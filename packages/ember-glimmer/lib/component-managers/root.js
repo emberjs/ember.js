@@ -2,7 +2,6 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import {
-  get,
   _instrumentStart
 } from 'ember-metal';
 import {
@@ -12,8 +11,6 @@ import { DEBUG } from 'ember-env-flags';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
-  rerenderInstrumentDetails,
-  validatePositionalParameters,
   processComponentInitializationAssertions
 } from './curly';
 
