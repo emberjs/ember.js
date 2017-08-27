@@ -123,6 +123,12 @@ agent-base@2:
     extend "~3.0.0"
     semver "~5.0.1"
 
+agent-base@^4.1.0:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-4.1.1.tgz#92d8a4fc2524a3b09b3666a33b6c97960f23d6a4"
+  dependencies:
+    es6-promisify "^5.0.0"
+
 ajv-keywords@^1.0.0:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/ajv-keywords/-/ajv-keywords-1.5.1.tgz#314dd0a4b3368fad3dfcdc54ede6171b886daf3c"
@@ -1860,7 +1866,7 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-debug@2, debug@2.6.8, debug@^2.1.0, debug@^2.1.1, debug@^2.1.3, debug@^2.2.0, debug@^2.4.0, debug@^2.6.8, debug@~2.6.7:
+debug@2, debug@2.6.8, debug@^2.1.0, debug@^2.1.1, debug@^2.1.3, debug@^2.2.0, debug@^2.4.0, debug@^2.4.1, debug@^2.6.8, debug@~2.6.7:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
@@ -2421,6 +2427,16 @@ es6-map@^0.1.3, es6-map@^0.1.4:
     es6-set "~0.1.5"
     es6-symbol "~3.1.1"
     event-emitter "~0.3.5"
+
+es6-promise@^4.0.3:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/es6-promise/-/es6-promise-4.1.1.tgz#8811e90915d9a0dba36274f0b242dbda78f9c92a"
+
+es6-promisify@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/es6-promisify/-/es6-promisify-5.0.0.tgz#5109d62f3e56ea967c4b63505aef08291c8a5203"
+  dependencies:
+    es6-promise "^4.0.3"
 
 es6-set@~0.1.5:
   version "0.1.5"
@@ -3369,6 +3385,13 @@ http-signature@~1.1.0:
     assert-plus "^0.2.0"
     jsprim "^1.2.2"
     sshpk "^1.7.0"
+
+https-proxy-agent@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/https-proxy-agent/-/https-proxy-agent-2.1.0.tgz#1391bee7fd66aeabc0df2a1fa90f58954f43e443"
+  dependencies:
+    agent-base "^4.1.0"
+    debug "^2.4.1"
 
 https-proxy-agent@~1.0.0:
   version "1.0.0"
@@ -4872,6 +4895,10 @@ proxy-addr@~1.1.4:
     forwarded "~0.1.0"
     ipaddr.js "1.3.0"
 
+proxy-from-env@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/proxy-from-env/-/proxy-from-env-1.0.0.tgz#33c50398f70ea7eb96d21f7b817630a55791c7ee"
+
 pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
@@ -4884,14 +4911,16 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-puppeteer@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-0.9.0.tgz#d65997ff83e24eb569e5577d2f75695dcbe5be4a"
+puppeteer@^0.10.1:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/puppeteer/-/puppeteer-0.10.1.tgz#a26f7012ff0fcc9f21c70ff9e2a8c60cba568a83"
   dependencies:
     debug "^2.6.8"
     extract-zip "^1.6.5"
+    https-proxy-agent "^2.1.0"
     mime "^1.3.4"
     progress "^2.0.0"
+    proxy-from-env "^1.0.0"
     rimraf "^2.6.1"
     ws "^3.0.0"
 
