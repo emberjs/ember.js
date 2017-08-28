@@ -169,7 +169,6 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
     }
 
     let layout = this.registerTemplate(name, layoutSource);
-
     let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout.handle);
     this.registerComponent(name, definition);
   }
