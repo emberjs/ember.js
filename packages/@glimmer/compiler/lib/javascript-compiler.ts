@@ -5,9 +5,7 @@ import { AST } from '@glimmer/syntax';
 import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
 import {
-  TemplateMeta,
   SerializedTemplateBlock,
-  SerializedTemplate,
   Core,
   Statement,
   Statements,
@@ -113,42 +111,39 @@ export class ComponentBlock extends Block {
   }
 }
 
-export class Template<T extends TemplateMeta> {
+export class Template {
   public block: TemplateBlock;
 
-  constructor(symbols: ProgramSymbolTable, public meta: T) {
+  constructor(symbols: ProgramSymbolTable) {
     this.block = new TemplateBlock(symbols);
   }
 
-  toJSON(): SerializedTemplate<T> {
-    return {
-      block: this.block.toJSON(),
-      meta: this.meta
-    };
+  toJSON(): SerializedTemplateBlock {
+    return this.block.toJSON();
   }
 }
 
-export default class JavaScriptCompiler<T extends TemplateMeta> {
-  static process<T extends TemplateMeta>(opcodes: any[], symbols: ProgramSymbolTable, meta: T): Template<T> {
-    let compiler = new JavaScriptCompiler<T>(opcodes, symbols, meta);
+export default class JavaScriptCompiler {
+  static process(opcodes: any[], symbols: ProgramSymbolTable): Template {
+    let compiler = new JavaScriptCompiler(opcodes, symbols);
     return compiler.process();
   }
 
-  private template: Template<T>;
+  private template: Template;
   private blocks = new Stack<Block>();
   private opcodes: any[];
   private values: StackValue[] = [];
 
-  constructor(opcodes: any[], symbols: ProgramSymbolTable, meta: T) {
+  constructor(opcodes: any[], symbols: ProgramSymbolTable) {
     this.opcodes = opcodes;
-    this.template = new Template(symbols, meta);
+    this.template = new Template(symbols);
   }
 
   get currentBlock(): Block {
     return expect(this.blocks.current, 'Expected a block on the stack');
   }
 
-  process(): Template<T> {
+  process(): Template {
     this.opcodes.forEach(([opcode, ...args]) => {
       if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on JavaScriptCompiler`); }
       this[opcode](...args);

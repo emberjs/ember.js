@@ -11,11 +11,12 @@
     "@glimmer/object-reference": "^0.27.0",
     "@glimmer/wire-format": "^0.27.0",
     "@glimmer/interfaces": "^0.27.0",
+    "@glimmer/opcode-compiler": "^0.27.0",
+    "@glimmer/program": "^0.27.0",
     "@glimmer/vm": "^0.27.0"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
-    "@glimmer/local-debug-flags": "^0.27.0",
     "typescript": "^2.2.0"
   }
 }

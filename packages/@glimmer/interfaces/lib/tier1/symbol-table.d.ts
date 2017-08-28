@@ -1,17 +1,12 @@
 import { Option, Dict } from '../core';
 import { TemplateMeta } from '@glimmer/wire-format';
+import { Opaque } from "@glimmer/interfaces";
 
 export interface Symbols {
 }
 
-export interface CompilationMeta {
-  symbols: string[];
-  templateMeta: TemplateMeta;
-  asPartial: boolean;
-}
-
 export interface SymbolTable {
-  meta: CompilationMeta;
+  referer: Opaque;
 }
 
 export interface ProgramSymbolTable extends SymbolTable {

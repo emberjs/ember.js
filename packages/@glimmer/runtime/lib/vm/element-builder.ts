@@ -212,6 +212,16 @@ export class NewElementBuilder implements ElementBuilder {
 
   openElement(tag: string): Simple.Element {
     let element = this.__openElement(tag);
+    // let isTableElement = tag === 'td' || tag === 'tr' || tag === 'th';
+
+    // if (isTableElement && this.element.tagName !== 'TBODY') {
+    //   let tbody = this.dom.createElement('tbody');
+    //   this.pushElement(tbody, null);
+    // }
+
+    if (tag === 'tbody' && this.element.tagName === 'TBODY') {
+      this.popElement();
+    }
 
     this.constructing = element;
 
@@ -233,6 +243,10 @@ export class NewElementBuilder implements ElementBuilder {
 
     this.pushElement(element, null);
     this.didOpenElement(element);
+
+    if (element.tagName === 'TABLE') {
+      this.pushElement(this.dom.createElement('tbody'), null);
+    }
   }
 
   __flushElement(parent: Simple.Element, constructing: Simple.Element) {
@@ -241,7 +255,15 @@ export class NewElementBuilder implements ElementBuilder {
 
   closeElement() {
     this.willCloseElement();
-    this.popElement();
+
+    if (this.element.tagName === 'TBODY' || this.element.tagName === 'COLGROUP') {
+      let tbody = this.cursorStack.current!.element;
+      this.popElement();
+      this.__flushElement(this.element, tbody);
+    } else {
+      this.popElement();
+    }
+
   }
 
   pushRemoteElement(element: Simple.Element, nextSibling: Option<Simple.Node> = null) {

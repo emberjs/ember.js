@@ -1,6 +1,6 @@
-import { RenderTests, module, test, stripTight } from "@glimmer/test-helpers";
+import { AbstractRenderTest, module, test, stripTight } from "@glimmer/test-helpers";
 
-class ScopeTests extends RenderTests {
+class ScopeTests extends AbstractRenderTest {
   @test
   "correct scope - conflicting local names"() {
     this.render({

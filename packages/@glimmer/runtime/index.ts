@@ -1,25 +1,8 @@
 import './lib/bootstrap';
 
-export { default as templateFactory, TemplateFactory, Template, TemplateIterator, RenderOptions, RenderLayoutOptions } from './lib/template';
+export { default as templateFactory, ScannableTemplate, TemplateFactory, Template, TemplateIterator, RenderLayoutOptions, elementBuilder } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
-
-export {
-   default as OpcodeBuilderDSL
-} from './lib/compiled/opcodes/builder';
-
-export {
-  prepareLayout
-} from './lib/compiler';
-
-export {
-  ComponentBuilder,
-  ComponentArgs
-} from './lib/opcode-builder';
-
-export {
-  debugSlice
-} from './lib/opcodes';
 
 export {
   setDebuggerCallback,
@@ -32,24 +15,12 @@ export {
 } from './lib/helpers/get-dynamic-var';
 
 export {
-  Blocks as BlockMacros,
-  Inlines as InlineMacros,
-  BlockMacro,
-  MissingBlockMacro,
-  expr as compileExpression
-} from './lib/syntax/functions';
-
-export {
   CompilableTemplate,
   BlockSyntax,
   TopLevelSyntax
 } from './lib/syntax/interfaces';
 
-export {
-  Macros
-} from './lib/syntax/macros';
-
-export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
+export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
 export {
   SimpleDynamicAttribute,
@@ -70,11 +41,9 @@ export { SafeString } from './lib/upsert';
 
 export {
   Scope,
-  Handle,
   default as Environment,
   Helper,
   DynamicScope,
-  Program,
   CompilationOptions
 } from './lib/environment';
 
@@ -83,15 +52,19 @@ export {
 } from './lib/partial';
 
 export {
-  ComponentCapabilities,
   ComponentManager,
-  ComponentDefinition,
+  CurriedComponentDefinition,
+  PublicComponentSpec as ComponentSpec,
   WithDynamicTagName,
   PreparedArguments,
   WithDynamicLayout,
-  WithStaticLayout,
-  isComponentDefinition
+  Invocation,
+  WithStaticLayout
 } from './lib/component/interfaces';
+
+export {
+  curry
+} from './lib/compiled/opcodes/component';
 
 export {
   ModifierManager

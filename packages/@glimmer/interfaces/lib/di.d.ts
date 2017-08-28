@@ -1,11 +1,10 @@
 import { TemplateMeta } from '@glimmer/wire-format';
 import { Opaque, Option, Unique } from './core';
+import { ComponentSpec } from "@glimmer/runtime";
 
-export interface Resolver<Specifier, T extends TemplateMeta = TemplateMeta> {
-  lookupHelper(name: string, meta: T): Option<Specifier>;
-  lookupModifier(name: string, meta: T): Option<Specifier>;
-  lookupComponent(name: string, meta: T): Option<Specifier>;
-  lookupPartial(name: string, meta: T): Option<Specifier>;
+export interface RuntimeResolver<Specifier> {
+  lookupComponent(name: string, meta: Specifier): Option<ComponentSpec<Opaque, Opaque>>;
+  lookupPartial(name: string, meta: Specifier): Option<number>;
 
-  resolve<U>(specifier: Specifier): U;
+  resolve<U>(specifier: number): U;
 }

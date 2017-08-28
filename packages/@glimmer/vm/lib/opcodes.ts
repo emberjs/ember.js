@@ -312,6 +312,18 @@ export const enum Op {
 
   /**
    * Operation:
+   *   Open a new Element named `tag` with special operations provided
+   *   on the stack.
+   * Format:
+   *   (OpenElementWithOperations tag:#string)
+   * Operand Stack:
+   *   ..., ElementOperations →
+   *   ...
+   */
+  OpenElementWithOperations,
+
+  /**
+   * Operation:
    *   Open a new Element with a name on the stack and with special
    *   operations provided on the stack.
    * Format:
@@ -421,9 +433,29 @@ export const enum Op {
   CompileBlock,
 
   /**
-   * Operation: Evaluate the specified block.
+   * Operation: Push a symbol table onto the stack.
    * Format:
-   *   (InvokeStatic)
+   *   (PushSymbolTable #SymbolTable)
+   * Operand Stack:
+   *   ..., →
+   *   ..., SymbolTable
+   */
+  PushSymbolTable,
+
+  /**
+   * Operation: Evaluate the handle at the top of the stack.
+   * Format:
+   *   (InvokeVirtual)
+   * Operand Stack:
+   *   ..., Handle, →
+   *   ...
+   */
+  InvokeVirtual,
+
+  /**
+   * Operation: Evaluate the handle.
+   * Format:
+   *   (InvokeStatic handle:u32)
    * Operand Stack:
    *   ... →
    *   ...
@@ -636,12 +668,12 @@ export const enum Op {
    * Operation: Push an appropriate component manager onto the stack.
    *
    * Format:
-   *   (PushComponentManager #ComponentDefinition)
+   *   (PushComponentManager #ComponentSpec)
    * Operand Stack:
    *   ... →
    *   ..., { ComponentDefinition, ComponentManager }
    */
-  PushComponentManager,
+  PushComponentSpec,
 
   /**
    * Operation:

@@ -29,6 +29,7 @@
     ]
   },
   "dependencies": {
+    "babel-plugin-debug-macros": "^0.1.11",
     "handlebars": "^4.0.6",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.4.1"

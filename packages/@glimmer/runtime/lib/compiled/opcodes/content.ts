@@ -1,19 +1,19 @@
+import { isCurriedComponentDefinition } from '../../component/interfaces';
 import { Opaque } from '@glimmer/interfaces';
 import { isConst, Reference, VersionedPathReference, Tag, VersionedReference } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
 import { DynamicContentWrapper } from '../../vm/content/dynamic';
-import { isComponentDefinition } from '../../component/interfaces';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { ConditionalReference } from '../../references';
 import { UpdatingVM } from '../../vm';
 
-export class IsComponentDefinitionReference extends ConditionalReference {
-  static create(inner: Reference<Opaque>): IsComponentDefinitionReference {
-    return new IsComponentDefinitionReference(inner);
+export class IsCurriedComponentDefinitionReference extends ConditionalReference {
+  static create(inner: Reference<Opaque>): IsCurriedComponentDefinitionReference {
+    return new IsCurriedComponentDefinitionReference(inner);
   }
 
   toBool(value: Opaque): boolean {
-    return isComponentDefinition(value);
+    return isCurriedComponentDefinition(value);
   }
 }
 
