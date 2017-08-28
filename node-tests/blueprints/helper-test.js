@@ -1,5 +1,6 @@
 'use strict';
 
+const file = require('../helpers/file');
 var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 var setupTestHooks = blueprintHelpers.setupTestHooks;
 var emberNew = blueprintHelpers.emberNew;
@@ -28,26 +29,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
                       "export default helper(fooBarBaz);");
 
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
-      }));
-  });
-
-  it('in-addon helper foo-bar', function() {
-    var args = ['helper', 'foo-bar'];
-
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('addon/helpers/foo-bar.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBar);");
-
-        expect(_file('app/helpers/foo-bar.js'))
-          .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
-        expect(_file('tests/integration/helpers/foo-bar-test.js'))
-          .to.contain("moduleForComponent('foo-bar', 'helper:foo-bar', {");
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
@@ -66,7 +48,26 @@ describe('Acceptance: ember generate and destroy helper', function() {
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
+          .to.equal(file('helper-test/integration.js'));
+      }));
+  });
+
+  it('in-addon helper foo/bar-baz', function() {
+    var args = ['helper', 'foo/bar-baz'];
+
+    return emberNew({ target: 'addon' })
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('addon/helpers/foo/bar-baz.js'))
+          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default helper(fooBarBaz);");
+
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
@@ -108,22 +109,22 @@ describe('Acceptance: ember generate and destroy helper', function() {
       }));
   });
 
-  it('in-repo-addon helper foo-bar', function() {
-    var args = ['helper', 'foo-bar', '--in-repo-addon=my-addon'];
+  it('in-repo-addon helper foo/bar-baz', function() {
+    var args = ['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('lib/my-addon/addon/helpers/foo-bar.js'))
+        expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js'))
           .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
                       "  return params;\n" +
                       "}\n\n" +
-                      "export default helper(fooBar);");
+                      "export default helper(fooBarBaz);");
 
-        expect(_file('lib/my-addon/app/helpers/foo-bar.js'))
-          .to.contain("export { default, fooBar } from 'my-addon/helpers/foo-bar';");
-        expect(_file('tests/integration/helpers/foo-bar-test.js'))
-          .to.contain("moduleForComponent('foo-bar', 'helper:foo-bar', {");
+        expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
+          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
@@ -142,42 +143,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
         expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
-      }));
-  });
-
-  it('helper foo-bar --pod', function() {
-    var args = ['helper', 'foo-bar', '--pod'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('app/helpers/foo-bar.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBar);");
-
-        expect(_file('tests/integration/helpers/foo-bar-test.js'))
-          .to.contain("moduleForComponent('foo-bar', 'helper:foo-bar', {");
-      }));
-  });
-
-  it('helper foo-bar --pod podModulePrefix', function() {
-    var args = ['helper', 'foo-bar', '--pod'];
-
-    return emberNew()
-      .then(() => setupPodConfig({ podModulePrefix: true }))
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('app/helpers/foo-bar.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBar);");
-
-        expect(_file('tests/integration/helpers/foo-bar-test.js'))
-          .to.contain("moduleForComponent('foo-bar', 'helper:foo-bar', {");
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
@@ -194,7 +160,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
                       "export default helper(fooBarBaz);");
 
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
@@ -212,7 +178,42 @@ describe('Acceptance: ember generate and destroy helper', function() {
                       "export default helper(fooBarBaz);");
 
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
+          .to.equal(file('helper-test/integration.js'));
+      }));
+  });
+
+  it('helper foo/bar-baz --pod', function() {
+    var args = ['helper', 'foo/bar-baz', '--pod'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default helper(fooBarBaz);");
+
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.equal(file('helper-test/integration.js'));
+      }));
+  });
+
+  it('helper foo/bar-baz --pod podModulePrefix', function() {
+    var args = ['helper', 'foo/bar-baz', '--pod'];
+
+    return emberNew()
+      .then(() => setupPodConfig({ podModulePrefix: true }))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default helper(fooBarBaz);");
+
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
@@ -222,7 +223,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
@@ -232,17 +233,17 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.contain("moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {");
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
-  it('in-addon helper-test foo-bar', function() {
-    var args = ['helper-test', 'foo-bar'];
+  it('in-addon helper-test foo/bar-baz', function() {
+    var args = ['helper-test', 'foo/bar-baz'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('tests/integration/helpers/foo-bar-test.js'))
-          .to.contain("moduleForComponent('foo-bar', 'helper:foo-bar', {");
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+          .to.equal(file('helper-test/integration.js'));
       }));
   });
 
