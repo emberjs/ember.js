@@ -16,12 +16,20 @@ import {
   EnvironmentOptions,
   EmberishCurlyComponent,
   ComponentKind,
-  AbstractEmberishCurlyComponentManager
+  AbstractEmberishCurlyComponentManager,
+  HasBlockSuite,
+  DebuggerSuite,
+  HasBlockParamsHelperSuite,
+  InElementSuite,
+  ScopeSuite,
+  ShadowingSuite,
+  WithDynamicVarsSuite,
+  YieldSuite
 } from "@glimmer/test-helpers";
-import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor } from "@glimmer/bundle-compiler";
+import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor, LookupMap } from "@glimmer/bundle-compiler";
 import { WrappedBuilder, ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
-import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants, WriteOnlyConstants } from "@glimmer/program";
-import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, Invocation } from "@glimmer/runtime";
+import { Program, RuntimeProgram, WriteOnlyConstants, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
+import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, Invocation, getDynamicVar, Helper as GlimmerHelper, } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { dict, unreachable, assert, assign } from "@glimmer/util";
 import { PathReference, CONSTANT_TAG, Tag } from "@glimmer/reference";
@@ -42,16 +50,8 @@ class BundledClientEnvironment extends AbstractTestEnvironment<Opaque> {
   }
 }
 
-function debugConstants(derivedCtor: any, baseCtors: any[]) {
-  baseCtors.forEach(baseCtor => {
-      Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
-          derivedCtor.prototype[name] = baseCtor.prototype[name];
-      });
-  });
-}
-
 export class RuntimeResolver implements IRuntimeResolver<Specifier> {
-  constructor(private map: SpecifierMap, private modules: Modules) {}
+  constructor(private map: SpecifierMap, private modules: Modules, public symbolTables: LookupMap<Specifier, ProgramSymbolTable>) {}
 
   lookupHelper(_name: string, _meta: Opaque): Option<number> {
     throw new Error("Method not implemented.");
@@ -203,8 +203,8 @@ const EMPTY_CAPABILITIES = {
   elementHook: false
 };
 
-export class BasicComponentManager implements WithStaticLayout<BasicComponent, typeof BasicComponent, Specifier, RuntimeResolver> {
-  getCapabilities(_definition: typeof BasicComponent) {
+export class BasicComponentManager implements WithStaticLayout<BasicComponent, { specifier: Specifier }, Specifier, RuntimeResolver> {
+  getCapabilities(_definition: { specifier: Specifier }) {
     return EMPTY_CAPABILITIES;
   }
 
@@ -217,8 +217,13 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, t
     return new klass();
   }
 
-  getLayout(): never {
-    throw new Error('unimplemented');
+  getLayout(definition: { specifier: Specifier }, resolver: RuntimeResolver): Invocation {
+    let handle = resolver.getVMHandle(definition.specifier);
+    let symbolTable = resolver.symbolTables.get(definition.specifier)!;
+    return {
+      handle: handle as Recast<number, VMHandle>,
+      symbolTable
+    };
   }
 
   getSelf(component: BasicComponent): PathReference<Opaque> {
@@ -296,7 +301,7 @@ interface RegisteredComponentDefinition {
   ComponentClass?: Opaque;
 }
 
-interface RuntimeComponentDefinition {
+export interface RuntimeComponentDefinition {
   symbolTable?: ProgramSymbolTable;
   name: string;
   specifier: Specifier;
@@ -317,19 +322,36 @@ class BundlingRenderDelegate implements RenderDelegate {
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
   protected components = dict<CompileTimeComponent>();
+  protected speficiersToSymbolTable = new LookupMap<Specifier, ProgramSymbolTable>();
+
+  constructor() {
+    this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
+  }
+
+  private registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
+    this.modules.register(name, 'helper', { default: helper });
+    return helper;
+  }
+
+  resetEnv() {
+    this.env = new BundledClientEnvironment();
+  }
 
   getInitialElement(): HTMLElement {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }
 
-  registerComponent(type: ComponentKind, testType: ComponentKind, name: string, layout: string): void {
+  registerComponent(type: ComponentKind, testType: ComponentKind, name: string, layout: string, Class?: Opaque): void {
     let module = `ui/components/${name}`;
 
     switch (type) {
       case "Basic":
+        class Basic {
+          static specifier = specifierFor(`ui/components/${name}`, 'default');
+        }
         this.components[module] = {
           type,
-          definition: class {} as RegisteredComponentDefinition,
+          definition: Basic as RegisteredComponentDefinition,
           manager: BASIC_MANAGER,
           capabilities: EMPTY_CAPABILITIES,
           template: layout
@@ -342,7 +364,7 @@ class BundlingRenderDelegate implements RenderDelegate {
             name,
             specifier: specifierFor(`ui/components/${name}`, 'default'),
             capabilities: EMBERISH_GLIMMER_CAPABILITIES,
-            ComponentClass: EmberishGlimmerComponent
+            ComponentClass: Class || EmberishGlimmerComponent
           },
           capabilities: EMBERISH_GLIMMER_CAPABILITIES,
           manager: EMBERISH_GLIMMER_COMPONENT_MANAGER,
@@ -358,7 +380,7 @@ class BundlingRenderDelegate implements RenderDelegate {
             symbolTable: testType === 'Dynamic',
             specifier: specifierFor(`ui/components/${name}`, 'default'),
             capabilities: EMBERISH_CURLY_CAPABILITIES,
-            ComponentClass: EmberishCurlyComponent
+            ComponentClass: Class || EmberishCurlyComponent
           },
           capabilities: EMBERISH_CURLY_CAPABILITIES,
           manager: EMBERISH_CURLY_COMPONENT_MANAGER,
@@ -381,9 +403,7 @@ class BundlingRenderDelegate implements RenderDelegate {
     let delegate: BundlingDelegate = new BundlingDelegate(this.components, this.modules, this.compileTimeModules, specifier => {
       return compiler.compileSpecifier(specifier);
     });
-    let DebugConstants = WriteOnlyConstants;
-    debugConstants(DebugConstants, [RuntimeConstants]);
-    let program = new WriteOnlyProgram(new DebugConstants());
+    let program = new WriteOnlyProgram(new WriteOnlyConstants());
     let compiler = new BundleCompiler(delegate, { macros, program });
 
     let spec = specifierFor('ui/components/main', 'default');
@@ -420,6 +440,8 @@ class BundlingRenderDelegate implements RenderDelegate {
           referer: key,
         };
 
+        this.speficiersToSymbolTable.set(spec, symbolTable);
+
         compileTimeModules.register(key, 'other', {
           default: symbolTable
         });
@@ -446,7 +468,7 @@ class BundlingRenderDelegate implements RenderDelegate {
     let builder = elementBuilder({ mode: 'client', env, cursor });
     let self = new UpdatableReference(context);
     let dynamicScope = new TestDynamicScope();
-    let resolver = new RuntimeResolver(compiler.getSpecifierMap(), this.modules);
+    let resolver = new RuntimeResolver(compiler.getSpecifierMap(), this.modules, this.speficiersToSymbolTable);
     let pool = program.constants.toPool();
     let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), program.heap);
 
@@ -460,3 +482,11 @@ class BundlingRenderDelegate implements RenderDelegate {
 rawModule("[Bundle Compiler] Initial Render Tests", InitialRenderSuite, BundlingRenderDelegate);
 rawModule("[Bundle Compiler] Basic Components", BasicComponents, BundlingRenderDelegate, { componentModule: true });
 rawModule('[Bundle Compiler] Emberish Components', EmberishComponentTests, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Has Block', HasBlockSuite, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Debugger Tests', DebuggerSuite, BundlingRenderDelegate);
+rawModule('[Bundle Compiler] Has Block Params Helpers Tests', HasBlockParamsHelperSuite, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] In-Element Tests', InElementSuite, BundlingRenderDelegate);
+rawModule('[Bundle Compiler] Scope Tests', ScopeSuite, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Shadowing Tests', ShadowingSuite, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] With Dynamic Vars Tests', WithDynamicVarsSuite, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Yield Tests', YieldSuite, BundlingRenderDelegate, { componentModule: true });
