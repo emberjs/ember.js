@@ -22,6 +22,11 @@ APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm.constants.getString(text));
 });
 
+APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
+  let tagName = vm.constants.getString(tag);
+  vm.elements().openElement(tagName);
+});
+
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
   vm.elements().appendComment(vm.constants.getString(text));
 });
@@ -45,7 +50,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   if (isConst(elementRef)) {
     element = elementRef.value();
   } else {
-    let cache = new ReferenceCache(elementRef);
+    let cache = new ReferenceCache<Simple.Element>(elementRef);
     element = cache.peek();
     vm.updateWith(new Assert(cache));
   }
@@ -53,7 +58,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   if (isConst(nextSiblingRef)) {
     nextSibling = nextSiblingRef.value();
   } else {
-    let cache = new ReferenceCache(nextSiblingRef);
+    let cache = new ReferenceCache<Option<Simple.Node>>(nextSiblingRef);
     nextSibling = cache.peek();
     vm.updateWith(new Assert(cache));
   }
@@ -76,8 +81,8 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
 
 APPEND_OPCODES.add(Op.CloseElement, vm => vm.elements().closeElement());
 
-APPEND_OPCODES.add(Op.Modifier, (vm, { op1: specifier }) => {
-  let manager = vm.constants.resolveSpecifier<ModifierManager>(specifier);
+APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
+  let manager = vm.constants.resolveHandle<ModifierManager>(handle);
   let stack = vm.stack;
   let args = stack.pop<Arguments>();
   let { constructing: element, updateOperations } = vm.elements();

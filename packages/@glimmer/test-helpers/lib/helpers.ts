@@ -58,11 +58,11 @@ function isMarker(node: Node) {
   return false;
 }
 
-export interface TestCompileOptions<T extends WireFormat.TemplateMeta> extends PrecompileOptions<T> {
+export interface TestCompileOptions extends PrecompileOptions {
   env: Environment;
 }
 
-export function precompile(string: string, options?: TestCompileOptions<WireFormat.TemplateMeta>): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
+export function precompile(string: string, options?: TestCompileOptions): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
   let wrapper = JSON.parse(rawPrecompile(string, options));
   wrapper.block = JSON.parse(wrapper.block);
   return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
@@ -222,8 +222,14 @@ export function getTextContent(el: Node) {
   }
 }
 
-export function strip(strings: TemplateStringsArray) {
-  return strings[0].split('\n').map(s => s.trim()).join(' ');
+export function strip(strings: TemplateStringsArray, ...args: string[]) {
+  if (typeof strings === 'object') {
+    return strings.map((str: string, i: number) => {
+      return `${str.split('\n').map(s => s.trim()).join('')}${args[i] ? args[i] : ''}`;
+    }).join('');
+  } else {
+    return strings[0].split('\n').map((s: string) => s.trim()).join(' ');
+  }
 }
 
 export function stripTight(strings: TemplateStringsArray) {

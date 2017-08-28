@@ -1,5 +1,5 @@
 import { Op } from '@glimmer/vm';
-import { Opaque, Option, BlockSymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option, BlockSymbolTable, Recast } from '@glimmer/interfaces';
 import {
   VersionedPathReference,
   CONSTANT_TAG,
@@ -10,14 +10,15 @@ import {
   Reference,
   Tag
 } from '@glimmer/reference';
-import { initializeGuid } from '@glimmer/util';
-import { Handle } from '../../environment';
-import { LazyConstants } from '../../environment/constants';
+import { initializeGuid, assert } from '@glimmer/util';
+import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { Primitive, PrimitiveReference, PrimitiveType } from '../../references';
+import { Primitive, PrimitiveReference } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
+import { LazyConstants, PrimitiveType } from "@glimmer/program";
+import { VMHandle } from "@glimmer/opcode-compiler";
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
@@ -27,13 +28,13 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
-APPEND_OPCODES.add(Op.Constant, (vm: VM & { constants: LazyConstants }, { op1: other }) => {
+APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, { op1: other }) => {
   vm.stack.push(vm.constants.getOther(other));
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
-  let flag: PrimitiveType = primitive & 7; // 111
+  let flag = primitive & 7; // 111
   let value = primitive >> 3;
 
   switch (flag) {
@@ -86,22 +87,32 @@ APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => vm.enter(args));
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
+APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
+  let stack = vm.stack;
+  stack.push(vm.constants.getSymbolTable(_table));
+});
+
 APPEND_OPCODES.add(Op.CompileBlock, vm => {
   let stack = vm.stack;
   let block = stack.pop<Option<CompilableTemplate> | 0>();
   stack.push(block ? block.compile() : null);
 });
 
-APPEND_OPCODES.add(Op.InvokeStatic, vm => vm.call(vm.stack.pop<Handle>()));
+APPEND_OPCODES.add(Op.InvokeVirtual, vm => vm.call(vm.stack.pop<VMHandle>()));
+
+APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => vm.call(handle as Recast<number, VMHandle>));
 
 APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
-  let handle = stack.pop<Option<Handle>>();
+  let handle = stack.pop<Option<VMHandle>>();
   let table = stack.pop<Option<BlockSymbolTable>>();
+
+  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+
   let args = stack.pop<Arguments>();
 
-  if (!table) {
+  if (table === null) {
     args.clear();
 
     // To balance the pop{Frame,Scope}
@@ -189,7 +200,7 @@ export class Assert extends UpdatingOpcode {
     this.cache = cache;
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     let { cache } = this;
 
     if (isModified(cache.revalidate())) {

@@ -17,33 +17,37 @@ export {
 } from './lib/helpers';
 
 export {
-  Attrs,
-  BasicComponent,
-  EmberishCurlyComponent,
-  EmberishGlimmerComponent,
-  TestModifierManager,
-  TestEnvironment,
   TestDynamicScope,
-  TestSpecifier,
-  LookupType,
   equalsElement,
   inspectHooks,
   regex,
   classes
 } from './lib/environment';
 
+export * from './lib/abstract-test-case';
+
+export * from './lib/suites';
+
 export {
-  VersionedObject,
-  SimpleRootReference,
-  AbstractRenderTest,
-  RenderTests,
-  OPEN,
-  CLOSE,
-  SEP,
-  EMPTY,
-  module,
-  test,
-  Content,
-  renderTemplate,
-  content
-} from './lib/abstract-test-case';
+  HelperReference,
+  UserHelper
+} from './lib/environment/helper';
+
+export {
+  TestMacros
+} from './lib/environment/generic/macros';
+
+export {
+  AbstractTestEnvironment,
+  EnvironmentOptions
+} from './lib/environment/env';
+
+export * from './lib/environment/modifier';
+
+export {
+  TestEnvironment
+} from './lib/environment/lazy-env';
+
+export * from './lib/environment/components';
+
+export * from './lib/environment/lookup';

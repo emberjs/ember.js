@@ -1,6 +1,6 @@
-import { RenderTests, module, test } from '@glimmer/test-helpers';
+import { AbstractRenderTest, module, test } from '@glimmer/test-helpers';
 
-class HasBlockParamHelperTests extends RenderTests {
+class HasBlockParamHelperTests extends AbstractRenderTest {
   @test({ kind: 'curly' })
   "parameterized has-block-params (subexpr, inverse) when inverse supplied without block params"() {
     this.render({

@@ -1,6 +1,6 @@
 import { ICapturedArguments } from './arguments';
 import { Register } from '@glimmer/vm';
-import { Scope, DynamicScope, Environment, Opcode, Handle, Heap, Program } from '../environment';
+import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementBuilder } from './element-builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, typePos, assert } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
@@ -14,11 +14,9 @@ import {
   UpdatingOpcode
 } from '../opcodes';
 
-import {
-  Constants,
-  ConstantString
-} from '../environment/constants';
-import { ProgramSymbolTable } from "@glimmer/interfaces";
+import { Opcode } from "@glimmer/interfaces";
+import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram } from "@glimmer/program";
+import { VMHandle as VMHandle } from "@glimmer/opcode-compiler";
 
 export interface PublicVM {
   env: Environment;
@@ -97,13 +95,13 @@ export type IteratorResult<T> = {
   value: T;
 };
 
-export default class VM implements PublicVM {
+export default class VM<Specifier> implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
-  public constants: Constants;
+  public constants: RuntimeConstants<Specifier>;
   public heap: Heap;
 
   public stack = EvaluationStack.empty();
@@ -183,7 +181,7 @@ export default class VM implements PublicVM {
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
-  call(handle: Handle) {
+  call(handle: VMHandle) {
     this.ra = this.pc;
     this.pc = this.heap.getaddr(handle);
   }
@@ -198,17 +196,17 @@ export default class VM implements PublicVM {
     this.pc = this.ra;
   }
 
-  static initial(
-    program: Program,
+  static initial<Specifier>(
+    program: RuntimeProgram<Specifier>,
     env: Environment,
     self: PathReference<Opaque>,
     args: Option<ICapturedArguments>,
     dynamicScope: DynamicScope,
     elementStack: ElementBuilder,
-    symbolTable: ProgramSymbolTable,
-    handle: Handle
+    handle: VMHandle
   ) {
-    let scope = Scope.root(self, symbolTable.symbols.length);
+    let scopeSize = program.heap.scopesizeof(handle);
+    let scope = Scope.root(self, scopeSize);
 
     if (args) {
 
@@ -225,7 +223,7 @@ export default class VM implements PublicVM {
   }
 
   constructor(
-    private program: Program,
+    private program: Program<Specifier>,
     public env: Environment,
     scope: Scope,
     dynamicScope: DynamicScope,
@@ -412,7 +410,7 @@ export default class VM implements PublicVM {
 
   /// EXECUTION
 
-  execute(start: Handle, initialize?: (vm: VM) => void): RenderResult {
+  execute(start: VMHandle, initialize?: (vm: VM<Specifier>) => void): RenderResult {
     this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);
@@ -463,7 +461,7 @@ export default class VM implements PublicVM {
     return program.opcode(pc);
   }
 
-  bindDynamicScope(names: ConstantString[]) {
+  bindDynamicScope(names: number[]) {
     let scope = this.dynamicScope();
 
     for(let i=names.length - 1; i>=0; i--) {

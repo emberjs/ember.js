@@ -1,21 +1,19 @@
 import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
-import { RenderResult, RenderLayoutOptions } from "@glimmer/runtime";
+import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction } from "@glimmer/node";
 import { Option } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { assign, equalTokens, normalizeInnerHTML } from "./helpers";
+import { TestEnvironment } from './environment/lazy-env';
 import {
-  TestEnvironment,
   TestDynamicScope,
-  EmberishGlimmerComponent,
-  EmberishCurlyComponent,
-  UserHelper,
   equalsElement,
   classes,
-  regex,
-  BasicComponent
+  regex
 } from "./environment";
+import { UserHelper } from './environment/helper';
+import { EmberishGlimmerComponent, EmberishCurlyComponent, BasicComponent } from './environment/components';
 import * as SimpleDOM from "simple-dom";
 
 export const OPEN: { marker: "open-block" } = { marker: "open-block" };
@@ -105,72 +103,36 @@ class SimplePathReference implements PathReference<Opaque> {
 type IndividualSnapshot = 'up' | 'down' | Node;
 type NodesSnapshot = IndividualSnapshot[];
 
-export abstract class AbstractRenderTest {
-  protected abstract element: HTMLElement;
-  protected serialized: string;
+export interface RenderDelegate {
+  getInitialElement(): HTMLElement;
+  registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, testType: L, name: string, layout: string, Class?: ComponentTypes[K]): void;
+  registerHelper(name: string, helper: UserHelper): void;
+  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult;
+}
+
+export class AbstractRenderTest {
+  protected element: HTMLElement;
   protected assert = QUnit.assert;
   protected context: Dict<Opaque> = dict<Opaque>();
   protected renderResult: Option<RenderResult> = null;
+  protected helpers = dict<UserHelper>();
+  protected testType: ComponentKind;
   private snapshot: NodesSnapshot = [];
-  private helpers = {};
-  public testType: ComponentKind;
-  public template: string;
 
-  constructor(protected env = new TestEnvironment()) {}
-
-  reset() {
-    this.element.innerHTML = '';
-    this.env = new TestEnvironment();
+  constructor(protected delegate: RenderDelegate) {
+    this.element = delegate.getInitialElement();
   }
 
   registerHelper(name: string, helper: UserHelper) {
-    this.helpers[name] = helper;
+    this.delegate.registerHelper(name, helper);
   }
 
-  registerComponent(
-    type: ComponentKind = this.testType,
-    name: string,
-    layout: string
-  ) {
-    switch (type) {
-      case 'Glimmer':
-        this.env.registerEmberishGlimmerComponent(
-          name,
-          EmberishGlimmerComponent,
-          layout
-        );
-        break;
-      case 'Curly':
-        this.env.registerEmberishCurlyComponent(
-          name,
-          EmberishCurlyComponent,
-          layout
-        );
-        break;
-
-      case 'Dynamic':
-        this.env.registerEmberishCurlyComponent(
-          name,
-          EmberishCurlyComponent,
-          layout
-        );
-        break;
-      case "Basic":
-      case "Fragment":
-        this.env.registerBasicComponent(name, BasicComponent, layout);
-        break;
-    }
-  }
-
-  populateHelpers() {
-    Object.keys(this.helpers).forEach(name =>
-      this.env.registerHelper(name, this.helpers[name])
-    );
+  registerComponent<K extends ComponentKind>(type: K, name: string, layout: string, Class?: ComponentTypes[K]) {
+    this.delegate.registerComponent(type, this.testType, name, layout, Class);
   }
 
   buildComponent(blueprint: ComponentBlueprint): string {
     let invocation = '';
-
     switch (this.testType) {
       case 'Glimmer':
         invocation = this.buildGlimmerComponent(blueprint);
@@ -282,7 +244,7 @@ export abstract class AbstractRenderTest {
     let invocation = this.buildAngleBracketComponent(blueprint);
     let layoutAttrs = this.buildAttributes(blueprint.layoutAttributes);
     this.assert.ok(true, `generated glimmer layout as ${`<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`}`);
-    this.registerComponent("Glimmer", name, `<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`);
+    this.delegate.registerComponent("Glimmer", this.testType, name, `<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`);
     this.assert.ok(true, `generated glimmer invocation as ${invocation}`);
     return invocation;
   }
@@ -332,7 +294,7 @@ export abstract class AbstractRenderTest {
       invocation.push('}}');
     }
     this.assert.ok(true, `generated curly layout as ${layout}`);
-    this.registerComponent("Curly", name, layout);
+    this.delegate.registerComponent("Curly", this.testType, name, layout);
     invocation = invocation.join("");
     this.assert.ok(true, `generated curly invocation as ${invocation}`);
     return invocation;
@@ -342,7 +304,7 @@ export abstract class AbstractRenderTest {
     let { layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated fragment layout as ${layout}`);
-    this.registerComponent("Basic", name, `${layout}`);
+    this.delegate.registerComponent("Basic", this.testType, name, `${layout}`);
     this.assert.ok(true, `generated fragment invocation as ${invocation}`);
     return invocation;
   }
@@ -351,7 +313,7 @@ export abstract class AbstractRenderTest {
     let { tag = "div", layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated basic layout as ${layout}`);
-    this.registerComponent("Basic", name, `<${tag} ...attributes>${layout}</${tag}>`);
+    this.delegate.registerComponent("Basic", this.testType, name, `<${tag} ...attributes>${layout}</${tag}>`);
     this.assert.ok(true, `generated basic invocation as ${invocation}`);
     return invocation;
   }
@@ -391,7 +353,7 @@ export abstract class AbstractRenderTest {
     }
 
     this.assert.ok(true, `generated dynamic layout as ${layout}`);
-    this.registerComponent("Curly", name, layout);
+    this.delegate.registerComponent("Curly", this.testType, name, layout);
     invocation = invocation.join("");
     this.assert.ok(true, `generated dynamic invocation as ${invocation}`);
 
@@ -401,7 +363,7 @@ export abstract class AbstractRenderTest {
   shouldBeVoid(tagName: string) {
     this.element.innerHTML = "";
     let html = "<" + tagName + " data-foo='bar'><p>hello</p>";
-    this.renderTemplate(html);
+    this.delegate.renderTemplate(html, this.context, this.element, () => this.takeSnapshot());
 
     let tag = '<' + tagName + ' data-foo="bar">';
     let closing = '</' + tagName + '>';
@@ -428,20 +390,17 @@ export abstract class AbstractRenderTest {
 
     this.setProperties(properties);
 
-    this.renderResult = this.renderTemplate(template);
+    this.renderResult = this.delegate.renderTemplate(template, this.context, this.element, () => this.takeSnapshot());
   }
-
-  protected abstract renderTemplate(template: string): RenderResult;
 
   rerender(properties: Dict<Opaque> = {}): void {
     this.setProperties(properties);
 
-    this.env.begin();
-    expect(
-      this.renderResult,
-      'the test should call render() before rerender()'
-    ).rerender();
-    this.env.commit();
+    let result = expect(this.renderResult, "the test should call render() before rerender()");
+
+    result.env.begin();
+    result.rerender();
+    result.env.commit();
   }
 
   protected set(key: string, value: Opaque): void {
@@ -492,8 +451,8 @@ export abstract class AbstractRenderTest {
     this.assertStableNodes();
   }
 
-  protected assertHTML(html: string) {
-    equalTokens(this.element, html);
+  protected assertHTML(html: string, message?: string) {
+    equalTokens(this.element, html, message ? `${html} (${message})` : html);
     this.takeSnapshot();
   }
 
@@ -530,123 +489,136 @@ export abstract class AbstractRenderTest {
   }
 }
 
-export class RenderTests extends AbstractRenderTest {
-  protected element: HTMLDivElement;
-  constructor(env: TestEnvironment) {
-    super(env);
-    this.element = this.env
-      .getAppendOperations()
-      .createElement('div') as HTMLDivElement;
+export class TestEnvironmentRenderDelegate implements RenderDelegate {
+  constructor(protected env: TestEnvironment = new TestEnvironment()) {}
+
+  resetEnv() {
+    this.env = new TestEnvironment();
   }
-  renderTemplate(template: string): RenderResult {
-    this.populateHelpers();
+
+  getInitialElement(): HTMLElement {
+    return this.env.getAppendOperations().createElement('div') as HTMLElement;
+  }
+
+  registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, _testType: L, name: string, layout: string, Class?: ComponentTypes[K]) {
+    registerComponent(this.env, type, name, layout, Class);
+  }
+
+  registerHelper(name: string, helper: UserHelper): void {
+    this.env.registerHelper(name, helper);
+  }
+
+  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
     let { env } = this;
     return renderTemplate(template, {
       env,
-      self: new UpdatableReference(this.context),
-      cursor: { element: this.element, nextSibling: null },
+      self: new UpdatableReference(context),
+      cursor: { element, nextSibling: null },
       dynamicScope: new TestDynamicScope()
     });
   }
 }
 
-export class RehydrationTests extends RenderTests {
+export const CLASSES = {
+  Glimmer: EmberishGlimmerComponent,
+  Curly: EmberishCurlyComponent,
+  Dynamic: EmberishCurlyComponent,
+  Basic: BasicComponent,
+  Fragment: BasicComponent
+};
+
+export type ComponentTypes = typeof CLASSES;
+
+function registerComponent<K extends ComponentKind>(env: TestEnvironment, type: K, name: string, layout: string, Class?: ComponentTypes[K]) {
+  switch (type) {
+    case "Glimmer":
+      env.registerEmberishGlimmerComponent(name, Class as typeof EmberishGlimmerComponent, layout);
+      break;
+    case "Curly":
+      env.registerEmberishCurlyComponent(name, Class as typeof EmberishCurlyComponent, layout);
+      break;
+
+    case "Dynamic":
+      env.registerEmberishCurlyComponent(name, Class as typeof EmberishCurlyComponent, layout);
+      break;
+    case "Basic":
+    case "Fragment":
+      env.registerBasicComponent(name, Class as typeof BasicComponent, layout);
+      break;
+  }
+}
+
+export class RehydrationDelegate implements RenderDelegate {
   serialized: string;
-  setupServer(template: string = this.template) {
+
+  protected env: never;
+
+  public clientEnv: TestEnvironment;
+  public serverEnv: TestEnvironment;
+
+  constructor() {
+    this.clientEnv = new TestEnvironment();
+
     let doc = new SimpleDOM.Document();
-    let env = new TestEnvironment({
+
+    this.serverEnv = new TestEnvironment({
       document: doc,
       appendOperations: new NodeDOMTreeConstruction(doc)
     });
-    this.setup({ template, env });
   }
 
-  setupClient(template: string = this.template) {
-    let env = new TestEnvironment();
-    let div = document.createElement('div');
-
-    expect(
-      this.serialized,
-      'Should have serialized HTML from `this.renderServerSide()`'
-    );
-
-    div.innerHTML = this.serialized;
-    this.element = div;
-    this.setup({ template, env });
+  getInitialElement(): HTMLElement {
+    return this.clientEnv.getAppendOperations().createElement('div') as HTMLElement;
   }
 
-  setup({
-    template,
-    context,
-    env
-  }: {
-    template: string;
-    context?: Dict<Opaque>;
-    env?: TestEnvironment;
-  }) {
-    if (env) this.env = env;
-    this.template = template;
-    if (context) this.setProperties(context);
-  }
-
-  assertServerOutput(..._expected: Content[]) {
-    let serialized = this.serialize();
-    equalTokens(serialized, content([OPEN, ..._expected, CLOSE]));
-    this.serialized = serialized;
-  }
-
-  renderServerSide(context?: Dict<Opaque>): void {
-    if (context) {
-      this.context = context;
-    }
-    this.setupServer();
-    this.populateHelpers();
-    let { env } = this;
-    this.element = env.getAppendOperations().createElement("div") as HTMLDivElement;
-    let template = expect(this.template, "Must set up a template before calling renderServerSide");
+  renderServerSide(template: string, context: Dict<Opaque>, takeSnapshot: () => void): string {
+    let env = this.serverEnv;
+    let element = env.getAppendOperations().createElement("div") as HTMLDivElement;
     // Emulate server-side render
     renderTemplate(template, {
       env,
-      self: new UpdatableReference(this.context),
-      cursor: { element: this.element, nextSibling: null },
+      self: new UpdatableReference(context),
+      cursor: { element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
       mode: 'serialize'
     });
 
-    this.takeSnapshot();
-    this.serialized = this.serialize();
+    takeSnapshot();
+    return this.serialize(element);
   }
 
-  serialize() {
+  serialize(element: HTMLElement) {
     let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    let serialized = serializer.serializeChildren(this.element);
+    let serialized = serializer.serializeChildren(element);
     return serialized;
   }
 
-  renderClientSide(context?: Dict<Opaque>) {
-    if (context) {
-      this.context = context;
-    }
-    this.setupClient();
-    this.populateHelpers();
-    let { env } = this;
-    this.element = env.getAppendOperations().createElement("div") as HTMLDivElement;
-    let template = expect(this.template, "Must set up a template before calling renderClientSide");
+  renderClientSide(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
+    let env = this.clientEnv;
     // Client-side rehydration
-    this.renderResult = renderTemplate(template, {
+    return renderTemplate(template, {
       env,
-      self: new UpdatableReference(this.context),
-      cursor: { element: this.element, nextSibling: null },
+      self: new UpdatableReference(context),
+      cursor: { element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
       mode: 'rehydrate'
     });
   }
 
-  renderTemplate(template: string): RenderResult {
-    this.template = template;
-    this.renderServerSide();
-    this.renderClientSide();
-    return this.renderResult!;
+  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult {
+    let serialized = this.renderServerSide(template, context, snapshot);
+    element.innerHTML = serialized;
+    return this.renderClientSide(template, context, element);
+  }
+
+  registerComponent(type: ComponentKind, name: string, layout: string): void {
+    registerComponent(this.clientEnv, type, name, layout);
+    registerComponent(this.serverEnv, type, name, layout);
+  }
+
+  registerHelper(name: string, helper: UserHelper): void {
+    this.clientEnv.registerHelper(name, helper);
+    this.serverEnv.registerHelper(name, helper);
   }
 }
 
@@ -767,13 +739,30 @@ export function test(...args: any[]) {
   return descriptor;
 }
 
-export function module(
+export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
+  new(): Delegate;
+}
+
+export interface RenderTestConstructor<D extends RenderDelegate, T extends AbstractRenderTest> {
+  new(delegate: D): T;
+}
+
+export function module<T extends AbstractRenderTest> (
   name: string,
-  klass: typeof AbstractRenderTest & Function,
+  klass: RenderTestConstructor<RenderDelegate, T>,
+  options = { componentModule: false }
+): void {
+  return rawModule(name, klass, TestEnvironmentRenderDelegate, options);
+}
+
+export function rawModule<D extends RenderDelegate, T extends AbstractRenderTest> (
+  name: string,
+  klass: RenderTestConstructor<D, T>,
+  Delegate: RenderDelegateConstructor<D>,
   options = { componentModule: false }
 ): void {
   if (options.componentModule) {
-    componentModule(name, klass);
+    componentModule(name, klass, Delegate);
   } else {
     QUnit.module(`[NEW] ${name}`);
 
@@ -781,7 +770,7 @@ export function module(
       const test = klass.prototype[prop];
 
       if (isTestFunction(test)) {
-        QUnit.test(prop, assert => test.call(new klass(), assert));
+        QUnit.test(prop, assert => test.call(new klass(new Delegate()), assert));
       }
     }
   }
@@ -795,10 +784,7 @@ interface ComponentTests {
   fragment: Function[];
 }
 
-function componentModule(
-  name: string,
-  klass: typeof AbstractRenderTest & Function
-) {
+function componentModule<D extends RenderDelegate, T extends AbstractRenderTest>(name: string, klass: RenderTestConstructor<D, T>, Delegate: RenderDelegateConstructor<D>) {
   let tests: ComponentTests = {
     glimmer: [],
     curly: [],
@@ -812,12 +798,10 @@ function componentModule(
     if (skip === true || test.skip === true) {
       shouldSkip = true;
     }
-    return (type: ComponentKind, klass: typeof AbstractRenderTest & Function) => {
-      let instance = new klass();
-      instance.testType = type;
-      if (shouldSkip) {
-        QUnit.skip(`${type.toLowerCase()}: ${prop}`, assert => test.call(instance, assert));
-      } else {
+    return (type: ComponentKind, klass: RenderTestConstructor<D, T>) => {
+      let instance = new klass(new Delegate());
+      instance['testType'] = type;
+      if (!shouldSkip) {
         QUnit.test(`${type.toLowerCase()}: ${prop}`, assert =>
           test.call(instance, assert)
         );
@@ -921,14 +905,18 @@ function isTestFunction(
 
 export function renderTemplate(template: string, options: RenderLayoutOptions & { env: TestEnvironment }) {
   let { env } = options;
-  env.begin();
 
-  let templateIterator = env.compile(template).renderLayout(options);
+  let iterator = env.compile(template).renderLayout(options);
+  return renderSync(env, iterator);
+}
+
+export function renderSync(env: Environment, iterator: TemplateIterator) {
+  env.begin();
 
   let iteratorResult: IteratorResult<RenderResult>;
 
   do {
-    iteratorResult = templateIterator.next() as IteratorResult<RenderResult>;
+    iteratorResult = iterator.next() as IteratorResult<RenderResult>;
   } while (!iteratorResult.done);
 
   let result = iteratorResult.value;

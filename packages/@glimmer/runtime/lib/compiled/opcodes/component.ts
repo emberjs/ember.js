@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Recast } from '@glimmer/interfaces';
+import { Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver, BlockSymbolTable } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
@@ -14,43 +14,48 @@ import {
   CurriedComponentDefinition,
   hasDynamicLayout,
   hasStaticLayout,
-  isComponentDefinition,
   isCurriedComponentDefinition,
   WithDynamicTagName,
   WithElementHook,
+  ComponentSpec,
+  PublicComponentSpec
 } from '../../component/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
-import { DynamicScope, Handle, ScopeBlock, ScopeSlot } from '../../environment';
+import { DynamicScope, ScopeBlock, ScopeSlot } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { AbstractTemplate } from './builder';
 import { UNDEFINED_REFERENCE } from '../../references';
-import { ATTRS_BLOCK } from '../../syntax/functions';
 import { UpdatingVM, VM } from '../../vm';
 import { Arguments, IArguments, ICapturedArguments } from '../../vm/arguments';
-import { IsComponentDefinitionReference } from './content';
+import { IsCurriedComponentDefinitionReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
-import { Resolver, Specifier, ComponentDefinition, ComponentManager, Component } from '../../internal-interfaces';
+import { ComponentDefinition, ComponentManager, Component } from '../../internal-interfaces';
 import { dict, assert, unreachable } from "@glimmer/util";
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
+import { ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
+import { stackAssert } from './assert';
 
 const ARGS = new Arguments();
 
-function resolveComponent(resolver: Resolver, name: string, meta: TemplateMeta): ComponentDefinition {
-  let specifier = resolver.lookupComponent(name, meta);
-  assert(specifier, `Could not find a component named "${name}"`);
-  return resolver.resolve<ComponentDefinition>(specifier!);
+function resolveComponent<Specifier>(resolver: RuntimeResolver<Specifier>, name: string, meta: Specifier): Option<ComponentSpec> {
+  let spec = resolver.lookupComponent(name, meta);
+  assert(spec, `Could not find a component named "${name}"`);
+  return spec as ComponentSpec;
 }
 
-class CurryComponentReference implements VersionedPathReference<Option<ComponentDefinition>> {
+export function curry(spec: PublicComponentSpec, args: Option<ICapturedArguments> = null): CurriedComponentDefinition {
+  return new CurriedComponentDefinition(spec as ComponentSpec, args);
+}
+
+class CurryComponentReference<Specifier> implements VersionedPathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
   private lastValue: Opaque;
-  private lastDefinition: Option<ComponentDefinition>;
+  private lastDefinition: Option<CurriedComponentDefinition>;
 
   constructor(
     private inner: VersionedReference<Opaque>,
-    private resolver: Resolver,
-    private meta: TemplateMeta,
+    private resolver: RuntimeResolver<Specifier>,
+    private meta: Specifier,
     private args: Option<ICapturedArguments>
   ) {
     this.tag = inner.tag;
@@ -58,7 +63,7 @@ class CurryComponentReference implements VersionedPathReference<Option<Component
     this.lastDefinition = null;
   }
 
-  value(): Option<ComponentDefinition> {
+  value(): Option<CurriedComponentDefinition> {
     let { inner, lastValue } = this;
 
     let value = inner.value();
@@ -67,11 +72,11 @@ class CurryComponentReference implements VersionedPathReference<Option<Component
       return this.lastDefinition;
     }
 
-    let definition: Option<ComponentDefinition> = null;
+    let definition: Option<CurriedComponentDefinition | ComponentSpec> = null;
 
-    if (isComponentDefinition(value)) {
+    if (isCurriedComponentDefinition(value)) {
       definition = value;
-    } else if(typeof value === 'string' && value) {
+    } else if (typeof value === 'string' && value) {
       let { resolver, meta } = this;
       definition = resolveComponent(resolver, value, meta);
     }
@@ -88,21 +93,23 @@ class CurryComponentReference implements VersionedPathReference<Option<Component
     return UNDEFINED_REFERENCE;
   }
 
-  private curry(definition: Option<ComponentDefinition>): Option<ComponentDefinition> {
+  private curry(definition: Option<CurriedComponentDefinition | ComponentSpec>): Option<CurriedComponentDefinition> {
     let { args } = this;
 
-    if (!definition || !args) {
+    if (!args && isCurriedComponentDefinition(definition)) {
       return definition;
+    } else if (!definition) {
+      return null;
+    } else {
+      return new CurriedComponentDefinition(definition, args);
     }
-
-    return new CurriedComponentDefinition(definition, args);
   }
 }
 
 APPEND_OPCODES.add(Op.IsComponent, vm => {
   let stack = vm.stack;
 
-  stack.push(IsComponentDefinitionReference.create(stack.pop<Reference>()));
+  stack.push(IsCurriedComponentDefinitionReference.create(stack.pop<Reference>()));
 });
 
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
@@ -123,33 +130,51 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   stack.push(new CurryComponentReference(definition, resolver, meta, captured));
 });
 
-APPEND_OPCODES.add(Op.PushComponentManager, (vm, { op1: specifier }) => {
-  let definition = vm.constants.resolveSpecifier<ComponentDefinition>(specifier);
+APPEND_OPCODES.add(Op.PushComponentSpec, (vm, { op1: handle }) => {
+  let spec = vm.constants.resolveHandle<ComponentSpec>(handle);
+
+  assert(!!spec, `Missing component for ${handle} (TODO: env.specifierForHandle)`);
+
   let stack = vm.stack;
 
-  stack.push({ definition, manager: definition.manager, component: null });
+  let { definition, manager } = spec;
+  stack.push({ definition, manager, component: null });
 });
 
 APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
-  let value = stack.pop<VersionedPathReference<Opaque>>().value();
-  let definition: ComponentDefinition;
+  let component = stack.pop<VersionedPathReference<CurriedComponentDefinition | string>>().value();
+  let definition: ComponentSpec['definition'] | CurriedComponentDefinition;
+  let manager: Option<ComponentSpec['manager']> = null;
 
-  if (isComponentDefinition(value)) {
-    definition = value;
-  } else {
-    assert(typeof value === 'string', `Could not find a component named "${String(value)}"`);
-
+  if (typeof component === 'string') {
     let { constants, constants: { resolver } } = vm;
     let meta = constants.getSerializable<TemplateMeta>(_meta);
-    definition = resolveComponent(resolver, value as string, meta);
+    let spec = resolveComponent(resolver, component, meta);
+
+    assert(!!spec, `Could not find a component named "${component}"`);
+
+    definition = spec!.definition;
+    manager = spec!.manager;
+
+    assert(definition && manager, 'missing definition or manager');
+  } else if (isCurriedComponentDefinition(component)) {
+    definition = component;
+  } else {
+    throw unreachable();
   }
 
-  stack.push({ definition, manager: definition.manager, component: null });
+  stack.push({ definition, manager, component: null });
 });
 
 interface InitialComponentState {
+  definition: ComponentDefinition;
+  manager: Option<ComponentManager>;
+  component: null;
+}
+
+interface PopulatedComponentState {
   definition: ComponentDefinition;
   manager: ComponentManager;
   component: null;
@@ -173,19 +198,26 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let state = vm.fetchValue<InitialComponentState>(_state);
 
   let { definition, manager } = state;
+  let args: Arguments;
 
-  if (definition.capabilities.prepareArgs !== true) {
+  if (isCurriedComponentDefinition(definition)) {
+    assert(!manager, "If the component definition was curried, we don't yet have a manager");
+
+    args = stack.pop<Arguments>();
+
+    let { manager: curriedManager, definition: curriedDefinition } = definition.unwrap(args);
+    state.manager = manager = curriedManager as ComponentManager;
+    state.definition = definition = curriedDefinition;
+  } else {
+    args = stack.pop<Arguments>();
+  }
+
+  if (manager!.getCapabilities(definition).prepareArgs !== true) {
+    stack.push(args);
     return;
   }
 
-  let args = stack.pop<Arguments>();
-
-  if (isCurriedComponentDefinition(definition)) {
-    state.definition = definition = definition.unwrap(args);
-    state.manager = manager = definition.manager;
-  }
-
-  let preparedArgs = manager.prepareArgs(definition, args);
+  let preparedArgs = manager!.prepareArgs(definition, args);
 
   if (preparedArgs) {
     args.clear();
@@ -214,13 +246,13 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let definition: ComponentDefinition;
   let manager: ComponentManager;
   let dynamicScope = vm.dynamicScope();
-  let state = { definition, manager } = vm.fetchValue<InitialComponentState>(_state);
+  let state = { definition, manager } = vm.fetchValue<PopulatedComponentState>(_state);
 
   let hasDefaultBlock = flags & 1;
 
   let args: Option<IArguments> = null;
 
-  if (definition.capabilities.createArgs) {
+  if (manager.getCapabilities(definition).createArgs) {
     args = vm.stack.peek<IArguments>();
   }
 
@@ -281,7 +313,7 @@ export class ComponentElementOperations {
     this.attributes[name] = deferred;
   }
 
-  flush(vm: VM) {
+  flush(vm: VM<Opaque>) {
     for (let name in this.attributes) {
       let attr = this.attributes[name];
       let { value: reference, namespace, trusting } = attr;
@@ -338,29 +370,29 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   vm.stack.push((manager as Recast<ComponentManager, WithDynamicTagName<Component>>).getTagName(component));
 });
 
+// Dynamic Invocation Only
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let { manager, definition, component } = vm.fetchValue<ComponentState>(_state);
   let { constants: { resolver }, stack } = vm;
-  let specifier: Specifier;
+  let invoke: { handle: VMHandle, symbolTable: ProgramSymbolTable };
 
   if (hasStaticLayout(definition, manager)) {
-    specifier = manager.getLayout(definition, resolver) as Specifier;
+    invoke = manager.getLayout(definition, resolver);
   } else if (hasDynamicLayout(definition, manager)) {
-    specifier = manager.getLayout(component, resolver) as Specifier;
+    invoke = manager.getLayout(component, resolver);
   } else {
     throw unreachable();
   }
 
-  let layout = resolver.resolve<AbstractTemplate<ProgramSymbolTable>>(specifier);
-
-  stack.push(layout.symbolTable);
-  stack.push(layout);
+  stack.push(invoke.symbolTable);
+  stack.push(invoke.handle);
 });
 
+// Dynamic Invocation Only
 APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
   let { stack } = vm;
 
-  let handle = stack.pop<Handle>();
+  let handle = stack.pop<VMHandle>();
   let { symbols, hasEval } = stack.pop<ProgramSymbolTable>();
 
   {
@@ -392,8 +424,10 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
 
     let bindBlock = (name: string) => {
       let symbol = symbols.indexOf(name);
-      let handle = stack.pop<Option<Handle>>();
+      let handle = stack.pop<Option<VMHandle>>();
       let table = stack.pop<Option<BlockSymbolTable>>();
+
+      assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
 
       let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 
@@ -440,7 +474,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(_vm: UpdatingVM) {
+  evaluate(_vm: UpdatingVM<Opaque>) {
     let { component, manager, dynamicScope } = this;
 
     manager.update(component, dynamicScope);
@@ -459,7 +493,7 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     let { manager, component, bounds } = this;
 
     manager.didUpdateLayout(component, bounds);
