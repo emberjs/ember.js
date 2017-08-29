@@ -254,37 +254,37 @@
   @public
 */
 
-export { INVOKE } from './helpers/action';
-export { default as RootTemplate } from './templates/root';
-export { default as template } from './template';
-export { default as Checkbox } from './components/checkbox';
-export { default as TextField } from './components/text_field';
-export { default as TextArea } from './components/text_area';
-export { default as LinkComponent } from './components/link-to';
-export { default as Component } from './component';
-export { default as Helper, helper } from './helper';
-export { default as Environment } from './environment';
+export { INVOKE } from './lib/helpers/action';
+export { default as RootTemplate } from './lib/templates/root';
+export { default as template } from './lib/template';
+export { default as Checkbox } from './lib/components/checkbox';
+export { default as TextField } from './lib/components/text_field';
+export { default as TextArea } from './lib/components/text_area';
+export { default as LinkComponent } from './lib/components/link-to';
+export { default as Component } from './lib/component';
+export { default as Helper, helper } from './lib/helper';
+export { default as Environment } from './lib/environment';
 export {
   SafeString,
   escapeExpression,
   htmlSafe,
   isHTMLSafe,
   getSafeString as _getSafeString
-} from './utils/string';
+} from './lib/utils/string';
 export {
   Renderer,
   InertRenderer,
   InteractiveRenderer,
   _resetRenderers
-} from './renderer';
+} from './lib/renderer';
 export {
   getTemplate,
   setTemplate,
   hasTemplate,
   getTemplates,
   setTemplates
-} from './template_registry';
-export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
-export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
-export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
-export { default as AbstractComponentManager } from './component-managers/abstract';
+} from './lib/template_registry';
+export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
+export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
+export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './lib/syntax';
+export { default as AbstractComponentManager } from './lib/component-managers/abstract';
