@@ -14,19 +14,28 @@
     "moduleResolution": "node",
 
     // Enhance Strictness
-    "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "allowUnreachableCode": false,
+    // "noImplicitAny": true,
+    // "suppressImplicitAnyIndexErrors": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "allowUnreachableCode": false,
     "strictNullChecks": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
+    // "noImplicitReturns": true,
+    // "noImplicitThis": true,
 
     "newLine": "LF",
     "noEmit": false,
-    "allowJs": true
+    "allowJs": true,
+
+    "paths": {
+      "*": ["*/lib"]
+    }
   },
+
+  "include": [
+    "packages/**/*.ts"
+  ],
+
   "exclude": [
     "dist",
     "demos",
