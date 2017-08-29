@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es5",
+    "module": "es2015",
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "outDir": "dist",
+    "baseUrl" : "packages",
+    "rootDir": "packages",
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+
+    "newLine": "LF",
+    "noEmit": false,
+    "allowJs": true
+  },
+  "exclude": [
+    "dist",
+    "demos",
+    "tmp",
+    "node_modules",
+    ".vscode"
+  ]
+}
