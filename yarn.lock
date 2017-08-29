@@ -69,6 +69,10 @@
   version "0.25.3"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.25.3.tgz#7cedf72947137b519658c8be34d0d5965cebe3a1"
 
+"@glimmer/vm@*":
+  version "0.27.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/vm/-/vm-0.27.0.tgz#03ebc2cf6939c7cef76459686db279f558ff2596"
+
 "@glimmer/wire-format@^0.25.3":
   version "0.25.3"
   resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.25.3.tgz#046692b3a26a30a498712266cd0bdb47d7710f37"

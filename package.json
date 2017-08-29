@@ -43,6 +43,7 @@
     "@glimmer/node": "^0.25.3",
     "@glimmer/reference": "^0.25.3",
     "@glimmer/runtime": "^0.25.3",
+    "@glimmer/vm": "*",
     "broccoli-funnel": "^1.2.0",
     "broccoli-merge-trees": "^2.0.0",
     "ember-cli-get-component-path-option": "^1.0.0",

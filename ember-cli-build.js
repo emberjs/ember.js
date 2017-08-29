@@ -342,8 +342,10 @@ function dependenciesES6() {
     glimmerPkgES('@glimmer/runtime', [
       '@glimmer/util',
       '@glimmer/reference',
-      '@glimmer/wire-format'
-    ])
+      '@glimmer/wire-format',
+      '@glimmer/vm'
+    ]),
+    glimmerPkgES('@glimmer/vm'),
   ];
 }
 
