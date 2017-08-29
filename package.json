@@ -86,6 +86,7 @@
     "broccoli-lint-eslint": "^3.2.1",
     "broccoli-rollup": "^1.2.0",
     "broccoli-string-replace": "^0.1.2",
+    "broccoli-typescript-compiler": "^2.0.1",
     "broccoli-uglify-js": "^0.2.0",
     "broccoli-uglify-sourcemap": "^1.5.2",
     "chalk": "^1.1.1",
