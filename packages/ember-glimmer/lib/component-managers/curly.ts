@@ -1,9 +1,9 @@
 import { OWNER, assign } from 'ember-utils';
 import { combineTagged } from '@glimmer/reference';
 import {
-  PrimitiveReference,
-  ComponentDefinition
+  PrimitiveReference, Arguments, PreparedArguments
 } from '@glimmer/runtime';
+import { Option } from '@glimmer/interfaces';
 import {
   assert
 } from 'ember-debug';
@@ -109,8 +109,8 @@ export class PositionalArgumentReference {
   }
 }
 
-export default class CurlyComponentManager extends AbstractManager {
-  prepareArgs(definition, args) {
+export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, CurlyComponentDefinition> {
+  prepareArgs(definition: CurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
     let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
 
     if (DEBUG && componentPositionalParamsDefinition) {
@@ -120,23 +120,14 @@ export default class CurlyComponentManager extends AbstractManager {
     let componentHasRestStylePositionalParams = typeof componentPositionalParamsDefinition === 'string';
     let componentHasPositionalParams = componentHasRestStylePositionalParams || componentPositionalParamsDefinition.length > 0;
     let needsPositionalParamMunging = componentHasPositionalParams && args.positional.length !== 0;
-    let isClosureComponent = definition.args;
 
-    if (!needsPositionalParamMunging && !isClosureComponent) {
+    if (!needsPositionalParamMunging) {
       return null;
     }
 
     let capturedArgs = args.capture();
     // grab raw positional references array
     let positional = capturedArgs.positional.references;
-
-    // handle prep for closure component with positional params
-    let curriedNamed;
-    if (definition.args) {
-      let remainingDefinitionPositionals = definition.args.positional.slice(positional.length);
-      positional = positional.concat(remainingDefinitionPositionals);
-      curriedNamed = definition.args.named;
-    }
 
     // handle positionalParams
     let positionalParamsToNamed;
@@ -154,7 +145,7 @@ export default class CurlyComponentManager extends AbstractManager {
       }
     }
 
-    let named = assign({}, curriedNamed, positionalParamsToNamed, capturedArgs.named.map);
+    let named = assign({}, positionalParamsToNamed, capturedArgs.named.map);
 
     return { positional, named };
   }
@@ -416,10 +407,6 @@ export function rerenderInstrumentDetails(component) {
 
 const MANAGER = new CurlyComponentManager();
 
-export class CurlyComponentDefinition extends ComponentDefinition {
-  constructor(name, ComponentClass, template, args, customManager) {
-    super(name, customManager || MANAGER, ComponentClass);
-    this.template = template;
-    this.args = args;
-  }
+export class CurlyComponentDefinition {
+  constructor(public name: string, public ComponentClass: any, public template: string) {}
 }

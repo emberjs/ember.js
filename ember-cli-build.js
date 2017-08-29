@@ -342,9 +342,11 @@ function dependenciesES6() {
       '@glimmer/util',
       '@glimmer/reference',
       '@glimmer/wire-format',
-      '@glimmer/vm'
+      '@glimmer/vm',
+      '@glimmer/opcode-compiler'
     ]),
     glimmerPkgES('@glimmer/vm'),
+    glimmerPkgES('@glimmer/opcode-compiler')
   ];
 }
 

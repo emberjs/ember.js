@@ -1,10 +1,14 @@
+// @ts-check
+
 import { RootReference } from './utils/references';
 import {
   run,
   setHasViews,
   runInTransaction
 } from 'ember-metal';
-import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { CURRENT_TAG } from '@glimmer/reference';
+import { Dict } from '@glimmer/util';
+import { UNDEFINED_REFERENCE } from '@glimmer/runtime';
 import {
   fallbackViewRegistry,
   getViewElement,
@@ -16,14 +20,12 @@ import { RootComponentDefinition } from './component-managers/root';
 import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { assert } from 'ember-debug';
 
+import Environment from './environment';
+
 const { backburner } = run;
 
-class DynamicScope {
-  constructor(view, outletState, rootOutletState, targetObject) {
-    this.view = view;
-    this.outletState = outletState;
-    this.rootOutletState = rootOutletState;
-  }
+export class DynamicScope {
+  constructor(public view: any, public outletState: any, public rootOutletState: any) {}
 
   child() {
     return new DynamicScope(
@@ -44,20 +46,18 @@ class DynamicScope {
 }
 
 class RootState {
-  constructor(root, env, template, self, parentElement, dynamicScope) {
+  public id: string;
+  public result: any = undefined;
+  public shouldReflush = false;
+  public destroyed = false;
+  public _removing = false;
+  public options = { alwaysRevalidate: false };
+  public render: () => void;
+
+  constructor(public root: any, public env: Environment, template, self, parentElement, dynamicScope) {
     assert(`You cannot render \`${self.value()}\` without a template.`, template);
 
     this.id = getViewId(root);
-    this.env = env;
-    this.root = root;
-    this.result = undefined;
-    this.shouldReflush = false;
-    this.destroyed = false;
-    this._removing = false;
-
-    let options = this.options = {
-      alwaysRevalidate: false
-    };
 
     this.render = () => {
       let iterator = template.render(self, parentElement, dynamicScope);
@@ -70,7 +70,7 @@ class RootState {
       let result = this.result = iteratorResult.value;
 
       // override .render function after initial render
-      this.render = () => result.rerender(options);
+      this.render = () => result.rerender(this.options);
     };
   }
 
@@ -114,7 +114,7 @@ class RootState {
   }
 }
 
-const renderers = [];
+const renderers: Renderer[] = [];
 
 export function _resetRenderers() {
   renderers.length = 0;
@@ -122,12 +122,12 @@ export function _resetRenderers() {
 
 setHasViews(() => renderers.length > 0);
 
-function register(renderer) {
+function register(renderer: Renderer) {
   assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
   renderers.push(renderer);
 }
 
-function deregister(renderer) {
+function deregister(renderer: Renderer) {
   let index = renderers.indexOf(renderer);
   assert('Cannot deregister unknown unregistered renderer', index !== -1);
   renderers.splice(index, 1);
@@ -162,17 +162,18 @@ backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
 class Renderer {
-  constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
-    this._env = env;
-    this._rootTemplate = rootTemplate;
-    this._viewRegistry = _viewRegistry;
-    this._destinedForDOM = destinedForDOM;
-    this._destroyed = false;
-    this._roots = [];
-    this._lastRevision = null;
-    this._isRenderingRoots = false;
-    this._removedRoots = [];
-  }
+  public _destroyed = false;
+  public _roots: any[] = [];
+  public _lastRevision: any = null;
+  public _isRenderingRoots = false;
+  public _removedRoots: any[] = [];
+
+  constructor(
+    public _env: Environment,
+    public _rootTemplate: any,
+    public _viewRegistry: Dict<any> = fallbackViewRegistry,
+    public _destinedForDOM = false
+  ) {}
 
   // renderer HOOKS
 
@@ -192,7 +193,7 @@ class Renderer {
 
   _appendDefinition(root, definition, target, outletStateReference = UNDEFINED_REFERENCE, targetObject = null) {
     let self = new RootReference(definition);
-    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference, true, targetObject);
+    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
 
     this._renderRoot(rootState);

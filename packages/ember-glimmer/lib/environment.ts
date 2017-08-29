@@ -1,6 +1,6 @@
 import { guidFor, OWNER } from 'ember-utils';
 import { Cache, _instrumentStart } from 'ember-metal';
-import { assert, warn } from 'ember-debug';
+import { warn } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -10,12 +10,14 @@ import {
   constructStyleDeprecationMessage
 } from 'ember-views';
 import {
+  DefaultEnvironment,
   Environment as GlimmerEnvironment,
-  AttributeManager,
-  isSafeString,
-  compileLayout,
-  getDynamicVar
+  Modifier,
+  getDynamicVar,
+  ModifierManager
 } from '@glimmer/runtime';
+import { Dict, Opaque } from '@glimmer/interfaces';
+import { Reference, OpaqueIterable } from '@glimmer/reference';
 import {
   CurlyComponentDefinition
 } from './component-managers/curly';
@@ -58,19 +60,46 @@ import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER
 } from 'ember/features';
 
-function instrumentationPayload(name) {
+function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-export default class Environment extends GlimmerEnvironment {
-  static create(options) {
-    return new this(options);
+interface Owner {
+  lookup<T>(key: string): T;
+  factoryFor<T>(key: string): { class: T };
+}
+
+interface DefinitionKey {
+  name: string;
+  source: string;
+  owner: Owner;
+}
+
+export default class Environment extends DefaultEnvironment {
+  protocolForURL(s: string): string {
+    throw new Error("Monkey patched. TODO: Remove this");
   }
 
-  constructor({ [OWNER]: owner }) {
-    super(...arguments);
+  static create(options: Dict<Opaque>) {
+    return new this(options[OWNER] as Owner);
+  }
+
+  protected owner: Owner;
+  protected isInteractive: boolean;
+  protected destroyedComponents: { destroy(): void }[] = [];
+  protected builtInModifiers: any;
+  protected builtInHelpers: any;
+  protected debugStack: any;
+  protected _definitionCache: any;
+  protected _templateCache: any;
+  protected _compilerCache: any;
+
+  public inTransaction = false;
+
+  constructor(owner: Owner) {
+    super();
     this.owner = owner;
-    this.isInteractive = owner.lookup('-environment:main').isInteractive;
+    this.isInteractive = owner.lookup<{ isInteractive: boolean }>('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = [];
@@ -89,7 +118,7 @@ export default class Environment extends GlimmerEnvironment {
             customManager = owner.factoryFor(`component-manager:${managerId}`).class;
           }
         }
-        return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
+        return new CurlyComponentDefinition(name, componentFactory, layout, customManager);
       }
     }, ({ name, source, owner }) => {
       let expandedName = source && this._resolveLocalLookupName(name, source, owner) || name;
@@ -152,12 +181,6 @@ export default class Environment extends GlimmerEnvironment {
   _resolveLocalLookupName(name, source, owner) {
     return EMBER_MODULE_UNIFICATION ? `${source}:${name}`
       : owner._resolveLocalLookupName(name, source);
-  }
-
-  macros() {
-    let macros = super.macros();
-    populateMacros(macros.blocks, macros.inlines);
-    return macros;
   }
 
   hasComponentDefinition() {
@@ -255,19 +278,19 @@ export default class Environment extends GlimmerEnvironment {
     return ConditionalReference.create(reference);
   }
 
-  iterableFor(ref, key) {
-    return createIterable(ref, key);
+  iterableFor(ref: Reference, key: string): OpaqueIterable {
+    return createIterable(ref, key) as any;
   }
 
-  scheduleInstallModifier() {
+  scheduleInstallModifier(modifier: Modifier, manager: ModifierManager) {
     if (this.isInteractive) {
-      super.scheduleInstallModifier(...arguments);
+      super.scheduleInstallModifier(modifier, manager);
     }
   }
 
-  scheduleUpdateModifier() {
+  scheduleUpdateModifier(modifier: Modifier, manager: ModifierManager) {
     if (this.isInteractive) {
-      super.scheduleUpdateModifier(...arguments);
+      super.scheduleUpdateModifier(modifier, manager);
     }
   }
 
@@ -288,7 +311,7 @@ export default class Environment extends GlimmerEnvironment {
     // `didCreate` to prevent errors when removing and adding a component
     // with the same name (would throw an error when added to view registry)
     for (let i = 0; i < destroyedComponents.length; i++) {
-      destroyedComponents[i].destroy();
+      destroyedComponents[i]!.destroy();
     }
 
     super.commit();
