@@ -229,12 +229,17 @@ export interface CompilationOptions<Specifier, R extends RuntimeResolver<Specifi
   Builder: OpcodeBuilderConstructor;
 }
 
+export interface EnvironmentOptions {
+  appendOperations: DOMTreeConstruction;
+  updateOperations: DOMChanges;
+}
+
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
   private _transaction: Option<Transaction> = null;
 
-  constructor({ appendOperations, updateOperations }: { appendOperations: DOMTreeConstruction, updateOperations: DOMChanges }) {
+  constructor({ appendOperations, updateOperations }: EnvironmentOptions) {
     this.appendOperations = appendOperations;
     this.updateOperations = updateOperations;
   }
@@ -290,6 +295,19 @@ export abstract class Environment {
 
   attributeFor(element: Simple.Element, attr: string, _isTrusting: boolean, _namespace: Option<string> = null): DynamicAttributeFactory {
     return defaultDynamicAttributes(element, attr);
+  }
+}
+
+export abstract class DefaultEnvironment extends Environment {
+  constructor(options?: EnvironmentOptions) {
+    if (!options) {
+      let document = window.document;
+      let appendOperations = new DOMTreeConstruction(document);
+      let updateOperations = new DOMChanges(document as HTMLDocument);
+      options = { appendOperations, updateOperations };
+    }
+
+    super(options);
   }
 }
 
