@@ -42,6 +42,7 @@ export { SafeString } from './lib/upsert';
 export {
   Scope,
   default as Environment,
+  DefaultEnvironment,
   Helper,
   DynamicScope,
   CompilationOptions
@@ -67,7 +68,8 @@ export {
 } from './lib/compiled/opcodes/component';
 
 export {
-  ModifierManager
+  ModifierManager,
+  Modifier
 } from './lib/modifier/interfaces';
 
 export { default as DOMChanges, SVG_NAMESPACE, DOMChanges as IDOMChanges, DOMTreeConstruction, isWhitespace, insertHTMLBefore } from './lib/dom/helper';
