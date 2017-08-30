@@ -976,7 +976,7 @@ const EmberRouter = EmberObject.extend(Evented, {
               return true;
             }
 
-            if (_fromRouterService) {
+            if (_fromRouterService && presentProp !== false) {
               return false;
             }
 
