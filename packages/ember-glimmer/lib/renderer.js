@@ -161,7 +161,7 @@ function loopEnd(current, next) {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-class Renderer {
+export class Renderer {
   constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
     this._env = env;
     this._rootTemplate = rootTemplate;
