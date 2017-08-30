@@ -2,8 +2,11 @@ import {
   CachedReference,
   combine,
   map,
-  referenceFromParts
+  referenceFromParts,
+  Reference,
+  Tag
 } from '@glimmer/reference';
+import { Opaque, Option } from '@glimmer/interfaces';
 import {
   Ops
 } from '@glimmer/wire-format';
@@ -100,22 +103,21 @@ export const AttributeBinding = {
 const DISPLAY_NONE = 'display: none;';
 const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
 
-class StyleBindingReference extends CachedReference {
-  constructor(inner, isVisible) {
+class StyleBindingReference extends CachedReference<string> {
+  public tag: Tag;
+  constructor(private inner: Reference<string>, private isVisible: Reference<Opaque>) {
     super();
 
     this.tag = combine([inner.tag, isVisible.tag]);
-    this.inner = inner;
-    this.isVisible = isVisible;
   }
 
-  compute() {
+  compute(): string {
     let value = this.inner.value();
     let isVisible = this.isVisible.value();
 
     if (isVisible !== false) {
       return value;
-    } else if (!value && value !== 0) {
+    } else if (!value) {
       return SAFE_DISPLAY_NONE;
     } else {
       let style = value + ' ' + DISPLAY_NONE;
@@ -158,8 +160,11 @@ export const ClassNameBinding = {
   }
 };
 
-class SimpleClassNameBindingReference extends CachedReference {
-  constructor(inner, path) {
+class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
+  public tag: Tag;
+  private dasherizedPath: Option<string>;
+
+  constructor(private inner: Reference<Opaque | number>, private path: string) {
     super();
 
     this.tag = inner.tag;
@@ -168,31 +173,30 @@ class SimpleClassNameBindingReference extends CachedReference {
     this.dasherizedPath = null;
   }
 
-  compute() {
+  compute(): Option<string> {
     let value = this.inner.value();
 
     if (value === true) {
       let { path, dasherizedPath } = this;
       return dasherizedPath || (this.dasherizedPath = StringUtils.dasherize(path));
     } else if (value || value === 0) {
-      return value;
+      return String(value);
     } else {
       return null;
     }
   }
 }
 
-class ColonClassNameBindingReference extends CachedReference {
-  constructor(inner, truthy, falsy) {
+class ColonClassNameBindingReference extends CachedReference<Option<string>> {
+  public tag: Tag;
+
+  constructor(private inner: Reference<Opaque>, private truthy: Option<string> = null, private falsy: Option<string> = null) {
     super();
 
     this.tag = inner.tag;
-    this.inner = inner;
-    this.truthy = truthy || null;
-    this.falsy = falsy || null;
   }
 
-  compute() {
+  compute(): Option<string> {
     let { inner, truthy, falsy } = this;
     return inner.value() ? truthy : falsy;
   }
