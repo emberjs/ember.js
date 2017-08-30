@@ -76,8 +76,7 @@ module.exports.qunit = function _qunit() {
 }
 
 module.exports.emberGlimmerES = function _emberGlimmerES() {
-  let input = new Funnel('packages/ember-glimmer', {
-    include: ['lib/**/*', 'index.*'],
+  let input = new Funnel('packages/ember-glimmer/lib', {
     destDir: 'packages/ember-glimmer'
   });
 
@@ -91,7 +90,9 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
 
   let debuggedCompiledTemplatesAndTypeScript = debugTree(compiledTemplatesAndTypescript, 'ember-glimmer:templates-output');
 
-  let typescriptCompiled = new TypeScriptPlugin(debuggedCompiledTemplatesAndTypeScript);
+  let typescriptCompiled = new TypeScriptPlugin(debuggedCompiledTemplatesAndTypeScript, {
+    compilerOptions: { allowJs: true }
+  });
 
   return debugTree(typescriptCompiled, 'ember-glimmer:output');
 }
@@ -192,7 +193,7 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
   }
 
   return new Funnel(`packages/${name}/lib`, {
-    exclude: ['.gitkeep'],
+    exclude: ['.gitkeep', '**/*.d.ts'],
     destDir: name,
     annotation: `${name} es`
   });
