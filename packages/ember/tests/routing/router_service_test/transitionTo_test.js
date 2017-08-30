@@ -256,6 +256,26 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
     }
 
+    ['@test RouterService#transitionTo with unspecified query params'](assert) {
+      assert.expect(1);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['sort', 'page', 'category', 'extra'],
+        sort: 'ASC',
+        page: null,
+        category: undefined
+      }));
+
+      let queryParams = this.buildQueryParams({ sort: 'ASC' });
+
+      return this.visit('/').then(() => {
+        return this.routerService.transitionTo('parent.child', queryParams);
+      })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+        });
+    }
+
     ['@test RouterService#transitionTo with aliased query params uses the original provided key'](assert) {
       assert.expect(1);
 
