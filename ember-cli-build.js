@@ -95,7 +95,10 @@ module.exports = function(options) {
   let backburner = toES5(backburnerES());
 
   // Linting
-  let linting = lint(new UnwatchedDir('packages'));
+  let packages = new UnwatchedDir('packages');
+  let linting = lint(new Funnel(packages, {
+    include: ['**/*.js']
+  }));
 
   // ES5
   let dependenciesES5 = dependenciesES6().map(toES5);
