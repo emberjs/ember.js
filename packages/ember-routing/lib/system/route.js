@@ -848,7 +848,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         } else {
           if (presentKey) {
             svalue = params[presentKey];
-            value = route.deserializeQueryParam(svalue, qp.urlKey, qp.type);
+
+            if (svalue !== undefined) {
+              value = route.deserializeQueryParam(svalue, qp.urlKey, qp.type);
+            }
           } else {
             // No QP provided; use default value.
             svalue = qp.serializedDefaultValue;
