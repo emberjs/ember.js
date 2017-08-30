@@ -1,11 +1,12 @@
+// @ts-check
+
 import { DEBUG } from 'ember-env-flags';
 
 let DebugStack;
 
 if (DEBUG) {
   class Element {
-    constructor(name) {
-      this.name = name;
+    constructor(public name: string) {
     }
   }
 
@@ -13,9 +14,7 @@ if (DEBUG) {
   class EngineElement extends Element { }
 
   DebugStack = class DebugStack {
-    constructor() {
-      this._stack = [];
-    }
+    private _stack: TemplateElement[] = [];
 
     push(name) {
       this._stack.push(new TemplateElement(name));

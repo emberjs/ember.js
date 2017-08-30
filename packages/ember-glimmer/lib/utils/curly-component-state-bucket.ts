@@ -1,3 +1,16 @@
+import { Opaque } from '@glimmer/interfaces';
+import { Revision, Tagged } from '@glimmer/reference';
+
+interface Environment {
+  isInteractive: boolean;
+  destroyedComponents: Component[];
+}
+
+interface Component {
+  trigger(event: string);
+}
+
+type Finalizer = () => void;
 function NOOP() {}
 
 /**
@@ -12,13 +25,12 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  constructor(environment, component, args, finalizer) {
-    this.environment = environment;
-    this.component = component;
+  private classRef: Opaque = null;
+  private argsRevision: Revision;
+
+  constructor(private environment: Environment, private component: Component, private args: Tagged, private finalizer: Finalizer) {
     this.classRef = null;
-    this.args = args;
     this.argsRevision = args.tag.value();
-    this.finalizer = finalizer;
   }
 
   destroy() {
