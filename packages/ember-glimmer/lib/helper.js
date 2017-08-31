@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-glimmer
+@module @ember/component
 */
 
 import { symbol } from 'ember-utils';
@@ -47,7 +46,7 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
   Additionally, class helpers can call `recompute` to force a new computation.
 
-  @class Ember.Helper
+  @class Helper
   @public
   @since 1.13.0
 */
@@ -106,7 +105,7 @@ Helper.reopenClass({
 });
 
 /**
-  In many cases, the ceremony of a full `Ember.Helper` class is not required.
+  In many cases, the ceremony of a full `Helper` class is not required.
   The `helper` method create pure-function helpers without instances. For
   example:
 
@@ -123,6 +122,7 @@ Helper.reopenClass({
   @static
   @param {Function} helper The helper function
   @method helper
+  @for @ember/component/helper
   @public
   @since 1.13.0
 */

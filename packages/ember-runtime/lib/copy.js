@@ -1,7 +1,9 @@
 import { assert } from 'ember-debug';
 import EmberObject from './system/object';
 import Copyable from './mixins/copyable';
-
+/**
+ @module @ember/object
+*/
 function _copy(obj, deep, seen, copies) {
   let ret, loc, key;
 
@@ -75,7 +77,8 @@ function _copy(obj, deep, seen, copies) {
   is simply returned.
 
   @method copy
-  @for Ember
+  @static
+  @for @ember/object/internals
   @param {Object} obj The object to clone
   @param {Boolean} [deep=false] If true, a deep copy of the object is made.
   @return {Object} The copied object

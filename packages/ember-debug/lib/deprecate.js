@@ -9,11 +9,6 @@ import { ENV } from 'ember-environment';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 /**
-@module ember
-@submodule ember-debug
-*/
-
-/**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
   Deprecations are invoked by calls to [Ember.deprecate](https://emberjs.com/api/classes/Ember.html#method_deprecate).
   The following example demonstrates its usage by registering a handler that throws an error if the
@@ -42,10 +37,11 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
     <li> <code>next</code> - A function that calls into the previously registered handler.</li>
   </ul>
 
+  @module @ember/debug
   @public
   @static
   @method registerDeprecationHandler
-  @for Ember.Debug
+  @for @ember/debug
   @param handler {Function} A function to handle deprecation calls.
   @since 2.1.0
 */
@@ -140,7 +136,9 @@ if (DEBUG) {
     * In a production build, this method is defined as an empty function (NOP).
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
+    @module @ember/application
     @method deprecate
+    @for @ember/application/deprecations
     @param {String} message A description of the deprecation.
     @param {Boolean} test A boolean. If falsy, the deprecation will be displayed.
     @param {Object} options
@@ -152,7 +150,7 @@ if (DEBUG) {
       warning will be removed.
     @param {String} [options.url] An optional url to the transition guide on the
       emberjs.com website.
-    @for Ember
+    @static
     @public
     @since 1.0.0
   */

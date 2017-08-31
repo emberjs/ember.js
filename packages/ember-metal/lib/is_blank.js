@@ -1,24 +1,29 @@
 import isEmpty from './is_empty';
-
+/**
+ @module @ember/utils
+*/
 /**
   A value is blank if it is empty or a whitespace string.
 
   ```javascript
-  Ember.isBlank();                // true
-  Ember.isBlank(null);            // true
-  Ember.isBlank(undefined);       // true
-  Ember.isBlank('');              // true
-  Ember.isBlank([]);              // true
-  Ember.isBlank('\n\t');          // true
-  Ember.isBlank('  ');            // true
-  Ember.isBlank({});              // false
-  Ember.isBlank('\n\t Hello');    // false
-  Ember.isBlank('Hello world');   // false
-  Ember.isBlank([1,2,3]);         // false
+  import { isBlank } from '@ember/utils';
+
+  isBlank();                // true
+  isBlank(null);            // true
+  isBlank(undefined);       // true
+  isBlank('');              // true
+  isBlank([]);              // true
+  isBlank('\n\t');          // true
+  isBlank('  ');            // true
+  isBlank({});              // false
+  isBlank('\n\t Hello');    // false
+  isBlank('Hello world');   // false
+  isBlank([1,2,3]);         // false
   ```
 
   @method isBlank
-  @for Ember
+  @static
+  @for @ember/utils
   @param {Object} obj Value to test
   @return {Boolean}
   @since 1.5.0

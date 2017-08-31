@@ -5,6 +5,9 @@ import {
   UNDEFINED
 } from './meta';
 
+/**
+ @module ember
+*/
 let id = 0;
 
 // Returns whether Type(value) is Object according to the terminology in the spec

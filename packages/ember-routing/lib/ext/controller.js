@@ -4,7 +4,6 @@ import { prefixRouteNameArg } from '../utils';
 
 /**
 @module ember
-@submodule ember-routing
 */
 
 ControllerMixin.reopen({

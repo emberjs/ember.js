@@ -8,8 +8,7 @@ import { Error as EmberError } from 'ember-debug';
 import { not, or } from '../computed/computed_macros';
 
 /**
-  @module ember
-  @submodule ember-runtime
+  @module @ember/object
 */
 
 function tap(proxy, promise) {
@@ -92,7 +91,7 @@ function tap(proxy, promise) {
   proxy.get('lastName')  //=> 'Penner'
   ```
 
-  @class Ember.PromiseProxyMixin
+  @class PromiseProxy
   @public
 */
 export default Mixin.create({

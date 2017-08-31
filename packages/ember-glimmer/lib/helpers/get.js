@@ -14,7 +14,6 @@ import {
 
 /**
 @module ember
-@submodule ember-glimmer
 */
 
 /**

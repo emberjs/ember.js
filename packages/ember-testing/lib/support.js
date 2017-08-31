@@ -5,7 +5,6 @@ import { environment } from 'ember-environment';
 
 /**
   @module ember
-  @submodule ember-testing
 */
 
 const $ = jQuery;

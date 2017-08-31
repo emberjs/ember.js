@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/engine
 */
 
 import { guidFor } from 'ember-utils';
@@ -20,8 +19,8 @@ import { getEngineParent, setEngineParent } from './engine-parent';
   running `Engine`.
 
   @public
-  @class Ember.EngineInstance
-  @extends Ember.Object
+  @class EngineInstance
+  @extends EmberObject
   @uses RegistryProxyMixin
   @uses ContainerProxyMixin
 */
@@ -139,7 +138,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @method buildChildEngineInstance
     @param name {String} the registered name of the engine.
     @param options {Object} options provided to the engine instance.
-    @return {Ember.EngineInstance,Error}
+    @return {EngineInstance,Error}
   */
   buildChildEngineInstance(name, options = {}) {
     let Engine = this.lookup(`engine:${name}`);
