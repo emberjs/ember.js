@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-routing
 */
 
 import { assign } from 'ember-utils';

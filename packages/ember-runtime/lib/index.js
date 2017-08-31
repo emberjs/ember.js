@@ -1,8 +1,3 @@
-/**
-@module ember
-@submodule ember-runtime
-*/
-
 export { default as Object, FrameworkObject } from './system/object';
 export { default as String } from './system/string';
 export {

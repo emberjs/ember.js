@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/string
 */
 import { Cache } from 'ember-metal';
 import { deprecate } from 'ember-debug';
@@ -122,8 +121,6 @@ function capitalize(str) {
   added to the `String.prototype` as well.
 
   @class String
-  @namespace Ember
-  @static
   @public
 */
 export default {

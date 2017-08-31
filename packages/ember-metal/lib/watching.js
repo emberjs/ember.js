@@ -1,5 +1,5 @@
 /**
-@module ember-metal
+@module ember
 */
 import {
   watchKey,

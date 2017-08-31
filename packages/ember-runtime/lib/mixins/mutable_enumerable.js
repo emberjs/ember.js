@@ -7,7 +7,6 @@ import {
 
 /**
 @module ember
-@submodule ember-runtime
 */
 
 /**

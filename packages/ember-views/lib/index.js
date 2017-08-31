@@ -1,7 +1,3 @@
-/**
-@module ember
-@submodule ember-views
-*/
 
 export { default as jQuery } from './system/jquery';
 export {
