@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-testing
 */
 import { RSVP } from 'ember-runtime';
 import Logger from 'ember-console';

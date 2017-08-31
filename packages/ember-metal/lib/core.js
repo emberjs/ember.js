@@ -2,7 +2,6 @@ import { context } from 'ember-environment';
 
 /**
 @module ember
-@submodule ember-metal
 */
 
 /**

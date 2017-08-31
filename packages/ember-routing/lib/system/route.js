@@ -59,8 +59,7 @@ export function hasDefaultSerialize(route) {
 }
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 /**
@@ -68,10 +67,9 @@ export function hasDefaultSerialize(route) {
   the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
   @class Route
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @uses Ember.ActionHandler
-  @uses Ember.Evented
+  @uses Evented
   @since 1.0.0
   @public
 */
@@ -114,7 +112,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     @property queryParams
-    @for Ember.Route
+    @for Route
     @type Object
     @since 1.6.0
     @public
@@ -128,7 +126,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     a `routeName` of `posts.post`.
 
     @property routeName
-    @for Ember.Route
+    @for Route
     @type String
     @since 1.0.0
     @public
@@ -657,7 +655,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     @event loading
     @param {Transition} transition
-    @param {Ember.Route} route The route that triggered the loading event
+    @param {Route} route The route that triggered the loading event
     @since 1.2.0
     @public
   */
@@ -785,7 +783,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     @property controller
-    @type Ember.Controller
+    @type Controller
     @since 1.6.0
     @public
   */
@@ -1775,7 +1773,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     @method controllerFor
     @param {String} name the name of the route or controller
-    @return {Ember.Controller}
+    @return {Controller}
     @since 1.0.0
     @public
   */

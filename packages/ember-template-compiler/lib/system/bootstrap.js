@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-templates
 */
 
 import { Error as EmberError } from 'ember-debug';

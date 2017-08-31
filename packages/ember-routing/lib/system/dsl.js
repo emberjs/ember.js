@@ -1,11 +1,6 @@
 import { assign } from 'ember-utils';
 import { assert, deprecate } from 'ember-debug';
 
-/**
-@module ember
-@submodule ember-routing
-*/
-
 let uuid = 0;
 
 class DSL {

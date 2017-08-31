@@ -1,4 +1,7 @@
 /**
+ @module @ember/polyfills
+*/
+/**
   Copy properties from a source object to a target object.
 
   ```javascript
@@ -9,7 +12,7 @@
   ```
 
   @method assign
-  @for Ember
+  @for @ember/polyfills
   @param {Object} original The object to assign into
   @param {Object} ...args The objects to copy properties from
   @return {Object}

@@ -1,6 +1,6 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/enumerable
+@private
 */
 
 // ..........................................................
@@ -87,7 +87,6 @@ function iter(key, value) {
   JavaScript 1.8 API.
 
   @class Enumerable
-  @namespace Ember
   @since Ember 0.9
   @private
 */
@@ -597,7 +596,7 @@ const Enumerable = Mixin.create({
     Returns `true` if the passed property resolves to the value of the second
     argument for all items in the enumerable. This method is often simpler/faster
     than using a callback.
-    
+
     Note that like the native `Array.every`, `isEvery` will return true when called
     on any empty enumerable.
 

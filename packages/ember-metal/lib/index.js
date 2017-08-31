@@ -1,7 +1,3 @@
-/**
-@module ember
-@submodule ember-metal
-*/
 
 export { default } from './core'; // reexports
 export {

@@ -3,8 +3,7 @@ import { Object as EmberObject } from 'ember-runtime';
 function K() { return this; }
 
 /**
- @module ember
- @submodule ember-testing
+ @module @ember/test
 */
 
 /**
@@ -12,7 +11,6 @@ function K() { return this; }
   by an adapter for various test frameworks.
 
   @class Adapter
-  @namespace Ember.Test
   @public
 */
 export default EmberObject.extend({

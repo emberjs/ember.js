@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/object
 */
 
 import { guidFor } from 'ember-utils';
@@ -66,7 +65,8 @@ function multiArrayMacro(_dependentKeys, callback) {
   in the dependent array.
 
   @method sum
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the sum of all values in the dependentKey's array
   @since 1.4.0
@@ -112,7 +112,8 @@ export function sum(dependentKey) {
   This behavior is consistent with `Math.max`.
 
   @method max
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the largest value in the dependentKey's array
   @public
@@ -157,7 +158,8 @@ export function max(dependentKey) {
   This behavior is consistent with `Math.min`.
 
   @method min
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the smallest value in the dependentKey's array
   @public
@@ -194,7 +196,8 @@ export function min(dependentKey) {
   ```
 
   @method map
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @param {Function} callback
   @return {Ember.ComputedProperty} an array mapped via the callback
@@ -230,7 +233,8 @@ export function map(dependentKey, callback) {
   ```
 
   @method mapBy
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @param {String} propertyKey
   @return {Ember.ComputedProperty} an array mapped to the specified key
@@ -299,7 +303,8 @@ export function mapBy(dependentKey, propertyKey) {
 
 
   @method filter
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @param {Function} callback
   @return {Ember.ComputedProperty} the filtered array
@@ -331,7 +336,8 @@ export function filter(dependentKey, callback) {
   ```
 
   @method filterBy
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @param {String} propertyKey
   @param {*} value
@@ -374,7 +380,8 @@ export function filterBy(dependentKey, propertyKey, value) {
   ```
 
   @method uniq
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
@@ -421,7 +428,8 @@ export function uniq(...args) {
   ```
 
   @method uniqBy
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey
   @param {String} propertyKey
   @return {Ember.ComputedProperty} computes a new array with all the
@@ -478,7 +486,8 @@ export function uniqBy(dependentKey, propertyKey) {
   ```
 
   @method union
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
@@ -504,7 +513,8 @@ export let union = uniq;
   ```
 
   @method intersect
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} propertyKey*
   @return {Ember.ComputedProperty} computes a new array with all the
   duplicated elements from the dependent arrays
@@ -564,7 +574,8 @@ export function intersect(...args) {
   ```
 
   @method setDiff
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} setAProperty
   @param {String} setBProperty
   @return {Ember.ComputedProperty} computes a new array with all the
@@ -613,7 +624,8 @@ export function setDiff(setAProperty, setBProperty) {
   ```
 
   @method collect
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed in properties to an array.
@@ -693,7 +705,8 @@ export function collect(...dependentKeys) {
   ```
 
   @method sort
-  @for Ember.computed
+  @for @ember/object/computed
+  @static
   @param {String} itemsKey
   @param {String or Function} sortDefinition a dependent key to an
   array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting

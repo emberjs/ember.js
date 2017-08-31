@@ -2,7 +2,6 @@ function NOOP() {}
 
 /**
   @module ember
-  @submodule ember-glimmer
 */
 
 /**

@@ -1,13 +1,12 @@
 
 /**
 @module ember
-@submodule ember-glimmer
 */
 import { InternalHelperReference } from '../utils/references';
 import { String as StringUtils } from 'ember-runtime';
 
 /**
-  Calls [Ember.String.loc](/api/classes/Ember.String.html#method_loc) with the
+  Calls [loc](/api/classes/Ember.String.html#method_loc) with the
   provided string. This is a convenient way to localize text within a template.
   For example:
 

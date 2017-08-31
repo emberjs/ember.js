@@ -3,8 +3,7 @@
 import { ENV, environment } from 'ember-environment';
 
 /**
-  @module ember
-  @submodule ember-runtime
+  @module @ember/application
 */
 
 const loadHooks = ENV.EMBER_LOAD_HOOKS || {};
@@ -25,7 +24,8 @@ export let _loaded = loaded;
   ```
 
   @method onLoad
-  @for Ember
+  @static
+  @for @ember/application
   @param name {String} name of hook
   @param callback {Function} callback to be called
   @private
@@ -46,7 +46,8 @@ export function onLoad(name, callback) {
   loading. Triggers any callbacks registered for this event.
 
   @method runLoadHooks
-  @for Ember
+  @static
+  @for @ember/application
   @param name {String} name of hook
   @param object {Object} object to pass to callbacks
   @private
