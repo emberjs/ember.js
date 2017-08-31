@@ -15,8 +15,7 @@ import {
 } from './util';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 
@@ -60,7 +59,6 @@ import {
   server must serve the Ember app at all the routes you define.
 
   @class AutoLocation
-  @namespace Ember
   @static
   @protected
 */

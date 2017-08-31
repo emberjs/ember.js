@@ -1,6 +1,5 @@
 /**
   @module ember
-  @submodule ember-glimmer
 */
 import { assign } from 'ember-utils';
 import { CachedReference } from '../utils/references';
@@ -14,8 +13,8 @@ import {
 import { assert } from 'ember-debug';
 
 /**
-  The `{{component}}` helper lets you add instances of `Ember.Component` to a
-  template. See [Ember.Component](/api/classes/Ember.Component.html) for
+  The `{{component}}` helper lets you add instances of `Component` to a
+  template. See [Component](/api/classes/Ember.Component.html) for
   additional information on how a `Component` functions.
   `{{component}}`'s primary use is for cases where you want to dynamically
   change which type of component is rendered as the state of your application
@@ -177,8 +176,8 @@ export class ClosureComponentReference extends CachedReference {
     this.lastName = nameOrDef;
 
     if (typeof nameOrDef === 'string') {
-      assert('You cannot use the input helper as a contextual helper. Please extend Ember.TextField or Ember.Checkbox to use it as a contextual component.', nameOrDef !== 'input');
-      assert('You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
+      assert('You cannot use the input helper as a contextual helper. Please extend TextField or Checkbox to use it as a contextual component.', nameOrDef !== 'input');
+      assert('You cannot use the textarea helper as a contextual helper. Please extend TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
       definition = env.getComponentDefinition(nameOrDef, meta);
       assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, definition);
     } else if (isComponentDefinition(nameOrDef)) {

@@ -1,6 +1,8 @@
 import { warn } from 'ember-debug';
 import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
-
+/**
+ @module ember
+*/
 /**
   Helper class that allows you to register your library with Ember.
 

@@ -3,7 +3,6 @@ import { normalizeTextValue } from '@glimmer/runtime';
 
 /**
 @module ember
-@submodule ember-glimmer
 */
 
 /**

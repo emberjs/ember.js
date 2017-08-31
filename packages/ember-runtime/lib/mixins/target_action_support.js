@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 
 import { context } from 'ember-environment';
@@ -19,7 +18,7 @@ doing more complex event handling in Components.
 
 @class TargetActionSupport
 @namespace Ember
-@extends Ember.Mixin
+@extends Mixin
 @private
 */
 export default Mixin.create({

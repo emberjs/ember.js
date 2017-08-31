@@ -1,7 +1,3 @@
-/**
-@module ember
-@submodule ember-glimmer
-*/
 import { generateGuid, guidFor } from 'ember-utils';
 import {
   ComponentDefinition

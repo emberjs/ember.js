@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-glimmer
 */
 
 import { assert } from 'ember-debug';

@@ -30,6 +30,9 @@ const backburner = new Backburner(['sync', 'actions', 'destroy'], {
   onErrorMethod: 'onerror'
 });
 
+/**
+ @module @ember/runloop
+*/
 // ..........................................................
 // run - this is ideally the only public API the dev sees
 //
@@ -50,8 +53,7 @@ const backburner = new Backburner(['sync', 'actions', 'destroy'], {
   });
   ```
 
-  @class run
-  @namespace Ember
+  @class @ember/runloop
   @static
   @constructor
   @param {Object} [target] target of method to call
@@ -94,7 +96,8 @@ export default function run() {
   ```
 
   @method join
-  @namespace Ember
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
     May be a function or a string. If you pass a string
@@ -158,7 +161,8 @@ run.join = function() {
   method be safely handled and executed by the Ember run loop.
 
   @method bind
-  @namespace Ember
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
     May be a function or a string. If you pass a string
@@ -186,6 +190,8 @@ run.queues = backburner.queueNames;
   ```
 
   @method begin
+  @static
+  @for @ember/runloop
   @return {void}
   @public
 */
@@ -205,6 +211,8 @@ run.begin = function() {
   ```
 
   @method end
+  @static
+  @for @ember/runloop
   @return {void}
   @public
 */
@@ -252,6 +260,8 @@ run.end = function() {
   ```
 
   @method schedule
+  @static
+  @for @ember/runloop
   @param {String} queue The name of the queue to schedule against.
     Default queues are 'sync' and 'actions'
   @param {Object} [target] target object to use as the context when invoking a method.
@@ -296,6 +306,8 @@ run.cancelTimers = function() {
   ```
 
   @method sync
+  @static
+  @for @ember/runloop
   @return {void}
   @private
 */
@@ -322,6 +334,8 @@ run.sync = function() {
   ```
 
   @method later
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
@@ -340,6 +354,8 @@ run.later = function(/*target, method*/) {
   to calling `scheduleOnce` with the "actions" queue.
 
   @method once
+  @static
+  @for @ember/runloop
   @param {Object} [target] The target of the method to invoke.
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
@@ -415,6 +431,8 @@ run.once = function(...args) {
   Available queues, and their order, can be found at `run.queues`
 
   @method scheduleOnce
+  @static
+  @for @ember/runloop
   @param {String} [queue] The name of the queue to schedule against. Default queues are 'sync' and 'actions'.
   @param {Object} [target] The target of the method to invoke.
   @param {Function|String} method The method to invoke.
@@ -490,6 +508,8 @@ run.scheduleOnce = function(/*queue, target, method*/) {
   outside of the current run loop, i.e. with `run.next`.
 
   @method next
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
@@ -554,6 +574,8 @@ run.next = function(...args) {
   ```
 
   @method cancel
+  @static
+  @for @ember/runloop
   @param {Object} timer Timer object to cancel
   @return {Boolean} true if canceled or false/undefined if it wasn't found
   @public
@@ -620,6 +642,8 @@ run.cancel = function(timer) {
   ```
 
   @method debounce
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     May be a function or a string. If you pass a string
@@ -663,6 +687,8 @@ run.debounce = function() {
   ```
 
   @method throttle
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     May be a function or a string. If you pass a string

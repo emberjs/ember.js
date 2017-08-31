@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-template-compiler
 */
 import require, { has } from 'require';
 import precompile from './precompile';

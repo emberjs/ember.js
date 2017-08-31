@@ -7,8 +7,7 @@ import {
 } from 'ember-metal';
 
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/object
 */
 
 /**
@@ -17,7 +16,7 @@ import {
   ```app/utils/person.js
   import EmberObject from '@ember/object';
   import Evented from '@ember/object/evented';
-  
+
   export default EmberObject.extend(Evented, {
     greet() {
       // ...
@@ -49,7 +48,6 @@ import {
   ```
 
   @class Evented
-  @namespace Ember
   @public
  */
 export default Mixin.create({

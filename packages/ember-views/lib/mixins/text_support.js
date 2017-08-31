@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-views
 */
 
 import {
@@ -110,7 +109,7 @@ const KEY_EVENTS = {
   @class TextSupport
   @namespace Ember
   @uses Ember.TargetActionSupport
-  @extends Ember.Mixin
+  @extends Mixin
   @private
 */
 export default Mixin.create(TargetActionSupport, {
