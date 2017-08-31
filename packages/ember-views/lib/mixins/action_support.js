@@ -109,13 +109,9 @@ export default Mixin.create({
     @param [params] {*} arguments for the action
     @public
   */
-  sendAction(action, ...contexts) {
+  sendAction(action = 'action', ...contexts) {
     let actionName;
 
-    // Send the default action
-    if (action === undefined) {
-      action = 'action';
-    }
     actionName = get(this, `attrs.${action}`) || get(this, action);
     actionName = validateAction(this, actionName);
 

@@ -207,11 +207,11 @@ export default EmberObject.extend({
     @param {Object} viewRegistry
   */
   setupHandler(rootElement, event, eventName, viewRegistry) {
-    let self = this;
-
     if (eventName === null) {
       return;
     }
+
+    let self = this;
 
     rootElement.on(`${event}.ember`, '.ember-view', function(evt, triggeringManager) {
       let view = viewRegistry[this.id];

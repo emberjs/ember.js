@@ -230,6 +230,91 @@ export default Mixin.create({
   },
 
   /**
+    Creates a new DOM element, renders the view into it, then returns the
+    element.
+
+    By default, the element created and rendered into will be a `BODY` element,
+    since this is the default context that views are rendered into when being
+    inserted directly into the DOM.
+
+    ```js
+    let element = view.renderToElement();
+    element.tagName; // => "BODY"
+    ```
+
+    You can override the kind of element rendered into and returned by
+    specifying an optional tag name as the first argument.
+
+    ```js
+    let element = view.renderToElement('table');
+    element.tagName; // => "TABLE"
+    ```
+
+    This method is useful if you want to render the view into an element that
+    is not in the document's body. Instead, a new `body` element, detached from
+    the DOM is returned. FastBoot uses this to serialize the rendered view into
+    a string for transmission over the network.
+
+    ```js
+    app.visit('/').then(function(instance) {
+      let element;
+      Ember.run(function() {
+        element = renderToElement(instance);
+      });
+
+      res.send(serialize(element));
+    });
+    ```
+
+    @method renderToElement
+    @param {String} tagName The tag of the element to create and render into. Defaults to "body".
+    @return {HTMLBodyElement} element
+    @deprecated Use appendTo instead.
+    @private
+  */
+  renderToElement(tagName = 'body') {
+    deprecate(
+      `Using the \`renderToElement\` is deprecated in favor of \`appendTo\`. Called in ${this.toString()}`,
+      false,
+      {
+        id: 'ember-views.render-to-element',
+        until: '2.12.0',
+        url: 'http://emberjs.com/deprecations/v2.x#toc_code-rendertoelement-code'
+      }
+    );
+
+    let element = this.renderer.createElement(tagName);
+
+    this.renderer.appendTo(this, element);
+    return element;
+  },
+
+  /**
+    Replaces the content of the specified parent element with this view's
+    element. If the view does not have an HTML representation yet,
+    the element will be generated automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing
+
+    @method replaceIn
+    @param {String|DOMElement|jQuery} selector A selector, element, HTML string, or jQuery object
+    @return {Ember.View} received
+    @private
+  */
+  replaceIn(selector) {
+    let target = jQuery(selector);
+
+    assert(`You tried to replace in (${selector}) but that isn't in the DOM`, target.length > 0);
+    assert('You cannot replace an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
+
+    this.renderer.replaceIn(this, target[0]);
+
+    return this;
+  },
+
+  /**
     Appends the view's element to the document body. If the view does
     not have an HTML representation yet
     the element will be generated automatically.

@@ -2,15 +2,16 @@ import { assert, Error as EmberError } from 'ember-debug';
 
 function parseUnderscoredName(templateName) {
   let nameParts = templateName.split('/');
-  let lastPart = nameParts[nameParts.length - 1];
+  let lastIndex = nameParts.length - 1;
+  let lastPart = nameParts[lastIndex];
 
-  nameParts[nameParts.length - 1] = `_${lastPart}`;
+  nameParts[lastIndex] = `_${lastPart}`;
 
   return nameParts.join('/');
 }
 
 export default function lookupPartial(templateName, owner) {
-  if (templateName == null) { return; }
+  if (templateName === null) { return; }
 
   let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
 
