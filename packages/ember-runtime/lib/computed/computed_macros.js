@@ -14,8 +14,7 @@ import {
 } from 'ember-debug';
 
 /**
-@module ember
-@submodule ember-metal
+@module @ember/object
 */
 
 function expandPropertiesToArray(predicateName, properties) {
@@ -78,9 +77,10 @@ function generateComputedWithPredicate(name, predicate) {
 
   @since 1.6.0
   @method empty
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which negate
+  @return {ComputedProperty} computed property which negate
   the original value for property
   @public
 */
@@ -109,9 +109,10 @@ export function empty(dependentKey) {
   ```
 
   @method notEmpty
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {@ember/object/computed} computed property which returns true if
   original value for property is not empty.
   @public
 */
@@ -143,9 +144,10 @@ export function notEmpty(dependentKey) {
   ```
 
   @method none
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which
+  @return {@ember/object/computed} computed property which
   returns true if original value for property is null or undefined.
   @public
 */
@@ -174,9 +176,10 @@ export function none(dependentKey) {
   ```
 
   @method not
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which returns
+  @return {@ember/object/computed} computed property which returns
   inverse of the original value for property
   @public
 */
@@ -207,9 +210,10 @@ export function not(dependentKey) {
   ```
 
   @method bool
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which converts
+  @return {@ember/object/computed} computed property which converts
   to boolean the original value for property
   @public
 */
@@ -241,10 +245,11 @@ export function bool(dependentKey) {
   ```
 
   @method match
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {RegExp} regexp
-  @return {Ember.ComputedProperty} computed property which match
+  @return {@ember/object/computed} computed property which match
   the original value for property against a given RegExp
   @public
 */
@@ -276,10 +281,11 @@ export function match(dependentKey, regexp) {
   ```
 
   @method equal
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {String|Number|Object} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {@ember/object/computed} computed property which returns true if
   the original value for property is equal to the given value.
   @public
 */
@@ -310,10 +316,11 @@ export function equal(dependentKey, value) {
   ```
 
   @method gt
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {@ember/object/computed} computed property which returns true if
   the original value for property is greater than given value.
   @public
 */
@@ -344,10 +351,11 @@ export function gt(dependentKey, value) {
   ```
 
   @method gte
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {@ember/object/computed} computed property which returns true if
   the original value for property is greater or equal then given value.
   @public
 */
@@ -378,10 +386,11 @@ export function gte(dependentKey, value) {
   ```
 
   @method lt
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {@ember/object/computed} computed property which returns true if
   the original value for property is less then given value.
   @public
 */
@@ -412,10 +421,11 @@ export function lt(dependentKey, value) {
   ```
 
   @method lte
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {@ember/object/computed} computed property which returns true if
   the original value for property is less or equal than given value.
   @public
 */
@@ -456,9 +466,10 @@ export function lte(dependentKey, value) {
   ```
 
   @method and
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey*
-  @return {Ember.ComputedProperty} computed property which performs
+  @return {@ember/object/computed} computed property which performs
   a logical `and` on the values of all the original values for properties.
   @public
 */
@@ -493,9 +504,10 @@ export const and = generateComputedWithPredicate('and', value => value);
   ```
 
   @method or
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey*
-  @return {Ember.ComputedProperty} computed property which performs
+  @return {@ember/object/computed} computed property which performs
   a logical `or` on the values of all the original values for properties.
   @public
 */
@@ -522,9 +534,10 @@ export const or = generateComputedWithPredicate('or', value => !value);
   ```
 
   @method alias
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates an
+  @return {@ember/object/computed} computed property which creates an
   alias to the original value for property.
   @public
 */
@@ -556,9 +569,10 @@ export const or = generateComputedWithPredicate('or', value => !value);
   ```
 
   @method oneWay
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates a
+  @return {@ember/object/computed} computed property which creates a
   one way computed property to the original value for property.
   @public
 */
@@ -571,9 +585,10 @@ export function oneWay(dependentKey) {
   whose name is somewhat ambiguous as to which direction the data flows.
 
   @method reads
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates a
+  @return {@ember/object/computed} computed property which creates a
     one way computed property to the original value for property.
   @public
  */
@@ -606,9 +621,10 @@ export function oneWay(dependentKey) {
   ```
 
   @method readOnly
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates a
+  @return {@ember/object/computed} computed property which creates a
   one way computed property to the original value for property.
   @since 1.5.0
   @public
@@ -638,10 +654,11 @@ export function readOnly(dependentKey) {
   ```
 
   @method deprecatingAlias
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Object} options Options for `Ember.deprecate`.
-  @return {Ember.ComputedProperty} computed property which creates an
+  @return {@ember/object/computed} computed property which creates an
   alias with a deprecation to the original value for property.
   @since 1.7.0
   @public

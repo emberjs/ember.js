@@ -1,6 +1,9 @@
 import TestPromise from './promise';
 
 export const helpers = {};
+/**
+ @module @ember/test
+*/
 
 /**
   `registerHelper` is used to register a test helper that will be injected
@@ -27,7 +30,8 @@ export const helpers = {};
   ```
 
   @public
-  @for Ember.Test
+  @for @ember/test
+  @static
   @method registerHelper
   @param {String} name The name of the helper method to add.
   @param {Function} helperMethod
@@ -75,7 +79,7 @@ export function registerHelper(name, helperMethod) {
   ```
 
   @public
-  @for Ember.Test
+  @for @ember/test
   @method registerAsyncHelper
   @param {String} name The name of the helper method to add.
   @param {Function} helperMethod
@@ -99,6 +103,8 @@ export function registerAsyncHelper(name, helperMethod) {
 
   @public
   @method unregisterHelper
+  @static
+  @for @ember/test
   @param {String} name The helper to remove.
 */
 export function unregisterHelper(name) {

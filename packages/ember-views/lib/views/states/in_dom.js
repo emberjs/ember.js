@@ -4,10 +4,6 @@ import { Error as EmberError } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 
 import hasElement from './has_element';
-/**
-@module ember
-@submodule ember-views
-*/
 
 const inDOM = Object.create(hasElement);
 

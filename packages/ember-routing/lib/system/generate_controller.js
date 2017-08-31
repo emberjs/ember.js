@@ -3,7 +3,6 @@ import { info } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 /**
 @module ember
-@submodule ember-routing
 */
 
 /**

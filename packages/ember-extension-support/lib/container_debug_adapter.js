@@ -8,8 +8,7 @@ import {
 } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-extension-support
+@module @ember/debug
 */
 
 /**
@@ -42,8 +41,7 @@ import {
   ```
 
   @class ContainerDebugAdapter
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @since 1.5.0
   @public
 */

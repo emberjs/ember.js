@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-testing
 */
 import { checkWaiters } from '../test/waiters';
 import { RSVP } from 'ember-runtime';
