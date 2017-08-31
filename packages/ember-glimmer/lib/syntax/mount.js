@@ -27,10 +27,31 @@ function dynamicEngineFor(vm, args, meta) {
   {{mount "ember-chat"}}
   ```
 
-  Currently, the engine name is the only argument that can be passed to
-  `{{mount}}`.
+  Additionally, you can also pass in a `model` argument that will be
+  set as the engines model. This can be an existing object:
+  
+  ```
+  <div>
+    {{mount 'admin' model=userSettings}}
+  </div>
+  ```
+
+  Or an inline `hash`, and you can even pass components:
+
+  ```
+  <div>
+    <h1>Application template!</h1>
+    {{mount 'admin' model=(hash
+        title='Secret Admin'
+        signInButton=(component 'sign-in-button')
+    )}}
+  </div>
+  ```
 
   @method mount
+  @param {String} name Name of the engine to mount.
+  @param {Object} [model] Object that will be set as
+                          the model of the engine.
   @for Ember.Templates.helpers
   @category ember-application-engines
   @public
