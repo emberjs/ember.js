@@ -73,7 +73,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
     * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
 
-    Note: If using ember-cli, this value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
+    This value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
 
     @property location
     @default 'hash'

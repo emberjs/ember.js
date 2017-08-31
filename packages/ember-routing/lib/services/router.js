@@ -18,9 +18,107 @@ import { shallowEqual } from '../utils';
    @category ember-routing-router-service
  */
 const RouterService = Service.extend({
+
+  /**
+     Name of the current route.
+
+     This property represent the logical name of the route,
+     which is comma separated.
+     For the following router:
+
+     ```app/router.js
+     Router.map(function() {
+       this.route('about);
+       this.route('blog', function () {
+         this.route('post', { path: ':post_id' });
+       });
+     });
+     ```
+
+     It will return:
+
+     * `index` when you visit `/`
+     * `about` when you visit `/about`
+     * `blog.index` when you visit `/blog`
+     * `blog.post` when you visit `/blog/some-post-id`
+
+     @property currentRouteName
+     @type String
+     @public
+   */
   currentRouteName: readOnly('_router.currentRouteName'),
+
+  /**
+     Current URL for the application.
+
+    This property represent the URL path for this route.
+    For the following router:
+
+     ```app/router.js
+     Router.map(function() {
+       this.route('about);
+       this.route('blog', function () {
+         this.route('post', { path: ':post_id' });
+       });
+     });
+     ```
+
+     It will return:
+
+     * `/` when you visit `/`
+     * `/about` when you visit `/about`
+     * `/blog/index` when you visit `/blog`
+     * `/blog/post` when you visit `/blog/some-post-id`
+
+     @property currentURL
+     @type String
+     @public
+   */
   currentURL: readOnly('_router.currentURL'),
+
+  /**
+    The `location` property determines the type of URL's that your
+    application will use.
+    The following location types are currently available:
+    * `auto`
+    * `hash`
+    * `history`
+    * `none`
+
+    @property location
+    @default 'hash'
+    @see {Ember.Location}
+    @public
+  */
   location: readOnly('_router.location'),
+
+  /**
+    The `rootURL` property represents the URL of the root of
+    the application, '/' by default.
+    This prefix is assumed on all routes defined on this app.
+
+    IF you change the `rootURL` in your environment configuration
+    like so:
+
+    ```config/environment.js
+    'use strict';
+
+    module.exports = function(environment) {
+      let ENV = {
+        modulePrefix: 'router-service',
+        environment,
+        rootURL: '/my-root',
+      …
+      }
+    ]
+    ```
+
+    This property will return `/my-root`.
+
+    @property rootURL
+    @default '/'
+    @public
+  */
   rootURL: readOnly('_router.rootURL'),
   _router: null,
 
