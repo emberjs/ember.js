@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### 2.16.0-beta.1 (August 31, 2017)
+
+- [#14764](https://github.com/emberjs/ember.js/pull/14764) Fixed string capitalize for accented characters.
+- [#15528](https://github.com/emberjs/ember.js/pull/15528) [DEPRECATION] Deprecate `Controller#content` alias.
+- [#15552](https://github.com/emberjs/ember.js/pull/15552) [FEATURE] Update blueprints and tests to RFC #176.
+
 ### 2.15.0 (August 31, 2017)
 
 - [#15577](https://github.com/emberjs/ember.js/pull/15577) [BUGFIX] Include missing sourcemaps in vendorTree.
