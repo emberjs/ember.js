@@ -1,11 +1,9 @@
+require 'json'
+
 module Ember
   extend self
 
-  VERSION = File.read(File.expand_path('../../../VERSION', __FILE__)).strip
+  package = File.read(File.expand_path('../../../package.json', __FILE__))
 
-  # we might want to unify this with the ember version string,
-  # but consistency?
-  def rubygems_version_string
-    VERSION.gsub(/[-\+]/,'.')
-  end
+  VERSION = JSON.parse(package)['version'].strip.gsub(/[-\+]/, '.')
 end

@@ -88,7 +88,7 @@ if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
   chmod 0600 ~/.gem/credentials
 
   gem build ember-source.gemspec
-  gem push ember-source-`cat VERSION`.gem
+  gem push `echo *.gem`.strip
 fi
 
 #### BOWER PUBLISHING

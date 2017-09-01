@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
   gem.homepage      = "https://github.com/emberjs/ember.js"
   gem.license       = 'MIT'
 
-  gem.version       = Ember.rubygems_version_string
+  gem.version       = Ember::VERSION
 
-  gem.files = %w(VERSION) + Dir['dist/*.js', 'lib/ember/*.rb']
+  gem.files = %w(package.json) + Dir['dist/*.js', 'lib/ember/*.rb']
 end
