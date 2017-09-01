@@ -1,7 +1,23 @@
 import { AbstractRenderTest, test } from "../abstract-test-case";
 import { classes } from '../environment';
+import { EmberishGlimmerComponent } from "@glimmer/test-helpers";
 
 export class EmberishComponentTests extends AbstractRenderTest {
+  @test({ kind: 'glimmer' })
+  "[BUG: Load to s0 is wrong]"() {
+    class MainComponent extends EmberishGlimmerComponent {
+      salutation = 'Glimmer';
+    }
+    this.registerComponent('Glimmer', 'Main', '<div><HelloWorld @name={{salutation}} /></div>', MainComponent);
+    this.registerComponent('Glimmer', 'HelloWorld', '<h1>Hello {{@name}}!</h1>');
+    let test = document.createElement('my-test');
+    this.render('{{#each roots key="id" as |root|}}{{#in-element root.element}}{{component root.name}}{{/in-element}}{{/each}}', {
+      roots: [{name: 'Main', element: test }]
+    });
+
+    console.log(test);
+  }
+
   @test
   "non-block without properties"() {
     this.render({
