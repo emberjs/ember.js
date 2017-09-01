@@ -818,7 +818,7 @@ export abstract class OpcodeBuilder<Specifier> {
     this.popDynamicScope();
     this.commitComponentTransaction();
 
-    this.load(Register.s0);
+    // this.load(Register.s0);
   }
 
   dynamicComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {

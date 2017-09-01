@@ -1,6 +1,6 @@
 import { AbstractRenderTest, test } from "../abstract-test-case";
 import { classes } from '../environment';
-import { EmberishGlimmerComponent } from "@glimmer/test-helpers";
+import { EmberishGlimmerComponent, equalTokens } from "@glimmer/test-helpers";
 
 export class EmberishComponentTests extends AbstractRenderTest {
   @test({ kind: 'glimmer' })
@@ -15,7 +15,7 @@ export class EmberishComponentTests extends AbstractRenderTest {
       roots: [{name: 'Main', element: test }]
     });
 
-    console.log(test);
+    equalTokens(test, '<div><h1>Hello Glimmer!</h1></div>');
   }
 
   @test
