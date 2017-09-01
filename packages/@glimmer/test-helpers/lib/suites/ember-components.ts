@@ -1,6 +1,6 @@
 import { AbstractRenderTest, test } from "../abstract-test-case";
 import { classes } from '../environment';
-import { EmberishGlimmerComponent, equalTokens } from "@glimmer/test-helpers";
+import { EmberishGlimmerComponent, EmberishCurlyComponent } from "@glimmer/test-helpers";
 
 export class EmberishComponentTests extends AbstractRenderTest {
   @test({ kind: 'glimmer' })
@@ -11,6 +11,18 @@ export class EmberishComponentTests extends AbstractRenderTest {
     this.registerComponent('Glimmer', 'Main', '<div><HelloWorld @name={{salutation}} /></div>', MainComponent);
     this.registerComponent('Glimmer', 'HelloWorld', '<h1>Hello {{@name}}!</h1>');
     this.render('<Main />');
+    this.assertHTML('<h1>Hello Glimmer!</h1>');
+  }
+
+  @test({ kind: 'curly' })
+  "[BUG: Curly recursive call stack curly]"() {
+    class MainComponent extends EmberishCurlyComponent {
+      tag = 'div';
+      salutation = 'Glimmer';
+    }
+    this.registerComponent('Curly', 'test-main', '<div>{{hello-world name=salutation}}</div>', MainComponent);
+    this.registerComponent('Curly', 'hello-world', '<h1>Hello {{name}}!</h1>');
+    this.render('{{test-main}}');
     this.assertHTML('<h1>Hello Glimmer!</h1>');
   }
 
