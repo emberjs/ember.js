@@ -10,12 +10,8 @@ export class EmberishComponentTests extends AbstractRenderTest {
     }
     this.registerComponent('Glimmer', 'Main', '<div><HelloWorld @name={{salutation}} /></div>', MainComponent);
     this.registerComponent('Glimmer', 'HelloWorld', '<h1>Hello {{@name}}!</h1>');
-    let test = document.createElement('my-test');
-    this.render('{{#each roots key="id" as |root|}}{{#in-element root.element}}{{component root.name}}{{/in-element}}{{/each}}', {
-      roots: [{name: 'Main', element: test }]
-    });
-
-    equalTokens(test, '<div><h1>Hello Glimmer!</h1></div>');
+    this.render('<Main />');
+    this.assertHTML('<h1>Hello Glimmer!</h1>');
   }
 
   @test
