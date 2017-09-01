@@ -1,4 +1,4 @@
-# How to do Ember.js releases
+# Ember.js Releases
 
 ## Concepts
 
@@ -15,7 +15,7 @@
 
 ---
 
-# Ember Notes on Point Releases (Not Release Notes)
+## Ember Notes on Point Releases (Not Release Notes)
 
 1. Check out `beta` branch and `git pull`
 1. Make sure any master commits that are conceptually `[{BUGFIX,DOC} {beta,release}]` are cherry-picked.
@@ -47,19 +47,19 @@
 
 ---
 
-# Ember Notes on Release (Not Release Notes)
+## Ember Notes on Release (Not Release Notes)
 
 Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://gist.github.com/rwjblue/fb945e55c70d698d4074)
 
-# LTS Releases
+## LTS Releases
 
 1. In Ember bower repo, `git co -b lts-2-4` , `git push origin`
 1. In `bin/publish_to_s3.js` and `bin/bower_ember_build`, add relevant "lts-2-4" lines (see https://github.com/emberjs/ember.js/commit/618de4fa036ab33dc760343decd355ede7b822bb)
 1. Follow usual stable point-release steps (release the LTS as `2.4.${++latest}`)
 
-# Stable Release
+## Stable Release
 
-## Review Commits
+### Review Commits
 
 1. Ensure that all commits that are tagged for release are in the release.
 1. Review commits by hand since last beta was cut.
@@ -71,7 +71,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
 1. @rwjblue: I manually scan commits looking for "bugfix beta" and cherry-pick them into the beta branch (which is imminently becoming the `release` branch)
     1. Automating "look for bugfix beta commits since last beta release" seems like an easy win (@tomdale)
 
-## Build Changelog
+### Build Changelog
 
 1. Push `beta` branch to get Travis to run
 1. Run `PRIOR_VERSION=<tag> ./bin/changelog | uniq | pbcopy`
@@ -83,7 +83,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
     1. E.g., commits from "beta.1", "beta.2", "beta.3" should just go under "2.4.0" or whatever
 1. Commit CHANGELOG
 
-## Bump Version
+### Bump Version
 
 1. Edit `package.json` to correct version (2.4.0)
 1. Edit `VERSION` file to correct value
@@ -92,7 +92,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
 1. Add commit message: "Release v2.4.0"
 1. `git tag v2.4.0`
 
-## Release
+### Release
 
 1. `git push origin v2.4.0` to push JUST the tag. This lets us run the tag first on Travis CI, which does the correct deploy to S3, Bower, etc.
 1. THEN wait for Travis CI build to finish
@@ -103,7 +103,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
 1. If you are paranoid like rojax, "freeze" this version of Ember in amber: `mv ember-beta ember-release-v2.4`
 1. Go to github and enable branch protection for the **release** branch
 
-## Add Release on GitHub
+### Add Release on GitHub
 
 1. Go to GitHub and add a new release
 1. Add title: `Ember 2.4`
@@ -121,7 +121,7 @@ File.open("data/api.yml", "w") do |f|
 end
 ```
 
-# On to the Beta Release…
+## On to the Beta Release…
 
 1. Check out `master` branch and pull to get latest `canary` on your local machine
 1. `nombom` and run those tests!
@@ -136,12 +136,12 @@ end
 1. In `.travis.yml`, remove `branches:` section e.g. [this commit](https://github.com/emberjs/ember.js/commit/e38ec5d910721a9e02a819b4105a4875723f4b1b).
 1. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
 
-## Changelog
+### Changelog
 
 1. `PRIOR_VERSION=v2.4.0-beta.1^ HEAD=master ./bin/changelog | uniq | pbcopy`
 1. Clean up changelog. Make sure the changelog from the stable release you just did is included.
 
-### Tag & Release
+#### Tag & Release
 
 1. Update `package.json` and `VERSION` file to use new version number
 1. `git tag v2.5.0-beta.1`
