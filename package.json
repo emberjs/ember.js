@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "ember build --env production",
+    "build:flags": "RETAIN_FLAGS=true ember build --env production",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect",
     "start": "ember serve --port=7357",
