@@ -117,7 +117,7 @@ function transpileAMD(pkgName, esVersion, tree) {
       external,
       plugins,
       onwarn(warning) {
-        let {code} = warning;
+        let { code } = warning;
         if (
           // Suppress known error message caused by TypeScript compiled code with Rollup
           // https://github.com/rollup/rollup/wiki/Troubleshooting#this-is-undefined
