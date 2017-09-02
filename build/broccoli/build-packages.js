@@ -116,6 +116,20 @@ function transpileAMD(pkgName, esVersion, tree) {
       entry: `${pkgName}/index.js`,
       external,
       plugins,
+      onwarn(warning) {
+        let {code} = warning;
+        if (
+          // Suppress known error message caused by TypeScript compiled code with Rollup
+          // https://github.com/rollup/rollup/wiki/Troubleshooting#this-is-undefined
+          code === 'THIS_IS_UNDEFINED' ||
+          // Suppress errors regarding un-used exports. These may be left behind
+          // after DEBUG stripping and Rollup removed them anyway.
+          code === 'UNUSED_EXTERNAL_IMPORT'
+        ) {
+          return;
+        }
+        console.log(`Rollup warning: ${warning.message}`);
+      },
       targets: [{
         dest: `${pkgName}/dist/amd/${esVersion}/${bundleName}.js`,
         format: 'amd',
