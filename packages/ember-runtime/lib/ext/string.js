@@ -37,6 +37,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method w
     @for String
     @private
+    @deprecated
   */
   StringPrototype.w = function () {
     return w(this);
@@ -48,6 +49,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method loc
     @for String
     @private
+    @deprecated
   */
   StringPrototype.loc = function (...args) {
     return loc(this, args);
@@ -59,6 +61,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method camelize
     @for String
     @private
+    @deprecated
   */
   StringPrototype.camelize = function () {
     return camelize(this);
@@ -70,6 +73,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method decamelize
     @for String
     @private
+    @deprecated
   */
   StringPrototype.decamelize = function () {
     return decamelize(this);
@@ -81,6 +85,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method dasherize
     @for String
     @private
+    @deprecated
   */
   StringPrototype.dasherize = function () {
     return dasherize(this);
@@ -92,6 +97,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method underscore
     @for String
     @private
+    @deprecated
   */
   StringPrototype.underscore = function () {
     return underscore(this);
@@ -103,6 +109,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method classify
     @for String
     @private
+    @deprecated
   */
   StringPrototype.classify = function () {
     return classify(this);
@@ -114,6 +121,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     @method capitalize
     @for String
     @private
+    @deprecated
   */
   StringPrototype.capitalize = function () {
     return capitalize(this);
