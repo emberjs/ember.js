@@ -70,7 +70,7 @@ export function escapeExpression(string: any): string {
   ```
 
   @method htmlSafe
-  @for @ember/string
+  @for @ember/template
   @static
   @return {Handlebars.SafeString} A string that will not be HTML escaped by Handlebars.
   @public
@@ -98,7 +98,7 @@ export function htmlSafe(str: string) {
   ```
 
   @method isHTMLSafe
-  @for @ember/string
+  @for @ember/template
   @static
   @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
   @public
