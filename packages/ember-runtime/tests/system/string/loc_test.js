@@ -26,33 +26,19 @@ if (!ENV.EXTEND_PROTOTYPES.String) {
   });
 }
 
-QUnit.test('\'_Hello World\'.loc() => \'Bonjour le monde\'', function() {
-  equal(loc('_Hello World'), 'Bonjour le monde');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    equal('_Hello World'.loc(), 'Bonjour le monde');
-  }
-});
+function test(given, args, expected, description) {
+  QUnit.test(description, function() {
+    equal(loc(given, args), expected);
+    if (ENV.EXTEND_PROTOTYPES.String) {
+      equal(given.loc(...args), expected);
+    }
+  });
+}
 
-QUnit.test('\'_Hello %@ %@\'.loc(\'John\', \'Doe\') => \'Bonjour John Doe\'', function() {
-  equal(loc('_Hello %@ %@', ['John', 'Doe']), 'Bonjour John Doe');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    equal('_Hello %@ %@'.loc('John', 'Doe'), 'Bonjour John Doe');
-  }
-});
-
-QUnit.test('\'_Hello %@# %@#\'.loc(\'John\', \'Doe\') => \'Bonjour Doe John\'', function() {
-  equal(loc('_Hello %@# %@#', ['John', 'Doe']), 'Bonjour Doe John');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    equal('_Hello %@# %@#'.loc('John', 'Doe'), 'Bonjour Doe John');
-  }
-});
-
-QUnit.test('\'_Not In Strings\'.loc() => \'_Not In Strings\'', function() {
-  equal(loc('_Not In Strings'), '_Not In Strings');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    equal('_Not In Strings'.loc(), '_Not In Strings');
-  }
-});
+test('_Hello World',    [],              'Bonjour le monde', `loc('_Hello World') => 'Bonjour le monde'`);
+test('_Hello %@ %@',    ['John', 'Doe'], 'Bonjour John Doe', `loc('_Hello %@ %@', ['John', 'Doe']) => 'Bonjour John Doe'`);
+test('_Hello %@# %@#',  ['John', 'Doe'], 'Bonjour Doe John', `loc('_Hello %@# %@#', ['John', 'Doe']) => 'Bonjour Doe John'`);
+test('_Not In Strings', [],              '_Not In Strings',  `loc('_Not In Strings') => '_Not In Strings'`);
 
 QUnit.test('works with argument form', function() {
   equal(loc('_Hello %@', 'John'), 'Bonjour John');

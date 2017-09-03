@@ -9,58 +9,20 @@ if (!ENV.EXTEND_PROTOTYPES.String) {
   });
 }
 
-QUnit.test('dasherize normal string', function() {
-  deepEqual(dasherize('my favorite items'), 'my-favorite-items');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('my favorite items'.dasherize(), 'my-favorite-items');
-  }
-});
+function test(given, expected, description) {
+  QUnit.test(description, function () {
+    deepEqual(dasherize(given), expected);
+    if (ENV.EXTEND_PROTOTYPES.String) {
+      deepEqual(given.dasherize(), expected);
+    }
+  });
+}
 
-QUnit.test('does nothing with dasherized string', function() {
-  deepEqual(dasherize('css-class-name'), 'css-class-name');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('css-class-name'.dasherize(), 'css-class-name');
-  }
-});
-
-QUnit.test('dasherize underscored string', function() {
-  deepEqual(dasherize('action_name'), 'action-name');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('action_name'.dasherize(), 'action-name');
-  }
-});
-
-QUnit.test('dasherize camelcased string', function() {
-  deepEqual(dasherize('innerHTML'), 'inner-html');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('innerHTML'.dasherize(), 'inner-html');
-  }
-});
-
-QUnit.test('dasherize string that is the property name of Object.prototype', function() {
-  deepEqual(dasherize('toString'), 'to-string');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('toString'.dasherize(), 'to-string');
-  }
-});
-
-QUnit.test('dasherize namespaced classified string', function() {
-  deepEqual(dasherize('PrivateDocs/OwnerInvoice'), 'private-docs/owner-invoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('PrivateDocs/OwnerInvoice'.dasherize(), 'private-docs/owner-invoice');
-  }
-});
-
-QUnit.test('dasherize namespaced camelized string', function() {
-  deepEqual(dasherize('privateDocs/ownerInvoice'), 'private-docs/owner-invoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('privateDocs/ownerInvoice'.dasherize(), 'private-docs/owner-invoice');
-  }
-});
-
-QUnit.test('dasherize namespaced underscored string', function() {
-  deepEqual(dasherize('private_docs/owner_invoice'), 'private-docs/owner-invoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('private_docs/owner_invoice'.dasherize(), 'private-docs/owner-invoice');
-  }
-});
+test('my favorite items',           'my-favorite-items',            'dasherize normal string');
+test('css-class-name',              'css-class-name',               'does nothing with dasherized string');
+test('action_name',                 'action-name',                  'dasherize underscored string');
+test('innerHTML',                   'inner-html',                   'dasherize camelcased string');
+test('toString',                    'to-string',                    'dasherize string that is the property name of Object.prototype');
+test('PrivateDocs/OwnerInvoice',    'private-docs/owner-invoice',   'dasherize namespaced classified string');
+test('privateDocs/ownerInvoice',    'private-docs/owner-invoice',   'dasherize namespaced camelized string');
+test('private_docs/owner_invoice',  'private-docs/owner-invoice',   'dasherize namespaced underscored string');

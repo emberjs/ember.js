@@ -9,51 +9,19 @@ if (!ENV.EXTEND_PROTOTYPES.String) {
   });
 }
 
-QUnit.test('with normal string', function() {
-  deepEqual(underscore('my favorite items'), 'my_favorite_items');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('my favorite items'.underscore(), 'my_favorite_items');
-  }
-});
+function test(given, expected, description) {
+  QUnit.test(description, function() {
+    deepEqual(underscore(given), expected);
+    if (ENV.EXTEND_PROTOTYPES.String) {
+      deepEqual(given.underscore(), expected);
+    }
+  });
+}
 
-QUnit.test('with dasherized string', function() {
-  deepEqual(underscore('css-class-name'), 'css_class_name');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('css-class-name'.underscore(), 'css_class_name');
-  }
-});
-
-QUnit.test('does nothing with underscored string', function() {
-  deepEqual(underscore('action_name'), 'action_name');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('action_name'.underscore(), 'action_name');
-  }
-});
-
-QUnit.test('with camelcased string', function() {
-  deepEqual(underscore('innerHTML'), 'inner_html');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('innerHTML'.underscore(), 'inner_html');
-  }
-});
-
-QUnit.test('underscore namespaced classified string', function() {
-  deepEqual(underscore('PrivateDocs/OwnerInvoice'), 'private_docs/owner_invoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('PrivateDocs/OwnerInvoice'.underscore(), 'private_docs/owner_invoice');
-  }
-});
-
-QUnit.test('underscore namespaced camelized string', function() {
-  deepEqual(underscore('privateDocs/ownerInvoice'), 'private_docs/owner_invoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('privateDocs/ownerInvoice'.underscore(), 'private_docs/owner_invoice');
-  }
-});
-
-QUnit.test('underscore namespaced dasherized string', function() {
-  deepEqual(underscore('private-docs/owner-invoice'), 'private_docs/owner_invoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('private-docs/owner-invoice'.underscore(), 'private_docs/owner_invoice');
-  }
-});
+test('my favorite items',          'my_favorite_items',          'with normal string');
+test('css-class-name',             'css_class_name',             'with dasherized string');
+test('action_name',                'action_name',                'does nothing with underscored string');
+test('innerHTML',                  'inner_html',                 'with camelcased string');
+test('PrivateDocs/OwnerInvoice',   'private_docs/owner_invoice', 'underscore namespaced classified string');
+test('privateDocs/ownerInvoice',   'private_docs/owner_invoice', 'underscore namespaced camelized string');
+test('private-docs/owner-invoice', 'private_docs/owner_invoice', 'underscore namespaced dasherized string');
