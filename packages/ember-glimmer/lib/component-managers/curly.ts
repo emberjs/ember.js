@@ -104,7 +104,7 @@ function ariaRole(vm: VM) {
   return vm.getSelf().get('ariaRole');
 }
 
-class CurlyComponentLayoutCompiler {
+export class CurlyComponentLayoutCompiler {
   static id: string;
   public template: WrappedTemplateFactory;
 
