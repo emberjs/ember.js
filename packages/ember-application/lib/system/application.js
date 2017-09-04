@@ -888,7 +888,7 @@ const Application = Engine.extend({
 
     In this scenario, because Ember does not have access to a global `document`
     object in the Node.js environment, you must provide one explicitly. In practice,
-    in the non-browser environment, the stand-in `document` object only need to
+    in the non-browser environment, the stand-in `document` object only needs to
     implement a limited subset of the full DOM API. The `SimpleDOM` library is known
     to work.
 
