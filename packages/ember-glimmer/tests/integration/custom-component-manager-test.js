@@ -1,4 +1,7 @@
 import {
+  set
+} from 'ember-metal';
+import {
   compileLayout,
   PrimitiveReference
 } from '@glimmer/runtime';
@@ -8,7 +11,6 @@ import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   MANDATORY_SETTER
 } from 'ember/features';
-import { AbstractComponentManager } from 'ember-glimmer';
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
   /*
@@ -33,25 +35,93 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
   /*
     Implementation of custom component manager, `ComponentManager` interface
   */
-  class TestComponentManager extends AbstractComponentManager {
+  class TestComponentManager {
     create(env, definition, args, dynamicScope, caller, hasBlock) {
       return definition.ComponentClass.create();
     }
 
+    getSelf(bucket) { return bucket; }
+
+    // this method is optional
     layoutFor(definition, bucket, env) {
       return env.getCompiledBlock(TestLayoutCompiler, definition.template);
     }
 
-    getDestructor(component) {
-      return component;
-    }
-
-    getSelf() {
-      return null;
-    }
+    update(component, dynamicScope) { }
   }
 
   moduleFor('Components test: curly components with custom manager', class extends RenderingTest {
+    ['@test falls back to curly component layout manager'](assert) {
+      let managerId = 'test';
+      let testManager = new TestComponentManager();
+      testManager.layoutFor = undefined;
+      this.owner.register(`component-manager:${managerId}`, testManager);
+      this.registerComponent('foo-bar', {
+        template: `{{use-component-manager "${managerId}"}}hello`,
+        managerId
+      });
+
+      this.render('{{foo-bar}}');
+
+      assert.equal(this.firstChild.textContent, 'hello', 'content was set correctly');
+    }
+
+    ['@test throws an exception if custom component manager does not define `create` method'](assert) {
+      let managerId = 'test';
+      this.owner.register(`component-manager:${managerId}`, {
+        getSelf(bucket) { return bucket; },
+        update(component, dynamicScope) { }
+      });
+      this.registerComponent('foo-bar', {
+        template: `{{use-component-manager "${managerId}"}}hello`,
+        managerId
+      });
+
+      expectAssertion(() => {
+        this.render('{{foo-bar}}');
+      }, /You must implement `create` method./);
+    }
+
+    ['@test throws an exception if custom component manager does not define `getSelf` method'](assert) {
+      let managerId = 'test';
+      this.owner.register(`component-manager:${managerId}`, {
+        create(env, definition, args, dynamicScope, caller, hasBlock) {
+          return definition.ComponentClass.create();
+        },
+        update(component, dynamicScope) { }
+      });
+      this.registerComponent('foo-bar', {
+        template: `{{use-component-manager "${managerId}"}}hello`,
+        managerId
+      });
+
+      expectAssertion(() => {
+        this.render('{{foo-bar}}');
+      }, /You must implement `getSelf` method./);
+    }
+
+    ['@test throws an exception if custom component manager does not define `update` method'](assert) {
+      let managerId = 'test';
+      this.owner.register(`component-manager:${managerId}`, {
+        create(env, definition, args, dynamicScope, caller, hasBlock) {
+          return definition.ComponentClass.create();
+        },
+        getSelf(bucket) { return bucket; }
+      });
+
+      expectAssertion(() => {
+        this.registerComponent('foo-bar', {
+          template: `{{use-component-manager "${managerId}"}}hello`,
+          managerId
+        });
+        this.render('{{foo-bar class=something}}', {
+          something: 'hello'
+        });
+
+        this.runTask(() => set(this.context, 'something', 'world'));
+      }, /You must implement `update` method./);
+    }
+
     ['@test it can render a basic component with custom component manager'](assert) {
       let managerId = 'test';
       this.owner.register(`component-manager:${managerId}`, new TestComponentManager());

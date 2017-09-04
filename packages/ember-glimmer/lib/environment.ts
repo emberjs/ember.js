@@ -40,6 +40,7 @@ import {
   ConditionalReference,
   SimpleHelperReference,
 } from './utils/references';
+import CustomManager from './component-managers/custom';
 
 import { default as classHelper } from './helpers/-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
@@ -129,7 +130,7 @@ export default class Environment extends GlimmerEnvironment {
           let managerId = layout && layout.meta.managerId;
 
           if (managerId) {
-            customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
+            customManager = new CustomManager(owner.factoryFor<any>(`component-manager:${managerId}`).class);
           }
         }
         return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);

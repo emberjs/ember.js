@@ -47,6 +47,9 @@ export default abstract class AbstractManager<T> implements ComponentManager<T> 
     definition: ComponentDefinition<T>,
     component: T,
     env: Environment): CompiledDynamicTemplate<ProgramSymbolTable>;
+  abstract templateFor(
+     component: T,
+     env: Environment): CompiledDynamicTemplate<ProgramSymbolTable>;
   abstract getSelf(component: T): VersionedPathReference<void | {}>;
 
   didCreateElement(_component: T, _element: Element, _operations: ElementOperations): void {
