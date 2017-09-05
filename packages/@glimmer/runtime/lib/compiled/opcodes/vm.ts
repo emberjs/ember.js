@@ -1,5 +1,5 @@
 import { Op } from '@glimmer/vm';
-import { Opaque, Option, BlockSymbolTable, Recast } from '@glimmer/interfaces';
+import { Opaque, Option, Recast } from '@glimmer/interfaces';
 import {
   VersionedPathReference,
   CONSTANT_TAG,
@@ -10,7 +10,7 @@ import {
   Reference,
   Tag
 } from '@glimmer/reference';
-import { initializeGuid, assert, expectStackChange, StackNumber, check, Instanceof, StackOption } from '@glimmer/util';
+import { initializeGuid, assert, expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckSymbolTable, CheckHandle } from '@glimmer/util';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { Primitive, PrimitiveReference } from '../../references';
@@ -65,11 +65,11 @@ APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
   stack.push(PrimitiveReference.create(stack.pop<Primitive>()));
 
   expectStackChange(stack, 0, 'PrimitiveReference');
-  check(stack.peek(), Instanceof(PrimitiveReference));
+  check(stack.peek(), CheckInstanceof(PrimitiveReference));
 });
 
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
-  let position = check(vm.fetchValue(register), StackNumber) - offset;
+  let position = check(vm.fetchValue(register), CheckNumber) - offset;
   vm.stack.dup(position);
 
   expectStackChange(vm.stack, 1, 'Dup');
@@ -104,8 +104,8 @@ APPEND_OPCODES.add(Op.PushFrame, vm => {
   vm.pushFrame();
 
   expectStackChange(vm.stack, 2, 'PushFrame');
-  check(vm.stack.peek(), StackNumber);
-  check(vm.stack.peek(1), StackNumber);
+  check(vm.stack.peek(), CheckNumber);
+  check(vm.stack.peek(1), CheckNumber);
 });
 
 APPEND_OPCODES.add(Op.PopFrame, vm => {
@@ -119,7 +119,10 @@ APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
   expectStackChange(vm.stack, 0, 'Enter');
 });
 
-APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
+APPEND_OPCODES.add(Op.Exit, vm => {
+  vm.exit();
+  expectStackChange(vm.stack, 0, 'Exit');
+});
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
@@ -134,22 +137,29 @@ APPEND_OPCODES.add(Op.CompileBlock, vm => {
   stack.push(block ? block.compile() : null);
 
   expectStackChange(vm.stack, 0, 'CompileBlock');
-  check(vm.stack.peek(), StackOption(StackNumber));
+  check(vm.stack.peek(), CheckOption(CheckNumber));
 });
 
-APPEND_OPCODES.add(Op.InvokeVirtual, vm => vm.call(vm.stack.pop<VMHandle>()));
+APPEND_OPCODES.add(Op.InvokeVirtual, vm => {
+  vm.call(vm.stack.pop<VMHandle>());
 
-APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => vm.call(handle as Recast<number, VMHandle>));
+  expectStackChange(vm.stack, -1, 'InvokeVirtual');
+});
+
+APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => {
+  vm.call(handle as Recast<number, VMHandle>);
+  expectStackChange(vm.stack, 0, 'InvokeStatic');
+});
 
 APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
-  let handle = stack.pop<Option<VMHandle>>();
-  let table = stack.pop<Option<BlockSymbolTable>>();
+  let handle = check(stack.pop(), CheckOption(CheckHandle));
+  let table = check(stack.pop(), CheckOption(CheckSymbolTable));
 
   assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
 
-  let args = stack.pop<Arguments>();
+  let args = check(stack.pop(), CheckInstanceof(Arguments));
 
   if (table === null) {
     args.clear();
@@ -157,6 +167,8 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
     // To balance the pop{Frame,Scope}
     vm.pushFrame();
     vm.pushCallerScope();
+
+    expectStackChange(vm.stack, -args.length - 1, 'InvokeYield (no table)');
 
     return;
   }
@@ -176,6 +188,8 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 
   vm.pushFrame();
   vm.call(handle!);
+
+  expectStackChange(vm.stack, -args.length - 1, 'InvokeYield (with table)');
 });
 
 APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => vm.goto(target));
