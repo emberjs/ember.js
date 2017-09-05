@@ -9,7 +9,7 @@ export const ENGINE_PARENT = symbol('ENGINE_PARENT');
   @param {EngineInstance} engine An engine instance.
   @return {EngineInstance} The parent engine instance.
   @for Ember
-  @public
+  @private
 */
 export function getEngineParent(engine) {
   return engine[ENGINE_PARENT];
