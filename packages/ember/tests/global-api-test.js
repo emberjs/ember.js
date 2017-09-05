@@ -1,5 +1,6 @@
 import { get } from 'ember-metal';
 import { isArray } from 'ember-runtime';
+import { getEngineParent } from 'ember-application';
 
 QUnit.module('Global API Tests');
 
@@ -18,3 +19,4 @@ confirmExport('Ember.generateController');
 confirmExport('Ember.Helper');
 confirmExport('Ember.Helper.helper');
 confirmExport('Ember.isArray', isArray);
+confirmExport('Ember.getEngineParent', getEngineParent);
