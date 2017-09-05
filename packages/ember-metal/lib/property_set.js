@@ -73,7 +73,7 @@ export function set(obj, keyName, value, tolerant) {
 
 if (MANDATORY_SETTER) {
   var setWithMandatorySetter = (meta, obj, keyName, value) => {
-    if (meta && meta.peekWatching(keyName) > 0) {
+    if (meta !== undefined && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);
     } else {

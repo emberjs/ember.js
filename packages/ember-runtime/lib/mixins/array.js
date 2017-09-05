@@ -657,7 +657,7 @@ EachProxy.prototype = {
     let lim = removedCnt > 0 ? idx + removedCnt : -1;
     let meta;
     for (let key in keys) {
-      meta = meta || peekMeta(this);
+      meta = meta === undefined ? peekMeta(this) : meta;
       if (lim > 0) {
         removeObserverForContentKey(content, key, this, idx, lim);
       }
@@ -670,7 +670,7 @@ EachProxy.prototype = {
     let lim = addedCnt > 0 ? idx + addedCnt : -1;
     let meta;
     for (let key in keys) {
-      meta = meta || peekMeta(this);
+      meta = meta === undefined ? peekMeta(this) : meta;
       if (lim > 0) {
         addObserverForContentKey(content, key, this, idx, lim);
       }

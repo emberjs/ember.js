@@ -547,8 +547,8 @@ export default function computed(...args) {
 */
 function cacheFor(obj, key) {
   let meta = peekMeta(obj);
-  let cache = meta && meta.source === obj && meta.readableCache();
-  let ret = cache && cache[key];
+  let cache = meta !== undefined ? meta.source === obj && meta.readableCache() : undefined;
+  let ret = cache !== undefined ? cache[key] : undefined;
 
   if (ret === UNDEFINED) {
     return undefined;

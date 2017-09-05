@@ -44,7 +44,7 @@ export function isWatching(obj, key) {
 
 export function watcherCount(obj, key) {
   let meta = peekMeta(obj);
-  return (meta && meta.peekWatching(key)) || 0;
+  return (meta !== undefined && meta.peekWatching(key)) || 0;
 }
 
 export function unwatch(obj, _keyPath, m) {

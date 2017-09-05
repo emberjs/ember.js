@@ -42,10 +42,10 @@ let deferred = 0;
   @private
 */
 function propertyWillChange(obj, keyName, _meta) {
-  let meta = _meta || peekMeta(obj);
-  if (meta && !meta.isInitialized(obj)) { return; }
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
+  if (meta !== undefined && !meta.isInitialized(obj)) { return; }
 
-  let watching = meta && meta.peekWatching(keyName) > 0;
+  let watching = meta !== undefined && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
   let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
@@ -78,8 +78,8 @@ function propertyWillChange(obj, keyName, _meta) {
   @private
 */
 function propertyDidChange(obj, keyName, _meta) {
-  let meta = _meta || peekMeta(obj);
-  let hasMeta = !!meta;
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
+  let hasMeta = meta !== undefined;
 
   if (hasMeta && !meta.isInitialized(obj)) { return; }
 
