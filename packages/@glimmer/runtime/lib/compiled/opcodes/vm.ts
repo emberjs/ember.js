@@ -10,7 +10,7 @@ import {
   Reference,
   Tag
 } from '@glimmer/reference';
-import { initializeGuid, assert } from '@glimmer/util';
+import { initializeGuid, assert, expectStackChange, StackNumber, check, Instanceof, StackOption } from '@glimmer/util';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { Primitive, PrimitiveReference } from '../../references';
@@ -56,46 +56,85 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       }
       break;
   }
+
+  expectStackChange(vm.stack, 1, 'Primitive');
 });
 
 APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
   let stack = vm.stack;
   stack.push(PrimitiveReference.create(stack.pop<Primitive>()));
+
+  expectStackChange(stack, 0, 'PrimitiveReference');
+  check(stack.peek(), Instanceof(PrimitiveReference));
 });
 
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
-  let position = vm.fetchValue<number>(register) - offset;
+  let position = check(vm.fetchValue(register), StackNumber) - offset;
   vm.stack.dup(position);
+
+  expectStackChange(vm.stack, 1, 'Dup');
 });
 
-APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => vm.stack.pop(count));
+APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => {
+  vm.stack.pop(count);
 
-APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => vm.load(register));
+  expectStackChange(vm.stack, -count, 'Pop');
+});
 
-APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => vm.fetch(register));
+APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => {
+  vm.load(register);
+
+  expectStackChange(vm.stack, -1, 'Load');
+});
+
+APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => {
+  vm.fetch(register);
+
+  expectStackChange(vm.stack, 1, 'Fetch');
+});
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   let names = vm.constants.getArray(_names);
   vm.bindDynamicScope(names);
+
+  expectStackChange(vm.stack, -(names.length), 'BindDynamicScope');
 });
 
-APPEND_OPCODES.add(Op.PushFrame, vm => vm.pushFrame());
+APPEND_OPCODES.add(Op.PushFrame, vm => {
+  vm.pushFrame();
 
-APPEND_OPCODES.add(Op.PopFrame, vm => vm.popFrame());
+  expectStackChange(vm.stack, 2, 'PushFrame');
+  check(vm.stack.peek(), StackNumber);
+  check(vm.stack.peek(1), StackNumber);
+});
 
-APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => vm.enter(args));
+APPEND_OPCODES.add(Op.PopFrame, vm => {
+  vm.popFrame();
+
+  /** stack restores to fp */
+});
+
+APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
+  vm.enter(args);
+  expectStackChange(vm.stack, 0, 'Enter');
+});
 
 APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
   stack.push(vm.constants.getSymbolTable(_table));
+
+  expectStackChange(vm.stack, 1, 'PushSymbolTable');
 });
 
 APPEND_OPCODES.add(Op.CompileBlock, vm => {
   let stack = vm.stack;
   let block = stack.pop<Option<CompilableTemplate> | 0>();
   stack.push(block ? block.compile() : null);
+
+  expectStackChange(vm.stack, 0, 'CompileBlock');
+  check(vm.stack.peek(), StackOption(StackNumber));
 });
 
 APPEND_OPCODES.add(Op.InvokeVirtual, vm => vm.call(vm.stack.pop<VMHandle>()));

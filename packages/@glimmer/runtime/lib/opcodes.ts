@@ -1,4 +1,4 @@
-import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, typePos } from '@glimmer/util';
+import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, typePos, recordStackSize } from '@glimmer/util';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
 import { debug, logOpcode } from "@glimmer/opcode-compiler";
@@ -38,6 +38,8 @@ export class AppendOpcodes {
       console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
       /* tslint:enable */
     }
+
+    recordStackSize(vm.stack);
 
     func(vm, opcode);
 
