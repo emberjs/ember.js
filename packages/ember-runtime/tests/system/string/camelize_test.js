@@ -9,65 +9,21 @@ if (!ENV.EXTEND_PROTOTYPES.String) {
   });
 }
 
-QUnit.test('camelize normal string', function() {
-  deepEqual(camelize('my favorite items'), 'myFavoriteItems');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('my favorite items'.camelize(), 'myFavoriteItems');
-  }
-});
+function test(given, expected, description) {
+  QUnit.test(description, function() {
+    deepEqual(camelize(given), expected);
+    if (ENV.EXTEND_PROTOTYPES.String) {
+      deepEqual(given.camelize(), expected);
+    }
+  })
+}
 
-QUnit.test('camelize capitalized string', function() {
-  deepEqual(camelize('I Love Ramen'), 'iLoveRamen');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('I Love Ramen'.camelize(), 'iLoveRamen');
-  }
-});
-
-QUnit.test('camelize dasherized string', function() {
-  deepEqual(camelize('css-class-name'), 'cssClassName');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('css-class-name'.camelize(), 'cssClassName');
-  }
-});
-
-QUnit.test('camelize underscored string', function() {
-  deepEqual(camelize('action_name'), 'actionName');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('action_name'.camelize(), 'actionName');
-  }
-});
-
-QUnit.test('camelize dot notation string', function() {
-  deepEqual(camelize('action.name'), 'actionName');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('action.name'.camelize(), 'actionName');
-  }
-});
-
-QUnit.test('does nothing with camelcased string', function() {
-  deepEqual(camelize('innerHTML'), 'innerHTML');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('innerHTML'.camelize(), 'innerHTML');
-  }
-});
-
-QUnit.test('camelize namespaced classified string', function() {
-  deepEqual(camelize('PrivateDocs/OwnerInvoice'), 'privateDocs/ownerInvoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('PrivateDocs/OwnerInvoice'.camelize(), 'privateDocs/ownerInvoice');
-  }
-});
-
-QUnit.test('camelize namespaced underscored string', function() {
-  deepEqual(camelize('private_docs/owner_invoice'), 'privateDocs/ownerInvoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('private_docs/owner_invoice'.camelize(), 'privateDocs/ownerInvoice');
-  }
-});
-
-QUnit.test('camelize namespaced dasherized string', function() {
-  deepEqual(camelize('private-docs/owner-invoice'), 'privateDocs/ownerInvoice');
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('private-docs/owner-invoice'.camelize(), 'privateDocs/ownerInvoice');
-  }
-});
+test('my favorite items',          'myFavoriteItems',          'camelize normal string');
+test('I Love Ramen',               'iLoveRamen',               'camelize capitalized string');
+test('css-class-name',             'cssClassName',             'camelize dasherized string');
+test('action_name',                'actionName',               'camelize underscored string');
+test('action.name',                'actionName',               'camelize dot notation string');
+test('innerHTML',                  'innerHTML',                'does nothing with camelcased string');
+test('PrivateDocs/OwnerInvoice',   'privateDocs/ownerInvoice', 'camelize namespaced classified string');
+test('private_docs/owner_invoice', 'privateDocs/ownerInvoice', 'camelize namespaced underscored string');
+test('private-docs/owner-invoice', 'privateDocs/ownerInvoice', 'camelize namespaced dasherized string');
