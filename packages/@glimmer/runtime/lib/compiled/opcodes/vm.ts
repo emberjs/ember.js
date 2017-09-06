@@ -9,7 +9,7 @@ import {
   Tag
 } from '@glimmer/reference';
 import { initializeGuid, assert } from '@glimmer/util';
-import { expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle } from '@glimmer/debug';
+import { expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle, CheckPrimitive } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { PrimitiveReference } from '../../references';
