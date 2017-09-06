@@ -767,8 +767,8 @@ export abstract class OpcodeBuilder<Specifier> {
             this.pushYieldableBlock(callerBlock);
             bindings.push({ symbol: i + 1, isBlock: true });
           } else {
-            this.primitive(null);
-            bindings.push({ symbol: i + 1, isBlock: false });
+            this.pushYieldableBlock(null);
+            bindings.push({ symbol: i + 1, isBlock: true });
           }
 
           break;

@@ -1,48 +1,53 @@
-import { Opaque, Option, BlockSymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
-import { Helper, ScopeBlock } from '../../environment';
+import { ScopeBlock } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
-import { Arguments } from '../../vm/arguments';
 import { ConcatReference } from '../expressions/concat';
-import { VMHandle } from "@glimmer/opcode-compiler";
-import { assert } from "@glimmer/util";
+import { assert, check, expectStackChange, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from "@glimmer/util";
 import { stackAssert } from './assert';
+import { CheckArguments, CheckPathReference, CheckCompilableBlock } from './__DEBUG__';
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
-  let helper = vm.constants.resolveHandle<Helper>(handle);
-  let args = stack.pop<Arguments>();
+  let helper = check(vm.constants.resolveHandle(handle), CheckFunction);
+  let args = check(stack.pop(), CheckArguments);
   let value = helper(vm, args);
 
   args.clear();
 
   vm.stack.push(value);
+
+  expectStackChange(vm.stack, -args.length, 'Helper');
 });
 
 APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {
   let expr = vm.referenceForSymbol(symbol);
   vm.stack.push(expr);
+
+  expectStackChange(vm.stack, 1, 'GetVariable');
 });
 
 APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
-  let expr = vm.stack.pop<VersionedPathReference<Opaque>>();
+  let expr = check(vm.stack.pop(), CheckPathReference);
   vm.scope().bindSymbol(symbol, expr);
+
+  expectStackChange(vm.stack, -1, 'SetVariable');
 });
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
-  let handle = vm.stack.pop<Option<VMHandle>>();
-  let table = vm.stack.pop<Option<BlockSymbolTable>>();
-
-  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+  let handle = check(vm.stack.pop(), CheckOr(CheckOption(CheckHandle), CheckCompilableBlock));
+  let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 
   vm.scope().bindBlock(symbol, block);
+
+  expectStackChange(vm.stack, -2, 'SetBlock');
 });
 
 APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
@@ -55,16 +60,22 @@ APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
   }
 
   vm.stack.push(ref);
+
+  expectStackChange(vm.stack, 1, 'ResolveMaybeLocal');
 });
 
 APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols, op2: bindCallerScope }) => {
   vm.pushRootScope(symbols, !!bindCallerScope);
+
+  expectStackChange(vm.stack, 0, 'RootScope');
 });
 
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
   let key = vm.constants.getString(_key);
-  let expr = vm.stack.pop<VersionedPathReference<Opaque>>();
+  let expr = check(vm.stack.pop(), CheckPathReference);
   vm.stack.push(expr.get(key));
+
+  expectStackChange(vm.stack, 0, 'GetProperty');
 });
 
 APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
@@ -78,21 +89,27 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
     stack.push(null);
     stack.push(null);
   }
+
+  expectStackChange(vm.stack, 2, 'GetBlock');
 });
 
 APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
   let hasBlock = !!vm.scope().getBlock(_block);
   vm.stack.push(hasBlock ? TRUE_REFERENCE : FALSE_REFERENCE);
+
+  expectStackChange(vm.stack, 1, 'HasBlock');
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
-  vm.stack.pop<VMHandle>();
-  let table = vm.stack.pop<Option<BlockSymbolTable>>();
+  check(vm.stack.pop(), CheckOption(CheckOr(CheckHandle, CheckCompilableBlock)));
+  let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
 
   let hasBlockParams = table && table.parameters.length;
   vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
+
+  expectStackChange(vm.stack, -1, 'HasBlockParams');
 });
 
 APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
@@ -100,8 +117,10 @@ APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
 
   for (let i = count; i > 0; i--) {
     let offset = i - 1;
-    out[offset] = vm.stack.pop<VersionedPathReference<Opaque>>();
+    out[offset] = check(vm.stack.pop(), CheckPathReference);
   }
 
   vm.stack.push(new ConcatReference(out));
+
+  expectStackChange(vm.stack, -count + 1, 'Concat');
 });
