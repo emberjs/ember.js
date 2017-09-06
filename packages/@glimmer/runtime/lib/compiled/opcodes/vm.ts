@@ -37,7 +37,7 @@ APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, 
   vm.stack.push(vm.constants.getOther(other));
 });
 
-OPCODE_METADATA(Op.Primitive, {
+OPCODE_METADATA(Op.Constant, {
   operands: 1,
   stackChange: 1
 });
@@ -94,23 +94,29 @@ APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => {
   vm.stack.pop(count);
 });
 
-OPCODE_METADATA(Op.Dup, {
+OPCODE_METADATA(Op.Pop, {
   operands: 1,
-  stackChange({ op1: count }: Opcode) {
+  stackChange({ opcode: { op1: count } }) {
     return -count;
   }
 });
 
 APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => {
   vm.load(register);
+});
 
-  expectStackChange(vm.stack, -1, 'Load');
+OPCODE_METADATA(Op.Load, {
+  operands: 1,
+  stackChange: -1
 });
 
 APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => {
   vm.fetch(register);
+});
 
-  expectStackChange(vm.stack, 1, 'Fetch');
+OPCODE_METADATA(Op.Fetch, {
+  operands: 1,
+  stackChange: 1
 });
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
@@ -120,12 +126,25 @@ APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   expectStackChange(vm.stack, -(names.length), 'BindDynamicScope');
 });
 
+OPCODE_METADATA(Op.BindDynamicScope, {
+  operands: 1,
+  stackChange({ opcode: { op1: _names }, constants }) {
+    let size = constants.getArray(_names).length;
+
+    return -size;
+  }
+});
+
 APPEND_OPCODES.add(Op.PushFrame, vm => {
   vm.pushFrame();
 
-  expectStackChange(vm.stack, 2, 'PushFrame');
   check(vm.stack.peek(), CheckNumber);
   check(vm.stack.peek(1), CheckNumber);
+});
+
+OPCODE_METADATA(Op.PushFrame, {
+  operands: 0,
+  stackChange: 2
 });
 
 APPEND_OPCODES.add(Op.PopFrame, vm => {
@@ -134,9 +153,22 @@ APPEND_OPCODES.add(Op.PopFrame, vm => {
   /** stack restores to fp */
 });
 
+OPCODE_METADATA(Op.PopFrame, {
+  before(_opcode: Opcode, vm: VM<Opaque>): { sp: number, fp: number } {
+    return { sp: vm.stack.sp, fp: vm.stack.fp };
+  },
+
+  stackChange({ state }: { state: { sp: number, fp: number } }) {
+    return state.fp - state.sp - 1;
+  }
+});
+
 APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
   vm.enter(args);
-  expectStackChange(vm.stack, 0, 'Enter');
+});
+
+OPCODE_METADATA(Op.Enter, {
+  operands: 1
 });
 
 APPEND_OPCODES.add(Op.Exit, vm => {
