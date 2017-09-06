@@ -17,7 +17,8 @@ module.exports = function(jsTree) {
       envFlags: {
         source: '@glimmer/local-debug-flags',
         flags: {
-          DEBUG: process.env.EMBER_ENV !== 'production'
+          DEBUG: process.env.EMBER_ENV !== 'production',
+          DEVMODE: process.env.EMBER_ENV !== 'production',
         }
       },
       debugTools: {

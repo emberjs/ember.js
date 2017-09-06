@@ -4,7 +4,7 @@ import { Tag } from '@glimmer/reference';
 import { debug, logOpcode } from "@glimmer/opcode-compiler";
 import { Opcode, Opaque } from "@glimmer/interfaces";
 import { VM, UpdatingVM } from './vm';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -21,7 +21,14 @@ export type Operand3 = number;
 
 export type EvaluateOpcode = (vm: VM<Opaque>, opcode: Opcode) => void;
 
+export interface DebugMetadata {
+  stackChange?: ((opcode: Opcode) => number) | number;
+  operands?: 0 | 1 | 2 | 3;
+}
+
 export class AppendOpcodes {
+  /** @internal */
+  public debugMetadata: Option<DebugMetadata>[] = fillNulls<DebugMetadata>(Op.Size).slice();
   private evaluateOpcode: EvaluateOpcode[] = fillNulls<EvaluateOpcode>(Op.Size).slice();
 
   add<Name extends Op>(name: Name, evaluate: EvaluateOpcode): void {
@@ -39,9 +46,33 @@ export class AppendOpcodes {
       /* tslint:enable */
     }
 
+    let sp: number;
+    let expectedChange: number;
+
+    if (DEVMODE) {
+      sp = vm.stack.sp;
+      let metadata = this.debugMetadata[type];
+      if (metadata !== null) {
+        if (typeof metadata.stackChange === 'number') {
+          expectedChange = metadata.stackChange;
+        } else {
+          expectedChange = metadata.stackChange(opcode);
+        }
+      }
+    }
+
     recordStackSize(vm.stack);
 
     func(vm, opcode);
+
+    if (DEVMODE) {
+      let actualChange = vm.stack.sp - sp!;
+      if (typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
+        let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
+
+        throw new Error(`Error in ${name}:\n\n${typePos(vm['pc'])}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
+      }
+    }
 
     if (DEBUG) {
       /* tslint:disable */

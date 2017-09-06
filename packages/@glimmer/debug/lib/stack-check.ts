@@ -2,6 +2,8 @@ import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple } fr
 import { VMHandle } from "@glimmer/opcode-compiler";
 
 export interface Checker<T> {
+  type: T;
+
   validate(value: Opaque): value is T;
   expected(): string;
 }
@@ -11,6 +13,8 @@ export interface Constructor<T> extends Function {
 }
 
 class TypeofChecker<T> implements Checker<T> {
+  type: T;
+
   constructor(private expectedType: string) {}
 
   validate(value: Opaque): value is T {
@@ -22,7 +26,27 @@ class TypeofChecker<T> implements Checker<T> {
   }
 }
 
+export type Primitive = undefined | null | boolean | number | string;
+
+class PrimitiveChecker implements Checker<Primitive> {
+  type: Primitive;
+
+  validate(value: Opaque): value is Primitive {
+    return typeof value !== 'string'
+      || typeof value === 'number'
+      || typeof value === 'string'
+      || value === undefined
+      || value === null;
+  }
+
+  expected(): string {
+    return `a primitive`;
+  }
+}
+
 class InstanceofChecker<T> implements Checker<T> {
+  type: T;
+
   constructor(private Class: Constructor<T>) {}
 
   validate(value: Opaque): value is T {
@@ -35,6 +59,8 @@ class InstanceofChecker<T> implements Checker<T> {
 }
 
 class OptionChecker<T> implements Checker<Option<T>> {
+  type: Option<T>;
+
   constructor(private checker: Checker<T>) {}
 
   validate(value: Opaque): value is Option<T> {
@@ -48,6 +74,8 @@ class OptionChecker<T> implements Checker<Option<T>> {
 }
 
 class OrChecker<T, U> implements Checker<T | U> {
+  type: T | U;
+
   constructor(private left: Checker<T>, private right: Checker<U>) {}
 
   validate(value: Opaque): value is T | U {
@@ -60,6 +88,8 @@ class OrChecker<T, U> implements Checker<T | U> {
 }
 
 class ExactValueChecker<T> implements Checker<T> {
+  type: T;
+
   constructor(private value: T, private desc: string) {}
 
   validate(obj: Opaque): obj is T {
@@ -72,6 +102,8 @@ class ExactValueChecker<T> implements Checker<T> {
 }
 
 class PropertyChecker<T> implements Checker<T> {
+  type: T;
+
   constructor(private checkers: Dict<Checker<Opaque>>) {}
 
   validate(obj: Opaque): obj is T {
@@ -97,6 +129,8 @@ class PropertyChecker<T> implements Checker<T> {
 }
 
 class ArrayChecker<T> implements Checker<T[]> {
+  type: T[];
+
   constructor(private checker: Checker<T>) {}
 
   validate(obj: Opaque): obj is T[] {
@@ -112,6 +146,8 @@ class ArrayChecker<T> implements Checker<T[]> {
 }
 
 class OpaqueChecker implements Checker<Opaque> {
+  type: Opaque;
+
   validate(_obj: Opaque): _obj is Opaque {
     return true;
   }
@@ -123,13 +159,13 @@ class OpaqueChecker implements Checker<Opaque> {
 
 export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
   return new InstanceofChecker<T>(Class);
-};
+}
 
 export function CheckOption<T>(checker: Checker<T>): Checker<Option<T>> {
   return new OptionChecker(checker);
 }
 
-export function CheckInterface<T>(obj: Dict<Checker<Opaque>>): Checker<T> {
+export function CheckInterface<I extends { [P in keyof O]: O[P]['type'] }, O extends Dict<Checker<Opaque>>>(obj: O): Checker<I> {
   return new PropertyChecker(obj);
 }
 
@@ -159,6 +195,7 @@ export function expectStackChange(stack: { sp: number }, expected: number, name:
   throw new Error(`Expected stack to change by ${expected}, but it changed by ${actual} in ${name}`);
 }
 
+export const CheckPrimitive: Checker<Primitive> = new PrimitiveChecker();
 export const CheckFunction: Checker<Function> = new TypeofChecker<Function>('function');
 export const CheckNumber: Checker<number> = new TypeofChecker<number>('number');
 export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolean');

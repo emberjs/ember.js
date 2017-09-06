@@ -9,7 +9,7 @@ import { ConcatReference } from '../expressions/concat';
 import { assert } from "@glimmer/util";
 import { check, expectStackChange, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
 import { stackAssert } from './assert';
-import { CheckArguments, CheckPathReference, CheckCompilableBlock } from './__DEBUG__';
+import { CheckArguments, CheckPathReference, CheckCompilableBlock } from './debug';
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 

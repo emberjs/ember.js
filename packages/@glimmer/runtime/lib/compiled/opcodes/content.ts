@@ -6,7 +6,7 @@ import { DynamicContentWrapper } from '../../vm/content/dynamic';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { ConditionalReference } from '../../references';
 import { UpdatingVM } from '../../vm';
-import { CheckPathReference } from './__DEBUG__';
+import { CheckPathReference } from './-debug-strip';
 import { check, expectStackChange } from "@glimmer/debug";
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {

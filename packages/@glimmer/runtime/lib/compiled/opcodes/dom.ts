@@ -17,7 +17,7 @@ import { UpdatingVM } from '../../vm';
 import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { ComponentElementOperations } from './component';
-import { CheckReference, CheckArguments } from './__DEBUG__';
+import { CheckReference, CheckArguments } from './debug';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm.constants.getString(text));
