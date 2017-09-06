@@ -32,20 +32,14 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
 
   stack.push(iterator);
   stack.push(new IterablePresenceReference(iterator.artifacts));
-
-  expectStackChange(vm.stack, 0, 'PutIterator');
 });
 
 APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart }) => {
   vm.enterList(relativeStart);
-
-  expectStackChange(vm.stack, 0, 'EnterList');
 });
 
 APPEND_OPCODES.add(Op.ExitList, vm => {
   vm.exitList();
-
-  expectStackChange(vm.stack, 0, 'ExitList');
 });
 
 APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
