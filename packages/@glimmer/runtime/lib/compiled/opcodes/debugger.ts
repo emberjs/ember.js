@@ -1,6 +1,7 @@
 import { Opaque } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
+import { expectStackChange } from '@glimmer/debug';
 import { Scope } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { Op } from '@glimmer/vm';
@@ -71,4 +72,6 @@ APPEND_OPCODES.add(Op.Debugger, (vm, { op1: _symbols, op2: _evalInfo }) => {
   let evalInfo = vm.constants.getArray(_evalInfo);
   let inspector = new ScopeInspector(vm.scope(), symbols, evalInfo);
   callback(vm.getSelf().value(), path => inspector.get(path).value());
+
+  expectStackChange(vm.stack, 0, 'Debugger');
 });

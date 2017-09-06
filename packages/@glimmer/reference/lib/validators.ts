@@ -165,7 +165,7 @@ function _combine(tags: Tag[]): Tag {
       return TagsPair.create(tags[0], tags[1]);
     default:
       return TagsCombinator.create(tags);
-  };
+  }
 }
 
 export abstract class CachedTag extends RevisionTag {

@@ -1,13 +1,13 @@
 import { Op } from '@glimmer/vm';
-import { Opaque } from '@glimmer/interfaces';
 import {
   IterationArtifacts,
   Reference,
   ReferenceIterator,
-  Tag,
-  VersionedPathReference,
+  Tag
 } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
+import { CheckPathReference } from './-debug-strip';
+import { check, CheckString, expectStackChange, CheckInstanceof } from "@glimmer/debug";
 
 class IterablePresenceReference implements Reference<boolean> {
   public tag: Tag;
@@ -25,24 +25,32 @@ class IterablePresenceReference implements Reference<boolean> {
 
 APPEND_OPCODES.add(Op.PutIterator, vm => {
   let stack = vm.stack;
-  let listRef = stack.pop<VersionedPathReference<Opaque>>();
-  let key = stack.pop<VersionedPathReference<string>>();
-  let iterable = vm.env.iterableFor(listRef, key.value());
+  let listRef = check(stack.pop(), CheckPathReference);
+  let key = check(stack.pop(), CheckPathReference);
+  let iterable = vm.env.iterableFor(listRef, check(key.value(), CheckString));
   let iterator = new ReferenceIterator(iterable);
 
   stack.push(iterator);
   stack.push(new IterablePresenceReference(iterator.artifacts));
+
+  expectStackChange(vm.stack, 0, 'PutIterator');
 });
 
 APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart }) => {
   vm.enterList(relativeStart);
+
+  expectStackChange(vm.stack, 0, 'EnterList');
 });
 
-APPEND_OPCODES.add(Op.ExitList, vm => vm.exitList());
+APPEND_OPCODES.add(Op.ExitList, vm => {
+  vm.exitList();
+
+  expectStackChange(vm.stack, 0, 'ExitList');
+});
 
 APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
   let stack = vm.stack;
-  let item = stack.peek<ReferenceIterator>().next();
+  let item = check(stack.peek(), CheckInstanceof(ReferenceIterator)).next();
 
   if (item) {
     let tryOpcode = vm.iterate(item.memo, item.value);
@@ -50,4 +58,6 @@ APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
   } else {
     vm.goto(breaks);
   }
+
+  expectStackChange(vm.stack, item ? 2 : 0, 'Iterate');
 });

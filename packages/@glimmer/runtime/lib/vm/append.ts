@@ -56,8 +56,8 @@ export class EvaluationStack {
     return top;
   }
 
-  peek<T>(): T {
-    return this.stack[this.sp] as T;
+  peek<T>(offset = 0): T {
+    return this.stack[this.sp - offset] as T;
   }
 
   get<T>(offset: number, base = this.fp): T {

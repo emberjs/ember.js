@@ -5,3 +5,5 @@ export const DEBUG = (() => {
   }
   return false;
 })();
+
+export const DEVMODE = true;
