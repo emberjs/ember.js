@@ -22,14 +22,14 @@ import {
 
 import { PublicVM } from './vm/append';
 
-import { Macros, OpcodeBuilderConstructor, VMHandle } from "@glimmer/opcode-compiler";
+import { Macros, OpcodeBuilderConstructor, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
 import { Simple, RuntimeResolver, BlockSymbolTable } from "@glimmer/interfaces";
 import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
 import { Program } from "@glimmer/program";
 
-export type ScopeBlock = [VMHandle, BlockSymbolTable];
-export type ScopeSlot = VersionedPathReference<Opaque> | Option<ScopeBlock>;
+export type ScopeBlock = [VMHandle | ICompilableTemplate<BlockSymbolTable>, BlockSymbolTable];
+export type ScopeSlot = Option<VersionedPathReference<Opaque>> | Option<ScopeBlock>;
 
 export interface DynamicScope {
   get(key: string): VersionedPathReference<Opaque>;
@@ -102,7 +102,7 @@ export class Scope {
   }
 
   bindSymbol(symbol: number, value: VersionedPathReference<Opaque>) {
-    this.set<VersionedPathReference<Opaque>>(symbol, value);
+    this.set(symbol, value);
   }
 
   bindBlock(symbol: number, value: Option<ScopeBlock>) {

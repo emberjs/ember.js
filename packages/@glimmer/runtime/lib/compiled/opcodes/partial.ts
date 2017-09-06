@@ -1,22 +1,24 @@
-import { VersionedReference, VersionedPathReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
 import { TemplateMeta } from '@glimmer/wire-format';
 import { Op } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { PartialDefinition } from '../../partial';
 import { assert, dict } from "@glimmer/util";
+import { check, expectStackChange } from '@glimmer/debug';
 import { Opaque } from "@glimmer/interfaces";
+import { CheckReference } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _evalInfo }) => {
   let { constants, constants: { resolver }, stack } = vm;
 
-  let name = stack.pop<VersionedReference</*Opaque*/ string>>().value();
+  let name = check(stack.pop(), CheckReference).value();
   assert(typeof name === 'string', `Could not find a partial named "${String(name)}"`);
 
   let meta = constants.getSerializable<TemplateMeta>(_meta);
   let outerSymbols = constants.getStringArray(_symbols);
   let evalInfo = constants.getArray(_evalInfo);
 
-  let specifier = resolver.lookupPartial(name, meta);
+  let specifier = resolver.lookupPartial(name as string, meta);
 
   assert(specifier, `Could not find a partial named "${name}"`);
 
@@ -53,7 +55,9 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
 
     partialScope.bindPartialMap(locals);
 
-    vm.pushFrame();
+    vm.pushFrame(); // sp += 2
     vm.call(handle!);
   }
+
+  expectStackChange(vm.stack, 1, 'InvokePartial');
 });

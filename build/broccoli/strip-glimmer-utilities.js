@@ -3,6 +3,7 @@
 const babel = require('broccoli-babel-transpiler');
 const stripGlimmerUtils = require('babel-plugin-strip-glimmer-utils');
 const debugMacros = require('babel-plugin-debug-macros').default;
+const nuke = require('babel-plugin-nukable-import');
 
 /**
  * Optimizes out Glimmer utility functions and strips debug code with a set of
@@ -16,7 +17,8 @@ module.exports = function(jsTree) {
       envFlags: {
         source: '@glimmer/local-debug-flags',
         flags: {
-          DEBUG: process.env.EMBER_ENV !== 'production'
+          DEBUG: process.env.EMBER_ENV !== 'production',
+          DEVMODE: process.env.EMBER_ENV !== 'production'
         }
       },
       debugTools: {
@@ -33,6 +35,8 @@ module.exports = function(jsTree) {
     sourceMaps: 'inline',
     plugins: [
       ...glimmerUtils,
+      [nuke, { source: '@glimmer/debug' }],
+      [nuke, { source: '../../-debug-strip' }],
       [stripGlimmerUtils, { bindings: ['expect', 'unwrap'], source: '@glimmer/util' }]
     ]
   });
