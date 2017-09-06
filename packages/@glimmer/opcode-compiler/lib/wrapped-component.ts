@@ -20,14 +20,14 @@ import { EMPTY_ARRAY } from "@glimmer/util";
 
 export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSymbolTable> {
   public symbolTable: ProgramSymbolTable;
-  private referer: Specifier;
+  private referrer: Specifier;
 
   constructor(public options: CompileOptions<Specifier>, private layout: ParsedLayout<Specifier>, private capabilities: ComponentCapabilities) {
     let { block } = layout;
-    let referer = this.referer = layout.referer;
+    let referrer = this.referrer = layout.referrer;
 
     this.symbolTable = {
-      referer,
+      referrer,
       hasEval: block.hasEval,
       symbols: block.symbols.concat([ATTRS_BLOCK])
     };
@@ -62,11 +62,11 @@ export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSym
     //        DidRenderLayout
     //        Exit
 
-    let { options, layout, referer } = this;
+    let { options, layout, referrer } = this;
     let { program, lookup, macros, asPartial } = options;
     let { Builder } = options;
 
-    let b = new Builder(program, lookup, referer, macros, layout, asPartial);
+    let b = new Builder(program, lookup, referrer, macros, layout, asPartial);
 
     b.startLabels();
 
@@ -117,9 +117,9 @@ export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSym
 }
 
 function blockFor<Specifier>(layout: ParsedLayout, options: CompileOptions<Specifier>): CompilableTemplate<BlockSymbolTable, Specifier> {
-  let { block, referer } = layout;
+  let { block, referrer } = layout;
 
-  return new CompilableTemplate(block.statements, layout, options, { referer, parameters: EMPTY_ARRAY });
+  return new CompilableTemplate(block.statements, layout, options, { referrer, parameters: EMPTY_ARRAY });
 }
 
 export class ComponentBuilder<Specifier> implements IComponentBuilder {

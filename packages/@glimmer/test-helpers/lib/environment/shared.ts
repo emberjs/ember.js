@@ -32,5 +32,5 @@ export function createTemplate(templateSource: string, meta: TemplateMeta = {}):
   let wrapper: SerializedTemplateWithLazyBlock<TemplateMeta> = JSON.parse(precompile(templateSource, { meta }));
   let block: SerializedTemplateBlock = JSON.parse(wrapper.block);
 
-  return { block, referer: meta };
+  return { block, referrer: meta };
 }

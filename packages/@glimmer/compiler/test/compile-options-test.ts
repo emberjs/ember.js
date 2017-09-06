@@ -14,7 +14,7 @@ QUnit.module('[glimmer-compiler] Compile options', {
 QUnit.test('moduleName option is passed into meta', assert => {
   let moduleName = 'It ain\'t hard to tell';
   let template = env.compile('Hi, {{name}}!', { moduleName });
-  assert.equal(template.referer.moduleName, moduleName, 'Template has the moduleName');
+  assert.equal(template.referrer.moduleName, moduleName, 'Template has the moduleName');
 });
 
 QUnit.module('[glimmer-compiler] precompile', {
