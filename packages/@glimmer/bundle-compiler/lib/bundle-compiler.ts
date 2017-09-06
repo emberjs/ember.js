@@ -1,91 +1,35 @@
 import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
-import { CompilableTemplate, Macros, OpcodeBuilderConstructor, ComponentCapabilities, CompileTimeLookup, CompileOptions, VMHandle, ICompilableTemplate, EagerOpcodeBuilder } from "@glimmer/opcode-compiler";
-import { WriteOnlyProgram, WriteOnlyConstants, ConstantPool } from "@glimmer/program";
-import { Option, ProgramSymbolTable, Recast, Dict, Opaque } from "@glimmer/interfaces";
+import { expect } from "@glimmer/util";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
-import { expect, dict, assert } from "@glimmer/util";
+import {
+  Option,
+  ProgramSymbolTable,
+  Recast,
+} from "@glimmer/interfaces";
+import {
+  CompilableTemplate,
+  Macros,
+  OpcodeBuilderConstructor,
+  ComponentCapabilities,
+  CompileTimeLookup,
+  CompileOptions,
+  VMHandle,
+  ICompilableTemplate,
+  EagerOpcodeBuilder
+} from "@glimmer/opcode-compiler";
+import {
+  WriteOnlyProgram,
+  WriteOnlyConstants,
+  ConstantPool
+} from "@glimmer/program";
+
+import { Specifier } from "./specifiers";
+import { SpecifierMap, LookupMap } from "./specifier-map";
+import { CompilerDelegate } from "./compiler-delegate";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
-}
-
-export type ModuleName = string;
-export type NamedExport = string;
-
-export interface Specifier {
-  module: ModuleName;
-  name: NamedExport;
-}
-
-const SPECIFIERS = dict<Dict<Specifier>>();
-type AddedTemplate = SerializedTemplateBlock | ICompilableTemplate<ProgramSymbolTable>;
-
-function isCompilableTemplate(v: AddedTemplate): v is ICompilableTemplate<ProgramSymbolTable> {
-  return typeof v['compile'] === 'function';
-}
-
-export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
-  let specifiers = SPECIFIERS[module];
-
-  if (!specifiers) specifiers = SPECIFIERS[module] = dict<Specifier>();
-
-  let specifier = specifiers[name];
-
-  if (!specifier) specifier = specifiers[name] = { module, name };
-
-  assert(module.indexOf('ui/components/ui') === -1, `BUG: unexpected ui/components/ui`);
-
-  return specifier;
-}
-
-export interface Mapping {
-  get(key: Opaque): Opaque;
-  set(key: Opaque, value: Opaque): void;
-  forEach(cb: (value: Opaque, key: Opaque) => void): void;
-}
-
-export class LookupMap<K, V> implements Mapping {
-  private pairs: Opaque[];
-  size = 0;
-  constructor() {
-    this.pairs = [];
-  }
-
-  set(key: K, value: V) {
-    let idx = this.pairs.indexOf(key);
-    if (idx === -1) {
-      this.pairs.push(key, value);
-      this.size++;
-    } else {
-      this.pairs[idx + 1] = value;
-    }
-  }
-
-  get(key: K): V | undefined {
-    let idx = this.pairs.indexOf(key);
-    if (idx > -1) {
-      return this.pairs[idx + 1] as V;
-    }
-
-    return undefined;
-  }
-
-  forEach(cb: (value: V, key: K) => void) {
-    for (let i = 0; i < this.pairs.length; i += 2) {
-      let value = this.pairs[i + 1];
-      let key = this.pairs[i];
-      cb(value as V, key as K);
-    }
-  }
-}
-
-export class SpecifierMap {
-  public bySpecifier = new LookupMap<Specifier, number>();
-  public byHandle = new LookupMap<number, Specifier>();
-
-  public byVMHandle = new LookupMap<number, Specifier>();
-  public vmHandleBySpecifier = new LookupMap<Specifier, number>();
 }
 
 export interface BundleCompilerOptions {
@@ -188,42 +132,6 @@ export class BundleCompiler {
   }
 }
 
-export interface CompilerDelegate {
-  /**
-   * During compilation, the compiler will ask the delegate about each component
-   * invocation found in the passed template. If the component exists in scope,
-   * the delegate should return `true`. If the component does not exist in
-   * scope, return `false`. (Note that returning `false` will cause the
-   * compilation process to fail.)
-   */
-  hasComponentInScope(componentName: string, referrer: Specifier): boolean;
-
-  /**
-   * If the delegate returns `true` from `hasComponentInScope()`, the compiler
-   * will next ask the delegate to turn the relative specifier into an
-   * globally-unique absolute specifier. By providing this unique identifier,
-   * the compiler avoids having to compile the same component multiple times if
-   * invoked from different locations.
-   */
-  resolveComponentSpecifier(componentName: string, referrer: Specifier): Specifier;
-
-  /**
-   * This method is called with the return value of `resolveComponentSpecifier` and
-   * it produces a statically known list of required capabilities.
-   */
-  getComponentCapabilities(specifier: Specifier): ComponentCapabilities;
-  getComponentLayout(specifier: Specifier): ICompilableTemplate<ProgramSymbolTable>;
-
-  hasHelperInScope(helperName: string, referer: Specifier): boolean;
-  resolveHelperSpecifier(helperName: string, referer: Specifier): Specifier;
-
-  hasModifierInScope(modifierName: string, referer: Specifier): boolean;
-  resolveModifierSpecifier(modifierName: string, referer: Specifier): Specifier;
-
-  hasPartialInScope(partialName: string, referer: Specifier): boolean;
-  resolvePartialSpecifier(partialName: string, referer: Specifier): Specifier;
-}
-
 class BundlingLookup implements CompileTimeLookup<Specifier> {
   constructor(private delegate: CompilerDelegate, private map: SpecifierMap) { }
 
@@ -247,7 +155,7 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
   }
 
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
-    let specifier =  expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated specifier`);
+    let specifier = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated specifier`);
     return this.delegate.getComponentLayout(specifier);
   }
 
@@ -285,4 +193,10 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
   lookupPartial(_name: string, _meta: Specifier): Option<number> {
     throw new Error("Method not implemented.");
   }
+}
+
+type AddedTemplate = SerializedTemplateBlock | ICompilableTemplate<ProgramSymbolTable>;
+
+function isCompilableTemplate(v: AddedTemplate): v is ICompilableTemplate<ProgramSymbolTable> {
+  return typeof v['compile'] === 'function';
 }
