@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver, Unique } from '@glimmer/interfaces';
+import { Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
