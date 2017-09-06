@@ -15,6 +15,12 @@ export function setAdapter(value) {
   }
 }
 
+export function stashTimeout() {
+  if (adapter) {
+    return adapter.stashTimeout();
+  }
+}
+
 export function asyncStart() {
   if (adapter) {
     adapter.asyncStart();

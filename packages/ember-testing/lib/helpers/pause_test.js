@@ -5,6 +5,7 @@
 import { RSVP } from 'ember-runtime';
 import Logger from 'ember-console';
 import { assert } from 'ember-debug';
+import Test from '../test';
 
 let resume;
 
@@ -39,7 +40,12 @@ export function resumeTest() {
 export function pauseTest() {
   Logger.info('Testing paused. Use `resumeTest()` to continue.');
 
+  let restoreTimeout = Test.adapter.stashTimeout();
   return new RSVP.Promise((resolve) => {
-    resume = resolve;
+    resume = () => {
+      restoreTimeout();
+      resolve();
+    };
   }, 'TestAdapter paused promise');
 }
+

@@ -926,6 +926,50 @@ moduleFor('ember-testing: debugging helpers', class extends HelpersApplicationTe
     pauseTest();
   }
 
+  [`@test pauseTest stashes test timeout`](assert) {
+    assert.expect(1);
+
+    let {application: {testHelpers: {andThen, pauseTest, resumeTest}}} = this;
+    let origTimeout = 20,
+      testTimeout = origTimeout;
+
+    Test.adapter.stashTimeout = () => {
+      testTimeout = 0;
+      return () => {
+        testTimeout = origTimeout;
+      }
+    };
+
+    run.later(() => {
+      assert.equal(testTimeout, 0);
+      resumeTest();
+    }, 20);
+
+    pauseTest();
+  }
+
+  [`@test resumeTest restores test timeout`](assert) {
+    assert.expect(1);
+
+    let {application: {testHelpers: {andThen, pauseTest, resumeTest}}} = this;
+    let origTimeout = 20,
+      testTimeout = origTimeout;
+
+    Test.adapter.stashTimeout = () => {
+      testTimeout = 0;
+      return () => {
+        testTimeout = origTimeout;
+      };
+    };
+
+    run.later(() => {
+      resumeTest();
+      assert.equal(testTimeout, origTimeout);
+    }, 20);
+
+    pauseTest();
+  }
+
   [`@test resumeTest resumes paused tests`](assert) {
     assert.expect(1);
 
