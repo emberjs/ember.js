@@ -7,7 +7,7 @@ import {
 } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckPathReference } from './__DEBUG__';
-import { check, CheckString, expectStackChange, CheckInstanceof } from "@glimmer/util";
+import { check, CheckString, expectStackChange, CheckInstanceof } from "@glimmer/debug";
 
 class IterablePresenceReference implements Reference<boolean> {
   public tag: Tag;

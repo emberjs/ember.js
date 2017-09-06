@@ -1,0 +1,14 @@
+{
+  "name": "@glimmer/debug",
+  "version": "0.27.0",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/debug",
+  "private": true,
+  "dependencies": {
+    "@glimmer/interfaces": "^0.27.0",
+    "@glimmer/opcode-compiler": "^0.27.0"
+  },
+  "devDependencies": {
+    "@types/qunit": "^2.0.31",
+    "typescript": "^2.2.0"
+  }
+}
