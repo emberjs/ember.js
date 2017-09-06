@@ -57,7 +57,7 @@ export class AppendOpcodes {
         if (typeof metadata.stackChange === 'number') {
           expectedChange = metadata.stackChange;
         } else {
-          expectedChange = metadata.stackChange(opcode);
+          expectedChange = metadata.stackChange!(opcode);
         }
       }
     }
