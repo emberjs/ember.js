@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver, BlockSymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver, Unique } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
@@ -6,8 +6,7 @@ import {
   VersionedReference,
   VersionedPathReference,
   isConst,
-  isConstTag,
-  Reference
+  isConstTag
 } from '@glimmer/reference';
 import Bounds from '../../bounds';
 import {
@@ -29,11 +28,11 @@ import { Arguments, IArguments, ICapturedArguments } from '../../vm/arguments';
 import { IsCurriedComponentDefinitionReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { ComponentDefinition, ComponentManager, Component } from '../../internal-interfaces';
-import { dict, assert, unreachable } from "@glimmer/util";
+import { dict, assert, unreachable, check, expectStackChange, CheckInstanceof, CheckFunction, CheckInterface, CheckProgramSymbolTable, CheckHandle, CheckOption, CheckBlockSymbolTable, CheckOr } from "@glimmer/util";
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
 import { ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
-import { stackAssert } from './assert';
+import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckCompilableBlock } from './__DEBUG__';
 
 const ARGS = new Arguments();
 
@@ -108,14 +107,17 @@ class CurryComponentReference<Specifier> implements VersionedPathReference<Optio
 
 APPEND_OPCODES.add(Op.IsComponent, vm => {
   let stack = vm.stack;
+  let ref = check(stack.pop(), CheckReference);
 
-  stack.push(IsCurriedComponentDefinitionReference.create(stack.pop<Reference>()));
+  stack.push(IsCurriedComponentDefinitionReference.create(ref));
+
+  expectStackChange(vm.stack, 0, 'IsComponent');
 });
 
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
-  let args = stack.pop<Arguments>();
+  let args = check(stack.pop(), CheckArguments);
   let captured: Option<ICapturedArguments> = null;
 
   if (args.length) {
@@ -125,9 +127,11 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
 
   let meta = vm.constants.getSerializable<TemplateMeta>(_meta);
   let resolver = vm.constants.resolver;
-  let definition = stack.pop<VersionedReference<Opaque>>();
+  let definition = check(stack.pop(), CheckReference);
 
   stack.push(new CurryComponentReference(definition, resolver, meta, captured));
+
+  expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
 });
 
 APPEND_OPCODES.add(Op.PushComponentSpec, (vm, { op1: handle }) => {
@@ -139,12 +143,14 @@ APPEND_OPCODES.add(Op.PushComponentSpec, (vm, { op1: handle }) => {
 
   let { definition, manager } = spec;
   stack.push({ definition, manager, component: null });
+
+  expectStackChange(vm.stack, 1, 'PushComponentSpec');
 });
 
 APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
-  let component = stack.pop<VersionedPathReference<CurriedComponentDefinition | string>>().value();
+  let component = check(stack.pop(), CheckPathReference).value();
   let definition: ComponentSpec['definition'] | CurriedComponentDefinition;
   let manager: Option<ComponentSpec['manager']> = null;
 
@@ -166,6 +172,8 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
   }
 
   stack.push({ definition, manager, component: null });
+
+  expectStackChange(vm.stack, 0, 'PushDynamicComponentManager');
 });
 
 interface InitialComponentState {
@@ -191,6 +199,8 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: positionalCount, op3: s
   let names = vm.constants.getStringArray(_names);
   ARGS.setup(stack, names, positionalCount, !!synthetic);
   stack.push(ARGS);
+
+  expectStackChange(vm.stack, 1, 'PushArgs');
 });
 
 APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
@@ -199,18 +209,21 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
   let { definition, manager } = state;
   let args: Arguments;
+  let debugCount = 0;
 
   if (isCurriedComponentDefinition(definition)) {
     assert(!manager, "If the component definition was curried, we don't yet have a manager");
 
-    args = stack.pop<Arguments>();
+    args = check(stack.pop(), CheckInstanceof(Arguments));
 
     let { manager: curriedManager, definition: curriedDefinition } = definition.unwrap(args);
     state.manager = manager = curriedManager as ComponentManager;
     state.definition = definition = curriedDefinition;
   } else {
-    args = stack.pop<Arguments>();
+    args = check(stack.pop(), CheckInstanceof(Arguments));
   }
+
+  debugCount--;
 
   if (manager!.getCapabilities(definition).prepareArgs !== true) {
     stack.push(args);
@@ -240,6 +253,8 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   }
 
   stack.push(args);
+
+  // TODO: Compute the expected stack change correctly
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
@@ -253,7 +268,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let args: Option<IArguments> = null;
 
   if (manager.getCapabilities(definition).createArgs) {
-    args = vm.stack.peek<IArguments>();
+    args = check(vm.stack.peek(), CheckArguments);
   }
 
   let component = manager.create(vm.env, definition, args, dynamicScope, vm.getSelf(), !!hasDefaultBlock);
@@ -267,30 +282,41 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   if (!isConstTag(tag)) {
     vm.updateWith(new UpdateComponentOpcode(tag, component, manager, dynamicScope));
   }
+
+  expectStackChange(vm.stack, 0, 'CreateComponent');
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
-  let { manager, component } = vm.fetchValue<ComponentState>(_state);
+  let { manager: uncheckedManager, component } = check(vm.fetchValue(_state), CheckComponentState);
 
-  let destructor = manager.getDestructor(component);
+  let manager = check(uncheckedManager, CheckInterface<ComponentManager>({ getDestructor: CheckFunction }));
+  let destructor = manager.getDestructor(component as Unique<'Component'>);
   if (destructor) vm.newDestroyable(destructor);
+
+  expectStackChange(vm.stack, 0, 'RegisterComponentDestructor');
 });
 
 APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {
   vm.beginCacheGroup();
   vm.elements().pushSimpleBlock();
+
+  expectStackChange(vm.stack, 0, 'BeginComponentTransaction');
 });
 
 APPEND_OPCODES.add(Op.PutComponentOperations, vm => {
   vm.loadValue(Register.t0, new ComponentElementOperations());
+
+  expectStackChange(vm.stack, 0, 'PutComponentOperations');
 });
 
 APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
   let name = vm.constants.getString(_name);
-  let reference = vm.stack.pop<VersionedReference<Opaque>>();
+  let reference = check(vm.stack.pop(), CheckReference);
   let namespace = _namespace ? vm.constants.getString(_namespace) : null;
 
-  vm.fetchValue<ComponentElementOperations>(Register.t0).setAttribute(name, reference, !!trusting, namespace);
+  check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations)).setAttribute(name, reference, !!trusting, namespace);
+
+  expectStackChange(vm.stack, -1, 'ComponentAttr');
 });
 
 interface DeferredAttribute {
@@ -354,20 +380,26 @@ class ClassListReference implements VersionedReference<Option<string>> {
 
 APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
   let { manager, component } = vm.fetchValue<ComponentState>(_state);
-  let operations = vm.fetchValue<ComponentElementOperations>(Register.t0);
+  let operations = check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations));
 
   let action = 'DidCreateElementOpcode#evaluate';
   (manager as WithElementHook<Component>).didCreateElement(component, vm.elements().expectConstructing(action), operations);
+
+  expectStackChange(vm.stack, 0, 'DidCreateElement');
 });
 
 APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {
   let { manager, component } = vm.fetchValue<ComponentState>(_state);
   vm.stack.push(manager.getSelf(component));
+
+  expectStackChange(vm.stack, 1, 'GetComponentSelf');
 });
 
 APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   let { manager, component } = vm.fetchValue<ComponentState>(_state);
   vm.stack.push((manager as Recast<ComponentManager, WithDynamicTagName<Component>>).getTagName(component));
+
+  expectStackChange(vm.stack, 1, 'GetComponentTagName');
 });
 
 // Dynamic Invocation Only
@@ -392,14 +424,14 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
 APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
   let { stack } = vm;
 
-  let handle = stack.pop<VMHandle>();
-  let { symbols, hasEval } = stack.pop<ProgramSymbolTable>();
+  let handle = check(stack.pop(), CheckHandle);
+  let { symbols, hasEval } = check(stack.pop(), CheckProgramSymbolTable);
 
   {
     let scope = vm.pushRootScope(symbols.length + 1, true);
-    scope.bindSelf(stack.pop<VersionedPathReference<Opaque>>());
+    scope.bindSelf(check(stack.pop(), CheckPathReference));
 
-    let args = vm.stack.pop<Arguments>();
+    let args = check(vm.stack.pop(), CheckArguments);
 
     let lookup: Option<Dict<ScopeSlot>> = null;
     let $eval: Option<number> = -1;
@@ -424,10 +456,8 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
 
     let bindBlock = (name: string) => {
       let symbol = symbols.indexOf(name);
-      let handle = stack.pop<Option<VMHandle>>();
-      let table = stack.pop<Option<BlockSymbolTable>>();
-
-      assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+      let handle = check(stack.pop(), CheckOr(CheckOption(CheckHandle), CheckOption(CheckCompilableBlock)));
+      let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
       let block: Option<ScopeBlock> = table ? [handle!, table] : null;
 
@@ -458,9 +488,15 @@ APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
   vm.env.didCreate(component, manager);
 
   vm.updateWith(new DidUpdateLayoutOpcode(manager, component, bounds));
+
+  expectStackChange(vm.stack, 0, 'DidRenderLayout');
 });
 
-APPEND_OPCODES.add(Op.CommitComponentTransaction, vm => vm.commitCacheGroup());
+APPEND_OPCODES.add(Op.CommitComponentTransaction, vm => {
+  vm.commitCacheGroup();
+
+  expectStackChange(vm.stack, 0, 'CommitComponentTransaction');
+});
 
 export class UpdateComponentOpcode extends UpdatingOpcode {
   public type = 'update-component';

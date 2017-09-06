@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable } from "@glimmer/interfaces";
+import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple } from "@glimmer/interfaces";
 import { VMHandle } from "@glimmer/opcode-compiler";
 
 export interface Checker<T> {
@@ -44,6 +44,30 @@ class OptionChecker<T> implements Checker<Option<T>> {
 
   expected(): string {
     return `${this.checker.expected()} or null`;
+  }
+}
+
+class OrChecker<T, U> implements Checker<T | U> {
+  constructor(private left: Checker<T>, private right: Checker<U>) {}
+
+  validate(value: Opaque): value is T | U {
+    return this.left.validate(value) || this.right.validate(value);
+  }
+
+  expected(): string {
+    return `${this.left.expected()} or ${this.right.expected()}`;
+  }
+}
+
+class ExactValueChecker<T> implements Checker<T> {
+  constructor(private value: T, private desc: string) {}
+
+  validate(obj: Opaque): obj is T {
+    return obj === this.value;
+  }
+
+  expected(): string {
+    return this.desc;
   }
 }
 
@@ -93,7 +117,7 @@ class OpaqueChecker implements Checker<Opaque> {
   }
 
   expected(): string {
-    throw new Error('unreachable');
+    return `any`;
   }
 }
 
@@ -135,10 +159,29 @@ export function expectStackChange(stack: { sp: number }, expected: number, name:
   throw new Error(`Expected stack to change by ${expected}, but it changed by ${actual} in ${name}`);
 }
 
+export const CheckFunction: Checker<Function> = new TypeofChecker<Function>('function');
 export const CheckNumber: Checker<number> = new TypeofChecker<number>('number');
+export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolean');
 export const CheckHandle: Checker<VMHandle> = CheckNumber as any as Checker<VMHandle>;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckOpaque: Checker<Opaque> = new OpaqueChecker();
 
-export const CheckSymbolTable: Checker<BlockSymbolTable> =
+export function CheckOr<T, U>(left: Checker<T>, right: Checker<U>): Checker<T | U> {
+  return new OrChecker(left, right);
+}
+
+export function CheckValue<T>(value: T, desc = String(value)): Checker<T> {
+  return new ExactValueChecker(value, desc);
+}
+
+export const CheckBlockSymbolTable: Checker<BlockSymbolTable> =
   CheckInterface({ parameters: CheckArray(CheckNumber), referer: CheckOpaque });
+
+export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> =
+  CheckInterface({ hasEval: CheckBoolean, symbols: CheckArray(CheckString), referer: CheckOpaque });
+
+export const CheckElement: Checker<Simple.Element> =
+  CheckInterface({ nodeType: CheckValue(1), tagName: CheckString, nextSibling: CheckOpaque });
+
+export const CheckNode: Checker<Simple.Node> =
+  CheckInterface({ nodeType: CheckNumber, nextSibling: CheckOpaque });

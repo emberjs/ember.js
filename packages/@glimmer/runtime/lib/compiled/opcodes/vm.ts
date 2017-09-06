@@ -1,16 +1,14 @@
 import { Op } from '@glimmer/vm';
 import { Opaque, Option, Recast } from '@glimmer/interfaces';
 import {
-  VersionedPathReference,
   CONSTANT_TAG,
   isConst,
   isModified,
   ReferenceCache,
   Revision,
-  Reference,
   Tag
 } from '@glimmer/reference';
-import { initializeGuid, assert, expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckSymbolTable, CheckHandle } from '@glimmer/util';
+import { initializeGuid, assert, expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle } from '@glimmer/util';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { Primitive, PrimitiveReference } from '../../references';
@@ -19,6 +17,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { LazyConstants, PrimitiveType } from "@glimmer/program";
 import { VMHandle } from "@glimmer/opcode-compiler";
+import { CheckReference } from './__DEBUG__';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
@@ -155,7 +154,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckOption(CheckHandle));
-  let table = check(stack.pop(), CheckOption(CheckSymbolTable));
+  let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
 
@@ -192,10 +191,14 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   expectStackChange(vm.stack, -args.length - 1, 'InvokeYield (with table)');
 });
 
-APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => vm.goto(target));
+APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => {
+  vm.goto(target);
+
+  expectStackChange(vm.stack, 0, 'Jump');
+});
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
-  let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
+  let reference = check(vm.stack.pop(), CheckReference);
 
   if (isConst(reference)) {
     if (reference.value()) {
@@ -210,10 +213,12 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 
     vm.updateWith(new Assert(cache));
   }
+
+  expectStackChange(vm.stack, -1, 'JumpIf');
 });
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
-  let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
+  let reference = check(vm.stack.pop(), CheckReference);
 
   if (isConst(reference)) {
     if (!reference.value()) {
@@ -228,16 +233,27 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
 
     vm.updateWith(new Assert(cache));
   }
+
+  expectStackChange(vm.stack, -1, 'JumpUnless');
 });
 
-APPEND_OPCODES.add(Op.Return, vm => vm.return());
+APPEND_OPCODES.add(Op.Return, vm => {
+  vm.return();
+
+  expectStackChange(vm.stack, 0, 'Return');
+});
+
 APPEND_OPCODES.add(Op.ReturnTo, (vm, { op1: relative }) => {
   vm.returnTo(relative);
+
+  expectStackChange(vm.stack, 0, 'ReturnTo');
 });
 
 APPEND_OPCODES.add(Op.ToBoolean, vm => {
   let { env, stack } = vm;
-  stack.push(env.toConditionalReference(stack.pop<Reference>()));
+  stack.push(env.toConditionalReference(check(stack.pop(), CheckReference)));
+
+  expectStackChange(vm.stack, 0, 'ToBoolean');
 });
 
 export class Assert extends UpdatingOpcode {
