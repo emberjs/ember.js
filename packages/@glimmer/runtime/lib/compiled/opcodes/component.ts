@@ -210,7 +210,6 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
   let { definition, manager } = state;
   let args: Arguments;
-  let debugCount = 0;
 
   if (isCurriedComponentDefinition(definition)) {
     assert(!manager, "If the component definition was curried, we don't yet have a manager");
@@ -223,8 +222,6 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   } else {
     args = check(stack.pop(), CheckInstanceof(Arguments));
   }
-
-  debugCount--;
 
   if (manager!.getCapabilities(definition).prepareArgs !== true) {
     stack.push(args);
