@@ -19,7 +19,10 @@ import { Arguments } from '../../vm/arguments';
 import { LazyConstants, PrimitiveType, Opcode } from "@glimmer/program";
 import { VMHandle } from "@glimmer/opcode-compiler";
 import { CheckReference } from './-debug-strip';
+<<<<<<< HEAD
 import { OPCODE_METADATA } from '../../-debug-strip';
+=======
+>>>>>>> Strip stack assertions
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 OPCODE_METADATA(Op.ChildScope);
