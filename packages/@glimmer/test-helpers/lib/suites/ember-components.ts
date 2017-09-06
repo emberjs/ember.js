@@ -1,8 +1,9 @@
-import { AbstractRenderTest, test } from "../abstract-test-case";
+import { AbstractRenderTest, test, skip } from "../abstract-test-case";
 import { classes } from '../environment';
 import { EmberishGlimmerComponent, EmberishCurlyComponent } from "@glimmer/test-helpers";
 
 export class EmberishComponentTests extends AbstractRenderTest {
+  @skip
   @test({ kind: 'glimmer' })
   "[BUG: Load to s0 is wrong]"() {
     class MainComponent extends EmberishGlimmerComponent {
@@ -14,6 +15,7 @@ export class EmberishComponentTests extends AbstractRenderTest {
     this.assertHTML('<h1>Hello Glimmer!</h1>');
   }
 
+  @skip
   @test({ kind: 'curly' })
   "[BUG: Curly recursive call stack curly]"() {
     class MainComponent extends EmberishCurlyComponent {

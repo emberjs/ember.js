@@ -33,7 +33,7 @@ import { check, expectStackChange, CheckInstanceof, CheckFunction, CheckInterfac
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
 import { ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
-import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckCompilableBlock } from './__DEBUG__';
+import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckCompilableBlock } from './debug';
 
 const ARGS = new Arguments();
 
@@ -177,19 +177,19 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
   expectStackChange(vm.stack, 0, 'PushDynamicComponentManager');
 });
 
-interface InitialComponentState {
+export interface InitialComponentState {
   definition: ComponentDefinition;
   manager: Option<ComponentManager>;
   component: null;
 }
 
-interface PopulatedComponentState {
+export interface PopulatedComponentState {
   definition: ComponentDefinition;
   manager: ComponentManager;
   component: null;
 }
 
-interface ComponentState {
+export interface ComponentState {
   definition: ComponentDefinition;
   manager: ComponentManager;
   component: Component;
@@ -288,10 +288,9 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
-  let { manager: uncheckedManager, component } = check(vm.fetchValue(_state), CheckComponentState);
+  let { manager, component } = check(vm.fetchValue(_state), CheckComponentState);
 
-  let manager = check(uncheckedManager, CheckInterface<ComponentManager>({ getDestructor: CheckFunction }));
-  let destructor = manager.getDestructor(component as Unique<'Component'>);
+  let destructor = manager.getDestructor(component);
   if (destructor) vm.newDestroyable(destructor);
 
   expectStackChange(vm.stack, 0, 'RegisterComponentDestructor');
@@ -481,10 +480,12 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
 });
 
 APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
-  let { manager, component } = vm.fetchValue<ComponentState>(_state);
+  let { manager, component } = check(vm.fetchValue(_state), CheckComponentState);
   let bounds = vm.elements().popBlock();
 
-  manager.didRenderLayout(component, bounds);
+  let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
+
+  mgr.didRenderLayout(component, bounds);
 
   vm.env.didCreate(component, manager);
 

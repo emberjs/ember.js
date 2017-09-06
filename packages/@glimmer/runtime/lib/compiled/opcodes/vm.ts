@@ -12,24 +12,34 @@ import { initializeGuid, assert } from '@glimmer/util';
 import { expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { Primitive, PrimitiveReference } from '../../references';
+import { PrimitiveReference } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
-import { LazyConstants, PrimitiveType } from "@glimmer/program";
+import { LazyConstants, PrimitiveType, Opcode } from "@glimmer/program";
 import { VMHandle } from "@glimmer/opcode-compiler";
-import { CheckReference } from './__DEBUG__';
+import { CheckReference } from './debug';
+import { OPCODE_METADATA } from '../../debug';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
+OPCODE_METADATA(Op.ChildScope);
 
 APPEND_OPCODES.add(Op.PopScope, vm => vm.popScope());
+OPCODE_METADATA(Op.PopScope);
 
 APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
+OPCODE_METADATA(Op.PushDynamicScope);
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
+OPCODE_METADATA(Op.PopDynamicScope);
 
 APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, { op1: other }) => {
   vm.stack.push(vm.constants.getOther(other));
+});
+
+OPCODE_METADATA(Op.Primitive, {
+  operands: 1,
+  stackChange: 1
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
@@ -56,29 +66,39 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       }
       break;
   }
+});
 
-  expectStackChange(vm.stack, 1, 'Primitive');
+OPCODE_METADATA(Op.Primitive, {
+  operands: 1,
+  stackChange: 1
 });
 
 APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
   let stack = vm.stack;
-  stack.push(PrimitiveReference.create(stack.pop<Primitive>()));
-
-  expectStackChange(stack, 0, 'PrimitiveReference');
-  check(stack.peek(), CheckInstanceof(PrimitiveReference));
+  stack.push(PrimitiveReference.create(check(stack.pop(), CheckPrimitive)));
 });
+
+OPCODE_METADATA(Op.PrimitiveReference);
 
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
   let position = check(vm.fetchValue(register), CheckNumber) - offset;
   vm.stack.dup(position);
+});
 
-  expectStackChange(vm.stack, 1, 'Dup');
+OPCODE_METADATA(Op.Dup, {
+  operands: 2,
+  stackChange: 1
 });
 
 APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => {
   vm.stack.pop(count);
+});
 
-  expectStackChange(vm.stack, -count, 'Pop');
+OPCODE_METADATA(Op.Dup, {
+  operands: 1,
+  stackChange({ op1: count }: Opcode) {
+    return -count;
+  }
 });
 
 APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => {
