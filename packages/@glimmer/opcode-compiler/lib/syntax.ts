@@ -55,10 +55,10 @@ STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder) => {
 });
 
 STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
-  let { lookup, referer } = builder;
+  let { lookup, referrer } = builder;
   let [, name, params, hash] = sexp;
 
-  let specifier = lookup.lookupModifier(name, referer);
+  let specifier = lookup.lookupModifier(name, referrer);
 
   if (specifier) {
     builder.compileArgs(params, hash, true);
@@ -163,8 +163,8 @@ STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
 STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
   let [, tag, _attrs, args, block] = sexp;
 
-  let { lookup, referer } = builder;
-  let handle = lookup.lookupComponentSpec(tag, referer);
+  let { lookup, referrer } = builder;
+  let handle = lookup.lookupComponentSpec(tag, referrer);
 
   if (handle !== null) {
     let capabilities = lookup.getCapabilities(handle);
@@ -194,7 +194,7 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
 STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
   let [, name, evalInfo] = sexp;
 
-  let { referer } = builder;
+  let { referrer } = builder;
 
   builder.startLabels();
 
@@ -210,7 +210,7 @@ STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
 
   builder.jumpUnless('ELSE');
 
-  builder.invokePartial(referer, builder.evalSymbols()!, evalInfo);
+  builder.invokePartial(referrer, builder.evalSymbols()!, evalInfo);
   builder.popScope();
   builder.popFrame();
 
@@ -262,10 +262,10 @@ export function expr<Specifier>(expression: WireFormat.Expression, builder: Opco
 }
 
 EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-  let { lookup, asPartial, referer } = builder;
+  let { lookup, asPartial, referrer } = builder;
   let name = sexp[1];
 
-  let specifier = lookup.lookupHelper(name, referer);
+  let specifier = lookup.lookupHelper(name, referrer);
 
   if (specifier !== null) {
     builder.compileArgs(null, null, true);
@@ -287,7 +287,7 @@ EXPRESSIONS.add(Ops.Concat, (sexp: E.Concat, builder) => {
 });
 
 EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
-  let { lookup, referer } = builder;
+  let { lookup, referrer } = builder;
   let [, name, params, hash] = sexp;
 
   // TODO: triage this in the WF compiler
@@ -299,7 +299,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
     return;
   }
 
-  let specifier = lookup.lookupHelper(name, referer);
+  let specifier = lookup.lookupHelper(name, referrer);
 
   if (specifier !== null) {
     builder.compileArgs(params, hash, true);
@@ -797,5 +797,5 @@ export interface TemplateOptions<Specifier> {
 
 export interface CompileOptions<Specifier> extends TemplateOptions<Specifier> {
   asPartial: boolean;
-  referer: Specifier;
+  referrer: Specifier;
 }

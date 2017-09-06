@@ -86,7 +86,7 @@ export class TestResolver implements RuntimeResolver<TestSpecifier> {
     return handle;
   }
 
-  lookup(type: LookupType, name: string, _referer?: TestSpecifier): Option<number> {
+  lookup(type: LookupType, name: string, _referrer?: TestSpecifier): Option<number> {
     if (this.registry[type].hasName(name)) {
       return this.registry[type].getHandle(name);
     } else {
@@ -108,26 +108,26 @@ export class TestResolver implements RuntimeResolver<TestSpecifier> {
     return invocation;
   }
 
-  lookupHelper(name: string, referer?: TestSpecifier): Option<number> {
-    return this.lookup('helper', name, referer);
+  lookupHelper(name: string, referrer?: TestSpecifier): Option<number> {
+    return this.lookup('helper', name, referrer);
   }
 
-  lookupModifier(name: string, referer?: TestSpecifier): Option<number> {
-    return this.lookup('modifier', name, referer);
+  lookupModifier(name: string, referrer?: TestSpecifier): Option<number> {
+    return this.lookup('modifier', name, referrer);
   }
 
-  lookupComponent(name: string, referer?: TestSpecifier): Option<ComponentSpec> {
-    let handle = this.lookupComponentHandle(name, referer);
+  lookupComponent(name: string, referrer?: TestSpecifier): Option<ComponentSpec> {
+    let handle = this.lookupComponentHandle(name, referrer);
     if (handle === null) return null;
     return this.resolve(handle) as ComponentSpec;
   }
 
-  lookupComponentHandle(name: string, referer?: TestSpecifier): Option<number> {
-    return this.lookup('component', name, referer);
+  lookupComponentHandle(name: string, referrer?: TestSpecifier): Option<number> {
+    return this.lookup('component', name, referrer);
   }
 
-  lookupPartial(name: string, referer?: TestSpecifier): Option<number> {
-    return this.lookup('partial', name, referer);
+  lookupPartial(name: string, referrer?: TestSpecifier): Option<number> {
+    return this.lookup('partial', name, referrer);
   }
 
   resolve<T>(handle: number): T {

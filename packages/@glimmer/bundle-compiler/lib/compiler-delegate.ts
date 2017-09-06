@@ -77,13 +77,13 @@ export interface CompilerDelegate {
    * `hasHelperInScope` returns `false`, the compiler will treat `currentTime`
    * as a value rather than a helper.
    */
-  hasHelperInScope(helperName: string, referer: Specifier): boolean;
+  hasHelperInScope(helperName: string, referrer: Specifier): boolean;
 
   /**
    * If the delegate returns `true` from `hasHelperInScope()`, the compiler will
    * next ask the delegate to provide a specifier corresponding to the helper function.
    */
-  resolveHelperSpecifier(helperName: string, referer: Specifier): Specifier;
+  resolveHelperSpecifier(helperName: string, referrer: Specifier): Specifier;
 
   /**
    * During compilation, the compiler will ask the delegate about each element
@@ -95,14 +95,14 @@ export interface CompilerDelegate {
    * modifier does not exist in scope, return `false`. Note that returning
    * `false` will cause the compilation process to fail.
    */
-  hasModifierInScope(modifierName: string, referer: Specifier): boolean;
+  hasModifierInScope(modifierName: string, referrer: Specifier): boolean;
 
   /**
    * If the delegate returns `true` from `hasModifierInScope()`, the compiler
    * will next ask the delegate to provide a specifier corresponding to the
    * element modifier function.
    */
-  resolveModifierSpecifier(modifierName: string, referer: Specifier): Specifier;
+  resolveModifierSpecifier(modifierName: string, referrer: Specifier): Specifier;
 
   /**
    * During compilation, the compiler will ask the delegate about each partial
@@ -119,12 +119,12 @@ export interface CompilerDelegate {
    * return `false` from `hasPartialInScope` to disable the feature entirely.
    * Components replace all use cases for partials with better performance.
    */
-  hasPartialInScope(partialName: string, referer: Specifier): boolean;
+  hasPartialInScope(partialName: string, referrer: Specifier): boolean;
 
   /**
    * If the delegate returns `true` from `hasPartialInScope()`, the compiler
    * will next ask the delegate to provide a specifier corresponding to the
    * partial template.
    */
-  resolvePartialSpecifier(partialName: string, referer: Specifier): Specifier;
+  resolvePartialSpecifier(partialName: string, referrer: Specifier): Specifier;
 }

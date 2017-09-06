@@ -106,7 +106,7 @@ export class BundleCompiler {
       Builder,
       lookup,
       asPartial,
-      referer: specifier
+      referrer: specifier
     };
   }
 
@@ -159,27 +159,27 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
     return this.delegate.getComponentLayout(specifier);
   }
 
-  lookupHelper(name: string, referer: Specifier): Option<number> {
-    if (this.delegate.hasHelperInScope(name, referer)) {
-      let specifier = this.delegate.resolveHelperSpecifier(name, referer);
+  lookupHelper(name: string, referrer: Specifier): Option<number> {
+    if (this.delegate.hasHelperInScope(name, referrer)) {
+      let specifier = this.delegate.resolveHelperSpecifier(name, referrer);
       return this.registerSpecifier(specifier);
     } else {
       return null;
     }
   }
 
-  lookupComponentSpec(name: string, referer: Specifier): Option<number> {
-    if (this.delegate.hasComponentInScope(name, referer)) {
-      let specifier = this.delegate.resolveComponentSpecifier(name, referer);
+  lookupComponentSpec(name: string, referrer: Specifier): Option<number> {
+    if (this.delegate.hasComponentInScope(name, referrer)) {
+      let specifier = this.delegate.resolveComponentSpecifier(name, referrer);
       return this.registerSpecifier(specifier);
     } else {
       return null;
     }
   }
 
-  lookupModifier(name: string, referer: Specifier): Option<number> {
-    if (this.delegate.hasModifierInScope(name, referer)) {
-      let specifier = this.delegate.resolveModifierSpecifier(name, referer);
+  lookupModifier(name: string, referrer: Specifier): Option<number> {
+    if (this.delegate.hasModifierInScope(name, referrer)) {
+      let specifier = this.delegate.resolveModifierSpecifier(name, referrer);
       return this.registerSpecifier(specifier);
     } else {
       return null;

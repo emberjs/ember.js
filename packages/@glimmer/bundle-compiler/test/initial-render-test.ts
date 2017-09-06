@@ -60,8 +60,8 @@ export class RuntimeResolver implements IRuntimeResolver<Specifier> {
     throw new Error("Method not implemented.");
   }
 
-  lookupComponent(name: string, referer: Specifier): Option<ComponentSpec> {
-    let moduleName = this.modules.resolve(name, referer, 'ui/components');
+  lookupComponent(name: string, referrer: Specifier): Option<ComponentSpec> {
+    let moduleName = this.modules.resolve(name, referrer, 'ui/components');
 
     if (!moduleName) return null;
 
@@ -121,8 +121,8 @@ export class Modules {
     this.registry[name] = new Module(value, type);
   }
 
-  resolve(name: string, referer: Specifier, defaultRoot?: string): Option<string> {
-    let local = referer.module && referer.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
+  resolve(name: string, referrer: Specifier, defaultRoot?: string): Option<string> {
+    let local = referrer.module && referrer.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
     if (local && this.registry[local]) {
       return local;
     } else if (defaultRoot && this.registry[`${defaultRoot}/${name}`]) {
@@ -138,13 +138,13 @@ export class Modules {
 class BundlingDelegate implements CompilerDelegate {
   constructor(private components: Dict<CompileTimeComponent>, private modules: Modules, private compileTimeModules: Modules, private compile: (specifier: Specifier) => VMHandle) {}
 
-  hasComponentInScope(componentName: string, referer: Specifier): boolean {
-    let name = this.modules.resolve(componentName, referer, 'ui/components');
+  hasComponentInScope(componentName: string, referrer: Specifier): boolean {
+    let name = this.modules.resolve(componentName, referrer, 'ui/components');
     return name ? this.modules.type(name) === 'component' : false;
   }
 
-  resolveComponentSpecifier(componentName: string, referer: Specifier): Specifier {
-    return specifierFor(this.modules.resolve(componentName, referer, 'ui/components')!, 'default');
+  resolveComponentSpecifier(componentName: string, referrer: Specifier): Specifier {
+    return specifierFor(this.modules.resolve(componentName, referrer, 'ui/components')!, 'default');
   }
 
   getComponentCapabilities(specifier: Specifier): ComponentCapabilities {
@@ -164,26 +164,26 @@ class BundlingDelegate implements CompilerDelegate {
     };
   }
 
-  hasHelperInScope(helperName: string, referer: Specifier): boolean {
-    let name = this.modules.resolve(helperName, referer);
+  hasHelperInScope(helperName: string, referrer: Specifier): boolean {
+    let name = this.modules.resolve(helperName, referrer);
     return name ? this.modules.type(name) === 'helper' : false;
   }
 
-  resolveHelperSpecifier(helperName: string, referer: Specifier): Specifier {
-    let path = this.modules.resolve(helperName, referer);
+  resolveHelperSpecifier(helperName: string, referrer: Specifier): Specifier {
+    let path = this.modules.resolve(helperName, referrer);
     return specifierFor(path!, 'default');
   }
 
-  hasModifierInScope(_modifierName: string, _referer: Specifier): boolean {
+  hasModifierInScope(_modifierName: string, _referrer: Specifier): boolean {
     return false;
   }
-  resolveModifierSpecifier(_modifierName: string, _referer: Specifier): Specifier {
+  resolveModifierSpecifier(_modifierName: string, _referrer: Specifier): Specifier {
     throw new Error("Method not implemented.");
   }
-  hasPartialInScope(_partialName: string, _referer: Specifier): boolean {
+  hasPartialInScope(_partialName: string, _referrer: Specifier): boolean {
     return false;
   }
-  resolvePartialSpecifier(_partialName: string, _referer: Specifier): Specifier {
+  resolvePartialSpecifier(_partialName: string, _referrer: Specifier): Specifier {
     throw new Error("Method not implemented.");
   }
 }
@@ -422,7 +422,7 @@ class BundlingRenderDelegate implements RenderDelegate {
       if (component.type === "Curly" || component.type === "Dynamic") {
         let block = compiler.preprocess(spec, component.template);
         let options = compiler.compileOptions(spec);
-        let parsedLayout = { block, referer: spec };
+        let parsedLayout = { block, referrer: spec };
         let wrapped = new WrappedBuilder(options, parsedLayout, EMBERISH_CURLY_CAPABILITIES);
         compiler.addCustom(spec, wrapped);
 
@@ -437,7 +437,7 @@ class BundlingRenderDelegate implements RenderDelegate {
         symbolTable = {
           hasEval: block.hasEval,
           symbols: block.symbols,
-          referer: key,
+          referrer: key,
         };
 
         this.speficiersToSymbolTable.set(spec, symbolTable);

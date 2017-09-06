@@ -67,10 +67,10 @@ export interface CompileTimeLookup<Specifier> {
   // produce any actual objects. The main use-case for producing objects is handled above,
   // with getCapabilities and getLayout, which drastically shrinks the size of the object
   // that the core interface is forced to reify.
-  lookupHelper(name: string, referer: Specifier): Option<number>;
-  lookupModifier(name: string, referer: Specifier): Option<number>;
-  lookupComponentSpec(name: string, referer: Specifier): Option<number>;
-  lookupPartial(name: string, referer: Specifier): Option<number>;
+  lookupHelper(name: string, referrer: Specifier): Option<number>;
+  lookupModifier(name: string, referrer: Specifier): Option<number>;
+  lookupComponentSpec(name: string, referrer: Specifier): Option<number>;
+  lookupPartial(name: string, referrer: Specifier): Option<number>;
 }
 
 export interface OpcodeBuilderConstructor {
@@ -93,7 +93,7 @@ export abstract class OpcodeBuilder<Specifier> {
   constructor(
     public program: CompileTimeProgram,
     public lookup: CompileTimeLookup<Specifier>,
-    public referer: Specifier,
+    public referrer: Specifier,
     public macros: Macros,
     public containingLayout: ParsedLayout,
     public asPartial: boolean
@@ -174,8 +174,8 @@ export abstract class OpcodeBuilder<Specifier> {
     this.push(Op.PushComponentSpec, this.constants.handle(handle));
   }
 
-  pushDynamicComponentManager(referer: Specifier) {
-    this.push(Op.PushDynamicComponentManager, this.constants.serializable(referer));
+  pushDynamicComponentManager(referrer: Specifier) {
+    this.push(Op.PushDynamicComponentManager, this.constants.serializable(referrer));
   }
 
   prepareArgs(state: Register) {
@@ -229,8 +229,8 @@ export abstract class OpcodeBuilder<Specifier> {
 
   // partial
 
-  invokePartial(referer: Specifier, symbols: string[], evalInfo: number[]) {
-    let _meta = this.constants.serializable(referer);
+  invokePartial(referrer: Specifier, symbols: string[], evalInfo: number[]) {
+    let _meta = this.constants.serializable(referrer);
     let _symbols = this.constants.stringArray(symbols);
     let _evalInfo = this.constants.array(evalInfo);
 
@@ -552,14 +552,14 @@ export abstract class OpcodeBuilder<Specifier> {
 
   inlineBlock(block: SerializedInlineBlock): CompilableBlock {
     let { parameters, statements } = block;
-    let symbolTable = { parameters, referer: this.containingLayout.referer };
+    let symbolTable = { parameters, referrer: this.containingLayout.referrer };
     let options = {
       program: this.program,
       macros: this.macros,
       Builder: this.constructor as OpcodeBuilderConstructor,
       lookup: this.lookup,
       asPartial: this.asPartial,
-      referer: this.referer
+      referrer: this.referrer
     };
 
     return new CompilableTemplate(statements, this.containingLayout, options, symbolTable);
@@ -640,7 +640,7 @@ export abstract class OpcodeBuilder<Specifier> {
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.referer);
+    this.pushDynamicComponentManager(this.referrer);
     this.invokeComponent(null, null, null, false, null, null);
 
     this.exit();
@@ -836,7 +836,7 @@ export abstract class OpcodeBuilder<Specifier> {
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.referer);
+    this.pushDynamicComponentManager(this.referrer);
     this.invokeComponent(null, params, hash, synthetic, block, inverse);
 
     this.label('ELSE');
@@ -854,11 +854,11 @@ export abstract class OpcodeBuilder<Specifier> {
   }
 
   curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
-    let referer = this.referer;
+    let referrer = this.referrer;
 
     expr(definition, this);
     this.compileArgs(params, hash, synthetic);
-    this.push(Op.CurryComponent, this.constants.serializable(referer));
+    this.push(Op.CurryComponent, this.constants.serializable(referrer));
   }
 
   abstract pushBlock(block: Option<CompilableBlock>): void;

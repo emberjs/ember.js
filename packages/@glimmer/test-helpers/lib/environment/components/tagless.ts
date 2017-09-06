@@ -13,7 +13,7 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
     return resolver.compileTemplate(handle, name, (source, options) => {
       let template = createTemplate(source, {});
-      let compileOptions = assign({}, options, { asPartial: false, referer: null });
+      let compileOptions = assign({}, options, { asPartial: false, referrer: null });
       let builder = new WrappedBuilder(compileOptions, template, capabilities);
 
       return {
