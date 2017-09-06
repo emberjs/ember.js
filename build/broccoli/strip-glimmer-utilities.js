@@ -36,6 +36,7 @@ module.exports = function(jsTree) {
     plugins: [
       ...glimmerUtils,
       [nuke, { source: '@glimmer/debug' }],
+      [nuke, { source: '../../-debug-strip' }],
       [stripGlimmerUtils, { bindings: ['expect', 'unwrap'], source: '@glimmer/util' }]
     ]
   });
