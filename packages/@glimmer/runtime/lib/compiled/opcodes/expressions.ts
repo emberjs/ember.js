@@ -6,7 +6,8 @@ import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
 import { ConcatReference } from '../expressions/concat';
-import { assert, check, expectStackChange, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from "@glimmer/util";
+import { assert } from "@glimmer/util";
+import { check, expectStackChange, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { CheckArguments, CheckPathReference, CheckCompilableBlock } from './__DEBUG__';
 

@@ -1,6 +1,7 @@
 import { Opaque } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { dict, expectStackChange } from '@glimmer/util';
+import { dict } from '@glimmer/util';
+import { expectStackChange } from '@glimmer/debug';
 import { Scope } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { Op } from '@glimmer/vm';

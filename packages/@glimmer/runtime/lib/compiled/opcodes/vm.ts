@@ -8,7 +8,8 @@ import {
   Revision,
   Tag
 } from '@glimmer/reference';
-import { initializeGuid, assert, expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle } from '@glimmer/util';
+import { initializeGuid, assert } from '@glimmer/util';
+import { expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { Primitive, PrimitiveReference } from '../../references';

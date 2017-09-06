@@ -3,7 +3,8 @@ import { TemplateMeta } from '@glimmer/wire-format';
 import { Op } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { PartialDefinition } from '../../partial';
-import { assert, dict, check, expectStackChange } from "@glimmer/util";
+import { assert, dict } from "@glimmer/util";
+import { check, expectStackChange } from '@glimmer/debug';
 import { Opaque } from "@glimmer/interfaces";
 import { CheckReference } from './__DEBUG__';
 

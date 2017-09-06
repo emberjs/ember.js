@@ -5,8 +5,6 @@ export interface Destroyable {
 export * from './lib/platform-utils';
 export { default as assert } from './lib/assert';
 
-export * from './lib/stack-check';
-
 export { assign, fillNulls } from './lib/object-utils';
 export { ensureGuid, initializeGuid, HasGuid } from './lib/guid';
 

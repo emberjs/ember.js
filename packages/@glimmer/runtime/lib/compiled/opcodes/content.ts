@@ -7,7 +7,7 @@ import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { ConditionalReference } from '../../references';
 import { UpdatingVM } from '../../vm';
 import { CheckPathReference } from './__DEBUG__';
-import { check, expectStackChange } from "@glimmer/util";
+import { check, expectStackChange } from "@glimmer/debug";
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {
   static create(inner: Reference<Opaque>): IsCurriedComponentDefinitionReference {

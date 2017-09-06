@@ -7,7 +7,8 @@ import {
   isConst,
   isConstTag
 } from '@glimmer/reference';
-import { Opaque, Option, expectStackChange, check, CheckString, CheckElement, CheckNode, CheckOption, CheckInstanceof } from '@glimmer/util';
+import { Opaque, Option } from '@glimmer/util';
+import { expectStackChange, check, CheckString, CheckElement, CheckNode, CheckOption, CheckInstanceof } from '@glimmer/debug';
 import { Simple } from '@glimmer/interfaces';
 import { Op, Register } from '@glimmer/vm';
 import { Modifier, ModifierManager } from '../../modifier/interfaces';
