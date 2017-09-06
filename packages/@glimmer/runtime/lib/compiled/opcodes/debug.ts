@@ -1,5 +1,5 @@
 
-import { Checker, CheckInstanceof, CheckFunction, CheckInterface, CheckOpaque, CheckBlockSymbolTable } from "@glimmer/util";
+import { Checker, CheckInstanceof, CheckFunction, CheckInterface, CheckOpaque, CheckBlockSymbolTable } from "@glimmer/debug";
 import { Tag, TagWrapper, VersionedPathReference, Reference } from "@glimmer/reference";
 import { Arguments } from '../../vm/arguments';
 import { ComponentState } from './component';
