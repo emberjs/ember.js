@@ -6,7 +6,11 @@ import { PartialDefinition } from '../../partial';
 import { assert, dict } from "@glimmer/util";
 import { check, expectStackChange } from '@glimmer/debug';
 import { Opaque } from "@glimmer/interfaces";
+<<<<<<< HEAD
 import { CheckReference } from './-debug-strip';
+=======
+import { CheckReference } from './debug';
+>>>>>>> Start restructuring stack checks
 
 APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _evalInfo }) => {
   let { constants, constants: { resolver }, stack } = vm;
