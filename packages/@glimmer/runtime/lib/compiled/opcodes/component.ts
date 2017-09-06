@@ -111,8 +111,6 @@ APPEND_OPCODES.add(Op.IsComponent, vm => {
   let ref = check(stack.pop(), CheckReference);
 
   stack.push(IsCurriedComponentDefinitionReference.create(ref));
-
-  expectStackChange(vm.stack, 0, 'IsComponent');
 });
 
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
@@ -200,8 +198,6 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: positionalCount, op3: s
   let names = vm.constants.getStringArray(_names);
   ARGS.setup(stack, names, positionalCount, !!synthetic);
   stack.push(ARGS);
-
-  expectStackChange(vm.stack, 1, 'PushArgs');
 });
 
 APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
@@ -280,8 +276,6 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   if (!isConstTag(tag)) {
     vm.updateWith(new UpdateComponentOpcode(tag, component, manager, dynamicScope));
   }
-
-  expectStackChange(vm.stack, 0, 'CreateComponent');
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
@@ -289,15 +283,11 @@ APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
 
   let destructor = manager.getDestructor(component);
   if (destructor) vm.newDestroyable(destructor);
-
-  expectStackChange(vm.stack, 0, 'RegisterComponentDestructor');
 });
 
 APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {
   vm.beginCacheGroup();
   vm.elements().pushSimpleBlock();
-
-  expectStackChange(vm.stack, 0, 'BeginComponentTransaction');
 });
 
 APPEND_OPCODES.add(Op.PutComponentOperations, vm => {
@@ -312,8 +302,6 @@ APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _nam
   let namespace = _namespace ? vm.constants.getString(_namespace) : null;
 
   check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations)).setAttribute(name, reference, !!trusting, namespace);
-
-  expectStackChange(vm.stack, -1, 'ComponentAttr');
 });
 
 interface DeferredAttribute {
@@ -376,32 +364,26 @@ class ClassListReference implements VersionedReference<Option<string>> {
 }
 
 APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
-  let { manager, component } = vm.fetchValue<ComponentState>(_state);
+  let { manager, component } = check(vm.fetchValue(_state), CheckComponentState);
   let operations = check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations));
 
   let action = 'DidCreateElementOpcode#evaluate';
   (manager as WithElementHook<Component>).didCreateElement(component, vm.elements().expectConstructing(action), operations);
-
-  expectStackChange(vm.stack, 0, 'DidCreateElement');
 });
 
 APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {
-  let { manager, component } = vm.fetchValue<ComponentState>(_state);
+  let { manager, component } = check(vm.fetchValue(_state), CheckComponentState);
   vm.stack.push(manager.getSelf(component));
-
-  expectStackChange(vm.stack, 1, 'GetComponentSelf');
 });
 
 APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
-  let { manager, component } = vm.fetchValue<ComponentState>(_state);
+  let { manager, component } = check(vm.fetchValue(_state), CheckComponentState);
   vm.stack.push((manager as Recast<ComponentManager, WithDynamicTagName<Component>>).getTagName(component));
-
-  expectStackChange(vm.stack, 1, 'GetComponentTagName');
 });
 
 // Dynamic Invocation Only
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
-  let { manager, definition, component } = vm.fetchValue<ComponentState>(_state);
+  let { manager, definition, component } = check(vm.fetchValue(_state), CheckComponentState);
   let { constants: { resolver }, stack } = vm;
   let invoke: { handle: VMHandle, symbolTable: ProgramSymbolTable };
 

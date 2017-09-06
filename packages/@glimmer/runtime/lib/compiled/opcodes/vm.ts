@@ -16,33 +16,20 @@ import { PrimitiveReference } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
-import { LazyConstants, PrimitiveType, Opcode } from "@glimmer/program";
+import { LazyConstants, PrimitiveType } from "@glimmer/program";
 import { VMHandle } from "@glimmer/opcode-compiler";
-import { CheckReference } from './-debug-strip';
-<<<<<<< HEAD
-import { OPCODE_METADATA } from '../../-debug-strip';
-=======
->>>>>>> Strip stack assertions
+import { CheckReference } from './debug';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
-OPCODE_METADATA(Op.ChildScope);
 
 APPEND_OPCODES.add(Op.PopScope, vm => vm.popScope());
-OPCODE_METADATA(Op.PopScope);
 
 APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
-OPCODE_METADATA(Op.PushDynamicScope);
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
-OPCODE_METADATA(Op.PopDynamicScope);
 
 APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, { op1: other }) => {
   vm.stack.push(vm.constants.getOther(other));
-});
-
-OPCODE_METADATA(Op.Constant, {
-  operands: 1,
-  stackChange: 1
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
@@ -71,71 +58,31 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   }
 });
 
-OPCODE_METADATA(Op.Primitive, {
-  operands: 1,
-  stackChange: 1
-});
-
 APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
   let stack = vm.stack;
   stack.push(PrimitiveReference.create(check(stack.pop(), CheckPrimitive)));
 });
-
-OPCODE_METADATA(Op.PrimitiveReference);
 
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
   let position = check(vm.fetchValue(register), CheckNumber) - offset;
   vm.stack.dup(position);
 });
 
-OPCODE_METADATA(Op.Dup, {
-  operands: 2,
-  stackChange: 1
-});
-
 APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => {
   vm.stack.pop(count);
-});
-
-OPCODE_METADATA(Op.Pop, {
-  operands: 1,
-  stackChange({ opcode: { op1: count } }) {
-    return -count;
-  }
 });
 
 APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => {
   vm.load(register);
 });
 
-OPCODE_METADATA(Op.Load, {
-  operands: 1,
-  stackChange: -1
-});
-
 APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => {
   vm.fetch(register);
-});
-
-OPCODE_METADATA(Op.Fetch, {
-  operands: 1,
-  stackChange: 1
 });
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   let names = vm.constants.getArray(_names);
   vm.bindDynamicScope(names);
-
-  expectStackChange(vm.stack, -(names.length), 'BindDynamicScope');
-});
-
-OPCODE_METADATA(Op.BindDynamicScope, {
-  operands: 1,
-  stackChange({ opcode: { op1: _names }, constants }) {
-    let size = constants.getArray(_names).length;
-
-    return -size;
-  }
 });
 
 APPEND_OPCODES.add(Op.PushFrame, vm => {
@@ -145,45 +92,21 @@ APPEND_OPCODES.add(Op.PushFrame, vm => {
   check(vm.stack.peek(1), CheckNumber);
 });
 
-OPCODE_METADATA(Op.PushFrame, {
-  operands: 0,
-  stackChange: 2
-});
-
 APPEND_OPCODES.add(Op.PopFrame, vm => {
   vm.popFrame();
-
-  /** stack restores to fp */
-});
-
-OPCODE_METADATA(Op.PopFrame, {
-  before(_opcode: Opcode, vm: VM<Opaque>): { sp: number, fp: number } {
-    return { sp: vm.stack.sp, fp: vm.stack.fp };
-  },
-
-  stackChange({ state }: { state: { sp: number, fp: number } }) {
-    return state.fp - state.sp - 1;
-  }
 });
 
 APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
   vm.enter(args);
 });
 
-OPCODE_METADATA(Op.Enter, {
-  operands: 1
-});
-
 APPEND_OPCODES.add(Op.Exit, vm => {
   vm.exit();
-  expectStackChange(vm.stack, 0, 'Exit');
 });
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
   stack.push(vm.constants.getSymbolTable(_table));
-
-  expectStackChange(vm.stack, 1, 'PushSymbolTable');
 });
 
 APPEND_OPCODES.add(Op.CompileBlock, vm => {
@@ -191,19 +114,15 @@ APPEND_OPCODES.add(Op.CompileBlock, vm => {
   let block = stack.pop<Option<CompilableTemplate> | 0>();
   stack.push(block ? block.compile() : null);
 
-  expectStackChange(vm.stack, 0, 'CompileBlock');
   check(vm.stack.peek(), CheckOption(CheckNumber));
 });
 
 APPEND_OPCODES.add(Op.InvokeVirtual, vm => {
-  vm.call(vm.stack.pop<VMHandle>());
-
-  expectStackChange(vm.stack, -1, 'InvokeVirtual');
+  vm.call(check(vm.stack.pop(), CheckHandle));
 });
 
 APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => {
   vm.call(handle as Recast<number, VMHandle>);
-  expectStackChange(vm.stack, 0, 'InvokeStatic');
 });
 
 APPEND_OPCODES.add(Op.InvokeYield, vm => {
@@ -223,8 +142,6 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
     vm.pushFrame();
     vm.pushCallerScope();
 
-    expectStackChange(vm.stack, -args.length - 1, 'InvokeYield (no table)');
-
     return;
   }
 
@@ -243,14 +160,10 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 
   vm.pushFrame();
   vm.call(handle!);
-
-  expectStackChange(vm.stack, -args.length - 1, 'InvokeYield (with table)');
 });
 
 APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => {
   vm.goto(target);
-
-  expectStackChange(vm.stack, 0, 'Jump');
 });
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
@@ -269,8 +182,6 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 
     vm.updateWith(new Assert(cache));
   }
-
-  expectStackChange(vm.stack, -1, 'JumpIf');
 });
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
@@ -289,8 +200,6 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
 
     vm.updateWith(new Assert(cache));
   }
-
-  expectStackChange(vm.stack, -1, 'JumpUnless');
 });
 
 APPEND_OPCODES.add(Op.Return, vm => {
@@ -301,15 +210,11 @@ APPEND_OPCODES.add(Op.Return, vm => {
 
 APPEND_OPCODES.add(Op.ReturnTo, (vm, { op1: relative }) => {
   vm.returnTo(relative);
-
-  expectStackChange(vm.stack, 0, 'ReturnTo');
 });
 
 APPEND_OPCODES.add(Op.ToBoolean, vm => {
   let { env, stack } = vm;
   stack.push(env.toConditionalReference(check(stack.pop(), CheckReference)));
-
-  expectStackChange(vm.stack, 0, 'ToBoolean');
 });
 
 export class Assert extends UpdatingOpcode {
