@@ -716,9 +716,9 @@ babel-plugin-member-expression-literals@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/babel-plugin-member-expression-literals/-/babel-plugin-member-expression-literals-1.0.1.tgz#cc5edb0faa8dc927170e74d6d1c02440021624d3"
 
-babel-plugin-nukable-import@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/babel-plugin-nukable-import/-/babel-plugin-nukable-import-0.1.1.tgz#6c6aca21b6f3b8a5bff1b0a770dc5713614d4791"
+babel-plugin-nukable-import@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/babel-plugin-nukable-import/-/babel-plugin-nukable-import-0.1.4.tgz#2495ff2b983eefbff5113b2f26b5dc8b21c02805"
 
 babel-plugin-property-literals@^1.0.1:
   version "1.0.1"

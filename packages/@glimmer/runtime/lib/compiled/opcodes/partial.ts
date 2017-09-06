@@ -6,7 +6,7 @@ import { PartialDefinition } from '../../partial';
 import { assert, dict } from "@glimmer/util";
 import { check, expectStackChange } from '@glimmer/debug';
 import { Opaque } from "@glimmer/interfaces";
-import { CheckReference } from './debug';
+import { CheckReference } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _evalInfo }) => {
   let { constants, constants: { resolver }, stack } = vm;

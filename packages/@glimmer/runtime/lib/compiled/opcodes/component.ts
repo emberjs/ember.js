@@ -33,7 +33,7 @@ import { check, expectStackChange, CheckInstanceof, CheckFunction, CheckInterfac
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
 import { ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
-import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckCompilableBlock } from './debug';
+import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckCompilableBlock } from './-debug-strip';
 
 const ARGS = new Arguments();
 
