@@ -18,8 +18,8 @@ import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { LazyConstants, PrimitiveType, Opcode } from "@glimmer/program";
 import { VMHandle } from "@glimmer/opcode-compiler";
-import { CheckReference } from './debug';
-import { OPCODE_METADATA } from '../../debug';
+import { CheckReference } from './-debug-strip';
+import { OPCODE_METADATA } from '../../-debug-strip';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 OPCODE_METADATA(Op.ChildScope);

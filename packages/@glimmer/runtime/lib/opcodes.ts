@@ -1,4 +1,5 @@
-import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, typePos, recordStackSize } from '@glimmer/util';
+import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, typePos } from '@glimmer/util';
+import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
 import { debug, logOpcode } from "@glimmer/opcode-compiler";
