@@ -10,25 +10,8 @@ export interface Set<T> {
   delete(value: T): void;
 }
 
-let proto = Object.create(null, {
-  // without this, we will always still end up with (new
-  // EmptyObject()).constructor === Object
-  constructor: {
-    value: undefined,
-    enumerable: false,
-    writable: true
-  }
-});
-
-function EmptyObject() {}
-EmptyObject.prototype = proto;
-
 export function dict<T>(): Dict<T> {
-  // let d = Object.create(null);
-  // d.x = 1;
-  // delete d.x;
-  // return d;
-  return new (EmptyObject as any)();
+  return Object.create(null);
 }
 
 export type SetMember = HasGuid | string;

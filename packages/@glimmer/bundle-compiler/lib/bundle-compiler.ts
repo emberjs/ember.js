@@ -6,6 +6,7 @@ import {
   Option,
   ProgramSymbolTable,
   Recast,
+  SymbolTable,
 } from "@glimmer/interfaces";
 import {
   CompilableTemplate,
@@ -44,6 +45,44 @@ export interface BundleCompilationResult {
   pool: ConstantPool;
 }
 
+export class DebugConstants extends WriteOnlyConstants {
+  getFloat(value: number): number {
+    return this.floats[value - 1];
+  }
+
+  getString(value: number): string {
+    return this.strings[value - 1];
+  }
+
+  getStringArray(value: number): string[] {
+    let names = this.getArray(value);
+    let _names: string[] = new Array(names.length);
+
+    for (let i = 0; i < names.length; i++) {
+      let n = names[i];
+      _names[i] = this.getString(n);
+    }
+
+    return _names;
+  }
+
+  getArray(value: number): number[] {
+    return this.arrays[value - 1];
+  }
+
+  getSymbolTable<T extends SymbolTable>(value: number): T {
+    return this.tables[value - 1] as T;
+  }
+
+  resolveHandle<T>(s: number): T {
+    return { handle: s } as any as T;
+  }
+
+  getSerializable<T>(s: number): T {
+    return this.serializables[s - 1] as T;
+  }
+}
+
 export class BundleCompiler {
   protected delegate: CompilerDelegate;
   protected macros: Macros;
@@ -58,7 +97,7 @@ export class BundleCompiler {
     this.delegate = delegate;
     this.macros = options.macros || new Macros();
     this.Builder = options.Builder || EagerOpcodeBuilder as OpcodeBuilderConstructor;
-    this.program = options.program || new WriteOnlyProgram(new WriteOnlyConstants());
+    this.program = options.program || new WriteOnlyProgram(new DebugConstants());
     this.plugins = options.plugins || [];
   }
 
