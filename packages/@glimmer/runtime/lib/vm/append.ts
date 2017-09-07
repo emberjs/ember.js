@@ -2,7 +2,7 @@ import { ICapturedArguments } from './arguments';
 import { Register } from '@glimmer/vm';
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementBuilder } from './element-builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, typePos, assert } from '@glimmer/util';
+import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, assert } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
@@ -111,6 +111,8 @@ export default class VM<Specifier> implements PublicVM {
   private _pc = -1;
   private ra = -1;
 
+  private currentOpSize = 0;
+
   get pc(): number {
     return this._pc;
   }
@@ -177,7 +179,8 @@ export default class VM<Specifier> implements PublicVM {
 
   // Jump to an address in `program`
   goto(offset: number) {
-    this.pc = typePos(this.pc + offset);
+    let addr = this.pc + offset - this.currentOpSize;
+    this.pc = addr;
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
@@ -188,7 +191,8 @@ export default class VM<Specifier> implements PublicVM {
 
   // Put a specific `program` address in $ra
   returnTo(offset: number) {
-    this.ra = typePos(this.pc + offset);
+    let addr = (this.pc + offset) - this.currentOpSize;
+    this.ra = addr;
   }
 
   // Return to the `program` address stored in $ra
@@ -311,8 +315,8 @@ export default class VM<Specifier> implements PublicVM {
     let state = this.capture(0);
     let tracker = this.elements().pushBlockList(updating);
     let artifacts = this.stack.peek<ReferenceIterator>().artifacts;
-
-    let start = this.heap.gethandle(typePos(this.pc + relativeStart));
+    let addr = (this.pc + relativeStart) - this.currentOpSize;
+    let start = this.heap.gethandle(addr);
 
     let opcode = new ListBlockOpcode(start, state, tracker, updating, artifacts);
 
@@ -455,8 +459,14 @@ export default class VM<Specifier> implements PublicVM {
     if (pc === -1) {
       return null;
     }
-
-    this.pc += 4;
+    // We have to save off the current operations size so that
+    // when we do a jump we can calculate the correct offset
+    // to where we are going. We can't simply ask for the size
+    // in a jump because we have have already incremented the
+    // program counter to the next instruction prior to executing.
+    let { size } = this.program.opcode(pc);
+    let operationSize = this.currentOpSize = size;
+    this.pc += operationSize;
 
     return program.opcode(pc);
   }

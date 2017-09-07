@@ -1,4 +1,4 @@
-import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, typePos, unreachable } from '@glimmer/util';
+import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable } from '@glimmer/util';
 import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
@@ -36,7 +36,7 @@ export class AppendOpcodes {
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
       // console.log(`${typePos(vm['pc'])}.`);
-      console.log(`${typePos(vm['pc'])}. ${logOpcode(name, params)}`);
+      console.log(`${vm['pc']}. ${logOpcode(name, params)}`);
 
       let debugParams = [];
       for (let prop in params) {
@@ -81,7 +81,7 @@ export class AppendOpcodes {
       if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
         let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
 
-        throw new Error(`Error in ${name}:\n\n${typePos(vm['pc'])}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
+        throw new Error(`Error in ${name}:\n\n${(vm['pc'] + (opcode.argSize + 1))}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
       }
     }
 

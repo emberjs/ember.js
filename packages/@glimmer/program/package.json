@@ -4,7 +4,8 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
   "dependencies": {
     "@glimmer/util": "^0.27.0",
-    "@glimmer/interfaces": "^0.27.0"
+    "@glimmer/interfaces": "^0.27.0",
+    "@glimmer/encoder": "^0.27.0"
   },
   "devDependencies": {
     "typescript": "^2.2.0"
