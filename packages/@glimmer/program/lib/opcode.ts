@@ -1,11 +1,17 @@
 import { Heap } from './program';
+import { TYPE_MASK, OPERAND_LEN_MASK, ARG_SHIFT } from "@glimmer/encoder";
 
 export class Opcode {
   public offset = 0;
   constructor(private heap: Heap) {}
 
+  get size() {
+    let rawType = this.heap.getbyaddr(this.offset);
+    return ((rawType & OPERAND_LEN_MASK) >> ARG_SHIFT) + 1;
+  }
+
   get type() {
-    return this.heap.getbyaddr(this.offset);
+    return (this.heap.getbyaddr(this.offset) & TYPE_MASK);
   }
 
   get op1() {

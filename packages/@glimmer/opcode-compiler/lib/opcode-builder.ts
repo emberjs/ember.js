@@ -1,5 +1,5 @@
 import { Opaque, Option, ProgramSymbolTable, SymbolTable, Recast, BlockSymbolTable } from '@glimmer/interfaces';
-import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, typePos, unreachable } from '@glimmer/util';
+import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import { SerializedInlineBlock } from "@glimmer/wire-format";
@@ -28,6 +28,7 @@ import CompilableTemplate, { ICompilableTemplate } from './compilable-template';
 import {
   ComponentBuilder
 } from './wrapped-component';
+import { InstructionEncoder } from "@glimmer/encoder";
 
 export type Label = string;
 
@@ -45,12 +46,12 @@ class Labels {
     this.targets.push({ at, Target, target });
   }
 
-  patch(buffer: number[]): void {
+  patch(encoder: InstructionEncoder): void {
     let { targets, labels } = this;
     for (let i = 0; i < targets.length; i++) {
       let { at, target } = targets[i];
       let address = labels[target] - at;
-      buffer[at + 1] = address;
+      encoder.patch(at, address);
     }
   }
 }
@@ -85,7 +86,8 @@ export interface OpcodeBuilderConstructor {
 export abstract class OpcodeBuilder<Specifier> {
   public constants: CompileTimeConstants;
 
-  private buffer: number[] = [];
+  // private buffer: number[] = [];
+  private encoder = new InstructionEncoder([]);
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
   public component: ComponentBuilder<Specifier> = new ComponentBuilder(this);
@@ -102,33 +104,35 @@ export abstract class OpcodeBuilder<Specifier> {
   }
 
   private get pos(): number {
-    return typePos(this.buffer.length);
+    return this.encoder.typePos;
   }
 
   private get nextPos(): number {
-    return this.buffer.length;
+    return this.encoder.size;
   }
 
   upvars<T extends [Opaque]>(count: number): T {
     return fillNulls(count) as T;
   }
 
-  reserve(name: Op) {
-    this.push(name, 0, 0, 0);
+  reserve(name: Op, size = 1) {
+    let reservedOperands = [];
+    for (let i = 0; i < size; i++) {
+      reservedOperands[i] = -1;
+    }
+
+    this.push(name, ...reservedOperands);
   }
 
-  push(name: Op, op1 = 0, op2 = 0, op3 = 0) {
-    let { buffer } = this;
-    buffer.push(name);
-    buffer.push(op1);
-    buffer.push(op2);
-    buffer.push(op3);
+  push(name: Op, ...ops: number[]) {
+    let { encoder } = this;
+    encoder.encode(name, ...ops);
   }
 
   commit(heap: CompileTimeHeap): VMHandle {
     this.push(Op.Return);
 
-    let { buffer } = this;
+    let { buffer } = this.encoder;
 
     // TODO: change the whole malloc API and do something more efficient
     let handle = heap.malloc();
@@ -165,7 +169,7 @@ export abstract class OpcodeBuilder<Specifier> {
 
   stopLabels() {
     let label = expect(this.labelsStack.pop(), 'unbalanced push and pop labels');
-    label.patch(this.buffer);
+    label.patch(this.encoder);
   }
 
   // components
