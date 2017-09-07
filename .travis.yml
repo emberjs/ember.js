@@ -31,6 +31,14 @@ install:
 after_success:
   - "./bin/publish_builds"
 
+branches:
+  only:
+    - master
+    - beta
+    - stable
+    # npm version tags
+    - /^v\d+\.\d+\.\d+$/
+
 env:
   global:
     - SAUCE_USERNAME=ember-ci
