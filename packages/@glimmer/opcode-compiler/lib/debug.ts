@@ -1,10 +1,13 @@
 import { CompileTimeProgram, CompileTimeConstants } from './interfaces';
 import { Option, Opaque, SymbolTable, Recast } from '@glimmer/interfaces';
-import { Op, Register } from '@glimmer/vm';
+import { METADATA, Op, Register } from '@glimmer/vm';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { unreachable } from "@glimmer/util";
+import { unreachable, dict } from "@glimmer/util";
+import { Primitive } from "@glimmer/debug";
+import { PrimitiveType } from "@glimmer/program";
 
 export interface DebugConstants {
+  getFloat(value: number): number;
   getString(value: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
@@ -77,110 +80,82 @@ function json(param: Opaque) {
   }
 }
 
-export function debug(c: DebugConstants, op: Op, op1: number, op2: number, op3: number): [string, object] {
-  switch (op) {
-    case Op.Bug: throw unreachable();
+export function debug(c: DebugConstants, op: Op, ...operands: number[]): [string, object] {
+  let metadata = METADATA[op];
 
-    case Op.Helper: return ['Helper', { helper: c.resolveHandle(op1) }];
-    case Op.SetVariable: return ['SetVariable', { symbol: op1 }];
-    case Op.SetBlock: return ['SetBlock', { symbol: op1 }];
-    case Op.GetVariable: return ['GetVariable', { symbol: op1 }];
-    case Op.GetProperty: return ['GetProperty', { key: c.getString(op1) }];
-    case Op.GetBlock: return ['GetBlock', { symbol: op1 }];
-    case Op.HasBlock: return ['HasBlock', { block: op1 }];
-    case Op.HasBlockParams: return ['HasBlockParams', { block: op1 }];
-    case Op.Concat: return ['Concat', { size: op1 }];
-    case Op.Constant: return ['Constant', { value: (c as Recast<DebugConstants, LazyDebugConstants>).getOther(op1) }];
-    case Op.Primitive: return ['Primitive', { primitive: op1 }];
-    case Op.PrimitiveReference: return ['PrimitiveReference', {}];
-    case Op.Dup: return ['Dup', { register: Register[op1], offset: op2 }];
-    case Op.Pop: return ['Pop', { count: op1 }];
-    case Op.Load: return ['Load', { register: Register[op1] }];
-    case Op.Fetch: return ['Fetch', { register: Register[op1] }];
+  if (!metadata) {
+    throw unreachable(`Missing Opcode Metadata for ${op}`);
+  }
 
-    /// PRELUDE & EXIT
-    case Op.RootScope: return ['RootScope', { symbols: op1, bindCallerScope: !!op2 }];
-    case Op.ChildScope: return ['ChildScope', {}];
-    case Op.PopScope: return ['PopScope', {}];
-    case Op.Return: return ['Return', {}];
-    case Op.ReturnTo: return ['ReturnTo', { offset: op1 }];
+  let out = dict<Opaque>();
 
-    /// HTML
-    case Op.Text: return ['Text', { text: c.getString(op1) }];
-    case Op.Comment: return ['Comment', { comment: c.getString(op1) }];
-    case Op.DynamicContent: return ['DynamicContent', { trusting: !!op1 }];
-    case Op.OpenElement: return ['OpenElement', { tag: c.getString(op1) }];
-    case Op.OpenElementWithOperations: return ['OpenElementWithOperations', { tag: c.getString(op1) }];
-    case Op.OpenDynamicElement: return ['OpenDynamicElement', {}];
-    case Op.StaticAttr: return ['StaticAttr', { name: c.getString(op1), value: c.getString(op2), namespace: op3 ? c.getString(op3) : null }];
-    case Op.DynamicAttr: return ['DynamicAttr', { name: c.getString(op1), trusting: !!op2, namespace: op3 ? c.getString(op3) : null }];
-    case Op.ComponentAttr: return ['ComponentAttr', { name: c.getString(op1), trusting: !!op2, namespace: op3 ? c.getString(op3) : null }];
-    case Op.FlushElement: return ['FlushElement', {}];
-    case Op.CloseElement: return ['CloseElement', {}];
+  metadata.ops.forEach((operand, index) => {
+    let op = operands[index];
 
-    /// MODIFIER
-    case Op.Modifier: return ['Modifier', {}];
+    switch (operand.type) {
+      case 'i32':
+      case 'symbol':
+      case 'block':
+        out[operand.name] = op;
+        break;
+      case 'handle':
+        out[operand.name] = c.resolveHandle(op);
+        break;
+      case 'str':
+        out[operand.name] = c.getString(op);
+        break;
+      case 'option-str':
+        out[operand.name] = op ? c.getString(op) : null;
+        break;
+      case 'str-array':
+        out[operand.name] = c.getStringArray(op);
+        break;
+      case 'array':
+        out[operand.name] = c.getArray(op);
+        break;
+      case 'bool':
+        out[operand.name] = !!op;
+        break;
+      case 'primitive':
+        out[operand.name] = decodePrimitive(op, c);
+        break;
+      case 'register':
+        out[operand.name] = Register[op];
+        break;
+      case 'table':
+        out[operand.name] = c.getSymbolTable(op);
+        break;
+      case 'serializable':
+        out[operand.name] = c.getSerializable(op);
+        break;
+      case 'lazy-constant':
+        out[operand.name] = (c as Recast<DebugConstants, LazyDebugConstants>).getOther(op);
+        break;
+    }
+  });
 
-    /// WORMHOLE
-    case Op.PushRemoteElement: return ['PushRemoteElement', {}];
-    case Op.PopRemoteElement: return ['PopRemoteElement', {}];
+  return [metadata.name, out];
+}
 
-    /// DYNAMIC SCOPE
-    case Op.BindDynamicScope: return ['BindDynamicScope', {}];
-    case Op.PushDynamicScope: return ['PushDynamicScope', {}];
-    case Op.PopDynamicScope: return ['PopDynamicScope', {}];
+function decodePrimitive(primitive: number, constants: DebugConstants): Primitive {
+  let flag = primitive & 7; // 111
+  let value = primitive >> 3;
 
-    /// VM
-    case Op.PushSymbolTable: return ['PushSymbolTable', { table: c.getSymbolTable(op1) }];
-    case Op.CompileBlock: return ['CompileBlock', {}];
-    case Op.InvokeVirtual: return ['InvokeVirtual', {}];
-    case Op.InvokeStatic: return ['InvokeStatic', { handle: op1 }];
-    case Op.InvokeYield: return ['InvokeYield', {}];
-    case Op.Jump: return ['Jump', { to: op1 }];
-    case Op.JumpIf: return ['JumpIf', { to: op1 }];
-    case Op.JumpUnless: return ['JumpUnless', { to: op1 }];
-    case Op.PushFrame: return ['PushFrame', {}];
-    case Op.PopFrame: return ['PopFrame', {}];
-    case Op.Enter: return ['Enter', { args: op1 }];
-    case Op.Exit: return ['Exit', {}];
-    case Op.ToBoolean: return ['ToBoolean', {}];
-
-    /// LISTS
-    case Op.EnterList: return ['EnterList', { start: op1 }];
-    case Op.ExitList: return ['ExitList', {}];
-    case Op.PutIterator: return ['PutIterator', {}];
-    case Op.Iterate: return ['Iterate', { end: op1 }];
-
-    /// COMPONENTS
-    case Op.IsComponent: return ['IsComponent', {}];
-    case Op.CurryComponent: return ['CurryComponent', { meta: c.getSerializable(op1) }];
-    case Op.PushComponentSpec: return ['PushComponentSpec', { definition: c.resolveHandle(op1) }];
-    case Op.PushDynamicComponentManager: return ['PushDynamicComponentManager', { meta: c.getSerializable(op1) }];
-    case Op.PushArgs: return ['PushArgs', { names: c.getStringArray(op1), positionals: op2, synthetic: !!op3 }];
-    case Op.PrepareArgs: return ['PrepareArgs', { state: Register[op1] }];
-    case Op.CreateComponent: return ['CreateComponent', { flags: op1, state: Register[op2] }];
-    case Op.RegisterComponentDestructor: return ['RegisterComponentDestructor', {}];
-    case Op.PutComponentOperations: return ['PutComponentOperations', {}];
-    case Op.GetComponentSelf: return ['GetComponentSelf', { state: Register[op1] }];
-    case Op.GetComponentTagName: return ['GetComponentTagName', { state: Register[op1] }];
-    case Op.GetComponentLayout: return ['GetComponentLayout', { state: Register[op1] }];
-    case Op.InvokeComponentLayout: return ['InvokeComponentLayout', {}];
-    case Op.BeginComponentTransaction: return ['BeginComponentTransaction', {}];
-    case Op.CommitComponentTransaction: return ['CommitComponentTransaction', {}];
-    case Op.DidCreateElement: return ['DidCreateElement', { state: Register[op1] }];
-    case Op.DidRenderLayout: return ['DidRenderLayout', {}];
-
-    /// PARTIALS
-    case Op.InvokePartial: return ['InvokePartial', { templateMeta: c.getSerializable(op1), symbols: c.getStringArray(op2), evalInfo: c.getArray(op3) }];
-    case Op.ResolveMaybeLocal: return ['ResolveMaybeLocal', { name: c.getString(op1)} ];
-
-    /// DEBUGGER
-    case Op.Debugger: return ['Debugger', { symbols: c.getStringArray(op1), evalInfo: c.getArray(op2) }];
-
-    /// STATEMENTS
-
-    case Op.Size: throw unreachable();
-
-    default: throw unreachable();
+  switch (flag) {
+    case PrimitiveType.NUMBER:
+      return value;
+    case PrimitiveType.FLOAT:
+      return constants.getFloat(value);
+    case PrimitiveType.STRING:
+      return constants.getString(value);
+    case PrimitiveType.BOOLEAN_OR_VOID:
+      switch (value) {
+        case 0: return false;
+        case 1: return true;
+        case 2: return null;
+        case 3: return undefined;
+      }
+    default:
+      throw unreachable();
   }
 }

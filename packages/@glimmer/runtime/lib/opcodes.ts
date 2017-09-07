@@ -2,7 +2,8 @@ import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, typePos, u
 import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
-import { METADATA, debug, logOpcode } from "@glimmer/opcode-compiler";
+import { debug, logOpcode } from "@glimmer/opcode-compiler";
+import { METADATA } from "@glimmer/vm";
 import { Opcode, Opaque } from "@glimmer/interfaces";
 import { VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
@@ -69,11 +70,9 @@ export class AppendOpcodes {
           if (isNaN(expectedChange)) throw unreachable();
         }
       }
-    }
 
-    if (DEVMODE) {
       let actualChange = vm.stack.sp - sp!;
-      if (typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
+      if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
         let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
 
         throw new Error(`Error in ${name}:\n\n${typePos(vm['pc'])}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
