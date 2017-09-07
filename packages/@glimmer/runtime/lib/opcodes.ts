@@ -3,10 +3,10 @@ import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
 import { debug, logOpcode } from "@glimmer/opcode-compiler";
+import { METADATA } from "@glimmer/vm";
 import { Opcode, Opaque } from "@glimmer/interfaces";
 import { VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
-import { RuntimeConstants } from "@glimmer/program";
 
 export interface OpcodeJSON {
   type: number | string;
@@ -23,24 +23,7 @@ export type Operand3 = number;
 
 export type EvaluateOpcode = (vm: VM<Opaque>, opcode: Opcode) => void;
 
-export type DebugStackChangeFunction<State> = (({ opcode, constants, state }: { opcode: Opcode, constants: RuntimeConstants<Opaque>, state: State }) => number);
-export type DebugBeforeFunction = (opcode: Opcode, vm: VM<Opaque>) => Opaque;
-
-export interface DebugMetadata<State = undefined> {
-  before?: (opcode: Opcode, vm: VM<Opaque>) => State;
-  stackChange?: DebugStackChangeFunction<State> | number;
-  operands?: 0 | 1 | 2 | 3;
-}
-
-export interface NormalizedMetadata {
-  before: Option<DebugBeforeFunction>;
-  stackChange: DebugStackChangeFunction<Opaque>;
-  operands: 0 | 1 | 2 | 3;
-}
-
 export class AppendOpcodes {
-  /** @internal */
-  public debugMetadata: Option<NormalizedMetadata>[] = fillNulls<NormalizedMetadata>(Op.Size).slice();
   private evaluateOpcode: EvaluateOpcode[] = fillNulls<EvaluateOpcode>(Op.Size).slice();
 
   add<Name extends Op>(name: Name, evaluate: EvaluateOpcode): void {
@@ -54,7 +37,13 @@ export class AppendOpcodes {
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
       // console.log(`${typePos(vm['pc'])}.`);
       console.log(`${typePos(vm['pc'])}. ${logOpcode(name, params)}`);
-      console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
+
+      let debugParams = [];
+      for (let prop in params) {
+        debugParams.push(prop, "=", params[prop]);
+      }
+
+      console.log(...debugParams);
       /* tslint:enable */
     }
 
@@ -63,7 +52,7 @@ export class AppendOpcodes {
     let state: Opaque;
 
     if (DEVMODE) {
-      let metadata = this.debugMetadata[type];
+      let metadata = METADATA[type];
 
       if (metadata && metadata.before) {
         state = metadata.before(opcode, vm);
@@ -78,7 +67,7 @@ export class AppendOpcodes {
     func(vm, opcode);
 
     if (DEVMODE) {
-      let metadata = this.debugMetadata[type];
+      let metadata = METADATA[type];
       if (metadata !== null) {
         if (typeof metadata.stackChange === 'number') {
           expectedChange = metadata.stackChange;
@@ -87,11 +76,9 @@ export class AppendOpcodes {
           if (isNaN(expectedChange)) throw unreachable();
         }
       }
-    }
 
-    if (DEVMODE) {
       let actualChange = vm.stack.sp - sp!;
-      if (typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
+      if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
         let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
 
         throw new Error(`Error in ${name}:\n\n${typePos(vm['pc'])}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);

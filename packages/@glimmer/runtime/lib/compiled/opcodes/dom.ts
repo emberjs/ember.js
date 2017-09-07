@@ -21,34 +21,24 @@ import { CheckReference, CheckArguments } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm.constants.getString(text));
-
-  expectStackChange(vm.stack, 0, 'Text');
 });
 
 APPEND_OPCODES.add(Op.OpenElementWithOperations, (vm, { op1: tag }) => {
   let tagName = vm.constants.getString(tag);
   vm.elements().openElement(tagName);
-
-  expectStackChange(vm.stack, 0, 'OpenElementWithOperations');
 });
 
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
   vm.elements().appendComment(vm.constants.getString(text));
-
-  expectStackChange(vm.stack, 0, 'Comment');
 });
 
 APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
   vm.elements().openElement(vm.constants.getString(tag));
-
-  expectStackChange(vm.stack, 0, 'OpenElement');
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
   let tagName = check(check(vm.stack.pop(), CheckReference).value(), CheckString);
   vm.elements().openElement(tagName);
-
-  expectStackChange(vm.stack, -1, 'OpenDynamicElement');
 });
 
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
@@ -75,14 +65,10 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   }
 
   vm.elements().pushRemoteElement(element, nextSibling);
-
-  expectStackChange(vm.stack, -2, 'PushRemoteElement');
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
   vm.elements().popRemoteElement();
-
-  expectStackChange(vm.stack, 0, 'PopRemoteElement');
 });
 
 APPEND_OPCODES.add(Op.FlushElement, vm => {
@@ -94,8 +80,6 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
   }
 
   vm.elements().flushElement();
-
-  expectStackChange(vm.stack, 0, 'FlushElement');
 });
 
 APPEND_OPCODES.add(Op.CloseElement, vm => {
@@ -161,8 +145,6 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
   let namespace = _namespace ? vm.constants.getString(_namespace) : null;
 
   vm.elements().setStaticAttribute(name, value, namespace);
-
-  expectStackChange(vm.stack, 0, 'StaticAttr');
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
@@ -176,8 +158,6 @@ APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _names
   if (!isConst(reference)) {
     vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
   }
-
-  expectStackChange(vm.stack, -1, 'DynamicAttr');
 });
 
 export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {

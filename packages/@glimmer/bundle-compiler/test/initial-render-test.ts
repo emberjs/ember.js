@@ -26,9 +26,9 @@ import {
   WithDynamicVarsSuite,
   YieldSuite
 } from "@glimmer/test-helpers";
-import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor, LookupMap } from "@glimmer/bundle-compiler";
+import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor, LookupMap, DebugConstants } from "@glimmer/bundle-compiler";
 import { WrappedBuilder, ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
-import { Program, RuntimeProgram, WriteOnlyConstants, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
+import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, Invocation, getDynamicVar, Helper as GlimmerHelper, } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { dict, unreachable, assert, assign } from "@glimmer/util";
@@ -403,7 +403,7 @@ class BundlingRenderDelegate implements RenderDelegate {
     let delegate: BundlingDelegate = new BundlingDelegate(this.components, this.modules, this.compileTimeModules, specifier => {
       return compiler.compileSpecifier(specifier);
     });
-    let program = new WriteOnlyProgram(new WriteOnlyConstants());
+    let program = new WriteOnlyProgram(new DebugConstants());
     let compiler = new BundleCompiler(delegate, { macros, program });
 
     let spec = specifierFor('ui/components/main', 'default');
