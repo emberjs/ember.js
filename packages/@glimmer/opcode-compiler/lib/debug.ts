@@ -64,7 +64,7 @@ function json(param: Opaque) {
     try {
       string = JSON.stringify(param);
     } catch(e) {
-      return '<cannot generate JSON>';
+      return '<object>';
     }
 
     if (string === undefined) {

@@ -2,7 +2,8 @@ export {
   BundleCompiler,
   BundleCompilerOptions,
   BundleCompileOptions,
-  BundleCompilationResult
+  BundleCompilationResult,
+  DebugConstants
 } from './lib/bundle-compiler';
 
 export {

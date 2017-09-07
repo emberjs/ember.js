@@ -37,7 +37,13 @@ export class AppendOpcodes {
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
       // console.log(`${typePos(vm['pc'])}.`);
       console.log(`${typePos(vm['pc'])}. ${logOpcode(name, params)}`);
-      console.log(...debug(vm.constants, type, opcode.op1, opcode.op2, opcode.op3));
+
+      let debugParams = [];
+      for (let prop in params) {
+        debugParams.push(prop, "=", params[prop]);
+      }
+
+      console.log(...debugParams);
       /* tslint:enable */
     }
 
