@@ -30,5 +30,3 @@ export {
 export {
   WrappedBuilder,
 } from './lib/wrapped-component';
-
-export { METADATA } from './lib/-debug-strip';
