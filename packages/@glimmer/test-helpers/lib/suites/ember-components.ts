@@ -1,6 +1,7 @@
 import { AbstractRenderTest, test, skip } from "../abstract-test-case";
 import { classes } from '../environment';
-import { EmberishGlimmerComponent, EmberishCurlyComponent } from "@glimmer/test-helpers";
+import { EmberishGlimmerComponent } from "../environment/components/emberish-glimmer";
+import { EmberishCurlyComponent } from '../environment/components/emberish-curly';
 
 export class EmberishComponentTests extends AbstractRenderTest {
   @skip
