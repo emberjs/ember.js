@@ -33,11 +33,12 @@ export function debugSlice(program: CompileTimeProgram, start: number, end: numb
 
     (console as any).group(`%c${start}:${end}`, 'color: #999');
 
-    for (let i=start; i<end;) {
+    let _size = 0;
+    for (let i=start; i<end; i = i + _size) {
       let { type, op1, op2, op3, size } = program.opcode(i);
       let [name, params] = debug(constants as Recast<CompileTimeConstants, DebugConstants>, type, op1, op2, op3);
       console.log(`${i}. ${logOpcode(name, params)}`);
-      i = i + size;
+      _size = size;
     }
 
     console.groupEnd();
