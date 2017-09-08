@@ -220,6 +220,11 @@ OPCODE_METADATA(Op.PushSymbolTable, {
   stackChange: 1
 });
 
+OPCODE_METADATA(Op.PushBlockScope, {
+  name: 'PushBlockScope',
+  stackChange: 1
+});
+
 OPCODE_METADATA(Op.CompileBlock, {
   name: 'CompileBlock'
 });
@@ -237,7 +242,8 @@ OPCODE_METADATA(Op.InvokeStatic, {
 
 OPCODE_METADATA(Op.InvokeYield, clearsArgs({
   name: 'InvokeYield',
-  argsPosition: 2
+  argsPosition: 3,
+  netPops: 1
 }));
 
 OPCODE_METADATA(Op.Jump, {
@@ -584,7 +590,7 @@ OPCODE_METADATA(Op.SetBlock, {
   name: 'SetBlock',
   ops: [ScopeSymbol('symbol')],
   operands: 1,
-  stackChange: -2
+  stackChange: -3
 });
 
 OPCODE_METADATA(Op.GetVariable, {
@@ -604,7 +610,7 @@ OPCODE_METADATA(Op.GetBlock, {
   name: 'GetBlock',
   ops: [ScopeBlock('block')],
   operands: 1,
-  stackChange: 2
+  stackChange: 3
 });
 
 OPCODE_METADATA(Op.HasBlock, {
@@ -617,7 +623,7 @@ OPCODE_METADATA(Op.HasBlock, {
 OPCODE_METADATA(Op.HasBlockParams, {
   name: 'HasBlockParams',
   ops: [ScopeBlock('block')],
-  stackChange: -1
+  stackChange: -2
 });
 
 OPCODE_METADATA(Op.Concat, {
