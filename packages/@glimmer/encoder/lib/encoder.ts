@@ -4,7 +4,7 @@ export const ARG_SHIFT = 8;
 const MAX_SIZE                = 0b1111111111111111;
 export const TYPE_SIZE        = 0b11111111;
 export const TYPE_MASK        = 0b0000000011111111;
-export const OPERAND_LEN_MASK = 0b0000111100000000;
+export const OPERAND_LEN_MASK = 0b0000001100000000;
 
 export class InstructionEncoder {
   constructor(public buffer: number[]) {}
