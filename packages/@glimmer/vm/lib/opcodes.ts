@@ -708,6 +708,24 @@ export const enum Op {
   PushArgs,
 
   /**
+   * Operation: Pops Arguments from the stack and clears the next N args.
+   *
+   * Format:
+   *   (PopArgs)
+   *
+   * Operand Stack:
+   *   ..., [VersionedPathReference ...], Arguments  →
+   *   ...
+   *
+   * Description:
+   * The arguments object contains the information of how many user
+   * supplied args the component was invoked with. To clear them from
+   * the stack we must pop it from the stack and call `clear` on it
+   * to remove the argument values from the stack.
+   */
+  PopArgs,
+
+  /**
    * Operation: ...
    * Format:
    *   (PrepareArgs state:u32)
