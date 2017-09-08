@@ -6,13 +6,10 @@ import {
   dictionary,
   symbol,
   setOwner,
-  getOwner,
   OWNER,
   assign,
-  NAME_KEY,
   HAS_NATIVE_PROXY
 } from 'ember-utils';
-import { ENV } from 'ember-environment';
 
 const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 

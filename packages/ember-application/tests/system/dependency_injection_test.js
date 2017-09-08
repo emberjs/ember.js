@@ -1,4 +1,4 @@
-import { ENV, context } from 'ember-environment';
+import { context } from 'ember-environment';
 import { run } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 import Application from '../../system/application';
