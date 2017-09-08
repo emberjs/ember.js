@@ -16,9 +16,9 @@ export default class CompilableTemplate<S extends SymbolTable, Specifier> implem
   static topLevel<Specifier>(block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable> {
     return new CompilableTemplate<ProgramSymbolTable, Specifier>(
       block.statements,
-      { block, referer: options.referer },
+      { block, referrer: options.referrer },
       options,
-      { referer: options.referer, hasEval: block.hasEval, symbols: block.symbols }
+      { referrer: options.referrer, hasEval: block.hasEval, symbols: block.symbols }
     );
   }
 
@@ -31,10 +31,10 @@ export default class CompilableTemplate<S extends SymbolTable, Specifier> implem
     if (compiled !== null) return compiled;
 
     let { options, statements, containingLayout } = this;
-    let { referer } = containingLayout;
+    let { referrer } = containingLayout;
     let { program, lookup, macros, asPartial, Builder } = options;
 
-    let builder = new Builder(program, lookup, referer, macros, containingLayout, asPartial);
+    let builder = new Builder(program, lookup, referrer, macros, containingLayout, asPartial);
 
     for (let i = 0; i < statements.length; i++) {
       compileStatement(statements[i], builder);

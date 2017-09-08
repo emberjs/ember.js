@@ -43,7 +43,7 @@ export interface Template<Specifier = Opaque> {
   /**
    * Template meta (both compile time and environment specific).
    */
-  referer: Specifier;
+  referrer: Specifier;
 
   hasEval: boolean;
 
@@ -112,7 +112,7 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new ScannableTemplate(options, { id, block: parsedBlock, referer: newMeta });
+    return new ScannableTemplate(options, { id, block: parsedBlock, referrer: newMeta });
   };
   return { id, meta, create };
 }
@@ -123,7 +123,7 @@ export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier
   public symbols: string[];
   public hasEval: boolean;
   public id: string;
-  public referer: Specifier;
+  public referrer: Specifier;
   private statements: Statement[];
 
   constructor(private options: TemplateOptions<Specifier>, private parsedLayout: ParsedLayout<Specifier>) {
@@ -131,7 +131,7 @@ export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
     this.statements = block.statements;
-    this.referer = parsedLayout.referer;
+    this.referrer = parsedLayout.referrer;
     this.id = parsedLayout.id || `client-${clientId++}`;
   }
 
@@ -158,11 +158,11 @@ export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier
 }
 
 export function compilable<Specifier>(layout: ParsedLayout<Specifier>, options: TemplateOptions<Opaque>, asPartial: boolean) {
-  let { block, referer } = layout;
+  let { block, referrer } = layout;
   let { hasEval, symbols } = block;
-  let compileOptions = assign({}, options, { asPartial, referer });
+  let compileOptions = assign({}, options, { asPartial, referrer });
 
-  return new CompilableTemplate(block.statements, layout, compileOptions, { referer, hasEval, symbols });
+  return new CompilableTemplate(block.statements, layout, compileOptions, { referrer, hasEval, symbols });
 }
 
 export function elementBuilder({ mode, env, cursor }: Pick<RenderLayoutOptions, 'mode' | 'env' | 'cursor'>) {
