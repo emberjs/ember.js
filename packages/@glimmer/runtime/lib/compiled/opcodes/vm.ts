@@ -139,7 +139,8 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 
     // To balance the pop{Frame,Scope}
     vm.pushFrame();
-    vm.pushCallerScope();
+    let blockScope = vm.scope().getCallerScope()!;
+    vm.pushScope(blockScope);
 
     return;
   }
@@ -147,7 +148,13 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let locals = table.parameters;
   let localsCount = locals.length;
 
-  vm.pushCallerScope(localsCount > 0);
+  {
+    let blockScope = vm.scope().getCallerScope()!;
+    if (localsCount > 0) {
+      blockScope = blockScope.child();
+    }
+    vm.pushScope(blockScope);
+  }
 
   let scope = vm.scope();
 
