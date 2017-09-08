@@ -212,10 +212,10 @@ export function CheckValue<T>(value: T, desc = String(value)): Checker<T> {
 }
 
 export const CheckBlockSymbolTable: Checker<BlockSymbolTable> =
-  CheckInterface({ parameters: CheckArray(CheckNumber), referer: CheckOpaque });
+  CheckInterface({ parameters: CheckArray(CheckNumber), referrer: CheckOpaque });
 
 export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> =
-  CheckInterface({ hasEval: CheckBoolean, symbols: CheckArray(CheckString), referer: CheckOpaque });
+  CheckInterface({ hasEval: CheckBoolean, symbols: CheckArray(CheckString), referrer: CheckOpaque });
 
 export const CheckElement: Checker<Simple.Element> =
   CheckInterface({ nodeType: CheckValue(1), tagName: CheckString, nextSibling: CheckOpaque });

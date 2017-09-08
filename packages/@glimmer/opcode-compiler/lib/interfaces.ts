@@ -76,5 +76,5 @@ export interface ComponentBuilder {
 export interface ParsedLayout<Specifier = Opaque> {
   id?: Option<string>;
   block: SerializedTemplateBlock;
-  referer: Specifier;
+  referrer: Specifier;
 }

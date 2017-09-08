@@ -6,7 +6,7 @@ export interface Symbols {
 }
 
 export interface SymbolTable {
-  referer: Opaque;
+  referrer: Opaque;
 }
 
 export interface ProgramSymbolTable extends SymbolTable {
