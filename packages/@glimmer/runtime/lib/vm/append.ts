@@ -179,7 +179,7 @@ export default class VM<Specifier> implements PublicVM {
 
   // Jump to an address in `program`
   goto(offset: number) {
-    let addr = this.pc + offset - this.currentOpSize;
+    let addr = (this.pc + offset) - this.currentOpSize;
     this.pc = addr;
   }
 
@@ -315,6 +315,7 @@ export default class VM<Specifier> implements PublicVM {
     let state = this.capture(0);
     let tracker = this.elements().pushBlockList(updating);
     let artifacts = this.stack.peek<ReferenceIterator>().artifacts;
+
     let addr = (this.pc + relativeStart) - this.currentOpSize;
     let start = this.heap.gethandle(addr);
 

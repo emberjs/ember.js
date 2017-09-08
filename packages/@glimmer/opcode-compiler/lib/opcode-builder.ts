@@ -86,7 +86,6 @@ export interface OpcodeBuilderConstructor {
 export abstract class OpcodeBuilder<Specifier> {
   public constants: CompileTimeConstants;
 
-  // private buffer: number[] = [];
   private encoder = new InstructionEncoder([]);
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
