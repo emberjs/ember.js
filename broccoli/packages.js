@@ -16,24 +16,10 @@ const { stripIndent } = require('common-tags');
 const toES5 = require('./to-es5');
 
 module.exports.routerES = function _routerES() {
-  return new Rollup(findLib('router_js', 'lib'), {
+  return new Rollup(findLib('router_js'), {
     rollup: {
       external: ['route-recognizer', 'rsvp'],
-      entry: 'router.js',
-      plugins: [{
-        transform(code, id) {
-          if (/[^t][^e][^r]\/router\.js$/.test(id)) {
-            code += 'export { Transition } from \'./router/transition\';\n'
-          } else if (/\/router\/handler-info\/[^\/]+\.js$/.test(id)) {
-            code = code.replace(/\'router\//g, '\'../');
-          }
-          code = code.replace(/import\ Promise\ from \'rsvp\/promise\'/g, 'import { Promise } from \'rsvp\'')
-          return {
-            code: code,
-            map: { mappings: '' }
-          };
-        }
-      }],
+      entry: 'index.js',
       targets: [{
         dest: 'router.js',
         format: 'es'
