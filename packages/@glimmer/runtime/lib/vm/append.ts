@@ -372,11 +372,6 @@ export default class VM<Specifier> implements PublicVM {
     this.scopeStack.push(this.scope().child());
   }
 
-  pushCallerScope(childScope = false) {
-    let callerScope = expect(this.scope().getCallerScope(), 'pushCallerScope is called when a caller scope is present');
-    this.scopeStack.push(childScope ? callerScope.child() : callerScope);
-  }
-
   pushDynamicScope(): DynamicScope {
     let child = this.dynamicScope().child();
     this.dynamicScopeStack.push(child);
@@ -388,6 +383,10 @@ export default class VM<Specifier> implements PublicVM {
     if (bindCaller) scope.bindCallerScope(this.scope());
     this.scopeStack.push(scope);
     return scope;
+  }
+
+  pushScope(scope: Scope) {
+    this.scopeStack.push(scope);
   }
 
   popScope() {
