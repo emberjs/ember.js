@@ -198,7 +198,7 @@ export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponen
 }
 
 export class EmberishCurlyComponent extends GlimmerObject {
-  public static positionalParams: string[] | string;
+  public static positionalParams: string[] | string = [];
 
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
   public layout: { name: string, handle: number };
