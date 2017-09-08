@@ -4,4 +4,5 @@ export interface Opcode {
   op1: number;
   op2: number;
   op3: number;
+  size: number;
 }
