@@ -44,13 +44,6 @@ export class Heap {
     this.heap[address] = value;
   }
 
-  reserve(): VMHandle {
-    this.table.push(0, 0, 0, 0);
-    let handle = this.handle;
-    this.handle += ENTRY_SIZE;
-    return handle as Recast<number, VMHandle>;
-  }
-
   malloc(): VMHandle {
     this.table.push(this.offset, 0, 0, 0);
     let handle = this.handle;
