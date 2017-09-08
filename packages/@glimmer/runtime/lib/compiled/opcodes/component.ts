@@ -20,7 +20,7 @@ import {
   PublicComponentSpec
 } from '../../component/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
-import { DynamicScope, ScopeBlock, ScopeSlot } from '../../environment';
+import { DynamicScope, ScopeBlock, ScopeSlot, Scope } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UNDEFINED_REFERENCE } from '../../references';
 import { UpdatingVM, VM } from '../../vm';
@@ -33,7 +33,7 @@ import { check, expectStackChange, CheckInstanceof, CheckFunction, CheckInterfac
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
 import { ATTRS_BLOCK } from '@glimmer/opcode-compiler';
-import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckCompilableBlock } from './-debug-strip';
+import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckScope, CheckCompilableBlock } from './-debug-strip';
 
 const ARGS = new Arguments();
 
@@ -441,9 +441,10 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
     let bindBlock = (name: string) => {
       let symbol = symbols.indexOf(name);
       let handle = check(stack.pop(), CheckOr(CheckOption(CheckHandle), CheckOption(CheckCompilableBlock)));
+      let blockScope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
       let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
-      let block: Option<ScopeBlock> = table ? [handle!, table] : null;
+      let block: Option<ScopeBlock> = table ? [handle!, blockScope!, table] : null;
 
       if (symbol !== -1) {
         scope.bindBlock(symbol + 1, block);

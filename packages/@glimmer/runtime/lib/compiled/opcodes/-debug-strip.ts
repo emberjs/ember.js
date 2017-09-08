@@ -4,6 +4,7 @@ import { Tag, TagWrapper, VersionedPathReference, Reference } from "@glimmer/ref
 import { Arguments } from '../../vm/arguments';
 import { ComponentState } from './component';
 import { ComponentManager } from '../../internal-interfaces';
+import { Scope } from '../../environment';
 import { BlockSymbolTable } from "@glimmer/interfaces";
 import { ICompilableTemplate } from "@glimmer/opcode-compiler";
 
@@ -16,6 +17,8 @@ export const CheckReference: Checker<Reference> =
   CheckInterface({ tag: CheckTag, value: CheckFunction });
 
 export const CheckArguments = CheckInstanceof(Arguments);
+
+export const CheckScope = CheckInstanceof(Scope);
 
 export const CheckComponentManager: Checker<ComponentManager> =
   CheckInterface({ getCapabilities: CheckFunction });

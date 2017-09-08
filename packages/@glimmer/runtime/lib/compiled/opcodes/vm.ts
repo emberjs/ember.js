@@ -12,12 +12,13 @@ import { initializeGuid, assert } from '@glimmer/util';
 import { expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle, CheckPrimitive } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
+import { Scope } from '../../environment';
 import { PrimitiveReference } from '../../references';
 import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { LazyConstants, PrimitiveType } from "@glimmer/program";
-import { CheckReference } from './-debug-strip';
+import { CheckReference, CheckScope } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
@@ -108,6 +109,11 @@ APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   stack.push(vm.constants.getSymbolTable(_table));
 });
 
+APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
+  let stack = vm.stack;
+  stack.push(vm.scope());
+});
+
 APPEND_OPCODES.add(Op.CompileBlock, vm => {
   let stack = vm.stack;
   let block = stack.pop<Option<CompilableTemplate> | 0>();
@@ -128,6 +134,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckOption(CheckHandle));
+  let _scope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
   let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
