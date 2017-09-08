@@ -134,7 +134,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckOption(CheckHandle));
-  let _scope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
+  let scope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
   let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
@@ -146,32 +146,30 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 
     // To balance the pop{Frame,Scope}
     vm.pushFrame();
-    let blockScope = vm.scope().getCallerScope()!;
-    vm.pushScope(blockScope);
-
+    vm.pushScope(scope!); // Could be null but it doesnt matter as it is immediatelly popped.
     return;
   }
 
-  let locals = table.parameters;
-  let localsCount = locals.length;
+  let invokingScope = scope!;
 
+  // If necessary, create a child scope
   {
-    let blockScope = vm.scope().getCallerScope()!;
+    let locals = table.parameters;
+    let localsCount = locals.length;
+
     if (localsCount > 0) {
-      blockScope = blockScope.child();
+      invokingScope = invokingScope.child();
+
+      for (let i=0; i<localsCount; i++) {
+        invokingScope.bindSymbol(locals![i], args.at(i));
+      }
     }
-    vm.pushScope(blockScope);
-  }
-
-  let scope = vm.scope();
-
-  for (let i=0; i<localsCount; i++) {
-    scope.bindSymbol(locals![i], args.at(i));
   }
 
   args.clear();
 
   vm.pushFrame();
+  vm.pushScope(invokingScope);
   vm.call(handle!);
 });
 
