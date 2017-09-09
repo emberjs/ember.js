@@ -460,10 +460,7 @@ Registry.prototype = {
     let injections = this._typeInjections[type] ||
                      (this._typeInjections[type] = []);
 
-    injections.push({
-      property: property,
-      fullName: fullName
-    });
+    injections.push({ property, fullName });
   },
 
   /**
@@ -526,10 +523,7 @@ Registry.prototype = {
     let injections = this._injections[normalizedName] ||
                      (this._injections[normalizedName] = []);
 
-    injections.push({
-      property: property,
-      fullName: normalizedInjectionName
-    });
+    injections.push({ property, fullName: normalizedInjectionName });
   },
 
   /**
@@ -613,6 +607,41 @@ Registry.prototype = {
     }
 
     return (options && options.source) ? `${options.source}:${name}` : name;
+  },
+
+  /**
+   Given a fullName and a source fullName returns the fully resolved
+   fullName. Used to allow for local lookup.
+
+   ```javascript
+   let registry = new Registry();
+
+   // the twitter factory is added to the module system
+   registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
+   ```
+
+   @private
+   @method expandLocalLookup
+   @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] the fullname of the request source (used for local lookups)
+   @return {String} fullName
+   */
+  expandLocalLookup(fullName, options) {
+    if (this.resolver && this.resolver.expandLocalLookup) {
+      assert('fullName must be a proper full name', this.validateFullName(fullName));
+      assert('options.source must be provided to expandLocalLookup', options && options.source);
+      assert('options.source must be a proper full name', this.validateFullName(options.source));
+
+      let normalizedFullName = this.normalize(fullName);
+      let normalizedSource = this.normalize(options.source);
+
+      return expandLocalLookup(this, normalizedFullName, normalizedSource);
+    } else if (this.fallback) {
+      return this.fallback.expandLocalLookup(fullName, options);
+    } else {
+      return null;
+    }
   }
 };
 
@@ -638,41 +667,6 @@ if (DEBUG) {
     }
   }
 }
-
-/**
- Given a fullName and a source fullName returns the fully resolved
- fullName. Used to allow for local lookup.
-
- ```javascript
- let registry = new Registry();
-
- // the twitter factory is added to the module system
- registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
- ```
-
- @private
- @method expandLocalLookup
- @param {String} fullName
- @param {Object} [options]
- @param {String} [options.source] the fullname of the request source (used for local lookups)
- @return {String} fullName
- */
-Registry.prototype.expandLocalLookup = function Registry_expandLocalLookup(fullName, options) {
-  if (this.resolver && this.resolver.expandLocalLookup) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
-    assert('options.source must be provided to expandLocalLookup', options && options.source);
-    assert('options.source must be a proper full name', this.validateFullName(options.source));
-
-    let normalizedFullName = this.normalize(fullName);
-    let normalizedSource = this.normalize(options.source);
-
-    return expandLocalLookup(this, normalizedFullName, normalizedSource);
-  } else if (this.fallback) {
-    return this.fallback.expandLocalLookup(fullName, options);
-  } else {
-    return null;
-  }
-};
 
 function expandLocalLookup(registry, normalizedName, normalizedSource) {
   let cache = registry._localLookupCache;
