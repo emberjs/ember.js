@@ -31,15 +31,11 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   protected floats: number[] = [];
 
   float(float: number) {
-    let index = this.floats.length;
-    this.floats.push(float);
-    return index + 1;
+    return this.floats.push(float);
   }
 
   string(value: string): number {
-    let index = this.strings.length;
-    this.strings.push(value);
-    return index + 1;
+    return this.strings.push(value);
   }
 
   stringArray(strings: string[]): number {
@@ -53,28 +49,20 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 
   array(values: number[]): number {
-    let index = this.arrays.length;
-    this.arrays.push(values);
-    return index + 1;
+    return this.arrays.push(values);
   }
 
   table(t: SymbolTable): number {
-    let index = this.tables.length;
-    this.tables.push(t);
-    return index + 1;
+    return this.tables.push(t);
   }
 
   handle(handle: number): number {
-    let index = this.handles.length;
-    this.handles.push(handle);
     this.resolved.push(UNRESOLVED);
-    return index + 1;
+    return this.handles.push(handle);
   }
 
   serializable(value: Opaque): number {
-    let index = this.serializables.length;
-    this.serializables.push(value);
-    return index + 1;
+    return this.serializables.push(value);
   }
 
   toPool(): ConstantPool {
@@ -220,8 +208,6 @@ export class LazyConstants extends Constants<Opaque> {
   }
 
   other(other: Opaque): number {
-    let index = this.others.length;
-    this.others.push(other);
-    return index + 1;
+    return this.others.push(other);
   }
 }
