@@ -398,7 +398,7 @@ export class InternalHelperReference extends CachedReference {
 // @implements PathReference
 export class UnboundReference extends ConstReference {
   static create(value) {
-    if (typeof value === 'object' && value !== null || typeof result === 'function') {
+    if (typeof value === 'object' && value !== null) {
       return new UnboundReference(value);
     } else {
       return PrimitiveReference.create(value);
