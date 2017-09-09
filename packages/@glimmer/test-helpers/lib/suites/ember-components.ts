@@ -1,32 +1,17 @@
-import { AbstractRenderTest, test, skip } from "../abstract-test-case";
+import { AbstractRenderTest, test } from "../abstract-test-case";
 import { classes } from '../environment';
 import { EmberishGlimmerComponent } from "../environment/components/emberish-glimmer";
-import { EmberishCurlyComponent } from '../environment/components/emberish-curly';
 
 export class EmberishComponentTests extends AbstractRenderTest {
-  @skip
   @test({ kind: 'glimmer' })
-  "[BUG: Load to s0 is wrong]"() {
+  "[BUG: #644 popping args should be balanced]"() {
     class MainComponent extends EmberishGlimmerComponent {
       salutation = 'Glimmer';
     }
     this.registerComponent('Glimmer', 'Main', '<div><HelloWorld @name={{salutation}} /></div>', MainComponent);
     this.registerComponent('Glimmer', 'HelloWorld', '<h1>Hello {{@name}}!</h1>');
     this.render('<Main />');
-    this.assertHTML('<h1>Hello Glimmer!</h1>');
-  }
-
-  @skip
-  @test({ kind: 'curly' })
-  "[BUG: Curly recursive call stack curly]"() {
-    class MainComponent extends EmberishCurlyComponent {
-      tag = 'div';
-      salutation = 'Glimmer';
-    }
-    this.registerComponent('Curly', 'test-main', '<div>{{hello-world name=salutation}}</div>', MainComponent);
-    this.registerComponent('Curly', 'hello-world', '<h1>Hello {{name}}!</h1>');
-    this.render('{{test-main}}');
-    this.assertHTML('<h1>Hello Glimmer!</h1>');
+    this.assertHTML('<div><h1>Hello Glimmer!</h1></div>');
   }
 
   @test

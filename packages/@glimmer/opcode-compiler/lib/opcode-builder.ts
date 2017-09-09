@@ -387,6 +387,10 @@ export abstract class OpcodeBuilder<Specifier> {
     return this.push(Op.Pop, count);
   }
 
+  popArgs() {
+    this.push(Op.PopArgs);
+  }
+
   // vm
 
   pushRemoteElement() {
@@ -739,7 +743,7 @@ export abstract class OpcodeBuilder<Specifier> {
     this.createComponent(Register.s0, block !== null, inverse !== null);
 
     if (capabilities.createArgs) {
-      this.pop();
+      this.popArgs();
     }
 
     this.registerComponentDestructor(Register.s0);

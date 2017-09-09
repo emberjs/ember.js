@@ -278,6 +278,11 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   }
 });
 
+APPEND_OPCODES.add(Op.PopArgs, (vm) => {
+  let args = check(vm.stack.pop(), CheckArguments);
+  args.clear();
+});
+
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
   let { manager, component } = check(vm.fetchValue(_state), CheckComponentState);
 
