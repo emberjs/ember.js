@@ -348,6 +348,12 @@ OPCODE_METADATA(Op.PushArgs, {
   stackChange: 1
 });
 
+OPCODE_METADATA(Op.PopArgs, {
+  name: 'PopArgs',
+  ops: [],
+  skipCheck: true
+});
+
 OPCODE_METADATA(Op.PrepareArgs, {
   name: 'PrepareArgs',
   ops: [Register('state')],
