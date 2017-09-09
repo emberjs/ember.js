@@ -142,6 +142,23 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
     this.assertHTML(escapedHtml);
   }
 
+  ['@test unbound works with function properties']() {
+    let func = function() {}
+    func.foo = 'WOOT';
+    let parent = { func };
+    this.render(`{{unbound func.foo}}`, parent);
+
+    this.assertText('WOOT');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('WOOT');
+
+    this.runTask(() => set(this.context, 'func.foo', 'OOF'));
+
+    this.assertText('WOOT');
+  }
+
   ['@skip helper form updates on parent re-render']() {
     this.render(`{{unbound foo}}`, {
       foo: 'BORK'
