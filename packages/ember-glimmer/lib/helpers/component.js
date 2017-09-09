@@ -6,14 +6,12 @@ import { assign } from 'ember-utils';
 import { CachedReference } from '../utils/references';
 import {
   CurlyComponentDefinition,
-  validatePositionalParameters,
-  PositionalArgumentsReference
+  validatePositionalParameters
 } from '../component-managers/curly';
 import {
   isComponentDefinition
 } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -210,15 +208,6 @@ function createCurriedDefinition(definition, args) {
     definition.template,
     curriedArgs
   );
-}
-
-let EMPTY_BLOCKS = {
-  default: null,
-  inverse: null
-};
-
-if (DEBUG) {
-  EMPTY_BLOCKS = Object.freeze(EMPTY_BLOCKS);
 }
 
 function curryArgs(definition, newArgs) {
