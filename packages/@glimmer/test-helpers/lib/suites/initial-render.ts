@@ -915,6 +915,13 @@ export class InitialRenderSuite extends AbstractRenderTest {
     this.assertStableRerender();
   }
 
+  @test "Constant negative numbers can render"() {
+    this.registerHelper('testing', ([id]) => id);
+    this.render('<div>{{testing -123321}}</div>');
+    this.assertHTML('<div>-123321</div>');
+    this.assertStableRerender();
+  }
+
   @test "GH#13999 The compiler can handle simple helpers with inline null parameter"() {
     let value;
     this.registerHelper('say-hello', function (params) {
