@@ -435,7 +435,7 @@ export abstract class OpcodeBuilder<Specifier> {
     let primitive: number;
     switch (typeof _primitive) {
       case 'number':
-        if (_primitive as number % 1 === 0 && _primitive as number > 0) {
+        if (_primitive as number % 1 === 0) {
           primitive = _primitive as number;
         } else {
           primitive = this.float(_primitive as number);
