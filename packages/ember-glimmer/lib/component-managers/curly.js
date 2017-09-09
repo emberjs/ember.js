@@ -109,12 +109,22 @@ export class PositionalArgumentReference {
   }
 }
 
+function positionalToNamed(positionalParamNames, positionalParams) {
+  let positionalToNamed = {};
+  for (let i = 0; i < positionalParams.length; i++) {
+    let name = positionalParamNames.shift();
+    positionalToNamed[name] = positionalParams[i];
+  }
+
+  return positionalToNamed;
+}
+
 export default class CurlyComponentManager extends AbstractManager {
   prepareArgs(definition, args) {
     let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
 
     if (DEBUG && componentPositionalParamsDefinition) {
-      validatePositionalParameters(args.named, args.positional, componentPositionalParamsDefinition);
+      validatePositionalParameters(args.named, args.positional, definition);
     }
 
     let componentHasRestStylePositionalParams = typeof componentPositionalParamsDefinition === 'string';
@@ -127,36 +137,48 @@ export default class CurlyComponentManager extends AbstractManager {
     }
 
     let capturedArgs = args.capture();
-    // grab raw positional references array
-    let positional = capturedArgs.positional.references;
 
-    // handle prep for closure component with positional params
-    let curriedNamed;
-    if (definition.args) {
-      let remainingDefinitionPositionals = definition.args.positional.slice(positional.length);
-      positional = positional.concat(remainingDefinitionPositionals);
-      curriedNamed = definition.args.named;
+    let positional = [];
+    let named = [];
+
+    let positionalParamNames = !componentHasRestStylePositionalParams && [...componentPositionalParamsDefinition];
+
+    let curriedArgs = definition.args;
+    if (curriedArgs) {
+      for (let i = 0; i < curriedArgs.length; ) {
+        let layerPositional = curriedArgs[i];
+        let layerNamed = curriedArgs[i + 1];
+
+        if (componentHasPositionalParams && !componentHasRestStylePositionalParams) {
+          let layerPositionalToNamed = positionalToNamed(positionalParamNames, layerPositional);
+          named.push(layerPositionalToNamed);
+        } else if (componentHasRestStylePositionalParams){
+          positional.push(...layerPositional);
+        }
+
+        named.push(layerNamed);
+        i += 2;
+      }
     }
 
     // handle positionalParams
     let positionalParamsToNamed;
     if (componentHasRestStylePositionalParams) {
+      positional.push(...capturedArgs.positional.references);
       positionalParamsToNamed = {
         [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional)
       };
-      positional = [];
+      named.push(positionalParamsToNamed);
     } else if (componentHasPositionalParams){
-      positionalParamsToNamed = {};
-      let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
-      for (let i = 0; i < length; i++) {
-        let name = componentPositionalParamsDefinition[i];
-        positionalParamsToNamed[name] = positional[i];
-      }
+      let invocationPositionalToNamed = positionalToNamed(positionalParamNames, capturedArgs.positional.references);
+      named.push(invocationPositionalToNamed);
     }
 
-    let named = assign({}, curriedNamed, positionalParamsToNamed, capturedArgs.named.map);
+    named.push(capturedArgs.named.map);
 
-    return { positional, named };
+    let finalNamed = assign({}, ...named);
+
+    return { positional, named: finalNamed };
   }
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
@@ -351,8 +373,10 @@ export default class CurlyComponentManager extends AbstractManager {
   }
 }
 
-export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
+export function validatePositionalParameters(named, positional, definition) {
   if (DEBUG) {
+    let positionalParamsDefinition = definition.ComponentClass.class.positionalParams;
+
     if (!named || !positional || !positional.length) {
       return;
     }
@@ -362,11 +386,23 @@ export function validatePositionalParameters(named, positional, positionalParams
     if (paramType === 'string') {
       assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
     } else {
-      if (positional.length < positionalParamsDefinition.length) {
-        positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
+      // copy the positional params
+      positionalParamsDefinition = positionalParamsDefinition.slice();
+
+      // if any args have been curried already, process them to ensure the remaining
+      // positional params are correct
+      let definitionArgs = definition.args;
+      if (definitionArgs) {
+        for (let i = 0; i < definitionArgs.length; i += 2) {
+          let layerPositionals = definitionArgs[i];
+          layerPositionals.forEach(() => positionalParamsDefinition.shift());
+        }
       }
 
-      for (let i = 0; i < positionalParamsDefinition.length; i++) {
+      // only check the positional params that are provided for this invocation/layer
+      let limit = Math.min(positionalParamsDefinition.length, positional.length);
+
+      for (let i = 0; i < limit; i++) {
         let name = positionalParamsDefinition[i];
 
         assert(
