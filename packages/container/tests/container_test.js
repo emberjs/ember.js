@@ -1,5 +1,4 @@
-import { getOwner, OWNER, assign } from 'ember-utils';
-import { ENV } from 'ember-environment';
+import { OWNER, assign } from 'ember-utils';
 import { get } from 'ember-metal';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { Registry } from '..';
