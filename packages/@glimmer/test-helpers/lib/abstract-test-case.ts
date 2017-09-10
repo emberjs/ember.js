@@ -2,7 +2,7 @@ import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } fro
 import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction } from "@glimmer/node";
-import { Option } from "@glimmer/interfaces";
+import { Option, Simple } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { assign, equalTokens, normalizeInnerHTML } from "./helpers";
 import { TestEnvironment } from './environment/lazy-env';
@@ -508,7 +508,7 @@ export class TestEnvironmentRenderDelegate implements RenderDelegate {
     this.env.registerHelper(name, helper);
   }
 
-  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
+  renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
     let { env } = this;
     return renderTemplate(template, {
       env,
