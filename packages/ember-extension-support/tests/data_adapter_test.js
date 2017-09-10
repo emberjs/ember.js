@@ -5,7 +5,11 @@ import {
   addObserver,
   removeObserver
 } from 'ember-metal';
-import { Object as EmberObject, A as emberA } from 'ember-runtime';
+import { 
+  Object as EmberObject, 
+  A as emberA,
+  pushObject
+} from 'ember-runtime';
 import EmberDataAdapter from '../data_adapter';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
@@ -127,7 +131,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
 
       function modelTypesAdded(types) {
         run(() => {
-          records.pushObject(4);
+          pushObject(records, 4);
         });
       }
 
@@ -175,7 +179,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
       adapter.watchRecords('post', recordsAdded);
       countAdded++;
       post = PostClass.create();
-      recordList.pushObject(post);
+      pushObject(recordList, post);
     });
   }
 
