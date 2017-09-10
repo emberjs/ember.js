@@ -1,7 +1,7 @@
-import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable } from '@glimmer/interfaces';
+import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable, VMHandle } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
-import { ComponentCapabilities, VMHandle } from '@glimmer/opcode-compiler';
+import { ComponentCapabilities } from '@glimmer/opcode-compiler';
 import Bounds from '../bounds';
 import { ElementOperations } from '../vm/element-builder';
 import Environment, { DynamicScope } from '../environment';

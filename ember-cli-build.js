@@ -78,6 +78,3 @@ module.exports = function(_options) {
 
   return merge(output);
 }
-
-function transpileTypeScriptToJavaScript() {
-}

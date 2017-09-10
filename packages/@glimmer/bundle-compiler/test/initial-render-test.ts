@@ -1,4 +1,4 @@
-import { Opaque, RuntimeResolver as IRuntimeResolver, Option, Dict, Recast, Simple, ProgramSymbolTable } from "@glimmer/interfaces";
+import { Opaque, RuntimeResolver as IRuntimeResolver, Option, Dict, Recast, Simple, ProgramSymbolTable, VMHandle } from "@glimmer/interfaces";
 import {
   TestDynamicScope,
   UserHelper,
@@ -27,7 +27,7 @@ import {
   YieldSuite
 } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate, Specifier, SpecifierMap, specifierFor, LookupMap, DebugConstants } from "@glimmer/bundle-compiler";
-import { WrappedBuilder, ComponentCapabilities, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { WrappedBuilder, ComponentCapabilities, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { Program, RuntimeProgram, WriteOnlyProgram, RuntimeConstants } from "@glimmer/program";
 import { elementBuilder, LowLevelVM, TemplateIterator, RenderResult, Helper, Environment, WithStaticLayout, Bounds, ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, Invocation, getDynamicVar, Helper as GlimmerHelper, } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
