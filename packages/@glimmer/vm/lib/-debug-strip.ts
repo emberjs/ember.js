@@ -1,4 +1,4 @@
-import { Op } from "@glimmer/vm";
+import { Op } from "./opcodes";
 import { Option, Opaque, Opcode } from "@glimmer/interfaces";
 import { RuntimeConstants } from "@glimmer/program";
 import { fillNulls } from "@glimmer/util";

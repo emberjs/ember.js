@@ -2,9 +2,8 @@ import {
   BlockSymbolTable,
   ProgramSymbolTable,
   SymbolTable,
+  VMHandle
 } from '@glimmer/interfaces';
-
-import { VMHandle } from '@glimmer/opcode-compiler';
 
 export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;

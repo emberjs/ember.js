@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver } from '@glimmer/interfaces';
+import { VMHandle, Opaque, Option, Dict, ProgramSymbolTable, Recast, RuntimeResolver } from '@glimmer/interfaces';
 import {
   combineTagged,
   CONSTANT_TAG,
@@ -32,7 +32,7 @@ import { dict, assert, unreachable } from "@glimmer/util";
 import { check, expectStackChange, CheckInstanceof, CheckFunction, CheckInterface, CheckProgramSymbolTable, CheckHandle, CheckOption, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from "@glimmer/wire-format";
-import { ATTRS_BLOCK, VMHandle } from '@glimmer/opcode-compiler';
+import { ATTRS_BLOCK } from '@glimmer/opcode-compiler';
 import { CheckReference, CheckArguments, CheckPathReference, CheckComponentState, CheckCompilableBlock } from './-debug-strip';
 
 const ARGS = new Arguments();

@@ -1,5 +1,4 @@
-import { ProgramSymbolTable } from '@glimmer/interfaces';
-import { VMHandle } from '@glimmer/opcode-compiler';
+import { ProgramSymbolTable, VMHandle } from '@glimmer/interfaces';
 import { Template } from './template';
 
 export class PartialDefinition {

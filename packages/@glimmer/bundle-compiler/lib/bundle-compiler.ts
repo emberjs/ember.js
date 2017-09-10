@@ -7,6 +7,7 @@ import {
   ProgramSymbolTable,
   Recast,
   SymbolTable,
+  VMHandle,
 } from "@glimmer/interfaces";
 import {
   CompilableTemplate,
@@ -15,7 +16,6 @@ import {
   ComponentCapabilities,
   CompileTimeLookup,
   CompileOptions,
-  VMHandle,
   ICompilableTemplate,
   EagerOpcodeBuilder
 } from "@glimmer/opcode-compiler";
