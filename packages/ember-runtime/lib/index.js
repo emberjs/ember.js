@@ -19,6 +19,7 @@ export { default as isEqual } from './is-equal';
 export {
   default as Array,
   objectAt,
+  pushObject,
   isEmberArray,
   addArrayObserver,
   removeArrayObserver

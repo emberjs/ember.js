@@ -60,6 +60,10 @@ export function objectAt(content, idx) {
   return typeof content.objectAt === 'function' ? content.objectAt(idx) : content[idx];
 }
 
+export function pushObject(arr, obj) {
+  return typeof arr.pushObject === 'function' ? arr.pushObject(obj) : arr.push(obj);
+}
+
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
   let removing, lim;
 
