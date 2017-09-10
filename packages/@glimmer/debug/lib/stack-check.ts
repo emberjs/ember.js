@@ -1,5 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple } from "@glimmer/interfaces";
-import { VMHandle } from "@glimmer/opcode-compiler";
+import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple, VMHandle } from "@glimmer/interfaces";
 
 export interface Checker<T> {
   type: T;

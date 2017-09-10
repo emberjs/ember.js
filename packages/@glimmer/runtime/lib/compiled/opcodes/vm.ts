@@ -1,5 +1,5 @@
 import { Op } from '@glimmer/vm';
-import { Opaque, Option, Recast } from '@glimmer/interfaces';
+import { Opaque, Option, Recast, VMHandle } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
   isConst,
@@ -17,7 +17,6 @@ import { CompilableTemplate } from '../../syntax/interfaces';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { LazyConstants, PrimitiveType } from "@glimmer/program";
-import { VMHandle } from "@glimmer/opcode-compiler";
 import { CheckReference } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());

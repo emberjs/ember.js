@@ -22,9 +22,9 @@ import {
 
 import { PublicVM } from './vm/append';
 
-import { Macros, OpcodeBuilderConstructor, VMHandle, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { Macros, OpcodeBuilderConstructor, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
-import { Simple, RuntimeResolver, BlockSymbolTable } from "@glimmer/interfaces";
+import { Simple, RuntimeResolver, BlockSymbolTable, VMHandle } from "@glimmer/interfaces";
 import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
 import { Program } from "@glimmer/program";
 
