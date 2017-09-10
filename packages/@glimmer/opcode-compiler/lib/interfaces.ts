@@ -1,8 +1,6 @@
-import { Unique, Opaque, SymbolTable, Option, BlockSymbolTable, Opcode } from "@glimmer/interfaces";
+import { VMHandle, Opaque, SymbolTable, Option, BlockSymbolTable, Opcode } from "@glimmer/interfaces";
 import { Core, SerializedTemplateBlock } from "@glimmer/wire-format";
 import { Macros } from './syntax';
-
-export type VMHandle = Unique<"Handle">;
 
 export interface CompileTimeHeap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;

@@ -14,9 +14,8 @@ import {
   UpdatingOpcode
 } from '../opcodes';
 
-import { Opcode } from "@glimmer/interfaces";
+import { Opcode, VMHandle } from "@glimmer/interfaces";
 import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram } from "@glimmer/program";
-import { VMHandle as VMHandle } from "@glimmer/opcode-compiler";
 
 export interface PublicVM {
   env: Environment;

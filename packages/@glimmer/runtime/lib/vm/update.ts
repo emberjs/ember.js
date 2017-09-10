@@ -20,11 +20,10 @@ import {
 } from '@glimmer/reference';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
-import { Simple } from '@glimmer/interfaces';
+import { Simple, VMHandle } from '@glimmer/interfaces';
 
 import VM, { CapturedStack, EvaluationStack } from './append';
 import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
-import { VMHandle } from "@glimmer/opcode-compiler";
 
 export default class UpdatingVM<Specifier = Opaque> {
   public env: Environment;
