@@ -3,7 +3,7 @@ import { Dict, VMHandle, ProgramSymbolTable, Opaque, Option, RuntimeResolver as 
 import { ComponentCapabilities, ICompilableTemplate, WrappedBuilder } from "@glimmer/opcode-compiler";
 import { ComponentKind, RenderDelegate, renderSync } from '../abstract-test-case';
 import { AbstractTestEnvironment, EnvironmentOptions } from './env';
-import { ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, getDynamicVar, Helper as GlimmerHelper, elementBuilder, TemplateIterator, RenderResult, Helper, LowLevelVM } from "@glimmer/runtime";
+import { ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, getDynamicVar, Helper as GlimmerHelper, elementBuilder, TemplateIterator, RenderResult, Helper, LowLevelVM, Environment } from "@glimmer/runtime";
 import { dict, assert, assign } from "@glimmer/util";
 import { Program, RuntimeProgram, RuntimeConstants, WriteOnlyProgram } from "@glimmer/program";
 import { BundlingBasicComponentManager, EMPTY_CAPABILITIES } from './components/basic';
@@ -13,6 +13,8 @@ import { HelperReference, UserHelper } from './helper';
 import { TestMacros } from './generic/macros';
 import { BundledEmberishGlimmerComponentManager, EmberishGlimmerComponent, EMBERISH_GLIMMER_CAPABILITIES } from './components/emberish-glimmer';
 import { EMBERISH_CURLY_CAPABILITIES, EmberishCurlyComponent, BundledEmberishCurlyComponentManager } from './components/emberish-curly';
+import * as SimpleDOM from 'simple-dom';
+import { NodeEnv } from './ssr-env';
 
 export interface RegisteredComponentDefinition {
   symbolTable?: boolean;
@@ -197,13 +199,14 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new BundledEmberishGlimmerComponentMa
 const EMBERISH_CURLY_COMPONENT_MANAGER = new BundledEmberishCurlyComponentManager();
 
 export class BundlingRenderDelegate implements RenderDelegate {
-  protected env = new BundledClientEnvironment();
+  protected env: Environment;
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
   protected components = {};
   protected speficiersToSymbolTable = new LookupMap<Specifier, ProgramSymbolTable>();
 
-  constructor() {
+  constructor(env: Environment) {
+    this.env = env || new BundledClientEnvironment();
     this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
   }
 
@@ -355,5 +358,11 @@ export class BundlingRenderDelegate implements RenderDelegate {
     let iterator = new TemplateIterator(vm);
 
     return renderSync(env, iterator);
+  }
+}
+
+export class NodeBundlingRenderDelegate extends BundlingRenderDelegate {
+  constructor(env = new NodeEnv({ document: new SimpleDOM.Document() })) {
+    super(env);
   }
 }

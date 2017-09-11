@@ -28,7 +28,7 @@ function testOptions(options: NodeEnvironmentOptions) {
 
 }
 
-class LazyNodeEnvironment extends TestEnvironment {
+export class NodeEnv extends TestEnvironment {
   protected document: Simple.Document;
   constructor(options: NodeEnvironmentOptions) {
     super(testOptions(options));
@@ -38,7 +38,7 @@ class LazyNodeEnvironment extends TestEnvironment {
 
 export class NodeRenderDelegate extends TestEnvironmentRenderDelegate {
   constructor() {
-    super(new LazyNodeEnvironment({ document: new SimpleDOM.Document() }));
+    super(new NodeEnv({ document: new SimpleDOM.Document() }));
   }
 }
 
@@ -51,6 +51,15 @@ export class AbstractNodeTest extends AbstractRenderTest {
 
   assertHTML(html: string) {
     let serialized = this.serializer.serializeChildren(this.element);
+    this.assert.equal(serialized, html);
+  }
+
+  assertComponent(html: string) {
+    let el = this.element.firstChild! as Element;
+    this.assert.equal(el.getAttribute('class'), 'ember-view');
+    this.assert.ok(el.getAttribute('id'));
+    this.assert.ok(el.getAttribute('id')!.indexOf('ember') > -1);
+    let serialized = this.serializer.serializeChildren(this.element.firstChild!);
     this.assert.equal(serialized, html);
   }
 }
