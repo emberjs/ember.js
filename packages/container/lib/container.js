@@ -307,7 +307,7 @@ function instantiateFactory(container, fullName, options) {
 }
 
 function markInjectionsAsDynamic(injections) {
-  injections._dynamic = true;
+  Object.defineProperty(injections, '_dynamic', { value: true });
 }
 
 function areInjectionsNotDynamic(injections) {
@@ -400,7 +400,7 @@ class FactoryManager {
     this.fullName = fullName;
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
-    this.injections = undefined;
+    this.injectionsCache = undefined;
   }
 
   toString() {
@@ -412,11 +412,11 @@ class FactoryManager {
   }
 
   create(options = {}) {
-    let injections = this.injections;
+    let injections = this.injectionsCache;
     if (injections === undefined) {
       injections = injectionsFor(this.container, this.normalizedName);
       if (areInjectionsNotDynamic(injections)) {
-        this.injections = injections;
+        this.injectionsCache = injections;
       }
     }
     let props = assign({}, injections, options);
