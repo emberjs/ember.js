@@ -253,18 +253,6 @@ Map.create = function() {
 
 Map.prototype = {
   constructor: Map,
-
-  /**
-    This property will change as the number of objects in the map changes.
-
-    @since 1.8.0
-    @property size
-    @type number
-    @default 0
-    @private
-  */
-  size: 0,
-
   /**
     Retrieve the value associated with a given key.
 
