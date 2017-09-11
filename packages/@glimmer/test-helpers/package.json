@@ -14,7 +14,8 @@
     "@glimmer/interfaces": "^0.27.0",
     "@glimmer/node": "^0.27.0",
     "@glimmer/opcode-compiler": "^0.27.0",
-    "@glimmer/program": "^0.27.0"
+    "@glimmer/program": "^0.27.0",
+    "@glimmer/bundle-compiler": "^0.27.0"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",

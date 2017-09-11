@@ -1,5 +1,5 @@
 import { ComponentCapabilities, WrappedBuilder } from "@glimmer/opcode-compiler";
-import { Option, Opaque } from "@glimmer/interfaces";
+import { Option, Opaque, Recast, VMHandle } from "@glimmer/interfaces";
 import GlimmerObject from "@glimmer/object";
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { EMPTY_ARRAY, assign, Destroyable } from "@glimmer/util";
@@ -8,6 +8,7 @@ import { UpdatableReference } from "@glimmer/object-reference";
 
 import { Attrs, GenericComponentDefinition, GenericComponentManager, createTemplate, AttrsDiff } from "../shared";
 import { TestSpecifier, TestResolver } from '../lazy-env';
+import { RuntimeComponentDefinition, RuntimeResolver } from '../bundle-compiler';
 
 export interface EmberishCurlyComponentFactory {
   positionalParams: Option<string | string[]>;
@@ -194,8 +195,27 @@ export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponen
       };
     });
   }
-
 }
+
+export class BundledEmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager {
+  getLayout(definition: RuntimeComponentDefinition, resolver: RuntimeResolver): Invocation {
+    let handle = resolver.getVMHandle(definition.specifier);
+    return {
+      handle: handle as Recast<number, VMHandle>,
+      symbolTable: definition.symbolTable!
+    };
+  }
+}
+
+export const EMBERISH_CURLY_CAPABILITIES = {
+  staticDefinitions: true,
+  dynamicLayout: false,
+  dynamicTag: true,
+  prepareArgs: true,
+  createArgs: true,
+  attributeHook: false,
+  elementHook: true
+};
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
