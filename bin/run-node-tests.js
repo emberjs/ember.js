@@ -6,7 +6,7 @@ const execa = require('execa');
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const EMBER_BIN = 'ember';
 const QUNIT_BIN = 'qunit';
-const NODE_TEST_GLOB = '@glimmer/node/test/**/*-test.js';
+const NODE_TEST_GLOB = '@glimmer/{node,bundle-compiler}/test/**/*node-test.js';
 
 // When running inside `ember test`, we already have a build we can use.
 if ('EMBER_CLI_TEST_OUTPUT' in process.env) {

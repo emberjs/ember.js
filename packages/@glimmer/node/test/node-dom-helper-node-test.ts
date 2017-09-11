@@ -1,7 +1,12 @@
-import { AbstractRenderTest, test, rawModule, } from "@glimmer/test-helpers";
+import {
+  AbstractRenderTest,
+  test,
+  rawModule,
+  AbstractNodeTest,
+  NodeRenderDelegate
+} from "@glimmer/test-helpers";
 import { NodeDOMTreeConstruction } from '..';
 import { precompile } from "@glimmer/compiler";
-import { AbstractNodeTest, NodeRenderDelegate } from './helpers';
 
 class NodeTests extends AbstractNodeTest {
 
