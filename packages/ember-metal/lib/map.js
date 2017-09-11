@@ -1,3 +1,4 @@
+import { assert } from 'ember-debug';
 /**
 @module ember
 @submodule ember-metal
@@ -21,10 +22,6 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 import { guidFor } from 'ember-utils';
-
-function missingFunction(fn) {
-  throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
-}
 
 function missingNew(name) {
   throw new TypeError(`Constructor ${name} requires 'new'`);
@@ -171,9 +168,7 @@ OrderedSet.prototype = {
     @private
   */
   forEach(fn /*, ...thisArg*/) {
-    if (typeof fn !== 'function') {
-      missingFunction(fn);
-    }
+    assert(`${Object.prototype.toString.call(fn)} is not a function`, typeof fn === 'function')
 
     if (this.size === 0) { return; }
 
@@ -366,9 +361,7 @@ Map.prototype = {
     @private
   */
   forEach(callback/*, ...thisArg*/) {
-    if (typeof callback !== 'function') {
-      missingFunction(callback);
-    }
+    assert(`${Object.prototype.toString.call(callback)} is not a function`, typeof callback === 'function')
 
     if (this.size === 0) { return; }
 
