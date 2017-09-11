@@ -11,7 +11,7 @@ export class LookupResolver {
   private getComponentSpec(handle: number): ComponentSpec {
     let spec = this.resolver.resolve<Option<ComponentSpec>>(handle);
 
-    assert(!!spec, `Couldn't find a template named ${name}`);
+    assert(!!spec, `Couldn't find a template for handle ${handle}`);
 
     return spec!;
   }
