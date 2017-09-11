@@ -25,7 +25,7 @@ import { PublicVM } from './vm/append';
 import { Macros, OpcodeBuilderConstructor, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
 import { Simple, RuntimeResolver, BlockSymbolTable, VMHandle } from "@glimmer/interfaces";
-import { Component, ComponentManager } from "@glimmer/runtime/lib/internal-interfaces";
+import { Component, ComponentManager } from "./internal-interfaces";
 import { Program } from "@glimmer/program";
 
 export type ScopeBlock = [VMHandle | ICompilableTemplate<BlockSymbolTable>, BlockSymbolTable];
