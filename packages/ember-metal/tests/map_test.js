@@ -519,13 +519,6 @@ QUnit.module('OrderedSet', {
   }
 });
 
-QUnit.test('OrderedSet() without `new`', function() {
-  QUnit.throws(() => {
-    // jshint newcap:false
-    OrderedSet();
-  }, /Constructor OrderedSet requires 'new'/);
-});
-
 QUnit.test('add returns the set', function() {
   let obj = {};
   equal(map.add(obj), map);

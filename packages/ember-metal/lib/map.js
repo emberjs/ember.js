@@ -59,28 +59,22 @@ function copyMap(original, newObject) {
   @constructor
   @private
 */
-function OrderedSet() {
-  if (this instanceof OrderedSet) {
+class OrderedSet {
+  constructor() {
     this.clear();
-  } else {
-    missingNew('OrderedSet');
   }
-}
 
-/**
-  @method create
-  @static
-  @return {Ember.OrderedSet}
-  @private
-*/
-OrderedSet.create = function() {
-  let Constructor = this;
+  /**
+    @method create
+    @static
+    @return {Ember.OrderedSet}
+    @private
+  */
+  static create() {
+    let Constructor = this;
+    return new Constructor();
+  }
 
-  return new Constructor();
-};
-
-OrderedSet.prototype = {
-  constructor: OrderedSet,
   /**
     @method clear
     @private
@@ -89,7 +83,7 @@ OrderedSet.prototype = {
     this.presenceSet = Object.create(null);
     this.list = [];
     this.size = 0;
-  },
+  }
 
   /**
     @method add
@@ -109,7 +103,7 @@ OrderedSet.prototype = {
     }
 
     return this;
-  },
+  }
 
   /**
     @since 1.8.0
@@ -135,7 +129,7 @@ OrderedSet.prototype = {
     } else {
       return false;
     }
-  },
+  }
 
   /**
     @method isEmpty
@@ -144,7 +138,7 @@ OrderedSet.prototype = {
   */
   isEmpty() {
     return this.size === 0;
-  },
+  }
 
   /**
     @method has
@@ -159,7 +153,7 @@ OrderedSet.prototype = {
     let presenceSet = this.presenceSet;
 
     return presenceSet[guid] === true;
-  },
+  }
 
   /**
     @method forEach
@@ -183,7 +177,7 @@ OrderedSet.prototype = {
         fn(list[i]);
       }
     }
-  },
+  }
 
   /**
     @method toArray
@@ -192,7 +186,7 @@ OrderedSet.prototype = {
   */
   toArray() {
     return this.list.slice();
-  },
+  }
 
   /**
     @method copy
@@ -200,8 +194,7 @@ OrderedSet.prototype = {
     @private
   */
   copy() {
-    let Constructor = this.constructor;
-    let set = new Constructor();
+    let set = new OrderedSet();
 
     set.presenceSet = copyNull(this.presenceSet);
     set.list = this.toArray();
@@ -209,7 +202,7 @@ OrderedSet.prototype = {
 
     return set;
   }
-};
+}
 
 /**
   A Map stores values indexed by keys. Unlike JavaScript's
@@ -233,7 +226,7 @@ OrderedSet.prototype = {
 */
 function Map() {
   if (this instanceof Map) {
-    this._keys = OrderedSet.create();
+    this._keys = new OrderedSet;
     this._values = Object.create(null);
     this.size = 0;
   } else {
