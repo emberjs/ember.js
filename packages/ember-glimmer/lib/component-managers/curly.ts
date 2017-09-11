@@ -199,7 +199,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     let factory = definition.ComponentClass;
 
     let capturedArgs = args.named.capture();
-    let props = processComponentArgs(capturedArgs);
+    let props = processComponentArgs(capturedArgs, definition.name);
 
     aliasIdToElementId(args, props);
 
@@ -337,13 +337,13 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     let { component, args, argsRevision, environment } = bucket;
 
     if (DEBUG) {
-       this._pushToDebugStack(component._debugContainerKey, environment);
+      this._pushToDebugStack(component._debugContainerKey, environment)
     }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     if (!args.tag.validate(argsRevision)) {
-      let props = processComponentArgs(args);
+      let props = processComponentArgs(args, component._debugContainerKey);
 
       bucket.argsRevision = args.tag.value();
 

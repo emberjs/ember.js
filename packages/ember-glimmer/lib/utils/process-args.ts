@@ -1,3 +1,4 @@
+import { assert } from 'ember-debug';
 import { symbol } from 'ember-utils';
 import { MUTABLE_CELL } from 'ember-views';
 import { CapturedNamedArguments } from '@glimmer/runtime';
@@ -5,25 +6,32 @@ import { ARGS } from '../component';
 import { ACTION } from '../helpers/action';
 import { UPDATE } from './references';
 
-// ComponentArgs takes EvaluatedNamedArgs and converts them into the
+// processComponentArgs takes CapturedNamedArguments and converts them into the
 // inputs needed by CurlyComponents (attrs and props, with mutable
 // cells, etc).
-export function processComponentArgs(namedArgs: CapturedNamedArguments) {
+export function processComponentArgs(namedArgs: CapturedNamedArguments, componentName: string) {
   let keys = namedArgs.names;
   let attrs = namedArgs.value();
   let props = Object.create(null);
   let args = Object.create(null);
 
-  props[ARGS] = args;
+  let seen;
+  if (DEBUG) {
+    seen = Object.create(null);
+  }
 
   for (let i = 0; i < keys.length; i++) {
     let name = keys[i];
+
+    assert(
+      `Component attribute \`${name}\` is declared multiple times for \`${componentName.split(':').slice(-1)}\` component.`,
+      seen[name] ? false : seen[name] = true
+    );
+
     let ref = namedArgs.get(name);
     let value = attrs[name];
 
-    if (typeof value === 'function' && value[ACTION]) {
-      attrs[name] = value;
-    } else if (ref[UPDATE]) {
+    if (!(typeof value === 'function' && value[ACTION]) && ref[UPDATE]) {
       attrs[name] = new MutableCell(ref, value);
     }
 
@@ -31,6 +39,7 @@ export function processComponentArgs(namedArgs: CapturedNamedArguments) {
     props[name] = value;
   }
 
+  props[ARGS] = args;
   props.attrs = attrs;
 
   return props;

@@ -3172,4 +3172,15 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('3');
   }
+
+  ['@test passing attributes with same name multiple times throws']() {
+    let FooBarComponent = Component.extend({});
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar foo="bar" foo="fizz"}}');
+    }, /Component attribute `foo` is declared multiple times for `foo-bar` component./);
+  }
+
 });
