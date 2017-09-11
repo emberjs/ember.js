@@ -468,13 +468,6 @@ QUnit.test('Map.prototype.constructor', function() {
   equal(map.constructor, Map);
 });
 
-QUnit.test('Map() without `new`', function() {
-  QUnit.throws(() => {
-    // jshint newcap:false
-    Map();
-  }, /Constructor Map requires 'new'/);
-});
-
 QUnit.test('MapWithDefault.prototype.constructor', function() {
   let map = new MapWithDefault({
     defaultValue(key) { return key; }

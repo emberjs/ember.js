@@ -23,10 +23,6 @@ import { assert } from 'ember-debug';
 */
 import { guidFor } from 'ember-utils';
 
-function missingNew(name) {
-  throw new TypeError(`Constructor ${name} requires 'new'`);
-}
-
 function copyNull(obj) {
   let output = Object.create(null);
 
@@ -224,28 +220,23 @@ class OrderedSet {
   @private
   @constructor
 */
-function Map() {
-  if (this instanceof Map) {
-    this._keys = new OrderedSet;
+class Map {
+  constructor() {
+    this._keys = new OrderedSet();
     this._values = Object.create(null);
     this.size = 0;
-  } else {
-    missingNew('Map');
   }
-}
 
-/**
-  @method create
-  @static
-  @private
-*/
-Map.create = function() {
-  let Constructor = this;
-  return new Constructor();
-};
+  /**
+    @method create
+    @static
+    @private
+  */
+  static create() {
+    let Constructor = this;
+    return new Constructor();
+  }
 
-Map.prototype = {
-  constructor: Map,
   /**
     Retrieve the value associated with a given key.
 
@@ -261,7 +252,7 @@ Map.prototype = {
     let guid = guidFor(key);
 
     return values[guid];
-  },
+  }
 
   /**
     Adds a value to the map. If a value for the given key has already been
@@ -288,7 +279,7 @@ Map.prototype = {
     this.size = keys.size;
 
     return this;
-  },
+  }
 
   /**
     Removes a value from the map for an associated key.
@@ -314,7 +305,7 @@ Map.prototype = {
     } else {
       return false;
     }
-  },
+  }
 
   /**
     Check whether a key is present.
@@ -326,7 +317,7 @@ Map.prototype = {
   */
   has(key) {
     return this._keys.has(key);
-  },
+  }
 
   /**
     Iterate over all the keys and values. Calls the function once
@@ -357,7 +348,7 @@ Map.prototype = {
     }
 
     this._keys.forEach(cb);
-  },
+  }
 
   /**
     @method clear
@@ -367,7 +358,7 @@ Map.prototype = {
     this._keys.clear();
     this._values = Object.create(null);
     this.size = 0;
-  },
+  }
 
   /**
     @method copy
@@ -377,7 +368,7 @@ Map.prototype = {
   copy() {
     return copyMap(this, new Map());
   }
-};
+}
 
 /**
   @class MapWithDefault
