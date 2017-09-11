@@ -219,19 +219,19 @@ function testMap(nameAndFunc) {
   });
 
   QUnit.test('forEach without proper callback', function() {
-    QUnit.throws(function() {
+    expectAssertion(function() {
       map.forEach();
     }, '[object Undefined] is not a function');
 
-    QUnit.throws(function() {
+    expectAssertion(function() {
       map.forEach(undefined);
     }, '[object Undefined] is not a function');
 
-    QUnit.throws(function() {
+    expectAssertion(function() {
       map.forEach(1);
     }, '[object Number] is not a function');
 
-    QUnit.throws(function() {
+    expectAssertion(function() {
       map.forEach({});
     }, '[object Object] is not a function');
 
@@ -240,7 +240,7 @@ function testMap(nameAndFunc) {
     });
     // ensure the error happens even if no data is present
     equal(map.size, 0);
-    QUnit.throws(function() {
+    expectAssertion(function() {
       map.forEach({});
     }, '[object Object] is not a function');
   });

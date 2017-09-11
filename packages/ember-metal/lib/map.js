@@ -1,4 +1,6 @@
 import { assert } from 'ember-debug';
+import { guidFor } from 'ember-utils';
+
 /**
 @module ember
 @submodule ember-metal
@@ -21,7 +23,6 @@ import { assert } from 'ember-debug';
   Map is mocked out to look like an Ember object, so you can do
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
-import { guidFor } from 'ember-utils';
 
 function copyNull(obj) {
   let output = Object.create(null);
@@ -190,7 +191,8 @@ class OrderedSet {
     @private
   */
   copy() {
-    let set = new OrderedSet();
+    let Constructor = this.constructor;
+    let set = new Constructor();
 
     set.presenceSet = copyNull(this.presenceSet);
     set.list = this.toArray();
@@ -379,64 +381,62 @@ class Map {
   @param [options]
     @param {*} [options.defaultValue]
 */
-function MapWithDefault(options) {
-  this._super$constructor();
-  this.defaultValue = options.defaultValue;
+class MapWithDefault extends Map {
+  constructor(options) {
+    super();
+    this.defaultValue = options.defaultValue;
+  }
+
+  /**
+    @method create
+    @static
+    @param [options]
+      @param {*} [options.defaultValue]
+    @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
+      `Ember.MapWithDefault` otherwise returns `Ember.Map`
+    @private
+  */
+  static create(options) {
+    if (options) {
+      return new MapWithDefault(options);
+    } else {
+      return new Map();
+    }
+  }
+
+  /**
+    Retrieve the value associated with a given key.
+
+    @method get
+    @param {*} key
+    @return {*} the value associated with the key, or the default value
+    @private
+  */
+  get(key) {
+    let hasValue = this.has(key);
+
+    if (hasValue) {
+      return super.get(key);
+    } else {
+      let defaultValue = this.defaultValue(key);
+      this.set(key, defaultValue);
+      return defaultValue;
+    }
+  }
+
+  /**
+    @method copy
+    @return {Ember.MapWithDefault}
+    @private
+  */
+  copy() {
+    let Constructor = this.constructor;
+    return copyMap(this, new Constructor({
+      defaultValue: this.defaultValue
+    }));
+  }
 }
 
-/**
-  @method create
-  @static
-  @param [options]
-    @param {*} [options.defaultValue]
-  @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
-    `Ember.MapWithDefault` otherwise returns `Ember.Map`
-  @private
-*/
-MapWithDefault.create = function(options) {
-  if (options) {
-    return new MapWithDefault(options);
-  } else {
-    return new Map();
-  }
-};
-
-MapWithDefault.prototype = Object.create(Map.prototype);
-MapWithDefault.prototype.constructor = MapWithDefault;
-MapWithDefault.prototype._super$constructor = Map;
-MapWithDefault.prototype._super$get = Map.prototype.get;
-
-/**
-  Retrieve the value associated with a given key.
-
-  @method get
-  @param {*} key
-  @return {*} the value associated with the key, or the default value
-  @private
-*/
-MapWithDefault.prototype.get = function(key) {
-  let hasValue = this.has(key);
-
-  if (hasValue) {
-    return this._super$get(key);
-  } else {
-    let defaultValue = this.defaultValue(key);
-    this.set(key, defaultValue);
-    return defaultValue;
-  }
-};
-
-/**
-  @method copy
-  @return {Ember.MapWithDefault}
-  @private
-*/
-MapWithDefault.prototype.copy = function() {
-  let Constructor = this.constructor;
-  return copyMap(this, new Constructor({
-    defaultValue: this.defaultValue
-  }));
-};
 
 export default Map;
 
