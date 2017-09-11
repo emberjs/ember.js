@@ -29,6 +29,13 @@ module.exports = function(jsTree) {
         module: true
       }
     }])
+
+    glimmerUtils.push([nuke, { source: '@glimmer/debug' }])
+    glimmerUtils.push([nuke, { source: '@glimmer/vm/lib/-debug-strip' }]);
+    glimmerUtils.push([nuke, {
+      source: '@glimmer/vm',
+      delegate: removeMetaData
+    }]);
   }
 
   function removeMetaData(bindingName, path, t) {
@@ -46,12 +53,6 @@ module.exports = function(jsTree) {
     getModuleId: nameResolver,
     plugins: [
       ...glimmerUtils,
-      [nuke, { source: '@glimmer/debug' }],
-      [nuke, { source: '@glimmer/vm/lib/-debug-strip' }],
-      [nuke, {
-        source: '@glimmer/vm',
-        delegate: removeMetaData
-      }],
       [stripGlimmerUtils, { bindings: ['expect', 'unwrap'], source: '@glimmer/util' }]
     ]
   });
