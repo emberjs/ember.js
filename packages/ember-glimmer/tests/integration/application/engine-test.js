@@ -719,4 +719,28 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       assert.ok(this.stringsEndWith(href1337, suffix1337));
     });
   }
+
+  ['@test visit() routable engine which errors on init'](assert) {
+    assert.expect(1);
+
+    let hooks = [];
+
+    this.additionalEngineRegistrations(function() {
+      this.register('route:application', Route.extend({
+        init() {
+          throw new Error('Whoops! Something went wrong...');
+        }
+      }));
+    });
+
+    this.setupAppAndRoutableEngine(hooks);
+
+    return this.visit('/', { shouldRender: true })
+      .then(() => {
+        return this.visit('/blog');
+      })
+      .catch((error) => {
+        assert.equal(error.message, 'Whoops! Something went wrong...');
+      });
+  }
 });
