@@ -51,3 +51,7 @@ export {
 export * from './lib/environment/components';
 
 export * from './lib/environment/lookup';
+
+export * from './lib/environment/ssr-env';
+
+export * from './lib/environment/bundle-compiler';
