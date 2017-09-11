@@ -29,6 +29,8 @@ export function skip(_target: Object, _name: string, descriptor: PropertyDescrip
   descriptor.value["skip"] = true;
 }
 
+const COMMENT_NODE = 8; //  Node.COMMENT_NODE
+
 export class VersionedObject implements Tagged {
   public tag: TagWrapper<DirtyableTag>;
   public value: Object;
@@ -703,7 +705,7 @@ function uniq(arr: any[]) {
 
 function isServerMarker(node: Node) {
   return (
-    node.nodeType === Node.COMMENT_NODE && node.nodeValue!.charAt(0) === '%'
+    node.nodeType === COMMENT_NODE && node.nodeValue!.charAt(0) === '%'
   );
 }
 
@@ -740,7 +742,7 @@ export function test(...args: any[]) {
 }
 
 export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
-  new(): Delegate;
+  new(env?: Environment): Delegate;
 }
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends AbstractRenderTest> {

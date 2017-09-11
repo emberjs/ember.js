@@ -9,3 +9,4 @@ export * from './suites/scopes';
 export * from './suites/shadowing';
 export * from './suites/with-dynamic-vars';
 export * from './suites/yield';
+export * from './suites/ssr';
