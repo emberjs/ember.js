@@ -37,9 +37,11 @@ module.exports = function(_options) {
   // Glimmer includes a number of assertions and logging information that can be
   // stripped from production builds for better runtime performance.
   if (PRODUCTION) {
-    jsTree = funnel(jsTree, {
-      exclude: ['**/**/-debug-strip.js']
-    });
+    if (!process.env.RETAIN_FLAGS) {
+      jsTree = funnel(jsTree, {
+        exclude: ['**/**/-debug-strip.js']
+      });
+    }
     jsTree = stripGlimmerUtilities(jsTree);
   }
 
