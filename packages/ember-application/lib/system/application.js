@@ -580,13 +580,11 @@ const Application = Engine.extend({
   _bootSync() {
     if (this._booted) { return; }
 
-
-
     // Even though this returns synchronously, we still need to make sure the
     // boot promise exists for book-keeping purposes: if anything went wrong in
     // the boot process, we need to store the error as a rejection on the boot
     // promise so that a future caller of `boot()` can tell what failed.
-    let defer = this._bootResolver = new RSVP.defer();
+    let defer = this._bootResolver = RSVP.defer();
     this._bootPromise = defer.promise;
 
     try {
