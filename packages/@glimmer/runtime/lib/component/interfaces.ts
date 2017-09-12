@@ -5,81 +5,77 @@ import { ComponentCapabilities } from '@glimmer/opcode-compiler';
 import Bounds from '../bounds';
 import { ElementOperations } from '../vm/element-builder';
 import Environment, { DynamicScope } from '../environment';
-import { IArguments, ICapturedArguments, Arguments } from '../vm/arguments';
+import { IArguments } from '../vm/arguments';
+import { CurriedComponentDefinition } from "@glimmer/runtime";
 
 export interface PreparedArguments {
   positional: Array<VersionedPathReference<Opaque>>;
   named: Dict<VersionedPathReference<Opaque>>;
 }
 
-// TODO: Think about renaming the concepts:
-//
-// - ComponentDefinition (opaque static state bucket)
-// - Component           (opaque instance state bucket)
-// - ComponentManager    (same thing)
-// - ComponentSpec       (pair of definition / manager)
-export type ComponentDefinition = Unique<'ComponentDefinition'>;
+export type ComponentDefinitionState = Unique<'ComponentDefinitionState'>;
+export type ComponentInstanceState = Unique<'ComponentInstanceState'>;
 
 /** @internal */
-export interface ComponentSpec {
-  definition: ComponentDefinition;
+export interface ComponentDefinition {
+  state: ComponentDefinitionState;
   manager: InternalComponentManager;
 }
 
-export interface PublicComponentSpec<Definition = Opaque, Manager = ComponentManager<Opaque, Definition>> {
-  definition: Definition;
+export interface PublicComponentDefinition<StaticComponentState = Opaque, Manager = ComponentManager<Opaque, StaticComponentState>> {
+  state: StaticComponentState;
   manager: Manager;
 }
 
-export interface ComponentManager<Component, Definition> {
-  getCapabilities(definition: Definition): ComponentCapabilities;
+export interface ComponentManager<InstanceState, StaticState> {
+  getCapabilities(state: StaticState): ComponentCapabilities;
 
   // First, the component manager is asked to prepare the arguments needed
   // for `create`. This allows for things like closure components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(definition: Definition, args: IArguments): Option<PreparedArguments>;
+  prepareArgs(state: StaticState, args: IArguments): Option<PreparedArguments>;
 
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, definition: Definition, args: Option<IArguments>, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): Component;
+  create(env: Environment, state: StaticState, args: Option<IArguments>, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): InstanceState;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
-  getSelf(component: Component): VersionedPathReference<Opaque>;
+  getSelf(state: InstanceState): VersionedPathReference<Opaque>;
 
   // Convert the opaque component into a `RevisionTag` that determins when
   // the component's update hooks need to be called (if at all).
-  getTag(component: Component): Tag;
+  getTag(state: InstanceState): Tag;
 
   // This hook is run after the entire layout has been rendered.
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didRenderLayout(component: Component, bounds: Bounds): void;
+  didRenderLayout(state: InstanceState, bounds: Bounds): void;
 
   // Once the whole top-down rendering process is complete, Glimmer invokes
   // the `didCreate` callbacks.
-  didCreate(component: Component): void;
+  didCreate(state: InstanceState): void;
 
   // When the component's tag has invalidated, the manager's `update` hook is
   // called.
-  update(component: Component, dynamicScope: DynamicScope): void;
+  update(state: InstanceState, dynamicScope: DynamicScope): void;
 
   // This hook is run after the entire layout has been updated.
   //
   // Hosts should use `didUpdate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didUpdateLayout(component: Component, bounds: Bounds): void;
+  didUpdateLayout(state: InstanceState, bounds: Bounds): void;
 
   // Finally, once top-down revalidation has completed, Glimmer invokes
   // the `didUpdate` callbacks on components that changed.
-  didUpdate(component: Component): void;
+  didUpdate(state: InstanceState): void;
 
   // Convert the opaque component into an object that implements Destroyable.
   // If it returns null, the component will not be destroyed.
-  getDestructor(component: Component): Option<Destroyable>;
+  getDestructor(state: InstanceState): Option<Destroyable>;
 }
 
 export interface Invocation {
@@ -101,7 +97,7 @@ export interface WithAttributeHook<Component, Definition> extends ComponentManag
   didSplatAttributes(component: Component, element: Component, operations: ElementOperations): void;
 }
 
-export interface WithElementHook<Component> extends ComponentManager<Component, ComponentDefinition> {
+export interface WithElementHook<Component> extends ComponentManager<Component, ComponentDefinitionState> {
   // The `didCreateElement` hook is run for non-tagless components after the
   // element as been created, but before it has been appended ("flushed") to
   // the DOM. This hook allows the manager to save off the element, as well as
@@ -149,51 +145,6 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   elementHook: false
 };
 
-const CURRIED_COMPONENT_DEFINITION_BRAND = 'CURRIED COMPONENT DEFINITION [id=6f00feb9-a0ef-4547-99ea-ac328f80acea]';
-
-export function isCurriedComponentDefinition(definition: Opaque): definition is CurriedComponentDefinition {
-  return !!(definition && definition[CURRIED_COMPONENT_DEFINITION_BRAND]);
-}
-
-export function isComponentDefinition(definition: Opaque): definition is CurriedComponentDefinition {
-  return definition && definition[CURRIED_COMPONENT_DEFINITION_BRAND];
-}
-
-export class CurriedComponentDefinition {
-  /** @internal */
-  constructor(protected inner: ComponentSpec | CurriedComponentDefinition, protected args: Option<ICapturedArguments>) {
-    this[CURRIED_COMPONENT_DEFINITION_BRAND] = true;
-  }
-
-  unwrap(args: Arguments): ComponentSpec {
-    args.realloc(this.offset);
-
-    let definition: CurriedComponentDefinition = this;
-
-    while (true) {
-      let { args: curriedArgs, inner } = definition;
-
-      if (curriedArgs) {
-        args.positional.prepend(curriedArgs.positional);
-        args.named.merge(curriedArgs.named);
-      }
-
-      if (!isCurriedComponentDefinition(inner)) {
-        return inner;
-      }
-
-      definition = inner;
-    }
-  }
-
-  /** @internal */
-  get offset(): number {
-    let { inner, args } = this;
-    let length = args ? args.positional.length : 0;
-    return isCurriedComponentDefinition(inner) ? length + inner.offset : length;
-  }
-}
-
 export type BrandedComponentDefinition = CurriedComponentDefinition;
-export type InternalComponent = Unique<'Component'>;
-export type InternalComponentManager = ComponentManager<InternalComponent, ComponentDefinition>;
+export type InternalComponent = ComponentInstanceState;
+export type InternalComponentManager = ComponentManager<ComponentInstanceState, ComponentDefinitionState>;

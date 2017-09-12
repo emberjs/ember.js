@@ -683,7 +683,7 @@ export const enum Op {
    *   ... →
    *   ..., { ComponentDefinition, ComponentManager }
    */
-  PushComponentSpec,
+  PushComponentDefinition,
 
   /**
    * Operation:

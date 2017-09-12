@@ -6,23 +6,37 @@ import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/
 import { UpdatableReference } from "@glimmer/object-reference";
 import GlimmerObject from "@glimmer/object";
 
-import { GenericComponentManager, GenericComponentDefinition, Attrs, AttrsDiff, createTemplate } from '../shared';
+import { GenericComponentManager, GenericStaticComponentState, Attrs, AttrsDiff, createTemplate } from '../shared';
 import { TestSpecifier, TestResolver } from '../lazy-env';
 import { Destroyable, unreachable } from "@glimmer/util";
 import { RuntimeResolver } from '../bundle-compiler';
 import { EMPTY_CAPABILITIES } from './basic';
 
-export interface EmberishGlimmerStateBucket {
+export class EmberishGlimmerStaticComponentState extends GenericStaticComponentState {
+  public ComponentClass: EmberishGlimmerComponentFactory;
+
+  public capabilities: ComponentCapabilities = {
+    staticDefinitions: false,
+    dynamicLayout: false,
+    dynamicTag: true,
+    prepareArgs: false,
+    createArgs: true,
+    attributeHook: true,
+    elementHook: false
+  };
+}
+
+export interface EmberishGlimmerComponentState {
   args: CapturedNamedArguments;
   component: EmberishGlimmerComponent;
 }
 
-export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R extends IRuntimeResolver<Specifier>> extends GenericComponentManager implements ComponentManager<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition>, WithStaticLayout<EmberishGlimmerStateBucket, EmberishGlimmerComponentDefinition, Specifier, R> {
+export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R extends IRuntimeResolver<Specifier>> extends GenericComponentManager implements ComponentManager<EmberishGlimmerComponentState, EmberishGlimmerStaticComponentState>, WithStaticLayout<EmberishGlimmerComponentState, EmberishGlimmerStaticComponentState, Specifier, R> {
   prepareArgs(): null {
     return null;
   }
 
-  create(_environment: Environment, definition: EmberishGlimmerComponentDefinition, _args: Arguments, _dynamicScope: any, _callerSelf: PathReference<Opaque>, _hasDefaultBlock: boolean): EmberishGlimmerStateBucket {
+  create(_environment: Environment, definition: EmberishGlimmerStaticComponentState, _args: Arguments, _dynamicScope: any, _callerSelf: PathReference<Opaque>, _hasDefaultBlock: boolean): EmberishGlimmerComponentState {
     let args = _args.named.capture();
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.value();
@@ -36,32 +50,32 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
     return { args, component };
   }
 
-  getTag({ args: { tag }, component: { dirtinessTag } }: EmberishGlimmerStateBucket): Tag {
+  getTag({ args: { tag }, component: { dirtinessTag } }: EmberishGlimmerComponentState): Tag {
     return combine([tag, dirtinessTag]);
   }
 
-  abstract getLayout(definition: EmberishGlimmerComponentDefinition, resolver: R): Invocation;
+  abstract getLayout(definition: EmberishGlimmerStaticComponentState, resolver: R): Invocation;
 
-  getSelf({ component }: EmberishGlimmerStateBucket): PathReference<Opaque> {
+  getSelf({ component }: EmberishGlimmerComponentState): PathReference<Opaque> {
     return new UpdatableReference(component);
   }
 
-  didCreateElement({ component }: EmberishGlimmerStateBucket, element: Element, operations: ElementOperations): void {
+  didCreateElement({ component }: EmberishGlimmerComponentState, element: Element, operations: ElementOperations): void {
     component.element = element;
     operations.setAttribute('id', PrimitiveReference.create(`ember${component._guid}`), false, null);
     operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
   }
 
-  didRenderLayout({ component }: EmberishGlimmerStateBucket, bounds: Bounds): void {
+  didRenderLayout({ component }: EmberishGlimmerComponentState, bounds: Bounds): void {
     component.bounds = bounds;
   }
 
-  didCreate({ component }: EmberishGlimmerStateBucket): void {
+  didCreate({ component }: EmberishGlimmerComponentState): void {
     component.didInsertElement();
     component.didRender();
   }
 
-  update({ args, component }: EmberishGlimmerStateBucket): void {
+  update({ args, component }: EmberishGlimmerComponentState): void {
     let oldAttrs = component.attrs;
     let newAttrs = args.value();
 
@@ -74,12 +88,12 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
 
   didUpdateLayout(): void { }
 
-  didUpdate({ component }: EmberishGlimmerStateBucket): void {
+  didUpdate({ component }: EmberishGlimmerComponentState): void {
     component.didUpdate();
     component.didRender();
   }
 
-  getDestructor({ component }: EmberishGlimmerStateBucket): Destroyable {
+  getDestructor({ component }: EmberishGlimmerComponentState): Destroyable {
     return {
       destroy() {
         component.destroy();
@@ -95,7 +109,7 @@ export class BundledEmberishGlimmerComponentManager extends AbstractEmberishGlim
 }
 
 export class EmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<TestSpecifier, TestResolver> {
-  getLayout({ name }: EmberishGlimmerComponentDefinition, resolver: TestResolver): Invocation {
+  getLayout({ name }: EmberishGlimmerStaticComponentState, resolver: TestResolver): Invocation {
     let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
       let template = new ScannableTemplate(options, layout).asLayout();
@@ -142,20 +156,6 @@ export class EmberishGlimmerComponent extends GlimmerObject {
 
 export interface EmberishGlimmerComponentFactory {
   create(options: { attrs: Attrs }): EmberishGlimmerComponent;
-}
-
-export class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerStateBucket> {
-  public ComponentClass: EmberishGlimmerComponentFactory;
-
-  public capabilities: ComponentCapabilities = {
-    staticDefinitions: false,
-    dynamicLayout: false,
-    dynamicTag: true,
-    prepareArgs: false,
-    createArgs: true,
-    attributeHook: true,
-    elementHook: false
-  };
 }
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {

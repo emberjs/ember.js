@@ -6,7 +6,7 @@ import { EMPTY_ARRAY, assign, Destroyable } from "@glimmer/util";
 import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope, Invocation } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 
-import { Attrs, GenericComponentDefinition, GenericComponentManager, createTemplate, AttrsDiff } from "../shared";
+import { Attrs, GenericStaticComponentState, GenericComponentManager, createTemplate, AttrsDiff } from "../shared";
 import { TestSpecifier, TestResolver } from '../lazy-env';
 import { RuntimeComponentDefinition, RuntimeResolver } from '../bundle-compiler';
 
@@ -25,14 +25,13 @@ const CURLY_CAPABILITIES: ComponentCapabilities = {
   elementHook: true
 };
 
-export class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponent> {
+export class EmberishCurlyStaticComponentState extends GenericStaticComponentState {
   public ComponentClass: EmberishCurlyComponentFactory;
-
   public capabilities: ComponentCapabilities = CURLY_CAPABILITIES;
 }
 
 export class AbstractEmberishCurlyComponentManager extends GenericComponentManager implements WithDynamicTagName<EmberishCurlyComponent> {
-  prepareArgs(definition: EmberishCurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
+  prepareArgs(definition: EmberishCurlyStaticComponentState, args: Arguments): Option<PreparedArguments> {
     const { positionalParams } = definition.ComponentClass || BaseEmberishCurlyComponent;
 
     if (typeof positionalParams === 'string') {
@@ -68,7 +67,7 @@ export class AbstractEmberishCurlyComponentManager extends GenericComponentManag
     }
   }
 
-  create(_environment: Environment, definition: EmberishCurlyComponentDefinition, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishCurlyComponent {
+  create(_environment: Environment, definition: EmberishCurlyStaticComponentState, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishCurlyComponent {
     let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
     let self = callerSelf.value();
     let args = _args.named.capture();

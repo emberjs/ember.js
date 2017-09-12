@@ -172,8 +172,8 @@ export abstract class OpcodeBuilder<Specifier> {
 
   // components
 
-  pushComponentSpec(handle: number) {
-    this.push(Op.PushComponentSpec, this.constants.handle(handle));
+  pushComponentDefinition(handle: number) {
+    this.push(Op.PushComponentDefinition, this.constants.handle(handle));
   }
 
   pushDynamicComponentManager(referrer: Specifier) {
