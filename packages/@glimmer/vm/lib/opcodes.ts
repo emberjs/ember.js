@@ -433,6 +433,16 @@ export const enum Op {
   CompileBlock,
 
   /**
+   * Operation: Push a scope onto the stack.
+   * Format:
+   *   (PushBlockScope #Scope)
+   * Operand Stack:
+   *   ..., →
+   *   ..., Scope
+   */
+  PushBlockScope,
+
+  /**
    * Operation: Push a symbol table onto the stack.
    * Format:
    *   (PushSymbolTable #SymbolTable)

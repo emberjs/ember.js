@@ -1,7 +1,7 @@
 import { Opaque, Option } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
-import { ScopeBlock } from '../../environment';
+import { Scope, ScopeBlock } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
@@ -9,7 +9,7 @@ import { ConcatReference } from '../expressions/concat';
 import { assert } from "@glimmer/util";
 import { check, expectStackChange, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
 import { stackAssert } from './assert';
-import { CheckArguments, CheckPathReference, CheckCompilableBlock } from './-debug-strip';
+import { CheckArguments, CheckPathReference, CheckCompilableBlock, CheckScope } from './-debug-strip';
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
@@ -36,9 +36,10 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
   let handle = check(vm.stack.pop(), CheckOr(CheckOption(CheckHandle), CheckCompilableBlock));
+  let scope = check(vm.stack.pop(), CheckScope) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
   let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
-  let block: Option<ScopeBlock> = table ? [handle!, table] : null;
+  let block: Option<ScopeBlock> = table ? [handle!, scope!, table] : null;
 
   vm.scope().bindBlock(symbol, block);
 });
@@ -70,14 +71,16 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
   let block = vm.scope().getBlock(_block);
 
   if (block) {
+    stack.push(block[2]);
     stack.push(block[1]);
     stack.push(block[0]);
   } else {
     stack.push(null);
     stack.push(null);
+    stack.push(null);
   }
 
-  expectStackChange(vm.stack, 2, 'GetBlock');
+  expectStackChange(vm.stack, 3, 'GetBlock');
 });
 
 APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
@@ -86,7 +89,9 @@ APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
+  // FIXME(mmun): should only need to push the symbol table
   check(vm.stack.pop(), CheckOption(CheckOr(CheckHandle, CheckCompilableBlock)));
+  check(vm.stack.pop(), CheckOption(CheckScope));
   let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
