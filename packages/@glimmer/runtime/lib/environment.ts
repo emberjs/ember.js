@@ -1,14 +1,7 @@
-import { VersionedPathReference } from '@glimmer/reference';
-
-import { DOMChanges, DOMTreeConstruction } from './dom/helper';
-import { Reference, OpaqueIterable } from '@glimmer/reference';
-import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
-import { DynamicAttributeFactory, defaultDynamicAttributes } from './vm/attributes/dynamic';
-
-import {
-  ModifierManager, Modifier
-} from './modifier/interfaces';
-
+import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
+import { Macros, OpcodeBuilderConstructor, ICompilableTemplate } from '@glimmer/opcode-compiler';
+import { Simple, RuntimeResolver, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { Program } from "@glimmer/program";
 import {
   Dict,
   Option,
@@ -20,26 +13,28 @@ import {
   expect
 } from '@glimmer/util';
 
+import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { PublicVM } from './vm/append';
-
-import { Macros, OpcodeBuilderConstructor, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { IArguments } from './vm/arguments';
-import { Simple, RuntimeResolver, BlockSymbolTable, VMHandle } from "@glimmer/interfaces";
+import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
+import { DynamicAttributeFactory, defaultDynamicAttributes } from './vm/attributes/dynamic';
+import {
+  ModifierManager, Modifier
+} from './modifier/interfaces';
 import { Component, ComponentManager } from "./internal-interfaces";
-import { Program } from "@glimmer/program";
 
 export type ScopeBlock = [VMHandle | ICompilableTemplate<BlockSymbolTable>, Scope, BlockSymbolTable];
-export type ScopeSlot = Option<VersionedPathReference<Opaque>> | Option<ScopeBlock>;
+export type ScopeSlot = Option<PathReference<Opaque>> | Option<ScopeBlock>;
 
 export interface DynamicScope {
-  get(key: string): VersionedPathReference<Opaque>;
-  set(key: string, reference: VersionedPathReference<Opaque>): VersionedPathReference<Opaque>;
+  get(key: string): PathReference<Opaque>;
+  set(key: string, reference: PathReference<Opaque>): PathReference<Opaque>;
   child(): DynamicScope;
 }
 
 export class Scope {
-  static root(self: VersionedPathReference<Opaque>, size = 0) {
-    let refs: VersionedPathReference<Opaque>[] = new Array(size + 1);
+  static root(self: PathReference<Opaque>, size = 0) {
+    let refs: PathReference<Opaque>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
@@ -49,7 +44,7 @@ export class Scope {
   }
 
   static sized(size = 0) {
-    let refs: VersionedPathReference<Opaque>[] = new Array(size + 1);
+    let refs: PathReference<Opaque>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
@@ -65,20 +60,20 @@ export class Scope {
     // named arguments and blocks passed to a layout that uses eval
     private evalScope: Option<Dict<ScopeSlot>>,
     // locals in scope when the partial was invoked
-    private partialMap: Option<Dict<VersionedPathReference<Opaque>>>) {
+    private partialMap: Option<Dict<PathReference<Opaque>>>) {
   }
 
-  init({ self }: { self: VersionedPathReference<Opaque> }): this {
+  init({ self }: { self: PathReference<Opaque> }): this {
     this.slots[0] = self;
     return this;
   }
 
-  getSelf(): VersionedPathReference<Opaque> {
-    return this.get<VersionedPathReference<Opaque>>(0);
+  getSelf(): PathReference<Opaque> {
+    return this.get<PathReference<Opaque>>(0);
   }
 
-  getSymbol(symbol: number): VersionedPathReference<Opaque> {
-    return this.get<VersionedPathReference<Opaque>>(symbol);
+  getSymbol(symbol: number): PathReference<Opaque> {
+    return this.get<PathReference<Opaque>>(symbol);
   }
 
   getBlock(symbol: number): ScopeBlock {
@@ -89,7 +84,7 @@ export class Scope {
     return this.evalScope;
   }
 
-  getPartialMap(): Option<Dict<VersionedPathReference<Opaque>>> {
+  getPartialMap(): Option<Dict<PathReference<Opaque>>> {
     return this.partialMap;
   }
 
@@ -97,11 +92,11 @@ export class Scope {
     this.set(symbol, value);
   }
 
-  bindSelf(self: VersionedPathReference<Opaque>) {
-    this.set<VersionedPathReference<Opaque>>(0, self);
+  bindSelf(self: PathReference<Opaque>) {
+    this.set<PathReference<Opaque>>(0, self);
   }
 
-  bindSymbol(symbol: number, value: VersionedPathReference<Opaque>) {
+  bindSymbol(symbol: number, value: PathReference<Opaque>) {
     this.set(symbol, value);
   }
 
@@ -113,7 +108,7 @@ export class Scope {
     this.evalScope = map;
   }
 
-  bindPartialMap(map: Dict<VersionedPathReference<Opaque>>) {
+  bindPartialMap(map: Dict<PathReference<Opaque>>) {
     this.partialMap = map;
   }
 
@@ -314,5 +309,5 @@ export abstract class DefaultEnvironment extends Environment {
 export default Environment;
 
 export interface Helper {
-  (vm: PublicVM, args: IArguments): VersionedPathReference<Opaque>;
+  (vm: PublicVM, args: IArguments): PathReference<Opaque>;
 }
