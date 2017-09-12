@@ -7,8 +7,8 @@ import { wrapComponentClassAttribute } from '../utils/bindings';
 import { dynamicComponentMacro } from './dynamic-component';
 import { hashToArgs } from './utils';
 
-function buildTextFieldSyntax(params, hash, builder) {
-  let definition = builder.env.getComponentDefinition('-text-field', builder.meta.templateMeta);
+function buildSyntax(type, params, hash, builder) {
+  let definition = builder.env.getComponentDefinition(type, builder.meta.templateMeta);
   builder.component.static(definition, [params, hashToArgs(hash), null, null]);
   return true;
 }
@@ -159,33 +159,22 @@ export function inputMacro(name, params, hash, builder) {
     valueIndex = keys.indexOf('value');
   }
 
-  if (!params) {
-    params = [];
-  }
+  if (!params) { params = []; }
 
   if (typeIndex > -1) {
     let typeArg = values[typeIndex];
-    if (!Array.isArray(typeArg)) {
-      if (typeArg === 'checkbox') {
-        assert(
-          '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
-            'you must use `checked=someBooleanValue` instead.',
-          valueIndex === -1
-        );
-
-        wrapComponentClassAttribute(hash);
-
-        let definition = builder.env.getComponentDefinition('-checkbox', builder.meta.templateMeta);
-        builder.component.static(definition, [params, hashToArgs(hash), null, null]);
-        return true;
-      } else {
-        return buildTextFieldSyntax(params, hash, builder);
-      }
+    if (Array.isArray(typeArg)) {
+      return dynamicComponentMacro(params, hash, null, null, builder);
+    } else if (typeArg === 'checkbox') {
+      assert(
+        '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
+          'you must use `checked=someBooleanValue` instead.',
+        valueIndex === -1
+      );
+      wrapComponentClassAttribute(hash);
+      return buildSyntax('-checkbox', params, hash, builder);
     }
-  } else {
-    return buildTextFieldSyntax(params, hash, builder);
   }
 
-
-  return dynamicComponentMacro(params, hash, null, null, builder);
+  return buildSyntax('-text-field', params, hash, builder);
 }
