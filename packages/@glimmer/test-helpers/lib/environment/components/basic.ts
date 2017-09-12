@@ -1,4 +1,4 @@
-import { GenericComponentManager, createTemplate, GenericComponentDefinition } from '../shared';
+import { GenericComponentManager, createTemplate, GenericStaticComponentState } from '../shared';
 import { TestSpecifier, TestResolver } from '../lazy-env';
 
 import { WithStaticLayout, Environment, ScannableTemplate, Bounds, Invocation } from "@glimmer/runtime";
@@ -72,17 +72,17 @@ export class BundlingBasicComponentManager implements WithStaticLayout<BasicComp
   }
 }
 
-export class BasicComponentManager extends GenericComponentManager implements WithStaticLayout<BasicComponent, BasicComponentDefinition, TestSpecifier, TestResolver> {
+export class BasicComponentManager extends GenericComponentManager implements WithStaticLayout<BasicComponent, BasicStaticComponentState, TestSpecifier, TestResolver> {
   prepareArgs(): null {
     throw unreachable();
   }
 
-  create(_env: Environment, definition: BasicComponentDefinition): BasicComponent {
+  create(_env: Environment, definition: BasicStaticComponentState): BasicComponent {
     let klass = definition.ComponentClass || BasicComponent;
     return new klass();
   }
 
-  getLayout({ name }: BasicComponentDefinition, resolver: TestResolver): Invocation {
+  getLayout({ name }: BasicStaticComponentState, resolver: TestResolver): Invocation {
     let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
       let template = new ScannableTemplate(options, layout).asLayout();
@@ -133,7 +133,7 @@ export interface BasicComponentFactory {
   new (): BasicComponent;
 }
 
-export class BasicComponentDefinition extends GenericComponentDefinition<BasicComponent> {
+export class BasicStaticComponentState extends GenericStaticComponentState {
   public name: string;
   public ComponentClass: BasicComponentFactory;
   public capabilities: ComponentCapabilities = {

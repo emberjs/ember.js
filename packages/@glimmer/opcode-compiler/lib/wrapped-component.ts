@@ -135,10 +135,10 @@ export class ComponentBuilder<Specifier> implements IComponentBuilder {
       if (capabilities.dynamicLayout === false) {
         let layout = lookup.getLayout(handle)!;
 
-        builder.pushComponentSpec(handle);
+        builder.pushComponentDefinition(handle);
         builder.invokeStaticComponent(capabilities, layout, null, params, hash, false, _default, inverse);
       } else {
-        builder.pushComponentSpec(handle);
+        builder.pushComponentDefinition(handle);
         builder.invokeComponent(null, params, hash, false, _default, inverse);
       }
     }

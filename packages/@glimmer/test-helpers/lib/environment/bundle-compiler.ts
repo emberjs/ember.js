@@ -3,7 +3,7 @@ import { Dict, VMHandle, ProgramSymbolTable, Opaque, Option, RuntimeResolver as 
 import { ComponentCapabilities, ICompilableTemplate, WrappedBuilder } from "@glimmer/opcode-compiler";
 import { ComponentKind, RenderDelegate, renderSync } from '../abstract-test-case';
 import { AbstractTestEnvironment, EnvironmentOptions } from './env';
-import { ComponentManager, DOMTreeConstruction, DOMChanges, ComponentSpec, getDynamicVar, Helper as GlimmerHelper, elementBuilder, TemplateIterator, RenderResult, Helper, LowLevelVM, Environment } from "@glimmer/runtime";
+import { ComponentManager, DOMTreeConstruction, DOMChanges, ComponentDefinition, getDynamicVar, Helper as GlimmerHelper, elementBuilder, TemplateIterator, RenderResult, Helper, LowLevelVM, Environment } from "@glimmer/runtime";
 import { dict, assert, assign } from "@glimmer/util";
 import { Program, RuntimeProgram, RuntimeConstants, WriteOnlyProgram } from "@glimmer/program";
 import { BundlingBasicComponentManager, EMPTY_CAPABILITIES } from './components/basic';
@@ -171,13 +171,13 @@ export class RuntimeResolver implements IRuntimeResolver<Specifier> {
     throw new Error("Method not implemented.");
   }
 
-  lookupComponent(name: string, referrer: Specifier): Option<ComponentSpec> {
+  lookupComponent(name: string, referrer: Specifier): Option<ComponentDefinition> {
     let moduleName = this.modules.resolve(name, referrer, 'ui/components');
 
     if (!moduleName) return null;
 
     let module = this.modules.get(moduleName);
-    return module.get('default') as ComponentSpec;
+    return module.get('default') as ComponentDefinition;
   }
 
   lookupPartial(_name: string, _meta: Opaque): Option<number> {

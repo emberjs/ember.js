@@ -1,36 +1,36 @@
 import { ComponentCapabilities, ICompilableTemplate } from "@glimmer/opcode-compiler";
 import { ProgramSymbolTable, Option } from "@glimmer/interfaces";
 import { assert } from "@glimmer/util";
-import { ComponentSpec, WithStaticLayout } from "@glimmer/runtime";
+import { ComponentDefinition, WithStaticLayout } from "@glimmer/runtime";
 import { TestResolver, TestSpecifier } from './lazy-env';
 
 export class LookupResolver {
   constructor(private resolver: TestResolver) {
   }
 
-  private getComponentSpec(handle: number): ComponentSpec {
-    let spec = this.resolver.resolve<Option<ComponentSpec>>(handle);
+  private getComponentDefinition(handle: number): ComponentDefinition {
+    let definition = this.resolver.resolve<Option<ComponentDefinition>>(handle);
 
-    assert(!!spec, `Couldn't find a template for handle ${handle}`);
+    assert(!!definition, `Couldn't find a template for handle ${definition}`);
 
-    return spec!;
+    return definition!;
   }
 
   getCapabilities(handle: number): ComponentCapabilities {
-    let spec = this.resolver.resolve<Option<ComponentSpec>>(handle);
-    let { manager, definition } = spec!;
-    return manager.getCapabilities(definition);
+    let definition = this.resolver.resolve<Option<ComponentDefinition>>(handle);
+    let { manager, state } = definition!;
+    return manager.getCapabilities(state);
   }
 
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
-    let { manager, definition } = this.getComponentSpec(handle);
-    let capabilities = manager.getCapabilities(definition);
+    let { manager, state } = this.getComponentDefinition(handle);
+    let capabilities = manager.getCapabilities(state);
 
     if (capabilities.dynamicLayout === true) {
       return null;
     }
 
-    let invocation = (manager as WithStaticLayout<any, any, TestSpecifier, TestResolver>).getLayout(definition, this.resolver);
+    let invocation = (manager as WithStaticLayout<any, any, TestSpecifier, TestResolver>).getLayout(state, this.resolver);
 
     return {
       compile() { return invocation.handle; },

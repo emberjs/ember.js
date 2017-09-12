@@ -1,20 +1,19 @@
-import { Dict, Option, Opaque } from "@glimmer/interfaces";
+import { Dict, Option } from "@glimmer/interfaces";
 import { ComponentCapabilities, ParsedLayout } from "@glimmer/opcode-compiler";
-import { ComponentManager } from "@glimmer/runtime";
 import { SerializedTemplateWithLazyBlock, SerializedTemplateBlock, TemplateMeta } from "@glimmer/wire-format";
 import { precompile } from "@glimmer/compiler";
 
 export type Attrs = Dict<any>;
 export type AttrsDiff = { oldAttrs: Option<Attrs>, newAttrs: Attrs };
 
-export interface Definition {
+export interface StaticComponentState {
   capabilities: ComponentCapabilities;
 }
 
-export abstract class GenericComponentDefinition<T> implements Definition {
+export abstract class GenericStaticComponentState implements StaticComponentState {
   abstract capabilities: ComponentCapabilities;
 
-  constructor(public name: string, public manager: ComponentManager<T, GenericComponentDefinition<T>>, public ComponentClass: any, public layout: Option<number>) {
+  constructor(public name: string, public ComponentClass: any, public layout: Option<number>) {
   }
 
   toJSON() {
@@ -23,8 +22,8 @@ export abstract class GenericComponentDefinition<T> implements Definition {
 }
 
 export class GenericComponentManager {
-  getCapabilities(definition: GenericComponentDefinition<Opaque>): ComponentCapabilities {
-    return definition.capabilities;
+  getCapabilities(state: GenericStaticComponentState): ComponentCapabilities {
+    return state.capabilities;
   }
 }
 

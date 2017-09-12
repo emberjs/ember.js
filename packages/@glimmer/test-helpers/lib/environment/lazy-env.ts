@@ -1,11 +1,28 @@
-import { GenericComponentDefinition } from './shared';
-import { BasicComponentFactory, BasicComponentDefinition, BASIC_COMPONENT_MANAGER, StaticTaglessComponentDefinition, STATIC_TAGLESS_COMPONENT_MANAGER, EmberishCurlyComponentFactory, EmberishCurlyComponentDefinition, EMBERISH_CURLY_COMPONENT_MANAGER, EmberishGlimmerComponentFactory, EmberishCurlyComponent, EmberishGlimmerComponentDefinition, EMBERISH_GLIMMER_COMPONENT_MANAGER, EmberishGlimmerComponent } from './components';
+import { BasicComponentFactory, BasicStaticComponentState, BASIC_COMPONENT_MANAGER, StaticTaglessComponentDefinition, STATIC_TAGLESS_COMPONENT_MANAGER, EmberishCurlyComponentFactory, EmberishCurlyStaticComponentState, EMBERISH_CURLY_COMPONENT_MANAGER, EmberishGlimmerComponentFactory, EmberishCurlyComponent, EmberishGlimmerStaticComponentState, EMBERISH_GLIMMER_COMPONENT_MANAGER, EmberishGlimmerComponent } from './components';
 import { AbstractTestEnvironment } from './env';
 import { UserHelper, HelperReference } from './helper';
 import { InertModifierManager } from './modifier';
 import { TestMacros } from './generic/macros';
 import { Option, RuntimeResolver, Opaque, Maybe, Simple } from "@glimmer/interfaces";
-import { Helper as GlimmerHelper, DOMTreeConstruction, TopLevelSyntax, ModifierManager, PartialDefinition, ComponentSpec, CompilationOptions, templateFactory, Template, IDOMChanges, DOMChanges, VM, Arguments, getDynamicVar, CurriedComponentDefinition, curry, Invocation } from "@glimmer/runtime";
+import {
+  Helper as GlimmerHelper,
+  DOMTreeConstruction,
+  TopLevelSyntax,
+  ModifierManager,
+  PartialDefinition,
+  ComponentDefinition,
+  CompilationOptions,
+  templateFactory,
+  Template,
+  IDOMChanges,
+  DOMChanges,
+  VM,
+  Arguments,
+  getDynamicVar,
+  CurriedComponentDefinition,
+  curry,
+  Invocation
+} from "@glimmer/runtime";
 import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
 import { dict } from "@glimmer/util";
 import { precompile } from "@glimmer/compiler";
@@ -28,7 +45,7 @@ export interface Lookup {
   helper: GlimmerHelper;
   modifier: ModifierManager;
   partial: PartialDefinition;
-  component: ComponentSpec;
+  component: ComponentDefinition;
   template: Invocation;
   'template-source': string;
 }
@@ -71,7 +88,7 @@ export class TestResolver implements RuntimeResolver<TestSpecifier> {
     helper: new TypedRegistry<GlimmerHelper>(),
     modifier: new TypedRegistry<ModifierManager>(),
     partial: new TypedRegistry<PartialDefinition>(),
-    component: new TypedRegistry<ComponentSpec>(),
+    component: new TypedRegistry<ComponentDefinition>(),
     template: new TypedRegistry<Invocation>(),
     'template-source': new TypedRegistry<string>()
   };
@@ -116,10 +133,10 @@ export class TestResolver implements RuntimeResolver<TestSpecifier> {
     return this.lookup('modifier', name, referrer);
   }
 
-  lookupComponent(name: string, referrer?: TestSpecifier): Option<ComponentSpec> {
+  lookupComponent(name: string, referrer?: TestSpecifier): Option<ComponentDefinition> {
     let handle = this.lookupComponentHandle(name, referrer);
     if (handle === null) return null;
-    return this.resolve(handle) as ComponentSpec;
+    return this.resolve(handle) as ComponentDefinition;
   }
 
   lookupComponentHandle(name: string, referrer?: TestSpecifier): Option<number> {
@@ -169,15 +186,19 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
     }
 
     let layout = this.registerTemplate(name, layoutSource);
-    let definition = new BasicComponentDefinition(name, BASIC_COMPONENT_MANAGER, Component, layout.handle);
-    this.registerComponent(name, definition);
+    let state = new BasicStaticComponentState(name, Component, layout.handle);
+    let manager = BASIC_COMPONENT_MANAGER;
+
+    this.registerComponent(name, { state, manager });
   }
 
   registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
     let layout = this.registerTemplate(name, layoutSource);
 
-    let definition = new StaticTaglessComponentDefinition(name, STATIC_TAGLESS_COMPONENT_MANAGER, Component, layout.handle);
-    this.registerComponent(name, definition);
+    let state = new StaticTaglessComponentDefinition(name, Component, layout.handle);
+    let manager = STATIC_TAGLESS_COMPONENT_MANAGER;
+
+    this.registerComponent(name, { state, manager });
   }
 
   registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): void {
@@ -187,8 +208,10 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
       layout = this.registerTemplate(name, layoutSource);
     }
 
-    let definition = new EmberishCurlyComponentDefinition(name, EMBERISH_CURLY_COMPONENT_MANAGER, Component || EmberishCurlyComponent, layout && layout.handle);
-    this.registerComponent(name, definition);
+    let state = new EmberishCurlyStaticComponentState(name, Component || EmberishCurlyComponent, layout && layout.handle);
+    let manager = EMBERISH_CURLY_COMPONENT_MANAGER;
+
+    this.registerComponent(name, { state, manager });
   }
 
   registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): void {
@@ -198,8 +221,10 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
 
     let layout = this.registerTemplate(name, layoutSource);
 
-    let definition = new EmberishGlimmerComponentDefinition(name, EMBERISH_GLIMMER_COMPONENT_MANAGER, Component || EmberishGlimmerComponent, layout.handle);
-    this.registerComponent(name, definition);
+    let state = new EmberishGlimmerStaticComponentState(name, Component || EmberishGlimmerComponent, layout.handle);
+    let manager = EMBERISH_GLIMMER_COMPONENT_MANAGER;
+
+    this.registerComponent(name, { state, manager });
   }
 
   registerHelper(name: string, helper: UserHelper): GlimmerHelper {
@@ -239,7 +264,7 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
 
     if (handle === null) return null;
 
-    let spec = this.resolver.resolve<ComponentSpec>(handle);
+    let spec = this.resolver.resolve<ComponentDefinition>(handle);
     return curry(spec);
   }
 
@@ -254,8 +279,8 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
     return factory.create(this.compileOptions, (meta || {}) as any as TemplateMeta);
   }
 
-  private registerComponent(name: string, definition: GenericComponentDefinition<any>) {
-    this.resolver.register('component', name, { definition, manager: definition.manager });
+  private registerComponent(name: string, definition: ComponentDefinition) {
+    this.resolver.register('component', name, definition);
     return definition;
   }
 }
