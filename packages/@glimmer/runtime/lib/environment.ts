@@ -28,7 +28,7 @@ import { Simple, RuntimeResolver, BlockSymbolTable, VMHandle } from "@glimmer/in
 import { Component, ComponentManager } from "./internal-interfaces";
 import { Program } from "@glimmer/program";
 
-export type ScopeBlock = [VMHandle | ICompilableTemplate<BlockSymbolTable>, BlockSymbolTable];
+export type ScopeBlock = [VMHandle | ICompilableTemplate<BlockSymbolTable>, Scope, BlockSymbolTable];
 export type ScopeSlot = Option<VersionedPathReference<Opaque>> | Option<ScopeBlock>;
 
 export interface DynamicScope {
