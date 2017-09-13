@@ -15,37 +15,46 @@ import {
   Arguments,
   getDynamicVar,
   CurriedComponentDefinition,
-  curry
+  curry,
+  ComponentManager
 } from "@glimmer/runtime";
-import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
+import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor, ComponentCapabilities } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
 import { LazyConstants, Program } from "@glimmer/program";
 
 import TestEnvironment from '../../environment';
+import { ComponentKind } from '../../../render-test';
 
 import LazyCompilerResolver from './compiler-resolver';
 import LazyRuntimeResolver from './runtime-resolver';
 
 import {
   BasicComponentFactory,
-  BasicComponentDefinition,
-  BASIC_COMPONENT_MANAGER,
-  StaticTaglessComponentDefinition,
-  STATIC_TAGLESS_COMPONENT_MANAGER,
-  EmberishCurlyComponentFactory,
-  EmberishCurlyComponentDefinition,
-  EMBERISH_CURLY_COMPONENT_MANAGER,
-  EmberishGlimmerComponentFactory,
+  BasicComponentManager,
+  BASIC_CAPABILITIES,
   EmberishCurlyComponent,
-  EmberishGlimmerComponentDefinition,
-  EMBERISH_GLIMMER_COMPONENT_MANAGER,
-  EmberishGlimmerComponent
+  EmberishCurlyComponentFactory,
+  EmberishCurlyComponentManager,
+  CURLY_CAPABILITIES,
+  EmberishGlimmerComponent,
+  EmberishGlimmerComponentFactory,
+  EmberishGlimmerComponentManager,
+  EMBERISH_GLIMMER_CAPABILITIES,
+  StaticTaglessComponentManager,
+  STATIC_TAGLESS_CAPABILITIES,
+  TestComponentDefinitionState
 } from '../../components';
 
 import { UserHelper, HelperReference } from '../../helper';
 import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
 import TestSpecifier from '../../specifier';
+import { Opaque } from "@glimmer/util";
+
+const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
+const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
+const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
+const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 
 export interface TestEnvironmentOptions {
   document?: Simple.Document;
@@ -88,27 +97,15 @@ export class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
       throw new Error("DEPRECATED: dasherized components");
     }
 
-    let layout = this.registerTemplate(name, layoutSource);
+    let { handle } = this.registerTemplate(name, layoutSource);
 
-    let definition = new BasicComponentDefinition(BASIC_COMPONENT_MANAGER, {
-      name,
-      layout: layout.handle,
-      ComponentClass: Component
-    });
-
-    this.registerComponent(name, definition);
+    this.registerComponent(name, 'Basic', BASIC_COMPONENT_MANAGER, handle, Component, BASIC_CAPABILITIES);
   }
 
   registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
-    let layout = this.registerTemplate(name, layoutSource);
+    let { handle } = this.registerTemplate(name, layoutSource);
 
-    let definition = new StaticTaglessComponentDefinition(STATIC_TAGLESS_COMPONENT_MANAGER, {
-      name,
-      layout: layout.handle,
-      ComponentClass: Component
-    });
-
-    this.registerComponent(name, definition);
+    this.registerComponent(name, 'Fragment', STATIC_TAGLESS_COMPONENT_MANAGER, handle, Component, STATIC_TAGLESS_CAPABILITIES);
   }
 
   registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): void {
@@ -118,13 +115,10 @@ export class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
       layout = this.registerTemplate(name, layoutSource);
     }
 
-    let definition = new EmberishCurlyComponentDefinition(EMBERISH_CURLY_COMPONENT_MANAGER, {
-      name,
-      ComponentClass: Component || EmberishCurlyComponent,
-      layout: layout && layout.handle
-    });
+    let handle = layout ? layout.handle : null;
+    let ComponentClass = Component || EmberishCurlyComponent;
 
-    this.registerComponent(name, definition);
+    this.registerComponent(name, 'Curly', EMBERISH_CURLY_COMPONENT_MANAGER, handle, ComponentClass, CURLY_CAPABILITIES);
   }
 
   registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): void {
@@ -132,15 +126,11 @@ export class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
       throw new Error("DEPRECATED: dasherized components");
     }
 
-    let layout = this.registerTemplate(name, layoutSource);
+    let { handle } = this.registerTemplate(name, layoutSource);
 
-    let definition = new EmberishGlimmerComponentDefinition(EMBERISH_GLIMMER_COMPONENT_MANAGER, {
-      name,
-      ComponentClass: Component || EmberishGlimmerComponent,
-      layout: layout.handle
-    });
+    let ComponentClass = Component || EmberishGlimmerComponent;
 
-    this.registerComponent(name, definition);
+    this.registerComponent(name, 'Glimmer', EMBERISH_GLIMMER_COMPONENT_MANAGER, handle, ComponentClass, EMBERISH_GLIMMER_CAPABILITIES);
   }
 
   registerHelper(name: string, helper: UserHelper): GlimmerHelper {
@@ -195,8 +185,20 @@ export class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
     return factory.create(this.compileOptions, (meta || {}) as any as TemplateMeta);
   }
 
-  private registerComponent(name: string, definition: ComponentDefinition) {
-    console.log('register', name, definition);
+  private registerComponent(name: string, type: ComponentKind, manager: ComponentManager<Opaque, Opaque>, layout: Option<number>, ComponentClass: Opaque, capabilities: ComponentCapabilities) {
+    let state: TestComponentDefinitionState = {
+      name,
+      type,
+      layout,
+      capabilities,
+      ComponentClass
+    };
+
+    let definition = {
+      state,
+      manager
+    };
+
     this.resolver.register('component', name, definition);
     return definition;
   }

@@ -11,14 +11,14 @@ import { Specifier } from '@glimmer/bundle-compiler';
 import { Attrs, createTemplate, AttrsDiff } from '../shared';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import TestSpecifier from '../specifier';
-import { GenericComponentDefinition, GenericComponentDefinitionState } from '../components';
+import { TestComponentDefinitionState } from '../components';
 
 export interface EmberishCurlyComponentFactory {
   positionalParams: Option<string | string[]>;
   create(options: { attrs: Attrs, targetObject: any }): EmberishCurlyComponent;
 }
 
-const CURLY_CAPABILITIES: ComponentCapabilities = {
+export const CURLY_CAPABILITIES: ComponentCapabilities = {
   staticDefinitions: false,
   dynamicLayout: true,
   dynamicTag: true,
@@ -43,20 +43,8 @@ export interface EmberishCurlyComponentDefinitionState {
   specifier?: Specifier;
 }
 
-export class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponentDefinitionState & GenericComponentDefinitionState, EmberishCurlyComponentManager> {
-  constructor(manager: any, state: EmberishCurlyComponentDefinitionState) {
-    super(manager, { capabilities: CURLY_CAPABILITIES, ...state });
-  }
-}
-
-export class EagerEmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponentDefinitionState & GenericComponentDefinitionState, BundleEmberishCurlyComponentManager> {
-  constructor(manager: any, state: EmberishCurlyComponentDefinitionState) {
-    super(manager, { capabilities: EMBERISH_CURLY_CAPABILITIES, ...state });
-  }
-}
-
 export class AbstractEmberishCurlyComponentManager implements WithDynamicTagName<EmberishCurlyComponent> {
-  getCapabilities(state: EmberishCurlyComponentDefinitionState & GenericComponentDefinitionState) {
+  getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
 
@@ -225,7 +213,7 @@ export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponen
   }
 }
 
-export class BundleEmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager {
+export class EagerEmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager {
   getLayout(state: EmberishCurlyComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
     let handle = resolver.getVMHandle(expect(state.specifier, 'expected specifier'));
     return {
@@ -269,4 +257,3 @@ export class EmberishCurlyComponent extends GlimmerObject {
 }
 
 export const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
-export const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
