@@ -14,7 +14,7 @@ import {
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
-  if (typeof obj !== 'object' || obj === null) { return; }
+  if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) { return; }
 
   let m = meta || metaFor(obj);
   let count = m.peekWatching(keyName) || 0;
@@ -81,9 +81,8 @@ if (MANDATORY_SETTER) {
 }
 
 export function unwatchKey(obj, keyName, _meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
+  if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) { return; }
+
   let meta = _meta || peekMeta(obj);
 
   // do nothing of this object has already been destroyed
