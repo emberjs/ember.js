@@ -1,12 +1,12 @@
 {
   "name": "@glimmer/vm",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/vm",
   "dependencies": {
-    "@glimmer/util": "^0.27.0",
-    "@glimmer/interfaces": "^0.27.0",
-    "@glimmer/program": "^0.27.0",
-    "@glimmer/debug": "^0.27.0"
+    "@glimmer/util": "^0.28.0",
+    "@glimmer/interfaces": "^0.28.0",
+    "@glimmer/program": "^0.28.0",
+    "@glimmer/debug": "^0.28.0"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
