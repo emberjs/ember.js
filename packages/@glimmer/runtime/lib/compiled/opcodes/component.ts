@@ -219,8 +219,6 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   }
 
   stack.push(args);
-
-  // TODO: Compute the expected stack change correctly
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {

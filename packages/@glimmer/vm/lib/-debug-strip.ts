@@ -363,7 +363,7 @@ OPCODE_METADATA(Op.GetComponentLayout, {
 
 OPCODE_METADATA(Op.InvokeComponentLayout, {
   name: 'InvokeComponentLayout',
-  skipCheck: true
+  stackChange: -4
 });
 
 OPCODE_METADATA(Op.BeginComponentTransaction, {
