@@ -521,11 +521,96 @@ export default class Mixin {
 
     return ret;
   }
+
+  /**
+    @method reopen
+    @param arguments*
+    @private
+  */
+  reopen() {
+    let currentMixin;
+
+    if (this.properties) {
+      currentMixin = new Mixin(undefined, this.properties);
+      this.properties = undefined;
+      this.mixins = [currentMixin];
+    } else if (!this.mixins) {
+      this.mixins = [];
+    }
+
+    let mixins = this.mixins;
+    let idx;
+
+    for (idx = 0; idx < arguments.length; idx++) {
+      currentMixin = arguments[idx];
+      assert(
+        `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
+        typeof currentMixin === 'object' && currentMixin !== null &&
+          Object.prototype.toString.call(currentMixin) !== '[object Array]'
+      );
+
+      if (currentMixin instanceof Mixin) {
+        mixins.push(currentMixin);
+      } else {
+        mixins.push(new Mixin(undefined, currentMixin));
+      }
+    }
+
+    return this;
+  }
+
+  /**
+    @method apply
+    @param obj
+    @return applied object
+    @private
+  */
+  apply(obj) {
+    return applyMixin(obj, [this], false);
+  }
+
+  applyPartial(obj) {
+    return applyMixin(obj, [this], true);
+  }
+
+  /**
+    @method detect
+    @param obj
+    @return {Boolean}
+    @private
+  */
+  detect(obj) {
+    if (typeof obj !== 'object' || obj === null) { return false; }
+    if (obj instanceof Mixin) { return _detect(obj, this, {}); }
+    let meta = peekMeta(obj);
+    if (meta === undefined) { return false; }
+    return !!meta.peekMixins(guidFor(this));
+  }
+
+  without(...args) {
+    let ret = new Mixin([this]);
+    ret._without = args;
+    return ret;
+  }
+
+  keys() {
+    let keys = {};
+    let seen = {};
+
+    _keys(keys, this, seen);
+    let ret = Object.keys(keys);
+    return ret;
+  }
+
 }
 
 Mixin._apply = applyMixin;
-
 Mixin.finishPartial = finishPartial;
+
+let MixinPrototype = Mixin.prototype;
+MixinPrototype.toString = Object.toString;
+
+debugSeal(MixinPrototype);
 
 let unprocessedFlag = false;
 
@@ -536,61 +621,6 @@ export function hasUnprocessedMixins() {
 export function clearUnprocessedMixins() {
   unprocessedFlag = false;
 }
-
-let MixinPrototype = Mixin.prototype;
-
-/**
-  @method reopen
-  @param arguments*
-  @private
-*/
-MixinPrototype.reopen = function() {
-  let currentMixin;
-
-  if (this.properties) {
-    currentMixin = new Mixin(undefined, this.properties);
-    this.properties = undefined;
-    this.mixins = [currentMixin];
-  } else if (!this.mixins) {
-    this.mixins = [];
-  }
-
-  let mixins = this.mixins;
-  let idx;
-
-  for (idx = 0; idx < arguments.length; idx++) {
-    currentMixin = arguments[idx];
-    assert(
-      `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
-      typeof currentMixin === 'object' && currentMixin !== null &&
-        Object.prototype.toString.call(currentMixin) !== '[object Array]'
-    );
-
-    if (currentMixin instanceof Mixin) {
-      mixins.push(currentMixin);
-    } else {
-      mixins.push(new Mixin(undefined, currentMixin));
-    }
-  }
-
-  return this;
-};
-
-/**
-  @method apply
-  @param obj
-  @return applied object
-  @private
-*/
-MixinPrototype.apply = function(obj) {
-  return applyMixin(obj, [this], false);
-};
-
-MixinPrototype.applyPartial = function(obj) {
-  return applyMixin(obj, [this], true);
-};
-
-MixinPrototype.toString = Object.toString;
 
 function _detect(curMixin, targetMixin, seen) {
   let guid = guidFor(curMixin);
@@ -607,26 +637,6 @@ function _detect(curMixin, targetMixin, seen) {
   return false;
 }
 
-/**
-  @method detect
-  @param obj
-  @return {Boolean}
-  @private
-*/
-MixinPrototype.detect = function(obj) {
-  if (typeof obj !== 'object' || obj === null) { return false; }
-  if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  let meta = peekMeta(obj);
-  if (meta === undefined) { return false; }
-  return !!meta.peekMixins(guidFor(this));
-};
-
-MixinPrototype.without = function(...args) {
-  let ret = new Mixin([this]);
-  ret._without = args;
-  return ret;
-};
-
 function _keys(ret, mixin, seen) {
   if (seen[guidFor(mixin)]) { return; }
   seen[guidFor(mixin)] = true;
@@ -641,17 +651,6 @@ function _keys(ret, mixin, seen) {
     mixin.mixins.forEach((x) => _keys(ret, x, seen));
   }
 }
-
-MixinPrototype.keys = function() {
-  let keys = {};
-  let seen = {};
-
-  _keys(keys, this, seen);
-  let ret = Object.keys(keys);
-  return ret;
-};
-
-debugSeal(MixinPrototype);
 
 const REQUIRED = new Descriptor();
 REQUIRED.toString = () => '(Required Property)';
