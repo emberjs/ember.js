@@ -729,6 +729,8 @@ export abstract class OpcodeBuilder<Specifier> {
     this.dup(Register.sp, 1);
     this.load(Register.s0);
 
+    this.pushFrame();
+
     let blocks = { main: block, else: inverse, attrs };
 
     this.compileArgs(params, hash, blocks, synthetic);
@@ -909,9 +911,12 @@ export abstract class OpcodeBuilder<Specifier> {
   curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
     let referrer = this.referrer;
 
-    expr(definition, this);
+    this.pushFrame();
     this.compileArgs(params, hash, null, synthetic);
+    expr(definition, this);
     this.push(Op.CurryComponent, this.constants.serializable(referrer));
+    this.popFrame();
+    this.fetch(Register.v0);
   }
 
   abstract pushBlock(block: Option<CompilableBlock>): void;
