@@ -1,10 +1,10 @@
 import { createTemplate } from '../shared';
 
-import { WithStaticLayout, Environment, ScannableTemplate, Bounds, Invocation } from "@glimmer/runtime";
-import { unreachable, expect } from "@glimmer/util";
-import { TemplateOptions, ComponentCapabilities } from "@glimmer/opcode-compiler";
-import { PathReference, Tag, CONSTANT_TAG } from "@glimmer/reference";
-import { Opaque, Recast, VMHandle } from "@glimmer/interfaces";
+import { WithStaticLayout, Environment, ScannableTemplate, Bounds, Invocation } from '@glimmer/runtime';
+import { unreachable, expect } from '@glimmer/util';
+import { TemplateOptions, ComponentCapabilities } from '@glimmer/opcode-compiler';
+import { PathReference, Tag, CONSTANT_TAG } from '@glimmer/reference';
+import { Opaque } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
@@ -63,13 +63,12 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
 
       return resolver.compileTemplate(handle, name, compile);
     } else {
+      // For the case of dynamically invoking (via `{{component}}`) in eager
+      // mode, we need to exchange the specifier for the handle to the compiled
+      // layout (which was provided at bundle compilation time and stashed in
+      // the component definition state).
       let specifier = expect(state.specifier, 'component definition state should include specifier');
-      let handle = resolver.getVMHandle(specifier);
-      let symbolTable = resolver.symbolTables.get(specifier)!;
-      return {
-        handle: handle as Recast<number, VMHandle>,
-        symbolTable
-      };
+      return resolver.getInvocation(specifier);
     }
   }
 
