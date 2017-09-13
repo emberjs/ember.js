@@ -100,21 +100,20 @@ APPEND_OPCODES.add(Op.IsComponent, vm => {
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
+  let definition = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments);
   let captured: Option<ICapturedArguments> = null;
 
   if (args.length) {
     captured = args.capture();
-    args.clear();
   }
 
   let meta = vm.constants.getSerializable<TemplateMeta>(_meta);
   let resolver = vm.constants.resolver;
-  let definition = check(stack.pop(), CheckReference);
 
-  stack.push(new CurryComponentReference(definition, resolver, meta, captured));
+  vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, captured));
 
-  expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
+  // expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
@@ -398,8 +397,6 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
       if (hasEval) lookup![atName] = value;
     }
 
-    // args.clear();
-
     let bindBlock = (symbolName: string, blockName: string) => {
       let symbol = symbols.indexOf(symbolName);
 
@@ -417,11 +414,8 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
     bindBlock('&inverse', 'else');
     bindBlock('&default', 'main');
 
-    args.clear();
-
     if (lookup) scope.bindEvalScope(lookup);
 
-    vm.pushFrame();
     vm.call(handle!);
   }
 });

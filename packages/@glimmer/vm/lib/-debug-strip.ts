@@ -2,7 +2,6 @@ import { Op } from "./opcodes";
 import { Option, Opaque, Opcode } from "@glimmer/interfaces";
 import { RuntimeConstants } from "@glimmer/program";
 import { fillNulls } from "@glimmer/util";
-import { check, CheckNumber, CheckInterface } from "@glimmer/debug";
 
 export interface VM {
   stack: {
@@ -157,40 +156,6 @@ export function OPCODE_METADATA<State, Name extends Op = Op>(name: Name, metadat
 
 /// helpers ///
 
-interface ClearsArgs {
-  name: string;
-  ops?: Operand[];
-  operands?: OperandSize;
-
-  /**
-   * net pushes, not including popping ARGS
-   */
-  netPushes?: number;
-
-  /**
-   * net pops, not including popping ARGS
-   */
-  netPops?: number;
-
-  argsPosition?: number;
-}
-
-function clearsArgs(options: ClearsArgs): DebugMetadata<number> {
-  return {
-    name: options.name,
-    ops: options.ops || [],
-    operands: options.operands || 0,
-
-    before(_opcode: Opaque, vm: VM): number {
-      return check(vm.stack.peek(options.argsPosition || 0), CheckInterface({ length: CheckNumber })).length;
-    },
-
-    stackChange({ state: args }: { state: number }): number {
-      return -args - 1 + (options.netPushes || 0) - (options.netPops || 0);
-    }
-  };
-}
-
 /// DYNAMIC SCOPE ///
 
 OPCODE_METADATA(Op.BindDynamicScope, {
@@ -328,10 +293,10 @@ OPCODE_METADATA(Op.IsComponent, {
   name: 'IsComponent'
 });
 
-OPCODE_METADATA(Op.CurryComponent, clearsArgs({
+OPCODE_METADATA(Op.CurryComponent, {
   name: 'CurryComponent',
-  operands: 0
-}));
+  stackChange: -2
+});
 
 OPCODE_METADATA(Op.PushComponentDefinition, {
   name: 'PushComponentDefinition',
