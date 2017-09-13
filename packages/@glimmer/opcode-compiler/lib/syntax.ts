@@ -61,8 +61,7 @@ STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
   let specifier = lookup.lookupModifier(name, referrer);
 
   if (specifier) {
-    builder.compileArgs(params, hash, null, true);
-    builder.modifier(specifier);
+    builder.modifier(specifier, params, hash);
   } else {
     throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
   }

@@ -324,8 +324,11 @@ export abstract class OpcodeBuilder<Specifier> {
     this.push(Op.Comment, comment);
   }
 
-  modifier(specifier: Specifier) {
+  modifier(specifier: Specifier, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+    this.pushFrame();
+    this.compileArgs(params, hash, null, true);
     this.push(Op.Modifier, this.constants.handle(specifier));
+    this.popFrame();
   }
 
   // lists

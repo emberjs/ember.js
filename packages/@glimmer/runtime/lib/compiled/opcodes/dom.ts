@@ -96,8 +96,6 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(element as Simple.FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
 
-  args.clear();
-
   vm.env.scheduleInstallModifier(modifier, manager);
   let destructor = manager.getDestructor(modifier);
 
