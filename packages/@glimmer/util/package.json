@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/util",
-  "version": "0.28.2",
+  "version": "0.28.3",
   "description": "Common utilities used in Glimmer",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/util",
   "license": "MIT",
