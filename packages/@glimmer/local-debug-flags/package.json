@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/local-debug-flags",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "description": "Helpers for debugging during local development. These get stripped from published builds. This package should not be published.",
   "private": true
 }
