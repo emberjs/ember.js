@@ -5,13 +5,48 @@ import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/
 import { EMPTY_ARRAY, assign, Destroyable, expect } from '@glimmer/util';
 import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope, Invocation } from '@glimmer/runtime';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { EagerRuntimeResolver } from '../modes/eager/runtime-resolver';
 import { Specifier } from '@glimmer/bundle-compiler';
 
 import { Attrs, createTemplate, AttrsDiff } from '../shared';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
+import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import TestSpecifier from '../specifier';
 import { TestComponentDefinitionState } from '../components';
+
+export class EmberishCurlyComponent extends GlimmerObject {
+  public static positionalParams: string[] | string = [];
+
+  public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
+  public layout: { name: string, handle: number };
+  public name: string;
+  public tagName: Option<string> = null;
+  public attributeBindings: Option<string[]> = null;
+  public attrs: Attrs;
+  public element: Element;
+  public bounds: Bounds;
+  public parentView: Option<EmberishCurlyComponent> = null;
+  public args: CapturedNamedArguments;
+
+  static create(args: { attrs: Attrs }): EmberishCurlyComponent {
+    return super.create(args) as EmberishCurlyComponent;
+  }
+
+  recompute() {
+    this.dirtinessTag.inner.dirty();
+  }
+
+  didInitAttrs(_options: { attrs: Attrs }) { }
+  didUpdateAttrs(_diff: AttrsDiff) { }
+  didReceiveAttrs(_diff: AttrsDiff) { }
+  willInsertElement() { }
+  willUpdate() { }
+  willRender() { }
+  didInsertElement() { }
+  didUpdate() { }
+  didRender() { }
+}
+
+export const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 export interface EmberishCurlyComponentFactory {
   positionalParams: Option<string | string[]>;
@@ -43,9 +78,41 @@ export interface EmberishCurlyComponentDefinitionState {
   specifier?: Specifier;
 }
 
-export class AbstractEmberishCurlyComponentManager implements WithDynamicTagName<EmberishCurlyComponent> {
+export class EmberishCurlyComponentManager implements
+  WithDynamicTagName<EmberishCurlyComponent>,
+  WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, LazyRuntimeResolver> {
+
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
+  }
+
+  getLayout(state: EmberishCurlyComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
+    let handle = resolver.getVMHandle(expect(state.specifier, 'expected specifier'));
+    return {
+      handle: handle as Recast<number, VMHandle>,
+      symbolTable: state.symbolTable! as ProgramSymbolTable
+    };
+  }
+
+  getDynamicLayout({ layout }: EmberishCurlyComponent, resolver: LazyRuntimeResolver): Invocation {
+    if (!layout) {
+      throw new Error('BUG: missing dynamic layout');
+    }
+
+    let handle = resolver.lookup('template-source', layout.name);
+
+    if (!handle) {
+      throw new Error('BUG: missing dynamic layout');
+    }
+
+    return resolver.compileTemplate(handle, layout.name, (source, options) => {
+      let template = createTemplate(source);
+      let builder = new WrappedBuilder(assign({}, options, { asPartial: false, referrer: null }), template, CURLY_CAPABILITIES);
+      return {
+        handle: builder.compile(),
+        symbolTable: builder.symbolTable
+      };
+    });
   }
 
   prepareArgs(state: EmberishCurlyComponentDefinitionState, args: Arguments): Option<PreparedArguments> {
@@ -189,71 +256,3 @@ export class AbstractEmberishCurlyComponentManager implements WithDynamicTagName
     };
   }
 }
-
-export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager implements WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, LazyRuntimeResolver> {
-  getLayout({ layout }: EmberishCurlyComponent, resolver: LazyRuntimeResolver): Invocation {
-    if (!layout) {
-      throw new Error('BUG: missing dynamic layout');
-    }
-
-    let handle = resolver.lookup('template-source', layout.name);
-
-    if (!handle) {
-      throw new Error('BUG: missing dynamic layout');
-    }
-
-    return resolver.compileTemplate(handle, layout.name, (source, options) => {
-      let template = createTemplate(source);
-      let builder = new WrappedBuilder(assign({}, options, { asPartial: false, referrer: null }), template, CURLY_CAPABILITIES);
-      return {
-        handle: builder.compile(),
-        symbolTable: builder.symbolTable
-      };
-    });
-  }
-}
-
-export class EagerEmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager {
-  getLayout(state: EmberishCurlyComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
-    let handle = resolver.getVMHandle(expect(state.specifier, 'expected specifier'));
-    return {
-      handle: handle as Recast<number, VMHandle>,
-      symbolTable: state.symbolTable! as ProgramSymbolTable
-    };
-  }
-}
-
-export class EmberishCurlyComponent extends GlimmerObject {
-  public static positionalParams: string[] | string = [];
-
-  public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
-  public layout: { name: string, handle: number };
-  public name: string;
-  public tagName: Option<string> = null;
-  public attributeBindings: Option<string[]> = null;
-  public attrs: Attrs;
-  public element: Element;
-  public bounds: Bounds;
-  public parentView: Option<EmberishCurlyComponent> = null;
-  public args: CapturedNamedArguments;
-
-  static create(args: { attrs: Attrs }): EmberishCurlyComponent {
-    return super.create(args) as EmberishCurlyComponent;
-  }
-
-  recompute() {
-    this.dirtinessTag.inner.dirty();
-  }
-
-  didInitAttrs(_options: { attrs: Attrs }) { }
-  didUpdateAttrs(_diff: AttrsDiff) { }
-  didReceiveAttrs(_diff: AttrsDiff) { }
-  willInsertElement() { }
-  willUpdate() { }
-  willRender() { }
-  didInsertElement() { }
-  didUpdate() { }
-  didRender() { }
-}
-
-export const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;

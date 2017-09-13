@@ -1,17 +1,16 @@
 
 import { TemplateOptions, Specifier, ComponentCapabilities } from "@glimmer/opcode-compiler";
 import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate, Invocation } from "@glimmer/runtime";
-import { Opaque, Option, RuntimeResolver as IRuntimeResolver, } from "@glimmer/interfaces";
+import { Opaque, Option } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import GlimmerObject from "@glimmer/object";
 
 import { Attrs, AttrsDiff, createTemplate } from '../shared';
 import TestSpecifier from '../specifier';
-import { Destroyable, unreachable } from "@glimmer/util";
+import { Destroyable } from "@glimmer/util";
 import { BASIC_CAPABILITIES } from './basic';
 import { TestComponentDefinitionState } from '../components';
-import { EagerRuntimeResolver } from "@glimmer/test-helpers/lib/environment/modes/eager/runtime-resolver";
 import LazyRuntimeResolver from "@glimmer/test-helpers/lib/environment/modes/lazy/runtime-resolver";
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
@@ -27,7 +26,10 @@ export interface EmberishGlimmerComponentState {
   component: EmberishGlimmerComponent;
 }
 
-export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R extends IRuntimeResolver<Specifier>> implements ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>, WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, Specifier, R> {
+export class EmberishGlimmerComponentManager
+  implements ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
+             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, Specifier, LazyRuntimeResolver> {
+
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
@@ -54,7 +56,21 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
     return combine([tag, dirtinessTag]);
   }
 
-  abstract getLayout(definition: TestComponentDefinitionState, resolver: R): Invocation;
+  getLayout({ name }: TestComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
+    let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
+      let layout = createTemplate(source);
+      let template = new ScannableTemplate(options, layout).asLayout();
+
+      return {
+        handle: template.compile(),
+        symbolTable: template.symbolTable
+      };
+    };
+
+    let handle = resolver.lookup('template-source', name)!;
+
+    return resolver.compileTemplate(handle, name, compile);
+  }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<Opaque> {
     return new UpdatableReference(component);
@@ -99,30 +115,6 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
         component.destroy();
       }
     };
-  }
-}
-
-export class EagerEmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<Specifier, EagerRuntimeResolver> {
-  getLayout(): Invocation {
-    throw unreachable();
-  }
-}
-
-export class EmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<TestSpecifier, LazyRuntimeResolver> {
-  getLayout({ name }: TestComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
-    let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
-      let layout = createTemplate(source);
-      let template = new ScannableTemplate(options, layout).asLayout();
-
-      return {
-        handle: template.compile(),
-        symbolTable: template.symbolTable
-      };
-    };
-
-    let handle = resolver.lookup('template-source', name)!;
-
-    return resolver.compileTemplate(handle, name, compile);
   }
 }
 

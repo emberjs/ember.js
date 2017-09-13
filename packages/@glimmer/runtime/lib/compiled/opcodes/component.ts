@@ -347,7 +347,7 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   if (hasStaticLayout(definitionState, manager)) {
     invoke = manager.getLayout(definitionState, resolver);
   } else if (hasDynamicLayout(definitionState, manager)) {
-    invoke = manager.getLayout(instanceState, resolver);
+    invoke = manager.getDynamicLayout(instanceState, resolver);
   } else {
     throw unreachable();
   }
