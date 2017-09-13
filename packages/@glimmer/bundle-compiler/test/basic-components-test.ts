@@ -1,3 +1,3 @@
-import { rawModule, BasicComponents, BundlingRenderDelegate } from "@glimmer/test-helpers";
+import { rawModule, BasicComponents, EagerRenderDelegate } from "@glimmer/test-helpers";
 
-rawModule("[Bundle Compiler] Basic Components", BasicComponents, BundlingRenderDelegate, { componentModule: true });
+rawModule("[Bundle Compiler] Basic Components", BasicComponents, EagerRenderDelegate, { componentModule: true });

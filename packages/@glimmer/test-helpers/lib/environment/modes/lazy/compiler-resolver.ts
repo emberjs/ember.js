@@ -1,11 +1,13 @@
-import { ComponentCapabilities, ICompilableTemplate } from "@glimmer/opcode-compiler";
-import { ProgramSymbolTable, Option } from "@glimmer/interfaces";
-import { assert } from "@glimmer/util";
-import { ComponentDefinition, WithStaticLayout } from "@glimmer/runtime";
-import { TestResolver, TestSpecifier } from './lazy-env';
+import { ComponentCapabilities, ICompilableTemplate, CompileTimeLookup } from '@glimmer/opcode-compiler';
+import { ProgramSymbolTable, Option } from '@glimmer/interfaces';
+import { assert } from '@glimmer/util';
+import { ComponentDefinition, WithStaticLayout } from '@glimmer/runtime';
 
-export class LookupResolver {
-  constructor(private resolver: TestResolver) {
+import RuntimeResolver from './runtime-resolver';
+import TestSpecifier from '../../specifier';
+
+export default class LazyCompilerResolver implements CompileTimeLookup<TestSpecifier> {
+  constructor(private resolver: RuntimeResolver) {
   }
 
   private getComponentDefinition(handle: number): ComponentDefinition {
@@ -30,7 +32,7 @@ export class LookupResolver {
       return null;
     }
 
-    let invocation = (manager as WithStaticLayout<any, any, TestSpecifier, TestResolver>).getLayout(state, this.resolver);
+    let invocation = (manager as WithStaticLayout<any, any, TestSpecifier, RuntimeResolver>).getLayout(state, this.resolver);
 
     return {
       compile() { return invocation.handle; },
@@ -53,5 +55,4 @@ export class LookupResolver {
   lookupPartial(name: string, referrer: TestSpecifier): Option<number> {
     return this.resolver.lookupPartial(name, referrer);
   }
-
 }

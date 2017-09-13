@@ -24,7 +24,7 @@ export {
   classes
 } from './lib/environment';
 
-export * from './lib/abstract-test-case';
+export * from './lib/render-test';
 
 export * from './lib/suites';
 
@@ -34,24 +34,19 @@ export {
 } from './lib/environment/helper';
 
 export {
-  TestMacros
-} from './lib/environment/generic/macros';
+  default as TestMacros
+} from './lib/environment/macros';
 
 export {
-  AbstractTestEnvironment,
-  EnvironmentOptions
-} from './lib/environment/env';
+  default as AbstractTestEnvironment,
+  TestEnvironmentOptions
+} from './lib/environment/environment';
 
 export * from './lib/environment/modifier';
 
-export {
-  TestEnvironment
-} from './lib/environment/lazy-env';
+export { LazyTestEnvironment, LazyTestEnvironment as TestEnvironment } from './lib/environment/modes/lazy/environment';
+export { NodeRenderDelegate } from './lib/environment/modes/ssr/environment';
+
+export { default as EagerRenderDelegate } from './lib/environment/modes/eager/render-delegate';
 
 export * from './lib/environment/components';
-
-export * from './lib/environment/lookup';
-
-export * from './lib/environment/ssr-env';
-
-export * from './lib/environment/bundle-compiler';

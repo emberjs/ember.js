@@ -1,8 +1,8 @@
 import {
   InitialRenderSuite,
   rawModule,
-  BundlingRenderDelegate
+  EagerRenderDelegate
 } from "@glimmer/test-helpers";
 
 // module("[Bundle Compiler] Rehydration Tests", Rehydration);
-rawModule("[Bundle Compiler] Initial Render Tests", InitialRenderSuite, BundlingRenderDelegate);
+rawModule("[Bundle Compiler] Initial Render Tests", InitialRenderSuite, EagerRenderDelegate);

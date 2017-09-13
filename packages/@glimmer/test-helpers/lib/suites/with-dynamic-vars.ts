@@ -1,6 +1,6 @@
-import { AbstractRenderTest, test } from "../abstract-test-case";
+import { RenderTest, test } from "../render-test";
 
-export class WithDynamicVarsSuite extends AbstractRenderTest {
+export class WithDynamicVarsSuite extends RenderTest {
   @test
   "Can get and set dynamic variable"() {
     this.render({

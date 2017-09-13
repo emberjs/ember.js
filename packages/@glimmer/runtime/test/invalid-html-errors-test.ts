@@ -1,6 +1,6 @@
-import { AbstractRenderTest, test, module, TestEnvironment } from "@glimmer/test-helpers";
+import { RenderTest, test, module, TestEnvironment } from "@glimmer/test-helpers";
 
-class CompileErrorTests extends AbstractRenderTest {
+class CompileErrorTests extends RenderTest {
   protected env = new TestEnvironment();
 
   @test "A helpful error message is provided for unclosed elements"() {

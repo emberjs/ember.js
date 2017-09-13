@@ -1,3 +1,3 @@
-import { rawModule, ScopeSuite, BundlingRenderDelegate } from "@glimmer/test-helpers";
+import { rawModule, ScopeSuite, EagerRenderDelegate } from "@glimmer/test-helpers";
 
-rawModule('[Bundle Compiler] Scope Tests', ScopeSuite, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Scope Tests', ScopeSuite, EagerRenderDelegate, { componentModule: true });

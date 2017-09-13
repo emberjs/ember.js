@@ -1,7 +1,7 @@
-import { AbstractRenderTest, test } from '../abstract-test-case';
+import { RenderTest, test } from '../render-test';
 import { setDebuggerCallback } from '@glimmer/runtime';
 
-export class DebuggerSuite extends AbstractRenderTest {
+export class DebuggerSuite extends RenderTest {
   @test "basic debugger statement"() {
     let expectedContext = {
       foo: 'bar',

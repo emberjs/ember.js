@@ -1,5 +1,5 @@
-import { test } from "../abstract-test-case";
-import { AbstractNodeTest } from '../environment/ssr-env';
+import { test } from "../render-test";
+import { AbstractNodeTest } from '../environment/modes/ssr/environment';
 
 export class SSRSuite extends AbstractNodeTest {
   @test "HTML text content"() {
