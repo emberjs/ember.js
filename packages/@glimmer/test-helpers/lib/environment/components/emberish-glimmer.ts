@@ -1,29 +1,23 @@
 
-import { ComponentCapabilities, TemplateOptions, Specifier } from "@glimmer/opcode-compiler";
+import { TemplateOptions, Specifier, ComponentCapabilities } from "@glimmer/opcode-compiler";
 import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate, Invocation } from "@glimmer/runtime";
 import { Opaque, Option, RuntimeResolver as IRuntimeResolver, } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import GlimmerObject from "@glimmer/object";
 
-import { GenericComponentManager, GenericStaticComponentState, Attrs, AttrsDiff, createTemplate } from '../shared';
-import { TestSpecifier, TestResolver } from '../lazy-env';
+import { Attrs, AttrsDiff, createTemplate } from '../shared';
+import TestSpecifier from '../specifier';
 import { Destroyable, unreachable } from "@glimmer/util";
-import { RuntimeResolver } from '../bundle-compiler';
-import { EMPTY_CAPABILITIES } from './basic';
+import { CAPABILITIES } from './basic';
+import { GenericComponentDefinitionState, GenericComponentDefinition } from '../components';
+import { EagerRuntimeResolver } from "@glimmer/test-helpers/lib/environment/modes/eager/runtime-resolver";
+import LazyRuntimeResolver from "@glimmer/test-helpers/lib/environment/modes/lazy/runtime-resolver";
 
-export class EmberishGlimmerStaticComponentState extends GenericStaticComponentState {
-  public ComponentClass: EmberishGlimmerComponentFactory;
-
-  public capabilities: ComponentCapabilities = {
-    staticDefinitions: false,
-    dynamicLayout: false,
-    dynamicTag: true,
-    prepareArgs: false,
-    createArgs: true,
-    attributeHook: true,
-    elementHook: false
-  };
+export interface EmberishGlimmerComponentDefinitionState {
+  name: string;
+  layout: Option<number>;
+  ComponentClass: EmberishGlimmerComponentFactory;
 }
 
 export interface EmberishGlimmerComponentState {
@@ -31,12 +25,22 @@ export interface EmberishGlimmerComponentState {
   component: EmberishGlimmerComponent;
 }
 
-export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R extends IRuntimeResolver<Specifier>> extends GenericComponentManager implements ComponentManager<EmberishGlimmerComponentState, EmberishGlimmerStaticComponentState>, WithStaticLayout<EmberishGlimmerComponentState, EmberishGlimmerStaticComponentState, Specifier, R> {
+export class EmberishGlimmerComponentDefinition extends GenericComponentDefinition<EmberishGlimmerComponentDefinitionState & GenericComponentDefinitionState, any> {
+  constructor(manager: any, state: EmberishGlimmerComponentDefinitionState) {
+    super(manager, { capabilities: EMBERISH_GLIMMER_CAPABILITIES, ...state });
+  }
+}
+
+export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R extends IRuntimeResolver<Specifier>> implements ComponentManager<EmberishGlimmerComponentState, EmberishGlimmerComponentDefinitionState>, WithStaticLayout<EmberishGlimmerComponentState, EmberishGlimmerComponentDefinitionState, Specifier, R> {
+  getCapabilities(state: GenericComponentDefinitionState): ComponentCapabilities {
+    return state.capabilities;
+  }
+
   prepareArgs(): null {
     return null;
   }
 
-  create(_environment: Environment, definition: EmberishGlimmerStaticComponentState, _args: Arguments, _dynamicScope: any, _callerSelf: PathReference<Opaque>, _hasDefaultBlock: boolean): EmberishGlimmerComponentState {
+  create(_environment: Environment, definition: EmberishGlimmerComponentDefinitionState, _args: Arguments, _dynamicScope: any, _callerSelf: PathReference<Opaque>, _hasDefaultBlock: boolean): EmberishGlimmerComponentState {
     let args = _args.named.capture();
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.value();
@@ -54,7 +58,7 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
     return combine([tag, dirtinessTag]);
   }
 
-  abstract getLayout(definition: EmberishGlimmerStaticComponentState, resolver: R): Invocation;
+  abstract getLayout(definition: EmberishGlimmerComponentDefinitionState, resolver: R): Invocation;
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<Opaque> {
     return new UpdatableReference(component);
@@ -102,14 +106,14 @@ export abstract class AbstractEmberishGlimmerComponentManager<Specifier, R exten
   }
 }
 
-export class BundledEmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<Specifier, RuntimeResolver> {
+export class EagerEmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<Specifier, EagerRuntimeResolver> {
   getLayout(): Invocation {
     throw unreachable();
   }
 }
 
-export class EmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<TestSpecifier, TestResolver> {
-  getLayout({ name }: EmberishGlimmerStaticComponentState, resolver: TestResolver): Invocation {
+export class EmberishGlimmerComponentManager extends AbstractEmberishGlimmerComponentManager<TestSpecifier, LazyRuntimeResolver> {
+  getLayout({ name }: EmberishGlimmerComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
     let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
       let template = new ScannableTemplate(options, layout).asLayout();
@@ -159,7 +163,7 @@ export interface EmberishGlimmerComponentFactory {
 }
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
-  ...EMPTY_CAPABILITIES,
+  ...CAPABILITIES,
   staticDefinitions: false,
   dynamicTag: true,
   createArgs: true,

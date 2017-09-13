@@ -1,13 +1,16 @@
-import { createTemplate, GenericStaticComponentState } from '../shared';
-import { BasicComponentManager, BasicStaticComponentState, BasicComponentFactory } from './basic';
-import { TestResolver } from '../lazy-env';
-import { WrappedBuilder, ComponentCapabilities } from "@glimmer/opcode-compiler";
-import { Invocation } from "@glimmer/runtime";
-import { assign } from "@glimmer/util";
+import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import { Invocation } from '@glimmer/runtime';
+import { assign, Option } from '@glimmer/util';
+
+import { createTemplate } from '../shared';
+import { BasicComponentManager } from './basic';
+import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
+
+import { GenericComponentDefinition, GenericComponentDefinitionState } from '../components';
 
 export class StaticTaglessComponentManager extends BasicComponentManager {
-  getLayout(definition: BasicStaticComponentState, resolver: TestResolver): Invocation {
-    let { name, capabilities } = definition;
+  getLayout(state: GenericComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
+    let { name, capabilities } = state;
 
     let handle = resolver.lookup('template-source', name)!;
 
@@ -26,15 +29,24 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
 export const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 
-export class StaticTaglessComponentDefinition extends GenericStaticComponentState {
-  public ComponentClass: BasicComponentFactory;
-  public capabilities: ComponentCapabilities = {
-    staticDefinitions: false,
-    dynamicLayout: false,
-    dynamicTag: false,
-    prepareArgs: false,
-    createArgs: false,
-    attributeHook: false,
-    elementHook: false
-  };
+export interface StaticTaglessComponentDefinitionState {
+  name: string;
+  layout: Option<number>;
+  ComponentClass: any;
+}
+
+const CAPABILITIES = {
+  staticDefinitions: false,
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: false,
+  elementHook: false
+};
+
+export class StaticTaglessComponentDefinition extends GenericComponentDefinition<StaticTaglessComponentDefinitionState & GenericComponentDefinitionState, StaticTaglessComponentManager> {
+  constructor(manager: StaticTaglessComponentManager, state: StaticTaglessComponentDefinitionState) {
+    super(manager, { capabilities: CAPABILITIES, ...state });
+  }
 }

@@ -1,9 +1,9 @@
-import { TestEnvironmentRenderDelegate, AbstractRenderTest } from "@glimmer/test-helpers";
+import { TestEnvironmentRenderDelegate, RenderTest } from "@glimmer/test-helpers";
 
 QUnit.module("Render Tests: I-N-U-R");
 
 QUnit.test("Can set properties", assert => {
-  new class extends AbstractRenderTest {
+  new class extends RenderTest {
     constructor(delegate: TestEnvironmentRenderDelegate) {
       super(delegate);
       this.setProperties({ foo: "bar" });
@@ -17,7 +17,7 @@ QUnit.test("Can take basic snapshots", assert => {
   let text = document.createTextNode("Foo");
   div.appendChild(text);
 
-  new class extends AbstractRenderTest {
+  new class extends RenderTest {
     element = div;
     constructor(delegate: TestEnvironmentRenderDelegate) {
       super(delegate);
@@ -34,7 +34,7 @@ QUnit.test("Can take nested snapshots", assert => {
   p.appendChild(text);
   div.appendChild(p);
 
-  new class extends AbstractRenderTest {
+  new class extends RenderTest {
     element = div;
     constructor(delegate: TestEnvironmentRenderDelegate) {
       super(delegate);
@@ -53,7 +53,7 @@ QUnit.test("Can take nested snapshots of serialized blocks", assert => {
   div.appendChild(text);
   div.appendChild(close);
 
-  new class extends AbstractRenderTest {
+  new class extends RenderTest {
     element = div;
     constructor(delegate: TestEnvironmentRenderDelegate) {
       super(delegate);

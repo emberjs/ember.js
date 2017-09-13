@@ -3,7 +3,7 @@ import { Macros } from "@glimmer/opcode-compiler";
 import { Option } from "@glimmer/interfaces";
 import * as WireFormat from '@glimmer/wire-format';
 
-export class TestMacros extends Macros {
+export default class TestMacros extends Macros {
   constructor() {
     super();
 

@@ -74,3 +74,7 @@ component.
 # Abstract Syntax Tree (AST)
 
 # Intermediate Representation (IR)
+
+# Compile Resolver
+
+# Runtime Resolver

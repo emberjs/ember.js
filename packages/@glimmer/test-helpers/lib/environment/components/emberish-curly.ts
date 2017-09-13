@@ -1,14 +1,17 @@
-import { ComponentCapabilities, WrappedBuilder } from "@glimmer/opcode-compiler";
-import { Option, Opaque, Recast, VMHandle } from "@glimmer/interfaces";
-import GlimmerObject from "@glimmer/object";
-import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from "@glimmer/reference";
-import { EMPTY_ARRAY, assign, Destroyable } from "@glimmer/util";
-import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope, Invocation } from "@glimmer/runtime";
-import { UpdatableReference } from "@glimmer/object-reference";
+import { ComponentCapabilities, WrappedBuilder } from '@glimmer/opcode-compiler';
+import { Option, Opaque, Recast, VMHandle, ProgramSymbolTable } from '@glimmer/interfaces';
+import GlimmerObject from '@glimmer/object';
+import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
+import { EMPTY_ARRAY, assign, Destroyable, expect } from '@glimmer/util';
+import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope, Invocation } from '@glimmer/runtime';
+import { UpdatableReference } from '@glimmer/object-reference';
+import { EagerRuntimeResolver } from '../modes/eager/runtime-resolver';
+import { Specifier } from '@glimmer/bundle-compiler';
 
-import { Attrs, GenericStaticComponentState, GenericComponentManager, createTemplate, AttrsDiff } from "../shared";
-import { TestSpecifier, TestResolver } from '../lazy-env';
-import { RuntimeComponentDefinition, RuntimeResolver } from '../bundle-compiler';
+import { Attrs, createTemplate, AttrsDiff } from '../shared';
+import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
+import TestSpecifier from '../specifier';
+import { GenericComponentDefinition, GenericComponentDefinitionState } from '../components';
 
 export interface EmberishCurlyComponentFactory {
   positionalParams: Option<string | string[]>;
@@ -25,14 +28,40 @@ const CURLY_CAPABILITIES: ComponentCapabilities = {
   elementHook: true
 };
 
-export class EmberishCurlyStaticComponentState extends GenericStaticComponentState {
-  public ComponentClass: EmberishCurlyComponentFactory;
-  public capabilities: ComponentCapabilities = CURLY_CAPABILITIES;
+export const EMBERISH_CURLY_CAPABILITIES = {
+  ...CURLY_CAPABILITIES,
+  staticDefinitions: true,
+  dynamicLayout: false,
+  attributeHook: false
+};
+
+export interface EmberishCurlyComponentDefinitionState {
+  name: string;
+  ComponentClass: EmberishCurlyComponentFactory;
+  layout: Option<number>;
+  symbolTable?: ProgramSymbolTable;
+  specifier?: Specifier;
 }
 
-export class AbstractEmberishCurlyComponentManager extends GenericComponentManager implements WithDynamicTagName<EmberishCurlyComponent> {
-  prepareArgs(definition: EmberishCurlyStaticComponentState, args: Arguments): Option<PreparedArguments> {
-    const { positionalParams } = definition.ComponentClass || BaseEmberishCurlyComponent;
+export class EmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponentDefinitionState & GenericComponentDefinitionState, EmberishCurlyComponentManager> {
+  constructor(manager: any, state: EmberishCurlyComponentDefinitionState) {
+    super(manager, { capabilities: CURLY_CAPABILITIES, ...state });
+  }
+}
+
+export class EagerEmberishCurlyComponentDefinition extends GenericComponentDefinition<EmberishCurlyComponentDefinitionState & GenericComponentDefinitionState, BundleEmberishCurlyComponentManager> {
+  constructor(manager: any, state: EmberishCurlyComponentDefinitionState) {
+    super(manager, { capabilities: EMBERISH_CURLY_CAPABILITIES, ...state });
+  }
+}
+
+export class AbstractEmberishCurlyComponentManager implements WithDynamicTagName<EmberishCurlyComponent> {
+  getCapabilities(state: EmberishCurlyComponentDefinitionState & GenericComponentDefinitionState) {
+    return state.capabilities;
+  }
+
+  prepareArgs(state: EmberishCurlyComponentDefinitionState, args: Arguments): Option<PreparedArguments> {
+    const { positionalParams } = state.ComponentClass || BaseEmberishCurlyComponent;
 
     if (typeof positionalParams === 'string') {
       if (args.named.has(positionalParams)) {
@@ -67,22 +96,22 @@ export class AbstractEmberishCurlyComponentManager extends GenericComponentManag
     }
   }
 
-  create(_environment: Environment, definition: EmberishCurlyStaticComponentState, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishCurlyComponent {
-    let klass = definition.ComponentClass || BaseEmberishCurlyComponent;
+  create(_environment: Environment, state: EmberishCurlyComponentDefinitionState, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishCurlyComponent {
+    let klass = state.ComponentClass || BaseEmberishCurlyComponent;
     let self = callerSelf.value();
     let args = _args.named.capture();
     let attrs = args.value();
     let merged = assign({}, attrs, { attrs }, { args }, { targetObject: self }, { HAS_BLOCK: hasDefaultBlock });
     let component = klass.create(merged);
 
-    component.name = definition.name;
+    component.name = state.name;
     component.args = args;
 
-    if (definition.layout) {
-      component.layout = { name: component.name, handle: definition.layout };
+    if (state.layout) {
+      component.layout = { name: component.name, handle: state.layout };
     }
 
-    let dyn: Option<string[]> = definition.ComponentClass ? definition.ComponentClass['fromDynamicScope'] : null;
+    let dyn: Option<string[]> = state.ComponentClass ? state.ComponentClass['fromDynamicScope'] : null;
 
     if (dyn) {
       for (let i = 0; i < dyn.length; i++) {
@@ -173,8 +202,8 @@ export class AbstractEmberishCurlyComponentManager extends GenericComponentManag
   }
 }
 
-export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager implements WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, TestResolver> {
-  getLayout({ layout }: EmberishCurlyComponent, resolver: TestResolver): Invocation {
+export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager implements WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, LazyRuntimeResolver> {
+  getLayout({ layout }: EmberishCurlyComponent, resolver: LazyRuntimeResolver): Invocation {
     if (!layout) {
       throw new Error('BUG: missing dynamic layout');
     }
@@ -196,25 +225,15 @@ export class EmberishCurlyComponentManager extends AbstractEmberishCurlyComponen
   }
 }
 
-export class BundledEmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager {
-  getLayout(definition: RuntimeComponentDefinition, resolver: RuntimeResolver): Invocation {
-    let handle = resolver.getVMHandle(definition.specifier);
+export class BundleEmberishCurlyComponentManager extends AbstractEmberishCurlyComponentManager {
+  getLayout(state: EmberishCurlyComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
+    let handle = resolver.getVMHandle(expect(state.specifier, 'expected specifier'));
     return {
       handle: handle as Recast<number, VMHandle>,
-      symbolTable: definition.symbolTable!
+      symbolTable: state.symbolTable! as ProgramSymbolTable
     };
   }
 }
-
-export const EMBERISH_CURLY_CAPABILITIES = {
-  staticDefinitions: true,
-  dynamicLayout: false,
-  dynamicTag: true,
-  prepareArgs: true,
-  createArgs: true,
-  attributeHook: false,
-  elementHook: true
-};
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];

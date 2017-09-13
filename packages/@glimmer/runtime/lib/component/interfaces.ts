@@ -22,60 +22,60 @@ export interface ComponentDefinition {
   manager: InternalComponentManager;
 }
 
-export interface PublicComponentDefinition<StaticComponentState = Opaque, Manager = ComponentManager<Opaque, StaticComponentState>> {
-  state: StaticComponentState;
+export interface PublicComponentDefinition<ComponentDefinitionState = Opaque, Manager = ComponentManager<Opaque, ComponentDefinitionState>> {
+  state: ComponentDefinitionState;
   manager: Manager;
 }
 
-export interface ComponentManager<InstanceState, StaticState> {
-  getCapabilities(state: StaticState): ComponentCapabilities;
+export interface ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+  getCapabilities(state: ComponentDefinitionState): ComponentCapabilities;
 
   // First, the component manager is asked to prepare the arguments needed
   // for `create`. This allows for things like closure components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(state: StaticState, args: IArguments): Option<PreparedArguments>;
+  prepareArgs(state: ComponentDefinitionState, args: IArguments): Option<PreparedArguments>;
 
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, state: StaticState, args: Option<IArguments>, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): InstanceState;
+  create(env: Environment, state: ComponentDefinitionState, args: Option<IArguments>, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): ComponentInstanceState;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
-  getSelf(state: InstanceState): VersionedPathReference<Opaque>;
+  getSelf(state: ComponentInstanceState): VersionedPathReference<Opaque>;
 
   // Convert the opaque component into a `RevisionTag` that determins when
   // the component's update hooks need to be called (if at all).
-  getTag(state: InstanceState): Tag;
+  getTag(state: ComponentInstanceState): Tag;
 
   // This hook is run after the entire layout has been rendered.
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didRenderLayout(state: InstanceState, bounds: Bounds): void;
+  didRenderLayout(state: ComponentInstanceState, bounds: Bounds): void;
 
   // Once the whole top-down rendering process is complete, Glimmer invokes
   // the `didCreate` callbacks.
-  didCreate(state: InstanceState): void;
+  didCreate(state: ComponentInstanceState): void;
 
   // When the component's tag has invalidated, the manager's `update` hook is
   // called.
-  update(state: InstanceState, dynamicScope: DynamicScope): void;
+  update(state: ComponentInstanceState, dynamicScope: DynamicScope): void;
 
   // This hook is run after the entire layout has been updated.
   //
   // Hosts should use `didUpdate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didUpdateLayout(state: InstanceState, bounds: Bounds): void;
+  didUpdateLayout(state: ComponentInstanceState, bounds: Bounds): void;
 
   // Finally, once top-down revalidation has completed, Glimmer invokes
   // the `didUpdate` callbacks on components that changed.
-  didUpdate(state: InstanceState): void;
+  didUpdate(state: ComponentInstanceState): void;
 
   // Convert the opaque component into an object that implements Destroyable.
   // If it returns null, the component will not be destroyed.
-  getDestructor(state: InstanceState): Option<Destroyable>;
+  getDestructor(state: ComponentInstanceState): Option<Destroyable>;
 }
 
 export interface Invocation {
@@ -89,8 +89,8 @@ export interface WithDynamicTagName<Component> extends ComponentManager<Componen
   getTagName(component: Component): Option<string>;
 }
 
-export interface WithStaticLayout<Component, Definition, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<Component, Definition> {
-  getLayout(definition: Definition, resolver: R): Invocation;
+export interface WithStaticLayout<ComponentInstanceState, ComponentDefinitionState, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+  getLayout(state: ComponentDefinitionState, resolver: R): Invocation;
 }
 
 export interface WithAttributeHook<Component, Definition> extends ComponentManager<Component, Definition> {
@@ -109,8 +109,8 @@ export interface WithElementHook<Component> extends ComponentManager<Component, 
 }
 
 /** @internal */
-export function hasStaticLayout<C, Definition extends ComponentDefinition>(definition: Definition, manager: ComponentManager<C, Definition>): manager is WithStaticLayout<C, Definition, Opaque, RuntimeResolver<Opaque>> {
-  return manager.getCapabilities(definition).dynamicLayout === false;
+export function hasStaticLayout<D extends ComponentDefinitionState, I extends ComponentInstanceState>(state: D, manager: ComponentManager<I, D>): manager is WithStaticLayout<I, D, Opaque, RuntimeResolver<Opaque>> {
+  return manager.getCapabilities(state).dynamicLayout === false;
 }
 
 export interface WithDynamicLayout<Component, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<Component, Opaque> {
@@ -122,8 +122,8 @@ export interface WithDynamicLayout<Component, Specifier, R extends RuntimeResolv
 }
 
 /** @internal */
-export function hasDynamicLayout<Component>(definition: ComponentDefinition, manager: ComponentManager<Component, ComponentDefinition>): manager is WithDynamicLayout<Component, Opaque, RuntimeResolver<Opaque>> {
-  return manager.getCapabilities(definition).dynamicLayout === true;
+export function hasDynamicLayout<D extends ComponentDefinitionState, I extends ComponentInstanceState>(state: D, manager: ComponentManager<I, D>): manager is WithDynamicLayout<I, Opaque, RuntimeResolver<Opaque>> {
+  return manager.getCapabilities(state).dynamicLayout === true;
 }
 
 export interface WithStaticDefinitions<ComponentDefinition> extends ComponentManager<Opaque, ComponentDefinition> {
@@ -131,8 +131,8 @@ export interface WithStaticDefinitions<ComponentDefinition> extends ComponentMan
 }
 
 /** @internal */
-export function hasStaticDefinitions<ComponentDefinition>(definition: ComponentDefinition, manager: ComponentManager<Opaque, ComponentDefinition>): manager is WithStaticDefinitions<ComponentDefinition> {
-  return manager.getCapabilities(definition).staticDefinitions === true;
+export function hasStaticDefinitions<D extends ComponentDefinitionState>(state: D, manager: ComponentManager<Opaque, D>): manager is WithStaticDefinitions<D> {
+  return manager.getCapabilities(state).staticDefinitions === true;
 }
 
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {

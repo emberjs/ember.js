@@ -309,7 +309,6 @@ export class ComponentElementOperations {
   }
 }
 
-
 APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
   let { definition, state } = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager } = definition;
@@ -331,18 +330,23 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   let { definition, state } = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager } = definition;
 
-  vm.stack.push((manager as Recast<ComponentManager, WithDynamicTagName<Component>>).getTagName(instanceState));
+  vm.stack.push((manager as Recast<ComponentManager, WithDynamicTagName<Component>>).getTagName(state));
 });
 
 // Dynamic Invocation Only
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
-  let { manager, staticState, instanceState } = check(vm.fetchValue(_state), CheckComponentInstance);
+  let instance = check(vm.fetchValue(_state), CheckComponentInstance);
+  let { manager, definition } = instance;
   let { constants: { resolver }, stack } = vm;
+
+  let { state: instanceState } = instance;
+  let { state: definitionState } = definition;
+
   let invoke: { handle: VMHandle, symbolTable: ProgramSymbolTable };
 
-  if (hasStaticLayout(staticState, manager)) {
-    invoke = manager.getLayout(staticState, resolver);
-  } else if (hasDynamicLayout(staticState, manager)) {
+  if (hasStaticLayout(definitionState, manager)) {
+    invoke = manager.getLayout(definitionState, resolver);
+  } else if (hasDynamicLayout(definitionState, manager)) {
     invoke = manager.getLayout(instanceState, resolver);
   } else {
     throw unreachable();
@@ -413,16 +417,16 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
 });
 
 APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
-  let { manager, instanceState } = check(vm.fetchValue(_state), CheckComponentInstance);
+  let { manager, state } = check(vm.fetchValue(_state), CheckComponentInstance);
   let bounds = vm.elements().popBlock();
 
   let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
 
-  mgr.didRenderLayout(instanceState, bounds);
+  mgr.didRenderLayout(state, bounds);
 
-  vm.env.didCreate(instanceState, manager);
+  vm.env.didCreate(state, manager);
 
-  vm.updateWith(new DidUpdateLayoutOpcode(manager, instanceState, bounds));
+  vm.updateWith(new DidUpdateLayoutOpcode(manager, state, bounds));
 
   expectStackChange(vm.stack, 0, 'DidRenderLayout');
 });

@@ -1,9 +1,4 @@
-import { BasicComponentFactory, BasicStaticComponentState, BASIC_COMPONENT_MANAGER, StaticTaglessComponentDefinition, STATIC_TAGLESS_COMPONENT_MANAGER, EmberishCurlyComponentFactory, EmberishCurlyStaticComponentState, EMBERISH_CURLY_COMPONENT_MANAGER, EmberishGlimmerComponentFactory, EmberishCurlyComponent, EmberishGlimmerStaticComponentState, EMBERISH_GLIMMER_COMPONENT_MANAGER, EmberishGlimmerComponent } from './components';
-import { AbstractTestEnvironment } from './env';
-import { UserHelper, HelperReference } from './helper';
-import { InertModifierManager } from './modifier';
-import { TestMacros } from './generic/macros';
-import { Option, RuntimeResolver, Opaque, Maybe, Simple } from "@glimmer/interfaces";
+import { Option, Maybe, Simple } from "@glimmer/interfaces";
 import {
   Helper as GlimmerHelper,
   DOMTreeConstruction,
@@ -20,19 +15,37 @@ import {
   Arguments,
   getDynamicVar,
   CurriedComponentDefinition,
-  curry,
-  Invocation
+  curry
 } from "@glimmer/runtime";
 import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
-import { dict } from "@glimmer/util";
 import { precompile } from "@glimmer/compiler";
 import { LazyConstants, Program } from "@glimmer/program";
-import { LookupResolver } from "./lookup";
 
-export interface TestSpecifier<T extends LookupType = LookupType> {
-  type: T;
-  name: string;
-}
+import TestEnvironment from '../../environment';
+
+import LazyCompilerResolver from './compiler-resolver';
+import LazyRuntimeResolver from './runtime-resolver';
+
+import {
+  BasicComponentFactory,
+  BasicComponentDefinition,
+  BASIC_COMPONENT_MANAGER,
+  StaticTaglessComponentDefinition,
+  STATIC_TAGLESS_COMPONENT_MANAGER,
+  EmberishCurlyComponentFactory,
+  EmberishCurlyComponentDefinition,
+  EMBERISH_CURLY_COMPONENT_MANAGER,
+  EmberishGlimmerComponentFactory,
+  EmberishCurlyComponent,
+  EmberishGlimmerComponentDefinition,
+  EMBERISH_GLIMMER_COMPONENT_MANAGER,
+  EmberishGlimmerComponent
+} from '../../components';
+
+import { UserHelper, HelperReference } from '../../helper';
+import { InertModifierManager } from '../../modifier';
+import TestMacros from '../../macros';
+import TestSpecifier from '../../specifier';
 
 export interface TestEnvironmentOptions {
   document?: Simple.Document;
@@ -41,124 +54,14 @@ export interface TestEnvironmentOptions {
   program?: TopLevelSyntax;
 }
 
-export interface Lookup {
-  helper: GlimmerHelper;
-  modifier: ModifierManager;
-  partial: PartialDefinition;
-  component: ComponentDefinition;
-  template: Invocation;
-  'template-source': string;
-}
+export type TestCompilationOptions = CompilationOptions<TestSpecifier, LazyRuntimeResolver>;
 
-export type LookupType = keyof Lookup;
-export type LookupValue = Lookup[LookupType];
-
-class TypedRegistry<T> {
-  private byName: { [key: string]: number } = dict<number>();
-  private byHandle: { [key: number]: T } = dict<T>();
-
-  hasName(name: string): boolean {
-    return name in this.byName;
-  }
-
-  getHandle(name: string): Option<number> {
-    return this.byName[name];
-  }
-
-  hasHandle(name: number): boolean {
-    return name in this.byHandle;
-  }
-
-  getByHandle(handle: number): Option<T> {
-    return this.byHandle[handle];
-  }
-
-  register(handle: number, name: string, value: T): void {
-    this.byHandle[handle] = value;
-    this.byName[name] = handle;
-  }
-}
-
-export type TestCompilationOptions = CompilationOptions<TestSpecifier, TestResolver>;
-
-export class TestResolver implements RuntimeResolver<TestSpecifier> {
-  private handleLookup: TypedRegistry<Opaque>[] = [];
-
-  private registry = {
-    helper: new TypedRegistry<GlimmerHelper>(),
-    modifier: new TypedRegistry<ModifierManager>(),
-    partial: new TypedRegistry<PartialDefinition>(),
-    component: new TypedRegistry<ComponentDefinition>(),
-    template: new TypedRegistry<Invocation>(),
-    'template-source': new TypedRegistry<string>()
-  };
-
-  private options: TemplateOptions<TestSpecifier>;
-
-  register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
-    let registry = this.registry[type];
-    let handle = this.handleLookup.length;
-    this.handleLookup.push(registry);
-    (this.registry[type] as TypedRegistry<any>).register(handle, name, value);
-    return handle;
-  }
-
-  lookup(type: LookupType, name: string, _referrer?: TestSpecifier): Option<number> {
-    if (this.registry[type].hasName(name)) {
-      return this.registry[type].getHandle(name);
-    } else {
-      return null;
-    }
-  }
-
-  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<TestSpecifier>) => Invocation): Invocation {
-    let invocationHandle = this.lookup('template', templateName);
-
-    if (invocationHandle) {
-      return this.resolve<Invocation>(invocationHandle);
-    }
-
-    let source = this.resolve<string>(sourceHandle);
-
-    let invocation = create(source, this.options);
-    this.register('template', templateName, invocation);
-    return invocation;
-  }
-
-  lookupHelper(name: string, referrer?: TestSpecifier): Option<number> {
-    return this.lookup('helper', name, referrer);
-  }
-
-  lookupModifier(name: string, referrer?: TestSpecifier): Option<number> {
-    return this.lookup('modifier', name, referrer);
-  }
-
-  lookupComponent(name: string, referrer?: TestSpecifier): Option<ComponentDefinition> {
-    let handle = this.lookupComponentHandle(name, referrer);
-    if (handle === null) return null;
-    return this.resolve(handle) as ComponentDefinition;
-  }
-
-  lookupComponentHandle(name: string, referrer?: TestSpecifier): Option<number> {
-    return this.lookup('component', name, referrer);
-  }
-
-  lookupPartial(name: string, referrer?: TestSpecifier): Option<number> {
-    return this.lookup('partial', name, referrer);
-  }
-
-  resolve<T>(handle: number): T {
-    let registry = this.handleLookup[handle];
-    return registry.getByHandle(handle) as T;
-  }
-}
-
-export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
-  public resolver = new TestResolver();
+export class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
+  public resolver = new LazyRuntimeResolver();
   protected program = new Program(new LazyConstants(this.resolver));
 
   public compileOptions: TemplateOptions<TestSpecifier> = {
-    lookup: new LookupResolver(this.resolver),
+    lookup: new LazyCompilerResolver(this.resolver),
     program: this.program,
     macros: new TestMacros(),
     Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor
@@ -186,19 +89,26 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
     }
 
     let layout = this.registerTemplate(name, layoutSource);
-    let state = new BasicStaticComponentState(name, Component, layout.handle);
-    let manager = BASIC_COMPONENT_MANAGER;
 
-    this.registerComponent(name, { state, manager });
+    let definition = new BasicComponentDefinition(BASIC_COMPONENT_MANAGER, {
+      name,
+      layout: layout.handle,
+      ComponentClass: Component
+    });
+
+    this.registerComponent(name, definition);
   }
 
   registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
     let layout = this.registerTemplate(name, layoutSource);
 
-    let state = new StaticTaglessComponentDefinition(name, Component, layout.handle);
-    let manager = STATIC_TAGLESS_COMPONENT_MANAGER;
+    let definition = new StaticTaglessComponentDefinition(STATIC_TAGLESS_COMPONENT_MANAGER, {
+      name,
+      layout: layout.handle,
+      ComponentClass: Component
+    });
 
-    this.registerComponent(name, { state, manager });
+    this.registerComponent(name, definition);
   }
 
   registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): void {
@@ -208,10 +118,13 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
       layout = this.registerTemplate(name, layoutSource);
     }
 
-    let state = new EmberishCurlyStaticComponentState(name, Component || EmberishCurlyComponent, layout && layout.handle);
-    let manager = EMBERISH_CURLY_COMPONENT_MANAGER;
+    let definition = new EmberishCurlyComponentDefinition(EMBERISH_CURLY_COMPONENT_MANAGER, {
+      name,
+      ComponentClass: Component || EmberishCurlyComponent,
+      layout: layout && layout.handle
+    });
 
-    this.registerComponent(name, { state, manager });
+    this.registerComponent(name, definition);
   }
 
   registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): void {
@@ -221,10 +134,13 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
 
     let layout = this.registerTemplate(name, layoutSource);
 
-    let state = new EmberishGlimmerStaticComponentState(name, Component || EmberishGlimmerComponent, layout.handle);
-    let manager = EMBERISH_GLIMMER_COMPONENT_MANAGER;
+    let definition = new EmberishGlimmerComponentDefinition(EMBERISH_GLIMMER_COMPONENT_MANAGER, {
+      name,
+      ComponentClass: Component || EmberishGlimmerComponent,
+      layout: layout.handle
+    });
 
-    this.registerComponent(name, { state, manager });
+    this.registerComponent(name, definition);
   }
 
   registerHelper(name: string, helper: UserHelper): GlimmerHelper {
@@ -280,6 +196,7 @@ export class TestEnvironment extends AbstractTestEnvironment<TestSpecifier> {
   }
 
   private registerComponent(name: string, definition: ComponentDefinition) {
+    console.log('register', name, definition);
     this.resolver.register('component', name, definition);
     return definition;
   }

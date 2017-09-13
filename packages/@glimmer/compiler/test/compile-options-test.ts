@@ -1,13 +1,13 @@
-import { TestEnvironment } from "@glimmer/test-helpers";
+import { LazyTestEnvironment } from "@glimmer/test-helpers";
 import { precompile } from "@glimmer/compiler";
 
-let env: TestEnvironment;
+let env: LazyTestEnvironment;
 
 QUnit.module('[glimmer-compiler] precompile');
 
 QUnit.module('[glimmer-compiler] Compile options', {
   beforeEach() {
-    env = new TestEnvironment();
+    env = new LazyTestEnvironment();
   }
 });
 
@@ -19,7 +19,7 @@ QUnit.test('moduleName option is passed into meta', assert => {
 
 QUnit.module('[glimmer-compiler] precompile', {
   beforeEach() {
-    env = new TestEnvironment();
+    env = new LazyTestEnvironment();
   }
 });
 

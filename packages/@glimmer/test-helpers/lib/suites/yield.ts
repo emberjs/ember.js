@@ -1,6 +1,6 @@
-import { AbstractRenderTest, test } from '../abstract-test-case';
+import { RenderTest, test } from '../render-test';
 
-export class YieldSuite extends AbstractRenderTest {
+export class YieldSuite extends RenderTest {
   @test
   'yield'() {
     this.render(
