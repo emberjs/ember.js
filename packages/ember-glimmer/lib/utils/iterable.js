@@ -129,15 +129,10 @@ class ObjectKeysIterator extends ArrayIterator {
   constructor(keys, values, keyFor) {
     super(values, keyFor);
     this.keys = keys;
-    this.length = keys.length;
   }
 
   getMemo(position) {
     return this.keys[position];
-  }
-
-  getValue(position) {
-    return this.array[position];
   }
 }
 
@@ -176,7 +171,7 @@ class EachInIterable {
 
     let typeofIterable = typeof iterable;
 
-    if (iterable && (typeofIterable === 'object' || typeofIterable === 'function')) {
+    if (iterable !== null && (typeofIterable === 'object' || typeofIterable === 'function')) {
       let keys = Object.keys(iterable);
       let values = keys.map(key => iterable[key]);
       return keys.length > 0 ? new ObjectKeysIterator(keys, values, keyFor) : EMPTY_ITERATOR;
@@ -222,7 +217,7 @@ class ArrayIterable {
 
     valueTag.update(tagForProperty(iterable, '[]'));
 
-    if (!iterable || typeof iterable !== 'object') {
+    if (iterable === null || typeof iterable !== 'object') {
       return EMPTY_ITERATOR;
     }
 
