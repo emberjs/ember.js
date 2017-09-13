@@ -5,12 +5,9 @@ import { VMHandle, ProgramSymbolTable } from '@glimmer/interfaces';
 
 import { Modules } from './modules';
 import { ComponentDefinition } from '@glimmer/runtime';
+import { TestComponentDefinitionState } from "@glimmer/test-helpers";
 
-export interface WithCapabilities {
-  capabilities: ComponentCapabilities;
-}
-
-export type ComponentDefinitionWithCapabilities = ComponentDefinition<WithCapabilities>;
+export type ComponentDefinitionWithCapabilities = ComponentDefinition<TestComponentDefinitionState>;
 
 export default class EagerCompilerDelegate implements CompilerDelegate {
   constructor(

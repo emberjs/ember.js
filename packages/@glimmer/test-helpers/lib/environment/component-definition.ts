@@ -1,27 +1,19 @@
-import { ComponentDefinition } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
-import { ComponentCapabilities } from '@glimmer/opcode-compiler';
 import { ProgramSymbolTable } from '@glimmer/interfaces';
 import { Specifier } from '@glimmer/bundle-compiler';
+import { ComponentCapabilities } from "@glimmer/opcode-compiler";
 
-export interface GenericComponentDefinitionState {
+export interface TestComponentDefinitionState {
+  /* Manager-related */
+  capabilities: ComponentCapabilities;
+
+  /* Component-related */
   name: string;
   ComponentClass: any;
-  capabilities: ComponentCapabilities;
-  specifier?: Specifier;
-  type?: string;
-  template?: string;
+  type: string;
   layout: Option<number>;
+  specifier?: Specifier;
+  template?: string;
   hasSymbolTable?: boolean;
   symbolTable?: ProgramSymbolTable;
-}
-
-export class GenericComponentDefinition<State extends GenericComponentDefinitionState, Manager> implements ComponentDefinition<State, Manager> {
-  state: State;
-  manager: Manager;
-
-  constructor(manager: Manager, state: State) {
-    this.state = state;
-    this.manager = manager;
-  }
 }

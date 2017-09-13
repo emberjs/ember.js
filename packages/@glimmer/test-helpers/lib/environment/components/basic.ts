@@ -1,7 +1,7 @@
 import { createTemplate } from '../shared';
 
 import { WithStaticLayout, Environment, ScannableTemplate, Bounds, Invocation } from "@glimmer/runtime";
-import { unreachable, Option, expect } from "@glimmer/util";
+import { unreachable, expect } from "@glimmer/util";
 import { TemplateOptions, ComponentCapabilities, Specifier } from "@glimmer/opcode-compiler";
 import { PathReference, Tag, CONSTANT_TAG } from "@glimmer/reference";
 import { Opaque, Recast, VMHandle } from "@glimmer/interfaces";
@@ -9,7 +9,7 @@ import { UpdatableReference } from '@glimmer/object-reference';
 
 import RuntimeResolver from '../modes/lazy/runtime-resolver';
 import TestSpecifier from '../specifier';
-import { GenericComponentDefinition, GenericComponentDefinitionState } from '../components';
+import { TestComponentDefinitionState } from '../components';
 import { EagerRuntimeResolver } from '../modes/eager/runtime-resolver';
 
 export class BasicComponent {
@@ -17,7 +17,7 @@ export class BasicComponent {
   public bounds: Bounds;
 }
 
-export const CAPABILITIES: ComponentCapabilities = {
+export const BASIC_CAPABILITIES: ComponentCapabilities = {
   staticDefinitions: true,
   dynamicLayout: false,
   dynamicTag: false,
@@ -27,20 +27,8 @@ export const CAPABILITIES: ComponentCapabilities = {
   elementHook: false
 };
 
-export interface BasicComponentDefinitionState {
-  name: string;
-  ComponentClass: Option<BasicComponentFactory>;
-  layout: Option<number>;
-}
-
-export class BasicComponentDefinition extends GenericComponentDefinition<BasicComponentDefinitionState & GenericComponentDefinitionState, BasicComponentManager> {
-  constructor(manager: BasicComponentManager, state: BasicComponentDefinitionState) {
-    super(manager, { capabilities: CAPABILITIES, ...state});
-  }
-}
-
-export class BasicComponentManager implements WithStaticLayout<BasicComponent, BasicComponentDefinitionState & GenericComponentDefinitionState, TestSpecifier, RuntimeResolver> {
-  getCapabilities(state: BasicComponentDefinitionState & GenericComponentDefinitionState) {
+export class BasicComponentManager implements WithStaticLayout<BasicComponent, TestComponentDefinitionState, TestSpecifier, RuntimeResolver> {
+  getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
 
@@ -48,12 +36,12 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, B
     throw unreachable();
   }
 
-  create(_env: Environment, definition: BasicComponentDefinitionState): BasicComponent {
+  create(_env: Environment, definition: TestComponentDefinitionState): BasicComponent {
     let klass = definition.ComponentClass || BasicComponent;
     return new klass();
   }
 
-  getLayout({ name }: BasicComponentDefinitionState & GenericComponentDefinitionState, resolver: RuntimeResolver): Invocation {
+  getLayout({ name }: TestComponentDefinitionState, resolver: RuntimeResolver): Invocation {
     let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
       let layout = createTemplate(source);
       let template = new ScannableTemplate(options, layout).asLayout();
@@ -98,21 +86,21 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, B
   }
 }
 
-export class EagerBasicComponentManager implements WithStaticLayout<BasicComponent, BasicComponentDefinitionState & GenericComponentDefinitionState, Specifier, EagerRuntimeResolver> {
-  getCapabilities(state: BasicComponentDefinitionState & GenericComponentDefinitionState) {
-    return state.capabilities;
+export class EagerBasicComponentManager implements WithStaticLayout<BasicComponent, TestComponentDefinitionState, Specifier, EagerRuntimeResolver> {
+  getCapabilities() {
+    return BASIC_CAPABILITIES;
   }
 
   prepareArgs(): null {
     throw unreachable();
   }
 
-  create(_env: Environment, definition: BasicComponentDefinitionState): BasicComponent {
+  create(_env: Environment, definition: TestComponentDefinitionState): BasicComponent {
     let klass = definition.ComponentClass || BasicComponent;
     return new klass();
   }
 
-  getLayout(state: GenericComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
+  getLayout(state: TestComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
     let specifier = expect(state.specifier, 'component definition state should include specifier');
     let handle = resolver.getVMHandle(specifier);
     let symbolTable = resolver.symbolTables.get(specifier)!;
@@ -150,8 +138,6 @@ export class EagerBasicComponentManager implements WithStaticLayout<BasicCompone
     return null;
   }
 }
-
-export const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 
 export interface BasicComponentFactory {
   new (): BasicComponent;

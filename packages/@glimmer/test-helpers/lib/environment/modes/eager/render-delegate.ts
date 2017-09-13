@@ -6,60 +6,66 @@ import {
   RenderResult,
   elementBuilder,
   LowLevelVM,
-  TemplateIterator
+  TemplateIterator,
+  ComponentManager
 } from '@glimmer/runtime';
 import { LookupMap, specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
-import { Opaque, Factory, assert, Dict, assign, expect } from '@glimmer/util';
+import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 
 import EagerCompilerDelegate from './compiler-delegate';
 import { RenderDelegate, ComponentKind, renderSync } from '../../../render-test';
 import TestMacros from '../../macros';
 import { UserHelper, HelperReference } from '../../helper';
 
-import { BasicComponent, BasicComponentDefinition, EagerBasicComponentManager } from '../../components/basic';
-import { EmberishCurlyComponent, EagerEmberishCurlyComponentDefinition, BundleEmberishCurlyComponentManager } from '../../components/emberish-curly';
-import { EmberishGlimmerComponent, EmberishGlimmerComponentDefinition, EMBERISH_GLIMMER_COMPONENT_MANAGER } from '../../components/emberish-glimmer';
+import { BasicComponent, EagerBasicComponentManager, BASIC_CAPABILITIES } from '../../components/basic';
+import { EmberishCurlyComponent, EagerEmberishCurlyComponentManager, EMBERISH_CURLY_CAPABILITIES } from '../../components/emberish-curly';
+import { EmberishGlimmerComponent, EagerEmberishGlimmerComponentManager, EMBERISH_GLIMMER_CAPABILITIES } from '../../components/emberish-glimmer';
 
 import { Modules } from './modules';
 import EagerTestEnvironment from './environment';
 import { TestDynamicScope } from '../../../environment';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants } from '@glimmer/program';
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import { WrappedBuilder, ComponentCapabilities } from '@glimmer/opcode-compiler';
 import { ProgramSymbolTable, Recast, VMHandle } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { EagerRuntimeResolver } from './runtime-resolver';
 import { NodeEnv } from '../ssr/environment';
 import * as SimpleDOM from 'simple-dom';
-import { GenericComponentDefinitionState, EMBERISH_CURLY_CAPABILITIES } from '../../components';
+import { TestComponentDefinitionState } from '../../component-definition';
 
-export type RenderDelegateComponentDefinition = ComponentDefinition<GenericComponentDefinitionState>;
+export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
-const COMPONENT_DEFINITIONS: { [key: string]: Factory<RenderDelegateComponentDefinition> } = {
-  Basic: BasicComponentDefinition,
-  Glimmer: EmberishGlimmerComponentDefinition,
-  Dynamic: EagerEmberishCurlyComponentDefinition,
-  Curly: EagerEmberishCurlyComponentDefinition
-};
+type Entries<T> = { [F in ComponentKind]: Option<T> };
 
-const COMPONENT_CLASSES = {
+const COMPONENT_CLASSES: Entries<Opaque> = {
   Basic: BasicComponent,
   Glimmer: EmberishGlimmerComponent,
   Dynamic: EmberishCurlyComponent,
-  Curly: EmberishCurlyComponent
+  Curly: EmberishCurlyComponent,
+  Fragment: null
 };
 
-const COMPONENT_MANAGERS = {
+const COMPONENT_MANAGERS: Entries<ComponentManager<Opaque, Opaque>> = {
   Basic: new EagerBasicComponentManager(),
-  Glimmer: EMBERISH_GLIMMER_COMPONENT_MANAGER,
-  Dynamic: new BundleEmberishCurlyComponentManager(),
-  Curly: new BundleEmberishCurlyComponentManager()
+  Glimmer: new EagerEmberishGlimmerComponentManager(),
+  Dynamic: new EagerEmberishCurlyComponentManager(),
+  Curly: new EagerEmberishCurlyComponentManager(),
+  Fragment: null
+};
+
+const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
+  Basic: BASIC_CAPABILITIES,
+  Glimmer: EMBERISH_GLIMMER_CAPABILITIES,
+  Dynamic: EMBERISH_CURLY_CAPABILITIES,
+  Curly: EMBERISH_CURLY_CAPABILITIES,
+  Fragment: null
 };
 
 export default class EagerRenderDelegate implements RenderDelegate {
   protected env: Environment;
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
-  protected components: Dict<ComponentDefinition<GenericComponentDefinitionState>> = {};
+  protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
   protected specifiersToSymbolTable = new LookupMap<Specifier, ProgramSymbolTable>();
 
   constructor(env: Environment) {
@@ -80,28 +86,36 @@ export default class EagerRenderDelegate implements RenderDelegate {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }
 
-  registerComponent(type: ComponentKind, testType: ComponentKind, name: string, layoutSource: string, Class?: Opaque): void {
+  registerComponent(type: ComponentKind, testType: ComponentKind, name: string, template: string, Class?: Opaque): void {
     let module = `ui/components/${name}`;
 
-    let DefinitionClass = COMPONENT_DEFINITIONS[type];
     let ComponentClass = Class || COMPONENT_CLASSES[type];
     let manager = COMPONENT_MANAGERS[type];
+    let capabilities = COMPONENT_CAPABILITIES[type];
 
-    if (!DefinitionClass) {
+    if (!manager || !capabilities) {
       throw new Error(`Not implemented in the Bundle Compiler yet: ${type}`);
     }
 
     let specifier = specifierFor(`ui/components/${name}`, 'default');
     let hasSymbolTable = testType === 'Dynamic';
 
-    this.components[module] = new DefinitionClass(manager, {
-      type,
+    let state: TestComponentDefinitionState = {
       name,
-      hasSymbolTable,
+      type,
       specifier,
-      template: layoutSource,
-      ComponentClass
-    });
+      template,
+      capabilities,
+      hasSymbolTable,
+      ComponentClass,
+      // Populated by the Bundle Compiler in eager mode
+      layout: null
+    };
+
+    this.components[module] = {
+      manager,
+      state
+    };
   }
 
   registerHelper(name: string, helper: UserHelper): void {
