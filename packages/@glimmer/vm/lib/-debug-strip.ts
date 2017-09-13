@@ -572,12 +572,12 @@ OPCODE_METADATA(Op.Fetch, {
 
 /// EXPRESSIONS ///
 
-OPCODE_METADATA(Op.Helper, clearsArgs({
+OPCODE_METADATA(Op.Helper, {
   name: 'Helper',
   ops: [Handle('helper')],
   operands: 1,
-  netPushes: 1
-}));
+  stackChange: -1
+});
 
 OPCODE_METADATA(Op.SetVariable, {
   name: 'SetVariable',

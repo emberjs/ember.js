@@ -24,5 +24,8 @@ export enum Register {
 
   // $6-$7 or $t0-$t1 (temporaries): caller saved general-purpose registers
   't0',
-  't1'
+  't1',
+
+  // $8 or $v0 (return value)
+  'v0'
 }

@@ -501,8 +501,12 @@ export abstract class OpcodeBuilder<Specifier> {
     this.push(Op.PrimitiveReference);
   }
 
-  helper(helper: Specifier) {
+  helper(helper: Specifier, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+    this.pushFrame();
+    this.compileArgs(params, hash, null, true);
     this.push(Op.Helper, this.constants.handle(helper));
+    this.popFrame();
+    this.fetch(Register.v0);
   }
 
   bindDynamicScope(_names: string[]) {

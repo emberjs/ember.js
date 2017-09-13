@@ -268,8 +268,7 @@ EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
   let specifier = lookup.lookupHelper(name, referrer);
 
   if (specifier !== null) {
-    builder.compileArgs(null, null, null, true);
-    builder.helper(specifier);
+    builder.helper(specifier, null, null);
   } else if (asPartial) {
     builder.resolveMaybeLocal(name);
   } else {
@@ -302,8 +301,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
   let specifier = lookup.lookupHelper(name, referrer);
 
   if (specifier !== null) {
-    builder.compileArgs(params, hash, null, true);
-    builder.helper(specifier);
+    builder.helper(specifier, params, hash);
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }
