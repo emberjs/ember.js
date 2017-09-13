@@ -13,10 +13,10 @@
     "@glimmer/interfaces": "^0.28.0",
     "@glimmer/opcode-compiler": "^0.28.0",
     "@glimmer/program": "^0.28.0",
-    "@glimmer/vm": "^0.28.0",
-    "@glimmer/debug": "^0.28.0"
+    "@glimmer/vm": "^0.28.0"
   },
   "devDependencies": {
+    "@glimmer/debug": "^0.28.0",
     "@types/qunit": "^2.0.31",
     "typescript": "^2.2.0"
   }
