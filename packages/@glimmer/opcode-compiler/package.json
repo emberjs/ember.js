@@ -9,11 +9,11 @@
     "@glimmer/interfaces": "^0.28.1",
     "@glimmer/program": "^0.28.1",
     "@glimmer/vm": "^0.28.1",
-    "@glimmer/local-debug-flags": "^0.28.1",
     "@glimmer/encoder": "^0.28.1",
     "simple-html-tokenizer": "^0.3.0"
   },
   "devDependencies": {
+    "@glimmer/local-debug-flags": "^0.28.1",
     "typescript": "^2.2.0"
   }
 }
