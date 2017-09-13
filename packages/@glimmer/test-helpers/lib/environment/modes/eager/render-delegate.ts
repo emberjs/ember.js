@@ -17,18 +17,19 @@ import { RenderDelegate, ComponentKind, renderSync } from '../../../render-test'
 import TestMacros from '../../macros';
 import { UserHelper, HelperReference } from '../../helper';
 
-import { BasicComponent, EagerBasicComponentManager, BASIC_CAPABILITIES } from '../../components/basic';
-import { EmberishCurlyComponent, EagerEmberishCurlyComponentManager, EMBERISH_CURLY_CAPABILITIES } from '../../components/emberish-curly';
-import { EmberishGlimmerComponent, EagerEmberishGlimmerComponentManager, EMBERISH_GLIMMER_CAPABILITIES } from '../../components/emberish-glimmer';
+import { BasicComponent, BasicComponentManager, BASIC_CAPABILITIES } from '../../components/basic';
+import { EmberishCurlyComponent, EmberishCurlyComponentManager, EMBERISH_CURLY_CAPABILITIES } from '../../components/emberish-curly';
+import { EmberishGlimmerComponent, EmberishGlimmerComponentManager, EMBERISH_GLIMMER_CAPABILITIES } from '../../components/emberish-glimmer';
+
+import EagerTestEnvironment from './environment';
+import EagerRuntimeResolver from './runtime-resolver';
 
 import { Modules } from './modules';
-import EagerTestEnvironment from './environment';
 import { TestDynamicScope } from '../../../environment';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants } from '@glimmer/program';
 import { WrappedBuilder, ComponentCapabilities } from '@glimmer/opcode-compiler';
 import { ProgramSymbolTable, Recast, VMHandle } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { EagerRuntimeResolver } from './runtime-resolver';
 import { NodeEnv } from '../ssr/environment';
 import * as SimpleDOM from 'simple-dom';
 import { TestComponentDefinitionState } from '../../component-definition';
@@ -46,10 +47,10 @@ const COMPONENT_CLASSES: Entries<Opaque> = {
 };
 
 const COMPONENT_MANAGERS: Entries<ComponentManager<Opaque, Opaque>> = {
-  Basic: new EagerBasicComponentManager(),
-  Glimmer: new EagerEmberishGlimmerComponentManager(),
-  Dynamic: new EagerEmberishCurlyComponentManager(),
-  Curly: new EagerEmberishCurlyComponentManager(),
+  Basic: new BasicComponentManager(),
+  Glimmer: new EmberishGlimmerComponentManager(),
+  Dynamic: new EmberishCurlyComponentManager(),
+  Curly: new EmberishCurlyComponentManager(),
   Fragment: null
 };
 

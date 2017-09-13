@@ -4,7 +4,7 @@ import { Opaque, Option } from '@glimmer/util';
 
 import { Modules } from './modules';
 
-export class EagerRuntimeResolver implements RuntimeResolver<Specifier> {
+export default class EagerRuntimeResolver implements RuntimeResolver<Specifier> {
   constructor(private map: SpecifierMap, private modules: Modules, public symbolTables: LookupMap<Specifier, ProgramSymbolTable>) {}
 
   lookupHelper(_name: string, _meta: Opaque): Option<number> {
