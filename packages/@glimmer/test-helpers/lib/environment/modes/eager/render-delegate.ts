@@ -12,8 +12,9 @@ import {
 import { LookupMap, specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 
+import RenderDelegate from '../../../render-delegate';
 import EagerCompilerDelegate from './compiler-delegate';
-import { RenderDelegate, ComponentKind, renderSync } from '../../../render-test';
+import { ComponentKind, renderSync } from '../../../render-test';
 import TestMacros from '../../macros';
 import { UserHelper, HelperReference } from '../../helper';
 

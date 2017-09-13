@@ -2,10 +2,13 @@ import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } fro
 import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction } from "@glimmer/node";
-import { Option, Simple } from "@glimmer/interfaces";
+import { Option } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
+import * as SimpleDOM from "simple-dom";
+
 import { assign, equalTokens, normalizeInnerHTML } from "./helpers";
-import { LazyTestEnvironment } from './environment/modes/lazy/environment';
+import LazyTestEnvironment from './environment/modes/lazy/environment';
+import LazyRenderDelegate from "./environment/modes/lazy/render-delegate";
 import {
   TestDynamicScope,
   equalsElement,
@@ -14,7 +17,7 @@ import {
 } from "./environment";
 import { UserHelper } from './environment/helper';
 import { EmberishGlimmerComponent, EmberishCurlyComponent, BasicComponent } from './environment/components';
-import * as SimpleDOM from "simple-dom";
+import RenderDelegate from './render-delegate';
 
 export const OPEN: { marker: "open-block" } = { marker: "open-block" };
 export const CLOSE: { marker: "close-block" } = { marker: "close-block" };
@@ -104,13 +107,6 @@ class SimplePathReference implements PathReference<Opaque> {
 
 type IndividualSnapshot = 'up' | 'down' | Node;
 type NodesSnapshot = IndividualSnapshot[];
-
-export interface RenderDelegate {
-  getInitialElement(): HTMLElement;
-  registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, testType: L, name: string, layout: string, Class?: ComponentTypes[K]): void;
-  registerHelper(name: string, helper: UserHelper): void;
-  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult;
-}
 
 export class RenderTest {
   protected element: HTMLElement;
@@ -491,36 +487,6 @@ export class RenderTest {
   }
 }
 
-export class TestEnvironmentRenderDelegate implements RenderDelegate {
-  constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) {}
-
-  resetEnv() {
-    this.env = new LazyTestEnvironment();
-  }
-
-  getInitialElement(): HTMLElement {
-    return this.env.getAppendOperations().createElement('div') as HTMLElement;
-  }
-
-  registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, _testType: L, name: string, layout: string, Class?: ComponentTypes[K]) {
-    registerComponent(this.env, type, name, layout, Class);
-  }
-
-  registerHelper(name: string, helper: UserHelper): void {
-    this.env.registerHelper(name, helper);
-  }
-
-  renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
-    let { env } = this;
-    return renderTemplate(template, {
-      env,
-      self: new UpdatableReference(context),
-      cursor: { element, nextSibling: null },
-      dynamicScope: new TestDynamicScope()
-    });
-  }
-}
-
 export const CLASSES = {
   Glimmer: EmberishGlimmerComponent,
   Curly: EmberishCurlyComponent,
@@ -531,7 +497,7 @@ export const CLASSES = {
 
 export type ComponentTypes = typeof CLASSES;
 
-function registerComponent<K extends ComponentKind>(env: LazyTestEnvironment, type: K, name: string, layout: string, Class?: ComponentTypes[K]) {
+export function registerComponent<K extends ComponentKind>(env: LazyTestEnvironment, type: K, name: string, layout: string, Class?: ComponentTypes[K]) {
   switch (type) {
     case "Glimmer":
       env.registerEmberishGlimmerComponent(name, Class as typeof EmberishGlimmerComponent, layout);
@@ -754,7 +720,7 @@ export function module<T extends RenderTest> (
   klass: RenderTestConstructor<RenderDelegate, T>,
   options = { componentModule: false }
 ): void {
-  return rawModule(name, klass, TestEnvironmentRenderDelegate, options);
+  return rawModule(name, klass, LazyRenderDelegate, options);
 }
 
 export function rawModule<D extends RenderDelegate, T extends RenderTest> (
