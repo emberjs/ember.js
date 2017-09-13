@@ -94,7 +94,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _initRouterJs() {
     let routerMicrolib = this._routerMicrolib = new Router();
-    routerMicrolib.triggerEvent = triggerEvent;
+    routerMicrolib.triggerEvent = triggerEvent.bind(this);
 
     routerMicrolib._triggerWillChangeContext = K;
     routerMicrolib._triggerWillLeave = K;
@@ -1084,22 +1084,22 @@ const EmberRouter = EmberObject.extend(Evented, {
   @param {Function} callback
   @return {Void}
  */
-function forEachRouteAbove(originRoute, handlerInfos, callback) {
-  let originRouteFound = false;
+function forEachRouteAbove(handlerInfos, callback) {
 
   for (let i = handlerInfos.length - 1; i >= 0; --i) {
     let handlerInfo = handlerInfos[i];
     let route = handlerInfo.handler;
 
-    if (originRoute === route) {
-      originRouteFound = true;
-    }
+    // handlerInfo.handler being `undefined` generally means either:
+    //
+    // 1. an error occurred during creation of the route in question
+    // 2. the route is across an async boundary (e.g. within an engine)
+    //
+    // In both of these cases, we cannot invoke the callback on that specific
+    // route, because it just doesn't exist...
+    if (route === undefined) { continue; }
 
-    if (!originRouteFound) {
-      continue;
-    }
-
-    if (callback(route) !== true) {
+    if (callback(route, handlerInfo) !== true) {
       return;
     }
   }
@@ -1109,20 +1109,21 @@ function forEachRouteAbove(originRoute, handlerInfos, callback) {
 // and are not meant to be overridable.
 let defaultActionHandlers = {
 
-  willResolveModel(transition, originRoute) {
-    originRoute.router._scheduleLoadingEvent(transition, originRoute);
+  willResolveModel(handlerInfos, transition, originRoute) {
+    this._scheduleLoadingEvent(transition, originRoute);
   },
 
   // Attempt to find an appropriate error route or substate to enter.
-  error(error, transition, originRoute) {
-    let handlerInfos = transition.state.handlerInfos;
-    let router = originRoute.router;
+  error(handlerInfos, error, transition) {
+    let router = this;
 
-    forEachRouteAbove(originRoute, handlerInfos, route => {
-      // Check for the existence of an 'error' route.
-      // We don't check for an 'error' route on the originRoute, since that would
+    let handlerInfoWithError = handlerInfos[handlerInfos.length - 1];
+
+    forEachRouteAbove(handlerInfos, (route, handlerInfo) => {
+      // We don't check the leaf most handlerInfo since that would
       // technically be below where we're at in the route hierarchy.
-      if (originRoute !== route) {
+      if (handlerInfo !== handlerInfoWithError) {
+        // Check for the existence of an 'error' route.
         let errorRouteName = findRouteStateName(route, 'error');
         if (errorRouteName) {
           router.intermediateTransitionTo(errorRouteName, error);
@@ -1144,15 +1145,16 @@ let defaultActionHandlers = {
   },
 
   // Attempt to find an appropriate loading route or substate to enter.
-  loading(transition, originRoute) {
-    let handlerInfos = transition.state.handlerInfos;
-    let router = originRoute.router;
+  loading(handlerInfos, transition, originRoute) {
+    let router = this;
 
-    forEachRouteAbove(originRoute, handlerInfos, route => {
-      // Check for the existence of a 'loading' route.
-      // We don't check for a 'loading' route on the originRoute, since that would
+    let handlerInfoWithSlowLoading = handlerInfos[handlerInfos.length - 1];
+
+    forEachRouteAbove(handlerInfos, (route, handlerInfo) => {
+      // We don't check the leaf most handlerInfo since that would
       // technically be below where we're at in the route hierarchy.
-      if (originRoute !== route) {
+      if (handlerInfo !== handlerInfoWithSlowLoading) {
+        // Check for the existence of a 'loading' route.
         let loadingRouteName = findRouteStateName(route, 'loading');
         if (loadingRouteName) {
           router.intermediateTransitionTo(loadingRouteName);
@@ -1285,7 +1287,7 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
 
   let defaultHandler = defaultActionHandlers[name]
   if (defaultHandler) {
-    defaultHandler.apply(null, args);
+    defaultHandler.apply(this, [handlerInfos, ...args]);
     return;
   }
 
