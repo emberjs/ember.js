@@ -44,9 +44,10 @@ export {
 
 export * from './lib/environment/modifier';
 
-export { LazyTestEnvironment, LazyTestEnvironment as TestEnvironment } from './lib/environment/modes/lazy/environment';
+export { default as LazyTestEnvironment, default as TestEnvironment } from './lib/environment/modes/lazy/environment';
 export { NodeRenderDelegate } from './lib/environment/modes/ssr/environment';
 
 export { default as EagerRenderDelegate } from './lib/environment/modes/eager/render-delegate';
+export { default as LazyRenderDelegate } from './lib/environment/modes/lazy/render-delegate';
 
 export * from './lib/environment/components';

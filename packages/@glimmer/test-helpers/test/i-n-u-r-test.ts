@@ -1,15 +1,15 @@
-import { TestEnvironmentRenderDelegate, RenderTest } from "@glimmer/test-helpers";
+import { LazyRenderDelegate, RenderTest } from "@glimmer/test-helpers";
 
 QUnit.module("Render Tests: I-N-U-R");
 
 QUnit.test("Can set properties", assert => {
   new class extends RenderTest {
-    constructor(delegate: TestEnvironmentRenderDelegate) {
+    constructor(delegate: LazyRenderDelegate) {
       super(delegate);
       this.setProperties({ foo: "bar" });
       assert.equal(this.context.foo, "bar");
     }
-  }(new TestEnvironmentRenderDelegate);
+  }(new LazyRenderDelegate);
 });
 
 QUnit.test("Can take basic snapshots", assert => {
@@ -19,12 +19,12 @@ QUnit.test("Can take basic snapshots", assert => {
 
   new class extends RenderTest {
     element = div;
-    constructor(delegate: TestEnvironmentRenderDelegate) {
+    constructor(delegate: LazyRenderDelegate) {
       super(delegate);
       let snapShot = this.takeSnapshot();
       assert.deepEqual(snapShot, [text, "up"]);
     }
-  }(new TestEnvironmentRenderDelegate());
+  }(new LazyRenderDelegate());
 });
 
 QUnit.test("Can take nested snapshots", assert => {
@@ -36,12 +36,12 @@ QUnit.test("Can take nested snapshots", assert => {
 
   new class extends RenderTest {
     element = div;
-    constructor(delegate: TestEnvironmentRenderDelegate) {
+    constructor(delegate: LazyRenderDelegate) {
       super(delegate);
       let snapShot = this.takeSnapshot();
       assert.deepEqual(snapShot, [p, "down", text, "up", "up"]);
     }
-  }(new TestEnvironmentRenderDelegate());
+  }(new LazyRenderDelegate());
 });
 
 QUnit.test("Can take nested snapshots of serialized blocks", assert => {
@@ -55,10 +55,10 @@ QUnit.test("Can take nested snapshots of serialized blocks", assert => {
 
   new class extends RenderTest {
     element = div;
-    constructor(delegate: TestEnvironmentRenderDelegate) {
+    constructor(delegate: LazyRenderDelegate) {
       super(delegate);
       let snapShot = this.takeSnapshot();
       assert.deepEqual(snapShot, [open, text, close, "up"]);
     }
-  }(new TestEnvironmentRenderDelegate());
+  }(new LazyRenderDelegate());
 });

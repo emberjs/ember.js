@@ -65,7 +65,7 @@ export interface TestEnvironmentOptions {
 
 export type TestCompilationOptions = CompilationOptions<TestSpecifier, LazyRuntimeResolver>;
 
-export class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
+export default class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
   public resolver = new LazyRuntimeResolver();
   protected program = new Program(new LazyConstants(this.resolver));
 
