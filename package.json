@@ -40,7 +40,7 @@
     "@types/handlebars": "^4.0.32",
     "@types/qunit": "^2.0.31",
     "amd-name-resolver": "^1.0.0",
-    "babel-plugin-nukable-import": "^0.3.0",
+    "babel-plugin-nukable-import": "^0.4.0",
     "babel-plugin-transform-proto-to-assign": "^6.23.0",
     "babel-preset-env": "^1.6.0",
     "benchmark": "^1.0.0",
