@@ -4,7 +4,6 @@
 */
 
 import { assign } from 'ember-utils';
-import { deprecate } from 'ember-debug';
 import { get, set, run, computed } from 'ember-metal';
 import {
   buildFakeRegistryWithDeprecations,
@@ -13,8 +12,6 @@ import {
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
-
-let BootOptions;
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -220,8 +217,7 @@ const ApplicationInstance = EngineInstance.extend({
     @return {String} the current URL
   */
   getURL() {
-    let router = get(this, 'router');
-    return get(router, 'url');
+    return get(this, 'router.url');
   },
 
   // `instance.visit(url)` should eventually replace `instance.handleURL()`;
@@ -323,7 +319,7 @@ ApplicationInstance.reopenClass({
   @namespace Ember.ApplicationInstance
   @public
 */
-BootOptions = function BootOptions(options = {}) {
+function BootOptions(options = {}) {
   /**
     Provide a specific instance of jQuery. This is useful in conjunction with
     the `document` option, as it allows you to use a copy of `jQuery` that is
@@ -481,7 +477,7 @@ BootOptions = function BootOptions(options = {}) {
   if (options.isInteractive !== undefined) {
     this.isInteractive = !!options.isInteractive;
   }
-};
+}
 
 BootOptions.prototype.toEnvironment = function() {
   let env = assign({}, environment);
