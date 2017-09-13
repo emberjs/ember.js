@@ -517,7 +517,9 @@ OPCODE_METADATA(Op.PopRemoteElement, {
 
 OPCODE_METADATA(Op.Modifier, {
   name: 'Modifier',
-  skipCheck: true
+  ops: [Handle('helper')],
+  operands: 1,
+  stackChange: -1
 });
 
 /// VM ///
