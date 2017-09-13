@@ -1,6 +1,7 @@
 /* global EmberDev */
 
 import { InjectedProperty } from 'ember-metal';
+import { DEBUG } from 'ember-env-flags';
 import inject from '../inject';
 import {
   createInjectionHelper
@@ -53,11 +54,13 @@ if (!EmberDev.runningProdBuild) {
   });
 }
 
-QUnit.test('factories should return a list of lazy injection full names', function() {
-  let AnObject = EmberObject.extend({
-    foo: new InjectedProperty('foo', 'bar'),
-    bar: new InjectedProperty('quux')
-  });
+if (DEBUG) {
+  QUnit.test('factories should return a list of lazy injection full names', function() {
+    let AnObject = EmberObject.extend({
+      foo: new InjectedProperty('foo', 'bar'),
+      bar: new InjectedProperty('quux')
+    });
 
-  deepEqual(AnObject._lazyInjections(), { 'foo': 'foo:bar', 'bar': 'quux:bar' }, 'should return injected container keys');
-});
+    deepEqual(AnObject._lazyInjections(), { 'foo': 'foo:bar', 'bar': 'quux:bar' }, 'should return injected container keys');
+  });
+}
