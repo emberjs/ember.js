@@ -15,7 +15,7 @@ function makeTag() {
 export function tagForProperty(object, propertyKey, _meta) {
   if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
 
-  let meta = _meta || metaFor(object);
+  let meta = _meta === undefined ? metaFor(object) : _meta;
   if (meta.isProxy()) {
     return tagFor(object, meta);
   }
@@ -29,7 +29,7 @@ export function tagForProperty(object, propertyKey, _meta) {
 
 export function tagFor(object, _meta) {
   if (typeof object === 'object' && object !== null) {
-    let meta = _meta || metaFor(object);
+    let meta = _meta === undefined ? metaFor(object) : _meta;
     return meta.writableTag(makeTag);
   } else {
     return CONSTANT_TAG;

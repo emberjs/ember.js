@@ -36,7 +36,7 @@ export class AliasedProperty extends Descriptor {
   }
 
   teardown(obj, keyName, meta) {
-    if (meta && meta.peekWatching(keyName)) {
+    if (meta.peekWatching(keyName)) {
       removeDependentKeys(this, obj, keyName, meta);
     }
   }

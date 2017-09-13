@@ -146,7 +146,7 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
 */
 export function watchedEvents(obj) {
   let meta = peekMeta(obj);
-  return meta && meta.watchedEvents() || [];
+  return meta !== undefined ? meta.watchedEvents() : [];
 }
 
 /**
@@ -167,7 +167,7 @@ export function watchedEvents(obj) {
 */
 export function sendEvent(obj, eventName, params, actions, _meta) {
   if (actions === undefined) {
-    let meta = _meta || peekMeta(obj);
+    let meta = _meta === undefined ? peekMeta(obj) : _meta;
     actions = typeof meta === 'object' &&
                      meta !== null &&
                      meta.matchingListeners(eventName);
@@ -225,9 +225,9 @@ export function hasListeners(obj, eventName) {
 export function listenersFor(obj, eventName) {
   let ret = [];
   let meta = peekMeta(obj);
-  let actions = meta && meta.matchingListeners(eventName);
+  let actions = meta !== undefined ? meta.matchingListeners(eventName) : undefined;
 
-  if (!actions) { return ret; }
+  if (actions === undefined) { return ret; }
 
   for (let i = 0; i < actions.length; i += 3) {
     let target = actions[i];
