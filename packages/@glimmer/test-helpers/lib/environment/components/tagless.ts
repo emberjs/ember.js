@@ -1,4 +1,5 @@
-import { WrappedBuilder, ComponentCapabilities } from '@glimmer/opcode-compiler';
+import { ComponentCapabilities } from "@glimmer/interfaces";
+import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { Invocation } from '@glimmer/runtime';
 import { assign, Option } from '@glimmer/util';
 

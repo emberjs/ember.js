@@ -1,5 +1,5 @@
-import { ComponentCapabilities, ICompilableTemplate, CompileTimeLookup } from '@glimmer/opcode-compiler';
-import { ProgramSymbolTable, Option } from '@glimmer/interfaces';
+import { ICompilableTemplate, CompileTimeLookup } from '@glimmer/opcode-compiler';
+import { ProgramSymbolTable, Option, ComponentCapabilities } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 import { ComponentDefinition, WithStaticLayout } from '@glimmer/runtime';
 

@@ -1,7 +1,7 @@
 
-import { TemplateOptions, Specifier, ComponentCapabilities } from "@glimmer/opcode-compiler";
+import { TemplateOptions, Specifier } from "@glimmer/opcode-compiler";
 import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate, Invocation } from "@glimmer/runtime";
-import { Opaque, Option } from "@glimmer/interfaces";
+import { Opaque, Option, ComponentCapabilities } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import GlimmerObject from "@glimmer/object";
