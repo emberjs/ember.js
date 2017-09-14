@@ -7,6 +7,10 @@ import {
   isConst,
   referenceFromParts
 } from '@glimmer/reference';
+import {
+  NULL_REFERENCE
+} from '@glimmer/runtime';
+
 
 /**
 @module ember
@@ -77,7 +81,7 @@ class GetHelperReference extends CachedReference {
     this.pathReference = pathReference;
 
     this.lastPath = null;
-    this.innerReference = null;
+    this.innerReference = NULL_REFERENCE;
 
     let innerTag = this.innerTag = new UpdatableTag(CONSTANT_TAG);
 
@@ -94,19 +98,21 @@ class GetHelperReference extends CachedReference {
         let pathType = typeof path;
 
         if (pathType === 'string') {
-          innerReference = this.innerReference = referenceFromParts(this.sourceReference, path.split('.'));
+          innerReference = referenceFromParts(this.sourceReference, path.split('.'));
         } else if (pathType === 'number') {
-          innerReference = this.innerReference = this.sourceReference.get('' + path);
+          innerReference = this.sourceReference.get('' + path);
         }
 
         innerTag.update(innerReference.tag);
       } else {
-        innerReference = this.innerReference = null;
+        innerReference = NULL_REFERENCE;
         innerTag.update(CONSTANT_TAG);
       }
+
+      this.innerReference = innerReference;
     }
 
-    return innerReference ? innerReference.value() : null;
+    return innerReference.value();
   }
 
   [UPDATE](value) {
