@@ -1,10 +1,10 @@
 import { EvaluationStack } from './append';
 import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
-import { Dict, Opaque, Option, unsafe, SymbolTable, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { Dict, Opaque, Option, unsafe, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference, CONSTANT_TAG } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
-import { ScopeBlock, Scope } from '../environment';
+import { ScopeBlock, Scope, BlockValue } from '../environment';
 import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
 import { CheckPathReference, CheckCompilableBlock, CheckScope } from '../compiled/opcodes/-debug-strip';
 
@@ -494,7 +494,7 @@ export class BlockArguments implements IBlockArguments {
     }
   }
 
-  get values(): (SymbolTable | VMHandle)[] {
+  get values(): BlockValue[] {
     let values = this.internalValues;
 
     if (!values) {
@@ -536,7 +536,7 @@ class CapturedBlockArguments implements ICapturedBlockArguments {
 
   constructor(
     public names: string[],
-    public values: (SymbolTable | Scope | VMHandle)[]
+    public values: BlockValue[]
   ) {
     this.length = names.length;
   }
