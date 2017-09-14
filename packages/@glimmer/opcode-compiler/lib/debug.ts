@@ -8,6 +8,7 @@ import { PrimitiveType } from "@glimmer/program";
 
 export interface DebugConstants {
   getFloat(value: number): number;
+  getNegative(value: number): number;
   getString(value: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
@@ -157,6 +158,8 @@ function decodePrimitive(primitive: number, constants: DebugConstants): Primitiv
         case 2: return null;
         case 3: return undefined;
       }
+    case PrimitiveType.NEGATIVE:
+      return constants.getNegative(value);
     default:
       throw unreachable();
   }

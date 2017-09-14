@@ -55,6 +55,9 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
         case 3: stack.push(undefined); break;
       }
       break;
+    case PrimitiveType.NEGATIVE:
+      stack.push(vm.constants.getNegative(value));
+      break;
   }
 });
 

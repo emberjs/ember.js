@@ -434,7 +434,12 @@ export abstract class OpcodeBuilder<Specifier> {
     switch (typeof _primitive) {
       case 'number':
         if (_primitive as number % 1 === 0) {
-          primitive = _primitive as number;
+          if (_primitive as number > -1) {
+            primitive = _primitive as number;
+          } else {
+            primitive = this.negative(_primitive as number);
+            type = PrimitiveType.NEGATIVE;
+          }
         } else {
           primitive = this.float(_primitive as number);
           type = PrimitiveType.FLOAT;
@@ -466,6 +471,10 @@ export abstract class OpcodeBuilder<Specifier> {
 
   float(num: number): number {
     return this.constants.float(num);
+  }
+
+  negative(num: number): number {
+    return this.constants.negative(num);
   }
 
   pushPrimitiveReference(primitive: Primitive) {
