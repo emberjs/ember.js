@@ -56,6 +56,7 @@ export interface CompileTimeConstants {
   handle(specifier: Opaque): number;
   serializable(value: Opaque): number;
   float(value: number): number;
+  negative(value: number): number;
 }
 
 export interface CompileTimeLazyConstants extends CompileTimeConstants {

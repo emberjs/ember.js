@@ -10,13 +10,15 @@ export interface ConstantPool {
   handles: number[];
   serializables: Opaque[];
   floats: number[];
+  negatives: number[];
 }
 
 export const enum PrimitiveType {
-  NUMBER          = 0b00,
-  FLOAT           = 0b01,
-  STRING          = 0b10,
-  BOOLEAN_OR_VOID = 0b11
+  NUMBER          = 0b000,
+  FLOAT           = 0b001,
+  STRING          = 0b010,
+  BOOLEAN_OR_VOID = 0b011,
+  NEGATIVE        = 0b100
 }
 
 export class WriteOnlyConstants implements CompileTimeConstants {
@@ -29,6 +31,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   protected serializables: Opaque[] = [];
   protected resolved: Opaque[] = [];
   protected floats: number[] = [];
+  protected negatives: number[] = [];
 
   float(float: number) {
     let index = this.floats.indexOf(float);
@@ -38,6 +41,10 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     }
 
     return this.floats.push(float) - 1;
+  }
+
+  negative(negative: number) {
+    return this.negatives.push(negative);
   }
 
   string(value: string): number {
@@ -102,7 +109,8 @@ export class WriteOnlyConstants implements CompileTimeConstants {
       tables: this.tables,
       handles: this.handles,
       serializables: this.serializables,
-      floats: this.floats
+      floats: this.floats,
+      negatives: this.negatives
     };
   }
 }
@@ -115,6 +123,7 @@ export class RuntimeConstants<Specifier> {
   protected serializables: Opaque[];
   protected resolved: Opaque[];
   protected floats: number[];
+  protected negatives: number[];
 
   constructor(public resolver: RuntimeResolver<Specifier>, pool: ConstantPool) {
     this.strings = pool.strings;
@@ -123,6 +132,7 @@ export class RuntimeConstants<Specifier> {
     this.handles = pool.handles;
     this.serializables = pool.serializables;
     this.floats = pool.floats;
+    this.negatives = pool.negatives;
     this.resolved = this.handles.map(() => UNRESOLVED);
   }
 
@@ -130,6 +140,10 @@ export class RuntimeConstants<Specifier> {
 
   getFloat(value: number): number {
     return this.floats[value];
+  }
+
+  getNegative(value: number): number {
+    return this.negatives[value - 1];
   }
 
   getString(value: number): string {
@@ -183,11 +197,20 @@ export class Constants<Specifier> extends WriteOnlyConstants {
       this.tables = pool.tables;
       this.handles = pool.handles;
       this.serializables = pool.serializables;
+      this.floats = pool.floats;
+      this.negatives = pool.negatives;
       this.resolved = this.handles.map(() => UNRESOLVED);
     }
   }
 
   // `0` means NULL
+  getFloat(value: number): number {
+    return this.floats[value - 1];
+  }
+
+  getNegative(value: number): number {
+    return this.negatives[value - 1];
+  }
 
   getString(value: number): string {
     return this.strings[value];
