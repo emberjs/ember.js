@@ -20,6 +20,7 @@
   Map is mocked out to look like an Ember object, so you can do
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
+import { deprecate } from 'ember-debug';
 import { guidFor } from 'ember-utils';
 
 function missingFunction(fn) {
@@ -62,8 +63,16 @@ function copyMap(original, newObject) {
   @constructor
   @private
 */
-function OrderedSet() {
+function OrderedSet(hideDeprecation = false) {
   if (this instanceof OrderedSet) {
+    deprecate(
+      'OrderedSet is being deprecated.',
+      hideDeprecation, {
+        id: 'ember-metal.map',
+        until: '2.16.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-map'
+      }
+    );
     this.clear();
   } else {
     missingNew('OrderedSet');
@@ -76,10 +85,10 @@ function OrderedSet() {
   @return {Ember.OrderedSet}
   @private
 */
-OrderedSet.create = function() {
+OrderedSet.create = function(hideDeprecation = false) {
   let Constructor = this;
 
-  return new Constructor();
+  return new Constructor(hideDeprecation);
 };
 
 OrderedSet.prototype = {
@@ -236,9 +245,18 @@ OrderedSet.prototype = {
   @private
   @constructor
 */
-function Map() {
+function Map(hideDeprecation = false) {
   if (this instanceof Map) {
-    this._keys = OrderedSet.create();
+    deprecate(
+      'Map is being deprecated.',
+      hideDeprecation, {
+        id: 'ember-metal.map',
+        until: '2.16.0',
+        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-map'
+      }
+    );
+    this._keys = OrderedSet.create(true);
+    this._keys._silenceRemoveDeprecation = true;
     this._values = Object.create(null);
     this.size = 0;
   } else {
@@ -415,7 +433,7 @@ Map.prototype = {
     @param {*} [options.defaultValue]
 */
 function MapWithDefault(options) {
-  this._super$constructor();
+  this._super$constructor(true);
   this.defaultValue = options.defaultValue;
 }
 
@@ -429,10 +447,18 @@ function MapWithDefault(options) {
   @private
 */
 MapWithDefault.create = function(options) {
+  deprecate(
+    'MapWithDefault is being deprecated.',
+    false, {
+      id: 'ember-metal.map',
+      until: '2.16.0',
+      url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-map'
+    }
+  );
   if (options) {
     return new MapWithDefault(options);
   } else {
-    return new Map();
+    return new Map(true);
   }
 };
 
