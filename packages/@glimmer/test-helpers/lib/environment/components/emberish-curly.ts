@@ -1,5 +1,5 @@
-import { ComponentCapabilities, WrappedBuilder } from '@glimmer/opcode-compiler';
-import { Option, Opaque, Recast, VMHandle, ProgramSymbolTable } from '@glimmer/interfaces';
+import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import { Option, Opaque, Recast, VMHandle, ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
 import { EMPTY_ARRAY, assign, Destroyable, expect } from '@glimmer/util';

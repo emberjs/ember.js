@@ -1,10 +1,9 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { ProgramSymbolTable, BlockSymbolTable, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
   ComponentBuilder as IComponentBuilder,
-  ComponentCapabilities,
   ParsedLayout
 } from './interfaces';
 

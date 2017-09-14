@@ -1,7 +1,6 @@
 import { Option } from '@glimmer/util';
-import { ProgramSymbolTable } from '@glimmer/interfaces';
+import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 import { Specifier } from '@glimmer/bundle-compiler';
-import { ComponentCapabilities } from "@glimmer/opcode-compiler";
 
 export interface TestComponentDefinitionState {
   /* Manager-related */

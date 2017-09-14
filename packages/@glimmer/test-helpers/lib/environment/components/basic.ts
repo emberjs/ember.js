@@ -2,9 +2,9 @@ import { createTemplate } from '../shared';
 
 import { WithStaticLayout, Environment, ScannableTemplate, Bounds, Invocation } from '@glimmer/runtime';
 import { unreachable, expect } from '@glimmer/util';
-import { TemplateOptions, ComponentCapabilities } from '@glimmer/opcode-compiler';
+import { TemplateOptions } from '@glimmer/opcode-compiler';
 import { PathReference, Tag, CONSTANT_TAG } from '@glimmer/reference';
-import { Opaque } from '@glimmer/interfaces';
+import { ComponentCapabilities, Opaque } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';

@@ -1,4 +1,4 @@
-import { Option, Maybe, Simple } from "@glimmer/interfaces";
+import { Option, Maybe, Simple, ComponentCapabilities } from "@glimmer/interfaces";
 import {
   Helper as GlimmerHelper,
   DOMTreeConstruction,
@@ -18,7 +18,7 @@ import {
   curry,
   ComponentManager
 } from "@glimmer/runtime";
-import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor, ComponentCapabilities } from "@glimmer/opcode-compiler";
+import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
 import { LazyConstants, Program } from "@glimmer/program";
 
