@@ -90,7 +90,7 @@ class GetHelperReference extends CachedReference {
     let path = this.lastPath = this.pathReference.value();
 
     if (path !== lastPath) {
-      if (path) {
+      if (path !== undefined && path !== null) {
         let pathType = typeof path;
 
         if (pathType === 'string') {
