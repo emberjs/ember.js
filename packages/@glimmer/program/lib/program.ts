@@ -41,11 +41,25 @@ const STATE_OFFSET = 3;
  * over them as you will have a bad memory access exception.
  */
 export class Heap {
-  private heap: number[] = [];
+  private heap: Uint16Array;
+  private table: number[];
   private offset = 0;
   private handle = 0;
 
-  private table: number[] = [];
+  constructor(serializedHeap?: { buffer: ArrayBuffer, table: number[], handle: number }) {
+    if (serializedHeap) {
+      let { buffer, table, handle } = serializedHeap;
+      this.heap = new Uint16Array(buffer);
+      this.table = table;
+      this.offset = this.heap.length;
+      this.handle = handle;
+    } else {
+      this.heap = new Uint16Array(0x100000);
+      this.table = [];
+    }
+    this.heap = serializedHeap ? new Uint16Array(serializedHeap.buffer) : new Uint16Array(0x100000);
+    this.table = serializedHeap ? serializedHeap.table : [];
+  }
 
   push(item: number): void {
     this.heap[this.offset++] = item;
@@ -144,8 +158,13 @@ export class Heap {
     this.offset = this.offset - compactedSize;
   }
 
-  toArray(): number[] {
-    return this.heap.slice();
+  capture() {
+    let o = this.heap.slice(0, this.offset);
+    return {
+      handle: this.handle,
+      table: this.table,
+      buffer: o.buffer as ArrayBuffer
+    };
   }
 }
 

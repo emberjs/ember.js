@@ -130,7 +130,7 @@ export class BundleCompiler {
     let { heap, constants } = this.program;
 
     return {
-      heap: heap.toArray(),
+      heap: heap.capture(),
       pool: constants.toPool()
     };
   }
