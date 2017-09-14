@@ -75,6 +75,23 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[First][Second][Third]');
   }
 
+
+  ['@test should be able to get an array value with numeric keys']() {
+    this.render(`{{#each numbers as |num index|}}[{{get numbers index}}]{{/each}}`, {
+      numbers: [1, 2, 3],
+    });
+
+    this.assertText('[1][2][3]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[1][2][3]');
+
+    this.runTask(() => set(this.context, 'numbers', [3, 2, 1]));
+
+    this.assertText('[3][2][1]');
+  }
+
   ['@test should be able to get an object value with a bound/dynamic key']() {
     this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
       colors: { apple: 'red', banana: 'yellow' },
