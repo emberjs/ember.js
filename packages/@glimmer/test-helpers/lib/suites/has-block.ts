@@ -1,6 +1,6 @@
-import { AbstractRenderTest, test } from '../abstract-test-case';
+import { RenderTest, test } from '../render-test';
 
-export class HasBlockSuite extends AbstractRenderTest {
+export class HasBlockSuite extends RenderTest {
   @test({ kind: 'curly' })
   "parameterized has-block (subexpr, inverse) when inverse supplied"() {
     this.render({

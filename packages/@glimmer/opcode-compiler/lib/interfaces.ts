@@ -1,5 +1,13 @@
-import { VMHandle, Opaque, SymbolTable, Option, BlockSymbolTable, Opcode } from "@glimmer/interfaces";
-import { Core, SerializedTemplateBlock } from "@glimmer/wire-format";
+import {
+  VMHandle,
+  Opaque,
+  SymbolTable,
+  Option,
+  BlockSymbolTable,
+  Opcode,
+  ComponentCapabilities
+} from '@glimmer/interfaces';
+import { Core, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { Macros } from './syntax';
 
 export interface CompileTimeHeap {
@@ -10,16 +18,6 @@ export interface CompileTimeHeap {
   // for debugging
   getaddr(handle: VMHandle): number;
   sizeof(handle: VMHandle): number;
-}
-
-export interface ComponentCapabilities {
-  staticDefinitions: boolean;
-  dynamicLayout: boolean;
-  dynamicTag: boolean;
-  prepareArgs: boolean;
-  createArgs: boolean;
-  attributeHook: boolean;
-  elementHook: boolean;
 }
 
 export interface EagerResolver<Specifier> {

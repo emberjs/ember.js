@@ -1,5 +1,5 @@
-import { ProgramSymbolTable } from "@glimmer/interfaces";
-import { ICompilableTemplate, ComponentCapabilities } from "@glimmer/opcode-compiler";
+import { ProgramSymbolTable, ComponentCapabilities } from "@glimmer/interfaces";
+import { ICompilableTemplate } from "@glimmer/opcode-compiler";
 
 import { Specifier } from "./specifiers";
 

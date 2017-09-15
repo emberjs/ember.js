@@ -1,9 +1,9 @@
-import { test, AbstractRenderTest } from '../abstract-test-case';
+import { test, RenderTest } from '../render-test';
 import { strip, assertNodeTagName } from '../helpers';
 import { SVG_NAMESPACE } from "@glimmer/runtime";
 import { Opaque } from "@glimmer/interfaces";
 
-export class InitialRenderSuite extends AbstractRenderTest {
+export class InitialRenderSuite extends RenderTest {
   name = 'BASE';
   isIe9PropIssues() {
     if (typeof window === undefined) {

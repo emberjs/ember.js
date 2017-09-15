@@ -180,10 +180,10 @@ STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
     if (capabilities.dynamicLayout === false) {
       let layout = lookup.getLayout(handle)!;
 
-      builder.pushComponentSpec(handle);
+      builder.pushComponentDefinition(handle);
       builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child);
     } else {
-      builder.pushComponentSpec(handle);
+      builder.pushComponentDefinition(handle);
       builder.invokeComponent(attrsBlock, null, args, false, child && child);
     }
   } else {
