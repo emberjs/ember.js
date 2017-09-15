@@ -110,13 +110,6 @@ See also: [`ComponentDefinition` interface][component-definition-source]
 
 [component-definition-source]: ../packages/@glimmer/interfaces/lib/components.d.ts
 
-## `ComponentFactory`
-
-A component factory is an object that can construct new instances of a
-particular component's JavaScript class. It has a `create()` method which takes
-an object containing properties that should be set on the instantiated
-component.
-
 ## Component Manager
 
 A component manager configures the behavior of the Glimmer runtime for a
