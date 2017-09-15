@@ -1,13 +1,14 @@
-import { isCurriedComponentDefinition } from '../../component/interfaces';
-import { Opaque } from '@glimmer/interfaces';
 import { isConst, Reference, Tag, VersionedReference } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
+import { check, expectStackChange } from '@glimmer/debug';
+import { Opaque } from '@glimmer/util';
+
 import { DynamicContentWrapper } from '../../vm/content/dynamic';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { ConditionalReference } from '../../references';
 import { UpdatingVM } from '../../vm';
+import { ConditionalReference } from '../../references';
+import { isCurriedComponentDefinition } from '../../component/curried-component';
 import { CheckPathReference } from './-debug-strip';
-import { check, expectStackChange } from "@glimmer/debug";
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {
   static create(inner: Reference<Opaque>): IsCurriedComponentDefinitionReference {

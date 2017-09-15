@@ -1,5 +1,5 @@
 import {
-  AbstractRenderTest,
+  RenderTest,
   test,
   rawModule,
   NodeRenderDelegate,
@@ -19,7 +19,7 @@ class DOMHelperTests extends SSRSuite {
   }
 }
 
-class CompilationTests extends AbstractRenderTest {
+class CompilationTests extends RenderTest {
   @test 'generates id in node'() {
     let template = precompile('hello');
     let obj = JSON.parse(template);

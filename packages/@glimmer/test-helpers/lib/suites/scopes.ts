@@ -1,7 +1,7 @@
-import { AbstractRenderTest, test } from '../abstract-test-case';
+import { RenderTest, test } from '../render-test';
 import { stripTight } from '../helpers';
 
-export class ScopeSuite extends AbstractRenderTest {
+export class ScopeSuite extends RenderTest {
   @test
   "correct scope - conflicting local names"() {
     this.render({

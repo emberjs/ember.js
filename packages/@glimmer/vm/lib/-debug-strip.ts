@@ -334,8 +334,8 @@ OPCODE_METADATA(Op.CurryComponent, clearsArgs({
   operands: 0
 }));
 
-OPCODE_METADATA(Op.PushComponentSpec, {
-  name: 'PushComponentSpec',
+OPCODE_METADATA(Op.PushComponentDefinition, {
+  name: 'PushComponentDefinition',
   ops: [Handle('definition')],
   operands: 1,
   stackChange: 1,

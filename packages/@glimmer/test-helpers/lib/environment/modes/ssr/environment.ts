@@ -1,9 +1,12 @@
-import { TestEnvironment } from "./lazy-env";
-import { AbstractRenderTest, RenderDelegate, TestEnvironmentRenderDelegate } from '../abstract-test-case';
 import { IDOMChanges, DOMChanges } from '@glimmer/runtime';
 import { Simple, Maybe } from '@glimmer/interfaces';
 import { NodeDOMTreeConstruction } from '@glimmer/node';
 import * as SimpleDOM from 'simple-dom';
+
+import LazyTestEnvironment from '../lazy/environment';
+import LazyRenderDelegate from '../lazy/render-delegate';
+import RenderDelegate from '../../../render-delegate';
+import { RenderTest } from '../../../render-test';
 
 export interface NodeEnvironmentOptions {
   document: Simple.Document;
@@ -28,7 +31,7 @@ function testOptions(options: NodeEnvironmentOptions) {
 
 }
 
-export class NodeEnv extends TestEnvironment {
+export class NodeEnv extends LazyTestEnvironment {
   protected document: Simple.Document;
   constructor(options: NodeEnvironmentOptions) {
     super(testOptions(options));
@@ -36,13 +39,13 @@ export class NodeEnv extends TestEnvironment {
   }
 }
 
-export class NodeRenderDelegate extends TestEnvironmentRenderDelegate {
+export class NodeRenderDelegate extends LazyRenderDelegate {
   constructor() {
     super(new NodeEnv({ document: new SimpleDOM.Document() }));
   }
 }
 
-export class AbstractNodeTest extends AbstractRenderTest {
+export class AbstractNodeTest extends RenderTest {
   private serializer: SimpleDOM.HTMLSerializer;
   constructor(delegate: RenderDelegate) {
     super(delegate);

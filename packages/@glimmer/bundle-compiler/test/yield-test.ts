@@ -1,3 +1,3 @@
-import { rawModule, YieldSuite, BundlingRenderDelegate } from "@glimmer/test-helpers";
+import { rawModule, YieldSuite, EagerRenderDelegate } from "@glimmer/test-helpers";
 
-rawModule('[Bundle Compiler] Yield Tests', YieldSuite, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Yield Tests', YieldSuite, EagerRenderDelegate, { componentModule: true });

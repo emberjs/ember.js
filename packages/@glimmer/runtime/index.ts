@@ -54,8 +54,7 @@ export {
 
 export {
   ComponentManager,
-  CurriedComponentDefinition,
-  PublicComponentSpec as ComponentSpec,
+  PublicComponentDefinition as ComponentDefinition,
   WithDynamicTagName,
   PreparedArguments,
   WithDynamicLayout,
@@ -64,7 +63,12 @@ export {
 } from './lib/component/interfaces';
 
 export {
+  CurriedComponentDefinition,
+  isCurriedComponentDefinition,
   curry
+} from './lib/component/curried-component';
+
+export {
 } from './lib/compiled/opcodes/component';
 
 export {

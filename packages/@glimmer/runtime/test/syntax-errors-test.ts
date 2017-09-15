@@ -1,6 +1,6 @@
-import { AbstractRenderTest, module, test, TestEnvironment } from "@glimmer/test-helpers";
+import { RenderTest, module, test, TestEnvironment } from "@glimmer/test-helpers";
 
-class SyntaxErrors extends AbstractRenderTest {
+class SyntaxErrors extends RenderTest {
   protected env = new TestEnvironment();
 
   @test "context switching using ../ is not allowed"() {

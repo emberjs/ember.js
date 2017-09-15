@@ -1,4 +1,4 @@
-import { Opaque, Option, ProgramSymbolTable, SymbolTable, Recast, VMHandle, BlockSymbolTable } from '@glimmer/interfaces';
+import { Opaque, Option, ProgramSymbolTable, SymbolTable, Recast, VMHandle, BlockSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
@@ -12,7 +12,6 @@ import {
   CompilableBlock,
   CompileTimeConstants,
   CompileTimeProgram,
-  ComponentCapabilities,
   ParsedLayout
 } from './interfaces';
 
@@ -172,8 +171,8 @@ export abstract class OpcodeBuilder<Specifier> {
 
   // components
 
-  pushComponentSpec(handle: number) {
-    this.push(Op.PushComponentSpec, this.constants.handle(handle));
+  pushComponentDefinition(handle: number) {
+    this.push(Op.PushComponentDefinition, this.constants.handle(handle));
   }
 
   pushDynamicComponentManager(referrer: Specifier) {

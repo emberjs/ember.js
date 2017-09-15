@@ -1,3 +1,3 @@
-import { rawModule, DebuggerSuite, BundlingRenderDelegate } from "@glimmer/test-helpers";
+import { rawModule, DebuggerSuite, EagerRenderDelegate } from "@glimmer/test-helpers";
 
-rawModule('[Bundle Compiler] Debugger Tests', DebuggerSuite, BundlingRenderDelegate);
+rawModule('[Bundle Compiler] Debugger Tests', DebuggerSuite, EagerRenderDelegate);

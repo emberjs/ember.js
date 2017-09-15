@@ -1,10 +1,9 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { ProgramSymbolTable, BlockSymbolTable, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
   ComponentBuilder as IComponentBuilder,
-  ComponentCapabilities,
   ParsedLayout
 } from './interfaces';
 
@@ -135,10 +134,10 @@ export class ComponentBuilder<Specifier> implements IComponentBuilder {
       if (capabilities.dynamicLayout === false) {
         let layout = lookup.getLayout(handle)!;
 
-        builder.pushComponentSpec(handle);
+        builder.pushComponentDefinition(handle);
         builder.invokeStaticComponent(capabilities, layout, null, params, hash, false, _default, inverse);
       } else {
-        builder.pushComponentSpec(handle);
+        builder.pushComponentDefinition(handle);
         builder.invokeComponent(null, params, hash, false, _default, inverse);
       }
     }

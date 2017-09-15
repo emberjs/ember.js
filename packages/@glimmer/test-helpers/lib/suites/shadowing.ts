@@ -1,6 +1,6 @@
-import { AbstractRenderTest, test } from '../abstract-test-case';
+import { RenderTest, test } from '../render-test';
 
-export class ShadowingSuite extends AbstractRenderTest {
+export class ShadowingSuite extends RenderTest {
   @test({ kind: 'glimmer' })
   "normal outer attributes are reflected"() {
     this.render({

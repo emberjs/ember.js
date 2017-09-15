@@ -1,3 +1,3 @@
-import { rawModule, EmberishComponentTests, BundlingRenderDelegate } from "@glimmer/test-helpers";
+import { rawModule, EmberishComponentTests, EagerRenderDelegate } from "@glimmer/test-helpers";
 
-rawModule('[Bundle Compiler] Emberish Components', EmberishComponentTests, BundlingRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] Emberish Components', EmberishComponentTests, EagerRenderDelegate, { componentModule: true });

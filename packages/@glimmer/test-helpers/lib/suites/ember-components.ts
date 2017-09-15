@@ -1,8 +1,8 @@
-import { AbstractRenderTest, test } from "../abstract-test-case";
+import { RenderTest, test } from "../render-test";
 import { classes } from '../environment';
 import { EmberishGlimmerComponent } from "../environment/components/emberish-glimmer";
 
-export class EmberishComponentTests extends AbstractRenderTest {
+export class EmberishComponentTests extends RenderTest {
   @test({ kind: 'glimmer' })
   "[BUG: #644 popping args should be balanced]"() {
     class MainComponent extends EmberishGlimmerComponent {

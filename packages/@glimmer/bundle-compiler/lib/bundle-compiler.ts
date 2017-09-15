@@ -8,12 +8,12 @@ import {
   Recast,
   SymbolTable,
   VMHandle,
+  ComponentCapabilities
 } from "@glimmer/interfaces";
 import {
   CompilableTemplate,
   Macros,
   OpcodeBuilderConstructor,
-  ComponentCapabilities,
   CompileTimeLookup,
   CompileOptions,
   ICompilableTemplate,

@@ -1,6 +1,6 @@
-import { AbstractRenderTest, test } from '../abstract-test-case';
+import { RenderTest, test } from '../render-test';
 
-export class FragmentComponents extends AbstractRenderTest {
+export class FragmentComponents extends RenderTest {
   @test({
     kind: "fragment"
   })
@@ -55,7 +55,7 @@ export class FragmentComponents extends AbstractRenderTest {
   }
 }
 
-export class BasicComponents extends AbstractRenderTest {
+export class BasicComponents extends RenderTest {
   @test({
     kind: "basic"
   })

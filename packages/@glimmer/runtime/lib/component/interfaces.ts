@@ -1,85 +1,80 @@
-import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
-import { ComponentCapabilities } from '@glimmer/opcode-compiler';
 import Bounds from '../bounds';
 import { ElementOperations } from '../vm/element-builder';
 import Environment, { DynamicScope } from '../environment';
-import { IArguments, ICapturedArguments, Arguments } from '../vm/arguments';
+import { IArguments } from '../vm/arguments';
+import { CurriedComponentDefinition } from "@glimmer/runtime";
 
 export interface PreparedArguments {
   positional: Array<VersionedPathReference<Opaque>>;
   named: Dict<VersionedPathReference<Opaque>>;
 }
 
-// TODO: Think about renaming the concepts:
-//
-// - ComponentDefinition (opaque static state bucket)
-// - Component           (opaque instance state bucket)
-// - ComponentManager    (same thing)
-// - ComponentSpec       (pair of definition / manager)
-export type ComponentDefinition = Unique<'ComponentDefinition'>;
+export type ComponentDefinitionState = Unique<'ComponentDefinitionState'>;
+export type ComponentInstanceState = Unique<'ComponentInstanceState'>;
 
 /** @internal */
-export interface ComponentSpec {
-  definition: ComponentDefinition;
+export interface ComponentDefinition {
+  state: ComponentDefinitionState;
   manager: InternalComponentManager;
 }
 
-export interface PublicComponentSpec<Definition = Opaque, Manager = ComponentManager<Opaque, Definition>> {
-  definition: Definition;
+export interface PublicComponentDefinition<ComponentDefinitionState = Opaque, Manager = ComponentManager<Opaque, ComponentDefinitionState>> {
+  state: ComponentDefinitionState;
   manager: Manager;
 }
 
-export interface ComponentManager<Component, Definition> {
-  getCapabilities(definition: Definition): ComponentCapabilities;
+export interface ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+  getCapabilities(state: ComponentDefinitionState): ComponentCapabilities;
 
   // First, the component manager is asked to prepare the arguments needed
   // for `create`. This allows for things like closure components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(definition: Definition, args: IArguments): Option<PreparedArguments>;
+  prepareArgs(state: ComponentDefinitionState, args: IArguments): Option<PreparedArguments>;
 
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, definition: Definition, args: Option<IArguments>, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): Component;
+  create(env: Environment, state: ComponentDefinitionState, args: Option<IArguments>, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): ComponentInstanceState;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
-  getSelf(component: Component): VersionedPathReference<Opaque>;
+  getSelf(state: ComponentInstanceState): VersionedPathReference<Opaque>;
 
   // Convert the opaque component into a `RevisionTag` that determins when
   // the component's update hooks need to be called (if at all).
-  getTag(component: Component): Tag;
+  getTag(state: ComponentInstanceState): Tag;
 
   // This hook is run after the entire layout has been rendered.
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didRenderLayout(component: Component, bounds: Bounds): void;
+  didRenderLayout(state: ComponentInstanceState, bounds: Bounds): void;
 
   // Once the whole top-down rendering process is complete, Glimmer invokes
   // the `didCreate` callbacks.
-  didCreate(component: Component): void;
+  didCreate(state: ComponentInstanceState): void;
 
   // When the component's tag has invalidated, the manager's `update` hook is
   // called.
-  update(component: Component, dynamicScope: DynamicScope): void;
+  update(state: ComponentInstanceState, dynamicScope: DynamicScope): void;
 
   // This hook is run after the entire layout has been updated.
   //
   // Hosts should use `didUpdate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didUpdateLayout(component: Component, bounds: Bounds): void;
+  didUpdateLayout(state: ComponentInstanceState, bounds: Bounds): void;
 
   // Finally, once top-down revalidation has completed, Glimmer invokes
   // the `didUpdate` callbacks on components that changed.
-  didUpdate(component: Component): void;
+  didUpdate(state: ComponentInstanceState): void;
 
   // Convert the opaque component into an object that implements Destroyable.
   // If it returns null, the component will not be destroyed.
-  getDestructor(component: Component): Option<Destroyable>;
+  getDestructor(state: ComponentInstanceState): Option<Destroyable>;
 }
 
 export interface Invocation {
@@ -93,15 +88,15 @@ export interface WithDynamicTagName<Component> extends ComponentManager<Componen
   getTagName(component: Component): Option<string>;
 }
 
-export interface WithStaticLayout<Component, Definition, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<Component, Definition> {
-  getLayout(definition: Definition, resolver: R): Invocation;
+export interface WithStaticLayout<ComponentInstanceState, ComponentDefinitionState, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+  getLayout(state: ComponentDefinitionState, resolver: R): Invocation;
 }
 
 export interface WithAttributeHook<Component, Definition> extends ComponentManager<Component, Definition> {
   didSplatAttributes(component: Component, element: Component, operations: ElementOperations): void;
 }
 
-export interface WithElementHook<Component> extends ComponentManager<Component, ComponentDefinition> {
+export interface WithElementHook<Component> extends ComponentManager<Component, ComponentDefinitionState> {
   // The `didCreateElement` hook is run for non-tagless components after the
   // element as been created, but before it has been appended ("flushed") to
   // the DOM. This hook allows the manager to save off the element, as well as
@@ -113,8 +108,8 @@ export interface WithElementHook<Component> extends ComponentManager<Component, 
 }
 
 /** @internal */
-export function hasStaticLayout<C, Definition extends ComponentDefinition>(definition: Definition, manager: ComponentManager<C, Definition>): manager is WithStaticLayout<C, Definition, Opaque, RuntimeResolver<Opaque>> {
-  return manager.getCapabilities(definition).dynamicLayout === false;
+export function hasStaticLayout<D extends ComponentDefinitionState, I extends ComponentInstanceState>(state: D, manager: ComponentManager<I, D>): manager is WithStaticLayout<I, D, Opaque, RuntimeResolver<Opaque>> {
+  return manager.getCapabilities(state).dynamicLayout === false;
 }
 
 export interface WithDynamicLayout<Component, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<Component, Opaque> {
@@ -122,12 +117,12 @@ export interface WithDynamicLayout<Component, Specifier, R extends RuntimeResolv
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  getLayout(component: Component, resolver: R): Invocation;
+  getDynamicLayout(component: Component, resolver: R): Invocation;
 }
 
 /** @internal */
-export function hasDynamicLayout<Component>(definition: ComponentDefinition, manager: ComponentManager<Component, ComponentDefinition>): manager is WithDynamicLayout<Component, Opaque, RuntimeResolver<Opaque>> {
-  return manager.getCapabilities(definition).dynamicLayout === true;
+export function hasDynamicLayout<D extends ComponentDefinitionState, I extends ComponentInstanceState>(state: D, manager: ComponentManager<I, D>): manager is WithDynamicLayout<I, Opaque, RuntimeResolver<Opaque>> {
+  return manager.getCapabilities(state).dynamicLayout === true;
 }
 
 export interface WithStaticDefinitions<ComponentDefinition> extends ComponentManager<Opaque, ComponentDefinition> {
@@ -135,8 +130,8 @@ export interface WithStaticDefinitions<ComponentDefinition> extends ComponentMan
 }
 
 /** @internal */
-export function hasStaticDefinitions<ComponentDefinition>(definition: ComponentDefinition, manager: ComponentManager<Opaque, ComponentDefinition>): manager is WithStaticDefinitions<ComponentDefinition> {
-  return manager.getCapabilities(definition).staticDefinitions === true;
+export function hasStaticDefinitions<D extends ComponentDefinitionState>(state: D, manager: ComponentManager<Opaque, D>): manager is WithStaticDefinitions<D> {
+  return manager.getCapabilities(state).staticDefinitions === true;
 }
 
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
@@ -149,51 +144,6 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   elementHook: false
 };
 
-const CURRIED_COMPONENT_DEFINITION_BRAND = 'CURRIED COMPONENT DEFINITION [id=6f00feb9-a0ef-4547-99ea-ac328f80acea]';
-
-export function isCurriedComponentDefinition(definition: Opaque): definition is CurriedComponentDefinition {
-  return !!(definition && definition[CURRIED_COMPONENT_DEFINITION_BRAND]);
-}
-
-export function isComponentDefinition(definition: Opaque): definition is CurriedComponentDefinition {
-  return definition && definition[CURRIED_COMPONENT_DEFINITION_BRAND];
-}
-
-export class CurriedComponentDefinition {
-  /** @internal */
-  constructor(protected inner: ComponentSpec | CurriedComponentDefinition, protected args: Option<ICapturedArguments>) {
-    this[CURRIED_COMPONENT_DEFINITION_BRAND] = true;
-  }
-
-  unwrap(args: Arguments): ComponentSpec {
-    args.realloc(this.offset);
-
-    let definition: CurriedComponentDefinition = this;
-
-    while (true) {
-      let { args: curriedArgs, inner } = definition;
-
-      if (curriedArgs) {
-        args.positional.prepend(curriedArgs.positional);
-        args.named.merge(curriedArgs.named);
-      }
-
-      if (!isCurriedComponentDefinition(inner)) {
-        return inner;
-      }
-
-      definition = inner;
-    }
-  }
-
-  /** @internal */
-  get offset(): number {
-    let { inner, args } = this;
-    let length = args ? args.positional.length : 0;
-    return isCurriedComponentDefinition(inner) ? length + inner.offset : length;
-  }
-}
-
 export type BrandedComponentDefinition = CurriedComponentDefinition;
-export type InternalComponent = Unique<'Component'>;
-export type InternalComponentManager = ComponentManager<InternalComponent, ComponentDefinition>;
+export type InternalComponent = ComponentInstanceState;
+export type InternalComponentManager = ComponentManager<ComponentInstanceState, ComponentDefinitionState>;
