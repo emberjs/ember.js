@@ -36,6 +36,8 @@ branches:
     - master
     - beta
     - stable
+    # npm version tags
+    - /^v\d+\.\d+\.\d+$/
 
 env:
   global:
