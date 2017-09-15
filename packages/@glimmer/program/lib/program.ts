@@ -17,19 +17,34 @@ const SIZE_OFFSET = 1;
 const SCOPESIZE_OFFSET = 2;
 const STATE_OFFSET = 3;
 
+/**
+ * The Heap is responsible for dynamically allocating
+ * memory in which we read/write the VM's instructions
+ * from/to. When we malloc we pass out a VMHandle, which
+ * is used as an indirect way of accessing the memory during
+ * execution of the VM. Internally we track the different
+ * regions of the memory in an int array known as the table.
+ *
+ * The table has the following layout:
+ *
+ * | ... |           table entry          |
+ * | ... | hp | size | scope size | state |
+ * | ... | 0  | 122  |      3     |   0   |
+ *  handle ^     |          |         ^ region state (allocated, freed, purged)
+ *   region size ^          |
+ *        number of symbols ^
+ *
+ * With this information we effectively have the ability to
+ * control when we want to free memory. That being said you
+ * can not free during execution as raw address are only
+ * valid during the execution. This means you cannot close
+ * over them as you will have a bad memory access exception.
+ */
 export class Heap {
   private heap: number[] = [];
   private offset = 0;
   private handle = 0;
 
-  /**
-   * layout:
-   *
-   * - pointer into heap
-   * - size
-   * - scope size
-   * - freed (0 or 1)
-   */
   private table: number[] = [];
 
   push(item: number): void {
@@ -91,6 +106,13 @@ export class Heap {
     this.table[(handle as Recast<VMHandle, number>) + STATE_OFFSET] = 1;
   }
 
+  /**
+   * The heap uses the [Mark-Compact Algorithm](https://en.wikipedia.org/wiki/Mark-compact_algorithm) to shift
+   * reachable memory to the bottom of the heap and freeable
+   * memory to the top of the heap. When we have shifted all
+   * the reachable memory to the top of the heap, we move the
+   * offset to the next free position.
+   */
   compact(): void {
     let compactedSize = 0;
     let { table, table: { length }, heap } = this;
