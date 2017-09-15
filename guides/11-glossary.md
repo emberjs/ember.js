@@ -114,12 +114,12 @@ See also: [`ComponentDefinition` interface][component-definition-source]
 
 A component manager configures the behavior of the Glimmer runtime for a
 particular component. Glimmer VM is low-level and highly configurable, and a
-component manager's primarily role is to turn that low-level functionality into
+component manager's primary role is to turn that low-level functionality into
 a higher-level API for use by application developers.
 
 A component manager is responsible for instantiating component classes, setting
 the context of a component's template, invoking lifecycle hooks, and more. In
-other words, it's the bridge between the VM and user's components.
+other words, it's the bridge between the VM and users' components.
 
 For example, the manager defines the API for component lifecycle hooks, so it
 can decide whether the hook is called `didInsertElement`, `componentDidMount`,
@@ -128,15 +128,14 @@ can decide whether the hook is called `didInsertElement`, `componentDidMount`,
 ## Element Modifier
 
 An modifier is a special kind of helper that appears in the attribute position of an
-element: `<div {{modifier}}></div>`;
+element, like this:
+
+```hbs
+<div {{modifier}}></div>
+```
 
 Regular helpers are used to produce values that can be inserted into the DOM,
 either as attributes or text nodes.
-
-```hbs
-<span class="created-at">{{formatDate @user.createdAt}}</span>
-```
-
 Modifiers, on the other hand, make imperative changes to a DOM element. For example,
 an `on` modifier might bind DOM events using `addEventListener`:
 
@@ -172,8 +171,8 @@ See also: [Compiler architecture overview (guide)](./01-introduction.md#compiler
 ## Helper
 
 A (typically pure) JavaScript function that takes input arguments and produces a
-value based on those inputs. If one or more of a helper's inputs are modified,
-Glimmer will reevaluate the helper function and update the DOM appropriately.
+value based on those inputs. If one or more of a helper's inputs change, Glimmer
+will reevaluate the helper function and update the DOM appropriately.
 
 Example with `dasherize` and `formatDate` helpers:
 
@@ -189,7 +188,7 @@ An intermediate representation, or IR, is a data structure that a compiler uses
 internally to represent the program it is compiling.
 
 An IR differs from an [AST](#abstract-syntax-tree) primarily in that it more
-closely resembles the final compiled output, where an AST more closely
+closely resembles the final compiled output, whereas an AST more closely
 represents the source code as typed by the developer.
 
 In Glimmer, the compiler transforms Handlebars AST into a Glimmer IR. The IR
@@ -281,9 +280,8 @@ in scope. Also like `eval()`, its highly dynamic nature disables many categories
 of optimization wherever it is used.
 
 Using partials is discouraged. They are implemented for backwards compatibility
-with Ember and should not be used in new Glimmer host environments. Everything
-that can be accomplished with a partial can be better accomplished with a
-component.
+with Ember and should not be used in new host environments. Everything that can
+be accomplished with a partial can be better accomplished with a component.
 
 ## Constant Pool
 
@@ -332,6 +330,9 @@ When the VM encounters the `OpenElement` opcode with the handle as the first ope
 let handle = instruction.operand1; // 0
 let tagName = STRING_CONSTANTS[handle];
 ```
+
+This particular space-reduction optimization is called [string
+interning](https://en.wikipedia.org/wiki/String_interning).
 
 ## Reference
 
