@@ -366,3 +366,25 @@ Typically, every [component](#component) will have an associated template that
 is rendered whenever the component is created.
 
 [handlebars]: http://handlebarsjs.com
+
+## Virtual Machine
+
+In the context of Glimmer, a virtual machine (or VM) is a software implementation of a
+hardware (or hardware-like) architecture, designed to execute computer programs.
+
+For example, Java source code is compiled into Java bytecode, which is run on
+the platform-independent Java virtual machine (JVM). Any program conforming to
+the JVM specification can execute Java bytecode, allowing the same compiled Java
+program to run on any platform with a conforming JVM implementation.
+
+Glimmer VM is an implementation of a compiler that turns Handlebars templates
+into bytecode, and a virtual machine that executes those bytecode programs in
+the browser and Node.js.
+
+We call Glimmer a virtual machine because its architecture is modelled on
+hardware CPUs. For example, the Glimmer virtual machine is both a stack machine
+and a register machine that evaluates a sequence of [opcodes](#opcode).
+
+In order to optimize over-the-wire size of compiled bytecode, Glimmer's
+instruction set implements common tasks of component-based libraries, such as
+creating new elements, setting attributes, instantiating components, and more.
