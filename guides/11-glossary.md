@@ -272,15 +272,18 @@ See also: [Reference](#reference), [References (guide)][path-reference-guide]
 
 ## Partial
 
-A partial is a kind of non-component template that can be included into other
-templates, inheriting the lexical scope of its surrounding environment. It is
-analogous to `#include` in C, in the sense that it behaves as though you copied
-and pasted the partial's source code into the place where you included it.
+A partial is a kind of non-component template that can be included inside other
+templates, inheriting the lexical scope of its surrounding environment.
 
-Using partials is discouraged because, like `eval()` in JavaScript, they prevent
-many categories of optimization. They are implemented for backwards
-compatibility with Ember and should not be used in new Glimmer host
-environments. Everything that can be accomplished with a partial can be better accomplished with a component.
+Similar to `eval()` in JavaScript, it behaves as though you copied and pasted
+the partial's template into the parent template, inheriting all of the variables
+in scope. Also like `eval()`, its highly dynamic nature disables many categories
+of optimization wherever it is used.
+
+Using partials is discouraged. They are implemented for backwards compatibility
+with Ember and should not be used in new Glimmer host environments. Everything
+that can be accomplished with a partial can be better accomplished with a
+component.
 
 ## Constant Pool
 
