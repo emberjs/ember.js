@@ -31,11 +31,23 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   protected floats: number[] = [];
 
   float(float: number) {
-    return this.floats.push(float);
+    let index = this.floats.indexOf(float);
+
+    if (index > -1) {
+      return index;
+    }
+
+    return this.floats.push(float) - 1;
   }
 
   string(value: string): number {
-    return this.strings.push(value);
+    let index = this.strings.indexOf(value);
+
+    if (index > -1) {
+      return index;
+    }
+
+    return this.strings.push(value) - 1;
   }
 
   stringArray(strings: string[]): number {
@@ -49,11 +61,23 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 
   array(values: number[]): number {
-    return this.arrays.push(values);
+    let index = this.arrays.indexOf(values);
+
+    if (index > -1) {
+      return index;
+    }
+
+    return this.arrays.push(values) - 1;
   }
 
   table(t: SymbolTable): number {
-    return this.tables.push(t);
+    let index = this.tables.indexOf(t);
+
+    if (index > -1) {
+      return index;
+    }
+
+    return this.tables.push(t) - 1;
   }
 
   handle(handle: number): number {
@@ -62,7 +86,13 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 
   serializable(value: Opaque): number {
-    return this.serializables.push(value);
+    let index = this.serializables.indexOf(value);
+
+    if (index > -1) {
+      return index;
+    }
+
+    return this.serializables.push(value) - 1;
   }
 
   toPool(): ConstantPool {
@@ -99,11 +129,11 @@ export class RuntimeConstants<Specifier> {
   // `0` means NULL
 
   getFloat(value: number): number {
-    return this.floats[value - 1];
+    return this.floats[value];
   }
 
   getString(value: number): string {
-    return this.strings[value - 1];
+    return this.strings[value];
   }
 
   getStringArray(value: number): string[] {
@@ -119,11 +149,11 @@ export class RuntimeConstants<Specifier> {
   }
 
   getArray(value: number): number[] {
-    return this.arrays[value - 1];
+    return this.arrays[value];
   }
 
   getSymbolTable<T extends SymbolTable>(value: number): T {
-    return this.tables[value - 1] as T;
+    return this.tables[value] as T;
   }
 
   resolveHandle<T>(s: number): T {
@@ -139,7 +169,7 @@ export class RuntimeConstants<Specifier> {
   }
 
   getSerializable<T>(s: number): T {
-    return this.serializables[s - 1] as T;
+    return this.serializables[s] as T;
   }
 }
 
@@ -160,7 +190,7 @@ export class Constants<Specifier> extends WriteOnlyConstants {
   // `0` means NULL
 
   getString(value: number): string {
-    return this.strings[value - 1];
+    return this.strings[value];
   }
 
   getStringArray(value: number): string[] {
@@ -176,11 +206,11 @@ export class Constants<Specifier> extends WriteOnlyConstants {
   }
 
   getArray(value: number): number[] {
-    return this.arrays[value - 1];
+    return this.arrays[value];
   }
 
   getSymbolTable<T extends SymbolTable>(value: number): T {
-    return this.tables[value - 1] as T;
+    return this.tables[value] as T;
   }
 
   resolveHandle<T>(s: number): T {
@@ -196,7 +226,7 @@ export class Constants<Specifier> extends WriteOnlyConstants {
   }
 
   getSerializable<T>(s: number): T {
-    return this.serializables[s - 1] as T;
+    return this.serializables[s] as T;
   }
 }
 
