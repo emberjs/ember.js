@@ -1,6 +1,6 @@
 import { TemplateMeta } from '@glimmer/wire-format';
-import { ComponentDefinition } from "@glimmer/runtime";
 
+import { ComponentDefinition } from './components';
 import { Opaque, Option, Unique } from './core';
 
 export interface RuntimeResolver<Specifier> {
