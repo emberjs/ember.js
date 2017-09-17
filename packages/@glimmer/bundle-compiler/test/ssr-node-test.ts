@@ -2,8 +2,8 @@ import {
   SSRSuite,
   SSRComponentSuite,
   rawModule,
-  NodeRenderDelegate
+  NodeEagerRenderDelegate
 } from "@glimmer/test-helpers";
 
-rawModule("[Bundle Compiler] SSR", SSRSuite, NodeRenderDelegate);
-rawModule("[Bundle Compiler] SSR Components", SSRComponentSuite, NodeRenderDelegate, { componentModule: true });
+rawModule("[Bundle Compiler] SSR", SSRSuite, NodeEagerRenderDelegate);
+rawModule("[Bundle Compiler] SSR Components", SSRComponentSuite, NodeEagerRenderDelegate, { componentModule: true });
