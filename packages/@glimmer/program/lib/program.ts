@@ -157,11 +157,11 @@ export class Heap {
   }
 
   capture() {
-    let o = this.heap.slice(0, this.offset);
+    let heap = this.heap.slice(0, this.offset);
     return {
       handle: this.handle,
       table: this.table,
-      buffer: o.buffer as ArrayBuffer
+      buffer: heap.buffer as ArrayBuffer
     };
   }
 }

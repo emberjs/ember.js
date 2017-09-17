@@ -730,14 +730,16 @@ export function rawModule<D extends RenderDelegate, T extends RenderTest> (
   options = { componentModule: false }
 ): void {
   if (options.componentModule) {
-    componentModule(name, klass, Delegate);
+    if (shouldRunTest<D>(Delegate)) {
+      componentModule(name, klass, Delegate);
+    }
   } else {
     QUnit.module(`[NEW] ${name}`);
 
     for (let prop in klass.prototype) {
       const test = klass.prototype[prop];
 
-      if (isTestFunction(test)) {
+      if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
         QUnit.test(prop, assert => test.call(new klass(new Delegate()), assert));
       }
     }
@@ -950,4 +952,29 @@ function assertEmberishElement(...args: any[]): void {
   );
 
   equalsElement(element, tagName, fullAttrs, contents);
+}
+
+const HAS_TYPED_ARRAYS = (() => {
+  try {
+    if (typeof Uint16Array === 'undefined') return false;
+    let arr = new Uint16Array([1]);
+    arr.slice(0, 1);
+    return true;
+  } catch (e) {
+    return false;
+  }
+})();
+
+function shouldRunTest<T extends RenderDelegate>(Delegate: RenderDelegateConstructor<T>) {
+  let isEagerDelegate = Delegate['isEager'];
+
+  if (HAS_TYPED_ARRAYS) {
+    return true;
+  }
+
+  if (!HAS_TYPED_ARRAYS && !isEagerDelegate) {
+    return true;
+  }
+
+  return false;
 }
