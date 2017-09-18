@@ -1,6 +1,6 @@
 import './lib/bootstrap';
 
-export { default as templateFactory, ScannableTemplate, TemplateFactory, Template, TemplateIterator, RenderLayoutOptions, clientBuilder, rehydrationBuilder, serializeBuilder } from './lib/template';
+export { default as templateFactory, ScannableTemplate, TemplateFactory, Template, TemplateIterator, RenderLayoutOptions, clientBuilder, rehydrationBuilder } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
 

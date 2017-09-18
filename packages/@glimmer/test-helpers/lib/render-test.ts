@@ -1,7 +1,7 @@
 import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
-import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, rehydrationBuilder, serializeBuilder } from "@glimmer/runtime";
+import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, rehydrationBuilder } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
-import { NodeDOMTreeConstruction } from "@glimmer/node";
+import { NodeDOMTreeConstruction, serializeBuilder } from "@glimmer/node";
 import { Option } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
 import * as SimpleDOM from "simple-dom";
