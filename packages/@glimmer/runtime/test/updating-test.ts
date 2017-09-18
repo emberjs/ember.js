@@ -1,4 +1,4 @@
-import { UNDEFINED_REFERENCE, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult } from "@glimmer/runtime";
+import { UNDEFINED_REFERENCE, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, clientBuilder } from "@glimmer/runtime";
 import { assertNodeTagName, BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
 import { ConstReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -46,7 +46,14 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(obj: T | null, key
 function render(template: Template, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.renderLayout({ env, self, cursor: { element: root, nextSibling: null }, dynamicScope: new TestDynamicScope() });
+  let cursor = { element: root, nextSibling: null };
+  let templateIterator = template.renderLayout({
+    env,
+    self,
+    cursor,
+    builder: clientBuilder(env, cursor),
+    dynamicScope: new TestDynamicScope()
+  });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();

@@ -7,7 +7,7 @@ import {
   SerializedTemplateWithLazyBlock,
   Statement
 } from '@glimmer/wire-format';
-import { NewElementBuilder } from './vm/element-builder';
+import { NewElementBuilder, ElementBuilder } from './vm/element-builder';
 import { RehydrateBuilder } from './vm/rehydrate-builder';
 import { SerializeBuilder } from './vm/serialize-builder';
 import { DynamicScope, Environment } from './environment';
@@ -27,7 +27,7 @@ export interface RenderLayoutOptions {
   args?: ICapturedArguments;
   cursor: Cursor;
   dynamicScope: DynamicScope;
-  mode?: 'client' | 'rehydrate' | 'serialize';
+  builder: ElementBuilder;
 }
 
 /**
@@ -136,8 +136,7 @@ export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier
   }
 
   renderLayout(options: RenderLayoutOptions): TemplateIterator {
-    let { env, self, dynamicScope, args = EMPTY_ARGS, cursor, mode = 'client' } = options;
-    let builder = elementBuilder({ env, cursor, mode });
+    let { env, self, dynamicScope, args = EMPTY_ARGS, builder } = options;
 
     let layout = this.asLayout();
     let handle = layout.compile();
@@ -165,11 +164,14 @@ export function compilable<Specifier>(layout: ParsedLayout<Specifier>, options: 
   return new CompilableTemplate(block.statements, layout, compileOptions, { referrer, hasEval, symbols });
 }
 
-export function elementBuilder({ mode, env, cursor }: Pick<RenderLayoutOptions, 'mode' | 'env' | 'cursor'>) {
-  switch (mode) {
-    case 'client': return NewElementBuilder.forInitialRender(env, cursor);
-    case 'rehydrate': return RehydrateBuilder.forInitialRender(env, cursor);
-    case 'serialize': return SerializeBuilder.forInitialRender(env, cursor);
-    default: throw new Error('unreachable');
-  }
+export function clientBuilder(env: Environment, cursor: Cursor) {
+  return NewElementBuilder.forInitialRender(env, cursor);
+}
+
+export function rehydrationBuilder(env: Environment, cursor: Cursor) {
+  return RehydrateBuilder.forInitialRender(env, cursor);
+}
+
+export function serializeBuilder(env: Environment, cursor: Cursor) {
+  return SerializeBuilder.forInitialRender(env, cursor);
 }
