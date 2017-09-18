@@ -5,6 +5,7 @@ import * as SimpleDOM from 'simple-dom';
 
 import LazyTestEnvironment from '../lazy/environment';
 import LazyRenderDelegate from '../lazy/render-delegate';
+import EagerRenderDelegate from '../eager/render-delegate';
 import RenderDelegate from '../../../render-delegate';
 import { RenderTest } from '../../../render-test';
 
@@ -39,7 +40,13 @@ export class NodeEnv extends LazyTestEnvironment {
   }
 }
 
-export class NodeRenderDelegate extends LazyRenderDelegate {
+export class NodeLazyRenderDelegate extends LazyRenderDelegate {
+  constructor() {
+    super(new NodeEnv({ document: new SimpleDOM.Document() }));
+  }
+}
+
+export class NodeEagerRenderDelegate extends EagerRenderDelegate {
   constructor() {
     super(new NodeEnv({ document: new SimpleDOM.Document() }));
   }

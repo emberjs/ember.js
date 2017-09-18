@@ -1,3 +1,4 @@
+import * as SimpleDOM from 'simple-dom';
 import {
   Environment,
   ComponentDefinition,
@@ -11,6 +12,9 @@ import {
 } from '@glimmer/runtime';
 import { LookupMap, specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
+import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
+import { ProgramSymbolTable, Recast, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
+import { UpdatableReference } from '@glimmer/object-reference';
 
 import RenderDelegate from '../../../render-delegate';
 import EagerCompilerDelegate from './compiler-delegate';
@@ -27,12 +31,8 @@ import EagerRuntimeResolver from './runtime-resolver';
 
 import { Modules } from './modules';
 import { TestDynamicScope } from '../../../environment';
-import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants } from '@glimmer/program';
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
-import { ProgramSymbolTable, Recast, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
 import { NodeEnv } from '../ssr/environment';
-import * as SimpleDOM from 'simple-dom';
 import { TestComponentDefinitionState } from '../../component-definition';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
@@ -64,6 +64,7 @@ const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
 };
 
 export default class EagerRenderDelegate implements RenderDelegate {
+  static isEager = true; // Used to disable tests where ArrayBuffer is undefined
   protected env: Environment;
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
@@ -192,7 +193,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
       }
     });
 
-    compiler.compile();
+    let { heap, pool } = compiler.compile();
 
     let handle = compiler.getSpecifierMap().vmHandleBySpecifier.get(spec)! as Recast<number, VMHandle>;
     let { env } = this;
@@ -202,8 +203,8 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let self = new UpdatableReference(context);
     let dynamicScope = new TestDynamicScope();
     let resolver = new EagerRuntimeResolver(compiler.getSpecifierMap(), this.modules, this.specifiersToSymbolTable);
-    let pool = program.constants.toPool();
-    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), program.heap);
+    let runtimeHeap = new Heap(heap);
+    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
 
     let vm = LowLevelVM.initial(runtimeProgram, env, self, null, dynamicScope, builder, handle);
     let iterator = new TemplateIterator(vm);

@@ -1,9 +1,8 @@
 
-import { Recast, VMHandle } from "@glimmer/interfaces";
+import { CompileTimeProgram, Recast, VMHandle } from "@glimmer/interfaces";
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Constants, WriteOnlyConstants, RuntimeConstants } from './constants';
 import { Opcode } from './opcode';
-import { CompileTimeProgram } from "@glimmer/opcode-compiler";
 
 enum TableSlotState {
   Allocated,
@@ -41,11 +40,28 @@ const STATE_OFFSET = 3;
  * over them as you will have a bad memory access exception.
  */
 export class Heap {
-  private heap: number[] = [];
+  private heap: Uint16Array | Array<number>;
+  private table: number[];
   private offset = 0;
   private handle = 0;
 
-  private table: number[] = [];
+  constructor(serializedHeap?: { buffer: ArrayBuffer, table: number[], handle: number }) {
+    if (serializedHeap) {
+      let { buffer, table, handle } = serializedHeap;
+      this.heap = new Uint16Array(buffer);
+      this.table = table;
+      this.offset = this.heap.length;
+      this.handle = handle;
+    } else {
+      if (typeof Uint16Array !== 'undefined') {
+        this.heap = new Uint16Array(0x100000);
+      } else {
+        // FIXME remove once we drop IE9
+        this.heap = new Array(0x100000);
+      }
+      this.table = [];
+    }
+  }
 
   push(item: number): void {
     this.heap[this.offset++] = item;
@@ -144,8 +160,14 @@ export class Heap {
     this.offset = this.offset - compactedSize;
   }
 
-  toArray(): number[] {
-    return this.heap.slice();
+  capture() {
+    // Only called in eager mode
+    let buffer = subarray(this.heap, 0, this.offset);
+    return {
+      handle: this.handle,
+      table: this.table,
+      buffer: buffer as ArrayBuffer
+    };
   }
 }
 
@@ -181,4 +203,12 @@ export class RuntimeProgram<Specifier> {
 
 export class Program<Specifier> extends WriteOnlyProgram {
   public constants: Constants<Specifier>;
+}
+
+function subarray(arr: Uint16Array | number[], start: number, end: number) {
+  if (arr instanceof Uint16Array) {
+    return arr.subarray(start, end).buffer;
+  }
+
+  return null;
 }
