@@ -5,7 +5,7 @@ import Bounds from '../bounds';
 import { ElementOperations } from '../vm/element-builder';
 import Environment, { DynamicScope } from '../environment';
 import { IArguments } from '../vm/arguments';
-import { CurriedComponentDefinition } from "@glimmer/runtime";
+import { CurriedComponentDefinition } from './curried-component';
 
 export interface PreparedArguments {
   positional: Array<VersionedPathReference<Opaque>>;
