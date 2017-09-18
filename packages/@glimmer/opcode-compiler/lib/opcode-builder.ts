@@ -1,4 +1,17 @@
-import { Opaque, Option, ProgramSymbolTable, SymbolTable, Recast, VMHandle, BlockSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import {
+  Opaque,
+  Option,
+  ProgramSymbolTable,
+  SymbolTable,
+  Recast,
+  VMHandle,
+  BlockSymbolTable,
+  ComponentCapabilities,
+  CompileTimeConstants,
+  CompileTimeProgram,
+  CompileTimeLazyConstants,
+  CompileTimeHeap
+} from "@glimmer/interfaces";
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
@@ -6,12 +19,8 @@ import { SerializedInlineBlock } from "@glimmer/wire-format";
 import { PrimitiveType } from "@glimmer/program";
 
 import {
-  CompileTimeHeap,
-  CompileTimeLazyConstants,
   Primitive,
   CompilableBlock,
-  CompileTimeConstants,
-  CompileTimeProgram,
   ParsedLayout
 } from './interfaces';
 

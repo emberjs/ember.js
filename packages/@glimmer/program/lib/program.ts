@@ -1,9 +1,8 @@
 
-import { Recast, VMHandle } from "@glimmer/interfaces";
+import { CompileTimeProgram, Recast, VMHandle } from "@glimmer/interfaces";
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Constants, WriteOnlyConstants, RuntimeConstants } from './constants';
 import { Opcode } from './opcode';
-import { CompileTimeProgram } from "@glimmer/opcode-compiler";
 
 enum TableSlotState {
   Allocated,
