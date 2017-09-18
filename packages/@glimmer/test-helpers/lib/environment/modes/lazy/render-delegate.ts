@@ -1,6 +1,6 @@
 import { Dict, Opaque } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
-import { RenderResult } from '@glimmer/runtime';
+import { RenderResult, clientBuilder } from '@glimmer/runtime';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import LazyTestEnvironment from './environment';
@@ -30,10 +30,11 @@ export default class LazyRenderDelegate implements RenderDelegate {
 
   renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
     let { env } = this;
+    let cursor = { element, nextSibling: null };
     return renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
-      cursor: { element, nextSibling: null },
+      builder: clientBuilder(env, cursor),
       dynamicScope: new TestDynamicScope()
     });
   }

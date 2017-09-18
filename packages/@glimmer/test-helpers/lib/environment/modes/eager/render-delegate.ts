@@ -5,10 +5,10 @@ import {
   getDynamicVar,
   Helper as GlimmerHelper,
   RenderResult,
-  elementBuilder,
   LowLevelVM,
   TemplateIterator,
-  ComponentManager
+  ComponentManager,
+  clientBuilder
 } from '@glimmer/runtime';
 import { LookupMap, specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
@@ -199,7 +199,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let { env } = this;
 
     let cursor = { element, nextSibling: null };
-    let builder = elementBuilder({ mode: 'client', env, cursor });
+    let builder = clientBuilder(env, cursor);
     let self = new UpdatableReference(context);
     let dynamicScope = new TestDynamicScope();
     let resolver = new EagerRuntimeResolver(compiler.getSpecifierMap(), this.modules, this.specifiersToSymbolTable);

@@ -12,16 +12,6 @@ export class Cursor {
   constructor(public element: Simple.Element, public nextSibling: Option<Simple.Node>) {}
 }
 
-export function currentNode(cursor: Cursor): Option<Simple.Node> {
-  let { element, nextSibling } = cursor;
-
-  if (nextSibling === null) {
-    return element.lastChild;
-  } else {
-    return nextSibling.previousSibling;
-  }
-}
-
 export default Bounds;
 
 export interface DestroyableBounds extends Bounds, Destroyable {}
