@@ -5,13 +5,13 @@ import { Opaque, Option, ComponentCapabilities } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import GlimmerObject from "@glimmer/object";
+import { Destroyable } from "@glimmer/util";
 
 import { Attrs, AttrsDiff, createTemplate } from '../shared';
 import TestSpecifier from '../specifier';
-import { Destroyable } from "@glimmer/util";
 import { BASIC_CAPABILITIES } from './basic';
 import { TestComponentDefinitionState } from '../components';
-import LazyRuntimeResolver from "@glimmer/test-helpers/lib/environment/modes/lazy/runtime-resolver";
+import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
