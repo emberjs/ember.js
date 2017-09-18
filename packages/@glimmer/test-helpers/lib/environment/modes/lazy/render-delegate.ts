@@ -34,7 +34,6 @@ export default class LazyRenderDelegate implements RenderDelegate {
     return renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
-      cursor,
       builder: clientBuilder(env, cursor),
       dynamicScope: new TestDynamicScope()
     });
