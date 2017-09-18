@@ -8,6 +8,7 @@ const buildTests = require('./build/broccoli/build-tests');
 const buildPackages = require('./build/broccoli/build-packages.js');
 const mergeDefinitionFiles = require('./build/broccoli/merge-definition-files');
 const stripGlimmerUtilities = require('./build/broccoli/strip-glimmer-utilities');
+const writeSmokeTest = require('./build/broccoli/write-smoke-test');
 
 const PRODUCTION = process.env.EMBER_ENV === 'production';
 
@@ -72,7 +73,8 @@ module.exports = function(_options) {
   // grab the AMD build of Glimmer and concatenate it into a single
   // glimmer-vm.js file.
   if (PRODUCTION) {
-    output = [packagesTree];
+    let smokeTestTree = writeSmokeTest(packagesTree);
+    output = [packagesTree, smokeTestTree];
   } else {
     let testsTree = buildTests(tsTree, jsTree, packagesTree);
     output = [packagesTree, testsTree];
