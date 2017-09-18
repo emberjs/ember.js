@@ -958,8 +958,7 @@ const HAS_TYPED_ARRAYS = (() => {
   try {
     if (typeof Uint16Array === 'undefined') return false;
     let arr = new Uint16Array([1]);
-    arr.slice(0, 1);
-    return true;
+    return typeof arr.subarray === 'function';
   } catch (e) {
     return false;
   }
