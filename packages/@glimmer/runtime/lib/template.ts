@@ -9,7 +9,6 @@ import {
 } from '@glimmer/wire-format';
 import { NewElementBuilder, ElementBuilder } from './vm/element-builder';
 import { RehydrateBuilder } from './vm/rehydrate-builder';
-import { SerializeBuilder } from './vm/serialize-builder';
 import { DynamicScope, Environment } from './environment';
 import { TopLevelSyntax } from './syntax/interfaces';
 import { IteratorResult, RenderResult, VM } from './vm';
@@ -170,8 +169,4 @@ export function clientBuilder(env: Environment, cursor: Cursor) {
 
 export function rehydrationBuilder(env: Environment, cursor: Cursor) {
   return RehydrateBuilder.forInitialRender(env, cursor);
-}
-
-export function serializeBuilder(env: Environment, cursor: Cursor) {
-  return SerializeBuilder.forInitialRender(env, cursor);
 }
