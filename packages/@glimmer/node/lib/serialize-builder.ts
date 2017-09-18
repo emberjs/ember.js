@@ -1,9 +1,18 @@
-import { NewElementBuilder, ElementBuilder } from "./element-builder";
+import { NewElementBuilder, ElementBuilder, Bounds, ConcreteBounds, Environment } from "@glimmer/runtime";
 
-import Bounds, { bounds, currentNode } from '../bounds';
-import { Simple } from "@glimmer/interfaces";
+import { Simple, Option } from "@glimmer/interfaces";
 
-export class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
+function currentNode(cursor: ElementBuilder | { element: Simple.Element, nextSibling: Simple.Node }): Option<Simple.Node> {
+  let { element, nextSibling } = cursor;
+
+  if (nextSibling === null) {
+    return element.lastChild;
+  } else {
+    return nextSibling.previousSibling;
+  }
+}
+
+class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   private serializeBlockDepth = 0;
 
   __openBlock(): void {
@@ -22,7 +31,7 @@ export class SerializeBuilder extends NewElementBuilder implements ElementBuilde
     let first = this.__appendComment('%glimmer%');
     super.__appendHTML(html);
     let last = this.__appendComment('%glimmer%');
-    return bounds(this.element, first, last);
+    return new ConcreteBounds(this.element, first, last);
   }
 
   __appendText(string: string): Simple.Text {
@@ -36,4 +45,8 @@ export class SerializeBuilder extends NewElementBuilder implements ElementBuilde
 
     return super.__appendText(string);
   }
+}
+
+export function serializeBuilder(env: Environment, cursor: { element: Simple.Element, nextSibling: Option<Simple.Node> }) {
+  return SerializeBuilder.forInitialRender(env, cursor);
 }

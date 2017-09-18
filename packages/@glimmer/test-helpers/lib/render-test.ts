@@ -1,7 +1,7 @@
 import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
-import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment } from "@glimmer/runtime";
+import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, rehydrationBuilder } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
-import { NodeDOMTreeConstruction } from "@glimmer/node";
+import { NodeDOMTreeConstruction, serializeBuilder } from "@glimmer/node";
 import { Option } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
 import * as SimpleDOM from "simple-dom";
@@ -542,13 +542,13 @@ export class RehydrationDelegate implements RenderDelegate {
   renderServerSide(template: string, context: Dict<Opaque>, takeSnapshot: () => void): string {
     let env = this.serverEnv;
     let element = env.getAppendOperations().createElement("div") as HTMLDivElement;
+    let cursor = { element, nextSibling: null };
     // Emulate server-side render
     renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
-      cursor: { element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
-      mode: 'serialize'
+      builder: serializeBuilder(env, cursor)
     });
 
     takeSnapshot();
@@ -564,12 +564,12 @@ export class RehydrationDelegate implements RenderDelegate {
   renderClientSide(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
     let env = this.clientEnv;
     // Client-side rehydration
+    let cursor = { element, nextSibling: null };
     return renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
-      cursor: { element, nextSibling: null },
       dynamicScope: new TestDynamicScope(),
-      mode: 'rehydrate'
+      builder: rehydrationBuilder(env, cursor)
     });
   }
 
