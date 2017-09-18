@@ -1,5 +1,11 @@
-import { CompileTimeProgram, CompileTimeConstants } from './interfaces';
-import { Option, Opaque, SymbolTable, Recast } from '@glimmer/interfaces';
+import {
+  CompileTimeProgram,
+  CompileTimeConstants,
+  Option,
+  Opaque,
+  SymbolTable,
+  Recast
+} from '@glimmer/interfaces';
 import { METADATA, Op, Register } from '@glimmer/vm';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { unreachable, dict } from "@glimmer/util";
