@@ -28,7 +28,6 @@ function render(template: Template, self: any) {
   let templateIterator = template.renderLayout({
     env,
     self: new UpdatableReference(self),
-    cursor,
     builder: clientBuilder(env, cursor),
     dynamicScope: new TestDynamicScope()
   });

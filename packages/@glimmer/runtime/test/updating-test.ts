@@ -50,7 +50,6 @@ function render(template: Template, context = {}) {
   let templateIterator = template.renderLayout({
     env,
     self,
-    cursor,
     builder: clientBuilder(env, cursor),
     dynamicScope: new TestDynamicScope()
   });

@@ -24,7 +24,6 @@ export interface RenderLayoutOptions {
   env: Environment;
   self: PathReference<Opaque>;
   args?: ICapturedArguments;
-  cursor: Cursor;
   dynamicScope: DynamicScope;
   builder: ElementBuilder;
 }

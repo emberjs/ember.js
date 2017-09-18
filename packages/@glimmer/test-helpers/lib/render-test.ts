@@ -547,7 +547,6 @@ export class RehydrationDelegate implements RenderDelegate {
     renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
-      cursor,
       dynamicScope: new TestDynamicScope(),
       builder: serializeBuilder(env, cursor)
     });
@@ -569,7 +568,6 @@ export class RehydrationDelegate implements RenderDelegate {
     return renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
-      cursor,
       dynamicScope: new TestDynamicScope(),
       builder: rehydrationBuilder(env, cursor)
     });

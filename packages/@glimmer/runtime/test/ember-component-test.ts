@@ -41,7 +41,6 @@ export class EmberishRootView extends EmberObject {
     let templateIterator = this.template.renderLayout({
       env: this.env,
       self,
-      cursor,
       builder: clientBuilder(env, cursor),
       dynamicScope: new TestDynamicScope()
     });
