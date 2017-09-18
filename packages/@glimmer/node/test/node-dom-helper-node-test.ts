@@ -2,7 +2,7 @@ import {
   RenderTest,
   test,
   rawModule,
-  NodeRenderDelegate,
+  NodeLazyRenderDelegate,
   SSRSuite,
   SSRComponentSuite
 } from "@glimmer/test-helpers";
@@ -30,6 +30,6 @@ class CompilationTests extends RenderTest {
   }
 }
 
-rawModule('Server-side rendering in Node.js', DOMHelperTests, NodeRenderDelegate);
-rawModule('Id generation', CompilationTests, NodeRenderDelegate);
-rawModule("[Bundle Compiler] SSR Components", SSRComponentSuite, NodeRenderDelegate, { componentModule: true });
+rawModule('Server-side rendering in Node.js', DOMHelperTests, NodeLazyRenderDelegate);
+rawModule('Id generation', CompilationTests, NodeLazyRenderDelegate);
+rawModule("[Bundle Compiler] SSR Components", SSRComponentSuite, NodeLazyRenderDelegate, { componentModule: true });

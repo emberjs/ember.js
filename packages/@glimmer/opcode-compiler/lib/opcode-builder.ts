@@ -1,4 +1,17 @@
-import { Opaque, Option, ProgramSymbolTable, SymbolTable, Recast, VMHandle, BlockSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import {
+  Opaque,
+  Option,
+  ProgramSymbolTable,
+  SymbolTable,
+  Recast,
+  VMHandle,
+  BlockSymbolTable,
+  ComponentCapabilities,
+  CompileTimeConstants,
+  CompileTimeProgram,
+  CompileTimeLazyConstants,
+  CompileTimeHeap
+} from "@glimmer/interfaces";
 import { dict, EMPTY_ARRAY, expect, fillNulls, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
@@ -6,12 +19,8 @@ import { SerializedInlineBlock } from "@glimmer/wire-format";
 import { PrimitiveType } from "@glimmer/program";
 
 import {
-  CompileTimeHeap,
-  CompileTimeLazyConstants,
   Primitive,
   CompilableBlock,
-  CompileTimeConstants,
-  CompileTimeProgram,
   ParsedLayout
 } from './interfaces';
 
@@ -434,7 +443,12 @@ export abstract class OpcodeBuilder<Specifier> {
     switch (typeof _primitive) {
       case 'number':
         if (_primitive as number % 1 === 0) {
-          primitive = _primitive as number;
+          if (_primitive as number > -1) {
+            primitive = _primitive as number;
+          } else {
+            primitive = this.negative(_primitive as number);
+            type = PrimitiveType.NEGATIVE;
+          }
         } else {
           primitive = this.float(_primitive as number);
           type = PrimitiveType.FLOAT;
@@ -466,6 +480,10 @@ export abstract class OpcodeBuilder<Specifier> {
 
   float(num: number): number {
     return this.constants.float(num);
+  }
+
+  negative(num: number): number {
+    return this.constants.negative(num);
   }
 
   pushPrimitiveReference(primitive: Primitive) {

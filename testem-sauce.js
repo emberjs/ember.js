@@ -4,7 +4,7 @@ module.exports = {
   "framework": "qunit",
   "test_page": "tests/index.html?hidepassed",
   "disable_watching": true,
-  "timeout": 540,
+  "timeout": 600,
   "parallel": 2,
   "launchers":
     {
@@ -29,7 +29,7 @@ module.exports = {
         "protocol": "tap"
       },
       "SL_Safari_Current": {
-        "command": "ember sauce:launch -b safari -v 9 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -b safari -v 10 --no-ct -u '<url>'",
         "protocol": "tap"
       },
       "SL_Safari_Last": {
