@@ -1,4 +1,4 @@
-import { Template, RenderResult, IteratorResult } from "@glimmer/runtime";
+import { Template, RenderResult, IteratorResult, clientBuilder } from "@glimmer/runtime";
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -29,7 +29,14 @@ function commonSetup() {
 function render(template: Template, context={}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.renderLayout({ env, self, cursor: { element: root, nextSibling: null }, dynamicScope: new TestDynamicScope() });
+  let cursor = { element: root, nextSibling: null };
+  let templateIterator = template.renderLayout({
+    env,
+    self,
+    cursor,
+    builder: clientBuilder(env, cursor),
+    dynamicScope: new TestDynamicScope()
+  });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();

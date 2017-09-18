@@ -1,6 +1,6 @@
 import { TestEnvironment, equalTokens, TestDynamicScope } from "@glimmer/test-helpers";
 import { test, module } from "@glimmer/runtime/test/support";
-import { Template, RenderResult, DynamicAttributeFactory, SimpleDynamicAttribute, ElementBuilder } from "@glimmer/runtime";
+import { Template, RenderResult, DynamicAttributeFactory, SimpleDynamicAttribute, ElementBuilder, clientBuilder } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Option, Simple, Opaque } from "@glimmer/interfaces";
 
@@ -24,7 +24,14 @@ function rootElement(): HTMLDivElement {
 function render(template: Template, self: any) {
   let result: RenderResult;
   env.begin();
-  let templateIterator = template.renderLayout({ env, self: new UpdatableReference(self), cursor: { element: root, nextSibling: null }, dynamicScope: new TestDynamicScope() });
+  let cursor = { element: root, nextSibling: null };
+  let templateIterator = template.renderLayout({
+    env,
+    self: new UpdatableReference(self),
+    cursor,
+    builder: clientBuilder(env, cursor),
+    dynamicScope: new TestDynamicScope()
+  });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next() as IteratorResult<RenderResult>;
