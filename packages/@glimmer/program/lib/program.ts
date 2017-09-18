@@ -41,7 +41,7 @@ const STATE_OFFSET = 3;
  * over them as you will have a bad memory access exception.
  */
 export class Heap {
-  private heap: Uint16Array;
+  private heap: Uint16Array | Array<number>;
   private table: number[];
   private offset = 0;
   private handle = 0;
@@ -54,7 +54,12 @@ export class Heap {
       this.offset = this.heap.length;
       this.handle = handle;
     } else {
-      this.heap = new Uint16Array(0x100000);
+      if (typeof Uint16Array !== 'undefined') {
+        this.heap = new Uint16Array(0x100000);
+      } else {
+        // FIXME remove once we drop IE9
+        this.heap = new Array(0x100000);
+      }
       this.table = [];
     }
   }
@@ -157,11 +162,12 @@ export class Heap {
   }
 
   capture() {
-    let heap = this.heap.slice(0, this.offset);
+    // Only called in eager mode
+    let buffer = subarray(this.heap, 0, this.offset);
     return {
       handle: this.handle,
       table: this.table,
-      buffer: heap.buffer as ArrayBuffer
+      buffer: buffer as ArrayBuffer
     };
   }
 }
@@ -198,4 +204,12 @@ export class RuntimeProgram<Specifier> {
 
 export class Program<Specifier> extends WriteOnlyProgram {
   public constants: Constants<Specifier>;
+}
+
+function subarray(arr: Uint16Array | number[], start: number, end: number) {
+  if (arr instanceof Uint16Array) {
+    return arr.subarray(start, end).buffer;
+  }
+
+  return null;
 }
