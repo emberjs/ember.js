@@ -596,3 +596,7 @@ class BlockListTracker implements Tracker {
   finalize(_stack: ElementBuilder) {
   }
 }
+
+export function clientBuilder(env: Environment, cursor: Cursor) {
+  return NewElementBuilder.forInitialRender(env, cursor);
+}
