@@ -39,6 +39,7 @@ export interface Node {
 
 export interface DocumentFragment extends Node {
   nodeType: NodeType.DocumentFragment;
+  insertBefore(node: Node, reference: Option<Node>): void;
 }
 
 export interface Document extends Node {
@@ -71,8 +72,11 @@ export interface Comment extends CharacterData {
 }
 
 export interface Attribute {
+  specified: boolean;
   name: string;
+  prefix: Option<string>;
   value: string;
+  namespaceURI: Option<string>;
 }
 
 export interface Attributes {

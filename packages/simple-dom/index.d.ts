@@ -16,6 +16,11 @@ interface HTMLSerializerConstructor {
 }
 
 export interface HTMLSerializer {
+  openTag(element: Simple.Element): string;
+  attributes(attributes: Simple.Attributes): string;
+  attr(attribute: Simple.Attribute): string;
+  closeTag(element: Simple.Element): string;
+
   serializeChildren(root: Simple.Node): string;
   serialize(root: Simple.Node): string;
 }
