@@ -954,15 +954,7 @@ function assertEmberishElement(...args: any[]): void {
   equalsElement(element, tagName, fullAttrs, contents);
 }
 
-const HAS_TYPED_ARRAYS = (() => {
-  try {
-    if (typeof Uint16Array === 'undefined') return false;
-    let arr = new Uint16Array([1]);
-    return typeof arr.subarray === 'function';
-  } catch (e) {
-    return false;
-  }
-})();
+const HAS_TYPED_ARRAYS = typeof Uint16Array !== 'undefined';
 
 function shouldRunTest<T extends RenderDelegate>(Delegate: RenderDelegateConstructor<T>) {
   let isEagerDelegate = Delegate['isEager'];
