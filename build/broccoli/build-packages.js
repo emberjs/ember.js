@@ -161,7 +161,7 @@ function transpileCommonJS(pkgName, esVersion, tree) {
           }
         },
         debugTools: {
-          source: '@glimmer/debug'
+          source: '@glimmer/util'
         },
         externalizeHelpers: {
           module: true
