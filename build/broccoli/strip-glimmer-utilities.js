@@ -36,15 +36,11 @@ module.exports = function(jsTree) {
       source: '@glimmer/vm',
       delegate: removeMetaData
     }]);
+    glimmerUtils.push([nuke, {
+      source: '@glimmer/opcode-compiler',
+      delegate: removeLogging
+    }]);
   }
-
-  function removeMetaData(bindingName, path, t) {
-    if (bindingName === 'METADATA') {
-      path.parentPath.replaceWith(t.nullLiteral());
-    }
-  }
-
-  removeMetaData.baseDir = nuke.baseDir;
 
   return babel(jsTree, {
     annotation: 'Babel - Strip Glimmer Utilities',
@@ -57,3 +53,26 @@ module.exports = function(jsTree) {
     ]
   });
 }
+
+function removeMetaData(bindingName, path, t) {
+  if (bindingName === 'METADATA') {
+    path.parentPath.replaceWith(t.nullLiteral());
+  }
+}
+
+function removeLogging(bindingName, path, t) {
+  if (bindingName === 'debugSlice') {
+    path.parentPath.remove();
+  }
+
+  if (bindingName === 'debug') {
+    path.parentPath.replaceWith(t.arrayExpression());
+  }
+
+  if (bindingName === 'logOpcode') {
+    path.parentPath.replaceWith(t.stringLiteral(''));
+  }
+}
+
+removeLogging.baseDir = nuke.baseDir;
+removeMetaData.baseDir = nuke.baseDir;
