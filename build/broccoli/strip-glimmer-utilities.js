@@ -23,14 +23,14 @@ module.exports = function(jsTree) {
         }
       },
       debugTools: {
-        source: '@glimmer/debug'
+        source: '@glimmer/util'
       },
       externalizeHelpers: {
         module: true
       }
     }])
 
-    glimmerUtils.push([nuke, { source: '@glimmer/debug' }])
+    glimmerUtils.push([nuke, { source: '@glimmer/debug' }]);
     glimmerUtils.push([nuke, { source: '@glimmer/vm/lib/-debug-strip' }]);
     glimmerUtils.push([nuke, {
       source: '@glimmer/vm',
