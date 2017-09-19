@@ -1,7 +1,7 @@
 import { NewElementBuilder, ElementBuilder, ElementOperations } from "./element-builder";
 
 import { Environment } from '../environment';
-import Bounds, { bounds } from '../bounds';
+import Bounds, { bounds, Cursor } from '../bounds';
 import { Simple, Option, Opaque } from "@glimmer/interfaces";
 import { DynamicContentWrapper } from './content/dynamic';
 import { expect, assert } from "@glimmer/util";
@@ -353,4 +353,8 @@ function findByName(array: Simple.Attribute[], name: string): Simple.Attribute |
 
 function unimplemented() {
   return new Error('Not implemented');
+}
+
+export function rehydrationBuilder(env: Environment, cursor: Cursor) {
+  return RehydrateBuilder.forInitialRender(env, cursor);
 }

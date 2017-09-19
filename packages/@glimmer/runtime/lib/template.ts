@@ -1,4 +1,3 @@
-import { Cursor } from './bounds';
 import { Opaque, Option } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
@@ -7,8 +6,7 @@ import {
   SerializedTemplateWithLazyBlock,
   Statement
 } from '@glimmer/wire-format';
-import { NewElementBuilder, ElementBuilder } from './vm/element-builder';
-import { RehydrateBuilder } from './vm/rehydrate-builder';
+import { ElementBuilder } from './vm/element-builder';
 import { DynamicScope, Environment } from './environment';
 import { TopLevelSyntax } from './syntax/interfaces';
 import { IteratorResult, RenderResult, VM } from './vm';
@@ -160,12 +158,4 @@ export function compilable<Specifier>(layout: ParsedLayout<Specifier>, options: 
   let compileOptions = assign({}, options, { asPartial, referrer });
 
   return new CompilableTemplate(block.statements, layout, compileOptions, { referrer, hasEval, symbols });
-}
-
-export function clientBuilder(env: Environment, cursor: Cursor) {
-  return NewElementBuilder.forInitialRender(env, cursor);
-}
-
-export function rehydrationBuilder(env: Environment, cursor: Cursor) {
-  return RehydrateBuilder.forInitialRender(env, cursor);
 }
