@@ -162,7 +162,7 @@ export class Heap {
 
   capture() {
     // Only called in eager mode
-    let buffer = subarray(this.heap, 0, this.offset);
+    let buffer = slice(this.heap, 0, this.offset);
     return {
       handle: this.handle,
       table: this.table,
@@ -205,9 +205,19 @@ export class Program<Specifier> extends WriteOnlyProgram {
   public constants: Constants<Specifier>;
 }
 
-function subarray(arr: Uint16Array | number[], start: number, end: number) {
+function slice(arr: Uint16Array | number[], start: number, end: number) {
   if (arr instanceof Uint16Array) {
-    return arr.subarray(start, end).buffer;
+    if (arr.slice !== undefined) {
+      return arr.slice(start, end).buffer;
+    }
+
+    let ret = new Uint16Array(end);
+
+    for (; start < end; start++) {
+      ret[start]  = arr[start];
+    }
+
+    return ret.buffer;
   }
 
   return null;
