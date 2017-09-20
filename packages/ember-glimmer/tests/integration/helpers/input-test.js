@@ -653,3 +653,56 @@ moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTes
     this.assertAttr('tabindex', undefined);
   }
 });
+
+// These are the permutations of the set:
+// ['type="range"', 'min="-5" max="50"', 'value="%x"']
+[
+  'type="range" min="-5" max="50" value="%x"',
+  'type="range" value="%x" min="-5" max="50"',
+  'min="-5" max="50" type="range" value="%x"',
+  'min="-5" max="50" value="%x" type="range"',
+  'value="%x" min="-5" max="50" type="range"',
+  'value="%x" type="range" min="-5" max="50"',
+].forEach(attrs => {
+  moduleFor(`[GH#15675] Helpers test: {{input ${attrs}}}`, class extends InputRenderingTest {
+    renderInput(value = 25) {
+      this.render(`{{input ${ attrs.replace("%x", value) }}}`);
+    }
+
+    assertValue(expected) {
+      let type = this.$input().attr('type');
+
+      if (type !== 'range') {
+        this.assert.ok(true, 'IE9 does not support range items');
+        return;
+      }
+
+      super.assertValue(expected);
+    }
+
+    ['@test value over default max but below set max is kept'](assert) {
+      this.renderInput("25");
+      this.assertValue("25");
+    }
+
+    ['@test value below default min but above set min is kept'](assert) {
+      this.renderInput("-2");
+      this.assertValue("-2");
+    }
+
+    ['@test in the valid default range is kept'](assert) {
+      this.renderInput("5");
+      this.assertValue("5");
+    }
+
+    ['@test value above max is reset to max'](assert) {
+      this.renderInput("55");
+      this.assertValue("50");
+    }
+
+    ['@test value below min is reset to min'](assert) {
+      this.renderInput("-10");
+      this.assertValue("-5");
+    }
+  });
+});
