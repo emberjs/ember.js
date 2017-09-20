@@ -7,7 +7,7 @@
     "@glimmer/util": "^0.29.0",
     "@glimmer/wire-format": "^0.29.0",
     "@glimmer/interfaces": "^0.29.0",
-    "simple-html-tokenizer": "^0.3.0"
+    "simple-html-tokenizer": "^0.4.1"
   },
   "devDependencies": {
     "typescript": "^2.2.0"

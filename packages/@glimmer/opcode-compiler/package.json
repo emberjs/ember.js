@@ -10,7 +10,7 @@
     "@glimmer/program": "^0.29.0",
     "@glimmer/vm": "^0.29.0",
     "@glimmer/encoder": "^0.29.0",
-    "simple-html-tokenizer": "^0.3.0"
+    "simple-html-tokenizer": "^0.4.1"
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.29.0",

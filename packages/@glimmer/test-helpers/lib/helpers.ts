@@ -104,7 +104,7 @@ function generateTokens(divOrHTML: Element | string) {
     div = divOrHTML;
   }
 
-  const tokens = tokenize(div.innerHTML);
+  const tokens = tokenize(div.innerHTML, {});
   tokens.forEach((token) => {
     if (token.type === "StartTag" && token.attributes) {
       token.attributes.sort((a, b) => {
