@@ -80,11 +80,11 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       mustache = b.mustache(path, params, hash, !escaped, loc);
     }
 
-    switch (tokenizer.state) {
+    switch (tokenizer['state']) {
       // Tag helpers
       case "tagName":
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.state = "beforeAttributeName";
+        tokenizer['state'] = "beforeAttributeName";
         break;
       case "beforeAttributeName":
         addElementModifier(this.currentStartTag, mustache);
@@ -94,18 +94,18 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         this.beginAttributeValue(false);
         this.finishAttributeValue();
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.state = "beforeAttributeName";
+        tokenizer['state'] = "beforeAttributeName";
         break;
       case "afterAttributeValueQuoted":
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.state = "beforeAttributeName";
+        tokenizer['state'] = "beforeAttributeName";
         break;
 
       // Attribute values
       case "beforeAttributeValue":
         this.beginAttributeValue(false);
         appendDynamicAttributeValuePart(this.currentAttribute!, mustache);
-        tokenizer.state = 'attributeValueUnquoted';
+        tokenizer['state'] = 'attributeValueUnquoted';
         break;
       case "attributeValueDoubleQuoted":
       case "attributeValueSingleQuoted":
@@ -132,7 +132,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   CommentStatement(rawComment: HandlebarsAST.CommentStatement): Option<AST.MustacheCommentStatement> {
     let { tokenizer } = this;
 
-    if (tokenizer.state === 'comment') {
+    if (tokenizer['state'] === 'comment') {
       this.appendToCommentData(this.sourceForNode(rawComment));
       return null;
     }
@@ -140,7 +140,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let { value, loc } = rawComment;
     let comment = b.mustacheComment(value, loc);
 
-    switch (tokenizer.state) {
+    switch (tokenizer['state']) {
       case "beforeAttributeName":
         this.currentStartTag.comments.push(comment);
         break;
@@ -151,7 +151,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         break;
 
       default:
-        throw new SyntaxError(`Using a Handlebars comment when in the \`${tokenizer.state}\` state is not supported: "${comment.value}" on line ${loc.start.line}:${loc.start.column}`, rawComment.loc);
+        throw new SyntaxError(`Using a Handlebars comment when in the \`${tokenizer['state']}\` state is not supported: "${comment.value}" on line ${loc.start.line}:${loc.start.column}`, rawComment.loc);
     }
 
     return comment;
