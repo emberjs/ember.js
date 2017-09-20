@@ -24,6 +24,7 @@ import {
 import { Component, ComponentManager } from "./internal-interfaces";
 
 export type ScopeBlock = [VMHandle | ICompilableTemplate<BlockSymbolTable>, Scope, BlockSymbolTable];
+export type BlockValue = ScopeBlock[0 | 1 | 2];
 export type ScopeSlot = Option<PathReference<Opaque>> | Option<ScopeBlock>;
 
 export interface DynamicScope {

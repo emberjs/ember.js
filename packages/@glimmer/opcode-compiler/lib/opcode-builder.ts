@@ -81,6 +81,12 @@ export interface CompileTimeLookup<Specifier> {
   lookupPartial(name: string, referrer: Specifier): Option<number>;
 }
 
+export interface Blocks {
+  main: Option<CompilableBlock>;
+  else: Option<CompilableBlock>;
+  attrs: Option<CompilableBlock>;
+}
+
 export interface OpcodeBuilderConstructor {
   new<Specifier>(program: CompileTimeProgram,
       lookup: CompileTimeLookup<Specifier>,
@@ -158,9 +164,9 @@ export abstract class OpcodeBuilder<Specifier> {
 
   // args
 
-  pushArgs(names: string[], positionalCount: number, synthetic: boolean) {
+  pushArgs(names: string[], flags: number) {
     let serialized = this.constants.stringArray(names);
-    this.push(Op.PushArgs, serialized, positionalCount, synthetic === true ? 1 : 0);
+    this.push(Op.PushArgs, serialized, flags);
   }
 
   // helpers
@@ -318,8 +324,11 @@ export abstract class OpcodeBuilder<Specifier> {
     this.push(Op.Comment, comment);
   }
 
-  modifier(specifier: Specifier) {
+  modifier(specifier: Specifier, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+    this.pushFrame();
+    this.compileArgs(params, hash, null, true);
     this.push(Op.Modifier, this.constants.handle(specifier));
+    this.popFrame();
   }
 
   // lists
@@ -392,10 +401,6 @@ export abstract class OpcodeBuilder<Specifier> {
 
   pop(count = 1) {
     return this.push(Op.Pop, count);
-  }
-
-  popArgs() {
-    this.push(Op.PopArgs);
   }
 
   // vm
@@ -495,8 +500,12 @@ export abstract class OpcodeBuilder<Specifier> {
     this.push(Op.PrimitiveReference);
   }
 
-  helper(helper: Specifier) {
+  helper(helper: Specifier, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+    this.pushFrame();
+    this.compileArgs(params, hash, null, true);
     this.push(Op.Helper, this.constants.handle(helper));
+    this.popFrame();
+    this.fetch(Register.v0);
   }
 
   bindDynamicScope(_names: string[]) {
@@ -604,8 +613,22 @@ export abstract class OpcodeBuilder<Specifier> {
     return params.length;
   }
 
-  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, synthetic: boolean) {
+  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, blocks: Option<Blocks>, synthetic: boolean) {
+    if (blocks) {
+      this.pushYieldableBlock(blocks.main);
+      this.pushYieldableBlock(blocks.else);
+      this.pushYieldableBlock(blocks.attrs);
+    }
+
     let count = this.compileParams(params);
+
+    let flags = count << 4;
+
+    if (synthetic) flags |= 0b1000;
+
+    if (blocks) {
+      flags |= 0b111;
+    }
 
     let names: string[] = EMPTY_ARRAY;
 
@@ -617,7 +640,7 @@ export abstract class OpcodeBuilder<Specifier> {
       }
     }
 
-    this.pushArgs(names, count, synthetic);
+    this.pushArgs(names, flags);
   }
 
   invokeStaticBlock(block: CompilableBlock, callerCount = 0): void {
@@ -686,7 +709,7 @@ export abstract class OpcodeBuilder<Specifier> {
   }
 
   yield(to: number, params: Option<WireFormat.Core.Params>) {
-    this.compileArgs(params, null, false);
+    this.compileArgs(params, null, null, false);
     this.getBlock(to);
     this.resolveBlock();
     this.invokeYield();
@@ -699,11 +722,11 @@ export abstract class OpcodeBuilder<Specifier> {
     this.dup(Register.sp, 1);
     this.load(Register.s0);
 
-    this.pushYieldableBlock(block);
-    this.pushYieldableBlock(inverse);
-    this.pushYieldableBlock(attrs);
+    this.pushFrame();
 
-    this.compileArgs(params, hash, synthetic);
+    let blocks = { main: block, else: inverse, attrs };
+
+    this.compileArgs(params, hash, blocks, synthetic);
     this.prepareArgs(Register.s0);
 
     this.beginComponentTransaction();
@@ -751,7 +774,8 @@ export abstract class OpcodeBuilder<Specifier> {
     let { symbols } = symbolTable;
 
     if (capabilities.createArgs) {
-      this.compileArgs(params, hash, synthetic);
+      this.pushFrame();
+      this.compileArgs(null, hash, null, synthetic);
     }
 
     this.beginComponentTransaction();
@@ -759,7 +783,7 @@ export abstract class OpcodeBuilder<Specifier> {
     this.createComponent(Register.s0, block !== null, inverse !== null);
 
     if (capabilities.createArgs) {
-      this.popArgs();
+      this.popFrame();
     }
 
     this.registerComponentDestructor(Register.s0);
@@ -879,9 +903,12 @@ export abstract class OpcodeBuilder<Specifier> {
   curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
     let referrer = this.referrer;
 
+    this.pushFrame();
+    this.compileArgs(params, hash, null, synthetic);
     expr(definition, this);
-    this.compileArgs(params, hash, synthetic);
     this.push(Op.CurryComponent, this.constants.serializable(referrer));
+    this.popFrame();
+    this.fetch(Register.v0);
   }
 
   abstract pushBlock(block: Option<CompilableBlock>): void;

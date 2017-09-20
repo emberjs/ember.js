@@ -7,6 +7,22 @@ export interface Checker<T> {
   expected(): string;
 }
 
+export function wrap<T>(checker: () => Checker<T>): Checker<T> {
+  class Wrapped {
+    type: T;
+
+    validate(value: Opaque): value is T {
+      return checker().validate(value);
+    }
+
+    expected(): string {
+      return checker().expected();
+    }
+  }
+
+  return new Wrapped();
+}
+
 export interface Constructor<T> extends Function {
   prototype: T;
 }
