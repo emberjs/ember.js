@@ -628,9 +628,6 @@ export abstract class OpcodeBuilder<Specifier> {
 
     if (blocks) {
       flags |= 0b111;
-      // if (blocks.main) flags |= 0b0100;
-      // if (blocks.else) flags |= 0b0010;
-      // if (blocks.attrs) flags |= 0b0001;
     }
 
     let names: string[] = EMPTY_ARRAY;
@@ -775,8 +772,6 @@ export abstract class OpcodeBuilder<Specifier> {
     this.load(Register.s0);
 
     let { symbols } = symbolTable;
-
-    // let blocks = { main: block, else: inverse, attrs };
 
     if (capabilities.createArgs) {
       this.pushFrame();
