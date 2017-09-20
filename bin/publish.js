@@ -20,6 +20,7 @@ if (DRY_RUN) {
 // Fail fast if we haven't done a build first.
 assertDistExists();
 assertGitIsClean();
+assertPassesSmokeTest();
 
 let cli = readline.createInterface({
   input: process.stdin,
@@ -179,6 +180,17 @@ function assertGitIsClean() {
       console.log(chalk.red("Git working tree isn't clean. Use --force to ignore this warning."));
       process.exit(1);
     }
+  }
+}
+
+function assertPassesSmokeTest() {
+  try {
+    execSync('./bin/run-types-tests.js');
+  } catch (err) {
+    console.log(chalk.red("Types smoke test failed: "));
+    console.log(err.stdout.toString());
+
+    process.exit(1);
   }
 }
 
