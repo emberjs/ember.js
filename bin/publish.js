@@ -185,11 +185,11 @@ function assertGitIsClean() {
 
 function assertPassesSmokeTest() {
   try {
-    console.log(chalk.green("Smoke testing types..."));
-    execSync('node_modules/.bin/tsc --noEmit --module commonjs dist/types-smoke-test.ts');
+    execSync('./bin/run-types-tests.js');
   } catch (err) {
-    console.log(chalk.red("Bad types detected:"));
-    console.log(chalk.red(err.stdout.toString()));
+    console.log(chalk.red("Types smoke test failed: "));
+    console.log(err.stdout.toString());
+
     process.exit(1);
   }
 }
