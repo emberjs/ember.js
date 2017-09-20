@@ -1,20 +1,20 @@
 {
   "name": "@glimmer/test-helpers",
-  "version": "0.28.3",
+  "version": "0.29.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/test-helpers",
   "dependencies": {
-    "@glimmer/reference": "^0.28.3",
-    "@glimmer/runtime": "^0.28.3",
-    "@glimmer/compiler": "^0.28.3",
-    "@glimmer/util": "^0.28.3",
-    "@glimmer/object": "^0.28.3",
-    "@glimmer/object-reference": "^0.28.3",
-    "@glimmer/wire-format": "^0.28.3",
-    "@glimmer/interfaces": "^0.28.3",
-    "@glimmer/node": "^0.28.3",
-    "@glimmer/opcode-compiler": "^0.28.3",
-    "@glimmer/program": "^0.28.3",
-    "@glimmer/bundle-compiler": "^0.28.3"
+    "@glimmer/reference": "^0.29.0",
+    "@glimmer/runtime": "^0.29.0",
+    "@glimmer/compiler": "^0.29.0",
+    "@glimmer/util": "^0.29.0",
+    "@glimmer/object": "^0.29.0",
+    "@glimmer/object-reference": "^0.29.0",
+    "@glimmer/wire-format": "^0.29.0",
+    "@glimmer/interfaces": "^0.29.0",
+    "@glimmer/node": "^0.29.0",
+    "@glimmer/opcode-compiler": "^0.29.0",
+    "@glimmer/program": "^0.29.0",
+    "@glimmer/bundle-compiler": "^0.29.0"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
