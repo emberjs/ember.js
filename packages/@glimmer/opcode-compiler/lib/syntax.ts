@@ -61,8 +61,7 @@ STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
   let specifier = lookup.lookupModifier(name, referrer);
 
   if (specifier) {
-    builder.compileArgs(params, hash, true);
-    builder.modifier(specifier);
+    builder.modifier(specifier, params, hash);
   } else {
     throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
   }
@@ -268,8 +267,7 @@ EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
   let specifier = lookup.lookupHelper(name, referrer);
 
   if (specifier !== null) {
-    builder.compileArgs(null, null, true);
-    builder.helper(specifier);
+    builder.helper(specifier, null, null);
   } else if (asPartial) {
     builder.resolveMaybeLocal(name);
   } else {
@@ -302,8 +300,7 @@ EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
   let specifier = lookup.lookupHelper(name, referrer);
 
   if (specifier !== null) {
-    builder.compileArgs(params, hash, true);
-    builder.helper(specifier);
+    builder.helper(specifier, params, hash);
   } else {
     throw new Error(`Compile Error: ${name} is not a helper`);
   }

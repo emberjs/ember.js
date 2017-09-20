@@ -23,14 +23,11 @@ import {
   CheckFunction,
   CheckInterface,
   CheckProgramSymbolTable,
-  CheckHandle,
-  CheckOption,
-  CheckBlockSymbolTable,
-  CheckOr
+  CheckHandle
 } from '@glimmer/debug';
 
 import Bounds from '../../bounds';
-import { DynamicScope, ScopeBlock, ScopeSlot, Scope } from '../../environment';
+import { DynamicScope, ScopeSlot } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM, VM } from '../../vm';
 import { Arguments, IArguments, ICapturedArguments } from '../../vm/arguments';
@@ -56,9 +53,7 @@ import {
   CheckReference,
   CheckArguments,
   CheckPathReference,
-  CheckComponentInstance,
-  CheckScope,
-  CheckCompilableBlock
+  CheckComponentInstance
 } from './-debug-strip';
 
 const ARGS = new Arguments();
@@ -105,21 +100,20 @@ APPEND_OPCODES.add(Op.IsComponent, vm => {
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
+  let definition = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments);
   let captured: Option<ICapturedArguments> = null;
 
   if (args.length) {
     captured = args.capture();
-    args.clear();
   }
 
   let meta = vm.constants.getSerializable<TemplateMeta>(_meta);
   let resolver = vm.constants.resolver;
-  let definition = check(stack.pop(), CheckReference);
 
-  stack.push(new CurryComponentReference(definition, resolver, meta, captured));
+  vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, captured));
 
-  expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
+  // expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
@@ -155,10 +149,19 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
   expectStackChange(vm.stack, 0, 'PushDynamicComponentManager');
 });
 
-APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: positionalCount, op3: synthetic }) => {
+APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
   let stack = vm.stack;
   let names = vm.constants.getStringArray(_names);
-  ARGS.setup(stack, names, positionalCount, !!synthetic);
+
+  let positionalCount = flags >> 4;
+  let synthetic = flags & 0b1000;
+  let blockNames = [];
+
+  if (flags & 0b0100) blockNames.push('main');
+  if (flags & 0b0010) blockNames.push('else');
+  if (flags & 0b0001) blockNames.push('attrs');
+
+  ARGS.setup(stack, names, blockNames, positionalCount, !!synthetic);
   stack.push(ARGS);
 });
 
@@ -187,10 +190,16 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
     return;
   }
 
+  let blocks = args.blocks.values;
+  let blockNames = args.blocks.names;
   let preparedArgs = manager.prepareArgs(state, args);
 
   if (preparedArgs) {
     args.clear();
+
+    for (let i = 0; i < blocks.length; i++) {
+      stack.push(blocks[i]);
+    }
 
     let { positional, named } = preparedArgs;
 
@@ -206,12 +215,10 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
       stack.push(named[names[i]]);
     }
 
-    args.setup(stack, names, positionalCount, true);
+    args.setup(stack, names, blockNames, positionalCount, true);
   }
 
   stack.push(args);
-
-  // TODO: Compute the expected stack change correctly
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
@@ -238,11 +245,6 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   if (!isConstTag(tag)) {
     vm.updateWith(new UpdateComponentOpcode(tag, state, manager, dynamicScope));
   }
-});
-
-APPEND_OPCODES.add(Op.PopArgs, (vm) => {
-  let args = check(vm.stack.pop(), CheckArguments);
-  args.clear();
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
@@ -388,30 +390,25 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
       if (hasEval) lookup![atName] = value;
     }
 
-    args.clear();
+    let bindBlock = (symbolName: string, blockName: string) => {
+      let symbol = symbols.indexOf(symbolName);
 
-    let bindBlock = (name: string) => {
-      let symbol = symbols.indexOf(name);
-      let handle = check(stack.pop(), CheckOr(CheckOption(CheckHandle), CheckOption(CheckCompilableBlock)));
-      let blockScope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
-      let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
-
-      let block: Option<ScopeBlock> = table ? [handle!, blockScope!, table] : null;
+      let block = blocks.get(blockName);
 
       if (symbol !== -1) {
         scope.bindBlock(symbol + 1, block);
       }
 
-      if (lookup) lookup[name] = block;
+      if (lookup) lookup[symbolName] = block;
     };
 
-    bindBlock(ATTRS_BLOCK);
-    bindBlock('&inverse');
-    bindBlock('&default');
+    let blocks = args.blocks;
+    bindBlock(ATTRS_BLOCK, 'attrs');
+    bindBlock('&inverse', 'else');
+    bindBlock('&default', 'main');
 
     if (lookup) scope.bindEvalScope(lookup);
 
-    vm.pushFrame();
     vm.call(handle!);
   }
 });

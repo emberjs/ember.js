@@ -1,14 +1,18 @@
 import { EvaluationStack } from './append';
 import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
-import { Dict, Opaque, Option, unsafe } from '@glimmer/interfaces';
+import { Dict, Opaque, Option, unsafe, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference, CONSTANT_TAG } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
+import { ScopeBlock, Scope, BlockValue } from '../environment';
+import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
+import { CheckPathReference, CheckCompilableBlock, CheckScope } from '../compiled/opcodes/-debug-strip';
 
 /*
   The calling convention is:
 
-  * 0-N positional arguments at the bottom (left-to-right)
+  * 0-N block arguments at the bottom
+  * 0-N positional arguments next (left-to-right)
   * 0-N named arguments next
 */
 
@@ -53,6 +57,21 @@ export interface INamedArguments {
   capture(): ICapturedNamedArguments;
 }
 
+export interface IBlockArguments {
+  names: string[];
+  length: number;
+  has(name: string): boolean;
+  get(name: string): Option<ScopeBlock>;
+  capture(): ICapturedBlockArguments;
+}
+
+export interface ICapturedBlockArguments {
+  names: string[];
+  length: number;
+  has(name: string): boolean;
+  get(name: string): Option<ScopeBlock>;
+}
+
 export interface ICapturedNamedArguments extends VersionedPathReference<Dict<Opaque>> {
   tag: Tag;
   map: Dict<VersionedPathReference<Opaque>>;
@@ -68,28 +87,35 @@ export class Arguments implements IArguments {
   private stack: EvaluationStack = null as any;
   public positional = new PositionalArguments();
   public named = new NamedArguments();
+  public blocks = new BlockArguments();
 
-  setup(stack: EvaluationStack, names: string[], positionalCount: number, synthetic: boolean) {
+  setup(stack: EvaluationStack, names: string[], blockNames: string[], positionalCount: number, synthetic: boolean) {
     this.stack = stack;
 
     /*
-           | ... | positional  | named |
-           | ... | p0 p1 p2 p3 | n0 n1 |
-     index | ... | 4  5  6  7  | 8  9  |
-                   ^             ^  ^
-                 pbase       nbase  sp
+           | ... | blocks      | positional  | named |
+           | ... | b0    b1    | p0 p1 p2 p3 | n0 n1 |
+     index | ... | 4/5/6 7/8/9 | 10 11 12 13 | 14 15 |
+                   ^             ^             ^  ^
+                 bbase         pbase       nbase  sp
     */
 
-    let named = this.named as NamedArguments;
+    let named = this.named;
     let namedCount = names.length;
     let namedBase  = stack.sp - namedCount + 1;
 
     named.setup(stack, namedBase, namedCount, names, synthetic);
 
-    let positional = this.positional as PositionalArguments;
+    let positional = this.positional;
     let positionalBase = namedBase - positionalCount;
 
     positional.setup(stack, positionalBase, positionalCount);
+
+    let blocks = this.blocks;
+    let blocksCount = blockNames.length;
+    let blocksBase = positionalBase - (blocksCount * 3);
+
+    blocks.setup(stack, blocksBase, blocksCount, blockNames);
   }
 
   get tag(): Tag {
@@ -97,11 +123,11 @@ export class Arguments implements IArguments {
   }
 
   get base(): number {
-    return this.positional.base;
+    return this.blocks.base;
   }
 
   get length(): number {
-    return this.positional.length + this.named.length;
+    return this.positional.length + this.named.length + (this.blocks.length * 3);
   }
 
   at<T extends VersionedPathReference<Opaque>>(pos: number): T {
@@ -110,14 +136,15 @@ export class Arguments implements IArguments {
 
   realloc(offset: number) {
     if (offset > 0) {
-      let { positional, named, stack, base, length } = this;
-      let newBase = base + offset;
+      let { positional, named, stack } = this;
+      let newBase = positional.base + offset;
+      let length = positional.length + named.length;
 
       for(let i=length-1; i>=0; i--) {
-        stack.set(stack.get(i, base), i, newBase);
+        stack.set(stack.get(i, positional.base), i, newBase);
       }
 
-      positional.base = newBase;
+      positional.base += offset;
       named.base += offset;
       stack.sp += offset;
     }
@@ -180,7 +207,7 @@ export class PositionalArguments implements IPositionalArguments {
       return UNDEFINED_REFERENCE as unsafe as T;
     }
 
-    return stack.get<T>(position, base);
+    return check(stack.get(position, base), CheckPathReference) as T;
   }
 
   capture(): ICapturedPositionalArguments {
@@ -439,6 +466,95 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
     }
 
     return out;
+  }
+}
+
+export class BlockArguments implements IBlockArguments {
+  private stack: EvaluationStack;
+  private internalValues: Option<VMHandle[]> = null;
+
+  public internalTag: Option<Tag> = null;
+  public names: string[] = EMPTY_ARRAY;
+
+  public length = 0;
+  public base = 0;
+
+  setup(stack: EvaluationStack, base: number, length: number, names: string[]) {
+    this.stack = stack;
+    this.names = names;
+    this.base = base;
+    this.length = length;
+
+    if (length === 0) {
+      this.internalTag = CONSTANT_TAG;
+      this.internalValues = EMPTY_ARRAY;
+    } else {
+      this.internalTag = null;
+      this.internalValues = null;
+    }
+  }
+
+  get values(): BlockValue[] {
+    let values = this.internalValues;
+
+    if (!values) {
+      let { base, length, stack } = this;
+      values = this.internalValues = stack.slice<VMHandle>(base, base + length * 3);
+    }
+
+    return values;
+  }
+
+  has(name: string): boolean {
+    return this.names!.indexOf(name) !== -1;
+  }
+
+  get(name: string): Option<ScopeBlock> {
+    let { base, stack, names } = this;
+
+    let idx = names!.indexOf(name);
+
+    if (names!.indexOf(name) === -1) {
+      return null;
+    }
+
+    let table = check(stack.get(idx * 3, base), CheckOption(CheckBlockSymbolTable));
+    let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
+    let handle = check(stack.get(idx * 3 + 2, base), CheckOption(CheckOr(CheckHandle, CheckCompilableBlock)));
+
+    return handle === null ? null : [handle, scope!, table!];
+  }
+
+  capture(): ICapturedBlockArguments {
+    return new CapturedBlockArguments(this.names, this.values);
+  }
+
+}
+
+class CapturedBlockArguments implements ICapturedBlockArguments {
+  public length: number;
+
+  constructor(
+    public names: string[],
+    public values: BlockValue[]
+  ) {
+    this.length = names.length;
+  }
+
+  has(name: string): boolean {
+    return this.names.indexOf(name) !== -1;
+  }
+
+  get(name: string): Option<ScopeBlock> {
+    let idx = this.names.indexOf(name);
+
+    if (idx === -1) return null;
+
+    return [
+      this.values[idx * 3 + 2] as VMHandle,
+      this.values[idx * 3 + 1] as Scope,
+      this.values[idx * 3] as BlockSymbolTable
+    ];
   }
 }
 
