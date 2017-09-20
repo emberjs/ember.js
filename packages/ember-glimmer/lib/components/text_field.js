@@ -70,6 +70,7 @@ export default Component.extend(TextSupport, {
     'inputmode',
     'lang',
     'list',
+    'type', // needs to be before min and max. See #15675
     'max',
     'min',
     'multiple',
@@ -77,7 +78,6 @@ export default Component.extend(TextSupport, {
     'pattern',
     'size',
     'step',
-    'type',
     'value',
     'width'
   ],
