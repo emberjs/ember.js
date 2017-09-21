@@ -14,7 +14,8 @@
     "@glimmer/node": "^0.29.0",
     "@glimmer/opcode-compiler": "^0.29.0",
     "@glimmer/program": "^0.29.0",
-    "@glimmer/bundle-compiler": "^0.29.0"
+    "@glimmer/bundle-compiler": "^0.29.0",
+    "simple-html-tokenizer": "^0.4.1"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
