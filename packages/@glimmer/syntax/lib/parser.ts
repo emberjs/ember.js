@@ -44,25 +44,25 @@ export class Parser {
   constructor(source: string, options: Object = {}) {
     this.options = options;
 
-    this.tokenizer['states'].tagOpen = function() {
+    this.tokenizer.states.tagOpen = function(this: EventedTokenizer) {
       let char = this.consume();
       if (char === "!") {
-        this.state = 'markupDeclaration';
+        this['state'] = 'markupDeclaration';
       } else if (char === "/") {
-        this.state = 'endTagOpen';
+        this['state'] = 'endTagOpen';
       } else if (/[A-Za-z]/.test(char)) {
-        this.state = 'tagName';
-        this.delegate.beginStartTag();
-        this.delegate.appendToTagName(char);
+        this['state'] = 'tagName';
+        this['delegate'].beginStartTag();
+        this['delegate'].appendToTagName(char);
       }
     };
 
-    this.tokenizer['states'].endTagOpen = function () {
+    this.tokenizer.states.endTagOpen = function(this: EventedTokenizer) {
       let char = this.consume();
       if (/[A-Za-z]/.test(char)) {
-        this.state = 'tagName';
-        this.delegate.beginEndTag();
-        this.delegate.appendToTagName(char);
+        this['state'] = 'tagName';
+        this['delegate'].beginEndTag();
+        this['delegate'].appendToTagName(char);
       }
     };
 
