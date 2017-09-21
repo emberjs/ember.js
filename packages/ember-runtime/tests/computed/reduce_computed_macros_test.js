@@ -1469,6 +1469,34 @@ QUnit.test('max recomputes when the current max is removed', function() {
   equal(obj.get('max'), 1, 'max is recomputed when the current max is removed');
 });
 
+QUnit.test('max returns a Date type when all inputs are dates', function() {
+  var items = obj.get('items');
+  items.removeObject(1);
+  items.removeObject(2);
+  items.removeObject(3);
+
+  var date1 = new Date('09 Jul 2017');
+  var date2 = new Date('10 Sep 2016');
+  var date3 = new Date('11 Aug 2016');
+  var date4 = new Date('10 Aug 2016');
+
+  items.pushObject(date1);
+  items.pushObject(date2);
+  items.pushObject(date3);
+  items.pushObject(date4);
+
+  ok(obj.get('max') instanceof Date, 'max of dates returns a Date instance');
+  equal(obj.get('max').getTime(), date1.getTime(), 'max of dates has a correct value');
+
+  items.removeObject(date1);
+
+  equal(obj.get('max').getTime(), date2.getTime(), 'max of dates updates its value when the maximum changes');
+
+  items.removeObject(date4);
+
+  equal(obj.get('max').getTime(), date2.getTime(), 'max of dates does not update what the non maximal date is removed');
+});
+
 QUnit.module('min', {
   setup() {
     obj = EmberObject.extend({
@@ -1512,6 +1540,34 @@ QUnit.test('min recomputes when the current min is removed', function() {
   items.removeObject(1);
 
   equal(obj.get('min'), 3, 'min is recomputed when the current min is removed');
+});
+
+QUnit.test('min returns a Date type when all inputs are dates', function() {
+  var items = obj.get('items');
+  items.removeObject(1);
+  items.removeObject(2);
+  items.removeObject(3);
+
+  var date1 = new Date('10 Aug 2016');
+  var date2 = new Date('11 Aug 2016');
+  var date3 = new Date('10 Sep 2016');
+  var date4 = new Date('09 Jul 2017');
+
+  items.pushObject(date1);
+  items.pushObject(date2);
+  items.pushObject(date3);
+  items.pushObject(date4);
+
+  ok(obj.get('min') instanceof Date, 'min of dates returns a Date instance');
+  equal(obj.get('min').getTime(), date1.getTime(), 'min of dates has a correct value');
+
+  items.removeObject(date1);
+
+  equal(obj.get('min').getTime(), date2.getTime(), 'min of dates updates its value when the minimum changes');
+
+  items.removeObject(date4);
+
+  equal(obj.get('min').getTime(), date2.getTime(), 'min of dates does not update what the non minmal date is removed');
 });
 
 QUnit.module('Ember.arrayComputed - mixed sugar', {
