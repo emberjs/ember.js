@@ -41,7 +41,8 @@ import {
   WithDynamicTagName,
   WithElementHook,
   ComponentDefinition,
-  InternalComponentManager
+  InternalComponentManager,
+  Invocation
 } from '../../component/interfaces';
 import {
   CurriedComponentDefinition,
@@ -53,10 +54,11 @@ import {
   CheckReference,
   CheckArguments,
   CheckPathReference,
-  CheckComponentInstance
+  CheckComponentInstance,
+  CheckFinishedComponentInstance
 } from './-debug-strip';
 
-const ARGS = new Arguments();
+export const ARGS = new Arguments();
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -71,18 +73,24 @@ export interface ComponentInstance {
   definition: ComponentDefinition;
   manager: InternalComponentManager;
   state: ComponentInstanceState;
+  handle: VMHandle;
+  table: ProgramSymbolTable;
 }
 
 export interface InitialComponentInstance {
   definition: PartialComponentDefinition;
   manager: Option<InternalComponentManager>;
   state: null;
+  handle: Option<VMHandle>;
+  table: Option<ProgramSymbolTable>;
 }
 
 export interface PopulatedComponentInstance {
   definition: ComponentDefinition;
   manager: InternalComponentManager;
   state: null;
+  handle: Option<VMHandle>;
+  table: Option<ProgramSymbolTable>;
 }
 
 export interface PartialComponentDefinition {
@@ -121,7 +129,7 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   assert(!!definition, `Missing component for ${handle} (TODO: env.specifierForHandle)`);
 
   let { manager } = definition;
-  vm.stack.push({ definition, manager, state: null });
+  vm.stack.push({ definition, manager, state: null, handle: null, table: null });
 
   expectStackChange(vm.stack, 1, 'PushComponentDefinition');
 });
@@ -144,7 +152,7 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
     throw unreachable();
   }
 
-  stack.push({ definition, manager: null, state: null });
+  stack.push({ definition, manager: null, state: null, handle: null, table: null });
 
   expectStackChange(vm.stack, 0, 'PushDynamicComponentManager');
 });
@@ -358,16 +366,44 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   stack.push(invoke.handle);
 });
 
-// Dynamic Invocation Only
-APPEND_OPCODES.add(Op.InvokeComponentLayout, vm => {
+APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
+  let definition = vm.stack.pop<ComponentDefinition>();
+  let invocation = vm.stack.pop<Invocation>();
+
+  let state: PopulatedComponentInstance = {
+    definition,
+    manager: definition.manager,
+    state: null,
+    handle: invocation.handle,
+    table: invocation.symbolTable
+  };
+
+  vm.loadValue(register, state);
+});
+
+APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckHandle);
-  let { symbols, hasEval } = check(stack.pop(), CheckProgramSymbolTable);
+  let table = check(stack.pop(), CheckProgramSymbolTable);
+
+  let state = check(vm.fetchValue(_state), CheckComponentInstance);
+
+  state.handle = handle;
+  state.table = table;
+});
+
+// Dynamic Invocation Only
+APPEND_OPCODES.add(Op.InvokeComponentLayout, (vm, { op1: _state }) => {
+  let { stack } = vm;
+  let { handle, table: { symbols, hasEval } } =
+    check(vm.fetchValue(_state), CheckFinishedComponentInstance);
 
   {
+    let self = check(stack.pop(), CheckPathReference);
+
     let scope = vm.pushRootScope(symbols.length + 1, true);
-    scope.bindSelf(check(stack.pop(), CheckPathReference));
+    scope.bindSelf(self);
 
     let args = check(vm.stack.pop(), CheckArguments);
 

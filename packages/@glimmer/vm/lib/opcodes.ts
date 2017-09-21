@@ -656,6 +656,17 @@ export const enum Op {
    * Operation: Test whether a reference contains a component definition.
    *
    * Format:
+   *   (Main state:register)
+   * Operand Stack:
+   *   ..., Invocation, ComponentDefinition →
+   *   ...
+   */
+  Main,
+
+  /**
+   * Operation: Test whether a reference contains a component definition.
+   *
+   * Format:
    *   (IsComponent)
    * Operand Stack:
    *   ..., VersionedPathReference<Opaque> →
@@ -738,7 +749,7 @@ export const enum Op {
   /**
    * Operation: ...
    * Format:
-   *   (PrepareArgs state:u32)
+   *   (PrepareArgs state:register)
    * Operand Stack:
    *   ... →
    *   ...
@@ -748,7 +759,7 @@ export const enum Op {
   /**
    * Operation: Create the component and push it onto the stack.
    * Format:
-   *   (CreateComponent flags:u32 state:u32)
+   *   (CreateComponent flags:u32 state:register)
    *   ... →
    *   ...
    * Description:
@@ -764,7 +775,7 @@ export const enum Op {
    * Operation: Register a destructor for the current component
    *
    * Format:
-   *   (RegisterComponentDestructor state:u32)
+   *   (RegisterComponentDestructor state:register)
    * Operand Stack:
    *   ... →
    *   ...
@@ -786,7 +797,7 @@ export const enum Op {
    * Operation: Push the component's `self` onto the stack.
    *
    * Format:
-   *   (GetComponentSelf state:u32)
+   *   (GetComponentSelf state:register)
    * Operand Stack:
    *   ... →
    *   ..., VersionedPathReference
@@ -797,7 +808,7 @@ export const enum Op {
    * Operation: Push the component's `self` onto the stack.
    *
    * Format:
-   *   (GetComponentTagName state:u32)
+   *   (GetComponentTagName state:register)
    * Operand Stack:
    *   ... →
    *   ..., Option<string>
@@ -808,7 +819,7 @@ export const enum Op {
    * Operation: Get the component layout from the manager.
    *
    * Format:
-   *   (GetComponentLayout state:u32)
+   *   (GetComponentLayout state:register)
    * Operand Stack:
    *   ... →
    *   ..., ProgramSymbolTable, Handle
@@ -816,12 +827,25 @@ export const enum Op {
   GetComponentLayout,
 
   /**
+   * Operation:
+   *   Populate the state register with the layout currently
+   *   on the stack.
+   *
+   * Format:
+   *   (PopulateLayout state:register)
+   * Operand Stack:
+   *   ..., ProgramSymbolTable, Handle →
+   *   ...
+   */
+  PopulateLayout,
+
+  /**
    * Operation: Invoke the layout returned by the manager.
    *
    * Format:
-   *   (InvokeComponentLayout)
+   *   (InvokeComponentLayout state:register)
    * Operand Stack:
-   *   ..., ProgramSymbolTable, Handle →
+   *   ... →
    *   ...
    */
   InvokeComponentLayout,
@@ -852,7 +876,7 @@ export const enum Op {
    * Operation: Invoke didCreateElement on the current component manager
    *
    * Format:
-   *   (DidCreateElement state:u32)
+   *   (DidCreateElement state:register)
    * Operand Stack:
    *   ... →
    *   ...
@@ -863,7 +887,7 @@ export const enum Op {
    * Operation: Invoke didRenderLayout on the current component manager
    *
    * Format:
-   *   (DidRenderLayout state:u32)
+   *   (DidRenderLayout state:register)
    * Operand Stack:
    *   ..., →
    *   ...
