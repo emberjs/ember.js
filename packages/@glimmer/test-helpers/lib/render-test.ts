@@ -736,11 +736,11 @@ export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
   new(env?: Environment): Delegate;
 }
 
-export interface RenderTestConstructor<D extends RenderDelegate, T extends RenderTest> {
+export interface RenderTestConstructor<D extends RenderDelegate, T> {
   new(delegate: D): T;
 }
 
-export function module<T extends RenderTest> (
+export function module<T> (
   name: string,
   klass: RenderTestConstructor<RenderDelegate, T>,
   options = { componentModule: false }
@@ -748,7 +748,7 @@ export function module<T extends RenderTest> (
   return rawModule(name, klass, LazyRenderDelegate, options);
 }
 
-export function rawModule<D extends RenderDelegate, T extends RenderTest> (
+export function rawModule<D extends RenderDelegate, T> (
   name: string,
   klass: RenderTestConstructor<D, T>,
   Delegate: RenderDelegateConstructor<D>,
@@ -756,7 +756,7 @@ export function rawModule<D extends RenderDelegate, T extends RenderTest> (
 ): void {
   if (options.componentModule) {
     if (shouldRunTest<D>(Delegate)) {
-      componentModule(name, klass, Delegate);
+      componentModule(name, klass as any as RenderTestConstructor<D, RenderTest>, Delegate);
     }
   } else {
     QUnit.module(`[NEW] ${name}`);

@@ -1,5 +1,5 @@
 
-import { Checker, CheckInstanceof, CheckFunction, CheckInterface, CheckOpaque, CheckBlockSymbolTable, wrap } from "@glimmer/debug";
+import { Checker, CheckInstanceof, CheckFunction, CheckInterface, CheckOpaque, CheckBlockSymbolTable, CheckProgramSymbolTable, CheckHandle, wrap } from "@glimmer/debug";
 import { Tag, TagWrapper, VersionedPathReference, Reference } from "@glimmer/reference";
 import { Arguments } from '../../vm/arguments';
 import { ComponentInstance } from './component';
@@ -23,7 +23,10 @@ export const CheckComponentManager: Checker<ComponentManager> =
   CheckInterface({ getCapabilities: CheckFunction });
 
 export const CheckComponentInstance: Checker<ComponentInstance> =
-  CheckInterface({ definition: CheckOpaque, state: CheckOpaque });
+  CheckInterface({ definition: CheckOpaque, state: CheckOpaque, handle: CheckOpaque, table: CheckOpaque });
+
+export const CheckFinishedComponentInstance: Checker<ComponentInstance> =
+  CheckInterface({ definition: CheckOpaque, state: CheckOpaque, handle: CheckHandle, table: CheckProgramSymbolTable });
 
 export const CheckCompilableBlock: Checker<ICompilableTemplate<BlockSymbolTable>> =
   CheckInterface({ compile: CheckFunction, symbolTable: CheckBlockSymbolTable });
