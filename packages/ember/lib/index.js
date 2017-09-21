@@ -580,6 +580,7 @@ Ember.ApplicationInstance = application.ApplicationInstance;
 Ember.Engine = application.Engine;
 Ember.EngineInstance = application.EngineInstance;
 Ember.DefaultResolver = Ember.Resolver = application.Resolver;
+Ember.getEngineParent = application.getEngineParent;
 
 runLoadHooks('Ember.Application', application.Application);
 
