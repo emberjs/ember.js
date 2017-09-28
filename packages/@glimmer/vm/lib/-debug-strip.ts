@@ -464,7 +464,7 @@ OPCODE_METADATA(Op.CloseElement, {
 
 OPCODE_METADATA(Op.PushRemoteElement, {
   name: 'PushRemoteElement',
-  stackChange: -2
+  stackChange: -3
 });
 
 OPCODE_METADATA(Op.PopRemoteElement, {
