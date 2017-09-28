@@ -45,6 +45,14 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
 
     return super.__appendText(string);
   }
+
+  pushRemoteElement(element: Simple.Element, cursorId: string,  nextSibling: Option<Simple.Node> = null) {
+    let { dom } = this;
+    let script = dom.createElement('script');
+    script.setAttribute('id', cursorId);
+    dom.insertBefore(element, script, nextSibling);
+    super.pushRemoteElement(element, cursorId, nextSibling);
+  }
 }
 
 export function serializeBuilder(env: Environment, cursor: { element: Simple.Element, nextSibling: Option<Simple.Node> }) {
