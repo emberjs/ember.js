@@ -627,7 +627,7 @@ export class IfUnlessHelperTest extends TogglingHelperConditionalsTest {}
 
 applyMixins(IfUnlessHelperTest, ...IfUnlessWithTestCases);
 
-// Testing behaviors shared across the "toggling" syntatical constructs,
+// Testing behaviors shared across the "toggling" syntactical constructs,
 // i.e. {{#if}}, {{#unless}}, {{#with}}, {{#each}} and {{#each-in}}
 export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 

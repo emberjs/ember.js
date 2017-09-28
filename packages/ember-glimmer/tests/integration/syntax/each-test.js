@@ -929,7 +929,7 @@ moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTes
 });
 
 moduleFor('Syntax test: {{#each}} with sparse arrays', class extends RenderingTest {
-  ['@test it should itterate over holes'](assert) {
+  ['@test it should iterate over holes'](assert) {
     let sparseArray = [];
     sparseArray[3] = 'foo';
     sparseArray[4] = 'bar';

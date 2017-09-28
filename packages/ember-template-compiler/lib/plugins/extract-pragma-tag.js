@@ -4,7 +4,7 @@ export default function extractPragmaTag(env) {
   let { meta } = env;
 
   return {
-    name: 'exract-pragma-tag',
+    name: 'extract-pragma-tag',
 
     visitors: {
       MustacheStatement: {

@@ -38,7 +38,7 @@ QUnit.test('normalization', function() {
   equal(registry.normalize('template:blog/posts_index'), 'template:blog/posts_index');
 });
 
-QUnit.test('normalization is indempotent', function() {
+QUnit.test('normalization is idempotent', function() {
   let examples = ['controller:posts', 'controller:posts.post.index', 'controller:blog/posts.post_index', 'template:foo_bar'];
 
   examples.forEach((example) => {

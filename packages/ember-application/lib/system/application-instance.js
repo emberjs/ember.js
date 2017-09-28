@@ -245,7 +245,7 @@ const ApplicationInstance = EngineInstance.extend({
         return this;
       } else {
         return new RSVP.Promise((resolve) => {
-          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thennable)
+          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thenable)
           // which resolves once the transition is completed, but the transition completion only queues up
           // a scheduled revalidation (into the `render` queue) in the Renderer.
           //

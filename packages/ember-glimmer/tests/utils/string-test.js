@@ -31,7 +31,7 @@ moduleFor('SafeString isHTMLSafe', class extends TestCase {
     this.assert.ok(isHTMLSafe(safeString));
   }
 
-  ['@test isHTMLSafe should not detect SafeString on primatives']() {
+  ['@test isHTMLSafe should not detect SafeString on primitives']() {
     this.assert.notOk(isHTMLSafe('Hello World'));
     this.assert.notOk(isHTMLSafe({}));
     this.assert.notOk(isHTMLSafe([]));

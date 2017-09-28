@@ -27,7 +27,7 @@ function copyNull(obj) {
   let output = Object.create(null);
 
   for (let prop in obj) {
-    // hasOwnPropery is not needed because obj is Object.create(null);
+    // hasOwnProperty is not needed because obj is Object.create(null);
     output[prop] = obj[prop];
   }
 

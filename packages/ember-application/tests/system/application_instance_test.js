@@ -46,7 +46,7 @@ QUnit.test('properties (and aliases) are correctly assigned for accessing the co
 
   // stub with a no-op to keep deprecation test simple
   appInstance.__container__.lookup = function() {
-    ok(true, '#loookup alias is called correctly');
+    ok(true, '#lookup alias is called correctly');
   };
 
   ok(typeof appInstance.registry.register === 'function', '#registry.register is available as a function');

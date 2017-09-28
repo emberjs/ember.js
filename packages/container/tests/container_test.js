@@ -587,9 +587,9 @@ QUnit.test('#factoryFor options passed to create clobber injections', (assert) =
 
   let componentFactory = container.factoryFor('component:foo-bar');
 
-  let instrance = componentFactory.create({ ajax: 'fetch' });
+  let instance = componentFactory.create({ ajax: 'fetch' });
 
-  assert.equal(instrance.ajax, 'fetch');
+  assert.equal(instance.ajax, 'fetch');
 });
 
 QUnit.test('#factoryFor does not add properties to the object being instantiated when _initFactory is present', function(assert) {

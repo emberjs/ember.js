@@ -273,7 +273,7 @@
   ```
 
   See [LinkComponent](/api/classes/Ember.LinkComponent.html) for a
-  complete list of overrideable properties. Be sure to also
+  complete list of overridable properties. Be sure to also
   check out inherited properties of `LinkComponent`.
 
   ### Overriding Application-wide Defaults

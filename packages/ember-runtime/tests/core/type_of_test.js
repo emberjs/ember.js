@@ -10,7 +10,7 @@ QUnit.test('Ember.typeOf', function() {
 
   let mockedDate  = new MockedDate();
   let date        = new Date();
-  let error       = new Error('boum');
+  let error       = new Error('boom');
   let object      = { a: 'b' };
   let a = null;
   let arr = [1, 2, 3];

@@ -294,7 +294,7 @@ class LifeCycleHooksTest extends RenderingTest {
     this.render(invoke('the-top', { twitter: expr('twitter') }), { twitter: '@tomdale' });
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
-    this.assertRegisteredViews('intial render');
+    this.assertRegisteredViews('initial render');
 
     let topAttrs = { twitter: '@tomdale' };
     let middleAttrs = { name: 'Tom Dale' };
@@ -535,7 +535,7 @@ class LifeCycleHooksTest extends RenderingTest {
     });
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
-    this.assertRegisteredViews('intial render');
+    this.assertRegisteredViews('initial render');
 
     this.assertHooks({
       label: 'after initial render',
@@ -849,7 +849,7 @@ class LifeCycleHooksTest extends RenderingTest {
     this.render(invoke('the-top', { twitter: expr('twitter') }), { twitter: '@tomdale' });
 
     this.assertText('Top: Middle: Bottom: @tomdale');
-    this.assertRegisteredViews('intial render');
+    this.assertRegisteredViews('initial render');
 
     this.assertHooks({
       label: 'after initial render',
@@ -974,7 +974,7 @@ class LifeCycleHooksTest extends RenderingTest {
     // In this case, because the attrs are passed down, all child components are invoked.
 
     this.assertHooks({
-      label: 'after no-op rernder (root)',
+      label: 'after no-op rerender (root)',
       interactive: [],
       nonInteractive: []
     });
@@ -1033,7 +1033,7 @@ class LifeCycleHooksTest extends RenderingTest {
     });
 
     this.assertText('Item: 1Item: 2Item: 3Item: 4Item: 5');
-    this.assertRegisteredViews('intial render');
+    this.assertRegisteredViews('initial render');
 
     let initialHooks = (count) => {
       let ret = [
@@ -1400,7 +1400,7 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
       }
     });
 
-    let PartentTemplate = strip`
+    let ParentTemplate = strip`
       {{yield}}
       <ul>
         {{#nested-component nestedId=(concat itemId '-A')}}A{{/nested-component}}
@@ -1424,7 +1424,7 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
 
     this.registerComponent('parent-component', {
       ComponentClass: ParentComponent,
-      template: PartentTemplate
+      template: ParentTemplate
     });
 
     this.registerComponent('nested-component', {

@@ -88,7 +88,7 @@
   for semantic clarity as it allows you to retain default scope or to reference a property from another
   `{{with}}` block.
 
-  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0`, `NaN` or
+  If the aliased property is "falsy", for example: `false`, `undefined` `null`, `""`, `0`, `NaN` or
   an empty array, the block will not be rendered.
 
   ```handlebars

@@ -217,7 +217,7 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
 
         actions: {
           derp(arg1) {
-            assert.ok(true, 'action called on action-delgate');
+            assert.ok(true, 'action called on action-delegate');
             assert.equal(arg1, 'something special', 'argument passed through properly');
           }
         }
@@ -369,7 +369,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
       ComponentClass: Component.extend({
         actions: {
           poke() {
-            assert.ok(true, 'parent component handled the aciton');
+            assert.ok(true, 'parent component handled the action');
           }
         }
       }),

@@ -496,7 +496,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
   /**
     Returns a string representation which attempts to provide more information
-    than Javascript's `toString` typically does, in a generic way for all Ember
+    than JavaScript's `toString` typically does, in a generic way for all Ember
     objects.
 
     ```javascript

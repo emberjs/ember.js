@@ -131,7 +131,7 @@ function buildSyntax(type: string, params: any[], hash: any, builder: any) {
 
   Internally, `{{input type="checkbox"}}` creates an instance of `Checkbox`, passing
   arguments from the helper to `Checkbox`'s `create` method. You can extend the
-  capablilties of checkbox inputs in your applications by reopening this class. For example,
+  capabilities of checkbox inputs in your applications by reopening this class. For example,
   if you wanted to add a css class to all checkboxes in your application:
 
   ```javascript

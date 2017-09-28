@@ -399,7 +399,7 @@ const Application = Engine.extend({
     This is orthogonal to autoboot: the deprecated instance needs to
     be created at Application construction (not boot) time to expose
     App.__container__. If autoboot sees that this instance exists,
-    it will continue booting it to avoid doing unncessary work (as
+    it will continue booting it to avoid doing unnecessary work (as
     opposed to building a new instance at boot time), but they are
     otherwise unrelated.
 
@@ -811,7 +811,7 @@ const Application = Engine.extend({
     Ember will boot a default instance for your Application on "DOM ready".
     However, you can customize this behavior by disabling `autoboot`.
 
-    For example, this allows you to render a miniture demo of your application
+    For example, this allows you to render a miniature demo of your application
     into a specific area on your marketing website:
 
     ```javascript

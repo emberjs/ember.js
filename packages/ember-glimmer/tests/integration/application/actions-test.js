@@ -55,7 +55,7 @@ moduleFor('Rendering test: non-interactive actions', class extends RenderingTest
     return { isInteractive: false };
   }
 
-  [`@test doesn't attatch actions`](assert) {
+  [`@test doesn't attach actions`](assert) {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         actions: {

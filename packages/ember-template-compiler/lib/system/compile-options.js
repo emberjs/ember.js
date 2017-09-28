@@ -15,8 +15,8 @@ export default function compileOptions(_options) {
   if (!options.plugins) {
     options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
   } else {
-    let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
-    let pluginsToAdd = potententialPugins.filter((plugin) => {
+    let potentialPlugins = [...USER_PLUGINS, ...PLUGINS];
+    let pluginsToAdd = potentialPlugins.filter((plugin) => {
       return options.plugins.ast.indexOf(plugin) === -1;
     });
     options.plugins.ast = options.plugins.ast.slice().concat(pluginsToAdd);

@@ -358,7 +358,7 @@ export const BOUNDS = symbol('BOUNDS');
   ```
 
   Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
-  mapped, since `:` is not a valid character for properties in Javascript:
+  mapped, since `:` is not a valid character for properties in JavaScript:
 
   ```app/components/my-use.js
   import Component from '@ember/component';

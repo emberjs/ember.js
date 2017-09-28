@@ -10,7 +10,7 @@ QUnit.module('Lazy Loading', {
   }
 });
 
-QUnit.test('if a load hook is registered, it is executed when runLoadHooks are exected', function() {
+QUnit.test('if a load hook is registered, it is executed when runLoadHooks are executed', function() {
   let count = 0;
 
   run(function() {

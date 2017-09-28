@@ -267,7 +267,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertText('HIBAR');
   }
 
-  ['@test outletState can pass through user code (liquid-fire initimate API) ']() {
+  ['@test outletState can pass through user code (liquid-fire intimate API) ']() {
     this.registerTemplate('outer', 'A{{#-with-dynamic-vars outletState=(identity (-get-dynamic-var "outletState"))}}B{{outlet}}D{{/-with-dynamic-vars}}E');
     this.registerTemplate('inner', 'C');
 

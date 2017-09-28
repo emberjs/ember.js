@@ -45,7 +45,7 @@ testWithDefault('replacing computed property with regular val', function(get, se
   equal(get(new Subclass(), 'foo'), 'BAR');
 });
 
-testWithDefault('complex depndent keys', function(get, set) {
+testWithDefault('complex dependent keys', function(get, set) {
   let MyClass = EmberObject.extend({
 
     init() {

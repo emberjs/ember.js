@@ -665,7 +665,7 @@ function resolve(registry, normalizedName, options) {
     // and source into the full normalizedName
     let expandedNormalizedName = registry.expandLocalLookup(normalizedName, options);
 
-    // if expandLocalLookup returns falsey, we do not support local lookup
+    // if expandLocalLookup returns falsy, we do not support local lookup
     if (!EMBER_MODULE_UNIFICATION) {
       if (!expandedNormalizedName) {
         return;

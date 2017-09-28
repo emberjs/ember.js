@@ -305,14 +305,14 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
     );
   }
 
-  ['@test The {{link-to}} helper supports setting replace=boundFalseyThing'](assert) {
+  ['@test The {{link-to}} helper supports setting replace=boundFalsyThing'](assert) {
     this.addTemplate('index', `
       <h3>Home</h3>
-      {{#link-to 'about' id='about-link' replace=boundFalseyThing}}About{{/link-to}}
+      {{#link-to 'about' id='about-link' replace=boundFalsyThing}}About{{/link-to}}
     `);
 
     this.add('controller:index', Controller.extend({
-      boundFalseyThing: false
+      boundFalsyThing: false
     }));
 
     this.visit('/');
@@ -615,10 +615,10 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(hidden, 0, "The link didn't bubble");
   }
 
-  [`@test The {{link-to}} helper supports bubbles=boundFalseyThing`](assert) {
+  [`@test The {{link-to}} helper supports bubbles=boundFalsyThing`](assert) {
     this.addTemplate('about', `
       <div {{action 'hide'}}>
-        {{#link-to 'about.contact' id='about-contact' bubbles=boundFalseyThing}}
+        {{#link-to 'about.contact' id='about-contact' bubbles=boundFalsyThing}}
           About
         {{/link-to}}
       </div>
@@ -627,7 +627,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
     this.add('controller:about', Controller.extend({
-      boundFalseyThing: false
+      boundFalsyThing: false
     }));
 
     this.router.map(function() {
@@ -792,17 +792,17 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault');
   }
 
-  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](assert) {
+  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalsyThing' is passed as an option`](assert) {
     this.router.map(function() {
       this.route('about');
     });
 
     this.addTemplate('index', `
-      {{#link-to 'about' id='about-link' preventDefault=boundFalseyThing}}About{{/link-to}}
+      {{#link-to 'about' id='about-link' preventDefault=boundFalsyThing}}About{{/link-to}}
     `);
 
     this.add('controller:index', Controller.extend({
-      boundFalseyThing: false
+      boundFalsyThing: false
     }));
 
     this.visit('/');
