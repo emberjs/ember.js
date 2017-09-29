@@ -8,7 +8,9 @@ import {
   LowLevelVM,
   TemplateIterator,
   ComponentManager,
-  clientBuilder
+  clientBuilder,
+  ElementBuilder,
+  Cursor
 } from '@glimmer/runtime';
 import { LookupMap, specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
@@ -79,6 +81,10 @@ export default class EagerRenderDelegate implements RenderDelegate {
   private registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
     this.modules.register(name, 'helper', { default: helper });
     return helper;
+  }
+
+  getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+    return clientBuilder(env, cursor);
   }
 
   resetEnv() {
@@ -199,7 +205,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let { env } = this;
 
     let cursor = { element, nextSibling: null };
-    let builder = clientBuilder(env, cursor);
+    let builder = this.getElementBuilder(env, cursor);
     let self = new UpdatableReference(context);
     let dynamicScope = new TestDynamicScope();
     let resolver = new EagerRuntimeResolver(compiler.getSpecifierMap(), this.modules, this.specifiersToSymbolTable);
