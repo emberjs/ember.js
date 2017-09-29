@@ -1,6 +1,6 @@
 import { Dict, Opaque } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
-import { RenderResult, clientBuilder } from '@glimmer/runtime';
+import { RenderResult, clientBuilder, Environment, Cursor, ElementBuilder } from '@glimmer/runtime';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import LazyTestEnvironment from './environment';
@@ -10,7 +10,7 @@ import { TestDynamicScope } from '../../../environment';
 import { ComponentTypes, ComponentKind, registerComponent, renderTemplate } from '../../../render-test';
 
 export default class LazyRenderDelegate implements RenderDelegate {
-  constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) {}
+  constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) { }
 
   resetEnv() {
     this.env = new LazyTestEnvironment();
@@ -28,13 +28,17 @@ export default class LazyRenderDelegate implements RenderDelegate {
     this.env.registerHelper(name, helper);
   }
 
+  getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+    return clientBuilder(env, cursor);
+  }
+
   renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
     let { env } = this;
     let cursor = { element, nextSibling: null };
     return renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
-      builder: clientBuilder(env, cursor),
+      builder: this.getElementBuilder(env, cursor),
       dynamicScope: new TestDynamicScope()
     });
   }

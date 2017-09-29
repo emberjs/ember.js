@@ -2,6 +2,8 @@ import { NewElementBuilder, ElementBuilder, Bounds, ConcreteBounds, Environment 
 
 import { Simple, Option } from "@glimmer/interfaces";
 
+const TEXT_NODE = 3;
+
 function currentNode(cursor: ElementBuilder | { element: Simple.Element, nextSibling: Simple.Node }): Option<Simple.Node> {
   let { element, nextSibling } = cursor;
 
@@ -39,7 +41,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
 
     if (string === '') {
       return this.__appendComment('%empty%') as any as Simple.Text;
-    } else if (current && current.nodeType === Node.TEXT_NODE) {
+    } else if (current && current.nodeType === TEXT_NODE) {
       this.__appendComment('%sep%');
     }
 

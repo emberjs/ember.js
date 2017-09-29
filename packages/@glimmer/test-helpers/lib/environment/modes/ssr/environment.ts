@@ -53,7 +53,7 @@ export class NodeEagerRenderDelegate extends EagerRenderDelegate {
 }
 
 export class AbstractNodeTest extends RenderTest {
-  private serializer: SimpleDOM.HTMLSerializer;
+  protected serializer: SimpleDOM.HTMLSerializer;
   constructor(delegate: RenderDelegate) {
     super(delegate);
     this.serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
