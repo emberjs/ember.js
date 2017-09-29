@@ -44,9 +44,11 @@ APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let elementRef = check(vm.stack.pop(), CheckReference);
   let nextSiblingRef = check(vm.stack.pop(), CheckReference);
+  let guidRef = check(vm.stack.pop(), CheckReference);
 
   let element: Simple.Element;
   let nextSibling: Option<Simple.Node>;
+  let guid = guidRef.value() as string;
 
   if (isConst(elementRef)) {
     element = check(elementRef.value(), CheckElement);
@@ -64,7 +66,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
     vm.updateWith(new Assert(cache));
   }
 
-  vm.elements().pushRemoteElement(element, nextSibling);
+  vm.elements().pushRemoteElement(element, guid, nextSibling);
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
