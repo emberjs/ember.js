@@ -5,25 +5,6 @@ import { Opaque } from "@glimmer/interfaces";
 
 export class InitialRenderSuite extends RenderTest {
   name = 'BASE';
-  isIe9PropIssues() {
-    if (typeof window === undefined) {
-      return false;
-    } else {
-      let select = document.createElement('select');
-      let option1 = document.createElement('option');
-      let option2 = document.createElement('option');
-      option1.setAttribute('selected', '');
-      select.appendChild(option1);
-      select.appendChild(option2);
-      document.body.appendChild(select);
-      let idx = select.selectedIndex;
-      option1.selected = false;
-      idx = select.selectedIndex;
-      let isSelectQuirk = idx === -1;
-      document.body.removeChild(select);
-      return isSelectQuirk;
-    }
-  }
   @test "HTML text content"() {
     this.render("content");
     this.assertHTML("content");
@@ -49,9 +30,8 @@ export class InitialRenderSuite extends RenderTest {
   }
 
   @test "HTML checked attributes"() {
-    let IE9_PROP_ISSUES = this.isIe9PropIssues() && this.name === 'rehydration';
     this.render("<input checked='checked'>");
-    this.assertHTML(`<input ${IE9_PROP_ISSUES ? '': "checked='checked'" }>`);
+    this.assertHTML(`<input checked='checked'>`);
     this.assertStableRerender();
   }
 
@@ -365,8 +345,6 @@ export class InitialRenderSuite extends RenderTest {
   }
 
   @test "Dynamic selected options"() {
-    const IE9_SELECT_QUIRK = this.isIe9PropIssues();
-
     this.render(strip`
       <select>
         <option>1</option>
@@ -374,113 +352,65 @@ export class InitialRenderSuite extends RenderTest {
         <option>3</option>
       </select>
     `, { selected: true });
-    if (IE9_SELECT_QUIRK) {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=""' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    } else {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    }
+
+    this.assertHTML(strip`
+      <select>
+        <option>1</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option>3</option>
+      </select>
+    `);
 
     let selectNode: any = this.element.childNodes[0];
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableRerender();
 
     this.rerender({ selected: false });
-    if (IE9_SELECT_QUIRK) {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=""' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    } else {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    }
+    this.assertHTML(strip`
+      <select>
+        <option>1</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option>3</option>
+      </select>
+    `);
 
     selectNode = this.element.childNodes[0];
 
-    if (IE9_SELECT_QUIRK) {
-      this.assert.equal(selectNode.selectedIndex, -1);
-    } else {
-      this.assert.equal(selectNode.selectedIndex, 0);
-    }
+    this.assert.equal(selectNode.selectedIndex, 0);
 
     this.assertStableNodes();
 
     this.rerender({ selected: '' });
 
-    if (IE9_SELECT_QUIRK) {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=""' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    } else {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    }
+    this.assertHTML(strip`
+      <select>
+        <option>1</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option>3</option>
+      </select>
+    `);
 
     selectNode = this.element.childNodes[0];
 
-    if (IE9_SELECT_QUIRK) {
-      this.assert.equal(selectNode.selectedIndex, -1);
-    } else {
-      this.assert.equal(selectNode.selectedIndex, 0);
-    }
+    this.assert.equal(selectNode.selectedIndex, 0);
 
     this.assertStableNodes();
 
     this.rerender({ selected: true });
-    if (IE9_SELECT_QUIRK) {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=""' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    } else {
-      this.assertHTML(strip`
-        <select>
-          <option>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
-          <option>3</option>
-        </select>
-      `);
-    }
+    this.assertHTML(strip`
+      <select>
+        <option>1</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
+        <option>3</option>
+      </select>
+    `);
+
     selectNode = this.element.childNodes[0];
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableNodes();
   }
 
   @test "Dynamic multi-select"() {
-    const IE9_SELECT_QUIRK = this.isIe9PropIssues();
-
     this.render(strip`
       <select multiple>
         <option>0</option>
@@ -512,27 +442,15 @@ export class InitialRenderSuite extends RenderTest {
       }
     }
 
-    if (IE9_SELECT_QUIRK) {
-      this.assertHTML(strip`
+    this.assertHTML(strip`
       <select multiple="">
         <option>0</option>
-        <option ${this.name === 'rehydration' ? ' selected=""' : ''}>1</option>
+        <option ${this.name === 'rehydration' ? ' selected=true' : ''}>1</option>
         <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
         <option>3</option>
         <option>4</option>
         <option>5</option>
       </select>`);
-    } else {
-      this.assertHTML(strip`
-        <select multiple="">
-          <option>0</option>
-          <option ${this.name === 'rehydration' ? ' selected=true' : ''}>1</option>
-          <option ${this.name === 'rehydration' ? ' selected=true' : ''}>2</option>
-          <option>3</option>
-          <option>4</option>
-          <option>5</option>
-        </select>`);
-    }
 
     this.assert.equal(selected.length, 2, 'two options are selected');
     this.assert.equal(selected[0].value, '1', 'first selected item is "1"');

@@ -1,8 +1,5 @@
 import { Bounds, ConcreteBounds } from '../bounds';
 import {
-  applyInnerHTMFix
-} from '../compat/inner-html-fix';
-import {
   applySVGInnerHTMLFix
 } from '../compat/svg-inner-html-fix';
 import {
@@ -133,7 +130,6 @@ export namespace DOM {
 
   let appliedTreeContruction = TreeConstruction;
   appliedTreeContruction = applyTextNodeMergingFix(doc, appliedTreeContruction) as typeof TreeConstruction;
-  appliedTreeContruction = applyInnerHTMFix(doc, appliedTreeContruction) as typeof TreeConstruction;
   appliedTreeContruction = applySVGInnerHTMLFix(doc, appliedTreeContruction, SVG_NAMESPACE) as typeof TreeConstruction;
 
   export const DOMTreeConstruction = appliedTreeContruction;
@@ -202,7 +198,6 @@ export function insertHTMLBefore(this: void, _useless: Simple.Element, _parent: 
 let helper = DOMChanges;
 
 helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChanges;
-helper = applyInnerHTMFix(doc, helper) as typeof DOMChanges;
 helper = applySVGInnerHTMLFix(doc, helper, SVG_NAMESPACE) as typeof DOMChanges;
 
 export default helper;
