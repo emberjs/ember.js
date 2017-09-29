@@ -12,12 +12,20 @@ let config = {
       "protocol": "tap"
      }
   },
+  "browser_args": {
+    "Chrome": [
+      '--disable-gpu',
+      '--headless',
+      '--remote-debugging-port=9222',
+      '--window-size=1440,900'
+    ]
+  },
   "launch_in_dev": [
-    "PhantomJS",
+    "Chrome",
     "Node"
   ],
   "launch_in_ci": [
-    "PhantomJS",
+    "Chrome",
     "Node"
   ]
 };

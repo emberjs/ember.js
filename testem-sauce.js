@@ -43,25 +43,24 @@ module.exports = {
       "SL_IE_11": {
         "command": "ember sauce:launch -p 'Windows 10' -b 'internet explorer' -v 11 --no-ct -u '<url>'",
         "protocol": "tap"
-      },
-      "SL_IE_10": {
-        "command": "ember sauce:launch -p 'Windows 7' -b 'internet explorer' -v 10 --no-ct -u '<url>'",
-        "protocol": "tap"
-      },
-      "SL_IE_9": {
-        "command": "ember sauce:launch -p 'Windows 7' -b 'internet explorer' -v 9 --no-ct -u '<url>'",
-        "protocol": "tap"
       }
     }
   ,
   "launch_in_dev": [
     "Node",
-    "PhantomJS",
     "Chrome"
   ],
+  "browser_args": {
+    "Chrome": [
+      '--disable-gpu',
+      '--headless',
+      '--remote-debugging-port=9222',
+      '--window-size=1440,900'
+    ]
+  },
   "launch_in_ci": [
     "Node",
-    "PhantomJS",
+    "Chrome",
     "SL_Chrome_Current",
     "SL_Chrome_Last",
     "SL_Firefox_Current",
@@ -69,9 +68,7 @@ module.exports = {
     "SL_Safari_Current",
     "SL_Safari_Last",
     "SL_MS_Edge",
-    "SL_IE_11",
-    "SL_IE_10",
-    "SL_IE_9"
+    "SL_IE_11"
   ],
   tap_quiet_logs: true
 };

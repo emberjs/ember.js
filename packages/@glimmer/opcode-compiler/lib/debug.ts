@@ -32,12 +32,6 @@ export function debugSlice(program: CompileTimeProgram, start: number, end: numb
     /* tslint:disable:no-console */
     let { constants } = program;
 
-    // console is not available in IE9
-    if (typeof console === 'undefined') { return; }
-
-    // IE10 does not have `console.group`
-    if (typeof console.group !== 'function') { return; }
-
     (console as any).group(`%c${start}:${end}`, 'color: #999');
 
     let _size = 0;
