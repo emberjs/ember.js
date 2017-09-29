@@ -23,7 +23,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let candidate = this.candidateStack.pop();
     if (!candidate) return null;
 
-    if (isComment(candidate) && getCloseBoundsDepth(candidate) === this.blockDepth) {
+    if (isComment(candidate) && getCloseBlockDepth(candidate) === this.blockDepth) {
       return null;
     } else {
       return candidate;
@@ -32,7 +32,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
   private clearMismatch(candidate: Simple.Node) {
     if (isComment(candidate)) {
-      let depth = getOpenBoundsDepth(candidate);
+      let depth = getOpenBlockDepth(candidate);
 
       if (depth !== null) {
         this.clearBlock(depth);
@@ -44,22 +44,22 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let until = this.nextSibling;
 
     while (current && current !== until) {
-      current = remove(current);
+      current = this.remove(current);
     }
 
     this.candidateStack.push(null);
   }
 
-  private clearBlock(depth: number) {
+  protected clearBlock(depth: number) {
     let current: Option<Simple.Node> = this.candidateStack.pop();
 
-    while (current && !(isComment(current) && getCloseBoundsDepth(current) === depth)) {
-      current = remove(current);
+    while (current && !(isComment(current) && getCloseBlockDepth(current) === depth)) {
+      current = this.remove(current);
     }
 
-    assert(current && isComment(current) && getCloseBoundsDepth(current) === depth, 'An opening block should be paired with a closing block comment');
+    assert(current && isComment(current) && getCloseBlockDepth(current) === depth, 'An opening block should be paired with a closing block comment');
 
-    this.candidateStack.push(remove(current!));
+    this.candidateStack.push(this.remove(current!));
   }
 
   __openBlock(): void {
@@ -67,9 +67,9 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (candidate) {
       if (isComment(candidate)) {
-        let depth = getOpenBoundsDepth(candidate);
+        let depth = getOpenBlockDepth(candidate);
         if (depth !== null) this.blockDepth = depth;
-        this.candidateStack.push(remove(candidate));
+        this.candidateStack.push(this.remove(candidate));
         return;
       } else {
         this.clearMismatch(candidate);
@@ -82,9 +82,9 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (candidate) {
       if (isComment(candidate)) {
-        let depth = getCloseBoundsDepth(candidate);
+        let depth = getCloseBlockDepth(candidate);
         if (depth !== null) this.blockDepth = depth - 1;
-        this.candidateStack.push(remove(candidate));
+        this.candidateStack.push(this.remove(candidate));
         return;
       } else {
         this.clearMismatch(candidate);
@@ -114,13 +114,20 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
       let newBounds = bounds(this.element, first.nextSibling!, last.previousSibling!);
 
-      remove(first);
-      remove(last);
+      this.remove(first);
+      this.remove(last);
 
       return newBounds;
     } else {
       return super.__appendHTML(html);
     }
+  }
+
+  protected remove(node: Simple.Node): Option<Simple.Node> {
+    let element = expect(node.parentNode, `cannot remove a detached node`) as Simple.Element;
+    let next = node.nextSibling;
+    element.removeChild(node);
+    return next;
   }
 
   private markerBounds(): Option<Bounds> {
@@ -145,7 +152,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (candidate) {
       if (isEmpty(candidate)) {
-        let next = remove(candidate);
+        let next = this.remove(candidate);
         this.candidateStack.push(next);
         let text = this.dom.createTextNode(string);
         this.dom.insertBefore(this.element, text, next);
@@ -159,7 +166,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
         return candidate;
       } else if (candidate && (isSeparator(candidate) || isEmpty(candidate))) {
         this.candidateStack.push(candidate.nextSibling);
-        remove(candidate);
+        this.remove(candidate);
         return this.__appendText(string);
       } else {
         this.clearMismatch(candidate);
@@ -274,7 +281,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (marker.parentNode === element) {
       let candidate = marker.nextSibling;
-      remove(marker);
+      this.remove(marker);
       this.candidateStack.push(candidate);
       this.candidateStack.push(this.candidate);
       super.pushRemoteElement(element, cursorId, _nextSibling);
@@ -318,8 +325,8 @@ function isComment(node: Simple.Node): node is Simple.Comment {
   return node.nodeType === 8;
 }
 
-function getOpenBoundsDepth(node: Simple.Comment): Option<number> {
-  let boundsDepth = node.nodeValue!.match(/^%\+bounds:(\d+)%$/);
+function getOpenBlockDepth(node: Simple.Comment): Option<number> {
+  let boundsDepth = node.nodeValue!.match(/^%\+block:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
     return Number(boundsDepth[1] as string);
@@ -328,8 +335,8 @@ function getOpenBoundsDepth(node: Simple.Comment): Option<number> {
   }
 }
 
-function getCloseBoundsDepth(node: Simple.Comment): Option<number> {
-  let boundsDepth = node.nodeValue!.match(/^%\-bounds:(\d+)%$/);
+function getCloseBlockDepth(node: Simple.Comment): Option<number> {
+  let boundsDepth = node.nodeValue!.match(/^%\-block:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
     return Number(boundsDepth[1] as string);
@@ -352,13 +359,6 @@ function isSeparator(node: Simple.Node): boolean {
 
 function isEmpty(node: Simple.Node): boolean {
   return node.nodeType === 8 && node.nodeValue === '%empty%';
-}
-
-function remove(node: Simple.Node): Option<Simple.Node> {
-  let element = expect(node.parentNode, `cannot remove a detached node`) as Simple.Element;
-  let next = node.nextSibling;
-  element.removeChild(node);
-  return next;
 }
 
 function findByName(array: Simple.Attribute[], name: string): Simple.Attribute | undefined {

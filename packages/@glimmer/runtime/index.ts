@@ -79,5 +79,5 @@ export {
 export { default as DOMChanges, SVG_NAMESPACE, DOMChanges as IDOMChanges, DOMTreeConstruction, isWhitespace, insertHTMLBefore } from './lib/dom/helper';
 export { normalizeProperty } from './lib/dom/props';
 export { ElementBuilder, NewElementBuilder, ElementOperations, clientBuilder } from './lib/vm/element-builder';
-export { rehydrationBuilder } from './lib/vm/rehydrate-builder';
+export { rehydrationBuilder, RehydrateBuilder } from './lib/vm/rehydrate-builder';
 export { default as Bounds, ConcreteBounds, Cursor } from './lib/bounds';
