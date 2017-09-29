@@ -2,7 +2,7 @@ import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } fro
 import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, rehydrationBuilder } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction, serializeBuilder } from "@glimmer/node";
-import { Option } from "@glimmer/interfaces";
+import { Option, Simple } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
 import * as SimpleDOM from "simple-dom";
 
@@ -555,7 +555,7 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.serialize(element);
   }
 
-  serialize(element: HTMLElement) {
+  serialize(element: Simple.Element) {
     let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
     let serialized = serializer.serializeChildren(element);
     return serialized;

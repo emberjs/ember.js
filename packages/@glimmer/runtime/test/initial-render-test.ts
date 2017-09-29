@@ -11,7 +11,8 @@ import {
   content,
   InitialRenderSuite,
   RehydrationDelegate,
-  rawModule
+  rawModule,
+  strip
 } from "@glimmer/test-helpers";
 import { expect } from "@glimmer/util";
 
@@ -106,6 +107,29 @@ class Rehydration extends InitialRenderSuite {
     this.rerender({ node: clientNode });
     this.assertHTML('<div>hello</div>', 'back to the beginning');
     this.assertStableNodes({ except: clientNode2 as Text });
+  }
+
+  @test "in-element can rehydrate"() {
+    let template = '<outer>{{#in-element remote}}<inner>Wat Wat</inner>{{/in-element}}</outer>';
+    let env = this.delegate.serverEnv;
+    let remote = env.getAppendOperations().createElement('remote');
+
+    this.renderServerSide(template, { remote });
+    let serializedRemote = this.delegate.serialize(remote);
+    this.assert.equal(serializedRemote, strip`
+      <script id="%cursor:0%"></script>
+      <!--%+block:2%--><inner>Wat Wat</inner><!--%-block:2%-->
+    `);
+    env = this.delegate.clientEnv;
+    let clientRemote = remote = env.getDOM().createElement('remote') as HTMLElement;
+    let host = env.getDOM().createElement('div') as HTMLElement;
+    host.appendChild(this.element);
+    host.appendChild(clientRemote);
+    clientRemote.innerHTML = serializedRemote;
+    this.element = host.firstChild as HTMLElement;
+
+    this.renderClientSide(template, { remote: clientRemote });
+    this.assert.equal(clientRemote.innerHTML, '<inner>Wat Wat</inner>');
   }
 }
 

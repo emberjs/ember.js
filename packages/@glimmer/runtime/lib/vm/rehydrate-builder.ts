@@ -4,25 +4,23 @@ import { Environment } from '../environment';
 import Bounds, { bounds, Cursor } from '../bounds';
 import { Simple, Option, Opaque } from "@glimmer/interfaces";
 import { DynamicContentWrapper } from './content/dynamic';
-import { expect, assert } from "@glimmer/util";
+import { expect, assert, Stack } from "@glimmer/util";
 
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
-  // The node that will be compared against the last operation
-  private _candidate: Option<Simple.Node>;
-
   // The last node that matched
   private lastMatchedNode: Option<Simple.Node> = null;
   private unmatchedAttributes: Option<Simple.Attribute[]> = null;
   private blockDepth = 0;
+  private candidateStack = new Stack<Option<Simple.Node>>();
 
   constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error("Rehydration with nextSibling not supported");
-    this._candidate = parentNode.firstChild;
+    this.candidateStack.push(parentNode.firstChild);
   }
 
   get candidate(): Option<Simple.Node> {
-    let candidate = this._candidate;
+    let candidate = this.candidateStack.pop();
     if (!candidate) return null;
 
     if (isComment(candidate) && getCloseBoundsDepth(candidate) === this.blockDepth) {
@@ -49,11 +47,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       current = remove(current);
     }
 
-    this._candidate = null;
+    this.candidateStack.push(null);
   }
 
   private clearBlock(depth: number) {
-    let current: Option<Simple.Node> = this._candidate;
+    let current: Option<Simple.Node> = this.candidateStack.pop();
 
     while (current && !(isComment(current) && getCloseBoundsDepth(current) === depth)) {
       current = remove(current);
@@ -61,7 +59,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     assert(current && isComment(current) && getCloseBoundsDepth(current) === depth, 'An opening block should be paired with a closing block comment');
 
-    this._candidate = remove(current!);
+    this.candidateStack.push(remove(current!));
   }
 
   __openBlock(): void {
@@ -71,7 +69,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       if (isComment(candidate)) {
         let depth = getOpenBoundsDepth(candidate);
         if (depth !== null) this.blockDepth = depth;
-        this._candidate = remove(candidate);
+        this.candidateStack.push(remove(candidate));
         return;
       } else {
         this.clearMismatch(candidate);
@@ -80,13 +78,13 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   }
 
   __closeBlock(): void {
-    let { _candidate: candidate } = this;
+    let candidate = this.candidateStack.pop();
 
     if (candidate) {
       if (isComment(candidate)) {
         let depth = getCloseBoundsDepth(candidate);
         if (depth !== null) this.blockDepth = depth - 1;
-        this._candidate = remove(candidate);
+        this.candidateStack.push(remove(candidate));
         return;
       } else {
         this.clearMismatch(candidate);
@@ -126,7 +124,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   }
 
   private markerBounds(): Option<Bounds> {
-    let { _candidate } = this;
+    let _candidate = this.candidateStack.pop();
 
     if (_candidate && isMarker(_candidate)) {
       let first = _candidate;
@@ -147,7 +145,8 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (candidate) {
       if (isEmpty(candidate)) {
-        let next = this._candidate = remove(candidate);
+        let next = remove(candidate);
+        this.candidateStack.push(next);
         let text = this.dom.createTextNode(string);
         this.dom.insertBefore(this.element, text, next);
         return text;
@@ -156,10 +155,10 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       if (isTextNode(candidate)) {
         candidate.nodeValue = string;
         this.lastMatchedNode = candidate;
-        this._candidate = candidate.nextSibling;
+        this.candidateStack.push(candidate.nextSibling);
         return candidate;
       } else if (candidate && (isSeparator(candidate) || isEmpty(candidate))) {
-        this._candidate = candidate.nextSibling;
+        this.candidateStack.push(candidate.nextSibling);
         remove(candidate);
         return this.__appendText(string);
       } else {
@@ -172,12 +171,12 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   }
 
   __appendComment(string: string): Simple.Comment {
-    let { _candidate } = this;
+    let _candidate = this.candidateStack.pop();
 
     if (_candidate && isComment(_candidate)) {
       _candidate.nodeValue = string;
       this.lastMatchedNode = _candidate;
-      this._candidate = _candidate.nextSibling;
+      this.candidateStack.push(_candidate.nextSibling);
       return _candidate;
     } else if (_candidate) {
       this.clearMismatch(_candidate);
@@ -187,11 +186,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   }
 
   __openElement(tag: string, _operations?: ElementOperations): Simple.Element {
-    let { _candidate } = this;
+    let _candidate = this.candidateStack.pop();
 
     if (_candidate && isElement(_candidate) && _candidate.tagName === tag.toUpperCase()) {
       this.unmatchedAttributes = [].slice.call(_candidate.attributes);
-      this._candidate = _candidate.firstChild;
+      this.candidateStack.push(_candidate.nextSibling);
       return _candidate;
     } else if (_candidate) {
       this.clearMismatch(_candidate);
@@ -256,29 +255,49 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       this.clearMismatch(candidate);
     }
 
-    this._candidate = this.element.nextSibling;
+    this.candidateStack.push(this.element.nextSibling);
     this.lastMatchedNode = this.element;
     super.willCloseElement();
   }
 
-  pushRemoteElement(_element: Simple.Element, _nextSibling: Option<Simple.Node> = null) {
-    throw unimplemented();
+  getMarker(element: Simple.Element, guid: string): Simple.Node {
+    let marker = element.firstChild;
+    if (marker && marker['id'] === guid) {
+      return marker;
+    }
+
+    throw new Error('Cannot find serialized cursor for `in-element`');
+  }
+
+  pushRemoteElement(element: Simple.Element, cursorId: string, _nextSibling: Option<Simple.Node> = null) {
+    let marker = this.getMarker(element, cursorId);
+
+    if (marker.parentNode === element) {
+      let candidate = marker.nextSibling;
+      remove(marker);
+      this.candidateStack.push(candidate);
+      this.candidateStack.push(this.candidate);
+      super.pushRemoteElement(element, cursorId, _nextSibling);
+      this.lastMatchedNode = element;
+    }
   }
 
   popRemoteElement() {
-    throw unimplemented();
+    super.popRemoteElement();
+    this.candidateStack.pop();
+    this.candidateStack.pop();
   }
 
   didAppendBounds(bounds: Bounds): Bounds {
     super.didAppendBounds(bounds);
     let last = bounds.lastNode();
-    this._candidate = last && last.nextSibling;
+    this.candidateStack.push(last && last.nextSibling);
     return bounds;
   }
 
   didOpenElement(element: Simple.Element): Simple.Element {
     super.didOpenElement(element);
-    this._candidate = element.firstChild;
+    this.candidateStack.push(element.firstChild);
     return element;
   }
 
@@ -349,10 +368,6 @@ function findByName(array: Simple.Attribute[], name: string): Simple.Attribute |
   }
 
   return undefined;
-}
-
-function unimplemented() {
-  return new Error('Not implemented');
 }
 
 export function rehydrationBuilder(env: Environment, cursor: Cursor) {

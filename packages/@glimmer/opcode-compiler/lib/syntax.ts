@@ -710,23 +710,22 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.returnTo('END');
 
-    if (hash && hash[0].length) {
-      let [ keys, values ] = hash;
+    let [ keys, values ] = hash!;
 
-      if (keys.length === 1 && keys[0] === 'nextSibling') {
-        expr(values[0], builder);
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
+      if (key === 'nextSibling' || key === 'guid') {
+        expr(values[i], builder);
       } else {
         throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);
       }
-    } else {
-      expr(null, builder);
     }
 
     expr(params[0], builder);
 
     builder.dup();
 
-    builder.enter(3);
+    builder.enter(4);
 
     builder.jumpUnless('ELSE');
 
