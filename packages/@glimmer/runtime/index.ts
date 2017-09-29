@@ -80,4 +80,4 @@ export { default as DOMChanges, SVG_NAMESPACE, DOMChanges as IDOMChanges, DOMTre
 export { normalizeProperty } from './lib/dom/props';
 export { ElementBuilder, NewElementBuilder, ElementOperations, clientBuilder } from './lib/vm/element-builder';
 export { rehydrationBuilder } from './lib/vm/rehydrate-builder';
-export { default as Bounds, ConcreteBounds } from './lib/bounds';
+export { default as Bounds, ConcreteBounds, Cursor } from './lib/bounds';

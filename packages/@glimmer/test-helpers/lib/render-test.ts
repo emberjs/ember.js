@@ -1,5 +1,5 @@
 import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
-import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, rehydrationBuilder } from "@glimmer/runtime";
+import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, rehydrationBuilder, Cursor, ElementBuilder } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction, serializeBuilder } from "@glimmer/node";
 import { Option, Simple } from "@glimmer/interfaces";
@@ -537,6 +537,15 @@ export class RehydrationDelegate implements RenderDelegate {
 
   getInitialElement(): HTMLElement {
     return this.clientEnv.getAppendOperations().createElement('div') as HTMLElement;
+  }
+
+  getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+
+    if (cursor.element instanceof Node) {
+      return rehydrationBuilder(env, cursor);
+    }
+
+    return serializeBuilder(env, cursor);
   }
 
   renderServerSide(template: string, context: Dict<Opaque>, takeSnapshot: () => void): string {

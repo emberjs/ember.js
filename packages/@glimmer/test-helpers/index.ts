@@ -13,7 +13,8 @@ export {
   getTextContent,
   strip,
   stripTight,
-  trimLines
+  trimLines,
+  blockStack
 } from './lib/helpers';
 
 export {

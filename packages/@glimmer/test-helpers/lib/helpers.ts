@@ -270,3 +270,18 @@ export function assertNodeProperty<T extends keyof ElementTagNameMap, P extends 
     QUnit.assert.strictEqual(node[prop], value);
   }
 }
+
+export function blockStack() {
+  let stack: number[] = [];
+
+  return (id: number) => {
+    if (stack.indexOf(id) > -1) {
+      let close = `<!--%-block:${id}%-->`;
+      stack.pop();
+      return close;
+    } else {
+      stack.push(id);
+      return `<!--%+block:${id}%-->`;
+    }
+  };
+}
