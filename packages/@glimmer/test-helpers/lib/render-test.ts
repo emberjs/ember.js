@@ -1,5 +1,5 @@
 import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
-import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, rehydrationBuilder, Cursor, ElementBuilder } from "@glimmer/runtime";
+import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, Cursor, ElementBuilder } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction, serializeBuilder } from "@glimmer/node";
 import { Option, Simple } from "@glimmer/interfaces";
@@ -18,6 +18,7 @@ import {
 import { UserHelper } from './environment/helper';
 import { EmberishGlimmerComponent, EmberishCurlyComponent, BasicComponent } from './environment/components';
 import RenderDelegate from './render-delegate';
+import { debugRehydration } from "./environment/modes/rehydration/debug-builder";
 
 export const OPEN: { marker: "open-block" } = { marker: "open-block" };
 export const CLOSE: { marker: "close-block" } = { marker: "close-block" };
@@ -516,6 +517,11 @@ export function registerComponent<K extends ComponentKind>(env: LazyTestEnvironm
   }
 }
 
+export interface RehydrationStats {
+  clearedBlocks: string[];
+  clearedNodes: Simple.Node[];
+}
+
 export class RehydrationDelegate implements RenderDelegate {
   serialized: string;
 
@@ -523,7 +529,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
   public clientEnv: LazyTestEnvironment;
   public serverEnv: LazyTestEnvironment;
-
+  public rehydrationStats: RehydrationStats;
   constructor() {
     this.clientEnv = new LazyTestEnvironment();
 
@@ -540,9 +546,8 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
-
     if (cursor.element instanceof Node) {
-      return rehydrationBuilder(env, cursor);
+      return debugRehydration(env, cursor);
     }
 
     return serializeBuilder(env, cursor);
@@ -557,7 +562,7 @@ export class RehydrationDelegate implements RenderDelegate {
       env,
       self: new UpdatableReference(context),
       dynamicScope: new TestDynamicScope(),
-      builder: serializeBuilder(env, cursor)
+      builder: this.getElementBuilder(env, cursor)
     });
 
     takeSnapshot();
@@ -574,12 +579,20 @@ export class RehydrationDelegate implements RenderDelegate {
     let env = this.clientEnv;
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
-    return renderTemplate(template, {
+    let builder = this.getElementBuilder(env, cursor);
+    let result = renderTemplate(template, {
       env,
       self: new UpdatableReference(context),
       dynamicScope: new TestDynamicScope(),
-      builder: rehydrationBuilder(env, cursor)
+      builder
     });
+
+    this.rehydrationStats = {
+      clearedBlocks: builder['clearedBlocks'],
+      clearedNodes: builder['clearedNodes']
+    };
+
+    return result;
   }
 
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult {
