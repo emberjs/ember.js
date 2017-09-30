@@ -50,5 +50,6 @@ export { NodeLazyRenderDelegate, NodeEagerRenderDelegate } from './lib/environme
 
 export { default as EagerRenderDelegate } from './lib/environment/modes/eager/render-delegate';
 export { default as LazyRenderDelegate } from './lib/environment/modes/lazy/render-delegate';
+export { debugRehydration } from './lib/environment/modes/rehydration/debug-builder';
 
 export * from './lib/environment/components';

@@ -12,7 +12,8 @@ import {
   InitialRenderSuite,
   RehydrationDelegate,
   rawModule,
-  strip
+  strip,
+  blockStack
 } from "@glimmer/test-helpers";
 import { expect } from "@glimmer/util";
 
@@ -36,6 +37,12 @@ class Rehydration extends InitialRenderSuite {
     this.renderResult = this.delegate.renderClientSide(template, context, this.element);
   }
 
+  assertRehydrationStats({ blocksRemoved: blocks, nodesRemoved :nodes}: { blocksRemoved: number, nodesRemoved: number }) {
+    let { clearedNodes, clearedBlocks } = this.delegate.rehydrationStats;
+    this.assert.equal(blocks, clearedBlocks.length, 'cleared blocks');
+    this.assert.equal(nodes, clearedNodes.length, 'cleared nodes');
+  }
+
   assertServerOutput(..._expected: Content[]) {
     let output = expect(this.serverOutput, 'must renderServerSide before calling assertServerOutput');
     equalTokens(output, content([OPEN, ..._expected, CLOSE]));
@@ -48,6 +55,8 @@ class Rehydration extends InitialRenderSuite {
 
     this.renderClientSide(template, { content: 'goodbye' });
     this.assertHTML("goodbye");
+    // Just repairs the value of the text node
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 0 });
     this.assertStableRerender();
   }
 
@@ -58,6 +67,8 @@ class Rehydration extends InitialRenderSuite {
 
     this.renderClientSide(template, { content: 'hello' });
     this.assertHTML("hello world");
+    // Just repairs the value of the text node
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 0 });
 
     // TODO: handle %empty% in the testing DSL
     // this.assertStableNodes();
@@ -70,6 +81,7 @@ class Rehydration extends InitialRenderSuite {
     this.assertServerOutput(OPEN, "<div>hi admin</div>", CLOSE);
 
     this.renderClientSide(template, { admin: false });
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 1 });
     this.assertHTML("<p>HAXOR</p>");
     this.assertStableRerender();
   }
@@ -80,6 +92,7 @@ class Rehydration extends InitialRenderSuite {
     this.assertServerOutput(OPEN, "<div>HAXOR<!--%sep%-->stahp</div>", CLOSE);
 
     this.renderClientSide(template, { admin: true });
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 1 });
     this.assertHTML("<div>hi admin</div>");
     this.assertStableRerender();
   }
@@ -97,6 +110,8 @@ class Rehydration extends InitialRenderSuite {
     this.context = { node: clientNode };
     this.renderClientSide(template, { node: clientNode });
     this.assertHTML('<div>hello</div>', 'first clean rerender');
+    // Just repairs the value of the text node
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 0 });
     this.assertStableRerender();
 
     let clientNode2 = env.getDOM().createTextNode('goodbye');
@@ -129,7 +144,53 @@ class Rehydration extends InitialRenderSuite {
     this.element = host.firstChild as HTMLElement;
 
     this.renderClientSide(template, { remote: clientRemote });
+    // The removal is the serialized cursor e.g. <script id="%cursor:1%"></script>
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 1 });
     this.assert.equal(clientRemote.innerHTML, '<inner>Wat Wat</inner>');
+  }
+
+  @test "#each rehydration"() {
+    let template = "{{#each items key='id' as |item|}}<p>{{item}}</p>{{/each}}";
+    this.renderServerSide(template, { items: [1, 2, 3] });
+    let b = blockStack();
+    this.assertHTML(strip`
+      ${b(0)}
+      ${b(1)}
+      ${b(2)}
+      ${b(3)}
+      <p>
+        ${b(4)}
+        1
+        ${b(4)}
+      </p>
+      ${b(3)}
+      ${b(3)}
+      <p>
+        ${b(4)}
+        2
+        ${b(4)}
+      </p>
+      ${b(3)}
+      ${b(3)}
+      <p>
+        ${b(4)}
+        3
+        ${b(4)}
+      </p>
+      ${b(3)}
+      ${b(2)}
+      ${b(1)}
+      ${b(0)}
+    `);
+
+    this.renderClientSide(template, { items: [1, 2, 4] });
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 0 });
+    this.assertHTML(strip`
+      <p>1</p>
+      <p>2</p>
+      <p>4</p>
+    `);
+    this.assertStableRerender();
   }
 }
 
