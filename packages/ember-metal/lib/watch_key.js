@@ -13,26 +13,26 @@ import {
 
 let handleMandatorySetter;
 
-export function watchKey(obj, keyName, meta) {
+export function watchKey(obj, keyName, _meta) {
   if (typeof obj !== 'object' || obj === null) { return; }
 
-  let m = meta === undefined ? metaFor(obj) : meta;
-  let count = m.peekWatching(keyName) || 0;
-  m.writeWatching(keyName, count + 1);
+  let meta = _meta === undefined ? metaFor(obj) : _meta;
+  let count = meta.peekWatching(keyName) || 0;
+  meta.writeWatching(keyName, count + 1);
 
   if (count === 0) { // activate watching first time
     let possibleDesc = obj[keyName];
     let isDescriptor = possibleDesc !== null &&
       typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
-    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName); }
+    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName, meta); }
 
-    if ('function' === typeof obj.willWatchProperty) {
+    if (typeof obj.willWatchProperty === 'function') {
       obj.willWatchProperty(keyName);
     }
 
     if (MANDATORY_SETTER) {
       // NOTE: this is dropped for prod + minified builds
-      handleMandatorySetter(m, obj, keyName);
+      handleMandatorySetter(meta, obj, keyName);
     }
   }
 }
@@ -40,7 +40,6 @@ export function watchKey(obj, keyName, meta) {
 
 if (MANDATORY_SETTER) {
   let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-
   let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
@@ -97,9 +96,9 @@ export function unwatchKey(obj, keyName, _meta) {
     let isDescriptor = possibleDesc !== null &&
       typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-    if (isDescriptor && possibleDesc.didUnwatch) { possibleDesc.didUnwatch(obj, keyName); }
+    if (isDescriptor && possibleDesc.didUnwatch) { possibleDesc.didUnwatch(obj, keyName, meta); }
 
-    if ('function' === typeof obj.didUnwatchProperty) {
+    if (typeof obj.didUnwatchProperty === 'function') {
       obj.didUnwatchProperty(keyName);
     }
 

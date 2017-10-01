@@ -41,12 +41,12 @@ export class AliasedProperty extends Descriptor {
     }
   }
 
-  willWatch(obj, keyName) {
-    addDependentKeys(this, obj, keyName, metaFor(obj));
+  willWatch(obj, keyName, meta) {
+    addDependentKeys(this, obj, keyName, meta);
   }
 
-  didUnwatch(obj, keyName) {
-    removeDependentKeys(this, obj, keyName, metaFor(obj));
+  didUnwatch(obj, keyName, meta) {
+    removeDependentKeys(this, obj, keyName, meta);
   }
 
   get(obj, keyName) {
