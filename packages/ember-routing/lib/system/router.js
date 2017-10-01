@@ -1125,6 +1125,8 @@ let defaultActionHandlers = {
       if (originRoute !== route) {
         let errorRouteName = findRouteStateName(route, 'error');
         if (errorRouteName) {
+          let errorId = guidFor(error);
+          router._markErrorAsHandled(errorId);
           router.intermediateTransitionTo(errorRouteName, error);
           return false;
         }
@@ -1133,6 +1135,8 @@ let defaultActionHandlers = {
       // Check for an 'error' substate route
       let errorSubstateName = findRouteSubstateName(route, 'error');
       if (errorSubstateName) {
+        var errorId = guidFor(error);
+        router._markErrorAsHandled(errorId);
         router.intermediateTransitionTo(errorSubstateName, error);
         return false;
       }

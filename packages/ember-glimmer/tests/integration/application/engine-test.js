@@ -378,7 +378,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     return this.visit('/').then(() => {
       this.assertText('Application');
       return this.transitionTo('blog.post');
-    }).catch(() => {
+    }).then(() => {
       this.assertText('ApplicationError! Oh, noes!');
     });
   }
@@ -399,7 +399,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     return this.visit('/').then(() => {
       this.assertText('Application');
       return this.transitionTo('blog.post');
-    }).catch(() => {
+    }).then(() => {
       this.assertText('ApplicationEngineError! Oh, noes!');
     });
   }
@@ -420,7 +420,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     return this.visit('/').then(() => {
       this.assertText('Application');
       return this.transitionTo('blog.post');
-    }).catch(() => {
+    }).then(() => {
       this.assertText('ApplicationEngineError! Oh, noes!');
     });
   }
@@ -441,7 +441,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     return this.visit('/').then(() => {
       this.assertText('Application');
       return this.transitionTo('blog.post.comments');
-    }).catch(() => {
+    }).then(() => {
       this.assertText('ApplicationEngineError! Oh, noes!');
     });
   }

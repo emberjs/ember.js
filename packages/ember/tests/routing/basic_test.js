@@ -2714,7 +2714,7 @@ QUnit.test('Errors in transition show error template if available', function() {
     }
   });
 
-  throws(() => bootApplication(), /More context objects were passed/);
+  bootApplication();
 
   equal(jQuery('#error').length, 1, 'Error template was rendered.');
 });
