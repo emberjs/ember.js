@@ -80,8 +80,10 @@ function generateComputedWithPredicate(name, predicate) {
   @method empty
   @for Ember.computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which negate
-  the original value for property
+  @return {Ember.ComputedProperty} computed property which returns true if
+  the value of the dependent property is null, an empty string, empty array,
+  or empty function and false if the underlying value is not empty.
+
   @public
 */
 export function empty(dependentKey) {
