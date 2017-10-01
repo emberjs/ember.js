@@ -212,12 +212,6 @@ export class NewElementBuilder implements ElementBuilder {
 
   openElement(tag: string): Simple.Element {
     let element = this.__openElement(tag);
-    // let isTableElement = tag === 'td' || tag === 'tr' || tag === 'th';
-
-    // if (isTableElement && this.element.tagName !== 'TBODY') {
-    //   let tbody = this.dom.createElement('tbody');
-    //   this.pushElement(tbody, null);
-    // }
 
     if (tag === 'tbody' && this.element.tagName === 'TBODY') {
       this.popElement();
@@ -344,28 +338,21 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   __appendTrustingDynamicContent(value: Opaque): DynamicContent {
-    if (isFragment(value)) {
+    if (isString(value)) {
+      return this.trustedContent(value);
+    } else if (isEmpty(value)) {
+      return this.trustedContent('');
+    } else if (isSafeString(value)) {
+      return this.trustedContent(value.toHTML());
+    } if (isFragment(value)) {
       let bounds = this.__appendFragment(value);
       return new DynamicNodeContent(bounds, value, true);
     } else if (isNode(value)) {
       let node = this.__appendNode(value);
       return new DynamicNodeContent(single(this.element, node), node, true);
-    } else {
-      let normalized: string;
-
-      if (isEmpty(value)) {
-        normalized = '';
-      } else if (isSafeString(value)) {
-        normalized = value.toHTML();
-      } else if (isString(value)) {
-        normalized = value;
-      } else {
-        normalized = String(value);
-      }
-
-      let bounds = this.__appendHTML(normalized);
-      return new DynamicTrustedHTMLContent(bounds, normalized, true);
     }
+
+    return this.trustedContent(String(value));
   }
 
   appendCautiousDynamicContent(value: Opaque): DynamicContentWrapper {
@@ -375,7 +362,11 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   __appendCautiousDynamicContent(value: Opaque): DynamicContent {
-    if (isFragment(value)) {
+    if (isString(value)) {
+      return this.untrustedContent(value);
+    } else if (isEmpty(value)) {
+      return this.untrustedContent('');
+    } else if (isFragment(value)) {
       let bounds = this.__appendFragment(value);
       return new DynamicNodeContent(bounds, value, false);
     } else if (isNode(value)) {
@@ -386,22 +377,20 @@ export class NewElementBuilder implements ElementBuilder {
       let bounds = this.__appendHTML(normalized);
       // let bounds = this.dom.insertHTMLBefore(this.element, this.nextSibling, normalized);
       return new DynamicHTMLContent(bounds, value, false);
-    } else {
-      let normalized: string;
-
-      if (isEmpty(value)) {
-        normalized = '';
-      } else if (isString(value)) {
-        normalized = value;
-      } else {
-        normalized = String(value);
-      }
-
-      let textNode = this.__appendText(normalized);
-      let bounds = single(this.element, textNode);
-
-      return new DynamicTextContent(bounds, normalized, false);
     }
+
+    return this.untrustedContent(String(value));
+  }
+
+  private trustedContent(value: string) {
+    let bounds = this.__appendHTML(value);
+    return new DynamicTrustedHTMLContent(bounds, value, true);
+  }
+
+  private untrustedContent(value: string) {
+    let textNode = this.__appendText(value);
+    let bounds = single(this.element, textNode);
+    return new DynamicTextContent(bounds, value, false);
   }
 
   appendComment(string: string): Simple.Comment {

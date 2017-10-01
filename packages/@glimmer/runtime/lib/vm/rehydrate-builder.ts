@@ -7,8 +7,6 @@ import { DynamicContentWrapper } from './content/dynamic';
 import { expect, assert, Stack } from "@glimmer/util";
 
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
-  // The last node that matched
-  private lastMatchedNode: Option<Simple.Node> = null;
   private unmatchedAttributes: Option<Simple.Attribute[]> = null;
   private blockDepth = 0;
   private candidateStack = new Stack<Option<Simple.Node>>();
@@ -151,23 +149,20 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let { candidate } = this;
 
     if (candidate) {
-      if (isEmpty(candidate)) {
-        let next = this.remove(candidate);
-        this.candidateStack.push(next);
-        let text = this.dom.createTextNode(string);
-        this.dom.insertBefore(this.element, text, next);
-        return text;
-      }
-
       if (isTextNode(candidate)) {
         candidate.nodeValue = string;
-        this.lastMatchedNode = candidate;
         this.candidateStack.push(candidate.nextSibling);
         return candidate;
       } else if (candidate && (isSeparator(candidate) || isEmpty(candidate))) {
         this.candidateStack.push(candidate.nextSibling);
         this.remove(candidate);
         return this.__appendText(string);
+      } else if (isEmpty(candidate)) {
+        let next = this.remove(candidate);
+        this.candidateStack.push(next);
+        let text = this.dom.createTextNode(string);
+        this.dom.insertBefore(this.element, text, next);
+        return text;
       } else {
         this.clearMismatch(candidate);
         return super.__appendText(string);
@@ -182,7 +177,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (_candidate && isComment(_candidate)) {
       _candidate.nodeValue = string;
-      this.lastMatchedNode = _candidate;
       this.candidateStack.push(_candidate.nextSibling);
       return _candidate;
     } else if (_candidate) {
@@ -263,7 +257,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
 
     this.candidateStack.push(this.element.nextSibling);
-    this.lastMatchedNode = this.element;
     super.willCloseElement();
   }
 
@@ -285,7 +278,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       this.candidateStack.push(candidate);
       this.candidateStack.push(this.candidate);
       super.pushRemoteElement(element, cursorId, _nextSibling);
-      this.lastMatchedNode = element;
     }
   }
 
@@ -307,14 +299,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     this.candidateStack.push(element.firstChild);
     return element;
   }
-
-  // finalize(): void {
-  //   super.finalize();
-
-  //   let next = this.lastMatchedNode && this.lastMatchedNode.nextSibling;
-
-  //   if (next) clear(bounds(this.element, next, this.element.lastChild!));
-  // }
 }
 
 function isTextNode(node: Simple.Node): node is Simple.Text {
