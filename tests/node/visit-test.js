@@ -170,24 +170,50 @@ QUnit.test('FastBoot: route error', function(assert) {
   var App = this.createApplication();
 
   return RSVP.all([
-    fastbootVisit(App, '/a').then(
-      function(instance) {
-        assert.ok(false, 'It should not render');
-        instance.destroy();
-      },
-      function(error) {
-        assert.equal(error.message, 'Error from A');
-      }
-    ),
-    fastbootVisit(App, '/b').then(
-      function(instance) {
-        assert.ok(false, 'It should not render');
-        instance.destroy();
-      },
-      function(error) {
-        assert.equal(error.message, 'Error from B');
-      }
-    )
+    fastbootVisit(App, '/a')
+      .then(
+        function(instance) {
+          assert.ok(false, 'It should not render');
+          instance.destroy();
+        },
+        function(error) {
+          assert.equal(error.message, 'Error from A');
+        }
+      ),
+      fastbootVisit(App, '/b').then(
+        function(instance) {
+          assert.ok(false, 'It should not render');
+          instance.destroy();
+        },
+        function(error) {
+          assert.equal(error.message, 'Error from B');
+        }
+      )
+  ]);
+});
+
+QUnit.test('FastBoot: route error template', function(assert) {
+  this.routes(function() {
+    this.route('a');
+  });
+
+  this.template('error', '<p>Error template rendered!</p>');
+  this.template('a', '<h1>Hello from A</h1>');
+
+  this.route('a', {
+    model: function() {
+      throw new Error('Error from A');
+    }
+  });
+
+  var App = this.createApplication();
+
+  return RSVP.all([
+    fastbootVisit(App, '/a')
+      .then(
+        assertFastbootResult(assert, { url: '/a', body: '<p>Error template rendered!</p>' }),
+        handleError(assert)
+      ),
   ]);
 });
 

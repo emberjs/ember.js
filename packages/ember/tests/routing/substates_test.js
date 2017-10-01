@@ -352,15 +352,15 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     }));
 
     return this.visit('/').then(() => {
-      assert.throws(() => {
-        this.visit('/foo/bar');
-      }, (err) => err.msg === "did it broke?", 'it broke');
-      let text = this.$('#app').text();
-      assert.equal(
-        text,
-        'FOOBAR ERROR: did it broke?',
-        `foo.bar_error was entered (as opposed to something like foo/foo/bar_error)`
-      );
+      return this.visit('/foo/bar').then(() => {
+        
+        let text = this.$('#app').text();
+        assert.equal(
+          text,
+          'FOOBAR ERROR: did it broke?',
+          `foo.bar_error was entered (as opposed to something like foo/foo/bar_error)`
+        );
+      });
     });
   }
   ['@test Prioritized loading substate entry works with auto-generated index routes'](assert) {
@@ -424,16 +424,16 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     }));
 
     return this.visit('/').then(() => {
-      assert.throws(() => {
-        this.visit('/foo');
-      }, (err) => err.msg === 'did it broke?', 'it broke');
-      let text = this.$('#app').text();
-
-      assert.equal(
-        text,
-        'FOO ERROR: did it broke?',
-        'foo.index_error was entered'
-      );
+      
+      return this.visit('/foo').then(() => {
+        let text = this.$('#app').text();
+        
+        assert.equal(
+          text,
+          'FOO ERROR: did it broke?',
+          'foo.index_error was entered'
+        );
+      });
     });
   }
 });
@@ -461,28 +461,26 @@ moduleFor('Loading/Error Substates - globals mode app', class extends AutobootAp
   ['@test Rejected promises returned from ApplicationRoute transition into top-level application_error'](assert) {
     let reject = true;
 
-    assert.throws(() => {
-      this.runTask(() => {
-        this.createApplication();
-        this.addTemplate('index', '<div id="app">INDEX</div>');
-        this.add('route:application', Route.extend({
-          init() {
-            this._super(...arguments);
-          },
-          model() {
-            if (reject) {
-              return RSVP.reject({ msg: 'BAD NEWS BEARS' });
-            } else {
-              return {};
-            }
+    this.runTask(() => {
+      this.createApplication();
+      this.addTemplate('index', '<div id="app">INDEX</div>');
+      this.add('route:application', Route.extend({
+        init() {
+          this._super(...arguments);
+        },
+        model() {
+          if (reject) {
+            return RSVP.reject({ msg: 'BAD NEWS BEARS' });
+          } else {
+            return {};
           }
-        }));
+        }
+      }));
 
-        this.addTemplate('application_error', `
-          <p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>
-        `);
-      })
-    }, (err) => err.msg === 'BAD NEWS BEARS', 'it went poorly');
+      this.addTemplate('application_error', `
+        <p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>
+      `);
+    });
 
     let text = this.$('#toplevel-error').text();
     assert.equal(
@@ -645,16 +643,15 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       }
     }));
 
-    assert.throws(() => {
-      this.visit('/grandma/mom/sally');
-    }, (err) =>  err.msg === "did it broke?", 'it broke.');
-
-    step(3, 'App finished loading');
-
-    let text = this.$('#app').text();
-
-    assert.equal(text, 'GRANDMA ERROR: did it broke?', 'error bubbles');
-    assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
+    
+    return this.visit('/grandma/mom/sally').then(() => {
+      step(3, 'App finished loading');
+      
+      let text = this.$('#app').text();
+      
+      assert.equal(text, 'GRANDMA ERROR: did it broke?', 'error bubbles');
+      assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
+    });
   }
 
   [`@test Non-bubbled errors that re-throw aren't swallowed`](assert) {
@@ -783,21 +780,19 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       }
     }));
 
-    assert.throws(() => {
-      this.visit('/grandma/mom/sally');
-    }, (err) => err.msg === 'did it broke?', 'it broke');
-
-    step(3, 'Application finished booting');
-
-    assert.equal(
-      this.$('#app').text(),
-      'GRANDMA MOM ERROR: did it broke?',
-      'the more specifically named mome error substate was entered over the other error route'
-    );
-
-    assert.equal(this.currentPath, 'grandma.mom_error',
-      'Initial route fully loaded'
-    );
+    return this.visit('/grandma/mom/sally').then(() => {
+      step(3, 'Application finished booting');
+      
+      assert.equal(
+        this.$('#app').text(),
+        'GRANDMA MOM ERROR: did it broke?',
+        'the more specifically named mome error substate was entered over the other error route'
+      );
+      
+      assert.equal(this.currentPath, 'grandma.mom_error',
+        'Initial route fully loaded'
+      ); 
+    });
   }
 
   ['@test Slow promises waterfall on startup'](assert) {
