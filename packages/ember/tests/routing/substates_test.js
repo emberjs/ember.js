@@ -369,7 +369,7 @@ QUnit.test('Loading actions bubble to root, but don\'t enter substates above piv
 });
 
 QUnit.test('Default error event moves into nested route', function() {
-  expect(6);
+  expect(5);
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
   templates['grandma/error'] = 'ERROR: {{model.msg}}';
@@ -400,9 +400,7 @@ QUnit.test('Default error event moves into nested route', function() {
     }
   });
 
-  throws(function() {
-    bootApplication('/grandma/mom/sally');
-  }, function(err) { return err.msg === 'did it broke?';});
+  bootApplication('/grandma/mom/sally');
 
   step(3, 'App finished booting');
 
@@ -779,7 +777,7 @@ QUnit.test('Slow promises returned from ApplicationRoute#model enter application
 });
 
 QUnit.test('Default error event moves into nested route, prioritizing more specifically named error route', function() {
-  expect(6);
+  expect(5);
 
   templates['grandma'] = 'GRANDMA {{outlet}}';
   templates['grandma/error'] = 'ERROR: {{model.msg}}';
@@ -811,9 +809,7 @@ QUnit.test('Default error event moves into nested route, prioritizing more speci
     }
   });
 
-  throws(function() {
-    bootApplication('/grandma/mom/sally');
-  }, function(err) { return err.msg === 'did it broke?'; });
+  bootApplication('/grandma/mom/sally');
 
   step(3, 'App finished booting');
 
@@ -916,7 +912,7 @@ QUnit.test('Prioritized loading substate entry works with preserved-namespace ne
 });
 
 QUnit.test('Prioritized error substate entry works with preserved-namespace nested routes', function() {
-  expect(2);
+  expect(1);
 
   templates['foo/bar_error'] = 'FOOBAR ERROR: {{model.msg}}';
   templates['foo/bar'] = 'YAY';
@@ -937,9 +933,7 @@ QUnit.test('Prioritized error substate entry works with preserved-namespace nest
     }
   });
 
-  throws(function() {
-    bootApplication('/foo/bar');
-  }, function(err) { return err.msg === 'did it broke?'; });
+  bootApplication('/foo/bar');
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOOBAR ERROR: did it broke?', 'foo.bar_error was entered (as opposed to something like foo/foo/bar_error)');
 });
@@ -981,7 +975,7 @@ QUnit.test('Prioritized loading substate entry works with auto-generated index r
 });
 
 QUnit.test('Prioritized error substate entry works with auto-generated index routes', function() {
-  expect(2);
+  expect(1);
 
   templates['foo/index_error'] = 'FOO ERROR: {{model.msg}}';
   templates['foo/index'] = 'YAY';
@@ -1008,14 +1002,13 @@ QUnit.test('Prioritized error substate entry works with auto-generated index rou
     }
   });
 
-  throws(() => bootApplication('/foo'),
-         err => err.msg === 'did it broke?');
+  bootApplication('/foo');
 
   equal(jQuery('#app', '#qunit-fixture').text(), 'FOO ERROR: did it broke?', 'foo.index_error was entered');
 });
 
 QUnit.test('Rejected promises returned from ApplicationRoute transition into top-level application_error', function() {
-  expect(3);
+  expect(2);
 
   templates['application_error'] = '<p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>';
 
@@ -1030,8 +1023,7 @@ QUnit.test('Rejected promises returned from ApplicationRoute transition into top
     }
   });
 
-  throws(() => bootApplication(),
-        err => err.msg === 'BAD NEWS BEARS');
+  bootApplication();
 
   equal(jQuery('#toplevel-error', '#qunit-fixture').text(), 'TOPLEVEL ERROR: BAD NEWS BEARS');
 
