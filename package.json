@@ -34,6 +34,7 @@
     "pretest": "ember build",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
+    "test:node": "node bin/run-node-tests.js",
     "test:sauce": "node bin/run-sauce-tests.js",
     "test:testem": "testem -f testem.dist.json",
     "link:glimmer": "node bin/yarn-link-glimmer.js"
