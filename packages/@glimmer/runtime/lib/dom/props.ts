@@ -46,14 +46,7 @@ export function normalizePropertyValue(value: Opaque): Opaque {
 // * strange spec outlier
 const ATTR_OVERRIDES = {
 
-  // phantomjs < 2.0 lets you set it as a prop but won't reflect it
-  // back to the attribute. button.getAttribute('type') === null
-  BUTTON: { type: true, form: true },
-
   INPUT: {
-    // Some version of IE (like IE9) actually throw an exception
-    // if you set input.type = 'something-unknown'
-    type: true,
     form: true,
     // Chrome 46.0.2464.0: 'autocorrect' in document.createElement('input') === false
     // Safari 8.0.7: 'autocorrect' in document.createElement('input') === false

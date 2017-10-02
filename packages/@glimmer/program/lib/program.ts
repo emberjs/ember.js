@@ -53,12 +53,7 @@ export class Heap {
       this.offset = this.heap.length;
       this.handle = handle;
     } else {
-      if (typeof Uint16Array !== 'undefined') {
-        this.heap = new Uint16Array(0x100000);
-      } else {
-        // FIXME remove once we drop IE9
-        this.heap = new Array(0x100000);
-      }
+      this.heap = new Uint16Array(0x100000);
       this.table = [];
     }
   }
