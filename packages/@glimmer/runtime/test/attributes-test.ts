@@ -547,6 +547,14 @@ test('handles empty string input placeholders', assert => {
   assert.equal(readDOMAttr(root.firstChild as Element, 'placeholder'), '');
 });
 
+test('type attribute can be set to non-valid type', assert => {
+  let template = compile('<input type="yolo" />');
+
+  render(template, { type: 'yolo' });
+
+  assert.equal(readDOMAttr(root.firstChild as Element, 'type'), 'text');
+});
+
 test('does not set undefined attributes', assert => {
   let template = compile('<div data-foo={{isUndefined}} /><div data-foo={{isNotUndefined}} />');
 
