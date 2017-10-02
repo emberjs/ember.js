@@ -21,8 +21,10 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 
     Computed properties allow you to treat a function like a property:
 
-    ```javascript
-    MyApp.President = Ember.Object.extend({
+    ```app/utils/president.js
+    import EmberObject from '@ember/object';
+
+    export default EmberObject.extend({
       firstName: '',
       lastName:  '',
 
@@ -30,8 +32,10 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
         return this.get('firstName') + ' ' + this.get('lastName');
       }.property() // Call this flag to mark the function as a property
     });
+    ```
 
-    let president = MyApp.President.create({
+    ```javascript
+    let president = President.create({
       firstName: 'Barack',
       lastName: 'Obama'
     });
@@ -47,8 +51,10 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     `firstName` and `lastName` to determine its value. You can tell Ember
     about these dependencies like this:
 
-    ```javascript
-    MyApp.President = Ember.Object.extend({
+    ```app/utils/president.js
+    import EmberObject from '@ember/object';
+
+    export default EmberObject.extend({
       firstName: '',
       lastName:  '',
 
@@ -87,7 +93,9 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     For example:
 
     ```javascript
-    Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    EmberObject.extend({
       valueObserver: function() {
         // Executes whenever the "value" property changes
       }.observes('value')
@@ -134,7 +142,9 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     For example:
 
     ```javascript
-    Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    EmberObject.extend({
       valueObserver: function() {
         // Executes immediately after the "value" property changes
       }.observesImmediately('value')
@@ -166,7 +176,9 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     your method declarations in classes or mixins that you write. For example:
 
     ```javascript
-    Ember.Mixin.create({
+    import Mixin from '@ember/mixin';
+
+    Mixin.create({
       doSomethingWithElement: function() {
         // Executes whenever the "didInsertElement" event fires
       }.on('didInsertElement')

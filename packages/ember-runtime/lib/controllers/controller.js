@@ -34,9 +34,13 @@ function controllerInjectionHelper(factory) {
 
   Example:
 
-  ```javascript
-  App.PostController = Ember.Controller.extend({
-    posts: Ember.inject.controller()
+  ```app/controllers/post.js
+  import Controller, {
+    inject as controller
+  } from '@ember/controller';
+
+  export default Controller.extend({
+    posts: controller()
   });
   ```
 
@@ -44,10 +48,13 @@ function controllerInjectionHelper(factory) {
   looks up the `posts` controller in the container, making it easy to
   reference other controllers. This is functionally equivalent to:
 
-  ```javascript
-  App.PostController = Ember.Controller.extend({
+  ```app/controllers/post.js
+  import Controller from '@ember/controller';
+  import { alias } from '@ember/object/computed';
+
+  export default Controller.extend({
     needs: 'posts',
-    posts: Ember.computed.alias('controllers.posts')
+    posts: alias('controllers.posts')
   });
   ```
 

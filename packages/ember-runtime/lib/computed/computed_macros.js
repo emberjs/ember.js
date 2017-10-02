@@ -462,7 +462,7 @@ export function lte(dependentKey, value) {
   a logical `and` on the values of all the original values for properties.
   @public
 */
-export let and = generateComputedWithPredicate('and', value => value);
+export const and = generateComputedWithPredicate('and', value => value);
 
 /**
   A computed property which performs a logical `or` on the
@@ -499,7 +499,7 @@ export let and = generateComputedWithPredicate('and', value => value);
   a logical `or` on the values of all the original values for properties.
   @public
 */
-export let or = generateComputedWithPredicate('or', value => !value);
+export const or = generateComputedWithPredicate('or', value => !value);
 
 /**
   Creates a new property that is an alias for another property

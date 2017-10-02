@@ -51,12 +51,14 @@ import layout from '../templates/empty';
 
   Bound:
 
-  In the following example, the `writtenWords` property on `App.ApplicationController`
-  will be updated live as the user types 'Lots of text that IS bound' into
-  the text area of their browser's window.
+  In the following example, the `writtenWords` property on the application
+  Controller will be updated live as the user types 'Lots of text that IS
+  bound' into the text area of their browser's window.
 
-  ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  ```app/controllers/application.js
+  import Controller from '@ember/controller';
+
+  export default Controller.extend({
     writtenWords: "Lots of text that IS bound"
   });
   ```
@@ -65,7 +67,7 @@ import layout from '../templates/empty';
   {{textarea value=writtenWords}}
   ```
 
-   Would result in the following HTML:
+  Would result in the following HTML:
 
   ```html
   <textarea class="ember-text-area">
@@ -76,8 +78,10 @@ import layout from '../templates/empty';
   If you wanted a one way binding between the text area and a div tag
   somewhere else on your screen, you could use `Ember.computed.oneWay`:
 
-  ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  ```app/controllers/application.js
+  import Controller from '@ember/controller';
+
+  export default Controller.extend({
     writtenWords: "Lots of text that IS bound",
     outputWrittenWords: Ember.computed.oneWay("writtenWords")
   });
@@ -108,8 +112,10 @@ import layout from '../templates/empty';
   `Ember.computed.alias` costs more in terms of performance, so only use it when
   your really binding in both directions:
 
-  ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  ```app/controllers/application.js
+  import Controller from '@ember/controller';
+
+  export default Controller.extend({
     writtenWords: "Lots of text that IS bound",
     twoWayWrittenWords: Ember.computed.alias("writtenWords")
   });

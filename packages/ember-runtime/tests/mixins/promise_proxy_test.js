@@ -184,7 +184,6 @@ QUnit.test('should work with promise inheritance', function() {
 
   PromiseSubclass.prototype = Object.create(RSVP.Promise.prototype);
   PromiseSubclass.prototype.constructor = PromiseSubclass;
-  PromiseSubclass.cast = RSVP.Promise.cast;
 
   let proxy = ObjectPromiseProxy.create({
     promise: new PromiseSubclass(() => { })

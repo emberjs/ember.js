@@ -129,7 +129,8 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 */
 function ComputedProperty(config, opts) {
   this.isDescriptor = true;
-  if (typeof config === 'function') {
+  let hasGetterOnly = typeof config === 'function';
+  if (hasGetterOnly) {
     this._getter = config;
   } else {
     assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
@@ -141,8 +142,9 @@ function ComputedProperty(config, opts) {
   this._suspended = undefined;
   this._meta = undefined;
   this._volatile = false;
+
   this._dependentKeys = opts && opts.dependentKeys;
-  this._readOnly =  false;
+  this._readOnly = opts && hasGetterOnly && opts.readOnly === true;
 }
 
 ComputedProperty.prototype = new Descriptor();
@@ -264,10 +266,13 @@ ComputedPropertyPrototype.property = function() {
   You can pass a hash of these values to a computed property like this:
 
   ```
-  person: Ember.computed(function() {
+  import { computed } from '@ember/object';
+  import Person from 'my-app/utils/person';
+
+  person: computed(function() {
     let personId = this.get('personId');
-    return App.Person.create({ id: personId });
-  }).meta({ type: App.Person })
+    return Person.create({ id: personId });
+  }).meta({ type: Person })
   ```
 
   The hash that you pass to the `meta()` function will be saved on the
@@ -299,12 +304,12 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
 
   // don't create objects just to invalidate
   let meta = peekMeta(obj);
-  if (!meta || meta.source !== obj) {
+  if (meta === undefined || meta.source !== obj) {
     return;
   }
 
   let cache = meta.readableCache();
-  if (cache && cache[keyName] !== undefined) {
+  if (cache !== undefined && cache[keyName] !== undefined) {
     cache[keyName] = undefined;
     removeDependentKeys(this, obj, keyName, meta);
   }
@@ -326,14 +331,10 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   }
 
   let ret = this._getter.call(obj, keyName);
-  if (ret === undefined) {
-    cache[keyName] = UNDEFINED;
-  } else {
-    cache[keyName] = ret;
-  }
+  cache[keyName] = ret === undefined ? UNDEFINED : ret;
 
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.revalidate(keyName);
   }
   addDependentKeys(this, obj, keyName, meta);
@@ -383,15 +384,14 @@ ComputedPropertyPrototype.setWithSuspend = function computedPropertySetWithSuspe
 };
 
 ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, value) {
-  // cache requires own meta
-  let meta           = metaFor(obj);
-  // either there is a writable cache or we need one to update
-  let cache          = meta.writableCache();
+  let meta = metaFor(obj);
+  let cache = meta.writableCache();
   let hadCachedValue = false;
   let cachedValue;
-  if (cache[keyName] !== undefined) {
-    if (cache[keyName] !== UNDEFINED) {
-      cachedValue = cache[keyName];
+  let val = cache[keyName];
+  if (val !== undefined) {
+    if (val !== UNDEFINED) {
+      cachedValue = val;
     }
     hadCachedValue = true;
   }

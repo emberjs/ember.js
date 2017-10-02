@@ -597,6 +597,9 @@ const Enumerable = Mixin.create({
     Returns `true` if the passed property resolves to the value of the second
     argument for all items in the enumerable. This method is often simpler/faster
     than using a callback.
+    
+    Note that like the native `Array.every`, `isEvery` will return true when called
+    on any empty enumerable.
 
     @method isEvery
     @param {String} key the property to test

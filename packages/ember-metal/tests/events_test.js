@@ -236,6 +236,20 @@ QUnit.test('a listener can be added as part of a mixin', function() {
   equal(triggered, 2, 'should invoke listeners');
 });
 
+QUnit.test('Ember.on asserts for invalid arguments', function() {
+  expectAssertion(()=> {
+    Mixin.create({
+      foo1: on('bar'),
+    });
+  }, 'Ember.on expects function as last argument');
+
+  expectAssertion(()=> {
+    Mixin.create({
+      foo1: on(function(){}),
+    });
+  }, 'Ember.on called without valid event names');
+});
+
 QUnit.test('a listener added as part of a mixin may be overridden', function() {
   let triggered = 0;
   let FirstMixin = Mixin.create({

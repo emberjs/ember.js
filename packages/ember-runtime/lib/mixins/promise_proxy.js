@@ -44,7 +44,7 @@ function tap(proxy, promise) {
   let ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
 
   let proxy = ObjectPromiseProxy.create({
-    promise: Ember.RSVP.cast($.getJSON('/some/remote/data.json'))
+    promise: Ember.RSVP.resolve($.getJSON('/some/remote/data.json'))
   });
 
   proxy.then(function(json){
@@ -67,7 +67,7 @@ function tap(proxy, promise) {
   When the $.getJSON completes, and the promise is fulfilled
   with json, the life cycle attributes will update accordingly.
   Note that $.getJSON doesn't return an ECMA specified promise,
-  it is useful to wrap this with an `RSVP.cast` so that it behaves
+  it is useful to wrap this with an `RSVP.resolve` so that it behaves
   as a spec compliant promise.
 
   ```javascript

@@ -57,11 +57,7 @@ export function removeArrayObserver(array, target, opts) {
 }
 
 export function objectAt(content, idx) {
-  if (content.objectAt) {
-    return content.objectAt(idx);
-  }
-
-  return content[idx];
+  return typeof content.objectAt === 'function' ? content.objectAt(idx) : content[idx];
 }
 
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
@@ -139,7 +135,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
   let meta = peekMeta(array);
-  let cache = meta && meta.readableCache();
+  let cache = meta !== undefined ? meta.readableCache() : undefined;
   if (cache !== undefined) {
     let length = get(array, 'length');
     let addedAmount = (addAmt === -1 ? 0 : addAmt);
@@ -169,7 +165,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
-  return obj && !!obj[EMBER_ARRAY];
+  return obj && obj[EMBER_ARRAY];
 }
 
 // ..........................................................
@@ -349,17 +345,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     if (isNone(beginIndex)) {
       beginIndex = 0;
+    } else if (beginIndex < 0) {
+      beginIndex = length + beginIndex;
     }
 
     if (isNone(endIndex) || (endIndex > length)) {
       endIndex = length;
-    }
-
-    if (beginIndex < 0) {
-      beginIndex = length + beginIndex;
-    }
-
-    if (endIndex < 0) {
+    } else if (endIndex < 0) {
       endIndex = length + endIndex;
     }
 

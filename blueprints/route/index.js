@@ -1,6 +1,6 @@
 /* eslint-env node */
 
-var fs                   = require('fs-extra');
+var fs                   = require('fs');
 var path                 = require('path');
 var chalk                = require('chalk');
 var stringUtil           = require('ember-cli-string-utils');

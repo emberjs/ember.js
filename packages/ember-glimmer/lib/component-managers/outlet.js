@@ -4,8 +4,7 @@
 */
 import { generateGuid, guidFor } from 'ember-utils';
 import {
-  ComponentDefinition,
-  CompiledArgs
+  ComponentDefinition
 } from '@glimmer/runtime';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';

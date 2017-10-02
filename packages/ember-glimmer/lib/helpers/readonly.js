@@ -59,7 +59,9 @@ import { unMut } from './mut';
   First let's set up the parent component:
 
   ```app/components/my-parent.js
-  export default Ember.Component.extend({
+  import Component from '@ember/component';
+
+  export default Component.extend({
     clicks: null,
 
     init() {
@@ -77,7 +79,9 @@ import { unMut } from './mut';
   Now, if you update the `total` property of `childClicks`:
 
   ```app/components/my-child.js
-  export default Ember.Component.extend({
+  import Component from '@ember/component';
+
+  export default Component.extend({
     click() {
       this.get('clicks').incrementProperty('total');
     }

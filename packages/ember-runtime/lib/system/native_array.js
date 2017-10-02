@@ -116,8 +116,10 @@ NativeArray = NativeArray.without(...ignore);
 
   Example
 
-  ```js
-  export default Ember.Component.extend({
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+
+  export default Component.extend({
     tagName: 'ul',
     classNames: ['pagination'],
 

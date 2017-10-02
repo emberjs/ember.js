@@ -58,7 +58,7 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 export function DEFAULT_GETTER_FUNCTION(name) {
   return function GETTER_FUNCTION() {
     let meta = peekMeta(this);
-    if (meta !== null && meta !== undefined) {
+    if (meta !== undefined) {
       return meta.peekValues(name);
     }
   };
@@ -68,7 +68,7 @@ export function INHERITING_GETTER_FUNCTION(name) {
   function IGETTER_FUNCTION() {
     let meta = peekMeta(this);
     let val;
-    if (meta !== null && meta !== undefined) {
+    if (meta !== undefined) {
       val = meta.readInheritedValue('values', name);
     }
 
@@ -130,9 +130,7 @@ export function INHERITING_GETTER_FUNCTION(name) {
     become the explicit value of this property.
 */
 export function defineProperty(obj, keyName, desc, data, meta) {
-  if (meta === null || meta === undefined) {
-    meta = metaFor(obj);
-  }
+  if (meta === undefined) { meta = metaFor(obj); }
 
   let watchEntry = meta.peekWatching(keyName);
   let watching = watchEntry !== undefined && watchEntry > 0;

@@ -340,7 +340,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/member.js
-    export default Ember.Route.extend({
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
       queryParams: {
         memberQp: { refreshModel: true }
       }
@@ -348,7 +350,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/member/interest.js
-    export default Ember.Route.extend({
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
       queryParams: {
         interestQp: { refreshModel: true }
       },
@@ -449,11 +453,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     changes or the route is exiting.
 
     ```app/routes/articles.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       resetController(controller, isExiting, transition) {
-        if (isExiting) {
+        if (isExiting && transition.targetName !== 'error') {
           controller.set('page', 1);
         }
       }
@@ -509,9 +513,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     template.
 
     ```app/routes/posts/list.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       templateName: 'posts/list'
     });
     ```
@@ -568,9 +572,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     half-filled out:
 
     ```app/routes/contact-form.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         willTransition(transition) {
           if (this.controller.get('userHasEnteredData')) {
@@ -611,9 +615,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     state on the controller.
 
     ```app/routes/login.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         didTransition() {
           this.controller.get('errors.base').clear();
@@ -635,7 +639,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     triggered the loading event is the second parameter.
 
     ```app/routes/application.js
-    export default Ember.Route.extend({
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
       actions: {
         loading(transition, route) {
           let controller = this.controllerFor('foo');
@@ -668,9 +674,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     as well as any unhandled errors from child routes:
 
     ```app/routes/admin.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       beforeModel() {
         return Ember.RSVP.reject('bad things!');
       },
@@ -699,9 +705,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     `error` handler on `ApplicationRoute`:
 
     ```app/routes/application.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         error(error, transition) {
           this.controllerFor('banner').displayError(error.message);
@@ -721,9 +727,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     not executed when the model for the route changes.
 
     ```app/routes/application.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       collectAnalytics: Ember.on('activate', function(){
         collectAnalytics();
       })
@@ -740,9 +746,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     route. It is not executed when the model for the route changes.
 
     ```app/routes/index.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       trackPageLeaveAnalytics: Ember.on('deactivate', function(){
         trackPageLeaveAnalytics();
       })
@@ -760,9 +766,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```app/routes/form.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         willTransition(transition) {
           if (this.controller.get('userHasEnteredData') &&
@@ -1030,9 +1036,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/index.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         transitionToNewArticle() {
           this.transitionTo('articles.new');
@@ -1058,9 +1064,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/index.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         moveToChocolateCereal() {
           let cereal = { cerealId: 'ChocolateYumminess' };
@@ -1087,9 +1093,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/index.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         transitionToApples() {
           this.transitionTo('fruits.apples', { queryParams: { color: 'red' } });
@@ -1180,9 +1186,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/secret.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       afterModel() {
         if (!authorized()){
           this.replaceWith('index');
@@ -1223,9 +1229,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/application.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         track(arg) {
           console.log(arg, 'was clicked');
@@ -1235,9 +1241,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/index.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       actions: {
         trackIfDebug(arg) {
           if (debug) {
@@ -1389,9 +1395,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     resolved.
 
     ```app/routes/posts.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       afterModel(posts, transition) {
         if (posts.get('length') === 1) {
           this.transitionTo('post.show', posts.get('firstObject'));
@@ -1515,9 +1521,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       model(params) {
         return this.store.findRecord('post', params.post_id);
       }
@@ -1640,9 +1646,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       model(params) {
         // the server returns `{ id: 12 }`
         return Ember.$.getJSON('/posts/' + params.post_id);
@@ -1688,9 +1694,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     `_super`:
 
     ```app/routes/photos.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       model() {
         return this.store.findAll('photo');
       },
@@ -1728,9 +1734,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       setupController(controller, model) {
         controller.set('model', model);
       }
@@ -1757,9 +1763,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     associated route or using `generateController`.
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       setupController(controller, post) {
         this._super(controller, post);
         this.controllerFor('posts').set('currentPost', post);
@@ -1798,9 +1804,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     Example
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       setupController(controller, post) {
         this._super(controller, post);
         this.generateController('posts');
@@ -1843,9 +1849,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/post/comments.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       model() {
         let post = this.modelFor('post');
         return post.get('comments');
@@ -1896,9 +1902,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     alternative templates.
 
     ```app/routes/posts.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       renderTemplate(controller, model) {
         let favController = this.controllerFor('favoritePost');
 
@@ -1957,9 +1963,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     `application.hbs` by calling `render`:
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       renderTemplate() {
         this.render('photos', {
           into: 'application',
@@ -1974,9 +1980,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
 
     ```app/routes/posts.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       renderTemplate(controller, model){
         this.render('posts', {    // the template to render, referenced by name
           into: 'application',    // the template to render into, referenced by name
@@ -2012,9 +2018,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/post.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default Ember.Route.extend({
+    export default Route.extend({
       renderTemplate() {
         this.render(); // all defaults apply
       }
@@ -2082,9 +2088,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     Example:
 
     ```app/routes/application.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default App.Route.extend({
+    export default Route.extend({
       actions: {
         showModal(evt) {
           this.render(evt.modalName, {
@@ -2092,6 +2098,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
             into: 'application'
           });
         },
+
         hideModal(evt) {
           this.disconnectOutlet({
             outlet: 'modal',
@@ -2107,9 +2114,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     Example:
 
     ```app/routes/application.js
-    import Ember from 'ember';
+    import Route from '@ember/routing/route';
 
-    export default App.Route.extend({
+    export default Route.extend({
       actions: {
         showModal(evt) {
           // ...

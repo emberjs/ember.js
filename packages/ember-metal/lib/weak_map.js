@@ -50,7 +50,7 @@ export class WeakMapPolyfill {
     if (!isObject(obj)) { return undefined; }
 
     let meta = peekMeta(obj);
-    if (meta) {
+    if (meta !== undefined) {
       let map = meta.readableWeak();
       if (map !== undefined) {
         let val = map[this._id];
@@ -91,7 +91,7 @@ export class WeakMapPolyfill {
     if (!isObject(obj)) { return false; }
 
     let meta = peekMeta(obj);
-    if (meta) {
+    if (meta !== undefined) {
       let map = meta.readableWeak();
       if (map !== undefined) {
         return map[this._id] !== undefined;
