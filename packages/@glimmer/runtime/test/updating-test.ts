@@ -9,18 +9,6 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
-/*
- * Phantom 1.9 does not serialize namespaced attributes correctly. The namespace
- * prefix is incorrectly stripped off.
- */
-const serializesNSAttributesCorrectly = (function () {
-  let div = <HTMLElement>document.createElement('div');
-  let span = <HTMLElement>document.createElement('span');
-  span.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang', 'en-uk');
-  div.appendChild(span);
-  return div.innerHTML === '<span xml:lang="en-uk"></span>';
-})();
-
 let root: HTMLElement;
 let env: TestEnvironment;
 let self: UpdatableReference<any>;
@@ -1734,53 +1722,51 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, "<div data-value='world'>hello</div>", "Revalidating after dirtying");
   });
 
-  if (serializesNSAttributesCorrectly) {
-    test("namespaced attribute nodes follow the normal dirtying rules", () => {
-      let template = compile("<div xml:lang='{{lang}}'>hello</div>");
-      let object = { lang: "en-us" };
+  test("namespaced attribute nodes follow the normal dirtying rules", () => {
+    let template = compile("<div xml:lang='{{lang}}'>hello</div>");
+    let object = { lang: "en-us" };
 
-      render(template, object);
+    render(template, object);
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
 
-      object.lang = "en-uk";
-      rerender();
+    object.lang = "en-uk";
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating without dirtying");
+    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating without dirtying");
 
-      rerender();
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating after dirtying");
-    });
+    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating after dirtying");
+  });
 
-    test("namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
-      let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
-      let object = { locale: "us" as (string | null) };
+  test("namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
+    let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
+    let object = { locale: "us" as (string | null) };
 
-      render(template, object);
+    render(template, object);
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
 
-      rerender();
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "No-op rerender");
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "No-op rerender");
 
-      object.locale = "uk";
-      rerender();
+    object.locale = "uk";
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "After update");
+    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "After update");
 
-      object.locale = null;
-      rerender();
+    object.locale = null;
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-'>hello</div>", "After updating to null");
+    equalTokens(root, "<div xml:lang='en-'>hello</div>", "After updating to null");
 
-      object.locale = "us";
-      rerender();
+    object.locale = "us";
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "After reset");
-    });
-  }
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "After reset");
+  });
 
   test("non-standard namespaced attribute nodes follow the normal dirtying rules", () => {
     let template = compile("<div epub:type='{{type}}'>hello</div>");
