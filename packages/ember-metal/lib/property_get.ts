@@ -11,12 +11,6 @@ import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';
 
-const ALLOWABLE_TYPES = {
-  object: true,
-  function: true,
-  string: true,
-};
-
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
 export let getPossibleMandatoryProxyValue: (obj: object, keyName: string) => any;
@@ -178,22 +172,18 @@ export function _getPath<T extends object>(root: T, path: string): any {
   let parts = path.split('.');
 
   for (let i = 0; i < parts.length; i++) {
-    if (!isGettable(obj)) {
+    if (obj === undefined || obj === null || obj.isDestroyed) {
       return undefined;
     }
 
     obj = get(obj, parts[i]);
+  }
 
-    if (obj && (obj as MaybeHasIsDestroyed).isDestroyed) {
-      return undefined;
-    }
+  if (obj !== undefined && obj !== null && (obj as MaybeHasIsDestroyed).isDestroyed) {
+    return undefined;
   }
 
   return obj;
-}
-
-function isGettable(obj: any): boolean {
-  return obj !== undefined && obj !== null && ALLOWABLE_TYPES[typeof obj];
 }
 
 /**
