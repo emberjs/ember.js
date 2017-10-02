@@ -5,6 +5,7 @@ import Bounds, { bounds, Cursor } from '../bounds';
 import { Simple, Option, Opaque } from "@glimmer/interfaces";
 import { DynamicContentWrapper } from './content/dynamic';
 import { expect, assert, Stack } from "@glimmer/util";
+import { SVG_NAMESPACE } from '../dom/helper';
 
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
   private unmatchedAttributes: Option<Simple.Attribute[]> = null;
@@ -189,7 +190,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   __openElement(tag: string, _operations?: ElementOperations): Simple.Element {
     let _candidate = this.candidateStack.pop();
 
-    if (_candidate && isElement(_candidate) && _candidate.tagName === tag.toUpperCase()) {
+    if (_candidate && isElement(_candidate) && isSameNodeType(_candidate, tag)) {
       this.unmatchedAttributes = [].slice.call(_candidate.attributes);
       this.candidateStack.push(_candidate.nextSibling);
       return _candidate;
@@ -343,6 +344,12 @@ function isSeparator(node: Simple.Node): boolean {
 
 function isEmpty(node: Simple.Node): boolean {
   return node.nodeType === 8 && node.nodeValue === '%empty%';
+}
+function isSameNodeType(candidate: Simple.Element, tag: string) {
+  if (candidate.namespaceURI === SVG_NAMESPACE) {
+    return candidate.tagName === tag;
+  }
+  return candidate.tagName === tag.toUpperCase();
 }
 
 function findByName(array: Simple.Attribute[], name: string): Simple.Attribute | undefined {

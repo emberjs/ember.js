@@ -149,6 +149,31 @@ class Rehydration extends InitialRenderSuite {
     this.assert.equal(clientRemote.innerHTML, '<inner>Wat Wat</inner>');
   }
 
+  @test "svg elements"() {
+    let template = '<svg>{{#if isTrue}}<circle />{{/if}}</svg><p>Hello</p>';
+    this.renderServerSide(template, { isTrue: true });
+    let b = blockStack();
+    this.assertHTML(strip`
+      ${b(0)}
+      <svg>
+        ${b(1)}
+        <circle />
+        ${b(1)}
+      </svg>
+      <p>Hello</p>
+      ${b(0)}
+    `);
+     this.renderClientSide(template, { isTrue: true });
+    this.assertRehydrationStats({ blocksRemoved: 0, nodesRemoved: 0 });
+    this.assertHTML(strip`
+      <svg>
+      <circle />
+      </svg>
+      <p>Hello</p>
+    `);
+    this.assertStableRerender();
+  }
+
   @test "#each rehydration"() {
     let template = "{{#each items key='id' as |item|}}<p>{{item}}</p>{{/each}}";
     this.renderServerSide(template, { items: [1, 2, 3] });
