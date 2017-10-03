@@ -54,8 +54,8 @@ module.exports = {
     "Chrome": [
       '--disable-gpu',
       '--headless',
-      '--remote-debugging-port=9222',
-      '--window-size=1440,900'
+      '--remote-debugging-port=0',
+      '--no-sandbox'
     ]
   },
   "launch_in_ci": [
@@ -69,6 +69,5 @@ module.exports = {
     "SL_Safari_Last",
     "SL_MS_Edge",
     "SL_IE_11"
-  ],
-  tap_quiet_logs: true
+  ]
 };

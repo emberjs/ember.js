@@ -16,6 +16,7 @@ function currentNode(cursor: ElementBuilder | { element: Simple.Element, nextSib
 
 class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   private serializeBlockDepth = 0;
+  private inTable = false;
 
   __openBlock(): void {
     let depth = this.serializeBlockDepth++;
@@ -30,7 +31,17 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 
   __appendHTML(html: string): Bounds {
+    // Do we need to run the html tokenizer here?
     let first = this.__appendComment('%glimmer%');
+    if (this.element.tagName === 'TABLE') {
+      let openIndex = html.indexOf('<');
+      if (openIndex > -1) {
+        let tr = html.slice(openIndex + 1, openIndex + 3);
+        if (tr === 'tr') {
+          html = `<tbody>${html}</tbody>`;
+        }
+      }
+    }
     super.__appendHTML(html);
     let last = this.__appendComment('%glimmer%');
     return new ConcreteBounds(this.element, first, last);
@@ -46,6 +57,34 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     }
 
     return super.__appendText(string);
+  }
+
+  closeElement() {
+    if (this.element['needsExtraClose'] === true) {
+      this.element['needsExtraClose'] = false;
+      super.closeElement();
+    }
+
+    super.closeElement();
+  }
+
+  openElement(tag: string) {
+
+    if (tag === 'tr') {
+      if (this.element.tagName !== 'TBODY') {
+        this.openElement('tbody');
+        // This prevents the closeBlock comment from being re-parented
+        // under the auto inserted tbody. Rehydration builder needs to
+        // account for the insertion since it is injected here and not
+        // really in the template.
+        this.constructing!['needsExtraClose'] = true;
+        this.flushElement();
+      }
+
+      this.inTable = false;
+    }
+
+    return super.openElement(tag);
   }
 
   pushRemoteElement(element: Simple.Element, cursorId: string,  nextSibling: Option<Simple.Node> = null) {

@@ -39,6 +39,10 @@ export class Stack<T> {
   private stack: T[] = [];
   public current: Option<T> = null;
 
+  public get size() {
+    return this.stack.length;
+  }
+
   push(item: T) {
     this.current = item;
     this.stack.push(item);
