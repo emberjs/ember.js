@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### 2.16.0-beta.2 (October, 2, 2017)
+
+- [#15577](https://github.com/emberjs/ember.js/pull/15577) [BUGFIX] Include missing sourcemaps in vendorTree.
+- [#15552](https://github.com/emberjs/ember.js/pull/15552) [FEATURE] Update blueprints and tests to RFC #176.
+- [#15600](https://github.com/emberjs/ember.js/pull/15600) [BUGFIX] ensure “pause on exception” pauses in the right place.
+- [#15616](https://github.com/emberjs/ember.js/pull/15616) [DOC release] Improve documentation for RouterService and mount helper.
+- [#15600](https://github.com/emberjs/ember.js/pull/15600) [BUGFIX LTS] ensure “pause on exception” pauses in the right place.
+- [#15667](https://github.com/emberjs/ember.js/pull/15667) [BUGFIX] Allow `0` to work with `get` helper.
+- [#15676](https://github.com/emberjs/ember.js/pull/15676) [BUGFIX] Fix `<input type="range">` so that it can properly bind `min`, `max`, and `value`.
+- [#15689](https://github.com/emberjs/ember.js/pull/15689) [BUGFIX] Mark error as handled before transition for error routes and substates.
+
+
 ### 2.16.0-beta.1 (August 31, 2017)
 
 - [#14764](https://github.com/emberjs/ember.js/pull/14764) Fixed string capitalize for accented characters.
