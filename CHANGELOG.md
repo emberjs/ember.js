@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 2.15.1 (October 2, 2017)
+
+- [#15600](https://github.com/emberjs/ember.js/pull/15600) [BUGFIX] ensure “pause on exception” pauses in the right place.
+- [#15689](https://github.com/emberjs/ember.js/pull/15689) [BUGFIX] Mark error as handled before transition for error routes and substates.
+
 ### 2.15.0 (August 31, 2017)
 
 - [#15577](https://github.com/emberjs/ember.js/pull/15577) [BUGFIX] Include missing sourcemaps in vendorTree.
