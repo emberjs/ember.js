@@ -24,7 +24,7 @@ export const OPEN: { marker: "open-block" } = { marker: "open-block" };
 export const CLOSE: { marker: "close-block" } = { marker: "close-block" };
 export const SEP: { marker: "sep" } = { marker: "sep" };
 export const EMPTY: { marker: "empty" } = { marker: "empty" };
-const GLIMMER_TEST_COMPONENT = "TestComponent";
+export const GLIMMER_TEST_COMPONENT = "TestComponent";
 const CURLY_TEST_COMPONENT = "test-component";
 
 export type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof EMPTY;
@@ -518,7 +518,6 @@ export function registerComponent<K extends ComponentKind>(env: LazyTestEnvironm
 }
 
 export interface RehydrationStats {
-  clearedBlocks: string[];
   clearedNodes: Simple.Node[];
 }
 
@@ -588,7 +587,6 @@ export class RehydrationDelegate implements RenderDelegate {
     });
 
     this.rehydrationStats = {
-      clearedBlocks: builder['clearedBlocks'],
       clearedNodes: builder['clearedNodes']
     };
 
@@ -601,7 +599,7 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.renderClientSide(template, context, element);
   }
 
-  registerComponent(type: ComponentKind, name: string, layout: string): void {
+  registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
     registerComponent(this.clientEnv, type, name, layout);
     registerComponent(this.serverEnv, type, name, layout);
   }
@@ -937,24 +935,24 @@ export function content(list: Content[]): string {
   return out.join('');
 }
 
-function assertEmberishElement(
+export function assertEmberishElement(
   element: HTMLElement,
   tagName: string,
   attrs: Object,
   contents: string
 ): void;
-function assertEmberishElement(
+export function assertEmberishElement(
   element: HTMLElement,
   tagName: string,
   attrs: Object
 ): void;
-function assertEmberishElement(
+export function assertEmberishElement(
   element: HTMLElement,
   tagName: string,
   contents: string
 ): void;
-function assertEmberishElement(element: HTMLElement, tagName: string): void;
-function assertEmberishElement(...args: any[]): void {
+export function assertEmberishElement(element: HTMLElement, tagName: string): void;
+export function assertEmberishElement(...args: any[]): void {
   let element = args[0];
   let tagName, attrs, contents;
 

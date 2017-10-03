@@ -197,8 +197,6 @@ const ConstructionOperations: ConstructionFunction[] = [
       constructing
     } = state;
 
-    // if (constants[text] === 'it works!') debugger;
-
     let parentElement = constructing ? flush(state) : parent;
     let textNode = document.createTextNode(constants[text]);
     parentElement.insertBefore(textNode, nextSibling);

@@ -2,12 +2,7 @@ import { RehydrateBuilder, ElementBuilder, Environment, Cursor } from '@glimmer/
 import { Simple } from '@glimmer/interfaces';
 
 export class DebugRehydrationBuilder extends RehydrateBuilder {
-  clearedBlocks: string[] = [];
   clearedNodes: Simple.Node[] = [];
-  clearBlock(count: number) {
-    this.clearedBlocks.push(`block:${count}`);
-    super.clearBlock(count);
-  }
 
   remove(node: Simple.Node) {
     let next = super.remove(node);
