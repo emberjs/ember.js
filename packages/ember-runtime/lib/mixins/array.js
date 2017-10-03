@@ -655,9 +655,8 @@ EachProxy.prototype = {
   arrayWillChange(content, idx, removedCnt, addedCnt) {
     let keys = this._keys;
     let lim = removedCnt > 0 ? idx + removedCnt : -1;
-    let meta;
+    let meta = peekMeta(this);
     for (let key in keys) {
-      meta = meta === undefined ? peekMeta(this) : meta;
       if (lim > 0) {
         removeObserverForContentKey(content, key, this, idx, lim);
       }
@@ -668,9 +667,8 @@ EachProxy.prototype = {
   arrayDidChange(content, idx, removedCnt, addedCnt) {
     let keys = this._keys;
     let lim = addedCnt > 0 ? idx + addedCnt : -1;
-    let meta;
+    let meta = peekMeta(this);
     for (let key in keys) {
-      meta = meta === undefined ? peekMeta(this) : meta;
       if (lim > 0) {
         addObserverForContentKey(content, key, this, idx, lim);
       }
