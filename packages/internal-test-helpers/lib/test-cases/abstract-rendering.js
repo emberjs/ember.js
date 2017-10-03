@@ -12,10 +12,12 @@ const TextNode = window.Text;
 export default class AbstractRenderingTestCase extends AbstractTestCase {
   constructor() {
     super();
+    let bootOptions = this.getBootOptions();
+
     let owner = this.owner = buildOwner({
       ownerOptions: this.getOwnerOptions(),
-      bootOptions: this.getBootOptions(),
-      resolver: this.getResolver()
+      resolver: this.getResolver(),
+      bootOptions,
     });
 
     this.renderer = this.owner.lookup('renderer:-dom');
@@ -24,7 +26,9 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
 
     owner.register('event_dispatcher:main', EventDispatcher);
     owner.inject('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
-    owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
+    if (!bootOptions || bootOptions.isInteractive !== false) {
+      owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
+    }
   }
 
   compile() {
