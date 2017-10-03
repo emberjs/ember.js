@@ -369,6 +369,52 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
     });
   }
 
+  [`@test visit() does not setup the event_dispatcher:main if isInteractive is false (with Engines) GH#15615`](assert) {
+    assert.expect(3);
+
+    this.router.map(function() {
+      this.mount('blog');
+    });
+
+    this.addTemplate('application', '<h1>Hello world</h1>{{outlet}}');
+    this.add('event_dispatcher:main', {
+      create() { throw new Error('should not happen!'); }
+    });
+
+    // Register engine
+    let BlogEngine = Engine.extend({
+      init(...args) {
+        this._super.apply(this, args);
+        this.register('template:application', compile('{{cache-money}}'));
+        this.register('template:components/cache-money', compile(`
+          <p>Dis cache money</p>
+        `));
+        this.register('component:cache-money', Component.extend({}));
+      }
+    });
+    this.add('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {};
+    this.add('route-map:blog', BlogMap);
+
+    assert.strictEqual(
+      this.$('#qunit-fixture').children().length, 0,
+      'there are no elements in the fixture element'
+    );
+
+    return this.visit('/blog', { isInteractive: false }).then(instance => {
+      assert.ok(
+        instance instanceof ApplicationInstance,
+        'promise is resolved with an ApplicationInstance'
+      );
+      assert.strictEqual(
+        this.$().find('p').text(), 'Dis cache money',
+        'Engine component is resolved'
+      );
+    });
+  }
+
   [`@test visit() on engine resolves engine component`](assert) {
     assert.expect(2);
 

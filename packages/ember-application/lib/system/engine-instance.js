@@ -181,8 +181,11 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       '-view-registry:main',
       `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
       'service:-document',
-      'event_dispatcher:main'
     ];
+
+    if (env.isInteractive) {
+      singletons.push('event_dispatcher:main');
+    }
 
     singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
 
