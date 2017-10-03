@@ -58,6 +58,7 @@
     "jquery": "^3.2.1",
     "resolve": "^1.3.3",
     "rsvp": "^3.6.1",
+    "silent-error": "^1.1.0",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.4.1"
   },
