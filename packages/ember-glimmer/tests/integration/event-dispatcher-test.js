@@ -209,15 +209,6 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.render(`{{x-foo}}`);
   }
 
-  ['@test canDispatchToEventManager is deprecated in EventDispatcher'](assert) {
-    let MyDispatcher = EventDispatcher.extend({
-      canDispatchToEventManager: null
-    });
-
-    expectDeprecation(/`canDispatchToEventManager` has been deprecated/);
-    MyDispatcher.create();
-  }
-
   ['@test a rootElement can be specified'](assert) {
     this.$().append('<div id="app"></div>');
     this.dispatcher.setup({ myevent: 'myEvent' }, '#app');
@@ -257,6 +248,27 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     assert.throws(() => {
       this.dispatcher.setup({ myevent: 'myEvent' }, '#app');
     });
+  }
+});
+
+moduleFor('custom EventDispatcher subclass with #setup', class extends RenderingTest {
+  constructor() {
+    super();
+
+    let dispatcher = this.owner.lookup('event_dispatcher:main');
+    run(dispatcher, 'destroy');
+    this.owner.__container__.reset('event_dispatcher:main');
+    this.owner.unregister('event_dispatcher:main');
+  }
+
+  ['@test canDispatchToEventManager is deprecated in EventDispatcher'](assert) {
+    let MyDispatcher = EventDispatcher.extend({
+      canDispatchToEventManager: null
+    });
+    this.owner.register('event_dispatcher:main', MyDispatcher);
+
+    expectDeprecation(/`canDispatchToEventManager` has been deprecated/);
+    this.owner.lookup('event_dispatcher:main');
   }
 });
 

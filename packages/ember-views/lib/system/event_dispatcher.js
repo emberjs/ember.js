@@ -10,7 +10,6 @@ import { deprecate } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
-import { environment } from 'ember-environment';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
@@ -136,7 +135,13 @@ export default EmberObject.extend({
 
   init() {
     this._super();
-    assert('EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.', environment.hasDOM);
+
+    assert('EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.', (() => {
+      let owner = getOwner(this);
+      let environment = owner.lookup('-environment:main');
+
+      return environment.isInteractive;
+    })());
 
     deprecate(
       `\`canDispatchToEventManager\` has been deprecated in ${this}.`,

@@ -63,6 +63,7 @@ QUnit.test('customEvents added to the application before setupEventDispatcher', 
   assert.expect(1);
 
   appInstance = run(() => ApplicationInstance.create({ application }));
+  appInstance.setupRegistry();
 
   application.customEvents = {
     awesome: 'sauce'
@@ -80,6 +81,7 @@ QUnit.test('customEvents added to the application before setupEventDispatcher', 
   assert.expect(1);
 
   run(() => appInstance = ApplicationInstance.create({ application }));
+  appInstance.setupRegistry();
 
   application.customEvents = {
     awesome: 'sauce'
@@ -97,6 +99,7 @@ QUnit.test('customEvents added to the application instance before setupEventDisp
   assert.expect(1);
 
   appInstance = run(() => ApplicationInstance.create({ application }));
+  appInstance.setupRegistry();
 
   appInstance.customEvents = {
     awesome: 'sauce'
