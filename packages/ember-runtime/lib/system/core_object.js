@@ -17,6 +17,7 @@ import {
 import {
   get,
   meta,
+  peekMeta,
   finishChains,
   sendEvent,
   detectBinding,
@@ -38,10 +39,10 @@ import { assert, Error as EmberError } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { MANDATORY_SETTER } from 'ember/features';
 
-let schedule = run.schedule;
-let applyMixin = Mixin._apply;
-let finishPartial = Mixin.finishPartial;
-let reopen = Mixin.prototype.reopen;
+const schedule = run.schedule;
+const applyMixin = Mixin._apply;
+const finishPartial = Mixin.finishPartial;
+const reopen = Mixin.prototype.reopen;
 
 export const POST_INIT = symbol('POST_INIT');
 
@@ -403,7 +404,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   isDestroyed: descriptor({
     get() {
-      return meta(this).isSourceDestroyed();
+      return peekMeta(this).isSourceDestroyed();
     },
 
     set(value) {
@@ -428,7 +429,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   isDestroying: descriptor({
     get() {
-      return meta(this).isSourceDestroying();
+      return peekMeta(this).isSourceDestroying();
     },
 
     set(value) {
@@ -456,7 +457,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   destroy() {
-    let m = meta(this);
+    let m = peekMeta(this);
     if (m.isSourceDestroying()) { return; }
 
     m.setSourceDestroying();
@@ -535,7 +536,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${this[NAME_KEY] || meta(this).factory || this.constructor.toString()}:${guidFor(this)}${extension}>`;
+    let ret = `<${this[NAME_KEY] || peekMeta(this).factory || this.constructor.toString()}:${guidFor(this)}${extension}>`;
 
     return ret;
   }
