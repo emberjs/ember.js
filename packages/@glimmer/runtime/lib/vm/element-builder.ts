@@ -125,7 +125,7 @@ export class NewElementBuilder implements ElementBuilder {
   public operations: Option<ElementOperations> = null;
   public env: Environment;
 
-  private cursorStack = new Stack<Cursor>();
+  protected cursorStack = new Stack<Cursor>();
   private blockStack = new Stack<Tracker>();
 
   static forInitialRender(env: Environment, cursor: Cursor) {
@@ -145,7 +145,7 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
-    this.cursorStack.push(new Cursor(parentNode, nextSibling));
+    this.pushElement(parentNode, nextSibling);
 
     this.env = env;
     this.dom = env.getAppendOperations();
@@ -185,7 +185,7 @@ export class NewElementBuilder implements ElementBuilder {
     return this.pushBlockTracker(new BlockListTracker(this.element, list));
   }
 
-  private pushBlockTracker<T extends Tracker>(tracker: T, isRemote = false): T {
+  protected pushBlockTracker<T extends Tracker>(tracker: T, isRemote = false): T {
     let current = this.blockStack.current;
 
     if (current !== null) {
@@ -210,13 +210,9 @@ export class NewElementBuilder implements ElementBuilder {
   __openBlock(): void {}
   __closeBlock(): void {}
 
+  // todo return seems unused
   openElement(tag: string): Simple.Element {
     let element = this.__openElement(tag);
-
-    if (tag === 'tbody' && this.element.tagName === 'TBODY') {
-      this.popElement();
-    }
-
     this.constructing = element;
 
     return element;
@@ -237,10 +233,6 @@ export class NewElementBuilder implements ElementBuilder {
 
     this.pushElement(element, null);
     this.didOpenElement(element);
-
-    if (element.tagName === 'TABLE') {
-      this.pushElement(this.dom.createElement('tbody'), null);
-    }
   }
 
   __flushElement(parent: Simple.Element, constructing: Simple.Element) {
@@ -249,15 +241,7 @@ export class NewElementBuilder implements ElementBuilder {
 
   closeElement() {
     this.willCloseElement();
-
-    if (this.element.tagName === 'TBODY' || this.element.tagName === 'COLGROUP') {
-      let tbody = this.cursorStack.current!.element;
-      this.popElement();
-      this.__flushElement(this.element, tbody);
-    } else {
-      this.popElement();
-    }
-
+    this.popElement();
   }
 
   pushRemoteElement(element: Simple.Element, _guid: string, nextSibling: Option<Simple.Node> = null) {
@@ -507,7 +491,7 @@ export class SimpleBlockTracker implements Tracker {
   }
 }
 
-class RemoteBlockTracker extends SimpleBlockTracker {
+export class RemoteBlockTracker extends SimpleBlockTracker {
   destroy() {
     super.destroy();
 
