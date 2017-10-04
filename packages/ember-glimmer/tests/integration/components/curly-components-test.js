@@ -2537,6 +2537,18 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
   }
 
+  ['@test using reserved `container` raises an exception'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        container: null
+      })
+    });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, 'You must not use `container` as a property in a component');
+  }
+
   ['@test should toggle visibility with isVisible'](assert) {
     let assertStyle = (expected) => {
       let matcher = styles(expected);
