@@ -96,7 +96,7 @@ QUnit.module('ember reexports');
   ['watch', 'ember-metal'],
   ['isWatching', 'ember-metal'],
   ['unwatch', 'ember-metal'],
-  ['destroy', 'ember-metal'],
+  ['destroy', 'ember-metal', 'deleteMeta'],
   ['libraries', 'ember-metal'],
   ['OrderedSet', 'ember-metal'],
   ['Map', 'ember-metal'],

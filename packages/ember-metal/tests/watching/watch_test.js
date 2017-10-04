@@ -8,7 +8,7 @@ import {
   addListener,
   watch,
   unwatch,
-  destroy
+  deleteMeta
 } from '../..';
 import { testBoth } from 'internal-test-helpers';
 
@@ -183,7 +183,7 @@ QUnit.test('when watching another object, destroy should remove chain watchers f
   equal(meta_objB.peekWatching('foo'), 1, 'should be watching foo');
   equal(meta_objB.readableChainWatchers().has('foo', chainNode), true, 'should have chain watcher');
 
-  destroy(objA);
+  deleteMeta(objA);
 
   equal(meta_objB.peekWatching('foo'), 0, 'should not be watching foo');
   equal(meta_objB.readableChainWatchers().has('foo', chainNode), false, 'should not have chain watcher');
