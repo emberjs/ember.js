@@ -414,7 +414,7 @@ CoreObject.PrototypeMixin = Mixin.create({
         return;
       }
 
-      assert(`You cannot set \`${this}.isDestroyed\` directly, please use `.destroy()`.`, false);
+      assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, false);
     }
   }),
 
@@ -439,7 +439,7 @@ CoreObject.PrototypeMixin = Mixin.create({
         return;
       }
 
-      assert(`You cannot set \`${this}.isDestroying\` directly, please use `.destroy()`.`, false);
+      assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, false);
     }
   }),
 
