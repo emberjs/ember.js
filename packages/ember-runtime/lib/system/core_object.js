@@ -110,7 +110,8 @@ function makeCtor() {
         });
       }
 
-      self.__defineNonEnumerable(GUID_KEY_PROPERTY);
+      Object.defineProperty(this, GUID_KEY_PROPERTY.name, GUID_KEY_PROPERTY.descriptor);
+
       let m = meta(self);
       let proto = m.proto;
       m.proto = self;
@@ -311,11 +312,6 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   init() {},
-
-  __defineNonEnumerable(property) {
-    Object.defineProperty(this, property.name, property.descriptor);
-    //this[property.name] = property.descriptor.value;
-  },
 
   /**
     Defines the properties that will be concatenated from the superclass
