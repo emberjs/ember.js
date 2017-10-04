@@ -165,11 +165,7 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
 
-  if (DEBUG) {
-    if (isArray(value)) { // use conditional to avoid stringifying every time
-      assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, false);
-    }
-  }
+  assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, !isArray(value));
 
   if (!baseValue) { return value; }
 
