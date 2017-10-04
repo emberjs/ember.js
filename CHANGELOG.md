@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### 2.15.2 (October 4, 2017)
+
+- [#15604](https://github.com/emberjs/ember.js/pull/15604) [BUGFIX] Ember Inspector Data Adapter: Only trigger model type update if the record live array count actually changed.
+- [#15695](https://github.com/emberjs/ember.js/pull/15695) [BUGFIX] Avoid creating event dispatcher in FastBoot with Engines.
+
+
 ### 2.15.1 (October 2, 2017)
 
 - [#15600](https://github.com/emberjs/ember.js/pull/15600) [BUGFIX] ensure “pause on exception” pauses in the right place.
