@@ -140,6 +140,33 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
     });
   }
 
+  ['@test Model Types Updated but Unchanged Do not Trigger Callbacks']() {
+    expect(0);
+    let records = emberA([1, 2, 3]);
+    this.add('data-adapter:main', DataAdapter.extend({
+      getRecords(klass, name) {
+        return records;
+      }
+    }));
+    this.add('model:post', PostClass);
+
+    return this.visit('/').then(() => {
+      adapter = this.applicationInstance.lookup('data-adapter:main');
+
+      function modelTypesAdded(types) {
+        run(() => {
+          records.arrayContentDidChange(0, 0, 0);
+        });
+      }
+
+      function modelTypesUpdated(types) {
+        ok(false, "modelTypesUpdated should not be triggered if the array didn't change");
+      }
+
+      adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
+    });
+  }
+
   ['@test Records Added']() {
     let countAdded = 1;
     let post = PostClass.create();

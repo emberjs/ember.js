@@ -294,8 +294,12 @@ export default EmberObject.extend({
     }
 
     let observer = {
-      didChange() {
-        run.scheduleOnce('actions', this, onChange);
+      didChange(array, idx, removedCount, addedCount) {
+        // Only re-fetch records if the record count changed
+        // (which is all we care about as far as model types are concerned).
+        if (removedCount > 0 || addedCount > 0) {
+          run.scheduleOnce('actions', this, onChange);
+        }
       },
       willChange() { return this; }
     };
