@@ -146,7 +146,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.renderServerSide(template, { remote });
     let serializedRemote = this.delegate.serialize(remote);
     this.assert.equal(serializedRemote, strip`
-      <script id="%cursor:0%"></script>
+      <script glmr="%cursor:0%"></script>
       <!--%+block:2%--><inner>Wat Wat</inner><!--%-block:2%-->
     `);
     env = this.delegate.clientEnv;
@@ -158,45 +158,53 @@ class Rehydration extends AbstractRehydrationTests {
     this.element = host.firstChild as HTMLElement;
 
     this.renderClientSide(template, { remote: clientRemote });
-    // The removal is the serialized cursor e.g. <script id="%cursor:1%"></script>
-    this.assertRehydrationStats({ nodesRemoved: 1 });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assert.equal(clientRemote.innerHTML, '<inner>Wat Wat</inner>');
   }
 
-  // TODO clean this up
   @test "nested in-element can rehydrate"() {
-    let template = '<outer>{{#in-element remote}}<inner>{{#in-element remote2}}Wat Wat{{/in-element}}</inner>{{/in-element}}</outer>';
+    let template = strip`
+    <outer>
+      {{#in-element remoteParent}}
+        <inner>{{#in-element remoteChild}}Wat Wat{{/in-element}}</inner>
+      {{/in-element}}
+    </outer>
+    `;
     let env = this.delegate.serverEnv;
-    let remote = env.getAppendOperations().createElement('remote');
-    let remote2 = env.getAppendOperations().createElement('other');
+    let remoteParent = env.getAppendOperations().createElement('remote');
+    let remoteChild = env.getAppendOperations().createElement('other');
 
-    this.renderServerSide(template, { remote, remote2 });
-    let serializedRemote = this.delegate.serialize(remote);
-    let serializedRemote2 = this.delegate.serialize(remote2);
-    this.assert.equal(serializedRemote, strip`
-      <script id="%cursor:0%"></script>
-      <!--%+block:2%--><inner><!--%+block:3%--><!----><!--%-block:3%--></inner><!--%-block:2%-->
-    `);
-    this.assert.equal(serializedRemote2, strip`
-      <script id="%cursor:1%"></script>
-      <!--%+block:4%-->Wat Wat<!--%-block:4%-->
-    `);
+    this.renderServerSide(template, { remoteParent, remoteChild });
+    let serializedParentRemote = this.delegate.serialize(remoteParent);
+    let serializedRemoteChild = this.delegate.serialize(remoteChild);
+    let b = blockStack();
+    this.assert.equal(serializedParentRemote, strip`
+      <script glmr="%cursor:0%"></script>
+      ${b(2)}
+        <inner>
+          ${b(3)}<!---->${b(3)}
+        </inner>
+      ${b(2)}
+    `, 'Serialized parent remote');
+    this.assert.equal(serializedRemoteChild, strip`
+      <script glmr="%cursor:1%"></script>
+      ${b(4)}Wat Wat${b(4)}
+    `, 'Serilaized nested remote');
     env = this.delegate.clientEnv;
-    let clientRemote = remote = env.getDOM().createElement('remote') as HTMLElement;
-    let clientRemote2 = remote = env.getDOM().createElement('other') as HTMLElement;
+    let clientRemoteParent = env.getDOM().createElement('remote') as HTMLElement;
+    let clientRemoteChild = env.getDOM().createElement('other') as HTMLElement;
     let host = env.getDOM().createElement('div') as HTMLElement;
     host.appendChild(this.element);
-    host.appendChild(clientRemote);
-    host.appendChild(clientRemote2);
+    host.appendChild(clientRemoteParent);
+    host.appendChild(clientRemoteChild);
 
-    clientRemote.innerHTML = serializedRemote;
-    clientRemote2.innerHTML = serializedRemote2;
+    clientRemoteParent.innerHTML = serializedParentRemote;
+    clientRemoteChild.innerHTML = serializedRemoteChild;
     this.element = host.firstChild as HTMLElement;
-    this.renderClientSide(template, { remote: clientRemote });
-    // The removal is the serialized cursor e.g. <script id="%cursor:1%"></script>
-    this.assertRehydrationStats({ nodesRemoved: 1 });
-    this.assert.equal(clientRemote.innerHTML, '<inner><!----></inner>');
-    this.assert.equal(clientRemote2.textContent, 'Wat Wat');
+    this.renderClientSide(template, { remoteParent: clientRemoteParent, remoteChild: clientRemoteChild });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.equal(clientRemoteParent.innerHTML, '<inner><!----></inner>');
+    this.assert.equal(clientRemoteChild.textContent, 'Wat Wat');
   }
 
   @test "svg elements"() {
