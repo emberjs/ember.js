@@ -210,7 +210,9 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (candidate) {
       if (isTextNode(candidate)) {
-        candidate.nodeValue = string;
+        if (candidate.nodeValue !== string) {
+          candidate.nodeValue = string;
+        }
         this.candidate = candidate.nextSibling;
         return candidate;
       } else if (candidate && (isSeparator(candidate) || isEmpty(candidate))) {
@@ -235,8 +237,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   __appendComment(string: string): Simple.Comment {
     let _candidate = this.candidate;
     if (_candidate && isComment(_candidate)) {
-      // TODO should not rehydrated a special comment
-      _candidate.nodeValue = string;
+
+      if (_candidate.nodeValue !== string) {
+        _candidate.nodeValue = string;
+      }
+
       this.candidate =_candidate.nextSibling;
       return _candidate;
     } else if (_candidate) {
@@ -270,7 +275,9 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     if (unmatched) {
       let attr = findByName(unmatched, name);
       if (attr) {
-        attr.value = value;
+        if (attr.value !== value) {
+          attr.value = value;
+        }
         unmatched.splice(unmatched.indexOf(attr), 1);
         return;
       }
@@ -285,7 +292,9 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     if (unmatched) {
       let attr = findByName(unmatched, name);
       if (attr) {
-        attr.value = value;
+        if (attr.value !== value) {
+          attr.value = value;
+        }
         unmatched.splice(unmatched.indexOf(attr), 1);
         return;
       }
