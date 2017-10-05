@@ -244,9 +244,12 @@ export class NewElementBuilder implements ElementBuilder {
     this.popElement();
   }
 
-  pushRemoteElement(element: Simple.Element, _guid: string, nextSibling: Option<Simple.Node> = null) {
-    this.pushElement(element, nextSibling);
+  pushRemoteElement(element: Simple.Element, guid: string, nextSibling: Option<Simple.Node> = null) {
+    this.__pushRemoteElement(element, guid, nextSibling);
+  }
 
+  __pushRemoteElement(element: Simple.Element, _guid: string, nextSibling: Option<Simple.Node>) {
+    this.pushElement(element, nextSibling);
     let tracker = new RemoteBlockTracker(element);
     this.pushBlockTracker(tracker, true);
   }
