@@ -15,6 +15,7 @@ import EmberArray, {
 import MutableArray from '../mixins/mutable_array';
 import Observable from '../mixins/observable';
 import Copyable from '../mixins/copyable';
+import { assert } from 'ember-debug';
 import { FROZEN_ERROR } from '../mixins/freezable';
 import copy from '../copy';
 
@@ -54,9 +55,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // primitive for array support.
   replace(idx, amt, objects) {
-    if (this.isFrozen) {
-      throw FROZEN_ERROR;
-    }
+    assert(FROZEN_ERROR, !this.isFrozen);
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length
