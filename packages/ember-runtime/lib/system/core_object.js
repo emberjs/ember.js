@@ -29,7 +29,7 @@ import {
   computed,
   InjectedProperty,
   run,
-  destroy,
+  deleteMeta,
   descriptor,
   _hasCachedComputedProperties
 } from 'ember-metal';
@@ -486,7 +486,7 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   _scheduledDestroy(m) {
     if (m.isSourceDestroyed()) { return; }
-    destroy(this);
+    deleteMeta(this);
     m.setSourceDestroyed();
   },
 

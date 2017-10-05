@@ -532,6 +532,16 @@ if (HAS_NATIVE_WEAKMAP) {
   };
 }
 
+/**
+  Tears down the meta on an object so that it can be garbage collected.
+  Multiple calls will have no effect.
+
+  @method deleteMeta
+  @for Ember
+  @param {Object} obj  the object to destroy
+  @return {void}
+  @private
+*/
 export function deleteMeta(obj) {
   if (DEBUG) {
     counters.deleteCalls++;

@@ -13,8 +13,7 @@ import {
   isPath
 } from './path_cache';
 import {
-  peekMeta,
-  deleteMeta
+  peekMeta
 } from './meta';
 
 /**
@@ -54,15 +53,3 @@ export function unwatch(obj, _keyPath, m) {
     unwatchKey(obj, _keyPath, m);
   }
 }
-
-/**
-  Tears down the meta on an object so that it can be garbage collected.
-  Multiple calls will have no effect.
-
-  @method destroy
-  @for Ember
-  @param {Object} obj  the object to destroy
-  @return {void}
-  @private
-*/
-export { deleteMeta as destroy };

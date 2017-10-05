@@ -30,7 +30,8 @@ export {
 export {
   META_DESC,
   meta,
-  peekMeta
+  peekMeta,
+  deleteMeta
 } from './meta';
 export { default as Cache } from './cache';
 export {
@@ -89,7 +90,6 @@ export {
   unwatchPath
 } from './watch_path';
 export {
-  destroy,
   isWatching,
   unwatch,
   watch,
