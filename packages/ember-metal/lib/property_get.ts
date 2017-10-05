@@ -172,15 +172,11 @@ export function _getPath<T extends object>(root: T, path: string): any {
   let parts = path.split('.');
 
   for (let i = 0; i < parts.length; i++) {
-    if (obj === undefined || obj === null || obj.isDestroyed) {
+    if (obj === undefined || obj === null || (obj as MaybeHasIsDestroyed).isDestroyed) {
       return undefined;
     }
 
     obj = get(obj, parts[i]);
-  }
-
-  if (obj !== undefined && obj !== null && (obj as MaybeHasIsDestroyed).isDestroyed) {
-    return undefined;
   }
 
   return obj;

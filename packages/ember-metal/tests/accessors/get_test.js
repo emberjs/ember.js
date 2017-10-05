@@ -1,6 +1,8 @@
 import { ENV } from 'ember-environment';
+import { Object as EmberObject } from 'ember-runtime';
 import { get, getWithDefault, Mixin, observer, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { run } from '@ember/runloop';
 
 function aget(x, y) {
   return x[y];
@@ -96,6 +98,23 @@ moduleFor(
       } else {
         assert.ok('SKIPPING ACCESSORS');
       }
+    }
+
+    ['@test get works with paths correctly'](assert) {
+      let func = function() {};
+      func.bar = 'awesome';
+
+      let destroyedObj = EmberObject.create({ bar: 'great' });
+      run(() => destroyedObj.destroy());
+
+      assert.equal(get({ foo: null }, 'foo.bar'), undefined);
+      assert.equal(get({ foo: { bar: 'hello' } }, 'foo.bar.length'), 5);
+      assert.equal(get({ foo: func }, 'foo.bar'), 'awesome');
+      assert.equal(get({ foo: func }, 'foo.bar.length'), 7);
+      assert.equal(get({}, 'foo.bar.length'), undefined);
+      assert.equal(get(function() {}, 'foo.bar.length'), undefined);
+      assert.equal(get('', 'foo.bar.length'), undefined);
+      assert.equal(get({ foo: destroyedObj }, 'foo.bar'), undefined);
     }
 
     ['@test warn on attempts to call get with no arguments']() {
