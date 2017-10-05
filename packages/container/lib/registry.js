@@ -491,7 +491,8 @@ export default class Registry {
    @param {String} injectionName
    */
   injection(fullName, property, injectionName) {
-    this.validateFullName(injectionName);
+    assert(`Invalid injectionName, expected: 'type:name' got: ${injectionName}`, this.isValidFullName(injectionName));
+
     let normalizedInjectionName = this.normalize(injectionName);
 
     if (fullName.indexOf(':') === -1) {
@@ -535,13 +536,6 @@ export default class Registry {
     }
 
     return assign({}, fallbackKnown, localKnown, resolverKnown);
-  }
-
-  validateFullName(fullName) {
-    if (!this.isValidFullName(fullName)) {
-      throw new TypeError(`Invalid Fullname, expected: 'type:name' got: ${fullName}`);
-    }
-    return true;
   }
 
   isValidFullName(fullName) {
