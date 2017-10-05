@@ -6,10 +6,19 @@ export class DebugRehydrationBuilder extends RehydrateBuilder {
 
   remove(node: Simple.Node) {
     let next = super.remove(node);
+    let el = node as Element;
+
     if (node.nodeType !== 8) {
-      // Only push nodes that effect the UI
-      this.clearedNodes.push(node);
+      if (el.nodeType === 1) {
+        // don't stat serialized cursor positions
+        if (el.tagName !== 'SCRIPT' && !el.getAttribute('gmlr')) {
+          this.clearedNodes.push(node);
+        }
+      } else {
+        this.clearedNodes.push(node);
+      }
     }
+
     return next;
   }
 }

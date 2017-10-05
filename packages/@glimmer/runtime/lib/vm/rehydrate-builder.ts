@@ -84,7 +84,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
         }
         assert(current !== null, 'should have found closing block');
       } else {
-        // assert current.parentNode === lastMatched
         while (current !== null) {
           current = this.remove(current);
         }
@@ -115,13 +114,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       this.clearMismatch(candidate);
     }
   }
-
-  // <el>
-  //  null
-  //  open block set
-  //    open block  incr
-  //    close block dcr
-  //  close unset
 
   __closeBlock(): void {
     let { currentCursor } = this;
@@ -334,23 +326,23 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     super.willCloseElement();
   }
 
-  getMarker(element: Simple.Element, guid: string): Simple.Node {
-    let marker = element.firstChild;
-    if (marker && marker['id'] === guid) {
+  getMarker(element: HTMLElement, guid: string): Simple.Node {
+    let marker = element.querySelector(`script[glmr="${guid}"]`);
+    if (marker) {
       return marker;
     }
 
     throw new Error('Cannot find serialized cursor for `in-element`');
   }
 
-  pushRemoteElement(element: Simple.Element, cursorId: string, _nextSibling: Option<Simple.Node> = null) {
-    let marker = this.getMarker(element, cursorId);
+  __pushRemoteElement(element: Simple.Element, cursorId: string, nextSibling: Option<Simple.Node> = null) {
+    let marker = this.getMarker(element as HTMLElement, cursorId);
 
     if (marker.parentNode === element) {
       let currentCursor = this.currentCursor;
       let candidate = currentCursor!.candidate;
 
-      this.pushElement(element, _nextSibling);
+      this.pushElement(element, nextSibling);
 
       currentCursor!.candidate = candidate;
       this.candidate = this.remove(marker);
@@ -367,11 +359,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       this.candidate = last && last.nextSibling;
     }
     return bounds;
-  }
-
-  didOpenElement(element: Simple.Element): Simple.Element {
-    super.didOpenElement(element);
-    return element;
   }
 }
 
