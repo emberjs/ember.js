@@ -92,7 +92,7 @@ export default class Container {
    @return {any}
    */
   lookup(fullName, options) {
-    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
   }
 
@@ -152,7 +152,7 @@ export default class Container {
   factoryFor(fullName, options = {}) {
     let normalizedName = this.registry.normalize(fullName);
 
-    assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
+    assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
 
     if (options.source) {
       let expandedFullName = this.registry.expandLocalLookup(fullName, options);

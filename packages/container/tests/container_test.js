@@ -474,9 +474,9 @@ QUnit.test('#factoryFor class is registered class', (assert) => {
 QUnit.test('#factoryFor must supply a fullname', (assert) => {
   let registry = new Registry();
   let container = registry.container();
-  assert.throws(() => {
+  expectAssertion(() => {
     container.factoryFor('chad-bar');
-  }, /Invalid Fullname, expected: 'type:name' got: chad-bar/);
+  }, /fullName must be a proper full name/);
 });
 
 QUnit.test('#factoryFor returns a factory manager', (assert) => {

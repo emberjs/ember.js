@@ -138,7 +138,7 @@ export default class Registry {
    @param {Object} options
    */
   register(fullName, factory, options = {}) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
@@ -167,7 +167,7 @@ export default class Registry {
    @param {String} fullName
    */
   unregister(fullName) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
 
@@ -215,7 +215,7 @@ export default class Registry {
    @return {Function} fullName's factory
    */
   resolve(fullName, options) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     let factory = resolve(this, this.normalize(fullName), options);
     if (factory === undefined && this.fallback) {
       factory = this.fallback.resolve(...arguments);
@@ -433,7 +433,7 @@ export default class Registry {
    @param {String} fullName
    */
   typeInjection(type, property, fullName) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let fullNameType = fullName.split(':')[0];
     assert(`Cannot inject a '${fullName}' on other ${type}(s).`, fullNameType !== type);
@@ -498,7 +498,7 @@ export default class Registry {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     let normalizedName = this.normalize(fullName);
 
     let injections = this._injections[normalizedName] ||
@@ -541,7 +541,6 @@ export default class Registry {
     if (!this.isValidFullName(fullName)) {
       throw new TypeError(`Invalid Fullname, expected: 'type:name' got: ${fullName}`);
     }
-
     return true;
   }
 
@@ -593,9 +592,9 @@ export default class Registry {
    */
   expandLocalLookup(fullName, options) {
     if (this.resolver && this.resolver.expandLocalLookup) {
-      assert('fullName must be a proper full name', this.validateFullName(fullName));
+      assert('fullName must be a proper full name', this.isValidFullName(fullName));
       assert('options.source must be provided to expandLocalLookup', options && options.source);
-      assert('options.source must be a proper full name', this.validateFullName(options.source));
+      assert('options.source must be a proper full name', this.isValidFullName(options.source));
 
       let normalizedFullName = this.normalize(fullName);
       let normalizedSource = this.normalize(options.source);
@@ -624,7 +623,7 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
-        assert(`Expected a proper full name, given '${hash[key]}'`, this.validateFullName(hash[key]));
+        assert(`Expected a proper full name, given '${hash[key]}'`, this.isValidFullName(hash[key]));
 
         injections.push({
           property: key,
