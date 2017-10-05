@@ -19,7 +19,7 @@ import applyStr from './apply-str';
   @private
 */
 export function canInvoke(obj, methodName) {
-  return !!(obj && typeof obj[methodName] === 'function');
+  return obj !== null && obj !== undefined && typeof obj[methodName] === 'function';
 }
 
 /**
