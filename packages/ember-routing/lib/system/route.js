@@ -1308,20 +1308,17 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       // Update the model dep values used to calculate cache keys.
       stashParamNames(this.router, transition.state.handlerInfos);
 
+      let cache = this._bucketCache;
       let params = transition.params;
       let allParams = queryParams.propertyNames;
-      let cache = this._bucketCache;
 
       allParams.forEach(prop => {
         let aQp = queryParams.map[prop];
-
         aQp.values = params;
-        let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
 
-        if (cache) {
-          let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
-          set(controller, prop, value);
-        }
+        let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
+        let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
+        set(controller, prop, value);
       });
 
       let qpValues = getQueryParamsFor(this, transition.state);
@@ -1343,13 +1340,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   _qpChanged(prop, value, qp) {
     if (!qp) { return; }
 
-    let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, qp.values);
-
     // Update model-dep cache
     let cache = this._bucketCache;
-    if (cache) {
-      cache.stash(cacheKey, prop, value);
-    }
+    let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, qp.values);
+    cache.stash(cacheKey, prop, value);
   },
 
   /**
@@ -2127,7 +2121,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
     });
 	```
-	
+
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name
     @since 1.0.0
