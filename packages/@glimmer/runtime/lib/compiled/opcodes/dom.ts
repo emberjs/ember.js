@@ -164,14 +164,19 @@ export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
   public type = 'patch-element';
 
   public tag: Tag;
+  public lastRevision: number;
 
   constructor(private reference: VersionedReference<Opaque>, private attribute: DynamicAttribute) {
     super();
     this.tag = reference.tag;
+    this.lastRevision = this.tag.value();
   }
 
   evaluate(vm: UpdatingVM) {
-    let { attribute, reference } = this;
-    attribute.update(reference.value(), vm.env);
+    let { attribute, reference, tag } = this;
+    if (!tag.validate(this.lastRevision)) {
+      this.lastRevision = tag.value();
+      attribute.update(reference.value(), vm.env);
+    }
   }
 }
