@@ -533,6 +533,31 @@ QUnit.test('#factoryFor instance have a common parent', (assert) => {
   assert.deepEqual(instance1.constructor, instance2.constructor);
 });
 
+QUnit.test('can properly reset cache', (assert) => {
+  let registry = new Registry();
+  let container = registry.container();
+
+  let Component = factory();
+  registry.register('component:foo-bar', Component);
+
+  let factory1 = container.factoryFor('component:foo-bar');
+  let factory2 = container.factoryFor('component:foo-bar');
+
+  let instance1 = container.lookup('component:foo-bar');
+  let instance2 = container.lookup('component:foo-bar');
+
+  assert.equal(instance1, instance2);
+  assert.equal(factory1, factory2);
+
+  container.reset();
+
+  let factory3 = container.factoryFor('component:foo-bar');
+  let instance3 = container.lookup('component:foo-bar');
+
+  assert.notEqual(instance1, instance3);
+  assert.notEqual(factory1, factory3);
+});
+
 QUnit.test('#factoryFor created instances come with instance injections', (assert) => {
   let registry = new Registry();
   let container = registry.container();
