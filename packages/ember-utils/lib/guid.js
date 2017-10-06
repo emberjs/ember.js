@@ -91,13 +91,9 @@ export let GUID_KEY_PROPERTY = {
     separate the guid into separate namespaces.
   @return {String} the guid
 */
-export function generateGuid(obj, prefix) {
-  if (!prefix) {
-    prefix = GUID_PREFIX;
-  }
-
-  let ret = (prefix + uuid());
-  if (obj) {
+export function generateGuid(obj, prefix = GUID_PREFIX) {
+  let ret = prefix + uuid();
+  if (obj !== undefined && obj !== null) {
     if (obj[GUID_KEY] === null) {
       obj[GUID_KEY] = ret;
     } else {
@@ -128,14 +124,6 @@ export function generateGuid(obj, prefix) {
   @return {String} the unique guid for this instance.
 */
 export function guidFor(obj) {
-  let type = typeof obj;
-  let isObject = type === 'object' && obj !== null;
-  let isFunction = type === 'function';
-
-  if ((isObject || isFunction) && obj[GUID_KEY]) {
-    return obj[GUID_KEY];
-  }
-
   // special cases where we don't want to add a key to object
   if (obj === undefined) {
     return '(undefined)';
@@ -145,8 +133,12 @@ export function guidFor(obj) {
     return '(null)';
   }
 
-  let ret;
+  let type = typeof obj;
+  if ((type === 'object' || type === 'function') && obj[GUID_KEY]) {
+    return obj[GUID_KEY];
+  }
 
+  let ret;
   // Don't allow prototype changes to String etc. to change the guidFor
   switch (type) {
     case 'number':
@@ -179,19 +171,6 @@ export function guidFor(obj) {
         return '(Array)';
       }
 
-      ret = GUID_PREFIX + uuid();
-
-      if (obj[GUID_KEY] === null) {
-        obj[GUID_KEY] = ret;
-      } else {
-        GUID_DESC.value = ret;
-
-        if (obj.__defineNonEnumerable) {
-          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-        } else {
-          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-        }
-      }
-      return ret;
+      return generateGuid(obj);
   }
 }
