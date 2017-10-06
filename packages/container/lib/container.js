@@ -306,16 +306,9 @@ function instantiateFactory(container, fullName, options) {
   throw new Error('Could not create factory');
 }
 
-function markInjectionsAsDynamic(injections) {
-  injections._dynamic = true;
-}
-
-function areInjectionsNotDynamic(injections) {
-  return injections._dynamic !== true;
-}
-
 function buildInjections() /* container, ...injections */{
   let hash = {};
+  let isDynamic = false;
 
   if (arguments.length > 1) {
     let container = arguments[0];
@@ -332,21 +325,16 @@ function buildInjections() /* container, ...injections */{
       container.registry.validateInjections(injections);
     }
 
-    let markAsDynamic = false;
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
-      if (!markAsDynamic) {
-        markAsDynamic = !isSingleton(container, injection.fullName);
+      if (!isDynamic) {
+        isDynamic = !isSingleton(container, injection.fullName);
       }
-    }
-
-    if (markAsDynamic) {
-      markInjectionsAsDynamic(hash);
     }
   }
 
-  return hash;
+  return { injections: hash, isDynamic };
 }
 
 function injectionsFor(container, fullName) {
@@ -354,9 +342,11 @@ function injectionsFor(container, fullName) {
   let splitName = fullName.split(':');
   let type = splitName[0];
 
-  let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
-
-  return injections;
+  return buildInjections(
+    container,
+    registry.getTypeInjections(type),
+    registry.getInjections(fullName)
+  );
 }
 
 function destroyDestroyables(container) {
@@ -412,14 +402,16 @@ class FactoryManager {
   }
 
   create(options = {}) {
-    let injections = this.injections;
-    if (injections === undefined) {
-      injections = injectionsFor(this.container, this.normalizedName);
-      if (areInjectionsNotDynamic(injections)) {
+    let injectionsCache = this.injections;
+    if (injectionsCache === undefined) {
+      let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
+      injectionsCache = injections;
+      if (!isDynamic) {
         this.injections = injections;
       }
     }
-    let props = assign({}, injections, options);
+
+    let props = assign({}, injectionsCache, options);
 
     if (DEBUG) {
       let lazyInjections;
