@@ -2,6 +2,8 @@ import { UpdatableReference } from "@glimmer/object-reference";
 import { IteratorResult } from '@glimmer/runtime';
 import { equalTokens, TestDynamicScope, TestEnvironment } from "@glimmer/test-helpers";
 import { SVG_NAMESPACE, RenderResult, Template, normalizeProperty, clientBuilder } from "@glimmer/runtime";
+import { ConstReference, PathReference } from "@glimmer/reference";
+import { Opaque } from "@glimmer/util";
 
 const { assert, test } = QUnit;
 
@@ -37,6 +39,35 @@ function readDOMAttr(element: Element, attr: string) {
 
 function render(template: Template, context = {}) {
   self = new UpdatableReference(context);
+
+  env.begin();
+  let cursor = { element: root, nextSibling: null };
+  let templateIterator = template.renderLayout({
+    env,
+    self,
+    builder: clientBuilder(env, cursor),
+    dynamicScope: new TestDynamicScope()
+  });
+  let iteratorResult: IteratorResult<RenderResult>;
+  do {
+    iteratorResult = templateIterator.next();
+  } while (!iteratorResult.done);
+
+  result = iteratorResult.value;
+  env.commit();
+  assertInvariants(result);
+  return result;
+}
+
+class ConstPathReference<T> extends ConstReference<T> implements PathReference<T> {
+  get(key: string): PathReference<Opaque> {
+    return new ConstPathReference(this.inner[key]);
+  }
+}
+
+function renderConst(template: Template, context = {}) {
+  let self = new ConstPathReference(context);
+
   env.begin();
   let cursor = { element: root, nextSibling: null };
   let templateIterator = template.renderLayout({
@@ -699,4 +730,21 @@ test("input list attribute updates properly", () => {
   rerender({ foo: "bar" });
 
   equalTokens(root, '<input list="bar" />');
+});
+
+test("attributes should not be set if not invalidated", () => {
+  let template = compile('<div class={{foo}}></div>');
+
+  let context = { foo: "bar" };
+  renderConst(template, context);
+
+  equalTokens(root, '<div class="bar"></div>');
+
+  root!.firstChild!['setAttribute'] = function() {
+    throw new Error("Should not setAttribute on an unchanged element");
+  };
+
+  rerender();
+
+  equalTokens(root, '<div class="bar"></div>');
 });
