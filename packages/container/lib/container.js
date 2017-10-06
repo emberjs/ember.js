@@ -404,7 +404,7 @@ class FactoryManager {
   }
 
   toString() {
-    if (!this.madeToString) {
+    if (this.madeToString === undefined) {
       this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
     }
 
