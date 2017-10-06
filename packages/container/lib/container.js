@@ -367,7 +367,7 @@ function destroyDestroyables(container) {
     let key = keys[i];
     let value = cache[key];
 
-    if (isInstantiatable(container, key) && value.destroy) {
+    if (value.destroy) {
       value.destroy();
     }
   }
