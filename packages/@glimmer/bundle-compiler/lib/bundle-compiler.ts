@@ -26,7 +26,7 @@ import {
 } from "@glimmer/program";
 
 import { Specifier } from "./specifiers";
-import { SpecifierMap, LookupMap } from "./specifier-map";
+import { SpecifierMap } from "./specifier-map";
 import { CompilerDelegate } from "./compiler-delegate";
 
 export interface BundleCompileOptions {
@@ -91,7 +91,7 @@ export class BundleCompiler {
   private program: WriteOnlyProgram;
 
   private specifiers = new SpecifierMap();
-  private firstPass = new LookupMap<Specifier, AddedTemplate>();
+  private firstPass = new Map<Specifier, AddedTemplate>();
 
   constructor(delegate: CompilerDelegate, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
@@ -137,7 +137,7 @@ export class BundleCompiler {
 
   compileOptions(specifier: Specifier, asPartial = false): CompileOptions<Specifier> {
     let { program, macros, Builder } = this;
-    let lookup = new BundlingLookup(this.delegate, this.specifiers);
+    let lookup = new BundlingLookup(this.delegate, this.specifiers, this);
 
     return {
       program,
@@ -172,7 +172,7 @@ export class BundleCompiler {
 }
 
 class BundlingLookup implements CompileTimeLookup<Specifier> {
-  constructor(private delegate: CompilerDelegate, private map: SpecifierMap) { }
+  constructor(private delegate: CompilerDelegate, private map: SpecifierMap, public compiler: BundleCompiler) { }
 
   private registerSpecifier(specifier: Specifier): number {
     let { bySpecifier, byHandle } = this.map;
@@ -195,7 +195,10 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
 
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
     let specifier = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated specifier`);
-    return this.delegate.getComponentLayout(specifier);
+
+    let compilable = this.delegate.getComponentLayout(specifier);
+
+    return compilable;
   }
 
   lookupHelper(name: string, referrer: Specifier): Option<number> {

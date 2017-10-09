@@ -16,6 +16,5 @@ export {
 } from './lib/specifiers';
 
 export {
-  SpecifierMap,
-  LookupMap
+  SpecifierMap
 } from './lib/specifier-map';
