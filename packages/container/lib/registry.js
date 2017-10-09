@@ -568,23 +568,6 @@ Registry.prototype = {
     return VALID_FULL_NAME_REGEXP.test(fullName);
   },
 
-  normalizeInjectionsHash(hash) {
-    let injections = [];
-
-    for (let key in hash) {
-      if (hash.hasOwnProperty(key)) {
-        assert(`Expected a proper full name, given '${hash[key]}'`, this.validateFullName(hash[key]));
-
-        injections.push({
-          property: key,
-          fullName: hash[key]
-        });
-      }
-    }
-
-    return injections;
-  },
-
   getInjections(fullName) {
     let injections = this._injections[fullName] || [];
     if (this.fallback) {
@@ -655,6 +638,23 @@ function deprecateResolverFunction(registry) {
 }
 
 if (DEBUG) {
+  Registry.prototype.normalizeInjectionsHash = function(hash) {
+    let injections = [];
+
+    for (let key in hash) {
+      if (hash.hasOwnProperty(key)) {
+        assert(`Expected a proper full name, given '${hash[key]}'`, this.validateFullName(hash[key]));
+
+        injections.push({
+          property: key,
+          fullName: hash[key]
+        });
+      }
+    }
+
+    return injections;
+  }
+
   Registry.prototype.validateInjections = function(injections) {
     if (!injections) { return; }
 
