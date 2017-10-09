@@ -150,8 +150,11 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   _resolveLocalLookupName(name, source, owner) {
-    return EMBER_MODULE_UNIFICATION ? `${source}:${name}`
-      : owner._resolveLocalLookupName(name, source);
+    if (EMBER_MODULE_UNIFICATION) {
+      return `${source}:${name}`;
+    } else {
+      return owner._resolveLocalLookupName(name, source);
+    }
   }
 
   macros() {
