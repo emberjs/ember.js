@@ -253,10 +253,12 @@ function lookup(container, fullName, options = {}) {
     }
   }
 
-  let cacheKey = container._resolverCacheKey(fullName, options);
-  let cached = container.cache[cacheKey];
-  if (cached !== undefined && options.singleton !== false) {
-    return cached;
+  if (options.singleton !== false) {
+    let cacheKey = container._resolverCacheKey(fullName, options);
+    let cached = container.cache[cacheKey];
+    if (cached !== undefined) {
+      return cached;
+    }
   }
 
   return instantiateFactory(container, fullName, options);
@@ -285,11 +287,10 @@ function instantiateFactory(container, fullName, options) {
     return;
   }
 
-  let cacheKey = container._resolverCacheKey(fullName, options);
-
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
+    let cacheKey = container._resolverCacheKey(fullName, options);
     return container.cache[cacheKey] = factoryManager.create();
   }
 
