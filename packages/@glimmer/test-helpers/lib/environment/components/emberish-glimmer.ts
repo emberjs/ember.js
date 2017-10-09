@@ -12,6 +12,7 @@ import TestSpecifier from '../specifier';
 import { BASIC_CAPABILITIES } from './basic';
 import { TestComponentDefinitionState } from '../components';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
+import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -56,20 +57,24 @@ export class EmberishGlimmerComponentManager
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout({ name }: TestComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
-    let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
-      let layout = createTemplate(source);
-      let template = new ScannableTemplate(options, layout).asLayout();
+  getLayout({ name, specifier }: TestComponentDefinitionState, resolver: LazyRuntimeResolver | EagerRuntimeResolver): Invocation {
+    if (resolver instanceof LazyRuntimeResolver) {
+      let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
+        let layout = createTemplate(source);
+        let template = new ScannableTemplate(options, layout).asLayout();
 
-      return {
-        handle: template.compile(),
-        symbolTable: template.symbolTable
+        return {
+          handle: template.compile(),
+          symbolTable: template.symbolTable
+        };
       };
-    };
 
-    let handle = resolver.lookup('template-source', name)!;
+      let handle = resolver.lookup('template-source', name)!;
 
-    return resolver.compileTemplate(handle, name, compile);
+      return resolver.compileTemplate(handle, name, compile);
+    }
+
+    return resolver.getInvocation(specifier!);
   }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<Opaque> {
