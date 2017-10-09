@@ -12,7 +12,7 @@ try {
   console.log('TAP version 13');
   console.log('1..1');
   console.log('# Smoke testing types');
-  execa.sync('tsc', ['--noEmit', '--module', 'commonjs', 'dist/types-smoke-test.ts']);
+  execa.sync('tsc', ['--noEmit', '--target', 'ES2015', '--module', 'commonjs', 'dist/types-smoke-test.ts']);
   console.log('ok 1 - types passed smoke test');
 } catch (err) {
   let { message } = err;
