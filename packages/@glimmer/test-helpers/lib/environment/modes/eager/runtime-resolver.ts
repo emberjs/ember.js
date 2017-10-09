@@ -1,5 +1,5 @@
 import { RuntimeResolver, ComponentDefinition, VMHandle, Recast, ProgramSymbolTable } from '@glimmer/interfaces';
-import { Specifier, SpecifierMap, LookupMap } from '@glimmer/bundle-compiler';
+import { Specifier, SpecifierMap } from '@glimmer/bundle-compiler';
 import { Opaque, Option, expect } from '@glimmer/util';
 import { Invocation } from "@glimmer/runtime";
 
@@ -9,7 +9,7 @@ export default class EagerRuntimeResolver implements RuntimeResolver<Specifier> 
   constructor(
     private map: SpecifierMap,
     private modules: Modules,
-    public symbolTables: LookupMap<Specifier, ProgramSymbolTable>
+    public symbolTables: Map<Specifier, ProgramSymbolTable>
   ) {}
 
   lookupHelper(_name: string, _meta: Opaque): Option<number> {
