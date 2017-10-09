@@ -870,9 +870,9 @@ backbone@^1.1.2:
   dependencies:
     underscore ">=1.8.3"
 
-backburner.js@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/backburner.js/-/backburner.js-1.2.1.tgz#26adfcd4d06adc80f78be010b3ff90bf44fc7790"
+backburner.js@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/backburner.js/-/backburner.js-1.2.2.tgz#0350aae362cf0522e6618f24d4b0a44cda2ec81e"
 
 backo2@1.0.2:
   version "1.0.2"
@@ -3387,7 +3387,7 @@ indexof@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/indexof/-/indexof-0.0.1.tgz#82dc336d232b9062179d05ab3293a66059fd435d"
 
-inflection@^1.7.0, inflection@^1.7.1:
+inflection@^1.12.0, inflection@^1.7.0, inflection@^1.7.1:
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/inflection/-/inflection-1.12.0.tgz#a200935656d6f5f6bc4dc7502e1aecb703228416"
 
