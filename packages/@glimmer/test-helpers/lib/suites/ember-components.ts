@@ -1,6 +1,7 @@
-import { RenderTest, test } from "../render-test";
+import { RenderTest, test, assertEmberishElement } from "../render-test";
 import { classes } from '../environment';
 import { EmberishGlimmerComponent } from "../environment/components/emberish-glimmer";
+import { strip } from "../helpers";
 
 export class EmberishComponentTests extends RenderTest {
   @test({ kind: 'glimmer' })
@@ -12,6 +13,25 @@ export class EmberishComponentTests extends RenderTest {
     this.registerComponent('Glimmer', 'HelloWorld', '<h1>Hello {{@name}}!</h1>');
     this.render('<Main />');
     this.assertHTML('<div><h1>Hello Glimmer!</h1></div>');
+  }
+
+  @test({ kind: 'glimmer' })
+  "top level in-element"() {
+    this.registerComponent('Glimmer', 'Foo', '<Bar data-bar={{@childName}} @data={{@data}} />');
+    this.registerComponent('Glimmer', 'Bar', '<div ...attributes>Hello World</div>');
+
+    let el = document.createElement('div');
+
+    this.render(strip`
+    {{#each components key="id" as |component|}}
+      {{#in-element component.mount}}
+        {{component component.name childName=component.child data=component.data}}
+      {{/in-element}}
+    {{/each}}
+    `, { components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] });
+    assertEmberishElement(el.firstChild as HTMLElement, 'div', { 'data-bar': 'Bar' }, 'Hello World');
+    this.rerender({ components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] });
+    assertEmberishElement(el.firstChild as HTMLElement, 'div', { 'data-bar': 'Bar' }, 'Hello World');
   }
 
   @test
