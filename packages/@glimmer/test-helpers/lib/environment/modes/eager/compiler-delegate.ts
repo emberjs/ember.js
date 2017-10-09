@@ -1,11 +1,12 @@
-import { ICompilableTemplate } from '@glimmer/opcode-compiler';
+import { ICompilableTemplate, CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
 import { CompilerDelegate, Specifier, specifierFor } from '@glimmer/bundle-compiler';
 import { Dict } from '@glimmer/util';
-import { VMHandle, ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 
 import { Modules } from './modules';
 import { ComponentDefinition } from '@glimmer/runtime';
 import { TestComponentDefinitionState } from "@glimmer/test-helpers";
+import { SerializedTemplateBlock } from '@glimmer/wire-format';
 
 export type ComponentDefinitionWithCapabilities = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -13,8 +14,6 @@ export default class EagerCompilerDelegate implements CompilerDelegate {
   constructor(
     private components: Dict<ComponentDefinitionWithCapabilities>,
     private modules: Modules,
-    private compileTimeModules: Modules,
-    private compile: (specifier: Specifier) => VMHandle
   ) {}
 
   hasComponentInScope(componentName: string, referrer: Specifier): boolean {
@@ -30,17 +29,8 @@ export default class EagerCompilerDelegate implements CompilerDelegate {
     return this.components[specifier.module].state.capabilities;
   }
 
-  getComponentLayout(specifier: Specifier): ICompilableTemplate<ProgramSymbolTable> {
-    let compile = this.compile;
-    let module = this.compileTimeModules.get(specifier.module)!;
-    let table = module.get(specifier.name) as ProgramSymbolTable;
-
-    return {
-      symbolTable: table,
-      compile(): VMHandle {
-        return compile(specifier);
-      }
-    };
+  getComponentLayout(_specifier: Specifier, block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable> {
+    return CompilableTemplate.topLevel(block, options);
   }
 
   hasHelperInScope(helperName: string, referrer: Specifier): boolean {

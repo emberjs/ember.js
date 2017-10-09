@@ -12,7 +12,7 @@ import {
   ElementBuilder,
   Cursor
 } from '@glimmer/runtime';
-import { LookupMap, specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
+import { specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
 import { ProgramSymbolTable, Recast, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
@@ -71,7 +71,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
   protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
-  protected specifiersToSymbolTable = new LookupMap<Specifier, ProgramSymbolTable>();
+  protected specifiersToSymbolTable = new Map<Specifier, ProgramSymbolTable>();
 
   constructor(env: Environment) {
     this.env = env || new EagerTestEnvironment();
@@ -134,9 +134,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
     let macros = new TestMacros();
-    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules, this.compileTimeModules, specifier => {
-      return compiler.compileSpecifier(specifier);
-    });
+    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
     let program = new WriteOnlyProgram(new DebugConstants());
     let compiler = new BundleCompiler(delegate, { macros, program });
 
