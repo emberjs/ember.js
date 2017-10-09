@@ -134,9 +134,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
     let macros = new TestMacros();
-    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules, this.compileTimeModules, specifier => {
-      return compiler.compileSpecifier(specifier);
-    });
+    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
     let program = new WriteOnlyProgram(new DebugConstants());
     let compiler = new BundleCompiler(delegate, { macros, program });
 

@@ -1,7 +1,8 @@
 import { ProgramSymbolTable, ComponentCapabilities } from "@glimmer/interfaces";
-import { ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { ICompilableTemplate, CompileOptions } from "@glimmer/opcode-compiler";
 
 import { Specifier } from "./specifiers";
+import { SerializedTemplateBlock } from "@glimmer/wire-format";
 
 /**
  * A CompilerDelegate helps the BundleCompiler map external references it finds
@@ -60,7 +61,7 @@ export interface CompilerDelegate {
    * and it should return a compilable template that the compiler adds to the
    * set of templates to compile for the bundle.
    */
-  getComponentLayout(specifier: Specifier): ICompilableTemplate<ProgramSymbolTable>;
+  getComponentLayout(specifier: Specifier, block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable>;
 
   /**
    * During compilation, the compiler will ask the delegate about each possible

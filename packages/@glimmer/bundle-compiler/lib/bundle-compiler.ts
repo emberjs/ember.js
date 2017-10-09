@@ -89,9 +89,10 @@ export class BundleCompiler {
   protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
   private program: WriteOnlyProgram;
+  private _compileOptions: CompileOptions<Specifier>;
 
   private specifiers = new SpecifierMap();
-  private firstPass = new Map<Specifier, AddedTemplate>();
+  public compiledBlocks = new Map<Specifier, AddedTemplate>();
 
   constructor(delegate: CompilerDelegate, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
@@ -114,16 +115,16 @@ export class BundleCompiler {
   add(specifier: Specifier, input: string): SerializedTemplateBlock {
     let block = this.preprocess(specifier, input);
 
-    this.firstPass.set(specifier, block);
+    this.compiledBlocks.set(specifier, block);
     return block;
   }
 
   addCustom(specifier: Specifier, input: ICompilableTemplate<ProgramSymbolTable>): void {
-    this.firstPass.set(specifier, input);
+    this.compiledBlocks.set(specifier, input);
   }
 
   compile() {
-    this.firstPass.forEach((_block, specifier) => {
+    this.compiledBlocks.forEach((_block, specifier) => {
       this.compileSpecifier(specifier);
     });
 
@@ -136,10 +137,12 @@ export class BundleCompiler {
   }
 
   compileOptions(specifier: Specifier, asPartial = false): CompileOptions<Specifier> {
+    if (this._compileOptions) { return this._compileOptions; }
+
     let { program, macros, Builder } = this;
     let lookup = new BundlingLookup(this.delegate, this.specifiers, this);
 
-    return {
+    return this._compileOptions = {
       program,
       macros,
       Builder,
@@ -153,7 +156,7 @@ export class BundleCompiler {
     let handle = this.specifiers.vmHandleBySpecifier.get(specifier) as Recast<number, VMHandle>;
     if (handle) return handle;
 
-    let block = expect(this.firstPass.get(specifier), `Can't compile a template that wasn't already added (${specifier.name} @ ${specifier.module})`);
+    let block = expect(this.compiledBlocks.get(specifier), `Can't compile a template that wasn't already added (${specifier.name} @ ${specifier.module})`);
 
     let options = this.compileOptions(specifier);
 
@@ -172,7 +175,7 @@ export class BundleCompiler {
 }
 
 class BundlingLookup implements CompileTimeLookup<Specifier> {
-  constructor(private delegate: CompilerDelegate, private map: SpecifierMap, public compiler: BundleCompiler) { }
+  constructor(private delegate: CompilerDelegate, private map: SpecifierMap, private compiler: BundleCompiler) { }
 
   private registerSpecifier(specifier: Specifier): number {
     let { bySpecifier, byHandle } = this.map;
@@ -195,10 +198,15 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
 
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
     let specifier = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated specifier`);
+    let block = this.compiler.compiledBlocks.get(specifier);
 
-    let compilable = this.delegate.getComponentLayout(specifier);
+    if (block && isCompilableTemplate(block)) {
+      return block;
+    }
 
-    return compilable;
+    expect(block, 'Should have a SerializedTemplateBlock');
+
+    return this.delegate.getComponentLayout(specifier, block!, this.compiler.compileOptions(specifier));
   }
 
   lookupHelper(name: string, referrer: Specifier): Option<number> {
