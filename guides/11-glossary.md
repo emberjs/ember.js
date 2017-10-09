@@ -127,7 +127,7 @@ can decide whether the hook is called `didInsertElement`, `componentDidMount`,
 
 ## Element Modifier
 
-An modifier is a special kind of helper that appears in the attribute position of an
+An element modifier is a special kind of helper that appears in the attribute position of an
 element, like this:
 
 ```hbs
@@ -159,7 +159,7 @@ something like Glimmer Native, for example.
 
 ## Handle
 
-A handle is a unique integer identifier is assigned to external objects referred
+A handle is a unique integer identifier assigned to external objects referred
 to in templates (such as helpers, other components, etc).
 
 The integer is encoded as operands in the compiled [bytecode](#bytecode). At run
