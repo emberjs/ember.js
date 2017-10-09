@@ -126,6 +126,10 @@ export default class EagerRenderDelegate implements RenderDelegate {
     };
   }
 
+  getSelf(context: Opaque) {
+    return new UpdatableReference(context);
+  }
+
   registerHelper(name: string, helper: UserHelper): void {
     let glimmerHelper: GlimmerHelper = (_vm, args) => new HelperReference(helper, args);
     this.modules.register(name, 'helper', { default: glimmerHelper });
@@ -203,7 +207,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
-    let self = new UpdatableReference(context);
+    let self = this.getSelf(context);
     let dynamicScope = new TestDynamicScope();
     let resolver = new EagerRuntimeResolver(compiler.getSpecifierMap(), this.modules, this.specifiersToSymbolTable);
     let runtimeHeap = new Heap(heap);

@@ -1,5 +1,7 @@
-import { RenderTest, module, test } from '@glimmer/test-helpers';
+import { RenderTest, module, test, LazyRenderDelegate, rawModule } from '@glimmer/test-helpers';
 import { SVG_NAMESPACE, normalizeProperty } from '@glimmer/runtime';
+import { ConstReference, PathReference } from "@glimmer/reference";
+import { Opaque } from '@glimmer/util';
 
 class AttributesTests extends RenderTest {
 
@@ -257,13 +259,13 @@ class AttributesTests extends RenderTest {
     this.assert.equal(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
+    // Note: In IE and Edge will insert a TextNode,
+    //       thus the nodes are going to be unstable
     this.rerender({ name: 'Alex' });
     this.assert.equal(this.readDOMAttr('value'), 'Alex');
-    this.assertStableNodes();
 
     this.rerender({ name: '' });
     this.assert.equal(this.readDOMAttr('value'), '');
-    this.assertStableNodes();
   }
 
   @test "handles empty string input placeholders"() {
@@ -566,6 +568,22 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
   }
 }
 
+class ConstedAttributeTests extends RenderTest {
+  @test
+  "attributes should not be set if not invalidated"() {
+    this.render('<div class={{foo}}></div>', { foo: "bar" });
+    this.assertHTML('<div class="bar"></div>');
+    this.assertStableRerender();
+
+    this.element!.firstChild!['setAttribute'] = function() {
+      throw new Error("Should not setAttribute on an unchanged element");
+    };
+
+    this.rerender();
+    this.assertHTML('<div class="bar"></div>');
+  }
+}
+
 module("Attribute a[href]", class extends BoundValuesToSpecialAttributeTests {
   tag = 'a';
   attr = 'href';
@@ -578,21 +596,15 @@ module("Attribute img[src]", class extends BoundValuesToSpecialAttributeTests {
   protected isSelfClosing = false;
 });
 
-/*
-test("attributes should not be set if not invalidated", () => {
-  let template = compile('<div class={{foo}}></div>');
+class ConstPathReference<T> extends ConstReference<T> implements PathReference<T> {
+  get(key: string): PathReference<Opaque> {
+    return new ConstPathReference(this.inner[key]);
+  }
+}
 
-  let context = { foo: "bar" };
-  renderConst(template, context);
-
-  equalTokens(root, '<div class="bar"></div>');
-
-  root!.firstChild!['setAttribute'] = function() {
-    throw new Error("Should not setAttribute on an unchanged element");
-  };
-
-  rerender();
-
-  equalTokens(root, '<div class="bar"></div>');
-});
-*/
+class ConstRenderDelegate extends LazyRenderDelegate {
+  getSelf(context: Opaque) {
+    return new ConstPathReference(context);
+  }
+}
+rawModule('Consted Attributes', ConstedAttributeTests, ConstRenderDelegate);
