@@ -3,6 +3,7 @@ import { Dict, Opaque } from '@glimmer/util';
 
 import { ComponentKind, ComponentTypes } from './render-test';
 import { UserHelper } from './environment/helper';
+import { BasicReference } from '@glimmer/reference';
 
 export default interface RenderDelegate {
   getInitialElement(): HTMLElement;
@@ -10,4 +11,5 @@ export default interface RenderDelegate {
   registerHelper(name: string, helper: UserHelper): void;
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder;
+  getSelf(context: Opaque): BasicReference<Opaque>;
 }
