@@ -701,7 +701,9 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param {String} type
   */
   _serializeQueryParam(value, type) {
-    if (type === 'array') {
+    if (value === null || value === undefined) {
+      return value;
+    } else if (type === 'array') {
       return JSON.stringify(value);
     }
 
@@ -737,7 +739,9 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param {String} defaultType
   */
   _deserializeQueryParam(value, defaultType) {
-    if (defaultType === 'boolean') {
+    if (value === null || value === undefined) {
+      return value;
+    } else if (defaultType === 'boolean') {
       return value === 'true';
     } else if (defaultType === 'number') {
       return (Number(value)).valueOf();
@@ -972,7 +976,7 @@ const EmberRouter = EmberObject.extend(Evented, {
               return true;
             }
 
-            if (_fromRouterService) {
+            if (_fromRouterService && presentProp !== false) {
               return false;
             }
 

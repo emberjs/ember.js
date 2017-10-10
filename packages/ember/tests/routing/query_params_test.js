@@ -1153,6 +1153,60 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
+  ['@test Setting bound query param property to null or undefined does not serialize to url'](assert) {
+    assert.expect(9);
+
+    this.router.map(function() {
+      this.route('home');
+    });
+
+    this.setSingleQPController('home', 'foo', [1, 2]);
+
+    return this.visitAndAssert('/home').then(() => {
+      var controller = this.getController('home');
+
+      assert.deepEqual(controller.get('foo'), [1,2]);
+      this.assertCurrentPath('/home');
+
+      this.setAndFlush(controller, 'foo', emberA([1,3]));
+      this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
+
+      return this.transitionTo('/home').then(() => {
+        assert.deepEqual(controller.get('foo'), [1,2]);
+        this.assertCurrentPath('/home');
+
+        this.setAndFlush(controller, 'foo', null);
+        this.assertCurrentPath('/home', 'Setting property to null');
+
+        this.setAndFlush(controller, 'foo', emberA([1,3]));
+        this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
+
+        this.setAndFlush(controller, 'foo', undefined);
+        this.assertCurrentPath('/home', 'Setting property to undefined');
+      });
+    });
+  }
+
+  ['@test {{link-to}} with null or undefined QPs does not get serialized into url'](assert) {
+    assert.expect(3);
+
+    this.addTemplate('home', '{{link-to \'Home\' \'home\' (query-params foo=nullValue) id=\'null-link\'}}{{link-to \'Home\' \'home\' (query-params foo=undefinedValue) id=\'undefined-link\'}}');
+
+    this.router.map(function() {
+      this.route('home');
+    });
+
+    this.setSingleQPController('home', 'foo', [], {
+      nullValue: null,
+      undefinedValue: undefined
+    });
+
+    return this.visitAndAssert('/home').then(() => {
+      assert.equal(this.$('#null-link').attr('href'), '/home');
+      assert.equal(this.$('#undefined-link').attr('href'), '/home');
+    });
+  }
+
   ['@test A child of a resource route still defaults to parent route\'s model even if the child route has a query param'](assert) {
     assert.expect(2);
 
