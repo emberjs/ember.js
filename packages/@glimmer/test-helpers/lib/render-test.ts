@@ -789,13 +789,14 @@ function componentModule<D extends RenderDelegate, T extends RenderTest>(name: s
     if (skip === true || test.skip === true) {
       shouldSkip = true;
     }
+
     return (type: ComponentKind, klass: RenderTestConstructor<D, T>) => {
-      let instance = new klass(new Delegate());
-      instance['testType'] = type;
       if (!shouldSkip) {
-        QUnit.test(`${type.toLowerCase()}: ${prop}`, assert =>
-          test.call(instance, assert)
-        );
+        QUnit.test(`${type.toLowerCase()}: ${prop}`, assert => {
+          let instance = new klass(new Delegate());
+          instance['testType'] = type;
+          test.call(instance, assert);
+        });
       }
     };
   }
