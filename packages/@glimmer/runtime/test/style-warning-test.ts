@@ -14,11 +14,7 @@ function compile(template: string) {
 
 function commonSetup(customEnv = new TestEnvironment()) {
   env = customEnv; // TODO: Support SimpleDOM
-  root = rootElement();
-}
-
-function rootElement(): HTMLDivElement {
-  return env.getDOM().createElement('div') as HTMLDivElement;
+  root = document.getElementById('qunit-fixture')!;
 }
 
 function render(template: Template, self: any) {

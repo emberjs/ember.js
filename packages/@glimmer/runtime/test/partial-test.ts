@@ -23,7 +23,7 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment();
-  root = document.createElement('div');
+  root = document.getElementById('qunit-fixture')!;
 }
 
 function render(template: Template, context={}) {
