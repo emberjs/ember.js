@@ -135,9 +135,18 @@ module.exports.backburnerES = function _backburnerES() {
 }
 
 module.exports.dagES = function _dagES() {
-  return funnelLib('dag-map', {
+  let lib = funnelLib('dag-map', {
     files: ['dag-map.js'],
     annotation: 'dag-map es'
+  });
+
+  return new StringReplace(lib, {
+    files: ['dag-map.js'],
+    patterns: [{
+      match: /\/\/# sourceMappingURL=dag-map.js.map/g,
+      replacement: ''
+    }],
+    annotation: 'remove sourcemap annotation (dag-map)'
   });
 }
 
