@@ -596,6 +596,7 @@ export class RehydrationDelegate implements RenderDelegate {
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult {
     let serialized = this.renderServerSide(template, context, snapshot);
     element.innerHTML = serialized;
+    document.getElementById('qunit-fixture')!.appendChild(element);
     return this.renderClientSide(template, context, element);
   }
 
@@ -788,13 +789,14 @@ function componentModule<D extends RenderDelegate, T extends RenderTest>(name: s
     if (skip === true || test.skip === true) {
       shouldSkip = true;
     }
+
     return (type: ComponentKind, klass: RenderTestConstructor<D, T>) => {
-      let instance = new klass(new Delegate());
-      instance['testType'] = type;
       if (!shouldSkip) {
-        QUnit.test(`${type.toLowerCase()}: ${prop}`, assert =>
-          test.call(instance, assert)
-        );
+        QUnit.test(`${type.toLowerCase()}: ${prop}`, assert => {
+          let instance = new klass(new Delegate());
+          instance['testType'] = type;
+          test.call(instance, assert);
+        });
       }
     };
   }
@@ -876,13 +878,11 @@ function nestedComponentModules(
   Object.keys(tests).forEach(type => {
     let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
     QUnit.module(`${formattedType}`, () => {
-      tests[
-        type
-      ].forEach(
-        (
-          t: (type: string, klass: typeof RenderTest & Function) => void
-        ) => t(formattedType, klass)
-      );
+      for (let i = tests[type].length - 1; i >= 0; i--) {
+        let t = tests[type][i];
+        t(formattedType, klass);
+        tests[type].pop();
+      }
     });
   });
 }

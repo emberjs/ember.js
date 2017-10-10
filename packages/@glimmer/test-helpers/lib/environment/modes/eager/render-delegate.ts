@@ -66,7 +66,6 @@ const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
 };
 
 export default class EagerRenderDelegate implements RenderDelegate {
-  static isEager = true; // Used to disable tests where ArrayBuffer is undefined
   protected env: Environment;
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
