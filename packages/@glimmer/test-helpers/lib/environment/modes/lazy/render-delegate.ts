@@ -9,6 +9,8 @@ import RenderDelegate from '../../../render-delegate';
 import { TestDynamicScope } from '../../../environment';
 import { ComponentTypes, ComponentKind, registerComponent, renderTemplate } from '../../../render-test';
 
+declare const module: any;
+
 export default class LazyRenderDelegate implements RenderDelegate {
   constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) { }
 
@@ -17,7 +19,11 @@ export default class LazyRenderDelegate implements RenderDelegate {
   }
 
   getInitialElement(): HTMLElement {
-    return this.env.getAppendOperations().createElement('div') as HTMLElement;
+    if (typeof module !== 'undefined' && module.exports) {
+      return this.env.getAppendOperations().createElement('div') as HTMLElement;
+    }
+
+    return document.getElementById('qunit-fixture')!;
   }
 
   registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, _testType: L, name: string, layout: string, Class?: ComponentTypes[K]) {
