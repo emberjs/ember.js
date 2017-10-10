@@ -877,13 +877,11 @@ function nestedComponentModules(
   Object.keys(tests).forEach(type => {
     let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
     QUnit.module(`${formattedType}`, () => {
-      tests[
-        type
-      ].forEach(
-        (
-          t: (type: string, klass: typeof RenderTest & Function) => void
-        ) => t(formattedType, klass)
-      );
+      for (let i = tests[type].length - 1; i >= 0; i--) {
+        let t = tests[type][i];
+        t(formattedType, klass);
+        tests[type].pop();
+      }
     });
   });
 }
