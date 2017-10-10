@@ -20,8 +20,7 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment(); // TODO: Support SimpleDOM
-  root = document.createElement('div');
-  root.setAttribute('debug-root', 'true');
+  root = document.getElementById('qunit-fixture')!;
 }
 
 function assertProperty<T, K extends keyof T, V extends T[K]>(obj: T | null, key: K, value: V): void {

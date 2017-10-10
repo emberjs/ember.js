@@ -18,7 +18,7 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment(); // TODO: Support SimpleDOM
-  root = document.createElement('div');
+  root = document.getElementById('qunit-fixture')!;
   root.setAttribute('debug-root', 'true');
 }
 
