@@ -43,7 +43,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 
   negative(negative: number) {
-    return this.negatives.push(negative);
+    return this.negatives.push(negative) - 1;
   }
 
   string(value: string): number {
@@ -142,7 +142,7 @@ export class RuntimeConstants<Specifier> {
   }
 
   getNegative(value: number): number {
-    return this.negatives[value - 1];
+    return this.negatives[value];
   }
 
   getString(value: number): string {
@@ -204,11 +204,11 @@ export class Constants<Specifier> extends WriteOnlyConstants {
 
   // `0` means NULL
   getFloat(value: number): number {
-    return this.floats[value - 1];
+    return this.floats[value];
   }
 
   getNegative(value: number): number {
-    return this.negatives[value - 1];
+    return this.negatives[value];
   }
 
   getString(value: number): string {
