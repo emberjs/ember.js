@@ -596,6 +596,7 @@ export class RehydrationDelegate implements RenderDelegate {
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement, snapshot: () => void): RenderResult {
     let serialized = this.renderServerSide(template, context, snapshot);
     element.innerHTML = serialized;
+    document.getElementById('qunit-fixture')!.appendChild(element);
     return this.renderClientSide(template, context, element);
   }
 
