@@ -30,6 +30,10 @@
 - [#15528](https://github.com/emberjs/ember.js/pull/15528) [DEPRECATION] Deprecate `Controller#content` alias.
 - [#15552](https://github.com/emberjs/ember.js/pull/15552) [FEATURE] Update blueprints and tests to RFC #176.
 
+### 2.15.3 (October 9, 2017)
+
+- [#15718](https://github.com/emberjs/ember.js/pull/15718) [BUGFIX] bump backburner (fixes clock + autorun interop)
+
 ### 2.15.2 (October 4, 2017)
 
 - [#15604](https://github.com/emberjs/ember.js/pull/15604) [BUGFIX] Ember Inspector Data Adapter: Only trigger model type update if the record live array count actually changed.
