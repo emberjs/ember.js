@@ -559,13 +559,17 @@ export class RehydrationDelegate implements RenderDelegate {
     // Emulate server-side render
     renderTemplate(template, {
       env,
-      self: new UpdatableReference(context),
+      self: this.getSelf(context),
       dynamicScope: new TestDynamicScope(),
       builder: this.getElementBuilder(env, cursor)
     });
 
     takeSnapshot();
     return this.serialize(element);
+  }
+
+  getSelf(context: Opaque) {
+    return new UpdatableReference(context);
   }
 
   serialize(element: Simple.Element) {
@@ -581,7 +585,7 @@ export class RehydrationDelegate implements RenderDelegate {
     let builder = this.getElementBuilder(env, cursor);
     let result = renderTemplate(template, {
       env,
-      self: new UpdatableReference(context),
+      self: this.getSelf(context),
       dynamicScope: new TestDynamicScope(),
       builder
     });
