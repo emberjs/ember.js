@@ -16,7 +16,8 @@ import {
   blockStack,
   ComponentBlueprint,
   GLIMMER_TEST_COMPONENT,
-  assertEmberishElement
+  assertEmberishElement,
+  assertSerializedInElement
 } from "@glimmer/test-helpers";
 import { expect } from "@glimmer/util";
 
@@ -145,10 +146,13 @@ class Rehydration extends AbstractRehydrationTests {
 
     this.renderServerSide(template, { remote });
     let serializedRemote = this.delegate.serialize(remote);
-    this.assert.equal(serializedRemote, strip`
-      <script glmr="%cursor:0%"></script>
-      <!--%+block:2%--><inner>Wat Wat</inner><!--%-block:2%-->
+    let b = blockStack();
+    assertSerializedInElement(serializedRemote, strip`
+      ${b(2)}
+      <inner>Wat Wat</inner>
+      ${b(2)}
     `);
+
     env = this.delegate.clientEnv;
     let clientRemote = remote = env.getDOM().createElement('remote') as HTMLElement;
     let host = env.getDOM().createElement('div') as HTMLElement;
@@ -178,16 +182,14 @@ class Rehydration extends AbstractRehydrationTests {
     let serializedParentRemote = this.delegate.serialize(remoteParent);
     let serializedRemoteChild = this.delegate.serialize(remoteChild);
     let b = blockStack();
-    this.assert.equal(serializedParentRemote, strip`
-      <script glmr="%cursor:0%"></script>
+    assertSerializedInElement(serializedParentRemote, strip`
       ${b(2)}
         <inner>
           ${b(3)}<!---->${b(3)}
         </inner>
       ${b(2)}
     `, 'Serialized parent remote');
-    this.assert.equal(serializedRemoteChild, strip`
-      <script glmr="%cursor:1%"></script>
+    assertSerializedInElement(serializedRemoteChild, strip`
       ${b(4)}Wat Wat${b(4)}
     `, 'Serilaized nested remote');
     env = this.delegate.clientEnv;
