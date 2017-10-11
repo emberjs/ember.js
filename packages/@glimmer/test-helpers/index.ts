@@ -14,7 +14,8 @@ export {
   strip,
   stripTight,
   trimLines,
-  blockStack
+  blockStack,
+  assertSerializedInElement
 } from './lib/helpers';
 
 export {

@@ -271,6 +271,18 @@ export function assertNodeProperty<T extends keyof ElementTagNameMap, P extends 
   }
 }
 
+export function assertSerializedInElement(result: string, expected: string, message?: string) {
+  let matched = result.match(/<script glmr="%cursor:[0-9]*.%"><\/script>/);
+
+  if (matched) {
+    QUnit.assert.ok(true, `has cursor ${matched[0]}`);
+    let [, trimmed] = result.split(matched![0]);
+    QUnit.assert.equal(trimmed, expected, message);
+  } else {
+    QUnit.assert.ok(false, `does not have a cursor`);
+  }
+}
+
 export function blockStack() {
   let stack: number[] = [];
 

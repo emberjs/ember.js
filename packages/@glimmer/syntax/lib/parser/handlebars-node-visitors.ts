@@ -12,8 +12,15 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   abstract beginAttributeValue(quoted: boolean): void;
   abstract finishAttributeValue(): void;
 
+  cursorCount = 0;
+
+  cursor() {
+    return `%cursor:${this.cursorCount++}%`;
+  }
+
   Program(program: HandlebarsAST.Program): AST.Program {
     let body: AST.Statement[] = [];
+    this.cursorCount = 0;
     let node = b.program(body, program.blockParams, program.loc);
     let i, l = program.body.length;
 
@@ -50,7 +57,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let program = this.Program(block.program);
     let inverse = block.inverse ? this.Program(block.inverse) : null;
 
+    if(path.original === 'in-element') {
+      hash = addInElementHash(this.cursor(), hash, block.loc);
+    }
+
     let node = b.block(path, params, hash, program, inverse, block.loc);
+
     let parentProgram = this.currentElement();
     appendChild(parentProgram, node);
   }
@@ -323,6 +335,31 @@ function addElementModifier(element: Tag<'StartTag'>, mustache: AST.MustacheStat
 
   let modifier = b.elementModifier(path, params, hash, loc);
   element.modifiers.push(modifier);
+}
+
+function addInElementHash(cursor: string, hash: AST.Hash, loc: AST.SourceLocation) {
+  let hasNextSibling = false;
+  hash.pairs.forEach((pair) => {
+    if (pair.key === 'guid') {
+      throw new SyntaxError('Cannot pass `guid` from user space', loc);
+    }
+
+    if (pair.key === 'nextSibling') {
+      hasNextSibling = true;
+    }
+  });
+
+  let guid = b.literal('StringLiteral', cursor);
+  let guidPair = b.pair('guid', guid);
+  hash.pairs.unshift(guidPair);
+
+  if (!hasNextSibling) {
+    let nullLiteral = b.literal('NullLiteral', null);
+    let nextSibling = b.pair('nextSibling', nullLiteral);
+    hash.pairs.push(nextSibling);
+  }
+
+  return hash;
 }
 
 function appendDynamicAttributeValuePart(attribute: Attribute, part: AST.MustacheStatement) {
