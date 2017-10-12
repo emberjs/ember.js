@@ -918,6 +918,13 @@ QUnit.test('updating sort properties detaches observers for old sort properties'
   ], 'after changing removed item array is not updated');
 });
 
+QUnit.test('sort works if array property is null (non array value) on first evaluation of computed prop', function() {
+  obj.set('items', null);
+  deepEqual(obj.get('sortedItems'), []);
+  obj.set('items', emberA([{fname: 'Cersei', lname: 'Lanister'}]));
+  deepEqual(obj.get('sortedItems'), [{fname: 'Cersei', lname: 'Lanister'}]);
+});
+
 QUnit.test('updating sort properties updates the sorted array', function() {
   deepEqual(obj.get('sortedItems').mapBy('fname'), [
     'Cersei',
