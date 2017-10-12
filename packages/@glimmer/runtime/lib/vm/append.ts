@@ -141,6 +141,7 @@ export default class VM<Specifier> implements PublicVM {
   public s1: any = null;
   public t0: any = null;
   public t1: any = null;
+  public v0: any = null;
 
   // Fetch a value from a register onto the stack
   fetch(register: Register) {
