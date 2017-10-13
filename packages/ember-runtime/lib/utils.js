@@ -17,7 +17,9 @@ const TYPE_MAP = {
 };
 
 const { toString } = Object.prototype;
-
+/**
+ @module @ember/array
+*/
 /**
   Returns true if the passed object is an array or Array-like.
 
@@ -37,7 +39,8 @@ const { toString } = Object.prototype;
   ```
 
   @method isArray
-  @for Ember
+  @static
+  @for @ember/array
   @param {Object} obj The object to test
   @return {Boolean} true if the passed object is an array or Array-like
   @public
@@ -53,7 +56,9 @@ export function isArray(obj) {
   if (typeof length === 'number' && length === length && 'object' === type) { return true; }
   return false;
 }
-
+/**
+ @module @ember/utils
+*/
 /**
   Returns a consistent type for the passed object.
 
@@ -104,10 +109,11 @@ export function isArray(obj) {
   ```
 
   @method typeOf
-  @for Ember
+  @for @ember/utils
   @param {Object} item the item to check
   @return {String} the type
   @public
+  @static
 */
 export function typeOf(item) {
   if (item === null) { return 'null'; }

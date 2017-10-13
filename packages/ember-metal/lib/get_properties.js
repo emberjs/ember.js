@@ -1,23 +1,30 @@
 import { get } from './property_get';
-
 /**
-  To get multiple properties at once, call `Ember.getProperties`
+ @module @ember/object
+*/
+/**
+  To get multiple properties at once, call `getProperties`
   with an object followed by a list of strings or an array:
 
   ```javascript
-  Ember.getProperties(record, 'firstName', 'lastName', 'zipCode');
+  import { getProperties } from '@ember/object';
+
+  getProperties(record, 'firstName', 'lastName', 'zipCode');
   // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
   ```
 
   is equivalent to:
 
   ```javascript
-  Ember.getProperties(record, ['firstName', 'lastName', 'zipCode']);
+  import { getProperties } from '@ember/object';
+
+  getProperties(record, ['firstName', 'lastName', 'zipCode']);
   // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
   ```
 
   @method getProperties
-  @for Ember
+  @static
+  @for @ember/object
   @param {Object} obj
   @param {String...|Array} list of keys to get
   @return {Object}

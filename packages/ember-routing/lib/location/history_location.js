@@ -7,8 +7,7 @@ import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 let popstateFired = false;
@@ -50,8 +49,7 @@ function _uuid() {
   define.
 
   @class HistoryLocation
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @protected
 */
 export default EmberObject.extend({

@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-glimmer
 */
 import { assign } from 'ember-utils';
 import { InternalHelperReference } from '../utils/references';

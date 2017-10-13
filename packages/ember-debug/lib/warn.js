@@ -9,20 +9,21 @@ let warn = () => {};
 let missingOptionsDeprecation, missingOptionsIdDeprecation;
 
 /**
-@module ember
-@submodule ember-debug
+@module @ember/debug
 */
 
 if (DEBUG) {
   /**
     Allows for runtime registration of handler functions that override the default warning behavior.
-    Warnings are invoked by calls made to [Ember.warn](https://emberjs.com/api/classes/Ember.html#method_warn).
+    Warnings are invoked by calls made to [warn](https://emberjs.com/api/classes/Ember.html#method_warn).
     The following example demonstrates its usage by registering a handler that does nothing overriding Ember's
     default warning behavior.
 
     ```javascript
+    import { registerWarnHandler } from '@ember/debug';
+
     // next is not called, so no warnings get the default behavior
-    Ember.Debug.registerWarnHandler(() => {});
+    registerWarnHandler(() => {});
     ```
 
     The handler function takes the following arguments:
@@ -39,7 +40,7 @@ if (DEBUG) {
     @public
     @static
     @method registerWarnHandler
-    @for Ember.Debug
+    @for @ember/debug
     @param handler {Function} A function to handle warnings.
     @since 2.1.0
   */
@@ -54,10 +55,10 @@ if (DEBUG) {
     }
   });
 
-  missingOptionsDeprecation = 'When calling `Ember.warn` you ' +
+  missingOptionsDeprecation = 'When calling `warn` you ' +
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include an `id` property.';
-  missingOptionsIdDeprecation = 'When calling `Ember.warn` you must provide `id` in options.';
+  missingOptionsIdDeprecation = 'When calling `warn` you must provide `id` in options.';
 
   /**
     Display a warning with the provided message.
@@ -66,6 +67,8 @@ if (DEBUG) {
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
     @method warn
+    @for @ember/debug
+    @static
     @param {String} message A warning to display.
     @param {Boolean} test An optional boolean. If falsy, the warning
       will be displayed.
@@ -73,7 +76,6 @@ if (DEBUG) {
       `id` for this warning.  The `id` can be used by Ember debugging tools
       to change the behavior (raise, log, or silence) for that specific warning.
       The `id` should be namespaced by dots, e.g. "ember-debug.feature-flag-with-features-stripped"
-    @for Ember
     @public
     @since 1.0.0
   */
