@@ -91,7 +91,9 @@ export class DefaultDynamicProperty extends DynamicAttribute {
   update(value: Opaque, _env: Environment): void {
     let { element, name } = this.attribute;
 
-    element[name] = value;
+    if (element[name] !== value) {
+      element[name] = value;
+    }
 
     if (value === null || value === undefined) {
       this.removeAttribute();
