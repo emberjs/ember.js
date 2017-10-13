@@ -1083,13 +1083,13 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
   ['@test GH#14632 give useful warning when calling contextual components with input as a name']() {
     expectAssertion(() => {
       this.render('{{component (component "input" type="text")}}');
-    }, 'You cannot use the input helper as a contextual helper. Please extend Ember.TextField or Ember.Checkbox to use it as a contextual component.');
+    }, 'You cannot use the input helper as a contextual helper. Please extend TextField or Checkbox to use it as a contextual component.');
   }
 
   ['@test GH#14632 give useful warning when calling contextual components with textarea as a name']() {
     expectAssertion(() => {
       this.render('{{component (component "textarea" type="text")}}');
-    }, 'You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.');
+    }, 'You cannot use the textarea helper as a contextual helper. Please extend TextArea to use it as a contextual component.');
   }
 });
 

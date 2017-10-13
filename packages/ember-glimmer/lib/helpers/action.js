@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-glimmer
 */
 import { symbol } from 'ember-utils';
 import {
@@ -208,7 +207,7 @@ export const ACTION = symbol('ACTION');
   If you need the default handler to trigger you should either register your
   own event handler, or use event methods on your view class. See
   ["Responding to Browser Events"](/api/classes/Ember.Component#responding-to-browser-events)
-  in the documentation for Ember.Component for more information.
+  in the documentation for `Component` for more information.
 
   ### Specifying DOM event type
 

@@ -3,7 +3,6 @@ import calculateLocationDisplay from '../system/calculate-location-display';
 
 /**
  @module ember
- @submodule ember-htmlbars
 */
 
 /**

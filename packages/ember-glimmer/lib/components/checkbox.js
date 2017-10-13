@@ -3,8 +3,7 @@ import EmberComponent from '../component';
 import layout from '../templates/empty';
 
 /**
-@module ember
-@submodule ember-views
+@module @ember/component
 */
 
 /**
@@ -15,7 +14,7 @@ import layout from '../templates/empty';
 
   ## Direct manipulation of `checked`
 
-  The `checked` attribute of an `Ember.Checkbox` object should always be set
+  The `checked` attribute of an `Checkbox` object should always be set
   through the Ember object or by interacting with its rendered element
   representation via the mouse, keyboard, or touch. Updating the value of the
   checkbox via jQuery will result in the checked value of the object and its
@@ -24,12 +23,10 @@ import layout from '../templates/empty';
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
-  properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
-  layout section for more information.
+  properties will not be applied.
 
   @class Checkbox
-  @namespace Ember
-  @extends Ember.Component
+  @extends Component
   @public
 */
 export default EmberComponent.extend({

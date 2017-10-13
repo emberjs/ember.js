@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/application
 */
 
 import { dictionary } from 'ember-utils';
@@ -79,32 +78,25 @@ export const Resolver = EmberObject.extend({
 
   Some examples of how names are resolved:
 
-  ```
+  ```text
   'template:post'           //=> Ember.TEMPLATES['post']
   'template:posts/byline'   //=> Ember.TEMPLATES['posts/byline']
   'template:posts.byline'   //=> Ember.TEMPLATES['posts/byline']
-  'template:blogPost'       //=> Ember.TEMPLATES['blogPost']
-                            //   OR
-                            //   Ember.TEMPLATES['blog_post']
+  'template:blogPost'       //=> Ember.TEMPLATES['blog-post']
   'controller:post'         //=> App.PostController
   'controller:posts.index'  //=> App.PostsIndexController
   'controller:blog/post'    //=> Blog.PostController
-  'controller:basic'        //=> Ember.Controller
+  'controller:basic'        //=> Controller
   'route:post'              //=> App.PostRoute
   'route:posts.index'       //=> App.PostsIndexRoute
   'route:blog/post'         //=> Blog.PostRoute
-  'route:basic'             //=> Ember.Route
-  'view:post'               //=> App.PostView
-  'view:posts.index'        //=> App.PostsIndexView
-  'view:blog/post'          //=> Blog.PostView
-  'view:basic'              //=> Ember.View
+  'route:basic'             //=> Route
   'foo:post'                //=> App.PostFoo
   'model:post'              //=> App.Post
   ```
 
-  @class DefaultResolver
-  @namespace Ember
-  @extends Ember.Object
+  @class GlobalsResolver
+  @extends EmberObject
   @public
 */
 

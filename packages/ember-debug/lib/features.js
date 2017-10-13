@@ -3,6 +3,10 @@ import * as FLAGS from 'ember/features';
 let { FEATURES } = FLAGS;
 
 /**
+ @module ember
+*/
+
+/**
   The hash of enabled Canary features. Add to this, any canary features
   before creating your application.
 

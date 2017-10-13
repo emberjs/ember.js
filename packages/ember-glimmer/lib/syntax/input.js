@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-glimmer
 */
 import { assert } from 'ember-debug';
 import { wrapComponentClassAttribute } from '../utils/bindings';
@@ -15,8 +14,8 @@ function buildTextFieldSyntax(params, hash, builder) {
 
 /**
   The `{{input}}` helper lets you create an HTML `<input />` component.
-  It causes an `Ember.TextField` component to be rendered.  For more info,
-  see the [Ember.TextField](/api/classes/Ember.TextField.html) docs and
+  It causes an `TextField` component to be rendered.  For more info,
+  see the [TextField](/api/classes/Ember.TextField.html) docs and
   the [templates guide](https://emberjs.com/guides/templates/input-helpers/).
 
   ```handlebars
@@ -86,22 +85,23 @@ function buildTextFieldSyntax(params, hash, builder) {
   ```
   See more about [Text Support Actions](/api/classes/Ember.TextField.html)
 
-  ### Extending `Ember.TextField`
+  ### Extending `TextField`
 
-  Internally, `{{input type="text"}}` creates an instance of `Ember.TextField`, passing
-  arguments from the helper to `Ember.TextField`'s `create` method. You can extend the
+  Internally, `{{input type="text"}}` creates an instance of `TextField`, passing
+  arguments from the helper to `TextField`'s `create` method. You can extend the
   capabilities of text inputs in your applications by reopening this class. For example,
   if you are building a Bootstrap project where `data-*` attributes are used, you
   can add one to the `TextField`'s `attributeBindings` property:
 
   ```javascript
-  Ember.TextField.reopen({
+  import TextField from '@ember/component/text-field';
+  TextField.reopen({
     attributeBindings: ['data-error']
   });
   ```
 
-  Keep in mind when writing `Ember.TextField` subclasses that `Ember.TextField`
-  itself extends `Ember.Component`. Expect isolated component semantics, not
+  Keep in mind when writing `TextField` subclasses that `TextField`
+  itself extends `Component`. Expect isolated component semantics, not
   legacy 1.x view semantics (like `controller` being present).
   See more about [Ember components](/api/classes/Ember.Component.html)
 
@@ -127,15 +127,17 @@ function buildTextFieldSyntax(params, hash, builder) {
   * `autofocus`
   * `form`
 
-  ### Extending `Ember.Checkbox`
+  ### Extending `Checkbox`
 
-  Internally, `{{input type="checkbox"}}` creates an instance of `Ember.Checkbox`, passing
-  arguments from the helper to `Ember.Checkbox`'s `create` method. You can extend the
+  Internally, `{{input type="checkbox"}}` creates an instance of `Checkbox`, passing
+  arguments from the helper to `Checkbox`'s `create` method. You can extend the
   capablilties of checkbox inputs in your applications by reopening this class. For example,
   if you wanted to add a css class to all checkboxes in your application:
 
   ```javascript
-  Ember.Checkbox.reopen({
+  import Checkbox from '@ember/component/checkbox';
+
+  Checkbox.reopen({
     classNames: ['my-app-checkbox']
   });
   ```
