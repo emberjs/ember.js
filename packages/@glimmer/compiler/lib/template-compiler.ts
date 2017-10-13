@@ -268,10 +268,10 @@ export default class TemplateCompiler {
 
       if (expr.this) {
         this.opcode('get', expr, 0, expr.parts);
-      } else  if (symbols.has(head)) {
+      } else if (symbols.has(head)) {
         this.opcode('get', expr, symbols.get(head), expr.parts.slice(1));
       } else {
-        this.opcode('get', expr, 0, expr.parts);
+        this.opcode('maybeLocal',expr, expr.parts);
       }
     }
   }
