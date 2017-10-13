@@ -463,6 +463,19 @@ QUnit.test('dynamic partial with local reference (unknown)', () => {
   equalTokens(root, `You smaht. You loyal. `);
 });
 
+QUnit.test('partial with if statement on a local reference works as expected', () => {
+  let template = compile(`{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`);
+
+  env.registerPartial('test', `{{#if quality}}You {{quality}}{{else}}No quality{{/if}}`);
+  render(template, { name: 'test', qualities: ['smaht', 'loyal', undefined] });
+
+  rerender(null, { assertStable: true });
+
+  equalTokens(root, `You smaht. You loyal. No quality. `);
+  rerender({ name: 'test', qualities: ['smaht', 'loyal', undefined] }, { assertStable: true });
+  equalTokens(root, `You smaht. You loyal. No quality. `);
+});
+
 QUnit.test('partial without arguments throws', assert => {
   assert.throws(function() {
     compile(`Before {{partial}} After`);
