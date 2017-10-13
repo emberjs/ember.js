@@ -958,6 +958,7 @@ moduleFor('ember-testing: routing helpers', class extends HelpersTestCase {
       this.router.map(function() {
         this.route('posts', {resetNamespace: true}, function() {
           this.route('new');
+          this.route('edit', { resetNamespace: true });
         });
       });
     });
@@ -1022,6 +1023,26 @@ moduleFor('ember-testing: routing helpers', class extends HelpersTestCase {
       assert.equal(
         testHelpers.currentURL(), '/posts/new',
         `should equal '/posts/new'.`
+      );
+    });
+  }
+
+  [`@test currentRouteName for '/posts/edit'`](assert) {
+    assert.expect(3);
+
+    let {application: {testHelpers}} = this;
+    return testHelpers.visit('/posts/edit').then(() => {
+      assert.equal(
+        testHelpers.currentRouteName(), 'edit',
+        `should equal 'edit'.`
+      );
+      assert.equal(
+        testHelpers.currentPath(), 'posts.edit',
+        `should equal 'posts.edit'.`
+      );
+      assert.equal(
+        testHelpers.currentURL(), '/posts/edit',
+        `should equal '/posts/edit'.`
       );
     });
   }
