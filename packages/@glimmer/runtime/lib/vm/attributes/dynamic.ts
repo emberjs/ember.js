@@ -81,9 +81,11 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
 }
 
 export class DefaultDynamicProperty extends DynamicAttribute {
+  value: Opaque;
   set(dom: ElementBuilder, value: Opaque, _env: Environment): void {
     if (value !== null && value !== undefined) {
       let { name } = this.attribute;
+      this.value = value;
       dom.__setProperty(name, value);
     }
   }
@@ -91,13 +93,14 @@ export class DefaultDynamicProperty extends DynamicAttribute {
   update(value: Opaque, _env: Environment): void {
     let { element, name } = this.attribute;
 
-    if (element[name] !== value) {
-      element[name] = value;
+    if (this.value !== value) {
+      element[name] = this.value = value;
+
+      if (value === null || value === undefined) {
+        this.removeAttribute();
+      }
     }
 
-    if (value === null || value === undefined) {
-      this.removeAttribute();
-    }
   }
 
   protected removeAttribute() {
