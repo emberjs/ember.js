@@ -1,5 +1,4 @@
 export default interface ComponentCapabilities {
-  staticDefinitions: boolean;
   dynamicLayout: boolean;
   dynamicTag: boolean;
   prepareArgs: boolean;

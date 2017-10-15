@@ -125,17 +125,7 @@ export function hasDynamicLayout<D extends ComponentDefinitionState, I extends C
   return manager.getCapabilities(state).dynamicLayout === true;
 }
 
-export interface WithStaticDefinitions<ComponentDefinition> extends ComponentManager<Opaque, ComponentDefinition> {
-  getComponentDefinition(definition: ComponentDefinition, handle: VMHandle): ComponentDefinition;
-}
-
-/** @internal */
-export function hasStaticDefinitions<D extends ComponentDefinitionState>(state: D, manager: ComponentManager<Opaque, D>): manager is WithStaticDefinitions<D> {
-  return manager.getCapabilities(state).staticDefinitions === true;
-}
-
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
-  staticDefinitions: false,
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,

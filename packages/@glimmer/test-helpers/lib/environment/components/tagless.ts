@@ -9,7 +9,6 @@ import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import { TestComponentDefinitionState } from '../components';
 
 export const STATIC_TAGLESS_CAPABILITIES = {
-  staticDefinitions: false,
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
@@ -24,14 +23,14 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
   }
 
   getLayout(state: TestComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
-    let { name } = state;
+    let { name, capabilities } = state;
 
     let handle = resolver.lookup('template-source', name)!;
 
     return resolver.compileTemplate(handle, name, (source, options) => {
       let template = createTemplate(source, {});
       let compileOptions = assign({}, options, { asPartial: false, referrer: null });
-      let builder = new WrappedBuilder(compileOptions, template, STATIC_TAGLESS_CAPABILITIES);
+      let builder = new WrappedBuilder(compileOptions, template, capabilities);
 
       return {
         handle: builder.compile(),
