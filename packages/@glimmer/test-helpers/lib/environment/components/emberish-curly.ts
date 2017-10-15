@@ -54,7 +54,6 @@ export interface EmberishCurlyComponentFactory {
 }
 
 export const CURLY_CAPABILITIES: ComponentCapabilities = {
-  staticDefinitions: false,
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,
@@ -63,9 +62,8 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   elementHook: true
 };
 
-export const EMBERISH_CURLY_CAPABILITIES = {
+export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = {
   ...CURLY_CAPABILITIES,
-  staticDefinitions: true,
   dynamicLayout: false,
   attributeHook: false
 };
