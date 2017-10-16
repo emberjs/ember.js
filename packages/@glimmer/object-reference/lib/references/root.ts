@@ -32,7 +32,7 @@ export default class RootReference<T> implements IRootReference<T>, IPathReferen
   }
 
   path(string: string): IPathReference<Opaque> {
-    return string.split('.').reduce((ref, part) => ref.get(part), this as IPathReference<Opaque>);
+    return this.referenceFromParts(string.split('.'));
   }
 
   referenceFromParts(parts: string[]): IPathReference<Opaque> {
