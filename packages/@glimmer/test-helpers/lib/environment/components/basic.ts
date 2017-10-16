@@ -22,7 +22,6 @@ export interface BasicComponentFactory {
 }
 
 export const BASIC_CAPABILITIES: ComponentCapabilities = {
-  staticDefinitions: true,
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,

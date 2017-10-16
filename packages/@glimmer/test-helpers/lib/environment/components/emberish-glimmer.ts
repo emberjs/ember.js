@@ -16,7 +16,6 @@ import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
-  staticDefinitions: false,
   dynamicTag: true,
   createArgs: true,
   attributeHook: true
