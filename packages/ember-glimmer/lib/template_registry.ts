@@ -17,7 +17,7 @@ export function getTemplate(name) {
   }
 }
 
-export function hasTemplate(name) {
+export function hasTemplate(name):boolean {
   return TEMPLATES.hasOwnProperty(name);
 }
 

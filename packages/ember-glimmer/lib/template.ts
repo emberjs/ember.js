@@ -2,7 +2,7 @@ import { OWNER } from 'ember-utils';
 import { templateFactory } from '@glimmer/runtime';
 
 export default function template(json) {
-  let factory = templateFactory(json);
+  const factory = templateFactory(json);
 
   return {
     id: factory.id,
