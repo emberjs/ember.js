@@ -18,7 +18,7 @@ import {
   import EmberObject from '@ember/object';
   import Evented from '@ember/object/evented';
   
-  export default EmberObject.extend(Ember.Evented, {
+  export default EmberObject.extend(Evented, {
     greet() {
       // ...
       this.trigger('greet');
