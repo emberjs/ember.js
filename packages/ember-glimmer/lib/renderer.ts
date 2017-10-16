@@ -1,3 +1,7 @@
+interface FreeformObject {
+  [key: string]: any;
+}
+
 import { RootReference } from './utils/references';
 import {
   run,
@@ -19,7 +23,11 @@ import { assert } from 'ember-debug';
 const { backburner } = run;
 
 class DynamicScope {
-  constructor(view, outletState, rootOutletState, targetObject) {
+  private view: any
+  private outletState: any
+  private rootOutletState: any
+
+  constructor(view, outletState, rootOutletState) {
     this.view = view;
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
@@ -44,6 +52,16 @@ class DynamicScope {
 }
 
 class RootState {
+  public id: any
+  public env: any
+  public root: any
+  public result: any
+  public shouldReflush: boolean
+  public destroyed: boolean
+  private _removing: boolean
+  public options: any
+  public render: any
+
   constructor(root, env, template, self, parentElement, dynamicScope) {
     assert(`You cannot render \`${self.value()}\` without a template.`, template);
 
@@ -114,7 +132,7 @@ class RootState {
   }
 }
 
-const renderers = [];
+const renderers: any[] = [];
 
 export function _resetRenderers() {
   renderers.length = 0;
@@ -162,6 +180,16 @@ backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
 export class Renderer {
+  private _env: any
+  private _rootTemplate: any
+  private _viewRegistry: any
+  private _destinedForDOM: any
+  private _destroyed: boolean
+  private _roots: Array<any>
+  private _lastRevision: any
+  private _isRenderingRoots: boolean
+  private _removedRoots: Array<any>
+
   constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
     this._env = env;
     this._rootTemplate = rootTemplate;
@@ -192,7 +220,7 @@ export class Renderer {
 
   _appendDefinition(root, definition, target, outletStateReference = UNDEFINED_REFERENCE, targetObject = null) {
     let self = new RootReference(definition);
-    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference, true, targetObject);
+    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
 
     this._renderRoot(rootState);
@@ -374,7 +402,7 @@ export class Renderer {
     }
 
     this._removedRoots.length = 0;
-    this._roots = null;
+    this._roots = [];
 
     // if roots were present before destroying
     // deregister this renderer instance
