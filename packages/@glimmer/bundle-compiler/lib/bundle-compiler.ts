@@ -17,7 +17,8 @@ import {
   CompileTimeLookup,
   CompileOptions,
   ICompilableTemplate,
-  EagerOpcodeBuilder
+  EagerOpcodeBuilder,
+  TemplateOptions
 } from "@glimmer/opcode-compiler";
 import {
   WriteOnlyProgram,
@@ -93,7 +94,7 @@ export class BundleCompiler {
   protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
   private program: WriteOnlyProgram;
-  private _compileOptions: CompileOptions<Specifier>;
+  private _templateOptions: TemplateOptions<Specifier>;
 
   private specifiers = new SpecifierMap();
   public compiledBlocks = new Map<Specifier, AddedTemplate>();
@@ -141,19 +142,19 @@ export class BundleCompiler {
   }
 
   compileOptions(specifier: Specifier, asPartial = false): CompileOptions<Specifier> {
-    if (this._compileOptions) { return this._compileOptions; }
+    let templateOptions = this._templateOptions;
+    if (!templateOptions) {
+      let { program, macros, Builder } = this;
+      let lookup = new BundlingLookup(this.delegate, this.specifiers, this);
+      templateOptions = this._templateOptions = {
+        program,
+        macros,
+        Builder,
+        lookup
+      };
+    }
 
-    let { program, macros, Builder } = this;
-    let lookup = new BundlingLookup(this.delegate, this.specifiers, this);
-
-    return this._compileOptions = {
-      program,
-      macros,
-      Builder,
-      lookup,
-      asPartial,
-      referrer: specifier
-    };
+    return { ...templateOptions, asPartial, referrer: specifier };
   }
 
   compileSpecifier(specifier: Specifier): VMHandle {
