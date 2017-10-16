@@ -66,7 +66,7 @@ export class IterationArtifacts {
   public tag: Tag;
 
   private iterable: OpaqueIterable;
-  private iterator: Option<OpaqueIterator>;
+  private iterator: Option<OpaqueIterator> = null;
   private map = dict<ListItem>();
   private list = new LinkedList<ListItem>();
 
@@ -81,7 +81,14 @@ export class IterationArtifacts {
   }
 
   iterate(): OpaqueIterator {
-    let iterator = this.iterator || this.iterable.iterate();
+    let iterator: OpaqueIterator;
+
+    if (this.iterator === null) {
+      iterator = this.iterable.iterate();
+    } else {
+      iterator = this.iterator;
+    }
+
     this.iterator = null;
 
     return iterator;
@@ -97,7 +104,7 @@ export class IterationArtifacts {
 
   wasSeen(key: string): boolean {
     let node = this.map[key];
-    return node && node.seen;
+    return node !== undefined && node.seen;
   }
 
   append(item: OpaqueIterationItem): ListItem {
@@ -159,7 +166,7 @@ export class ReferenceIterator {
 
     let item = iterator.next();
 
-    if (!item) return null;
+    if (item === null) return null;
 
     return artifacts.append(item);
   }
@@ -214,12 +221,14 @@ export class IteratorSynchronizer {
 
     let seek = current;
 
-    while (seek && seek.key !== key) {
+    while (seek !== null && seek.key !== key) {
       seek.seen = true;
       seek = artifacts.nextNode(seek);
     }
 
-    this.current = seek && artifacts.nextNode(seek);
+    if (seek !== null) {
+      this.current = artifacts.nextNode(seek);
+    }
   }
 
   private nextAppend(): Phase {
@@ -233,7 +242,7 @@ export class IteratorSynchronizer {
 
     let { key } = item;
 
-    if (current && current.key === key) {
+    if (current !== null && current.key === key) {
       this.nextRetain(item);
     } else if (artifacts.has(key)) {
       this.nextMove(item);

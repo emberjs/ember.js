@@ -1,0 +1,12 @@
+{
+  "name": "@glimmer/dom-change-list",
+  "version": "0.29.7",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/dom-change-list",
+  "dependencies": {
+    "@glimmer/util": "^0.29.7",
+    "@glimmer/interfaces": "^0.29.7"
+  },
+  "devDependencies": {
+    "typescript": "^2.2.0"
+  }
+}

@@ -1,4 +1,4 @@
-import { UNDEFINED_REFERENCE, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult } from "@glimmer/runtime";
+import { UNDEFINED_REFERENCE, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, clientBuilder } from "@glimmer/runtime";
 import { assertNodeTagName, BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
 import { ConstReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -8,18 +8,6 @@ import { test, module, assert } from './support';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-
-/*
- * Phantom 1.9 does not serialize namespaced attributes correctly. The namespace
- * prefix is incorrectly stripped off.
- */
-const serializesNSAttributesCorrectly = (function () {
-  let div = <HTMLElement>document.createElement('div');
-  let span = <HTMLElement>document.createElement('span');
-  span.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:lang', 'en-uk');
-  div.appendChild(span);
-  return div.innerHTML === '<span xml:lang="en-uk"></span>';
-})();
 
 let root: HTMLElement;
 let env: TestEnvironment;
@@ -32,8 +20,7 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment(); // TODO: Support SimpleDOM
-  root = document.createElement('div');
-  root.setAttribute('debug-root', 'true');
+  root = document.getElementById('qunit-fixture')!;
 }
 
 function assertProperty<T, K extends keyof T, V extends T[K]>(obj: T | null, key: K, value: V): void {
@@ -43,10 +30,16 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(obj: T | null, key
   }
 }
 
-function render<T>(template: Template<T>, context = {}) {
+function render(template: Template, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
-  let templateIterator = template.render({ self, parentNode: root, dynamicScope: new TestDynamicScope() });
+  let cursor = { element: root, nextSibling: null };
+  let templateIterator = template.renderLayout({
+    env,
+    self,
+    builder: clientBuilder(env, cursor),
+    dynamicScope: new TestDynamicScope()
+  });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();
@@ -950,22 +943,22 @@ module("[glimmer-runtime] Updating", hooks => {
   });
 
   test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    env.registerBasicComponent('x-yasss', BasicComponent, '<div>Yes</div>');
+    env.registerBasicComponent('XYasss', BasicComponent, '<div>Yes</div>');
 
     let options = {
       template: '{{component (stateful-foo)}}',
-      truthyValue: 'x-yasss',
+      truthyValue: 'XYasss',
       falsyValue: null
     };
 
     testStatefulHelper(assert, options);
   });
 
-  test(`helpers passed as arguments to {{#-in-element}} are not torn down when switching between blocks`, assert => {
+  test(`helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks`, assert => {
     let externalElement = document.createElement('div');
 
     let options = {
-      template: '{{#-in-element (stateful-foo)}}Yes{{/-in-element}}',
+      template: '{{#in-element (stateful-foo)}}Yes{{/in-element}}',
       truthyValue: externalElement,
       falsyValue: null,
       element: externalElement
@@ -1728,53 +1721,51 @@ module("[glimmer-runtime] Updating", hooks => {
     equalTokens(root, "<div data-value='world'>hello</div>", "Revalidating after dirtying");
   });
 
-  if (serializesNSAttributesCorrectly) {
-    test("namespaced attribute nodes follow the normal dirtying rules", () => {
-      let template = compile("<div xml:lang='{{lang}}'>hello</div>");
-      let object = { lang: "en-us" };
+  test("namespaced attribute nodes follow the normal dirtying rules", () => {
+    let template = compile("<div xml:lang='{{lang}}'>hello</div>");
+    let object = { lang: "en-us" };
 
-      render(template, object);
+    render(template, object);
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
 
-      object.lang = "en-uk";
-      rerender();
+    object.lang = "en-uk";
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating without dirtying");
+    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating without dirtying");
 
-      rerender();
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating after dirtying");
-    });
+    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "Revalidating after dirtying");
+  });
 
-    test("namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
-      let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
-      let object = { locale: "us" as (string | null) };
+  test("namespaced attribute nodes w/ concat follow the normal dirtying rules", () => {
+    let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
+    let object = { locale: "us" as (string | null) };
 
-      render(template, object);
+    render(template, object);
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "Initial render");
 
-      rerender();
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "No-op rerender");
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "No-op rerender");
 
-      object.locale = "uk";
-      rerender();
+    object.locale = "uk";
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "After update");
+    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", "After update");
 
-      object.locale = null;
-      rerender();
+    object.locale = null;
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-'>hello</div>", "After updating to null");
+    equalTokens(root, "<div xml:lang='en-'>hello</div>", "After updating to null");
 
-      object.locale = "us";
-      rerender();
+    object.locale = "us";
+    rerender();
 
-      equalTokens(root, "<div xml:lang='en-us'>hello</div>", "After reset");
-    });
-  }
+    equalTokens(root, "<div xml:lang='en-us'>hello</div>", "After reset");
+  });
 
   test("non-standard namespaced attribute nodes follow the normal dirtying rules", () => {
     let template = compile("<div epub:type='{{type}}'>hello</div>");
@@ -1963,12 +1954,6 @@ module("[glimmer-runtime] Updating", hooks => {
   testEachHelper(
     "An implementation of #each using block params",
     "<ul>{{#each list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>"
-  );
-
-  testEachHelper(
-    "An implementation of #each using a self binding",
-    "<ul>{{#each list}}<li class={{class}}>{{name}}</li>{{/each}}</ul>",
-    QUnit.skip
   );
 
   test('The each helper with inverse', assert => {

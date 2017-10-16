@@ -1,15 +1,9 @@
-import { Bounds, ConcreteBounds, SingleNodeBounds } from '../bounds';
+import { Bounds, ConcreteBounds } from '../bounds';
 import {
-  domChanges as domChangesTableElementFix,
-  treeConstruction as treeConstructionTableElementFix
-} from '../compat/inner-html-fix';
-import {
-  domChanges as domChangesSvgElementFix,
-  treeConstruction as treeConstructionSvgElementFix
+  applySVGInnerHTMLFix
 } from '../compat/svg-inner-html-fix';
 import {
-  domChanges as domChangesNodeMergingFix,
-  treeConstruction as treeConstructionNodeMergingFix
+  applyTextNodeMergingFix
 } from '../compat/text-node-merging-fix';
 import { Simple } from '@glimmer/interfaces';
 
@@ -135,9 +129,8 @@ export namespace DOM {
   }
 
   let appliedTreeContruction = TreeConstruction;
-  appliedTreeContruction = treeConstructionNodeMergingFix(doc, appliedTreeContruction);
-  appliedTreeContruction = treeConstructionTableElementFix(doc, appliedTreeContruction);
-  appliedTreeContruction = treeConstructionSvgElementFix(doc, appliedTreeContruction, SVG_NAMESPACE);
+  appliedTreeContruction = applyTextNodeMergingFix(doc, appliedTreeContruction) as typeof TreeConstruction;
+  appliedTreeContruction = applySVGInnerHTMLFix(doc, appliedTreeContruction, SVG_NAMESPACE) as typeof TreeConstruction;
 
   export const DOMTreeConstruction = appliedTreeContruction;
   export type DOMTreeConstruction = TreeConstruction;
@@ -155,37 +148,8 @@ export class DOMChanges extends DOMOperations {
     element.setAttribute(name, value);
   }
 
-  setAttributeNS(element: Simple.Element, namespace: string, name: string, value: string) {
-    element.setAttributeNS(namespace, name, value);
-  }
-
   removeAttribute(element: Simple.Element, name: string) {
     element.removeAttribute(name);
-  }
-
-  removeAttributeNS(element: Simple.Element, namespace: string, name: string) {
-    element.removeAttributeNS(namespace, name);
-  }
-
-  insertNodeBefore(parent: Simple.Element, node: Simple.Node, reference: Simple.Node): Bounds {
-    if (isDocumentFragment(node)) {
-      let { firstChild, lastChild } = node;
-      this.insertBefore(parent, node, reference);
-      return new ConcreteBounds(parent, firstChild, lastChild);
-    } else {
-      this.insertBefore(parent, node, reference);
-      return new SingleNodeBounds(parent, node);
-    }
-  }
-
-  insertTextBefore(parent: Simple.Element, nextSibling: Simple.Node, text: string): Simple.Text {
-    let textNode = this.createTextNode(text);
-    this.insertBefore(parent, textNode, nextSibling);
-    return textNode;
-  }
-
-  insertBefore(element: Simple.Element, node: Simple.Node, reference: Option<Simple.Node>) {
-    element.insertBefore(node, reference);
   }
 
   insertAfter(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
@@ -231,15 +195,10 @@ export function insertHTMLBefore(this: void, _useless: Simple.Element, _parent: 
   return new ConcreteBounds(parent, first, last);
 }
 
-function isDocumentFragment(node: Simple.Node): node is DocumentFragment {
-  return node.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
-}
-
 let helper = DOMChanges;
 
-helper = domChangesNodeMergingFix(doc, helper);
-helper = domChangesTableElementFix(doc, helper);
-helper = domChangesSvgElementFix(doc, helper, SVG_NAMESPACE);
+helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChanges;
+helper = applySVGInnerHTMLFix(doc, helper, SVG_NAMESPACE) as typeof DOMChanges;
 
 export default helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;

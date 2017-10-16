@@ -1,4 +1,4 @@
-import { Dict, Option } from '@glimmer/util';
+import { Dict, Option, Opaque } from '@glimmer/util';
 import { Opcodes } from './lib/opcodes';
 
 export { Opcodes as Ops } from './lib/opcodes';
@@ -118,10 +118,12 @@ export namespace Statements {
   export type Block         = [Opcodes.Block, str, Params, Hash, Option<SerializedInlineBlock>, Option<SerializedInlineBlock>];
   export type Component     = [Opcodes.Component, str, Attribute[], Hash, Option<SerializedInlineBlock>];
   export type OpenElement   = [Opcodes.OpenElement, str];
+  export type SplatElement  = [Opcodes.OpenSplattedElement, str];
   export type FlushElement  = [Opcodes.FlushElement];
   export type CloseElement  = [Opcodes.CloseElement];
   export type StaticAttr    = [Opcodes.StaticAttr, str, Expression, Option<str>];
   export type DynamicAttr   = [Opcodes.DynamicAttr, str, Expression, Option<str>];
+  export type AttrSplat     = [Opcodes.AttrSplat, YieldTo];
   export type Yield         = [Opcodes.Yield, YieldTo, Option<Params>];
   export type Partial       = [Opcodes.Partial, Expression, Core.EvalInfo];
   export type DynamicArg    = [Opcodes.DynamicArg, str, Expression];
@@ -137,10 +139,12 @@ export namespace Statements {
   export const isBlock        = is<Block>(Opcodes.Block);
   export const isComponent    = is<Component>(Opcodes.Component);
   export const isOpenElement  = is<OpenElement>(Opcodes.OpenElement);
+  export const isSplatElement = is<SplatElement>(Opcodes.OpenSplattedElement);
   export const isFlushElement = is<FlushElement>(Opcodes.FlushElement);
   export const isCloseElement = is<CloseElement>(Opcodes.CloseElement);
   export const isStaticAttr   = is<StaticAttr>(Opcodes.StaticAttr);
   export const isDynamicAttr  = is<DynamicAttr>(Opcodes.DynamicAttr);
+  export const isAttrSplat    = is<AttrSplat>(Opcodes.AttrSplat);
   export const isYield        = is<Yield>(Opcodes.Yield);
   export const isPartial      = is<Partial>(Opcodes.Partial);
   export const isDynamicArg   = is<DynamicArg>(Opcodes.DynamicArg);
@@ -157,10 +161,12 @@ export namespace Statements {
     | Block
     | Component
     | OpenElement
+    | SplatElement
     | FlushElement
     | CloseElement
     | StaticAttr
     | DynamicAttr
+    | AttrSplat
     | Yield
     | Partial
     | StaticArg
@@ -173,6 +179,7 @@ export namespace Statements {
   export type Attribute =
       Statements.StaticAttr
     | Statements.DynamicAttr
+    | Statements.AttrSplat
     ;
 
   export function isAttribute(val: Statement): val is Attribute {
@@ -193,10 +200,6 @@ export namespace Statements {
   export function isParameter(val: Statement): val is Parameter {
     return isAttribute(val) || isArgument(val);
   }
-
-  export function getParameterName(s: Parameter): string {
-    return s[1];
-  }
 }
 
 export type Statement = Statements.Statement;
@@ -205,6 +208,7 @@ export type Statement = Statements.Statement;
  * A JSON object of static compile time meta for the template.
  */
 export interface TemplateMeta {
+  [key: string]: Opaque;
   moduleName?: string;
 }
 
@@ -243,10 +247,10 @@ export type SerializedTemplateBlockJSON = string;
 /**
  * A JSON object containing the SerializedTemplateBlock as JSON and TemplateMeta.
  */
-export interface SerializedTemplateWithLazyBlock<T extends TemplateMeta> {
+export interface SerializedTemplateWithLazyBlock<Specifier> {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
-  meta: T;
+  meta: Specifier;
 }
 
 /**

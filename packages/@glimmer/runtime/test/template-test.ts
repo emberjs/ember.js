@@ -1,11 +1,11 @@
 import { TestEnvironment } from "@glimmer/test-helpers";
 import { templateFactory } from "@glimmer/runtime";
 import { precompile } from "@glimmer/compiler";
-import { SerializedTemplateWithLazyBlock } from "@glimmer/wire-format";
+import { SerializedTemplateWithLazyBlock, TemplateMeta } from "@glimmer/wire-format";
 
 let env: TestEnvironment;
 
-interface TestMeta {
+interface TestMeta extends TemplateMeta {
   version: number;
   lang: string;
   moduleName: string;
@@ -21,7 +21,7 @@ let serializedTemplateNoId: SerializedTemplateWithLazyBlock<TestMeta>;
 QUnit.module("templateFactory", {
   beforeEach() {
     env = new TestEnvironment();
-    let templateJs = precompile<TestMeta>("<div>{{name}}</div>", {
+    let templateJs = precompile("<div>{{name}}</div>", {
       meta: {
         version: 12,
         lang: 'es',
@@ -52,7 +52,7 @@ QUnit.test("generates id if no id is on the serialized template", assert => {
 
 QUnit.test("id of template matches factory", assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create(env);
+  let template = factory.create(env.compileOptions);
   assert.ok(template.id, 'is present');
   assert.equal(template.id, factory.id, 'template id matches factory id');
 });
@@ -68,8 +68,8 @@ QUnit.test("meta is accessible from factory", assert => {
 
 QUnit.test("meta is accessible from template", assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create(env);
-  assert.deepEqual(template.meta, {
+  let template = factory.create(env.compileOptions);
+  assert.deepEqual(template.referrer, {
     version: 12,
     lang: 'es',
     moduleName: "template/module/name"
@@ -80,9 +80,9 @@ QUnit.test("can inject per environment things into meta", assert => {
   let owner = {};
   let factory = templateFactory<TestMeta, OwnerMeta>(serializedTemplate);
 
-  let template = factory.create(env, { owner });
-  assert.strictEqual(template.meta.owner, owner, 'is owner');
-  assert.deepEqual(template.meta, {
+  let template = factory.create(env.compileOptions, { owner });
+  assert.strictEqual(template.referrer.owner, owner, 'is owner');
+  assert.deepEqual(template.referrer, {
     version: 12,
     lang: 'es',
     moduleName: "template/module/name",

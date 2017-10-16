@@ -8,13 +8,13 @@ export interface TemplateIdFn {
   (src: string): Option<string>;
 }
 
-export interface PrecompileOptions<T extends TemplateMeta> extends CompileOptions<T>, PreprocessOptions {
+export interface PrecompileOptions extends CompileOptions, PreprocessOptions {
   id?: TemplateIdFn;
 }
 
 declare function require(id: string): any;
 
-const defaultId: TemplateIdFn = (() => {
+export const defaultId: TemplateIdFn = (() => {
   if (typeof require === 'function') {
     try {
       /* tslint:disable:no-require-imports */
@@ -38,7 +38,7 @@ const defaultId: TemplateIdFn = (() => {
   return function idFn() { return null; };
 })();
 
-const defaultOptions: PrecompileOptions<TemplateMeta> = {
+const defaultOptions: PrecompileOptions = {
   id: defaultId,
   meta: {}
 };
@@ -57,16 +57,17 @@ const defaultOptions: PrecompileOptions<TemplateMeta> = {
  * @param {string} string a Glimmer template string
  * @return {string} a template javascript string
  */
-export function precompile<T extends TemplateMeta>(string: string, options?: PrecompileOptions<T>): TemplateJavascript;
-export function precompile(string: string, options: PrecompileOptions<TemplateMeta> = defaultOptions): TemplateJavascript {
+export function precompile(string: string, options?: PrecompileOptions): TemplateJavascript;
+export function precompile(string: string, options: PrecompileOptions = defaultOptions): TemplateJavascript {
   let ast = preprocess(string, options);
-  let { block, meta } = TemplateCompiler.compile(options, ast);
+  let { meta } = options;
+  let { block } = TemplateCompiler.compile(options, ast);
   let idFn = options.id || defaultId;
   let blockJSON = JSON.stringify(block.toJSON());
   let templateJSONObject: SerializedTemplateWithLazyBlock<TemplateMeta> = {
     id: idFn(JSON.stringify(meta) + blockJSON),
     block: blockJSON,
-    meta
+    meta: meta as TemplateMeta
   };
 
   // JSON is javascript

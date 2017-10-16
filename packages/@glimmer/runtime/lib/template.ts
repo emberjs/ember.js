@@ -1,32 +1,35 @@
-import { Simple, Opaque, Option } from '@glimmer/interfaces';
+import { Opaque, Option } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { assign, EMPTY_ARRAY } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
-  Statements,
-  TemplateMeta,
+  Statement
 } from '@glimmer/wire-format';
-import { ElementBuilder, NewElementBuilder } from './vm/element-builder';
-import { RehydrateBuilder } from './vm/rehydrate-builder';
-import { SerializeBuilder } from './vm/serialize-builder';
+import { ElementBuilder } from './vm/element-builder';
 import { DynamicScope, Environment } from './environment';
-import Scanner from './scanner';
-import { Block, Program } from './syntax/interfaces';
+import { TopLevelSyntax } from './syntax/interfaces';
 import { IteratorResult, RenderResult, VM } from './vm';
+import { EMPTY_ARGS, ICapturedArguments } from './vm/arguments';
+import {
+  CompilableTemplate,
+  ParsedLayout,
+  TemplateOptions
+} from "@glimmer/opcode-compiler";
+import { RuntimeProgram } from "@glimmer/program";
 
-export interface RenderOptions {
+export interface RenderLayoutOptions {
+  env: Environment;
   self: PathReference<Opaque>;
-  parentNode: Simple.Element;
-  nextSibling?: Option<Simple.Node>;
+  args?: ICapturedArguments;
   dynamicScope: DynamicScope;
-  mode?: 'rehydrate' | 'serialize';
+  builder: ElementBuilder;
 }
 
 /**
  * Environment specific template.
  */
-export interface Template<T> {
+export interface Template<Specifier = Opaque> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -36,7 +39,7 @@ export interface Template<T> {
   /**
    * Template meta (both compile time and environment specific).
    */
-  meta: T;
+  referrer: Specifier;
 
   hasEval: boolean;
 
@@ -45,19 +48,14 @@ export interface Template<T> {
    */
   symbols: string[];
 
-  /**
-   * Helper to render template as root entry point.
-   */
-  render(options: RenderOptions): TemplateIterator;
+  renderLayout(options: RenderLayoutOptions): TemplateIterator;
 
   // internal casts, these are lazily created and cached
-  asEntryPoint(): Program;
-  asLayout(componentName: string, attrs?: Statements.Attribute[]): Program;
-  asPartial(): Program;
-  asBlock(): Block;
+  asLayout(): TopLevelSyntax;
+  asPartial(): TopLevelSyntax;
 }
 
-export interface TemplateFactory<T, U> {
+export interface TemplateFactory<Specifier> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -67,7 +65,7 @@ export interface TemplateFactory<T, U> {
   /**
    * Compile time meta.
    */
-  meta: T;
+  meta: Specifier;
 
   /**
    * Used to create an environment specific singleton instance
@@ -75,7 +73,7 @@ export interface TemplateFactory<T, U> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: Environment): Template<T>;
+  create(env: TemplateOptions<Opaque>): Template<Specifier>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -83,11 +81,11 @@ export interface TemplateFactory<T, U> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create(env: Environment, meta: U): Template<T & U>;
+  create<U>(env: TemplateOptions<Opaque>, meta: U): Template<Specifier & U>;
 }
 
 export class TemplateIterator {
-  constructor(private vm: VM) {}
+  constructor(private vm: VM<Opaque>) {}
   next(): IteratorResult<RenderResult> {
     return this.vm.next();
   }
@@ -100,74 +98,64 @@ let clientId = 0;
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
-export default function templateFactory<T extends TemplateMeta>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, T>;
-export default function templateFactory<T extends TemplateMeta, U>(serializedTemplate: SerializedTemplateWithLazyBlock<T>): TemplateFactory<T, U>;
-export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}, {}> {
+export default function templateFactory<Specifier>(serializedTemplate: SerializedTemplateWithLazyBlock<Specifier>): TemplateFactory<Specifier>;
+export default function templateFactory<Specifier, U>(serializedTemplate: SerializedTemplateWithLazyBlock<Specifier>): TemplateFactory<Specifier & U>;
+export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
-  let create = (env: Environment, envMeta?: {}) => {
+  let create = (options: TemplateOptions<Opaque>, envMeta?: {}) => {
     let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new ScannableTemplate(id, newMeta, env, parsedBlock);
+    return new ScannableTemplate(options, { id, block: parsedBlock, referrer: newMeta });
   };
   return { id, meta, create };
 }
 
-class ScannableTemplate implements Template<TemplateMeta> {
-  private entryPoint: Option<Program> = null;
-  private layout: Option<Program> = null;
-  private partial: Option<Program> = null;
-  private block: Option<Block> = null;
-  private scanner: Scanner;
+export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier> {
+  private layout: Option<TopLevelSyntax> = null;
+  private partial: Option<TopLevelSyntax> = null;
   public symbols: string[];
   public hasEval: boolean;
+  public id: string;
+  public referrer: Specifier;
+  private statements: Statement[];
 
-  constructor(public id: string, public meta: TemplateMeta, private env: Environment, rawBlock: SerializedTemplateBlock) {
-    this.scanner = new Scanner(rawBlock, env);
-    this.symbols = rawBlock.symbols;
-    this.hasEval = rawBlock.hasEval;
+  constructor(private options: TemplateOptions<Specifier>, private parsedLayout: ParsedLayout<Specifier>) {
+    let { block } = parsedLayout;
+    this.symbols = block.symbols;
+    this.hasEval = block.hasEval;
+    this.statements = block.statements;
+    this.referrer = parsedLayout.referrer;
+    this.id = parsedLayout.id || `client-${clientId++}`;
   }
 
-  render({ self, parentNode, dynamicScope, mode }: RenderOptions) {
-    let { env } = this;
+  renderLayout(options: RenderLayoutOptions): TemplateIterator {
+    let { env, self, dynamicScope, args = EMPTY_ARGS, builder } = options;
 
-    let elementBuilder: ElementBuilder;
+    let layout = this.asLayout();
+    let handle = layout.compile();
 
-    switch (mode) {
-      case undefined: elementBuilder = NewElementBuilder.forInitialRender(env, parentNode, null); break;
-      case 'rehydrate': elementBuilder = RehydrateBuilder.forInitialRender(env, parentNode, null); break;
-      case 'serialize': elementBuilder = SerializeBuilder.forInitialRender(env, parentNode, null); break;
-      default: throw new Error('unreachable');
-    }
-
-    let compiled = this.asEntryPoint().compileDynamic(env);
-    let vm = VM.initial(env, self, dynamicScope, elementBuilder, compiled);
+    let vm = VM.initial(this.options.program as any as RuntimeProgram<Opaque>, env, self, args, dynamicScope, builder, handle);
     return new TemplateIterator(vm);
   }
 
-  asEntryPoint(): Program {
-    if (!this.entryPoint) this.entryPoint = this.scanner.scanEntryPoint(this.compilationMeta());
-    return this.entryPoint;
+  asLayout(): TopLevelSyntax {
+    if (this.layout) return this.layout;
+    return this.layout = compilable(this.parsedLayout, this.options, false);
   }
 
-  asLayout(componentName: string, attrs?: Statements.Attribute[]): Program {
-    if (!this.layout) this.layout = this.scanner.scanLayout(this.compilationMeta(), attrs || EMPTY_ARRAY, componentName);
-    return this.layout;
+  asPartial(): TopLevelSyntax {
+    if (this.partial) return this.partial;
+    return this.partial = compilable(this.parsedLayout, this.options, true);
   }
+}
 
-  asPartial(): Program {
-    if (!this.partial) this.partial = this.scanner.scanEntryPoint(this.compilationMeta(true));
-    return this.partial;
-  }
+export function compilable<Specifier>(layout: ParsedLayout<Specifier>, options: TemplateOptions<Opaque>, asPartial: boolean) {
+  let { block, referrer } = layout;
+  let { hasEval, symbols } = block;
+  let compileOptions = assign({}, options, { asPartial, referrer });
 
-  asBlock(): Block {
-    if (!this.block) this.block = this.scanner.scanBlock(this.compilationMeta());
-    return this.block;
-  }
-
-  private compilationMeta(asPartial = false) {
-    return { templateMeta: this.meta, symbols: this.symbols, asPartial };
-  }
+  return new CompilableTemplate(block.statements, layout, compileOptions, { referrer, hasEval, symbols });
 }

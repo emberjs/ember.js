@@ -1,5 +1,4 @@
-import EmberObject, { Mixin, computed } from '../index';
-import { strip } from '@glimmer/test-helpers';
+import EmberObject, { computed } from '..';
 
 let moduleOptions;
 
@@ -102,59 +101,6 @@ QUnit.test('calls computed property setters', assert => {
   assert.equal(o.get('foo'), 'bar');
 });
 
-QUnit.skip('allows bindings to be defined', assert => {
-  let obj = EmberObject.create({
-    foo: 'foo',
-    barBinding: 'foo'
-  });
-
-  assert.equal(obj.get('bar'), 'foo', 'The binding value is correct');
-});
-
-QUnit.skip('calls setUnknownProperty if defined', assert => {
-  let setUnknownPropertyCalled = false;
-
-  let MyClass = EmberObject.extend({
-    setUnknownProperty() {
-      setUnknownPropertyCalled = true;
-    }
-  });
-
-  MyClass.create({ foo: 'bar' });
-  assert.ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
-});
-
-QUnit.skip('throws if you try to define a computed property', assert => {
-  assert.throws(function() {
-    EmberObject.create({
-      foo: computed(function() {})
-    });
-  }, strip`Ember.Object.create no longer supports defining computed properties.
-           Define computed properties using extend() or reopen() before calling create().`);
-});
-
-QUnit.skip('throws if you try to call _super in a method', assert => {
-  assert.throws(function() {
-    EmberObject.create({
-      foo(this: any) {
-        this._super.apply(this, arguments);
-      }
-    });
-  }, 'Ember.Object.create no longer supports defining methods that call _super.');
-});
-
-QUnit.skip('throws if you try to \'mixin\' a definition', assert => {
-  let myMixin = Mixin.create({
-    adder(arg1: number, arg2: number) {
-      return arg1 + arg2;
-    }
-  });
-
-  assert.throws(function() {
-    EmberObject.create(myMixin);
-  }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create seperately instead.');
-});
-
 // This test is for IE8.
 QUnit.test('property name is the same as own prototype property', assert => {
   let MyClass = EmberObject.extend({
@@ -169,22 +115,4 @@ QUnit.test('inherits properties from passed in EmberObject', assert => {
   let secondaryObj = EmberObject.create(baseObj);
 
   assert.equal(secondaryObj['foo'], baseObj['foo'], 'Em.O.create inherits properties from EmberObject parameter');
-});
-
-QUnit.skip('throws if you try to pass anything a string as a parameter', assert => {
-  let expected = 'EmberObject.create only accepts an objects.';
-
-  assert.throws(function() {
-    EmberObject.create('some-string');
-  }, expected);
-});
-
-QUnit.skip('EmberObject.create can take undefined as a parameter', assert => {
-  let o = EmberObject.create(undefined);
-  assert.deepEqual(EmberObject.create(), o);
-});
-
-QUnit.skip('EmberObject.create can take null as a parameter', assert => {
-  let o = EmberObject.create(null);
-  assert.deepEqual(EmberObject.create(), o);
 });

@@ -1,4 +1,4 @@
-import { preprocess as parse, AST } from "../index";
+import { preprocess as parse, AST } from "..";
 
 QUnit.module("[glimmer-syntax] Parser - Location Info");
 
@@ -288,6 +288,18 @@ data-barf="herpy"
     locEqual(dataBarf.value, 4, 10, 4, 17);
     locEqual(dataQux.value, 5, 11, 5, 22);
     locEqual(dataHurky.value, 6, 15, 6, 36);
+  }
+});
+
+test("element dynamic attribute", function() {
+  let ast = parse(`<img src={{blah}}>`);
+
+  let [img] = ast.body;
+  if (assertNodeType(img, 'ElementNode')) {
+    let [src] = img.attributes;
+    locEqual(src, 1, 5, 1, 17);
+    let { value } = src;
+    locEqual(value, 1, 9, 1, 17);
   }
 });
 

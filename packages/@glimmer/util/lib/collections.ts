@@ -8,28 +8,10 @@ export interface Dict<T> {
 export interface Set<T> {
   add(value: T): Set<T>;
   delete(value: T): void;
-  forEach(callback: (item: T) => void): void;
 }
 
-let proto = Object.create(null, {
-  // without this, we will always still end up with (new
-  // EmptyObject()).constructor === Object
-  constructor: {
-    value: undefined,
-    enumerable: false,
-    writable: true
-  }
-});
-
-function EmptyObject() {}
-EmptyObject.prototype = proto;
-
 export function dict<T>(): Dict<T> {
-  // let d = Object.create(null);
-  // d.x = 1;
-  // delete d.x;
-  // return d;
-  return new (EmptyObject as any)();
+  return Object.create(null);
 }
 
 export type SetMember = HasGuid | string;
@@ -51,26 +33,14 @@ export class DictSet<T extends SetMember> implements Set<T> {
     if (typeof obj === 'string') delete this.dict[<any>obj];
     else if ((obj as any)._guid) delete this.dict[(obj as any)._guid];
   }
-
-  forEach(callback: (item: T) => void) {
-    let { dict } = this;
-    let dictKeys = Object.keys(dict);
-    for (let i = 0; dictKeys.length; i++) {
-      callback(dict[dictKeys[i]]);
-    }
-  }
-
-  toArray(): string[] {
-    return Object.keys(this.dict);
-  }
 }
 
 export class Stack<T> {
   private stack: T[] = [];
   public current: Option<T> = null;
 
-  toArray(): T[] {
-    return this.stack;
+  public get size() {
+    return this.stack.length;
   }
 
   push(item: T) {

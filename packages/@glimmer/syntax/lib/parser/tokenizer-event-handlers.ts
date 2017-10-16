@@ -1,7 +1,6 @@
 import b, { SYNTHETIC } from "../builders";
 import { appendChild, parseElementBlockParams } from "../utils";
 import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
-import { SourceLocation } from "../types/nodes";
 import * as AST from "../types/nodes";
 import SyntaxError from '../errors/syntax-error';
 import { Tag } from "../parser";
@@ -11,6 +10,7 @@ import print from "../generation/print";
 import Walker from "../traversal/walker";
 import * as handlebars from "handlebars";
 import { assign } from '@glimmer/util';
+import { Recast } from "@glimmer/interfaces";
 
 const voidMap: {
   [tagName: string]: boolean
@@ -36,8 +36,8 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tagOpenLine, this.tagOpenColumn),
-      end: null
-    } as any as SourceLocation;
+      end: null as Recast<null, AST.Position>
+    };
   }
 
   appendToCommentData(char: string) {
@@ -57,8 +57,8 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
-      end: null
-    } as any as SourceLocation;
+      end: null as Recast<null, AST.Position>
+    };
   }
 
   appendToData(char: string) {
@@ -291,22 +291,6 @@ function formatEndTagInfo(tag: Tag<'StartTag' | 'EndTag'>) {
   return "`" + tag.name + "` (on line " + tag.loc.end.line + ")";
 }
 
-export interface Syntax {
-  parse: typeof preprocess;
-  builders: typeof builders;
-  print: typeof print;
-  traverse: typeof traverse;
-  Walker: typeof Walker;
-}
-
-export const syntax: Syntax = {
-  parse: preprocess,
-  builders,
-  print,
-  traverse,
-  Walker
-};
-
 /**
   ASTPlugins can make changes to the Glimmer template AST before
   compilation begins.
@@ -330,6 +314,22 @@ export interface PreprocessOptions {
     ast?: ASTPluginBuilder[];
   };
 }
+
+export interface Syntax {
+  parse: typeof preprocess;
+  builders: typeof builders;
+  print: typeof print;
+  traverse: typeof traverse;
+  Walker: typeof Walker;
+}
+
+const syntax: Syntax = {
+  parse: preprocess,
+  builders,
+  print,
+  traverse,
+  Walker
+};
 
 export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
   let ast = (typeof html === 'object') ? html : handlebars.parse(html);

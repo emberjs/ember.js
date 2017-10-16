@@ -1,6 +1,6 @@
 import { TestEnvironment, equalTokens, TestDynamicScope } from "@glimmer/test-helpers";
 import { test, module } from "@glimmer/runtime/test/support";
-import { Template, RenderResult, DynamicAttributeFactory, SimpleDynamicAttribute, ElementBuilder } from "@glimmer/runtime";
+import { Template, RenderResult, DynamicAttributeFactory, SimpleDynamicAttribute, ElementBuilder, clientBuilder } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Option, Simple, Opaque } from "@glimmer/interfaces";
 
@@ -14,17 +14,19 @@ function compile(template: string) {
 
 function commonSetup(customEnv = new TestEnvironment()) {
   env = customEnv; // TODO: Support SimpleDOM
-  root = rootElement();
+  root = document.getElementById('qunit-fixture')!;
 }
 
-function rootElement(): HTMLDivElement {
-  return env.getDOM().createElement('div') as HTMLDivElement;
-}
-
-function render<T>(template: Template<T>, self: any) {
+function render(template: Template, self: any) {
   let result: RenderResult;
   env.begin();
-  let templateIterator = template.render({ self: new UpdatableReference(self), parentNode: root, dynamicScope: new TestDynamicScope() });
+  let cursor = { element: root, nextSibling: null };
+  let templateIterator = template.renderLayout({
+    env,
+    self: new UpdatableReference(self),
+    builder: clientBuilder(env, cursor),
+    dynamicScope: new TestDynamicScope()
+  });
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next() as IteratorResult<RenderResult>;
@@ -54,7 +56,7 @@ module('Style attributes', {
     warnings = 0;
   }
 }, () => {
-  test(`using a static inline style on an element does not give you a warning`, function(assert) {
+  test(`using a static inline style on an element does not give you a warning`, function (assert) {
     let template = compile(`<div style="background: red">Thing</div>`);
     render(template, {});
 
@@ -63,16 +65,16 @@ module('Style attributes', {
     equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
   });
 
-  test(`triple curlies are trusted`, function(assert) {
+  test(`triple curlies are trusted`, function (assert) {
     let template = compile(`<div foo={{foo}} style={{{styles}}}>Thing</div>`);
-    render(template, {styles: 'background: red'});
+    render(template, { styles: 'background: red' });
 
     assert.strictEqual(warnings, 0);
 
     equalTokens(root, '<div style="background: red">Thing</div>', "initial render");
   });
 
-  test(`using a static inline style on an namespaced element does not give you a warning`, function(assert) {
+  test(`using a static inline style on an namespaced element does not give you a warning`, function (assert) {
     let template = compile(`<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red" />`);
 
     render(template, {});
@@ -91,5 +93,5 @@ class StyleAttribute extends SimpleDynamicAttribute {
     super.set(dom, value, env);
   }
 
-  update() {}
+  update() { }
 }

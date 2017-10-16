@@ -64,14 +64,10 @@ export class Fragment implements Bounds {
   lastNode(): Option<Simple.Node> {
     return this.bounds.lastNode();
   }
-
-  update(bounds: Bounds) {
-    this.bounds = bounds;
-  }
 }
 
 export interface DOMStack {
-  pushRemoteElement(element: Simple.Element, nextSibling: Option<Simple.Node>): void;
+  pushRemoteElement(element: Simple.Element, guid: string, nextSibling: Option<Simple.Node>): void;
   popRemoteElement(): void;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): Simple.Element;
@@ -110,7 +106,6 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
 
   // TODO: ?
   expectConstructing(method: string): Simple.Element;
-  expectOperations(method: string): ElementOperations;
 
   block(): Tracker;
 
@@ -130,11 +125,11 @@ export class NewElementBuilder implements ElementBuilder {
   public operations: Option<ElementOperations> = null;
   public env: Environment;
 
-  private cursorStack = new Stack<Cursor>();
+  protected cursorStack = new Stack<Cursor>();
   private blockStack = new Stack<Tracker>();
 
-  static forInitialRender(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
-    let builder = new this(env, parentNode, nextSibling);
+  static forInitialRender(env: Environment, cursor: Cursor) {
+    let builder = new this(env, cursor.element, cursor.nextSibling);
     builder.pushSimpleBlock();
     return builder;
   }
@@ -150,7 +145,7 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
-    this.cursorStack.push(new Cursor(parentNode, nextSibling));
+    this.pushElement(parentNode, nextSibling);
 
     this.env = env;
     this.dom = env.getAppendOperations();
@@ -167,10 +162,6 @@ export class NewElementBuilder implements ElementBuilder {
 
   expectConstructing(method: string): Simple.Element {
     return expect(this.constructing, `${method} should only be called while constructing an element`);
-  }
-
-  expectOperations(method: string): ElementOperations {
-    return expect(this.operations, `${method} should only be called while constructing an element`);
   }
 
   block(): Tracker {
@@ -194,7 +185,7 @@ export class NewElementBuilder implements ElementBuilder {
     return this.pushBlockTracker(new BlockListTracker(this.element, list));
   }
 
-  private pushBlockTracker<T extends Tracker>(tracker: T, isRemote = false): T {
+  protected pushBlockTracker<T extends Tracker>(tracker: T, isRemote = false): T {
     let current = this.blockStack.current;
 
     if (current !== null) {
@@ -219,9 +210,9 @@ export class NewElementBuilder implements ElementBuilder {
   __openBlock(): void {}
   __closeBlock(): void {}
 
+  // todo return seems unused
   openElement(tag: string): Simple.Element {
     let element = this.__openElement(tag);
-
     this.constructing = element;
 
     return element;
@@ -253,9 +244,12 @@ export class NewElementBuilder implements ElementBuilder {
     this.popElement();
   }
 
-  pushRemoteElement(element: Simple.Element, nextSibling: Option<Simple.Node> = null) {
-    this.pushElement(element, nextSibling);
+  pushRemoteElement(element: Simple.Element, guid: string, nextSibling: Option<Simple.Node> = null) {
+    this.__pushRemoteElement(element, guid, nextSibling);
+  }
 
+  __pushRemoteElement(element: Simple.Element, _guid: string, nextSibling: Option<Simple.Node>) {
+    this.pushElement(element, nextSibling);
     let tracker = new RemoteBlockTracker(element);
     this.pushBlockTracker(tracker, true);
   }
@@ -303,17 +297,9 @@ export class NewElementBuilder implements ElementBuilder {
     return node;
   }
 
-  appendNode(node: Simple.Node): Simple.Node {
-    return this.didAppendNode(this.__appendNode(node));
-  }
-
   __appendNode(node: Simple.Node): Simple.Node {
     this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
-  }
-
-  appendFragment(fragment: Simple.DocumentFragment): Bounds {
-    return this.didAppendBounds(this.__appendFragment(fragment));
   }
 
   __appendFragment(fragment: Simple.DocumentFragment): Bounds {
@@ -328,10 +314,6 @@ export class NewElementBuilder implements ElementBuilder {
     }
   }
 
-  appendHTML(html: string): Bounds {
-    return this.didAppendBounds(this.__appendHTML(html));
-  }
-
   __appendHTML(html: string): Bounds {
     return this.dom.insertHTMLBefore(this.element, this.nextSibling, html);
   }
@@ -343,28 +325,21 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   __appendTrustingDynamicContent(value: Opaque): DynamicContent {
-    if (isFragment(value)) {
+    if (isString(value)) {
+      return this.trustedContent(value);
+    } else if (isEmpty(value)) {
+      return this.trustedContent('');
+    } else if (isSafeString(value)) {
+      return this.trustedContent(value.toHTML());
+    } if (isFragment(value)) {
       let bounds = this.__appendFragment(value);
       return new DynamicNodeContent(bounds, value, true);
     } else if (isNode(value)) {
       let node = this.__appendNode(value);
       return new DynamicNodeContent(single(this.element, node), node, true);
-    } else {
-      let normalized: string;
-
-      if (isEmpty(value)) {
-        normalized = '';
-      } else if (isSafeString(value)) {
-        normalized = value.toHTML();
-      } else if (isString(value)) {
-        normalized = value;
-      } else {
-        normalized = String(value);
-      }
-
-      let bounds = this.__appendHTML(normalized);
-      return new DynamicTrustedHTMLContent(bounds, normalized, true);
     }
+
+    return this.trustedContent(String(value));
   }
 
   appendCautiousDynamicContent(value: Opaque): DynamicContentWrapper {
@@ -374,7 +349,11 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   __appendCautiousDynamicContent(value: Opaque): DynamicContent {
-    if (isFragment(value)) {
+    if (isString(value)) {
+      return this.untrustedContent(value);
+    } else if (isEmpty(value)) {
+      return this.untrustedContent('');
+    } else if (isFragment(value)) {
       let bounds = this.__appendFragment(value);
       return new DynamicNodeContent(bounds, value, false);
     } else if (isNode(value)) {
@@ -385,22 +364,20 @@ export class NewElementBuilder implements ElementBuilder {
       let bounds = this.__appendHTML(normalized);
       // let bounds = this.dom.insertHTMLBefore(this.element, this.nextSibling, normalized);
       return new DynamicHTMLContent(bounds, value, false);
-    } else {
-      let normalized: string;
-
-      if (isEmpty(value)) {
-        normalized = '';
-      } else if (isString(value)) {
-        normalized = value;
-      } else {
-        normalized = String(value);
-      }
-
-      let textNode = this.__appendText(normalized);
-      let bounds = single(this.element, textNode);
-
-      return new DynamicTextContent(bounds, normalized, false);
     }
+
+    return this.untrustedContent(String(value));
+  }
+
+  private trustedContent(value: string) {
+    let bounds = this.__appendHTML(value);
+    return new DynamicTrustedHTMLContent(bounds, value, true);
+  }
+
+  private untrustedContent(value: string) {
+    let textNode = this.__appendText(value);
+    let bounds = single(this.element, textNode);
+    return new DynamicTextContent(bounds, value, false);
   }
 
   appendComment(string: string): Simple.Comment {
@@ -517,7 +494,7 @@ export class SimpleBlockTracker implements Tracker {
   }
 }
 
-class RemoteBlockTracker extends SimpleBlockTracker {
+export class RemoteBlockTracker extends SimpleBlockTracker {
   destroy() {
     super.destroy();
 
@@ -594,4 +571,8 @@ class BlockListTracker implements Tracker {
 
   finalize(_stack: ElementBuilder) {
   }
+}
+
+export function clientBuilder(env: Environment, cursor: Cursor) {
+  return NewElementBuilder.forInitialRender(env, cursor);
 }
