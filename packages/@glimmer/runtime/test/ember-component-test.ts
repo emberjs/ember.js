@@ -12,6 +12,7 @@ import {
   stripTight,
   TestDynamicScope,
   TestEnvironment,
+  TestModifierManager
 } from "@glimmer/test-helpers";
 import { assign } from "@glimmer/util";
 import { RenderResult, Template, clientBuilder } from '@glimmer/runtime';
@@ -1167,6 +1168,14 @@ QUnit.test(`Glimmer component with element modifier`, function (assert) {
   assert.throws(() => {
     appendViewFor('<NonBlock {{action}} />');
   }, new Error("Compile Error: Element modifiers are not allowed in components"), "should throw error");
+});
+
+QUnit.test('Custom element with element modifier', function(assert) {
+  assert.expect(0);
+
+  env.registerModifier('foo', new TestModifierManager());
+
+  appendViewFor('<some-custom-element {{foo "foo"}}></some-custom-element>');
 });
 
 QUnit.test('Curly component hooks (with attrs)', assert => {
