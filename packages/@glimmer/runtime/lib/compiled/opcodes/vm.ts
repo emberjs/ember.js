@@ -1,27 +1,24 @@
-import { Opaque, Option, SymbolTable } from '@glimmer/interfaces';
-import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
+import { Op } from '@glimmer/vm';
+import { Opaque, Option, Recast, VMHandle } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
   isConst,
   isModified,
   ReferenceCache,
   Revision,
-  Tag,
+  Tag
 } from '@glimmer/reference';
-import { initializeGuid } from '@glimmer/util';
-import Environment from '../../environment';
-import { APPEND_OPCODES, Op, OpcodeJSON, UpdatingOpcode } from '../../opcodes';
-import { Block } from '../../syntax/interfaces';
-import { UpdatingVM, VM } from '../../vm';
-import { CompiledDynamicTemplate } from '../blocks';
-
-import {
-  FALSE_REFERENCE,
-  NULL_REFERENCE,
-  PrimitiveReference,
-  TRUE_REFERENCE,
-  UNDEFINED_REFERENCE,
-} from '../../references';
+import { initializeGuid, assert } from '@glimmer/util';
+import { expectStackChange, CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle, CheckPrimitive } from '@glimmer/debug';
+import { stackAssert } from './assert';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
+import { Scope } from '../../environment';
+import { PrimitiveReference } from '../../references';
+import { CompilableTemplate } from '../../syntax/interfaces';
+import { VM, UpdatingVM } from '../../vm';
+import { Arguments } from '../../vm/arguments';
+import { LazyConstants, PrimitiveType } from "@glimmer/program";
+import { CheckReference, CheckScope } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
@@ -31,87 +28,157 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
-APPEND_OPCODES.add(Op.Immediate, (vm, { op1: number }) => {
-  vm.stack.push(number);
-});
-
-APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
+APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, { op1: other }) => {
   vm.stack.push(vm.constants.getOther(other));
 });
 
-APPEND_OPCODES.add(Op.PrimitiveReference, (vm, { op1: primitive }) => {
+APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
-  let flag = (primitive & (3 << 30)) >>> 30;
-  let value = primitive & ~(3 << 30);
+  let flag = primitive & 7; // 111
+  let value = primitive >> 3;
 
   switch (flag) {
-    case 0:
-      stack.push(PrimitiveReference.create(value));
+    case PrimitiveType.NUMBER:
+      stack.push(value);
       break;
-    case 1:
-      stack.push(PrimitiveReference.create(vm.constants.getString(value)));
+    case PrimitiveType.FLOAT:
+      stack.push(vm.constants.getFloat(value));
       break;
-    case 2:
+    case PrimitiveType.STRING:
+      stack.push(vm.constants.getString(value));
+      break;
+    case PrimitiveType.BOOLEAN_OR_VOID:
       switch (value) {
-        case 0: stack.push(FALSE_REFERENCE); break;
-        case 1: stack.push(TRUE_REFERENCE); break;
-        case 2: stack.push(NULL_REFERENCE); break;
-        case 3: stack.push(UNDEFINED_REFERENCE); break;
+        case 0: stack.push(false); break;
+        case 1: stack.push(true); break;
+        case 2: stack.push(null); break;
+        case 3: stack.push(undefined); break;
       }
+      break;
+    case PrimitiveType.NEGATIVE:
+      stack.push(vm.constants.getNegative(value));
       break;
   }
 });
 
+APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
+  let stack = vm.stack;
+  stack.push(PrimitiveReference.create(check(stack.pop(), CheckPrimitive)));
+});
+
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
-  let position = vm.fetchValue<number>(register) - offset;
+  let position = check(vm.fetchValue(register), CheckNumber) - offset;
   vm.stack.dup(position);
 });
 
-APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => vm.stack.pop(count));
+APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => {
+  vm.stack.pop(count);
+});
 
-APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => vm.load(register));
+APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => {
+  vm.load(register);
+});
 
-APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => vm.fetch(register));
+APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => {
+  vm.fetch(register);
+});
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   let names = vm.constants.getArray(_names);
   vm.bindDynamicScope(names);
 });
 
-APPEND_OPCODES.add(Op.PushFrame, vm => vm.pushFrame());
+APPEND_OPCODES.add(Op.PushFrame, vm => {
+  vm.pushFrame();
 
-APPEND_OPCODES.add(Op.PopFrame, vm => vm.popFrame());
+  check(vm.stack.peek(), CheckNumber);
+  check(vm.stack.peek(1), CheckNumber);
+});
 
-APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => vm.enter(args));
+APPEND_OPCODES.add(Op.PopFrame, vm => {
+  vm.popFrame();
+});
 
-APPEND_OPCODES.add(Op.Exit, (vm) => vm.exit());
+APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
+  vm.enter(args);
+});
 
-APPEND_OPCODES.add(Op.CompileDynamicBlock, vm => {
+APPEND_OPCODES.add(Op.Exit, vm => {
+  vm.exit();
+});
+
+APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
-  let block = stack.pop<Block>();
-  stack.push(block ? block.compileDynamic(vm.env) : null);
+  stack.push(vm.constants.getSymbolTable(_table));
 });
 
-APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: _block }) => {
-  let block = vm.constants.getBlock(_block);
-  let compiled = block.compileStatic(vm.env);
-  vm.call(compiled.handle);
+APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
+  let stack = vm.stack;
+  stack.push(vm.scope());
 });
 
-export interface DynamicInvoker<S extends SymbolTable> {
-  invoke(vm: VM, block: Option<CompiledDynamicTemplate<S>>): void;
-}
+APPEND_OPCODES.add(Op.CompileBlock, vm => {
+  let stack = vm.stack;
+  let block = stack.pop<Option<CompilableTemplate> | 0>();
+  stack.push(block ? block.compile() : null);
 
-APPEND_OPCODES.add(Op.InvokeDynamic, (vm, { op1: _invoker }) => {
-  let invoker = vm.constants.getOther<DynamicInvoker<SymbolTable>>(_invoker);
-  let block = vm.stack.pop<Option<CompiledDynamicTemplate<SymbolTable>>>();
-  invoker.invoke(vm, block);
+  check(vm.stack.peek(), CheckOption(CheckNumber));
 });
 
-APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => vm.goto(target));
+APPEND_OPCODES.add(Op.InvokeVirtual, vm => {
+  vm.call(check(vm.stack.pop(), CheckHandle));
+});
+
+APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => {
+  vm.call(handle as Recast<number, VMHandle>);
+});
+
+APPEND_OPCODES.add(Op.InvokeYield, vm => {
+  let { stack } = vm;
+
+  let handle = check(stack.pop(), CheckOption(CheckHandle));
+  let scope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
+  let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
+
+  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+
+  let args = check(stack.pop(), CheckInstanceof(Arguments));
+
+  if (table === null) {
+
+    // To balance the pop{Frame,Scope}
+    vm.pushFrame();
+    vm.pushScope(scope!); // Could be null but it doesnt matter as it is immediatelly popped.
+    return;
+  }
+
+  let invokingScope = scope!;
+
+  // If necessary, create a child scope
+  {
+    let locals = table.parameters;
+    let localsCount = locals.length;
+
+    if (localsCount > 0) {
+      invokingScope = invokingScope.child();
+
+      for (let i=0; i<localsCount; i++) {
+        invokingScope.bindSymbol(locals![i], args.at(i));
+      }
+    }
+  }
+
+  vm.pushFrame();
+  vm.pushScope(invokingScope);
+  vm.call(handle!);
+});
+
+APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => {
+  vm.goto(target);
+});
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
-  let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
+  let reference = check(vm.stack.pop(), CheckReference);
 
   if (isConst(reference)) {
     if (reference.value()) {
@@ -129,7 +196,7 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 });
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
-  let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
+  let reference = check(vm.stack.pop(), CheckReference);
 
   if (isConst(reference)) {
     if (!reference.value()) {
@@ -146,30 +213,19 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.Return, vm => vm.return());
+APPEND_OPCODES.add(Op.Return, vm => {
+  vm.return();
+
+  expectStackChange(vm.stack, 0, 'Return');
+});
+
 APPEND_OPCODES.add(Op.ReturnTo, (vm, { op1: relative }) => {
   vm.returnTo(relative);
 });
 
-export type TestFunction = (ref: Reference<Opaque>, env: Environment) => Reference<boolean>;
-
-export const ConstTest: TestFunction = function(ref: Reference<Opaque>, _env: Environment): Reference<boolean> {
-  return new ConstReference(!!ref.value());
-};
-
-export const SimpleTest: TestFunction = function(ref: Reference<Opaque>, _env: Environment): Reference<boolean> {
-  return ref as Reference<boolean>;
-};
-
-export const EnvironmentTest: TestFunction = function(ref: Reference<Opaque>, env: Environment): Reference<boolean> {
-  return env.toConditionalReference(ref);
-};
-
-APPEND_OPCODES.add(Op.Test, (vm, { op1: _func }) => {
-  let stack = vm.stack;
-  let operand = stack.pop();
-  let func = vm.constants.getFunction(_func);
-  stack.push(func(operand, vm.env));
+APPEND_OPCODES.add(Op.ToBoolean, vm => {
+  let { env, stack } = vm;
+  stack.push(env.toConditionalReference(check(stack.pop(), CheckReference)));
 });
 
 export class Assert extends UpdatingOpcode {
@@ -185,31 +241,12 @@ export class Assert extends UpdatingOpcode {
     this.cache = cache;
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     let { cache } = this;
 
     if (isModified(cache.revalidate())) {
       vm.throw();
     }
-  }
-
-  toJSON(): OpcodeJSON {
-    let { type, _guid, cache } = this;
-
-    let expected: string;
-
-    try {
-      expected = JSON.stringify(cache.peek());
-    } catch (e) {
-      expected = String(cache.peek());
-    }
-
-    return {
-      args: [],
-      details: { expected },
-      guid: _guid,
-      type,
-    };
   }
 }
 
@@ -236,14 +273,6 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
 
   didModify() {
     this.lastRevision = this.tag.value();
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      args: [JSON.stringify(this.target.inspect())],
-      guid: this._guid,
-      type: this.type,
-    };
   }
 }
 
@@ -280,13 +309,5 @@ export class LabelOpcode implements UpdatingOpcode {
 
   inspect(): string {
     return `${this.label} [${this._guid}]`;
-  }
-
-  toJSON(): OpcodeJSON {
-    return {
-      args: [JSON.stringify(this.inspect())],
-      guid: this._guid,
-      type: this.type,
-    };
   }
 }

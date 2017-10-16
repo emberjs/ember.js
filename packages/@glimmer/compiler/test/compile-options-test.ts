@@ -1,31 +1,25 @@
-import { TemplateMeta } from '@glimmer/wire-format';
-import { TestEnvironment, compile } from "@glimmer/test-helpers";
+import { LazyTestEnvironment } from "@glimmer/test-helpers";
 import { precompile } from "@glimmer/compiler";
 
-let env: TestEnvironment;
+let env: LazyTestEnvironment;
 
-QUnit.module('precompile');
+QUnit.module('[glimmer-compiler] precompile');
 
-QUnit.module('Compile options', {
+QUnit.module('[glimmer-compiler] Compile options', {
   beforeEach() {
-    env = new TestEnvironment();
+    env = new LazyTestEnvironment();
   }
 });
 
 QUnit.test('moduleName option is passed into meta', assert => {
   let moduleName = 'It ain\'t hard to tell';
-  let template = compile('Hi, {{name}}!', {
-    env,
-    meta: {
-      moduleName
-    }
-  });
-  assert.equal(template.meta.moduleName, moduleName, 'Template has the moduleName');
+  let template = env.compile('Hi, {{name}}!', { moduleName });
+  assert.equal(template.referrer.moduleName, moduleName, 'Template has the moduleName');
 });
 
-QUnit.module('precompile', {
+QUnit.module('[glimmer-compiler] precompile', {
   beforeEach() {
-    env = new TestEnvironment();
+    env = new LazyTestEnvironment();
   }
 });
 
@@ -34,7 +28,7 @@ QUnit.test('returned meta is correct', assert => {
     meta: {
       moduleName: 'my/module-name',
       metaIsOpaque: 'yes'
-    } as any as TemplateMeta
+    }
   }));
 
   assert.equal(wire.meta.moduleName, 'my/module-name', 'Template has correct meta');

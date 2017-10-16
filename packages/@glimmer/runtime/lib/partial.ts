@@ -1,10 +1,16 @@
-import { TemplateMeta } from '@glimmer/wire-format';
+import { ProgramSymbolTable, VMHandle } from '@glimmer/interfaces';
 import { Template } from './template';
 
-export class PartialDefinition<T extends TemplateMeta> {
+export class PartialDefinition {
   constructor(
     public name: string, // for debugging
-    public template: Template<T>
+    private template: Template
   ) {
+  }
+
+  getPartial(): { symbolTable: ProgramSymbolTable, handle: VMHandle } {
+    let partial = this.template.asPartial();
+    let handle = partial.compile();
+    return { symbolTable: partial.symbolTable, handle };
   }
 }

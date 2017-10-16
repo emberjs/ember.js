@@ -4,10 +4,14 @@ module.exports = {
   "framework": "qunit",
   "test_page": "tests/index.html?hidepassed",
   "disable_watching": true,
-  "timeout": 540,
+  "timeout": 600,
   "parallel": 2,
   "launchers":
     {
+      "Node": {
+        "command": "./bin/run-node-tests.js",
+        "protocol": "tap"
+      },
       "SL_Chrome_Current": {
         "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest --no-ct -u '<url>'",
         "protocol": "tap"
@@ -25,7 +29,7 @@ module.exports = {
         "protocol": "tap"
       },
       "SL_Safari_Current": {
-        "command": "ember sauce:launch -b safari -v 9 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -b safari -v 10 --no-ct -u '<url>'",
         "protocol": "tap"
       },
       "SL_Safari_Last": {
@@ -39,23 +43,24 @@ module.exports = {
       "SL_IE_11": {
         "command": "ember sauce:launch -p 'Windows 10' -b 'internet explorer' -v 11 --no-ct -u '<url>'",
         "protocol": "tap"
-      },
-      "SL_IE_10": {
-        "command": "ember sauce:launch -p 'Windows 7' -b 'internet explorer' -v 10 --no-ct -u '<url>'",
-        "protocol": "tap"
-      },
-      "SL_IE_9": {
-        "command": "ember sauce:launch -p 'Windows 7' -b 'internet explorer' -v 9 --no-ct -u '<url>'",
-        "protocol": "tap"
       }
     }
   ,
   "launch_in_dev": [
-    "PhantomJS",
+    "Node",
     "Chrome"
   ],
+  "browser_args": {
+    "Chrome": [
+      '--disable-gpu',
+      '--headless',
+      '--remote-debugging-port=0',
+      '--no-sandbox'
+    ]
+  },
   "launch_in_ci": [
-    "PhantomJS",
+    "Node",
+    "Chrome",
     "SL_Chrome_Current",
     "SL_Chrome_Last",
     "SL_Firefox_Current",
@@ -63,9 +68,6 @@ module.exports = {
     "SL_Safari_Current",
     "SL_Safari_Last",
     "SL_MS_Edge",
-    "SL_IE_11",
-    "SL_IE_10",
-    "SL_IE_9"
-  ],
-  tap_quiet_logs: true
+    "SL_IE_11"
+  ]
 };

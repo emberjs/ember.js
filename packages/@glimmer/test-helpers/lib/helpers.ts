@@ -1,6 +1,6 @@
 import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
 import { Opaque, Option } from "@glimmer/interfaces";
-import { Environment, Template, templateFactory } from "@glimmer/runtime";
+import { Environment } from "@glimmer/runtime";
 import * as WireFormat from '@glimmer/wire-format';
 import { tokenize } from "simple-html-tokenizer";
 
@@ -58,20 +58,14 @@ function isMarker(node: Node) {
   return false;
 }
 
-export interface TestCompileOptions<T extends WireFormat.TemplateMeta> extends PrecompileOptions<T> {
+export interface TestCompileOptions extends PrecompileOptions {
   env: Environment;
 }
 
-export function precompile(string: string, options?: TestCompileOptions<WireFormat.TemplateMeta>): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
+export function precompile(string: string, options?: TestCompileOptions): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
   let wrapper = JSON.parse(rawPrecompile(string, options));
   wrapper.block = JSON.parse(wrapper.block);
   return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
-}
-
-export function compile<T extends WireFormat.TemplateMeta>(string: string, options: TestCompileOptions<T>): Template<T> {
-  let js = rawPrecompile(string, options);
-  let factory = templateFactory<T>(JSON.parse(js));
-  return factory.create(options.env);
 }
 
 export function equalInnerHTML(fragment: { innerHTML: string }, html: string, message?: string) {
@@ -110,7 +104,7 @@ function generateTokens(divOrHTML: Element | string) {
     div = divOrHTML;
   }
 
-  const tokens = tokenize(div.innerHTML);
+  const tokens = tokenize(div.innerHTML, {});
   tokens.forEach((token) => {
     if (token.type === "StartTag" && token.attributes) {
       token.attributes.sort((a, b) => {
@@ -228,8 +222,14 @@ export function getTextContent(el: Node) {
   }
 }
 
-export function strip(strings: TemplateStringsArray) {
-  return strings[0].split('\n').map(s => s.trim()).join(' ');
+export function strip(strings: TemplateStringsArray, ...args: string[]) {
+  if (typeof strings === 'object') {
+    return strings.map((str: string, i: number) => {
+      return `${str.split('\n').map(s => s.trim()).join('')}${args[i] ? args[i] : ''}`;
+    }).join('');
+  } else {
+    return strings[0].split('\n').map((s: string) => s.trim()).join(' ');
+  }
 }
 
 export function stripTight(strings: TemplateStringsArray) {
@@ -267,6 +267,33 @@ export function assertNodeTagName<T extends keyof ElementTagNameMap, U extends E
 
 export function assertNodeProperty<T extends keyof ElementTagNameMap, P extends keyof ElementTagNameMap[T], V extends HTMLElementTagNameMap[T][P]>(node: Node | null, tagName: T, prop: P, value: V) {
   if (assertNodeTagName(node, tagName)) {
-    QUnit.assert.strictEqual(node[prop], value);;
+    QUnit.assert.strictEqual(node[prop], value);
   }
+}
+
+export function assertSerializedInElement(result: string, expected: string, message?: string) {
+  let matched = result.match(/<script glmr="%cursor:[0-9]*.%"><\/script>/);
+
+  if (matched) {
+    QUnit.assert.ok(true, `has cursor ${matched[0]}`);
+    let [, trimmed] = result.split(matched![0]);
+    QUnit.assert.equal(trimmed, expected, message);
+  } else {
+    QUnit.assert.ok(false, `does not have a cursor`);
+  }
+}
+
+export function blockStack() {
+  let stack: number[] = [];
+
+  return (id: number) => {
+    if (stack.indexOf(id) > -1) {
+      let close = `<!--%-block:${id}%-->`;
+      stack.pop();
+      return close;
+    } else {
+      stack.push(id);
+      return `<!--%+block:${id}%-->`;
+    }
+  };
 }

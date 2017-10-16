@@ -1,87 +1,72 @@
+'use strict';
+
 const path = require('path');
 const merge = require('broccoli-merge-trees');
 const funnel = require('broccoli-funnel');
 const concat = require('broccoli-concat');
-const typescript = require('broccoli-typescript-compiler');
 const transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
+const transpileToES5 = require('./transpile-to-es5');
 const handlebarsInlinedTrees = require('./handlebars-inliner');
 const TSLint = require('broccoli-tslinter');
 const Rollup = require('broccoli-rollup');
+const babel = require('broccoli-babel-transpiler');
 
 /**
  * For development, this returns a Broccoli tree with:
  *
- * 1. Glimmer packages with each file compiled into its own AMD module.
+ * 1. All of Glimmer's AMD modules, concatenated into glimmer-vm.js.
  * 2. Test files as AMD modules.
  * 3. A test harness, including HTML page, QUnit, dependencies, etc.
  */
-module.exports = function(packages) {
-  // Compile Glimmer's library and test TypeScript code into
-  // ES5 AMD modules.
-  let amdTree = transpileGlimmerSourceToAMD();
-
-  let testTree = merge([
-    includeGlimmerAMD(amdTree),
-    includeTestFiles(amdTree),
+module.exports = function(tsTree, jsTree, packagesTree) {
+  let browserTests = merge([
+    transpileBrowserTestsToAMD(tsTree, jsTree),
+    includeGlimmerAMD(packagesTree),
     includeVendorDependencies(),
     includeTestHarness()
   ]);
 
-  return funnel(testTree, {
+  browserTests = funnel(browserTests, {
     destDir: 'tests'
+  });
+
+  let nodeTests = transpileNodeTestsToCommonJS(jsTree);
+
+  return merge([browserTests, nodeTests]);
+}
+
+function transpileBrowserTestsToAMD(tsTree, jsTree) {
+  let testTree = funnel(jsTree, {
+    include: ['@glimmer/!(node)/test/**/*.js']
+  });
+
+  // The TSLint plugin passes through all files, so we need to filter out any
+  // non-TypeScript files.
+  tsTree = funnel(tsTree, {
+    include: ['**/*.ts']
+  });
+
+  let tslintTestsTree = generateTSLintTests(tsTree);
+
+  testTree = merge([testTree, tslintTestsTree]);
+  testTree = transpileToES5(testTree, 'amd');
+
+  return concat(testTree, {
+    outputFile: 'assets/tests.js'
   });
 }
 
-function transpileGlimmerSourceToAMD() {
-  // Find all of the TypeScript source code in `packages/`. Skip the node
-  // package because we're building browser tests.
-  let tsTree = funnel('packages', {
-    include: ['**/*.ts'],
-    exclude: [
-      '**/*.d.ts',
-      '@glimmer/node/test/*'
+function transpileNodeTestsToCommonJS(jsTree) {
+  let testTree = funnel(jsTree, {
+    include: [
+      '@glimmer/**/test/**/*-node-test.js'
     ]
   });
 
-  let tslintTree = generateTSLintTests(tsTree);
-
-  // Compile the TypeScript source, including library, test and tslint test files, to
-  // ES2015 (including preserving ES2015 modules).
-  let jsTree = typescript(merge([tsTree, tslintTree]), {
-    tsconfig: {
-      compilerOptions: {
-        target: 'es5',
-        module: 'es6',
-        inlineSourceMap: true,
-        inlineSources: true,
-        moduleResolution: 'node',
-
-        /* Needed to get TypeScript to emit correct sourcemaps */
-        rootDir: '.',
-        mapRoot: '/'
-      }
-    }
-  });
-
-  // Use Babel to convert to AMD modules and transpile to ES5. Because this is
-  // coming from emberjs-build, it rewrites AMD's `define` to `enifed` by
-  // default, which we disable.
-  return transpileES6(jsTree, 'AMD Tree', {
-    avoidDefine: false,
-    externalHelpers: false,
-    stripRuntimeChecks: false,
+  return babel(testTree, {
     sourceMaps: 'inline',
-    // The list of helpers whitelisted from emberjs-build does not support
-    // extends. We need to override the entire list to add it.
-    helperWhiteList: [
-      'tagged-template-literal-loose',
-      'slice',
-      'defaults',
-      'create-class',
-      'class-call-check',
-      'interop-export-wildcard',
-      'inherits',
-      'extends'
+    plugins: [
+      'transform-es2015-modules-commonjs'
     ]
   });
 }
@@ -93,28 +78,15 @@ function generateTSLintTests(tsTree) {
   });
 }
 
-function includeGlimmerAMD(amd) {
-  let libAMD = funnel(amd, {
+function includeGlimmerAMD(packages) {
+  let libAMD = funnel(packages, {
     include: [
-      '@glimmer/*/lib/**/*.js',
-      '@glimmer/*/index.js'
+      '@glimmer/*/dist/amd/es5/*.js'
     ]
   });
 
   return concat(libAMD, {
-    outputFile: 'assets/glimmer.js'
-  });
-}
-
-function includeTestFiles(amd) {
-  let testAMD = funnel(amd, {
-    include: [
-      '@glimmer/*/test/**/*.js'
-    ]
-  });
-
-  return concat(testAMD, {
-    outputFile: 'assets/tests.js'
+    outputFile: 'assets/glimmer-vm.js'
   });
 }
 
@@ -126,13 +98,11 @@ function includeVendorDependencies() {
 
   let simpleDOM = new Rollup('node_modules/simple-dom/lib', {
     rollup: {
-      format: 'es6',
+      format: 'es',
       entry: ['simple-dom.js'],
       dest: 'simple-dom.js'
     }
   });
-
-  let handlebars = handlebarsInlinedTrees.compiler;
 
   let transpiled = transpileES6(merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler, simpleDOM]), 'test-dependencies', {
     avoidDefine: false

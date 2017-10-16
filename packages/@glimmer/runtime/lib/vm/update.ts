@@ -1,4 +1,4 @@
-import { Scope, DynamicScope, Environment, Handle } from '../environment';
+import { Scope, DynamicScope, Environment } from '../environment';
 import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
 import { NewElementBuilder, Tracker, UpdatableTracker } from './element-builder';
 import { Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
@@ -18,24 +18,24 @@ import {
   INITIAL,
   Tag
 } from '@glimmer/reference';
-import { OpcodeJSON, UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
-import { Constants } from '../environment/constants';
+import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
-import { Simple } from '@glimmer/interfaces';
+import { Simple, VMHandle } from '@glimmer/interfaces';
 
 import VM, { CapturedStack, EvaluationStack } from './append';
+import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
 
-export default class UpdatingVM {
+export default class UpdatingVM<Specifier = Opaque> {
   public env: Environment;
   public dom: DOMChanges;
   public alwaysRevalidate: boolean;
-  public constants: Constants;
+  public constants: Constants<Specifier>;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
-  constructor(env: Environment, { alwaysRevalidate = false }) {
+  constructor(env: Environment, program: Program<Specifier>, { alwaysRevalidate = false }) {
     this.env = env;
-    this.constants = env.program.constants;
+    this.constants = program.constants;
     this.dom = env.getDOM();
     this.alwaysRevalidate = alwaysRevalidate;
   }
@@ -75,10 +75,6 @@ export default class UpdatingVM {
     this.frame.handleException();
     this.frameStack.pop();
   }
-
-  evaluateOpcode(opcode: UpdatingOpcode) {
-    opcode.evaluate(this);
-  }
 }
 
 export interface ExceptionHandler {
@@ -87,6 +83,7 @@ export interface ExceptionHandler {
 
 export interface VMState {
   env: Environment;
+  program: Program<Opaque>;
   scope: Scope;
   dynamicScope: DynamicScope;
   stack: CapturedStack;
@@ -98,20 +95,12 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   public prev = null;
   public children: LinkedList<UpdatingOpcode>;
 
-  protected env: Environment;
-  protected scope: Scope;
-  protected dynamicScope: DynamicScope;
-  protected stack: CapturedStack;
   protected bounds: DestroyableBounds;
 
-  constructor(public start: Handle, state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public start: VMHandle, protected state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
-    let { env, scope, dynamicScope, stack } = state;
+
     this.children = children;
-    this.env = env;
-    this.scope = scope;
-    this.dynamicScope = dynamicScope;
-    this.stack = stack;
     this.bounds = bounds;
   }
 
@@ -129,7 +118,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
     return this.bounds.lastNode();
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     vm.try(this.children, null);
   }
 
@@ -138,20 +127,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   }
 
   didDestroy() {
-    this.env.didDestroy(this.bounds);
-  }
-
-  toJSON() : OpcodeJSON {
-    let details = dict<string>();
-
-    details["guid"] = `${this._guid}`;
-
-    return {
-      guid: this._guid,
-      type: this.type,
-      details,
-      children: this.children.toArray().map(op => op.toJSON())
-    };
+    this.state.env.didDestroy(this.bounds);
   }
 }
 
@@ -164,7 +140,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(start: Handle, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+  constructor(start: VMHandle, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
     super(start, state, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
@@ -173,27 +149,27 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     this._tag.inner.update(combineSlice(this.children));
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     vm.try(this.children, this);
   }
 
   handleException() {
-    let { env, bounds, children, scope, dynamicScope, start, stack, prev, next } = this;
+    let { state, bounds, children, start, prev, next } = this;
 
     children.clear();
 
     let elementStack = NewElementBuilder.resume(
-      env,
+      state.env,
       bounds,
-      bounds.reset(env)
+      bounds.reset(state.env)
     );
 
-    let vm = new VM(env, scope, dynamicScope, elementStack);
+    let vm = VM.resume(state, elementStack);
 
     let updating = new LinkedList<UpdatingOpcode>();
 
     vm.execute(start, vm => {
-      vm.stack = EvaluationStack.restore(stack);
+      vm.stack = EvaluationStack.restore(state.stack);
       vm.updatingOpcodeStack.push(updating);
       vm.updateWith(this);
       vm.updatingOpcodeStack.push(children);
@@ -201,17 +177,6 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     this.prev = prev;
     this.next = next;
-  }
-
-  toJSON() : OpcodeJSON {
-    let json = super.toJSON();
-
-    let details = json["details"];
-    if (!details) {
-      details = json["details"] = {};
-    }
-
-    return super.toJSON();
   }
 }
 
@@ -300,7 +265,7 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: TagWrapper<UpdatableTag>;
 
-  constructor(start: Handle, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+  constructor(start: VMHandle, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
     super(start, state, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
@@ -315,7 +280,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVM<Opaque>) {
     let { artifacts, lastIterated } = this;
 
     if (!artifacts.tag.validate(lastIterated)) {
@@ -337,41 +302,22 @@ export class ListBlockOpcode extends BlockOpcode {
     super.evaluate(vm);
   }
 
-  vmForInsertion(nextSibling: Option<Simple.Node>): VM {
-    let { env, scope, dynamicScope } = this;
+  vmForInsertion(nextSibling: Option<Simple.Node>): VM<Opaque> {
+    let { bounds, state } = this;
 
     let elementStack = NewElementBuilder.forInitialRender(
-      this.env,
-      this.bounds.parentElement(),
-      nextSibling
+      state.env,
+      { element: bounds.parentElement(), nextSibling }
     );
 
-    return new VM(env, scope, dynamicScope, elementStack);
-  }
-
-  toJSON() : OpcodeJSON {
-    let json = super.toJSON();
-    let map = this.map;
-
-    let inner = Object.keys(map).map(key => {
-      return `${JSON.stringify(key)}: ${map[key]._guid}`;
-    }).join(", ");
-
-    let details = json["details"];
-    if (!details) {
-      details = json["details"] = {};
-    }
-
-    details["map"] = `{${inner}}`;
-
-    return json;
+    return VM.resume(state, elementStack);
   }
 }
 
 class UpdatingVMFrame {
   private current: Option<UpdatingOpcode>;
 
-  constructor(private vm: UpdatingVM, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
+  constructor(private vm: UpdatingVM<Opaque>, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
     this.vm = vm;
     this.ops = ops;
     this.current = ops.head();

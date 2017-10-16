@@ -9,15 +9,26 @@ let config = {
   "launchers": {
     "Node": {
       "command": "./bin/run-node-tests.js",
-      "output": "tap"
+      "protocol": "tap"
      }
   },
+  "browser_args": {
+    "Chrome": {
+      "mode": "ci",
+      "args": [
+        '--disable-gpu',
+        '--headless',
+        '--remote-debugging-port=9222'
+      ]
+    }
+  },
   "launch_in_dev": [
-    "PhantomJS",
+    "Chrome",
     "Node"
   ],
   "launch_in_ci": [
-    "PhantomJS",
+    "Chrome",
+    "Node"
   ]
 };
 

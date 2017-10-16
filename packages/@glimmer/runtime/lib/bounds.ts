@@ -12,27 +12,9 @@ export class Cursor {
   constructor(public element: Simple.Element, public nextSibling: Option<Simple.Node>) {}
 }
 
-export function currentNode(cursor: Cursor): Option<Simple.Node> {
-  let { element, nextSibling } = cursor;
-
-  if (nextSibling === null) {
-    return element.lastChild;
-  } else {
-    return nextSibling.previousSibling;
-  }
-}
-
 export default Bounds;
 
 export interface DestroyableBounds extends Bounds, Destroyable {}
-
-export class RealDOMBounds implements Bounds {
-  constructor(private bounds: Bounds) {}
-
-  parentElement() { return this.bounds.parentElement() as Element; }
-  firstNode() { return this.bounds.firstNode() as Node; }
-  lastNode() { return this.bounds.lastNode() as Node; }
-}
 
 export class ConcreteBounds implements Bounds {
   constructor(public parentNode: Simple.Element, private first: Option<Simple.Node>, private last: Option<Simple.Node>) {}

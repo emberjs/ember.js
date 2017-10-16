@@ -1,34 +1,8 @@
 import './lib/bootstrap';
 
-export { default as templateFactory, TemplateFactory, Template, TemplateIterator, RenderOptions } from './lib/template';
+export { default as templateFactory, ScannableTemplate, TemplateFactory, Template, TemplateIterator, RenderLayoutOptions } from './lib/template';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
-
-export {
-   default as OpcodeBuilderDSL
-} from './lib/compiled/opcodes/builder';
-
-export {
-  CompilableLayout,
-  compileLayout
-} from './lib/compiler';
-
-export {
-  ComponentBuilder,
-  ComponentArgs
-} from './lib/opcode-builder';
-
-export {
-  CompiledStaticTemplate,
-  CompiledDynamicTemplate,
-  CompiledDynamicBlock,
-  CompiledDynamicProgram
-} from './lib/compiled/blocks';
-
-export {
-  Register,
-  debugSlice
-} from './lib/opcodes';
 
 export {
   setDebuggerCallback,
@@ -41,21 +15,12 @@ export {
 } from './lib/helpers/get-dynamic-var';
 
 export {
-  Blocks as BlockMacros,
-  Inlines as InlineMacros,
-  BlockMacro,
-  MissingBlockMacro,
-  compileList,
-  expr as compileExpression
-} from './lib/syntax/functions';
-
-export {
   CompilableTemplate,
-  Block,
-  Program
+  BlockSyntax,
+  TopLevelSyntax
 } from './lib/syntax/interfaces';
 
-export { PublicVM as VM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
+export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
 export {
   SimpleDynamicAttribute,
@@ -77,8 +42,10 @@ export { SafeString } from './lib/upsert';
 export {
   Scope,
   default as Environment,
+  DefaultEnvironment,
   Helper,
   DynamicScope,
+  CompilationOptions
 } from './lib/environment';
 
 export {
@@ -86,21 +53,31 @@ export {
 } from './lib/partial';
 
 export {
-  Component,
-  ComponentClass,
   ComponentManager,
-  ComponentDefinition,
-  ComponentLayoutBuilder,
-  ComponentAttrsBuilder,
+  PublicComponentDefinition as ComponentDefinition,
+  WithDynamicTagName,
   PreparedArguments,
-  isComponentDefinition
+  WithDynamicLayout,
+  Invocation,
+  WithStaticLayout
 } from './lib/component/interfaces';
 
 export {
-  ModifierManager
+  CurriedComponentDefinition,
+  isCurriedComponentDefinition,
+  curry
+} from './lib/component/curried-component';
+
+export {
+} from './lib/compiled/opcodes/component';
+
+export {
+  ModifierManager,
+  Modifier
 } from './lib/modifier/interfaces';
 
 export { default as DOMChanges, SVG_NAMESPACE, DOMChanges as IDOMChanges, DOMTreeConstruction, isWhitespace, insertHTMLBefore } from './lib/dom/helper';
 export { normalizeProperty } from './lib/dom/props';
-export { ElementBuilder, NewElementBuilder, ElementOperations } from './lib/vm/element-builder';
-export { default as Bounds, ConcreteBounds } from './lib/bounds';
+export { ElementBuilder, NewElementBuilder, ElementOperations, clientBuilder } from './lib/vm/element-builder';
+export { rehydrationBuilder, RehydrateBuilder } from './lib/vm/rehydrate-builder';
+export { default as Bounds, ConcreteBounds, Cursor } from './lib/bounds';

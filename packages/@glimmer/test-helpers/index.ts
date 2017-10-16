@@ -3,7 +3,6 @@ export {
   assertNodeTagName,
   assertNodeProperty,
   TestCompileOptions,
-  compile,
   equalInnerHTML,
   equalHTML,
   equalTokens,
@@ -14,16 +13,12 @@ export {
   getTextContent,
   strip,
   stripTight,
-  trimLines
+  trimLines,
+  blockStack,
+  assertSerializedInElement
 } from './lib/helpers';
 
 export {
-  Attrs,
-  BasicComponent,
-  EmberishCurlyComponent,
-  EmberishGlimmerComponent,
-  TestModifierManager,
-  TestEnvironment,
   TestDynamicScope,
   equalsElement,
   inspectHooks,
@@ -31,18 +26,31 @@ export {
   classes
 } from './lib/environment';
 
+export * from './lib/render-test';
+
+export * from './lib/suites';
+
 export {
-  VersionedObject,
-  SimpleRootReference,
-  AbstractRenderTest,
-  RehydrationTests,
-  RenderTests,
-  OPEN,
-  CLOSE,
-  SEP,
-  EMPTY,
-  module,
-  test,
-  Content,
-  renderTemplate
-} from './lib/abstract-test-case';
+  HelperReference,
+  UserHelper
+} from './lib/environment/helper';
+
+export {
+  default as TestMacros
+} from './lib/environment/macros';
+
+export {
+  default as AbstractTestEnvironment,
+  TestEnvironmentOptions
+} from './lib/environment/environment';
+
+export * from './lib/environment/modifier';
+
+export { default as LazyTestEnvironment, default as TestEnvironment } from './lib/environment/modes/lazy/environment';
+export { NodeLazyRenderDelegate, NodeEagerRenderDelegate } from './lib/environment/modes/ssr/environment';
+
+export { default as EagerRenderDelegate } from './lib/environment/modes/eager/render-delegate';
+export { default as LazyRenderDelegate } from './lib/environment/modes/lazy/render-delegate';
+export { debugRehydration } from './lib/environment/modes/rehydration/debug-builder';
+
+export * from './lib/environment/components';

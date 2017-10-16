@@ -18,7 +18,7 @@ function actionsEqual(input: string, expectedActions: any[]) {
   assert.deepEqual(actualActions, expectedActions);
 }
 
-QUnit.module("TemplateVisitor");
+QUnit.module("[glimmer-compiler] TemplateVisitor");
 
 test("empty", function() {
   let input = "";

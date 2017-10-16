@@ -1,23 +1,27 @@
-import { Opaque } from '@glimmer/interfaces';
-import { isConst, Reference, VersionedPathReference, Tag, VersionedReference } from '@glimmer/reference';
-import { DynamicContentWrapper } from '../../vm/content/dynamic';
-import { isComponentDefinition } from '../../component/interfaces';
-import { APPEND_OPCODES, Op, UpdatingOpcode } from '../../opcodes';
-import { ConditionalReference } from '../../references';
-import { UpdatingVM } from '../../vm';
+import { isConst, Reference, Tag, VersionedReference } from '@glimmer/reference';
+import { Op } from '@glimmer/vm';
+import { check, expectStackChange } from '@glimmer/debug';
+import { Opaque } from '@glimmer/util';
 
-export class IsComponentDefinitionReference extends ConditionalReference {
-  static create(inner: Reference<Opaque>): IsComponentDefinitionReference {
-    return new IsComponentDefinitionReference(inner);
+import { DynamicContentWrapper } from '../../vm/content/dynamic';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
+import { UpdatingVM } from '../../vm';
+import { ConditionalReference } from '../../references';
+import { isCurriedComponentDefinition } from '../../component/curried-component';
+import { CheckPathReference } from './-debug-strip';
+
+export class IsCurriedComponentDefinitionReference extends ConditionalReference {
+  static create(inner: Reference<Opaque>): IsCurriedComponentDefinitionReference {
+    return new IsCurriedComponentDefinitionReference(inner);
   }
 
   toBool(value: Opaque): boolean {
-    return isComponentDefinition(value);
+    return isCurriedComponentDefinition(value);
   }
 }
 
 APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: isTrusting }) => {
-  let reference = vm.stack.pop<VersionedPathReference<Opaque>>();
+  let reference = check(vm.stack.pop(), CheckPathReference);
   let value = reference.value();
   let content: DynamicContentWrapper;
 
@@ -30,6 +34,8 @@ APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: isTrusting }) => {
   if (!isConst(reference)) {
     vm.updateWith(new UpdateDynamicContentOpcode(reference, content));
   }
+
+  expectStackChange(vm.stack, -1, 'DynamicContent');
 });
 
 class UpdateDynamicContentOpcode extends UpdatingOpcode {

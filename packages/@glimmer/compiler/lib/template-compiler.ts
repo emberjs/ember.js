@@ -1,36 +1,37 @@
 import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
-import { Stack, getAttrNamespace } from "@glimmer/util";
+import { Stack } from "@glimmer/util";
 import { assert, expect } from "@glimmer/util";
-import { TemplateMeta } from "@glimmer/wire-format";
 import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
+import { getAttrNamespace } from './utils';
+import { Opaque } from "@glimmer/interfaces";
 
-export interface CompileOptions<T extends TemplateMeta> {
-  meta: T;
+export interface CompileOptions {
+  meta: Opaque;
 }
 
 function isTrustedValue(value: any) {
   return value.escaped !== undefined && !value.escaped;
 }
 
-export default class TemplateCompiler<T extends TemplateMeta> {
-  static compile<T extends TemplateMeta>(options: CompileOptions<T>, ast: AST.Program): Template<T> {
+export default class TemplateCompiler {
+  static compile(options: CompileOptions, ast: AST.Program): Template {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
     let compiler = new TemplateCompiler(options);
     let opcodes = compiler.process(templateVisitor.actions);
-    return JavaScriptCompiler.process<T>(opcodes, ast['symbols'], options.meta);
+    return JavaScriptCompiler.process(opcodes, ast['symbols']);
   }
 
-  private options: CompileOptions<T>;
+  private options: CompileOptions;
   private templateId = 0;
   private templateIds: number[] = [];
   private symbolStack = new Stack<SymbolTable>();
   private opcodes: any[] = [];
   private includeMeta = false;
 
-  constructor(options: CompileOptions<T>) {
+  constructor(options: CompileOptions) {
     this.options = options || {};
   }
 
@@ -77,7 +78,23 @@ export default class TemplateCompiler<T extends TemplateMeta> {
   }
 
   openElement([action]: [AST.ElementNode]) {
-    this.opcode('openElement', action, action);
+    let attributes = action.attributes;
+    let hasSplat;
+
+    for (let i = 0; i < attributes.length; i++) {
+      let attr = attributes[i];
+      if (attr.name === '...attributes') {
+        hasSplat = attr;
+        break;
+      }
+    }
+
+    if (hasSplat) {
+      this.opcode('openSplattedElement', action, action);
+    } else {
+      this.opcode('openElement', action, action);
+    }
+
     for (let i = 0; i < action.attributes.length; i++) {
       this.attribute([action.attributes[i]]);
     }
@@ -113,7 +130,9 @@ export default class TemplateCompiler<T extends TemplateMeta> {
     } else {
       let isTrusting = isTrustedValue(value);
 
-      if (isStatic) {
+      if (isStatic && name === '...attributes') {
+        this.opcode('attrSplat', action, this.symbols.allocateBlock('attrs'));
+      } else if (isStatic) {
         this.opcode('staticAttr', action, name, namespace);
       } else if (isTrusting) {
         this.opcode('trustingAttr', action, name, namespace);
@@ -249,10 +268,10 @@ export default class TemplateCompiler<T extends TemplateMeta> {
 
       if (expr.this) {
         this.opcode('get', expr, 0, expr.parts);
-      } else  if (symbols.has(head)) {
+      } else if (symbols.has(head)) {
         this.opcode('get', expr, symbols.get(head), expr.parts.slice(1));
       } else {
-        this.opcode('get', expr, 0, expr.parts);
+        this.opcode('maybeLocal',expr, expr.parts);
       }
     }
   }

@@ -1,15 +1,22 @@
 language: node_js
 node_js:
   - 6
-sudo: false
+dist: trusty
+sudo: required
 cache: yarn
+addons:
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
 before_install:
-  - mkdir travis-phantomjs
-  - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2 -O $PWD/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
-  - tar -xvf $PWD/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2 -C $PWD/travis-phantomjs
-  - export PATH=$PWD/travis-phantomjs:$PATH
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 0.27.5
+  - export PATH="$HOME/.yarn/bin:$PATH"
+  - npm install -g qunitjs
 env:
   global:
+    - CHROME_BIN=/usr/bin/google-chrome
     - SAUCE_USERNAME=htmlbars-ci
     - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
   matrix:
@@ -22,6 +29,8 @@ script:
   - yarn run problems
   - yarn run test:ci
   - yarn run build
+  - yarn run test:types
+  - yarn run eslint
 after_script:
   - sleep 10
   - yarn run sauce:disconnect

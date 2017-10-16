@@ -1,4 +1,4 @@
-import GlimmerObject, { computed, observer, alias } from '../index';
+import GlimmerObject, { computed, observer, alias } from '..';
 
 interface Get {
   (obj: any, key: string): any;

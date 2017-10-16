@@ -77,14 +77,6 @@ VALUE.push(() => $REVISION);
 VALIDATE.push((_tag, snapshot) => snapshot === $REVISION);
 export const CURRENT_TAG = new TagWrapper(2, null);
 
-export function isVolatile({ tag }: Tagged): boolean {
-  return tag === VOLATILE_TAG;
-}
-
-export function isVolatileTag(tag: Tag): boolean {
-  return tag === VOLATILE_TAG;
-}
-
 export function isConst({ tag }: Tagged): boolean {
   return tag === CONSTANT_TAG;
 }
@@ -173,7 +165,7 @@ function _combine(tags: Tag[]): Tag {
       return TagsPair.create(tags[0], tags[1]);
     default:
       return TagsCombinator.create(tags);
-  };
+  }
 }
 
 export abstract class CachedTag extends RevisionTag {
@@ -278,9 +270,9 @@ register(UpdatableTag);
 
 //////////
 
-export interface VersionedReference<T> extends Reference<T>, Tagged {}
+export interface VersionedReference<T = Opaque> extends Reference<T>, Tagged {}
 
-export interface VersionedPathReference<T> extends PathReference<T>, Tagged {
+export interface VersionedPathReference<T = Opaque> extends PathReference<T>, Tagged {
   get(property: string): VersionedPathReference<Opaque>;
 }
 
@@ -293,7 +285,7 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
   value(): T {
     let { tag, lastRevision, lastValue } = this;
 
-    if (!lastRevision || !tag.validate(lastRevision)) {
+    if (lastRevision === null || !tag.validate(lastRevision)) {
       lastValue = this.lastValue = this.compute();
       this.lastRevision = tag.value();
     }

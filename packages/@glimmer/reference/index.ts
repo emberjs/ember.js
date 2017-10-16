@@ -19,10 +19,6 @@ export {
 } from './lib/validators';
 
 export {
-  referenceFromParts
-} from './lib/utils';
-
-export {
   IterationItem,
   Iterator,
   Iterable,

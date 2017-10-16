@@ -20,6 +20,7 @@
     "tmp": true,
     "dist": true
   },
+  "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
   "editor.renderWhitespace": "boundary",
   "editor.insertSpaces": true,
