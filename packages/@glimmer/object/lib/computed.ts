@@ -90,7 +90,7 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
   if (get && get.length > 0) {
     originalGet = function(this: any) { return (get as any).call(this, accessorName); };
   } else {
-    originalGet = <ComputedGetCallback>_desc.get;
+    originalGet = _desc.get as ComputedGetCallback;
   }
 
   let set = _desc.set;
@@ -100,7 +100,7 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
       return (set as any).call(this, accessorName, value);
     };
   } else {
-    originalSet = <ComputedGetCallback>_desc.set;
+    originalSet = _desc.set as ComputedGetCallback;
   }
 
   let cacheGet = function(this: any) {
@@ -188,10 +188,10 @@ export function computed(...args: any[]) {
 
   if (typeof last === 'function') {
     return new ComputedBlueprint({
-      get: <ComputedGetCallback | LegacyComputedGetCallback>last
+      get: last as ComputedGetCallback | LegacyComputedGetCallback
     }).property(...deps);
   } else if (typeof last === 'object') {
-    return new ComputedBlueprint(<ComputedDescriptor>last).property(...deps);
+    return new ComputedBlueprint(last as ComputedDescriptor).property(...deps);
   } else {
     throw new TypeError("computed expects a function or an object as last argument");
   }

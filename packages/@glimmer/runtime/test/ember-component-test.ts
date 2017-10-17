@@ -99,7 +99,7 @@ export function appendViewFor(template: string, context: Object = {}) {
 }
 
 export function assertAppended(content: string) {
-  equalTokens((<HTMLElement>document.querySelector('#qunit-fixture')), content);
+  equalTokens((document.querySelector('#qunit-fixture') as HTMLElement), content);
 }
 
 function assertText(expected: string) {
@@ -731,8 +731,8 @@ QUnit.test('static arbitrary number of positional parameters', function () {
       {{sample-component "Foo" 4 "Bar" 5 "Baz"}}
       {{!sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`);
 
-  let first = <Element>view.element.firstChild;
-  let second = <Element>first.nextSibling;
+  let first = view.element.firstChild as Element;
+  let second = first.nextSibling as Element;
   // let third = <Element>second.nextSibling;
 
   assertElementIsEmberishElement(first, 'div', 'Foo4Bar');

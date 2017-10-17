@@ -76,8 +76,8 @@ export class ClassMeta {
   }
 
   static for(object: ObjectWithMixins | InstanceWithMixins): Option<ClassMeta> {
-    if (CLASS_META in object) return (<ObjectWithMixins>object)[CLASS_META];
-    else if (object.constructor) return (<InstanceWithMixins>object).constructor[CLASS_META] || null;
+    if (CLASS_META in object) return (object as ObjectWithMixins)[CLASS_META];
+    else if (object.constructor) return (object as InstanceWithMixins).constructor[CLASS_META] || null;
     else return null;
   }
 
@@ -169,7 +169,7 @@ export class ClassMeta {
 
   hasConcatenatedProperty(property: string): boolean {
     if (!this.hasConcatenatedProperties) return false;
-    return <string>property in this.concatenatedProperties;
+    return property as string in this.concatenatedProperties;
   }
 
   getConcatenatedProperty(property: string): any[] {
@@ -177,13 +177,13 @@ export class ClassMeta {
   }
 
   getConcatenatedProperties(): string[] {
-    return <string[]>Object.keys(this.concatenatedProperties);
+    return Object.keys(this.concatenatedProperties) as string[];
   }
 
   addConcatenatedProperty(property: string, value: any) {
     this.hasConcatenatedProperties = true;
 
-    if (<string>property in this.concatenatedProperties) {
+    if (property as string in this.concatenatedProperties) {
       let val = this.concatenatedProperties[property].concat(value);
       this.concatenatedProperties[property] = val;
     } else {
@@ -193,7 +193,7 @@ export class ClassMeta {
 
   hasMergedProperty(property: string): boolean {
     if (!this.hasMergedProperties) return false;
-    return <string>property in this.mergedProperties;
+    return property as string in this.mergedProperties;
   }
 
   getMergedProperty(property: string): Object {
@@ -201,7 +201,7 @@ export class ClassMeta {
   }
 
   getMergedProperties(): string[] {
-    return <string[]>Object.keys(this.mergedProperties);
+    return Object.keys(this.mergedProperties) as string[];
   }
 
   addMergedProperty(property: string, value: Object) {
@@ -211,7 +211,7 @@ export class ClassMeta {
       throw new Error(`You passed in \`${JSON.stringify(value)}\` as the value for \`foo\` but \`foo\` cannot be an Array`);
     }
 
-    if (<string>property in this.mergedProperties && this.mergedProperties[property] && value) {
+    if (property as string in this.mergedProperties && this.mergedProperties[property] && value) {
       this.mergedProperties[property] = mergeMergedProperties(value, this.mergedProperties[property]);
     } else {
       value = value === null ? value : value || {};
@@ -318,7 +318,7 @@ export class InstanceMeta extends ClassMeta {
   public "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta = ClassMeta.fromParent(null);
 
   static fromParent(parent: Option<InstanceMeta>): InstanceMeta {
-    return <InstanceMeta>super.fromParent(parent);
+    return super.fromParent(parent) as InstanceMeta;
   }
 
   reset(parent: InstanceMeta) {
@@ -383,7 +383,7 @@ export default class GlimmerObject {
 
   constructor(attrs?: Object | null) {
     if (attrs) assign(this, attrs);
-    (<typeof GlimmerObject>this.constructor)[CLASS_META].init(this, attrs || null);
+    (this.constructor as typeof GlimmerObject)[CLASS_META].init(this, attrs || null);
     this._super = ROOT;
     initializeGuid(this);
     this.init();
