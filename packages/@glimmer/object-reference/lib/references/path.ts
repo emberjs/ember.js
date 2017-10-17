@@ -45,7 +45,7 @@ export default class PathReference<T> implements IPathReference<T>, HasGuid {
 
   get(prop: string): IPathReference<any> {
     let chains = this._getChains();
-    if (<string>prop in chains) return chains[prop];
+    if (prop as string in chains) return chains[prop];
     return (chains[prop] = new PathReference(this, prop));
   }
 

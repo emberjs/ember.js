@@ -24,13 +24,13 @@ export class DictSet<T extends SetMember> implements Set<T> {
   }
 
   add(obj: T): Set<T> {
-    if (typeof obj === 'string') this.dict[<any>obj] = obj;
-    else this.dict[ensureGuid(<any>obj)] = obj;
+    if (typeof obj === 'string') this.dict[obj as any] = obj;
+    else this.dict[ensureGuid(obj as any)] = obj;
     return this;
   }
 
   delete(obj: T) {
-    if (typeof obj === 'string') delete this.dict[<any>obj];
+    if (typeof obj === 'string') delete this.dict[obj as any];
     else if ((obj as any)._guid) delete this.dict[(obj as any)._guid];
   }
 }
