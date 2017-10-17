@@ -17,6 +17,7 @@
   @param {Object} ...args The objects to copy properties from
   @return {Object}
   @public
+  @static
 */
 export function assign(original) {
   for (let i = 1; i < arguments.length; i++) {
