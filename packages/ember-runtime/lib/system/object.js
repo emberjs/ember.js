@@ -19,7 +19,7 @@ let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
 
   @class EmberObject
   @extends CoreObject
-  @uses Ember.Observable
+  @uses Observable
   @public
 */
 const EmberObject = CoreObject.extend(Observable, {

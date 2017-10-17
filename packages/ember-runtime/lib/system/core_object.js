@@ -739,6 +739,8 @@ let ClassMixinProps = {
     see `reopenClass`
 
     @method reopen
+    @for @ember/object
+    @static
     @public
   */
   reopen() {
@@ -800,6 +802,8 @@ let ClassMixinProps = {
     see `reopen`
 
     @method reopenClass
+    @for @ember/object
+    @static
     @public
   */
   reopenClass() {

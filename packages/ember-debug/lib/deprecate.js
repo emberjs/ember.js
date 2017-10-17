@@ -7,7 +7,10 @@ import Logger from 'ember-console';
 import { ENV } from 'ember-environment';
 
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
-
+/**
+ @module @ember/debug
+ @public
+*/
 /**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
   Deprecations are invoked by calls to [Ember.deprecate](https://emberjs.com/api/classes/Ember.html#method_deprecate).
@@ -37,7 +40,6 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
     <li> <code>next</code> - A function that calls into the previously registered handler.</li>
   </ul>
 
-  @module @ember/debug
   @public
   @static
   @method registerDeprecationHandler
@@ -128,7 +130,10 @@ if (DEBUG) {
     '`options` should include `id` and `until` properties.';
   missingOptionsIdDeprecation = 'When calling `Ember.deprecate` you must provide `id` in options.';
   missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you must provide `until` in options.';
-
+  /**
+   @module @ember/application
+   @public
+   */
   /**
     Display a deprecation warning with the provided message and a stack trace
     (Chrome and Firefox only).
@@ -136,7 +141,6 @@ if (DEBUG) {
     * In a production build, this method is defined as an empty function (NOP).
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
-    @module @ember/application
     @method deprecate
     @for @ember/application/deprecations
     @param {String} message A description of the deprecation.
