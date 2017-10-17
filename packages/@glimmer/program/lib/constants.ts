@@ -2,6 +2,8 @@ import { Opaque, SymbolTable, RuntimeResolver, CompileTimeConstants } from "@gli
 
 const UNRESOLVED = {};
 
+const WELL_KNOWN_EMPTY_ARRAY_POSITION = 0;
+
 export interface ConstantPool {
   strings: string[];
   arrays: number[][];
@@ -24,7 +26,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   // `0` means NULL
 
   protected strings: string[] = [];
-  protected arrays: number[][] = [];
+  protected arrays: number[][] = [[]];
   protected tables: SymbolTable[] = [];
   protected handles: number[] = [];
   protected serializables: Opaque[] = [];
@@ -71,6 +73,10 @@ export class WriteOnlyConstants implements CompileTimeConstants {
 
     if (index > -1) {
       return index;
+    }
+
+    if (values.length === 0) {
+      return WELL_KNOWN_EMPTY_ARRAY_POSITION;
     }
 
     return this.arrays.push(values) - 1;
