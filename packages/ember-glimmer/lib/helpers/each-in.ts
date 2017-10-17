@@ -111,7 +111,7 @@ import { symbol } from 'ember-utils';
 */
 const EACH_IN_REFERENCE = symbol('EACH_IN');
 
-export function isEachIn(ref) {
+export function isEachIn(ref): boolean {
   return ref && ref[EACH_IN_REFERENCE];
 }
 
