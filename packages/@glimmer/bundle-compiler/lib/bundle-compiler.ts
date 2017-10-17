@@ -72,7 +72,7 @@ export class DebugConstants extends WriteOnlyConstants {
   }
 
   getArray(value: number): number[] {
-    return this.arrays[value];
+    return (this.arrays as number[][])[value];
   }
 
   getSymbolTable<T extends SymbolTable>(value: number): T {
