@@ -40,10 +40,10 @@
     "link:glimmer": "node bin/yarn-link-glimmer.js"
   },
   "dependencies": {
-    "@glimmer/compiler": "^0.25.3",
-    "@glimmer/node": "^0.25.3",
-    "@glimmer/reference": "^0.25.3",
-    "@glimmer/runtime": "^0.25.3",
+    "@glimmer/compiler": "^0.29.8",
+    "@glimmer/node": "^0.29.8",
+    "@glimmer/reference": "^0.29.8",
+    "@glimmer/runtime": "^0.29.8",
     "broccoli-funnel": "^1.2.0",
     "broccoli-merge-trees": "^2.0.0",
     "ember-cli-get-component-path-option": "^1.0.0",
