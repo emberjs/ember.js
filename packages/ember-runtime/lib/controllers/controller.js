@@ -46,17 +46,7 @@ function controllerInjectionHelper(factory) {
 
   This example will create a `posts` property on the `post` controller that
   looks up the `posts` controller in the container, making it easy to
-  reference other controllers. This is functionally equivalent to:
-
-  ```app/controllers/post.js
-  import Controller from '@ember/controller';
-  import { alias } from '@ember/object/computed';
-
-  export default Controller.extend({
-    needs: 'posts',
-    posts: alias('controllers.posts')
-  });
-  ```
+  reference other controllers.
 
   @method controller
   @since 1.10.0
