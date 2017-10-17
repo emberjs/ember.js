@@ -79,6 +79,12 @@ function ensureUniqueKey(seen, key) {
 }
 
 class ArrayIterator {
+  public array: Array<any>;
+  public length: number;
+  public keyFor: (value: any, memo: any) => any;
+  public position: number;
+  public seen: any;
+
   constructor(array, keyFor) {
     this.array = array;
     this.length = array.length;
@@ -126,6 +132,9 @@ class EmberArrayIterator extends ArrayIterator {
 }
 
 class ObjectKeysIterator extends ArrayIterator {
+  public keys: Array<any>;
+  public length: number;
+
   constructor(keys, values, keyFor) {
     super(values, keyFor);
     this.keys = keys;
@@ -154,6 +163,11 @@ class EmptyIterator {
 const EMPTY_ITERATOR = new EmptyIterator();
 
 class EachInIterable {
+  public ref: any;
+  public keyFor: (iterable: any) => any;
+  public valueTag: any;
+  public tag: any;
+
   constructor(ref, keyFor) {
     this.ref = ref;
     this.keyFor = keyFor;
@@ -206,6 +220,11 @@ class EachInIterable {
 }
 
 class ArrayIterable {
+  public ref: any;
+  public keyFor: (iterable: any) => any;
+  public valueTag: any;
+  public tag: any;
+
   constructor(ref, keyFor) {
     this.ref = ref;
     this.keyFor = keyFor;
@@ -231,7 +250,7 @@ class ArrayIterable {
     } else if (isEmberArray(iterable)) {
       return get(iterable, 'length') > 0 ? new EmberArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
     } else if (typeof iterable.forEach === 'function') {
-      let array = [];
+      let array: Array<any> = [];
       iterable.forEach(function(item) {
         array.push(item);
       });
