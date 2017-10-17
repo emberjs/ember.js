@@ -175,7 +175,7 @@ let ieSVGInnerHTML = (function () {
   let div = document.createElement('div');
   let node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   div.appendChild(node);
-  let clone = <HTMLDivElement>div.cloneNode(true);
+  let clone = div.cloneNode(true) as HTMLDivElement;
   return clone.innerHTML === '<svg xmlns="http://www.w3.org/2000/svg" />';
 })();
 

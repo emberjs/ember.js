@@ -44,10 +44,10 @@ export class Mixin {
     if (args.length === 0) {
       return new this({}, []);
     } else if (extensions instanceof Mixin) {
-      return new this({}, <Mixin[]>args);
+      return new this({}, args as Mixin[]);
     } else {
       let deps = args.slice(0, -1).map(toMixin);
-      return new this(<Extensions>extensions, deps);
+      return new this(extensions as Extensions, deps);
     }
   }
 
@@ -86,11 +86,11 @@ export class Mixin {
       let rawConcat = extensions.concatenatedProperties;
 
       if (isArray(rawConcat)) {
-        concat = (<string[]>rawConcat).slice();
+        concat = (rawConcat as string[]).slice();
       } else if (rawConcat === null || rawConcat === undefined) {
         concat = [];
       } else {
-        concat = [<string>rawConcat];
+        concat = [rawConcat as string];
       }
 
       delete extensions.concatenatedProperties;
@@ -102,11 +102,11 @@ export class Mixin {
       let rawMerged = extensions.mergedProperties;
 
       if (isArray(rawMerged)) {
-        merged = (<string[]>rawMerged).slice();
+        merged = (rawMerged as string[]).slice();
       } else if (rawMerged === null || rawMerged === undefined) {
         merged = [];
       } else {
-        merged = [<string>rawMerged];
+        merged = [rawMerged as string];
       }
 
       delete extensions.mergedProperties;
@@ -178,18 +178,18 @@ export class Mixin {
 
     Object.keys(this.extensions).forEach(key => {
       let extension: Blueprint = this.extensions![key];
-      let desc = extension.descriptor(target, <string>key, meta);
-      desc.define(target, <string>key, parent);
+      let desc = extension.descriptor(target, key as string, meta);
+      desc.define(target, key as string, parent);
     });
 
-    new ValueDescriptor({ value: ROOT }).define(target, <string>'_super');
+    new ValueDescriptor({ value: ROOT }).define(target, '_super' as string);
   }
 }
 
 export type Extension = Mixin | Extensions;
 
 export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>, ...extensions: Extension[]): GlimmerObjectFactory<any> {
-  let Super = <typeof GlimmerObject>Parent;
+  let Super = Parent as typeof GlimmerObject;
 
   let Subclass = class extends Super {};
   Subclass[CLASS_META] = InstanceMeta.fromParent(Parent[CLASS_META]);
@@ -217,7 +217,7 @@ export function relinkSubclasses(Parent: GlimmerObjectFactory<any>) {
 
 export function toMixin(extension: Extension): Mixin {
   if (extension instanceof Mixin) return extension;
-  else return new Mixin(<Object>extension, []);
+  else return new Mixin(extension as Object, []);
 }
 
 class ValueDescriptor extends Descriptor {
@@ -261,12 +261,12 @@ export class DataBlueprint extends Blueprint {
   descriptor(_target: Object, key: string, classMeta: ClassMeta): Descriptor {
     let { enumerable, configurable, writable, value } = this;
 
-    if (classMeta.hasConcatenatedProperty(<string>key)) {
-      classMeta.addConcatenatedProperty(<string>key, value);
-      value = classMeta.getConcatenatedProperty(<string>key);
-    } else if (classMeta.hasMergedProperty(<string>key)) {
-      classMeta.addMergedProperty(<string>key, value);
-      value = classMeta.getMergedProperty(<string>key);
+    if (classMeta.hasConcatenatedProperty(key as string)) {
+      classMeta.addConcatenatedProperty(key as string, value);
+      value = classMeta.getConcatenatedProperty(key as string);
+    } else if (classMeta.hasMergedProperty(key as string)) {
+      classMeta.addMergedProperty(key as string, value);
+      value = classMeta.getMergedProperty(key as string);
     }
 
     return new ValueDescriptor({ enumerable, configurable, writable, value });
@@ -312,7 +312,7 @@ class MethodBlueprint extends DataBlueprint {
 }
 
 export function wrapMethod(home: Object, methodName: string, original: (...args: any[]) => any) {
-  if (!(<string>methodName in home)) return maybeWrap(original);
+  if (!(methodName as string in home)) return maybeWrap(original);
 
   let superMethod = home[methodName];
 
@@ -329,7 +329,7 @@ export function wrapMethod(home: Object, methodName: string, original: (...args:
     }
   };
 
-  (<any>func).__wrapped = true;
+  (func as any).__wrapped = true;
 
   return func;
 }

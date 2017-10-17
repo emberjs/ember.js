@@ -9,21 +9,21 @@ function validateAliasMethod(obj: { fooMethod(): string; barMethod(): string }) 
 }
 
 QUnit.test('methods of another name are aliased when the mixin is applied', function() {
-  let MyMixin = <Mixin>Mixin.create({
+  let MyMixin = Mixin.create({
     fooMethod() { return 'FOO'; },
     barMethod: aliasMethod('fooMethod')
-  });
+  }) as Mixin;
 
   let obj = MyMixin.apply({});
   validateAliasMethod(obj);
 });
 
 QUnit.test('should follow aliasMethods all the way down', assert => {
-  let MyMixin = <Mixin>Mixin.create({
+  let MyMixin = Mixin.create({
     bar: aliasMethod('foo'), // put first to break ordered iteration
     baz() { return 'baz'; },
     foo: aliasMethod('baz')
-  });
+  }) as Mixin;
 
   let obj = MyMixin.apply({});
   assert.equal(get(obj, 'bar')(), 'baz', 'should have followed aliasMethods');

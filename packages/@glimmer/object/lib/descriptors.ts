@@ -11,7 +11,7 @@ class AliasMethodDescriptor extends Descriptor {
   }
 
   define(target: Object, key: string, _home: Object) {
-    let name = <string>this.name;
+    let name = this.name as string;
 
     Object.defineProperty(target, key, {
       enumerable: true,
