@@ -3,10 +3,12 @@ import { Opaque, SymbolTable, RuntimeResolver, CompileTimeConstants } from "@gli
 const UNRESOLVED = {};
 
 const WELL_KNOWN_EMPTY_ARRAY_POSITION = 0;
+const WELL_KNOW_EMPTY_ARRAY = Object.freeze([]);
+export type EMPTY_ARRAY = Array<ReadonlyArray<never>>;
 
 export interface ConstantPool {
   strings: string[];
-  arrays: number[][];
+  arrays: number[][] | EMPTY_ARRAY;
   tables: SymbolTable[];
   handles: number[];
   serializables: Opaque[];
@@ -26,7 +28,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   // `0` means NULL
 
   protected strings: string[] = [];
-  protected arrays: number[][] = [[]];
+  protected arrays: number[][] | EMPTY_ARRAY = [WELL_KNOW_EMPTY_ARRAY];
   protected tables: SymbolTable[] = [];
   protected handles: number[] = [];
   protected serializables: Opaque[] = [];
@@ -69,17 +71,17 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 
   array(values: number[]): number {
-    let index = this.arrays.indexOf(values);
+    if (values.length === 0) {
+      return WELL_KNOWN_EMPTY_ARRAY_POSITION;
+    }
+
+    let index = (this.arrays as number[][]).indexOf(values);
 
     if (index > -1) {
       return index;
     }
 
-    if (values.length === 0) {
-      return WELL_KNOWN_EMPTY_ARRAY_POSITION;
-    }
-
-    return this.arrays.push(values) - 1;
+    return (this.arrays as number[][]).push(values) - 1;
   }
 
   table(t: SymbolTable): number {
@@ -122,7 +124,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
 
 export class RuntimeConstants<Specifier> {
   protected strings: string[];
-  protected arrays: number[][];
+  protected arrays: number[][] | EMPTY_ARRAY;
   protected tables: SymbolTable[];
   protected handles: number[];
   protected serializables: Opaque[];
@@ -168,7 +170,7 @@ export class RuntimeConstants<Specifier> {
   }
 
   getArray(value: number): number[] {
-    return this.arrays[value];
+    return (this.arrays as number[][])[value];
   }
 
   getSymbolTable<T extends SymbolTable>(value: number): T {
@@ -234,7 +236,7 @@ export class Constants<Specifier> extends WriteOnlyConstants {
   }
 
   getArray(value: number): number[] {
-    return this.arrays[value];
+    return (this.arrays as number[][])[value];
   }
 
   getSymbolTable<T extends SymbolTable>(value: number): T {
