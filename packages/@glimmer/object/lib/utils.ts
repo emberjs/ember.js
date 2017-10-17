@@ -17,7 +17,7 @@ export const checkHasSuper = (function () {
 }());
 
 export function ROOT(..._args: any[]) {}
-(<any>ROOT).__hasSuper = false;
+(ROOT as any).__hasSuper = false;
 
 export function hasSuper(func: Function) {
   if (func['__hasSuper'] === undefined) {

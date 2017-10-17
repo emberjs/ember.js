@@ -150,7 +150,7 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   }
 
   update(value: Opaque) {
-    let input = <HTMLInputElement>this.attribute.element;
+    let input = this.attribute.element as HTMLInputElement;
     let currentValue = input.value;
     let normalizedValue = normalizeStringValue(value);
     if (currentValue !== normalizedValue) {
@@ -167,7 +167,7 @@ export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
   }
 
   update(value: Opaque): void {
-    let option = <HTMLOptionElement>this.attribute.element;
+    let option = this.attribute.element as HTMLOptionElement;
 
     if (value) {
       option.selected = true;

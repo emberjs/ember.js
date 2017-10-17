@@ -90,7 +90,7 @@ class Meta implements IMeta, HasGuid {
   static for(obj: any): IMeta {
     if (obj === null || obj === undefined) return new Meta(obj, {});
     if (hasOwnProperty.call(obj, '_meta') && obj._meta) return obj._meta;
-    if (!Object.isExtensible(obj)) return <any>new ConstMeta(obj);
+    if (!Object.isExtensible(obj)) return new ConstMeta(obj) as any;
 
     let MetaToUse: typeof Meta = Meta;
 
