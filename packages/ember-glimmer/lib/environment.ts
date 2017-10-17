@@ -10,12 +10,18 @@ import {
   constructStyleDeprecationMessage
 } from 'ember-views';
 import {
+  Reference
+} from '@glimmer/reference';
+import {
   Environment as GlimmerEnvironment,
   AttributeManager,
   isSafeString,
   compileLayout,
   getDynamicVar
 } from '@glimmer/runtime';
+import {
+  Opaque
+} from '@glimmer/util';
 import {
   CurlyComponentDefinition
 } from './component-managers/curly';
@@ -66,6 +72,16 @@ export default class Environment extends GlimmerEnvironment {
   static create(options) {
     return new this(options);
   }
+
+  public owner: any;
+  public isInteractive: boolean;
+  public destroyedComponents: Array<any>;
+  public builtInModifiers: any;
+  public builtInHelpers: any;
+  public debugStack: any;
+  private _definitionCache: Cache;
+  private _templateCache: Cache;
+  private _compilerCache: Cache;
 
   constructor({ [OWNER]: owner }) {
     super(...arguments);
@@ -255,19 +271,19 @@ export default class Environment extends GlimmerEnvironment {
     return ConditionalReference.create(reference);
   }
 
-  iterableFor(ref, key) {
+  iterableFor(ref: Reference<Opaque>, key: string) {
     return createIterable(ref, key);
   }
 
-  scheduleInstallModifier() {
+  scheduleInstallModifier(modifier, manager) {
     if (this.isInteractive) {
-      super.scheduleInstallModifier(...arguments);
+      super.scheduleInstallModifier(modifier, manager);
     }
   }
 
-  scheduleUpdateModifier() {
+  scheduleUpdateModifier(modifier, manager) {
     if (this.isInteractive) {
-      super.scheduleUpdateModifier(...arguments);
+      super.scheduleUpdateModifier(modifier, manager);
     }
   }
 
@@ -306,7 +322,7 @@ if (DEBUG) {
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-      super.setAttribute(...arguments);
+      super.setAttribute(dom, element, value);
     }
 
     updateAttribute(dom, element, value) {
@@ -316,7 +332,7 @@ if (DEBUG) {
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-      super.updateAttribute(...arguments);
+      super.updateAttribute(dom, element, value);
     }
   }
 
