@@ -129,7 +129,6 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
   - [New computed syntax explained in "Ember 1.12 released" ](https://emberjs.com/blog/2015/05/13/ember-1-12-released.html#toc_new-computed-syntax)
 
   @class ComputedProperty
-  @static
   @public
 */
 function ComputedProperty(config, opts) {
@@ -180,7 +179,7 @@ const ComputedPropertyPrototype = ComputedProperty.prototype;
   @method volatile
   @static
   @for @ember/object/computed
-  @return {@ember/object/computed} this
+  @return {ComputedProperty} this
   @chainable
   @public
 */
@@ -210,7 +209,7 @@ ComputedPropertyPrototype.volatile = function() {
   @method readOnly
   @static
   @for @ember/object/computed
-  @return {@ember/object/computed} this
+  @return {ComputedProperty} this
   @chainable
   @public
 */
@@ -248,7 +247,7 @@ ComputedPropertyPrototype.readOnly = function() {
   @static
   @for @ember/object/computed
   @param {String} path* zero or more property paths
-  @return {@ember/object/computed} this
+  @return {ComputedProperty} this
   @chainable
   @public
 */
@@ -538,7 +537,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName, meta) {
   @static
   @param {String} [dependentKeys*] Optional dependent keys that trigger this computed property.
   @param {Function} func The computed property function.
-  @return {@ember/object/computed} property descriptor instance
+  @return {ComputedProperty} property descriptor instance
   @public
 */
 export default function computed(...args) {

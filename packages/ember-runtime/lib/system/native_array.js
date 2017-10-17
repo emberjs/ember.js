@@ -28,7 +28,7 @@ import copy from '../copy';
   false, this will be applied automatically. Otherwise you can apply the mixin
   at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
 
-  @class Ember.EmberArray
+  @class Ember.NativeArray
   @uses MutableArray
   @uses Observable
   @uses Ember.Copyable
