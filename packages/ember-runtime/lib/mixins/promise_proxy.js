@@ -91,7 +91,7 @@ function tap(proxy, promise) {
   proxy.get('lastName')  //=> 'Penner'
   ```
 
-  @class PromiseProxy
+  @class PromiseProxyMixin
   @public
 */
 export default Mixin.create({

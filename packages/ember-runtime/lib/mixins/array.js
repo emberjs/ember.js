@@ -195,11 +195,11 @@ export function isEmberArray(obj) {
   contents in a KVO-friendly way. You can also be notified whenever the
   membership of an array changes by using `.observes('myArray.[]')`.
 
-  To support `@ember/array` in your own class, you must override two
+  To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
 
-  Note that the @ember/array mixin also incorporates the `Ember.Enumerable`
-  mixin. All `@ember/array`-like objects are also enumerable.
+  Note that the EmberArray mixin also incorporates the `Ember.Enumerable`
+  mixin. All `EmberArray`-like objects are also enumerable.
 
   @class EmberArray
   @uses Enumerable
@@ -225,7 +225,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Returns the object at the given `index`. If the given `index` is negative
     or is greater or equal than the array length, returns `undefined`.
 
-    This is one of the primitives you must implement to support `@ember/array`.
+    This is one of the primitives you must implement to support `EmberArray`.
     If your object supports retrieving the value of an array item using `get()`
     (i.e. `myArray.get(0)`), then you do not need to implement this method
     yourself.
@@ -317,7 +317,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return this.indexOf(obj) >= 0;
   },
 
-  // Add any extra methods to @ember/array that are native to the built-in Array.
+  // Add any extra methods to EmberArray that are native to the built-in Array.
   /**
     Returns a new array that is a slice of the receiver. This implementation
     uses the observable array methods to retrieve the objects for the new
@@ -508,7 +508,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   }),
 
   /**
-    If you are implementing an object that supports `@ember/array`, call this
+    If you are implementing an object that supports `EmberArray`, call this
     method just before the array content changes to notify any observers and
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
@@ -527,7 +527,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    If you are implementing an object that supports `@ember/array`, call this
+    If you are implementing an object that supports `EmberArray`, call this
     method just after the array content changes to notify any observers and
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
