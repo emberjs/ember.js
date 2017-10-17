@@ -743,6 +743,7 @@ export function aliasMethod(methodName) {
   @param {Function} func
   @return func
   @public
+  @static
 */
 export function observer(...args) {
   let _paths, func;
@@ -776,7 +777,7 @@ export function observer(...args) {
 
   ```javascript
   import EmberObject from '@ember/object';
-  
+
   EmberObject.extend({
     valueObserver: Ember.immediateObserver('value', function() {
       // Executes whenever the "value" property changes
