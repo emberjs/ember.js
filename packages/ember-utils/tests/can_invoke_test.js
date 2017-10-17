@@ -19,6 +19,12 @@ QUnit.test('should return false if the object doesn\'t exist', function() {
   equal(canInvoke(undefined, 'aMethodThatDoesNotExist'), false);
 });
 
+QUnit.test('should return true for falsy values that have methods', function() {
+  equal(canInvoke(false, 'valueOf'), true);
+  equal(canInvoke('', 'charAt'), true);
+  equal(canInvoke(0, 'toFixed'), true);
+});
+
 QUnit.test('should return true if the method exists on the object', function() {
   equal(canInvoke(obj, 'aMethodThatExists'), true);
 });
