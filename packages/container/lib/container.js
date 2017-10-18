@@ -115,10 +115,10 @@ Container.prototype = {
    @param {String} fullName optional key to reset; if missing, resets everything
   */
   reset(fullName) {
-    if (fullName !== undefined) {
-      resetMember(this, this.registry.normalize(fullName));
-    } else {
+    if (fullName === undefined) {
       resetCache(this);
+    } else {
+      resetMember(this, this.registry.normalize(fullName));
     }
   },
 
@@ -366,7 +366,8 @@ function destroyDestroyables(container) {
 
 function resetCache(container) {
   destroyDestroyables(container);
-  container.cache.dict = dictionary(null);
+  container.cache = dictionary(null);
+  container.factoryManagerCache = dictionary(null);
 }
 
 function resetMember(container, fullName) {
