@@ -7,6 +7,7 @@ const Funnel = require('broccoli-funnel');
 const filterTypeScript = require('broccoli-typescript-compiler').filterTypeScript;
 const TypeScriptPlugin = require('broccoli-typescript-compiler').TypeScriptPlugin;
 const BroccoliDebug = require('broccoli-debug');
+const MergeTrees = require('broccoli-merge-trees');
 const findLib = require('./find-lib');
 const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
@@ -77,7 +78,7 @@ module.exports.qunit = function _qunit() {
 
 module.exports.emberGlimmerES = function _emberGlimmerES() {
   let input = new Funnel('packages/ember-glimmer/lib', {
-    destDir: 'packages/ember-glimmer'
+    destDir: 'packages/ember-glimmer/lib'
   });
 
   let debuggedInput = debugTree(input, 'ember-glimmer:input');
@@ -90,11 +91,15 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
 
   let debuggedCompiledTemplatesAndTypeScript = debugTree(compiledTemplatesAndTypescript, 'ember-glimmer:templates-output');
 
-  let typescriptCompiled = new TypeScriptPlugin(debuggedCompiledTemplatesAndTypeScript, {
-    compilerOptions: { allowJs: true }
+  let typescriptCompiled = filterTypeScript(debuggedCompiledTemplatesAndTypeScript);
+
+  let funneled = new Funnel(typescriptCompiled, {
+    getDestinationPath(path) {
+      return path.replace('/lib/', '/').replace('packages/', '/');
+    }
   });
 
-  return debugTree(typescriptCompiled, 'ember-glimmer:output');
+  return debugTree(funneled, 'ember-glimmer:output');
 }
 
 module.exports.handlebarsES = function _handlebars() {

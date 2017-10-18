@@ -19,29 +19,21 @@
     // "noUnusedLocals": true,
     // "noUnusedParameters": true,
     // "allowUnreachableCode": false,
-    "strictNullChecks": true,
+    // "strictNullChecks": true,
     // "noImplicitReturns": true,
     // "noImplicitThis": true,
 
     "newLine": "LF",
-    "noEmit": false,
-    "allowJs": true,
+    "noEmit": true,
+    "allowJs": false,
 
     "paths": {
       "*": ["*/lib"]
     }
   },
 
-  "include": [
-    "packages/**/*.ts",
-    "packages/**/*.js"
-  ],
-
-  "exclude": [
-    "dist",
-    "demos",
-    "tmp",
-    "node_modules",
-    ".vscode"
+  "files": [
+    "packages/ember-glimmer/lib/index.ts"
   ]
+
 }
