@@ -211,7 +211,11 @@ class BundlingLookup implements CompileTimeLookup<Specifier> {
 
     expect(block, 'Should have a SerializedTemplateBlock');
 
-    return this.delegate.getComponentLayout(specifier, block!, this.compiler.compileOptions(specifier));
+    block = this.delegate.getComponentLayout(specifier, block!, this.compiler.compileOptions(specifier));
+
+    this.compiler.compiledBlocks.set(specifier, block);
+
+    return block;
   }
 
   lookupHelper(name: string, referrer: Specifier): Option<number> {
