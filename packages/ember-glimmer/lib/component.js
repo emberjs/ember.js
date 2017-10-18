@@ -40,7 +40,7 @@ export const BOUNDS = symbol('BOUNDS');
   surrounding context or outer controller; all
   contextual information must be passed in.
 
-  The easiest way to create an `Component` is via
+  The easiest way to create a `Component` is via
   a template. If you name a template
   `app/components/my-foo.hbs`, you will be able to use
   `{{my-foo}}` in other templates, which will make
