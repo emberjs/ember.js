@@ -312,7 +312,7 @@ export const BOUNDS = symbol('BOUNDS');
   representation. If the value becomes `false` or `undefined` the class name
   will be removed.
   Both `classNames` and `classNameBindings` are concatenated properties. See
-  [Object](/api/classes/Ember.Object.html) documentation for more
+  [EmberObject](/api/classes/Ember.Object.html) documentation for more
   information about concatenated properties.
 
 
