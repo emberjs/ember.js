@@ -435,7 +435,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   Updates to the property of an attribute binding will result in automatic
   update of the  HTML attribute in the component's rendered HTML representation.
-  `attributeBindings` is a concatenated property. See [Object](/api/classes/Ember.Object.html)
+  `attributeBindings` is a concatenated property. See [EmberObject](/api/classes/Ember.Object.html)
   documentation for more information about concatenated properties.
 
 
