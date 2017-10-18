@@ -21,7 +21,7 @@ function GlimmerTemplatePrecompiler (inputTree, options) {
 }
 
 GlimmerTemplatePrecompiler.prototype.extensions = ['hbs'];
-GlimmerTemplatePrecompiler.prototype.targetExtension = 'ts';
+GlimmerTemplatePrecompiler.prototype.targetExtension = 'js';
 
 GlimmerTemplatePrecompiler.prototype.baseDir = function() {
   return __dirname;
