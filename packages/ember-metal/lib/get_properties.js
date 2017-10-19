@@ -2,6 +2,7 @@ import { get } from './property_get';
 /**
  @module @ember/object
 */
+
 /**
   To get multiple properties at once, call `getProperties`
   with an object followed by a list of strings or an array:
