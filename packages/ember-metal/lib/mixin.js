@@ -444,11 +444,16 @@ export function mixin(obj, ...args) {
   // filters array will be shared amongst any object implementing mixin
   import Mixin from '@ember/object/mixin';
   import { A } from '@ember/array';
-  import { computed } from '@ember/object';
 
   const FilterableMixin = Mixin.create({
     filters: A()
   });
+  ```
+
+  ```javascript
+  import Mixin from '@ember/object/mixin';
+  import { A } from '@ember/array';
+  import { computed } from '@ember/object';
 
   // filters will be a separate array for every object implementing the mixin
   const FilterableMixin = Mixin.create({
@@ -456,9 +461,16 @@ export function mixin(obj, ...args) {
       return A();
     })
   });
+  ```
+
+  ```javascript
+  import Mixin from '@ember/object/mixin';
+  import { A } from '@ember/array';
 
   // filters will be created as a separate array during the object's initialization
   const Filterable = Mixin.create({
+    filters: null,
+
     init() {
       this._super(...arguments);
       this.set("filters", A());
