@@ -24,7 +24,7 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  private classRef: Opaque = null;
+  public classRef: Opaque = null;
   private argsRevision: Revision;
 
   constructor(private environment: Environment, private component: Component, private args: Tagged, private finalizer: Finalizer) {

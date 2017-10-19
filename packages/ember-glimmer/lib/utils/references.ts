@@ -57,18 +57,24 @@ class EmberPathReference {
   // @abstract get tag()
   // @abstract value()
 
-  get(key) {
+  get(key?): any {
     return PropertyReference.create(this, key);
   }
 }
 
 // @abstract
 export class CachedReference extends EmberPathReference {
+  private _lastRevision: any;
+  private _lastValue: any;
+  public tag: any;
+
   constructor() {
     super();
     this._lastRevision = null;
     this._lastValue = null;
   }
+
+  compute() {}
 
   value() {
     let { tag, _lastRevision, _lastValue } = this;
@@ -85,7 +91,8 @@ export class CachedReference extends EmberPathReference {
 }
 
 // @implements PathReference
-export class RootReference extends ConstReference {
+export class RootReference extends ConstReference<any> {
+  public children: any;
   constructor(value) {
     super(value);
     this.children = Object.create(null);
@@ -107,6 +114,11 @@ let TwoWayFlushDetectionTag;
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
     EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
   TwoWayFlushDetectionTag = class {
+    public tag: any;
+    public parent: any;
+    public key: any;
+    public ref: any;
+
     constructor(tag, key, ref) {
       this.tag = tag;
       this.parent = null;
@@ -152,6 +164,9 @@ export class PropertyReference extends CachedReference {
 }
 
 export class RootPropertyReference extends PropertyReference {
+  private _parentValue: any;
+  private _propertyKey: any;
+
   constructor(parentValue, propertyKey) {
     super();
 
@@ -187,6 +202,10 @@ export class RootPropertyReference extends PropertyReference {
 }
 
 export class NestedPropertyReference extends PropertyReference {
+  private _parentReference: any;
+  private _parentObjectTag: any;
+  private _propertyKey: any;
+
   constructor(parentReference, propertyKey) {
     super();
 
@@ -242,6 +261,9 @@ export class NestedPropertyReference extends PropertyReference {
 }
 
 export class UpdatableReference extends EmberPathReference {
+  public tag: DirtyableTag;
+  private _value: any;
+
   constructor(value) {
     super();
 
@@ -270,6 +292,7 @@ export class UpdatablePrimitiveReference extends UpdatableReference {
 }
 
 export class ConditionalReference extends GlimmerConditionalReference {
+  public objectTag: UpdatableTag;
   static create(reference) {
     if (isConst(reference)) {
       let value = reference.value();
@@ -303,6 +326,9 @@ export class ConditionalReference extends GlimmerConditionalReference {
 }
 
 export class SimpleHelperReference extends CachedReference {
+  public helper: any;
+  public args: any;
+
   static create(helper, args) {
     if (isConst(args)) {
       let { positional, named } = args;
@@ -351,6 +377,9 @@ export class SimpleHelperReference extends CachedReference {
 }
 
 export class ClassBasedHelperReference extends CachedReference {
+  public instance: any;
+  public args: any;
+
   static create(helperClass, vm, args) {
     let instance = helperClass.create();
     vm.newDestroyable(instance);
@@ -381,6 +410,9 @@ export class ClassBasedHelperReference extends CachedReference {
 }
 
 export class InternalHelperReference extends CachedReference {
+  public helper: any;
+  public args: any;
+
   constructor(helper, args) {
     super();
 
@@ -396,7 +428,7 @@ export class InternalHelperReference extends CachedReference {
 }
 
 // @implements PathReference
-export class UnboundReference extends ConstReference {
+export class UnboundReference extends ConstReference<any> {
   static create(value) {
     if (typeof value === 'object' && value !== null) {
       return new UnboundReference(value);

@@ -14,6 +14,9 @@ function instrumentationPayload({ render: { name, outlet } }) {
 function NOOP() {}
 
 class StateBucket {
+  public outletState: any;
+  public finalizer: any;
+
   constructor(outletState) {
     this.outletState = outletState;
     this.instrument();
@@ -76,7 +79,8 @@ class TopLevelOutletComponentManager extends OutletComponentManager {
 const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
 
-export class TopLevelOutletComponentDefinition extends ComponentDefinition {
+export class TopLevelOutletComponentDefinition extends ComponentDefinition<any> {
+  public template: any;
   constructor(instance) {
     super('outlet', TOP_LEVEL_MANAGER, instance);
     this.template = instance.template;
@@ -85,6 +89,8 @@ export class TopLevelOutletComponentDefinition extends ComponentDefinition {
 }
 
 class TopLevelOutletLayoutCompiler {
+  static id: string;
+  public template: any;
   constructor(template) {
     this.template = template;
   }
@@ -99,7 +105,10 @@ class TopLevelOutletLayoutCompiler {
 
 TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
 
-export class OutletComponentDefinition extends ComponentDefinition {
+export class OutletComponentDefinition extends ComponentDefinition<any> {
+  public outletName: string;
+  public template: any;
+
   constructor(outletName, template) {
     super('outlet', MANAGER, null);
     this.outletName = outletName;
@@ -109,6 +118,8 @@ export class OutletComponentDefinition extends ComponentDefinition {
 }
 
 export class OutletLayoutCompiler {
+  static id: string;
+  public template: any;
   constructor(template) {
     this.template = template;
   }

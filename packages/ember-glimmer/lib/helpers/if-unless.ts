@@ -15,6 +15,12 @@ import {
 } from '@glimmer/reference';
 
 class ConditionalHelperReference extends CachedReference {
+  public branchTag: UpdatableTag;
+  public tag: any;
+  public cond: any;
+  public truthy: any;
+  public falsy: any;
+
   static create(_condRef, truthyRef, falsyRef) {
     let condRef = ConditionalReference.create(_condRef);
     if (isConst(condRef)) {

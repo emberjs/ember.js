@@ -2,6 +2,9 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
+import {
+  Opaque
+} from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 
 import { RootReference } from '../utils/references';
@@ -9,6 +12,17 @@ import { OutletLayoutCompiler } from './outlet';
 import AbstractManager from './abstract';
 import { generateControllerFactory } from 'ember-routing';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
+
+//TODO: remove these stubbed interfaces when better typing is in place
+interface engineType {
+  boot(): void;
+};
+
+interface bucketType {
+  modelReference?: any;
+  engine: engineType;
+};
+
 
 class MountManager extends AbstractManager {
   prepareArgs(definition, args) {
@@ -22,11 +36,11 @@ class MountManager extends AbstractManager {
 
     dynamicScope.outletState = UNDEFINED_REFERENCE;
 
-    let engine = environment.owner.buildChildEngineInstance(name);
+    let engine: engineType = environment.owner.buildChildEngineInstance(name);
 
     engine.boot();
 
-    let bucket = { engine };
+    let bucket: bucketType = { engine };
 
     if (EMBER_ENGINES_MOUNT_PARAMS) {
       bucket.modelReference = args.named.get('model');
@@ -81,7 +95,7 @@ class MountManager extends AbstractManager {
 
 const MOUNT_MANAGER = new MountManager();
 
-export class MountDefinition extends ComponentDefinition {
+export class MountDefinition extends ComponentDefinition<Opaque> {
   constructor(name) {
     super(name, MOUNT_MANAGER, null);
   }

@@ -4,11 +4,15 @@ import { DEBUG } from 'ember-env-flags';
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
 
 export default class AbstractManager {
+  public debugStack: any;
+  public _pushToDebugStack: (name: string, environment: any) => void;
+  public _pushEngineToDebugStack: (name: string, environment: any) => void;
+
   constructor() {
     this.debugStack = undefined;
   }
 
-  prepareArgs(definition, args) {
+  prepareArgs(definition, args): any | null {
     return null;
   }
 
@@ -43,7 +47,7 @@ export default class AbstractManager {
   // inheritors should also call `this._pushToDebugStack`
   // to ensure the rerendering assertion messages are
   // properly maintained
-  update(bucket, dynamicScope) { }
+  update(bucket, dynamicScope?) { }
 
   // inheritors should also call `this.debugStack.pop()` to
   // ensure the rerendering assertion messages are properly
@@ -56,12 +60,12 @@ export default class AbstractManager {
 }
 
 if (DEBUG) {
-  AbstractManager.prototype._pushToDebugStack = function(name, environment) {
+  AbstractManager.prototype._pushToDebugStack = function(name: string, environment) {
     this.debugStack = environment.debugStack;
     this.debugStack.push(name);
   };
 
-  AbstractManager.prototype._pushEngineToDebugStack = function(name, environment) {
+  AbstractManager.prototype._pushEngineToDebugStack = function(name: string, environment) {
     this.debugStack = environment.debugStack;
     this.debugStack.pushEngine(name);
   };

@@ -74,7 +74,11 @@ class NonSingletonRenderManager extends AbstractRenderManager {
 
 export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 
-export class RenderDefinition extends ComponentDefinition {
+export class RenderDefinition extends ComponentDefinition<any> {
+  public name: string;
+  public template: any;
+  public env: any;
+
   constructor(name, template, env, manager) {
     super('render', manager, null);
 

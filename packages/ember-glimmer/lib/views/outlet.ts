@@ -5,6 +5,9 @@ import { OWNER } from 'ember-utils';
 import { run } from 'ember-metal';
 
 class OutletStateReference {
+  public outletView: any;
+  public tag: any;
+
   constructor(outletView) {
     this.outletView = outletView;
     this.tag = outletView._tag;
@@ -31,6 +34,9 @@ class OutletStateReference {
 // in 3.0. Preferably it is deprecated in the release that
 // follows the Glimmer release.
 class OrphanedOutletStateReference extends OutletStateReference {
+  public root: any;
+  public name: string;
+
   constructor(root, name) {
     super(root.outletView);
     this.root = root;
@@ -60,6 +66,10 @@ class OrphanedOutletStateReference extends OutletStateReference {
 }
 
 class ChildOutletStateReference {
+  public parent: any;
+  public key: string;
+  public tag: any;
+
   constructor(parent, key) {
     this.parent = parent;
     this.key = key;
@@ -76,6 +86,13 @@ class ChildOutletStateReference {
 }
 
 export default class OutletView {
+  private _environment: any;
+  public renderer: any;
+  public owner: any;
+  public template: any;
+  public outletState: any;
+  private _tag: any;
+
   static extend(injections) {
     return class extends OutletView {
       static create(options) {

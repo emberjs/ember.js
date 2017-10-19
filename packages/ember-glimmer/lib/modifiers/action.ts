@@ -53,6 +53,16 @@ export let ActionHelper = {
 };
 
 export class ActionState {
+  public element: HTMLElement;
+  public actionId: any;
+  public actionName: any;
+  public actionArgs: any;
+  public namedArgs: any;
+  public positional: any;
+  public implicitTarget: any;
+  public dom: any;
+  public eventName: any;
+
   constructor(element, actionId, actionName, actionArgs, namedArgs, positionalArgs, implicitTarget, dom) {
     this.element = element;
     this.actionId = actionId;
@@ -115,7 +125,8 @@ export class ActionState {
       let args = this.getActionArgs();
       let payload = {
         args,
-        target
+        target,
+        name: null
       };
       if (typeof actionName[INVOKE] === 'function') {
         flaggedInstrument('interaction.ember-action', payload, () => {
