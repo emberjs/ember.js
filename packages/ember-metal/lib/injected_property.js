@@ -7,6 +7,7 @@ import { Descriptor } from './properties';
  @module ember
  @private
  */
+
 /**
   Read-only property that returns the result of a container lookup.
 
