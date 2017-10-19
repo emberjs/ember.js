@@ -1,4 +1,8 @@
-import { OWNER, assign } from 'ember-utils';
+import {
+  Opaque,
+  OWNER,
+  assign
+} from 'ember-utils';
 import { combineTagged } from '@glimmer/reference';
 import {
   PrimitiveReference,
@@ -41,15 +45,15 @@ function aliasIdToElementId(args, props) {
 }
 
 // We must traverse the attributeBindings in reverse keeping track of
-// what has already been applied. This is essentially refining the concated
+// what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
 function applyAttributeBindings(element, attributeBindings, component, operations) {
-  let seen = [];
+  let seen: Array<string> = [];
   let i = attributeBindings.length - 1;
 
   while (i !== -1) {
     let binding = attributeBindings[i];
-    let parsed = AttributeBinding.parse(binding);
+    let parsed: Array<string> = AttributeBinding.parse(binding);
     let attribute = parsed[1];
 
     if (seen.indexOf(attribute) === -1) {
@@ -80,6 +84,9 @@ function ariaRole(vm) {
 }
 
 class CurlyComponentLayoutCompiler {
+  static id: string;
+  public template: any;
+
   constructor(template) {
     this.template = template;
   }
@@ -95,6 +102,9 @@ class CurlyComponentLayoutCompiler {
 CurlyComponentLayoutCompiler.id = 'curly';
 
 export class PositionalArgumentReference {
+  public tag: any;
+  private _references: any;
+
   constructor(references) {
     this.tag = combineTagged(references);
     this._references = references;
@@ -303,7 +313,7 @@ export default class CurlyComponentManager extends AbstractManager {
     }
   }
 
-  update(bucket, _, dynamicScope) {
+  update(bucket) {
     let { component, args, argsRevision, environment } = bucket;
 
     if (DEBUG) {
@@ -416,8 +426,11 @@ export function rerenderInstrumentDetails(component) {
 
 const MANAGER = new CurlyComponentManager();
 
-export class CurlyComponentDefinition extends ComponentDefinition {
-  constructor(name, ComponentClass, template, args, customManager) {
+export class CurlyComponentDefinition extends ComponentDefinition<Opaque> {
+  public template: any;
+  public args: any;
+
+  constructor(name, ComponentClass, template, args, customManager?) {
     super(name, customManager || MANAGER, ComponentClass);
     this.template = template;
     this.args = args;

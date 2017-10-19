@@ -14,7 +14,7 @@ import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
 import { ROOT_REF } from '../component';
-import { htmlSafe, isHTMLSafe } from './string';
+import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
 function referenceForKey(component, key) {
   return component[ROOT_REF].get(key);
@@ -103,7 +103,7 @@ export const AttributeBinding = {
 const DISPLAY_NONE = 'display: none;';
 const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
 
-class StyleBindingReference extends CachedReference<string> {
+class StyleBindingReference extends CachedReference<string | SafeString> {
   public tag: Tag;
   constructor(private inner: Reference<string>, private isVisible: Reference<Opaque>) {
     super();
@@ -111,7 +111,7 @@ class StyleBindingReference extends CachedReference<string> {
     this.tag = combine([inner.tag, isVisible.tag]);
   }
 
-  compute(): string {
+  compute(): string | SafeString {
     let value = this.inner.value();
     let isVisible = this.isVisible.value();
 

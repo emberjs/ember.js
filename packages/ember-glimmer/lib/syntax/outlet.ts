@@ -6,6 +6,13 @@ import {
 import { OutletComponentDefinition } from '../component-managers/outlet';
 
 class OutletComponentReference {
+  public outletNameRef: any;
+  public parentOutletStateRef: any;
+  public definition: any;
+  public lastState: any;
+  public outletStateTag: UpdatableTag;
+  public tag: any;
+
   constructor(outletNameRef, parentOutletStateRef) {
     this.outletNameRef = outletNameRef;
     this.parentOutletStateRef = parentOutletStateRef;

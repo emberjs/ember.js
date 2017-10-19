@@ -9,7 +9,7 @@ function dynamicComponentFor(vm, args, meta) {
   let env     = vm.env;
   let nameRef = args.positional.at(0);
 
-  return new DynamicComponentReference({ nameRef, env, meta });
+  return new DynamicComponentReference({ nameRef, env, meta, args: null });
 }
 
 export function dynamicComponentMacro(params, hash, _default, inverse, builder) {
@@ -34,6 +34,12 @@ export function inlineComponentMacro(name, params, hash, builder) {
 }
 
 class DynamicComponentReference {
+  public tag: any;
+  public nameRef: any;
+  public env: any;
+  public meta: any;
+  public args: any;
+
   constructor({ nameRef, env, meta, args }) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;

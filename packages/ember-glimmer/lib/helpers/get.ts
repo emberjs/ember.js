@@ -66,6 +66,13 @@ export default function(vm, args) {
 }
 
 class GetHelperReference extends CachedReference {
+  public sourceReference: any;
+  public pathReference: any;
+  public lastPath: any;
+  public innerReference: any;
+  public innerTag: UpdatableTag;
+  public tag: any;
+
   static create(sourceReference, pathReference) {
     if (isConst(pathReference)) {
       let parts = pathReference.value().split('.');

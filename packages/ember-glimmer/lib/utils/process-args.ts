@@ -38,6 +38,7 @@ export function processComponentArgs(namedArgs) {
 const REF = symbol('REF');
 
 class MutableCell {
+  public value: any;
   constructor(ref, value) {
     this[MUTABLE_CELL] = true;
     this[REF] = ref;

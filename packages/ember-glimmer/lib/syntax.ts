@@ -53,7 +53,7 @@ function refineBlockSyntax(name, params, hash, _default, inverse, builder) {
   return false;
 }
 
-export const experimentalMacros = [];
+export const experimentalMacros: Array<any> = [];
 
 // This is a private API to allow for experimental macros
 // to be created in user space. Registering a macro should
