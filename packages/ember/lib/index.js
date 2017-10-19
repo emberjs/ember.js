@@ -617,11 +617,13 @@ if (IS_NODE) {
  @module jquery
  @public
  */
+
 /**
  @class jquery
  @public
  @static
  */
+
 /**
   Alias for jQuery
 
