@@ -3,10 +3,12 @@
 
 import { ENV } from 'ember-environment';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
+
 /**
 @module @ember/instrumentation
 @private
 */
+
 /**
   The purpose of the Ember Instrumentation module is
   to provide efficient, general-purpose instrumentation
