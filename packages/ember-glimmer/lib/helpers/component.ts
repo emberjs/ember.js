@@ -6,8 +6,7 @@ import { assign } from 'ember-utils';
 import { CachedReference } from '../utils/references';
 import {
   CurlyComponentDefinition,
-  validatePositionalParameters,
-  PositionalArgumentsReference
+  validatePositionalParameters
 } from '../component-managers/curly';
 import {
   isComponentDefinition
@@ -147,6 +146,14 @@ import { DEBUG } from 'ember-env-flags';
   @public
 */
 export class ClosureComponentReference extends CachedReference {
+  public defRef: any;
+  public tag: any;
+  public args: any;
+  public meta: any;
+  public env: any;
+  public lastDefinition: any;
+  public lastName: string;
+
   static create(args, meta, env) {
     return new ClosureComponentReference(args, meta, env);
   }

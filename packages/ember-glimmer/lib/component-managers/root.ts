@@ -49,7 +49,9 @@ class RootComponentManager extends CurlyComponentManager {
 
 const ROOT_MANAGER = new RootComponentManager();
 
-export class RootComponentDefinition extends ComponentDefinition {
+export class RootComponentDefinition extends ComponentDefinition<any> {
+  public template: any;
+  public args: any;
   constructor(instance) {
     super('-root', ROOT_MANAGER, {
       class: instance.constructor,

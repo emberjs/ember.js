@@ -55,6 +55,12 @@ export function mountMacro(name, params, hash, builder) {
 }
 
 class DynamicEngineReference {
+  public tag: any;
+  public nameRef: any;
+  public env: any;
+  public meta: any;
+  private _lastName: any;
+  private _lastDef: any;
   constructor({ nameRef, env, meta }) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;

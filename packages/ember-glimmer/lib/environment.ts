@@ -1,7 +1,7 @@
+/// <reference path="../externs.d.ts"/>
 import { guidFor, OWNER } from 'ember-utils';
 import { Cache, _instrumentStart } from 'ember-metal';
 import { assert, warn } from 'ember-debug';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
   lookupPartial,
@@ -61,7 +61,8 @@ import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { default as ActionModifierManager } from './modifiers/action';
 
 import {
-  GLIMMER_CUSTOM_COMPONENT_MANAGER
+  GLIMMER_CUSTOM_COMPONENT_MANAGER,
+  EMBER_MODULE_UNIFICATION
 } from 'ember/features';
 
 function instrumentationPayload(name) {
@@ -79,6 +80,7 @@ export default class Environment extends GlimmerEnvironment {
   public builtInModifiers: any;
   public builtInHelpers: any;
   public debugStack: any;
+  public inTransaction: boolean;
   private _definitionCache: Cache;
   private _templateCache: Cache;
   private _compilerCache: Cache;

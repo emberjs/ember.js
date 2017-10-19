@@ -6,6 +6,8 @@
 import { deprecate } from 'ember-debug';
 
 export class SafeString {
+  public string: string;
+
   constructor(string) {
     this.string = string;
   }
