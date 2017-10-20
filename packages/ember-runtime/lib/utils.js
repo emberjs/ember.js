@@ -31,9 +31,11 @@ const { toString } = Object.prototype;
   not formally an array but appears to be array-like (i.e. implements `Ember.Array`)
 
   ```javascript
-  Ember.isArray();                                          // false
-  Ember.isArray([]);                                        // true
-  Ember.isArray(Ember.ArrayProxy.create({ content: [] }));  // true
+  import { isArray } from '@ember/array';
+
+  isArray();                                          // false
+  isArray([]);                                        // true
+  isArray(Ember.ArrayProxy.create({ content: [] }));  // true
   ```
 
   @method isArray
