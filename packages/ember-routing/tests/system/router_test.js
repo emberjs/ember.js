@@ -262,21 +262,3 @@ QUnit.test('Router#triggerEvent ignores handlers that have not loaded yet', func
 
   triggerEvent(handlerInfos, false, ['loading']);
 });
-
-QUnit.test('Router#router deprecates when called', function(assert) {
-  assert.expect(2);
-
-  let router = createRouter();
-
-  expectDeprecation(function() {
-    assert.equal(router.router, router._routerMicrolib);
-  }, 'Usage of `router` is deprecated, use `_routerMicrolib` instead.');
-});
-
-QUnit.test('Router#_routerMicrolib can be used without deprecation', function(assert) {
-  assert.expect(1);
-
-  let router = createRouter();
-
-  assert.ok(router._routerMicrolib, 'Router._routerMicrolib can be used without deprecation');
-});

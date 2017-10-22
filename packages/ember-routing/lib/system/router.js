@@ -1356,8 +1356,6 @@ function updatePaths(router) {
 }
 
 EmberRouter.reopenClass({
-  router: null,
-
   /**
     The `Router.map` function allows you to define mappings from URLs to routes
     in your application. These mappings are defined within the
@@ -1582,11 +1580,5 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
     return defaultParentState;
   }
 }
-
-deprecateProperty(EmberRouter.prototype, 'router', '_routerMicrolib', {
-  id: 'ember-router.router',
-  until: '2.16',
-  url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routermicrolib'
-});
 
 export default EmberRouter;
