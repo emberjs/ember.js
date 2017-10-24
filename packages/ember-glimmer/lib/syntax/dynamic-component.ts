@@ -1,7 +1,6 @@
 import {
   isComponentDefinition
 } from '@glimmer/runtime';
-import { UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { assert } from 'ember-debug';
 import { hashToArgs } from './utils';
 
@@ -66,6 +65,5 @@ class DynamicComponentReference {
   }
 
   get() {
-    return UNDEFINED_REFERENCE;
   }
 }

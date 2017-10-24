@@ -1,5 +1,6 @@
 import {
   HAS_NATIVE_WEAKMAP,
+  Opaque,
   symbol
 } from 'ember-utils';
 import {
@@ -16,13 +17,14 @@ import {
   ConstReference,
   DirtyableTag,
   UpdatableTag,
+  TagWrapper,
+  VersionedPathReference,
   combine,
   isConst
 } from '@glimmer/reference';
 import {
   ConditionalReference as GlimmerConditionalReference,
-  PrimitiveReference,
-  UNDEFINED_REFERENCE
+  PrimitiveReference
 } from '@glimmer/runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
@@ -203,14 +205,14 @@ export class RootPropertyReference extends PropertyReference {
 
 export class NestedPropertyReference extends PropertyReference {
   private _parentReference: any;
-  private _parentObjectTag: any;
+  private _parentObjectTag: TagWrapper<UpdatableTag>;
   private _propertyKey: any;
 
   constructor(parentReference, propertyKey) {
     super();
 
     let parentReferenceTag = parentReference.tag;
-    let parentObjectTag = new UpdatableTag(CONSTANT_TAG);
+    let parentObjectTag = UpdatableTag.create(CONSTANT_TAG);
 
     this._parentReference = parentReference;
     this._parentObjectTag = parentObjectTag;
@@ -230,7 +232,7 @@ export class NestedPropertyReference extends PropertyReference {
 
     let parentValue = _parentReference.value();
 
-    _parentObjectTag.update(tagForProperty(parentValue, _propertyKey));
+    _parentObjectTag.inner.update(tagForProperty(parentValue, _propertyKey));
 
     let parentValueType = typeof parentValue;
 
@@ -261,13 +263,13 @@ export class NestedPropertyReference extends PropertyReference {
 }
 
 export class UpdatableReference extends EmberPathReference {
-  public tag: DirtyableTag;
+  public tag: TagWrapper<DirtyableTag>;
   private _value: any;
 
   constructor(value) {
     super();
 
-    this.tag = new DirtyableTag();
+    this.tag = DirtyableTag.create();
     this._value = value;
   }
 
@@ -279,20 +281,17 @@ export class UpdatableReference extends EmberPathReference {
     let { _value } = this;
 
     if (value !== _value) {
-      this.tag.dirty();
+      this.tag.inner.dirty();
       this._value = value;
     }
   }
 }
 
 export class UpdatablePrimitiveReference extends UpdatableReference {
-  get() {
-    return UNDEFINED_REFERENCE;
-  }
 }
 
 export class ConditionalReference extends GlimmerConditionalReference {
-  public objectTag: UpdatableTag;
+  public objectTag: TagWrapper<UpdatableTag>;
   static create(reference) {
     if (isConst(reference)) {
       let value = reference.value();
@@ -310,16 +309,16 @@ export class ConditionalReference extends GlimmerConditionalReference {
   constructor(reference) {
     super(reference);
 
-    this.objectTag = new UpdatableTag(CONSTANT_TAG);
+    this.objectTag = UpdatableTag.create(CONSTANT_TAG);
     this.tag = combine([reference.tag, this.objectTag]);
   }
 
   toBool(predicate) {
     if (isProxy(predicate)) {
-      this.objectTag.update(tagForProperty(predicate, 'isTruthy'));
+      this.objectTag.inner.update(tagForProperty(predicate, 'isTruthy'));
       return get(predicate, 'isTruthy');
     } else {
-      this.objectTag.update(tagFor(predicate));
+      this.objectTag.inner.update(tagFor(predicate));
       return emberToBool(predicate);
     }
   }

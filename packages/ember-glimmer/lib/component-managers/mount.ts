@@ -1,7 +1,6 @@
 import {
   ComponentDefinition
 } from '@glimmer/runtime';
-import { UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
   Opaque
 } from '@glimmer/util';
@@ -33,8 +32,6 @@ class MountManager extends AbstractManager {
     if (DEBUG) {
       this._pushEngineToDebugStack(`engine:${name}`, environment)
     }
-
-    dynamicScope.outletState = UNDEFINED_REFERENCE;
 
     let engine: engineType = environment.owner.buildChildEngineInstance(name);
 

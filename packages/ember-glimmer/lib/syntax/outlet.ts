@@ -1,6 +1,7 @@
 import {
   UpdatableTag,
   ConstReference,
+  TagWrapper,
   combine
 } from '@glimmer/reference';
 import { OutletComponentDefinition } from '../component-managers/outlet';
@@ -10,7 +11,7 @@ class OutletComponentReference {
   public parentOutletStateRef: any;
   public definition: any;
   public lastState: any;
-  public outletStateTag: UpdatableTag;
+  public outletStateTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
   constructor(outletNameRef, parentOutletStateRef) {
@@ -18,8 +19,8 @@ class OutletComponentReference {
     this.parentOutletStateRef = parentOutletStateRef;
     this.definition = null;
     this.lastState = null;
-    let outletStateTag = this.outletStateTag = new UpdatableTag(parentOutletStateRef.tag);
-    this.tag = combine([outletStateTag.tag, outletNameRef.tag]);
+    let outletStateTag = this.outletStateTag = UpdatableTag.create(parentOutletStateRef.tag);
+    this.tag = combine([outletStateTag.inner, outletNameRef.tag]);
   }
 
   value() {
@@ -29,7 +30,7 @@ class OutletComponentReference {
     let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
     let newState = this.lastState = outletStateRef.value();
 
-    this.outletStateTag.update(outletStateRef.tag);
+    this.outletStateTag.inner.update(outletStateRef.tag);
 
     definition = revalidate(definition, lastState, newState);
 
