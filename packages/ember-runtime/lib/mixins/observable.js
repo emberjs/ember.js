@@ -52,7 +52,7 @@ import { assert } from 'ember-debug';
 
   ## Observing Property Changes
 
-  You typically observe property changes simply by using the `Ember.observer`
+  You typically observe property changes simply by using the `observer`
   function in classes that you write.
 
   For example:

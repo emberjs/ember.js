@@ -34,13 +34,13 @@ QUnit.module('addObserver');
 testBoth('observer should assert to invalid input', function(get, set) {
   expectAssertion(()=> {
     observer(()=>{})
-  }, 'Ember.observer called without valid path');
+  }, 'observer called without valid path');
 
-  expectDeprecation('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.')
+  expectDeprecation('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.')
 
   expectAssertion(()=> {
     observer(null)
-  }, 'Ember.observer called without a function');
+  }, 'observer called without a function');
 })
 
 testBoth('observer should fire when property is modified', function(get, set) {
@@ -970,7 +970,7 @@ testBoth('setting a cached computed property whose value has changed should trig
 QUnit.module('Ember.immediateObserver (Deprecated)');
 
 testBoth('immediate observers should fire synchronously', function(get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
   let obj = {};
   let observerCalled = 0;
   let mixin;
@@ -1038,7 +1038,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 }
 
 testBoth('immediate observers watching multiple properties via brace expansion fire synchronously', function (get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
   let obj = {};
   let observerCalled = 0;
   let mixin;
@@ -1070,7 +1070,7 @@ testBoth('immediate observers watching multiple properties via brace expansion f
 });
 
 testBoth('immediate observers are for internal properties only', function(get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
   expectAssertion(function() {
     _immediateObserver('foo.bar', function() { return this; });
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
