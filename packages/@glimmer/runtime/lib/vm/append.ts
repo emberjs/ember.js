@@ -7,7 +7,7 @@ import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice 
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import EvaluationStack from './stack';
 
 import {
   APPEND_OPCODES,
@@ -26,68 +26,6 @@ export interface PublicVM {
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
   newDestroyable(d: Destroyable): void;
-}
-
-export type CapturedStack = Opaque[];
-
-export class EvaluationStack {
-  static empty(): EvaluationStack {
-    return new this([], 0, -1);
-  }
-
-  static restore(snapshot: CapturedStack): EvaluationStack {
-    return new this(snapshot.slice(), 0, snapshot.length - 1);
-  }
-
-  constructor(private stack: Opaque[], public fp: number, public sp: number) {
-    if (DEBUG) {
-      Object.seal(this);
-    }
-  }
-
-  push(value: Opaque): void {
-    this.stack[++this.sp] = value;
-  }
-
-  dup(position = this.sp): void {
-    this.push(this.stack[position]);
-  }
-
-  pop<T>(n = 1): T {
-    let top = this.stack[this.sp] as T;
-    this.sp -= n;
-    return top;
-  }
-
-  peek<T>(offset = 0): T {
-    return this.stack[this.sp - offset] as T;
-  }
-
-  get<T>(offset: number, base = this.fp): T {
-    return this.stack[base + offset] as T;
-  }
-
-  set(value: Opaque, offset: number, base = this.fp) {
-    this.stack[base + offset] = value;
-  }
-
-  slice<T = Opaque>(start: number, end: number): T[] {
-    return this.stack.slice(start, end) as T[];
-  }
-
-  capture(items: number): CapturedStack {
-    let end = this.sp + 1;
-    let start = end - items;
-    return this.stack.slice(start, end);
-  }
-
-  reset() {
-    this.stack.length = 0;
-  }
-
-  toArray() {
-    return this.stack.slice(this.fp, this.sp + 1);
-  }
 }
 
 export type IteratorResult<T> = {

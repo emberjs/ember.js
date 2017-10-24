@@ -1,4 +1,4 @@
-import { EvaluationStack } from './append';
+import EvaluationStack from './stack';
 import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
 import { Dict, Opaque, Option, unsafe, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
@@ -237,7 +237,7 @@ export class PositionalArguments implements IPositionalArguments {
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.slice<VersionedPathReference<Opaque>>(base, base + length);
+      references = this._references = stack.sliceArray<VersionedPathReference<Opaque>>(base, base + length);
     }
 
     return references;
@@ -400,7 +400,7 @@ export class NamedArguments implements INamedArguments {
 
     if (!references) {
       let { base, length, stack } = this;
-      references = this._references = stack.slice<VersionedPathReference<Opaque>>(base, base + length);
+      references = this._references = stack.sliceArray<VersionedPathReference<Opaque>>(base, base + length);
     }
 
     return references;
@@ -503,7 +503,7 @@ export class BlockArguments implements IBlockArguments {
 
     if (!values) {
       let { base, length, stack } = this;
-      values = this.internalValues = stack.slice<VMHandle>(base, base + length * 3);
+      values = this.internalValues = stack.sliceArray<VMHandle>(base, base + length * 3);
     }
 
     return values;
