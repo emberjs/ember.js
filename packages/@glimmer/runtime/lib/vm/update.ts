@@ -22,7 +22,8 @@ import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
 import { Simple, VMHandle } from '@glimmer/interfaces';
 
-import VM, { CapturedStack, EvaluationStack } from './append';
+import EvaluationStack, { CapturedStack } from './stack';
+import VM from './append';
 import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
 
 export default class UpdatingVM<TemplateMeta = Opaque> {
