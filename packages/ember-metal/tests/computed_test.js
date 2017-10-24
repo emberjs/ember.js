@@ -31,7 +31,7 @@ QUnit.test('computed properties assert the presence of a getter or setter functi
 QUnit.test('computed properties check for the presence of a function or configuration object', function() {
   expectAssertion(function() {
     computed('nolastargument');
-  }, 'Ember.computed expects a function or an object as last argument.');
+  }, 'computed expects a function or an object as last argument.');
 });
 
 QUnit.test('computed properties defined with an object only allow `get` and `set` keys', function() {
@@ -41,7 +41,7 @@ QUnit.test('computed properties defined with an object only allow `get` and `set
       set() {},
       other() {}
     });
-  }, 'Config object passed to an Ember.computed can only contain `get` or `set` keys.');
+  }, 'Config object passed to computed can only contain `get` or `set` keys.');
 });
 
 

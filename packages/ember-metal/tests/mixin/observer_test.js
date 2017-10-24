@@ -211,7 +211,7 @@ testBoth('observing chain with overridden property', function(get, set) {
 });
 
 testBoth('providing the arguments in reverse order is deprecated', function(get, set) {
-  expectDeprecation(/Passing the dependentKeys after the callback function in Ember\.observer is deprecated. Ensure the callback function is the last argument/);
+  expectDeprecation(/Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument/);
 
   Mixin.create({
     count: 0,
