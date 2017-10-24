@@ -1,4 +1,5 @@
 import { DEBUG } from 'ember-env-flags';
+import { Destroyable } from '@glimmer/util';
 
 // implements the ComponentManager interface as defined in glimmer:
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
@@ -56,7 +57,9 @@ export default class AbstractManager {
 
   didUpdate(bucket) { }
 
-  getDestructor(bucket) { }
+  getDestructor(bucket): Destroyable {
+    return bucket.component
+  }
 }
 
 if (DEBUG) {

@@ -8,7 +8,7 @@ import {
   setHasViews,
   runInTransaction
 } from 'ember-metal';
-import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { CURRENT_TAG } from '@glimmer/reference';
 import {
   fallbackViewRegistry,
   getViewElement,
@@ -218,7 +218,7 @@ export class Renderer {
     this._appendDefinition(view, rootDef, target);
   }
 
-  _appendDefinition(root, definition, target, outletStateReference = UNDEFINED_REFERENCE, targetObject = null) {
+  _appendDefinition(root, definition, target, outletStateReference?, targetObject = null) {
     let self = new RootReference(definition);
     let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
