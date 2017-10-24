@@ -17,7 +17,9 @@ import {
   AttributeManager,
   isSafeString,
   compileLayout,
-  getDynamicVar
+  getDynamicVar,
+  DOMTreeConstruction,
+  PartialDefinition
 } from '@glimmer/runtime';
 import {
   Opaque
@@ -64,6 +66,7 @@ import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   EMBER_MODULE_UNIFICATION
 } from 'ember/features';
+import { DOMChanges } from "@glimmer/runtime/dist/types/lib/dom/helper";
 
 function instrumentationPayload(name) {
   return { object: `component:${name}` };
@@ -85,9 +88,9 @@ export default class Environment extends GlimmerEnvironment {
   private _templateCache: Cache;
   private _compilerCache: Cache;
 
-  constructor({ [OWNER]: owner }) {
-    super(...arguments);
-    this.owner = owner;
+  constructor(injections: any) {
+    super(injections);
+    let owner = this.owner = injections[OWNER];
     this.isInteractive = owner.lookup('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
@@ -167,6 +170,12 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
+  // this gets clobbered by installPlatformSpecificProtocolForURL
+  // it really should just delegate to a platform specific injection
+  protocolForURL(s): string {
+    return s;
+  }
+
   _resolveLocalLookupName(name, source, owner) {
     return EMBER_MODULE_UNIFICATION ? `${source}:${name}`
       : owner._resolveLocalLookupName(name, source);
@@ -203,13 +212,14 @@ export default class Environment extends GlimmerEnvironment {
     return compilerCache.get(template);
   }
 
-  hasPartial(name: string, { owner }) {
-    return hasPartial(name, owner);
+  hasPartial(partialName: string, meta: any): boolean {
+    return hasPartial(name, meta.owner);
   }
 
-  lookupPartial(name, { owner }) {
+  lookupPartial(PartialName: string, meta: any): PartialDefinition<any> {
     let partial = {
-      template: lookupPartial(name, owner)
+      name,
+      template: lookupPartial(name, meta.owner)
     };
 
     if (partial.template) {
