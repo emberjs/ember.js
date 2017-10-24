@@ -203,7 +203,7 @@ export default class Environment extends GlimmerEnvironment {
     return compilerCache.get(template);
   }
 
-  hasPartial(name, { owner }) {
+  hasPartial(name: string, { owner }) {
     return hasPartial(name, owner);
   }
 

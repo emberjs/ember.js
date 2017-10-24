@@ -2,6 +2,7 @@ import { set } from 'ember-metal';
 import { CachedReference, UPDATE } from '../utils/references';
 import {
   CONSTANT_TAG,
+  TagWrapper,
   UpdatableTag,
   combine,
   isConst,
@@ -69,7 +70,7 @@ class GetHelperReference extends CachedReference {
   public pathReference: any;
   public lastPath: any;
   public innerReference: any;
-  public innerTag: UpdatableTag;
+  public innerTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
   static create(sourceReference, pathReference) {
@@ -89,7 +90,7 @@ class GetHelperReference extends CachedReference {
     this.lastPath = null;
     this.innerReference = NULL_REFERENCE;
 
-    let innerTag = this.innerTag = new UpdatableTag(CONSTANT_TAG);
+    let innerTag = this.innerTag = UpdatableTag.create(CONSTANT_TAG);
 
     this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
   }
@@ -109,10 +110,10 @@ class GetHelperReference extends CachedReference {
           innerReference = this.sourceReference.get('' + path);
         }
 
-        innerTag.update(innerReference.tag);
+        innerTag.inner.update(innerReference.tag);
       } else {
         innerReference = NULL_REFERENCE;
-        innerTag.update(CONSTANT_TAG);
+        innerTag.inner.update(CONSTANT_TAG);
       }
 
       this.innerReference = innerReference;

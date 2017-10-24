@@ -11,9 +11,12 @@ import {
 import { isEachIn } from '../helpers/each-in';
 import {
   CONSTANT_TAG,
+  IterationItem,
+  TagWrapper,
   UpdatableTag,
   combine
 } from '@glimmer/reference';
+import { Opaque } from '@glimmer/util';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
@@ -150,7 +153,7 @@ class EmptyIterator {
     return true;
   }
 
-  next() {
+  next(): IterationItem<Opaque, Opaque> {
     throw new Error('Cannot call next() on an empty iterator');
   }
 }
@@ -160,14 +163,14 @@ const EMPTY_ITERATOR = new EmptyIterator();
 class EachInIterable {
   public ref: any;
   public keyFor: (iterable: any) => any;
-  public valueTag: any;
+  public valueTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
   constructor(ref, keyFor) {
     this.ref = ref;
     this.keyFor = keyFor;
 
-    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
+    let valueTag = this.valueTag = UpdatableTag.create(CONSTANT_TAG);
 
     this.tag = combine([ref.tag, valueTag]);
   }
@@ -177,7 +180,7 @@ class EachInIterable {
 
     let iterable = ref.value();
 
-    valueTag.update(tagFor(iterable));
+    valueTag.inner.update(tagFor(iterable));
 
     if (isProxy(iterable)) {
       iterable = get(iterable, 'content');
@@ -217,14 +220,14 @@ class EachInIterable {
 class ArrayIterable {
   public ref: any;
   public keyFor: (iterable: any) => any;
-  public valueTag: any;
+  public valueTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
   constructor(ref, keyFor) {
     this.ref = ref;
     this.keyFor = keyFor;
 
-    let valueTag = this.valueTag = new UpdatableTag(CONSTANT_TAG);
+    let valueTag = this.valueTag = UpdatableTag.create(CONSTANT_TAG);
 
     this.tag = combine([ref.tag, valueTag]);
   }
@@ -234,7 +237,7 @@ class ArrayIterable {
 
     let iterable = ref.value();
 
-    valueTag.update(tagForProperty(iterable, '[]'));
+    valueTag.inner.update(tagForProperty(iterable, '[]'));
 
     if (iterable === null || typeof iterable !== 'object') {
       return EMPTY_ITERATOR;
