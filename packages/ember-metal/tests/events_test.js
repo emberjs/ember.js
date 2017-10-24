@@ -241,13 +241,13 @@ QUnit.test('Ember.on asserts for invalid arguments', function() {
     Mixin.create({
       foo1: on('bar'),
     });
-  }, 'Ember.on expects function as last argument');
+  }, 'on expects function as last argument');
 
   expectAssertion(()=> {
     Mixin.create({
       foo1: on(function(){}),
     });
-  }, 'Ember.on called without valid event names');
+  }, 'on called without valid event names');
 });
 
 QUnit.test('a listener added as part of a mixin may be overridden', function() {

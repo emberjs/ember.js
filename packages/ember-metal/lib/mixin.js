@@ -812,7 +812,7 @@ export function observer(...args) {
   @private
 */
 export function _immediateObserver() {
-  deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
+  deprecate('Usage of `Ember.immediateObserver` is deprecated, use `observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
 
   for (let i = 0; i < arguments.length; i++) {
     let arg = arguments[i];
