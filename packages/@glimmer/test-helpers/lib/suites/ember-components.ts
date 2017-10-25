@@ -16,6 +16,22 @@ export class EmberishComponentTests extends RenderTest {
   }
 
   @test({ kind: 'glimmer' })
+  "[BUG] Gracefully handles application of curried args when invoke starts with 0 args"() {
+    class MainComponent extends EmberishGlimmerComponent {
+      salutation = 'Glimmer';
+    }
+    this.registerComponent('Glimmer', 'Main', '<div><HelloWorld @a={{@a}} as |wat|>{{wat}}</HelloWorld></div>', MainComponent);
+    this.registerComponent('Glimmer', 'HelloWorld', '{{yield (component "A" a=@a)}}');
+    this.registerComponent('Glimmer', 'A', 'A {{@a}}');
+    this.render('<Main @a={{a}} />', { a: 'a' });
+    this.assertHTML('<div>A a</div>');
+    this.assertStableRerender();
+    this.rerender({a: 'A' });
+    this.assertHTML('<div>A A</div>');
+    this.assertStableNodes();
+  }
+
+  @test({ kind: 'glimmer' })
   "top level in-element"() {
     this.registerComponent('Glimmer', 'Foo', '<Bar data-bar={{@childName}} @data={{@data}} />');
     this.registerComponent('Glimmer', 'Bar', '<div ...attributes>Hello World</div>');
