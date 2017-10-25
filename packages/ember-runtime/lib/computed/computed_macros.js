@@ -549,7 +549,7 @@ export const or = generateComputedWithPredicate('or', value => !value);
 
   let teddy = User.create({
     firstName: 'Teddy',
-    lastName:  'Zeenny'
+    lastName: 'Zeenny'
   });
 
   teddy.get('nickName');              // 'Teddy'
