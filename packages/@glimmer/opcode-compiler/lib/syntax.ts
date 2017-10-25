@@ -7,13 +7,16 @@ import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./op
 import { CompilableBlock } from './interfaces';
 
 import Ops = WireFormat.Ops;
+import S = WireFormat.Statements;
+import E = WireFormat.Expressions;
+import C = WireFormat.Core;
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
 export type CompilerFunction<T extends TupleSyntax, Specifier> = ((sexp: T, builder: OpcodeBuilder<Specifier>) => void);
 
 export const ATTRS_BLOCK = '&attrs';
 
-class Compilers<T extends TupleSyntax> {
+export class Compilers<T extends TupleSyntax> {
   private names = dict<number>();
   private funcs: CompilerFunction<T, Opaque>[] = [];
 
@@ -33,57 +36,221 @@ class Compilers<T extends TupleSyntax> {
   }
 }
 
-import S = WireFormat.Statements;
+let _statementCompiler: Compilers<WireFormat.Statement>;
 
-const STATEMENTS = new Compilers<WireFormat.Statement>();
-const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
-
-STATEMENTS.add(Ops.Text, (sexp: S.Text, builder) => {
-  builder.text(sexp[1]);
-});
-
-STATEMENTS.add(Ops.Comment, (sexp: S.Comment, builder) => {
-  builder.comment(sexp[1]);
-});
-
-STATEMENTS.add(Ops.CloseElement, (_sexp: S.CloseElement, builder) => {
-  builder.closeElement();
-});
-
-STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder) => {
-  builder.flushElement();
-});
-
-STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
-  let { lookup, referrer } = builder;
-  let [, name, params, hash] = sexp;
-
-  let specifier = lookup.lookupModifier(name, referrer);
-
-  if (specifier) {
-    builder.modifier(specifier, params, hash);
-  } else {
-    throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
+export function statementCompiler() {
+  if (_statementCompiler) {
+    return _statementCompiler;
   }
-});
 
-STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder) => {
-  let [, name, value, namespace] = sexp;
-  builder.staticAttr(name, namespace, value as string);
-});
+  const STATEMENTS = _statementCompiler = new Compilers<WireFormat.Statement>();
 
-STATEMENTS.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, builder) => {
-  dynamicAttr(sexp, false, builder);
-});
+  STATEMENTS.add(Ops.Text, (sexp: S.Text, builder) => {
+    builder.text(sexp[1]);
+  });
 
-STATEMENTS.add(Ops.TrustingAttr, (sexp: S.DynamicAttr, builder) => {
-  dynamicAttr(sexp, true, builder);
-});
+  STATEMENTS.add(Ops.Comment, (sexp: S.Comment, builder) => {
+    builder.comment(sexp[1]);
+  });
+
+  STATEMENTS.add(Ops.CloseElement, (_sexp: S.CloseElement, builder) => {
+    builder.closeElement();
+  });
+
+  STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder) => {
+    builder.flushElement();
+  });
+
+  STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
+    let { lookup, referrer } = builder;
+    let [, name, params, hash] = sexp;
+
+    let specifier = lookup.lookupModifier(name, referrer);
+
+    if (specifier) {
+      builder.modifier(specifier, params, hash);
+    } else {
+      throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
+    }
+  });
+
+  STATEMENTS.add(Ops.StaticAttr, (sexp: S.StaticAttr, builder) => {
+    let [, name, value, namespace] = sexp;
+    builder.staticAttr(name, namespace, value as string);
+  });
+
+  STATEMENTS.add(Ops.DynamicAttr, (sexp: S.DynamicAttr, builder) => {
+    dynamicAttr(sexp, false, builder);
+  });
+
+  STATEMENTS.add(Ops.TrustingAttr, (sexp: S.DynamicAttr, builder) => {
+    dynamicAttr(sexp, true, builder);
+  });
+
+  STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder) => {
+    builder.openPrimitiveElement(sexp[1]);
+  });
+
+  STATEMENTS.add(Ops.OpenSplattedElement, (sexp: S.SplatElement, builder) => {
+    builder.setComponentAttrs(true);
+    builder.putComponentOperations();
+    builder.openElementWithOperations(sexp[1]);
+  });
+
+  STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
+    let [, tag, _attrs, args, block] = sexp;
+
+    let { lookup, referrer } = builder;
+    let handle = lookup.lookupComponentSpec(tag, referrer);
+
+    if (handle !== null) {
+      let capabilities = lookup.getCapabilities(handle);
+
+      let attrs: WireFormat.Statement[] = [
+        [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
+        ..._attrs,
+        [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]
+      ];
+      let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
+      let child = builder.template(block);
+
+      if (capabilities.dynamicLayout === false) {
+        let layout = lookup.getLayout(handle)!;
+
+        builder.pushComponentDefinition(handle);
+        builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child);
+      } else {
+        builder.pushComponentDefinition(handle);
+        builder.invokeComponent(attrsBlock, null, args, false, child && child);
+      }
+    } else {
+      throw new Error(`Compile Error: Cannot find component ${tag}`);
+    }
+  });
+
+  STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
+    let [, name, evalInfo] = sexp;
+
+    let { referrer } = builder;
+
+    builder.startLabels();
+
+    builder.pushFrame();
+
+    builder.returnTo('END');
+
+    builder.expr(name);
+
+    builder.dup();
+
+    builder.enter(2);
+
+    builder.jumpUnless('ELSE');
+
+    builder.invokePartial(referrer, builder.evalSymbols()!, evalInfo);
+    builder.popScope();
+    builder.popFrame();
+
+    builder.label('ELSE');
+    builder.exit();
+    builder.return();
+
+    builder.label('END');
+    builder.popFrame();
+
+    builder.stopLabels();
+  });
+
+  STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
+    let [, to, params] = sexp;
+
+    builder.yield(to, params);
+  });
+
+  STATEMENTS.add(Ops.AttrSplat, (sexp: WireFormat.Statements.AttrSplat, builder) => {
+    let [, to] = sexp;
+
+    builder.yield(to, []);
+    builder.didCreateElement(Register.s0);
+    builder.setComponentAttrs(false);
+  });
+
+  STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder) => {
+    let [, evalInfo] = sexp;
+
+    builder.debugger(builder.evalSymbols()!, evalInfo);
+  });
+
+  STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder) => {
+    CLIENT_SIDE.compile(sexp as ClientSide.ClientSideStatement, builder);
+  });
+
+  STATEMENTS.add(Ops.Append, (sexp: S.Append, builder) => {
+    let [, value, trusting] = sexp;
+
+    let { inlines } = builder.macros;
+    let returned = inlines.compile(sexp, builder) || value;
+
+    if (returned === true) return;
+
+    let isGet = WireFormat.isGet(value);
+    let isMaybeLocal = WireFormat.isMaybeLocal(value);
+
+    if (trusting) {
+      builder.guardedAppend(value, true);
+    } else {
+      if (isGet || isMaybeLocal) {
+        builder.guardedAppend(value, false);
+      } else {
+        builder.expr(value);
+        builder.dynamicContent(false);
+      }
+    }
+  });
+
+  STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
+    let [, name, params, hash, _template, _inverse] = sexp;
+    let template = builder.template(_template);
+    let inverse = builder.template(_inverse);
+
+    let templateBlock = template && template;
+    let inverseBlock = inverse && inverse;
+
+    let { blocks } = builder.macros;
+    blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
+  });
+
+  const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
+
+  CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
+    builder.putComponentOperations();
+    builder.openElementWithOperations(sexp[2]);
+  });
+
+  CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder) => {
+    builder.didCreateElement(Register.s0);
+  });
+
+  CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder) => {
+    builder.setComponentAttrs(sexp[2]);
+  });
+
+  CLIENT_SIDE.add(ClientSide.Ops.Debugger, () => {
+    // tslint:disable-next-line:no-debugger
+    debugger;
+  });
+
+  CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder) => {
+    builder.didRenderLayout(Register.s0);
+  });
+
+  return STATEMENTS;
+}
 
 function dynamicAttr<Specifier>(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder<Specifier>) {
   let [, name, value, namespace] = sexp;
 
-  expr(value, builder);
+  builder.expr(value);
 
   if (namespace) {
     builder.dynamicAttr(name, namespace, trusting);
@@ -92,256 +259,100 @@ function dynamicAttr<Specifier>(sexp: S.DynamicAttr | S.TrustingAttr, trusting: 
   }
 }
 
-STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder) => {
-  builder.openPrimitiveElement(sexp[1]);
-});
+let _expressionCompiler: Compilers<WireFormat.TupleExpression>;
 
-STATEMENTS.add(Ops.OpenSplattedElement, (sexp: S.SplatElement, builder) => {
-  builder.setComponentAttrs(true);
-  builder.putComponentOperations();
-  builder.openElementWithOperations(sexp[1]);
-});
+export function expressionCompiler() {
+  if (_expressionCompiler) {
+    return _expressionCompiler;
+  }
 
-CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
-  builder.putComponentOperations();
-  builder.openElementWithOperations(sexp[2]);
-});
+  const EXPRESSIONS = _expressionCompiler = new Compilers<WireFormat.TupleExpression>();
 
-CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder) => {
-  builder.didCreateElement(Register.s0);
-});
+  EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
+    let { lookup, asPartial, referrer } = builder;
+    let name = sexp[1];
 
-CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder) => {
-  builder.setComponentAttrs(sexp[2]);
-});
+    let specifier = lookup.lookupHelper(name, referrer);
 
-CLIENT_SIDE.add(ClientSide.Ops.Debugger, () => {
-  // tslint:disable-next-line:no-debugger
-  debugger;
-});
-
-CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder) => {
-  builder.didRenderLayout(Register.s0);
-});
-
-STATEMENTS.add(Ops.Append, (sexp: S.Append, builder) => {
-  let [, value, trusting] = sexp;
-
-  let { inlines } = builder.macros;
-  let returned = inlines.compile(sexp, builder) || value;
-
-  if (returned === true) return;
-
-  let isGet = WireFormat.isGet(value);
-  let isMaybeLocal = WireFormat.isMaybeLocal(value);
-
-  if (trusting) {
-    builder.guardedAppend(value, true);
-  } else {
-    if (isGet || isMaybeLocal) {
-      builder.guardedAppend(value, false);
+    if (specifier !== null) {
+      builder.helper(specifier, null, null);
+    } else if (asPartial) {
+      builder.resolveMaybeLocal(name);
     } else {
-      expr(value, builder);
-      builder.dynamicContent(false);
+      builder.getVariable(0);
+      builder.getProperty(name);
     }
-  }
-});
+  });
 
-STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
-  let [, name, params, hash, _template, _inverse] = sexp;
-  let template = builder.template(_template);
-  let inverse = builder.template(_inverse);
+  EXPRESSIONS.add(Ops.Concat, (sexp: E.Concat, builder) => {
+    let parts = sexp[1];
+    for (let i = 0; i < parts.length; i++) {
+      builder.expr(parts[i]);
+    }
+    builder.concat(parts.length);
+  });
 
-  let templateBlock = template && template;
-  let inverseBlock = inverse && inverse;
+  EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
+    let { lookup, referrer } = builder;
+    let [, name, params, hash] = sexp;
 
-  let { blocks } = builder.macros;
-  blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
-});
+    // TODO: triage this in the WF compiler
+    if (name === 'component') {
+      assert(params.length, 'SYNTAX ERROR: component helper requires at least one argument');
 
-STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
-  let [, tag, _attrs, args, block] = sexp;
+      let [definition, ...restArgs] = params;
+      builder.curryComponent(definition, restArgs, hash, true);
+      return;
+    }
 
-  let { lookup, referrer } = builder;
-  let handle = lookup.lookupComponentSpec(tag, referrer);
+    let specifier = lookup.lookupHelper(name, referrer);
 
-  if (handle !== null) {
-    let capabilities = lookup.getCapabilities(handle);
-
-    let attrs: WireFormat.Statement[] = [
-      [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
-      ..._attrs,
-      [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]
-    ];
-    let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
-    let child = builder.template(block);
-
-    if (capabilities.dynamicLayout === false) {
-      let layout = lookup.getLayout(handle)!;
-
-      builder.pushComponentDefinition(handle);
-      builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child);
+    if (specifier !== null) {
+      builder.helper(specifier, params, hash);
     } else {
-      builder.pushComponentDefinition(handle);
-      builder.invokeComponent(attrsBlock, null, args, false, child && child);
+      throw new Error(`Compile Error: ${name} is not a helper`);
     }
-  } else {
-    throw new Error(`Compile Error: Cannot find component ${tag}`);
-  }
-});
+  });
 
-STATEMENTS.add(Ops.Partial, (sexp: S.Partial, builder) => {
-  let [, name, evalInfo] = sexp;
+  EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
+    let [, head, path] = sexp;
+    builder.getVariable(head);
+    for (let i = 0; i < path.length; i++) {
+      builder.getProperty(path[i]);
+    }
+  });
 
-  let { referrer } = builder;
+  EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder) => {
+    let [, path] = sexp;
 
-  builder.startLabels();
+    if (builder.asPartial) {
+      let head = path[0];
+      path = path.slice(1);
 
-  builder.pushFrame();
+      builder.resolveMaybeLocal(head);
+    } else {
+      builder.getVariable(0);
+    }
 
-  builder.returnTo('END');
+    for(let i = 0; i < path.length; i++) {
+      builder.getProperty(path[i]);
+    }
+  });
 
-  expr(name, builder);
+  EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
+    return builder.pushPrimitiveReference(undefined);
+  });
 
-  builder.dup();
+  EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder) => {
+    builder.hasBlock(sexp[1]);
+  });
 
-  builder.enter(2);
+  EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
+    builder.hasBlockParams(sexp[1]);
+  });
 
-  builder.jumpUnless('ELSE');
-
-  builder.invokePartial(referrer, builder.evalSymbols()!, evalInfo);
-  builder.popScope();
-  builder.popFrame();
-
-  builder.label('ELSE');
-  builder.exit();
-  builder.return();
-
-  builder.label('END');
-  builder.popFrame();
-
-  builder.stopLabels();
-});
-
-STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
-  let [, to, params] = sexp;
-
-  builder.yield(to, params);
-});
-
-STATEMENTS.add(Ops.AttrSplat, (sexp: WireFormat.Statements.AttrSplat, builder) => {
-  let [, to] = sexp;
-
-  builder.yield(to, []);
-  builder.didCreateElement(Register.s0);
-  builder.setComponentAttrs(false);
-});
-
-STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder) => {
-  let [, evalInfo] = sexp;
-
-  builder.debugger(builder.evalSymbols()!, evalInfo);
-});
-
-STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder) => {
-  CLIENT_SIDE.compile(sexp as ClientSide.ClientSideStatement, builder);
-});
-
-const EXPRESSIONS = new Compilers<WireFormat.TupleExpression>();
-
-import E = WireFormat.Expressions;
-import C = WireFormat.Core;
-
-export function expr<Specifier>(expression: WireFormat.Expression, builder: OpcodeBuilder<Specifier>): void {
-  if (Array.isArray(expression)) {
-    EXPRESSIONS.compile(expression, builder);
-  } else {
-    builder.pushPrimitiveReference(expression);
-  }
+  return EXPRESSIONS;
 }
-
-EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-  let { lookup, asPartial, referrer } = builder;
-  let name = sexp[1];
-
-  let specifier = lookup.lookupHelper(name, referrer);
-
-  if (specifier !== null) {
-    builder.helper(specifier, null, null);
-  } else if (asPartial) {
-    builder.resolveMaybeLocal(name);
-  } else {
-    builder.getVariable(0);
-    builder.getProperty(name);
-  }
-});
-
-EXPRESSIONS.add(Ops.Concat, (sexp: E.Concat, builder) => {
-  let parts = sexp[1];
-  for (let i = 0; i < parts.length; i++) {
-    expr(parts[i], builder);
-  }
-  builder.concat(parts.length);
-});
-
-EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
-  let { lookup, referrer } = builder;
-  let [, name, params, hash] = sexp;
-
-  // TODO: triage this in the WF compiler
-  if (name === 'component') {
-    assert(params.length, 'SYNTAX ERROR: component helper requires at least one argument');
-
-    let [definition, ...restArgs] = params;
-    builder.curryComponent(definition, restArgs, hash, true);
-    return;
-  }
-
-  let specifier = lookup.lookupHelper(name, referrer);
-
-  if (specifier !== null) {
-    builder.helper(specifier, params, hash);
-  } else {
-    throw new Error(`Compile Error: ${name} is not a helper`);
-  }
-});
-
-EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
-  let [, head, path] = sexp;
-  builder.getVariable(head);
-  for (let i = 0; i < path.length; i++) {
-    builder.getProperty(path[i]);
-  }
-});
-
-EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder) => {
-  let [, path] = sexp;
-
-  if (builder.asPartial) {
-    let head = path[0];
-    path = path.slice(1);
-
-    builder.resolveMaybeLocal(head);
-  } else {
-    builder.getVariable(0);
-  }
-
-  for(let i = 0; i < path.length; i++) {
-    builder.getProperty(path[i]);
-  }
-});
-
-EXPRESSIONS.add(Ops.Undefined, (_sexp, builder) => {
-  return builder.pushPrimitiveReference(undefined);
-});
-
-EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder) => {
-  builder.hasBlock(sexp[1]);
-});
-
-EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
-  builder.hasBlockParams(sexp[1]);
-});
 
 export class Macros {
   public blocks: Blocks;
@@ -385,8 +396,6 @@ export class Blocks {
     }
   }
 }
-
-export const BLOCKS = new Blocks();
 
 export type AppendSyntax = S.Append;
 export type AppendMacro<Specifier> = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder<Specifier>) => ['expr', WireFormat.Expression] | true | false;
@@ -445,10 +454,6 @@ export class Inlines {
   }
 }
 
-export const INLINES = new Inlines();
-
-populateBuiltins(BLOCKS, INLINES);
-
 export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines = new Inlines()): { blocks: Blocks, inlines: Inlines } {
   blocks.add('if', (params, _hash, template, inverse, builder) => {
     //        PutArgs
@@ -473,7 +478,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.returnTo('END');
 
-    expr(params[0], builder);
+    builder.expr(params[0]);
 
     builder.toBoolean();
 
@@ -527,7 +532,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.returnTo('END');
 
-    expr(params[0], builder);
+    builder.expr(params[0]);
 
     builder.toBoolean();
 
@@ -581,7 +586,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.returnTo('END');
 
-    expr(params[0], builder);
+    builder.expr(params[0]);
 
     builder.dup();
     builder.toBoolean();
@@ -644,12 +649,12 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     builder.returnTo('END');
 
     if (hash && hash[0][0] === 'key') {
-      expr(hash[1][0], builder);
+      builder.expr(hash[1][0]);
     } else {
       builder.pushPrimitiveReference(null);
     }
 
-    expr(params[0], builder);
+    builder.expr(params[0]);
 
     builder.enter(2);
 
@@ -715,13 +720,13 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     for (let i = 0; i < keys.length; i++) {
       let key = keys[i];
       if (key === 'nextSibling' || key === 'guid') {
-        expr(values[i], builder);
+        builder.expr(values[i]);
       } else {
         throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);
       }
     }
 
-    expr(params[0], builder);
+    builder.expr(params[0]);
 
     builder.dup();
 
@@ -775,10 +780,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
   });
 
   return { blocks, inlines };
-}
-
-export function compileStatement<Specifier>(statement: WireFormat.Statement, builder: OpcodeBuilder<Specifier>) {
-  STATEMENTS.compile(statement, builder);
 }
 
 export interface TemplateOptions<Specifier> {
