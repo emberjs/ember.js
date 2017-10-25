@@ -556,18 +556,17 @@ const LinkComponent = EmberComponent.extend({
   _isActive(routerState) {
     if (get(this, 'loading')) { return false; }
 
-    let routing = get(this, '_routing');
-    let models = get(this, 'models');
-    let resolvedQueryParams = get(this, 'resolvedQueryParams');
     let currentWhen = get(this, 'current-when');
 
-    if (typeof currentWhen === 'boolean') {
-      return currentWhen ? get(this, 'activeClass') : false;
-    }
+    if (typeof currentWhen === 'boolean') { return currentWhen; }
 
     let isCurrentWhenSpecified = !!currentWhen;
     currentWhen = currentWhen || get(this, 'qualifiedRouteName');
     currentWhen = currentWhen.split(' ');
+
+    let routing = get(this, '_routing');
+    let models = get(this, 'models');
+    let resolvedQueryParams = get(this, 'resolvedQueryParams');
 
     for (let i = 0; i < currentWhen.length; i++) {
       if (routing.isActiveForRoute(models, resolvedQueryParams, currentWhen[i], routerState, isCurrentWhenSpecified)) {
