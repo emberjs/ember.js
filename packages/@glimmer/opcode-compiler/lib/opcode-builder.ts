@@ -27,7 +27,8 @@ import {
 import {
   ATTRS_BLOCK,
   Macros,
-  expr
+  Compilers,
+  expressionCompiler
 } from './syntax';
 
 import CompilableTemplate, { ICompilableTemplate } from './compilable-template';
@@ -102,6 +103,7 @@ export abstract class OpcodeBuilder<Specifier> {
   private encoder = new InstructionEncoder([]);
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
+  private expressionCompiler: Compilers<WireFormat.TupleExpression>;
   public component: ComponentBuilder<Specifier> = new ComponentBuilder(this);
 
   constructor(
@@ -113,6 +115,7 @@ export abstract class OpcodeBuilder<Specifier> {
     public asPartial: boolean
   ) {
     this.constants = program.constants;
+    this.expressionCompiler = expressionCompiler();
   }
 
   private get pos(): number {
@@ -121,6 +124,14 @@ export abstract class OpcodeBuilder<Specifier> {
 
   private get nextPos(): number {
     return this.encoder.size;
+  }
+
+  expr(expression: WireFormat.Expression) {
+    if (Array.isArray(expression)) {
+      this.expressionCompiler.compile(expression, this);
+    } else {
+      this.pushPrimitiveReference(expression);
+    }
   }
 
   upvars<T extends [Opaque]>(count: number): T {
@@ -607,7 +618,7 @@ export abstract class OpcodeBuilder<Specifier> {
     if (!params) return 0;
 
     for (let i = 0; i < params.length; i++) {
-      expr(params[i], this);
+      this.expr(params[i]);
     }
 
     return params.length;
@@ -636,7 +647,7 @@ export abstract class OpcodeBuilder<Specifier> {
       names = hash[0];
       let val = hash[1];
       for (let i = 0; i < val.length; i++) {
-        expr(val[i], this);
+        this.expr(val[i]);
       }
     }
 
@@ -677,7 +688,7 @@ export abstract class OpcodeBuilder<Specifier> {
 
     this.returnTo('END');
 
-    expr(expression, this);
+    this.expr(expression);
 
     this.dup();
     this.isComponent();
@@ -835,7 +846,7 @@ export abstract class OpcodeBuilder<Specifier> {
           let index = keys.indexOf(lookupName);
 
           if (index !== -1) {
-            expr(values[index], this);
+            this.expr(values[index]);
             bindings.push({ symbol: i + 1, isBlock: false });
           }
 
@@ -875,7 +886,7 @@ export abstract class OpcodeBuilder<Specifier> {
 
     this.returnTo('END');
 
-    expr(definition, this);
+    this.expr(definition);
 
     this.dup();
 
@@ -905,7 +916,7 @@ export abstract class OpcodeBuilder<Specifier> {
 
     this.pushFrame();
     this.compileArgs(params, hash, null, synthetic);
-    expr(definition, this);
+    this.expr(definition);
     this.push(Op.CurryComponent, this.constants.serializable(referrer));
     this.popFrame();
     this.fetch(Register.v0);
