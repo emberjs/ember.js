@@ -106,7 +106,7 @@ NativeArray.keys().forEach((methodName) => {
 NativeArray = NativeArray.without(...ignore);
 
 /**
-  Creates an `Ember.NativeArray` from an Array like object.
+  Creates an `Ember.NativeArray` from an Array-like object.
   Does not modify the original object's contents. Ember.A is not needed if
   `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
   it is recommended that you use Ember.A when creating addons for
@@ -127,6 +127,7 @@ NativeArray = NativeArray.without(...ignore);
 
       if (!this.get('content')) {
         this.set('content', Ember.A());
+        this.set('otherContent', Ember.A([1,2,3]));
       }
     }
   });
@@ -134,6 +135,7 @@ NativeArray = NativeArray.without(...ignore);
 
   @method A
   @for Ember
+  @param {Object} [array] An Array-like object to convert
   @return {Ember.NativeArray}
   @public
 */
