@@ -16,13 +16,7 @@ function consoleMethod(name) {
     return;
   }
 
-  if (typeof method.bind === 'function') {
-    return method.bind(consoleObj);
-  }
-
-  return function() {
-    method.apply(consoleObj, arguments);
-  };
+  return method.bind(consoleObj);
 }
 
 function assertPolyfill(test, message) {
