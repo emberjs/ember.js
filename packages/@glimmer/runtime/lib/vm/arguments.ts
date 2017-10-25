@@ -141,7 +141,7 @@ export class Arguments implements IArguments {
       let length = positional.length + named.length;
 
       for(let i=length-1; i>=0; i--) {
-        stack.set(stack.get(i, positional.base), i, newBase);
+        stack.copy(i + positional.base, i + newBase);
       }
 
       positional.base += offset;

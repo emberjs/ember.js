@@ -23,13 +23,17 @@ export class InnerStack {
     return out;
   }
 
+  copy(from: number, to: number): void {
+    this.inner[to] = this.inner[from];
+  }
+
   update(pos: number, value: Opaque): void {
-    if (typeof value === 'number' && !(value & HI)) {
+    if (typeof value === 'number' && !((value as number) & HI)) {
       this.inner[pos] = value;
-      this.js[pos] = null;
     } else {
-      this.inner[pos] = pos | HI;
-      this.js[pos] = value;
+      let idx = this.js.length;
+      this.js.push(value);
+      this.inner[pos] = idx | HI;
     }
   }
 
@@ -78,7 +82,11 @@ export default class EvaluationStack {
   }
 
   dup(position = this.sp): void {
-    this.push(this.stack.get(position));
+    this.stack.copy(position, ++this.sp);
+  }
+
+  copy(from: number, to: number): void {
+    this.stack.copy(from, to);
   }
 
   pop<T>(n = 1): T {
