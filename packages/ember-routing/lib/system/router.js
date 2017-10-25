@@ -116,10 +116,8 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _buildDSL() {
-    let moduleBasedResolver = this._hasModuleBasedResolver();
-    let options = {
-      enableLoadingSubstates: !!moduleBasedResolver
-    };
+    let enableLoadingSubstates = this._hasModuleBasedResolver();
+    let options = { enableLoadingSubstates };
 
     let owner = getOwner(this);
     let router = this;
@@ -171,14 +169,10 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _hasModuleBasedResolver() {
     let owner = getOwner(this);
-
     if (!owner) { return false; }
 
-    let resolver = owner.application && owner.application.__registry__ && owner.application.__registry__.resolver;
-
-    if (!resolver) { return false; }
-
-    return !!resolver.moduleBasedResolver;
+    let resolver = get(owner, 'application.__registry__.resolver.moduleBasedResolver');
+    return !!resolver;
   },
 
   /**
