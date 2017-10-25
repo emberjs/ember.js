@@ -1,5 +1,7 @@
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { Opaque } from '@glimmer/interfaces';
+import { PrimitiveType } from '@glimmer/program';
+import { unreachable } from '@glimmer/util';
 
 const HI   = 0x80000000;
 const MASK = 0x7FFFFFFF;
@@ -28,8 +30,8 @@ export class InnerStack {
   }
 
   update(pos: number, value: Opaque): void {
-    if (typeof value === 'number' && !((value as number) & HI)) {
-      this.inner[pos] = value;
+    if (isImmediate(value)) {
+      this.inner[pos] = encodeImmediate(value);
     } else {
       let idx = this.js.length;
       this.js.push(value);
@@ -43,7 +45,7 @@ export class InnerStack {
     if (value & HI) {
       return this.js[value & MASK] as T;
     } else {
-      return value as any;
+      return decodeImmediate(value) as any;
     }
   }
 
@@ -127,5 +129,56 @@ export default class EvaluationStack {
 
   toArray() {
     return this.stack.sliceInner(this.fp, this.sp + 1);
+  }
+}
+
+function isImmediate(value: Opaque): value is number | boolean | null | undefined {
+  let type = typeof value;
+
+  if (value === null || value === undefined) return true;
+
+  switch (type) {
+    case 'boolean':
+    case 'undefined':
+      return true;
+    case 'number':
+      return (value as number) % 1 === 0 && value > -1 && !((value as number) & HI);
+    default:
+      return false;
+  }
+}
+
+function encodeImmediate(primitive: number | boolean | null | undefined): number {
+  switch (typeof primitive) {
+    case 'number':
+      return (primitive as number) << 3 | PrimitiveType.NUMBER;
+    case 'boolean':
+      return ((primitive as any) | 0) << 3 | PrimitiveType.BOOLEAN_OR_VOID;
+    case 'object':
+      // assume null
+      return 2 << 3 | PrimitiveType.BOOLEAN_OR_VOID;
+    case 'undefined':
+      return 3 << 3 | PrimitiveType.BOOLEAN_OR_VOID;
+    default:
+      throw unreachable();
+  }
+}
+
+function decodeImmediate(immediate: number): number | boolean | null | undefined {
+  let flag = immediate & 7; // 111
+  let value = immediate >> 3;
+
+  switch (flag) {
+    case PrimitiveType.NUMBER:
+      return value;
+    case PrimitiveType.BOOLEAN_OR_VOID:
+      switch (value) {
+        case 0: return false;
+        case 1: return true;
+        case 2: return null;
+        case 3: return undefined;
+      }
+    default:
+      throw unreachable();
   }
 }
