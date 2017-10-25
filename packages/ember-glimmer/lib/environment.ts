@@ -212,11 +212,11 @@ export default class Environment extends GlimmerEnvironment {
     return compilerCache.get(template);
   }
 
-  hasPartial(partialName: string, meta: any): boolean {
+  hasPartial(name: string, meta: any): boolean {
     return hasPartial(name, meta.owner);
   }
 
-  lookupPartial(PartialName: string, meta: any): PartialDefinition<any> {
+  lookupPartial(name: string, meta: any): PartialDefinition<any> {
     let partial = {
       name,
       template: lookupPartial(name, meta.owner)
