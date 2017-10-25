@@ -82,23 +82,6 @@ export namespace Expressions {
     [2]: Params;
     [3]: Hash;
   }
-
-  export const isUnknown        = is<Unknown>(Opcodes.Unknown);
-  export const isGet            = is<Get>(Opcodes.Get);
-  export const isConcat         = is<Concat>(Opcodes.Concat);
-  export const isHelper         = is<Helper>(Opcodes.Helper);
-  export const isHasBlock       = is<HasBlock>(Opcodes.HasBlock);
-  export const isHasBlockParams = is<HasBlockParams>(Opcodes.HasBlockParams);
-  export const isUndefined      = is<Undefined>(Opcodes.Undefined);
-  export const isClientSide     = is<ClientSide>(Opcodes.ClientSideExpression);
-  export const isMaybeLocal     = is<MaybeLocal>(Opcodes.MaybeLocal);
-
-  export function isPrimitiveValue(value: any): value is Value {
-    if (value === null) {
-      return true;
-    }
-    return typeof value !== 'object';
-  }
 }
 
 export type Expression = Expressions.Expression;
@@ -132,27 +115,6 @@ export namespace Statements {
   export type Debugger      = [Opcodes.Debugger, Core.EvalInfo];
   export type ClientSide    = [Opcodes.ClientSideStatement, any];
 
-  export const isText         = is<Text>(Opcodes.Text);
-  export const isAppend       = is<Append>(Opcodes.Append);
-  export const isComment      = is<Comment>(Opcodes.Comment);
-  export const isModifier     = is<Modifier>(Opcodes.Modifier);
-  export const isBlock        = is<Block>(Opcodes.Block);
-  export const isComponent    = is<Component>(Opcodes.Component);
-  export const isOpenElement  = is<OpenElement>(Opcodes.OpenElement);
-  export const isSplatElement = is<SplatElement>(Opcodes.OpenSplattedElement);
-  export const isFlushElement = is<FlushElement>(Opcodes.FlushElement);
-  export const isCloseElement = is<CloseElement>(Opcodes.CloseElement);
-  export const isStaticAttr   = is<StaticAttr>(Opcodes.StaticAttr);
-  export const isDynamicAttr  = is<DynamicAttr>(Opcodes.DynamicAttr);
-  export const isAttrSplat    = is<AttrSplat>(Opcodes.AttrSplat);
-  export const isYield        = is<Yield>(Opcodes.Yield);
-  export const isPartial      = is<Partial>(Opcodes.Partial);
-  export const isDynamicArg   = is<DynamicArg>(Opcodes.DynamicArg);
-  export const isStaticArg    = is<StaticArg>(Opcodes.StaticArg);
-  export const isTrustingAttr = is<TrustingAttr>(Opcodes.TrustingAttr);
-  export const isDebugger     = is<Debugger>(Opcodes.Debugger);
-  export const isClientSide   = is<ClientSide>(Opcodes.ClientSideStatement);
-
   export type Statement =
       Text
     | Append
@@ -182,24 +144,12 @@ export namespace Statements {
     | Statements.AttrSplat
     ;
 
-  export function isAttribute(val: Statement): val is Attribute {
-    return val[0] === Opcodes.StaticAttr || val[0] === Opcodes.DynamicAttr || val[0] === Opcodes.TrustingAttr;
-  }
-
   export type Argument =
       Statements.StaticArg
     | Statements.DynamicArg
     ;
 
-  export function isArgument(val: Statement): val is Argument {
-    return val[0] === Opcodes.StaticArg || val[0] === Opcodes.DynamicArg;
-  }
-
   export type Parameter = Attribute | Argument;
-
-  export function isParameter(val: Statement): val is Parameter {
-    return isAttribute(val) || isArgument(val);
-  }
 }
 
 export type Statement = Statements.Statement;
@@ -258,3 +208,19 @@ export interface SerializedTemplateWithLazyBlock<Specifier> {
  * concatenated into a Javascript module.
  */
 export type TemplateJavascript = string;
+
+// Statements
+export const isModifier       = is<Statements.Modifier>(Opcodes.Modifier);
+export const isFlushElement   = is<Statements.FlushElement>(Opcodes.FlushElement);
+
+export function isAttribute(val: Statement): val is Statements.Attribute {
+  return val[0] === Opcodes.StaticAttr || val[0] === Opcodes.DynamicAttr || val[0] === Opcodes.TrustingAttr;
+}
+
+export function isArgument(val: Statement): val is Statements.Argument {
+  return val[0] === Opcodes.StaticArg || val[0] === Opcodes.DynamicArg;
+}
+
+// Expressions
+export const isGet            = is<Expressions.Get>(Opcodes.Get);
+export const isMaybeLocal     = is<Expressions.MaybeLocal>(Opcodes.MaybeLocal);

@@ -8,7 +8,7 @@ import { Statement, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { debugSlice } from './debug';
 import { CompilableTemplate as ICompilableTemplate, ParsedLayout } from './interfaces';
-import { CompileOptions, compileStatement } from './syntax';
+import { CompileOptions, statementCompiler, Compilers } from './syntax';
 
 export { ICompilableTemplate };
 
@@ -24,7 +24,11 @@ export default class CompilableTemplate<S extends SymbolTable, Specifier> implem
 
   private compiled: Option<VMHandle> = null;
 
-  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<Specifier>, public symbolTable: S) {}
+  private statementCompiler: Compilers<Statement>;
+
+  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<Specifier>, public symbolTable: S) {
+    this.statementCompiler = statementCompiler();
+  }
 
   compile(): VMHandle {
     let { compiled } = this;
@@ -37,7 +41,7 @@ export default class CompilableTemplate<S extends SymbolTable, Specifier> implem
     let builder = new Builder(program, lookup, referrer, macros, containingLayout, asPartial);
 
     for (let i = 0; i < statements.length; i++) {
-      compileStatement(statements[i], builder);
+      this.statementCompiler.compile(statements[i], builder);
     }
 
     let handle = builder.commit(program.heap);
