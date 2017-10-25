@@ -22,7 +22,7 @@ import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
 import { Simple, VMHandle } from '@glimmer/interfaces';
 
-import EvaluationStack, { CapturedStack } from './stack';
+import EvaluationStack from './stack';
 import VM from './append';
 import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
 
@@ -87,7 +87,7 @@ export interface VMState {
   program: Program<Opaque>;
   scope: Scope;
   dynamicScope: DynamicScope;
-  stack: CapturedStack;
+  stack: Opaque[];
 }
 
 export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
