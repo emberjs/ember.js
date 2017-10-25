@@ -373,6 +373,10 @@ export class NamedArguments implements INamedArguments {
       let { names, length, stack } = this;
       let { names: extraNames } = other;
 
+      if (Object.isFrozen(names) && names.length === 0) {
+        names = [];
+      }
+
       for (let i = 0; i < extras; i++) {
         let name = extraNames[i];
         let idx = names.indexOf(name);
