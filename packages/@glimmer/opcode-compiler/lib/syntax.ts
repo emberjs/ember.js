@@ -132,8 +132,8 @@ STATEMENTS.add(Ops.Append, (sexp: S.Append, builder) => {
 
   if (returned === true) return;
 
-  let isGet = E.isGet(value);
-  let isMaybeLocal = E.isMaybeLocal(value);
+  let isGet = WireFormat.isGet(value);
+  let isMaybeLocal = WireFormat.isMaybeLocal(value);
 
   if (trusting) {
     builder.guardedAppend(value, true);

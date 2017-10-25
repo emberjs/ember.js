@@ -1,17 +1,21 @@
-import * as WireFormat from '@glimmer/wire-format';
 import { assert } from "@glimmer/util";
 import { Stack, DictSet, Option, expect } from "@glimmer/util";
 import { AST } from '@glimmer/syntax';
 import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
 import {
+  SerializedInlineBlock,
   SerializedTemplateBlock,
   Core,
   Statement,
   Statements,
   Expression,
   Expressions,
-  Ops
+  Ops,
+  isModifier,
+  isFlushElement,
+  isArgument,
+  isAttribute
 } from '@glimmer/wire-format';
 
 export type str = string;
@@ -35,7 +39,7 @@ export class InlineBlock extends Block {
     super();
   }
 
-  toJSON(): WireFormat.SerializedInlineBlock {
+  toJSON(): SerializedInlineBlock {
     return {
       statements: this.statements,
       parameters: this.table.slots
@@ -47,7 +51,7 @@ export class TemplateBlock extends Block {
   public type = "template";
   public yields = new DictSet<string>();
   public named = new DictSet<string>();
-  public blocks: WireFormat.SerializedInlineBlock[] = [];
+  public blocks: SerializedInlineBlock[] = [];
   public hasEval = false;
 
   constructor(private symbolTable: ProgramSymbolTable) {
@@ -79,13 +83,13 @@ export class ComponentBlock extends Block {
 
   push(statement: Statement) {
     if (this.inParams) {
-      if (Statements.isModifier(statement)) {
+      if (isModifier(statement)) {
         throw new Error('Compile Error: Element modifiers are not allowed in components');
-      } else if (Statements.isFlushElement(statement)) {
+      } else if (isFlushElement(statement)) {
         this.inParams = false;
-      } else if (Statements.isArgument(statement)) {
+      } else if (isArgument(statement)) {
         this.arguments.push(statement);
-      } else if (Statements.isAttribute(statement)) {
+      } else if (isAttribute(statement)) {
         this.attributes.push(statement);
       } else {
         throw new Error('Compile Error: only parameters allowed before flush-element');
@@ -95,7 +99,7 @@ export class ComponentBlock extends Block {
     }
   }
 
-  toJSON(): [WireFormat.Statements.Attribute[], WireFormat.Core.Hash, Option<WireFormat.SerializedInlineBlock>] {
+  toJSON(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
     let args = this.arguments;
     let keys = args.map(arg => arg[1]);
     let values = args.map(arg => arg[2]);
@@ -337,7 +341,7 @@ export default class JavaScriptCompiler {
     this.blocks.push(component);
   }
 
-  endComponent(): [WireFormat.Statements.Attribute[], WireFormat.Core.Hash, Option<WireFormat.SerializedInlineBlock>] {
+  endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
     let component = this.blocks.pop();
     assert(component instanceof ComponentBlock, "Compiler bug: endComponent() should end a component");
     return (component as ComponentBlock).toJSON();
