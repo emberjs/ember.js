@@ -1430,20 +1430,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
 moduleFor('The {{link-to}} helper - loading states and warnings', class extends ApplicationTestCase {
 
-  constructor() {
-    super();
-    this._oldWarn = Logger.warn;
-    this.warnCalled = false;
-    Logger.warn = () => this.warnCalled = true;
-  }
-
-  teardown() {
-    Logger.warn = this._oldWarn;
-    super.teardown();
-  }
-
   [`@test link-to with null/undefined dynamic parameters are put in a loading state`](assert) {
     assert.expect(19);
+    let warningMessage = 'This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.';
 
     this.router.map(function() {
       this.route('thing', { path: '/thing/:thing_id' });
@@ -1490,9 +1479,9 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
     assertLinkStatus(contextLink);
     assertLinkStatus(staticLink);
 
-    this.warnCalled = false;
-    this.click(contextLink);
-    assert.ok(this.warnCalled, 'Logger.warn was called from clicking loading link');
+    expectWarning(()=> {
+      this.click(contextLink);
+    }, warningMessage);
 
     // Set the destinationRoute (context is still null).
     this.runTask(() => controller.set('destinationRoute', 'thing'));
@@ -1516,9 +1505,9 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
     this.runTask(() => controller.set('destinationRoute', null));
     assertLinkStatus(contextLink);
 
-    this.warnCalled = false;
-    this.click(staticLink);
-    assert.ok(this.warnCalled, 'Logger.warn was called from clicking loading link');
+    expectWarning(()=> {
+      this.click(staticLink);
+    }, warningMessage);
 
     this.runTask(() => controller.set('secondRoute', 'about'));
     assertLinkStatus(staticLink, '/about');
