@@ -43,6 +43,7 @@ import {
 } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
+import { WrappedTemplateFactory } from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -105,9 +106,9 @@ function ariaRole(vm: VM) {
 
 class CurlyComponentLayoutCompiler {
   static id: string;
-  public template: any;
+  public template: WrappedTemplateFactory;
 
-  constructor(template: any) {
+  constructor(template: WrappedTemplateFactory) {
     this.template = template;
   }
 
@@ -257,7 +258,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
-  templateFor(component: ComponentStateBucket, env: Environment): any {
+  templateFor(component: ComponentStateBucket, env: Environment): WrappedTemplateFactory {
     let Template = get(component, 'layout');
     let owner = component[OWNER];
     if (Template) {
@@ -443,10 +444,10 @@ export function rerenderInstrumentDetails(component: any): any {
 const MANAGER = new CurlyComponentManager();
 
 export class CurlyComponentDefinition extends ComponentDefinition<Opaque> {
-  public template: any;
+  public template: WrappedTemplateFactory;
   public args: Arguments;
 
-  constructor(name: string, ComponentClass: ComponentClass, template: any, args: Arguments, customManager?: ComponentManager<Opaque>) {
+  constructor(name: string, ComponentClass: ComponentClass, template: WrappedTemplateFactory, args: Arguments, customManager?: ComponentManager<Opaque>) {
     super(name, customManager || MANAGER, ComponentClass);
     this.template = template;
     this.args = args;

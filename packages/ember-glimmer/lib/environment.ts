@@ -227,7 +227,7 @@ export default class Environment extends GlimmerEnvironment {
   // normally templates should be exported at the proper module name
   // and cached in the container, but this cache supports templates
   // that have been set directly on the component's layout property
-  getTemplate(Template, owner) {
+  getTemplate(Template, owner): WrappedTemplateFactory {
     return this._templateCache.get({ Template, owner });
   }
 
