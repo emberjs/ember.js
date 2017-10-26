@@ -1,14 +1,14 @@
+import { Opaque, Option } from '@glimmer/interfaces';
 import {
   CachedReference,
   combine,
   map,
-  referenceFromParts,
   Reference,
-  Tag
+  referenceFromParts,
+  Tag,
 } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/interfaces';
 import {
-  Ops
+  Ops,
 } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
@@ -97,7 +97,7 @@ export const AttributeBinding = {
     }
 
     operations.addDynamicAttribute(element, attribute, reference);
-  }
+  },
 };
 
 const DISPLAY_NONE = 'display: none;';
@@ -133,7 +133,7 @@ export const IsVisibleBinding = {
 
   mapStyleValue(isVisible) {
     return isVisible === false ? SAFE_DISPLAY_NONE : null;
-  }
+  },
 };
 
 export const ClassNameBinding = {
@@ -157,7 +157,7 @@ export const ClassNameBinding = {
 
       operations.addDynamicAttribute(element, 'class', ref);
     }
-  }
+  },
 };
 
 class SimpleClassNameBindingReference extends CachedReference<Option<string>> {

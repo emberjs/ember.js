@@ -2,34 +2,35 @@
 @module ember
 @submodule ember-glimmer
 */
-import { assign } from 'ember-utils';
-import { DirtyableTag } from '@glimmer/reference';
+import { Simple } from '@glimmer/interfaces';
+import { DirtyableTag, VersionedPathReference } from '@glimmer/reference';
 import { environment } from 'ember-environment';
-import { OWNER } from 'ember-utils';
 import { run } from 'ember-metal';
+import { assign } from 'ember-utils';
+import { OWNER } from 'ember-utils';
+import Environment from '../environment';
+import { Renderer } from '../renderer';
 
-class OutletStateReference {
-  public outletView: any;
+export class OutletStateReference implements VersionedPathReference<OutletState> {
   public tag: any;
 
-  constructor(outletView) {
-    this.outletView = outletView;
+  constructor(public outletView: OutletView) {
     this.tag = outletView._tag;
   }
 
-  get(key) {
+  get(key: string): VersionedPathReference<OutletState> {
     return new ChildOutletStateReference(this, key);
   }
 
-  value() {
+  value(): OutletState {
     return this.outletView.outletState;
   }
 
-  getOrphan(name) {
+  getOrphan(name: string): VersionedPathReference<OutletState> {
     return new OrphanedOutletStateReference(this, name);
   }
 
-  update(state) {
+  update(state: OutletState) {
     this.outletView.setOutletState(state);
   }
 }
@@ -47,7 +48,7 @@ class OrphanedOutletStateReference extends OutletStateReference {
     this.name = name;
   }
 
-  value() {
+  value(): OutletState {
     let rootState = this.root.value();
 
     let orphans = rootState.outlets.main.outlets.__ember_orphans__;
@@ -65,7 +66,7 @@ class OrphanedOutletStateReference extends OutletStateReference {
     let state = Object.create(null);
     state[matched.render.outlet] = matched;
     matched.wasUsed = true;
-    return { outlets: state };
+    return { outlets: state, render: undefined };
   }
 }
 
@@ -89,13 +90,28 @@ class ChildOutletStateReference {
   }
 }
 
+export interface OutletState {
+  outlets: {
+    [name: string]: OutletState;
+  };
+  render: {
+    owner: any | undefined,
+    into: string,
+    outlet: string,
+    name: string,
+    controller: any | undefined,
+    ViewClass: Function | undefined,
+    template: any | undefined,
+  };
+}
+
 export default class OutletView {
-  private _environment: any;
-  public renderer: any;
+  private _environment: Environment;
+  public renderer: Renderer;
   public owner: any;
   public template: any;
-  public outletState: any;
-  private _tag: any;
+  public outletState: OutletState;
+  public _tag: DirtyableTag;
 
   static extend(injections) {
     return class extends OutletView {
@@ -128,7 +144,7 @@ export default class OutletView {
     this._tag = new DirtyableTag();
   }
 
-  appendTo(selector) {
+  appendTo(selector: string | Simple.Element) {
     let env = this._environment || environment;
     let target;
 
@@ -143,10 +159,10 @@ export default class OutletView {
 
   rerender() { }
 
-  setOutletState(state) {
+  setOutletState(state: OutletState) {
     this.outletState = {
       outlets: {
-        main: state
+        main: state,
       },
       render: {
         owner: undefined,
@@ -155,8 +171,8 @@ export default class OutletView {
         name: '-top-level',
         controller: undefined,
         ViewClass: undefined,
-        template: undefined
-      }
+        template: undefined,
+      },
     };
     this._tag.dirty();
   }

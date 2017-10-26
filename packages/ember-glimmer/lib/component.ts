@@ -1,25 +1,25 @@
-import { symbol, getOwner, NAME_KEY } from 'ember-utils';
-import {
-  CoreView,
-  ClassNamesSupport,
-  ChildViewsSupport,
-  ViewStateSupport,
-  ViewMixin,
-  ActionSupport,
-  getViewElement
-} from 'ember-views';
-import { TargetActionSupport } from 'ember-runtime';
+import { DirtyableTag } from '@glimmer/reference';
+import { readDOMAttr } from '@glimmer/runtime';
 import {
   assert,
-  deprecate
+  deprecate,
 } from 'ember-debug';
 import {
   get,
   PROPERTY_DID_CHANGE,
 } from 'ember-metal';
-import { UPDATE, RootReference } from './utils/references';
-import { DirtyableTag } from '@glimmer/reference';
-import { readDOMAttr } from '@glimmer/runtime';
+import { TargetActionSupport } from 'ember-runtime';
+import { getOwner, NAME_KEY, symbol } from 'ember-utils';
+import {
+  ActionSupport,
+  ChildViewsSupport,
+  ClassNamesSupport,
+  CoreView,
+  getViewElement,
+  ViewMixin,
+  ViewStateSupport,
+} from 'ember-views';
+import { RootReference, UPDATE } from './utils/references';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
@@ -110,7 +110,6 @@ export const BOUNDS = symbol('BOUNDS');
   elements. This is consistent with the same
   requirement in web components.
 
-
   ## HTML Tag
 
   The default HTML tag name used for a component's DOM representation is `div`.
@@ -130,7 +129,6 @@ export const BOUNDS = symbol('BOUNDS');
   ```html
   <em id="ember1" class="ember-view"></em>
   ```
-
 
   ## HTML `class` Attribute
 
@@ -309,7 +307,6 @@ export const BOUNDS = symbol('BOUNDS');
   [Ember.Object](/api/classes/Ember.Object.html) documentation for more
   information about concatenated properties.
 
-
   ## HTML Attributes
 
   The HTML attribute section of a component's tag can be set by providing an
@@ -426,7 +423,6 @@ export const BOUNDS = symbol('BOUNDS');
   `attributeBindings` is a concatenated property. See [Ember.Object](/api/classes/Ember.Object.html)
   documentation for more information about concatenated properties.
 
-
   ## Layouts
 
   See [Ember.Templates.helpers.yield](/api/classes/Ember.Templates.helpers.html#method_yield)
@@ -460,13 +456,11 @@ export const BOUNDS = symbol('BOUNDS');
     </div>
   ```
 
-
   ## Responding to Browser Events
 
   Components can respond to user-initiated events in one of three ways: method
   implementation, through an event manager, and through `{{action}}` helper use
   in their template or layout.
-
 
   ### Method Implementation
 
@@ -485,11 +479,9 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-
   ### `{{action}}` Helper
 
   See [Ember.Templates.helpers.action](/api/classes/Ember.Templates.helpers.html#method_action).
-
 
   ### Event Names
 
@@ -578,8 +570,8 @@ const Component = CoreView.extend(
           {
             id: 'ember-views.component.defaultLayout',
             until: '3.0.0',
-            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout'
-          }
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout',
+          },
         );
 
         this.layout = this.defaultLayout;
@@ -665,7 +657,7 @@ const Component = CoreView.extend(
     readDOMAttr(name) {
       let element = getViewElement(this);
       return readDOMAttr(element, name);
-    }
+    },
 
     /**
      The WAI-ARIA role of the control represented by this view. For example, a
@@ -734,7 +726,6 @@ const Component = CoreView.extend(
      @property positionalParams
      @since 1.13.0
      */
-
 
     /**
      Called when the attributes passed into the component have been updated.
@@ -902,14 +893,14 @@ const Component = CoreView.extend(
      @default null
      @public
      */
-  }
+  },
 );
 
 Component[NAME_KEY] = 'Ember.Component';
 
 Component.reopenClass({
   isComponentFactory: true,
-  positionalParams: []
+  positionalParams: [],
 });
 
 export default Component;

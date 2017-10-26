@@ -61,7 +61,8 @@
     "resolve": "^1.3.3",
     "rsvp": "^4.7.0",
     "simple-dom": "^0.3.0",
-    "simple-html-tokenizer": "^0.4.1"
+    "simple-html-tokenizer": "^0.4.1",
+    "tslint": "^5.8.0"
   },
   "devDependencies": {
     "aws-sdk": "^2.46.0",

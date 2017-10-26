@@ -5,8 +5,8 @@
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
-import { hashToArgs } from './utils';
 import { MountDefinition } from '../component-managers/mount';
+import { hashToArgs } from './utils';
 
 function dynamicEngineFor(vm, args, meta) {
   let env     = vm.env;
@@ -29,7 +29,7 @@ function dynamicEngineFor(vm, args, meta) {
 
   Additionally, you can also pass in a `model` argument that will be
   set as the engines model. This can be an existing object:
-  
+
   ```
   <div>
     {{mount 'admin' model=userSettings}}
@@ -60,12 +60,12 @@ export function mountMacro(name, params, hash, builder) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params.length === 1
+      params.length === 1,
     );
   } else {
     assert(
       'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params.length === 1 && hash === null
+      params.length === 1 && hash === null,
     );
   }
 
@@ -92,7 +92,7 @@ class DynamicEngineReference {
   }
 
   value() {
-    let { env, nameRef, /*meta*/ } = this;
+    let { env, nameRef /*meta*/ } = this;
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {
@@ -102,7 +102,7 @@ class DynamicEngineReference {
 
       assert(
         `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
-        env.owner.hasRegistration(`engine:${nameOrDef}`)
+        env.owner.hasRegistration(`engine:${nameOrDef}`),
       );
 
       if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
@@ -116,7 +116,7 @@ class DynamicEngineReference {
     } else {
       assert(
         `Invalid engine name '${nameOrDef}' specified, engine name must be either a string, null or undefined.`,
-        nameOrDef === null || nameOrDef === undefined
+        nameOrDef === null || nameOrDef === undefined,
       );
 
       return null;

@@ -1,5 +1,5 @@
-import { InternalHelperReference } from '../utils/references';
 import { String as StringUtils } from 'ember-runtime';
+import { InternalHelperReference } from '../utils/references';
 
 function normalizeClass({ positional, named }) {
   let classNameParts = positional.at(0).value().split('.');

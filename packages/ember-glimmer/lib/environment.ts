@@ -1,72 +1,73 @@
 /// <reference path="../externs.d.ts"/>
-import { guidFor, OWNER } from 'ember-utils';
-import { Cache, _instrumentStart } from 'ember-metal';
-import { assert, warn } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
 import {
-  lookupPartial,
-  hasPartial,
-  lookupComponent,
-  constructStyleDeprecationMessage
-} from 'ember-views';
-import {
-  Reference
+  Reference,
 } from '@glimmer/reference';
 import {
-  Environment as GlimmerEnvironment,
   AttributeManager,
-  isSafeString,
   compileLayout,
-  getDynamicVar,
   DOMTreeConstruction,
-  PartialDefinition
+  Environment as GlimmerEnvironment,
+  getDynamicVar,
+  isSafeString,
+  PartialDefinition,
 } from '@glimmer/runtime';
 import {
-  Opaque
+  Destroyable, Opaque,
 } from '@glimmer/util';
+import { assert, warn } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { _instrumentStart, Cache } from 'ember-metal';
+import { guidFor, OWNER } from 'ember-utils';
 import {
-  CurlyComponentDefinition
+  constructStyleDeprecationMessage,
+  hasPartial,
+  lookupComponent,
+  lookupPartial,
+} from 'ember-views';
+import {
+  CurlyComponentDefinition,
 } from './component-managers/curly';
 import {
-  populateMacros
+  populateMacros,
 } from './syntax';
+import DebugStack from './utils/debug-stack';
 import createIterable from './utils/iterable';
 import {
+  ClassBasedHelperReference,
   ConditionalReference,
   SimpleHelperReference,
-  ClassBasedHelperReference
 } from './utils/references';
-import DebugStack from './utils/debug-stack';
 
-import {
-  inlineIf,
-  inlineUnless
-} from './helpers/if-unless';
+import { default as classHelper } from './helpers/-class';
+import { default as htmlSafeHelper } from './helpers/-html-safe';
+import { default as inputTypeHelper } from './helpers/-input-type';
+import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as action } from './helpers/action';
 import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
+import { default as eachIn } from './helpers/each-in';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
+import {
+  inlineIf,
+  inlineUnless,
+} from './helpers/if-unless';
 import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
+import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
-import { default as classHelper } from './helpers/-class';
-import { default as inputTypeHelper } from './helpers/-input-type';
-import { default as queryParams } from './helpers/query-param';
-import { default as eachIn } from './helpers/each-in';
-import { default as normalizeClassHelper } from './helpers/-normalize-class';
-import { default as htmlSafeHelper } from './helpers/-html-safe';
 
-import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { default as ActionModifierManager } from './modifiers/action';
+import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
+import { DOMChanges } from '@glimmer/runtime/dist/types/lib/dom/helper';
 import {
+  EMBER_MODULE_UNIFICATION,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
-  EMBER_MODULE_UNIFICATION
 } from 'ember/features';
-import { DOMChanges } from "@glimmer/runtime/dist/types/lib/dom/helper";
+import { Container } from './template';
 
 function instrumentationPayload(name) {
   return { object: `component:${name}` };
@@ -77,12 +78,16 @@ export default class Environment extends GlimmerEnvironment {
     return new this(options);
   }
 
-  public owner: any;
+  public owner: Container;
   public isInteractive: boolean;
-  public destroyedComponents: Array<any>;
-  public builtInModifiers: any;
-  public builtInHelpers: any;
-  public debugStack: any;
+  public destroyedComponents: Destroyable[];
+  public builtInModifiers: {
+    [name: string]: any;
+  };
+  public builtInHelpers: {
+    [name: string]: any;
+  };
+  public debugStack: typeof DebugStack;
   public inTransaction: boolean;
   private _definitionCache: Cache;
   private _templateCache: Cache;
@@ -100,7 +105,7 @@ export default class Environment extends GlimmerEnvironment {
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
-      let customManager = undefined;
+      let customManager;
 
       if (componentFactory || layout) {
         if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
@@ -130,22 +135,22 @@ export default class Environment extends GlimmerEnvironment {
       }
     }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
 
-    this._compilerCache = new Cache(10, Compiler => {
+    this._compilerCache = new Cache(10, (Compiler) => {
       return new Cache(2000, (template) => {
         let compilable = new Compiler(template);
         return compileLayout(compilable, this);
-      }, (template)=> {
+      }, (template) => {
         let owner = template.meta.owner;
         return guidFor(owner) + '|' + template.id;
       });
-    }, Compiler => Compiler.id);
+    }, (Compiler) => Compiler.id);
 
     this.builtInModifiers = {
-      action: new ActionModifierManager()
+      action: new ActionModifierManager(),
     };
 
     this.builtInHelpers = {
-      if: inlineIf,
+      'if': inlineIf,
       action,
       concat,
       get,
@@ -156,17 +161,17 @@ export default class Environment extends GlimmerEnvironment {
       'query-params': queryParams,
       readonly,
       unbound,
-      unless: inlineUnless,
+      'unless': inlineUnless,
       '-class': classHelper,
       '-each-in': eachIn,
       '-input-type': inputTypeHelper,
       '-normalize-class': normalizeClassHelper,
       '-html-safe': htmlSafeHelper,
-      '-get-dynamic-var': getDynamicVar
+      '-get-dynamic-var': getDynamicVar,
     };
 
     if (DEBUG) {
-      this.debugStack = new DebugStack()
+      this.debugStack = new DebugStack();
     }
   }
 
@@ -219,7 +224,7 @@ export default class Environment extends GlimmerEnvironment {
   lookupPartial(name: string, meta: any): PartialDefinition<any> {
     let partial = {
       name,
-      template: lookupPartial(name, meta.owner)
+      template: lookupPartial(name, meta.owner),
     };
 
     if (partial.template) {

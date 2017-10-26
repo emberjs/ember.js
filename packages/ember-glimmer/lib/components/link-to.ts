@@ -308,20 +308,20 @@
 
 import Logger from 'ember-console';
 import { assert, deprecate } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
-  get,
   computed,
-  flaggedInstrument
+  flaggedInstrument,
+  get,
 } from 'ember-metal';
 import {
+  ControllerMixin,
   deprecatingAlias,
   inject,
-  ControllerMixin
 } from 'ember-runtime';
 import { isSimpleClick } from 'ember-views';
-import layout from '../templates/link-to';
 import EmberComponent, { HAS_BLOCK } from '../component';
-import { DEBUG } from 'ember-env-flags';
+import layout from '../templates/link-to';
 
 /**
   `Ember.LinkComponent` renders an element whose `click` event triggers a
@@ -427,7 +427,6 @@ const LinkComponent = EmberComponent.extend({
     @private
   **/
   disabledClass: 'disabled',
-  _isDisabled: false,
 
   /**
     Determines whether the `LinkComponent` will trigger routing via
@@ -518,6 +517,7 @@ const LinkComponent = EmberComponent.extend({
   */
   init() {
     this._super(...arguments);
+    this._isDisabled = false;
 
     // Map desired event name to invoke function
     let eventName = get(this, 'eventName');
@@ -542,7 +542,7 @@ const LinkComponent = EmberComponent.extend({
       if (value !== undefined) { this.set('_isDisabled', value); }
 
       return value ? get(this, 'disabledClass') : false;
-    }
+    },
   }),
 
   _isActive(routerState) {
@@ -645,6 +645,7 @@ const LinkComponent = EmberComponent.extend({
     if (get(this, '_isDisabled')) { return false; }
 
     if (get(this, 'loading')) {
+      // tslint:disable-next-line:max-line-length
       Logger.warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.');
       return false;
     }
@@ -660,9 +661,10 @@ const LinkComponent = EmberComponent.extend({
 
     let payload = {
       queryParams,
-      routeName: qualifiedRouteName
+      routeName: qualifiedRouteName,
     };
 
+    // tslint:disable-next-line:max-line-length
     flaggedInstrument('interaction.link-to', payload, this._generateTransition(payload, qualifiedRouteName, models, queryParams, shouldReplace));
   },
 
@@ -675,7 +677,8 @@ const LinkComponent = EmberComponent.extend({
 
   queryParams: null,
 
-  qualifiedRouteName: computed('targetRouteName', '_routing.currentState', function computeLinkToComponentQualifiedRouteName() {
+  qualifiedRouteName: computed('targetRouteName', '_routing.currentState',
+  function computeLinkToComponentQualifiedRouteName() {
     let params = get(this, 'params');
     let paramsLength = params.length;
     let lastParam = params[paramsLength - 1];
@@ -740,6 +743,7 @@ const LinkComponent = EmberComponent.extend({
       try {
         routing.generateURL(qualifiedRouteName, models, queryParams);
       } catch (e) {
+        // tslint:disable-next-line:max-line-length
         assert('You attempted to define a `{{link-to "' + qualifiedRouteName + '"}}` but did not pass the parameters required for generating its dynamic segments. ' + e.message);
       }
     }
@@ -775,9 +779,10 @@ const LinkComponent = EmberComponent.extend({
       while (ControllerMixin.detect(value)) {
         deprecate(
           'Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. ' +
-            (this.parentView ? 'Please update `' + this.parentView + '` to use `{{link-to "post" someController.model}}` instead.' : ''),
+            (this.parentView ? 'Please update `' + this.parentView +
+            '` to use `{{link-to "post" someController.model}}` instead.' : ''),
           false,
-          { id: 'ember-routing-views.controller-wrapped-param', until: '3.0.0' }
+          { id: 'ember-routing-views.controller-wrapped-param', until: '3.0.0' },
         );
         value = value.get('model');
       }
@@ -841,13 +846,13 @@ const LinkComponent = EmberComponent.extend({
     } else {
       this.set('models', []);
     }
-  }
+  },
 });
 
 LinkComponent.toString = () => 'LinkComponent';
 
 LinkComponent.reopenClass({
-  positionalParams: 'params'
+  positionalParams: 'params',
 });
 
 export default LinkComponent;

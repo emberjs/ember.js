@@ -5,12 +5,12 @@
 
 import { ConstReference, isConst } from '@glimmer/reference';
 import { assert } from 'ember-debug';
-import { hashToArgs } from './utils';
 import {
+  NON_SINGLETON_RENDER_MANAGER,
   RenderDefinition,
   SINGLETON_RENDER_MANAGER,
-  NON_SINGLETON_RENDER_MANAGER
 } from '../component-managers/render';
+import { hashToArgs } from './utils';
 
 function makeComponentDefinition(vm, args) {
   let env     = vm.env;
@@ -45,7 +45,6 @@ function makeComponentDefinition(vm, args) {
     return new ConstReference(new RenderDefinition(controllerName, template, env, NON_SINGLETON_RENDER_MANAGER));
   }
 }
-
 
 /**
   Calling ``{{render}}`` from within a template will insert another

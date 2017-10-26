@@ -1,5 +1,5 @@
 import {
-  isComponentDefinition
+  isComponentDefinition,
 } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import { hashToArgs } from './utils';

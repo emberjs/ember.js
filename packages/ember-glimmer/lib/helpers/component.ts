@@ -2,16 +2,16 @@
   @module ember
   @submodule ember-glimmer
 */
-import { assign } from 'ember-utils';
-import { CachedReference } from '../utils/references';
 import {
-  CurlyComponentDefinition,
-  validatePositionalParameters
-} from '../component-managers/curly';
-import {
-  isComponentDefinition
+  isComponentDefinition,
 } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
+import { assign } from 'ember-utils';
+import {
+  CurlyComponentDefinition,
+  validatePositionalParameters,
+} from '../component-managers/curly';
+import { CachedReference } from '../utils/references';
 
 /**
   The `{{component}}` helper lets you add instances of `Ember.Component` to a
@@ -194,7 +194,7 @@ export class ClosureComponentReference extends CachedReference {
     } else {
       assert(
         `You cannot create a component from ${nameOrDef} using the {{component}} helper`,
-        nameOrDef
+        nameOrDef,
       );
       return null;
     }
@@ -214,7 +214,7 @@ function createCurriedDefinition(definition, args) {
     definition.name,
     definition.ComponentClass,
     definition.template,
-    curriedArgs
+    curriedArgs,
   );
 }
 

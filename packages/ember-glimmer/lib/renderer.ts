@@ -2,49 +2,55 @@ interface FreeformObject {
   [key: string]: any;
 }
 
-import { RootReference } from './utils/references';
+import { Simple } from '@glimmer/interfaces';
+import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
+import { IteratorResult } from '@glimmer/runtime';
+import { Opaque } from '@glimmer/util';
+import { assert } from 'ember-debug';
+import { Environment } from 'ember-glimmer';
 import {
   run,
+  runInTransaction,
   setHasViews,
-  runInTransaction
 } from 'ember-metal';
-import { CURRENT_TAG } from '@glimmer/reference';
 import {
   fallbackViewRegistry,
   getViewElement,
+  getViewId,
   setViewElement,
-  getViewId
 } from 'ember-views';
 import { BOUNDS } from './component';
-import { RootComponentDefinition } from './component-managers/root';
 import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
-import { assert } from 'ember-debug';
+import { RootComponentDefinition } from './component-managers/root';
+import { OwnedTemplate } from './template';
+import { RootReference } from './utils/references';
+import OutletView, { OutletState, OutletStateReference } from './views/outlet';
+
+import { ComponentDefinition, RenderResult } from '@glimmer/runtime';
 
 const { backburner } = run;
 
-class DynamicScope {
-  private view: any
-  private outletState: any
-  private rootOutletState: any
-
-  constructor(view, outletState, rootOutletState) {
-    this.view = view;
-    this.outletState = outletState;
-    this.rootOutletState = rootOutletState;
+export class DynamicScope {
+  constructor(
+    public view: Opaque,
+    public outletState?: VersionedPathReference<OutletState>,
+    public rootOutletState?: OutletStateReference) {
   }
 
   child() {
     return new DynamicScope(
-      this.view, this.outletState, this.rootOutletState
+      this.view, this.outletState, this.rootOutletState,
     );
   }
 
   get(key) {
+    // tslint:disable-next-line:max-line-length
     assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     return this.outletState;
   }
 
   set(key, value) {
+    // tslint:disable-next-line:max-line-length
     assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     this.outletState = value;
     return value;
@@ -52,18 +58,26 @@ class DynamicScope {
 }
 
 class RootState {
-  public id: any
-  public env: any
-  public root: any
-  public result: any
-  public shouldReflush: boolean
-  public destroyed: boolean
-  private _removing: boolean
-  public options: any
-  public render: any
+  public id: string;
+  public env: Environment;
+  public root: Opaque;
+  public result: RenderResult;
+  public shouldReflush: boolean;
+  public destroyed: boolean;
+  public options: {
+    alwaysRevalidate: boolean;
+  };
+  public render: () => void;
+  private _removing: boolean;
 
-  constructor(root, env, template, self, parentElement, dynamicScope) {
-    assert(`You cannot render \`${self.value()}\` without a template.`, template);
+  constructor(
+    root: Opaque,
+    env: Environment,
+    template: OwnedTemplate,
+    self: VersionedPathReference<Opaque>,
+    parentElement: Simple.Element,
+    dynamicScope: DynamicScope) {
+    assert(`You cannot render \`${self.value()}\` without a template.`, template !== undefined);
 
     this.id = getViewId(root);
     this.env = env;
@@ -74,12 +88,12 @@ class RootState {
     this._removing = false;
 
     let options = this.options = {
-      alwaysRevalidate: false
+      alwaysRevalidate: false,
     };
 
     this.render = () => {
       let iterator = template.render(self, parentElement, dynamicScope);
-      let iteratorResult;
+      let iteratorResult: IteratorResult<RenderResult>;
 
       do {
         iteratorResult = iterator.next();
@@ -157,7 +171,7 @@ function loopBegin() {
   }
 }
 
-function K() {}
+function K() { /* noop */ }
 
 let loops = 0;
 function loopEnd(current, next) {
@@ -180,15 +194,17 @@ backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
 export class Renderer {
-  private _env: any
-  private _rootTemplate: any
-  private _viewRegistry: any
-  private _destinedForDOM: any
-  private _destroyed: boolean
-  private _roots: Array<any>
-  private _lastRevision: any
-  private _isRenderingRoots: boolean
-  private _removedRoots: Array<any>
+  private _env: Environment;
+  private _rootTemplate: any;
+  private _viewRegistry: {
+    [viewId: string]: Opaque,
+  };
+  private _destinedForDOM: boolean;
+  private _destroyed: boolean;
+  private _roots: RootState[];
+  private _lastRevision: number;
+  private _isRenderingRoots: boolean;
+  private _removedRoots: RootState[];
 
   constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
     this._env = env;
@@ -204,7 +220,7 @@ export class Renderer {
 
   // renderer HOOKS
 
-  appendOutletView(view, target) {
+  appendOutletView(view: OutletView, target: Simple.Element) {
     let definition = new TopLevelOutletComponentDefinition(view);
     let outletStateReference = view.toReference();
     let targetObject = view.outletState.render.controller;
@@ -212,13 +228,18 @@ export class Renderer {
     this._appendDefinition(view, definition, target, outletStateReference, targetObject);
   }
 
-  appendTo(view, target) {
+  appendTo(view: Opaque, target: Simple.Element) {
     let rootDef = new RootComponentDefinition(view);
 
     this._appendDefinition(view, rootDef, target);
   }
 
-  _appendDefinition(root, definition, target, outletStateReference?, targetObject = null) {
+  _appendDefinition(
+    root: Opaque,
+    definition: ComponentDefinition<Opaque>,
+    target: Simple.Element,
+    outletStateReference?: OutletStateReference,
+    targetObject: Opaque = null) {
     let self = new RootReference(definition);
     let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
@@ -226,11 +247,11 @@ export class Renderer {
     this._renderRoot(rootState);
   }
 
-  rerender(view) {
+  rerender() {
     this._scheduleRevalidate();
   }
 
-  register(view) {
+  register(view: Opaque) {
     let id = getViewId(view);
     assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
     this._viewRegistry[id] = view;
@@ -300,7 +321,7 @@ export class Renderer {
     return this._env.getAppendOperations().createElement(tagName);
   }
 
-  _renderRoot(root) {
+  _renderRoot(root: RootState) {
     let { _roots: roots } = this;
 
     roots.push(root);

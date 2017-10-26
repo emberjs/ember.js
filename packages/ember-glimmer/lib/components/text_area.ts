@@ -2,8 +2,8 @@
 @module ember
 @submodule ember-glimmer
 */
-import Component from '../component';
 import { TextSupport } from 'ember-views';
+import Component from '../component';
 import layout from '../templates/empty';
 
 /**
@@ -214,7 +214,7 @@ import layout from '../templates/empty';
 export default Component.extend(TextSupport, {
   classNames: ['ember-text-area'],
 
-  layout: layout,
+  layout,
 
   tagName: 'textarea',
   attributeBindings: [
@@ -226,8 +226,8 @@ export default Component.extend(TextSupport, {
     'wrap',
     'lang',
     'dir',
-    'value'
+    'value',
   ],
   rows: null,
-  cols: null
+  cols: null,
 });

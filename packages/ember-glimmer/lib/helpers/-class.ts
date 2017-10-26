@@ -1,5 +1,5 @@
-import { InternalHelperReference } from '../utils/references';
 import { String as StringUtils } from 'ember-runtime';
+import { InternalHelperReference } from '../utils/references';
 
 function classHelper({ positional }) {
   let path = positional.at(0);

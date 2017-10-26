@@ -1,39 +1,39 @@
-import {
-  Opaque,
-  OWNER,
-  assign
-} from 'ember-utils';
 import { combineTagged } from '@glimmer/reference';
 import {
+  ComponentDefinition,
   PrimitiveReference,
-  ComponentDefinition
 } from '@glimmer/runtime';
+import { privatize as P } from 'container';
 import {
-  assert
+  assert,
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
-  ROOT_REF,
+  _instrumentStart,
+  get,
+} from 'ember-metal';
+import {
+  assign,
+  Opaque,
+  OWNER,
+} from 'ember-utils';
+import { setViewElement } from 'ember-views';
+import {
+  BOUNDS,
   DIRTY_TAG,
-  IS_DISPATCHING_ATTRS,
   HAS_BLOCK,
-  BOUNDS
+  IS_DISPATCHING_ATTRS,
+  ROOT_REF,
 } from '../component';
 import {
   AttributeBinding,
   ClassNameBinding,
-  IsVisibleBinding
+  IsVisibleBinding,
 } from '../utils/bindings';
-import {
-  get,
-  _instrumentStart
-} from 'ember-metal';
-import { processComponentArgs } from '../utils/process-args';
-import { setViewElement } from 'ember-views';
-import { privatize as P } from 'container';
-import AbstractManager from './abstract';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
+import { processComponentArgs } from '../utils/process-args';
 import { PropertyReference } from '../utils/references';
+import AbstractManager from './abstract';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -48,12 +48,12 @@ function aliasIdToElementId(args, props) {
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
 function applyAttributeBindings(element, attributeBindings, component, operations) {
-  let seen: Array<string> = [];
+  let seen: string[] = [];
   let i = attributeBindings.length - 1;
 
   while (i !== -1) {
     let binding = attributeBindings[i];
-    let parsed: Array<string> = AttributeBinding.parse(binding);
+    let parsed: string[] = AttributeBinding.parse(binding);
     let attribute = parsed[1];
 
     if (seen.indexOf(attribute) === -1) {
@@ -111,7 +111,7 @@ export class PositionalArgumentReference {
   }
 
   value() {
-    return this._references.map(reference => reference.value());
+    return this._references.map((reference) => reference.value());
   }
 
   get(key) {
@@ -119,7 +119,7 @@ export class PositionalArgumentReference {
   }
 }
 
-export default class CurlyComponentManager extends AbstractManager {
+export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket> {
   prepareArgs(definition, args) {
     let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
 
@@ -152,10 +152,10 @@ export default class CurlyComponentManager extends AbstractManager {
     let positionalParamsToNamed;
     if (componentHasRestStylePositionalParams) {
       positionalParamsToNamed = {
-        [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional)
+        [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional),
       };
       positional = [];
-    } else if (componentHasPositionalParams){
+    } else if (componentHasPositionalParams) {
       positionalParamsToNamed = {};
       let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
       for (let i = 0; i < length; i++) {
@@ -171,7 +171,7 @@ export default class CurlyComponentManager extends AbstractManager {
 
   create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
     if (DEBUG) {
-      this._pushToDebugStack(`component:${definition.name}`, environment)
+      this._pushToDebugStack(`component:${definition.name}`, environment);
     }
 
     let parentView = dynamicScope.view;
@@ -274,13 +274,13 @@ export default class CurlyComponentManager extends AbstractManager {
     }
 
     if (classNames && classNames.length) {
-      classNames.forEach(name => {
+      classNames.forEach((name) => {
         operations.addStaticAttribute(element, 'class', name);
       });
     }
 
     if (classNameBindings && classNameBindings.length) {
-      classNameBindings.forEach(binding => {
+      classNameBindings.forEach((binding) => {
         ClassNameBinding.install(element, component, binding, operations);
       });
     }
@@ -313,11 +313,11 @@ export default class CurlyComponentManager extends AbstractManager {
     }
   }
 
-  update(bucket) {
+  update(bucket: ComponentStateBucket) {
     let { component, args, argsRevision, environment } = bucket;
 
     if (DEBUG) {
-       this._pushToDebugStack(component._debugContainerKey, environment)
+       this._pushToDebugStack(component._debugContainerKey, environment);
     }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
@@ -341,7 +341,7 @@ export default class CurlyComponentManager extends AbstractManager {
     }
   }
 
-  didUpdateLayout(bucket) {
+  didUpdateLayout(bucket: ComponentStateBucket) {
     bucket.finalize();
 
     if (DEBUG) {
@@ -356,7 +356,7 @@ export default class CurlyComponentManager extends AbstractManager {
     }
   }
 
-  getDestructor(stateBucket) {
+  getDestructor(stateBucket: ComponentStateBucket) {
     return stateBucket;
   }
 }
@@ -381,7 +381,7 @@ export function validatePositionalParameters(named, positional, positionalParams
 
         assert(
           `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-          !named.has(name)
+          !named.has(name),
         );
       }
     }

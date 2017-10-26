@@ -2,12 +2,16 @@
 @module ember
 @submodule ember-glimmer
 */
-import { generateGuid, guidFor } from 'ember-utils';
+import { Option } from '@glimmer/interfaces/dist/types';
 import {
-  ComponentDefinition
+  ComponentDefinition,
+  DynamicScope,
 } from '@glimmer/runtime';
+import { Destroyable } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
+import { Environment } from 'ember-glimmer';
 import { _instrumentStart } from 'ember-metal';
+import { generateGuid, guidFor } from 'ember-utils';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
@@ -15,7 +19,11 @@ function instrumentationPayload({ render: { name, outlet } }) {
   return { object: `${name}:${outlet}` };
 }
 
-function NOOP() {}
+function NOOP() {/**/}
+
+interface OutletDynamicScope extends DynamicScope {
+  outletState: any;
+}
 
 class StateBucket {
   public outletState: any;
@@ -37,13 +45,14 @@ class StateBucket {
   }
 }
 
-class OutletComponentManager extends AbstractManager {
-  create(environment, definition, args, dynamicScope) {
+class OutletComponentManager extends AbstractManager<StateBucket> {
+  create(environment: Environment, definition: OutletComponentDefinition, args, dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
     }
 
-    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
+    let outletStateReference = dynamicScope.outletState =
+      dynamicScope.outletState.get('outlets').get(definition.outletName);
     let outletState = outletStateReference.value();
     return new StateBucket(outletState);
   }
@@ -62,6 +71,10 @@ class OutletComponentManager extends AbstractManager {
     if (DEBUG) {
       this.debugStack.pop();
     }
+  }
+
+  getDestructor(bucket: StateBucket): Option<Destroyable> {
+    return null;
   }
 }
 
@@ -82,8 +95,7 @@ class TopLevelOutletComponentManager extends OutletComponentManager {
 
 const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
-
-export class TopLevelOutletComponentDefinition extends ComponentDefinition<any> {
+export class TopLevelOutletComponentDefinition extends ComponentDefinition<StateBucket> {
   public template: any;
   constructor(instance) {
     super('outlet', TOP_LEVEL_MANAGER, instance);

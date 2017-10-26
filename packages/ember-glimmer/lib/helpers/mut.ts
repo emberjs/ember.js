@@ -2,8 +2,8 @@
 @module ember
 @submodule ember-glimmer
 */
-import { symbol } from 'ember-utils';
 import { assert } from 'ember-debug';
+import { symbol } from 'ember-utils';
 import { UPDATE } from '../utils/references';
 import { INVOKE } from './action';
 

@@ -1,39 +1,39 @@
 import {
-  HAS_NATIVE_WEAKMAP,
-  Opaque,
-  symbol
-} from 'ember-utils';
-import {
-  get,
-  set,
-  tagForProperty,
-  tagFor,
-  didRender,
-  watchKey,
-  isProxy
-} from 'ember-metal';
-import {
+  combine,
   CONSTANT_TAG,
   ConstReference,
   DirtyableTag,
-  UpdatableTag,
+  isConst,
   TagWrapper,
+  UpdatableTag,
   VersionedPathReference,
-  combine,
-  isConst
 } from '@glimmer/reference';
 import {
   ConditionalReference as GlimmerConditionalReference,
-  PrimitiveReference
+  PrimitiveReference,
 } from '@glimmer/runtime';
-import emberToBool from './to-bool';
-import { RECOMPUTE_TAG } from '../helper';
 import { DEBUG } from 'ember-env-flags';
 import {
-  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
+  didRender,
+  get,
+  isProxy,
+  set,
+  tagFor,
+  tagForProperty,
+  watchKey,
+} from 'ember-metal';
+import {
+  HAS_NATIVE_WEAKMAP,
+  Opaque,
+  symbol,
+} from 'ember-utils';
+import {
   EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
-  MANDATORY_SETTER
+  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
+  MANDATORY_SETTER,
 } from 'ember/features';
+import { RECOMPUTE_TAG } from '../helper';
+import emberToBool from './to-bool';
 
 export const UPDATE = symbol('UPDATE');
 
@@ -50,7 +50,7 @@ if (DEBUG) {
     if (!Object.isFrozen(obj) && HAS_NATIVE_WEAKMAP) {
       Object.freeze(obj);
     }
-  }
+  };
 }
 
 // @abstract
@@ -93,9 +93,10 @@ export class CachedReference extends EmberPathReference {
 }
 
 // @implements PathReference
-export class RootReference extends ConstReference<any> {
+export class RootReference<T> extends ConstReference<T> {
   public children: any;
-  constructor(value) {
+
+  constructor(value: T) {
     super(value);
     this.children = Object.create(null);
   }

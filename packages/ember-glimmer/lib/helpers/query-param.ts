@@ -2,10 +2,10 @@
 @module ember
 @submodule ember-glimmer
 */
-import { assign } from 'ember-utils';
-import { InternalHelperReference } from '../utils/references';
 import { assert } from 'ember-debug';
 import { QueryParams } from 'ember-routing';
+import { assign } from 'ember-utils';
+import { InternalHelperReference } from '../utils/references';
 
 /**
   This is a helper to be used in conjunction with the link-to helper.
@@ -27,7 +27,7 @@ function queryParams({ positional, named }) {
   assert('The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName=\'foo\') as opposed to just (query-params \'foo\')', positional.value().length === 0);
 
   return QueryParams.create({
-    values: assign({}, named.value())
+    values: assign({}, named.value()),
   });
 }
 

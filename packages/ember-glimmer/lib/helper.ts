@@ -3,9 +3,9 @@
 @submodule ember-glimmer
 */
 
-import { symbol } from 'ember-utils';
-import { FrameworkObject } from 'ember-runtime';
 import { DirtyableTag } from '@glimmer/reference';
+import { FrameworkObject } from 'ember-runtime';
+import { symbol } from 'ember-utils';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -51,7 +51,7 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
   @public
   @since 1.13.0
 */
-var Helper = FrameworkObject.extend({
+let Helper = FrameworkObject.extend({
   isHelperInstance: true,
 
   init() {
@@ -88,7 +88,7 @@ var Helper = FrameworkObject.extend({
   */
   recompute() {
     this[RECOMPUTE_TAG].dirty();
-  }
+  },
 
   /**
     Override this function when writing a class-based helper.
@@ -102,7 +102,7 @@ var Helper = FrameworkObject.extend({
 });
 
 Helper.reopenClass({
-  isHelperFactory: true
+  isHelperFactory: true,
 });
 
 /**
@@ -129,7 +129,7 @@ Helper.reopenClass({
 export function helper(helperFn) {
   return {
     isHelperInstance: true,
-    compute: helperFn
+    compute: helperFn,
   };
 }
 

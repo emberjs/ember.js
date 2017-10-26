@@ -3,8 +3,8 @@
 @module ember
 @submodule ember-glimmer
 */
-import { InternalHelperReference } from '../utils/references';
 import { String as StringUtils } from 'ember-runtime';
+import { InternalHelperReference } from '../utils/references';
 
 /**
   Calls [Ember.String.loc](/api/classes/Ember.String.html#method_loc) with the

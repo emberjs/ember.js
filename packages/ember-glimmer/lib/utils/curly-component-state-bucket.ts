@@ -7,7 +7,12 @@ interface Environment {
 }
 
 interface Component {
+  _debugContainerKey: string;
   trigger(event: string);
+  destroy(): void;
+  setProperties(props: {
+    [key: string]: any;
+  }): void;
 }
 
 type Finalizer = () => void;
@@ -26,9 +31,9 @@ function NOOP() {}
 */
 export default class ComponentStateBucket {
   public classRef: Opaque = null;
-  private argsRevision: Revision;
+  public argsRevision: Revision;
 
-  constructor(private environment: Environment, private component: Component, private args: Tagged, private finalizer: Finalizer) {
+  constructor(public environment: Environment, public component: Component, public args: Tagged, public finalizer: Finalizer) {
     this.classRef = null;
     this.argsRevision = args.tag.value();
   }

@@ -169,7 +169,7 @@ export function inputMacro(name, params, hash, builder) {
       assert(
         '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
           'you must use `checked=someBooleanValue` instead.',
-        valueIndex === -1
+        valueIndex === -1,
       );
       wrapComponentClassAttribute(hash);
       return buildSyntax('-checkbox', params, hash, builder);

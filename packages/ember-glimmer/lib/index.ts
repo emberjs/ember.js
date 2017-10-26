@@ -269,20 +269,20 @@ export {
   escapeExpression,
   htmlSafe,
   isHTMLSafe,
-  getSafeString as _getSafeString
+  getSafeString as _getSafeString,
 } from './utils/string';
 export {
   Renderer,
   InertRenderer,
   InteractiveRenderer,
-  _resetRenderers
+  _resetRenderers,
 } from './renderer';
 export {
   getTemplate,
   setTemplate,
   hasTemplate,
   getTemplates,
-  setTemplates
+  setTemplates,
 } from './template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
