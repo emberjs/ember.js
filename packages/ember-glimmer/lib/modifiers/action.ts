@@ -102,7 +102,7 @@ export class ActionState {
     return target;
   }
 
-  handler(event) {
+  handler(event): boolean {
     let { actionName, namedArgs } = this;
     let bubbles = namedArgs.get('bubbles');
     let preventDefault = namedArgs.get('preventDefault');
@@ -155,6 +155,7 @@ export class ActionState {
         });
       }
     });
+    return false;
   }
 
   destroy() {

@@ -190,7 +190,9 @@ class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
 class ColonClassNameBindingReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
-  constructor(private inner: Reference<Opaque>, private truthy: Option<string> = null, private falsy: Option<string> = null) {
+  constructor(private inner: Reference<Opaque>,
+              private truthy: Option<string> = null,
+              private falsy: Option<string> = null) {
     super();
 
     this.tag = inner.tag;

@@ -592,20 +592,20 @@ const LinkComponent = EmberComponent.extend({
     @property active
     @private
   */
-  active: computed('attrs.params', '_active', function computeLinkToComponentActiveClass() {
+  active: computed('attrs.params', '_active', function computeLinkToComponentActiveClass(this: any) {
     let currentState = get(this, '_routing.currentState');
     if (!currentState) { return false; }
 
     return this.get('_active') ? get(this, 'activeClass') : false;
   }),
 
-  _active: computed('_routing.currentState', function computeLinkToComponentActive() {
+  _active: computed('_routing.currentState', function computeLinkToComponentActive(this: any) {
     let currentState = get(this, '_routing.currentState');
     if (!currentState) { return false; }
     return this._isActive(currentState);
   }),
 
-  willBeActive: computed('_routing.targetState', function computeLinkToComponentWillBeActive() {
+  willBeActive: computed('_routing.targetState', function computeLinkToComponentWillBeActive(this: any) {
     let routing = get(this, '_routing');
     let targetState = get(routing, 'targetState');
     if (get(routing, 'currentState') === targetState) { return; }
@@ -613,7 +613,7 @@ const LinkComponent = EmberComponent.extend({
     return this._isActive(targetState);
   }),
 
-  transitioningIn: computed('active', 'willBeActive', function computeLinkToComponentTransitioningIn() {
+  transitioningIn: computed('active', 'willBeActive', function computeLinkToComponentTransitioningIn(this: any) {
     if (get(this, 'willBeActive') === true && !get(this, '_active')) {
       return 'ember-transitioning-in';
     } else {
@@ -621,7 +621,7 @@ const LinkComponent = EmberComponent.extend({
     }
   }),
 
-  transitioningOut: computed('active', 'willBeActive', function computeLinkToComponentTransitioningOut() {
+  transitioningOut: computed('active', 'willBeActive', function computeLinkToComponentTransitioningOut(this: any) {
     if (get(this, 'willBeActive') === false && get(this, '_active')) {
       return 'ember-transitioning-out';
     } else {
@@ -636,7 +636,7 @@ const LinkComponent = EmberComponent.extend({
     @param {Event} event
     @private
   */
-  _invoke(event) {
+  _invoke(this: any, event: Event): boolean {
     if (!isSimpleClick(event)) { return true; }
 
     let preventDefault = get(this, 'preventDefault');
@@ -674,6 +674,7 @@ const LinkComponent = EmberComponent.extend({
 
     // tslint:disable-next-line:max-line-length
     flaggedInstrument('interaction.link-to', payload, this._generateTransition(payload, qualifiedRouteName, models, queryParams, shouldReplace));
+    return false;
   },
 
   _generateTransition(payload, qualifiedRouteName, models, queryParams, shouldReplace) {
@@ -686,7 +687,7 @@ const LinkComponent = EmberComponent.extend({
   queryParams: null,
 
   qualifiedRouteName: computed('targetRouteName', '_routing.currentState',
-  function computeLinkToComponentQualifiedRouteName() {
+  function computeLinkToComponentQualifiedRouteName(this: any) {
     let params = get(this, 'params');
     let paramsLength = params.length;
     let lastParam = params[paramsLength - 1];
@@ -700,7 +701,7 @@ const LinkComponent = EmberComponent.extend({
     return get(this, 'targetRouteName');
   }),
 
-  resolvedQueryParams: computed('queryParams', function computeLinkToComponentResolvedQueryParams() {
+  resolvedQueryParams: computed('queryParams', function computeLinkToComponentResolvedQueryParams(this: any) {
     let resolvedQueryParams = {};
     let queryParams = get(this, 'queryParams');
 
@@ -725,7 +726,7 @@ const LinkComponent = EmberComponent.extend({
     @property href
     @private
   */
-  href: computed('models', 'qualifiedRouteName', function computeLinkToComponentHref() {
+  href: computed('models', 'qualifiedRouteName', function computeLinkToComponentHref(this: any) {
     if (get(this, 'tagName') !== 'a') { return; }
 
     let qualifiedRouteName = get(this, 'qualifiedRouteName');
@@ -759,7 +760,7 @@ const LinkComponent = EmberComponent.extend({
     return routing.generateURL(qualifiedRouteName, models, queryParams);
   }),
 
-  loading: computed('_modelsAreLoaded', 'qualifiedRouteName', function computeLinkToComponentLoading() {
+  loading: computed('_modelsAreLoaded', 'qualifiedRouteName', function computeLinkToComponentLoading(this: any) {
     let qualifiedRouteName = get(this, 'qualifiedRouteName');
     let modelsAreLoaded = get(this, '_modelsAreLoaded');
 
@@ -768,7 +769,7 @@ const LinkComponent = EmberComponent.extend({
     }
   }),
 
-  _modelsAreLoaded: computed('models', function computeLinkToComponentModelsAreLoaded() {
+  _modelsAreLoaded: computed('models', function computeLinkToComponentModelsAreLoaded(this: any) {
     let models = get(this, 'models');
     for (let i = 0; i < models.length; i++) {
       if (models[i] == null) { return false; }

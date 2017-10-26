@@ -590,11 +590,13 @@ const Component = CoreView.extend(
 
       // If in a tagless component, assert that no event handlers are defined
       assert(
+        // tslint:disable-next-line:max-line-length
         `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
         this.tagName !== '' || !this.renderer._destinedForDOM || !(() => {
           let eventDispatcher = getOwner(this).lookup('event_dispatcher:main');
           let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
 
+          // tslint:disable-next-line:forin
           for (let key in events) {
             let methodName = events[key];
 
@@ -602,9 +604,11 @@ const Component = CoreView.extend(
               return true; // indicate that the assertion should be triggered
             }
           }
+          return false;
         }
       )());
 
+      // tslint:disable-next-line:max-line-length
       assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, !(this.tagName && this.tagName.isDescriptor));
     },
 
@@ -620,9 +624,10 @@ const Component = CoreView.extend(
     [PROPERTY_DID_CHANGE](key) {
       if (this[IS_DISPATCHING_ATTRS]) { return; }
 
-      let args, reference;
+      let args = this[ARGS];
+      let reference = args && args[key];
 
-      if ((args = this[ARGS]) && (reference = args[key])) {
+      if (reference) {
         if (reference[UPDATE]) {
           reference[UPDATE](get(this, key));
         }
