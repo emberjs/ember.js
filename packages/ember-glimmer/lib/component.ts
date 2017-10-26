@@ -606,11 +606,14 @@ const Component = CoreView.extend(
       this._super();
     },
 
-    __defineNonEnumerable(property) {
+    __defineNonEnumerable(property: {
+      name: string;
+      descriptor: { value: any }
+    }) {
       this[property.name] = property.descriptor.value;
     },
 
-    [PROPERTY_DID_CHANGE](key) {
+    [PROPERTY_DID_CHANGE](key: string) {
       if (this[IS_DISPATCHING_ATTRS]) { return; }
 
       let args = this[ARGS];
@@ -623,7 +626,7 @@ const Component = CoreView.extend(
       }
     },
 
-    getAttr(key) {
+    getAttr(key: string) {
       // TODO Intimate API should be deprecated
       return this.get(key);
     },
@@ -659,7 +662,7 @@ const Component = CoreView.extend(
       @return String
       @public
      */
-    readDOMAttr(name) {
+    readDOMAttr(name: string) {
       let element = getViewElement(this);
       return readDOMAttr(element, name);
     },
