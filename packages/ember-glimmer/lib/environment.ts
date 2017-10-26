@@ -3,6 +3,8 @@ import {
 } from '@glimmer/reference';
 import {
   AttributeManager,
+  CompilableLayout,
+  CompiledDynamicProgram,
   compileLayout,
   Environment as GlimmerEnvironment,
   getDynamicVar,
@@ -64,10 +66,19 @@ import {
   EMBER_MODULE_UNIFICATION,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
 } from 'ember/features';
-import { Container } from './template';
+import { Container, OwnedTemplate, WrappedTemplateFactory } from './template';
 
 function instrumentationPayload(name) {
   return { object: `component:${name}` };
+}
+
+function isTemplateFactory(template: OwnedTemplate | WrappedTemplateFactory): template is WrappedTemplateFactory {
+  return typeof (template as WrappedTemplateFactory).create === 'function';
+}
+
+export interface CompilerFactory {
+  id: string;
+  new (template: OwnedTemplate): CompilableLayout;
 }
 
 export default class Environment extends GlimmerEnvironment {
@@ -86,9 +97,16 @@ export default class Environment extends GlimmerEnvironment {
   };
   public debugStack: typeof DebugStack;
   public inTransaction: boolean;
-  private _definitionCache: Cache;
-  private _templateCache: Cache;
-  private _compilerCache: Cache;
+  private _definitionCache: Cache<{
+    name: string;
+    source: string;
+    owner: Container;
+  }, CurlyComponentDefinition | undefined>;
+  private _templateCache: Cache<{
+    Template: WrappedTemplateFactory | OwnedTemplate;
+    owner: Container;
+  }, OwnedTemplate>;
+  private _compilerCache: Cache<CompilerFactory, Cache<OwnedTemplate, CompiledDynamicProgram>>;
 
   constructor(injections: any) {
     super(injections);
@@ -102,18 +120,20 @@ export default class Environment extends GlimmerEnvironment {
 
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
-      let customManager;
+      let customManager: any;
 
       if (componentFactory || layout) {
         if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           let managerId = layout && layout.meta.managerId;
 
           if (managerId) {
-            customManager = owner.factoryFor(`component-manager:${managerId}`).class;
+            customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
           }
         }
         return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
       }
+
+      return undefined;
     }, ({ name, source, owner }) => {
       let expandedName = source && this._resolveLocalLookupName(name, source, owner) || name;
 
@@ -123,7 +143,7 @@ export default class Environment extends GlimmerEnvironment {
     });
 
     this._templateCache = new Cache(1000, ({ Template, owner }) => {
-      if (Template.create) {
+      if (isTemplateFactory(Template)) {
         // we received a factory
         return Template.create({ env: this, [OWNER]: owner });
       } else {
