@@ -115,7 +115,7 @@ export function isEachIn(ref): boolean {
   return ref && ref[EACH_IN_REFERENCE];
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   let ref = Object.create(args.positional.at(0));
   ref[EACH_IN_REFERENCE] = true;
   return ref;

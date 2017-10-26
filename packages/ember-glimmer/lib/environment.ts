@@ -1,11 +1,9 @@
-/// <reference path="../externs.d.ts"/>
 import {
   Reference,
 } from '@glimmer/reference';
 import {
   AttributeManager,
   compileLayout,
-  DOMTreeConstruction,
   Environment as GlimmerEnvironment,
   getDynamicVar,
   isSafeString,
@@ -14,7 +12,7 @@ import {
 import {
   Destroyable, Opaque,
 } from '@glimmer/util';
-import { assert, warn } from 'ember-debug';
+import { warn } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart, Cache } from 'ember-metal';
 import { guidFor, OWNER } from 'ember-utils';
@@ -62,7 +60,6 @@ import { default as unbound } from './helpers/unbound';
 import { default as ActionModifierManager } from './modifiers/action';
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
-import { DOMChanges } from '@glimmer/runtime/dist/types/lib/dom/helper';
 import {
   EMBER_MODULE_UNIFICATION,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
@@ -95,8 +92,8 @@ export default class Environment extends GlimmerEnvironment {
 
   constructor(injections: any) {
     super(injections);
-    let owner = this.owner = injections[OWNER];
-    this.isInteractive = owner.lookup('-environment:main').isInteractive;
+    this.owner = injections[OWNER];
+    this.isInteractive = this.owner.lookup<any>('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = [];
@@ -262,7 +259,7 @@ export default class Environment extends GlimmerEnvironment {
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helperFactory.class.isHelperInstance) {
-      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
+      return (_vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
     } else if (helperFactory.class.isHelperFactory) {
       return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
     } else {
@@ -355,7 +352,7 @@ if (DEBUG) {
 
   let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager('style');
 
-  Environment.prototype.attributeFor = function(element, attribute, isTrusting, namespace) {
+  Environment.prototype.attributeFor = function(element, attribute, isTrusting) {
     if (attribute === 'style' && !isTrusting) {
       return STYLE_ATTRIBUTE_MANANGER;
     }

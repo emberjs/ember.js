@@ -148,7 +148,7 @@ function buildSyntax(type, params, hash, builder) {
   @public
 */
 
-export function inputMacro(name, params, hash, builder) {
+export function inputMacro(_name, params, hash, builder) {
   let keys;
   let values;
   let typeIndex = -1;

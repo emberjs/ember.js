@@ -6,6 +6,6 @@ function htmlSafe({ positional }) {
   return new SafeString(path.value());
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return new InternalHelperReference(htmlSafe, args.capture());
 }

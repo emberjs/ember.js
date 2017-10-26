@@ -133,7 +133,7 @@ class ConditionalHelperReference extends CachedReference {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineIf(vm, { positional }) {
+export function inlineIf(_vm, { positional }) {
   assert(
     'The inline form of the `if` helper expects two or three arguments, e.g. ' +
     '`{{if trialExpired "Expired" expiryDate}}`.',
@@ -162,7 +162,7 @@ export function inlineIf(vm, { positional }) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineUnless(vm, { positional }) {
+export function inlineUnless(_vm, { positional }) {
   assert(
     'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
     '`{{unless isFirstLogin "Welcome back!"}}`.',

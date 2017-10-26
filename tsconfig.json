@@ -16,8 +16,8 @@
     // Enhance Strictness
     // "noImplicitAny": true,
     // "suppressImplicitAnyIndexErrors": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     // "allowUnreachableCode": false,
     // "strictNullChecks": true,
     // "noImplicitReturns": true,
@@ -33,7 +33,7 @@
   },
 
   "files": [
+    "packages/ember-glimmer/externs.d.ts",
     "packages/ember-glimmer/lib/index.ts"
   ]
-
 }

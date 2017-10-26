@@ -1,13 +1,9 @@
 import {
-  VersionedPathReference,
-} from '@glimmer/reference';
-import {
   ComponentDefinition,
 } from '@glimmer/runtime';
 import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
 import { Destroyable } from '@glimmer/util';
 
-import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import Environment from '../environment';
@@ -17,7 +13,7 @@ import AbstractManager from './abstract';
 import { OutletLayoutCompiler } from './outlet';
 
 export abstract class AbstractRenderManager extends AbstractManager<RenderState> {
-  layoutFor(definition, bucket, env) {
+  layoutFor(definition: RenderDefinition, _bucket, env) {
     return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
@@ -37,7 +33,10 @@ export interface RenderState {
 }
 
 class SingletonRenderManager extends AbstractRenderManager {
-  create(env: Environment, definition: ComponentDefinition<RenderState>, args: IArguments, dynamicScope: DynamicScope) {
+  create(env: Environment,
+         definition: ComponentDefinition<RenderState>,
+         _args: IArguments,
+         dynamicScope: DynamicScope) {
     let { name } = definition;
     let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
 
@@ -79,7 +78,7 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     return { controller, model: modelRef };
   }
 
-  update({ controller, model }, dynamicScope) {
+  update({ controller, model }) {
     controller.set('model', model.value());
   }
 

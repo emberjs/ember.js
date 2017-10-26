@@ -102,7 +102,7 @@ import { unMut } from './mut';
   @for Ember.Templates.helpers
   @private
 */
-export default function(vm, args) {
+export default function(_vm, args) {
   let ref = unMut(args.positional.at(0));
 
   let wrapped = Object.create(ref);

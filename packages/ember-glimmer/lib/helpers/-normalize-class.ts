@@ -1,7 +1,7 @@
 import { String as StringUtils } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
-function normalizeClass({ positional, named }) {
+function normalizeClass({ positional }) {
   let classNameParts = positional.at(0).value().split('.');
   let className = classNameParts[classNameParts.length - 1];
   let value = positional.at(1).value();
@@ -15,6 +15,6 @@ function normalizeClass({ positional, named }) {
   }
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return new InternalHelperReference(normalizeClass, args.capture());
 }

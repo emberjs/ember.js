@@ -60,7 +60,7 @@ import { CachedReference, UPDATE } from '../utils/references';
   @since 2.1.0
  */
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
 }
 

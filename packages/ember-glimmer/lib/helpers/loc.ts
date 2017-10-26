@@ -41,6 +41,6 @@ function locHelper({ positional }) {
   return StringUtils.loc.apply(null, positional.value());
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return new InternalHelperReference(locHelper, args.capture());
 }

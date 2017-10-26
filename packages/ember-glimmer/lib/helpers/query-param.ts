@@ -23,6 +23,7 @@ import { InternalHelperReference } from '../utils/references';
   @public
 */
 function queryParams({ positional, named }) {
+  // tslint:disable-next-line:max-line-length
   assert('The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName=\'foo\') as opposed to just (query-params \'foo\')', positional.value().length === 0);
 
   return QueryParams.create({
@@ -30,6 +31,6 @@ function queryParams({ positional, named }) {
   });
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return new InternalHelperReference(queryParams, args.capture());
 }

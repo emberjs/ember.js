@@ -270,7 +270,7 @@ export const ACTION = symbol('ACTION');
   @for Ember.Templates.helpers
   @public
 */
-export default function(vm, args): UnboundReference {
+export default function(_vm, args): UnboundReference {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -308,7 +308,7 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
   let mergeArgs = null;
 
   if (actionArgsRef.length > 0) {
-    mergeArgs = function(args) {
+    mergeArgs = (args) => {
       return actionArgsRef.map((ref) => ref.value()).concat(args);
     };
   }
@@ -316,7 +316,7 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
   let readValue = null;
 
   if (valuePathRef) {
-    readValue = function(args) {
+    readValue = (args) => {
       let valuePath = valuePathRef.value();
 
       if (valuePath && args.length > 0) {
@@ -328,7 +328,7 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
   }
 
   if (mergeArgs && readValue) {
-    return function(args) {
+    return (args) => {
       return readValue(mergeArgs(args));
     };
   } else {
@@ -342,13 +342,14 @@ function makeDynamicClosureAction(context, targetRef, actionRef, processArgs, de
     makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey);
   }
 
-  return function(...args) {
+  return (...args) => {
     return makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey)(...args);
   };
 }
 
 function makeClosureAction(context, target, action, processArgs, debugKey) {
-  let self, fn;
+  let self;
+  let fn;
 
   assert(`Action passed is null or undefined in (action) from ${target}.`, !isNone(action));
 
@@ -367,11 +368,12 @@ function makeClosureAction(context, target, action, processArgs, debugKey) {
       self = context;
       fn   = action;
     } else {
+      // tslint:disable-next-line:max-line-length
       assert(`An action could not be made for \`${debugKey || action}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${debugKey || 'myAction'}')\`) or a function available in ${target}.`, false);
     }
   }
 
-  return function(...args) {
+  return (...args) => {
     let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
       return run.join(self, fn, ...processArgs(args));

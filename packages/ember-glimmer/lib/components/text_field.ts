@@ -103,7 +103,7 @@ export default Component.extend(TextSupport, {
       return 'text';
     },
 
-    set(key, value) {
+    set(_key, value) {
       let type = 'text';
 
       if (canSetTypeOfInput(value)) {

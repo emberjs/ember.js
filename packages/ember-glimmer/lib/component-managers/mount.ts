@@ -23,7 +23,7 @@ interface EngineBucket {
 }
 
 class MountManager extends AbstractManager<EngineBucket> {
-  create(environment, { name }, args, dynamicScope) {
+  create(environment, { name }, args) {
     if (DEBUG) {
       this._pushEngineToDebugStack(`engine:${name}`, environment);
     }
@@ -41,7 +41,7 @@ class MountManager extends AbstractManager<EngineBucket> {
     return bucket;
   }
 
-  layoutFor(definition, { engine }, env) {
+  layoutFor(_definition, { engine }, env) {
     let template = engine.lookup(`template:application`);
     return env.getCompiledBlock(OutletLayoutCompiler, template);
   }

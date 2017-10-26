@@ -54,8 +54,8 @@ function keyForArray(keyPath) {
   }
 }
 
-function index(item, index) {
-  return String(index);
+function index(_item, i) {
+  return String(i);
 }
 
 function identity(item) {
@@ -249,7 +249,7 @@ class ArrayIterable {
       return get(iterable, 'length') > 0 ? new EmberArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
     } else if (typeof iterable.forEach === 'function') {
       let array: any[] = [];
-      iterable.forEach(function(item) {
+      iterable.forEach((item) => {
         array.push(item);
       });
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;

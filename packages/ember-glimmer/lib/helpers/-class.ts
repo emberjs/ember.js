@@ -23,6 +23,6 @@ function classHelper({ positional }) {
   return value;
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return new InternalHelperReference(classHelper, args.capture());
 }
