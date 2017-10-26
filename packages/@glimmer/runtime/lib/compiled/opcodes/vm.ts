@@ -48,12 +48,7 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       stack.push(vm.constants.getString(value));
       break;
     case PrimitiveType.BOOLEAN_OR_VOID:
-      switch (value) {
-        case 0: stack.push(false); break;
-        case 1: stack.push(true); break;
-        case 2: stack.push(null); break;
-        case 3: stack.push(undefined); break;
-      }
+      stack.pushEncodedImmediate(primitive);
       break;
     case PrimitiveType.NEGATIVE:
       stack.push(vm.constants.getNegative(value));
@@ -120,13 +115,18 @@ APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
 APPEND_OPCODES.add(Op.CompileBlock, vm => {
   let stack = vm.stack;
   let block = stack.pop<Option<CompilableTemplate> | 0>();
-  stack.push(block ? block.compile() : null);
+
+  if (block) {
+    stack.pushSmi(block.compile() as Recast<VMHandle, number>);
+  } else {
+    stack.pushNull();
+  }
 
   check(vm.stack.peek(), CheckOption(CheckNumber));
 });
 
 APPEND_OPCODES.add(Op.InvokeVirtual, vm => {
-  vm.call(check(vm.stack.pop(), CheckHandle));
+  vm.call(check(vm.stack.popSmi(), CheckHandle));
 });
 
 APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => {

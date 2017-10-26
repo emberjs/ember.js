@@ -29,14 +29,23 @@ export class InnerStack {
     this.inner[to] = this.inner[from];
   }
 
-  update(pos: number, value: Opaque): void {
+  write(pos: number, value: Opaque): void {
     if (isImmediate(value)) {
+      // if (typeof value === 'number') console.trace('immediate');
       this.inner[pos] = encodeImmediate(value);
     } else {
       let idx = this.js.length;
       this.js.push(value);
       this.inner[pos] = idx | HI;
     }
+  }
+
+  writeSmi(pos: number, value: number): void {
+    this.inner[pos] = encodeImmediate(value); // value << 3 | PrimitiveType.NUMBER;
+  }
+
+  writeImmediate(pos: number, value: number): void {
+    this.inner[pos] = value;
   }
 
   get<T>(pos: number): T {
@@ -47,6 +56,10 @@ export class InnerStack {
     } else {
       return decodeImmediate(value) as any;
     }
+  }
+
+  getSmi(pos: number): number {
+    return decodeSmi(this.inner[pos]);
   }
 
   reset(): void {
@@ -67,7 +80,7 @@ export default class EvaluationStack {
     let stack = new InnerStack();
 
     for (let i=0; i<snapshot.length; i++) {
-      stack.update(i, snapshot[i]);
+      stack.write(i, snapshot[i]);
     }
 
     return new this(stack, 0, snapshot.length - 1);
@@ -80,7 +93,24 @@ export default class EvaluationStack {
   }
 
   push(value: Opaque): void {
-    this.stack.update(++this.sp, value);
+    if (value === null) console.trace('null');
+    this.stack.write(++this.sp, value);
+  }
+
+  pushSmi(value: number): void {
+    this.stack.writeSmi(++this.sp, value);
+  }
+
+  pushImmediate(value: null | undefined | number | boolean): void {
+    this.stack.writeImmediate(++this.sp, encodeImmediate(value));
+  }
+
+  pushEncodedImmediate(value: number): void {
+    this.stack.writeImmediate(++this.sp, value);
+  }
+
+  pushNull(): void {
+    this.stack.writeImmediate(++this.sp, Immediates.Null);
   }
 
   dup(position = this.sp): void {
@@ -97,6 +127,10 @@ export default class EvaluationStack {
     return top;
   }
 
+  popSmi(): number {
+    return this.stack.getSmi(this.sp--);
+  }
+
   peek<T>(offset = 0): T {
     return this.stack.get<T>(this.sp - offset);
   }
@@ -105,8 +139,12 @@ export default class EvaluationStack {
     return this.stack.get<T>(base + offset);
   }
 
+  getSmi(offset: number, base = this.fp): number {
+    return this.stack.getSmi(base + offset);
+  }
+
   set(value: Opaque, offset: number, base = this.fp) {
-    this.stack.update(base + offset, value);
+    this.stack.write(base + offset, value);
   }
 
   slice(start: number, end: number): InnerStack {
@@ -142,43 +180,73 @@ function isImmediate(value: Opaque): value is number | boolean | null | undefine
     case 'undefined':
       return true;
     case 'number':
-      return (value as number) % 1 === 0 && value > -1 && !((value as number) & HI);
+      // not an integer
+      if (value as number % 1 !== 0) return false;
+
+      let abs = Math.abs(value as number);
+
+      // too big
+      if (abs & HI) return false;
+
+      return true;
     default:
       return false;
   }
 }
 
+export const enum Type {
+  NUMBER          = 0b000,
+  FLOAT           = 0b001,
+  STRING          = 0b010,
+  BOOLEAN_OR_VOID = 0b011,
+  NEGATIVE        = 0b100
+}
+
+export const enum Immediates {
+  False = 0 << 3 | Type.BOOLEAN_OR_VOID,
+  True  = 1 << 3 | Type.BOOLEAN_OR_VOID,
+  Null  = 2 << 3 | Type.BOOLEAN_OR_VOID,
+  Undef = 3 << 3 | Type.BOOLEAN_OR_VOID
+}
+
 function encodeImmediate(primitive: number | boolean | null | undefined): number {
   switch (typeof primitive) {
     case 'number':
-      return (primitive as number) << 3 | PrimitiveType.NUMBER;
+      if (primitive as number < 0) {
+        return Math.abs(primitive as number) << 3 | PrimitiveType.NEGATIVE;
+      } else {
+        return (primitive as number) << 3 | PrimitiveType.NUMBER;
+      }
     case 'boolean':
-      return ((primitive as any) | 0) << 3 | PrimitiveType.BOOLEAN_OR_VOID;
+      return primitive ? Immediates.True : Immediates.False;
     case 'object':
       // assume null
-      return 2 << 3 | PrimitiveType.BOOLEAN_OR_VOID;
+      return Immediates.Null;
     case 'undefined':
-      return 3 << 3 | PrimitiveType.BOOLEAN_OR_VOID;
+      return Immediates.Undef;
+    default:
+      throw unreachable();
+  }
+}
+
+function decodeSmi(smi: number): number {
+  switch (smi & 0b111) {
+    case PrimitiveType.NUMBER:
+      return smi >> 3;
+    case PrimitiveType.NEGATIVE:
+      return -(smi >> 3);
     default:
       throw unreachable();
   }
 }
 
 function decodeImmediate(immediate: number): number | boolean | null | undefined {
-  let flag = immediate & 7; // 111
-  let value = immediate >> 3;
-
-  switch (flag) {
-    case PrimitiveType.NUMBER:
-      return value;
-    case PrimitiveType.BOOLEAN_OR_VOID:
-      switch (value) {
-        case 0: return false;
-        case 1: return true;
-        case 2: return null;
-        case 3: return undefined;
-      }
+  switch (immediate) {
+    case Immediates.False: return false;
+    case Immediates.True:  return true;
+    case Immediates.Null:  return null;
+    case Immediates.Undef: return undefined;
     default:
-      throw unreachable();
+      return decodeSmi(immediate);
   }
 }
