@@ -1,9 +1,11 @@
-import { Simple } from '@glimmer/interfaces';
+import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
-import { IteratorResult } from '@glimmer/runtime';
+import {
+  DynamicScope as GlimmerDynamicScope,
+  IteratorResult,
+} from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
-import { Environment } from 'ember-glimmer';
 import {
   run,
   runInTransaction,
@@ -18,19 +20,25 @@ import {
 import { BOUNDS } from './component';
 import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
+import Environment from './environment';
 import { OwnedTemplate } from './template';
 import { RootReference } from './utils/references';
-import OutletView, { OutletState, OutletStateReference } from './views/outlet';
+import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
 
-import { ComponentDefinition, RenderResult } from '@glimmer/runtime';
+import { ComponentDefinition, NULL_REFERENCE, RenderResult } from '@glimmer/runtime';
 
 const { backburner } = run;
 
-export class DynamicScope {
+export class DynamicScope implements GlimmerDynamicScope {
+  outletState: VersionedPathReference<Option<OutletState>>;
+  rootOutletState: RootOutletStateReference | undefined;
+
   constructor(
     public view: Opaque,
-    public outletState?: VersionedPathReference<OutletState>,
-    public rootOutletState?: OutletStateReference) {
+    outletState: VersionedPathReference<Option<OutletState>>,
+    rootOutletState?: RootOutletStateReference) {
+    this.outletState = outletState;
+    this.rootOutletState = rootOutletState;
   }
 
   child() {
@@ -39,13 +47,13 @@ export class DynamicScope {
     );
   }
 
-  get(key) {
+  get(key: 'outletState'): VersionedPathReference<Option<OutletState>> {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     return this.outletState;
   }
 
-  set(key, value) {
+  set(key: 'outletState', value: VersionedPathReference<Option<OutletState>>) {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     this.outletState = value;
@@ -57,7 +65,7 @@ class RootState {
   public id: string;
   public env: Environment;
   public root: Opaque;
-  public result: RenderResult;
+  public result: RenderResult | undefined;
   public shouldReflush: boolean;
   public destroyed: boolean;
   public options: {
@@ -111,10 +119,10 @@ class RootState {
 
     this.destroyed = true;
 
-    this.env = null;
+    this.env = undefined as any;
     this.root = null;
-    this.result = null;
-    this.render = null;
+    this.result = undefined;
+    this.render = undefined as any;
 
     if (result) {
       /*
@@ -142,7 +150,7 @@ class RootState {
   }
 }
 
-const renderers: any[] = [];
+const renderers: Renderer[] = [];
 
 export function _resetRenderers() {
   renderers.length = 0;
@@ -209,7 +217,7 @@ export abstract class Renderer {
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
     this._roots = [];
-    this._lastRevision = null;
+    this._lastRevision = -1;
     this._isRenderingRoots = false;
     this._removedRoots = [];
   }
@@ -233,9 +241,9 @@ export abstract class Renderer {
     root: Opaque,
     definition: ComponentDefinition<Opaque>,
     target: Simple.Element,
-    outletStateReference?: OutletStateReference) {
+    outletStateReference?: RootOutletStateReference) {
     let self = new RootReference(definition);
-    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference);
+    let dynamicScope = new DynamicScope(null, outletStateReference || NULL_REFERENCE, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
 
     this._renderRoot(rootState);
@@ -376,7 +384,7 @@ export abstract class Renderer {
     while (removedRoots.length) {
       let root = removedRoots.pop();
 
-      let rootIndex = roots.indexOf(root);
+      let rootIndex = roots.indexOf(root!);
       roots.splice(rootIndex, 1);
     }
 

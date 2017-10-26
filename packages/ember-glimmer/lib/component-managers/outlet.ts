@@ -1,13 +1,14 @@
-import { Option } from '@glimmer/interfaces/dist/types';
+import { Option } from '@glimmer/interfaces';
 import {
   ComponentDefinition,
   DynamicScope,
+  Environment,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
-import { Environment } from 'ember-glimmer';
 import { _instrumentStart } from 'ember-metal';
 import { generateGuid, guidFor } from 'ember-utils';
+import EmberEnvironment from '../environment';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
@@ -42,7 +43,10 @@ class StateBucket {
 }
 
 class OutletComponentManager extends AbstractManager<StateBucket> {
-  create(environment: Environment, definition: OutletComponentDefinition, _args, dynamicScope: OutletDynamicScope) {
+  create(environment: Environment,
+         definition: OutletComponentDefinition,
+         _args,
+         dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
     }
@@ -54,7 +58,7 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
   }
 
   layoutFor(definition, _bucket, env: Environment) {
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
+    return (env as EmberEnvironment).getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
   getSelf({ outletState }) {
@@ -117,7 +121,7 @@ class TopLevelOutletLayoutCompiler {
 
 TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
 
-export class OutletComponentDefinition extends ComponentDefinition<any> {
+export class OutletComponentDefinition extends ComponentDefinition<StateBucket> {
   public outletName: string;
   public template: any;
 

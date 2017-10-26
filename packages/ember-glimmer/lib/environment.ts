@@ -6,9 +6,12 @@ import {
   CompilableLayout,
   CompiledDynamicProgram,
   compileLayout,
+  ComponentDefinition,
   Environment as GlimmerEnvironment,
   getDynamicVar,
+  Helper,
   isSafeString,
+  ModifierManager,
   PartialDefinition,
 } from '@glimmer/runtime';
 import {
@@ -90,10 +93,10 @@ export default class Environment extends GlimmerEnvironment {
   public isInteractive: boolean;
   public destroyedComponents: Destroyable[];
   public builtInModifiers: {
-    [name: string]: any;
+    [name: string]: ModifierManager<Opaque>;
   };
   public builtInHelpers: {
-    [name: string]: any;
+    [name: string]: Helper;
   };
   public debugStack: typeof DebugStack;
   public inTransaction: boolean;
@@ -101,7 +104,7 @@ export default class Environment extends GlimmerEnvironment {
     name: string;
     source: string;
     owner: Container;
-  }, CurlyComponentDefinition | undefined>;
+  }, CurlyComponentDefinition>;
   private _templateCache: Cache<{
     Template: WrappedTemplateFactory | OwnedTemplate;
     owner: Container;
@@ -121,19 +124,14 @@ export default class Environment extends GlimmerEnvironment {
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
       let customManager: any;
+      if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+        let managerId = layout && layout.meta.managerId;
 
-      if (componentFactory || layout) {
-        if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
-          let managerId = layout && layout.meta.managerId;
-
-          if (managerId) {
-            customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
-          }
+        if (managerId) {
+          customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
         }
-        return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
       }
-
-      return undefined;
+      return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
     }, ({ name, source, owner }) => {
       let expandedName = source && this._resolveLocalLookupName(name, source, owner) || name;
 
@@ -213,7 +211,7 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  getComponentDefinition(name, { owner, moduleName }) {
+  getComponentDefinition(name, { owner, moduleName }): ComponentDefinition<Opaque> {
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let source = moduleName && `template:${moduleName}`;
     let definition = this._definitionCache.get({ name, source, owner });
@@ -262,7 +260,7 @@ export default class Environment extends GlimmerEnvironment {
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name, meta) {
+  lookupHelper(name, meta): Helper {
     if (name === 'component') {
       return (vm, args) => componentHelper(vm, args, meta);
     }
