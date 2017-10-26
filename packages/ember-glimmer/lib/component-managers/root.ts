@@ -1,17 +1,17 @@
 import {
-  ComponentDefinition
+  ComponentDefinition,
 } from '@glimmer/runtime';
 import {
-  _instrumentStart
-} from 'ember-metal';
-import {
-  assert
+  assert,
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+import {
+  _instrumentStart,
+} from 'ember-metal';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
-  processComponentInitializationAssertions
+  processComponentInitializationAssertions,
 } from './curly';
 
 class RootComponentManager extends CurlyComponentManager {
@@ -19,7 +19,7 @@ class RootComponentManager extends CurlyComponentManager {
     let component = definition.ComponentClass.create();
 
     if (DEBUG) {
-      this._pushToDebugStack(component._debugContainerKey, environment)
+      this._pushToDebugStack(component._debugContainerKey, environment);
     }
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
@@ -57,7 +57,7 @@ export class RootComponentDefinition extends ComponentDefinition<any> {
       class: instance.constructor,
       create() {
         return instance;
-      }
+      },
     });
     this.template = undefined;
     this.args = undefined;

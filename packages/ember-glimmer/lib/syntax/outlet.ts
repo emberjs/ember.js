@@ -1,8 +1,8 @@
 import {
-  UpdatableTag,
+  combine,
   ConstReference,
   TagWrapper,
-  combine
+  UpdatableTag,
 } from '@glimmer/reference';
 import { OutletComponentDefinition } from '../component-managers/outlet';
 

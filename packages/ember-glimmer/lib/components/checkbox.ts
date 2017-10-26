@@ -44,7 +44,7 @@ export default EmberComponent.extend({
     'name',
     'autofocus',
     'required',
-    'form'
+    'form',
   ],
 
   type: 'checkbox',
@@ -58,5 +58,5 @@ export default EmberComponent.extend({
 
   change() {
    set(this, 'checked', this.$().prop('checked'));
-  }
+  },
 });

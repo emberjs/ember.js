@@ -4,7 +4,6 @@
 import { UPDATE } from '../utils/references';
 import { unMut } from './mut';
 
-
 /**
   The `readonly` helper let's you specify that a binding is one-way only,
   instead of two-way.

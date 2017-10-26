@@ -1,14 +1,22 @@
 import {
-  ComponentDefinition
+  VersionedPathReference,
+} from '@glimmer/reference';
+import {
+  ComponentDefinition,
 } from '@glimmer/runtime';
+import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
+import { Destroyable } from '@glimmer/util';
+
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { RootReference } from '../utils/references';
 import { generateController, generateControllerFactory } from 'ember-routing';
-import { OutletLayoutCompiler } from './outlet';
+import Environment from '../environment';
+import { DynamicScope } from '../renderer';
+import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
+import { OutletLayoutCompiler } from './outlet';
 
-export class AbstractRenderManager extends AbstractManager {
+export abstract class AbstractRenderManager extends AbstractManager<RenderState> {
   layoutFor(definition, bucket, env) {
     return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
@@ -24,13 +32,17 @@ if (DEBUG) {
   };
 }
 
+export interface RenderState {
+  controller: Destroyable;
+}
+
 class SingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
-    let { name, env } = definition;
+  create(env: Environment, definition: ComponentDefinition<RenderState>, args: IArguments, dynamicScope: DynamicScope) {
+    let { name } = definition;
     let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
 
     if (DEBUG) {
-      this._pushToDebugStack(`controller:${name} (with the render helper)`, environment);
+      this._pushToDebugStack(`controller:${name} (with the render helper)`, env);
     }
 
     if (dynamicScope.rootOutletState) {
@@ -38,6 +50,10 @@ class SingletonRenderManager extends AbstractRenderManager {
     }
 
     return { controller };
+  }
+
+  getDestructor() {
+    return null;
   }
 }
 
@@ -77,7 +93,7 @@ export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 export class RenderDefinition extends ComponentDefinition<any> {
   public name: string;
   public template: any;
-  public env: any;
+  public env: Environment;
 
   constructor(name, template, env, manager) {
     super('render', manager, null);

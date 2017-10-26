@@ -1,11 +1,11 @@
 /**
 @module @ember/component
 */
-import { computed } from 'ember-metal';
 import { environment } from 'ember-environment';
+import { computed } from 'ember-metal';
+import { TextSupport } from 'ember-views';
 import Component from '../component';
 import layout from '../templates/empty';
-import { TextSupport } from 'ember-views';
 
 const inputTypes = Object.create(null);
 function canSetTypeOfInput(type) {
@@ -76,7 +76,7 @@ export default Component.extend(TextSupport, {
     'size',
     'step',
     'value',
-    'width'
+    'width',
   ],
 
   /**
@@ -111,7 +111,7 @@ export default Component.extend(TextSupport, {
       }
 
       return type;
-    }
+    },
   }),
 
   /**
@@ -154,5 +154,5 @@ export default Component.extend(TextSupport, {
     @since 1.4.0
     @public
   */
-  max: null
+  max: null,
 });

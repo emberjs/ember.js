@@ -1,17 +1,17 @@
 /**
 @module ember
 */
-import { symbol } from 'ember-utils';
-import {
-  run,
-  get,
-  flaggedInstrument,
-  isNone
-} from 'ember-metal';
-import { UnboundReference } from '../utils/references';
 import { isConst } from '@glimmer/reference';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+import {
+  flaggedInstrument,
+  get,
+  isNone,
+  run,
+} from 'ember-metal';
+import { symbol } from 'ember-utils';
+import { UnboundReference } from '../utils/references';
 
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
@@ -309,7 +309,7 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
 
   if (actionArgsRef.length > 0) {
     mergeArgs = function(args) {
-      return actionArgsRef.map(ref => ref.value()).concat(args);
+      return actionArgsRef.map((ref) => ref.value()).concat(args);
     };
   }
 

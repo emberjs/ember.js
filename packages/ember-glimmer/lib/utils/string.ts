@@ -27,8 +27,8 @@ export function getSafeString() {
     {
       id: 'ember-htmlbars.ember-handlebars-safestring',
       until: '3.0.0',
-      url: 'https://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring'
-    }
+      url: 'https://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring',
+    },
   );
 
   return SafeString;
@@ -43,7 +43,7 @@ const escape = {
   "'": '&#x27;',
   // jscs:enable
   '`': '&#x60;',
-  '=': '&#x3D;'
+  '=': '&#x3D;',
 };
 
 const possible = /[&<>"'`=]/;

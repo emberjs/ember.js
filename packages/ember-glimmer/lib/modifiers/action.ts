@@ -1,9 +1,9 @@
-import { uuid } from 'ember-utils';
-import { run, flaggedInstrument } from 'ember-metal';
 import { assert } from 'ember-debug';
+import { flaggedInstrument, run } from 'ember-metal';
+import { uuid } from 'ember-utils';
 import {
+  ActionManager,
   isSimpleClick,
-  ActionManager
 } from 'ember-views';
 import { INVOKE } from '../helpers/action';
 
@@ -49,7 +49,7 @@ export let ActionHelper = {
     let { actionId } = actionState;
 
     delete ActionManager.registeredActions[actionId];
-  }
+  },
 };
 
 export class ActionState {
@@ -126,7 +126,7 @@ export class ActionState {
       let payload = {
         args,
         target,
-        name: null
+        name: null,
       };
       if (typeof actionName[INVOKE] === 'function') {
         flaggedInstrument('interaction.ember-action', payload, () => {
@@ -148,7 +148,7 @@ export class ActionState {
       } else {
         assert(
           `The action '${actionName}' did not exist on ${target}`,
-          typeof target[actionName] === 'function'
+          typeof target[actionName] === 'function',
         );
         flaggedInstrument('interaction.ember-action', payload, () => {
           target[actionName].apply(target, args);
@@ -184,7 +184,7 @@ export default class ActionModifierManager {
             '{{action}} helper which did not resolve to an action name (a ' +
             'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
             '{{action "' + actionLabel + '"}}).',
-          typeof actionName === 'string' || typeof actionName === 'function'
+          typeof actionName === 'string' || typeof actionName === 'function',
         );
       }
     }
@@ -205,7 +205,7 @@ export default class ActionModifierManager {
       named,
       positional,
       implicitTarget,
-      dom
+      dom,
     );
   }
 

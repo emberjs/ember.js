@@ -1,17 +1,16 @@
-import { set } from 'ember-metal';
-import { CachedReference, UPDATE } from '../utils/references';
 import {
+  combine,
   CONSTANT_TAG,
+  isConst,
+  referenceFromParts,
   TagWrapper,
   UpdatableTag,
-  combine,
-  isConst,
-  referenceFromParts
 } from '@glimmer/reference';
 import {
-  NULL_REFERENCE
+  NULL_REFERENCE,
 } from '@glimmer/runtime';
-
+import { set } from 'ember-metal';
+import { CachedReference, UPDATE } from '../utils/references';
 
 /**
 @module ember

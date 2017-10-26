@@ -1,15 +1,15 @@
-import { renderMacro } from './syntax/render';
-import { outletMacro } from './syntax/outlet';
-import { mountMacro } from './syntax/mount';
+import { assert } from 'ember-debug';
+import { textAreaMacro } from './syntax/-text-area';
 import {
   blockComponentMacro,
-  inlineComponentMacro
+  inlineComponentMacro,
 } from './syntax/dynamic-component';
-import { wrapComponentClassAttribute } from './utils/bindings';
 import { inputMacro } from './syntax/input';
-import { textAreaMacro } from './syntax/-text-area';
+import { mountMacro } from './syntax/mount';
+import { outletMacro } from './syntax/outlet';
+import { renderMacro } from './syntax/render';
 import { hashToArgs } from './syntax/utils';
-import { assert } from 'ember-debug';
+import { wrapComponentClassAttribute } from './utils/bindings';
 
 function refineInlineSyntax(name, params, hash, builder) {
   assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.env.builtInHelpers[name] && builder.env.owner.hasRegistration(`helper:${name}`)));
@@ -53,7 +53,7 @@ function refineBlockSyntax(name, params, hash, _default, inverse, builder) {
   return false;
 }
 
-export const experimentalMacros: Array<any> = [];
+export const experimentalMacros: any[] = [];
 
 // This is a private API to allow for experimental macros
 // to be created in user space. Registering a macro should

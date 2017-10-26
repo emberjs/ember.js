@@ -2,8 +2,8 @@
 /**
 @module ember
 */
-import { InternalHelperReference } from '../utils/references';
 import { String as StringUtils } from 'ember-runtime';
+import { InternalHelperReference } from '../utils/references';
 
 /**
   Calls [loc](/api/classes/Ember.String.html#method_loc) with the

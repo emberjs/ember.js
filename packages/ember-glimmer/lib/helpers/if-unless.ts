@@ -2,18 +2,18 @@
 @module ember
 */
 
+import {
+  combine,
+  CONSTANT_TAG,
+  isConst,
+  TagWrapper,
+  UpdatableTag,
+} from '@glimmer/reference';
 import { assert } from 'ember-debug';
 import {
   CachedReference,
-  ConditionalReference
+  ConditionalReference,
 } from '../utils/references';
-import {
-  CONSTANT_TAG,
-  TagWrapper,
-  UpdatableTag,
-  combine,
-  isConst
-} from '@glimmer/reference';
 
 class ConditionalHelperReference extends CachedReference {
   public branchTag: TagWrapper<UpdatableTag>;
@@ -137,7 +137,7 @@ export function inlineIf(vm, { positional }) {
   assert(
     'The inline form of the `if` helper expects two or three arguments, e.g. ' +
     '`{{if trialExpired "Expired" expiryDate}}`.',
-    positional.length === 3 || positional.length === 2
+    positional.length === 3 || positional.length === 2,
   );
   return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
 }
@@ -166,7 +166,7 @@ export function inlineUnless(vm, { positional }) {
   assert(
     'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
     '`{{unless isFirstLogin "Welcome back!"}}`.',
-    positional.length === 3 || positional.length === 2
+    positional.length === 3 || positional.length === 2,
   );
   return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
 }

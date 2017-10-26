@@ -1,43 +1,38 @@
 import {
-  ComponentDefinition
+  ComponentDefinition,
 } from '@glimmer/runtime';
 import {
-  Opaque
+  Opaque,
 } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 
-import { RootReference } from '../utils/references';
-import { OutletLayoutCompiler } from './outlet';
-import AbstractManager from './abstract';
 import { generateControllerFactory } from 'ember-routing';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
+import { RootReference } from '../utils/references';
+import AbstractManager from './abstract';
+import { OutletLayoutCompiler } from './outlet';
 
-//TODO: remove these stubbed interfaces when better typing is in place
-interface engineType {
+// TODO: remove these stubbed interfaces when better typing is in place
+interface EngineType {
   boot(): void;
-};
+}
 
-interface bucketType {
+interface EngineBucket {
   modelReference?: any;
-  engine: engineType;
-};
+  engine: EngineType;
+}
 
-
-class MountManager extends AbstractManager {
-  prepareArgs(definition, args) {
-    return null;
-  }
-
+class MountManager extends AbstractManager<EngineBucket> {
   create(environment, { name }, args, dynamicScope) {
     if (DEBUG) {
-      this._pushEngineToDebugStack(`engine:${name}`, environment)
+      this._pushEngineToDebugStack(`engine:${name}`, environment);
     }
 
-    let engine: engineType = environment.owner.buildChildEngineInstance(name);
+    let engine: EngineType = environment.owner.buildChildEngineInstance(name);
 
     engine.boot();
 
-    let bucket: bucketType = { engine };
+    let bucket: EngineBucket = { engine };
 
     if (EMBER_ENGINES_MOUNT_PARAMS) {
       bucket.modelReference = args.named.get('model');
@@ -73,7 +68,7 @@ class MountManager extends AbstractManager {
 
   didRenderLayout() {
     if (DEBUG) {
-      this.debugStack.pop()
+      this.debugStack.pop();
     }
   }
 

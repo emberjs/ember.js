@@ -1,8 +1,8 @@
 import { symbol } from 'ember-utils';
-import { ARGS } from '../component';
-import { UPDATE } from './references';
 import { MUTABLE_CELL } from 'ember-views';
+import { ARGS } from '../component';
 import { ACTION } from '../helpers/action';
+import { UPDATE } from './references';
 
 // ComponentArgs takes EvaluatedNamedArgs and converts them into the
 // inputs needed by CurlyComponents (attrs and props, with mutable

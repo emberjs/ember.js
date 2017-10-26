@@ -1,22 +1,22 @@
-import { guidFor } from 'ember-utils';
-import { get, tagForProperty, tagFor, isProxy } from 'ember-metal';
 import {
-  objectAt,
-  isEmberArray
-} from 'ember-runtime';
-import {
-  UpdatableReference,
-  UpdatablePrimitiveReference
-} from './references';
-import { isEachIn } from '../helpers/each-in';
-import {
+  combine,
   CONSTANT_TAG,
   IterationItem,
   TagWrapper,
   UpdatableTag,
-  combine
 } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
+import { get, isProxy, tagFor, tagForProperty } from 'ember-metal';
+import {
+  isEmberArray,
+  objectAt,
+} from 'ember-runtime';
+import { guidFor } from 'ember-utils';
+import { isEachIn } from '../helpers/each-in';
+import {
+  UpdatablePrimitiveReference,
+  UpdatableReference,
+} from './references';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
@@ -82,7 +82,7 @@ function ensureUniqueKey(seen, key) {
 }
 
 class ArrayIterator {
-  public array: Array<any>;
+  public array: any[];
   public length: number;
   public keyFor: (value: any, memo: any) => any;
   public position: number;
@@ -135,7 +135,7 @@ class EmberArrayIterator extends ArrayIterator {
 }
 
 class ObjectKeysIterator extends ArrayIterator {
-  public keys: Array<any>;
+  public keys: any[];
   public length: number;
 
   constructor(keys, values, keyFor) {
@@ -190,7 +190,7 @@ class EachInIterable {
 
     if (iterable !== null && (typeofIterable === 'object' || typeofIterable === 'function')) {
       let keys = Object.keys(iterable);
-      let values = keys.map(key => iterable[key]);
+      let values = keys.map((key) => iterable[key]);
       return keys.length > 0 ? new ObjectKeysIterator(keys, values, keyFor) : EMPTY_ITERATOR;
     } else {
       return EMPTY_ITERATOR;
@@ -248,7 +248,7 @@ class ArrayIterable {
     } else if (isEmberArray(iterable)) {
       return get(iterable, 'length') > 0 ? new EmberArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
     } else if (typeof iterable.forEach === 'function') {
-      let array: Array<any> = [];
+      let array: any[] = [];
       iterable.forEach(function(item) {
         array.push(item);
       });

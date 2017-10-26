@@ -1,21 +1,21 @@
-import { environment } from 'ember-environment';
 import { privatize as P } from 'container';
-import { InteractiveRenderer, InertRenderer } from './renderer';
+import { environment } from 'ember-environment';
+import Component from './component';
+import Checkbox from './components/checkbox';
+import LinkToComponent from './components/link-to';
+import TextArea from './components/text_area';
+import TextField from './components/text_field';
 import {
   DOMChanges,
   DOMTreeConstruction,
-  NodeDOMTreeConstruction
+  NodeDOMTreeConstruction,
 } from './dom';
-import OutletView from './views/outlet';
-import TextField from './components/text_field';
-import TextArea from './components/text_area';
-import Checkbox from './components/checkbox';
-import LinkToComponent from './components/link-to';
-import Component from './component';
-import ComponentTemplate from './templates/component';
-import RootTemplate from './templates/root';
-import OutletTemplate from './templates/outlet';
 import Environment from './environment';
+import { InertRenderer, InteractiveRenderer } from './renderer';
+import ComponentTemplate from './templates/component';
+import OutletTemplate from './templates/outlet';
+import RootTemplate from './templates/root';
+import OutletView from './views/outlet';
 
 export function setupApplicationRegistry(registry) {
   registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
@@ -34,14 +34,14 @@ export function setupApplicationRegistry(registry) {
   registry.register('service:-dom-changes', {
     create({ document }) {
       return new DOMChanges(document);
-    }
+    },
   });
 
   registry.register('service:-dom-tree-construction', {
     create({ document }) {
-      var Implementation = environment.hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
+      let Implementation = environment.hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
       return new Implementation(document);
-    }
+    },
   });
 }
 
