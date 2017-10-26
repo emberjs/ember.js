@@ -116,16 +116,16 @@ export default class VM<TemplateMeta> implements PublicVM {
 
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
-    this.stack.push(this.ra);
-    this.stack.push(this.fp);
+    this.stack.pushSmi(this.ra);
+    this.stack.pushSmi(this.fp);
     this.fp = this.sp - 1;
   }
 
   // Restore $ra, $sp and $fp
   popFrame() {
     this.sp = this.fp - 1;
-    this.ra = this.stack.get<number>(0);
-    this.fp = this.stack.get<number>(1);
+    this.ra = this.stack.getSmi(0);
+    this.fp = this.stack.getSmi(1);
   }
 
   // Jump to an address in `program`
