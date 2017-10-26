@@ -6,7 +6,6 @@ import {
   isConst,
   TagWrapper,
   UpdatableTag,
-  VersionedPathReference,
 } from '@glimmer/reference';
 import {
   ConditionalReference as GlimmerConditionalReference,
@@ -24,7 +23,6 @@ import {
 } from 'ember-metal';
 import {
   HAS_NATIVE_WEAKMAP,
-  Opaque,
   symbol,
 } from 'ember-utils';
 import {
@@ -76,7 +74,7 @@ export class CachedReference extends EmberPathReference {
     this._lastValue = null;
   }
 
-  compute() {}
+  compute() { /* NOOP */ }
 
   value() {
     let { tag, _lastRevision, _lastValue } = this;

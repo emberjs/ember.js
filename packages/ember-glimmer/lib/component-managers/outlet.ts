@@ -46,7 +46,7 @@ class StateBucket {
 }
 
 class OutletComponentManager extends AbstractManager<StateBucket> {
-  create(environment: Environment, definition: OutletComponentDefinition, args, dynamicScope: OutletDynamicScope) {
+  create(environment: Environment, definition: OutletComponentDefinition, _args, dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
     }
@@ -57,7 +57,7 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
     return new StateBucket(outletState);
   }
 
-  layoutFor(definition, bucket, env) {
+  layoutFor(definition, _bucket, env: Environment) {
     return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
@@ -65,7 +65,7 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
     return new RootReference(outletState.render.controller);
   }
 
-  didRenderLayout(bucket) {
+  didRenderLayout(bucket: StateBucket) {
     bucket.finalize();
 
     if (DEBUG) {
@@ -73,7 +73,7 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
     }
   }
 
-  getDestructor(bucket: StateBucket): Option<Destroyable> {
+  getDestructor(): Option<Destroyable> {
     return null;
   }
 }
@@ -81,14 +81,14 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
 const MANAGER = new OutletComponentManager();
 
 class TopLevelOutletComponentManager extends OutletComponentManager {
-  create(environment, definition, args, dynamicScope) {
+  create(environment, definition, _args, dynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
     }
     return new StateBucket(dynamicScope.outletState.value());
   }
 
-  layoutFor(definition, bucket, env) {
+  layoutFor(definition, _bucket, env) {
     return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
   }
 }

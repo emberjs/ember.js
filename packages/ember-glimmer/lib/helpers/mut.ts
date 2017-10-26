@@ -87,7 +87,7 @@ export function unMut(ref) {
   return ref[SOURCE] || ref;
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   let rawRef = args.positional.at(0);
 
   if (isMut(rawRef)) {

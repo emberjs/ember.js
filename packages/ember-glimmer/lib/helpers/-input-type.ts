@@ -1,6 +1,6 @@
 import { InternalHelperReference } from '../utils/references';
 
-function inputTypeHelper({ positional, named }) {
+function inputTypeHelper({ positional }) {
   let type = positional.at(0).value();
   if (type === 'checkbox') {
     return '-checkbox';
@@ -8,6 +8,6 @@ function inputTypeHelper({ positional, named }) {
   return '-text-field';
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return new InternalHelperReference(inputTypeHelper, args.capture());
 }

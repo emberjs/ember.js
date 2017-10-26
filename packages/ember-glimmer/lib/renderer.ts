@@ -1,7 +1,3 @@
-interface FreeformObject {
-  [key: string]: any;
-}
-
 import { Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import { IteratorResult } from '@glimmer/runtime';
@@ -174,7 +170,7 @@ function loopBegin() {
 function K() { /* noop */ }
 
 let loops = 0;
-function loopEnd(current, next) {
+function loopEnd() {
   for (let i = 0; i < renderers.length; i++) {
     if (!renderers[i]._isValid()) {
       if (loops > 10) {
@@ -193,7 +189,7 @@ function loopEnd(current, next) {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-export class Renderer {
+export abstract class Renderer {
   private _env: Environment;
   private _rootTemplate: any;
   private _viewRegistry: {
@@ -223,9 +219,8 @@ export class Renderer {
   appendOutletView(view: OutletView, target: Simple.Element) {
     let definition = new TopLevelOutletComponentDefinition(view);
     let outletStateReference = view.toReference();
-    let targetObject = view.outletState.render.controller;
 
-    this._appendDefinition(view, definition, target, outletStateReference, targetObject);
+    this._appendDefinition(view, definition, target, outletStateReference);
   }
 
   appendTo(view: Opaque, target: Simple.Element) {
@@ -238,8 +233,7 @@ export class Renderer {
     root: Opaque,
     definition: ComponentDefinition<Opaque>,
     target: Simple.Element,
-    outletStateReference?: OutletStateReference,
-    targetObject: Opaque = null) {
+    outletStateReference?: OutletStateReference) {
     let self = new RootReference(definition);
     let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
@@ -303,9 +297,7 @@ export class Renderer {
     this._clearAllRoots();
   }
 
-  getElement(view) {
-    // overridden in the subclasses
-  }
+  abstract getElement(view: Opaque): Simple.Element | undefined;
 
   getBounds(view) {
     let bounds = view[BOUNDS];
@@ -335,7 +327,8 @@ export class Renderer {
 
   _renderRoots() {
     let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
-    let globalShouldReflush, initialRootsLength;
+    let globalShouldReflush: boolean;
+    let initialRootsLength: number;
 
     do {
       env.begin();
@@ -453,7 +446,7 @@ export class InertRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, false);
   }
 
-  getElement(view) {
+  getElement(_view: Opaque): Simple.Element | undefined {
     throw new Error('Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).');
   }
 }
@@ -463,7 +456,7 @@ export class InteractiveRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, true);
   }
 
-  getElement(view) {
+  getElement(view: Opaque): Simple.Element | undefined {
     return getViewElement(view);
   }
 }

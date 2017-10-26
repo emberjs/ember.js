@@ -11,7 +11,7 @@ function dynamicComponentFor(vm, args, meta) {
   return new DynamicComponentReference({ nameRef, env, meta, args: null });
 }
 
-export function dynamicComponentMacro(params, hash, _default, inverse, builder) {
+export function dynamicComponentMacro(params, hash, _default, _inverse, builder) {
   let definitionArgs = [params.slice(0, 1), null, null, null];
   let args = [params.slice(1), hashToArgs(hash), null, null];
   builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
@@ -25,7 +25,7 @@ export function blockComponentMacro(params, hash, _default, inverse, builder) {
   return true;
 }
 
-export function inlineComponentMacro(name, params, hash, builder) {
+export function inlineComponentMacro(_name, params, hash, builder) {
   let definitionArgs = [params.slice(0, 1), null, null, null];
   let args = [params.slice(1), hashToArgs(hash), null, null];
   builder.component.dynamic(definitionArgs, dynamicComponentFor, args);
@@ -54,6 +54,7 @@ class DynamicComponentReference {
     if (typeof nameOrDef === 'string') {
       let definition = env.getComponentDefinition(nameOrDef, meta);
 
+      // tslint:disable-next-line:max-line-length
       assert(`Could not find component named "${nameOrDef}" (no component or template with that name was found)`, definition);
 
       return definition;
@@ -64,6 +65,5 @@ class DynamicComponentReference {
     }
   }
 
-  get() {
-  }
+  get() { /* NOOP */ }
 }

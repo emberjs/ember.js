@@ -1,9 +1,6 @@
 import {
   ComponentDefinition,
 } from '@glimmer/runtime';
-import {
-  assert,
-} from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart,
@@ -15,7 +12,7 @@ import CurlyComponentManager, {
 } from './curly';
 
 class RootComponentManager extends CurlyComponentManager {
-  create(environment, definition, args, dynamicScope, currentScope, hasBlock) {
+  create(environment, definition, args, dynamicScope) {
     let component = definition.ComponentClass.create();
 
     if (DEBUG) {

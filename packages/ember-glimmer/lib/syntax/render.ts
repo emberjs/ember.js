@@ -17,10 +17,12 @@ function makeComponentDefinition(vm, args) {
   let nameRef = args.positional.at(0);
 
   assert(`The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`, isConst(nameRef));
+  // tslint:disable-next-line:max-line-length
   assert(`The second argument of {{render}} must be a path, e.g. {{render "post" post}}.`, args.positional.length === 1 || !isConst(args.positional.at(1)));
 
   let templateName = nameRef.value();
 
+  // tslint:disable-next-line:max-line-length
   assert(`You used \`{{render '${templateName}'}}\`, but '${templateName}' can not be found as a template.`, env.owner.hasRegistration(`template:${templateName}`));
 
   let template = env.owner.lookup(`template:${templateName}`);
@@ -30,10 +32,12 @@ function makeComponentDefinition(vm, args) {
   if (args.named.has('controller')) {
     let controllerNameRef = args.named.get('controller');
 
+    // tslint:disable-next-line:max-line-length
     assert(`The controller argument for {{render}} must be quoted, e.g. {{render "sidebar" controller="foo"}}.`, isConst(controllerNameRef));
 
     controllerName = controllerNameRef.value();
 
+    // tslint:disable-next-line:max-line-length
     assert(`The controller name you supplied '${controllerName}' did not resolve to a controller.`, env.owner.hasRegistration(`controller:${controllerName}`));
   } else {
     controllerName = templateName;
@@ -118,7 +122,7 @@ function makeComponentDefinition(vm, args) {
   @public
   @deprecated Use a component instead
 */
-export function renderMacro(name, params, hash, builder) {
+export function renderMacro(_name, params, hash, builder) {
   if (!params) {
     params = [];
   }

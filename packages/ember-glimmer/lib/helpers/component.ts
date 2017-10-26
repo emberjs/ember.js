@@ -145,6 +145,10 @@ import { CachedReference } from '../utils/references';
   @public
 */
 export class ClosureComponentReference extends CachedReference {
+  static create(args, meta, env) {
+    return new ClosureComponentReference(args, meta, env);
+  }
+
   public defRef: any;
   public tag: any;
   public args: any;
@@ -152,10 +156,6 @@ export class ClosureComponentReference extends CachedReference {
   public env: any;
   public lastDefinition: any;
   public lastName: string;
-
-  static create(args, meta, env) {
-    return new ClosureComponentReference(args, meta, env);
-  }
 
   constructor(args, meta, env) {
     super();
@@ -185,9 +185,12 @@ export class ClosureComponentReference extends CachedReference {
     this.lastName = nameOrDef;
 
     if (typeof nameOrDef === 'string') {
+      // tslint:disable-next-line:max-line-length
       assert('You cannot use the input helper as a contextual helper. Please extend Ember.TextField or Ember.Checkbox to use it as a contextual component.', nameOrDef !== 'input');
+      // tslint:disable-next-line:max-line-length
       assert('You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
       definition = env.getComponentDefinition(nameOrDef, meta);
+      // tslint:disable-next-line:max-line-length
       assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, definition);
     } else if (isComponentDefinition(nameOrDef)) {
       definition = nameOrDef;

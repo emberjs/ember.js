@@ -26,6 +26,6 @@ function concat({ positional }) {
   return positional.value().map(normalizeTextValue).join('');
 }
 
-export default function(vm, args) {
+export default function(_vm, args) {
   return new InternalHelperReference(concat, args.capture());
 }

@@ -535,10 +535,10 @@ const LinkComponent = EmberComponent.extend({
     @private
   */
   disabled: computed({
-    get(key, value) {
+    get(_key) {
       return false;
     },
-    set(key, value) {
+    set(_key, value) {
       if (value !== undefined) { this.set('_isDisabled', value); }
 
       return value ? get(this, 'disabledClass') : false;

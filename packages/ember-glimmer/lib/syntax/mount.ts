@@ -3,7 +3,6 @@
 @submodule ember-glimmer
 */
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import { MountDefinition } from '../component-managers/mount';
 import { hashToArgs } from './utils';
@@ -56,7 +55,7 @@ function dynamicEngineFor(vm, args, meta) {
   @category ember-application-engines
   @public
 */
-export function mountMacro(name, params, hash, builder) {
+export function mountMacro(_name, params, hash, builder) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',

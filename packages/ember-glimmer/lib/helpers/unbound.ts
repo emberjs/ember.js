@@ -34,7 +34,7 @@ import { UnboundReference } from '../utils/references';
   @public
 */
 
-export default function(vm, args) {
+export default function(_vm, args) {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
     args.positional.length === 1 && args.named.length === 0,
