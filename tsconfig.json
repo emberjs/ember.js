@@ -20,8 +20,8 @@
     "noUnusedParameters": true,
     // "allowUnreachableCode": false,
     // "strictNullChecks": true,
-    // "noImplicitReturns": true,
-    // "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
 
     "newLine": "LF",
     "noEmit": true,

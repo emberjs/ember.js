@@ -13,6 +13,7 @@ if (DEBUG) {
   class TemplateElement extends Element { }
   class EngineElement extends Element { }
 
+  // tslint:disable-next-line:no-shadowed-variable
   DebugStack = class DebugStack {
     private _stack: TemplateElement[] = [];
 
@@ -24,7 +25,7 @@ if (DEBUG) {
       this._stack.push(new EngineElement(name));
     }
 
-    pop() {
+    pop(): string | void {
       let element = this._stack.pop();
 
       if (element) {
@@ -32,7 +33,7 @@ if (DEBUG) {
       }
     }
 
-    peek() {
+    peek(): string | void {
       let template = this._currentTemplate();
       let engine = this._currentEngine();
 
@@ -51,7 +52,7 @@ if (DEBUG) {
       return this._getCurrentByType(EngineElement);
     }
 
-    _getCurrentByType(type) {
+    _getCurrentByType(type): string | void {
       for (let i = this._stack.length; i >= 0; i--) {
         let element = this._stack[i];
         if (element instanceof type) {

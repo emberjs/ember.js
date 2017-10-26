@@ -39,6 +39,7 @@ const DEFAULT_LAYOUT = P`template:components/-default`;
 
 function aliasIdToElementId(args, props) {
   if (args.named.has('id')) {
+    // tslint:disable-next-line:max-line-length
     assert(`You cannot invoke a component with both 'id' and 'elementId' at the same time.`, !args.named.has('elementId'));
     props.elementId = props.id;
   }
@@ -74,6 +75,7 @@ function applyAttributeBindings(element, attributeBindings, component, operation
 }
 
 function tagName(vm) {
+  // tslint:disable-next-line:no-shadowed-variable
   let { tagName } = vm.dynamicScope().view;
 
   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
@@ -128,7 +130,8 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     let componentHasRestStylePositionalParams = typeof componentPositionalParamsDefinition === 'string';
-    let componentHasPositionalParams = componentHasRestStylePositionalParams || componentPositionalParamsDefinition.length > 0;
+    let componentHasPositionalParams = componentHasRestStylePositionalParams ||
+                                       componentPositionalParamsDefinition.length > 0;
     let needsPositionalParamMunging = componentHasPositionalParams && args.positional.length !== 0;
     let isClosureComponent = definition.args;
 
@@ -370,6 +373,7 @@ export function validatePositionalParameters(named, positional, positionalParams
     let paramType = typeof positionalParamsDefinition;
 
     if (paramType === 'string') {
+      // tslint:disable-next-line:max-line-length
       assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
     } else {
       if (positional.length < positionalParamsDefinition.length) {
@@ -400,20 +404,15 @@ export function processComponentInitializationAssertions(component, props) {
     return true;
   })());
 
-  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(), (() => {
-    let { classNameBindings, tagName } = component;
-    return tagName !== '' || !classNameBindings || classNameBindings.length === 0;
-  })());
+  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(),
+    component.tagName !== '' || !component.classNameBindings || component.classNameBindings.length === 0);
 
-  assert('You cannot use `elementId` on a tag-less component: ' + component.toString(), (() => {
-    let { elementId, tagName } = component;
-    return tagName !== '' || props.id === elementId || (!elementId && elementId !== '');
-  })());
+  assert('You cannot use `elementId` on a tag-less component: ' + component.toString(),
+    component.tagName !== '' || props.id === component.elementId ||
+    (!component.elementId && component.elementId !== ''));
 
-  assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(), (() => {
-    let { attributeBindings, tagName } = component;
-    return tagName !== '' || !attributeBindings || attributeBindings.length === 0;
-  })());
+  assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(),
+    component.tagName !== '' || !component.attributeBindings || component.attributeBindings.length === 0);
 }
 
 export function initialRenderInstrumentDetails(component) {
