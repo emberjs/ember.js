@@ -1,9 +1,24 @@
-import { combineTagged } from '@glimmer/reference';
+import { 
+  combineTagged,
+  Tag,
+  VersionedPathReference
+} from '@glimmer/reference';
 import {
+  Arguments,
+  Bounds,
+  CompiledDynamicProgram,
+  ComponentClass,
   ComponentDefinition,
+  ComponentManager,
+  ElementOperations,
+  NamedArguments,
+  PositionalArguments,
+  PreparedArguments,
   PrimitiveReference,
+  Simple,
 } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
+import { Opaque, Destroyable } from '@glimmer/util';
+import { Option } from '@glimmer/interfaces';
 import { privatize as P } from 'container';
 import {
   assert,
@@ -25,19 +40,21 @@ import {
   IS_DISPATCHING_ATTRS,
   ROOT_REF,
 } from '../component';
+import Environment from '../environment';
+import { DynamicScope } from '../renderer';
 import {
   AttributeBinding,
   ClassNameBinding,
   IsVisibleBinding,
 } from '../utils/bindings';
-import ComponentStateBucket from '../utils/curly-component-state-bucket';
+import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 import { PropertyReference } from '../utils/references';
 import AbstractManager from './abstract';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
-function aliasIdToElementId(args, props) {
+function aliasIdToElementId(args: Arguments, props: any) {
   if (args.named.has('id')) {
     // tslint:disable-next-line:max-line-length
     assert(`You cannot invoke a component with both 'id' and 'elementId' at the same time.`, !args.named.has('elementId'));
@@ -48,7 +65,7 @@ function aliasIdToElementId(args, props) {
 // We must traverse the attributeBindings in reverse keeping track of
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
-function applyAttributeBindings(element, attributeBindings, component, operations) {
+function applyAttributeBindings(element: Simple.Element, attributeBindings: any, component: Component, operations: ElementOperations) {
   let seen: string[] = [];
   let i = attributeBindings.length - 1;
 
@@ -74,14 +91,14 @@ function applyAttributeBindings(element, attributeBindings, component, operation
   }
 }
 
-function tagName(vm) {
+function tagName(vm: any) {
   // tslint:disable-next-line:no-shadowed-variable
   let { tagName } = vm.dynamicScope().view;
 
   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
 }
 
-function ariaRole(vm) {
+function ariaRole(vm: any) {
   return vm.getSelf().get('ariaRole');
 }
 
@@ -89,11 +106,11 @@ class CurlyComponentLayoutCompiler {
   static id: string;
   public template: any;
 
-  constructor(template) {
+  constructor(template: any) {
     this.template = template;
   }
 
-  compile(builder) {
+  compile(builder: any) {
     builder.wrapLayout(this.template);
     builder.tag.dynamic(tagName);
     builder.attrs.dynamic('role', ariaRole);
@@ -107,22 +124,22 @@ export class PositionalArgumentReference {
   public tag: any;
   private _references: any;
 
-  constructor(references) {
+  constructor(references: any) {
     this.tag = combineTagged(references);
     this._references = references;
   }
 
   value() {
-    return this._references.map((reference) => reference.value());
+    return this._references.map((reference: any) => reference.value());
   }
 
-  get(key) {
+  get(key: any) {
     return PropertyReference.create(this, key);
   }
 }
 
 export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket> {
-  prepareArgs(definition, args) {
+  prepareArgs(definition: ComponentDefinition<ComponentStateBucket>, args: Arguments): Option<PreparedArguments> {
     let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
 
     if (DEBUG && componentPositionalParamsDefinition) {
@@ -172,7 +189,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return { positional, named };
   }
 
-  create(environment, definition, args, dynamicScope, callerSelfRef, hasBlock) {
+  create(environment: Environment, definition: ComponentDefinition<ComponentStateBucket>, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
     if (DEBUG) {
       this._pushToDebugStack(`component:${definition.name}`, environment);
     }
@@ -231,16 +248,15 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return bucket;
   }
 
-  layoutFor(definition, bucket, env) {
+  layoutFor(definition: ComponentDefinition<ComponentStateBucket>, bucket: ComponentStateBucket, env: Environment): CompiledDynamicProgram {
     let template = definition.template;
     if (!template) {
-      let { component } = bucket;
-      template = this.templateFor(component, env);
+      template = this.templateFor(bucket, env);
     }
     return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
-  templateFor(component, env) {
+  templateFor(component: ComponentStateBucket, env: Environment): any {
     let Template = get(component, 'layout');
     let owner = component[OWNER];
     if (Template) {
@@ -256,11 +272,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return owner.lookup(DEFAULT_LAYOUT);
   }
 
-  getSelf({ component }) {
+  getSelf({ component }: ComponentStateBucket): VersionedPathReference<Opaque> {
     return component[ROOT_REF];
   }
 
-  didCreateElement({ component, classRef, environment }, element, operations) {
+  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: Simple.Element, operations: ElementOperations): void {
     setViewElement(component, element);
 
     let { attributeBindings, classNames, classNameBindings } = component;
@@ -277,13 +293,13 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     if (classNames && classNames.length) {
-      classNames.forEach((name) => {
+      classNames.forEach((name: string) => {
         operations.addStaticAttribute(element, 'class', name);
       });
     }
 
     if (classNameBindings && classNameBindings.length) {
-      classNameBindings.forEach((binding) => {
+      classNameBindings.forEach((binding: any) => {
         ClassNameBinding.install(element, component, binding, operations);
       });
     }
@@ -295,7 +311,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
   }
 
-  didRenderLayout(bucket, bounds) {
+  didRenderLayout(bucket: ComponentStateBucket, bounds: Bounds): void {
     bucket.component[BOUNDS] = bounds;
     bucket.finalize();
 
@@ -304,11 +320,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
   }
 
-  getTag({ component }) {
+  getTag({ component }: ComponentStateBucket): Option<Tag> {
     return component[DIRTY_TAG];
   }
 
-  didCreate({ component, environment }) {
+  didCreate({ component, environment }: ComponentStateBucket): void {
     if (environment.isInteractive) {
       component._transitionTo('inDOM');
       component.trigger('didInsertElement');
@@ -316,7 +332,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
   }
 
-  update(bucket: ComponentStateBucket) {
+  update(bucket: ComponentStateBucket): void {
     let { component, args, argsRevision, environment } = bucket;
 
     if (DEBUG) {
@@ -344,7 +360,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
   }
 
-  didUpdateLayout(bucket: ComponentStateBucket) {
+  didUpdateLayout(bucket: ComponentStateBucket): void {
     bucket.finalize();
 
     if (DEBUG) {
@@ -352,19 +368,19 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
   }
 
-  didUpdate({ component, environment }) {
+  didUpdate({ component, environment }: ComponentStateBucket): void {
     if (environment.isInteractive) {
       component.trigger('didUpdate');
       component.trigger('didRender');
     }
   }
 
-  getDestructor(stateBucket: ComponentStateBucket) {
+  getDestructor(stateBucket: ComponentStateBucket): Option<Destroyable> {
     return stateBucket;
   }
 }
 
-export function validatePositionalParameters(named, positional, positionalParamsDefinition) {
+export function validatePositionalParameters(named: NamedArguments, positional: PositionalArguments, positionalParamsDefinition: any) {
   if (DEBUG) {
     if (!named || !positional || !positional.length) {
       return;
@@ -392,7 +408,7 @@ export function validatePositionalParameters(named, positional, positionalParams
   }
 }
 
-export function processComponentInitializationAssertions(component, props) {
+export function processComponentInitializationAssertions(component: Component, props: any) {
   assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
     let { classNameBindings } = component;
     for (let i = 0; i < classNameBindings.length; i++) {
@@ -415,11 +431,11 @@ export function processComponentInitializationAssertions(component, props) {
     component.tagName !== '' || !component.attributeBindings || component.attributeBindings.length === 0);
 }
 
-export function initialRenderInstrumentDetails(component) {
+export function initialRenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: true });
 }
 
-export function rerenderInstrumentDetails(component) {
+export function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
 
@@ -427,9 +443,9 @@ const MANAGER = new CurlyComponentManager();
 
 export class CurlyComponentDefinition extends ComponentDefinition<Opaque> {
   public template: any;
-  public args: any;
+  public args: Arguments;
 
-  constructor(name, ComponentClass, template, args, customManager?) {
+  constructor(name: string, ComponentClass: ComponentClass, template: any, args: Arguments, customManager?: ComponentManager<Opaque>) {
     super(name, customManager || MANAGER, ComponentClass);
     this.template = template;
     this.args = args;

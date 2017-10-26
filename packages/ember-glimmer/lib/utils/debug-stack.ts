@@ -17,11 +17,11 @@ if (DEBUG) {
   DebugStack = class DebugStack {
     private _stack: TemplateElement[] = [];
 
-    push(name) {
+    push(name: string) {
       this._stack.push(new TemplateElement(name));
     }
 
-    pushEngine(name) {
+    pushEngine(name: string) {
       this._stack.push(new EngineElement(name));
     }
 
@@ -52,7 +52,7 @@ if (DEBUG) {
       return this._getCurrentByType(EngineElement);
     }
 
-    _getCurrentByType(type): string | void {
+    _getCurrentByType(type: any): string | void {
       for (let i = this._stack.length; i >= 0; i--) {
         let element = this._stack[i];
         if (element instanceof type) {

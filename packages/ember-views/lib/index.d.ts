@@ -1,4 +1,5 @@
 import { Opaque } from '@glimmer/util';
+import { Simple } from '@glimmer/runtime';
 
 export const ActionSupport: any;
 export const ChildViewsSupport: any;
@@ -8,8 +9,8 @@ export const ViewMixin: any;
 export const ViewStateSupport: any;
 export const TextSupport: any;
 
-export function getViewElement(view: Opaque): Element;
-export function setViewElement(view: Opaque, element: Element | null);
+export function getViewElement(view: Opaque): Simple.Element;
+export function setViewElement(view: Opaque, element: Simple.Element | null);
 
 export function isSimpleClick(event: Event): boolean;
 

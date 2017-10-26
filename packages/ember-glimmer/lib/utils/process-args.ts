@@ -1,5 +1,6 @@
 import { symbol } from 'ember-utils';
 import { MUTABLE_CELL } from 'ember-views';
+import { CapturedNamedArguments } from '@glimmer/runtime';
 import { ARGS } from '../component';
 import { ACTION } from '../helpers/action';
 import { UPDATE } from './references';
@@ -7,7 +8,7 @@ import { UPDATE } from './references';
 // ComponentArgs takes EvaluatedNamedArgs and converts them into the
 // inputs needed by CurlyComponents (attrs and props, with mutable
 // cells, etc).
-export function processComponentArgs(namedArgs) {
+export function processComponentArgs(namedArgs: CapturedNamedArguments) {
   let keys = namedArgs.names;
   let attrs = namedArgs.value();
   let props = Object.create(null);

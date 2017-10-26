@@ -1,14 +1,19 @@
 import { Opaque } from '@glimmer/interfaces';
-import { Revision, Tagged } from '@glimmer/reference';
+import { Revision } from '@glimmer/reference';
+import {
+  CapturedNamedArguments
+} from '@glimmer/runtime';
+import Environment from '../environment';
 
-interface Environment {
-  isInteractive: boolean;
-  destroyedComponents: Component[];
-}
-
-interface Component {
+export interface Component {
   _debugContainerKey: string;
-  trigger(event: string);
+  _transitionTo(name: string): void;
+  attributeBindings: any;
+  classNames: any;
+  classNameBindings: any;
+  elementId: string;
+  tagName: string;
+  trigger(event: string): void;
   destroy(): void;
   setProperties(props: {
     [key: string]: any;
@@ -32,7 +37,7 @@ export default class ComponentStateBucket {
   public classRef: Opaque = null;
   public argsRevision: Revision;
 
-  constructor(public environment: Environment, public component: Component, public args: Tagged, public finalizer: Finalizer) {
+  constructor(public environment: Environment, public component: Component, public args: CapturedNamedArguments, public finalizer: Finalizer) {
     this.classRef = null;
     this.argsRevision = args.tag.value();
   }

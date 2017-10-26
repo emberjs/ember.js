@@ -1,34 +1,46 @@
 import {
+  Arguments,
   ComponentDefinition,
 } from '@glimmer/runtime';
 import {
+  Destroyable,
   Opaque,
+  Option
 } from '@glimmer/util';
+import {
+  VersionedPathReference
+} from '@glimmer/reference';
 import { DEBUG } from 'ember-env-flags';
 
 import { generateControllerFactory } from 'ember-routing';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import { RootReference } from '../utils/references';
+import Environment from '../environment';
 import AbstractManager from './abstract';
 import { OutletLayoutCompiler } from './outlet';
 
 // TODO: remove these stubbed interfaces when better typing is in place
 interface EngineType {
   boot(): void;
+  destroy(): void;
+  lookup(name: string): any;
+  factoryFor(name: string): any;
 }
 
 interface EngineBucket {
-  modelReference?: any;
   engine: EngineType;
+  controller?: any;
+  modelReference?: any;
+  modelRevision?: any;
 }
 
 class MountManager extends AbstractManager<EngineBucket> {
-  create(environment, { name }, args) {
+  create(environment: Environment, { name }: ComponentDefinition<EngineBucket>, args: Arguments) {
     if (DEBUG) {
       this._pushEngineToDebugStack(`engine:${name}`, environment);
     }
 
-    let engine: EngineType = environment.owner.buildChildEngineInstance(name);
+    let engine = environment.owner.buildChildEngineInstance<EngineType>(name);
 
     engine.boot();
 
@@ -41,12 +53,12 @@ class MountManager extends AbstractManager<EngineBucket> {
     return bucket;
   }
 
-  layoutFor(_definition, { engine }, env) {
+  layoutFor(_definition: ComponentDefinition<EngineBucket>, { engine }: EngineBucket, env: Environment) {
     let template = engine.lookup(`template:application`);
     return env.getCompiledBlock(OutletLayoutCompiler, template);
   }
 
-  getSelf(bucket) {
+  getSelf(bucket: EngineBucket): VersionedPathReference<Opaque> {
     let { engine, modelReference } = bucket;
 
     let applicationFactory = engine.factoryFor(`controller:application`);
@@ -62,17 +74,17 @@ class MountManager extends AbstractManager<EngineBucket> {
     return new RootReference(controller);
   }
 
-  getDestructor({ engine }) {
+  getDestructor({ engine }: EngineBucket): Option<Destroyable> {
     return engine;
   }
 
-  didRenderLayout() {
+  didRenderLayout(): void {
     if (DEBUG) {
       this.debugStack.pop();
     }
   }
 
-  update(bucket) {
+  update(bucket: EngineBucket): void {
     if (EMBER_ENGINES_MOUNT_PARAMS) {
       let { controller, modelReference, modelRevision } = bucket;
 
@@ -88,7 +100,7 @@ class MountManager extends AbstractManager<EngineBucket> {
 const MOUNT_MANAGER = new MountManager();
 
 export class MountDefinition extends ComponentDefinition<Opaque> {
-  constructor(name) {
+  constructor(name: string) {
     super(name, MOUNT_MANAGER, null);
   }
 }

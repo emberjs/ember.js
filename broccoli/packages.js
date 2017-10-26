@@ -75,7 +75,9 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
 
   let debuggedCompiledTemplatesAndTypeScript = debugTree(compiledTemplatesAndTypescript, 'ember-glimmer:templates-output');
 
-  let typescriptCompiled = filterTypeScript(debuggedCompiledTemplatesAndTypeScript);
+  let typescriptCompiled = filterTypeScript(debuggedCompiledTemplatesAndTypeScript, {
+    noImplicitAny: false
+  });
 
   let funneled = new Funnel(typescriptCompiled, {
     getDestinationPath(path) {
