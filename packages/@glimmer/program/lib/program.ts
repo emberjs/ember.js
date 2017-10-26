@@ -11,10 +11,19 @@ enum TableSlotState {
   Pointer
 }
 
-const ENTRY_SIZE = 4;
-const SIZE_OFFSET = 1;
-const SCOPESIZE_OFFSET = 2;
-const STATE_OFFSET = 3;
+const ENTRY_SIZE = 2;
+const INFO_OFFSET = 1;
+const SIZE_MASK =  0b00000000000000001111111111111111;
+const SCOPE_MASK = 0b00111111111111110000000000000000;
+const STATE_MASK = 0b11000000000000000000000000000000;
+
+function encodeTableInfo(size: number, scopeSize: number, state: number) {
+  return size | (scopeSize << 16) | state << 30;
+}
+
+function changeState(info: number, newState: number) {
+  return info | newState << 30;
+}
 
 /**
  * The Heap is responsible for dynamically allocating
@@ -24,14 +33,11 @@ const STATE_OFFSET = 3;
  * execution of the VM. Internally we track the different
  * regions of the memory in an int array known as the table.
  *
- * The table has the following layout:
+ * The table 32-bit aligned and has the following layout:
  *
- * | ... |           table entry          |
- * | ... | hp | size | scope size | state |
- * | ... | 0  | 122  |      3     |   0   |
- *  handle ^     |          |         ^ region state (allocated, freed, purged)
- *   region size ^          |
- *        number of symbols ^
+ * | ... | hp (u32) |       info (u32)          |
+ * | ... |  Handle  | Size | Scope Size | State |
+ * | ... | 32-bits  | 16b  |    14b     |  2b   |
  *
  * With this information we effectively have the ability to
  * control when we want to free memory. That being said you
@@ -71,7 +77,7 @@ export class Heap {
   }
 
   malloc(): VMHandle {
-    this.table.push(this.offset, 0, 0, 0);
+    this.table.push(this.offset, 0);
     let handle = this.handle;
     this.handle += ENTRY_SIZE;
     return handle as Recast<number, VMHandle>;
@@ -80,8 +86,9 @@ export class Heap {
   finishMalloc(handle: VMHandle, scopeSize: number): void {
     let start = this.table[handle as Recast<VMHandle, number>];
     let finish = this.offset;
-    this.table[(handle as Recast<VMHandle, number>) + SIZE_OFFSET] = finish - start;
-    this.table[(handle as Recast<VMHandle, number>) + SCOPESIZE_OFFSET] = scopeSize;
+    let instructionSize = finish - start;
+    let info = encodeTableInfo(instructionSize, scopeSize, TableSlotState.Allocated);
+    this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET] = info;
   }
 
   size(): number {
@@ -96,7 +103,7 @@ export class Heap {
   }
 
   gethandle(address: number): VMHandle {
-    this.table.push(address, 0, 0, TableSlotState.Pointer);
+    this.table.push(address, encodeTableInfo(0, 0, TableSlotState.Pointer));
     let handle = this.handle;
     this.handle += ENTRY_SIZE;
     return handle as Recast<number, VMHandle>;
@@ -104,17 +111,20 @@ export class Heap {
 
   sizeof(handle: VMHandle): number {
     if (DEBUG) {
-      return this.table[(handle as Recast<VMHandle, number>) + SIZE_OFFSET];
+      let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
+      return info & SIZE_MASK;
     }
     return -1;
   }
 
   scopesizeof(handle: VMHandle): number {
-    return this.table[(handle as Recast<VMHandle, number>) + SCOPESIZE_OFFSET];
+    let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
+    return (info & SCOPE_MASK) >> 16;
   }
 
   free(handle: VMHandle): void {
-    this.table[(handle as Recast<VMHandle, number>) + STATE_OFFSET] = 1;
+    let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
+    this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET] = changeState(info, TableSlotState.Freed);
   }
 
   /**
@@ -130,8 +140,9 @@ export class Heap {
 
     for (let i=0; i<length; i+=ENTRY_SIZE) {
       let offset = table[i];
-      let size = table[i + SIZE_OFFSET];
-      let state = table[i + STATE_OFFSET];
+      let info = table[i + INFO_OFFSET];
+      let size = info & SIZE_MASK;
+      let state = info & STATE_MASK >> 30;
 
       if (state === TableSlotState.Purged) {
         continue;
@@ -139,7 +150,7 @@ export class Heap {
         // transition to "already freed" aka "purged"
         // a good improvement would be to reuse
         // these slots
-        table[i + STATE_OFFSET] = TableSlotState.Purged;
+        table[i + INFO_OFFSET] = changeState(info, TableSlotState.Purged);
         compactedSize += size;
       } else if (state === TableSlotState.Allocated) {
         for (let j=offset; j<=i+size; j++) {
