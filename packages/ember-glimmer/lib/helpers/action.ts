@@ -2,7 +2,9 @@
 @module ember
 @submodule ember-glimmer
 */
-import { isConst } from '@glimmer/reference';
+import { isConst, VersionedPathReference } from '@glimmer/reference';
+import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
+import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -271,7 +273,7 @@ export const ACTION = symbol('ACTION');
   @for Ember.Templates.helpers
   @public
 */
-export default function(_vm, args): UnboundReference {
+export default function(_vm, args: IArguments): UnboundReference {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -283,7 +285,7 @@ export default function(_vm, args): UnboundReference {
   let [context, action, ...restArgs] = capturedArgs.references;
 
   // TODO: Is there a better way of doing this?
-  let debugKey = action._propertyKey;
+  let debugKey: string | undefined = (action as any)._propertyKey;
 
   let target = named.has('target') ? named.get('target') : context;
   let processArgs = makeArgsProcessor(named.has('value') && named.get('value'), restArgs);
@@ -305,8 +307,9 @@ export default function(_vm, args): UnboundReference {
 
 function NOOP(args) { return args; }
 
-function makeArgsProcessor(valuePathRef, actionArgsRef) {
-  let mergeArgs = null;
+function makeArgsProcessor(valuePathRef: VersionedPathReference<Opaque> | false,
+                           actionArgsRef: Array<VersionedPathReference<Opaque>>) {
+  let mergeArgs;
 
   if (actionArgsRef.length > 0) {
     mergeArgs = (args) => {
@@ -314,14 +317,14 @@ function makeArgsProcessor(valuePathRef, actionArgsRef) {
     };
   }
 
-  let readValue = null;
+  let readValue;
 
   if (valuePathRef) {
     readValue = (args) => {
       let valuePath = valuePathRef.value();
 
       if (valuePath && args.length > 0) {
-        args[0] = get(args[0], valuePath);
+        args[0] = get(args[0], valuePath as string);
       }
 
       return args;

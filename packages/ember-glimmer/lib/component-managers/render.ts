@@ -43,7 +43,7 @@ class SingletonRenderManager extends AbstractRenderManager {
          _args: IArguments,
          dynamicScope: DynamicScope) {
     let { name } = definition;
-    let controller = env.owner.lookup(`controller:${name}`) || generateController(env.owner, name);
+    let controller = env.owner.lookup<any>(`controller:${name}`) || generateController(env.owner, name);
 
     if (DEBUG) {
       this._pushToDebugStack(`controller:${name} (with the render helper)`, env);

@@ -155,7 +155,7 @@ export class ClosureComponentReference extends CachedReference {
   public meta: any;
   public env: any;
   public lastDefinition: any;
-  public lastName: string;
+  public lastName: string | undefined;
 
   constructor(args, meta, env) {
     super();
@@ -176,7 +176,7 @@ export class ClosureComponentReference extends CachedReference {
     // currying are in the assertion messages.
     let { args, defRef, env, meta, lastDefinition, lastName } = this;
     let nameOrDef = defRef.value();
-    let definition = null;
+    let definition;
 
     if (nameOrDef && nameOrDef === lastName) {
       return lastDefinition;
@@ -191,7 +191,7 @@ export class ClosureComponentReference extends CachedReference {
       assert('You cannot use the textarea helper as a contextual helper. Please extend Ember.TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
       definition = env.getComponentDefinition(nameOrDef, meta);
       // tslint:disable-next-line:max-line-length
-      assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, definition);
+      assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, !!definition);
     } else if (isComponentDefinition(nameOrDef)) {
       definition = nameOrDef;
     } else {

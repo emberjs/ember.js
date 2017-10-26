@@ -74,8 +74,7 @@ function setupComponentTest() {
       outlet: 'main',
       name: 'application',
       controller: module,
-      ViewClass: undefined,
-      template: OutletTemplate
+      template: OutletTemplate,
     },
 
     outlets: { }
@@ -108,7 +107,6 @@ function render(_template) {
     outlet: 'main',
     name: 'index',
     controller: this,
-    ViewClass: undefined,
     template: this.owner.lookup(templateFullName),
     outlets: { }
   };

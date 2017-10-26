@@ -19,7 +19,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'application',
         controller: undefined,
-        ViewClass: undefined,
         template: undefined
       },
 
@@ -41,7 +40,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'application',
         controller: undefined,
-        ViewClass: undefined,
         template: undefined
       },
 
@@ -62,7 +60,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'application',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
@@ -82,7 +79,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'index',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:index')
       },
       outlets: Object.create(null)
@@ -102,7 +98,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'application',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
@@ -124,7 +119,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'index',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:index')
       },
       outlets: Object.create(null)
@@ -144,7 +138,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'application',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
@@ -166,7 +159,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'special',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:special')
       },
       outlets: Object.create(null)
@@ -186,7 +178,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'application',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
@@ -208,7 +199,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'special',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:special')
       },
       outlets: Object.create(null)
@@ -229,7 +219,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'application',
         controller,
-        ViewClass: undefined,
         template: this.owner.lookup('template:application')
       },
       outlets: Object.create(null)
@@ -251,7 +240,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'foo',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:foo')
       },
       outlets: Object.create(null)
@@ -265,7 +253,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'bar',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:bar')
       },
       outlets: Object.create(null)
@@ -297,7 +284,6 @@ moduleFor('outlet view', class extends RenderingTest {
         outlet: 'main',
         name: 'outer',
         controller: {},
-        ViewClass: undefined,
         template: this.owner.lookup('template:outer')
       },
       outlets: {
@@ -308,7 +294,6 @@ moduleFor('outlet view', class extends RenderingTest {
             outlet: 'main',
             name: 'inner',
             controller: {},
-            ViewClass: undefined,
             template: this.owner.lookup('template:inner')
           },
           outlets: Object.create(null)

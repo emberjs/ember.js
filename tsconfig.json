@@ -19,7 +19,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     // "allowUnreachableCode": false,
-    // "strictNullChecks": true,
+    "strictNullChecks": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
 

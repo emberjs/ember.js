@@ -190,7 +190,7 @@ export default class ActionModifierManager {
       }
     }
 
-    let actionArgs = [];
+    let actionArgs: any[] = [];
     // The first two arguments are (1) `this` and (2) the action name.
     // Everything else is a param.
     for (let i = 2; i < positional.length; i++) {
