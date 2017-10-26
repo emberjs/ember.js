@@ -7,6 +7,7 @@ import { OWNER } from 'ember-utils';
 
 export interface Container {
   lookup<T>(name: string): T;
+  factoryFor<T>(name: string): T;
 }
 
 export type OwnedTemplate = Template<{
@@ -14,11 +15,12 @@ export type OwnedTemplate = Template<{
   owner: Container;
 }>;
 
-class WrappedTemplateFactory {
+export class WrappedTemplateFactory {
   id: string;
   meta: {
     moduleName: string;
   };
+
   constructor(public factory: TemplateFactory<{
     moduleName: string;
   }, {
