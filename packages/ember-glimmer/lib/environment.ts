@@ -104,7 +104,7 @@ export default class Environment extends GlimmerEnvironment {
     name: string;
     source: string;
     owner: Container;
-  }, CurlyComponentDefinition>;
+  }, CurlyComponentDefinition | undefined>;
   private _templateCache: Cache<{
     Template: WrappedTemplateFactory | OwnedTemplate;
     owner: Container;
@@ -124,14 +124,17 @@ export default class Environment extends GlimmerEnvironment {
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
       let customManager: any;
-      if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
-        let managerId = layout && layout.meta.managerId;
+      if (componentFactory || layout) {
+        if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+          let managerId = layout && layout.meta.managerId;
 
-        if (managerId) {
-          customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
+          if (managerId) {
+            customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
+          }
         }
+        return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
       }
-      return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
+      return undefined;
     }, ({ name, source, owner }) => {
       let expandedName = source && this._resolveLocalLookupName(name, source, owner) || name;
 
@@ -216,7 +219,9 @@ export default class Environment extends GlimmerEnvironment {
     let source = moduleName && `template:${moduleName}`;
     let definition = this._definitionCache.get({ name, source, owner });
     finalizer();
-    return definition;
+    // TODO the glimmer-vm wants this to always have a def
+    // but internally we need it to sometimes be undefined
+    return definition!;
   }
 
   // normally templates should be exported at the proper module name
