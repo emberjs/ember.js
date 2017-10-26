@@ -5,6 +5,7 @@ import { ElementBuilder } from './element-builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, assert } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
+import LowLevelVM from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import EvaluationStack from './stack';
@@ -39,37 +40,46 @@ export type IteratorResult<T> = {
 export default class VM<TemplateMeta> implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
+  private inner: LowLevelVM;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public constants: RuntimeConstants<TemplateMeta>;
   public heap: Heap;
 
-  public stack = EvaluationStack.empty();
+  get stack(): EvaluationStack {
+    return this.inner.stack as EvaluationStack;
+  }
+
+  set stack(value: EvaluationStack) {
+    this.inner.stack = value;
+  }
 
   /* Registers */
 
-  private _pc = -1;
-  private _ra = -1;
+  set currentOpSize(value: number) {
+    this.inner.currentOpSize = value;
+  }
 
-  private currentOpSize = 0;
+  get currentOpSize(): number {
+    return this.inner.currentOpSize;
+  }
 
   get pc(): number {
-    return this._pc;
+    return this.inner.pc;
   }
 
   set pc(value: number) {
     assert(typeof value === 'number' && value >= -1, `invalid pc: ${value}`);
-    this._pc = value;
+    this.inner.pc = value;
   }
 
-  private set ra(value: number) {
-    assert(typeof value === 'number' && value >= -1, `invalid ra: ${value}`);
-    this._ra = value;
+  get ra(): number {
+    return this.inner.ra;
   }
 
-  private get ra(): number {
-    return this._ra;
+  set ra(value: number) {
+    this.inner.ra = value;
   }
 
   private get fp(): number {
@@ -114,42 +124,43 @@ export default class VM<TemplateMeta> implements PublicVM {
     this[Register[register]] = value;
   }
 
+  /**
+   * Migrated to Inner
+   */
+
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
-    this.stack.pushSmi(this.ra);
-    this.stack.pushSmi(this.fp);
-    this.fp = this.sp - 1;
+    this.inner.pushFrame();
   }
 
   // Restore $ra, $sp and $fp
   popFrame() {
-    this.sp = this.fp - 1;
-    this.ra = this.stack.getSmi(0);
-    this.fp = this.stack.getSmi(1);
+    this.inner.popFrame();
   }
 
   // Jump to an address in `program`
   goto(offset: number) {
-    let addr = (this.pc + offset) - this.currentOpSize;
-    this.pc = addr;
+    this.inner.goto(offset);
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
   call(handle: VMHandle) {
-    this.ra = this.pc;
-    this.pc = this.heap.getaddr(handle);
+    this.inner.call(handle);
   }
 
   // Put a specific `program` address in $ra
   returnTo(offset: number) {
-    let addr = (this.pc + offset) - this.currentOpSize;
-    this.ra = addr;
+    this.inner.returnTo(offset);
   }
 
   // Return to the `program` address stored in $ra
   return() {
-    this.pc = this.ra;
+    this.inner.return();
   }
+
+  /**
+   * End of migrated.
+   */
 
   static initial<TemplateMeta>(
     program: RuntimeProgram<TemplateMeta>,
@@ -206,6 +217,7 @@ export default class VM<TemplateMeta> implements PublicVM {
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
+    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap);
   }
 
   capture(args: number): VMState {
