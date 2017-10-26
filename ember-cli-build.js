@@ -1,6 +1,12 @@
 'use strict';
 /* eslint-env node */
 
+// To create fast production builds (without ES3 support, minification, derequire, or JSHint)
+// run the following:
+//
+// DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
+
+const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
@@ -67,7 +73,10 @@ module.exports = function(options) {
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
   let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
   let rsvp = toES5(rsvpES(), { annotation: 'rsvp' });
-  let emberMetal = new Funnel('packages/ember-metal/lib', { destDir: '/' });
+  let emberMetal = new Funnel('packages/ember-metal/lib', {
+    destDir: '/',
+    include: ['**/*.js']
+  });
   let emberMetalES5 = rollupEmberMetal(emberMetal);
   let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);
   let emberConsoleES5 = toES5(emberConsole, { annotation: 'ember-console' });
@@ -89,8 +98,10 @@ module.exports = function(options) {
   let backburner = toES5(backburnerES());
 
   // Linting
-  let emberTestsLinted = emberTests.map(lint);
-  let emberLinted = emberCoreES6.map(lint);
+  let packages = new UnwatchedDir('packages');
+  let linting = lint(new Funnel(packages, {
+    include: ['**/*.js']
+  }));
 
   // ES5
   let dependenciesES5 = dependenciesES6().map(toES5);
@@ -101,8 +112,7 @@ module.exports = function(options) {
   // Bundling
   let emberTestsBundle = new MergeTrees([
     ...emberTestsES5,
-    ...emberTestsLinted,
-    ...emberLinted,
+    linting,
     loader,
     nodeModule,
     license,

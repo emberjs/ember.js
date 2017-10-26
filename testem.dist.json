@@ -22,7 +22,7 @@
       "protocol": "tap"
     },
     "SL_MS_Edge": {
-      "command": "npm run sauce:launch -- -p 'Windows 10' -b 'microsoftedge' -v latest --no-connect -u '<url>'",
+      "command": "npm run sauce:launch -- -p 'Windows 10' -b 'microsoftedge' -v 14 --no-connect -u '<url>'",
       "protocol": "tap"
     },
     "SL_IE_11": {

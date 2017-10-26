@@ -4,6 +4,8 @@ const { readFileSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
+const filterTypeScript = require('broccoli-typescript-compiler').filterTypeScript;
+const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
 const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
@@ -14,6 +16,8 @@ const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const { stripIndent } = require('common-tags');
 const toES5 = require('./to-es5');
+
+const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
 module.exports.routerES = function _routerES() {
   return new Rollup(findLib('router_js'), {
@@ -57,16 +61,29 @@ module.exports.qunit = function _qunit() {
 }
 
 module.exports.emberGlimmerES = function _emberGlimmerES() {
-  let pkg = new Funnel('packages/ember-glimmer/lib', {
-    include: ['**/*.js', '**/*.hbs'],
-    destDir: 'ember-glimmer'
+  let input = new Funnel('packages/ember-glimmer/lib', {
+    destDir: 'packages/ember-glimmer/lib'
   });
 
-  return new GlimmerTemplatePrecompiler(pkg, {
+  let debuggedInput = debugTree(input, 'ember-glimmer:input');
+
+  let compiledTemplatesAndTypescript = new GlimmerTemplatePrecompiler(debuggedInput, {
     persist: true,
     glimmer: require('@glimmer/compiler'),
     annotation: 'ember-glimmer es'
   });
+
+  let debuggedCompiledTemplatesAndTypeScript = debugTree(compiledTemplatesAndTypescript, 'ember-glimmer:templates-output');
+
+  let typescriptCompiled = filterTypeScript(debuggedCompiledTemplatesAndTypeScript);
+
+  let funneled = new Funnel(typescriptCompiled, {
+    getDestinationPath(path) {
+      return path.replace('/lib/', '/').replace('packages/', '/');
+    }
+  });
+
+  return debugTree(funneled, 'ember-glimmer:output');
 }
 
 module.exports.handlebarsES = function _handlebars() {
@@ -174,7 +191,7 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
   }
 
   return new Funnel(`packages/${name}/lib`, {
-    exclude: ['.gitkeep'],
+    exclude: ['.gitkeep', '**/*.d.ts'],
     destDir: name,
     annotation: `${name} es`
   });
