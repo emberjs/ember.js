@@ -12,6 +12,7 @@
   "scripts": {
     "build": "ember build --env production",
     "build:flags": "RETAIN_FLAGS=true ember build --env production",
+    "changelog": "lerna-changelog",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect",
     "start": "ember serve --port=7357",
@@ -63,6 +64,7 @@
     "eslint": "^4.3.0",
     "glob": "^7.0.5",
     "js-yaml": "^3.10.0",
+    "lerna-changelog": "^0.7.0",
     "loader.js": "^4.0.10",
     "mkdirp": "^0.5.1",
     "qunit-tap": "^1.5.1",
@@ -73,5 +75,15 @@
     "testem": "^1.16.0",
     "tslint": "^4.0.2",
     "typescript": "^2.4.2"
+  },
+  "changelog": {
+    "repo": "glimmerjs/glimmer-vm",
+    "labels": {
+      "breaking": ":boom: Breaking Change",
+      "enhancement": ":rocket: Enhancement",
+      "bug": ":bug: Bug Fix",
+      "documentation": ":memo: Documentation",
+      "internal": ":house: Internal"
+    }
   }
 }
