@@ -14,7 +14,7 @@ export class RootOutletStateReference implements VersionedPathReference<Option<O
     this.tag = outletView._tag;
   }
 
-  get(key: string): VersionedPathReference<Option<OutletState>> {
+  get(key: string): VersionedPathReference<any> {
     return new ChildOutletStateReference(this, key);
   }
 
@@ -66,22 +66,22 @@ class OrphanedOutletStateReference extends RootOutletStateReference {
   }
 }
 
-class ChildOutletStateReference implements VersionedPathReference<Option<OutletState>> {
-  public parent: VersionedPathReference<Option<OutletState>>;
+class ChildOutletStateReference implements VersionedPathReference<any> {
+  public parent: VersionedPathReference<any>;
   public key: string;
   public tag: Tag;
 
-  constructor(parent: VersionedPathReference<Option<OutletState>>, key: string) {
+  constructor(parent: VersionedPathReference<any>, key: string) {
     this.parent = parent;
     this.key = key;
     this.tag = parent.tag;
   }
 
-  get(key) {
+  get(key: string): VersionedPathReference<any> {
     return new ChildOutletStateReference(this, key);
   }
 
-  value() {
+  value(): any {
     let parent = this.parent.value();
     return parent && parent[this.key];
   }
@@ -117,9 +117,9 @@ export default class OutletView {
   public outletState: Option<OutletState>;
   public _tag: TagWrapper<DirtyableTag>;
 
-  static extend(injections) {
+  static extend(injections: any) {
     return class extends OutletView {
-      static create(options) {
+      static create(options: any) {
         if (options) {
           return super.create(assign({}, injections, options));
         } else {
@@ -129,11 +129,11 @@ export default class OutletView {
     };
   }
 
-  static reopenClass(injections) {
+  static reopenClass(injections: any) {
     assign(this, injections);
   }
 
-  static create(options) {
+  static create(options: any) {
     let { _environment, renderer, template } = options;
     let owner = options[OWNER];
     return new OutletView(_environment, renderer, owner, template);

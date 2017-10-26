@@ -3,6 +3,7 @@ import {
   ComponentDefinition,
   PrimitiveReference,
 } from '@glimmer/runtime';
+import { Opaque } from '@glimmer/util';
 import { privatize as P } from 'container';
 import {
   assert,
@@ -14,7 +15,6 @@ import {
 } from 'ember-metal';
 import {
   assign,
-  Opaque,
   OWNER,
 } from 'ember-utils';
 import { setViewElement } from 'ember-views';

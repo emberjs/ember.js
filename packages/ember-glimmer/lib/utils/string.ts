@@ -7,7 +7,7 @@ import { deprecate } from 'ember-debug';
 export class SafeString {
   public string: string;
 
-  constructor(string) {
+  constructor(string: string) {
     this.string = string;
   }
 
@@ -49,11 +49,11 @@ const escape = {
 const possible = /[&<>"'`=]/;
 const badChars = /[&<>"'`=]/g;
 
-function escapeChar(chr) {
+function escapeChar(chr: keyof typeof escape) {
   return escape[chr];
 }
 
-export function escapeExpression(string) {
+export function escapeExpression(string: string | SafeString) {
   if (typeof string !== 'string') {
     // don't escape SafeStrings, since they're already safe
     if (string && string.toHTML) {
@@ -91,7 +91,7 @@ export function escapeExpression(string) {
   @return {Handlebars.SafeString} A string that will not be HTML escaped by Handlebars.
   @public
 */
-export function htmlSafe(str) {
+export function htmlSafe(str: string) {
   if (str === null || str === undefined) {
     str = '';
   } else if (typeof str !== 'string') {
@@ -119,6 +119,6 @@ export function htmlSafe(str) {
   @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
   @public
 */
-export function isHTMLSafe(str) {
-  return str && typeof str.toHTML === 'function';
+export function isHTMLSafe(str: string | SafeString): str is SafeString {
+  return str !== null && typeof str === 'object' && typeof str.toHTML === 'function';
 }
