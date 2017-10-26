@@ -16,6 +16,7 @@ import {
   PreparedArguments,
   PrimitiveReference,
   Simple,
+  VM,
 } from '@glimmer/runtime';
 import { Opaque, Destroyable } from '@glimmer/util';
 import { Option } from '@glimmer/interfaces';
@@ -91,14 +92,14 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
   }
 }
 
-function tagName(vm: any) {
+function tagName(vm: VM) {
   // tslint:disable-next-line:no-shadowed-variable
   let { tagName } = vm.dynamicScope().view;
 
   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
 }
 
-function ariaRole(vm: any) {
+function ariaRole(vm: VM) {
   return vm.getSelf().get('ariaRole');
 }
 
@@ -133,7 +134,7 @@ export class PositionalArgumentReference {
     return this._references.map((reference: any) => reference.value());
   }
 
-  get(key: any) {
+  get(key: string) {
     return PropertyReference.create(this, key);
   }
 }

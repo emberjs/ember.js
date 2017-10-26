@@ -93,7 +93,7 @@ export default EmberObject.extend({
 
     @private
     @method handleURL
-    @param callback {Function}
+    @param url {String}
   */
   handleURL(url) {
     set(this, 'path', url);
