@@ -1,5 +1,6 @@
 import {
-  ComponentDefinition,
+  Arguments,
+  ComponentDefinition
 } from '@glimmer/runtime';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -9,10 +10,13 @@ import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
+  CurlyComponentDefinition
 } from './curly';
+import { DynamicScope } from '../renderer';
+import Environment from '../environment';
 
 class RootComponentManager extends CurlyComponentManager {
-  create(environment, definition, args, dynamicScope) {
+  create(environment: Environment, definition: CurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope) {
     let component = definition.ComponentClass.create();
 
     if (DEBUG) {
@@ -46,10 +50,10 @@ class RootComponentManager extends CurlyComponentManager {
 
 const ROOT_MANAGER = new RootComponentManager();
 
-export class RootComponentDefinition extends ComponentDefinition<any> {
+export class RootComponentDefinition extends ComponentDefinition<ComponentStateBucket> {
   public template: any;
   public args: any;
-  constructor(instance) {
+  constructor(instance: ComponentStateBucket) {
     super('-root', ROOT_MANAGER, {
       class: instance.constructor,
       create() {

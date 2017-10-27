@@ -141,7 +141,7 @@ export class PositionalArgumentReference {
 }
 
 export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket> {
-  prepareArgs(definition: ComponentDefinition<ComponentStateBucket>, args: Arguments): Option<PreparedArguments> {
+  prepareArgs(definition: CurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
     let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
 
     if (DEBUG && componentPositionalParamsDefinition) {
@@ -191,7 +191,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return { positional, named };
   }
 
-  create(environment: Environment, definition: ComponentDefinition<ComponentStateBucket>, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
+  create(environment: Environment, definition: CurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
     if (DEBUG) {
       this._pushToDebugStack(`component:${definition.name}`, environment);
     }
@@ -250,7 +250,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return bucket;
   }
 
-  layoutFor(definition: ComponentDefinition<ComponentStateBucket>, bucket: ComponentStateBucket, env: Environment): CompiledDynamicProgram {
+  layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): CompiledDynamicProgram {
     let template = definition.template;
     if (!template) {
       template = this.templateFor(bucket, env);
@@ -443,11 +443,11 @@ export function rerenderInstrumentDetails(component: any): any {
 
 const MANAGER = new CurlyComponentManager();
 
-export class CurlyComponentDefinition extends ComponentDefinition<Opaque> {
+export class CurlyComponentDefinition extends ComponentDefinition<ComponentStateBucket> {
   public template: WrappedTemplateFactory;
   public args: Arguments;
 
-  constructor(name: string, ComponentClass: ComponentClass, template: WrappedTemplateFactory, args: Arguments, customManager?: ComponentManager<Opaque>) {
+  constructor(name: string, ComponentClass: ComponentClass, template: WrappedTemplateFactory, args: Arguments, customManager?: ComponentManager<ComponentStateBucket>) {
     super(name, customManager || MANAGER, ComponentClass);
     this.template = template;
     this.args = args;

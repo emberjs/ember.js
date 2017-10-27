@@ -1,5 +1,6 @@
 import { Option } from '@glimmer/interfaces';
 import {
+  Arguments,
   ComponentDefinition,
   DynamicScope,
   Environment,
@@ -9,10 +10,11 @@ import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { generateGuid, guidFor } from 'ember-utils';
 import EmberEnvironment from '../environment';
+import { WrappedTemplateFactory } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
-function instrumentationPayload({ render: { name, outlet } }) {
+function instrumentationPayload({ render: { name, outlet } }: {render: {name: string, outlet: string}}) {
   return { object: `${name}:${outlet}` };
 }
 
@@ -26,7 +28,7 @@ class StateBucket {
   public outletState: any;
   public finalizer: any;
 
-  constructor(outletState) {
+  constructor(outletState: any) {
     this.outletState = outletState;
     this.instrument();
   }
@@ -45,7 +47,7 @@ class StateBucket {
 class OutletComponentManager extends AbstractManager<StateBucket> {
   create(environment: Environment,
          definition: OutletComponentDefinition,
-         _args,
+         _args: Arguments,
          dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
@@ -57,11 +59,11 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
     return new StateBucket(outletState);
   }
 
-  layoutFor(definition, _bucket, env: Environment) {
+  layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
     return (env as EmberEnvironment).getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
-  getSelf({ outletState }) {
+  getSelf({ outletState }: StateBucket) {
     return new RootReference(outletState.render.controller);
   }
 
@@ -81,23 +83,23 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
 const MANAGER = new OutletComponentManager();
 
 class TopLevelOutletComponentManager extends OutletComponentManager {
-  create(environment, definition, _args, dynamicScope) {
+  create(environment: Environment, definition: OutletComponentDefinition, _args: Arguments, dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
     }
     return new StateBucket(dynamicScope.outletState.value());
   }
 
-  layoutFor(definition, _bucket, env) {
-    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
+  layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
+    return (env as EmberEnvironment).getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
   }
 }
 
 const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
 export class TopLevelOutletComponentDefinition extends ComponentDefinition<StateBucket> {
-  public template: any;
-  constructor(instance) {
+  public template: WrappedTemplateFactory;
+  constructor(instance: any) {
     super('outlet', TOP_LEVEL_MANAGER, instance);
     this.template = instance.template;
     generateGuid(this);
@@ -106,12 +108,12 @@ export class TopLevelOutletComponentDefinition extends ComponentDefinition<State
 
 class TopLevelOutletLayoutCompiler {
   static id: string;
-  public template: any;
-  constructor(template) {
+  public template: WrappedTemplateFactory;
+  constructor(template: WrappedTemplateFactory) {
     this.template = template;
   }
 
-  compile(builder) {
+  compile(builder: any) {
     builder.wrapLayout(this.template);
     builder.tag.static('div');
     builder.attrs.static('id', guidFor(this));
@@ -123,9 +125,9 @@ TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
 
 export class OutletComponentDefinition extends ComponentDefinition<StateBucket> {
   public outletName: string;
-  public template: any;
+  public template: WrappedTemplateFactory;
 
-  constructor(outletName, template) {
+  constructor(outletName: string, template: WrappedTemplateFactory) {
     super('outlet', MANAGER, null);
     this.outletName = outletName;
     this.template = template;
@@ -135,12 +137,12 @@ export class OutletComponentDefinition extends ComponentDefinition<StateBucket> 
 
 export class OutletLayoutCompiler {
   static id: string;
-  public template: any;
-  constructor(template) {
+  public template: WrappedTemplateFactory;
+  constructor(template: WrappedTemplateFactory) {
     this.template = template;
   }
 
-  compile(builder) {
+  compile(builder: any) {
     builder.wrapLayout(this.template);
   }
 }

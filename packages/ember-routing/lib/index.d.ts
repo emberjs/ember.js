@@ -63,7 +63,7 @@ export const AutoLocation: {
 };
 
 export function generateController(owner: any, controllerName: string): any;
-export function generateControllerFactory(owner: any, controllerName: string, context: any): any;
+export function generateControllerFactory(owner: any, controllerName: string, context?: any): any;
 
 export function controllerFor(container: any, controllerName: string, lookupOptions: any): any;
 
