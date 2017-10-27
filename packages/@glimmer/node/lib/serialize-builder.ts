@@ -96,6 +96,6 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 }
 
-export function serializeBuilder(env: Environment, cursor: { element: Simple.Element, nextSibling: Option<Simple.Node> }) {
+export function serializeBuilder(env: Environment, cursor: { element: Simple.Element, nextSibling: Option<Simple.Node> }): ElementBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }
