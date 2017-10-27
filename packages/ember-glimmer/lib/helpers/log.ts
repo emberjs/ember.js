@@ -1,3 +1,8 @@
+import {
+  Arguments,
+  CapturedArguments,
+  VM
+} from '@glimmer/runtime';
 import { InternalHelperReference } from '../utils/references';
 /**
 @module ember
@@ -18,10 +23,10 @@ import Logger from 'ember-console';
   @param {Array} params
   @public
 */
-function log({ positional }) {
+function log({ positional }: CapturedArguments) {
   Logger.log.apply(null, positional.value());
 }
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   return new InternalHelperReference(log, args.capture());
 }

@@ -195,7 +195,8 @@ export const Route: {
 };
 export const QueryParams: {
   isQueryParams: boolean;
-  values: any
+  values: any;
+  create(obj: any): any;
 }; 
 export const RoutingService: {
   router: any;
