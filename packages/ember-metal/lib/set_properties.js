@@ -1,6 +1,8 @@
 import { changeProperties } from './property_events';
 import { set } from './property_set';
-
+/**
+ @module @ember/object
+*/
 /**
   Set a list of properties on an object. These properties are set inside
   a single `beginPropertyChanges` and `endPropertyChanges` batch, so
@@ -17,6 +19,8 @@ import { set } from './property_set';
   ```
 
   @method setProperties
+  @static
+  @for @ember/object
   @param obj
   @param {Object} properties
   @return properties

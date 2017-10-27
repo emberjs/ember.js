@@ -1,7 +1,3 @@
-/**
-@module ember
-@submodule ember-views
-*/
 
 import { run } from 'ember-metal';
 

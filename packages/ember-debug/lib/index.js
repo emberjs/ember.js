@@ -62,13 +62,7 @@ if (DEBUG) {
 }
 
 /**
-@module ember
-@submodule ember-debug
-*/
-
-/**
-@class Ember
-@public
+@module @ember/debug
 */
 
 if (DEBUG) {
@@ -79,14 +73,18 @@ if (DEBUG) {
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
     ```javascript
+    import { assert } from '@ember/debug';
+
     // Test for truthiness
-    Ember.assert('Must pass a valid object', obj);
+    assert('Must pass a valid object', obj);
 
     // Fail unconditionally
-    Ember.assert('This code path should never be run');
+    assert('This code path should never be run');
     ```
 
     @method assert
+    @static
+    @for @ember/debug
     @param {String} desc A description of the assertion. This will become
       the text of the Error thrown if the assertion fails.
     @param {Boolean} test Must be truthy for the assertion to pass. If
@@ -107,10 +105,14 @@ if (DEBUG) {
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
     ```javascript
-    Ember.debug('I\'m a debug notice!');
+    import { debug } from '@ember/debug';
+
+    debug('I\'m a debug notice!');
     ```
 
     @method debug
+    @for @ember/debug
+    @static
     @param {String} message A debug message to display.
     @public
   */
@@ -132,6 +134,11 @@ if (DEBUG) {
   });
 
   /**
+   @module @ember/application
+   @public
+  */
+
+  /**
     Alias an old, deprecated method with its new counterpart.
 
     Display a deprecation warning with the provided message and a stack trace
@@ -144,6 +151,8 @@ if (DEBUG) {
     ```
 
     @method deprecateFunc
+    @static
+    @for @ember/application/deprecations
     @param {String} message A description of the deprecation.
     @param {Object} [options] The options object for Ember.deprecate.
     @param {Function} func The new function called to replace its deprecated counterpart.
@@ -168,14 +177,21 @@ if (DEBUG) {
 
 
   /**
+   @module @ember/debug
+   @public
+  */
+  /**
     Run a function meant for debugging.
 
     * In a production build, this method is defined as an empty function (NOP).
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
     ```javascript
-    Ember.runInDebug(() => {
-      Ember.Component.reopen({
+    import Component from '@ember/component';
+    import { runInDebug } from '@ember/debug';
+
+    runInDebug(() => {
+      Component.reopen({
         didInsertElement() {
           console.log("I'm happy");
         }
@@ -184,6 +200,8 @@ if (DEBUG) {
     ```
 
     @method runInDebug
+    @for @ember/debug
+    @static
     @param {Function} func The function to be executed.
     @since 1.5.0
     @public
@@ -209,7 +227,7 @@ let _warnIfUsingStrippedFeatureFlags;
 
 if (DEBUG && !isTesting()) {
   /**
-     Will call `Ember.warn()` if ENABLE_OPTIONAL_FEATURES or
+     Will call `warn()` if ENABLE_OPTIONAL_FEATURES or
      any specific FEATURES flag is truthy.
 
      This method is called automatically in debug canary builds.

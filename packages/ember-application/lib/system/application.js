@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/application
 */
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
@@ -188,8 +187,7 @@ let librariesRegistered = false;
   begins.
 
   @class Application
-  @namespace Ember
-  @extends Ember.Engine
+  @extends Engine
   @uses RegistryProxyMixin
   @public
 */
@@ -366,7 +364,7 @@ const Application = Engine.extend({
 
     @private
     @method buildInstance
-    @return {Ember.ApplicationInstance} the application instance
+    @return {ApplicationInstance} the application instance
   */
   buildInstance(options = {}) {
     options.base = this;
@@ -523,7 +521,7 @@ const Application = Engine.extend({
     or the application will never become ready and routing will not begin.
 
     @method advanceReadiness
-    @see {Ember.Application#deferReadiness}
+    @see {Application#deferReadiness}
     @public
   */
   advanceReadiness() {
@@ -549,7 +547,7 @@ const Application = Engine.extend({
 
     @private
     @method boot
-    @return {Promise<Ember.Application,Error>}
+    @return {Promise<Application,Error>}
   */
   boot() {
     if (this._bootPromise) { return this._bootPromise; }
@@ -963,8 +961,8 @@ const Application = Engine.extend({
     @public
     @method visit
     @param url {String} The initial URL to navigate to
-    @param options {Ember.ApplicationInstance.BootOptions}
-    @return {Promise<Ember.ApplicationInstance, Error>}
+    @param options {ApplicationInstance.BootOptions}
+    @return {Promise<ApplicationInstance, Error>}
   */
   visit(url, options) {
     return this.boot().then(() => {
@@ -1009,7 +1007,7 @@ Application.reopenClass({
 
     @method buildRegistry
     @static
-    @param {Ember.Application} namespace the application for which to
+    @param {Application} namespace the application for which to
       build the registry
     @return {Ember.Registry} the built registry
     @private

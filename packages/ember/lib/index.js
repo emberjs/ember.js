@@ -534,13 +534,6 @@ metal.libraries.registerCoreLibrary('Ember', VERSION);
 // this is so that the global exports occur properly
 import * as views from 'ember-views';
 
-/**
-  Alias for jQuery
-
-  @method $
-  @for Ember
-  @public
-*/
 Ember.$ = views.jQuery;
 
 Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
@@ -608,6 +601,7 @@ runLoadHooks('Ember');
 
 /**
   @module ember
+  @private
 */
 export default Ember;
 
@@ -618,3 +612,23 @@ if (IS_NODE) {
 } else {
   context.exports.Ember = context.exports.Em = Ember;
 }
+
+/**
+ @module jquery
+ @public
+ */
+
+/**
+ @class jquery
+ @public
+ @static
+ */
+
+/**
+  Alias for jQuery
+
+  @for jquery
+  @method $
+  @static
+  @public
+*/

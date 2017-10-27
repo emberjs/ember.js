@@ -2,7 +2,6 @@ import { Mixin } from 'ember-metal';
 
 /**
 @module ember
-@submodule ember-runtime
 */
 
 /**

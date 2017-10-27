@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 
 import { ENV } from 'ember-environment';
@@ -104,7 +103,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 
     In the future this method may become asynchronous.
 
-    See `Ember.observer`.
+    See `observer`.
 
     @method observes
     @for Function
