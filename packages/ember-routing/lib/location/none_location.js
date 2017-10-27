@@ -6,8 +6,7 @@ import { assert } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 /**
@@ -21,8 +20,7 @@ import { Object as EmberObject } from 'ember-runtime';
   of the changes made when calling `App.setupForTesting()`.
 
   @class NoneLocation
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @protected
 */
 export default EmberObject.extend({

@@ -11,8 +11,7 @@ import {
 } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-extension-support
+@module @ember/debug
 */
 
 /**
@@ -53,7 +52,6 @@ import {
   ```
 
   @class DataAdapter
-  @namespace Ember
   @extends EmberObject
   @public
 */

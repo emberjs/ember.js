@@ -199,7 +199,7 @@ if (MANDATORY_SETTER) {
     obj.someProp = 'foo-bar';
   });
 
-  QUnit.test('should assert if set without Ember.set when property is being watched', function() {
+  QUnit.test('should assert if set without set when property is being watched', function() {
     let obj = {
       someProp: null,
       toString() {
@@ -211,10 +211,10 @@ if (MANDATORY_SETTER) {
 
     expectAssertion(function() {
       obj.someProp = 'foo-bar';
-    }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
+    }, 'You must use set() to set the `someProp` property (of custom-object) to `foo-bar`.');
   });
 
-  QUnit.test('should not assert if set with Ember.set when property is being watched', function() {
+  QUnit.test('should not assert if set with set when property is being watched', function() {
     let obj = {
       someProp: null,
       toString() {
@@ -367,7 +367,7 @@ if (MANDATORY_SETTER) {
 
     expectAssertion(function() {
       obj2.someProp = 'foo-bar';
-    }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
+    }, 'You must use set() to set the `someProp` property (of custom-object) to `foo-bar`.');
   });
 
   QUnit.test('inheritance remains live', function() {

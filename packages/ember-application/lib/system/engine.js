@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/engine
 */
 import { canInvoke } from 'ember-utils';
 import {
@@ -44,7 +43,6 @@ function props(obj) {
   Engines can spawn `EngineInstance` instances via `buildInstance()`.
 
   @class Engine
-  @namespace Ember
   @extends Ember.Namespace
   @uses RegistryProxy
   @public
@@ -82,7 +80,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
 
     @private
     @method buildInstance
-    @return {Ember.EngineInstance} the engine instance
+    @return {EngineInstance} the engine instance
   */
   buildInstance(options = {}) {
     this.ensureInitializers();
@@ -413,7 +411,7 @@ Engine.reopenClass({
 
     @method buildRegistry
     @static
-    @param {Ember.Application} namespace the application for which to
+    @param {Application} namespace the application for which to
       build the registry
     @return {Ember.Registry} the built registry
     @private

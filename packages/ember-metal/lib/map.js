@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-metal
 */
 
 /*
@@ -8,7 +7,7 @@
   which are often used as dictionaries, may only have Strings as keys.
 
   Because Ember has a way to get a unique identifier for every object
-  via `Ember.guidFor`, we can implement a performant Map with arbitrary
+  via `guidFor`, we can implement a performant Map with arbitrary
   keys. Because it is commonly used in low-level bookkeeping, Map is
   implemented as a pure JavaScript object for performance.
 
@@ -18,7 +17,7 @@
   forEach method for iteration.
 
   Map is mocked out to look like an Ember object, so you can do
-  `Ember.Map.create()` for symmetry with other Ember classes.
+  `EmberMap.create()` for symmetry with other Ember classes.
 */
 import { guidFor } from 'ember-utils';
 
@@ -224,7 +223,7 @@ OrderedSet.prototype = {
   Internally, a Map has two data structures:
 
   1. `keys`: an OrderedSet of all of the existing keys
-  2. `values`: a JavaScript Object indexed by the `Ember.guidFor(key)`
+  2. `values`: a JavaScript Object indexed by the `guidFor(key)`
 
   When a key/value pair is added for the first time, we
   add the key to the `keys` OrderedSet, and create or
@@ -425,7 +424,7 @@ function MapWithDefault(options) {
   @param [options]
     @param {*} [options.defaultValue]
   @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
-    `Ember.MapWithDefault` otherwise returns `Ember.Map`
+    `MapWithDefault` otherwise returns `EmberMap`
   @private
 */
 MapWithDefault.create = function(options) {

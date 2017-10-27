@@ -1,5 +1,5 @@
 /**
-@module ember-metal
+@module @ember/object
 */
 
 import { assert } from 'ember-debug';
@@ -47,7 +47,7 @@ export function MANDATORY_SETTER_FUNCTION(name) {
     if (!m.isInitialized(this)) {
       m.writeValues(name, value);
     } else {
-      assert(`You must use Ember.set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
+      assert(`You must use set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
     }
   }
 
@@ -87,7 +87,7 @@ export function INHERITING_GETTER_FUNCTION(name) {
 /**
   NOTE: This is a low-level method used by other parts of the API. You almost
   never want to call this method directly. Instead you should use
-  `Ember.mixin()` to define new properties.
+  `mixin()` to define new properties.
 
   Defines a property on an object. This method works much like the ES5
   `Object.defineProperty()` method except that it can also accept computed
@@ -101,8 +101,10 @@ export function INHERITING_GETTER_FUNCTION(name) {
   ## Examples
 
   ```javascript
+  import { defineProperty, computed } from '@ember/object';
+
   // ES5 compatible mode
-  Ember.defineProperty(contact, 'firstName', {
+  defineProperty(contact, 'firstName', {
     writable: true,
     configurable: false,
     enumerable: true,
@@ -110,17 +112,17 @@ export function INHERITING_GETTER_FUNCTION(name) {
   });
 
   // define a simple property
-  Ember.defineProperty(contact, 'lastName', undefined, 'Jolley');
+  defineProperty(contact, 'lastName', undefined, 'Jolley');
 
   // define a computed property
-  Ember.defineProperty(contact, 'fullName', Ember.computed('firstName', 'lastName', function() {
+  defineProperty(contact, 'fullName', computed('firstName', 'lastName', function() {
     return this.firstName+' '+this.lastName;
   }));
   ```
 
   @private
   @method defineProperty
-  @for Ember
+  @for @ember/object
   @param {Object} obj the object to define this property on. This may be a prototype.
   @param {String} keyName the name of the property
   @param {Descriptor} [desc] an instance of `Descriptor` (typically a

@@ -15,6 +15,11 @@ import {
 } from 'ember/features';
 import { assertNotRendered } from './transaction';
 
+/**
+ @module ember
+ @private
+ */
+
 export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
 const beforeObserverSet = new ObserverSet();

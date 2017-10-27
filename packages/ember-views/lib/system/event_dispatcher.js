@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-views
 */
 
 import { assign, getOwner } from 'ember-utils';

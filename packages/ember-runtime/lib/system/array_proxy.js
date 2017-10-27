@@ -21,8 +21,7 @@ import {
 import { assert, Error as EmberError } from 'ember-debug';
 
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/array
 */
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
@@ -65,9 +64,8 @@ function K() { return this; }
   ```
 
   @class ArrayProxy
-  @namespace Ember
-  @extends Ember.Object
-  @uses Ember.MutableArray
+  @extends EmberObject
+  @uses MutableArray
   @public
 */
 export default EmberObject.extend(MutableArray, {
@@ -77,7 +75,7 @@ export default EmberObject.extend(MutableArray, {
     `Ember.MutableArray.`
 
     @property content
-    @type Ember.Array
+    @type EmberArray
     @private
   */
   content: null,
@@ -118,7 +116,7 @@ export default EmberObject.extend(MutableArray, {
     @method replaceContent
     @param {Number} idx The starting index
     @param {Number} amt The number of items to remove from the content.
-    @param {Array} objects Optional array of objects to insert or null if no
+    @param {EmberArray} objects Optional array of objects to insert or null if no
       objects.
     @return {void}
     @private
@@ -154,7 +152,7 @@ export default EmberObject.extend(MutableArray, {
 
     @method contentArrayWillChange
 
-    @param {Ember.Array} contentArray the content array
+    @param {EmberArray} contentArray the content array
     @param {Number} start starting index of the change
     @param {Number} removeCount count of items removed
     @param {Number} addCount count of items added
@@ -166,7 +164,7 @@ export default EmberObject.extend(MutableArray, {
 
     @method contentArrayDidChange
 
-    @param {Ember.Array} contentArray the content array
+    @param {EmberArray} contentArray the content array
     @param {Number} start starting index of the change
     @param {Number} removeCount count of items removed
     @param {Number} addCount count of items added

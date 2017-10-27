@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-glimmer
+@module @ember/component
 */
 import Component from '../component';
 import { TextSupport } from 'ember-views';
@@ -76,14 +75,16 @@ import layout from '../templates/empty';
   ```
 
   If you wanted a one way binding between the text area and a div tag
-  somewhere else on your screen, you could use `Ember.computed.oneWay`:
+  somewhere else on your screen, you could use `oneWay`:
 
   ```app/controllers/application.js
   import Controller from '@ember/controller';
+  import { oneWay } from '@ember/object/computed';
 
   export default Controller.extend({
     writtenWords: "Lots of text that IS bound",
-    outputWrittenWords: Ember.computed.oneWay("writtenWords")
+
+    outputWrittenWords: oneWay("writtenWords")
   });
   ```
 
@@ -107,17 +108,19 @@ import layout from '../templates/empty';
   ```
 
   Finally, this example really shows the power and ease of Ember when two
-  properties are bound to eachother via `Ember.computed.alias`. Type into
+  properties are bound to eachother via `alias`. Type into
   either text area box and they'll both stay in sync. Note that
-  `Ember.computed.alias` costs more in terms of performance, so only use it when
+  `alias` costs more in terms of performance, so only use it when
   your really binding in both directions:
 
   ```app/controllers/application.js
   import Controller from '@ember/controller';
+  import { alias } from '@ember/object/computed';
 
   export default Controller.extend({
     writtenWords: "Lots of text that IS bound",
-    twoWayWrittenWords: Ember.computed.alias("writtenWords")
+
+    twoWayWrittenWords: alias("writtenWords")
   });
   ```
 
@@ -166,23 +169,25 @@ import layout from '../templates/empty';
 
   ### Extension
 
-  Internally, `{{textarea}}` creates an instance of `Ember.TextArea`, passing
-  arguments from the helper to `Ember.TextArea`'s `create` method. You can
+  Internally, `{{textarea}}` creates an instance of `TextArea`, passing
+  arguments from the helper to `TextArea`'s `create` method. You can
   extend the capabilities of text areas in your application by reopening this
   class. For example, if you are building a Bootstrap project where `data-*`
   attributes are used, you can globally add support for a `data-*` attribute
-  on all `{{textarea}}`s' in your app by reopening `Ember.TextArea` or
-  `Ember.TextSupport` and adding it to the `attributeBindings` concatenated
+  on all `{{textarea}}`s' in your app by reopening `TextArea` or
+  `TextSupport` and adding it to the `attributeBindings` concatenated
   property:
 
   ```javascript
-  Ember.TextArea.reopen({
+  import TextArea from '@ember/component/text-area';
+
+  TextArea.reopen({
     attributeBindings: ['data-error']
   });
   ```
 
-  Keep in mind when writing `Ember.TextArea` subclasses that `Ember.TextArea`
-  itself extends `Ember.Component`. Expect isolated component semantics, not
+  Keep in mind when writing `TextArea` subclasses that `TextArea`
+  itself extends `Component`. Expect isolated component semantics, not
   legacy 1.x view semantics (like `controller` being present).
 
   See more about [Ember components](/api/classes/Ember.Component.html)
@@ -202,12 +207,10 @@ import layout from '../templates/empty';
   ## Layout and LayoutName properties
 
   Because HTML `textarea` elements do not contain inner HTML the `layout` and
-  `layoutName` properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
-  layout section for more information.
+  `layoutName` properties will not be applied.
 
   @class TextArea
-  @namespace Ember
-  @extends Ember.Component
+  @extends Component
   @uses Ember.TextSupport
   @public
 */

@@ -1,6 +1,5 @@
 /**
-  @module ember
-  @submodule ember-runtime
+  @module @ember/object
 */
 
 // using ember-metal/lib/main here to ensure that ember-debug is setup
@@ -197,7 +196,6 @@ function makeCtor() {
 
 /**
   @class CoreObject
-  @namespace Ember
   @public
 */
 let CoreObject = makeCtor();
@@ -454,7 +452,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     happen immediately.  It will set an isDestroying flag immediately.
 
     @method destroy
-    @return {Ember.Object} receiver
+    @return {EmberObject} receiver
     @public
   */
   destroy() {
@@ -638,7 +636,7 @@ let ClassMixinProps = {
 
     @method extend
     @static
-
+    @for @ember/object
     @param {Mixin} [mixins]* One or more Mixin classes
     @param {Object} [arguments]* Object containing values to use within the new class
     @public
@@ -700,6 +698,7 @@ let ClassMixinProps = {
     properties when using `extend`.
 
     @method create
+    @for @ember/object
     @static
     @param [arguments]*
     @public
@@ -740,6 +739,8 @@ let ClassMixinProps = {
     see `reopenClass`
 
     @method reopen
+    @for @ember/object
+    @static
     @public
   */
   reopen() {
@@ -801,6 +802,8 @@ let ClassMixinProps = {
     see `reopen`
 
     @method reopenClass
+    @for @ember/object
+    @static
     @public
   */
   reopenClass() {

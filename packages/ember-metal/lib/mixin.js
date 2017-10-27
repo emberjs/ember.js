@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-metal
+@module @ember/object
 */
 import {
   assign,
@@ -390,7 +389,6 @@ function applyMixin(obj, mixins, partial) {
 
 /**
   @method mixin
-  @for Ember
   @param obj
   @param mixins*
   @return obj
@@ -402,21 +400,28 @@ export function mixin(obj, ...args) {
 }
 
 /**
-  The `Ember.Mixin` class allows you to create mixins, whose properties can be
+  The `Mixin` class allows you to create mixins, whose properties can be
   added to other classes. For instance,
 
   ```javascript
-  const EditableMixin = Ember.Mixin.create({
+  import Mixin from '@ember/object/mixin';
+
+  const EditableMixin = Mixin.create({
     edit() {
       console.log('starting to edit');
       this.set('isEditing', true);
     },
     isEditing: false
   });
+  ```
+
+  ```javascript
+  import EmberObject from '@ember/object';
+  import EditableMixin from '../mixins/editable';
 
   // Mix mixins into classes by passing them as the first arguments to
   // `.extend.`
-  const Comment = Ember.Object.extend(EditableMixin, {
+  const Comment = EmberObject.extend(EditableMixin, {
     post: null
   });
 
@@ -427,8 +432,8 @@ export function mixin(obj, ...args) {
   comment.edit(); // outputs 'starting to edit'
   ```
 
-  Note that Mixins are created with `Ember.Mixin.create`, not
-  `Ember.Mixin.extend`.
+  Note that Mixins are created with `Mixin.create`, not
+  `Mixin.extend`.
 
   Note that mixins extend a constructor's prototype so arrays and object literals
   defined as properties will be shared amongst objects that implement the mixin.
@@ -437,28 +442,43 @@ export function mixin(obj, ...args) {
 
   ```javascript
   // filters array will be shared amongst any object implementing mixin
-  const FilterableMixin = Ember.Mixin.create({
-    filters: Ember.A()
+  import Mixin from '@ember/object/mixin';
+  import { A } from '@ember/array';
+
+  const FilterableMixin = Mixin.create({
+    filters: A()
   });
+  ```
+
+  ```javascript
+  import Mixin from '@ember/object/mixin';
+  import { A } from '@ember/array';
+  import { computed } from '@ember/object';
 
   // filters will be a separate array for every object implementing the mixin
-  const FilterableMixin = Ember.Mixin.create({
-    filters: Ember.computed(function() {
-      return Ember.A();
+  const FilterableMixin = Mixin.create({
+    filters: computed(function() {
+      return A();
     })
   });
+  ```
+
+  ```javascript
+  import Mixin from '@ember/object/mixin';
+  import { A } from '@ember/array';
 
   // filters will be created as a separate array during the object's initialization
-  const Filterable = Ember.Mixin.create({
+  const Filterable = Mixin.create({
+    filters: null,
+
     init() {
       this._super(...arguments);
-      this.set("filters", Ember.A());
+      this.set("filters", A());
     }
   });
   ```
 
   @class Mixin
-  @namespace Ember
   @public
 */
 export default class Mixin {
@@ -496,6 +516,7 @@ export default class Mixin {
 
   /**
     @method create
+    @for @ember/object/mixin
     @static
     @param arguments*
     @public
@@ -508,7 +529,7 @@ export default class Mixin {
   }
 
   // returns the mixins currently applied to the specified object
-  // TODO: Make Ember.mixin
+  // TODO: Make `mixin`
   static mixins(obj) {
     let meta = peekMeta(obj);
     let ret = [];
@@ -703,7 +724,8 @@ Alias.prototype = new Descriptor();
   ```
 
   @method aliasMethod
-  @for Ember
+  @static
+  @for @ember/object
   @param {String} methodName name of the method to alias
   @public
 */
@@ -719,8 +741,11 @@ export function aliasMethod(methodName) {
   Specify a method that observes property changes.
 
   ```javascript
-  Ember.Object.extend({
-    valueObserver: Ember.observer('value', function() {
+  import EmberObject from '@ember/object';
+  import { observer } from '@ember/object';
+
+  export default EmberObject.extend({
+    valueObserver: observer('value', function() {
       // Executes whenever the "value" property changes
     })
   });
@@ -730,17 +755,18 @@ export function aliasMethod(methodName) {
   enabled.
 
   @method observer
-  @for Ember
+  @for @ember/object
   @param {String} propertyNames*
   @param {Function} func
   @return func
   @public
+  @static
 */
 export function observer(...args) {
   let _paths, func;
   if (typeof args[args.length - 1] !== 'function') {
     // revert to old, soft-deprecated argument ordering
-    deprecate('Passing the dependentKeys after the callback function in Ember.observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
+    deprecate('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
 
     func = args.shift();
     _paths = args;
@@ -749,8 +775,8 @@ export function observer(...args) {
     _paths = args;
   }
 
-  assert('Ember.observer called without a function', typeof func === 'function');
-  assert('Ember.observer called without valid path', _paths.length > 0 && _paths.every((p)=> typeof p === 'string' && p.length));
+  assert('observer called without a function', typeof func === 'function');
+  assert('observer called without valid path', _paths.length > 0 && _paths.every((p)=> typeof p === 'string' && p.length));
 
   let paths = [];
   let addWatchedProperty = path => paths.push(path);
@@ -767,15 +793,17 @@ export function observer(...args) {
   Specify a method that observes property changes.
 
   ```javascript
-  Ember.Object.extend({
+  import EmberObject from '@ember/object';
+
+  EmberObject.extend({
     valueObserver: Ember.immediateObserver('value', function() {
       // Executes whenever the "value" property changes
     })
   });
   ```
 
-  In the future, `Ember.observer` may become asynchronous. In this event,
-  `Ember.immediateObserver` will maintain the synchronous behavior.
+  In the future, `observer` may become asynchronous. In this event,
+  `immediateObserver` will maintain the synchronous behavior.
 
   Also available as `Function.prototype.observesImmediately` if prototype extensions are
   enabled.
@@ -784,12 +812,12 @@ export function observer(...args) {
   @for Ember
   @param {String} propertyNames*
   @param {Function} func
-  @deprecated Use `Ember.observer` instead.
+  @deprecated Use `observer` instead.
   @return func
   @private
 */
 export function _immediateObserver() {
-  deprecate('Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
+  deprecate('Usage of `Ember.immediateObserver` is deprecated, use `observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
 
   for (let i = 0; i < arguments.length; i++) {
     let arg = arguments[i];

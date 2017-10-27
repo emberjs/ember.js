@@ -29,19 +29,18 @@ export const HAS_BLOCK = symbol('HAS_BLOCK');
 export const BOUNDS = symbol('BOUNDS');
 
 /**
-@module ember
-@submodule ember-glimmer
+@module @ember/component
 */
 
 /**
-  An `Ember.Component` is a view that is completely
+  A `Component` is a view that is completely
   isolated. Properties accessed in its templates go
   to the view object and actions are targeted at
   the view object. There is no access to the
   surrounding context or outer controller; all
   contextual information must be passed in.
 
-  The easiest way to create an `Ember.Component` is via
+  The easiest way to create a `Component` is via
   a template. If you name a template
   `app/components/my-foo.hbs`, you will be able to use
   `{{my-foo}}` in other templates, which will make
@@ -77,7 +76,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   If you want to customize the component, in order to
   handle events or actions, you implement a subclass
-  of `Ember.Component` named after the name of the
+  of `Component` named after the name of the
   component.
 
   For example, you could implement the action
@@ -158,11 +157,13 @@ export const BOUNDS = symbol('BOUNDS');
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
+  import { computed } from '@ember/object';
 
   export default Component.extend({
     classNameBindings: ['propertyA', 'propertyB'],
+
     propertyA: 'from-a',
-    propertyB: Ember.computed(function() {
+    propertyB: computed(function() {
       if (someLogic) { return 'from-b'; }
     })
   });
@@ -183,6 +184,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   export default Component.extend({
     classNameBindings: ['hovered'],
+
     hovered: true
   });
   ```
@@ -202,6 +204,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   export default Component.extend({
     classNameBindings: ['awesome:so-very-cool'],
+
     awesome: true
   });
   ```
@@ -220,6 +223,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   export default Component.extend({
     classNameBindings: ['isUrgent'],
+
     isUrgent: true
   });
   ```
@@ -235,10 +239,12 @@ export const BOUNDS = symbol('BOUNDS');
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
+  import EmberObject from '@ember/object';
 
   export default Component.extend({
     classNameBindings: ['messages.empty'],
-    messages: Ember.Object.create({
+
+    messages: EmberObject.create({
       empty: true
     })
   });
@@ -306,7 +312,7 @@ export const BOUNDS = symbol('BOUNDS');
   representation. If the value becomes `false` or `undefined` the class name
   will be removed.
   Both `classNames` and `classNameBindings` are concatenated properties. See
-  [Ember.Object](/api/classes/Ember.Object.html) documentation for more
+  [EmberObject](/api/classes/Ember.Object.html) documentation for more
   information about concatenated properties.
 
 
@@ -323,6 +329,7 @@ export const BOUNDS = symbol('BOUNDS');
   export default Component.extend({
     tagName: 'a',
     attributeBindings: ['href'],
+
     href: 'http://google.com'
   });
   ```
@@ -342,6 +349,7 @@ export const BOUNDS = symbol('BOUNDS');
   export default Component.extend({
     tagName: 'a',
     attributeBindings: ['url:href'],
+
     url: 'http://google.com'
   });
   ```
@@ -361,6 +369,7 @@ export const BOUNDS = symbol('BOUNDS');
   export default Component.extend({
     tagName: 'use',
     attributeBindings: ['xlinkHref:xlink:href'],
+
     xlinkHref: '#triangle'
   });
   ```
@@ -380,6 +389,7 @@ export const BOUNDS = symbol('BOUNDS');
   export default Component.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
+
     disabled: false
   });
   ```
@@ -394,11 +404,13 @@ export const BOUNDS = symbol('BOUNDS');
 
   ```app/components/my-text-input.js
   import Component from '@ember/component';
+  import { computed } from '@ember/object';
 
   export default Component.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
-    disabled: Ember.computed(function() {
+
+    disabled: computed(function() {
       if (someLogic) {
         return true;
       } else {
@@ -423,7 +435,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   Updates to the property of an attribute binding will result in automatic
   update of the  HTML attribute in the component's rendered HTML representation.
-  `attributeBindings` is a concatenated property. See [Ember.Object](/api/classes/Ember.Object.html)
+  `attributeBindings` is a concatenated property. See [EmberObject](/api/classes/Ember.Object.html)
   documentation for more information about concatenated properties.
 
 
@@ -543,7 +555,6 @@ export const BOUNDS = symbol('BOUNDS');
   * `drop`
 
   @class Component
-  @namespace Ember
   @extends Ember.CoreView
   @uses Ember.TargetActionSupport
   @uses Ember.ClassNamesSupport
@@ -687,12 +698,16 @@ const Component = CoreView.extend(
      For example, a component that takes two parameters with the names
      `name` and `age`:
 
-     ```javascript
-     let MyComponent = Ember.Component.extend;
+     ```app/components/my-component.js
+     import Component from '@ember/component';
+
+     let MyComponent = Component.extend();
 
      MyComponent.reopenClass({
        positionalParams: ['name', 'age']
      });
+
+     export default MyComponent;
      ```
 
      It can then be invoked like this:
@@ -710,12 +725,16 @@ const Component = CoreView.extend(
      Using a string instead of an array allows for an arbitrary number of
      parameters:
 
-     ```javascript
-     let MyComponent = Ember.Component.extend;
+     ```app/components/my-component.js
+     import Component from '@ember/component';
+
+     let MyComponent = Component.extend();
 
      MyComponent.reopenClass({
        positionalParams: 'names'
      });
+
+     export default MyComponent;
      ```
 
      It can then be invoked like this:
@@ -845,7 +864,7 @@ const Component = CoreView.extend(
 
     /**
       The name of the layout to lookup if no layout is provided.
-      By default `Ember.Component` will lookup a template with this name in
+      By default `Component` will lookup a template with this name in
       `Ember.TEMPLATES` (a shared global object).
       @property layoutName
       @type String
