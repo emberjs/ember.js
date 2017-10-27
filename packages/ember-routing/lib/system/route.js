@@ -2178,7 +2178,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           name: connection.name,
           controller: undefined,
           template: undefined,
-          ViewClass: undefined
         };
         run.once(this.router, '_setOutlets');
       }
@@ -2283,7 +2282,6 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     name,
     controller,
     template: template || route._topLevelViewTemplate,
-    ViewClass: undefined
   };
 
   if (DEBUG) {

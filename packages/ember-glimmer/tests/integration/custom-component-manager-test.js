@@ -41,6 +41,14 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
     layoutFor(definition, bucket, env) {
       return env.getCompiledBlock(TestLayoutCompiler, definition.template);
     }
+
+    getDestructor(component) {
+      return component;
+    }
+
+    getSelf() {
+      return null;
+    }
   }
 
   moduleFor('Components test: curly components with custom manager', class extends RenderingTest {
