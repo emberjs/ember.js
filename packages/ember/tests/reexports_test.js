@@ -42,7 +42,6 @@ QUnit.module('ember reexports');
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal'],
   ['merge', 'ember-metal'],
-  ['instrument', 'ember-metal'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],
   ['Instrumentation.subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
