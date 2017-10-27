@@ -430,6 +430,6 @@ function findByName(array: Simple.Attribute[], name: string): Simple.Attribute |
   return undefined;
 }
 
-export function rehydrationBuilder(env: Environment, cursor: Cursor) {
+export function rehydrationBuilder(env: Environment, cursor: Cursor): ElementBuilder {
   return RehydrateBuilder.forInitialRender(env, cursor);
 }

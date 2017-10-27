@@ -573,6 +573,6 @@ class BlockListTracker implements Tracker {
   }
 }
 
-export function clientBuilder(env: Environment, cursor: Cursor) {
+export function clientBuilder(env: Environment, cursor: Cursor): ElementBuilder {
   return NewElementBuilder.forInitialRender(env, cursor);
 }
