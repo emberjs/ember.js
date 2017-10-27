@@ -1,6 +1,5 @@
 /**
  @module ember
- @submodule ember-views
 */
 import { inspect } from 'ember-utils';
 import { Mixin, get, isNone } from 'ember-metal';

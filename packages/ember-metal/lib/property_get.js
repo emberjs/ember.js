@@ -1,5 +1,5 @@
 /**
-@module ember-metal
+@module @ember/object
 */
 
 import { assert } from 'ember-debug';
@@ -41,7 +41,8 @@ const ALLOWABLE_TYPES = {
   an error.
 
   @method get
-  @for Ember
+  @for @ember/object
+  @static
   @param {Object} obj The object to retrieve from.
   @param {String} keyName The property key to retrieve
   @return {Object} the property value or `null`.
@@ -101,7 +102,8 @@ function isGettable(obj) {
   ```
 
   @method getWithDefault
-  @for Ember
+  @for @ember/object
+  @static
   @param {Object} obj The object to retrieve from.
   @param {String} keyName The name of the property to retrieve
   @param {Object} defaultValue The value to return if the property value is undefined

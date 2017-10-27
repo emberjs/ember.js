@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-metal
+@module @ember/object
 */
 import { applyStr } from 'ember-utils';
 import { deprecate, assert } from 'ember-debug';
@@ -29,7 +28,8 @@ import { ONCE, SUSPENDED } from './meta_listeners';
   Add an event listener
 
   @method addListener
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
   @param {Object|Function} target A target object or a function
@@ -38,7 +38,7 @@ import { ONCE, SUSPENDED } from './meta_listeners';
   @public
 */
 export function addListener(obj, eventName, target, method, once) {
-  assert('You must pass at least an object and event name to Ember.addListener', !!obj && !!eventName);
+  assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
 
   deprecate(
     `didInitAttrs called in ${obj && obj.toString && obj.toString()}.`,
@@ -70,10 +70,11 @@ export function addListener(obj, eventName, target, method, once) {
 /**
   Remove an event listener
 
-  Arguments should match those passed to `Ember.addListener`.
+  Arguments should match those passed to `addListener`.
 
   @method removeListener
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
   @param {Object|Function} target A target object or a function
@@ -81,7 +82,7 @@ export function addListener(obj, eventName, target, method, once) {
   @public
 */
 export function removeListener(obj, eventName, target, method) {
-  assert('You must pass at least an object and event name to Ember.removeListener', !!obj && !!eventName);
+  assert('You must pass at least an object and event name to removeListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
     method = target;
@@ -102,7 +103,8 @@ export function removeListener(obj, eventName, target, method) {
   setting that property.
 
   @method suspendListener
-  @for Ember
+  @static
+  @for @ember/object/events
 
   @private
   @param obj
@@ -119,7 +121,8 @@ export function suspendListener(obj, eventName, target, method, callback) {
   Suspends multiple listeners during a callback.
 
   @method suspendListeners
-  @for Ember
+  @static
+  @for @ember/object/events
 
   @private
   @param obj
@@ -141,7 +144,8 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
 
   @private
   @method watchedEvents
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
 */
 export function watchedEvents(obj) {
@@ -156,7 +160,8 @@ export function watchedEvents(obj) {
   is not passed, the actions stored on the passed object are invoked.
 
   @method sendEvent
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
   @param {Array} params Optional parameters for each listener.
@@ -204,7 +209,8 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
 /**
   @private
   @method hasListeners
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
 */
@@ -218,7 +224,8 @@ export function hasListeners(obj, eventName) {
 /**
   @private
   @method listenersFor
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
 */
@@ -244,19 +251,24 @@ export function listenersFor(obj, eventName) {
 
 
   ``` javascript
-  let Job = Ember.Object.extend({
-    logCompleted: Ember.on('completed', function() {
+  import EmberObject from '@ember/object';
+  import { on } from '@ember/object/evented';
+  import { sendEvent } from '@ember/object/events';
+
+  let Job = EmberObject.extend({
+    logCompleted: on('completed', function() {
       console.log('Job completed!');
     })
   });
 
   let job = Job.create();
 
-  Ember.sendEvent(job, 'completed'); // Logs 'Job completed!'
+  sendEvent(job, 'completed'); // Logs 'Job completed!'
  ```
 
   @method on
-  @for Ember
+  @static
+  @for @ember/object/evented
   @param {String} eventNames*
   @param {Function} func
   @return func
@@ -266,8 +278,8 @@ export function on(...args) {
   let func = args.pop();
   let events = args;
 
-  assert('Ember.on expects function as last argument', typeof func === 'function');
-  assert('Ember.on called without valid event names', events.length > 0 && events.every((p)=> typeof p === 'string' && p.length));
+  assert('on expects function as last argument', typeof func === 'function');
+  assert('on called without valid event names', events.length > 0 && events.every((p)=> typeof p === 'string' && p.length));
 
   func.__ember_listens__ = events;
   return func;

@@ -1,8 +1,3 @@
-/**
-@module ember
-@submodule ember-glimmer
-*/
-
 import {
   ComponentDefinition
 } from '@glimmer/runtime';

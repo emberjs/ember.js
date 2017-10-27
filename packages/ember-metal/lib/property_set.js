@@ -13,7 +13,9 @@ import {
   peekMeta
 } from './meta';
 import { MANDATORY_SETTER } from 'ember/features';
-
+/**
+ @module @ember/object
+*/
 /**
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change. If the
@@ -25,7 +27,8 @@ import { MANDATORY_SETTER } from 'ember/features';
   ```
 
   @method set
-  @for Ember
+  @static
+  @for @ember/object
   @param {Object} obj The object to modify.
   @param {String} keyName The property key to set
   @param {Object} value The value to set
@@ -116,7 +119,8 @@ function setPath(root, path, value, tolerant) {
   an object has been destroyed.
 
   @method trySet
-  @for Ember
+  @static
+  @for @ember/object
   @param {Object} root The object to modify.
   @param {String} path The property path to set
   @param {Object} value The value to set

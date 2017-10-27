@@ -7,12 +7,10 @@ import Logger from 'ember-console';
 import { ENV } from 'ember-environment';
 
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
-
 /**
-@module ember
-@submodule ember-debug
+ @module @ember/debug
+ @public
 */
-
 /**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
   Deprecations are invoked by calls to [Ember.deprecate](https://emberjs.com/api/classes/Ember.html#method_deprecate).
@@ -45,7 +43,7 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
   @public
   @static
   @method registerDeprecationHandler
-  @for Ember.Debug
+  @for @ember/debug
   @param handler {Function} A function to handle deprecation calls.
   @since 2.1.0
 */
@@ -132,7 +130,10 @@ if (DEBUG) {
     '`options` should include `id` and `until` properties.';
   missingOptionsIdDeprecation = 'When calling `Ember.deprecate` you must provide `id` in options.';
   missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you must provide `until` in options.';
-
+  /**
+   @module @ember/application
+   @public
+   */
   /**
     Display a deprecation warning with the provided message and a stack trace
     (Chrome and Firefox only).
@@ -141,6 +142,7 @@ if (DEBUG) {
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
     @method deprecate
+    @for @ember/application/deprecations
     @param {String} message A description of the deprecation.
     @param {Boolean} test A boolean. If falsy, the deprecation will be displayed.
     @param {Object} options
@@ -152,7 +154,7 @@ if (DEBUG) {
       warning will be removed.
     @param {String} [options.url] An optional url to the transition guide on the
       emberjs.com website.
-    @for Ember
+    @static
     @public
     @since 1.0.0
   */

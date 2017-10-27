@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-views
+@module @ember/component
 */
 import { computed } from 'ember-metal';
 import { environment } from 'ember-environment';
@@ -43,12 +42,10 @@ function canSetTypeOfInput(type) {
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
-  properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
-  layout section for more information.
+  properties will not be applied.
 
   @class TextField
-  @namespace Ember
-  @extends Ember.Component
+  @extends Component
   @uses Ember.TextSupport
   @public
 */

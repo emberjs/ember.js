@@ -2345,7 +2345,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     if (MANDATORY_SETTER) {
       expectAssertion(() => {
         component.bar = 'foo-bar';
-      }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
+      }, /You must use set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
 
       this.assertText('initial value - initial value');
     }

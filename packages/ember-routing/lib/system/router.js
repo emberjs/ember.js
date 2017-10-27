@@ -40,8 +40,7 @@ import RouterState from './router_state';
 import { DEBUG } from 'ember-env-flags';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 import Router from 'router';
@@ -56,9 +55,8 @@ const { slice } = Array.prototype;
   the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
   @class Router
-  @namespace Ember
-  @extends Ember.Object
-  @uses Ember.Evented
+  @extends EmberObject
+  @uses Evented
   @public
 */
 const EmberRouter = EmberObject.extend(Evented, {
@@ -77,7 +75,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     @property location
     @default 'hash'
-    @see {Ember.Location}
+    @see {Location}
     @public
   */
   location: 'hash',
@@ -1253,7 +1251,7 @@ function findRouteStateName(route, state) {
 
   @private
   @param {Owner} owner
-  @param {Ember.Router} router
+  @param {Router} router
   @param {String} localName
   @param {String} fullName
   @return {Boolean}

@@ -1,7 +1,6 @@
 import { InternalHelperReference } from '../utils/references';
 /**
 @module ember
-@submodule ember-glimmer
 */
 
 import Logger from 'ember-console';

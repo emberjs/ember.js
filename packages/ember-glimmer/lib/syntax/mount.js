@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-glimmer
 */
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
@@ -29,7 +28,7 @@ function dynamicEngineFor(vm, args, meta) {
 
   Additionally, you can also pass in a `model` argument that will be
   set as the engines model. This can be an existing object:
-  
+
   ```
   <div>
     {{mount 'admin' model=userSettings}}

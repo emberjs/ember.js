@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 
 import { CachedTag, DirtyableTag, UpdatableTag } from '@glimmer/reference';

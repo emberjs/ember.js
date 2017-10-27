@@ -65,17 +65,22 @@
 
   Ember's built-in helpers are described under the [Ember.Templates.helpers](/api/classes/Ember.Templates.helpers.html)
   namespace. Documentation on creating custom helpers can be found under
-  [Ember.Helper](/api/classes/Ember.Helper.html).
+  [Helper](/api/classes/Ember.Helper.html).
 
   ### Invoking a Component
 
   Ember components represent state to the UI of an application. Further
-  reading on components can be found under [Ember.Component](/api/classes/Ember.Component.html).
+  reading on components can be found under [Component](/api/classes/Ember.Component.html).
 
-  @module ember
-  @submodule ember-glimmer
-  @main ember-glimmer
+  @module @ember/component
+  @main @ember/component
   @public
+ */
+
+/**
+ @module ember
+ @class Ember.Templates.helpers
+ @public
  */
 
 /**
@@ -97,7 +102,7 @@
     {{/each}}
   {{/with}}
   ```
-  
+
   NOTE: The alias should not reuse a name from the bound property path.
 
   For example: `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
@@ -114,7 +119,7 @@
   `{{yield}}` denotes an area of a template that will be rendered inside
   of another template.
 
-  ### Use with Ember.Component
+  ### Use with `Component`
 
   When designing components `{{yield}}` is used to denote where, inside the component's
   template, an optional block passed to the component should render:

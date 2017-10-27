@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/object
 */
 
 import { symbol, NAME_KEY, OWNER } from 'ember-utils';
@@ -18,10 +17,9 @@ let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
   of `Ember.CoreObject` with the `Ember.Observable` mixin applied. For details,
   see the documentation for each of these.
 
-  @class Object
-  @namespace Ember
-  @extends Ember.CoreObject
-  @uses Ember.Observable
+  @class EmberObject
+  @extends CoreObject
+  @uses Observable
   @public
 */
 const EmberObject = CoreObject.extend(Observable, {

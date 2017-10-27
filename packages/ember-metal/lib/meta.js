@@ -30,7 +30,7 @@ if (DEBUG) {
 }
 
 /**
-@module ember-metal
+@module ember
 */
 
 export const UNDEFINED = symbol('undefined');
