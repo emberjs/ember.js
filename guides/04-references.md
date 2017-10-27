@@ -228,7 +228,7 @@ let work: Reference<string> = {
   }
 };
 
-let relax = Reference<string> = {
+let relax: Reference<string> = {
   value() {
     return 'Relaxing... (v_v)'
   }
@@ -332,7 +332,7 @@ function get(object: any, ...subpaths: string[]) {
     let head = subpaths[0];
     let tail = subpaths.slice(1);
 
-    return get(object[head], tail);
+    return get(object[head], ...tail);
   }
 }
 
