@@ -1,6 +1,10 @@
 /**
 @module ember
 */
+import {
+  Arguments,
+  VM
+} from '@glimmer/runtime';
 import { symbol } from 'ember-utils';
 
 /**
@@ -111,11 +115,11 @@ import { symbol } from 'ember-utils';
 */
 const EACH_IN_REFERENCE = symbol('EACH_IN');
 
-export function isEachIn(ref): boolean {
+export function isEachIn(ref: any): boolean {
   return ref && ref[EACH_IN_REFERENCE];
 }
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   let ref = Object.create(args.positional.at(0));
   ref[EACH_IN_REFERENCE] = true;
   return ref;

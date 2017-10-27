@@ -1,3 +1,4 @@
+import { Arguments, VM } from '@glimmer/runtime';
 import { String as StringUtils } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
@@ -15,6 +16,6 @@ function normalizeClass({ positional }) {
   }
 }
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   return new InternalHelperReference(normalizeClass, args.capture());
 }

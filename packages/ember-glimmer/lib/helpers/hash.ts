@@ -1,3 +1,8 @@
+import {
+  Arguments,
+  VM
+} from '@glimmer/runtime';
+
 /**
 @module ember
 */
@@ -41,6 +46,6 @@
    @public
  */
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   return args.named.capture();
 }

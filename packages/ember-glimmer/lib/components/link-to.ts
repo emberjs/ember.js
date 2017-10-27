@@ -543,17 +543,17 @@ const LinkComponent = EmberComponent.extend({
     @private
   */
   disabled: computed({
-    get(_key) {
+    get(_key: string): boolean {
       return false;
     },
-    set(_key, value) {
+    set(_key: string, value: any): boolean {
       if (value !== undefined) { this.set('_isDisabled', value); }
 
       return value ? get(this, 'disabledClass') : false;
     },
   }),
 
-  _isActive(routerState) {
+  _isActive(routerState: any) {
     if (get(this, 'loading')) { return false; }
 
     let routing = get(this, '_routing');
@@ -677,7 +677,7 @@ const LinkComponent = EmberComponent.extend({
     return false;
   },
 
-  _generateTransition(payload, qualifiedRouteName, models, queryParams, shouldReplace) {
+  _generateTransition(payload: any, qualifiedRouteName: string, models: any[], queryParams: any[], shouldReplace: boolean) {
     let routing = get(this, '_routing');
     return () => {
       payload.transition = routing.transitionTo(qualifiedRouteName, models, queryParams, shouldReplace);
@@ -778,7 +778,7 @@ const LinkComponent = EmberComponent.extend({
     return true;
   }),
 
-  _getModels(params) {
+  _getModels(params: any[]) {
     let modelCount = params.length - 1;
     let models = new Array(modelCount);
 

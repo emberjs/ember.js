@@ -1,4 +1,9 @@
-import { normalizeTextValue } from '@glimmer/runtime';
+import {
+  Arguments,
+  CapturedArguments,
+  normalizeTextValue,
+  VM
+} from '@glimmer/runtime';
 import { InternalHelperReference } from '../utils/references';
 
 /**
@@ -21,10 +26,10 @@ import { InternalHelperReference } from '../utils/references';
   @for Ember.Templates.helpers
   @since 1.13.0
 */
-function concat({ positional }) {
+function concat({ positional }: CapturedArguments) {
   return positional.value().map(normalizeTextValue).join('');
 }
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   return new InternalHelperReference(concat, args.capture());
 }
