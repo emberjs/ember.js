@@ -310,7 +310,22 @@ export class ComponentElementOperations {
         reference = new ClassListReference(this.classes);
       }
 
+      if (name === 'type') {
+        continue;
+      }
+
       let attribute = vm.elements().setDynamicAttribute(name, reference.value(), trusting, namespace);
+
+      if (!isConst(reference)) {
+        vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
+      }
+    }
+
+    if ('type' in this.attributes) {
+      let type = this.attributes.type;
+      let { value: reference, namespace, trusting } = type;
+
+      let attribute = vm.elements().setDynamicAttribute('type', reference.value(), trusting, namespace);
 
       if (!isConst(reference)) {
         vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
