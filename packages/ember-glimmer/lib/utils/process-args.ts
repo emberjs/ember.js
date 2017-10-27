@@ -40,13 +40,13 @@ const REF = symbol('REF');
 
 class MutableCell {
   public value: any;
-  constructor(ref, value) {
+  constructor(ref: any, value: any) {
     this[MUTABLE_CELL] = true;
     this[REF] = ref;
     this.value = value;
   }
 
-  update(val) {
+  update(val: any) {
     this[REF][UPDATE](val);
   }
 }

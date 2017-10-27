@@ -291,7 +291,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     if (classRef) {
-      operations.addDynamicAttribute(element, 'class', classRef);
+      operations.addDynamicAttribute(element, 'class', classRef, false);
     }
 
     if (classNames && classNames.length) {

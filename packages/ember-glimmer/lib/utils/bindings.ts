@@ -8,19 +8,24 @@ import {
   Tag,
 } from '@glimmer/reference';
 import {
+  ElementOperations,
+  Simple
+} from '@glimmer/runtime';
+import {
   Ops,
 } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
+import { Component } from './curly-component-state-bucket';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
-function referenceForKey(component, key) {
+function referenceForKey(component: Component, key: string) {
   return component[ROOT_REF].get(key);
 }
 
-function referenceForParts(component, parts) {
+function referenceForParts(component: Component, parts: string[]) {
   let isAttrs = parts[0] === 'attrs';
 
   // TODO deprecate this
@@ -36,7 +41,7 @@ function referenceForParts(component, parts) {
 }
 
 // TODO we should probably do this transform at build time
-export function wrapComponentClassAttribute(hash) {
+export function wrapComponentClassAttribute(hash: any[]) {
   if (!hash) {
     return hash;
   }
@@ -59,7 +64,7 @@ export function wrapComponentClassAttribute(hash) {
 }
 
 export const AttributeBinding = {
-  parse(microsyntax) {
+  parse(microsyntax: string) {
     let colonIndex = microsyntax.indexOf(':');
 
     if (colonIndex === -1) {
@@ -75,7 +80,7 @@ export const AttributeBinding = {
     }
   },
 
-  install(element, component, parsed, operations) {
+  install(element: Simple.Element, component: Component, parsed: [string, string, boolean], operations: ElementOperations) {
     let [prop, attribute, isSimple] = parsed;
 
     if (attribute === 'id') {
@@ -96,7 +101,7 @@ export const AttributeBinding = {
       reference = new StyleBindingReference(reference, referenceForKey(component, 'isVisible'));
     }
 
-    operations.addDynamicAttribute(element, attribute, reference);
+    operations.addDynamicAttribute(element, attribute, reference, false);
   },
 };
 
@@ -127,17 +132,17 @@ class StyleBindingReference extends CachedReference<string | SafeString> {
 }
 
 export const IsVisibleBinding = {
-  install(element, component, operations) {
-    operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue));
+  install(element: Simple.Element, component: Component, operations: ElementOperations) {
+    operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue), false);
   },
 
-  mapStyleValue(isVisible) {
+  mapStyleValue(isVisible: boolean) {
     return isVisible === false ? SAFE_DISPLAY_NONE : null;
   },
 };
 
 export const ClassNameBinding = {
-  install(element, component, microsyntax, operations) {
+  install(element: Simple.Element, component: Component, microsyntax: string, operations: ElementOperations) {
     let [ prop, truthy, falsy ] = microsyntax.split(':');
     let isStatic = prop === '';
 
@@ -145,7 +150,7 @@ export const ClassNameBinding = {
       operations.addStaticAttribute(element, 'class', truthy);
     } else {
       let isPath = prop.indexOf('.') > -1;
-      let parts = isPath && prop.split('.');
+      let parts = isPath ? prop.split('.') : [];
       let value = isPath ? referenceForParts(component, parts) : referenceForKey(component, prop);
       let ref;
 
@@ -155,7 +160,7 @@ export const ClassNameBinding = {
         ref = new ColonClassNameBindingReference(value, truthy, falsy);
       }
 
-      operations.addDynamicAttribute(element, 'class', ref);
+      operations.addDynamicAttribute(element, 'class', ref, false);
     }
   },
 };

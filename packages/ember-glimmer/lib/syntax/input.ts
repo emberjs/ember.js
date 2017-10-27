@@ -6,7 +6,7 @@ import { wrapComponentClassAttribute } from '../utils/bindings';
 import { dynamicComponentMacro } from './dynamic-component';
 import { hashToArgs } from './utils';
 
-function buildSyntax(type, params, hash, builder) {
+function buildSyntax(type: string, params: any[], hash: any, builder: any) {
   let definition = builder.env.getComponentDefinition(type, builder.meta.templateMeta);
   builder.component.static(definition, [params, hashToArgs(hash), null, null]);
   return true;
@@ -148,7 +148,7 @@ function buildSyntax(type, params, hash, builder) {
   @public
 */
 
-export function inputMacro(_name, params, hash, builder) {
+export function inputMacro(_name: string, params: any[], hash: any[], builder: any) {
   let keys;
   let values;
   let typeIndex = -1;
