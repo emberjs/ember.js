@@ -3,7 +3,6 @@
 tmp
 
 npm-debug.log
-lerna-debug.log
 sauce-example.log
 
 testem.log
