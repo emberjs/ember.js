@@ -48,7 +48,7 @@ class ConcatReference implements Reference<string> {
 }
 
 class UppercaseReference implements Reference<string> {
-  private str: Reference<string>[];
+  private str: Reference<string>;
 
   constructor(str: Reference<string>) {
     this.str = str;
@@ -272,7 +272,7 @@ Therefore, we can simply reuse the input reference's entity tag:
 ```typescript
 class UppercaseReference implements TaggedReference<string> {
   public tag: EntityTag<any>;
-  private str: Reference<string>[];
+  private str: Reference<string>;
 
   constructor(str: TaggedReference<string>) {
     this.tag = str.tag;
@@ -295,7 +295,7 @@ class ConcatReference implements TaggedReference<string> {
   private parts: TaggedReference<string>[];
 
   constructor(...parts: TaggedReference<string>[]) {
-    let tags = parts.map(reference => reference.tag)
+    let tags = parts.map(reference => reference.tag);
     this.tag = new CompositeTag(tags);
     this.parts = parts;
   }
@@ -319,7 +319,7 @@ class CompositeTag implements EntityTag<any[]> {
   validate(tickets: any[]): boolean {
     return this.tags.every((tag, i) => tag.validate(tickets[i]));
   }
-};
+}
 ```
 
 Finally, we can put all of these together and write a very simple renderer that
@@ -431,7 +431,7 @@ type RevisionTag = EntityTag<Revision>;
 let $REVISION_COUNTER: Revision = 1;
 
 interface TrackedObject {
-  public tag: DirtyableTag;
+  tag: DirtyableTag;
 }
 
 class DirtyableTag implements RevisionTag {
@@ -481,13 +481,13 @@ reference chain.
 For example, this is the updated implementation of `UppercaseReference`:
 
 ```typescript
-interface VersionedReference<T> extends <T> {
+interface VersionedReference<T> extends Reference<T> {
   tag: RevisionTag;
 }
 
 class UppercaseReference implements VersionedReference<string> {
   public tag: RevisionTag;
-  private str: Reference<string>[];
+  private str: Reference<string>;
 
   constructor(str: VersionedReference<string>) {
     this.tag = str.tag;
@@ -506,7 +506,7 @@ const person: TrackedObject = {
   name: 'Godfrey Chan'
 };
 
-let nameReference: VersionedReference<string> {
+let nameReference: VersionedReference<string> = {
   tag: person.tag,
 
   value() {
@@ -518,6 +518,7 @@ let uppercaseReference = new UppercaseReference(nameReference);
 
 uppercaseReference.value();         // => 'GODFREY CHAN'
 uppercaseReference.tag.value();     // => 1
+uppercaseReference.tag.validate(1); // => true
 
 set(person, 'name', 'Yehuda Katz');
 
@@ -537,7 +538,7 @@ class ConcatReference implements VersionedReference<string> {
   private parts: VersionedReference<string>[];
 
   constructor(...parts: VersionedReference<string>[]) {
-    let tags = parts.map(reference => reference.tag)
+    let tags = parts.map(reference => reference.tag);
     this.tag = new CompositeTag(tags);
     this.parts = parts;
   }
@@ -632,7 +633,7 @@ let currentInputValue: VersionedReference<string> = {
   tag: VOLATILE_TAG,
 
   value() {
-    return $('input').value();
+    return $('input').val();
   }
 };
 ```
