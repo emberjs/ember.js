@@ -62,7 +62,7 @@ QUnit.test('Throw exception when trying to inject `type:thing` on all type(s)', 
 
   registry.register('controller:post', PostController);
 
-  throws(() => {
+  expectAssertion(() => {
     registry.typeInjection('controller', 'injected', 'controller:post');
   }, /Cannot inject a 'controller:post' on other controller\(s\)\./);
 });
@@ -186,7 +186,7 @@ QUnit.test('cannot re-register a factory if it has been resolved', function() {
   registry.register('controller:apple', FirstApple);
   strictEqual(registry.resolve('controller:apple'), FirstApple);
 
-  throws(function() {
+  expectAssertion(function() {
     registry.register('controller:apple', SecondApple);
   }, /Cannot re-register: 'controller:apple', as it has already been resolved\./);
 
