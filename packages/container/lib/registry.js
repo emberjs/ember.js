@@ -139,16 +139,10 @@ export default class Registry {
    */
   register(fullName, factory, options = {}) {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
-
-    if (factory === undefined) {
-      throw new TypeError(`Attempting to register an unknown factory: '${fullName}'`);
-    }
+    assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
-
-    if (this._resolveCache[normalizedName]) {
-      throw new Error(`Cannot re-register: '${fullName}', as it has already been resolved.`);
-    }
+    assert(`Cannot re-register: '${fullName}', as it has already been resolved.`, !this._resolveCache[normalizedName]);
 
     delete this._failCache[normalizedName];
     this.registrations[normalizedName] = factory;
@@ -442,9 +436,7 @@ export default class Registry {
     assert('fullName must be a proper full name', this.validateFullName(fullName));
 
     let fullNameType = fullName.split(':')[0];
-    if (fullNameType === type) {
-      throw new Error(`Cannot inject a '${fullName}' on other ${type}(s).`);
-    }
+    assert(`Cannot inject a '${fullName}' on other ${type}(s).`, fullNameType !== type);
 
     let injections = this._typeInjections[type] ||
                      (this._typeInjections[type] = []);
