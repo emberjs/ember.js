@@ -64,34 +64,6 @@
   {{/link-to}}
   ```
 
-  dynamic use: the `disabledWhen` option:
-
-  ```handlebars
-  {{#link-to 'photoGallery' disabledWhen=controller.someProperty}}
-    Great Hamster Photos
-  {{/link-to}}
-  ```
-
-  any passed value to `disabled` will disable it except `undefined`.
-  to ensure that only `true` disable the `link-to` component you can
-  override the global behavior of `LinkComponent`.
-
-  ```javascript
-  import LinkComponent from '@ember/routing/link-component';
-  import { computed } from '@ember/object';
-
-  LinkComponent.reopen({
-    disabled: computed(function(key, value) {
-      if (value !== undefined) {
-        this.set('_isDisabled', value === true);
-      }
-      return value === true ? get(this, 'disabledClass') : false;
-    })
-  });
-  ```
-
-  see "Overriding Application-wide Defaults" for more.
-
   ### Handling `href`
   `{{link-to}}` will use your application's Router to
   fill the element's `href` property with a url that
@@ -464,10 +436,10 @@ const LinkComponent = EmberComponent.extend({
 
     @property classNameBindings
     @type Array
-    @default ['active', 'loading', 'disabled', 'ember-transitioning-in', 'ember-transitioning-out']
+    @default ['active', 'loading', '_disabled', 'ember-transitioning-in', 'ember-transitioning-out']
     @public
   */
-  classNameBindings: ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'],
+  classNameBindings: ['active', 'loading', '_disabled', 'transitioningIn', 'transitioningOut'],
 
   /**
     By default the `{{link-to}}` component responds to the `click` event. You
@@ -524,7 +496,6 @@ const LinkComponent = EmberComponent.extend({
   */
   init() {
     this._super(...arguments);
-    this._isDisabled = false;
 
     // Map desired event name to invoke function
     let eventName = get(this, 'eventName');
@@ -534,22 +505,14 @@ const LinkComponent = EmberComponent.extend({
   _routing: inject.service('-routing'),
 
   /**
-    Accessed as a classname binding to apply the `LinkComponent`'s `disabledClass`
-    CSS `class` to the element when the link is disabled.
-
     When `true` interactions with the element will not trigger route changes.
     @property disabled
-    @private
+    @public
   */
-  disabled: computed({
-    get(_key: string): boolean {
-      return false;
-    },
-    set(_key: string, value: any): boolean {
-      if (value !== undefined) { this.set('_isDisabled', value); }
+  disabled: false,
 
-      return value ? get(this, 'disabledClass') : false;
-    },
+  _disabled: computed('disabled', 'disabledClass', function() {
+    return this.get('disabled') ? this.get('disabledClass') : false;
   }),
 
   _isActive(routerState: any) {
@@ -649,7 +612,7 @@ const LinkComponent = EmberComponent.extend({
 
     if (get(this, 'bubbles') === false) { event.stopPropagation(); }
 
-    if (get(this, '_isDisabled')) { return false; }
+    if (get(this, 'disabled')) { return false; }
 
     if (get(this, 'loading')) {
       // tslint:disable-next-line:max-line-length
@@ -826,6 +789,11 @@ const LinkComponent = EmberComponent.extend({
 
     let disabledWhen = get(this, 'disabledWhen');
     if (disabledWhen !== undefined) {
+      deprecate(
+        'Usage of `disabledWhen` in `{{link-to}}` is deprecated use `disabled` directly instead.',
+        false,
+        { id: 'ember-glimmer.components.link-to-disabled-when', until: '3.5.0' },
+      );
       this.set('disabled', disabledWhen);
     }
 

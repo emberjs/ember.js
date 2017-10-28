@@ -80,7 +80,9 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.equal(this.$('#about-link').attr('href'), undefined, 'there is no href attribute');
   }
 
-  [`@test the {{link-to}} applies a 'disabled' class when disabled`](assert) {
+  [`@test the {{link-to}} applies a 'disabled' class when disabled (Deprecated)`](assert) {
+    expectDeprecation('Usage of `disabledWhen` in `{{link-to}}` is deprecated use `disabled` directly instead.');
+
     this.addTemplate('index', `
       {{#link-to "about" id="about-link-static" disabledWhen="shouldDisable"}}About{{/link-to}}
       {{#link-to "about" id="about-link-dynamic" disabledWhen=dynamicDisabledWhen}}About{{/link-to}}
@@ -102,7 +104,30 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.equal(this.$('#about-link-dynamic.disabled').length, 0, 'The dynamic link is re-enabled when its disabledWhen becomes false');
   }
 
-  [`@test the {{link-to}} doesn't apply a 'disabled' class if disabledWhen is not provided`](assert) {
+  [`@test the {{link-to}} applies a 'disabled' class when disabled`](assert) {
+
+    this.addTemplate('index', `
+      {{#link-to "about" id="about-link-static" disabled="shouldDisable"}}About{{/link-to}}
+      {{#link-to "about" id="about-link-dynamic" disabled=dynamicDisabledWhen}}About{{/link-to}}
+    `);
+
+    this.add('controller:index', Controller.extend({
+      shouldDisable: true,
+      dynamicDisabledWhen: 'shouldDisable'
+    }));
+
+    this.visit('/');
+
+    assert.equal(this.$('#about-link-static.disabled').length, 1, 'The static link is disabled when its `disabled` is true');
+    assert.equal(this.$('#about-link-dynamic.disabled').length, 1, 'The dynamic link is disabled when its `disabled` is true');
+
+    let controller = this.applicationInstance.lookup('controller:index');
+    this.runTask(() => controller.set('dynamicDisabledWhen', false));
+
+    assert.equal(this.$('#about-link-dynamic.disabled').length, 0, 'The dynamic link is re-enabled when its `disabled` becomes false');
+  }
+
+  [`@test the {{link-to}} doesn't apply a 'disabled' class if disabledWhen is not provided (Deprecated)`](assert) {
     this.addTemplate('index', `{{#link-to "about" id="about-link"}}About{{/link-to}}`);
 
     this.visit('/');
@@ -110,7 +135,16 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.ok(!this.$('#about-link').hasClass('disabled'), 'The link is not disabled if disabledWhen not provided');
   }
 
-  [`@test the {{link-to}} helper supports a custom disabledClass`](assert) {
+  [`@test the {{link-to}} doesn't apply a 'disabled' class if 'disabled' is not provided`](assert) {
+    this.addTemplate('index', `{{#link-to "about" id="about-link"}}About{{/link-to}}`);
+
+    this.visit('/');
+
+    assert.ok(!this.$('#about-link').hasClass('disabled'), 'The link is not disabled if disabledWhen not provided');
+  }
+
+  [`@test the {{link-to}} helper supports a custom disabledClass (Deprecated)`](assert) {
+    expectDeprecation('Usage of `disabledWhen` in `{{link-to}}` is deprecated use `disabled` directly instead.');
     this.addTemplate('index', `
       {{#link-to "about" id="about-link" disabledWhen=true disabledClass="do-not-want"}}About{{/link-to}}
     `);
@@ -120,7 +154,18 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class');
   }
 
-  [`@test the {{link-to}} helper supports a custom disabledClass set via bound param`](assert) {
+  [`@test the {{link-to}} helper supports a custom disabledClass`](assert) {
+    this.addTemplate('index', `
+      {{#link-to "about" id="about-link" disabled=true disabledClass="do-not-want"}}About{{/link-to}}
+    `);
+
+    this.visit('/');
+
+    assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class');
+  }
+
+  [`@test the {{link-to}} helper supports a custom disabledClass set via bound param (Deprecated)`](assert) {
+    expectDeprecation('Usage of `disabledWhen` in `{{link-to}}` is deprecated use `disabled` directly instead.');
     this.addTemplate('index', `
       {{#link-to "about" id="about-link" disabledWhen=true disabledClass=disabledClass}}About{{/link-to}}
     `);
@@ -134,7 +179,22 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class via bound param');
   }
 
-  [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
+  [`@test the {{link-to}} helper supports a custom disabledClass set via bound param`](assert) {
+    this.addTemplate('index', `
+      {{#link-to "about" id="about-link" disabled=true disabledClass=disabledClass}}About{{/link-to}}
+    `);
+
+    this.add('controller:index', Controller.extend({
+      disabledClass: 'do-not-want'
+    }));
+
+    this.visit('/');
+
+    assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class via bound param');
+  }
+
+  [`@test the {{link-to}} helper does not respond to clicks when disabled (Deprecated)`](assert) {
+    expectDeprecation('Usage of `disabledWhen` in `{{link-to}}` is deprecated use `disabled` directly instead.');
     this.addTemplate('index', `
       {{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}
     `);
@@ -145,7 +205,19 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
   }
 
-  [`@test the {{link-to}} helper responds to clicks according to its disabledWhen bound param`](assert) {
+  [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
+    this.addTemplate('index', `
+      {{#link-to "about" id="about-link" disabled=true}}About{{/link-to}}
+    `);
+
+    this.visit('/');
+    this.click('#about-link');
+
+    assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
+  }
+
+  [`@test the {{link-to}} helper responds to clicks according to its disabledWhen bound param (Deprecated)`](assert) {
+    expectDeprecation('Usage of `disabledWhen` in `{{link-to}}` is deprecated use `disabled` directly instead.');
     this.addTemplate('index', `
       {{#link-to "about" id="about-link" disabledWhen=disabledWhen}}About{{/link-to}}
     `);
@@ -166,6 +238,29 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     this.click('#about-link');
 
     assert.equal(this.$('h3:contains(About)').length, 1, 'Transitioning did occur when disabledWhen became false');
+  }
+
+  [`@test the {{link-to}} helper responds to clicks according to its 'disabled' bound param`](assert) {
+    this.addTemplate('index', `
+      {{#link-to "about" id="about-link" disabled=disabled}}About{{/link-to}}
+    `);
+
+    this.add('controller:index', Controller.extend({
+      disabled: true
+    }));
+
+    this.visit('/');
+
+    this.click('#about-link');
+
+    assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
+
+    let controller = this.applicationInstance.lookup('controller:index');
+    this.runTask(() => controller.set('disabled', false));
+
+    this.click('#about-link');
+
+    assert.equal(this.$('h3:contains(About)').length, 1, 'Transitioning did occur when disabled became false');
   }
 
   [`@test The {{link-to}} helper supports a custom activeClass`](assert) {
