@@ -101,7 +101,7 @@ export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSym
       b.stopLabels();
     }
 
-    let handle = b.commit(options.program.heap);
+    let handle = b.commit(options.program.heap, layout.block.symbols.length);
 
     if (DEBUG) {
       let { program, program: { heap } } = options;

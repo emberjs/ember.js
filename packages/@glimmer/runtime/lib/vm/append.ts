@@ -14,6 +14,10 @@ import {
   UpdatingOpcode
 } from '../opcodes';
 
+import {
+  UNDEFINED_REFERENCE
+} from '../references';
+
 import { Opcode, VMHandle } from "@glimmer/interfaces";
 import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram } from "@glimmer/program";
 
@@ -108,7 +112,7 @@ export default class VM<Specifier> implements PublicVM {
   /* Registers */
 
   private _pc = -1;
-  private ra = -1;
+  private _ra = -1;
 
   private currentOpSize = 0;
 
@@ -119,6 +123,15 @@ export default class VM<Specifier> implements PublicVM {
   set pc(value: number) {
     assert(typeof value === 'number' && value >= -1, `invalid pc: ${value}`);
     this._pc = value;
+  }
+
+  private set ra(value: number) {
+    assert(typeof value === 'number' && value >= -1, `invalid ra: ${value}`);
+    this._ra = value;
+  }
+
+  private get ra(): number {
+    return this._ra;
   }
 
   private get fp(): number {
@@ -218,6 +231,22 @@ export default class VM<Specifier> implements PublicVM {
 
     let vm = new VM(program, env, scope, dynamicScope, elementStack);
     vm.pc = vm.heap.getaddr(handle);
+    vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+    return vm;
+  }
+
+  static empty<Specifier>(
+    program: RuntimeProgram<Specifier>,
+    env: Environment,
+    elementStack: ElementBuilder
+  ) {
+    let dynamicScope: DynamicScope = {
+      get() { return UNDEFINED_REFERENCE; },
+      set() { return UNDEFINED_REFERENCE; },
+      child() { return dynamicScope; }
+    };
+
+    let vm = new VM(program, env, Scope.root(UNDEFINED_REFERENCE, 0), dynamicScope, elementStack);
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     return vm;
   }

@@ -363,7 +363,21 @@ OPCODE_METADATA(Op.GetComponentLayout, {
 
 OPCODE_METADATA(Op.InvokeComponentLayout, {
   name: 'InvokeComponentLayout',
-  stackChange: -4
+  stackChange: -2
+});
+
+OPCODE_METADATA(Op.PopulateLayout, {
+  name: 'PopulateLayout',
+  ops: [Register('state')],
+  operands: 1,
+  stackChange: -2
+});
+
+OPCODE_METADATA(Op.Main, {
+  name: 'Main',
+  ops: [Register('state')],
+  operands: 1,
+  stackChange: -2
 });
 
 OPCODE_METADATA(Op.BeginComponentTransaction, {
