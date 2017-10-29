@@ -81,7 +81,7 @@
     "babel-plugin-transform-proto-to-assign": "^6.23.0",
     "babel-template": "^6.24.1",
     "backburner.js": "^1.2.2",
-    "broccoli-babel-transpiler": "next",
+    "broccoli-babel-transpiler": "^6.1.1",
     "broccoli-concat": "^3.2.2",
     "broccoli-file-creator": "^1.1.1",
     "broccoli-lint-eslint": "^3.2.1",
