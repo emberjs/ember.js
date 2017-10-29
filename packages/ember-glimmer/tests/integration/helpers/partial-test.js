@@ -127,4 +127,37 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
 
     this.assertText('Nothing!');
   }
+
+  ['@test partials which contain contextual components']() {
+    this.registerComponent('outer-component', {
+      template: '{{yield (hash inner=(component "inner-component" name=name))}}'
+    });
+
+    this.registerComponent('inner-component', {
+      template: '{{yield (hash name=name)}}'
+    });
+
+    this.registerPartial('_some-partial', strip`
+      {{#outer.inner as |inner|}}
+        inner.name: {{inner.name}}
+      {{/outer.inner}}
+    `);
+
+    this.render(strip`
+      {{#outer-component name=name as |outer|}}
+        {{partial 'some-partial'}}
+      {{/outer-component}}`, { name: 'Sophie' });
+
+    this.assertStableRerender();
+
+    this.assertText('inner.name: Sophie');
+
+    this.runTask(() => set(this.context, 'name', 'Ben'));
+
+    this.assertText('inner.name: Ben');
+
+    this.runTask(() => set(this.context, 'name', 'Sophie'));
+
+    this.assertText('inner.name: Sophie');
+  }
 });
