@@ -134,6 +134,15 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   elementHook: false
 };
 
+export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: false,
+  elementHook: false
+};
+
 export type BrandedComponentDefinition = CurriedComponentDefinition;
 export type InternalComponent = ComponentInstanceState;
 export type InternalComponentManager = ComponentManager<ComponentInstanceState, ComponentDefinitionState>;

@@ -47,7 +47,7 @@ const SPECIFIERS = dict<Dict<Specifier>>();
  * @param name the export name (or 'default' for default exports)
  * @returns {Specifier}
  */
-export function specifierFor(module: ModuleName, name: NamedExport): Specifier {
+export function specifierFor(module: ModuleName, name: NamedExport = 'default'): Specifier {
   let specifiers = SPECIFIERS[module];
 
   if (!specifiers) specifiers = SPECIFIERS[module] = dict<Specifier>();

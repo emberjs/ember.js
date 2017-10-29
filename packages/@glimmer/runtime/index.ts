@@ -53,6 +53,8 @@ export {
 } from './lib/partial';
 
 export {
+  DEFAULT_CAPABILITIES,
+  MINIMAL_CAPABILITIES,
   ComponentManager,
   PublicComponentDefinition as ComponentDefinition,
   WithDynamicTagName,
@@ -69,6 +71,7 @@ export {
 } from './lib/component/curried-component';
 
 export {
+  ARGS
 } from './lib/compiled/opcodes/component';
 
 export {
