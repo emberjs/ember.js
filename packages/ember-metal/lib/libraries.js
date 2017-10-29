@@ -18,14 +18,6 @@ export class Libraries {
     this._coreLibIndex = 0;
   }
 
-  isRegistered(name) {
-    return !!this._getLibraryByName(name);
-  }
-}
-
-Libraries.prototype = {
-  constructor: Libraries,
-
   _getLibraryByName(name) {
     let libs = this._registry;
     let count = libs.length;
@@ -35,7 +27,7 @@ Libraries.prototype = {
         return libs[i];
       }
     }
-  },
+  }
 
   register(name, version, isCoreLibrary) {
     let index = this._registry.length;
@@ -48,11 +40,11 @@ Libraries.prototype = {
     } else {
       warn(`Library "${name}" is already registered with Ember.`, false, { id: 'ember-metal.libraries-register' });
     }
-  },
+  }
 
   registerCoreLibrary(name, version) {
     this.register(name, version, true);
-  },
+  }
 
   deRegister(name) {
     let lib = this._getLibraryByName(name);
@@ -63,7 +55,7 @@ Libraries.prototype = {
       this._registry.splice(index, 1);
     }
   }
-};
+}
 
 if (EMBER_LIBRARIES_ISREGISTERED) {
   Libraries.prototype.isRegistered = function(name) {
