@@ -18,6 +18,7 @@ import {
 } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import DebugStack from '../utils/debug-stack';
+import { Component } from '../utils/curly-component-state-bucket';
 
 // implements the ComponentManager interface as defined in glimmer:
 // tslint:disable-next-line:max-line-length
@@ -53,7 +54,7 @@ export default abstract class AbstractManager<T> implements ComponentManager<T> 
     env: Environment): CompiledDynamicTemplate<ProgramSymbolTable>;
   abstract getSelf(component: T): VersionedPathReference<Opaque>;
   abstract templateFor(
-     component: T,
+     component: Component,
      env: Environment): CompiledDynamicTemplate<ProgramSymbolTable>;
 
   didCreateElement(_component: T, _element: Element, _operations: ElementOperations): void {
