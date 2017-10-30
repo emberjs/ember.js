@@ -34,6 +34,7 @@
     "start": "ember serve",
     "pretest": "ember build",
     "prepare": "ember build -prod",
+    "lint": "tslint -p tsconfig.json",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "test:node": "node bin/run-node-tests.js",
