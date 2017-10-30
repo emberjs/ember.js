@@ -8,7 +8,6 @@ import {
   UpdatableTag,
 } from '@glimmer/reference';
 import {
-  Arguments,
   CapturedArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
@@ -381,13 +380,13 @@ export class ClassBasedHelperReference extends CachedReference {
   public instance: any;
   public args: any;
 
-  static create(helperClass: any, vm: VM, args: Arguments) {
+  static create(helperClass: any, vm: VM, args: CapturedArguments) {
     let instance = helperClass.create();
     vm.newDestroyable(instance);
     return new ClassBasedHelperReference(instance, args);
   }
 
-  constructor(instance: any, args: Arguments) {
+  constructor(instance: any, args: CapturedArguments) {
     super();
 
     this.tag = combine([instance[RECOMPUTE_TAG], args.tag]);
@@ -411,10 +410,10 @@ export class ClassBasedHelperReference extends CachedReference {
 }
 
 export class InternalHelperReference extends CachedReference {
-  public helper: (args: Arguments) => any;
+  public helper: (args: CapturedArguments) => CapturedArguments;
   public args: any;
 
-  constructor(helper: (args: Arguments) => any, args: Arguments) {
+  constructor(helper: (args: CapturedArguments) => any, args: CapturedArguments) {
     super();
 
     this.tag = args.tag;

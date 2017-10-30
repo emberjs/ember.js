@@ -13,6 +13,7 @@ export interface Component {
   classNameBindings: any;
   elementId: string;
   tagName: string;
+  isDestroying: boolean;
   trigger(event: string): void;
   destroy(): void;
   setProperties(props: {

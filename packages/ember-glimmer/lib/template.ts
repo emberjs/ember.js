@@ -9,7 +9,7 @@ export interface Container {
   lookup<T>(name: string): T;
   factoryFor<T>(name: string): T;
   buildChildEngineInstance<T>(name: string): T;
-  hasRegistration(name: string): boolean;
+  hasRegistration(name: string, options?: any): boolean;
 }
 
 export type OwnedTemplate = Template<{

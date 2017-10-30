@@ -3,7 +3,6 @@
 */
 import {
   Arguments,
-  CapturedArguments,
   Environment,
   isComponentDefinition,
   VM
@@ -148,19 +147,19 @@ import { CachedReference } from '../utils/references';
   @public
 */
 export class ClosureComponentReference extends CachedReference {
-  static create(args: CapturedArguments, meta: any, env: Environment) {
+  static create(args: Arguments, meta: any, env: Environment) {
     return new ClosureComponentReference(args, meta, env);
   }
 
   public defRef: any;
   public tag: any;
-  public args: CapturedArguments;
+  public args: Arguments;
   public meta: any;
   public env: Environment;
   public lastDefinition: any;
   public lastName: string | undefined;
 
-  constructor(args: CapturedArguments, meta: any, env: Environment) {
+  constructor(args: Arguments, meta: any, env: Environment) {
     super();
 
     let firstArg = args.positional.at(0);
@@ -213,7 +212,7 @@ export class ClosureComponentReference extends CachedReference {
   }
 }
 
-function createCurriedDefinition(definition: CurlyComponentDefinition, args: CapturedArguments) {
+function createCurriedDefinition(definition: CurlyComponentDefinition, args: Arguments) {
   let curriedArgs = curryArgs(definition, args);
 
   return new CurlyComponentDefinition(
@@ -224,7 +223,7 @@ function createCurriedDefinition(definition: CurlyComponentDefinition, args: Cap
   );
 }
 
-function curryArgs(definition: CurlyComponentDefinition, newArgs: CapturedArguments) {
+function curryArgs(definition: CurlyComponentDefinition, newArgs: Arguments): Arguments {
   let { args, ComponentClass } = definition;
   let positionalParams = ComponentClass.class.positionalParams;
 
@@ -236,7 +235,7 @@ function curryArgs(definition: CurlyComponentDefinition, newArgs: CapturedArgume
   // For "normal" curly components this slicing is done at the syntax layer,
   // but we don't have that luxury here.
 
-  let [, ...slicedPositionalArgs] = newArgs.positional.references;
+  let [, ...slicedPositionalArgs] = newArgs.capture().positional.references;
 
   if (positionalParams && slicedPositionalArgs.length) {
     validatePositionalParameters(newArgs.named, slicedPositionalArgs, positionalParams);
@@ -277,5 +276,5 @@ function curryArgs(definition: CurlyComponentDefinition, newArgs: CapturedArgume
 }
 
 export default function(vm: VM, args: Arguments, meta: any) {
-  return ClosureComponentReference.create(args.capture(), meta, vm.env);
+  return ClosureComponentReference.create(args, meta, vm.env);
 }

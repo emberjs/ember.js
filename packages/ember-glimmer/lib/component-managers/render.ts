@@ -3,12 +3,11 @@ import {
   ComponentManager
 } from '@glimmer/runtime';
 import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
-import { Destroyable } from '@glimmer/util';
 
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import Environment from '../environment';
-import { WrappedTemplateFactory } from '../template';
+import { OwnedTemplate } from '../template';
 import { DynamicScope } from '../renderer';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
@@ -31,7 +30,7 @@ if (DEBUG) {
 }
 
 export interface RenderState {
-  controller: Destroyable;
+  controller: any;
   model: any;
 }
 
@@ -67,7 +66,7 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     let modelRef = args.positional.at(0);
     let controllerFactory = env.owner.factoryFor(`controller:${name}`);
 
-    let factory = controllerFactory || generateControllerFactory(env.owner, name);
+    let factory: any = controllerFactory || generateControllerFactory(env.owner, name);
     let controller = factory.create({ model: modelRef.value() });
 
     if (DEBUG) {
@@ -94,10 +93,10 @@ export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 
 export class RenderDefinition extends ComponentDefinition<RenderState> {
   public name: string;
-  public template: WrappedTemplateFactory;
+  public template: OwnedTemplate;
   public env: Environment;
 
-  constructor(name: string, template: WrappedTemplateFactory, env: Environment, manager: ComponentManager<RenderState>) {
+  constructor(name: string, template: OwnedTemplate, env: Environment, manager: ComponentManager<RenderState>) {
     super('render', manager, null);
 
     this.name = name;

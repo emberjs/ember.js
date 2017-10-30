@@ -14,7 +14,7 @@ export function setViewElement(view: Opaque, element: Element | null): void;
 
 export function isSimpleClick(event: Event): boolean;
 
-export function constructStyleDeprecationMessage(affectedStyle: string): string;
+export function constructStyleDeprecationMessage(affectedStyle: any): string;
 
 export function hasPartial(name: string, owner: any): boolean;
 

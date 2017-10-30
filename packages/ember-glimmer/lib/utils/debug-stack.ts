@@ -2,7 +2,7 @@
 
 import { DEBUG } from 'ember-env-flags';
 
-let DebugStack;
+let DebugStack: any;
 
 if (DEBUG) {
   class Element {

@@ -64,7 +64,7 @@ export function wrapComponentClassAttribute(hash: any[]) {
 }
 
 export const AttributeBinding = {
-  parse(microsyntax: string) {
+  parse(microsyntax: string): [string, string, boolean] {
     let colonIndex = microsyntax.indexOf(':');
 
     if (colonIndex === -1) {

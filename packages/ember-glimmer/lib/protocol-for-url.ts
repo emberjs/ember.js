@@ -1,12 +1,13 @@
 /* globals module, URL */
 
 import { environment as emberEnvironment } from 'ember-environment';
+import Environment from './environment';
 import { IS_NODE, require } from 'node-module';
 
-let nodeURL;
-let parsingNode;
+let nodeURL: any;
+let parsingNode: HTMLAnchorElement;
 
-export default function installProtocolForURL(environment) {
+export default function installProtocolForURL(environment: Environment) {
   let protocol;
 
   if (emberEnvironment.hasDOM) {
@@ -34,7 +35,7 @@ export default function installProtocolForURL(environment) {
   }
 }
 
-function browserProtocolForURL(url) {
+function browserProtocolForURL(url: string) {
   if (!parsingNode) {
     parsingNode = document.createElement('a');
   }
@@ -43,7 +44,7 @@ function browserProtocolForURL(url) {
   return parsingNode.protocol;
 }
 
-function nodeProtocolForURL(url) {
+function nodeProtocolForURL(url: string) {
   let protocol = null;
   if (typeof url === 'string') {
     protocol = nodeURL.parse(url).protocol;

@@ -43,7 +43,7 @@ import {
 } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
-import { WrappedTemplateFactory } from '../template';
+import { OwnedTemplate, WrappedTemplateFactory } from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -73,7 +73,7 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
 
   while (i !== -1) {
     let binding = attributeBindings[i];
-    let parsed: string[] = AttributeBinding.parse(binding);
+    let parsed: [string, string, boolean] = AttributeBinding.parse(binding);
     let attribute = parsed[1];
 
     if (seen.indexOf(attribute) === -1) {
@@ -216,7 +216,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     dynamicScope.view = component;
 
-    if (parentView !== null) {
+    if (parentView !== null && parentView !== undefined) {
       parentView.appendChild(component);
     }
 
@@ -258,7 +258,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
-  templateFor(component: ComponentStateBucket, env: Environment): WrappedTemplateFactory {
+  templateFor(component: ComponentStateBucket, env: Environment): OwnedTemplate {
     let Template = get(component, 'layout');
     let owner = component[OWNER];
     if (Template) {
@@ -278,7 +278,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return component[ROOT_REF];
   }
 
-  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: Simple.Element, operations: ElementOperations): void {
+  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: Element, operations: ElementOperations): void {
     setViewElement(component, element);
 
     let { attributeBindings, classNames, classNameBindings } = component;
@@ -444,10 +444,10 @@ export function rerenderInstrumentDetails(component: any): any {
 const MANAGER = new CurlyComponentManager();
 
 export class CurlyComponentDefinition extends ComponentDefinition<ComponentStateBucket> {
-  public template: WrappedTemplateFactory;
-  public args: Arguments;
+  public template: OwnedTemplate;
+  public args: Arguments | undefined;
 
-  constructor(name: string, ComponentClass: ComponentClass, template: WrappedTemplateFactory, args: Arguments, customManager?: ComponentManager<ComponentStateBucket>) {
+  constructor(name: string, ComponentClass: ComponentClass, template: OwnedTemplate, args: Arguments | undefined, customManager?: ComponentManager<ComponentStateBucket>) {
     super(name, customManager || MANAGER, ComponentClass);
     this.template = template;
     this.args = args;

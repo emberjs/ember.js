@@ -20,6 +20,7 @@ import {
 import { BOUNDS } from './component';
 import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
+import ComponentStateBucket, { Component } from './utils/curly-component-state-bucket';
 import Environment from './environment';
 import { OwnedTemplate } from './template';
 import { RootReference } from './utils/references';
@@ -110,7 +111,7 @@ class RootState {
     };
   }
 
-  isFor(possibleRoot) {
+  isFor(possibleRoot: Opaque): boolean {
     return this.root === possibleRoot;
   }
 
@@ -158,18 +159,18 @@ export function _resetRenderers() {
 
 setHasViews(() => renderers.length > 0);
 
-function register(renderer) {
+function register(renderer: Renderer): void {
   assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
   renderers.push(renderer);
 }
 
-function deregister(renderer) {
+function deregister(renderer: Renderer): void {
   let index = renderers.indexOf(renderer);
   assert('Cannot deregister unknown unregistered renderer', index !== -1);
   renderers.splice(index, 1);
 }
 
-function loopBegin() {
+function loopBegin(): void {
   for (let i = 0; i < renderers.length; i++) {
     renderers[i]._scheduleRevalidate();
   }
@@ -210,7 +211,7 @@ export abstract class Renderer {
   private _isRenderingRoots: boolean;
   private _removedRoots: RootState[];
 
-  constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
+  constructor(env: Environment, rootTemplate: OwnedTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
     this._env = env;
     this._rootTemplate = rootTemplate;
     this._viewRegistry = _viewRegistry;
@@ -231,7 +232,7 @@ export abstract class Renderer {
     this._appendDefinition(view, definition, target, outletStateReference);
   }
 
-  appendTo(view: Opaque, target: Simple.Element) {
+  appendTo(view: ComponentStateBucket, target: Simple.Element) {
     let rootDef = new RootComponentDefinition(view);
 
     this._appendDefinition(view, rootDef, target);
@@ -259,11 +260,11 @@ export abstract class Renderer {
     this._viewRegistry[id] = view;
   }
 
-  unregister(view) {
+  unregister(view: Opaque) {
     delete this._viewRegistry[getViewId(view)];
   }
 
-  remove(view) {
+  remove(view: Component) {
     view._transitionTo('destroying');
 
     this.cleanupRootFor(view);
@@ -279,7 +280,7 @@ export abstract class Renderer {
     }
   }
 
-  cleanupRootFor(view) {
+  cleanupRootFor(view: Opaque) {
     // no need to cleanup roots if we have already been destroyed
     if (this._destroyed) { return; }
 
@@ -307,7 +308,7 @@ export abstract class Renderer {
 
   abstract getElement(view: Opaque): Simple.Element | undefined;
 
-  getBounds(view) {
+  getBounds(view: Component) {
     let bounds = view[BOUNDS];
 
     let parentElement = bounds.parentElement();
@@ -317,7 +318,7 @@ export abstract class Renderer {
     return { parentElement, firstNode, lastNode };
   }
 
-  createElement(tagName) {
+  createElement(tagName: string): Simple.Element {
     return this._env.getAppendOperations().createElement(tagName);
   }
 
@@ -450,7 +451,7 @@ export abstract class Renderer {
 }
 
 export class InertRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry }) {
+  static create({ env, rootTemplate, _viewRegistry }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any}) {
     return new this(env, rootTemplate, _viewRegistry, false);
   }
 
@@ -460,7 +461,7 @@ export class InertRenderer extends Renderer {
 }
 
 export class InteractiveRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry }) {
+  static create({ env, rootTemplate, _viewRegistry }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any}) {
     return new this(env, rootTemplate, _viewRegistry, true);
   }
 

@@ -10,7 +10,10 @@ import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { generateGuid, guidFor } from 'ember-utils';
 import EmberEnvironment from '../environment';
-import { WrappedTemplateFactory } from '../template';
+import {
+  OwnedTemplate,
+  WrappedTemplateFactory
+} from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
@@ -125,9 +128,9 @@ TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
 
 export class OutletComponentDefinition extends ComponentDefinition<StateBucket> {
   public outletName: string;
-  public template: WrappedTemplateFactory;
+  public template: OwnedTemplate;
 
-  constructor(outletName: string, template: WrappedTemplateFactory) {
+  constructor(outletName: string, template: OwnedTemplate) {
     super('outlet', MANAGER, null);
     this.outletName = outletName;
     this.template = template;

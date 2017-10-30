@@ -11,7 +11,7 @@ import { renderMacro } from './syntax/render';
 import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 
-function refineInlineSyntax(name, params, hash, builder) {
+function refineInlineSyntax(name: string, params: any[], hash: any, builder: any) {
   assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.env.builtInHelpers[name] && builder.env.owner.hasRegistration(`helper:${name}`)));
 
   let definition;
@@ -28,7 +28,7 @@ function refineInlineSyntax(name, params, hash, builder) {
   return false;
 }
 
-function refineBlockSyntax(name, params, hash, _default, inverse, builder) {
+function refineBlockSyntax(name: string, params: any[], hash: any, _default: any, inverse: any, builder: any) {
   if (name.indexOf('-') === -1) {
     return false;
   }
@@ -58,11 +58,11 @@ export const experimentalMacros: any[] = [];
 // This is a private API to allow for experimental macros
 // to be created in user space. Registering a macro should
 // should be done in an initializer.
-export function registerMacros(macro) {
+export function registerMacros(macro: any) {
   experimentalMacros.push(macro);
 }
 
-export function populateMacros(blocks, inlines) {
+export function populateMacros(blocks: any, inlines: any) {
   inlines.add('outlet', outletMacro);
   inlines.add('component', inlineComponentMacro);
   inlines.add('render', renderMacro);
