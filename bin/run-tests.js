@@ -27,8 +27,148 @@ server.listen(PORT);
 function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
     var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
-    runInPhantom(url, 3, resolve, reject);
+    runInBrowser(url, 3, resolve, reject);
+    //runInPhantom(url, 3, resolve, reject);
   });
+}
+
+function runInBrowser(url, retries, resolve, reject) {
+  var result = {output: [], errors: [], code: null};
+
+  console.log('Running Chrome headless: ' + url);
+
+  var puppeteer = require('puppeteer');
+
+  puppeteer.launch().then(function(browser) {
+    browser.newPage().then(function(page) {
+      page.on('console', function() {
+
+        var string = Array.prototype.slice.call(arguments).join('');
+        var lines = string.split('\n');
+
+        lines.forEach(function(line) {
+          if (line.indexOf('0 failed.') > -1) {
+            console.log(chalk.green(line));
+          } else {
+            console.log(line);
+          }
+        });
+
+        result.output.push(string);
+      });
+
+      page.on('error', function(err) {
+        var string = err.toString();
+
+        if (string.indexOf('Chrome headless has crashed.') > -1) {
+          crashed = true;
+        }
+
+        result.errors.push(string);
+        console.error(chalk.red(string));
+      });
+
+      var addLogging = function() {
+        window.document.addEventListener('DOMContentLoaded', function() {
+          var currentTestAssertions = [];
+
+          QUnit.log(function (details) {
+            var response;
+
+            // Ignore passing assertions
+            if (details.result) {
+              return;
+            }
+
+            response = details.message || '';
+
+            if (typeof details.expected !== 'undefined') {
+              if (response) {
+                response += ', ';
+              }
+
+              response += 'expected: ' + details.expected + ', but was: ' + details.actual;
+            }
+
+            if (details.source) {
+              response += '\n' + details.source;
+            }
+
+            currentTestAssertions.push('Failed assertion: ' + response);
+          });
+
+          QUnit.testDone(function (result) {
+            var i,
+                len,
+                name = '';
+
+            if (result.module) {
+              name += result.module + ': ';
+            }
+            name += result.name;
+
+            if (result.failed) {
+              console.log('\n' + 'Test failed: ' + name);
+
+              for (i = 0, len = currentTestAssertions.length; i < len; i++) {
+                console.log('    ' + currentTestAssertions[i]);
+              }
+            }
+
+            currentTestAssertions.length = 0;
+          });
+
+          QUnit.done(function (result) {
+            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + result.total + ' tests. ' + result.passed + ' passed, ' + result.failed + ' failed.');
+
+            if (typeof window.callPhantom === 'function') {
+              window.callPhantom({
+                'name': 'QUnit.done',
+                'data': result
+              });
+            }
+          });
+        });
+      };
+
+      page.exposeFunction('callPhantom', function(message) {
+        if (message && message.name === 'QUnit.done') {
+          result = message.data;
+          failed = !result || !result.total || result.failed;
+
+          if (!result.total) {
+            console.error('No tests were executed. Are you loading tests asynchronously?');
+          }
+
+          var code = failed ? 1 : 0;
+          var crashed = false;
+
+          result.code = code;
+
+          if (!crashed && code === 0) {
+            resolve(result);
+          } else if (crashed) {
+            console.log(chalk.red('Browser crashed with exit code ' + code));
+
+            if (retries > 1) {
+              console.log(chalk.yellow('Retrying... ¯\_(ツ)_/¯'));
+              runInBrowser(url, retries - 1, resolve, reject);
+            } else {
+              console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
+              console.log(chalk.yellow('This might be a known issue with Chrome headless, skipping for now'));
+              resolve(result);
+            }
+          } else {
+            reject(result);
+          }
+        }
+      });
+
+      page.evaluateOnNewDocument(addLogging);
+
+      page.goto(url, { timeout: 900 });
+    });
+  })
 }
 
 function runInPhantom(url, retries, resolve, reject) {
