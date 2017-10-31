@@ -73,6 +73,176 @@ moduleFor('Helpers test: {{partial}}', class extends RenderingTest {
     this.assertText('This sub-template is pretty great.');
   }
 
+  ['@test partial using data from {{#each}}']() {
+    this.registerPartial('show-item', '{{item}}');
+
+    this.render(strip`
+      {{#each model.items as |item|}}
+        {{item}}: {{partial 'show-item'}} |
+      {{/each}}`, {
+        model: {
+          items: emberA(['apple', 'orange', 'banana']),
+        }
+      });
+
+    this.assertStableRerender();
+
+    this.assertText('apple: apple |orange: orange |banana: banana |');
+
+    this.runTask(() => this.context.model.items.pushObject('strawberry'));
+
+    this.assertText('apple: apple |orange: orange |banana: banana |strawberry: strawberry |');
+
+    this.runTask(() => set(this.context, 'model', {
+      items: emberA(['apple', 'orange', 'banana']),
+    }));
+
+    this.assertText('apple: apple |orange: orange |banana: banana |');
+  }
+
+  ['@test partial using `{{get` on data from {{#with}}']() {
+    this.registerPartial('show-id', '{{get item "id"}}');
+
+    this.render(strip`
+      {{#with model as |item|}}
+        {{item.name}}: {{partial 'show-id'}}
+      {{/with}}`, {
+        model: { id: 1, name: 'foo' }
+      });
+
+    this.assertStableRerender();
+
+    this.assertText('foo: 1');
+
+    this.runTask(() => set(this.context, 'model.id', 2));
+
+    this.assertText('foo: 2');
+
+    this.runTask(() => set(this.context, 'model.name', 'bar'));
+
+    this.assertText('bar: 2');
+
+    this.runTask(() => set(this.context, 'model', { id: 1, name: 'foo' }));
+
+    this.assertText('foo: 1');
+  }
+
+  ['@test partial using `{{get` on data from {{#each}}']() {
+    this.registerPartial('show-item', '{{get item "id"}}');
+
+    this.render(strip`
+      {{#each items as |item|}}
+        {{item.id}}: {{partial 'show-item'}} |
+      {{/each}}`, {
+        items: emberA([{ id: 1 }, { id: 2 }, { id: 3 }]),
+      });
+
+    this.assertStableRerender();
+
+    this.assertText('1: 1 |2: 2 |3: 3 |');
+
+    this.runTask(() => this.context.items.pushObject({ id: 4 }));
+
+    this.assertText('1: 1 |2: 2 |3: 3 |4: 4 |');
+
+    this.runTask(() => set(this.context, 'items',
+      emberA([{ id: 1 }, { id: 2 }, { id: 3 }])
+    ));
+
+    this.assertText('1: 1 |2: 2 |3: 3 |');
+  }
+
+  ['@test partial using conditional on data from {{#each}}']() {
+    this.registerPartial('show-item', '{{#if item}}{{item}}{{/if}}');
+
+    this.render(strip`
+      {{#each items as |item|}}
+        {{item}}: {{partial 'show-item'}} |
+      {{/each}}`, {
+        items: emberA(['apple', null, 'orange', 'banana']),
+      });
+
+    this.assertStableRerender();
+
+    this.assertText('apple: apple |:  |orange: orange |banana: banana |');
+
+    this.runTask(() => this.context.items.pushObject('strawberry'));
+
+    this.assertText('apple: apple |:  |orange: orange |banana: banana |strawberry: strawberry |');
+
+    this.runTask(() => set(this.context, 'items',
+      emberA(['apple', null, 'orange', 'banana'])
+    ));
+
+    this.assertText('apple: apple |:  |orange: orange |banana: banana |');
+  }
+
+  ['@test nested partials using data from {{#each}}']() {
+    this.registerPartial('_outer-partial', strip`
+      [outer: {{name}}] {{partial 'inner-partial'}}
+    `);
+
+    this.registerPartial('inner-partial', '[inner: {{name}}]');
+
+    this.render(strip`
+      {{#each names as |name i|}}
+        {{i}}: {{partial 'outer-partial'}}
+      {{/each}}`, {
+        names: emberA(['Alex', 'Ben'])
+      });
+
+    this.assertStableRerender();
+
+    this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
+
+    this.runTask(() => this.context.names.pushObject('Sophie'));
+
+    this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]2: [outer: Sophie] [inner: Sophie]');
+
+    this.runTask(() => set(this.context, 'names', emberA(['Alex', 'Ben'])));
+
+    this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
+  }
+
+  ['@test nested partials within nested `{{#with}}` blocks']() {
+    this.registerPartial('_person2-partial', strip`
+      {{#with 'Ben' as |person2|}}
+        Hi {{person1}} (aged {{age}}) and {{person2}}. {{partial 'person3-partial'}}
+      {{/with}}
+    `);
+
+    this.registerPartial('_person3-partial', strip`
+      {{#with 'Alex' as |person3|}}
+        Hi {{person1}} (aged {{age}}), {{person2}} and {{person3}}. {{partial 'person4-partial'}}
+      {{/with}}
+    `);
+
+    this.registerPartial('_person4-partial', strip`
+      {{#with 'Sarah' as |person4|}}
+        Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}.
+      {{/with}}
+    `);
+
+    this.render(strip`
+      {{#with 'Sophie' as |person1|}}
+        Hi {{person1}} (aged {{age}}). {{partial 'person2-partial'}}
+      {{/with}}`,
+      { age: 0 }
+    );
+
+    this.assertStableRerender();
+
+    this.assertText('Hi Sophie (aged 0). Hi Sophie (aged 0) and Ben. Hi Sophie (aged 0), Ben and Alex. Hi Sophie (aged 0), Ben, Alex and Sarah.');
+
+    this.runTask(() => set(this.context, 'age', 1));
+
+    this.assertText('Hi Sophie (aged 1). Hi Sophie (aged 1) and Ben. Hi Sophie (aged 1), Ben and Alex. Hi Sophie (aged 1), Ben, Alex and Sarah.');
+
+    this.runTask(() => set(this.context, 'age', 0));
+
+    this.assertText('Hi Sophie (aged 0). Hi Sophie (aged 0) and Ben. Hi Sophie (aged 0), Ben and Alex. Hi Sophie (aged 0), Ben, Alex and Sarah.');
+  }
+
   ['@test dynamic partials in {{#each}}']() {
     this.registerPartial('_odd', 'ODD{{i}}');
     this.registerPartial('_even', 'EVEN{{i}}');
