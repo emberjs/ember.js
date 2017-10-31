@@ -235,7 +235,7 @@ function curryArgs(definition: CurlyComponentDefinition, newArgs: Arguments): Ar
   // For "normal" curly components this slicing is done at the syntax layer,
   // but we don't have that luxury here.
 
-  let [, ...slicedPositionalArgs] = newArgs.capture().positional.references;
+  let [, ...slicedPositionalArgs] = newArgs.positional.references;
 
   if (positionalParams && slicedPositionalArgs.length) {
     validatePositionalParameters(newArgs.named, slicedPositionalArgs, positionalParams);
@@ -276,5 +276,5 @@ function curryArgs(definition: CurlyComponentDefinition, newArgs: Arguments): Ar
 }
 
 export default function(vm: VM, args: Arguments, meta: any) {
-  return ClosureComponentReference.create(args, meta, vm.env);
+  return ClosureComponentReference.create(args.capture(), meta, vm.env);
 }
