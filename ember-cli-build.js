@@ -18,7 +18,6 @@ const toES5 = require('./broccoli/to-es5');
 const stripForProd = toES5.stripForProd;
 const minify = require('./broccoli/minify');
 const lint = require('./broccoli/lint');
-const Rollup = require('broccoli-rollup');
 const { stripIndent } = require('common-tags');
 const {
   routerES,
