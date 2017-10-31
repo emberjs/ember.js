@@ -26,20 +26,20 @@ const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
  @private
  @class Container
  */
-export default function Container(registry, options = {}) {
-  this.registry        = registry;
-  this.owner           = options.owner || null;
-  this.cache           = dictionary(options.cache || null);
-  this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
-  this[CONTAINER_OVERRIDE] = undefined;
-  this.isDestroyed = false;
+export default class Container {
+  constructor(registry, options = {}) {
+    this.registry        = registry;
+    this.owner           = options.owner || null;
+    this.cache           = dictionary(options.cache || null);
+    this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
+    this[CONTAINER_OVERRIDE] = undefined;
+    this.isDestroyed = false;
 
-  if (DEBUG) {
-    this.validationCache = dictionary(options.validationCache || null);
+    if (DEBUG) {
+      this.validationCache = dictionary(options.validationCache || null);
+    }
   }
-}
 
-Container.prototype = {
   /**
    @private
    @property registry
@@ -94,7 +94,7 @@ Container.prototype = {
   lookup(fullName, options) {
     assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
-  },
+  }
 
   /**
    A depth first traversal, destroying the container, its descendant containers and all
@@ -105,7 +105,7 @@ Container.prototype = {
   destroy() {
     destroyDestroyables(this);
     this.isDestroyed = true;
-  },
+  }
 
   /**
    Clear either the entire cache or just the cache for a particular key.
@@ -120,7 +120,7 @@ Container.prototype = {
     } else {
       resetMember(this, this.registry.normalize(fullName));
     }
-  },
+  }
 
   /**
    Returns an object that can be used to provide an owner to a
@@ -131,11 +131,11 @@ Container.prototype = {
   */
   ownerInjection() {
     return { [OWNER]: this.owner };
-  },
+  }
 
   _resolverCacheKey(name, options) {
     return this.registry.resolverCacheKey(name, options);
-  },
+  }
 
   /**
    Given a fullName, return the corresponding factory. The consumer of the factory
@@ -195,8 +195,7 @@ Container.prototype = {
     this.factoryManagerCache[cacheKey] = manager;
     return manager;
   }
-};
-
+}
 /*
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.

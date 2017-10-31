@@ -16,6 +16,13 @@
 - [#15265](https://github.com/emberjs/ember.js/pull/15265) [BUGFIX] fixed issue when passing `false` to `activeClass` for `{{link-to}}`
 - [#15672](https://github.com/emberjs/ember.js/pull/15672) Update router_js to 2.0.0.
 
+### 2.16.1 (October 29, 2017)
+
+- [#15722](https://github.com/emberjs/ember.js/pull/15722) [BUGFIX] Avoid assertion when using `(get` helper with empty paths.
+- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initally `null`.
+- [#15613](https://github.com/emberjs/ember.js/pull/15613) [BUGFIX] Prevent an error from being thrown when partial set of query params are passed to the router service.
+- [#15777](https://github.com/emberjs/ember.js/pull/15777) [BUGFIX] Fix various issues around accessing dynamic data within a partial.
+
 ### 2.16.0 (October 9, 2017)
 
 - [#15604](https://github.com/emberjs/ember.js/pull/15604) Data Adapter: Only trigger model type update if the record live array count actually changed
@@ -1371,12 +1378,12 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Components are lazily looked up.
 * Renaming everyBy and anyBy to isEvery and isAny.
 
-###Ember 1.2.1 _(January 14, 2014)_
+### Ember 1.2.1 _(January 14, 2014)_
 
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 
-###Ember 1.2.0 _(November 22, 2013)_
+### Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
 * [BUGFIX] Use RegExp.test() for Ember.computed.match.
@@ -1431,16 +1438,16 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Allow apps with custom jquery builds to exclude the event-alias module
 * Removes long-deprecated getPath/setPath
 
-###Ember 1.1.3 _(January 13, 2014)_
+### Ember 1.1.3 _(January 13, 2014)_
 
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 
-###Ember 1.1.2 _(October 25, 2013)
+### Ember 1.1.2 _(October 25, 2013)_
 
 * [BUGFIX] Fix failures in component rendering. - Fixes #3637
 
-###Ember 1.1.1 _(October 23, 2013)_
+### Ember 1.1.1 _(October 23, 2013)_
 
 * [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 

@@ -311,9 +311,8 @@
   @public
 */
 
-import Logger from 'ember-console';
-import { assert, deprecate } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+import { assert, deprecate, warn } from 'ember-debug';
 import {
   computed,
   flaggedInstrument,
@@ -654,7 +653,7 @@ const LinkComponent = EmberComponent.extend({
 
     if (get(this, 'loading')) {
       // tslint:disable-next-line:max-line-length
-      Logger.warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.');
+      warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.', false);
       return false;
     }
 

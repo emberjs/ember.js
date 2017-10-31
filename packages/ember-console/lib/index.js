@@ -56,7 +56,7 @@ export default {
    @param {*} arguments
    @public
   */
-  log:   consoleMethod('log')   || K,
+  log: consoleMethod('log') || K,
 
   /**
    Prints the arguments to the console with a warning icon.
@@ -72,7 +72,7 @@ export default {
    @param {*} arguments
    @public
   */
-  warn:  consoleMethod('warn')  || K,
+  warn: consoleMethod('warn') || K,
 
   /**
    Prints the arguments to the console with an error icon, red text and a stack trace.
@@ -105,7 +105,7 @@ export default {
    @param {*} arguments
    @public
   */
-  info:  consoleMethod('info')  || K,
+  info: consoleMethod('info') || K,
 
   /**
    Logs the arguments to the console in blue text.

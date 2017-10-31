@@ -52,9 +52,9 @@ export function wrapComponentClassAttribute(hash: any[]) {
   if (index !== -1) {
     let [ type ] = values[index];
 
-    if (type === Ops.Get) {
+    if (type === Ops.Get || type === Ops.MaybeLocal) {
       let getExp = values[index];
-      let path = getExp[2];
+      let path = getExp[getExp.length - 1];
       let propName = path[path.length - 1];
       hash[1][index] = [Ops.Helper, ['-class'], [getExp, propName]];
     }
