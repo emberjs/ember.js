@@ -253,12 +253,12 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): CompiledDynamicProgram {
     let template = definition.template;
     if (!template) {
-      template = this.templateFor(bucket, env);
+      template = this.templateFor(bucket.component, env);
     }
     return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
-  templateFor(component: ComponentStateBucket, env: Environment): OwnedTemplate {
+  templateFor(component: Component, env: Environment): OwnedTemplate {
     let Template = get(component, 'layout');
     let owner = component[OWNER];
     if (Template) {
