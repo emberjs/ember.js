@@ -138,22 +138,14 @@ const RouterService = Service.extend({
        attempted transition
      @public
    */
-  transitionTo(...args) {
-    let queryParams;
-    let arg = args[0];
-    if (resemblesURL(arg)) {
-      return this._router._doURLTransition('transitionTo', arg);
+  transitionTo(routeNameOrUrl, ...args) {
+    if (resemblesURL(routeNameOrUrl)) {
+      return this._router._doURLTransition('transitionTo', routeNameOrUrl);
     }
 
-    let possibleQueryParams = args[args.length - 1];
-    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
-      queryParams = args.pop().queryParams;
-    } else {
-      queryParams = {};
-    }
+    let { models, queryParams } = this._extractQueryParamsArgument(args);
 
-    let targetRouteName = args.shift();
-    let transition = this._router._doTransition(targetRouteName, args, queryParams, true);
+    let transition = this._router._doTransition(routeNameOrUrl, models, queryParams, true);
     transition._keepDefaultQueryParamValues = true;
 
     return transition;
@@ -210,32 +202,32 @@ const RouterService = Service.extend({
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
-  isActive(/* routeName, ...models, options */) {
-    let { routeName, models, queryParams } = this._extractArguments(...arguments);
+  isActive(routeName, ...args) {
+    let { models, queryParams } = this._extractQueryParamsArgument(args);
     let routerMicrolib = this._router._routerMicrolib;
-    let state = routerMicrolib.state;
 
     if (!routerMicrolib.isActiveIntent(routeName, models, null)) { return false; }
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
       this._router._prepareQueryParams(routeName, models, queryParams, true /* fromRouterService */);
-      return shallowEqual(queryParams, state.queryParams);
+      return shallowEqual(queryParams, routerMicrolib.state.queryParams);
     }
 
     return true;
   },
 
-  _extractArguments(routeName, ...models) {
+  _extractQueryParamsArgument(models) {
     let possibleQueryParams = models[models.length - 1];
-    let queryParams = {};
 
+    let queryParams;
     if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
-      let options = models.pop();
-      queryParams = options.queryParams;
+      queryParams = models.pop().queryParams;
+    } else {
+      queryParams = {};
     }
 
-    return { routeName, models, queryParams };
+    return { models, queryParams };
   }
 });
 
