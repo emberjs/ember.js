@@ -106,20 +106,12 @@ export class DOMOperations {
 }
 
 export namespace DOM {
-  export type Node = Simple.Node;
-  export type Element = Simple.Element;
-  export type Document = Simple.Document;
-  export type Comment = Simple.Comment;
-  export type Text = Simple.Text;
-  export type Namespace = Simple.Namespace;
-  export type HTMLElement = Simple.HTMLElement;
-
   export class TreeConstruction extends DOMOperations {
-    createElementNS(namespace: Namespace, tag: string): Element {
+    createElementNS(namespace: Simple.Namespace, tag: string): Simple.Element {
       return this.document.createElementNS(namespace, tag);
     }
 
-    setAttribute(element: Element, name: string, value: string, namespace: Option<string> = null) {
+    setAttribute(element: Simple.Element, name: string, value: string, namespace: Option<string> = null) {
       if (namespace) {
         element.setAttributeNS(namespace, name, value);
       } else {
@@ -157,13 +149,12 @@ export class DOMChanges extends DOMOperations {
   }
 }
 
-export function insertHTMLBefore(this: void, _useless: Simple.Element, _parent: Simple.Element, _nextSibling: Option<Simple.Node>, html: string): Bounds { // tslint:disable-line
+export function insertHTMLBefore(this: void, useless: HTMLElement, _parent: Simple.Element, _nextSibling: Option<Simple.Node>, html: string): Bounds { // tslint:disable-line
   // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
   // only exists on `HTMLElement` but not on `Element`. We actually work with the
   // newer version of the DOM API here (and monkey-patch this method in `./compat`
   // when we detect older browsers). This is a hack to work around this limitation.
   let parent = _parent as HTMLElement;
-  let useless = _useless as HTMLElement;
   let nextSibling = _nextSibling as Node;
 
   let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
