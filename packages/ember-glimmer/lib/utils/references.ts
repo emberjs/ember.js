@@ -35,6 +35,11 @@ import emberToBool from './to-bool';
 
 export const UPDATE = symbol('UPDATE');
 
+import {
+  ComponentPathReference as GlimmerComponentPathReference,
+  CachedReference as GlimmerCachedReference
+} from './glimmer-references';
+
 let maybeFreeze;
 if (DEBUG) {
   // gaurding this in a DEBUG gaurd (as well as all invocations)
@@ -51,43 +56,18 @@ if (DEBUG) {
   };
 }
 
-// @abstract
-// @implements PathReference
-class EmberPathReference {
-  // @abstract get tag()
-  // @abstract value()
+abstract class EmberPathReference extends GlimmerComponentPathReference<any> {
+  get(key?): any {
+    return PropertyReference.create(this, key);
+  }
+};
+
+export abstract class CachedReference extends GlimmerCachedReference<any> {
+  public tag: any;
 
   get(key?): any {
     return PropertyReference.create(this, key);
   }
-}
-
-// @abstract
-export class CachedReference extends EmberPathReference {
-  private _lastRevision: any;
-  private _lastValue: any;
-  public tag: any;
-
-  constructor() {
-    super();
-    this._lastRevision = null;
-    this._lastValue = null;
-  }
-
-  compute() { /* NOOP */ }
-
-  value() {
-    let { tag, _lastRevision, _lastValue } = this;
-
-    if (!_lastRevision || !tag.validate(_lastRevision)) {
-      _lastValue = this._lastValue = this.compute();
-      this._lastRevision = tag.value();
-    }
-
-    return _lastValue;
-  }
-
-  // @abstract compute()
 }
 
 // @implements PathReference
