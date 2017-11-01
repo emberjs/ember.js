@@ -60,7 +60,6 @@ Ember.Debug = {
 Ember.merge = metal.merge;
 
 Ember.instrument = metal.instrument;
-Ember.subscribe = metal.instrumentationSubscribe;
 Ember.Instrumentation = {
   instrument: metal.instrument,
   subscribe: metal.instrumentationSubscribe,
