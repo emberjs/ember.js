@@ -1,5 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal';
+import { A as emberA } from 'ember-runtime';
 import { strip } from '../../utils/abstract-test-case';
 
 
