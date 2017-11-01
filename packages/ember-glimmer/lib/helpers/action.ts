@@ -2,7 +2,7 @@
 @module ember
 */
 import { isConst, VersionedPathReference } from '@glimmer/reference';
-import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
+import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
@@ -272,7 +272,7 @@ export const ACTION = symbol('ACTION');
   @for Ember.Templates.helpers
   @public
 */
-export default function(_vm, args: IArguments): UnboundReference {
+export default function(_vm: VM, args: Arguments): UnboundReference {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -304,22 +304,22 @@ export default function(_vm, args: IArguments): UnboundReference {
   return new UnboundReference(fn);
 }
 
-function NOOP(args) { return args; }
+function NOOP(args: Arguments) { return args; }
 
 function makeArgsProcessor(valuePathRef: VersionedPathReference<Opaque> | false,
                            actionArgsRef: Array<VersionedPathReference<Opaque>>) {
-  let mergeArgs;
+  let mergeArgs: any;
 
   if (actionArgsRef.length > 0) {
-    mergeArgs = (args) => {
+    mergeArgs = (args: Arguments) => {
       return actionArgsRef.map((ref) => ref.value()).concat(args);
     };
   }
 
-  let readValue;
+  let readValue: any;
 
   if (valuePathRef) {
-    readValue = (args) => {
+    readValue = (args: any) => {
       let valuePath = valuePathRef.value();
 
       if (valuePath && args.length > 0) {
@@ -331,7 +331,7 @@ function makeArgsProcessor(valuePathRef: VersionedPathReference<Opaque> | false,
   }
 
   if (mergeArgs && readValue) {
-    return (args) => {
+    return (args: Arguments) => {
       return readValue(mergeArgs(args));
     };
   } else {
@@ -339,20 +339,20 @@ function makeArgsProcessor(valuePathRef: VersionedPathReference<Opaque> | false,
   }
 }
 
-function makeDynamicClosureAction(context, targetRef, actionRef, processArgs, debugKey) {
+function makeDynamicClosureAction(context: any, targetRef: any, actionRef: any, processArgs: any, debugKey: any) {
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
   if (DEBUG) {
     makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey);
   }
 
-  return (...args) => {
+  return (...args: any[]) => {
     return makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey)(...args);
   };
 }
 
-function makeClosureAction(context, target, action, processArgs, debugKey) {
-  let self;
-  let fn;
+function makeClosureAction(context: any, target: any, action: any, processArgs: any, debugKey: any) {
+  let self: any;
+  let fn: any;
 
   assert(`Action passed is null or undefined in (action) from ${target}.`, !isNone(action));
 
@@ -376,7 +376,7 @@ function makeClosureAction(context, target, action, processArgs, debugKey) {
     }
   }
 
-  return (...args) => {
+  return (...args: any[]) => {
     let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
       return run.join(self, fn, ...processArgs(args));

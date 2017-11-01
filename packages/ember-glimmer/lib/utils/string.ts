@@ -11,11 +11,11 @@ export class SafeString {
     this.string = string;
   }
 
-  toString() {
+  toString(): string {
     return `${this.string}`;
   }
 
-  toHTML() {
+  toHTML(): string {
     return this.toString();
   }
 }

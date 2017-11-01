@@ -17,7 +17,13 @@ import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
 
-export function setupApplicationRegistry(registry) {
+interface Registry {
+  injection(name: string, name2: string, name3: string): void;
+  register(name: string, value: any): void;
+  optionsForType(type: string, options: any): void;
+}
+
+export function setupApplicationRegistry(registry: Registry) {
   registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
@@ -32,20 +38,20 @@ export function setupApplicationRegistry(registry) {
   }
 
   registry.register('service:-dom-changes', {
-    create({ document }) {
+    create({ document }: { document: HTMLDocument }) {
       return new DOMChanges(document);
     },
   });
 
   registry.register('service:-dom-tree-construction', {
-    create({ document }) {
+    create({ document }: { document: HTMLDocument }) {
       let Implementation = environment.hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
       return new Implementation(document);
     },
   });
 }
 
-export function setupEngineRegistry(registry) {
+export function setupEngineRegistry(registry: Registry) {
   registry.register('view:-outlet', OutletView);
   registry.register('template:-outlet', OutletTemplate);
   registry.injection('view:-outlet', 'template', 'template:-outlet');

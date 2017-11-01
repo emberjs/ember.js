@@ -2,7 +2,7 @@ import { Opaque } from '@glimmer/interfaces';
 import { get } from 'ember-metal';
 import { isArray } from 'ember-runtime';
 
-export default function toBool(predicate: Opaque) {
+export default function toBool(predicate: Opaque): boolean {
   if (!predicate) {
     return false;
   }

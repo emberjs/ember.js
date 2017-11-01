@@ -1,7 +1,8 @@
+import { Arguments, VM } from '@glimmer/runtime';
 import { String as StringUtils } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
-function classHelper({ positional }) {
+function classHelper({ positional }: any) {
   let path = positional.at(0);
   let args = positional.length;
   let value = path.value();
@@ -23,6 +24,6 @@ function classHelper({ positional }) {
   return value;
 }
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   return new InternalHelperReference(classHelper, args.capture());
 }

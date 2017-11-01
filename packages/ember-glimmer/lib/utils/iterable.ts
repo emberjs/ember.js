@@ -20,7 +20,7 @@ import {
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
-export default function iterableFor(ref, keyPath) {
+export default function iterableFor(ref: any, keyPath: string) {
   if (isEachIn(ref)) {
     return new EachInIterable(ref, keyForEachIn(keyPath));
   } else {
@@ -28,7 +28,7 @@ export default function iterableFor(ref, keyPath) {
   }
 }
 
-function keyForEachIn(keyPath) {
+function keyForEachIn(keyPath: string | undefined | null) {
   switch (keyPath) {
     case '@index':
     case undefined:
@@ -37,11 +37,11 @@ function keyForEachIn(keyPath) {
     case '@identity':
       return identity;
     default:
-      return (item) => get(item, keyPath);
+      return (item: any) => get(item, keyPath);
   }
 }
 
-function keyForArray(keyPath) {
+function keyForArray(keyPath: string | undefined | null) {
   switch (keyPath) {
     case '@index':
       return index;
@@ -50,15 +50,15 @@ function keyForArray(keyPath) {
     case null:
       return identity;
     default:
-      return (item) => get(item, keyPath);
+      return (item: any) => get(item, keyPath);
   }
 }
 
-function index(_item, i) {
+function index(_item: any, i: any): string {
   return String(i);
 }
 
-function identity(item) {
+function identity(item: any) {
   switch (typeof item) {
     case 'string':
     case 'number':
@@ -68,7 +68,7 @@ function identity(item) {
   }
 }
 
-function ensureUniqueKey(seen, key) {
+function ensureUniqueKey(seen: any, key: string) {
   let seenCount = seen[key];
 
   if (seenCount > 0) {
@@ -88,7 +88,7 @@ class ArrayIterator {
   public position: number;
   public seen: any;
 
-  constructor(array, keyFor) {
+  constructor(array: any[], keyFor: (value: any, memo: any) => any) {
     this.array = array;
     this.length = array.length;
     this.keyFor = keyFor;
@@ -100,11 +100,11 @@ class ArrayIterator {
     return false;
   }
 
-  getMemo(position) {
+  getMemo(position: number) {
     return position;
   }
 
-  getValue(position) {
+  getValue(position: number) {
     return this.array[position];
   }
 
@@ -124,12 +124,12 @@ class ArrayIterator {
 }
 
 class EmberArrayIterator extends ArrayIterator {
-  constructor(array, keyFor) {
+  constructor(array: any[], keyFor: (value: any, memo: any) => any) {
     super(array, keyFor);
     this.length = get(array, 'length');
   }
 
-  getValue(position) {
+  getValue(position: number) {
     return objectAt(this.array, position);
   }
 }
@@ -138,12 +138,12 @@ class ObjectKeysIterator extends ArrayIterator {
   public keys: any[];
   public length: number;
 
-  constructor(keys, values, keyFor) {
+  constructor(keys: any[], values: any[], keyFor: (value: any, memo: any) => any) {
     super(values, keyFor);
     this.keys = keys;
   }
 
-  getMemo(position) {
+  getMemo(position: number) {
     return this.keys[position];
   }
 }
@@ -162,11 +162,11 @@ const EMPTY_ITERATOR = new EmptyIterator();
 
 class EachInIterable {
   public ref: any;
-  public keyFor: (iterable: any) => any;
+  public keyFor: ((iterable: any) => any) | ((item: any, i: any) => string);
   public valueTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
-  constructor(ref, keyFor) {
+  constructor(ref: any, keyFor: ((iterable: any) => any) | ((item: any, i: any) => string)) {
     this.ref = ref;
     this.keyFor = keyFor;
 
@@ -200,30 +200,30 @@ class EachInIterable {
   // {{each-in}} yields |key value| instead of |value key|, so the memo and
   // value are flipped
 
-  valueReferenceFor(item) {
+  valueReferenceFor(item: any): UpdatablePrimitiveReference {
     return new UpdatablePrimitiveReference(item.memo);
   }
 
-  updateValueReference(reference, item) {
+  updateValueReference(reference: UpdatableReference, item: any) {
     reference.update(item.memo);
   }
 
-  memoReferenceFor(item) {
+  memoReferenceFor(item: any): UpdatableReference {
     return new UpdatableReference(item.value);
   }
 
-  updateMemoReference(reference, item) {
+  updateMemoReference(reference: UpdatableReference, item: any) {
     reference.update(item.value);
   }
 }
 
 class ArrayIterable {
-  public ref: any;
-  public keyFor: (iterable: any) => any;
+  public ref: UpdatableReference;
+  public keyFor: (value: any, memo: any) => any;
   public valueTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
-  constructor(ref, keyFor) {
+  constructor(ref: UpdatableReference, keyFor: (value: any, memo: any) => any) {
     this.ref = ref;
     this.keyFor = keyFor;
 
@@ -249,7 +249,7 @@ class ArrayIterable {
       return get(iterable, 'length') > 0 ? new EmberArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
     } else if (typeof iterable.forEach === 'function') {
       let array: any[] = [];
-      iterable.forEach((item) => {
+      iterable.forEach((item: any) => {
         array.push(item);
       });
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
@@ -258,19 +258,19 @@ class ArrayIterable {
     }
   }
 
-  valueReferenceFor(item) {
+  valueReferenceFor(item: any): UpdatableReference {
     return new UpdatableReference(item.value);
   }
 
-  updateValueReference(reference, item) {
+  updateValueReference(reference: UpdatableReference, item: any) {
     reference.update(item.value);
   }
 
-  memoReferenceFor(item) {
+  memoReferenceFor(item: any): UpdatablePrimitiveReference {
     return new UpdatablePrimitiveReference(item.memo);
   }
 
-  updateMemoReference(reference, item) {
+  updateMemoReference(reference: UpdatablePrimitiveReference, item: any) {
     reference.update(item.memo);
   }
 }

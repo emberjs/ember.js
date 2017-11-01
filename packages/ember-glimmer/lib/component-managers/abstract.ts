@@ -11,7 +11,11 @@ import {
   PreparedArguments,
 } from '@glimmer/runtime';
 import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
-import { Destroyable, Option } from '@glimmer/util';
+import {
+  Destroyable,
+  Opaque,
+  Option 
+} from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import DebugStack from '../utils/debug-stack';
 
@@ -47,7 +51,7 @@ export default abstract class AbstractManager<T> implements ComponentManager<T> 
     definition: ComponentDefinition<T>,
     component: T,
     env: Environment): CompiledDynamicTemplate<ProgramSymbolTable>;
-  abstract getSelf(component: T): VersionedPathReference<void | {}>;
+  abstract getSelf(component: T): VersionedPathReference<Opaque>;
 
   didCreateElement(_component: T, _element: Element, _operations: ElementOperations): void {
     // noop

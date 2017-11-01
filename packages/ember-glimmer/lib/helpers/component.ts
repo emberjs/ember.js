@@ -2,7 +2,10 @@
   @module ember
 */
 import {
+  Arguments,
+  Environment,
   isComponentDefinition,
+  VM
 } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import { assign } from 'ember-utils';
@@ -144,19 +147,19 @@ import { CachedReference } from '../utils/references';
   @public
 */
 export class ClosureComponentReference extends CachedReference {
-  static create(args, meta, env) {
+  static create(args: Arguments, meta: any, env: Environment) {
     return new ClosureComponentReference(args, meta, env);
   }
 
   public defRef: any;
   public tag: any;
-  public args: any;
+  public args: Arguments;
   public meta: any;
-  public env: any;
+  public env: Environment;
   public lastDefinition: any;
   public lastName: string | undefined;
 
-  constructor(args, meta, env) {
+  constructor(args: Arguments, meta: any, env: Environment) {
     super();
 
     let firstArg = args.positional.at(0);
@@ -175,7 +178,7 @@ export class ClosureComponentReference extends CachedReference {
     // currying are in the assertion messages.
     let { args, defRef, env, meta, lastDefinition, lastName } = this;
     let nameOrDef = defRef.value();
-    let definition;
+    let definition: CurlyComponentDefinition;
 
     if (nameOrDef && nameOrDef === lastName) {
       return lastDefinition;
@@ -188,13 +191,11 @@ export class ClosureComponentReference extends CachedReference {
       assert('You cannot use the input helper as a contextual helper. Please extend TextField or Checkbox to use it as a contextual component.', nameOrDef !== 'input');
       // tslint:disable-next-line:max-line-length
       assert('You cannot use the textarea helper as a contextual helper. Please extend TextArea to use it as a contextual component.', nameOrDef !== 'textarea');
-
-      definition = env.getComponentDefinition(nameOrDef, meta);
-
+      definition = <CurlyComponentDefinition>env.getComponentDefinition(nameOrDef, meta);
       // tslint:disable-next-line:max-line-length
       assert(`The component helper cannot be used without a valid component name. You used "${nameOrDef}" via (component "${nameOrDef}")`, !!definition);
     } else if (isComponentDefinition(nameOrDef)) {
-      definition = nameOrDef;
+      definition = <CurlyComponentDefinition>nameOrDef;
     } else {
       assert(
         `You cannot create a component from ${nameOrDef} using the {{component}} helper`,
@@ -211,7 +212,7 @@ export class ClosureComponentReference extends CachedReference {
   }
 }
 
-function createCurriedDefinition(definition, args) {
+function createCurriedDefinition(definition: CurlyComponentDefinition, args: Arguments) {
   let curriedArgs = curryArgs(definition, args);
 
   return new CurlyComponentDefinition(
@@ -222,7 +223,7 @@ function createCurriedDefinition(definition, args) {
   );
 }
 
-function curryArgs(definition, newArgs) {
+function curryArgs(definition: CurlyComponentDefinition, newArgs: Arguments): Arguments {
   let { args, ComponentClass } = definition;
   let positionalParams = ComponentClass.class.positionalParams;
 
@@ -274,6 +275,6 @@ function curryArgs(definition, newArgs) {
   return { positional, named };
 }
 
-export default function(vm, args, meta) {
+export default function(vm: VM, args: Arguments, meta: any) {
   return ClosureComponentReference.create(args.capture(), meta, vm.env);
 }

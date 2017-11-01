@@ -8,6 +8,8 @@ import { OWNER } from 'ember-utils';
 export interface Container {
   lookup<T>(name: string): T;
   factoryFor<T>(name: string): T;
+  buildChildEngineInstance<T>(name: string): T;
+  hasRegistration(name: string, options?: any): boolean;
 }
 
 export type OwnedTemplate = Template<{
@@ -36,7 +38,7 @@ export class WrappedTemplateFactory {
   }
 }
 
-export default function template(json) {
+export default function template(json: any) {
   const factory = templateFactory<{
     moduleName: string;
   }, {

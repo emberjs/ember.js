@@ -1,4 +1,8 @@
 import {
+  Arguments,
+  VM
+} from '@glimmer/runtime';
+import {
   combine,
   ConstReference,
   TagWrapper,
@@ -14,7 +18,7 @@ class OutletComponentReference {
   public outletStateTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
-  constructor(outletNameRef, parentOutletStateRef) {
+  constructor(outletNameRef: any, parentOutletStateRef: any) {
     this.outletNameRef = outletNameRef;
     this.parentOutletStateRef = parentOutletStateRef;
     this.definition = null;
@@ -46,7 +50,7 @@ class OutletComponentReference {
   }
 }
 
-function revalidate(definition, lastState, newState) {
+function revalidate(definition: any, lastState: any, newState: any) {
   if (!lastState && !newState) {
     return definition;
   }
@@ -65,7 +69,7 @@ function revalidate(definition, lastState, newState) {
   return null;
 }
 
-function outletComponentFor(vm, args) {
+function outletComponentFor(vm: VM, args: Arguments) {
   let { outletState } = vm.dynamicScope();
 
   let outletNameRef;
@@ -128,7 +132,7 @@ function outletComponentFor(vm, args) {
   @for Ember.Templates.helpers
   @public
 */
-export function outletMacro(_name, params, _hash, builder) {
+export function outletMacro(_name: string, params: any[], _hash: any[], builder: any) {
   if (!params) {
     params = [];
   }

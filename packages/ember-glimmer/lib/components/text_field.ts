@@ -8,7 +8,7 @@ import Component from '../component';
 import layout from '../templates/empty';
 
 const inputTypes = Object.create(null);
-function canSetTypeOfInput(type) {
+function canSetTypeOfInput(type: string) {
   if (type in inputTypes) {
     return inputTypes[type];
   }
@@ -99,11 +99,11 @@ export default Component.extend(TextSupport, {
     @public
   */
   type: computed({
-    get() {
+    get(): string {
       return 'text';
     },
 
-    set(_key, value) {
+    set(_key: string, value: string) {
       let type = 'text';
 
       if (canSetTypeOfInput(value)) {

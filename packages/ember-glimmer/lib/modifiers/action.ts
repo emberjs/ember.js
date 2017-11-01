@@ -1,3 +1,11 @@
+import {
+  Arguments,
+  CapturedNamedArguments,
+  CapturedPositionalArguments,
+  DynamicScope,
+  Simple
+} from '@glimmer/runtime';
+import { Destroyable } from '@glimmer/util';
 import { assert } from 'ember-debug';
 import { flaggedInstrument, run } from 'ember-metal';
 import { uuid } from 'ember-utils';
@@ -10,7 +18,7 @@ import { INVOKE } from '../helpers/action';
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
 
-function isAllowedEvent(event, allowedKeys) {
+function isAllowedEvent(event: Event, allowedKeys: any) {
   if (allowedKeys === null || allowedKeys === undefined) {
     if (POINTER_EVENT_TYPE_REGEX.test(event.type)) {
       return isSimpleClick(event);
@@ -37,7 +45,7 @@ export let ActionHelper = {
   // that were using this undocumented API.
   registeredActions: ActionManager.registeredActions,
 
-  registerAction(actionState) {
+  registerAction(actionState: ActionState) {
     let { actionId } = actionState;
 
     ActionManager.registeredActions[actionId] = actionState;
@@ -45,7 +53,7 @@ export let ActionHelper = {
     return actionId;
   },
 
-  unregisterAction(actionState) {
+  unregisterAction(actionState: ActionState) {
     let { actionId } = actionState;
 
     delete ActionManager.registeredActions[actionId];
@@ -53,17 +61,17 @@ export let ActionHelper = {
 };
 
 export class ActionState {
-  public element: HTMLElement;
-  public actionId: any;
+  public element: Simple.Element;
+  public actionId: number;
   public actionName: any;
   public actionArgs: any;
-  public namedArgs: any;
-  public positional: any;
+  public namedArgs: CapturedNamedArguments;
+  public positional: CapturedPositionalArguments;
   public implicitTarget: any;
   public dom: any;
   public eventName: any;
 
-  constructor(element, actionId, actionName, actionArgs, namedArgs, positionalArgs, implicitTarget, dom) {
+  constructor(element: Simple.Element, actionId: number, actionName: any, actionArgs: any[], namedArgs: CapturedNamedArguments, positionalArgs: CapturedPositionalArguments, implicitTarget: any, dom: any) {
     this.element = element;
     this.actionId = actionId;
     this.actionName = actionName;
@@ -102,7 +110,7 @@ export class ActionState {
     return target;
   }
 
-  handler(event): boolean {
+  handler(event: Event): boolean {
     let { actionName, namedArgs } = this;
     let bubbles = namedArgs.get('bubbles');
     let preventDefault = namedArgs.get('preventDefault');
@@ -165,11 +173,11 @@ export class ActionState {
 
 // implements ModifierManager<Action>
 export default class ActionModifierManager {
-  create(element, args, _dynamicScope, dom) {
+  create(element: Simple.Element, args: Arguments, _dynamicScope: DynamicScope, dom: any) {
     let { named, positional } = args.capture();
     let implicitTarget;
     let actionName;
-    let actionNameRef;
+    let actionNameRef: any;
     if (positional.length > 1) {
       implicitTarget = positional.at(0);
       actionNameRef = positional.at(1);
@@ -210,7 +218,7 @@ export default class ActionModifierManager {
     );
   }
 
-  install(actionState) {
+  install(actionState: ActionState) {
     let { dom, element, actionId } = actionState;
 
     ActionHelper.registerAction(actionState);
@@ -219,7 +227,7 @@ export default class ActionModifierManager {
     dom.setAttribute(element, `data-ember-action-${actionId}`, actionId);
   }
 
-  update(actionState) {
+  update(actionState: ActionState) {
     let { positional } = actionState;
     let actionNameRef = positional.at(1);
 
@@ -230,7 +238,7 @@ export default class ActionModifierManager {
     actionState.eventName = actionState.getEventName();
   }
 
-  getDestructor(modifier) {
+  getDestructor(modifier: Destroyable) {
     return modifier;
   }
 }

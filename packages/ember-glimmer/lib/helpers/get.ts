@@ -2,12 +2,15 @@ import {
   combine,
   CONSTANT_TAG,
   isConst,
+  PathReference,
   referenceFromParts,
   TagWrapper,
   UpdatableTag,
 } from '@glimmer/reference';
 import {
+  Arguments,
   NULL_REFERENCE,
+  VM
 } from '@glimmer/runtime';
 import { set } from 'ember-metal';
 import { CachedReference, UPDATE } from '../utils/references';
@@ -60,19 +63,19 @@ import { CachedReference, UPDATE } from '../utils/references';
   @since 2.1.0
  */
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
 }
 
 class GetHelperReference extends CachedReference {
   public sourceReference: any;
-  public pathReference: any;
+  public pathReference: PathReference<any>;
   public lastPath: any;
   public innerReference: any;
   public innerTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
-  static create(sourceReference, pathReference) {
+  static create(sourceReference: any, pathReference: PathReference<any>) {
     if (isConst(pathReference)) {
       let parts = pathReference.value().split('.');
       return referenceFromParts(sourceReference, parts);
@@ -81,7 +84,7 @@ class GetHelperReference extends CachedReference {
     }
   }
 
-  constructor(sourceReference, pathReference) {
+  constructor(sourceReference: any, pathReference: PathReference<any>) {
     super();
     this.sourceReference = sourceReference;
     this.pathReference = pathReference;
@@ -121,7 +124,7 @@ class GetHelperReference extends CachedReference {
     return innerReference.value();
   }
 
-  [UPDATE](value) {
+  [UPDATE](value: any) {
     set(this.sourceReference.value(), this.pathReference.value(), value);
   }
 }

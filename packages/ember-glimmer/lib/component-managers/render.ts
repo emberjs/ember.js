@@ -1,23 +1,24 @@
 import {
   ComponentDefinition,
+  ComponentManager
 } from '@glimmer/runtime';
 import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
-import { Destroyable } from '@glimmer/util';
 
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import Environment from '../environment';
+import { OwnedTemplate } from '../template';
 import { DynamicScope } from '../renderer';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import { OutletLayoutCompiler } from './outlet';
 
 export abstract class AbstractRenderManager extends AbstractManager<RenderState> {
-  layoutFor(definition: RenderDefinition, _bucket, env) {
+  layoutFor(definition: RenderDefinition, _bucket: RenderState, env: Environment) {
     return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
-  getSelf({ controller }) {
+  getSelf({ controller }: RenderState) {
     return new RootReference(controller);
   }
 }
@@ -29,7 +30,8 @@ if (DEBUG) {
 }
 
 export interface RenderState {
-  controller: Destroyable;
+  controller: any;
+  model: any;
 }
 
 class SingletonRenderManager extends AbstractRenderManager {
@@ -48,7 +50,7 @@ class SingletonRenderManager extends AbstractRenderManager {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
     }
 
-    return { controller };
+    return <RenderState>{ controller };
   }
 
   getDestructor() {
@@ -59,12 +61,12 @@ class SingletonRenderManager extends AbstractRenderManager {
 export const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
 
 class NonSingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
+  create(environment: Environment, definition: RenderDefinition, args: IArguments, dynamicScope: DynamicScope) {
     let { name, env } = definition;
     let modelRef = args.positional.at(0);
     let controllerFactory = env.owner.factoryFor(`controller:${name}`);
 
-    let factory = controllerFactory || generateControllerFactory(env.owner, name);
+    let factory: any = controllerFactory || generateControllerFactory(env.owner, name);
     let controller = factory.create({ model: modelRef.value() });
 
     if (DEBUG) {
@@ -78,23 +80,23 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     return { controller, model: modelRef };
   }
 
-  update({ controller, model }) {
+  update({ controller, model }: RenderState) {
     controller.set('model', model.value());
   }
 
-  getDestructor({ controller }) {
+  getDestructor({ controller }: RenderState) {
     return controller;
   }
 }
 
 export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 
-export class RenderDefinition extends ComponentDefinition<any> {
+export class RenderDefinition extends ComponentDefinition<RenderState> {
   public name: string;
-  public template: any;
+  public template: OwnedTemplate;
   public env: Environment;
 
-  constructor(name, template, env, manager) {
+  constructor(name: string, template: OwnedTemplate, env: Environment, manager: ComponentManager<RenderState>) {
     super('render', manager, null);
 
     this.name = name;

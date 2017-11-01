@@ -2,6 +2,12 @@
 /**
 @module ember
 */
+
+import {
+  Arguments,
+  CapturedArguments,
+  VM
+} from '@glimmer/runtime';
 import { String as StringUtils } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
@@ -37,10 +43,10 @@ import { InternalHelperReference } from '../utils/references';
   @see {Ember.String#loc}
   @public
 */
-function locHelper({ positional }) {
+function locHelper({ positional }: CapturedArguments) {
   return StringUtils.loc.apply(null, positional.value());
 }
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   return new InternalHelperReference(locHelper, args.capture());
 }

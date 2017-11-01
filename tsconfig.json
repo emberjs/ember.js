@@ -14,11 +14,11 @@
     "moduleResolution": "node",
 
     // Enhance Strictness
-    // "noImplicitAny": true,
-    // "suppressImplicitAnyIndexErrors": true,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    // "allowUnreachableCode": false,
+    "allowUnreachableCode": false,
     "strictNullChecks": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,

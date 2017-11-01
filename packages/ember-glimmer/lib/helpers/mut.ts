@@ -1,6 +1,10 @@
 /**
 @module ember
 */
+import {
+  Arguments,
+  VM
+} from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import { symbol } from 'ember-utils';
 import { UPDATE } from '../utils/references';
@@ -78,15 +82,15 @@ import { INVOKE } from './action';
 const MUT_REFERENCE = symbol('MUT');
 const SOURCE = symbol('SOURCE');
 
-export function isMut(ref) {
+export function isMut(ref: any): boolean {
   return ref && ref[MUT_REFERENCE];
 }
 
-export function unMut(ref) {
+export function unMut(ref: any) {
   return ref[SOURCE] || ref;
 }
 
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   let rawRef = args.positional.at(0);
 
   if (isMut(rawRef)) {

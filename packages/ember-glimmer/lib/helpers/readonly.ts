@@ -1,6 +1,10 @@
 /**
 @module ember
 */
+import {
+  Arguments,
+  VM
+} from '@glimmer/runtime';
 import { UPDATE } from '../utils/references';
 import { unMut } from './mut';
 
@@ -102,7 +106,7 @@ import { unMut } from './mut';
   @for Ember.Templates.helpers
   @private
 */
-export default function(_vm, args) {
+export default function(_vm: VM, args: Arguments) {
   let ref = unMut(args.positional.at(0));
 
   let wrapped = Object.create(ref);

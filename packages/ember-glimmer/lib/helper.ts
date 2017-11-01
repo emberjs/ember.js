@@ -126,7 +126,7 @@ Helper.reopenClass({
   @public
   @since 1.13.0
 */
-export function helper(helperFn) {
+export function helper(helperFn: (params: any[], hash?: any) => string) {
   return {
     isHelperInstance: true,
     compute: helperFn,

@@ -1,5 +1,6 @@
 /**
 @module ember
+@submodule ember-glimmer
 */
 
 import {
@@ -9,6 +10,11 @@ import {
   TagWrapper,
   UpdatableTag,
 } from '@glimmer/reference';
+import {
+  Arguments,
+  PrimitiveReference,
+  VM
+} from '@glimmer/runtime'
 import { assert } from 'ember-debug';
 import {
   CachedReference,
@@ -22,7 +28,7 @@ class ConditionalHelperReference extends CachedReference {
   public truthy: any;
   public falsy: any;
 
-  static create(_condRef, truthyRef, falsyRef) {
+  static create(_condRef: any, truthyRef: PrimitiveReference<boolean>, falsyRef: PrimitiveReference<boolean>) {
     let condRef = ConditionalReference.create(_condRef);
     if (isConst(condRef)) {
       return condRef.value() ? truthyRef : falsyRef;
@@ -31,7 +37,7 @@ class ConditionalHelperReference extends CachedReference {
     }
   }
 
-  constructor(cond, truthy, falsy) {
+  constructor(cond: any, truthy: any, falsy: any) {
     super();
 
     this.branchTag = UpdatableTag.create(CONSTANT_TAG);
@@ -133,7 +139,7 @@ class ConditionalHelperReference extends CachedReference {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineIf(_vm, { positional }) {
+export function inlineIf(_vm: VM, { positional }: Arguments) {
   assert(
     'The inline form of the `if` helper expects two or three arguments, e.g. ' +
     '`{{if trialExpired "Expired" expiryDate}}`.',
@@ -162,7 +168,7 @@ export function inlineIf(_vm, { positional }) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineUnless(_vm, { positional }) {
+export function inlineUnless(_vm: VM, { positional }: Arguments) {
   assert(
     'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
     '`{{unless isFirstLogin "Welcome back!"}}`.',

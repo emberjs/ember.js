@@ -8,8 +8,10 @@ import {
   UpdatableTag,
 } from '@glimmer/reference';
 import {
+  CapturedArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
+  VM
 } from '@glimmer/runtime';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -35,12 +37,12 @@ import emberToBool from './to-bool';
 
 export const UPDATE = symbol('UPDATE');
 
-let maybeFreeze;
+let maybeFreeze: (obj: any) => void;
 if (DEBUG) {
   // gaurding this in a DEBUG gaurd (as well as all invocations)
   // so that it is properly stripped during the minification's
   // dead code elimination
-  maybeFreeze = (obj) => {
+  maybeFreeze = (obj: any) => {
     // re-freezing an already frozen object introduces a significant
     // performance penalty on Chrome (tested through 59).
     //
@@ -57,7 +59,7 @@ class EmberPathReference {
   // @abstract get tag()
   // @abstract value()
 
-  get(key?): any {
+  get(key: string): any {
     return PropertyReference.create(this, key);
   }
 }
@@ -99,7 +101,7 @@ export class RootReference<T> extends ConstReference<T> {
     this.children = Object.create(null);
   }
 
-  get(propertyKey) {
+  get(propertyKey: string) {
     let ref = this.children[propertyKey];
 
     if (ref === undefined) {
@@ -110,17 +112,17 @@ export class RootReference<T> extends ConstReference<T> {
   }
 }
 
-let TwoWayFlushDetectionTag;
+let TwoWayFlushDetectionTag: any;
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
     EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
   TwoWayFlushDetectionTag = class {
     public tag: any;
     public parent: any;
-    public key: any;
+    public key: string;
     public ref: any;
 
-    constructor(tag, key, ref) {
+    constructor(tag: TagWrapper<UpdatableTag>, key: string, ref: any) {
       this.tag = tag;
       this.parent = null;
       this.key = key;
@@ -131,7 +133,7 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
       return this.tag.value();
     }
 
-    validate(ticket) {
+    validate(ticket: any) {
       let { parent, key } = this;
 
       let isValid = this.tag.validate(ticket);
@@ -143,7 +145,7 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
       return isValid;
     }
 
-    didCompute(parent) {
+    didCompute(parent: any) {
       this.parent = parent;
       didRender(parent, this.key, this.ref);
     }
@@ -151,7 +153,7 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
 }
 
 export class PropertyReference extends CachedReference {
-  static create(parentReference, propertyKey) {
+  static create(parentReference: any, propertyKey: string) {
     if (isConst(parentReference)) {
       return new RootPropertyReference(parentReference.value(), propertyKey);
     } else {
@@ -159,16 +161,16 @@ export class PropertyReference extends CachedReference {
     }
   }
 
-  get(key) {
+  get(key: string) {
     return new NestedPropertyReference(this, key);
   }
 }
 
 export class RootPropertyReference extends PropertyReference {
   private _parentValue: any;
-  private _propertyKey: any;
+  private _propertyKey: string;
 
-  constructor(parentValue, propertyKey) {
+  constructor(parentValue: any, propertyKey: string) {
     super();
 
     this._parentValue = parentValue;
@@ -197,7 +199,7 @@ export class RootPropertyReference extends PropertyReference {
     return get(_parentValue, _propertyKey);
   }
 
-  [UPDATE](value) {
+  [UPDATE](value: any) {
     set(this._parentValue, this._propertyKey, value);
   }
 }
@@ -205,9 +207,9 @@ export class RootPropertyReference extends PropertyReference {
 export class NestedPropertyReference extends PropertyReference {
   private _parentReference: any;
   private _parentObjectTag: TagWrapper<UpdatableTag>;
-  private _propertyKey: any;
+  private _propertyKey: string;
 
-  constructor(parentReference, propertyKey) {
+  constructor(parentReference: any, propertyKey: string) {
     super();
 
     let parentReferenceTag = parentReference.tag;
@@ -255,7 +257,7 @@ export class NestedPropertyReference extends PropertyReference {
     }
   }
 
-  [UPDATE](value) {
+  [UPDATE](value: any) {
     let parent = this._parentReference.value();
     set(parent, this._propertyKey, value);
   }
@@ -265,7 +267,7 @@ export class UpdatableReference extends EmberPathReference {
   public tag: TagWrapper<DirtyableTag>;
   private _value: any;
 
-  constructor(value) {
+  constructor(value: any) {
     super();
 
     this.tag = DirtyableTag.create();
@@ -276,7 +278,7 @@ export class UpdatableReference extends EmberPathReference {
     return this._value;
   }
 
-  update(value) {
+  update(value: any) {
     let { _value } = this;
 
     if (value !== _value) {
@@ -291,7 +293,7 @@ export class UpdatablePrimitiveReference extends UpdatableReference {
 
 export class ConditionalReference extends GlimmerConditionalReference {
   public objectTag: TagWrapper<UpdatableTag>;
-  static create(reference) {
+  static create(reference: UpdatableReference) {
     if (isConst(reference)) {
       let value = reference.value();
 
@@ -305,14 +307,14 @@ export class ConditionalReference extends GlimmerConditionalReference {
     return new ConditionalReference(reference);
   }
 
-  constructor(reference) {
+  constructor(reference: UpdatableReference) {
     super(reference);
 
     this.objectTag = UpdatableTag.create(CONSTANT_TAG);
     this.tag = combine([reference.tag, this.objectTag]);
   }
 
-  toBool(predicate) {
+  toBool(predicate: any) {
     if (isProxy(predicate)) {
       this.objectTag.inner.update(tagForProperty(predicate, 'isTruthy'));
       return get(predicate, 'isTruthy');
@@ -324,10 +326,10 @@ export class ConditionalReference extends GlimmerConditionalReference {
 }
 
 export class SimpleHelperReference extends CachedReference {
-  public helper: any;
+  public helper: (positionalValue: any, namedValue: any) => any;
   public args: any;
 
-  static create(helper, args) {
+  static create(helper: (positionalValue: any, namedValue: any) => any, args: CapturedArguments) {
     if (isConst(args)) {
       let { positional, named } = args;
 
@@ -351,7 +353,7 @@ export class SimpleHelperReference extends CachedReference {
     }
   }
 
-  constructor(helper, args) {
+  constructor(helper: (positionalValue: any, namedValue: any) => any, args: CapturedArguments) {
     super();
 
     this.tag = args.tag;
@@ -378,13 +380,13 @@ export class ClassBasedHelperReference extends CachedReference {
   public instance: any;
   public args: any;
 
-  static create(helperClass, vm, args) {
+  static create(helperClass: any, vm: VM, args: CapturedArguments) {
     let instance = helperClass.create();
     vm.newDestroyable(instance);
     return new ClassBasedHelperReference(instance, args);
   }
 
-  constructor(instance, args) {
+  constructor(instance: any, args: CapturedArguments) {
     super();
 
     this.tag = combine([instance[RECOMPUTE_TAG], args.tag]);
@@ -408,10 +410,10 @@ export class ClassBasedHelperReference extends CachedReference {
 }
 
 export class InternalHelperReference extends CachedReference {
-  public helper: any;
+  public helper: (args: CapturedArguments) => CapturedArguments;
   public args: any;
 
-  constructor(helper, args) {
+  constructor(helper: (args: CapturedArguments) => any, args: CapturedArguments) {
     super();
 
     this.tag = args.tag;
@@ -427,7 +429,7 @@ export class InternalHelperReference extends CachedReference {
 
 // @implements PathReference
 export class UnboundReference extends ConstReference<any> {
-  static create(value) {
+  static create(value: any) {
     if (typeof value === 'object' && value !== null) {
       return new UnboundReference(value);
     } else {
@@ -435,7 +437,7 @@ export class UnboundReference extends ConstReference<any> {
     }
   }
 
-  get(key) {
+  get(key: string) {
     return new UnboundReference(get(this.inner, key));
   }
 }

@@ -1,4 +1,5 @@
 import { Opaque } from '@glimmer/util';
+import { Simple } from '@glimmer/runtime';
 
 export const ActionSupport: any;
 export const ChildViewsSupport: any;
@@ -9,11 +10,11 @@ export const ViewStateSupport: any;
 export const TextSupport: any;
 
 export function getViewElement(view: Opaque): Element;
-export function setViewElement(view: Opaque, element: Element | null);
+export function setViewElement(view: Opaque, element: Element | null): void;
 
 export function isSimpleClick(event: Event): boolean;
 
-export function constructStyleDeprecationMessage(affectedStyle: string): string;
+export function constructStyleDeprecationMessage(affectedStyle: any): string;
 
 export function hasPartial(name: string, owner: any): boolean;
 

@@ -12,7 +12,9 @@ import {
   Helper,
   isSafeString,
   ModifierManager,
+  PrimitiveReference,
   PartialDefinition,
+  Simple,
 } from '@glimmer/runtime';
 import {
   Destroyable, Opaque,
@@ -38,7 +40,9 @@ import createIterable from './utils/iterable';
 import {
   ClassBasedHelperReference,
   ConditionalReference,
+  RootPropertyReference,
   SimpleHelperReference,
+  UpdatableReference
 } from './utils/references';
 
 import { default as classHelper } from './helpers/-class';
@@ -71,7 +75,7 @@ import {
 } from 'ember/features';
 import { Container, OwnedTemplate, WrappedTemplateFactory } from './template';
 
-function instrumentationPayload(name) {
+function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
@@ -85,7 +89,7 @@ export interface CompilerFactory {
 }
 
 export default class Environment extends GlimmerEnvironment {
-  static create(options) {
+  static create(options: any) {
     return new this(options);
   }
 
@@ -195,11 +199,11 @@ export default class Environment extends GlimmerEnvironment {
 
   // this gets clobbered by installPlatformSpecificProtocolForURL
   // it really should just delegate to a platform specific injection
-  protocolForURL(s): string {
+  protocolForURL(s: string): string {
     return s;
   }
 
-  _resolveLocalLookupName(name, source, owner) {
+  _resolveLocalLookupName(name: string, source: string, owner: any) {
     return EMBER_MODULE_UNIFICATION ? `${source}:${name}`
       : owner._resolveLocalLookupName(name, source);
   }
@@ -214,7 +218,7 @@ export default class Environment extends GlimmerEnvironment {
     return false;
   }
 
-  getComponentDefinition(name, { owner, moduleName }): ComponentDefinition<Opaque> {
+  getComponentDefinition(name: string, { owner, moduleName }: any): ComponentDefinition<Opaque> {
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let source = moduleName && `template:${moduleName}`;
     let definition = this._definitionCache.get({ name, source, owner });
@@ -227,12 +231,12 @@ export default class Environment extends GlimmerEnvironment {
   // normally templates should be exported at the proper module name
   // and cached in the container, but this cache supports templates
   // that have been set directly on the component's layout property
-  getTemplate(Template, owner) {
+  getTemplate(Template: WrappedTemplateFactory, owner: Container): OwnedTemplate {
     return this._templateCache.get({ Template, owner });
   }
 
   // a Compiler can wrap the template so it needs its own cache
-  getCompiledBlock(Compiler, template) {
+  getCompiledBlock(Compiler: any, template: OwnedTemplate) {
     let compilerCache = this._compilerCache.get(Compiler);
     return compilerCache.get(template);
   }
@@ -254,7 +258,7 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(name, { owner, moduleName }) {
+  hasHelper(name: string, { owner, moduleName }: {owner: Container, moduleName: string}): boolean {
     if (name === 'component' || this.builtInHelpers[name]) {
       return true;
     }
@@ -265,7 +269,7 @@ export default class Environment extends GlimmerEnvironment {
       owner.hasRegistration(`helper:${name}`);
   }
 
-  lookupHelper(name, meta): Helper {
+  lookupHelper(name: string, meta: any): Helper {
     if (name === 'component') {
       return (vm, args) => componentHelper(vm, args, meta);
     }
@@ -290,11 +294,11 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasModifier(name) {
+  hasModifier(name: string) {
     return !!this.builtInModifiers[name];
   }
 
-  lookupModifier(name) {
+  lookupModifier(name: string) {
     let modifier = this.builtInModifiers[name];
 
     if (modifier) {
@@ -304,7 +308,7 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  toConditionalReference(reference) {
+  toConditionalReference(reference: UpdatableReference): ConditionalReference | RootPropertyReference | PrimitiveReference<any> {
     return ConditionalReference.create(reference);
   }
 
@@ -312,19 +316,19 @@ export default class Environment extends GlimmerEnvironment {
     return createIterable(ref, key);
   }
 
-  scheduleInstallModifier(modifier, manager) {
+  scheduleInstallModifier(modifier: any, manager: any): void {
     if (this.isInteractive) {
       super.scheduleInstallModifier(modifier, manager);
     }
   }
 
-  scheduleUpdateModifier(modifier, manager) {
+  scheduleUpdateModifier(modifier: any, manager: any) {
     if (this.isInteractive) {
       super.scheduleUpdateModifier(modifier, manager);
     }
   }
 
-  didDestroy(destroyable) {
+  didDestroy(destroyable: Destroyable) {
     destroyable.destroy();
   }
 
@@ -352,7 +356,7 @@ export default class Environment extends GlimmerEnvironment {
 
 if (DEBUG) {
   class StyleAttributeManager extends AttributeManager {
-    setAttribute(dom, element, value) {
+    setAttribute(dom: Environment, element: Simple.Element, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
@@ -362,7 +366,7 @@ if (DEBUG) {
       super.setAttribute(dom, element, value);
     }
 
-    updateAttribute(dom, element, value) {
+    updateAttribute(dom: Environment, element: Element, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;

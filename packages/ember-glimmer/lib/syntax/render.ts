@@ -2,6 +2,10 @@
 @module ember
 */
 
+import {
+  Arguments,
+  VM
+} from '@glimmer/runtime';
 import { ConstReference, isConst } from '@glimmer/reference';
 import { assert } from 'ember-debug';
 import {
@@ -10,9 +14,10 @@ import {
   SINGLETON_RENDER_MANAGER,
 } from '../component-managers/render';
 import { hashToArgs } from './utils';
+import Environment from '../environment';
 
-function makeComponentDefinition(vm, args) {
-  let env     = vm.env;
+function makeComponentDefinition(vm: VM, args: Arguments) {
+  let env     = vm.env as Environment;
   let nameRef = args.positional.at(0);
 
   assert(`The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`, isConst(nameRef));
@@ -121,7 +126,7 @@ function makeComponentDefinition(vm, args) {
   @public
   @deprecated Use a component instead
 */
-export function renderMacro(_name, params, hash, builder) {
+export function renderMacro(_name: string, params: any[], hash: any[], builder: any) {
   if (!params) {
     params = [];
   }
