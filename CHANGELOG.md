@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 2.16.2 (November 1, 2017)
+
+- [#15797](https://github.com/emberjs/ember.js/pull/15797) [BUGFIX] Fix issues with using partials nested within other partials.
+
+
 ### 2.16.1 (October 29, 2017)
 
 - [#15722](https://github.com/emberjs/ember.js/pull/15722) [BUGFIX] Avoid assertion when using `(get` helper with empty paths.
