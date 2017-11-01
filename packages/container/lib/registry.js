@@ -217,7 +217,7 @@ export default class Registry {
   resolve(fullName, options) {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     let factory = resolve(this, this.normalize(fullName), options);
-    if (factory === undefined && this.fallback) {
+    if (factory === undefined && this.fallback !== null) {
       factory = this.fallback.resolve(...arguments);
     }
     return factory;
@@ -237,9 +237,9 @@ export default class Registry {
    @return {string} described fullName
    */
   describe(fullName) {
-    if (this.resolver && this.resolver.lookupDescription) {
+    if (this.resolver !== null && this.resolver.lookupDescription) {
       return this.resolver.lookupDescription(fullName);
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.describe(fullName);
     } else {
       return fullName;
@@ -255,9 +255,9 @@ export default class Registry {
    @return {string} normalized fullName
    */
   normalizeFullName(fullName) {
-    if (this.resolver && this.resolver.normalize) {
+    if (this.resolver !== null && this.resolver.normalize) {
       return this.resolver.normalize(fullName);
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.normalizeFullName(fullName);
     } else {
       return fullName;
@@ -287,9 +287,9 @@ export default class Registry {
    @return {function} toString function
    */
   makeToString(factory, fullName) {
-    if (this.resolver && this.resolver.makeToString) {
+    if (this.resolver !== null && this.resolver.makeToString) {
       return this.resolver.makeToString(factory, fullName);
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.makeToString(factory, fullName);
     } else {
       return factory.toString();
@@ -352,7 +352,7 @@ export default class Registry {
 
   getOptionsForType(type) {
     let optionsForType = this._typeOptions[type];
-    if (optionsForType === undefined && this.fallback) {
+    if (optionsForType === undefined && this.fallback !== null) {
       optionsForType = this.fallback.getOptionsForType(type);
     }
     return optionsForType;
@@ -373,7 +373,7 @@ export default class Registry {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
-    if (options === undefined && this.fallback) {
+    if (options === undefined && this.fallback !== null) {
       options = this.fallback.getOptions(fullName);
     }
     return options;
@@ -391,7 +391,7 @@ export default class Registry {
 
     if (options && options[optionName] !== undefined) {
       return options[optionName];
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.getOption(fullName, optionName);
     }
   }
@@ -527,11 +527,11 @@ export default class Registry {
       }
     }
 
-    if (this.fallback) {
+    if (this.fallback !== null) {
       fallbackKnown = this.fallback.knownForType(type);
     }
 
-    if (this.resolver && this.resolver.knownForType) {
+    if (this.resolver !== null && this.resolver.knownForType) {
       resolverKnown = this.resolver.knownForType(type);
     }
 
@@ -544,7 +544,7 @@ export default class Registry {
 
   getInjections(fullName) {
     let injections = this._injections[fullName] || [];
-    if (this.fallback) {
+    if (this.fallback !== null) {
       injections = injections.concat(this.fallback.getInjections(fullName));
     }
     return injections;
@@ -552,7 +552,7 @@ export default class Registry {
 
   getTypeInjections(type) {
     let injections = this._typeInjections[type] || [];
-    if (this.fallback) {
+    if (this.fallback !== null) {
       injections = injections.concat(this.fallback.getTypeInjections(type));
     }
     return injections;
@@ -585,7 +585,7 @@ export default class Registry {
    @return {String} fullName
    */
   expandLocalLookup(fullName, options) {
-    if (this.resolver && this.resolver.expandLocalLookup) {
+    if (this.resolver !== null && this.resolver.expandLocalLookup) {
       assert('fullName must be a proper full name', this.isValidFullName(fullName));
       assert('options.source must be provided to expandLocalLookup', options && options.source);
       assert('options.source must be a proper full name', this.isValidFullName(options.source));
@@ -594,7 +594,7 @@ export default class Registry {
       let normalizedSource = this.normalize(options.source);
 
       return expandLocalLookup(this, normalizedFullName, normalizedSource);
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.expandLocalLookup(fullName, options);
     } else {
       return null;

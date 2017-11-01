@@ -1378,12 +1378,12 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Components are lazily looked up.
 * Renaming everyBy and anyBy to isEvery and isAny.
 
-###Ember 1.2.1 _(January 14, 2014)_
+### Ember 1.2.1 _(January 14, 2014)_
 
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 
-###Ember 1.2.0 _(November 22, 2013)_
+### Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
 * [BUGFIX] Use RegExp.test() for Ember.computed.match.
@@ -1438,16 +1438,16 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Allow apps with custom jquery builds to exclude the event-alias module
 * Removes long-deprecated getPath/setPath
 
-###Ember 1.1.3 _(January 13, 2014)_
+### Ember 1.1.3 _(January 13, 2014)_
 
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 
-###Ember 1.1.2 _(October 25, 2013)
+### Ember 1.1.2 _(October 25, 2013)_
 
 * [BUGFIX] Fix failures in component rendering. - Fixes #3637
 
-###Ember 1.1.1 _(October 23, 2013)_
+### Ember 1.1.1 _(October 23, 2013)_
 
 * [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 

@@ -74,7 +74,7 @@ export default function transformDotComponentInvocation(env) {
 }
 
 function isMultipartPath(path)  {
-  return path.parts.length > 1;
+  return path.parts && path.parts.length > 1;
 }
 
 function isInlineInvocation(path, params, hash) {
