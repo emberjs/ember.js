@@ -85,7 +85,7 @@ function ariaRole(vm) {
   return vm.getSelf().get('ariaRole');
 }
 
-class CurlyComponentLayoutCompiler {
+export class CurlyComponentLayoutCompiler {
   static id: string;
   public template: any;
 
