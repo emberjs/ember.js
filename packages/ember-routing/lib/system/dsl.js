@@ -4,7 +4,7 @@ import { assert, deprecate } from 'ember-debug';
 let uuid = 0;
 
 class DSL {
-  constructor(name, options) {
+  constructor(name = 'application', options) {
     this.parent = name;
     this.enableLoadingSubstates = options && options.enableLoadingSubstates;
     this.matches = [];
