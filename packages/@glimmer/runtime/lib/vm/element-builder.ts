@@ -27,17 +27,17 @@ export interface LastNode {
 }
 
 class First {
-  constructor(private node: Node) { }
+  constructor(private node: Simple.Node) { }
 
-  firstNode(): Node {
+  firstNode(): Simple.Node {
     return this.node;
   }
 }
 
 class Last {
-  constructor(private node: Node) { }
+  constructor(private node: Simple.Node) { }
 
-  lastNode(): Node {
+  lastNode(): Simple.Node {
     return this.node;
   }
 }
@@ -453,7 +453,7 @@ export class SimpleBlockTracker implements Tracker {
     return this.last && this.last.lastNode();
   }
 
-  openElement(element: Element) {
+  openElement(element: Simple.Element) {
     this.didAppendNode(element);
     this.nesting++;
   }
@@ -462,7 +462,7 @@ export class SimpleBlockTracker implements Tracker {
     this.nesting--;
   }
 
-  didAppendNode(node: Node) {
+  didAppendNode(node: Simple.Node) {
     if (this.nesting !== 0) return;
 
     if (!this.first) {
@@ -551,7 +551,7 @@ class BlockListTracker implements Tracker {
     return tail && tail.lastNode();
   }
 
-  openElement(_element: Element) {
+  openElement(_element: Simple.Element) {
     assert(false, 'Cannot openElement directly inside a block list');
   }
 
@@ -559,7 +559,7 @@ class BlockListTracker implements Tracker {
     assert(false, 'Cannot closeElement directly inside a block list');
   }
 
-  didAppendNode(_node: Node) {
+  didAppendNode(_node: Simple.Node) {
     assert(false, 'Cannot create a new node directly inside a block list');
   }
 

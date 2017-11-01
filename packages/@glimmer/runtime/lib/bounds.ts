@@ -25,12 +25,9 @@ export class ConcreteBounds implements Bounds {
 }
 
 export class SingleNodeBounds implements Bounds {
-  private parentNode: Element;
-  private node: Node;
 
-  constructor(parentNode: Simple.Element, node: Simple.Node) {
-    this.parentNode = parentNode as Element;
-    this.node = node as Node;
+  constructor(private parentNode: Simple.Element,
+              private node: Simple.Node) {
   }
 
   parentElement() { return this.parentNode; }
