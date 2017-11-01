@@ -14,7 +14,9 @@ QUnit.test('Does not throw a compiler error for path components', function(asser
     '{{#c.modal}}Woot{{/c.modal}}',
     '{{#my-component as |c|}}{{c.a name="Chad"}}{{/my-component}}',
     '{{#my-component as |c|}}{{c.a "Chad"}}{{/my-component}}',
-    '{{#my-component as |c|}}{{#c.a}}{{/c.a}}{{/my-component}}'
+    '{{#my-component as |c|}}{{#c.a}}{{/c.a}}{{/my-component}}',
+    '<input disabled={{true}}>', // GH#15740
+    '<td colspan={{3}}></td>' // GH#15217
   ].forEach((layout, i) => {
     compile(layout, { moduleName: `example-${i}` });
   });
