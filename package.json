@@ -57,10 +57,10 @@
     "resolve": "^1.3.3"
   },
   "devDependencies": {
-    "@glimmer/compiler": "^0.25.4",
-    "@glimmer/node": "^0.25.4",
-    "@glimmer/reference": "^0.25.4",
-    "@glimmer/runtime": "^0.25.4",
+    "@glimmer/compiler": "^0.25.6",
+    "@glimmer/node": "^0.25.6",
+    "@glimmer/reference": "^0.25.6",
+    "@glimmer/runtime": "^0.25.6",
     "aws-sdk": "^2.46.0",
     "babel-plugin-check-es2015-constants": "^6.22.0",
     "babel-plugin-debug-macros": "^0.1.10",
