@@ -1,9 +1,6 @@
 'use strict';
 
-var fs                 = require('fs-extra');
-var path               = require('path');
-var RSVP               = require('rsvp');
-var remove             = RSVP.denodeify(fs.remove);
+var path = require('path');
 
 var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 var setupTestHooks = blueprintHelpers.setupTestHooks;
@@ -150,7 +147,6 @@ describe('Acceptance: ember generate and destroy route', function() {
     var args = ['route', 'application'];
 
     return emberNew()
-      .then(() => remove(path.resolve('app/templates/application.hbs')))
       .then(() => emberGenerate(args))
       .then(() => expect(file('app/router.js')).to.not.contain('this.route(\'application\')'));
   });
@@ -395,7 +391,6 @@ describe('Acceptance: ember generate and destroy route', function() {
     var args = ['route', 'application', '--pod'];
 
     return emberNew()
-      .then(() => remove(path.resolve('app/templates/application.hbs')))
       .then(() => emberGenerate(args))
       .then(() => expect(file('app/application/route.js')).to.exist)
       .then(() => expect(file('app/application/template.hbs')).to.exist)
