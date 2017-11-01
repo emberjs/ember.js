@@ -330,6 +330,53 @@ QUnit.test('nested dynamic partial with dynamic content', () => {
   equalTokens(root, `Before <div>Testing wat are <div>Nested you doing?</div></div> After`);
 });
 
+QUnit.test('nested partials within nested `{{#with}}` blocks', () => {
+  let template = compile(`Hi {{person1}}. {{#with 'Sophie' as |person1|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}. {{partial 'person2-partial'}}{{/with}}`);
+
+  env.registerPartial('person2-partial', `{{#with 'Ben' as |person2|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}. {{partial 'person3-partial'}}{{/with}}`);
+  env.registerPartial('person3-partial', `{{#with 'Alex' as |person3|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}. {{partial 'person4-partial'}}{{/with}}`);
+  env.registerPartial('person4-partial', `{{#with 'Sarah' as |person4|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}.{{/with}}`);
+
+  render(template, {
+    person1: 'Context1',
+    person2: 'Context2',
+    person3: 'Context3',
+    person4: 'Context4',
+    age: 0
+  });
+
+  equalTokens(root, `Hi Context1. Hi Sophie (aged 0), Context2, Context3 and Context4. Hi Sophie (aged 0), Ben, Context3 and Context4. Hi Sophie (aged 0), Ben, Alex and Context4. Hi Sophie (aged 0), Ben, Alex and Sarah.`);
+
+  rerender({person1: 'Context1',
+    person2: 'Context2',
+    person3: 'Context3',
+    person4: 'Context4',
+    age: 0
+  }, { assertStable: true });
+
+  equalTokens(root, `Hi Context1. Hi Sophie (aged 0), Context2, Context3 and Context4. Hi Sophie (aged 0), Ben, Context3 and Context4. Hi Sophie (aged 0), Ben, Alex and Context4. Hi Sophie (aged 0), Ben, Alex and Sarah.`);
+
+  rerender({
+    person1: 'UpdatedContext1',
+    person2: 'UpdatedContext2',
+    person3: 'UpdatedContext3',
+    person4: 'UpdatedContext4',
+    age: 1
+  });
+
+  equalTokens(root, `Hi UpdatedContext1. Hi Sophie (aged 1), UpdatedContext2, UpdatedContext3 and UpdatedContext4. Hi Sophie (aged 1), Ben, UpdatedContext3 and UpdatedContext4. Hi Sophie (aged 1), Ben, Alex and UpdatedContext4. Hi Sophie (aged 1), Ben, Alex and Sarah.`);
+
+  rerender({
+    person1: 'Context1',
+    person2: 'Context2',
+    person3: 'Context3',
+    person4: 'Context4',
+    age: 0
+  });
+
+  equalTokens(root, `Hi Context1. Hi Sophie (aged 0), Context2, Context3 and Context4. Hi Sophie (aged 0), Ben, Context3 and Context4. Hi Sophie (aged 0), Ben, Alex and Context4. Hi Sophie (aged 0), Ben, Alex and Sarah.`);
+});
+
 QUnit.test('dynamic partial with falsy value does not render', () => {
   let template = compile(`Before {{partial name}} After`);
 
