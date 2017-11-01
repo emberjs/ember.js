@@ -3,7 +3,7 @@ import { TemplateMeta } from '@glimmer/wire-format';
 import { Op } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { PartialDefinition } from '../../partial';
-import { assert, dict } from "@glimmer/util";
+import { assert, Dict } from "@glimmer/util";
 import { check, expectStackChange } from '@glimmer/debug';
 import { Opaque } from "@glimmer/interfaces";
 import { CheckReference } from './-debug-strip';
@@ -30,11 +30,12 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
     let partialSymbols = symbolTable.symbols;
     let outerScope = vm.scope();
     let partialScope = vm.pushRootScope(partialSymbols.length, false);
+    let evalScope = outerScope.getEvalScope();
     partialScope.bindCallerScope(outerScope.getCallerScope());
-    partialScope.bindEvalScope(outerScope.getEvalScope());
+    partialScope.bindEvalScope(evalScope);
     partialScope.bindSelf(outerScope.getSelf());
 
-    let locals = dict<VersionedPathReference<Opaque>>();
+    let locals = Object.create(outerScope.getPartialMap()) as Dict<VersionedPathReference<Opaque>>;
 
     for (let i = 0; i < evalInfo.length; i++) {
       let slot = evalInfo[i];
@@ -43,14 +44,14 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
       locals[name] = ref;
     }
 
-    let evalScope = outerScope.getEvalScope()!;
+    if (evalScope) {
+      for (let i = 0; i < partialSymbols.length; i++) {
+        let name = partialSymbols[i];
+        let symbol = i + 1;
+        let value = evalScope[name];
 
-    for (let i = 0; i < partialSymbols.length; i++) {
-      let name = partialSymbols[i];
-      let symbol = i + 1;
-      let value = evalScope[name];
-
-      if (value !== undefined) partialScope.bind(symbol, value);
+        if (value !== undefined) partialScope.bind(symbol, value);
+      }
     }
 
     partialScope.bindPartialMap(locals);
