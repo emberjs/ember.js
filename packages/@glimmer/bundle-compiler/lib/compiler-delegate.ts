@@ -1,8 +1,8 @@
 import { ProgramSymbolTable, ComponentCapabilities } from "@glimmer/interfaces";
 import { ICompilableTemplate, CompileOptions } from "@glimmer/opcode-compiler";
-
-import { Specifier } from "./specifiers";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
+
+import { TemplateLocator, ModuleLocator } from "./module-locators";
 
 /**
  * A CompilerDelegate helps the BundleCompiler map external references it finds
@@ -16,21 +16,21 @@ import { SerializedTemplateBlock } from "@glimmer/wire-format";
  * having resolution hardcoded into Glimmer.
  *
  * Because resolution often depends on where a component was invoked, many hooks
- * take a referrer, or the specifier for the template where the invocation was
- * found, as the second argument.
+ * take a referrer, or the module locator for the template where the invocation
+ * was found, as the second argument.
  *
- * For example, if the template with the specifier
- * `{ module: 'src/ui/components/MyComponent.js', name: 'template' }` contains
- * the string `<MyOtherComponent />`, the compiler would invoke
- * `hasComponentInScope` with `'MyOtherComponent'` as the first argument and this
- * specifier as the second argument.
+ * For example, if the template with the locator `{ module:
+ * 'src/ui/components/MyComponent.js', name: 'template' }` contains the string
+ * `<MyOtherComponent />`, the compiler would invoke `hasComponentInScope` with
+ * `'MyOtherComponent'` as the first argument and this locator as the second
+ * argument.
  *
  * The CompilerDelegate is also responsible for describing the capabilities of a
  * particular component by returning a ComponentCapabilities descriptor. Glimmer
  * uses this information to perform additional optimizations during the
  * compilation phase.
  */
-export interface CompilerDelegate {
+export default interface CompilerDelegate<Meta = {}> {
   /**
    * During compilation, the compiler will ask the delegate about each component
    * invocation found in the passed template. If the component exists in scope,
@@ -38,30 +38,42 @@ export interface CompilerDelegate {
    * scope, return `false`. Note that returning `false` will cause the
    * compilation process to fail.
    */
-  hasComponentInScope(componentName: string, referrer: Specifier): boolean;
+  hasComponentInScope(
+    componentName: string,
+    referrer: TemplateLocator<Meta>
+  ): boolean;
 
   /**
    * If the delegate returns `true` from `hasComponentInScope()`, the compiler
-   * will next ask the delegate to turn the relative specifier into an
-   * globally-unique absolute specifier. By providing this unique identifier,
-   * the compiler avoids having to compile the same component multiple times if
-   * invoked from different locations.
+   * will next ask the delegate to provide the module location for the named
+   * component. By resolving symbolic component names into unique module
+   * locations, the compiler avoids having to compile the same component
+   * multiple times if invoked from different templates.
    */
-  resolveComponentSpecifier(componentName: string, referrer: Specifier): Specifier;
+  resolveComponent(
+    componentName: string,
+    referrer: TemplateLocator<Meta>
+  ): ModuleLocator;
 
   /**
-   * The compiler calls this hook with the return value of
-   * `resolveComponentSpecifier`, and it should return the required capabilities
-   * for the given component via a ComponentCapabilities descriptor.
+   * The compiler calls this hook with the return value of `resolveComponent`,
+   * and it should return the required capabilities for the given component via
+   * a ComponentCapabilities descriptor.
    */
-  getComponentCapabilities(specifier: Specifier): ComponentCapabilities;
+  getComponentCapabilities(
+    locator: TemplateLocator<Meta>
+  ): ComponentCapabilities;
 
   /**
-   * This hook is called with the return value of `resolveComponentSpecifier`,
+   * This hook is called with the return value of `resolveComponent`,
    * and it should return a compilable template that the compiler adds to the
    * set of templates to compile for the bundle.
    */
-  getComponentLayout(specifier: Specifier, block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable>;
+  getComponentLayout(
+    locator: TemplateLocator<Meta>,
+    block: SerializedTemplateBlock,
+    options: CompileOptions<ModuleLocator>
+  ): ICompilableTemplate<ProgramSymbolTable>;
 
   /**
    * During compilation, the compiler will ask the delegate about each possible
@@ -78,13 +90,13 @@ export interface CompilerDelegate {
    * `hasHelperInScope` returns `false`, the compiler will treat `currentTime`
    * as a value rather than a helper.
    */
-  hasHelperInScope(helperName: string, referrer: Specifier): boolean;
+  hasHelperInScope(helperName: string, referrer: TemplateLocator<Meta>): boolean;
 
   /**
    * If the delegate returns `true` from `hasHelperInScope()`, the compiler will
-   * next ask the delegate to provide a specifier corresponding to the helper function.
+   * next ask the delegate to provide a module locator corresponding to the helper function.
    */
-  resolveHelperSpecifier(helperName: string, referrer: Specifier): Specifier;
+  resolveHelper(helperName: string, referrer: TemplateLocator<Meta>): ModuleLocator;
 
   /**
    * During compilation, the compiler will ask the delegate about each element
@@ -96,14 +108,14 @@ export interface CompilerDelegate {
    * modifier does not exist in scope, return `false`. Note that returning
    * `false` will cause the compilation process to fail.
    */
-  hasModifierInScope(modifierName: string, referrer: Specifier): boolean;
+  hasModifierInScope(modifierName: string, referrer: TemplateLocator<Meta>): boolean;
 
   /**
    * If the delegate returns `true` from `hasModifierInScope()`, the compiler
-   * will next ask the delegate to provide a specifier corresponding to the
+   * will next ask the delegate to provide a module locator corresponding to the
    * element modifier function.
    */
-  resolveModifierSpecifier(modifierName: string, referrer: Specifier): Specifier;
+  resolveModifier(modifierName: string, referrer: TemplateLocator<Meta>): ModuleLocator;
 
   /**
    * During compilation, the compiler will ask the delegate about each partial
@@ -120,12 +132,15 @@ export interface CompilerDelegate {
    * return `false` from `hasPartialInScope` to disable the feature entirely.
    * Components replace all use cases for partials with better performance.
    */
-  hasPartialInScope(partialName: string, referrer: Specifier): boolean;
+  hasPartialInScope(partialName: string, referrer: TemplateLocator<Meta>): boolean;
 
   /**
    * If the delegate returns `true` from `hasPartialInScope()`, the compiler
-   * will next ask the delegate to provide a specifier corresponding to the
+   * will next ask the delegate to provide a module locator corresponding to the
    * partial template.
    */
-  resolvePartialSpecifier(partialName: string, referrer: Specifier): Specifier;
-}
+  resolvePartial(
+    partialName: string,
+    referrer: TemplateLocator<Meta>
+  ): ModuleLocator;
+};

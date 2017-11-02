@@ -18,13 +18,13 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
   let outerSymbols = constants.getStringArray(_symbols);
   let evalInfo = constants.getArray(_evalInfo);
 
-  let specifier = resolver.lookupPartial(name as string, meta);
+  let handle = resolver.lookupPartial(name as string, meta);
 
-  assert(specifier, `Could not find a partial named "${name}"`);
+  assert(handle, `Could not find a partial named "${name}"`);
 
-  let definition = resolver.resolve<PartialDefinition>(specifier!);
+  let definition = resolver.resolve<PartialDefinition>(handle!);
 
-  let { symbolTable, handle } = definition.getPartial();
+  let { symbolTable, handle: vmHandle } = definition.getPartial();
 
   {
     let partialSymbols = symbolTable.symbols;
@@ -57,7 +57,7 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
     partialScope.bindPartialMap(locals);
 
     vm.pushFrame(); // sp += 2
-    vm.call(handle!);
+    vm.call(vmHandle!);
   }
 
   expectStackChange(vm.stack, 1, 'InvokePartial');

@@ -1,4 +1,4 @@
-import { BundleCompiler, Specifier, specifierFor } from '@glimmer/bundle-compiler';
+import { BundleCompiler, TemplateLocator } from '@glimmer/bundle-compiler';
 import { ComponentCapabilities, ProgramSymbolTable } from '@glimmer/interfaces';
 import { BASIC_CAPABILITIES } from '@glimmer/test-helpers';
 import { CompilableTemplate, CompileOptions, ICompilableTemplate } from '@glimmer/opcode-compiler';
@@ -9,37 +9,37 @@ const { test } = QUnit;
 QUnit.module("[glimmer-bundle-compiler] CompilerDelegate");
 
 test("correct referrer is passed during component lookup", function(assert) {
-  let inScopeReferrers: Specifier[] = [];
-  let resolveComponentReferrers: Specifier[] = [];
+  let inScopeReferrers: TemplateLocator[] = [];
+  let resolveComponentReferrers: TemplateLocator[] = [];
 
   // This partial implementation of CompilerDelegate tracks what referrers are
   // passed to hasComponentInScope and resolveComponentSpecifier so that they
   // can be verified after compilation has finished.
   class TestDelegate {
-    hasComponentInScope(_componentName: string, referrer: Specifier): boolean {
+    hasComponentInScope(_componentName: string, referrer: TemplateLocator): boolean {
       inScopeReferrers.push(referrer);
       return true;
     }
 
-    resolveComponentSpecifier(componentName: string, referrer: Specifier): Specifier {
+    resolveComponent(componentName: string, referrer: TemplateLocator): TemplateLocator {
       resolveComponentReferrers.push(referrer);
-      return specifierFor(componentName, 'default');
+      return { module: componentName, name: 'default' };
     }
 
     getComponentCapabilities(): ComponentCapabilities {
       return BASIC_CAPABILITIES;
     }
 
-    getComponentLayout(_specifier: Specifier, block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable> {
+    getComponentLayout(_locator: TemplateLocator, block: SerializedTemplateBlock, options: CompileOptions<TemplateLocator>): ICompilableTemplate<ProgramSymbolTable> {
       return CompilableTemplate.topLevel(block, options);
     }
   }
 
   let bundleCompiler = new BundleCompiler(new TestDelegate() as any);
 
-  bundleCompiler.add(specifierFor('UserNav', 'default'), '<div class="user-nav"></div>');
-  bundleCompiler.add(specifierFor('Main', 'default'), '<UserNav />');
-  bundleCompiler.add(specifierFor('SideBar', 'default'), '<UserNav />');
+  bundleCompiler.add({ module: 'UserNav', name: 'default' }, '<div class="user-nav"></div>');
+  bundleCompiler.add({ module: 'Main', name: 'default' }, '<UserNav />');
+  bundleCompiler.add({ module: 'SideBar', name: 'default' }, '<UserNav />');
   bundleCompiler.compile();
 
   assert.deepEqual(inScopeReferrers, [

@@ -1,17 +1,16 @@
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
-import { Option, Opaque, Recast, VMHandle, ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import { Option, Opaque, ProgramSymbolTable, ComponentCapabilities, Recast, VMHandle } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
 import { EMPTY_ARRAY, assign, Destroyable, expect } from '@glimmer/util';
 import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope, Invocation } from '@glimmer/runtime';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { Specifier } from '@glimmer/bundle-compiler';
 
 import { Attrs, createTemplate, AttrsDiff } from '../shared';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import TestSpecifier from '../specifier';
-import { TestComponentDefinitionState } from '../components';
+import { TestComponentDefinitionState, TemplateMeta } from '../components';
+import { TemplateLocator } from '@glimmer/bundle-compiler';
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
@@ -71,21 +70,21 @@ export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = {
 export interface EmberishCurlyComponentDefinitionState {
   name: string;
   ComponentClass: EmberishCurlyComponentFactory;
+  locator: TemplateLocator<TemplateMeta>;
   layout: Option<number>;
   symbolTable?: ProgramSymbolTable;
-  specifier?: Specifier;
 }
 
 export class EmberishCurlyComponentManager implements
   WithDynamicTagName<EmberishCurlyComponent>,
-  WithDynamicLayout<EmberishCurlyComponent, TestSpecifier, LazyRuntimeResolver> {
+  WithDynamicLayout<EmberishCurlyComponent, TemplateLocator, LazyRuntimeResolver> {
 
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
 
   getLayout(state: EmberishCurlyComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
-    let handle = resolver.getVMHandle(expect(state.specifier, 'expected specifier'));
+    let handle = resolver.getVMHandle(expect(state.locator, 'expected locator'));
     return {
       handle: handle as Recast<number, VMHandle>,
       symbolTable: state.symbolTable! as ProgramSymbolTable

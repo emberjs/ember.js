@@ -4,13 +4,13 @@ import { Option, Opaque } from '@glimmer/util';
 import { Invocation } from '@glimmer/runtime';
 
 import Registry, { TypedRegistry, Lookup, LookupType } from '../../registry';
-import TestSpecifier from '../../specifier';
+import { TemplateLocator } from '@glimmer/bundle-compiler';
 
-export default class LazyRuntimeResolver implements RuntimeResolver<TestSpecifier> {
+export default class LazyRuntimeResolver implements RuntimeResolver<TemplateLocator> {
   private handleLookup: TypedRegistry<Opaque>[] = [];
   private registry = new Registry();
 
-  private options: TemplateOptions<TestSpecifier>;
+  private options: TemplateOptions<TemplateLocator>;
 
   register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
     let registry = this.registry[type];
@@ -20,7 +20,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestSpecifie
     return handle;
   }
 
-  lookup(type: LookupType, name: string, _referrer?: TestSpecifier): Option<number> {
+  lookup(type: LookupType, name: string, _referrer?: TemplateLocator): Option<number> {
     if (this.registry[type].hasName(name)) {
       return this.registry[type].getHandle(name);
     } else {
@@ -28,7 +28,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestSpecifie
     }
   }
 
-  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<TestSpecifier>) => Invocation): Invocation {
+  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<TemplateLocator>) => Invocation): Invocation {
     let invocationHandle = this.lookup('template', templateName);
 
     if (invocationHandle) {
@@ -42,25 +42,25 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestSpecifie
     return invocation;
   }
 
-  lookupHelper(name: string, referrer?: TestSpecifier): Option<number> {
+  lookupHelper(name: string, referrer?: TemplateLocator): Option<number> {
     return this.lookup('helper', name, referrer);
   }
 
-  lookupModifier(name: string, referrer?: TestSpecifier): Option<number> {
+  lookupModifier(name: string, referrer?: TemplateLocator): Option<number> {
     return this.lookup('modifier', name, referrer);
   }
 
-  lookupComponent(name: string, referrer?: TestSpecifier): Option<ComponentDefinition> {
+  lookupComponent(name: string, referrer?: TemplateLocator): Option<ComponentDefinition> {
     let handle = this.lookupComponentHandle(name, referrer);
     if (handle === null) return null;
     return this.resolve(handle) as ComponentDefinition;
   }
 
-  lookupComponentHandle(name: string, referrer?: TestSpecifier): Option<number> {
+  lookupComponentHandle(name: string, referrer?: TemplateLocator): Option<number> {
     return this.lookup('component', name, referrer);
   }
 
-  lookupPartial(name: string, referrer?: TestSpecifier): Option<number> {
+  lookupPartial(name: string, referrer?: TemplateLocator): Option<number> {
     return this.lookup('partial', name, referrer);
   }
 

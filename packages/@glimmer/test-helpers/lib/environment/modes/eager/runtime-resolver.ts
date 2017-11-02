@@ -1,15 +1,16 @@
 import { RuntimeResolver, ComponentDefinition, VMHandle, Recast, ProgramSymbolTable } from '@glimmer/interfaces';
-import { Specifier, SpecifierMap } from '@glimmer/bundle-compiler';
 import { Opaque, Option, expect } from '@glimmer/util';
 import { Invocation } from "@glimmer/runtime";
+import { ExternalModuleTable, TemplateLocator, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 
+import { TemplateMeta as Meta } from '../../component-definition';
 import { Modules } from './modules';
 
-export default class EagerRuntimeResolver implements RuntimeResolver<Specifier> {
+export default class EagerRuntimeResolver implements RuntimeResolver<TemplateLocator<Meta>> {
   constructor(
-    private map: SpecifierMap,
+    private table: ExternalModuleTable,
     private modules: Modules,
-    public symbolTables: Map<Specifier, ProgramSymbolTable>
+    public symbolTables: ModuleLocatorMap<ProgramSymbolTable>
   ) {}
 
   lookupHelper(_name: string, _meta: Opaque): Option<number> {
@@ -20,7 +21,7 @@ export default class EagerRuntimeResolver implements RuntimeResolver<Specifier> 
     throw new Error("Method not implemented.");
   }
 
-  lookupComponent(name: string, referrer: Specifier): Option<ComponentDefinition> {
+  lookupComponent(name: string, referrer: TemplateLocator<Meta>): Option<ComponentDefinition> {
     let moduleName = this.modules.resolve(name, referrer, 'ui/components');
 
     if (!moduleName) return null;
@@ -33,14 +34,14 @@ export default class EagerRuntimeResolver implements RuntimeResolver<Specifier> 
     throw new Error("Method not implemented.");
   }
 
-  resolve<U>(specifier: number): U {
-    let module = this.map.byHandle.get(specifier)!;
+  resolve<U>(handle: number): U {
+    let module = this.table.byHandle.get(handle)!;
     return this.modules.get(module.module).get('default') as U;
   }
 
-  getInvocation(specifier: Specifier): Invocation {
-    let handle = this.getVMHandle(specifier);
-    let symbolTable = expect(this.symbolTables.get(specifier), `expected symbol table for specifier ${specifier}`);
+  getInvocation(locator: TemplateLocator<Meta>): Invocation {
+    let handle = this.getVMHandle(locator);
+    let symbolTable = expect(this.symbolTables.get(locator), `expected symbol table for module ${locator}`);
 
     return {
       handle,
@@ -48,8 +49,8 @@ export default class EagerRuntimeResolver implements RuntimeResolver<Specifier> 
     };
   }
 
-  getVMHandle(specifier: Specifier): VMHandle {
-    let handle = expect(this.map.vmHandleBySpecifier.get(specifier), `could not find handle for specifier ${specifier}`);
+  getVMHandle(locator: TemplateLocator<Meta>): VMHandle {
+    let handle = expect(this.table.vmHandleByModuleLocator.get(locator), `could not find handle for module ${locator}`);
     return handle as Recast<number, VMHandle>;
   }
 }

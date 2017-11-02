@@ -126,7 +126,7 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   let definition = vm.constants.resolveHandle<ComponentDefinition>(handle);
-  assert(!!definition, `Missing component for ${handle} (TODO: env.specifierForHandle)`);
+  assert(!!definition, `Missing component for ${handle}`);
 
   let { manager } = definition;
   vm.stack.push({ definition, manager, state: null, handle: null, table: null });

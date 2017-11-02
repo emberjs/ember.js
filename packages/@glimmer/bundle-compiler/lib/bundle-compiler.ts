@@ -3,19 +3,15 @@ import { TemplateCompiler } from "@glimmer/compiler";
 import { expect } from "@glimmer/util";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import {
-  Option,
   ProgramSymbolTable,
   Recast,
-  SymbolTable,
   VMHandle,
-  ComponentCapabilities,
   Unique
 } from "@glimmer/interfaces";
 import {
   CompilableTemplate,
   Macros,
   OpcodeBuilderConstructor,
-  CompileTimeLookup,
   CompileOptions,
   ICompilableTemplate,
   EagerOpcodeBuilder,
@@ -24,14 +20,19 @@ import {
 } from "@glimmer/opcode-compiler";
 import {
   WriteOnlyProgram,
-  WriteOnlyConstants,
   ConstantPool,
   SerializedHeap
 } from "@glimmer/program";
 
-import { Specifier } from "./specifiers";
-import { SpecifierMap } from "./specifier-map";
-import { CompilerDelegate } from "./compiler-delegate";
+import {
+  TemplateLocator,
+  ModuleLocator,
+  ModuleLocatorMap
+} from "./module-locators";
+import DebugConstants from "./debug-constants";
+import ExternalModuleTable from "./external-module-table";
+import CompilerDelegate from "./compiler-delegate";
+import CompilerResolver from "./compiler-resolver";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -44,226 +45,176 @@ export interface BundleCompilerOptions {
   program?: WriteOnlyProgram;
 }
 
+/**
+ * Represents the results of a bundle compilation.
+ */
 export interface BundleCompilationResult {
-  heap: number[];
+  /**
+   * The VM handle corresponding to the program entry point. This is the heap
+   * offset where execution will begin when the program starts.
+   */
+  main: number;
+
+  /**
+   * The final result of program compilation, including the binary bytecode.
+   */
+  heap: SerializedHeap;
+
+  /**
+   * A JSON-ready data structure containing constant values generated during
+   * compilation.
+   */
   pool: ConstantPool;
+
+  /**
+   * A table mapping modules locators to their associated handles, and vice
+   * versa.
+   */
+  table: ExternalModuleTable;
 }
 
-export class DebugConstants extends WriteOnlyConstants {
-  getFloat(value: number): number {
-    return this.floats[value];
-  }
+/**
+ * The BundleCompiler is used to compile all of the component templates in a
+ * Glimmer program into binary bytecode.
+ *
+ * First, you must call `add()` to push each component's template into the
+ * bundle. Once every template in the program has been registered, the last step
+ * is to call `compile()`, which begins eager compilation of the entire program
+ * into the heap.
+ *
+ * At the end of compilation, the heap plus additional metadata is produced,
+ * which is suitable for serialization into bytecode and JavaScript assets that
+ * can be loaded and run in the browser.
+ */
+export default class BundleCompiler<Meta = {}> {
+  public compilableTemplates = new ModuleLocatorMap<
+    ICompilableTemplate<ProgramSymbolTable>
+  >();
+  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock>();
+  public meta = new ModuleLocatorMap<Meta>();
 
-  getNegative(value: number): number {
-    return this.negatives[value];
-  }
-
-  getString(value: number): string {
-    return this.strings[value];
-  }
-
-  getStringArray(value: number): string[] {
-    let names = this.getArray(value);
-    let _names: string[] = new Array(names.length);
-
-    for (let i = 0; i < names.length; i++) {
-      let n = names[i];
-      _names[i] = this.getString(n);
-    }
-
-    return _names;
-  }
-
-  getArray(value: number): number[] {
-    return (this.arrays as number[][])[value];
-  }
-
-  getSymbolTable<T extends SymbolTable>(value: number): T {
-    return this.tables[value] as T;
-  }
-
-  resolveHandle<T>(s: number): T {
-    return { handle: s } as any as T;
-  }
-
-  getSerializable<T>(s: number): T {
-    return this.serializables[s] as T;
-  }
-}
-
-export class BundleCompiler {
   protected delegate: CompilerDelegate;
   protected macros: Macros;
   protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
-  private program: WriteOnlyProgram;
-  private _templateOptions: TemplateOptions<Specifier>;
-
-  private specifiers = new SpecifierMap();
-  public compiledBlocks = new Map<Specifier, AddedTemplate>();
+  protected program: WriteOnlyProgram;
+  protected templateOptions: TemplateOptions<ModuleLocator>;
+  protected table = new ExternalModuleTable();
 
   constructor(delegate: CompilerDelegate, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
     this.macros = options.macros || new Macros();
-    this.Builder = options.Builder || EagerOpcodeBuilder as OpcodeBuilderConstructor;
-    this.program = options.program || new WriteOnlyProgram(new DebugConstants());
+    this.Builder =
+      options.Builder || (EagerOpcodeBuilder as OpcodeBuilderConstructor);
+    this.program =
+      options.program || new WriteOnlyProgram(new DebugConstants());
     this.plugins = options.plugins || [];
   }
 
-  getSpecifierMap(): SpecifierMap {
-    return this.specifiers;
-  }
+  /**
+   * Adds the template source code for a component to the bundle.
+   */
+  add(locator: TemplateLocator<Meta>, templateSource: string): SerializedTemplateBlock {
+    let { meta } = locator;
 
-  preprocess(specifier: Specifier, input: string): SerializedTemplateBlock {
-    let ast = preprocess(input, { plugins: { ast: this.plugins } });
-    let template = TemplateCompiler.compile({ meta: specifier }, ast);
-    return template.toJSON();
-  }
+    let block = this.preprocess(meta || null, templateSource);
+    this.compiledBlocks.set(locator, block);
 
-  add(specifier: Specifier, input: string): SerializedTemplateBlock {
-    let block = this.preprocess(specifier, input);
+    let compileOptions = this.compileOptions(locator);
+    let compilableTemplate = CompilableTemplate.topLevel(block, compileOptions);
 
-    this.compiledBlocks.set(specifier, block);
+    this.addCompilableTemplate(locator, compilableTemplate);
+
     return block;
   }
 
-  addCustom(specifier: Specifier, input: ICompilableTemplate<ProgramSymbolTable>): void {
-    this.compiledBlocks.set(specifier, input);
+  /**
+   * Adds a custom CompilableTemplate instance to the bundle.
+   */
+  addCompilableTemplate(
+    locator: TemplateLocator<Meta>,
+    template: ICompilableTemplate<ProgramSymbolTable>
+  ): void {
+    this.compilableTemplates.set(locator, template);
   }
 
-  compile() {
+  /**
+   * Compiles all of the templates added to the bundle. Once compilation
+   * completes, the results of the compilation are returned, which includes
+   * everything needed to serialize the Glimmer program into binary bytecode and
+   * data segment.
+   */
+  compile(): BundleCompilationResult {
     let builder = new SimpleOpcodeBuilder();
     builder.main();
     let main = builder.commit(this.program.heap, 0);
 
-    this.compiledBlocks.forEach((_block, specifier) => {
-      this.compileSpecifier(specifier);
+    this.compilableTemplates.forEach((_, locator) => {
+      this.compileTemplate(locator);
     });
 
     let { heap, constants } = this.program;
 
     return {
-      main: main as Unique<'Handle'>,
+      main: main as Recast<Unique<"Handle">, number>,
       heap: heap.capture() as SerializedHeap,
-      pool: constants.toPool()
+      pool: constants.toPool(),
+      table: this.table
     };
   }
 
-  compileOptions(specifier: Specifier, asPartial = false): CompileOptions<Specifier> {
-    let templateOptions = this._templateOptions;
+  preprocess(
+    meta: Meta | null,
+    input: string
+  ): SerializedTemplateBlock {
+    let ast = preprocess(input, { plugins: { ast: this.plugins } });
+    let template = TemplateCompiler.compile({ meta }, ast);
+    return template.toJSON();
+  }
+
+  compileOptions(
+    locator: TemplateLocator<Meta>,
+    asPartial = false
+  ): CompileOptions<TemplateLocator<Meta>> {
+    let templateOptions = this.templateOptions;
     if (!templateOptions) {
       let { program, macros, Builder } = this;
-      let lookup = new BundlingLookup(this.delegate, this.specifiers, this);
-      templateOptions = this._templateOptions = {
+      let resolver = new CompilerResolver(this.delegate, this.table, this);
+      templateOptions = this.templateOptions = {
         program,
         macros,
         Builder,
-        lookup
+        resolver
       };
     }
 
-    return { ...templateOptions, asPartial, referrer: specifier };
+    return { ...templateOptions, asPartial, referrer: locator };
   }
 
-  compileSpecifier(specifier: Specifier): VMHandle {
-    let handle = this.specifiers.vmHandleBySpecifier.get(specifier) as Recast<number, VMHandle>;
+  /**
+   * Performs the actual compilation of the template identified by the passed
+   * locator into the Program. Returns the VM handle for the compiled template.
+   */
+  protected compileTemplate(locator: TemplateLocator<Meta>): VMHandle {
+    let handle = this.table.vmHandleByModuleLocator.get(locator) as Recast<
+      number,
+      VMHandle
+    >;
     if (handle) return handle;
 
-    let block = expect(this.compiledBlocks.get(specifier), `Can't compile a template that wasn't already added (${specifier.name} @ ${specifier.module})`);
+    let compilableTemplate = expect(
+      this.compilableTemplates.get(locator),
+      `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${locator.module})`
+    );
 
-    let options = this.compileOptions(specifier);
+    handle = compilableTemplate.compile();
 
-    if (isCompilableTemplate(block)) {
-      handle = block.compile();
-    } else {
-      let compilable = CompilableTemplate.topLevel(block, options);
-      handle = compilable.compile();
-    }
-
-    this.specifiers.byVMHandle.set(handle as Recast<VMHandle, number>, specifier);
-    this.specifiers.vmHandleBySpecifier.set(specifier, handle as Recast<VMHandle, number>);
-
-    return handle;
-  }
-}
-
-class BundlingLookup implements CompileTimeLookup<Specifier> {
-  constructor(private delegate: CompilerDelegate, private map: SpecifierMap, private compiler: BundleCompiler) { }
-
-  private registerSpecifier(specifier: Specifier): number {
-    let { bySpecifier, byHandle } = this.map;
-
-    let handle = bySpecifier.get(specifier);
-
-    if (handle === undefined) {
-      handle = byHandle.size;
-      byHandle.set(handle, specifier);
-      bySpecifier.set(specifier, handle);
-    }
+    this.table.byVMHandle.set(handle as Recast<VMHandle, number>, locator);
+    this.table.vmHandleByModuleLocator.set(locator, handle as Recast<
+      VMHandle,
+      number
+    >);
 
     return handle;
   }
-
-  getCapabilities(handle: number): ComponentCapabilities {
-    let specifier = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getCapabilities if a handle has no associated specifier`);
-    return this.delegate.getComponentCapabilities(specifier);
-  }
-
-  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
-    let specifier = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated specifier`);
-    let block = this.compiler.compiledBlocks.get(specifier);
-
-    if (block && isCompilableTemplate(block)) {
-      return block;
-    }
-
-    expect(block, 'Should have a SerializedTemplateBlock');
-
-    block = this.delegate.getComponentLayout(specifier, block!, this.compiler.compileOptions(specifier));
-
-    this.compiler.compiledBlocks.set(specifier, block);
-
-    return block;
-  }
-
-  lookupHelper(name: string, referrer: Specifier): Option<number> {
-    if (this.delegate.hasHelperInScope(name, referrer)) {
-      let specifier = this.delegate.resolveHelperSpecifier(name, referrer);
-      return this.registerSpecifier(specifier);
-    } else {
-      return null;
-    }
-  }
-
-  lookupComponentSpec(name: string, referrer: Specifier): Option<number> {
-    if (this.delegate.hasComponentInScope(name, referrer)) {
-      let specifier = this.delegate.resolveComponentSpecifier(name, referrer);
-      return this.registerSpecifier(specifier);
-    } else {
-      return null;
-    }
-  }
-
-  lookupModifier(name: string, referrer: Specifier): Option<number> {
-    if (this.delegate.hasModifierInScope(name, referrer)) {
-      let specifier = this.delegate.resolveModifierSpecifier(name, referrer);
-      return this.registerSpecifier(specifier);
-    } else {
-      return null;
-    }
-  }
-
-  lookupComponent(_name: string, _meta: Specifier): Option<number> {
-    throw new Error("Method not implemented.");
-  }
-
-  lookupPartial(_name: string, _meta: Specifier): Option<number> {
-    throw new Error("Method not implemented.");
-  }
-}
-
-type AddedTemplate = SerializedTemplateBlock | ICompilableTemplate<ProgramSymbolTable>;
-
-function isCompilableTemplate(v: AddedTemplate): v is ICompilableTemplate<ProgramSymbolTable> {
-  return typeof v['compile'] === 'function';
 }

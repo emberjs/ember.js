@@ -10,8 +10,8 @@ import {
 import { Core, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { Macros } from './syntax';
 
-export interface EagerResolver<Specifier> {
-  getCapabilities(specifier: Specifier): ComponentCapabilities;
+export interface EagerResolver<Locator> {
+  getCapabilities(locator: Locator): ComponentCapabilities;
 }
 
 export interface EagerCompilationOptions<Specifier, R extends EagerResolver<Specifier>> {
