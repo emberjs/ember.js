@@ -11,7 +11,7 @@ import {
   CapturedArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
-  VM
+  VM,
 } from '@glimmer/runtime';
 import { DEBUG } from 'ember-env-flags';
 import {

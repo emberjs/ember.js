@@ -1,7 +1,8 @@
-import { 
+import { Option } from '@glimmer/interfaces';
+import {
   combineTagged,
   Tag,
-  VersionedPathReference
+  VersionedPathReference,
 } from '@glimmer/reference';
 import {
   Arguments,
@@ -18,8 +19,7 @@ import {
   Simple,
   VM,
 } from '@glimmer/runtime';
-import { Opaque, Destroyable } from '@glimmer/util';
-import { Option } from '@glimmer/interfaces';
+import { Destroyable, Opaque } from '@glimmer/util';
 import { privatize as P } from 'container';
 import {
   assert,
@@ -94,9 +94,9 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
 }
 
 function tagName(vm: VM) {
+  let dynamicScope: DynamicScope = vm.dynamicScope() as DynamicScope;
   // tslint:disable-next-line:no-shadowed-variable
-  let { tagName } = vm.dynamicScope().view;
-
+  let { tagName } = dynamicScope.view!;
   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
 }
 
@@ -291,7 +291,8 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     if (classRef) {
-      operations.addDynamicAttribute(element, 'class', classRef, false);
+      // TODO should make addDynamicAttribute accept an opaque
+      operations.addDynamicAttribute(element, 'class', classRef as any, false);
     }
 
     if (classNames && classNames.length) {
@@ -447,6 +448,7 @@ export class CurlyComponentDefinition extends ComponentDefinition<ComponentState
   public template: OwnedTemplate;
   public args: Arguments | undefined;
 
+  // tslint:disable-next-line:no-shadowed-variable
   constructor(name: string, ComponentClass: ComponentClass, template: OwnedTemplate, args: Arguments | undefined, customManager?: ComponentManager<ComponentStateBucket>) {
     super(name, customManager || MANAGER, ComponentClass);
     this.template = template;

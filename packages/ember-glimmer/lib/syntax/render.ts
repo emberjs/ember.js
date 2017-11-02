@@ -2,19 +2,20 @@
 @module ember
 */
 
+import { ConstReference, isConst } from '@glimmer/reference';
 import {
   Arguments,
-  VM
+  VM,
 } from '@glimmer/runtime';
-import { ConstReference, isConst } from '@glimmer/reference';
 import { assert } from 'ember-debug';
 import {
   NON_SINGLETON_RENDER_MANAGER,
   RenderDefinition,
   SINGLETON_RENDER_MANAGER,
 } from '../component-managers/render';
-import { hashToArgs } from './utils';
 import Environment from '../environment';
+import { OwnedTemplate } from '../template';
+import { hashToArgs } from './utils';
 
 function makeComponentDefinition(vm: VM, args: Arguments) {
   let env     = vm.env as Environment;
@@ -24,14 +25,14 @@ function makeComponentDefinition(vm: VM, args: Arguments) {
   // tslint:disable-next-line:max-line-length
   assert(`The second argument of {{render}} must be a path, e.g. {{render "post" post}}.`, args.positional.length === 1 || !isConst(args.positional.at(1)));
 
-  let templateName = nameRef.value();
+  let templateName = nameRef.value() as string;
 
   // tslint:disable-next-line:max-line-length
   assert(`You used \`{{render '${templateName}'}}\`, but '${templateName}' can not be found as a template.`, env.owner.hasRegistration(`template:${templateName}`));
 
-  let template = env.owner.lookup(`template:${templateName}`);
+  let template = env.owner.lookup<OwnedTemplate | undefined>(`template:${templateName}`);
 
-  let controllerName;
+  let controllerName: string;
 
   if (args.named.has('controller')) {
     let controllerNameRef = args.named.get('controller');
@@ -39,7 +40,8 @@ function makeComponentDefinition(vm: VM, args: Arguments) {
     // tslint:disable-next-line:max-line-length
     assert(`The controller argument for {{render}} must be quoted, e.g. {{render "sidebar" controller="foo"}}.`, isConst(controllerNameRef));
 
-    controllerName = controllerNameRef.value();
+    // TODO should be ensuring this to string here
+    controllerName = controllerNameRef.value() as string;
 
     // tslint:disable-next-line:max-line-length
     assert(`The controller name you supplied '${controllerName}' did not resolve to a controller.`, env.owner.hasRegistration(`controller:${controllerName}`));

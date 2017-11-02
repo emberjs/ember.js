@@ -1,21 +1,24 @@
 import {
   ComponentDefinition,
-  ComponentManager
+  ComponentManager,
 } from '@glimmer/runtime';
 import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
 
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import Environment from '../environment';
-import { OwnedTemplate } from '../template';
 import { DynamicScope } from '../renderer';
+import { OwnedTemplate } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import { OutletLayoutCompiler } from './outlet';
 
 export abstract class AbstractRenderManager extends AbstractManager<RenderState> {
   layoutFor(definition: RenderDefinition, _bucket: RenderState, env: Environment) {
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
+    // only curly components can have lazy layout
+    assert('definition is missing a template', !!definition.template);
+    return env.getCompiledBlock(OutletLayoutCompiler, definition.template!);
   }
 
   getSelf({ controller }: RenderState) {
@@ -50,7 +53,7 @@ class SingletonRenderManager extends AbstractRenderManager {
       dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
     }
 
-    return <RenderState>{ controller };
+    return { controller } as RenderState;
   }
 
   getDestructor() {
@@ -93,10 +96,10 @@ export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 
 export class RenderDefinition extends ComponentDefinition<RenderState> {
   public name: string;
-  public template: OwnedTemplate;
+  public template: OwnedTemplate | undefined;
   public env: Environment;
 
-  constructor(name: string, template: OwnedTemplate, env: Environment, manager: ComponentManager<RenderState>) {
+  constructor(name: string, template: OwnedTemplate | undefined, env: Environment, manager: ComponentManager<RenderState>) {
     super('render', manager, null);
 
     this.name = name;

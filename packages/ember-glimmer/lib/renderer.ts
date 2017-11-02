@@ -20,9 +20,9 @@ import {
 import { BOUNDS } from './component';
 import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
-import ComponentStateBucket, { Component } from './utils/curly-component-state-bucket';
 import Environment from './environment';
 import { OwnedTemplate } from './template';
+import ComponentStateBucket, { Component } from './utils/curly-component-state-bucket';
 import { RootReference } from './utils/references';
 import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
 
@@ -30,12 +30,17 @@ import { ComponentDefinition, NULL_REFERENCE, RenderResult } from '@glimmer/runt
 
 const { backburner } = run;
 
+export interface View {
+  tagName: string | null;
+  appendChild(child: View): void;
+}
+
 export class DynamicScope implements GlimmerDynamicScope {
   outletState: VersionedPathReference<Option<OutletState>>;
   rootOutletState: RootOutletStateReference | undefined;
 
   constructor(
-    public view: Opaque,
+    public view: View | null,
     outletState: VersionedPathReference<Option<OutletState>>,
     rootOutletState?: RootOutletStateReference) {
     this.outletState = outletState;
