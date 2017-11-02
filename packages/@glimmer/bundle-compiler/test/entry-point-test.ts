@@ -1,6 +1,6 @@
 import { module, test, EagerTestEnvironment } from "@glimmer/test-helpers";
-import { BundleCompiler, CompilerDelegate, specifierFor, Specifier } from "@glimmer/bundle-compiler";
-import { RuntimeResolver, ComponentCapabilities, Option } from "@glimmer/interfaces";
+import { BundleCompiler, CompilerDelegate, TemplateLocator } from "@glimmer/bundle-compiler";
+import { RuntimeResolver, ComponentCapabilities, Option, VMHandle, Recast } from "@glimmer/interfaces";
 import { RuntimeProgram } from "@glimmer/program";
 import { LowLevelVM, NewElementBuilder, ComponentManager, MINIMAL_CAPABILITIES, ARGS, UNDEFINED_REFERENCE, PrimitiveReference } from "@glimmer/runtime";
 import { CONSTANT_TAG, VersionedPathReference, Tag } from "@glimmer/reference";
@@ -11,7 +11,7 @@ class TestCompilerDelegate implements CompilerDelegate {
     return false;
   }
 
-  resolveComponentSpecifier(): never {
+  resolveComponent(): never {
     throw new Error("Method not implemented.");
   }
 
@@ -27,7 +27,7 @@ class TestCompilerDelegate implements CompilerDelegate {
     return false;
   }
 
-  resolveHelperSpecifier(): never {
+  resolveHelper(): never {
     throw new Error("Method not implemented.");
   }
 
@@ -35,7 +35,7 @@ class TestCompilerDelegate implements CompilerDelegate {
     return false;
   }
 
-  resolveModifierSpecifier(): never {
+  resolveModifier(): never {
     throw new Error("Method not implemented.");
   }
 
@@ -43,12 +43,12 @@ class TestCompilerDelegate implements CompilerDelegate {
     return false;
   }
 
-  resolvePartialSpecifier(): never {
+  resolvePartial(): never {
     throw new Error("Method not implemented.");
   }
 }
 
-class SimpleResolver implements RuntimeResolver<Specifier> {
+class SimpleResolver implements RuntimeResolver<TemplateLocator> {
   lookupComponent(): never {
     throw new Error("Method not implemented.");
   }
@@ -112,10 +112,9 @@ export class EntryPointTest {
   @test "an entry point"() {
     let compiler = new BundleCompiler(new TestCompilerDelegate());
 
-    let titleSpec = specifierFor('ui/components/Title');
-    let titleBlock = compiler.add(titleSpec, '<h1>{{@title}}</h1>');
-    let { main, heap, pool } = compiler.compile();
-    let map = compiler.getSpecifierMap();
+    let titleLocator = { module: 'ui/components/Title', name: 'default' };
+    let titleBlock = compiler.add(titleLocator, '<h1>{{@title}}</h1>');
+    let { main, heap, pool, table } = compiler.compile();
 
     let env = new EagerTestEnvironment();
     let program = RuntimeProgram.hydrate(heap, pool, new SimpleResolver());
@@ -127,7 +126,7 @@ export class EntryPointTest {
 
     let vm = LowLevelVM.empty(program, env, builder);
 
-    let title = map.vmHandleBySpecifier.get(titleSpec);
+    let title = table.vmHandleByModuleLocator.get(titleLocator);
 
     vm.pushFrame();
 
@@ -144,7 +143,7 @@ export class EntryPointTest {
     vm.stack.push({ state: null, manager: new BasicManager() });
 
     // invoke main()
-    vm.execute(main);
+    vm.execute(main as Recast<number, VMHandle>);
 
     env.commit();
 

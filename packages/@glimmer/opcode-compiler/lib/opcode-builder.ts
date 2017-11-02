@@ -68,18 +68,18 @@ export interface AbstractTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
 }
 
-export interface CompileTimeLookup<Specifier> {
+export interface CompileTimeLookup<Locator> {
   getCapabilities(handle: number): ComponentCapabilities;
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>>;
 
-  // This interface produces specifiers (and indicates if a name is present), but does not
+  // This interface produces module locators (and indicates if a name is present), but does not
   // produce any actual objects. The main use-case for producing objects is handled above,
   // with getCapabilities and getLayout, which drastically shrinks the size of the object
   // that the core interface is forced to reify.
-  lookupHelper(name: string, referrer: Specifier): Option<number>;
-  lookupModifier(name: string, referrer: Specifier): Option<number>;
-  lookupComponentSpec(name: string, referrer: Specifier): Option<number>;
-  lookupPartial(name: string, referrer: Specifier): Option<number>;
+  lookupHelper(name: string, referrer: Locator): Option<number>;
+  lookupModifier(name: string, referrer: Locator): Option<number>;
+  lookupComponentDefinition(name: string, referrer: Locator): Option<number>;
+  lookupPartial(name: string, referrer: Locator): Option<number>;
 }
 
 export interface Blocks {
@@ -273,18 +273,18 @@ export class SimpleOpcodeBuilder {
   }
 }
 
-export abstract class OpcodeBuilder<Specifier> extends SimpleOpcodeBuilder {
+export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   public constants: CompileTimeConstants;
 
   private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
-  public component: ComponentBuilder<Specifier> = new ComponentBuilder(this);
+  public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
 
   constructor(
     public program: CompileTimeProgram,
-    public lookup: CompileTimeLookup<Specifier>,
-    public referrer: Specifier,
+    public resolver: CompileTimeLookup<Locator>,
+    public referrer: Locator,
     public macros: Macros,
     public containingLayout: ParsedLayout,
     public asPartial: boolean
@@ -337,13 +337,13 @@ export abstract class OpcodeBuilder<Specifier> extends SimpleOpcodeBuilder {
     this.push(Op.PushComponentDefinition, this.constants.handle(handle));
   }
 
-  pushDynamicComponentManager(referrer: Specifier) {
+  pushDynamicComponentManager(referrer: Locator) {
     this.push(Op.PushDynamicComponentManager, this.constants.serializable(referrer));
   }
 
   // partial
 
-  invokePartial(referrer: Specifier, symbols: string[], evalInfo: number[]) {
+  invokePartial(referrer: Locator, symbols: string[], evalInfo: number[]) {
     let _meta = this.constants.serializable(referrer);
     let _symbols = this.constants.stringArray(symbols);
     let _evalInfo = this.constants.array(evalInfo);
@@ -416,10 +416,10 @@ export abstract class OpcodeBuilder<Specifier> extends SimpleOpcodeBuilder {
     this.push(Op.Comment, comment);
   }
 
-  modifier(specifier: Specifier, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+  modifier(locator: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
     this.pushFrame();
     this.compileArgs(params, hash, null, true);
-    this.push(Op.Modifier, this.constants.handle(specifier));
+    this.push(Op.Modifier, this.constants.handle(locator));
     this.popFrame();
   }
 
@@ -560,7 +560,7 @@ export abstract class OpcodeBuilder<Specifier> extends SimpleOpcodeBuilder {
     this.push(Op.PrimitiveReference);
   }
 
-  helper(helper: Specifier, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+  helper(helper: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
     this.pushFrame();
     this.compileArgs(params, hash, null, true);
     this.push(Op.Helper, this.constants.handle(helper));
@@ -629,7 +629,7 @@ export abstract class OpcodeBuilder<Specifier> extends SimpleOpcodeBuilder {
       program: this.program,
       macros: this.macros,
       Builder: this.constructor as OpcodeBuilderConstructor,
-      lookup: this.lookup,
+      resolver: this.resolver,
       asPartial: this.asPartial,
       referrer: this.referrer
     };

@@ -62,13 +62,13 @@ export function statementCompiler() {
   });
 
   STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
-    let { lookup, referrer } = builder;
+    let { resolver, referrer } = builder;
     let [, name, params, hash] = sexp;
 
-    let specifier = lookup.lookupModifier(name, referrer);
+    let handle = resolver.lookupModifier(name, referrer);
 
-    if (specifier) {
-      builder.modifier(specifier, params, hash);
+    if (handle) {
+      builder.modifier(handle, params, hash);
     } else {
       throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
     }
@@ -100,11 +100,11 @@ export function statementCompiler() {
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
     let [, tag, _attrs, args, block] = sexp;
 
-    let { lookup, referrer } = builder;
-    let handle = lookup.lookupComponentSpec(tag, referrer);
+    let { resolver, referrer } = builder;
+    let handle = resolver.lookupComponentDefinition(tag, referrer);
 
     if (handle !== null) {
-      let capabilities = lookup.getCapabilities(handle);
+      let capabilities = resolver.getCapabilities(handle);
 
       let attrs: WireFormat.Statement[] = [
         [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
@@ -115,7 +115,7 @@ export function statementCompiler() {
       let child = builder.template(block);
 
       if (capabilities.dynamicLayout === false) {
-        let layout = lookup.getLayout(handle)!;
+        let layout = resolver.getLayout(handle)!;
 
         builder.pushComponentDefinition(handle);
         builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child);
@@ -269,13 +269,13 @@ export function expressionCompiler() {
   const EXPRESSIONS = _expressionCompiler = new Compilers<WireFormat.TupleExpression>();
 
   EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-    let { lookup, asPartial, referrer } = builder;
+    let { resolver, asPartial, referrer } = builder;
     let name = sexp[1];
 
-    let specifier = lookup.lookupHelper(name, referrer);
+    let handle = resolver.lookupHelper(name, referrer);
 
-    if (specifier !== null) {
-      builder.helper(specifier, null, null);
+    if (handle !== null) {
+      builder.helper(handle, null, null);
     } else if (asPartial) {
       builder.resolveMaybeLocal(name);
     } else {
@@ -293,7 +293,7 @@ export function expressionCompiler() {
   });
 
   EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
-    let { lookup, referrer } = builder;
+    let { resolver, referrer } = builder;
     let [, name, params, hash] = sexp;
 
     // TODO: triage this in the WF compiler
@@ -305,10 +305,10 @@ export function expressionCompiler() {
       return;
     }
 
-    let specifier = lookup.lookupHelper(name, referrer);
+    let handle = resolver.lookupHelper(name, referrer);
 
-    if (specifier !== null) {
-      builder.helper(specifier, params, hash);
+    if (handle !== null) {
+      builder.helper(handle, params, hash);
     } else {
       throw new Error(`Compile Error: ${name} is not a helper`);
     }
@@ -789,7 +789,7 @@ export interface TemplateOptions<Specifier> {
   Builder: OpcodeBuilderConstructor;
 
   // a subset of the resolver w/ a couple of small tweaks
-  lookup: CompileTimeLookup<Specifier>;
+  resolver: CompileTimeLookup<Specifier>;
 }
 
 export interface CompileOptions<Specifier> extends TemplateOptions<Specifier> {

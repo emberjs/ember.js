@@ -1,5 +1,5 @@
 import { ICompilableTemplate, CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
-import { CompilerDelegate, Specifier, specifierFor } from '@glimmer/bundle-compiler';
+import { CompilerDelegate, TemplateLocator, ModuleLocator }  from '@glimmer/bundle-compiler';
 import { Dict } from '@glimmer/util';
 import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 
@@ -16,43 +16,46 @@ export default class EagerCompilerDelegate implements CompilerDelegate {
     private modules: Modules,
   ) {}
 
-  hasComponentInScope(componentName: string, referrer: Specifier): boolean {
+  hasComponentInScope(componentName: string, referrer: TemplateLocator): boolean {
     let name = this.modules.resolve(componentName, referrer, 'ui/components');
     return name ? this.modules.type(name) === 'component' : false;
   }
 
-  resolveComponentSpecifier(componentName: string, referrer: Specifier): Specifier {
-    return specifierFor(this.modules.resolve(componentName, referrer, 'ui/components')!, 'default');
+  resolveComponent(componentName: string, referrer: TemplateLocator): ModuleLocator {
+    return { module: this.modules.resolve(componentName, referrer, 'ui/components')!, name: 'default' };
   }
 
-  getComponentCapabilities(specifier: Specifier): ComponentCapabilities {
-    return this.components[specifier.module].state.capabilities;
+  getComponentCapabilities(locator: TemplateLocator): ComponentCapabilities {
+    return this.components[locator.module].state.capabilities;
   }
 
-  getComponentLayout(_specifier: Specifier, block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable> {
+  getComponentLayout(_: TemplateLocator, block: SerializedTemplateBlock, options: CompileOptions<TemplateLocator>): ICompilableTemplate<ProgramSymbolTable> {
     return CompilableTemplate.topLevel(block, options);
   }
 
-  hasHelperInScope(helperName: string, referrer: Specifier): boolean {
+  hasHelperInScope(helperName: string, referrer: TemplateLocator): boolean {
     let name = this.modules.resolve(helperName, referrer);
     return name ? this.modules.type(name) === 'helper' : false;
   }
 
-  resolveHelperSpecifier(helperName: string, referrer: Specifier): Specifier {
+  resolveHelper(helperName: string, referrer: TemplateLocator): TemplateLocator {
     let path = this.modules.resolve(helperName, referrer);
-    return specifierFor(path!, 'default');
+    return { module: path!, name: 'default' };
   }
 
-  hasModifierInScope(_modifierName: string, _referrer: Specifier): boolean {
+  hasModifierInScope(_modifierName: string, _referrer: TemplateLocator): boolean {
     return false;
   }
-  resolveModifierSpecifier(_modifierName: string, _referrer: Specifier): Specifier {
+
+  resolveModifier(_modifierName: string, _referrer: TemplateLocator): ModuleLocator {
     throw new Error("Method not implemented.");
   }
-  hasPartialInScope(_partialName: string, _referrer: Specifier): boolean {
+
+  hasPartialInScope(_partialName: string, _referrer: TemplateLocator): boolean {
     return false;
   }
-  resolvePartialSpecifier(_partialName: string, _referrer: Specifier): Specifier {
+
+  resolvePartial(_partialName: string, _referrer: TemplateLocator): ModuleLocator {
     throw new Error("Method not implemented.");
   }
 }

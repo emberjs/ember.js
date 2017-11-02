@@ -1,5 +1,5 @@
-import { Specifier } from '@glimmer/bundle-compiler';
 import { Opaque, Option, dict, Dict, assert } from '@glimmer/util';
+import { TemplateLocator } from '@glimmer/bundle-compiler';
 
 export type ModuleType = 'component' | 'helper' | 'modifier' | 'partial' | 'other';
 
@@ -39,7 +39,7 @@ export class Modules {
     this.registry[name] = new Module(value, type);
   }
 
-  resolve(name: string, referrer: Specifier, defaultRoot?: string): Option<string> {
+  resolve(name: string, referrer: TemplateLocator, defaultRoot?: string): Option<string> {
     let local = referrer.module && referrer.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
     if (local && this.registry[local]) {
       return local;

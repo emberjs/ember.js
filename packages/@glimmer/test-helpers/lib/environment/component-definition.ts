@@ -1,6 +1,10 @@
 import { Option } from '@glimmer/util';
 import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
-import { Specifier } from '@glimmer/bundle-compiler';
+import { TemplateLocator } from '@glimmer/bundle-compiler';
+
+export interface TemplateMeta {
+  locator: TemplateLocator;
+}
 
 export interface TestComponentDefinitionState {
   /* Manager-related */
@@ -11,7 +15,7 @@ export interface TestComponentDefinitionState {
   ComponentClass: any;
   type: string;
   layout: Option<number>;
-  specifier?: Specifier;
+  locator?: TemplateLocator<TemplateMeta>;
   template?: string;
   hasSymbolTable?: boolean;
   symbolTable?: ProgramSymbolTable;

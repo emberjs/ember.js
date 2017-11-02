@@ -8,11 +8,11 @@ import GlimmerObject from "@glimmer/object";
 import { Destroyable } from "@glimmer/util";
 
 import { Attrs, AttrsDiff, createTemplate } from '../shared';
-import TestSpecifier from '../specifier';
 import { BASIC_CAPABILITIES } from './basic';
 import { TestComponentDefinitionState } from '../components';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
+import { TemplateLocator } from "@glimmer/bundle-compiler";
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -56,9 +56,9 @@ export class EmberishGlimmerComponentManager
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout({ name, specifier }: TestComponentDefinitionState, resolver: LazyRuntimeResolver | EagerRuntimeResolver): Invocation {
+  getLayout({ name, locator }: TestComponentDefinitionState, resolver: LazyRuntimeResolver | EagerRuntimeResolver): Invocation {
     if (resolver instanceof LazyRuntimeResolver) {
-      let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
+      let compile = (source: string, options: TemplateOptions<TemplateLocator>) => {
         let layout = createTemplate(source);
         let template = new ScannableTemplate(options, layout).asLayout();
 
@@ -73,7 +73,7 @@ export class EmberishGlimmerComponentManager
       return resolver.compileTemplate(handle, name, compile);
     }
 
-    return resolver.getInvocation(specifier!);
+    return resolver.getInvocation(locator!);
   }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<Opaque> {
