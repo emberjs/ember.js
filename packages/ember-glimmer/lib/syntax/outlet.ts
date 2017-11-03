@@ -1,14 +1,15 @@
 import {
-  Arguments,
-  VM
-} from '@glimmer/runtime';
-import {
   combine,
   ConstReference,
   TagWrapper,
   UpdatableTag,
 } from '@glimmer/reference';
+import {
+  Arguments,
+  VM,
+} from '@glimmer/runtime';
 import { OutletComponentDefinition } from '../component-managers/outlet';
+import { DynamicScope } from '../renderer';
 
 class OutletComponentReference {
   public outletNameRef: any;
@@ -70,7 +71,7 @@ function revalidate(definition: any, lastState: any, newState: any) {
 }
 
 function outletComponentFor(vm: VM, args: Arguments) {
-  let { outletState } = vm.dynamicScope();
+  let { outletState } = vm.dynamicScope() as DynamicScope;
 
   let outletNameRef;
   if (args.positional.length === 0) {

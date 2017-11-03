@@ -42,7 +42,7 @@ import {
   ConditionalReference,
   RootPropertyReference,
   SimpleHelperReference,
-  UpdatableReference
+  UpdatableReference,
 } from './utils/references';
 
 import { default as classHelper } from './helpers/-class';
@@ -85,7 +85,7 @@ function isTemplateFactory(template: OwnedTemplate | WrappedTemplateFactory): te
 
 export interface CompilerFactory {
   id: string;
-  new (template: OwnedTemplate): CompilableLayout;
+  new (template: OwnedTemplate | undefined): CompilableLayout;
 }
 
 export default class Environment extends GlimmerEnvironment {

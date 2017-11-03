@@ -1,8 +1,6 @@
-import { Opaque } from '@glimmer/interfaces';
-import { Revision } from '@glimmer/reference';
-import {
-  CapturedNamedArguments
-} from '@glimmer/runtime';
+import { Revision, VersionedReference } from '@glimmer/reference';
+import { CapturedNamedArguments } from '@glimmer/runtime';
+import { Opaque } from '@glimmer/util/dist/types';
 import Environment from '../environment';
 
 export interface Component {
@@ -22,6 +20,7 @@ export interface Component {
 }
 
 type Finalizer = () => void;
+// tslint:disable-next-line:no-empty
 function NOOP() {}
 
 /**
@@ -35,7 +34,7 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  public classRef: Opaque = null;
+  public classRef: VersionedReference<Opaque> | null = null;
   public argsRevision: Revision;
 
   constructor(public environment: Environment, public component: Component, public args: CapturedNamedArguments, public finalizer: Finalizer) {

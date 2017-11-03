@@ -12,7 +12,7 @@ import { generateGuid, guidFor } from 'ember-utils';
 import EmberEnvironment from '../environment';
 import {
   OwnedTemplate,
-  WrappedTemplateFactory
+  WrappedTemplateFactory,
 } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
