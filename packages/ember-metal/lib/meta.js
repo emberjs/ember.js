@@ -7,11 +7,7 @@ import {
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import {
-  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
-  MANDATORY_SETTER
-} from 'ember/features';
+import { MANDATORY_SETTER } from 'ember/features';
 import {
   removeChainWatcher
 } from './chains';
@@ -79,14 +75,6 @@ export class Meta {
     // have detailed knowledge of how each property should really be
     // inherited, and we can optimize it much better than JS runtimes.
     this.parent = parentMeta;
-
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      this._lastRendered = undefined;
-      if (DEBUG) {
-        this._lastRenderedReferenceMap = undefined;
-        this._lastRenderedTemplateMap = undefined;
-      }
-    }
 
     this._listeners = undefined;
     this._listenersFinalized = false;
@@ -421,17 +409,6 @@ export class Meta {
 
   deleteFromValues(subkey) {
     delete this._getOrCreateOwnMap('_values')[subkey];
-  }
-}
-
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-  Meta.prototype.writableLastRendered = function() { return this._getOrCreateOwnMap('_lastRendered'); };
-  Meta.prototype.readableLastRendered = function() { return this._lastRendered; };
-  if (DEBUG) {
-    Meta.prototype.writableLastRenderedReferenceMap = function() { return this._getOrCreateOwnMap('_lastRenderedReferenceMap'); };
-    Meta.prototype.readableLastRenderedReferenceMap = function() { return this._lastRenderedReferenceMap; };
-    Meta.prototype.writableLastRenderedTemplateMap = function() { return this._getOrCreateOwnMap('_lastRenderedTemplateMap'); };
-    Meta.prototype.readableLastRenderedTemplateMap = function() { return this._lastRenderedTemplateMap; };
   }
 }
 
