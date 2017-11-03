@@ -34,6 +34,7 @@ import EmberLocation from '../location/api';
 import {
   routeArgs,
   getActiveTargetName,
+  resemblesURL,
   calculateCacheKey
 } from '../utils';
 import RouterState from './router_state';
@@ -1457,10 +1458,6 @@ function didBeginTransition(transition, router) {
       throw error;
     }
   });
-}
-
-function resemblesURL(str) {
-  return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
 function forEachQueryParam(router, handlerInfos, queryParams, callback) {

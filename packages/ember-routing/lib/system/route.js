@@ -34,10 +34,10 @@ function K() { return this; }
 export function defaultSerialize(model, params) {
   if (params.length < 1 || !model) { return; }
 
-  let name = params[0];
   let object = {};
 
   if (params.length === 1) {
+    let name = params[0];
     if (name in model) {
       object[name] = get(model, name);
     } else if (/_id$/.test(name)) {
