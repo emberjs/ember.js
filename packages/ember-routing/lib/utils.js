@@ -167,8 +167,8 @@ function accumulateQueryParamDescriptors(_desc, accum) {
 
   @private
 */
-function resemblesURL(str) {
-  return typeof str === 'string' && (str === '' || str.charAt(0) === '/');
+export function resemblesURL(str) {
+  return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
 /*

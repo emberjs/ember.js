@@ -6,7 +6,7 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
-import { shallowEqual } from '../utils';
+import { shallowEqual, resemblesURL } from '../utils';
 
 /**
    The Router service is the public API that provides component/view layer
@@ -230,9 +230,5 @@ const RouterService = Service.extend({
     return { models, queryParams };
   }
 });
-
-function resemblesURL(str) {
-  return typeof str === 'string' && (str === '' || str[0] === '/');
-}
 
 export default RouterService;
