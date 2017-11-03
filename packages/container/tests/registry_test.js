@@ -123,26 +123,6 @@ QUnit.test('The registry normalizes names when checking if the factory is regist
   equal(isPresent, true, 'Normalizes the name when checking if the factory or instance is present');
 });
 
-QUnit.test('validateFullName throws an error if name is incorrect', function() {
-  expect(2);
-
-  let registry = new Registry();
-  let PostController = factory();
-
-  registry.normalize = function(fullName) {
-    return 'controller:post';
-  };
-
-  registry.register('controller:post', PostController);
-  throws(() => {
-    registry.validateFullName('post');
-  }, /TypeError: Invalid Fullname, expected: 'type:name' got: post/);
-
-  throws(() => {
-    registry.validateFullName('route:http://foo.bar.com/baz');
-  }, /TypeError: Invalid Fullname, expected: 'type:name' got: route:http:\/\/foo.bar.com\/baz/);
-});
-
 QUnit.test('The registry normalizes names when injecting', function() {
   let registry = new Registry();
   let PostController = factory();

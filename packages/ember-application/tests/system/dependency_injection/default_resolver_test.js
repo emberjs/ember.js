@@ -148,14 +148,14 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
   }
 
   [`@test the default resolver throws an error if the fullName to resolve is invalid`](assert) {
-    assert.throws(() => { this.applicationInstance.resolveRegistration(undefined);}, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration(null);     }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('');       }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('');       }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration(':');      }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('model');  }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('model:'); }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration(':type');  }, TypeError, /Invalid fullName/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(undefined);}, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(null);     }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('');       }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('');       }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(':');      }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('model');  }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('model:'); }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(':type');  }, /fullName must be a proper full name/);
   }
 
   /*
