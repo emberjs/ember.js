@@ -22,12 +22,12 @@ export default class TestMacros extends Macros {
         params = [];
       }
 
-      let lookup = builder.lookup;
+      let lookup = builder.resolver;
 
-      let specifier = lookup.lookupComponentSpec(name, builder.referrer);
+      let handle = lookup.lookupComponentDefinition(name, builder.referrer);
 
-      if (specifier !== null) {
-        builder.component.static(specifier, [params, hashToArgs(hash), template, inverse]);
+      if (handle !== null) {
+        builder.component.static(handle, [params, hashToArgs(hash), template, inverse]);
         return true;
       }
 
@@ -35,8 +35,8 @@ export default class TestMacros extends Macros {
     });
 
     inlines.addMissing((name, params, hash, builder) => {
-      let lookup = builder.lookup;
-      let handle = lookup.lookupComponentSpec(name, builder.referrer);
+      let lookup = builder.resolver;
+      let handle = lookup.lookupComponentDefinition(name, builder.referrer);
 
       if (handle !== null) {
         builder.component.static(handle, [params!, hashToArgs(hash), null, null]);

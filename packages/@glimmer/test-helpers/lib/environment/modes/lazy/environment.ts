@@ -48,8 +48,8 @@ import {
 import { UserHelper, HelperReference } from '../../helper';
 import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
-import TestSpecifier from '../../specifier';
 import { Opaque } from "@glimmer/util";
+import { TemplateLocator } from "@glimmer/bundle-compiler";
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
@@ -63,14 +63,14 @@ export interface TestEnvironmentOptions {
   program?: TopLevelSyntax;
 }
 
-export type TestCompilationOptions = CompilationOptions<TestSpecifier, LazyRuntimeResolver>;
+export type TestCompilationOptions = CompilationOptions<TemplateLocator, LazyRuntimeResolver>;
 
-export default class LazyTestEnvironment extends TestEnvironment<TestSpecifier> {
+export default class LazyTestEnvironment extends TestEnvironment<TemplateLocator> {
   public resolver = new LazyRuntimeResolver();
   protected program = new Program(new LazyConstants(this.resolver));
 
-  public compileOptions: TemplateOptions<TestSpecifier> = {
-    lookup: new LazyCompilerResolver(this.resolver),
+  public compileOptions: TemplateOptions<TemplateLocator> = {
+    resolver: new LazyCompilerResolver(this.resolver),
     program: this.program,
     macros: new TestMacros(),
     Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor

@@ -1,20 +1,16 @@
 export {
-  BundleCompiler,
+  default as BundleCompiler,
   BundleCompilerOptions,
   BundleCompileOptions,
-  BundleCompilationResult,
-  DebugConstants
+  BundleCompilationResult
 } from './lib/bundle-compiler';
 
 export {
-  CompilerDelegate
-} from './lib/compiler-delegate';
-
-export {
-  Specifier,
-  specifierFor
-} from './lib/specifiers';
-
-export {
-  SpecifierMap
-} from './lib/specifier-map';
+  ModuleLocator,
+  TemplateLocator,
+  ModuleLocatorMap
+} from './lib/module-locators';
+export { default as CompilerDelegate } from './lib/compiler-delegate';
+export { default as CompilerResolver } from './lib/compiler-resolver';
+export { default as DebugConstants } from './lib/debug-constants';
+export { default as ExternalModuleTable } from './lib/external-module-table';

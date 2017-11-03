@@ -61,10 +61,10 @@ export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSym
     //        Exit
 
     let { options, layout, referrer } = this;
-    let { program, lookup, macros, asPartial } = options;
+    let { program, resolver, macros, asPartial } = options;
     let { Builder } = options;
 
-    let b = new Builder(program, lookup, referrer, macros, layout, asPartial);
+    let b = new Builder(program, resolver, referrer, macros, layout, asPartial);
 
     b.startLabels();
 
@@ -126,13 +126,13 @@ export class ComponentBuilder<Specifier> implements IComponentBuilder {
   static(handle: number, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;
     let { builder } = this;
-    let { lookup } = builder;
+    let { resolver } = builder;
 
     if (handle !== null) {
-      let capabilities = lookup.getCapabilities(handle);
+      let capabilities = resolver.getCapabilities(handle);
 
       if (capabilities.dynamicLayout === false) {
-        let layout = lookup.getLayout(handle)!;
+        let layout = resolver.getLayout(handle)!;
 
         builder.pushComponentDefinition(handle);
         builder.invokeStaticComponent(capabilities, layout, null, params, hash, false, _default, inverse);
