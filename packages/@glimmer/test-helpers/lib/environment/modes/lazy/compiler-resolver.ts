@@ -4,9 +4,9 @@ import { assert } from '@glimmer/util';
 import { ComponentDefinition, WithStaticLayout } from '@glimmer/runtime';
 
 import RuntimeResolver from './runtime-resolver';
-import TestSpecifier from '../../specifier';
+import { TemplateLocator } from '@glimmer/bundle-compiler';
 
-export default class LazyCompilerResolver implements CompileTimeLookup<TestSpecifier> {
+export default class LazyCompilerResolver implements CompileTimeLookup<TemplateLocator> {
   constructor(private resolver: RuntimeResolver) {
   }
 
@@ -32,7 +32,7 @@ export default class LazyCompilerResolver implements CompileTimeLookup<TestSpeci
       return null;
     }
 
-    let invocation = (manager as WithStaticLayout<any, any, TestSpecifier, RuntimeResolver>).getLayout(state, this.resolver);
+    let invocation = (manager as WithStaticLayout<any, any, TemplateLocator, RuntimeResolver>).getLayout(state, this.resolver);
 
     return {
       compile() { return invocation.handle; },
@@ -40,19 +40,19 @@ export default class LazyCompilerResolver implements CompileTimeLookup<TestSpeci
     };
   }
 
-  lookupHelper(name: string, referrer: TestSpecifier): Option<number> {
+  lookupHelper(name: string, referrer: TemplateLocator): Option<number> {
     return this.resolver.lookupHelper(name, referrer);
   }
 
-  lookupModifier(name: string, referrer: TestSpecifier): Option<number> {
+  lookupModifier(name: string, referrer: TemplateLocator): Option<number> {
     return this.resolver.lookupModifier(name, referrer);
   }
 
-  lookupComponentSpec(name: string, referrer: TestSpecifier): Option<number> {
+  lookupComponentDefinition(name: string, referrer: TemplateLocator): Option<number> {
     return this.resolver.lookupComponentHandle(name, referrer);
   }
 
-  lookupPartial(name: string, referrer: TestSpecifier): Option<number> {
+  lookupPartial(name: string, referrer: TemplateLocator): Option<number> {
     return this.resolver.lookupPartial(name, referrer);
   }
 }

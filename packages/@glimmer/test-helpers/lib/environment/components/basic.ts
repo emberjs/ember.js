@@ -9,8 +9,8 @@ import { UpdatableReference } from '@glimmer/object-reference';
 
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import TestSpecifier from '../specifier';
 import { TestComponentDefinitionState } from '../components';
+import { TemplateLocator } from '@glimmer/bundle-compiler';
 
 export class BasicComponent {
   public element: Element;
@@ -30,7 +30,7 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = {
   elementHook: false
 };
 
-export class BasicComponentManager implements WithStaticLayout<BasicComponent, TestComponentDefinitionState, TestSpecifier, LazyRuntimeResolver> {
+export class BasicComponentManager implements WithStaticLayout<BasicComponent, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
@@ -48,7 +48,7 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
     let { name } = state;
 
     if (resolver instanceof LazyRuntimeResolver) {
-      let compile = (source: string, options: TemplateOptions<TestSpecifier>) => {
+      let compile = (source: string, options: TemplateOptions<TemplateLocator>) => {
         let layout = createTemplate(source);
         let template = new ScannableTemplate(options, layout).asLayout();
 
@@ -63,11 +63,11 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
       return resolver.compileTemplate(handle, name, compile);
     } else {
       // For the case of dynamically invoking (via `{{component}}`) in eager
-      // mode, we need to exchange the specifier for the handle to the compiled
-      // layout (which was provided at bundle compilation time and stashed in
-      // the component definition state).
-      let specifier = expect(state.specifier, 'component definition state should include specifier');
-      return resolver.getInvocation(specifier);
+      // mode, we need to exchange the module locator for the handle to the
+      // compiled layout (which was provided at bundle compilation time and
+      // stashed in the component definition state).
+      let locator = expect(state.locator, 'component definition state should include module locator');
+      return resolver.getInvocation(locator);
     }
   }
 

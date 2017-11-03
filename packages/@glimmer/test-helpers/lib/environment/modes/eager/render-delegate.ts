@@ -12,7 +12,7 @@ import {
   ElementBuilder,
   Cursor
 } from '@glimmer/runtime';
-import { specifierFor, DebugConstants, BundleCompiler, Specifier } from '@glimmer/bundle-compiler';
+import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
 import { ProgramSymbolTable, Recast, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
@@ -70,7 +70,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
   protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
-  protected specifiersToSymbolTable = new Map<Specifier, ProgramSymbolTable>();
+  protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable>();
 
   constructor(env: Environment) {
     this.env = env || new EagerTestEnvironment();
@@ -105,17 +105,16 @@ export default class EagerRenderDelegate implements RenderDelegate {
       throw new Error(`Not implemented in the Bundle Compiler yet: ${type}`);
     }
 
-    let specifier = specifierFor(`ui/components/${name}`, 'default');
     let hasSymbolTable = testType === 'Dynamic';
 
     let state: TestComponentDefinitionState = {
       name,
       type,
-      specifier,
       template,
       capabilities,
       hasSymbolTable,
       ComponentClass,
+      locator: { module, name: 'default' },
       // Populated by the Bundle Compiler in eager mode
       layout: null
     };
@@ -141,8 +140,8 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let program = new WriteOnlyProgram(new DebugConstants());
     let compiler = new BundleCompiler(delegate, { macros, program });
 
-    let spec = specifierFor('ui/components/main', 'default');
-    compiler.add(spec, template);
+    let locator = { module: 'ui/components/main', name: 'default' };
+    compiler.add(locator, template);
 
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
@@ -150,17 +149,17 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
       let { state, manager } = components[key];
 
-      let spec = specifierFor(key, 'default');
+      let locator = { module: key, name: 'default' };
 
       let block;
       let symbolTable;
 
       if (state.type === "Curly" || state.type === "Dynamic") {
-        let block = compiler.preprocess(spec, state.template!);
-        let options = compiler.compileOptions(spec);
-        let parsedLayout = { block, referrer: spec };
+        let block = compiler.preprocess(locator, state.template!);
+        let options = compiler.compileOptions(locator);
+        let parsedLayout = { block, referrer: locator };
         let wrapped = new WrappedBuilder(options, parsedLayout, EMBERISH_CURLY_CAPABILITIES);
-        compiler.addCustom(spec, wrapped);
+        compiler.addCompilableTemplate(locator, wrapped);
 
         compileTimeModules.register(key, 'other', {
           default: wrapped.symbolTable
@@ -168,7 +167,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
         symbolTable = wrapped.symbolTable;
       } else {
-        block = compiler.add(spec, expect(state.template, 'expected component definition state to have template'));
+        block = compiler.add(locator, expect(state.template, 'expected component definition state to have template'));
 
         symbolTable = {
           hasEval: block.hasEval,
@@ -176,7 +175,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
           referrer: key,
         };
 
-        this.specifiersToSymbolTable.set(spec, symbolTable);
+        this.symbolTables.set(locator, symbolTable);
 
         compileTimeModules.register(key, 'other', {
           default: symbolTable
@@ -200,16 +199,16 @@ export default class EagerRenderDelegate implements RenderDelegate {
       }
     });
 
-    let { heap, pool } = compiler.compile();
+    let { heap, pool, table } = compiler.compile();
 
-    let handle = compiler.getSpecifierMap().vmHandleBySpecifier.get(spec)! as Recast<number, VMHandle>;
+    let handle = table.vmHandleByModuleLocator.get(locator)! as Recast<number, VMHandle>;
     let { env } = this;
 
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
     let self = this.getSelf(context);
     let dynamicScope = new TestDynamicScope();
-    let resolver = new EagerRuntimeResolver(compiler.getSpecifierMap(), this.modules, this.specifiersToSymbolTable);
+    let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
     let runtimeHeap = new Heap(heap);
     let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
 
