@@ -789,8 +789,8 @@ function commonSortTests() {
 
     let items = obj.get('items');
 
-    items.replace(0, 1, jaime);
-    items.replace(1, 1, jaimeInDisguise);
+    items.replace(0, 1, [jaime]);
+    items.replace(1, 1, [jaimeInDisguise]);
 
     deepEqual(obj.get('sortedItems').mapBy('fname'), [
       'Cersei',

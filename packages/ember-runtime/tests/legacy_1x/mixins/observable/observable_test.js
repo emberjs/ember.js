@@ -703,7 +703,7 @@ QUnit.test('toggle function, should be boolean', function() {
 });
 
 QUnit.test('should notify array observer when array changes', function() {
-  get(object, 'normalArray').replace(0, 0, 6);
+  get(object, 'normalArray').replace(0, 0, [6]);
   equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
 });
 

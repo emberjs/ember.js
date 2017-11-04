@@ -298,7 +298,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertText('Hello Planet EarthGlobe World');
 
-    this.runTask(() => this.replace(2, 4, { text: 'my' }));
+    this.runTask(() => this.replace(2, 4, [{ text: 'my' }]));
 
     this.assertText('Hello my World');
 
@@ -864,7 +864,7 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
 
     this.runTask(() => {
       get(this.context, 'first').pushObject('I');
-      get(this.context, 'ninth').replace(0, 1, 'K');
+      get(this.context, 'ninth').replace(0, 1, ['K']);
     });
 
     this.assertText('O-Limbo-D-K-D-Wrath-K-Wrath-Limbo-I-D-K-D-Wrath-K-Wrath-I-O');
@@ -892,7 +892,7 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
 
     this.runTask(() => {
       let name = get(this.context, 'name');
-      name.objectAt(0).replace(0, 1, 'lady');
+      name.objectAt(0).replace(0, 1, ['lady']);
       name.pushObject(['bird']);
     });
 
