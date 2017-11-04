@@ -195,7 +195,7 @@ moduleFor('Syntax test: {{#with as}}', class extends IfUnlessWithSyntaxTest {
 
     this.runTask(() => {
       let array = get(this.context, 'arrayThing');
-      array.replace(0, 1, 'Goodbye');
+      array.replace(0, 1, ['Goodbye']);
       removeAt(array, 1);
       array.insertAt(1, ', ');
       array.pushObject('!');
