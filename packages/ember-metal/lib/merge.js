@@ -1,3 +1,4 @@
+import { assign } from 'ember-utils';
 /**
  @module @ember/polyfills
 */
@@ -26,13 +27,5 @@ export default function merge(original, updates) {
     return original;
   }
 
-  let props = Object.keys(updates);
-  let prop;
-
-  for (let i = 0; i < props.length; i++) {
-    prop = props[i];
-    original[prop] = updates[prop];
-  }
-
-  return original;
+  return assign(original, updates);
 }
