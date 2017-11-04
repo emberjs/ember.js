@@ -137,10 +137,10 @@ function applyConcatenatedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
   let ret;
 
-  if (baseValue === null || baseValue === undefined) {
+  if (baseValue == null) {
     ret = makeArray(value);
   } else if (isArray(baseValue)) {
-    if (value === null || value === undefined) {
+    if (value == null) {
       ret = baseValue;
     } else {
       ret = a_concat.call(baseValue, value);

@@ -50,7 +50,7 @@ const ALLOWABLE_TYPES = {
 */
 export function get(obj, keyName) {
   assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
-  assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
+  assert(`Cannot call get with '${keyName}' on an undefined object.`, obj != null);
   assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
@@ -90,7 +90,7 @@ export function _getPath(root, path) {
 }
 
 function isGettable(obj) {
-  return obj !== undefined && obj !== null && ALLOWABLE_TYPES[typeof obj];
+  return obj != null && ALLOWABLE_TYPES[typeof obj];
 }
 
 /**

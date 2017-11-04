@@ -20,7 +20,6 @@ import isBlank from './is_blank';
   isPresent(0);               // true
   isPresent(function() {})    // true
   isPresent({});              // true
-  isPresent(false);           // true
   isPresent('\n\t Hello');    // true
   isPresent([1,2,3]);         // true
   ```

@@ -1,7 +1,7 @@
 const objectToString = Object.prototype.toString;
 
 function isNone(obj) {
-  return obj === null || obj === undefined;
+  return obj == null;
 }
 
 /*

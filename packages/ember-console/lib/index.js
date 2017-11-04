@@ -1,6 +1,6 @@
 import { context } from 'ember-environment';
 
-function K() {}
+const noop = () => {};
 
 function consoleMethod(name) {
   let consoleObj;
@@ -56,7 +56,7 @@ export default {
    @param {*} arguments
    @public
   */
-  log: consoleMethod('log') || K,
+  log: consoleMethod('log') || noop,
 
   /**
    Prints the arguments to the console with a warning icon.
@@ -72,7 +72,7 @@ export default {
    @param {*} arguments
    @public
   */
-  warn: consoleMethod('warn') || K,
+  warn: consoleMethod('warn') || noop,
 
   /**
    Prints the arguments to the console with an error icon, red text and a stack trace.
@@ -88,7 +88,7 @@ export default {
    @param {*} arguments
    @public
   */
-  error: consoleMethod('error') || K,
+  error: consoleMethod('error') || noop,
 
   /**
    Logs the arguments to the console.
@@ -105,7 +105,7 @@ export default {
    @param {*} arguments
    @public
   */
-  info: consoleMethod('info') || K,
+  info: consoleMethod('info') || noop,
 
   /**
    Logs the arguments to the console in blue text.
@@ -122,7 +122,7 @@ export default {
    @param {*} arguments
    @public
   */
-  debug: consoleMethod('debug') || consoleMethod('info') || K,
+  debug: consoleMethod('debug') || consoleMethod('info') || noop,
 
   /**
    If the value passed into `Ember.Logger.assert` is not truthy it will throw an error with a stack trace.
