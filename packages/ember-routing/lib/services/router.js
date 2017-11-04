@@ -6,7 +6,11 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
-import { shallowEqual, resemblesURL } from '../utils';
+import {
+  shallowEqual,
+  resemblesURL,
+  extractRouteArgs
+} from '../utils';
 
 /**
    The Router service is the public API that provides component/view layer
@@ -138,14 +142,14 @@ const RouterService = Service.extend({
        attempted transition
      @public
    */
-  transitionTo(routeNameOrUrl, ...args) {
-    if (resemblesURL(routeNameOrUrl)) {
-      return this._router._doURLTransition('transitionTo', routeNameOrUrl);
+  transitionTo(...args) {
+    if (resemblesURL(args[0])) {
+      return this._router._doURLTransition('transitionTo', args[0]);
     }
 
-    let { models, queryParams } = this._extractQueryParamsArgument(args);
+    let { routeName, models, queryParams } = extractRouteArgs(args);
 
-    let transition = this._router._doTransition(routeNameOrUrl, models, queryParams, true);
+    let transition = this._router._doTransition(routeName, models, queryParams, true);
     transition._keepDefaultQueryParamValues = true;
 
     return transition;
@@ -202,8 +206,8 @@ const RouterService = Service.extend({
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
-  isActive(routeName, ...args) {
-    let { models, queryParams } = this._extractQueryParamsArgument(args);
+  isActive(...args) {
+    let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
     if (!routerMicrolib.isActiveIntent(routeName, models, null)) { return false; }
@@ -215,20 +219,8 @@ const RouterService = Service.extend({
     }
 
     return true;
-  },
-
-  _extractQueryParamsArgument(models) {
-    let possibleQueryParams = models[models.length - 1];
-
-    let queryParams;
-    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
-      queryParams = models.pop().queryParams;
-    } else {
-      queryParams = {};
-    }
-
-    return { models, queryParams };
   }
+
 });
 
 export default RouterService;

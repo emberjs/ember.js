@@ -33,9 +33,10 @@ import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';
 import {
   routeArgs,
-  getActiveTargetName,
   resemblesURL,
-  calculateCacheKey
+  getActiveTargetName,
+  calculateCacheKey,
+  extractRouteArgs
 } from '../utils';
 import RouterState from './router_state';
 import { DEBUG } from 'ember-env-flags';
@@ -371,21 +372,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     @public
   */
   transitionTo(...args) {
-    let queryParams;
-    let arg = args[0];
-    if (resemblesURL(arg)) {
-      return this._doURLTransition('transitionTo', arg);
+    if (resemblesURL(args[0])) {
+      return this._doURLTransition('transitionTo', args[0]);
     }
-
-    let possibleQueryParams = args[args.length - 1];
-    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
-      queryParams = args.pop().queryParams;
-    } else {
-      queryParams = {};
-    }
-
-    let targetRouteName = args.shift();
-    return this._doTransition(targetRouteName, args, queryParams);
+    let { routeName, models, queryParams } = extractRouteArgs(args);
+    return this._doTransition(routeName, models, queryParams);
   },
 
   intermediateTransitionTo() {

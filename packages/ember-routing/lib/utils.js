@@ -4,6 +4,22 @@ import { Error as EmberError } from 'ember-debug';
 
 const ALL_PERIODS_REGEX = /\./g;
 
+export function extractRouteArgs(args) {
+  args = args.slice()
+  let possibleQueryParams = args[args.length - 1];
+
+  let queryParams;
+  if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+    queryParams = args.pop().queryParams;
+  } else {
+    queryParams = {};
+  }
+
+  let routeName = args.shift();
+
+  return { routeName, models: args, queryParams };
+}
+
 export function routeArgs(targetRouteName, models, queryParams) {
   let args = [];
   if (typeof targetRouteName === 'string') {
