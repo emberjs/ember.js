@@ -28,6 +28,8 @@ export default function installProtocolForURL(environment: Environment) {
     // Otherwise, we need to fall back to our own URL parsing.
     // Global `require` is shadowed by Ember's loader so we have to use the fully
     // qualified `module.require`.
+
+    // tslint:disable-next-line:no-require-imports
     nodeURL = require('url');
     environment.protocolForURL = nodeProtocolForURL;
   } else {

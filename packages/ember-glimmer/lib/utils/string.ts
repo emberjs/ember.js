@@ -58,7 +58,7 @@ export function escapeExpression(string: string | SafeString) {
     // don't escape SafeStrings, since they're already safe
     if (string && string.toHTML) {
       return string.toHTML();
-    } else if (string == null) {
+    } else if (string === null || string === undefined) {
       return '';
     } else if (!string) {
       return string + '';

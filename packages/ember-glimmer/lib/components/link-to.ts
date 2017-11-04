@@ -763,7 +763,7 @@ const LinkComponent = EmberComponent.extend({
     let qualifiedRouteName = get(this, 'qualifiedRouteName');
     let modelsAreLoaded = get(this, '_modelsAreLoaded');
 
-    if (!modelsAreLoaded || qualifiedRouteName == null) {
+    if (!modelsAreLoaded || qualifiedRouteName === null || qualifiedRouteName === undefined) {
       return get(this, 'loadingClass');
     }
   }),
@@ -771,7 +771,8 @@ const LinkComponent = EmberComponent.extend({
   _modelsAreLoaded: computed('models', function computeLinkToComponentModelsAreLoaded(this: any) {
     let models = get(this, 'models');
     for (let i = 0; i < models.length; i++) {
-      if (models[i] == null) { return false; }
+      let model = models[i];
+      if (model === null || model === undefined) { return false; }
     }
 
     return true;
