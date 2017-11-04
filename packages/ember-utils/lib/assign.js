@@ -22,7 +22,7 @@
 export function assign(original) {
   for (let i = 1; i < arguments.length; i++) {
     let arg = arguments[i];
-    if (!arg) { continue; }
+    if (arg === undefined || arg === null) { continue; }
 
     let updates = Object.keys(arg);
 
