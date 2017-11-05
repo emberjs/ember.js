@@ -22,12 +22,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
@@ -39,12 +34,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
@@ -58,35 +48,11 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('addon/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
-      }));
-  });
-
-  it('dummy helper foo-bar', function() {
-    var args = ['helper', 'foo-bar', '--dummy'];
-
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('tests/dummy/app/helpers/foo-bar.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBar(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBar);");
-
-        expect(_file('app/helpers/foo-bar.js'))
-          .to.not.exist;
-        expect(_file('tests/integration/helpers/foo-bar-test.js'))
-          .to.not.exist;
       }));
   });
 
@@ -96,12 +62,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/dummy/app/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.not.exist;
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
@@ -115,12 +76,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
@@ -134,12 +90,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
           .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
@@ -153,12 +104,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
@@ -171,12 +117,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
       .then(() => setupPodConfig({ podModulePrefix: true }))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
@@ -188,12 +129,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
@@ -206,12 +142,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
       .then(() => setupPodConfig({ podModulePrefix: true }))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
