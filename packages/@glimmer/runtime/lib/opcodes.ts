@@ -5,7 +5,7 @@ import { Tag } from '@glimmer/reference';
 import { debug, logOpcode } from "@glimmer/opcode-compiler";
 import { METADATA } from "@glimmer/vm";
 import { Opcode, Opaque } from "@glimmer/interfaces";
-import { VM, UpdatingVM } from './vm';
+import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 
 export interface OpcodeJSON {
@@ -21,17 +21,22 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type EvaluateOpcode = (vm: VM<Opaque>, opcode: Opcode) => void;
+export type Syscall = (vm: VM<Opaque>, opcode: Opcode) => void;
+export type MachineOpcode = (vm: LowLevelVM, opcode: Opcode) => void;
+
+export type Evaluate = { syscall: true, evaluate: Syscall } | { syscall: false, evaluate: MachineOpcode };
 
 export class AppendOpcodes {
-  private evaluateOpcode: EvaluateOpcode[] = fillNulls<EvaluateOpcode>(Op.Size).slice();
+  private evaluateOpcode: Evaluate[] = fillNulls<Evaluate>(Op.Size).slice();
 
-  add<Name extends Op>(name: Name, evaluate: EvaluateOpcode): void {
-    this.evaluateOpcode[name as number] = evaluate;
+  add<Name extends Op>(name: Name, evaluate: Syscall): void;
+  add<Name extends Op>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
+  add<Name extends Op>(name: Name, evaluate: Syscall | MachineOpcode, kind = 'syscall'): void {
+    this.evaluateOpcode[name as number] = { syscall: kind === 'syscall', evaluate } as Evaluate;
   }
 
   evaluate(vm: VM<Opaque>, opcode: Opcode, type: number) {
-    let func = this.evaluateOpcode[type];
+    let operation = this.evaluateOpcode[type];
     if (DEBUG) {
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
@@ -64,7 +69,12 @@ export class AppendOpcodes {
     }
 
     recordStackSize(vm.stack);
-    func(vm, opcode);
+
+    if (operation.syscall) {
+      operation.evaluate(vm, opcode);
+    } else {
+      operation.evaluate(vm.inner, opcode);
+    }
 
     if (DEVMODE) {
       let metadata = METADATA[type];
