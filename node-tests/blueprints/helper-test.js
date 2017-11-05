@@ -33,6 +33,23 @@ describe('Acceptance: ember generate and destroy helper', function() {
       }));
   });
 
+  it('helper foo/bar-baz unit', function() {
+    var args = ['helper', '--test-type=unit', 'foo/bar-baz'];
+
+    return emberNew()
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
+                      "export function fooBarBaz(params/*, hash*/) {\n" +
+                      "  return params;\n" +
+                      "}\n\n" +
+                      "export default helper(fooBarBaz);");
+
+        expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+          .to.equal(file('helper-test/unit.js'));
+      }));
+  });
+
   it('in-addon helper foo/bar-baz', function() {
     var args = ['helper', 'foo/bar-baz'];
 
