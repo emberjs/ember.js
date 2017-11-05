@@ -53,7 +53,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
         expect(_file('addon/helpers/foo/bar-baz.js'))
           .to.equal(file('helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+          .to.equal(file('helper-addon.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
@@ -67,7 +67,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
         expect(_file('addon/helpers/foo/bar-baz.js'))
           .to.equal(file('helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+          .to.equal(file('helper-addon.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
@@ -95,7 +95,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
         expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js'))
           .to.equal(file('helper.js'));
         expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
-          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+          .to.equal(file('helper-addon.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
@@ -109,7 +109,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
         expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js'))
           .to.equal(file('helper.js'));
         expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js'))
-          .to.contain("export { default, fooBarBaz } from 'my-addon/helpers/foo/bar-baz';");
+          .to.equal(file('helper-addon.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/integration.js'));
       }));
