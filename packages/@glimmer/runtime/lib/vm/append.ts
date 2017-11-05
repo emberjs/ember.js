@@ -19,7 +19,7 @@ import {
   UNDEFINED_REFERENCE
 } from '../references';
 
-import { Opcode, VMHandle } from "@glimmer/interfaces";
+import { VMHandle } from "@glimmer/interfaces";
 import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram } from "@glimmer/program";
 
 export interface PublicVM {
@@ -40,7 +40,7 @@ export type IteratorResult<T> = {
 export default class VM<TemplateMeta> implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
-  private inner: LowLevelVM;
+  public inner: LowLevelVM;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
@@ -217,7 +217,7 @@ export default class VM<TemplateMeta> implements PublicVM {
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
-    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap);
+    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap, program);
   }
 
   capture(args: number): VMState {
@@ -410,7 +410,7 @@ export default class VM<TemplateMeta> implements PublicVM {
 
   next(): IteratorResult<RenderResult> {
     let { env, program, updatingOpcodeStack, elementStack } = this;
-    let opcode = this.nextStatement();
+    let opcode = this.inner.nextStatement();
     let result: IteratorResult<RenderResult>;
     if (opcode !== null) {
       APPEND_OPCODES.evaluate(this, opcode, opcode.type);
@@ -430,24 +430,6 @@ export default class VM<TemplateMeta> implements PublicVM {
       };
     }
     return result;
-  }
-
-  private nextStatement(): Option<Opcode> {
-    let { pc, program } = this;
-
-    if (pc === -1) {
-      return null;
-    }
-    // We have to save off the current operations size so that
-    // when we do a jump we can calculate the correct offset
-    // to where we are going. We can't simply ask for the size
-    // in a jump because we have have already incremented the
-    // program counter to the next instruction prior to executing.
-    let { size } = this.program.opcode(pc);
-    let operationSize = this.currentOpSize = size;
-    this.pc += operationSize;
-
-    return program.opcode(pc);
   }
 
   bindDynamicScope(names: number[]) {

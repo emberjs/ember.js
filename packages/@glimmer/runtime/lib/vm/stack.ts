@@ -135,6 +135,10 @@ export default class EvaluationStack {
     return this.stack.get<T>(this.sp - offset);
   }
 
+  peekSmi(offset = 0): number {
+    return this.stack.getSmi(this.sp - offset);
+  }
+
   get<T>(offset: number, base = this.fp): T {
     return this.stack.get<T>(base + offset);
   }

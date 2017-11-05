@@ -1,5 +1,5 @@
-import { Heap } from "@glimmer/program";
-import { VMHandle } from "@glimmer/interfaces";
+import { Heap, Opcode } from "@glimmer/program";
+import { VMHandle, Option } from "@glimmer/interfaces";
 
 export interface Stack {
   sp: number;
@@ -9,6 +9,12 @@ export interface Stack {
   pushEncodedImmediate(value: number): void;
 
   getSmi(position: number): number;
+  peekSmi(offset?: number): number;
+  popSmi(): number;
+}
+
+export interface Program {
+  opcode(offset: number): Opcode;
 }
 
 export default class LowLevelVM {
@@ -17,6 +23,7 @@ export default class LowLevelVM {
   constructor(
     public stack: Stack,
     public heap: Heap,
+    public program: Program,
     public pc = -1,
     public ra = -1
   ) {}
@@ -56,5 +63,24 @@ export default class LowLevelVM {
   // Return to the `program` address stored in $ra
   return() {
     this.pc = this.ra;
+  }
+
+  nextStatement(): Option<Opcode> {
+    let { pc, program } = this;
+
+    if (pc === -1) {
+      return null;
+    }
+
+    // We have to save off the current operations size so that
+    // when we do a jump we can calculate the correct offset
+    // to where we are going. We can't simply ask for the size
+    // in a jump because we have have already incremented the
+    // program counter to the next instruction prior to executing.
+    let { size } = this.program.opcode(pc);
+    let operationSize = this.currentOpSize = size;
+    this.pc += operationSize;
+
+    return program.opcode(pc);
   }
 }
