@@ -1,5 +1,5 @@
 import { assign } from 'ember-utils';
-import { set } from 'ember-metal';
+import { set, isPresent } from 'ember-metal';
 import { TextField, Checkbox, Component } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
@@ -313,14 +313,17 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
   }
 
   ['@test sends an action with `{{input key-press="foo"}}` is pressed'](assert) {
-    assert.expect(1);
+    assert.expect(4);
 
     this.render(`{{input value=value key-press='foo'}}`, {
       value: 'initial',
 
       actions: {
-        foo() {
+        foo(value, event) {
           assert.ok(true, 'action was triggered');
+          assert.ok(arguments.length === 2, 'action has two arguments; value and event');
+          assert.ok(value === 'initial', 'value was passesd in the first argument');
+          assert.ok(isPresent(event), 'event trace was passed in the second argument');
         }
       }
     });
