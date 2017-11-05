@@ -306,25 +306,16 @@ function instantiateFactory(container, fullName, options) {
   throw new Error('Could not create factory');
 }
 
-function buildInjections() /* container, ...injections */{
+function buildInjections(container, injections) {
   let hash = {};
   let isDynamic = false;
 
-  if (arguments.length > 1) {
-    let container = arguments[0];
-    let injections = [];
-    let injection;
-
-    for (let i = 1; i < arguments.length; i++) {
-      if (arguments[i]) {
-        injections = injections.concat(arguments[i]);
-      }
-    }
-
+  if (injections.length > 0) {
     if (DEBUG) {
       container.registry.validateInjections(injections);
     }
 
+    let injection;
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
@@ -339,14 +330,10 @@ function buildInjections() /* container, ...injections */{
 
 function injectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let [type] = fullName.split(':');
 
-  return buildInjections(
-    container,
-    registry.getTypeInjections(type),
-    registry.getInjections(fullName)
-  );
+  let injections = registry.getTypeInjections(type).concat(registry.getInjections(fullName));
+  return buildInjections(container, injections);
 }
 
 function destroyDestroyables(container) {
