@@ -349,6 +349,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   }
 
   let ret = this._getter.call(obj, keyName);
+
   cache[keyName] = ret === undefined ? UNDEFINED : ret;
 
   let chainWatchers = meta.readableChainWatchers();
@@ -404,14 +405,13 @@ ComputedPropertyPrototype.setWithSuspend = function computedPropertySetWithSuspe
 ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, value) {
   let meta = metaFor(obj);
   let cache = meta.writableCache();
-  let hadCachedValue = false;
-  let cachedValue;
+
   let val = cache[keyName];
-  if (val !== undefined) {
-    if (val !== UNDEFINED) {
-      cachedValue = val;
-    }
-    hadCachedValue = true;
+  let hadCachedValue = val !== undefined;
+
+  let cachedValue;
+  if (hadCachedValue && val !== UNDEFINED) {
+    cachedValue = val;
   }
 
   let ret = this._setter.call(obj, keyName, value, cachedValue);
@@ -423,17 +423,11 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 
   propertyWillChange(obj, keyName, meta);
 
-  if (hadCachedValue) {
-    cache[keyName] = undefined;
-  } else {
+  if (!hadCachedValue) {
     addDependentKeys(this, obj, keyName, meta);
   }
 
-  if (ret === undefined) {
-    cache[keyName] = UNDEFINED;
-  } else {
-    cache[keyName] = ret;
-  }
+  cache[keyName] = ret === undefined ? UNDEFINED : ret;
 
   propertyDidChange(obj, keyName, meta);
 
