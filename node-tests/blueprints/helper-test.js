@@ -34,12 +34,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
-          .to.contain("import { helper } from '@ember/component/helper';\n\n" +
-                      "export function fooBarBaz(params/*, hash*/) {\n" +
-                      "  return params;\n" +
-                      "}\n\n" +
-                      "export default helper(fooBarBaz);");
-
+          .to.equal(file('helper.js'));
         expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
           .to.equal(file('helper-test/unit.js'));
       }));
