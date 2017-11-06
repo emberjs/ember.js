@@ -1,4 +1,4 @@
-import { DEBUG } from 'ember-env-flags'
+import { DEBUG } from 'ember-env-flags';
 import { ENV, environment } from 'ember-environment';
 import Logger from 'ember-console';
 import { isTesting } from './testing';
@@ -297,4 +297,4 @@ export {
   setDebugFunction,
   getDebugFunction,
   _warnIfUsingStrippedFeatureFlags
-}
+};

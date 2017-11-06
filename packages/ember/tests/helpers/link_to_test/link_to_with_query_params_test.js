@@ -8,7 +8,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
     let indexProperties = {
       foo: '123',
       bar: 'abc'
-    }
+    };
     this.add('controller:index', Controller.extend({
       queryParams: ['foo', 'bar', 'abool'],
       foo: indexProperties.foo,
@@ -158,7 +158,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
 
     return this.visit('/').then(() => {
       let indexController = this.getController('index');
-      let theLink = this.$('#the-link')
+      let theLink = this.$('#the-link');
 
       assert.equal(theLink.attr('href'), '/?foo=OMG');
 
@@ -228,7 +228,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
     this.router.map(function() {
       this.route('cars', function() {
         this.route('create');
-      })
+      });
     });
 
     this.add('controller:cars', Controller.extend({
@@ -285,7 +285,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
     this.router.map(function() {
       this.route('search', function() {
         this.route('results');
-      })
+      });
     });
 
     this.add('controller:search', Controller.extend({
@@ -323,7 +323,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
       this.shouldNotBeActive(assert, '#only-add-archive');
       this.shouldNotBeActive(assert, '#remove-one');
 
-      return this.visit('/search?search=same&archive=true')
+      return this.visit('/search?search=same&archive=true');
     }).then(() => {
       this.shouldBeActive(assert, '#both-same');
       this.shouldNotBeActive(assert, '#change-one');
@@ -383,7 +383,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
       this.shouldNotBeActive(assert, '#bigger-link');
       this.shouldNotBeActive(assert, '#empty-link');
 
-      return this.visit('/?pages=%5B2%2C1%5D')
+      return this.visit('/?pages=%5B2%2C1%5D');
     }).then(() => {
       this.shouldNotBeActive(assert, '#array-link');
       this.shouldNotBeActive(assert, '#bigger-link');

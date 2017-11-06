@@ -92,7 +92,7 @@ QUnit.module('TestPromise');
 QUnit.test('does not throw error when falsy value passed to then', function() {
   expect(1);
   return new TestPromise(function(resolve) {
-    resolve()
+    resolve();
   })
   .then(null)
   .then(function() {
@@ -104,14 +104,14 @@ QUnit.test('able to get last Promise', function() {
   expect(2);
 
   var p1 = new TestPromise(function(resolve) {
-    resolve()
+    resolve();
   })
   .then(function() {
     ok(true);
   });
 
   var p2 = new TestPromise(function(resolve) {
-    resolve()
+    resolve();
   });
 
   deepEqual(getLastPromise(), p2);

@@ -219,7 +219,7 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
 
     assert.equal(this.$('#about-link.foo-is-true').length, 1, 'The about-link was rendered with the truthy class after toggling the property');
   }
-})
+});
 
 moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTestCase {
 
@@ -936,7 +936,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let assertEquality = href => {
       assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
       assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
-    }
+    };
 
     this.visit('/');
 
@@ -1039,7 +1039,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
         // Old IE includes the whole hostname as well
         assert.equal(href.slice(-expected[idx].length), expected[idx], `Expected link to be '${expected[idx]}', but was '${href}'`);
       }
-    }
+    };
 
     linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
@@ -1192,7 +1192,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let assertEquality = href => {
       assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
       assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
-    }
+    };
 
     assertEquality('/');
 

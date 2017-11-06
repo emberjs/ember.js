@@ -128,7 +128,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
        * Destroy the instance.
        */
       return this.runTask(() => {
-        this.applicationInstance.destroy()
+        this.applicationInstance.destroy();
         this.applicationInstance = null;
       });
     }).then(() => {

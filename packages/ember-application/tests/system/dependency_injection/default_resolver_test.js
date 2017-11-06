@@ -183,7 +183,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     this.application.FooRoute = Component.extend();
 
     expectAssertion(() => {
-      this.privateRegistry.resolve(`route:foo`)
+      this.privateRegistry.resolve(`route:foo`);
     }, /to resolve to an Ember.Route/, 'Should assert');
   }
 

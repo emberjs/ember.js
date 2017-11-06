@@ -53,7 +53,7 @@ let missingOptionsDeprecation, missingOptionsIdDeprecation, missingOptionsUntilD
 if (DEBUG) {
   registerHandler = function registerHandler(handler) {
     genericRegisterHandler('deprecate', handler);
-  }
+  };
 
   let formatMessage = function formatMessage(_message, options) {
     let message = _message;
@@ -67,7 +67,7 @@ if (DEBUG) {
     }
 
     return message;
-  }
+  };
 
   registerHandler(function logDeprecationToConsole(message, options) {
     let updatedMessage = formatMessage(message, options);
@@ -196,7 +196,7 @@ if (DEBUG) {
     }
 
     invoke('deprecate', ...arguments);
-  }
+  };
 }
 
 export default deprecate;
@@ -206,4 +206,4 @@ export {
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
   missingOptionsUntilDeprecation
-}
+};

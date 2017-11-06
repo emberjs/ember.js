@@ -3,7 +3,7 @@ import {
   run,
   get,
   Mixin
-} from '../..'
+} from '../..';
 
 QUnit.module('Ember.Mixin#reopen');
 

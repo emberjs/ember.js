@@ -104,7 +104,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
 
     this.router.map(function() {
       this.route('dummy');
-    })
+    });
     this.add('route:dummy', Route.extend({
       model() {
         return deferred.promise;
@@ -204,7 +204,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
 
     let promise = this.visit('/').then(() => {
       let length = this.$('#toplevel-loading').length;
-      text = this.$('#app').text()
+      text = this.$('#app').text();
 
       assert.equal(
         length,
@@ -307,7 +307,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     this.router.map(function() {
       this.route('foo', function() {
         this.route('bar');
-      })
+      });
     });
 
     this.add('route:foo.bar', Route.extend({
@@ -407,7 +407,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     this.router.map(function() {
       this.route('foo', function() {
         this.route('bar');
-      })
+      });
     });
 
     this.add('route:foo.index', Route.extend({
@@ -489,7 +489,7 @@ moduleFor('Loading/Error Substates - globals mode app', class extends AutobootAp
       'toplevel error rendered'
     );
 
-    reject = false
+    reject = false;
 
     return this.visit('/').then(() => {
       let text = this.$('#app').text();
@@ -633,7 +633,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
         step(1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
-        })
+        });
       },
       actions: {
         error() {
@@ -682,7 +682,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
         step(1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
-        })
+        });
       },
       actions: {
         error(err) {
@@ -894,7 +894,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
         'grandma.loading',
         `in pivot route's child loading state`
       );
-      deferred.resolve()
+      deferred.resolve();
 
       return promise;
     });

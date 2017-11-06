@@ -218,7 +218,7 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Def
   [`@test can specify custom router`](assert) {
     let MyRouter = Router.extend();
     this.runTask(() => {
-      this.createApplication()
+      this.createApplication();
       this.application.Router = MyRouter;
     });
 

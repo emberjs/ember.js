@@ -23,7 +23,7 @@ export default function deprecateRenderModel(env) {
         }
       }
     }
-  }
+  };
 }
 
 function deprecationMessage(moduleName, node, param) {

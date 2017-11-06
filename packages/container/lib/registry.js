@@ -627,7 +627,7 @@ if (DEBUG) {
     }
 
     return injections;
-  }
+  };
 
   Registry.prototype.validateInjections = function(injections) {
     if (!injections) { return; }
@@ -639,7 +639,7 @@ if (DEBUG) {
 
       assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
     }
-  }
+  };
 }
 
 function expandLocalLookup(registry, normalizedName, normalizedSource) {

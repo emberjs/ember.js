@@ -4,6 +4,5 @@ module.exports = {
     node: true,
   },
   rules: {
-    'semi': 'error',
   },
 };

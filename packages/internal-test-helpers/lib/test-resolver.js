@@ -40,4 +40,4 @@ class ModuleBasedResolver extends Resolver {
   }
 }
 
-export { ModuleBasedResolver }
+export { ModuleBasedResolver };

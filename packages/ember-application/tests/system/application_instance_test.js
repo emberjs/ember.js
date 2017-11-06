@@ -126,7 +126,7 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
   let postController1 = appInstance.lookup('controller:post');
   let postController1Factory = appInstance.factoryFor('controller:post');
   assert.ok(postController1 instanceof PostController1, 'precond - lookup creates instance');
-  assert.equal(PostController1, postController1Factory.class, 'precond - factoryFor().class matches')
+  assert.equal(PostController1, postController1Factory.class, 'precond - factoryFor().class matches');
 
   appInstance.unregister('controller:post');
   appInstance.register('controller:post', PostController2);
@@ -134,7 +134,7 @@ QUnit.test('unregistering a factory clears all cached instances of that factory'
   let postController2 = appInstance.lookup('controller:post');
   let postController2Factory = appInstance.factoryFor('controller:post');
   assert.ok(postController2 instanceof PostController2, 'lookup creates instance');
-  assert.equal(PostController2, postController2Factory.class, 'factoryFor().class matches')
+  assert.equal(PostController2, postController2Factory.class, 'factoryFor().class matches');
 
   assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because the previous one was reset');
 });
