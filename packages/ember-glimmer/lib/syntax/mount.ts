@@ -113,6 +113,7 @@ class DynamicEngineReference {
       }
 
       this._lastName = nameOrDef;
+      // TODO: maybe I've got the MountDefinition constructor wrong...
       this._lastDef = new MountDefinition(nameOrDef);
 
       return this._lastDef;

@@ -65,8 +65,11 @@ module.exports = function(options) {
     glimmerPkgES('@glimmer/compiler', ['@glimmer/util', '@glimmer/wire-format', '@glimmer/syntax']),
     { annotation: '@glimmer/compiler' }
   );
+  let glimmerEncoder = toES5(glimmerPkgES('@glimmer/encoder'));
+  let glimmerOpcodeComiler = toES5(glimmerPkgES('@glimmer/opcode-compiler', ['@glimmer/encoder']));
   let glimmerReference = toES5(glimmerPkgES('@glimmer/reference', ['@glimmer/util']));
   let glimmerUtil = toES5(glimmerPkgES('@glimmer/util'));
+  let glimmerVM = toES5(glimmerPkgES('@glimmer/vm'));
   let glimmerWireFormat = toES5(glimmerPkgES('@glimmer/wire-format', ['@glimmer/util']));
   let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
@@ -136,8 +139,11 @@ module.exports = function(options) {
     emberMetalES5,
     emberConsoleES5,
     emberDebugES5,
+    glimmerEncoder,
+    glimmerOpcodeComiler,
     glimmerReference,
     glimmerUtil,
+    glimmerVM,
     glimmerWireFormat,
     backburner,
     version,
@@ -197,8 +203,11 @@ module.exports = function(options) {
       emberDebugES5,
       glimmerSyntax,
       glimmerCompiler,
+      glimmerEncoder,
+      glimmerOpcodeComiler,
       glimmerReference,
       glimmerUtil,
+      glimmerVM,
       glimmerWireFormat,
       backburner,
       debugFeatures,
@@ -229,8 +238,11 @@ module.exports = function(options) {
     });
 
     let depsProd = [
+      glimmerEncoder,
+      glimmerOpcodeComiler,
       glimmerReference,
       glimmerUtil,
+      glimmerVM,
       glimmerWireFormat,
       backburner,
       rsvp
@@ -344,9 +356,11 @@ function dependenciesES6() {
     routeRecognizerES(),
     glimmerPkgES('@glimmer/node', ['@glimmer/runtime']),
     glimmerPkgES('@glimmer/runtime', [
-      '@glimmer/util',
+      '@glimmer/opcode-compiler',
       '@glimmer/reference',
-      '@glimmer/wire-format'
+      '@glimmer/wire-format',
+      '@glimmer/util',
+      '@glimmer/vm'
     ])
   ];
 }

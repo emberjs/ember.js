@@ -1,11 +1,19 @@
 import {
+  Simple
+} from '@glimmer/interfaces';
+import {
+  TagWrapper
+} from '@glimmer/reference';
+import {
   Arguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
   DynamicScope,
-  Simple
+  ModifierManager,
 } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+import { 
+  Destroyable
+} from '@glimmer/util';
 import { assert } from 'ember-debug';
 import { flaggedInstrument, run } from 'ember-metal';
 import { uuid } from 'ember-utils';
@@ -172,7 +180,7 @@ export class ActionState {
 }
 
 // implements ModifierManager<Action>
-export default class ActionModifierManager {
+export default class ActionModifierManager implements ModifierManager<ActionState> {
   create(element: Simple.Element, args: Arguments, _dynamicScope: DynamicScope, dom: any) {
     let { named, positional } = args.capture();
     let implicitTarget;
@@ -236,6 +244,11 @@ export default class ActionModifierManager {
     }
 
     actionState.eventName = actionState.getEventName();
+  }
+
+  getTag() {
+    // TODO: ModifierManager needs a getTag method. Where does this tag come from?
+    return new TagWrapper();
   }
 
   getDestructor(modifier: Destroyable) {

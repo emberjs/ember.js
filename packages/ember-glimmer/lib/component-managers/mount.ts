@@ -3,20 +3,28 @@ import {
   ComponentDefinition,
 } from '@glimmer/runtime';
 import {
+  ComponentCapabilities,
+  VMHandle
+} from '@glimmer/interfaces';
+import {
   Destroyable,
   Opaque,
   Option
 } from '@glimmer/util';
 import {
+  Tag,
   VersionedPathReference
 } from '@glimmer/reference';
 import { DEBUG } from 'ember-env-flags';
 
 import { generateControllerFactory } from 'ember-routing';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
+import { Component } from '../utils/curly-component-state-bucket';
+import { DIRTY_TAG } from '../component';
 import { RootReference } from '../utils/references';
 import Environment from '../environment';
 import AbstractManager from './abstract';
+import DefinitionState, { CAPABILITIES } from './definition-state';
 import { OutletLayoutCompiler } from './outlet';
 
 // TODO: remove these stubbed interfaces when better typing is in place
@@ -29,13 +37,18 @@ interface EngineType {
 
 interface EngineBucket {
   engine: EngineType;
+  component?: Component;
   controller?: any;
   modelReference?: any;
   modelRevision?: any;
 }
 
-class MountManager extends AbstractManager<EngineBucket> {
-  create(environment: Environment, { name }: ComponentDefinition<EngineBucket>, args: Arguments) {
+class MountManager extends AbstractManager<EngineBucket, DefinitionState> {
+  getCapabilities(state: DefinitionState): ComponentCapabilities {
+    return state.capabilities;
+  }
+
+  create(environment: Environment, { name }: DefinitionState, args: Arguments) {
     if (DEBUG) {
       this._pushEngineToDebugStack(`engine:${name}`, environment);
     }
@@ -74,6 +87,11 @@ class MountManager extends AbstractManager<EngineBucket> {
     return new RootReference(controller);
   }
 
+  getTag({ component }: EngineBucket): Tag {
+    // TODO: is this the right tag?
+    return component[DIRTY_TAG];
+  }
+
   getDestructor({ engine }: EngineBucket): Option<Destroyable> {
     return engine;
   }
@@ -97,10 +115,15 @@ class MountManager extends AbstractManager<EngineBucket> {
   }
 }
 
-const MOUNT_MANAGER = new MountManager();
+export class MountDefinition implements ComponentDefinition {
+  public state: DefinitionState;
 
-export class MountDefinition extends ComponentDefinition<Opaque> {
-  constructor(name: string) {
-    super(name, MOUNT_MANAGER, null);
+  constructor(public name: string, public manager: MountManager, public ComponentClass: any, public handle: Option<VMHandle>) {
+    this.state = {
+      name,
+      ComponentClass,
+      handle,
+      capabilities: CAPABILITIES
+    };
   }
 }

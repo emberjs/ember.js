@@ -25,8 +25,6 @@ export class WrappedTemplateFactory {
 
   constructor(public factory: TemplateFactory<{
     moduleName: string;
-  }, {
-    owner: Container;
   }>) {
     this.id = factory.id;
     this.meta = factory.meta;

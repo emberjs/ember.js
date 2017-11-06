@@ -4,7 +4,6 @@
 import {
   Arguments,
   Environment,
-  isComponentDefinition,
   VM
 } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
@@ -217,7 +216,9 @@ function createCurriedDefinition(definition: CurlyComponentDefinition, args: Arg
 
   return new CurlyComponentDefinition(
     definition.name,
+    definition.manager,
     definition.ComponentClass,
+    definition.state.handle,
     definition.template,
     curriedArgs,
   );

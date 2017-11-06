@@ -1,15 +1,17 @@
-import { Opaque, Option } from '@glimmer/interfaces';
+import {
+  Opaque,
+  Option,
+  Simple
+} from '@glimmer/interfaces';
 import {
   CachedReference,
   combine,
   map,
   Reference,
-  referenceFromParts,
   Tag,
 } from '@glimmer/reference';
 import {
-  ElementOperations,
-  Simple
+  ElementOperations
 } from '@glimmer/runtime';
 import {
   Ops,
@@ -80,7 +82,7 @@ export const AttributeBinding = {
     }
   },
 
-  install(element: Simple.Element, component: Component, parsed: [string, string, boolean], operations: ElementOperations) {
+  install(_element: Simple.Element, component: Component, parsed: [string, string, boolean], operations: ElementOperations) {
     let [prop, attribute, isSimple] = parsed;
 
     if (attribute === 'id') {
@@ -88,7 +90,8 @@ export const AttributeBinding = {
       if (elementId === undefined || elementId === null) {
         elementId = component.elementId;
       }
-      operations.addStaticAttribute(element, 'id', elementId);
+      operations.setAttribute('id', elementId, true, null);
+      // operations.addStaticAttribute(element, 'id', elementId);
       return;
     }
 
@@ -101,7 +104,8 @@ export const AttributeBinding = {
       reference = new StyleBindingReference(reference, referenceForKey(component, 'isVisible'));
     }
 
-    operations.addDynamicAttribute(element, attribute, reference, false);
+    operations.setAttribute(attribute, reference, false, null);
+    // operations.addDynamicAttribute(element, attribute, reference, false);
   },
 };
 
@@ -132,8 +136,14 @@ class StyleBindingReference extends CachedReference<string | SafeString> {
 }
 
 export const IsVisibleBinding = {
-  install(element: Simple.Element, component: Component, operations: ElementOperations) {
-    operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue), false);
+  install(_element: Simple.Element, component: Component, operations: ElementOperations) {
+    operations.setAttribute(
+      'style',
+      map(referenceForKey(component, 'isVisible'), this.mapStyleValue),
+      false,
+      null
+    );
+    // operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue), false);
   },
 
   mapStyleValue(isVisible: boolean) {
@@ -142,12 +152,13 @@ export const IsVisibleBinding = {
 };
 
 export const ClassNameBinding = {
-  install(element: Simple.Element, component: Component, microsyntax: string, operations: ElementOperations) {
+  install(_element: Simple.Element, component: Component, microsyntax: string, operations: ElementOperations) {
     let [ prop, truthy, falsy ] = microsyntax.split(':');
     let isStatic = prop === '';
 
     if (isStatic) {
-      operations.addStaticAttribute(element, 'class', truthy);
+      operations.setAttribute('class', truthy, true, null);
+      // operations.addStaticAttribute(element, 'class', truthy);
     } else {
       let isPath = prop.indexOf('.') > -1;
       let parts = isPath ? prop.split('.') : [];
@@ -160,7 +171,8 @@ export const ClassNameBinding = {
         ref = new ColonClassNameBindingReference(value, truthy, falsy);
       }
 
-      operations.addDynamicAttribute(element, 'class', ref, false);
+      operations.setAttribute('class', ref, false, null);
+      // operations.addDynamicAttribute(element, 'class', ref, false);
     }
   },
 };

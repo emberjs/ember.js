@@ -1,20 +1,22 @@
 import {
+  Simple,
+  VMHandle
+} from '@glimmer/interfaces';
+import {
+  WrappedBuilder
+} from '@glimmer/opcode-compiler';
+import {
   Reference,
 } from '@glimmer/reference';
 import {
-  AttributeManager,
-  CompilableLayout,
-  CompiledDynamicProgram,
-  compileLayout,
   ComponentDefinition,
+  DynamicAttributeFactory,
   Environment as GlimmerEnvironment,
   getDynamicVar,
   Helper,
-  isSafeString,
   ModifierManager,
   PrimitiveReference,
   PartialDefinition,
-  Simple,
 } from '@glimmer/runtime';
 import {
   Destroyable, Opaque,
@@ -33,8 +35,8 @@ import {
   CurlyComponentDefinition,
 } from './component-managers/curly';
 import {
-  populateMacros,
-} from './syntax';
+  CAPABILITIES
+} from './component-managers/definition-state';
 import DebugStack from './utils/debug-stack';
 import createIterable from './utils/iterable';
 import {
@@ -85,7 +87,7 @@ function isTemplateFactory(template: OwnedTemplate | WrappedTemplateFactory): te
 
 export interface CompilerFactory {
   id: string;
-  new (template: OwnedTemplate | undefined): CompilableLayout;
+  new (template: OwnedTemplate): any;
 }
 
 export default class Environment extends GlimmerEnvironment {
@@ -113,7 +115,7 @@ export default class Environment extends GlimmerEnvironment {
     Template: WrappedTemplateFactory | OwnedTemplate;
     owner: Container;
   }, OwnedTemplate>;
-  private _compilerCache: Cache<CompilerFactory, Cache<OwnedTemplate, CompiledDynamicProgram>>;
+  private _compilerCache: Cache<CompilerFactory, Cache<OwnedTemplate, VMHandle>>;
 
   constructor(injections: any) {
     super(injections);
@@ -136,7 +138,7 @@ export default class Environment extends GlimmerEnvironment {
             customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
           }
         }
-        return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
+        return new CurlyComponentDefinition(name, customManager, undefined, layout, customManager);
       }
       return undefined;
     }, ({ name, source, owner }) => {
@@ -144,7 +146,7 @@ export default class Environment extends GlimmerEnvironment {
 
       let ownerGuid = guidFor(owner);
 
-      return ownerGuid + '|' + expandedName;
+      return `${ownerGuid}|${expandedName}`;
     });
 
     this._templateCache = new Cache(1000, ({ Template, owner }) => {
@@ -155,14 +157,14 @@ export default class Environment extends GlimmerEnvironment {
         // we were provided an instance already
         return Template;
       }
-    }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
+    }, ({ Template, owner }) => `${guidFor(owner)}|${Template.id}`);
 
     this._compilerCache = new Cache(10, (Compiler) => {
       return new Cache(2000, (template) => {
         let compilable = new Compiler(template);
-        return compileLayout(compilable, this);
+        return new WrappedBuilder({asPartial: false, referrer: null}, compilable, CAPABILITIES);
       }, (template) => {
-        let owner = template.meta.owner;
+        let owner = template.owner;
         return guidFor(owner) + '|' + template.id;
       });
     }, (Compiler) => Compiler.id);
@@ -208,11 +210,13 @@ export default class Environment extends GlimmerEnvironment {
       : owner._resolveLocalLookupName(name, source);
   }
 
+  /*
   macros() {
     let macros = super.macros();
     populateMacros(macros.blocks, macros.inlines);
     return macros;
   }
+  */
 
   hasComponentDefinition() {
     return false;
@@ -245,13 +249,11 @@ export default class Environment extends GlimmerEnvironment {
     return hasPartial(name, meta.owner);
   }
 
-  lookupPartial(name: string, meta: any): PartialDefinition<any> {
-    let partial = {
-      name,
-      template: lookupPartial(name, meta.owner),
-    };
+  lookupPartial(name: string, meta: any): PartialDefinition {
+    const template = lookupPartial(name, meta.owner);
+    const partial = new PartialDefinition( name, lookupPartial(name, meta.owner));
 
-    if (partial.template) {
+    if (template) {
       return partial;
     } else {
       throw new Error(`${name} is not a partial`);
@@ -355,29 +357,27 @@ export default class Environment extends GlimmerEnvironment {
 }
 
 if (DEBUG) {
-  class StyleAttributeManager extends AttributeManager {
-    setAttribute(dom: Environment, element: Simple.Element, value: Opaque) {
+  class StyleAttributeManager implements DynamicAttributeFactory {
+    setAttribute(_dom: Environment, _element: Simple.Element, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-      super.setAttribute(dom, element, value);
     }
 
-    updateAttribute(dom: Environment, element: Element, value: Opaque) {
+    updateAttribute(_dom: Environment, _element: Element, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-      super.updateAttribute(dom, element, value);
     }
   }
 
-  let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager('style');
+  let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager();
 
   Environment.prototype.attributeFor = function(element, attribute, isTrusting) {
     if (attribute === 'style' && !isTrusting) {

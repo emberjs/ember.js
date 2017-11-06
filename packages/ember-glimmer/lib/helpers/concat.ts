@@ -1,7 +1,6 @@
 import {
   Arguments,
   CapturedArguments,
-  normalizeTextValue,
   VM
 } from '@glimmer/runtime';
 import { InternalHelperReference } from '../utils/references';

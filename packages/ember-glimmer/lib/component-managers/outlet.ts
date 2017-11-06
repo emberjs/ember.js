@@ -1,10 +1,16 @@
-import { Option } from '@glimmer/interfaces';
+import {
+  ComponentCapabilities,
+  Option
+} from '@glimmer/interfaces';
 import {
   Arguments,
   ComponentDefinition,
   DynamicScope,
-  Environment,
+  Environment
 } from '@glimmer/runtime';
+import {
+  Tag
+} from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
@@ -16,6 +22,9 @@ import {
 } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
+import { Component } from '../utils/curly-component-state-bucket';
+import DefinitionState from './definition-state';
+import { DIRTY_TAG } from '../component';
 
 function instrumentationPayload({ render: { name, outlet } }: {render: {name: string, outlet: string}}) {
   return { object: `${name}:${outlet}` };
@@ -30,6 +39,7 @@ interface OutletDynamicScope extends DynamicScope {
 class StateBucket {
   public outletState: any;
   public finalizer: any;
+  public component: Component;
 
   constructor(outletState: any) {
     this.outletState = outletState;
@@ -47,9 +57,9 @@ class StateBucket {
   }
 }
 
-class OutletComponentManager extends AbstractManager<StateBucket> {
+class OutletComponentManager extends AbstractManager<StateBucket, DefinitionState> {
   create(environment: Environment,
-         definition: OutletComponentDefinition,
+         definition: DefinitionState,
          _args: Arguments,
          dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
@@ -62,12 +72,21 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
     return new StateBucket(outletState);
   }
 
+  getCapabilities(state: DefinitionState): ComponentCapabilities {
+    return state.capabilities;
+  }
+
   layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
     return (env as EmberEnvironment).getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
   getSelf({ outletState }: StateBucket) {
     return new RootReference(outletState.render.controller);
+  }
+
+  getTag({ component }: StateBucket): Tag {
+    // TODO: is this the right tag?
+    return component[DIRTY_TAG];
   }
 
   didRenderLayout(bucket: StateBucket) {
@@ -83,10 +102,8 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
   }
 }
 
-const MANAGER = new OutletComponentManager();
-
 class TopLevelOutletComponentManager extends OutletComponentManager {
-  create(environment: Environment, definition: OutletComponentDefinition, _args: Arguments, dynamicScope: OutletDynamicScope) {
+  create(environment: Environment, definition: DefinitionState, _args: Arguments, dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
     }
@@ -98,12 +115,12 @@ class TopLevelOutletComponentManager extends OutletComponentManager {
   }
 }
 
-const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
-
-export class TopLevelOutletComponentDefinition extends ComponentDefinition<StateBucket> {
+export class TopLevelOutletComponentDefinition implements ComponentDefinition {
   public template: WrappedTemplateFactory;
+  public state: DefinitionState;
+  public manager: TopLevelOutletComponentManager;
+
   constructor(instance: any) {
-    super('outlet', TOP_LEVEL_MANAGER, instance);
     this.template = instance.template;
     generateGuid(this);
   }
@@ -126,12 +143,13 @@ class TopLevelOutletLayoutCompiler {
 
 TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
 
-export class OutletComponentDefinition extends ComponentDefinition<StateBucket> {
+export class OutletComponentDefinition implements ComponentDefinition {
   public outletName: string;
   public template: OwnedTemplate;
+  public state: DefinitionState;
+  public manager: OutletComponentManager;
 
   constructor(outletName: string, template: OwnedTemplate) {
-    super('outlet', MANAGER, null);
     this.outletName = outletName;
     this.template = template;
     generateGuid(this);

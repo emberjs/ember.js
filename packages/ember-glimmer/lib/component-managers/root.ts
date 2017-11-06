@@ -1,7 +1,13 @@
 import {
+  VMHandle
+} from '@glimmer/interfaces';
+import {
   Arguments,
   ComponentDefinition
 } from '@glimmer/runtime';
+import {
+  Option
+} from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart,
@@ -10,13 +16,16 @@ import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
-  CurlyComponentDefinition
 } from './curly';
 import { DynamicScope } from '../renderer';
 import Environment from '../environment';
+import DefintionState, { CAPABILITIES } from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
-  create(environment: Environment, definition: CurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope) {
+  create(environment: Environment,
+         definition: DefintionState,
+         args: Arguments,
+         dynamicScope: DynamicScope) {
     let component = definition.ComponentClass.create();
 
     if (DEBUG) {
@@ -48,19 +57,16 @@ class RootComponentManager extends CurlyComponentManager {
   }
 }
 
-const ROOT_MANAGER = new RootComponentManager();
+export class RootComponentDefinition implements ComponentDefinition {
+  public state: DefintionState;
+  public manager: RootComponentManager;
 
-export class RootComponentDefinition extends ComponentDefinition<ComponentStateBucket> {
-  public template: any;
-  public args: any;
-  constructor(instance: ComponentStateBucket) {
-    super('-root', ROOT_MANAGER, {
-      class: instance.constructor,
-      create() {
-        return instance;
-      },
-    });
-    this.template = undefined;
-    this.args = undefined;
+  constructor(name: string, _manager: RootComponentManager, ComponentClass: any, handle: Option<VMHandle>) {
+    this.state = {
+      name,
+      ComponentClass,
+      handle,
+      capabilities: CAPABILITIES
+    }
   }
 }
