@@ -25,9 +25,9 @@ import {
 } from "@glimmer/program";
 
 import {
-  TemplateLocator,
   ModuleLocator,
-  ModuleLocatorMap
+  ModuleLocatorMap,
+  TemplateLocator
 } from "./module-locators";
 import DebugConstants from "./debug-constants";
 import ExternalModuleTable from "./external-module-table";
@@ -73,6 +73,11 @@ export interface BundleCompilationResult {
   table: ExternalModuleTable;
 }
 
+export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
+  meta?: TemplateMeta;
+  kind?: 'template';
+}
+
 /**
  * The BundleCompiler is used to compile all of the component templates in a
  * Glimmer program into binary bytecode.
@@ -86,22 +91,22 @@ export interface BundleCompilationResult {
  * which is suitable for serialization into bytecode and JavaScript assets that
  * can be loaded and run in the browser.
  */
-export default class BundleCompiler<Meta = {}> {
+export default class BundleCompiler<TemplateMeta = {}> {
   public compilableTemplates = new ModuleLocatorMap<
     ICompilableTemplate<ProgramSymbolTable>
   >();
-  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock>();
-  public meta = new ModuleLocatorMap<Meta>();
+  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<TemplateMeta>>();
+  public meta = new ModuleLocatorMap<TemplateMeta>();
 
-  protected delegate: CompilerDelegate;
+  protected delegate: CompilerDelegate<TemplateMeta>;
   protected macros: Macros;
   protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
   protected program: WriteOnlyProgram;
-  protected templateOptions: TemplateOptions<ModuleLocator>;
+  protected templateOptions: TemplateOptions<TemplateMeta>;
   protected table = new ExternalModuleTable();
 
-  constructor(delegate: CompilerDelegate, options: BundleCompilerOptions = {}) {
+  constructor(delegate: CompilerDelegate<TemplateMeta>, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
     this.macros = options.macros || new Macros();
     this.Builder =
@@ -114,7 +119,8 @@ export default class BundleCompiler<Meta = {}> {
   /**
    * Adds the template source code for a component to the bundle.
    */
-  add(locator: TemplateLocator<Meta>, templateSource: string): SerializedTemplateBlock {
+  add(_locator: PartialTemplateLocator<TemplateMeta>, templateSource: string): SerializedTemplateBlock {
+    let locator = normalizeLocator(_locator);
     let { meta } = locator;
 
     let block = this.preprocess(meta || null, templateSource);
@@ -132,9 +138,12 @@ export default class BundleCompiler<Meta = {}> {
    * Adds a custom CompilableTemplate instance to the bundle.
    */
   addCompilableTemplate(
-    locator: TemplateLocator<Meta>,
+    _locator: PartialTemplateLocator<TemplateMeta>,
     template: ICompilableTemplate<ProgramSymbolTable>
   ): void {
+    let locator = normalizeLocator(_locator);
+
+    this.meta.set(locator, locator.meta);
     this.compilableTemplates.set(locator, template);
   }
 
@@ -164,7 +173,7 @@ export default class BundleCompiler<Meta = {}> {
   }
 
   preprocess(
-    meta: Meta | null,
+    meta: TemplateMeta | null,
     input: string
   ): SerializedTemplateBlock {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
@@ -173,13 +182,13 @@ export default class BundleCompiler<Meta = {}> {
   }
 
   compileOptions(
-    locator: TemplateLocator<Meta>,
+    locator: TemplateLocator<TemplateMeta>,
     asPartial = false
-  ): CompileOptions<TemplateLocator<Meta>> {
+  ): CompileOptions<TemplateMeta> {
     let templateOptions = this.templateOptions;
     if (!templateOptions) {
       let { program, macros, Builder } = this;
-      let resolver = new CompilerResolver(this.delegate, this.table, this);
+      let resolver = new CompilerResolver<TemplateMeta>(this.delegate, this.table, this);
       templateOptions = this.templateOptions = {
         program,
         macros,
@@ -188,33 +197,63 @@ export default class BundleCompiler<Meta = {}> {
       };
     }
 
-    return { ...templateOptions, asPartial, referrer: locator };
+    return { ...templateOptions, asPartial, referrer: locator.meta };
   }
 
   /**
    * Performs the actual compilation of the template identified by the passed
    * locator into the Program. Returns the VM handle for the compiled template.
    */
-  protected compileTemplate(locator: TemplateLocator<Meta>): VMHandle {
-    let handle = this.table.vmHandleByModuleLocator.get(locator) as Recast<
+  protected compileTemplate(locator: ModuleLocator): VMHandle {
+    // If this locator already has an assigned VM handle, it means we've already
+    // compiled it. We need to skip compiling it again and just return the same
+    // VM handle.
+    let vmHandle = this.table.vmHandleByModuleLocator.get(locator) as Recast<
       number,
       VMHandle
     >;
-    if (handle) return handle;
+    if (vmHandle) return vmHandle;
 
+    // It's an error to try to compile a template that wasn't first added to the
+    // bundle via the add() or addCompilableTemplate() methods.
     let compilableTemplate = expect(
       this.compilableTemplates.get(locator),
       `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${locator.module})`
     );
 
-    handle = compilableTemplate.compile();
+    // Compile the template, which writes opcodes to the heap and returns the VM
+    // handle (the address of the compiled program in the heap).
+    vmHandle = compilableTemplate.compile();
 
-    this.table.byVMHandle.set(handle as Recast<VMHandle, number>, locator);
-    this.table.vmHandleByModuleLocator.set(locator, handle as Recast<
+    // Index the locator by VM handle and vice versa for easy lookups.
+    this.table.byVMHandle.set(vmHandle as Recast<VMHandle, number>, locator);
+    this.table.vmHandleByModuleLocator.set(locator, vmHandle as Recast<
       VMHandle,
       number
     >);
 
-    return handle;
+    // We also make sure to assign a non-VM application handle to every
+    // top-level component as well, so any associated component classes appear
+    // in the module map.
+    this.table.handleForModuleLocator(locator);
+
+    return vmHandle;
   }
+}
+
+/**
+ * For developer convenience, we allow users to pass partially populated
+ * TemplateLocator objects as identifiers for a given template. Because it is
+ * always a TemplateLocator added to a bundle, we can populate missing fields
+ * like the `kind` with the appropriate value and avoid boilerplate on the part
+ * of API consumers.
+ */
+function normalizeLocator<T>(locator: PartialTemplateLocator<T>): TemplateLocator<T> {
+  let { module, name, meta } = locator;
+  return {
+    module,
+    name,
+    kind: 'template',
+    meta: meta || {} as T
+  };
 }

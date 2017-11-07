@@ -7,6 +7,7 @@ export {
 
 export {
   ModuleLocator,
+  AnnotatedModuleLocator,
   TemplateLocator,
   ModuleLocatorMap
 } from './lib/module-locators';

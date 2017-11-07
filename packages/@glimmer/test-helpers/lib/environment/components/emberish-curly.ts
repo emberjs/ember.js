@@ -10,7 +10,7 @@ import { Attrs, createTemplate, AttrsDiff } from '../shared';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import { TestComponentDefinitionState, TemplateMeta } from '../components';
-import { TemplateLocator } from '@glimmer/bundle-compiler';
+import { ModuleLocator } from '@glimmer/bundle-compiler';
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
@@ -70,14 +70,14 @@ export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = {
 export interface EmberishCurlyComponentDefinitionState {
   name: string;
   ComponentClass: EmberishCurlyComponentFactory;
-  locator: TemplateLocator<TemplateMeta>;
+  locator: ModuleLocator;
   layout: Option<number>;
   symbolTable?: ProgramSymbolTable;
 }
 
 export class EmberishCurlyComponentManager implements
   WithDynamicTagName<EmberishCurlyComponent>,
-  WithDynamicLayout<EmberishCurlyComponent, TemplateLocator, LazyRuntimeResolver> {
+  WithDynamicLayout<EmberishCurlyComponent, TemplateMeta, LazyRuntimeResolver> {
 
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;

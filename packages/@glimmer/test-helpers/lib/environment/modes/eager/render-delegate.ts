@@ -12,7 +12,7 @@ import {
   ElementBuilder,
   Cursor
 } from '@glimmer/runtime';
-import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
+import { DebugConstants, BundleCompiler, ModuleLocatorMap, ModuleLocator } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
 import { ProgramSymbolTable, Recast, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
@@ -35,7 +35,7 @@ import { Modules } from './modules';
 import { TestDynamicScope } from '../../../environment';
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { NodeEnv } from '../ssr/environment';
-import { TestComponentDefinitionState } from '../../component-definition';
+import { TestComponentDefinitionState, locatorFor } from '../../component-definition';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -70,7 +70,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
   protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
-  protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable>();
+  protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
 
   constructor(env: Environment) {
     this.env = env || new EagerTestEnvironment();
@@ -114,7 +114,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
       capabilities,
       hasSymbolTable,
       ComponentClass,
-      locator: { module, name: 'default' },
+      locator: locatorFor({ module, name: 'default' }),
       // Populated by the Bundle Compiler in eager mode
       layout: null
     };
@@ -140,7 +140,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let program = new WriteOnlyProgram(new DebugConstants());
     let compiler = new BundleCompiler(delegate, { macros, program });
 
-    let locator = { module: 'ui/components/main', name: 'default' };
+    let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
     compiler.add(locator, template);
 
     let { components, modules, compileTimeModules } = this;
@@ -149,15 +149,15 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
       let { state, manager } = components[key];
 
-      let locator = { module: key, name: 'default' };
+      let locator = locatorFor({ module: key, name: 'default' });
 
       let block;
       let symbolTable;
 
       if (state.type === "Curly" || state.type === "Dynamic") {
-        let block = compiler.preprocess(locator, state.template!);
+        let block = compiler.preprocess(locator.meta, state.template!);
         let options = compiler.compileOptions(locator);
-        let parsedLayout = { block, referrer: locator };
+        let parsedLayout = { block, referrer: locator.meta };
         let wrapped = new WrappedBuilder(options, parsedLayout, EMBERISH_CURLY_CAPABILITIES);
         compiler.addCompilableTemplate(locator, wrapped);
 

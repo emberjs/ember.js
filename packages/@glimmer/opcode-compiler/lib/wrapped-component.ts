@@ -16,11 +16,11 @@ import { ATTRS_BLOCK } from './syntax';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { EMPTY_ARRAY } from "@glimmer/util";
 
-export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSymbolTable> {
+export class WrappedBuilder<TemplateMeta> implements ICompilableTemplate<ProgramSymbolTable> {
   public symbolTable: ProgramSymbolTable;
-  private referrer: Specifier;
+  private referrer: TemplateMeta;
 
-  constructor(public options: CompileOptions<Specifier>, private layout: ParsedLayout<Specifier>, private capabilities: ComponentCapabilities) {
+  constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>, private capabilities: ComponentCapabilities) {
     let { block } = layout;
     let referrer = this.referrer = layout.referrer;
 
@@ -114,14 +114,14 @@ export class WrappedBuilder<Specifier> implements ICompilableTemplate<ProgramSym
   }
 }
 
-function blockFor<Specifier>(layout: ParsedLayout, options: CompileOptions<Specifier>): CompilableTemplate<BlockSymbolTable, Specifier> {
+function blockFor<TemplateMeta>(layout: ParsedLayout, options: CompileOptions<TemplateMeta>): CompilableTemplate<BlockSymbolTable, TemplateMeta> {
   let { block, referrer } = layout;
 
   return new CompilableTemplate(block.statements, layout, options, { referrer, parameters: EMPTY_ARRAY });
 }
 
-export class ComponentBuilder<Specifier> implements IComponentBuilder {
-  constructor(private builder: OpcodeBuilder<Specifier>) {}
+export class ComponentBuilder<TemplateMeta> implements IComponentBuilder {
+  constructor(private builder: OpcodeBuilder<TemplateMeta>) {}
 
   static(handle: number, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;

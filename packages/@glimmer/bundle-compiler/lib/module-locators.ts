@@ -31,12 +31,21 @@ export interface ModuleLocator {
 }
 
 /**
- * A TemplateLocator is a ModuleLocator augmented with additional template
- * metadata that will be passed to the template compiler and made available at
- * both compile-time and run-time.
+ * An AnnotatedModuleLocator is a ModuleLocator augmented with additional
+ * metadata about that module that is made available to the compiler.
  */
-export interface TemplateLocator<Meta = {}> extends ModuleLocator {
-  meta?: Meta;
+export interface AnnotatedModuleLocator extends ModuleLocator {
+  kind: string;
+  meta: {};
+}
+
+/**
+ * A TemplateLocator is a ModuleLocator annotated with additional information
+ * about a template.
+ */
+export interface TemplateLocator<Meta> extends AnnotatedModuleLocator {
+  kind: 'template';
+  meta: Meta;
 }
 
 type ByModule<V> = Map<string, ByName<V>>;
@@ -57,23 +66,24 @@ type ByName<V> = Map<string, V>;
  * map.get({ module: 'foo', name: 'default' }); // returns 123
  * ```
  */
-export class ModuleLocatorMap<V> {
+export class ModuleLocatorMap<V, K extends ModuleLocator = ModuleLocator> {
   private byModule: ByModule<V> = new Map();
+  private locators = new Set<K>();
 
-  set({ module, name }: ModuleLocator, value: V): this {
+  set(locator: K, value: V): this {
+    let { module, name } = locator;
     this._byName(module).set(name, value);
+    this.locators.add(locator);
     return this;
   }
 
-  get({ module, name }: ModuleLocator): V | undefined {
+  get({ module, name }: K): V | undefined {
     return this._byName(module).get(name);
   }
 
-  forEach(cb: (value: V, key: ModuleLocator) => void): void {
-    this.byModule.forEach((byName, module) => {
-      byName.forEach((value, name) => {
-        cb(value, { module, name });
-      });
+  forEach(cb: (value: V, key: K) => void): void {
+    this.locators.forEach(locator => {
+      cb(this.get(locator)!, locator);
     });
   }
 
