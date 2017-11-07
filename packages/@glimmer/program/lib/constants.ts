@@ -122,7 +122,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 }
 
-export class RuntimeConstants<Specifier> {
+export class RuntimeConstants<TemplateMeta> {
   protected strings: string[];
   protected arrays: number[][] | EMPTY_ARRAY;
   protected tables: SymbolTable[];
@@ -132,7 +132,7 @@ export class RuntimeConstants<Specifier> {
   protected floats: number[];
   protected negatives: number[];
 
-  constructor(public resolver: RuntimeResolver<Specifier>, pool: ConstantPool) {
+  constructor(public resolver: RuntimeResolver<TemplateMeta>, pool: ConstantPool) {
     this.strings = pool.strings;
     this.arrays = pool.arrays;
     this.tables = pool.tables;
@@ -194,8 +194,8 @@ export class RuntimeConstants<Specifier> {
   }
 }
 
-export class Constants<Specifier> extends WriteOnlyConstants {
-  constructor(public resolver: RuntimeResolver<Specifier>, pool?: ConstantPool) {
+export class Constants<TemplateMeta> extends WriteOnlyConstants {
+  constructor(public resolver: RuntimeResolver<TemplateMeta>, pool?: ConstantPool) {
     super();
 
     if (pool) {

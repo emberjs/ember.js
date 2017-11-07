@@ -197,10 +197,10 @@ export type SerializedTemplateBlockJSON = string;
 /**
  * A JSON object containing the SerializedTemplateBlock as JSON and TemplateMeta.
  */
-export interface SerializedTemplateWithLazyBlock<Specifier> {
+export interface SerializedTemplateWithLazyBlock<TemplateMeta> {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
-  meta: Specifier;
+  meta: TemplateMeta;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Opaque, Option, dict, Dict, assert } from '@glimmer/util';
-import { TemplateLocator } from '@glimmer/bundle-compiler';
+import { TemplateMeta } from '../../components';
 
 export type ModuleType = 'component' | 'helper' | 'modifier' | 'partial' | 'other';
 
@@ -39,8 +39,8 @@ export class Modules {
     this.registry[name] = new Module(value, type);
   }
 
-  resolve(name: string, referrer: TemplateLocator, defaultRoot?: string): Option<string> {
-    let local = referrer.module && referrer.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
+  resolve(name: string, referrer: TemplateMeta, defaultRoot?: string): Option<string> {
+    let local = referrer.locator.module && referrer.locator.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
     if (local && this.registry[local]) {
       return local;
     } else if (defaultRoot && this.registry[`${defaultRoot}/${name}`]) {

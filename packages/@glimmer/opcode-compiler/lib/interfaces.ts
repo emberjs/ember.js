@@ -14,7 +14,7 @@ export interface EagerResolver<Locator> {
   getCapabilities(locator: Locator): ComponentCapabilities;
 }
 
-export interface EagerCompilationOptions<Specifier, R extends EagerResolver<Specifier>> {
+export interface EagerCompilationOptions<TemplateMeta, R extends EagerResolver<TemplateMeta>> {
   resolver: R;
   program: CompileTimeProgram;
   macros: Macros;
@@ -30,14 +30,14 @@ export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 export type Primitive = undefined | null | boolean | number | string;
 
 export type ComponentArgs = [Core.Params, Core.Hash, Option<CompilableBlock>, Option<CompilableBlock>];
-export type Specifier = Opaque;
+export type TemplateMeta = Opaque;
 
 export interface ComponentBuilder {
   static(definition: number, args: ComponentArgs): void;
 }
 
-export interface ParsedLayout<Specifier = Opaque> {
+export interface ParsedLayout<TemplateMeta = Opaque> {
   id?: Option<string>;
   block: SerializedTemplateBlock;
-  referrer: Specifier;
+  referrer: TemplateMeta;
 }

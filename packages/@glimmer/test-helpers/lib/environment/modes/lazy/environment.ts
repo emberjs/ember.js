@@ -42,14 +42,16 @@ import {
   EMBERISH_GLIMMER_CAPABILITIES,
   StaticTaglessComponentManager,
   STATIC_TAGLESS_CAPABILITIES,
-  TestComponentDefinitionState
+  TestComponentDefinitionState,
+  TemplateMeta,
+  locatorFor
 } from '../../components';
 
 import { UserHelper, HelperReference } from '../../helper';
 import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
 import { Opaque } from "@glimmer/util";
-import { TemplateLocator } from "@glimmer/bundle-compiler";
+import { AnnotatedModuleLocator } from "@glimmer/bundle-compiler";
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
@@ -63,13 +65,13 @@ export interface TestEnvironmentOptions {
   program?: TopLevelSyntax;
 }
 
-export type TestCompilationOptions = CompilationOptions<TemplateLocator, LazyRuntimeResolver>;
+export type TestCompilationOptions = CompilationOptions<AnnotatedModuleLocator, LazyRuntimeResolver>;
 
-export default class LazyTestEnvironment extends TestEnvironment<TemplateLocator> {
+export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModuleLocator> {
   public resolver = new LazyRuntimeResolver();
   protected program = new Program(new LazyConstants(this.resolver));
 
-  public compileOptions: TemplateOptions<TemplateLocator> = {
+  public compileOptions: TemplateOptions<TemplateMeta> = {
     resolver: new LazyCompilerResolver(this.resolver),
     program: this.program,
     macros: new TestMacros(),
@@ -190,6 +192,7 @@ export default class LazyTestEnvironment extends TestEnvironment<TemplateLocator
       name,
       type,
       layout,
+      locator: locatorFor({ module: name, name: 'default' }),
       capabilities,
       ComponentClass
     };

@@ -12,9 +12,9 @@ import { CompileOptions, statementCompiler, Compilers } from './syntax';
 
 export { ICompilableTemplate };
 
-export default class CompilableTemplate<S extends SymbolTable, Specifier> implements ICompilableTemplate<S> {
-  static topLevel<Specifier>(block: SerializedTemplateBlock, options: CompileOptions<Specifier>): ICompilableTemplate<ProgramSymbolTable> {
-    return new CompilableTemplate<ProgramSymbolTable, Specifier>(
+export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> implements ICompilableTemplate<S> {
+  static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): ICompilableTemplate<ProgramSymbolTable> {
+    return new CompilableTemplate<ProgramSymbolTable, TemplateMeta>(
       block.statements,
       { block, referrer: options.referrer },
       options,
@@ -26,7 +26,7 @@ export default class CompilableTemplate<S extends SymbolTable, Specifier> implem
 
   private statementCompiler: Compilers<Statement>;
 
-  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<Specifier>, public symbolTable: S) {
+  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<TemplateMeta>, public symbolTable: S) {
     this.statementCompiler = statementCompiler();
   }
 
