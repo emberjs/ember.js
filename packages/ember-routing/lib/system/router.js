@@ -32,7 +32,6 @@ import {
 import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';
 import {
-  routeArgs,
   resemblesURL,
   getActiveTargetName,
   calculateCacheKey,
@@ -766,8 +765,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams, _keepDefaultQueryParamValues);
 
-    let transitionArgs = routeArgs(targetRouteName, models, queryParams);
-    let transition = this._routerMicrolib.transitionTo(...transitionArgs);
+    let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
 
     didBeginTransition(transition, this);
 

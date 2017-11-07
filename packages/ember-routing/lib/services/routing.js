@@ -7,9 +7,7 @@ import {
   Service,
   readOnly
 } from 'ember-runtime';
-
 import { get } from 'ember-metal';
-import { routeArgs } from '../utils';
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for
@@ -46,21 +44,17 @@ export default Service.extend({
   },
 
   normalizeQueryParams(routeName, models, queryParams) {
-    let router = get(this, 'router');
-    router._prepareQueryParams(routeName, models, queryParams);
+    get(this, 'router')._prepareQueryParams(routeName, models, queryParams);
   },
 
   generateURL(routeName, models, queryParams) {
-    let router = get(this, 'router');
-    if (!router._routerMicrolib) { return; }
-
     let visibleQueryParams = {};
-    assign(visibleQueryParams, queryParams);
+    if (queryParams) {
+      assign(visibleQueryParams, queryParams);
+      this.normalizeQueryParams(routeName, models, visibleQueryParams);
+    }
 
-    this.normalizeQueryParams(routeName, models, visibleQueryParams);
-
-    let args = routeArgs(routeName, models, visibleQueryParams);
-    return router.generate(...args);
+    return get(this, 'router').generate(routeName, ...models, { queryParams: visibleQueryParams });
   },
 
   isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {

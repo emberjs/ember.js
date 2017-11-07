@@ -20,16 +20,6 @@ export function extractRouteArgs(args) {
   return { routeName, models: args, queryParams };
 }
 
-export function routeArgs(targetRouteName, models, queryParams) {
-  let args = [];
-  if (typeof targetRouteName === 'string') {
-    args.push(`${targetRouteName}`);
-  }
-  args.push(...models);
-  args.push({ queryParams });
-  return args;
-}
-
 export function getActiveTargetName(router) {
   let handlerInfos = router.activeTransition ?
                      router.activeTransition.state.handlerInfos :
