@@ -91,7 +91,7 @@ export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
  * which is suitable for serialization into bytecode and JavaScript assets that
  * can be loaded and run in the browser.
  */
-export default class BundleCompiler<TemplateMeta = {}> {
+export default class BundleCompiler<TemplateMeta> {
   public compilableTemplates = new ModuleLocatorMap<
     ICompilableTemplate<ProgramSymbolTable>
   >();
