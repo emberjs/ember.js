@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.17.0-beta.5 (November 7, 2017)
+- [#15797](https://github.com/emberjs/ember.js/pull/15797) [BUGFIX] Fix issues with using partials nested within other partials.
+- [#15808](https://github.com/emberjs/ember.js/pull/15808) [BUGFIX] Fix a memory leak in certain testing scenarios.
+
 ### 2.17.0-beta.4 (October 30, 2017)
 - [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initally `null`.
 - [#15777](https://github.com/emberjs/ember.js/pull/15777) [BUGFIX] Fix various issues around accessing dynamic data within a partial.
