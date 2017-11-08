@@ -198,10 +198,10 @@ export class WriteOnlyProgram implements CompileTimeProgram {
   }
 }
 
-export class RuntimeProgram<Specifier> {
+export class RuntimeProgram<TemplateMeta> {
   [key: number]: never;
 
-  static hydrate<Specifier>(rawHeap: SerializedHeap, pool: ConstantPool, resolver: RuntimeResolver<Specifier>) {
+  static hydrate<TemplateMeta>(rawHeap: SerializedHeap, pool: ConstantPool, resolver: RuntimeResolver<TemplateMeta>) {
     let heap = new Heap(rawHeap);
     let constants = new RuntimeConstants(resolver, pool);
 
@@ -210,7 +210,7 @@ export class RuntimeProgram<Specifier> {
 
   private _opcode: Opcode;
 
-  constructor(public constants: RuntimeConstants<Specifier>, public heap: Heap) {
+  constructor(public constants: RuntimeConstants<TemplateMeta>, public heap: Heap) {
     this._opcode = new Opcode(this.heap);
   }
 
@@ -220,8 +220,8 @@ export class RuntimeProgram<Specifier> {
   }
 }
 
-export class Program<Specifier> extends WriteOnlyProgram {
-  public constants: Constants<Specifier>;
+export class Program<TemplateMeta> extends WriteOnlyProgram {
+  public constants: Constants<TemplateMeta>;
 }
 
 function slice(arr: Uint16Array | number[], start: number, end: number) {

@@ -1,6 +1,5 @@
 import { CompileTimeLookup, ICompilableTemplate } from "@glimmer/opcode-compiler";
 
-import { ModuleLocator, TemplateLocator } from './module-locators';
 import CompilerDelegate from './compiler-delegate';
 import ExternalModuleTable from './external-module-table';
 import BundleCompiler from './bundle-compiler';
@@ -20,70 +19,52 @@ import { expect, Option } from "@glimmer/util";
  * helper and ensuring that any future calls to `lookupHelper` that refer to the
  * same helper return the same handle.
  */
-export default class CompilerResolver<Meta> implements CompileTimeLookup<TemplateLocator<Meta>> {
-  constructor(private delegate: CompilerDelegate, private map: ExternalModuleTable, private compiler: BundleCompiler) { }
+export default class CompilerResolver<TemplateMeta> implements CompileTimeLookup<TemplateMeta> {
+  constructor(private delegate: CompilerDelegate<TemplateMeta>, private table: ExternalModuleTable, private compiler: BundleCompiler<TemplateMeta>) { }
 
   getCapabilities(handle: number): ComponentCapabilities {
-    let locator = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getCapabilities if a handle has no associated locator`);
-    return this.delegate.getComponentCapabilities(locator);
+    let locator = expect(this.table.byHandle.get(handle), `BUG: Shouldn't call getCapabilities if a handle has no associated locator`);
+    let meta = expect(this.compiler.meta.get(locator), `could not find template metadata for module ${locator.module}`);
+    return this.delegate.getComponentCapabilities(meta);
   }
 
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
-    let locator = expect(this.map.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated locator`);
+    let locator = expect(this.table.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated locator`);
     return this.compiler.compilableTemplates.get(locator) || null;
   }
 
-  lookupHelper(name: string, referrer: TemplateLocator<Meta>): Option<number> {
+  lookupHelper(name: string, referrer: TemplateMeta): Option<number> {
     if (this.delegate.hasHelperInScope(name, referrer)) {
       let locator = this.delegate.resolveHelper(name, referrer);
-      return this.handleForLocator(locator);
+      return this.table.handleForModuleLocator(locator);
     } else {
       return null;
     }
   }
 
-  lookupComponentDefinition(name: string, referrer: TemplateLocator<Meta>): Option<number> {
+  lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number> {
     if (this.delegate.hasComponentInScope(name, referrer)) {
       let locator = this.delegate.resolveComponent(name, referrer);
-      return this.handleForLocator(locator);
+      return this.table.handleForModuleLocator(locator);
     } else {
       return null;
     }
   }
 
-  lookupModifier(name: string, referrer: TemplateLocator<Meta>): Option<number> {
+  lookupModifier(name: string, referrer: TemplateMeta): Option<number> {
     if (this.delegate.hasModifierInScope(name, referrer)) {
       let locator = this.delegate.resolveModifier(name, referrer);
-      return this.handleForLocator(locator);
+      return this.table.handleForModuleLocator(locator);
     } else {
       return null;
     }
   }
 
-  lookupComponent(_name: string, _meta: TemplateLocator<Meta>): Option<number> {
+  lookupComponent(_name: string, _meta: TemplateMeta): Option<number> {
     throw new Error("Method not implemented.");
   }
 
-  lookupPartial(_name: string, _meta: TemplateLocator<Meta>): Option<number> {
+  lookupPartial(_name: string, _meta: TemplateMeta): Option<number> {
     throw new Error("Method not implemented.");
-  }
-
-  /**
-   * Returns the handle (unique integer id) for the provided module locator. If
-   * the locator has not been seen before, a new handle is assigned. Otherwise,
-   * the same handle is always returned for a given locator.
-   */
-  private handleForLocator(locator: ModuleLocator): number {
-    let { byModuleLocator, byHandle } = this.map;
-
-    let handle = byModuleLocator.get(locator);
-
-    if (handle === undefined) {
-      handle = byHandle.size;
-      byHandle.set(handle, locator);
-      byModuleLocator.set(locator, handle);
-    }
-
-    return handle;
   }
 }

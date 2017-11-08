@@ -1,5 +1,5 @@
 
-import { TemplateOptions, Specifier } from "@glimmer/opcode-compiler";
+import { TemplateOptions, TemplateMeta } from "@glimmer/opcode-compiler";
 import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate, Invocation } from "@glimmer/runtime";
 import { Opaque, Option, ComponentCapabilities } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
@@ -12,7 +12,7 @@ import { BASIC_CAPABILITIES } from './basic';
 import { TestComponentDefinitionState } from '../components';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import { TemplateLocator } from "@glimmer/bundle-compiler";
+import { } from "@glimmer/bundle-compiler";
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -28,7 +28,7 @@ export interface EmberishGlimmerComponentState {
 
 export class EmberishGlimmerComponentManager
   implements ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
-             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, Specifier, LazyRuntimeResolver> {
+             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, TemplateMeta, LazyRuntimeResolver> {
 
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
@@ -56,9 +56,10 @@ export class EmberishGlimmerComponentManager
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout({ name, locator }: TestComponentDefinitionState, resolver: LazyRuntimeResolver | EagerRuntimeResolver): Invocation {
+  getLayout(state: TestComponentDefinitionState, resolver: LazyRuntimeResolver | EagerRuntimeResolver): Invocation {
+    let { name, locator } = state;
     if (resolver instanceof LazyRuntimeResolver) {
-      let compile = (source: string, options: TemplateOptions<TemplateLocator>) => {
+      let compile = (source: string, options: TemplateOptions<{}>) => {
         let layout = createTemplate(source);
         let template = new ScannableTemplate(options, layout).asLayout();
 
@@ -73,7 +74,7 @@ export class EmberishGlimmerComponentManager
       return resolver.compileTemplate(handle, name, compile);
     }
 
-    return resolver.getInvocation(locator!);
+    return resolver.getInvocation(locator.meta);
   }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<Opaque> {

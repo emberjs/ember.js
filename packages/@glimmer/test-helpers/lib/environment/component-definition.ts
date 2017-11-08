@@ -1,9 +1,20 @@
 import { Option } from '@glimmer/util';
 import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
-import { TemplateLocator } from '@glimmer/bundle-compiler';
+import { ModuleLocator, TemplateLocator } from '@glimmer/bundle-compiler';
 
 export interface TemplateMeta {
-  locator: TemplateLocator;
+  locator: ModuleLocator;
+}
+
+export function locatorFor(locator: ModuleLocator): TemplateLocator<TemplateMeta> {
+  let { module, name } = locator;
+
+  return {
+    module,
+    name,
+    kind: 'template',
+    meta: { locator }
+  };
 }
 
 export interface TestComponentDefinitionState {
@@ -15,7 +26,7 @@ export interface TestComponentDefinitionState {
   ComponentClass: any;
   type: string;
   layout: Option<number>;
-  locator?: TemplateLocator<TemplateMeta>;
+  locator: TemplateLocator<TemplateMeta>;
   template?: string;
   hasSymbolTable?: boolean;
   symbolTable?: ProgramSymbolTable;

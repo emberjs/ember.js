@@ -218,9 +218,9 @@ class Transaction {
   }
 }
 
-export interface CompilationOptions<Specifier, R extends RuntimeResolver<Specifier>> {
+export interface CompilationOptions<TemplateMeta, R extends RuntimeResolver<TemplateMeta>> {
   resolver: R;
-  program: Program<Specifier>;
+  program: Program<TemplateMeta>;
   macros: Macros;
   Builder: OpcodeBuilderConstructor;
 }

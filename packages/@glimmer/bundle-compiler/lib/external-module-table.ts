@@ -17,4 +17,23 @@ export default class ExternalModuleTable {
 
   public vmHandleByModuleLocator = new ModuleLocatorMap<number>();
   public byVMHandle = new Map<number, ModuleLocator>();
+
+  /**
+   * Returns the handle (unique integer id) for the provided module locator. If
+   * the locator has not been seen before, a new handle is assigned. Otherwise,
+   * the same handle is always returned for a given locator.
+   */
+  public handleForModuleLocator(locator: ModuleLocator): number {
+    let { byModuleLocator, byHandle } = this;
+
+    let handle = byModuleLocator.get(locator);
+
+    if (handle === undefined) {
+      handle = byHandle.size;
+      byHandle.set(handle, locator);
+      byModuleLocator.set(locator, handle);
+    }
+
+    return handle;
+  }
 }

@@ -9,15 +9,15 @@ import { CurriedComponentDefinition, isCurriedComponentDefinition } from '../com
 import { resolveComponent } from '../component/resolve';
 import { UNDEFINED_REFERENCE } from '../references';
 
-export default class CurryComponentReference<Specifier> implements PathReference<Option<CurriedComponentDefinition>> {
+export default class CurryComponentReference<TemplateMeta> implements PathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
   private lastValue: Opaque;
   private lastDefinition: Option<CurriedComponentDefinition>;
 
   constructor(
     private inner: Reference<Opaque>,
-    private resolver: RuntimeResolver<Specifier>,
-    private meta: Specifier,
+    private resolver: RuntimeResolver<TemplateMeta>,
+    private meta: TemplateMeta,
     private args: Option<ICapturedArguments>
   ) {
     this.tag = inner.tag;
