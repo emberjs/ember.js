@@ -8,6 +8,7 @@ import {
 } from '@glimmer/interfaces';
 import { Core, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { Macros } from './syntax';
+import { STDLib } from './opcode-builder';
 
 export interface EagerResolver<Locator> {
   getCapabilities(locator: Locator): ComponentCapabilities;
@@ -21,7 +22,7 @@ export interface EagerCompilationOptions<TemplateMeta, R extends EagerResolver<T
 
 export interface CompilableTemplate<S extends SymbolTable> {
   symbolTable: S;
-  compile(): number;
+  compile(stdLib?: STDLib): number;
 }
 
 export const PLACEHOLDER_HANDLE = -1;
