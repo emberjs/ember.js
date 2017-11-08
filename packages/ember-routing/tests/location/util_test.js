@@ -80,7 +80,6 @@ QUnit.test('Feature-Detecting onhashchange', function() {
   equal(supportsHashChange(8, { onhashchange() {} }), true, 'When in IE8+, use onhashchange existence as evidence of the feature');
 });
 
-// jscs:disable
 QUnit.test("Feature-detecting the history API", function() {
   equal(supportsHistory("", { pushState: true }), true, "returns true if not Android Gingerbread and history.pushState exists");
   equal(supportsHistory("", {}), false, "returns false if history.pushState doesn't exist");
@@ -132,5 +131,3 @@ QUnit.test("Feature-detecting the history API", function() {
     "returns true for Windows Phone 8.1 with misleading user agent string"
   );
 });
-// jscs:enable
-
