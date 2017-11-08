@@ -302,6 +302,44 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
     }
 
+    ['@test RouterService#transitionTo with refreshModel on parent route'](assert) {
+      assert.expect(2);
+
+      this.add('controller:parent', Controller.extend({
+        queryParams: ['parentParam'],
+        parentParam: null
+      }));
+
+      let modelCalled = 0;
+
+      this.add('route:parent', Route.extend({
+        queryParams: {
+          parentParam: {
+            refreshModel: true
+          }
+        },
+
+        model() {
+          modelCalled++;
+        }
+      }));
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['childParam']
+      }));
+
+      let queryParams = this.buildQueryParams({ childParam: 'other' })
+
+      return this.visit('/child')
+        .then(() => {
+          assert.equal(modelCalled, 1, "Model called from first load");
+          return this.routerService.transitionTo(queryParams);
+        })
+        .then(() => {
+          assert.equal(modelCalled, 1, "Model should not be called again");
+        });
+    }
+
     ['@test RouterService#transitionTo with aliased query params uses the original provided key'](assert) {
       assert.expect(1);
 
