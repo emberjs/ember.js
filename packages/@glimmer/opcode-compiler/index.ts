@@ -14,7 +14,8 @@ export {
   EagerOpcodeBuilder,
   OpcodeBuilder,
   OpcodeBuilderConstructor,
-  SimpleOpcodeBuilder
+  SimpleOpcodeBuilder,
+  STDLib
 } from './lib/opcode-builder';
 
 export {

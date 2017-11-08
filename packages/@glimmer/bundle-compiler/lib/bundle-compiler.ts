@@ -16,7 +16,8 @@ import {
   ICompilableTemplate,
   EagerOpcodeBuilder,
   TemplateOptions,
-  SimpleOpcodeBuilder
+  SimpleOpcodeBuilder,
+  STDLib
 } from "@glimmer/opcode-compiler";
 import {
   WriteOnlyProgram,
@@ -152,6 +153,19 @@ export default class BundleCompiler<TemplateMeta> {
     this.compilableTemplates.set(locator, template);
   }
 
+  compileSTDLib(_locator: PartialTemplateLocator<TemplateMeta>): STDLib {
+    let builder = new SimpleOpcodeBuilder();
+    builder.main();
+    let main = builder.commit(this.program.heap, 0);
+    let locator = normalizeLocator(_locator);
+    let { program, resolver, referrer, macros } = this.compileOptions(locator);
+    let block = this.preprocess(null, '');
+    let eagerBuilder = new EagerOpcodeBuilder(program, resolver, referrer, macros, {block, referrer: null}, false);
+    eagerBuilder.builtInGuardedAppend();
+    let guardedAppend = eagerBuilder.commit(program.heap, 0);
+    return { main, guardedAppend };
+  }
+
   /**
    * Compiles all of the templates added to the bundle. Once compilation
    * completes, the results of the compilation are returned, which includes
@@ -159,18 +173,16 @@ export default class BundleCompiler<TemplateMeta> {
    * data segment.
    */
   compile(): BundleCompilationResult {
-    let builder = new SimpleOpcodeBuilder();
-    builder.main();
-    let main = builder.commit(this.program.heap, 0);
+    let stdLib = this.compileSTDLib({ module: '__std__', name: '<unreachable>' });
+    let { main } = stdLib;
     let symbolTables = new ModuleLocatorMap<ProgramSymbolTable>();
 
     this.compilableTemplates.forEach((template, locator) => {
-      this.compileTemplate(locator);
+      this.compileTemplate(locator, stdLib);
       symbolTables.set(locator, template.symbolTable);
     });
 
     let { heap, constants } = this.program;
-
     return {
       main: main as Recast<Unique<"Handle">, number>,
       heap: heap.capture() as SerializedHeap,
@@ -212,7 +224,7 @@ export default class BundleCompiler<TemplateMeta> {
    * Performs the actual compilation of the template identified by the passed
    * locator into the Program. Returns the VM handle for the compiled template.
    */
-  protected compileTemplate(locator: ModuleLocator): number {
+  protected compileTemplate(locator: ModuleLocator, stdLib: STDLib): number {
     // If this locator already has an assigned VM handle, it means we've already
     // compiled it. We need to skip compiling it again and just return the same
     // VM handle.
@@ -228,7 +240,7 @@ export default class BundleCompiler<TemplateMeta> {
 
     // Compile the template, which writes opcodes to the heap and returns the VM
     // handle (the address of the compiled program in the heap).
-    vmHandle = compilableTemplate.compile();
+    vmHandle = compilableTemplate.compile(stdLib);
 
     // Index the locator by VM handle and vice versa for easy lookups.
     this.table.byVMHandle.set(vmHandle as Recast<VMHandle, number>, locator);
