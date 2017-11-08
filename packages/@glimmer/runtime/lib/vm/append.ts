@@ -98,13 +98,13 @@ export type IteratorResult<T> = {
   value: T;
 };
 
-export default class VM<Specifier> implements PublicVM {
+export default class VM<TemplateMeta> implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
-  public constants: RuntimeConstants<Specifier>;
+  public constants: RuntimeConstants<TemplateMeta>;
   public heap: Heap;
 
   public stack = EvaluationStack.empty();
@@ -213,8 +213,8 @@ export default class VM<Specifier> implements PublicVM {
     this.pc = this.ra;
   }
 
-  static initial<Specifier>(
-    program: RuntimeProgram<Specifier>,
+  static initial<TemplateMeta>(
+    program: RuntimeProgram<TemplateMeta>,
     env: Environment,
     self: PathReference<Opaque>,
     args: Option<ICapturedArguments>,
@@ -235,8 +235,8 @@ export default class VM<Specifier> implements PublicVM {
     return vm;
   }
 
-  static empty<Specifier>(
-    program: RuntimeProgram<Specifier>,
+  static empty<TemplateMeta>(
+    program: RuntimeProgram<TemplateMeta>,
     env: Environment,
     elementStack: ElementBuilder
   ) {
@@ -256,7 +256,7 @@ export default class VM<Specifier> implements PublicVM {
   }
 
   constructor(
-    private program: Program<Specifier>,
+    private program: Program<TemplateMeta>,
     public env: Environment,
     scope: Scope,
     dynamicScope: DynamicScope,
@@ -443,7 +443,7 @@ export default class VM<Specifier> implements PublicVM {
 
   /// EXECUTION
 
-  execute(start: VMHandle, initialize?: (vm: VM<Specifier>) => void): RenderResult {
+  execute(start: VMHandle, initialize?: (vm: VM<TemplateMeta>) => void): RenderResult {
     this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);

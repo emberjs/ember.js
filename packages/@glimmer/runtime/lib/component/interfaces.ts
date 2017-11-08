@@ -88,7 +88,7 @@ export interface WithDynamicTagName<Component> extends ComponentManager<Componen
   getTagName(component: Component): Option<string>;
 }
 
-export interface WithStaticLayout<ComponentInstanceState, ComponentDefinitionState, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+export interface WithStaticLayout<ComponentInstanceState, ComponentDefinitionState, TemplateMeta, R extends RuntimeResolver<TemplateMeta>> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   getLayout(state: ComponentDefinitionState, resolver: R): Invocation;
 }
 
@@ -112,7 +112,7 @@ export function hasStaticLayout<D extends ComponentDefinitionState, I extends Co
   return manager.getCapabilities(state).dynamicLayout === false;
 }
 
-export interface WithDynamicLayout<Component, Specifier, R extends RuntimeResolver<Specifier>> extends ComponentManager<Component, Opaque> {
+export interface WithDynamicLayout<Component, TemplateMeta, R extends RuntimeResolver<TemplateMeta>> extends ComponentManager<Component, Opaque> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons

@@ -68,7 +68,7 @@ export interface AbstractTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
 }
 
-export interface CompileTimeLookup<Locator> {
+export interface CompileTimeLookup<TemplateMeta> {
   getCapabilities(handle: number): ComponentCapabilities;
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>>;
 
@@ -76,10 +76,10 @@ export interface CompileTimeLookup<Locator> {
   // produce any actual objects. The main use-case for producing objects is handled above,
   // with getCapabilities and getLayout, which drastically shrinks the size of the object
   // that the core interface is forced to reify.
-  lookupHelper(name: string, referrer: Locator): Option<number>;
-  lookupModifier(name: string, referrer: Locator): Option<number>;
-  lookupComponentDefinition(name: string, referrer: Locator): Option<number>;
-  lookupPartial(name: string, referrer: Locator): Option<number>;
+  lookupHelper(name: string, referrer: TemplateMeta): Option<number>;
+  lookupModifier(name: string, referrer: TemplateMeta): Option<number>;
+  lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number>;
+  lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
 }
 
 export interface Blocks {
@@ -89,12 +89,12 @@ export interface Blocks {
 }
 
 export interface OpcodeBuilderConstructor {
-  new<Specifier>(program: CompileTimeProgram,
-      lookup: CompileTimeLookup<Specifier>,
+  new<TemplateMeta>(program: CompileTimeProgram,
+      lookup: CompileTimeLookup<TemplateMeta>,
       meta: Opaque,
       macros: Macros,
       containingLayout: ParsedLayout,
-      asPartial: boolean): OpcodeBuilder<Specifier>;
+      asPartial: boolean): OpcodeBuilder<TemplateMeta>;
 }
 
 export class SimpleOpcodeBuilder {
@@ -978,7 +978,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
 export default OpcodeBuilder;
 
-export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier> {
+export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta> {
   public constants: CompileTimeLazyConstants;
 
   pushBlock(block: Option<CompilableBlock>): void {
@@ -993,7 +993,7 @@ export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier> {
     this.push(Op.CompileBlock);
   }
 
-  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, Specifier>>) {
+  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, TemplateMeta>>) {
     if (layout) {
       this.pushOther(layout);
     } else {
@@ -1020,7 +1020,7 @@ export class LazyOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier> {
   }
 }
 
-export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier> {
+export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta> {
   pushBlock(block: Option<ICompilableTemplate<BlockSymbolTable>>): void {
     let handle = block ? block.compile() as Recast<VMHandle, number> : null;
     this.primitive(handle);
@@ -1030,7 +1030,7 @@ export class EagerOpcodeBuilder<Specifier> extends OpcodeBuilder<Specifier> {
     return;
   }
 
-  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, Specifier>>): void {
+  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, TemplateMeta>>): void {
     if (layout) {
       this.primitive(layout.compile() as Recast<VMHandle, number>);
     } else {

@@ -9,8 +9,7 @@ import { UpdatableReference } from '@glimmer/object-reference';
 
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import { TestComponentDefinitionState } from '../components';
-import { TemplateLocator } from '@glimmer/bundle-compiler';
+import { TestComponentDefinitionState, TemplateMeta } from '../components';
 
 export class BasicComponent {
   public element: Element;
@@ -48,7 +47,7 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
     let { name } = state;
 
     if (resolver instanceof LazyRuntimeResolver) {
-      let compile = (source: string, options: TemplateOptions<TemplateLocator>) => {
+      let compile = (source: string, options: TemplateOptions<TemplateMeta>) => {
         let layout = createTemplate(source);
         let template = new ScannableTemplate(options, layout).asLayout();
 
@@ -67,7 +66,7 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
       // compiled layout (which was provided at bundle compilation time and
       // stashed in the component definition state).
       let locator = expect(state.locator, 'component definition state should include module locator');
-      return resolver.getInvocation(locator);
+      return resolver.getInvocation({ locator });
     }
   }
 

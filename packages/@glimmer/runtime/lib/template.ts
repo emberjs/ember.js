@@ -29,7 +29,7 @@ export interface RenderLayoutOptions {
 /**
  * Environment specific template.
  */
-export interface Template<Specifier = Opaque> {
+export interface Template<TemplateMeta = Opaque> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -39,7 +39,7 @@ export interface Template<Specifier = Opaque> {
   /**
    * Template meta (both compile time and environment specific).
    */
-  referrer: Specifier;
+  referrer: TemplateMeta;
 
   hasEval: boolean;
 
@@ -55,7 +55,7 @@ export interface Template<Specifier = Opaque> {
   asPartial(): TopLevelSyntax;
 }
 
-export interface TemplateFactory<Specifier> {
+export interface TemplateFactory<TemplateMeta> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -65,7 +65,7 @@ export interface TemplateFactory<Specifier> {
   /**
    * Compile time meta.
    */
-  meta: Specifier;
+  meta: TemplateMeta;
 
   /**
    * Used to create an environment specific singleton instance
@@ -73,7 +73,7 @@ export interface TemplateFactory<Specifier> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: TemplateOptions<Opaque>): Template<Specifier>;
+  create(env: TemplateOptions<Opaque>): Template<TemplateMeta>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -81,7 +81,7 @@ export interface TemplateFactory<Specifier> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create<U>(env: TemplateOptions<Opaque>, meta: U): Template<Specifier & U>;
+  create<U>(env: TemplateOptions<Opaque>, meta: U): Template<TemplateMeta & U>;
 }
 
 export class TemplateIterator {
@@ -98,8 +98,8 @@ let clientId = 0;
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
-export default function templateFactory<Specifier>(serializedTemplate: SerializedTemplateWithLazyBlock<Specifier>): TemplateFactory<Specifier>;
-export default function templateFactory<Specifier, U>(serializedTemplate: SerializedTemplateWithLazyBlock<Specifier>): TemplateFactory<Specifier & U>;
+export default function templateFactory<TemplateMeta>(serializedTemplate: SerializedTemplateWithLazyBlock<TemplateMeta>): TemplateFactory<TemplateMeta>;
+export default function templateFactory<TemplateMeta, U>(serializedTemplate: SerializedTemplateWithLazyBlock<TemplateMeta>): TemplateFactory<TemplateMeta & U>;
 export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
@@ -113,16 +113,16 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
   return { id, meta, create };
 }
 
-export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier> {
+export class ScannableTemplate<TemplateMeta = Opaque> implements Template<TemplateMeta> {
   private layout: Option<TopLevelSyntax> = null;
   private partial: Option<TopLevelSyntax> = null;
   public symbols: string[];
   public hasEval: boolean;
   public id: string;
-  public referrer: Specifier;
+  public referrer: TemplateMeta;
   private statements: Statement[];
 
-  constructor(private options: TemplateOptions<Specifier>, private parsedLayout: ParsedLayout<Specifier>) {
+  constructor(private options: TemplateOptions<TemplateMeta>, private parsedLayout: ParsedLayout<TemplateMeta>) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
@@ -152,7 +152,7 @@ export class ScannableTemplate<Specifier = Opaque> implements Template<Specifier
   }
 }
 
-export function compilable<Specifier>(layout: ParsedLayout<Specifier>, options: TemplateOptions<Opaque>, asPartial: boolean) {
+export function compilable<TemplateMeta>(layout: ParsedLayout<TemplateMeta>, options: TemplateOptions<Opaque>, asPartial: boolean) {
   let { block, referrer } = layout;
   let { hasEval, symbols } = block;
   let compileOptions = assign({}, options, { asPartial, referrer });

@@ -25,15 +25,15 @@ import { Simple, VMHandle } from '@glimmer/interfaces';
 import VM, { CapturedStack, EvaluationStack } from './append';
 import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
 
-export default class UpdatingVM<Specifier = Opaque> {
+export default class UpdatingVM<TemplateMeta = Opaque> {
   public env: Environment;
   public dom: DOMChanges;
   public alwaysRevalidate: boolean;
-  public constants: Constants<Specifier>;
+  public constants: Constants<TemplateMeta>;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
-  constructor(env: Environment, program: Program<Specifier>, { alwaysRevalidate = false }) {
+  constructor(env: Environment, program: Program<TemplateMeta>, { alwaysRevalidate = false }) {
     this.env = env;
     this.constants = program.constants;
     this.dom = env.getDOM();
