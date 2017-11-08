@@ -71,6 +71,11 @@ export interface BundleCompilationResult {
    * versa.
    */
   table: ExternalModuleTable;
+
+  /**
+   * A mapping of module locators to compiled template symbol tables.
+   */
+  symbolTables: ModuleLocatorMap<ProgramSymbolTable>;
 }
 
 export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
@@ -157,9 +162,11 @@ export default class BundleCompiler<TemplateMeta> {
     let builder = new SimpleOpcodeBuilder();
     builder.main();
     let main = builder.commit(this.program.heap, 0);
+    let symbolTables = new ModuleLocatorMap<ProgramSymbolTable>();
 
-    this.compilableTemplates.forEach((_, locator) => {
+    this.compilableTemplates.forEach((template, locator) => {
       this.compileTemplate(locator);
+      symbolTables.set(locator, template.symbolTable);
     });
 
     let { heap, constants } = this.program;
@@ -168,7 +175,8 @@ export default class BundleCompiler<TemplateMeta> {
       main: main as Recast<Unique<"Handle">, number>,
       heap: heap.capture() as SerializedHeap,
       pool: constants.toPool(),
-      table: this.table
+      table: this.table,
+      symbolTables
     };
   }
 
