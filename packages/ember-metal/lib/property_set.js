@@ -1,14 +1,10 @@
 import { toString } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
-import { _getPath as getPath } from './property_get';
+import { _getPath } from './property_get';
 import {
   propertyWillChange,
   propertyDidChange
 } from './property_events';
-
-import {
-  isPath
-} from './path_cache';
 import {
   peekMeta
 } from './meta';
@@ -45,10 +41,11 @@ export function set(obj, keyName, value, tolerant) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, !obj.isDestroyed);
 
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
-  }
+  let keys = keyName.split('.');
+  return keys.length === 1 ? _set(obj, keyName, value) : _setPath(obj, keys, value, tolerant);
+}
 
+function _set(obj, keyName, value) {
   let currentValue = obj[keyName];
   let isDescriptor = currentValue !== null && typeof currentValue === 'object' && currentValue.isDescriptor;
 
@@ -74,6 +71,20 @@ export function set(obj, keyName, value, tolerant) {
   return value;
 }
 
+function _setPath(root, pathParts, value, tolerant) {
+  let keyName = pathParts.pop();
+
+  assert('Property set failed: You passed an empty path', keyName.trim().length > 0)
+
+  let newRoot = _getPath(root, pathParts);
+
+  if (newRoot) {
+    return _set(newRoot, keyName, value);
+  } else if (!tolerant) {
+    throw new EmberError(`Property set failed: object in path "${pathParts.join('.')}" could not be found or was destroyed.`);
+  }
+}
+
 if (MANDATORY_SETTER) {
   var setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta !== undefined && meta.peekWatching(keyName) > 0) {
@@ -92,23 +103,6 @@ if (MANDATORY_SETTER) {
       Object.defineProperty(obj, key, desc);
     }
   };
-}
-
-function setPath(root, path, value, tolerant) {
-  let parts = path.split('.');
-  let keyName = parts.pop();
-
-  assert('Property set failed: You passed an empty path', keyName.trim().length > 0)
-
-  let newPath = parts.join('.');
-
-  let newRoot = getPath(root, newPath);
-
-  if (newRoot) {
-    return set(newRoot, keyName, value);
-  } else if (!tolerant) {
-    throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
-  }
 }
 
 /**
