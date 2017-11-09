@@ -34,6 +34,18 @@ export default EmberObject.extend({
   asyncEnd: K,
 
   /**
+    Removes test timeout for current test.
+
+    This allows `pauseTest` test helper to wait forever.
+    It should also store an original test timeout value in order to restore it on `resumeTest()`.
+
+    @public
+    @method stashTimeout
+    @return {function} Function that restores timeout
+  */
+  stashTimeout: () => K,
+
+  /**
     Override this method with your testing framework's false assertion.
     This function is called whenever an exception occurs causing the testing
     promise to fail.
