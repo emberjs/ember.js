@@ -53,7 +53,7 @@ function escapeChar(chr: keyof typeof escape) {
   return escape[chr];
 }
 
-export function escapeExpression(string: string | SafeString) {
+export function escapeExpression(string: any): string {
   if (typeof string !== 'string') {
     // don't escape SafeStrings, since they're already safe
     if (string && string.toHTML) {
