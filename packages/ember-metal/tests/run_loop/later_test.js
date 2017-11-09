@@ -27,9 +27,7 @@ function wait(callback, maxWaitCount) {
 // run loop has to flush, it would have considered
 // the timer already expired.
 function pauseUntil(time) {
-  // jscs:disable
   while (+new Date() < time) { /* do nothing - sleeping */ }
-  // jscs:enable
 }
 
 QUnit.module('run.later', {

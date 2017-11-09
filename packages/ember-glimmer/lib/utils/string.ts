@@ -39,9 +39,7 @@ const escape = {
   '<': '&lt;',
   '>': '&gt;',
   '"': '&quot;',
-  // jscs:disable
   "'": '&#x27;',
-  // jscs:enable
   '`': '&#x60;',
   '=': '&#x3D;',
 };
