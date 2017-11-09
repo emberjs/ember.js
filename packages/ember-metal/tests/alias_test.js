@@ -8,7 +8,7 @@ import {
   addObserver,
   removeObserver,
   tagFor
-} from '..'
+} from '..';
 
 let obj, count;
 

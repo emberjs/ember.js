@@ -2916,7 +2916,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         didReceiveAttrs() {
-          assert.equal(1, this.get('foo'), 'expected attrs to have correct value')
+          assert.equal(1, this.get('foo'), 'expected attrs to have correct value');
         }
       }),
 

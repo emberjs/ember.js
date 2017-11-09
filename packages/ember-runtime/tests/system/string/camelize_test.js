@@ -15,7 +15,7 @@ function test(given, expected, description) {
     if (ENV.EXTEND_PROTOTYPES.String) {
       deepEqual(given.camelize(), expected);
     }
-  })
+  });
 }
 
 test('my favorite items',          'myFavoriteItems',          'camelize normal string');

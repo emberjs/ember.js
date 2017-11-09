@@ -141,7 +141,7 @@ suite.test('[A,B,C].insertAt(1,X) => [A,X,B,C] + notify', function() {
   obj.objectAt = (ix) => {
     objectAtCalls.push(ix);
     return objectAt.call(obj, ix);
-  }
+  };
 
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 

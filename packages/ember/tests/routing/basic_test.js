@@ -2510,7 +2510,7 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
     renderTemplate() {
       expectAssertion(() => {
         this.render('homepage', { controller: 'stefanpenneristhemanforme' });
-      }, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.')
+      }, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.');
     }
   });
 

@@ -23,7 +23,7 @@ function reduceMacro(dependentKey, callback, initialValue) {
     let arr = get(this, dependentKey);
     if (arr === null || typeof arr !== 'object') { return initialValue; }
     return arr.reduce(callback, initialValue, this);
-  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true })
+  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true });
 
   return cp;
 }

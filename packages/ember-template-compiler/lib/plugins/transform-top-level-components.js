@@ -10,7 +10,7 @@ export default function transformTopLevelComponent(env) {
         });
       }
     }
-  }
+  };
 }
 
 function hasSingleComponentNode(program, componentCallback) {

@@ -33,15 +33,15 @@ QUnit.module('addObserver');
 
 testBoth('observer should assert to invalid input', function(get, set) {
   expectAssertion(()=> {
-    observer(()=>{})
+    observer(()=>{});
   }, 'observer called without valid path');
 
-  expectDeprecation('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.')
+  expectDeprecation('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.');
 
   expectAssertion(()=> {
-    observer(null)
+    observer(null);
   }, 'observer called without a function');
-})
+});
 
 testBoth('observer should fire when property is modified', function(get, set) {
   let obj = {};

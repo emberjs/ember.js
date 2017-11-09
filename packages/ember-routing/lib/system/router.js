@@ -145,7 +145,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
     this._engineInstances = Object.create(null);
-    this._engineInfoByRoute = Object.create(null)
+    this._engineInfoByRoute = Object.create(null);
   },
 
   /*
@@ -1275,7 +1275,7 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
     }
   }
 
-  let defaultHandler = defaultActionHandlers[name]
+  let defaultHandler = defaultActionHandlers[name];
   if (defaultHandler) {
     defaultHandler.apply(this, [handlerInfos, ...args]);
     return;

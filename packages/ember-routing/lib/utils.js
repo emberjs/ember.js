@@ -5,7 +5,7 @@ import { Error as EmberError } from 'ember-debug';
 const ALL_PERIODS_REGEX = /\./g;
 
 export function extractRouteArgs(args) {
-  args = args.slice()
+  args = args.slice();
   let possibleQueryParams = args[args.length - 1];
 
   let queryParams;

@@ -158,7 +158,7 @@ class OrderedSet {
     @private
   */
   forEach(fn /*, ...thisArg*/) {
-    assert(`${Object.prototype.toString.call(fn)} is not a function`, typeof fn === 'function')
+    assert(`${Object.prototype.toString.call(fn)} is not a function`, typeof fn === 'function');
 
     if (this.size === 0) { return; }
 
@@ -334,7 +334,7 @@ class Map {
     @private
   */
   forEach(callback/*, ...thisArg*/) {
-    assert(`${Object.prototype.toString.call(callback)} is not a function`, typeof callback === 'function')
+    assert(`${Object.prototype.toString.call(callback)} is not a function`, typeof callback === 'function');
 
     if (this.size === 0) { return; }
 

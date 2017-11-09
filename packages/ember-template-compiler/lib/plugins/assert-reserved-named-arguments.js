@@ -14,7 +14,7 @@ export default function assertReservedNamedArguments(env) {
         }
       }
     }
-  }
+  };
 }
 
 function assertMessage(moduleName, node) {

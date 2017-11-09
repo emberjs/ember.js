@@ -38,7 +38,7 @@ moduleFor('Container Debug Adapter', class extends ApplicationTestCase {
   }
 
   ['@test default ContainerDebugAdapter catalogs controller entries'](assert) {
-    this.application.PostController = EmberController.extend()
+    this.application.PostController = EmberController.extend();
     let controllerClasses = adapter.catalogEntriesByType('controller');
 
     assert.equal(controllerClasses.length, 1, 'found 1 class');

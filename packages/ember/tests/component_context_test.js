@@ -43,7 +43,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
 
     this.visit('/').then(() => {
-      let text = this.$('#wrapper').text().trim()
+      let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'outer', 'The component is composed correctly');
     });
   }

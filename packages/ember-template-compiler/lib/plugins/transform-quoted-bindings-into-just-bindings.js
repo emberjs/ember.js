@@ -12,7 +12,7 @@ export default function transformQuotedBindingsIntoJustBindings(env) {
         styleAttr.value = styleAttr.value.parts[0];
       }
     }
-  }
+  };
 }
 
 function validStyleAttr(attr) {
