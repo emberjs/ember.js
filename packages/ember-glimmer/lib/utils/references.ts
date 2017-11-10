@@ -32,7 +32,10 @@ import {
   EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
   MANDATORY_SETTER,
 } from 'ember/features';
-import { RECOMPUTE_TAG } from '../helper';
+import {
+  RECOMPUTE_TAG,
+  SimpleHelperFactory,
+} from '../helper';
 import emberToBool from './to-bool';
 
 export const UPDATE = symbol('UPDATE');
@@ -329,7 +332,9 @@ export class SimpleHelperReference extends CachedReference {
   public helper: (positionalValue: any, namedValue: any) => any;
   public args: any;
 
-  static create(helper: (positionalValue: any, namedValue: any) => any, args: CapturedArguments) {
+  static create(Helper: SimpleHelperFactory, _vm: VM, args: CapturedArguments) {
+    let helper = Helper.create();
+
     if (isConst(args)) {
       let { positional, named } = args;
 
@@ -341,7 +346,7 @@ export class SimpleHelperReference extends CachedReference {
         maybeFreeze(namedValue);
       }
 
-      let result = helper(positionalValue, namedValue);
+      let result = helper.compute(positionalValue, namedValue);
 
       if (typeof result === 'object' && result !== null || typeof result === 'function') {
         return new RootReference(result);
@@ -349,7 +354,7 @@ export class SimpleHelperReference extends CachedReference {
         return PrimitiveReference.create(result);
       }
     } else {
-      return new SimpleHelperReference(helper, args);
+      return new SimpleHelperReference(helper.compute, args);
     }
   }
 
