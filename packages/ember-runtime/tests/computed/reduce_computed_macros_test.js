@@ -344,6 +344,24 @@ QUnit.test('it updates as the array is replaced', function() {
   deepEqual(obj.get('filtered'), [20, 22, 24], 'computed array is updated when array is changed');
 });
 
+QUnit.test('it updates properly on @each with {} dependencies', function() {
+  let item = EmberObject.create({prop: true});
+
+  obj = EmberObject.extend({
+    filtered: filter('items.@each.{prop}', function(item, index) {
+      return item.get('prop') === true;
+    })
+  }).create({
+    items: [item]
+  });
+
+  deepEqual(obj.get('filtered'), [item]);
+
+  item.set('prop', false);
+
+  deepEqual(obj.get('filtered'), []);
+});
+
 QUnit.module('filterBy', {
   setup() {
     obj = EmberObject.extend({
