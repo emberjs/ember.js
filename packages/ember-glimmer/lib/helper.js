@@ -104,6 +104,22 @@ Helper.reopenClass({
   isHelperFactory: true
 });
 
+export class SimpleHelperFactory {
+  constructor(compute) {
+    this.isHelperFactory = true;
+    this.isSimpleHelperFactory = true;
+
+    this.instance = {
+      isHelperInstance: true,
+      compute,
+    };
+  }
+
+  create() {
+    return this.instance;
+  }
+}
+
 /**
   In many cases, the ceremony of a full `Helper` class is not required.
   The `helper` method create pure-function helpers without instances. For
@@ -127,10 +143,7 @@ Helper.reopenClass({
   @since 1.13.0
 */
 export function helper(helperFn) {
-  return {
-    isHelperInstance: true,
-    compute: helperFn
-  };
+  return new SimpleHelperFactory(helperFn);
 }
 
 export default Helper;

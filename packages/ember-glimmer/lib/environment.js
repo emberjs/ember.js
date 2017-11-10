@@ -228,13 +228,16 @@ export default class Environment extends GlimmerEnvironment {
     let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helperFactory.class.isHelperInstance) {
-      return (vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
+    let HelperReference;
+    if (helperFactory.class.isSimpleHelperFactory) {
+      HelperReference = SimpleHelperReference;
     } else if (helperFactory.class.isHelperFactory) {
-      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
+      HelperReference = ClassBasedHelperReference;
     } else {
       throw new Error(`${name} is not a helper`);
     }
+
+    return (vm, args) => HelperReference.create(helperFactory, vm, args.capture());
   }
 
   hasModifier(name) {

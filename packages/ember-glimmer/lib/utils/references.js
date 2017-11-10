@@ -303,7 +303,9 @@ export class ConditionalReference extends GlimmerConditionalReference {
 }
 
 export class SimpleHelperReference extends CachedReference {
-  static create(helper, args) {
+  static create(Helper, _vm, args) {
+    let helper = Helper.create();
+
     if (isConst(args)) {
       let { positional, named } = args;
 
@@ -315,7 +317,7 @@ export class SimpleHelperReference extends CachedReference {
         maybeFreeze(namedValue);
       }
 
-      let result = helper(positionalValue, namedValue);
+      let result = helper.compute(positionalValue, namedValue);
 
       if (typeof result === 'object' && result !== null || typeof result === 'function') {
         return new RootReference(result);
@@ -323,7 +325,7 @@ export class SimpleHelperReference extends CachedReference {
         return PrimitiveReference.create(result);
       }
     } else {
-      return new SimpleHelperReference(helper, args);
+      return new SimpleHelperReference(helper.compute, args);
     }
   }
 
