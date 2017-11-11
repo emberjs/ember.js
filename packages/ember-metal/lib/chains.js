@@ -4,12 +4,6 @@ import { watchKey, unwatchKey } from './watch_key';
 import { getCachedValueFor } from './computed';
 import { eachProxyFor } from './each_proxy';
 
-const FIRST_KEY = /^([^\.]+)/;
-
-function firstKey(path) {
-  return path.match(FIRST_KEY)[0];
-}
-
 function isObject(obj) {
   return typeof obj === 'object' && obj !== null;
 }
@@ -204,10 +198,8 @@ class ChainNode {
     let paths = this._paths || (this._paths = {});
     paths[path] = (paths[path] || 0) + 1;
 
-    let key = firstKey(path);
-    let tail = path.slice(key.length + 1);
-
-    this.chain(key, tail);
+    let tails = path.split('.');
+    this.chain(tails.shift(), tails);
   }
 
   // called on the root node of a chain to teardown watcher on the specified
@@ -219,13 +211,11 @@ class ChainNode {
       paths[path]--;
     }
 
-    let key = firstKey(path);
-    let tail = path.slice(key.length + 1);
-
-    this.unchain(key, tail);
+    let tails = path.split('.');
+    this.unchain(tails.shift(), tails);
   }
 
-  chain(key, path) {
+  chain(key, tails) {
     let chains = this._chains;
     let node;
     if (chains === undefined) {
@@ -241,22 +231,18 @@ class ChainNode {
     node.count++; // count chains...
 
     // chain rest of path if there is one
-    if (path) {
-      key = firstKey(path);
-      path = path.slice(key.length + 1);
-      node.chain(key, path);
+    if (tails.length > 0) {
+      node.chain(tails.shift(), tails);
     }
   }
 
-  unchain(key, path) {
+  unchain(key, tails) {
     let chains = this._chains;
     let node = chains[key];
 
     // unchain rest of path first...
-    if (path && path.length > 1) {
-      let nextKey  = firstKey(path);
-      let nextPath = path.slice(nextKey.length + 1);
-      node.unchain(nextKey, nextPath);
+    if (tails.length > 1) {
+      node.unchain(tails.shift(), tails);
     }
 
     // delete node if needed.
