@@ -209,8 +209,11 @@ class ChainNode {
   remove(path) {
     let paths = this._paths;
     if (paths === undefined) { return; }
+
     if (paths[path] > 0) {
       paths[path]--;
+    } else {
+      return;
     }
 
     let key = firstKey(path);
