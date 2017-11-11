@@ -6,11 +6,13 @@ export const TYPE_SIZE        = 0b11111111;
 export const TYPE_MASK        = 0b0000000011111111;
 export const OPERAND_LEN_MASK = 0b0000001100000000;
 
+export type Operand = number | (() => number);
+
 export class InstructionEncoder {
-  constructor(public buffer: number[]) {}
+  constructor(public buffer: Operand[]) {}
   typePos = 0;
   size = 0;
-  encode(type: Op, ...operands: number[]) {
+  encode(type: Op, ...operands: Operand[]) {
     if (type > TYPE_SIZE) {
       throw new Error(`Opcode type over 8-bits. Got ${type}.`);
     }
@@ -20,7 +22,7 @@ export class InstructionEncoder {
     this.typePos = this.buffer.length - 1;
 
     operands.forEach(op => {
-      if (op > MAX_SIZE) {
+      if (typeof op === 'number' && op > MAX_SIZE) {
         throw new Error(`Operand over 16-bits. Got ${op}.`);
       }
       this.buffer.push(op);

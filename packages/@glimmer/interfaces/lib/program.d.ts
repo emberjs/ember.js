@@ -14,6 +14,7 @@ export type VMHandle = Unique<"Handle">;
 
 export interface CompileTimeHeap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;
+  pushPlaceholder(valueFunc: () => number): void;
   malloc(): VMHandle;
   finishMalloc(handle: VMHandle, scopeSize: number): void;
 

@@ -3,6 +3,7 @@ import { CompileTimeProgram, Recast, VMHandle, RuntimeResolver } from "@glimmer/
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Constants, WriteOnlyConstants, RuntimeConstants, ConstantPool } from './constants';
 import { Opcode } from './opcode';
+import { assert } from "@glimmer/util";
 
 enum TableSlotState {
   Allocated,
@@ -13,6 +14,7 @@ enum TableSlotState {
 
 const ENTRY_SIZE = 2;
 const INFO_OFFSET = 1;
+const MAX_SIZE = 0b1111111111111111;
 const SIZE_MASK =  0b00000000000000001111111111111111;
 const SCOPE_MASK = 0b00111111111111110000000000000000;
 const STATE_MASK = 0b11000000000000000000000000000000;
@@ -30,6 +32,8 @@ export interface SerializedHeap {
   table: number[];
   handle: number;
 }
+
+export type Placeholder = [number, () => number];
 
 /**
  * The Heap is responsible for dynamically allocating
@@ -53,6 +57,7 @@ export interface SerializedHeap {
  */
 export class Heap {
   private heap: Uint16Array | Array<number>;
+  private placeholders: Placeholder[] = [];
   private table: number[];
   private offset = 0;
   private handle = 0;
@@ -172,7 +177,26 @@ export class Heap {
     this.offset = this.offset - compactedSize;
   }
 
+  pushPlaceholder(valueFunc: () => number): void {
+    let address = this.offset++;
+    this.heap[address] = MAX_SIZE;
+    this.placeholders.push([address, valueFunc]);
+  }
+
+  private patchPlaceholders() {
+    let { placeholders } = this;
+
+    for (let i = 0; i < placeholders.length; i++) {
+      let [address, getValue] = placeholders[i];
+
+      assert(this.getbyaddr(address) === MAX_SIZE, `expected to find a placeholder value at ${address}`);
+      this.setbyaddr(address, getValue());
+    }
+  }
+
   capture(): SerializedHeap {
+    this.patchPlaceholders();
+
     // Only called in eager mode
     let buffer = slice(this.heap, 0, this.offset);
     return {
