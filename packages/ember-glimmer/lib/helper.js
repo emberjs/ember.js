@@ -104,19 +104,16 @@ Helper.reopenClass({
   isHelperFactory: true
 });
 
-export class SimpleHelperFactory {
+export class SimpleHelper {
   constructor(compute) {
     this.isHelperFactory = true;
+    this.isHelperInstance = true;
     this.isSimpleHelperFactory = true;
-
-    this.instance = {
-      isHelperInstance: true,
-      compute,
-    };
+    this.compute = compute;
   }
 
   create() {
-    return this.instance;
+    return this;
   }
 }
 
@@ -143,7 +140,7 @@ export class SimpleHelperFactory {
   @since 1.13.0
 */
 export function helper(helperFn) {
-  return new SimpleHelperFactory(helperFn);
+  return new SimpleHelper(helperFn);
 }
 
 export default Helper;
