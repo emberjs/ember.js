@@ -1,8 +1,10 @@
 import {
   Reference,
+  PathReference,
 } from '@glimmer/reference';
 import {
   AttributeManager,
+  CapturedArguments,
   CompilableLayout,
   CompiledDynamicProgram,
   compileLayout,
@@ -15,6 +17,7 @@ import {
   PrimitiveReference,
   PartialDefinition,
   Simple,
+  VM
 } from '@glimmer/runtime';
 import {
   Destroyable, Opaque,
@@ -285,13 +288,18 @@ export default class Environment extends GlimmerEnvironment {
     let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helperFactory.class.isHelperInstance) {
-      return (_vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
+    let HelperReference: {
+      create: (HelperFactory: any, vm: VM, args: CapturedArguments ) => PathReference<Opaque>;
+    };
+    if (helperFactory.class.isSimpleHelperFactory) {
+      HelperReference = SimpleHelperReference;
     } else if (helperFactory.class.isHelperFactory) {
-      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
+      HelperReference = ClassBasedHelperReference;
     } else {
       throw new Error(`${name} is not a helper`);
     }
+
+    return (vm, args) => HelperReference.create(helperFactory, vm, args.capture());
   }
 
   hasModifier(name: string) {
