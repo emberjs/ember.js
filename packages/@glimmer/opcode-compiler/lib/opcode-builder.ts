@@ -31,12 +31,12 @@ import {
   expressionCompiler
 } from './syntax';
 
-import CompilableTemplate, { ICompilableTemplate } from './compilable-template';
+import CompilableTemplate, { ICompilableTemplate, PLACEHOLDER_HANDLE } from './compilable-template';
 
 import {
   ComponentBuilder
 } from './wrapped-component';
-import { InstructionEncoder } from "@glimmer/encoder";
+import { InstructionEncoder, Operand } from "@glimmer/encoder";
 
 export type Label = string;
 
@@ -100,7 +100,7 @@ export interface OpcodeBuilderConstructor {
 export class SimpleOpcodeBuilder {
   protected encoder = new InstructionEncoder([]);
 
-  push(name: Op, ...ops: number[]) {
+  push(name: Op, ...ops: Operand[]) {
     let { encoder } = this;
     encoder.encode(name, ...ops);
   }
@@ -114,7 +114,10 @@ export class SimpleOpcodeBuilder {
     let handle = heap.malloc();
 
     for (let i = 0; i < buffer.length; i++) {
-      heap.push(buffer[i]);
+      let value = buffer[i];
+      typeof value === 'function' ?
+        heap.pushPlaceholder(value) :
+        heap.push(value);
     }
 
     heap.finishMalloc(handle, scopeSize);
@@ -273,13 +276,15 @@ export class SimpleOpcodeBuilder {
   }
 }
 
+export type VMHandlePlaceholder = [number, () => VMHandle];
+
 export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   public constants: CompileTimeConstants;
+  public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
 
   private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
   private labelsStack = new Stack<Labels>();
   private isComponentAttrs = false;
-  public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
 
   constructor(
     public program: CompileTimeProgram,
@@ -1042,6 +1047,15 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
 
   invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
     let handle = compilable.compile();
-    this.push(Op.InvokeStatic, handle as Recast<VMHandle, number>);
+
+    // If the handle for the invoked component is not yet known (for example,
+    // because this is a recursive invocation and we're still compiling), push a
+    // function that will produce the correct handle when the heap is
+    // serialized.
+    if (handle === PLACEHOLDER_HANDLE) {
+      this.push(Op.InvokeStatic, () => compilable.compile() as Recast<VMHandle, number>);
+    } else {
+      this.push(Op.InvokeStatic, handle as Recast<VMHandle, number>);
+    }
   }
 }
