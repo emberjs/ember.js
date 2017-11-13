@@ -50,6 +50,29 @@ export class EmberishComponentTests extends RenderTest {
     assertEmberishElement(el.firstChild as HTMLElement, 'div', { 'data-bar': 'Bar' }, 'Hello World');
   }
 
+  @test({ kind: 'glimmer' })
+  "recursive component invocation"() {
+    let counter = 0;
+
+    class RecursiveInvoker extends EmberishGlimmerComponent {
+      id: number;
+
+      get showChildren() {
+        return this.id < 3;
+      }
+
+      constructor(...args: any[]) {
+        super(...args);
+        this.id = ++counter;
+      }
+    }
+
+    this.registerComponent('Glimmer', 'RecursiveInvoker', '{{id}}{{#if showChildren}}<RecursiveInvoker />{{/if}}', RecursiveInvoker);
+
+    this.render('<RecursiveInvoker />');
+    this.assertHTML('123<!---->');
+  }
+
   @test
   "non-block without properties"() {
     this.render({

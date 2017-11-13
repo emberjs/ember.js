@@ -5,7 +5,8 @@ import {
   Option,
   BlockSymbolTable,
   ComponentCapabilities,
-  CompileTimeProgram
+  CompileTimeProgram,
+  Recast
 } from '@glimmer/interfaces';
 import { Core, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { Macros } from './syntax';
@@ -24,6 +25,8 @@ export interface CompilableTemplate<S extends SymbolTable> {
   symbolTable: S;
   compile(): VMHandle;
 }
+
+export const PLACEHOLDER_HANDLE: VMHandle = -1 as Recast<number, VMHandle>;
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
