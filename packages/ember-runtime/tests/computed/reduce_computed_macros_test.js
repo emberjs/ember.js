@@ -665,7 +665,7 @@ QUnit.test('it asserts if given fewer or more than two dependent properties', fu
       array: emberA([1, 2, 3, 4, 5, 6, 7]),
       array2: emberA([3, 4, 5])
     });
-  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /\`Ember\.computed\.setDiff\` requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 
   expectAssertion(function () {
     EmberObject.extend({
@@ -675,7 +675,7 @@ QUnit.test('it asserts if given fewer or more than two dependent properties', fu
       array2: emberA([3, 4, 5]),
       array3: emberA([7])
     });
-  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /\`Ember\.computed\.setDiff\` requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 });
 
 
