@@ -2,6 +2,7 @@
 @module @ember/component
 */
 
+import { Dict, Opaque } from '@glimmer/util';
 import { DirtyableTag } from '@glimmer/reference';
 import { FrameworkObject } from 'ember-runtime';
 import { symbol } from 'ember-utils';
@@ -104,26 +105,15 @@ Helper.reopenClass({
   isHelperFactory: true,
 });
 
-export interface HelperInstance {
-  isHelperInstance: true;
-  compute: Function;
-}
-
-export class SimpleHelperFactory {
+export class SimpleHelper {
   isHelperFactory = true;
+  isHelperInstance = true;
   isSimpleHelperFactory = true;
 
-  private instance: HelperInstance;
+  constructor(public compute: (positional: any[], named: Dict<Opaque>) => any) { }
 
-  constructor(compute: (positionalValue: any[], namedValue: any[]) => any) {
-    this.instance = {
-      isHelperInstance: true,
-      compute,
-    };
-  }
-
-  create(): HelperInstance {
-    return this.instance;
+  create() {
+    return this;
   }
 }
 
@@ -150,7 +140,7 @@ export class SimpleHelperFactory {
   @since 1.13.0
 */
 export function helper(helperFn: (params: any[], hash?: any) => string) {
-  return new SimpleHelperFactory(helperFn);
+  return new SimpleHelper(helperFn);
 }
 
 export default Helper;

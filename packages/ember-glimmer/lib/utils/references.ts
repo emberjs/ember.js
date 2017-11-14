@@ -34,7 +34,7 @@ import {
 } from 'ember/features';
 import {
   RECOMPUTE_TAG,
-  SimpleHelperFactory,
+  SimpleHelper,
 } from '../helper';
 import emberToBool from './to-bool';
 
@@ -332,7 +332,7 @@ export class SimpleHelperReference extends CachedReference {
   public helper: (positionalValue: any, namedValue: any) => any;
   public args: any;
 
-  static create(Helper: SimpleHelperFactory, _vm: VM, args: CapturedArguments) {
+  static create(Helper: SimpleHelper, _vm: VM, args: CapturedArguments) {
     let helper = Helper.create();
 
     if (isConst(args)) {
