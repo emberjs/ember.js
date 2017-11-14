@@ -352,7 +352,7 @@ QUnit.test('it updates properly on @each with {} dependencies', function() {
       return item.get('prop') === true;
     })
   }).create({
-    items: [item]
+    items: emberA([item])
   });
 
   deepEqual(obj.get('filtered'), [item]);

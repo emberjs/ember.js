@@ -17,7 +17,6 @@ import compare from '../compare';
 import { isArray } from '../utils';
 import { A as emberA } from '../system/native_array';
 
-
 function reduceMacro(dependentKey, callback, initialValue) {
   let cp = new ComputedProperty(function() {
     let arr = get(this, dependentKey);
@@ -45,7 +44,9 @@ function arrayMacro(dependentKey, callback) {
     } else {
       return emberA();
     }
-  }, { dependentKeys: [ dependentKey ], readOnly: true });
+  }, { readOnly: true });
+
+  cp.property(dependentKey); // this forces to expand properties GH #15855
 
   return cp;
 }
