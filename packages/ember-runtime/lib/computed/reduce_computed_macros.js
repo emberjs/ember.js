@@ -17,7 +17,12 @@ import compare from '../compare';
 import { isArray } from '../utils';
 import { A as emberA } from '../system/native_array';
 
-function reduceMacro(dependentKey, callback, initialValue) {
+function reduceMacro(dependentKey, callback, initialValue, name) {
+  assert(
+    `Dependent key passed to \`Ember.computed.${name}\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
+  );
+
   let cp = new ComputedProperty(function() {
     let arr = get(this, dependentKey);
     if (arr === null || typeof arr !== 'object') { return initialValue; }
@@ -51,7 +56,11 @@ function arrayMacro(dependentKey, callback) {
   return cp;
 }
 
-function multiArrayMacro(_dependentKeys, callback) {
+function multiArrayMacro(_dependentKeys, callback, name) {
+  assert(
+    `Dependent keys passed to \`Ember.computed.${name}\` shouldn't contain brace expanding pattern.`,
+    _dependentKeys.every((dependentKey)=> !/[\[\]\{\}]/g.test(dependentKey))
+  );
   let dependentKeys = _dependentKeys.map(key => `${key}.[]`);
 
   let cp = new ComputedProperty(function() {
@@ -74,7 +83,7 @@ function multiArrayMacro(_dependentKeys, callback) {
   @public
 */
 export function sum(dependentKey) {
-  return reduceMacro(dependentKey, (sum, item) => sum + item, 0);
+  return reduceMacro(dependentKey, (sum, item) => sum + item, 0, 'sum');
 }
 
 /**
@@ -120,7 +129,7 @@ export function sum(dependentKey) {
   @public
 */
 export function max(dependentKey) {
-  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity);
+  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity, 'max');
 }
 
 /**
@@ -166,7 +175,7 @@ export function max(dependentKey) {
   @public
 */
 export function min(dependentKey) {
-  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity);
+  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity, 'min');
 }
 
 /**
@@ -243,9 +252,13 @@ export function map(dependentKey, callback) {
 */
 export function mapBy(dependentKey, propertyKey) {
   assert(
-    'Ember.computed.mapBy expects a property string for its second argument, ' +
+    '\`Ember.computed.mapBy\` expects a property string for its second argument, ' +
     'perhaps you meant to use "map"',
     typeof propertyKey === 'string'
+  );
+  assert(
+    `Dependent key passed to \`Ember.computed.mapBy\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
   );
 
   return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));
@@ -346,8 +359,12 @@ export function filter(dependentKey, callback) {
   @public
 */
 export function filterBy(dependentKey, propertyKey, value) {
-  let callback;
+  assert(
+    `Dependent key passed to \`Ember.computed.filterBy\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
+  );
 
+  let callback;
   if (arguments.length === 2) {
     callback = (item) => get(item, propertyKey);
   } else {
@@ -404,7 +421,7 @@ export function uniq(...args) {
     });
 
     return uniq;
-  });
+  }, 'uniq');
 }
 
 /**
@@ -438,6 +455,11 @@ export function uniq(...args) {
   @public
 */
 export function uniqBy(dependentKey, propertyKey) {
+  assert(
+    `Dependent key passed to \`Ember.computed.uniqBy\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
+  );
+
   let cp = new ComputedProperty(function() {
     let uniq = emberA();
     let seen = Object.create(null);
@@ -543,8 +565,7 @@ export function intersect(...args) {
       }
 
       return true;
-    });
-
+    }, 'intersect');
 
     return emberA(results);
   });
@@ -585,8 +606,12 @@ export function intersect(...args) {
   @public
 */
 export function setDiff(setAProperty, setBProperty) {
-  assert('Ember.computed.setDiff requires exactly two dependent arrays.',
+  assert('\`Ember.computed.setDiff\` requires exactly two dependent arrays.',
     arguments.length === 2
+  );
+  assert(
+    `Dependent keys passed to \`Ember.computed.setDiff\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(setAProperty) && !/[\[\]\{\}]/g.test(setBProperty)
   );
 
   let cp = new ComputedProperty(function() {
@@ -646,7 +671,7 @@ export function collect(...dependentKeys) {
       }
     }
     return res;
-  });
+  }, 'collect');
 }
 
 /**
@@ -717,7 +742,7 @@ export function collect(...dependentKeys) {
 */
 export function sort(itemsKey, sortDefinition) {
   assert(
-    'Ember.computed.sort requires two arguments: an array key to sort and ' +
+    '\`Ember.computed.sort\` requires two arguments: an array key to sort and ' +
     'either a sort properties key or sort function',
     arguments.length === 2
   );
