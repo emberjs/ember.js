@@ -62,7 +62,6 @@ import {
   inlineIf,
   inlineUnless,
 } from './helpers/if-unless';
-import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
 import { default as queryParams } from './helpers/query-param';
@@ -88,7 +87,7 @@ function isTemplateFactory(template: OwnedTemplate | WrappedTemplateFactory): te
 
 export interface CompilerFactory {
   id: string;
-  new (template: OwnedTemplate | undefined): CompilableLayout;
+  new(template: OwnedTemplate | undefined): CompilableLayout;
 }
 
 export default class Environment extends GlimmerEnvironment {
@@ -180,7 +179,6 @@ export default class Environment extends GlimmerEnvironment {
       concat,
       get,
       hash,
-      loc,
       log,
       mut,
       'query-params': queryParams,
@@ -261,7 +259,7 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  hasHelper(name: string, { owner, moduleName }: {owner: Container, moduleName: string}): boolean {
+  hasHelper(name: string, { owner, moduleName }: { owner: Container, moduleName: string }): boolean {
     if (name === 'component' || this.builtInHelpers[name]) {
       return true;
     }
@@ -289,7 +287,7 @@ export default class Environment extends GlimmerEnvironment {
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     let HelperReference: {
-      create: (HelperFactory: any, vm: VM, args: CapturedArguments ) => PathReference<Opaque>;
+      create: (HelperFactory: any, vm: VM, args: CapturedArguments) => PathReference<Opaque>;
     };
     if (helperFactory.class.isSimpleHelperFactory) {
       HelperReference = SimpleHelperReference;
@@ -387,7 +385,7 @@ if (DEBUG) {
 
   let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager('style');
 
-  Environment.prototype.attributeFor = function(element, attribute, isTrusting) {
+  Environment.prototype.attributeFor = function (element, attribute, isTrusting) {
     if (attribute === 'style' && !isTrusting) {
       return STYLE_ATTRIBUTE_MANANGER;
     }
