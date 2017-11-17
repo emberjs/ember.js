@@ -3,7 +3,7 @@ import {
   CONSTANT_TAG,
   isConst,
   PathReference,
-  referenceFromParts,
+  referenceForParts,
   TagWrapper,
   UpdatableTag,
 } from '@glimmer/reference';
@@ -78,7 +78,7 @@ class GetHelperReference extends CachedReference {
   static create(sourceReference: any, pathReference: PathReference<any>) {
     if (isConst(pathReference)) {
       let parts = pathReference.value().split('.');
-      return referenceFromParts(sourceReference, parts);
+      return referenceForParts(sourceReference, parts);
     } else {
       return new GetHelperReference(sourceReference, pathReference);
     }
@@ -107,7 +107,7 @@ class GetHelperReference extends CachedReference {
         let pathType = typeof path;
 
         if (pathType === 'string') {
-          innerReference = referenceFromParts(this.sourceReference, path.split('.'));
+          innerReference = referenceForParts(this.sourceReference, path.split('.'));
         } else if (pathType === 'number') {
           innerReference = this.sourceReference.get('' + path);
         }

@@ -1,5 +1,5 @@
 import { Opaque } from '@glimmer/util';
-import { Simple } from '@glimmer/runtime';
+import { Simple } from '@glimmer/interfaces';
 
 export const ActionSupport: any;
 export const ChildViewsSupport: any;
