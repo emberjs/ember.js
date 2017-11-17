@@ -149,7 +149,7 @@
   ```app/templates/application.hbs
   {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
     {{#if validationError}}
-      <p class="error">{{ValidationError}}</p>
+      <p class="error">{{validationError}}</p>
     {{/if}}
     First name:
   {{/labeled-textfield}}

@@ -1,6 +1,7 @@
 import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
+  clientBuilder,
   DynamicScope as GlimmerDynamicScope,
   IteratorResult,
 } from '@glimmer/runtime';
@@ -78,7 +79,6 @@ class RootState {
     alwaysRevalidate: boolean;
   };
   public render: () => void;
-  private _removing: boolean;
 
   constructor(
     root: Opaque,
@@ -95,14 +95,18 @@ class RootState {
     this.result = undefined;
     this.shouldReflush = false;
     this.destroyed = false;
-    this._removing = false;
 
     let options = this.options = {
       alwaysRevalidate: false,
     };
 
     this.render = () => {
-      let iterator = template.render(self, parentElement, dynamicScope);
+      let iterator = template.renderLayout({
+        self,
+        env,
+        builder: clientBuilder(env, { element: parentElement, nextSibling: null}),
+        dynamicScope
+      });
       let iteratorResult: IteratorResult<RenderResult>;
 
       do {

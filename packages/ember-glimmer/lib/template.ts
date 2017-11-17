@@ -1,9 +1,21 @@
 import {
+  LazyConstants,
+  Program
+} from '@glimmer/program';
+import {
   Template,
   templateFactory,
   TemplateFactory,
 } from '@glimmer/runtime';
+import {
+  EagerOpcodeBuilder,
+  OpcodeBuilderConstructor,
+  Macros
+} from '@glimmer/opcode-compiler';
 import { OWNER } from 'ember-utils';
+
+import RuntimeResolver from './resolver';
+import CompileTimeLookup from './compile-time-lookup';
 
 export interface Container {
   lookup<T>(name: string): T;
@@ -31,8 +43,14 @@ export class WrappedTemplateFactory {
   }
 
   create(props: any): OwnedTemplate {
-    let owner = props[OWNER];
-    return this.factory.create(props.env, { owner });
+    const owner = props[OWNER];
+    const resolver = new RuntimeResolver(owner);
+    return this.factory.create({
+      program: new Program(new LazyConstants(resolver)),
+      macros: new Macros(),
+      lookup: new CompileTimeLookup(resolver),
+      Builder: EagerOpcodeBuilder as OpcodeBuilderConstructor
+    }, { owner });
   }
 }
 

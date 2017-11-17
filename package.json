@@ -44,6 +44,7 @@
   "dependencies": {
     "@glimmer/compiler": "^0.29.10",
     "@glimmer/node": "^0.29.10",
+    "@glimmer/program": "^0.29.10",
     "@glimmer/reference": "^0.29.10",
     "@glimmer/runtime": "^0.29.10",
     "@glimmer/vm": "^0.29.10",

@@ -8,7 +8,6 @@ import {
   Bounds,
   ComponentDefinition,
   ElementOperations,
-  Invocation,
   NamedArguments,
   PositionalArguments,
   PreparedArguments,
@@ -117,8 +116,8 @@ class CurlyComponentLayoutCompiler {
 
   compile(builder: any) {
     builder.wrapLayout(this.template);
-    builder.tag.dynamic(tagName);
-    builder.attrs.dynamic('role', ariaRole);
+    // builder.tag.dynamic(tagName);
+    // builder.attrs.dynamic('role', ariaRole);
     builder.attrs.static('class', 'ember-view');
   }
 }
@@ -258,7 +257,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return bucket;
   }
 
-  layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): Invocation {
+  layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): VMHandle {
     let template = definition.template;
     if (!template) {
       template = this.templateFor(bucket.component, env);

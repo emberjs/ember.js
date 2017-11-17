@@ -3,7 +3,7 @@ import { WrappedTemplateFactory } from './template';
 // to support Ember.TEMPLATES but shield ember internals from this legacy
 // global API.
 interface TemplatesRegistry {
-  [name: string]: WrappedTemplateFactory
+  [name: string]: WrappedTemplateFactory;
 }
 let TEMPLATES: TemplatesRegistry = {};
 

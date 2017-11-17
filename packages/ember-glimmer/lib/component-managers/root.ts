@@ -6,7 +6,7 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import {
-  Option
+  Option, Opaque
 } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -17,19 +17,26 @@ import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
-import { DynamicScope } from '../renderer';
+import { DynamicScope, View } from '../renderer';
 import Environment from '../environment';
 import DefintionState, { CAPABILITIES } from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
+  component: View;
+
+  constructor(component: View) {
+    super();
+    this.component = component;
+  }
+
   create(environment: Environment,
-         definition: DefintionState,
+         _: DefintionState,
          args: Arguments,
          dynamicScope: DynamicScope) {
-    let component = definition.ComponentClass.create();
+    let component = this.component;
 
     if (DEBUG) {
-      this._pushToDebugStack(component._debugContainerKey, environment);
+      this._pushToDebugStack((component as any)._debugContainerKey, environment);
     }
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);

@@ -1,5 +1,6 @@
 import {
   ComponentCapabilities,
+  VMHandle
 } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -8,14 +9,13 @@ import {
   DynamicScope,
   ElementOperations,
   Environment,
-  Invocation,
   PreparedArguments,
 } from '@glimmer/runtime';
 import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
 import {
   Destroyable,
   Opaque,
-  Option 
+  Option
 } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import DebugStack from '../utils/debug-stack';
@@ -51,9 +51,9 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
   abstract layoutFor(
     definition: any,
     component: T,
-    env: Environment): Invocation;
+    env: Environment): VMHandle;
   abstract getSelf(component: T): VersionedPathReference<Opaque>;
-  abstract getCapabilities(state: U): ComponentCapabilities; 
+  abstract getCapabilities(state: U): ComponentCapabilities;
 
   didCreateElement(_component: T, _element: Element, _operations: ElementOperations): void {
     // noop

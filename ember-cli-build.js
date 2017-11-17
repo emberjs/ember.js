@@ -67,6 +67,7 @@ module.exports = function(options) {
   );
   let glimmerEncoder = toES5(glimmerPkgES('@glimmer/encoder'));
   let glimmerOpcodeComiler = toES5(glimmerPkgES('@glimmer/opcode-compiler', ['@glimmer/encoder']));
+  let glimmerProgram = toES5(glimmerPkgES('@glimmer/program'));
   let glimmerReference = toES5(glimmerPkgES('@glimmer/reference', ['@glimmer/util']));
   let glimmerUtil = toES5(glimmerPkgES('@glimmer/util'));
   let glimmerVM = toES5(glimmerPkgES('@glimmer/vm'));
@@ -141,6 +142,7 @@ module.exports = function(options) {
     emberDebugES5,
     glimmerEncoder,
     glimmerOpcodeComiler,
+    glimmerProgram,
     glimmerReference,
     glimmerUtil,
     glimmerVM,
@@ -205,6 +207,7 @@ module.exports = function(options) {
       glimmerCompiler,
       glimmerEncoder,
       glimmerOpcodeComiler,
+      glimmerProgram,
       glimmerReference,
       glimmerUtil,
       glimmerVM,
@@ -240,6 +243,7 @@ module.exports = function(options) {
     let depsProd = [
       glimmerEncoder,
       glimmerOpcodeComiler,
+      glimmerProgram,
       glimmerReference,
       glimmerUtil,
       glimmerVM,

@@ -260,6 +260,10 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
+  lookupComponent(name: string, meta: any) {
+    return lookupComponent(meta.owner, name, meta);
+  }
+
   hasHelper(name: string, { owner, moduleName }: {owner: Container, moduleName: string}): boolean {
     if (name === 'component' || this.builtInHelpers[name]) {
       return true;
