@@ -113,7 +113,7 @@ function transpileAMD(pkgName, esVersion, tree) {
   let options = {
     annotation: `Transpile AMD - ${pkgName} - ${esVersion}`,
     rollup: {
-      entry: `${pkgName}/index.js`,
+      input: `${pkgName}/index.js`,
       external,
       plugins,
       onwarn(warning) {
@@ -130,12 +130,14 @@ function transpileAMD(pkgName, esVersion, tree) {
         }
         console.log(`Rollup warning: ${warning.message}`);
       },
-      targets: [{
-        dest: `${pkgName}/dist/amd/${esVersion}/${bundleName}.js`,
+      output: [{
+        file: `${pkgName}/dist/amd/${esVersion}/${bundleName}.js`,
         format: 'amd',
         exports: 'named',
-        moduleId: pkgName,
-        sourceMap: 'inline'
+        amd: {
+          id: pkgName
+        },
+        sourcemap: 'inline'
       }]
     }
   };
