@@ -38,9 +38,9 @@ export default class ComponentStateBucket {
   public classRef: VersionedReference<Opaque> | null = null;
   public argsRevision: Revision;
 
-  constructor(public environment: Environment, public component: Component, public args: CapturedNamedArguments, public finalizer: Finalizer) {
+  constructor(public environment: Environment, public component: Component, public args: CapturedNamedArguments | null, public finalizer: Finalizer) {
     this.classRef = null;
-    this.argsRevision = args.tag.value();
+    this.argsRevision = args === null ? 0 : args.tag.value();
   }
 
   destroy() {

@@ -6,6 +6,7 @@ import {
 import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart,
+  peekMeta,
 } from 'ember-metal';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -15,7 +16,6 @@ import CurlyComponentManager, {
   processComponentInitializationAssertions,
 } from './curly';
 import DefintionState from './definition-state';
-import { peekMeta } from 'ember-metal';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -25,9 +25,13 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
+  getLayout(...args: any[]) {
+    console.log(...args);
+  }
+
   create(environment: Environment,
-         _: DefintionState,
-         args: Arguments,
+         _state: DefintionState,
+         _args: Arguments | null,
          dynamicScope: DynamicScope) {
     let component = this.component;
 
@@ -56,15 +60,17 @@ class RootComponentManager extends CurlyComponentManager {
       processComponentInitializationAssertions(component, {});
     }
 
-    return new ComponentStateBucket(environment, component, args.named.capture(), finalizer);
+    return new ComponentStateBucket(environment, component, null, finalizer);
   }
 }
 
-export const CURLY_CAPABILITIES: ComponentCapabilities = {
-  dynamicLayout: true,
-  dynamicTag: true,
-  prepareArgs: true,
-  createArgs: true,
+// ROOT is the top-level template it has nothing but one yield.
+// it is supposed to have a dummy element
+export const ROOT_CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
   attributeHook: true,
   elementHook: true
 };
@@ -79,9 +85,9 @@ export class RootComponentDefinition implements ComponentDefinition {
     let factory = peekMeta(component)._factory;
     this.state = {
       name: factory.fullName,
-      capabilities: CURLY_CAPABILITIES,
+      capabilities: ROOT_CAPABILITIES,
       ComponentClass: factory,
-      handle: null
+      handle: null,
     };
   }
 }
