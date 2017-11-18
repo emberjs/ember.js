@@ -1,6 +1,7 @@
+import { Owner } from 'ember-utils';
 interface Container {
   registry: any;
-  owner: any | null;
+  owner: Owner | null;
   cache: any | null;
   factoryManagerCache: any | null;
   isDestroyed: boolean;

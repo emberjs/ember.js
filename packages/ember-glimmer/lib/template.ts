@@ -1,4 +1,10 @@
 import {
+  EagerOpcodeBuilder,
+  Macros,
+  OpcodeBuilderConstructor,
+  TemplateOptions
+} from '@glimmer/opcode-compiler';
+import {
   LazyConstants,
   Program
 } from '@glimmer/program';
@@ -7,58 +13,52 @@ import {
   templateFactory,
   TemplateFactory,
 } from '@glimmer/runtime';
-import {
-  EagerOpcodeBuilder,
-  OpcodeBuilderConstructor,
-  Macros
-} from '@glimmer/opcode-compiler';
-import { OWNER } from 'ember-utils';
-
-import RuntimeResolver from './resolver';
+import { OWNER, Owner } from 'ember-utils';
+import { TemplateMeta } from 'ember-views';
 import CompileTimeLookup from './compile-time-lookup';
+import RuntimeResolver from './resolver';
 
-export interface Container {
-  lookup<T>(name: string): T;
-  factoryFor<T>(name: string): T;
-  buildChildEngineInstance<T>(name: string): T;
-  hasRegistration(name: string, options?: any): boolean;
-}
-
-export type OwnedTemplate = Template<{
-  moduleName: string;
-  owner: Container;
-}>;
+export type OwnedTemplate = Template<TemplateMeta>;
 
 export class WrappedTemplateFactory {
   id: string;
   meta: {
     moduleName: string;
+    managerId?: string;
   };
 
   constructor(public factory: TemplateFactory<{
     moduleName: string;
+    managerId?: string;
   }>) {
     this.id = factory.id;
     this.meta = factory.meta;
   }
 
   create(props: any): OwnedTemplate {
-    const owner = props[OWNER];
+    const owner: Owner = props[OWNER];
     const resolver = new RuntimeResolver(owner);
-    return this.factory.create({
+    // I'm pretty sure there is only supposed to be one of these
+    // injected into all templates.
+    const options: TemplateOptions<{
+      moduleName: string;
+      managerId?: string;
+    }> = {
       program: new Program(new LazyConstants(resolver)),
       macros: new Macros(),
-      lookup: new CompileTimeLookup(resolver),
+      resolver: new CompileTimeLookup(resolver),
       Builder: EagerOpcodeBuilder as OpcodeBuilderConstructor
-    }, { owner });
+    };
+    return this.factory.create(options, { owner });
   }
 }
 
 export default function template(json: any) {
   const factory = templateFactory<{
     moduleName: string;
+    managerId?: string;
   }, {
-    owner: Container;
+    owner: Owner;
   }>(json);
   return new WrappedTemplateFactory(factory);
 }
