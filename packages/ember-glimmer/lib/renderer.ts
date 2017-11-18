@@ -1,8 +1,10 @@
 import { Option, Simple } from '@glimmer/interfaces';
-import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
+  CapturedArguments,
   clientBuilder,
   ComponentDefinition,
+  CurriedComponentDefinition,
   DynamicScope as GlimmerDynamicScope,
   IteratorResult,
   NULL_REFERENCE,
@@ -26,7 +28,7 @@ import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import Environment from './environment';
 import { OwnedTemplate } from './template';
-import ComponentStateBucket, { Component } from './utils/curly-component-state-bucket';
+import { Component } from './utils/curly-component-state-bucket';
 import { RootReference } from './utils/references';
 import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
 
@@ -203,6 +205,23 @@ function loopEnd() {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
+// const EMPTY_NAMED = new CapturedNamedArguments(CONSTANT_TAG, [], []);
+// const EMPTY_POSITIONAL = new CapturedPositionalArguments(CONSTANT_TAG, []);
+export const EMPTY_ARGS: CapturedArguments = {
+  tag: CONSTANT_TAG,
+  length: 0,
+  positional: {
+    tag: CONSTANT_TAG,
+    length: 0,
+    references: [] as VersionedPathReference<Opaque>[],
+  },
+  named: {
+    tag: CONSTANT_TAG,
+    length: 0,
+    names: [] as string[],
+    references: [] as VersionedPathReference<Opaque>[]
+  }} as any;
+
 export abstract class Renderer {
   private _env: Environment;
   private _rootTemplate: any;
@@ -237,15 +256,15 @@ export abstract class Renderer {
     this._appendDefinition(view, definition, target, outletStateReference);
   }
 
-  appendTo(view: ComponentStateBucket, target: Simple.Element) {
+  appendTo(view: Component, target: Simple.Element) {
     let rootDef = new RootComponentDefinition(view);
-
-    this._appendDefinition(view, rootDef, target);
+    let def = new CurriedComponentDefinition(rootDef as any, EMPTY_ARGS);
+    this._appendDefinition(view, def, target);
   }
 
   _appendDefinition(
     root: Opaque,
-    definition: ComponentDefinition<Opaque>,
+    definition: ComponentDefinition<Opaque> | CurriedComponentDefinition,
     target: Simple.Element,
     outletStateReference?: RootOutletStateReference) {
     let self = new RootReference(definition);

@@ -1,31 +1,30 @@
 import {
-  Arguments,
-  ComponentDefinition,
-} from '@glimmer/runtime';
-import {
   ComponentCapabilities,
   VMHandle
 } from '@glimmer/interfaces';
+import {
+  Tag,
+  VersionedPathReference
+} from '@glimmer/reference';
+import {
+  Arguments,
+  ComponentDefinition,
+} from '@glimmer/runtime';
 import {
   Destroyable,
   Opaque,
   Option
 } from '@glimmer/util';
-import {
-  Tag,
-  VersionedPathReference
-} from '@glimmer/reference';
 import { DEBUG } from 'ember-env-flags';
 
 import { generateControllerFactory } from 'ember-routing';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
-import { Component } from '../utils/curly-component-state-bucket';
 import { DIRTY_TAG } from '../component';
-import { RootReference } from '../utils/references';
 import Environment from '../environment';
+import { Component } from '../utils/curly-component-state-bucket';
+import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import DefinitionState, { CAPABILITIES } from './definition-state';
-import { OutletLayoutCompiler } from './outlet';
 
 // TODO: remove these stubbed interfaces when better typing is in place
 interface EngineType {

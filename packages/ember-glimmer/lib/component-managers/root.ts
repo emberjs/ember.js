@@ -1,3 +1,4 @@
+import { ComponentCapabilities } from '@glimmer/interfaces';
 import {
   Arguments,
   ComponentDefinition
@@ -14,6 +15,7 @@ import CurlyComponentManager, {
   processComponentInitializationAssertions,
 } from './curly';
 import DefintionState from './definition-state';
+import { peekMeta } from 'ember-metal';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -58,11 +60,28 @@ class RootComponentManager extends CurlyComponentManager {
   }
 }
 
+export const CURLY_CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: true,
+  dynamicTag: true,
+  prepareArgs: true,
+  createArgs: true,
+  attributeHook: true,
+  elementHook: true
+};
+
 export class RootComponentDefinition implements ComponentDefinition {
   state: DefintionState;
   manager: RootComponentManager;
 
-  constructor(public component: ComponentStateBucket) {
-    // TODO initialize
+  constructor(public component: Component) {
+    let manager = new RootComponentManager(component);
+    this.manager = manager;
+    let factory = peekMeta(component)._factory;
+    this.state = {
+      name: factory.fullName,
+      capabilities: CURLY_CAPABILITIES,
+      ComponentClass: factory,
+      handle: null
+    };
   }
 }

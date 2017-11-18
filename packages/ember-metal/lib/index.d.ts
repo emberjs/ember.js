@@ -11,6 +11,8 @@ interface IRun {
   backburner: IBackburner
 }
 
+export function peekMeta(obj: any): any;
+
 export const run: IRun;
 
 export const PROPERTY_DID_CHANGE: symbol;
