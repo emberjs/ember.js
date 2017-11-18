@@ -14,6 +14,7 @@ import {
 import {
   Ops,
 } from '@glimmer/wire-format';
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
@@ -41,7 +42,7 @@ function referenceForParts(component: Component, parts: string[]) {
 }
 
 // TODO we should probably do this transform at build time
-export function wrapComponentClassAttribute(hash: any[]) {
+export function wrapComponentClassAttribute(hash: WireFormat.Core.Hash) {
   if (!hash) {
     return hash;
   }
@@ -50,17 +51,22 @@ export function wrapComponentClassAttribute(hash: any[]) {
   let index = keys.indexOf('class');
 
   if (index !== -1) {
-    let [ type ] = values[index];
+    let [ type ] = values[index] as WireFormat.Expressions.TupleExpression | string;
 
     if (type === Ops.Get || type === Ops.MaybeLocal) {
-      let getExp = values[index];
+      let getExp = expectTupleExpression(values[index]);
       let path = getExp[getExp.length - 1];
       let propName = path[path.length - 1];
-      hash[1][index] = [Ops.Helper, ['-class'], [getExp, propName]];
+      hash[1][index] = [Ops.Helper, '-class', [getExp, propName], null] as WireFormat.Expressions.Helper;
     }
   }
 
   return hash;
+}
+
+function expectTupleExpression(expr: WireFormat.Expression): WireFormat.Expressions.TupleExpression {
+  assert(`Expected a TupleExpression but got expression ${expr}`, Array.isArray(expr));
+  return expr as WireFormat.Expressions.TupleExpression;
 }
 
 export const AttributeBinding = {

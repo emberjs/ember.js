@@ -6,7 +6,11 @@ import { ConstReference, isConst } from '@glimmer/reference';
 import {
   Arguments,
   VM,
+  OpcodeBuilderDSL,
+  ComponentArgs,
 } from '@glimmer/runtime';
+import * as WireFormat from '@glimmer/wire-format';
+import { Option } from '@glimmer/util';
 import { assert } from 'ember-debug';
 import {
   NON_SINGLETON_RENDER_MANAGER,
@@ -17,7 +21,7 @@ import Environment from '../environment';
 import { OwnedTemplate } from '../template';
 import { hashToArgs } from './utils';
 
-function makeComponentDefinition(vm: VM, args: Arguments) {
+function makeComponentDefinition(vm: VM, args: Arguments): ConstReference<RenderDefinition> {
   let env     = vm.env as Environment;
   let nameRef = args.positional.at(0);
 
@@ -128,12 +132,17 @@ function makeComponentDefinition(vm: VM, args: Arguments) {
   @public
   @deprecated Use a component instead
 */
-export function renderMacro(_name: string, params: any[], hash: any[], builder: any) {
+export function renderMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, builder: OpcodeBuilderDSL): boolean {
   if (!params) {
     params = [];
   }
-  let definitionArgs = [params.slice(0), hash, null, null];
-  let args = [params.slice(1), hashToArgs(hash), null, null];
-  builder.component.dynamic(definitionArgs, makeComponentDefinition, args);
+  let definitionArgs: ComponentArgs = [params.slice(0), hash, null, null];
+  let args: ComponentArgs = [params.slice(1), hashToArgs(hash), null, null];
+
+  // We have to coerce makeComponentDefinition into an `any` here because
+  // Glimmer VM is typing this too restrictively as a PathReference when it
+  // should just be a Reference (paths are never looked up on
+  // ComponentDefinitions.
+  builder.component.dynamic(definitionArgs, makeComponentDefinition as any, args);
   return true;
 }
