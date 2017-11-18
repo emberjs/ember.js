@@ -1,13 +1,7 @@
 import {
-  VMHandle
-} from '@glimmer/interfaces';
-import {
   Arguments,
   ComponentDefinition
 } from '@glimmer/runtime';
-import {
-  Option
-} from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart,
@@ -19,7 +13,7 @@ import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
-import DefintionState, { CAPABILITIES } from './definition-state';
+import DefintionState from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -65,14 +59,10 @@ class RootComponentManager extends CurlyComponentManager {
 }
 
 export class RootComponentDefinition implements ComponentDefinition {
-  public state: DefintionState;
+  state: DefintionState;
+  manager: RootComponentManager;
 
-  constructor(name: string, public manager: RootComponentManager, ComponentClass: any, handle: Option<VMHandle>) {
-    this.state = {
-      name,
-      ComponentClass,
-      handle,
-      capabilities: CAPABILITIES
-    };
+  constructor(public component: ComponentStateBucket) {
+    // TODO initialize
   }
 }

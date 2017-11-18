@@ -66,9 +66,11 @@ class MountManager extends AbstractManager<EngineBucket, DefinitionState> {
     return bucket;
   }
 
-  layoutFor(_definition: ComponentDefinition<EngineBucket>, { engine }: EngineBucket, env: Environment) {
-    let template = engine.lookup(`template:application`);
-    return env.getCompiledBlock(OutletLayoutCompiler, template);
+  layoutFor(_definition: ComponentDefinition<EngineBucket>, _bucket: EngineBucket, _env: Environment) {
+    // let template = engine.lookup(`template:application`);
+    throw Error('use resolver.lookupTemplate resolver.compileTemplate');
+    // needs to use resolver
+    // return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
   getSelf(bucket: EngineBucket): VersionedPathReference<Opaque> {

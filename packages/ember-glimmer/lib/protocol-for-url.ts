@@ -1,8 +1,8 @@
 /* globals module, URL */
 
 import { environment as emberEnvironment } from 'ember-environment';
-import Environment from './environment';
 import { IS_NODE, require } from 'node-module';
+import Environment from './environment';
 
 let nodeURL: any;
 let parsingNode: HTMLAnchorElement;

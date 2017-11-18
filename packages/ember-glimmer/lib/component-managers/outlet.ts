@@ -1,30 +1,30 @@
 import {
   ComponentCapabilities,
-  Option
+  Option,
+  VMHandle
 } from '@glimmer/interfaces';
+import {
+  Tag
+} from '@glimmer/reference';
 import {
   Arguments,
   ComponentDefinition,
   DynamicScope,
   Environment
 } from '@glimmer/runtime';
-import {
-  Tag
-} from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { generateGuid, guidFor } from 'ember-utils';
-import EmberEnvironment from '../environment';
+import { DIRTY_TAG } from '../component';
 import {
   OwnedTemplate,
   WrappedTemplateFactory,
 } from '../template';
+import { Component } from '../utils/curly-component-state-bucket';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
-import { Component } from '../utils/curly-component-state-bucket';
 import DefinitionState from './definition-state';
-import { DIRTY_TAG } from '../component';
 
 function instrumentationPayload({ render: { name, outlet } }: {render: {name: string, outlet: string}}) {
   return { object: `${name}:${outlet}` };
@@ -76,8 +76,13 @@ class OutletComponentManager extends AbstractManager<StateBucket, DefinitionStat
     return state.capabilities;
   }
 
-  layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
-    return (env as EmberEnvironment).getCompiledBlock(OutletLayoutCompiler, definition.template);
+  layoutFor(
+    _definition: OutletComponentDefinition,
+    _component: StateBucket,
+    _env: Environment): VMHandle {
+    throw new Error('TODO');
+    // TODO resolver.compileTemplate
+    // return (env as EmberEnvironment).getCompiledBlock(OutletLayoutCompiler, definition.template);
   }
 
   getSelf({ outletState }: StateBucket) {
@@ -110,8 +115,9 @@ class TopLevelOutletComponentManager extends OutletComponentManager {
     return new StateBucket(dynamicScope.outletState.value());
   }
 
-  layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
-    return (env as EmberEnvironment).getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
+  layoutFor(_definition: OutletComponentDefinition, _bucket: StateBucket, _env: Environment): VMHandle {
+    throw new Error('TODO resolver.compileTemplate and get invocation handle');
+    // eturn (env as EmberEnvironment).getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
   }
 }
 

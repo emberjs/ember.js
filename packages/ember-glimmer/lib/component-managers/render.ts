@@ -1,5 +1,5 @@
 import {
-  ComponentCapabilities,
+  ComponentCapabilities, VMHandle,
 } from '@glimmer/interfaces';
 import {
   Tag
@@ -19,13 +19,14 @@ import { OwnedTemplate } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
-import { OutletLayoutCompiler } from './outlet';
 
 export abstract class AbstractRenderManager extends AbstractManager<RenderState, DefinitionState> {
-  layoutFor(definition: RenderDefinition, _bucket: RenderState, env: Environment) {
+  layoutFor(definition: RenderDefinition, _bucket: RenderState, _env: Environment): VMHandle {
     // only curly components can have lazy layout
     assert('definition is missing a template', !!definition.template);
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template!);
+
+    throw Error('use resolver.lookupTemplate resolver.compileTemplate');
+    // return env.getCompiledBlock(OutletLayoutCompiler, definition.template!);
   }
 
   getSelf({ controller }: RenderState) {

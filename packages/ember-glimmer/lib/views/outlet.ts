@@ -3,9 +3,9 @@ import { DirtyableTag, Tag, TagWrapper, VersionedPathReference } from '@glimmer/
 import { Opaque, Option } from '@glimmer/util';
 import { environment } from 'ember-environment';
 import { run } from 'ember-metal';
-import { assign, OWNER } from 'ember-utils';
+import { assign, OWNER, Owner } from 'ember-utils';
 import { Renderer } from '../renderer';
-import { Container, OwnedTemplate } from '../template';
+import { OwnedTemplate } from '../template';
 
 export class RootOutletStateReference implements VersionedPathReference<Option<OutletState>> {
   tag: Tag;
@@ -88,7 +88,7 @@ class ChildOutletStateReference implements VersionedPathReference<any> {
 }
 
 export interface RenderState {
-  owner: Container | undefined;
+  owner: Owner | undefined;
   into: string | undefined;
   outlet: string;
   name: string;
@@ -112,7 +112,7 @@ export interface BootEnvironment {
 export default class OutletView {
   private _environment: BootEnvironment;
   public renderer: Renderer;
-  public owner: Container;
+  public owner: Owner;
   public template: OwnedTemplate;
   public outletState: Option<OutletState>;
   public _tag: TagWrapper<DirtyableTag>;
@@ -139,7 +139,7 @@ export default class OutletView {
     return new OutletView(_environment, renderer, owner, template);
   }
 
-  constructor(_environment: BootEnvironment, renderer: Renderer, owner: Container, template: OwnedTemplate) {
+  constructor(_environment: BootEnvironment, renderer: Renderer, owner: Owner, template: OwnedTemplate) {
     this._environment = _environment;
     this.renderer = renderer;
     this.owner = owner;

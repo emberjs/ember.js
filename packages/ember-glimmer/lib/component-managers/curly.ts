@@ -274,16 +274,21 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): VMHandle {
     let template = definition.template;
     if (!template) {
+      // move templateFor to resolver
       template = this.templateFor(bucket.component, env);
     }
-    return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
+    throw Error('use resolver');
+    // needs to use resolver
+    // return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
-  templateFor(component: Component, env: Environment): OwnedTemplate {
+  templateFor(component: Component, _env: Environment): OwnedTemplate {
     let Template = get(component, 'layout');
     let owner = component[OWNER];
     if (Template) {
-      return env.getTemplate(Template, owner);
+      throw new Error('TODO layout not looked up but direct import');
+      // we should move this to the resolver
+      // return env.getTemplate(Template, owner);
     }
     let layoutName = get(component, 'layoutName');
     if (layoutName) {

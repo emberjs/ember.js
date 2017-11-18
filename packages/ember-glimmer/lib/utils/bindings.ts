@@ -19,15 +19,15 @@ import {
 import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
-import { Component } from './curly-component-state-bucket';
 import { ROOT_REF } from '../component';
+import { Component } from './curly-component-state-bucket';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
 function referenceForKey(component: Component, key: string) {
   return component[ROOT_REF].get(key);
 }
 
-function referenceForParts(component: Component, parts: string[]) {
+function referenceForParts(component: Component, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';
 
   // TODO deprecate this
@@ -39,7 +39,7 @@ function referenceForParts(component: Component, parts: string[]) {
     }
   }
 
-  return referenceFromParts(component[ROOT_REF], parts);
+  return referenceForParts(component[ROOT_REF], parts);
 }
 
 // TODO we should probably do this transform at build time
