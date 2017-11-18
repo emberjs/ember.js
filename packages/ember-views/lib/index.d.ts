@@ -1,5 +1,6 @@
 import { Opaque } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
+import { Owner } from 'ember-utils';
 
 export const ActionSupport: any;
 export const ChildViewsSupport: any;
@@ -18,7 +19,7 @@ export function constructStyleDeprecationMessage(affectedStyle: any): string;
 
 export function hasPartial(name: string, owner: any): boolean;
 
-export function lookupComponent(owner: any, name: string, options: any): any;
+export function lookupComponent(owner: Owner, name: string, options?: { source?: string }): any;
 
 export function lookupPartial(templateName: string, owner: any): any;
 
