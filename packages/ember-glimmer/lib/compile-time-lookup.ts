@@ -1,41 +1,36 @@
-import { CompileTimeLookup as ICompileTimeLookup, Specifier } from '@glimmer/opcode-compiler';
-import {
-  CAPABILITIES
-} from './component-managers/definition-state';
+import { ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
+import { CompileTimeLookup as ICompileTimeLookup } from '@glimmer/opcode-compiler';
+import { CompilableTemplate, ComponentDefinition } from '@glimmer/runtime';
+import { TemplateMeta } from 'ember-views';
 import RuntimeResolver from './resolver';
-import { CurlyComponentDefinition } from 'ember-glimmer/lib/component-managers/curly';
 
-export default class CompileTimeLookup implements ICompileTimeLookup<Specifier> {
+export default class CompileTimeLookup implements ICompileTimeLookup<TemplateMeta> {
   constructor(private resolver: RuntimeResolver) {}
-  private getComponentDefinition(handle: number) {
-    return this.resolver.resolve<Option<CurlyComponentDefinition>>(handle);
-  }
-  getCapabilities(handle: number) {
-    return this.getComponentDefinition(handle).getCapabilities();
-  }
 
-  getLayout(handle: number) {
-    const componentDefintion = this.resolver.resolve(handle);
-    const { manager } = componentDefintion;
-    return {
-      compile() { return handle; },
-      symbolTable: null
-    };
+  getCapabilities(handle: number): ComponentCapabilities {
+    let definition = this.resolver.resolve<Option<ComponentDefinition>>(handle);
+    let { manager, state } = definition!;
+    return manager.getCapabilities(state);
   }
 
-  lookupHelper(handle: number) {
-
+  getLayout(_handle: number): Option<CompilableTemplate<ProgramSymbolTable>> {
+    // const componentDefintion: CurlyComponentDefinition = this.resolver.resolve(handle);
+    return null;
   }
 
-  lookupModifier(handle: number) {
-
+  lookupHelper(name: string, referrer: TemplateMeta): Option<number> {
+    return this.resolver.lookupHelper(name, referrer);
   }
 
-  lookupComponentSpec(handle: number) {
-
+  lookupModifier(name: string, referrer: TemplateMeta): Option<number> {
+    return this.resolver.lookupModifier(name, referrer);
   }
 
-  lookupPartial(handle: number) {
+  lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number> {
+    return this.resolver.lookupComponentDefinition(name, referrer);
+  }
 
+  lookupPartial(name: string, referrer: TemplateMeta): Option<number> {
+    return this.resolver.lookupPartial(name, referrer);
   }
 }

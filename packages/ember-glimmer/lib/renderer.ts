@@ -2,8 +2,11 @@ import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
+  ComponentDefinition,
   DynamicScope as GlimmerDynamicScope,
   IteratorResult,
+  NULL_REFERENCE,
+  RenderResult,
 } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
@@ -27,21 +30,14 @@ import ComponentStateBucket, { Component } from './utils/curly-component-state-b
 import { RootReference } from './utils/references';
 import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
 
-import { ComponentDefinition, NULL_REFERENCE, RenderResult } from '@glimmer/runtime';
-
 const { backburner } = run;
-
-export interface View {
-  tagName: string | null;
-  appendChild(child: View): void;
-}
 
 export class DynamicScope implements GlimmerDynamicScope {
   outletState: VersionedPathReference<Option<OutletState>>;
   rootOutletState: RootOutletStateReference | undefined;
 
   constructor(
-    public view: View | null,
+    public view: Component | null,
     outletState: VersionedPathReference<Option<OutletState>>,
     rootOutletState?: RootOutletStateReference) {
     this.outletState = outletState;

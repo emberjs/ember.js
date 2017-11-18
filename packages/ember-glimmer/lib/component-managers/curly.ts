@@ -1,4 +1,10 @@
 import {
+  ComponentCapabilities,
+  Option,
+  Simple,
+  VMHandle
+} from '@glimmer/interfaces';
+import {
   combineTagged,
   Tag,
   VersionedPathReference,
@@ -8,19 +14,15 @@ import {
   Bounds,
   ComponentDefinition,
   ElementOperations,
+  Invocation,
   NamedArguments,
   PositionalArguments,
   PreparedArguments,
   PrimitiveReference,
-  VM,
+  WithDynamicLayout,
+  WithDynamicTagName,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque } from '@glimmer/util';
-import {
-  ComponentCapabilities,
-  Option,
-  Simple,
-  VMHandle
-} from '@glimmer/interfaces';
 import { privatize as P } from 'container';
 import {
   assert,
@@ -34,7 +36,7 @@ import {
   assign,
   OWNER,
 } from 'ember-utils';
-import { setViewElement } from 'ember-views';
+import { setViewElement, TemplateMeta } from 'ember-views';
 import {
   BOUNDS,
   DIRTY_TAG,
@@ -44,6 +46,7 @@ import {
 } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
+import RuntimeResolver from '../resolver';
 import { OwnedTemplate, WrappedTemplateFactory } from '../template';
 import {
   AttributeBinding,
@@ -95,16 +98,17 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
   }
 }
 
-function tagName(vm: VM) {
-  let dynamicScope: DynamicScope = vm.dynamicScope() as DynamicScope;
-  // tslint:disable-next-line:no-shadowed-variable
-  let { tagName } = dynamicScope.view!;
-  return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
-}
+// TODO there is a hook for dynamic attributes
+// function tagName(vm: VM) {
+//   let dynamicScope: DynamicScope = vm.dynamicScope() as DynamicScope;
+//   // tslint:disable-next-line:no-shadowed-variable
+//   let { tagName } = dynamicScope.view!;
+//   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
+// }
 
-function ariaRole(vm: VM) {
-  return vm.getSelf().get('ariaRole');
-}
+// function ariaRole(vm: VM) {
+//   return vm.getSelf().get('ariaRole');
+// }
 
 class CurlyComponentLayoutCompiler {
   static id: string;
@@ -142,7 +146,17 @@ export class PositionalArgumentReference {
   }
 }
 
-export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, DefinitionState> {
+export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, DefinitionState>
+  implements WithDynamicTagName<Opaque>,
+             WithDynamicLayout<Opaque, TemplateMeta, RuntimeResolver> {
+
+  getDynamicLayout(_component: Opaque, _resolver: RuntimeResolver): Invocation {
+    throw new Error('Method not implemented.');
+  }
+
+  getTagName(_component: Opaque): Option<string> {
+    throw new Error('Method not implemented.');
+  }
 
   getCapabilities(state: DefinitionState): ComponentCapabilities {
     return state.capabilities;

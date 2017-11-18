@@ -12,6 +12,7 @@ export interface Component {
   elementId: string;
   tagName: string;
   isDestroying: boolean;
+  appendChild(view: Component): void;
   trigger(event: string): void;
   destroy(): void;
   setProperties(props: {

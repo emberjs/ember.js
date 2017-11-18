@@ -6,25 +6,25 @@ import {
   ComponentDefinition
 } from '@glimmer/runtime';
 import {
-  Option, Opaque
+  Option
 } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart,
 } from 'ember-metal';
-import ComponentStateBucket from '../utils/curly-component-state-bucket';
+import Environment from '../environment';
+import { DynamicScope } from '../renderer';
+import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
-import { DynamicScope, View } from '../renderer';
-import Environment from '../environment';
 import DefintionState, { CAPABILITIES } from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
-  component: View;
+  component: Component;
 
-  constructor(component: View) {
+  constructor(component: Component) {
     super();
     this.component = component;
   }
@@ -66,14 +66,13 @@ class RootComponentManager extends CurlyComponentManager {
 
 export class RootComponentDefinition implements ComponentDefinition {
   public state: DefintionState;
-  public manager: RootComponentManager;
 
-  constructor(name: string, _manager: RootComponentManager, ComponentClass: any, handle: Option<VMHandle>) {
+  constructor(name: string, public manager: RootComponentManager, ComponentClass: any, handle: Option<VMHandle>) {
     this.state = {
       name,
       ComponentClass,
       handle,
       capabilities: CAPABILITIES
-    }
+    };
   }
 }
