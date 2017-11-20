@@ -29,6 +29,7 @@ export {
   ICapturedPositionalArguments as CapturedPositionalArguments,
   INamedArguments as NamedArguments,
   ICapturedNamedArguments as CapturedNamedArguments,
+  EMPTY_ARGS
 } from './lib/vm/arguments';
 
 export { SafeString } from './lib/upsert';
@@ -41,10 +42,6 @@ export {
   DynamicScope,
   CompilationOptions
 } from './lib/environment';
-
-export {
-  PartialDefinition
-} from './lib/partial';
 
 export {
   DEFAULT_CAPABILITIES,

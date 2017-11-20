@@ -3,7 +3,6 @@ import {
   Helper as GlimmerHelper,
   DOMTreeConstruction,
   ModifierManager,
-  PartialDefinition,
   ComponentDefinition,
   CompilationOptions,
   IDOMChanges,
@@ -20,7 +19,7 @@ import {
   TemplateIterator
 } from "@glimmer/runtime";
 import { Template } from "@glimmer/interfaces";
-import { templateFactory, TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
+import { templateFactory, TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor, PartialDefinition } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
 import { LazyConstants, Program } from "@glimmer/program";
 import { TestDynamicScope } from "../../../environment";
