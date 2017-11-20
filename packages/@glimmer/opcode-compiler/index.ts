@@ -16,6 +16,8 @@ export {
   SimpleOpcodeBuilder,
 } from './lib/opcode-builder';
 
+export { PartialDefinition } from './lib/partial-template';
+
 export {
   default as templateFactory,
   TemplateFactory
