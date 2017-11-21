@@ -4,6 +4,7 @@ import {
   Simple,
   VMHandle
 } from '@glimmer/interfaces';
+import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   combineTagged,
   Tag,
@@ -150,8 +151,23 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   implements WithDynamicTagName<Opaque>,
              WithDynamicLayout<Opaque, TemplateMeta, RuntimeResolver> {
 
-  getDynamicLayout(_component: Opaque, _resolver: RuntimeResolver): Invocation {
-    throw new Error('Method not implemented.');
+  getDynamicLayout(component: Opaque, resolver: RuntimeResolver): Invocation {
+    const handle = resolver.lookupComponent(component.name, component.ComponentClass);
+    if (!handle) {
+      throw new Error('Missing dynamic layout');
+    }
+
+    return resolver.compileTemplate(handle, component.layout.name, (template, options) => {
+      const builder = new WrappedBuilder(
+        assign({}, options, { asPartial: false, referrer: null }),
+        template,
+        CAPABILITIES
+      );
+      return {
+        handle: builder.compile(),
+        symbolTable: builder.symbolTable
+      };
+    });
   }
 
   getTagName(_component: Opaque): Option<string> {
@@ -369,10 +385,10 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
-    if (!args.tag.validate(argsRevision)) {
-      let props = processComponentArgs(args);
+    if (!args!.tag.validate(argsRevision)) {
+      let props = processComponentArgs(args!);
 
-      bucket.argsRevision = args.tag.value();
+      bucket.argsRevision = args!.tag.value();
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);

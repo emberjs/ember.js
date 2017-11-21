@@ -10,12 +10,13 @@ import {
 } from 'ember-metal';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
+import RuntimeResolver from '../resolver';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
-import DefintionState from './definition-state';
+import DefinitionState from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -25,12 +26,16 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getLayout(...args: any[]) {
-    console.log(...args);
+  getLayout(state: DefinitionState, resolver: RuntimeResolver) {
+    const handle = resolver.lookupComponent(state.name, state.ComponentClass);
+    return {
+      handle,
+      symbolTable: state.symbolTable
+    };
   }
 
   create(environment: Environment,
-         _state: DefintionState,
+         _state: DefinitionState,
          _args: Arguments | null,
          dynamicScope: DynamicScope) {
     let component = this.component;
@@ -76,13 +81,14 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
 };
 
 export class RootComponentDefinition implements ComponentDefinition {
-  state: DefintionState;
+  state: DefinitionState;
   manager: RootComponentManager;
 
   constructor(public component: Component) {
     let manager = new RootComponentManager(component);
     this.manager = manager;
     let factory = peekMeta(component)._factory;
+    console.log(factory);
     this.state = {
       name: factory.fullName,
       capabilities: ROOT_CAPABILITIES,

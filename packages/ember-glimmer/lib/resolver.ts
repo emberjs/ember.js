@@ -133,19 +133,16 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
       return (vm, args) => componentHelper(vm, args, meta);
     }
 
-    let helper = this.builtInHelpers[name];
+    const helper = this.builtInHelpers[name];
     if (helper !== undefined) {
       return helper;
     }
 
-    let { owner, moduleName } = meta;
+    const { owner, moduleName } = meta;
 
-    let options: LookupOptions | undefined;
-    if (moduleName !== undefined) {
-      options = { source: `template:${moduleName}` };
-    }
+    const options: LookupOptions | undefined = makeOptions(moduleName);
 
-    let helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
+    const helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helperFactory.class.isHelperInstance) {
