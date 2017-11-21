@@ -72,7 +72,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
       layoutName: '-top-level'
     });
 
-    owner.register('-top-level', Component.extend(attrs));
+    owner.register('component:-top-level', Component.extend(attrs));
 
     this.component = owner.lookup('component:-top-level');
 

@@ -35,6 +35,7 @@ import {
 } from 'ember-metal';
 import {
   assign,
+  getOwner,
   OWNER,
 } from 'ember-utils';
 import { setViewElement, TemplateMeta } from 'ember-views';
@@ -151,13 +152,18 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   implements WithDynamicTagName<Opaque>,
              WithDynamicLayout<Opaque, TemplateMeta, RuntimeResolver> {
 
-  getDynamicLayout(component: Opaque, resolver: RuntimeResolver): Invocation {
-    const handle = resolver.lookupComponent(component.name, component.ComponentClass);
+  getDynamicLayout(component: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
+    const owner = getOwner(component.component);
+    const layoutName = component.component.layoutName!;
+    const handle = resolver.lookupComponent(layoutName, {
+      owner,
+      moduleName: '',
+    });
     if (!handle) {
       throw new Error('Missing dynamic layout');
     }
 
-    return resolver.compileTemplate(handle, component.layout.name, (template, options) => {
+    return resolver.compileTemplate(handle, layoutName, (template, options) => {
       const builder = new WrappedBuilder(
         assign({}, options, { asPartial: false, referrer: null }),
         template,

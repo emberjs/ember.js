@@ -72,7 +72,7 @@ class RootComponentManager extends CurlyComponentManager {
 // ROOT is the top-level template it has nothing but one yield.
 // it is supposed to have a dummy element
 export const ROOT_CAPABILITIES: ComponentCapabilities = {
-  dynamicLayout: false,
+  dynamicLayout: true,
   dynamicTag: false,
   prepareArgs: false,
   createArgs: false,
@@ -90,7 +90,7 @@ export class RootComponentDefinition implements ComponentDefinition {
     let factory = peekMeta(component)._factory;
     console.log(factory);
     this.state = {
-      name: factory.fullName,
+      name: factory.fullName.slice(10),
       capabilities: ROOT_CAPABILITIES,
       ComponentClass: factory,
       handle: null,

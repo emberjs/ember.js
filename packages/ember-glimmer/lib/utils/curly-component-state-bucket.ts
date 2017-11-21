@@ -6,6 +6,7 @@ import Environment from '../environment';
 export interface Component {
   _debugContainerKey: string;
   _transitionTo(name: string): void;
+  layoutName?: string;
   attributeBindings: any;
   classNames: any;
   classNameBindings: any;
