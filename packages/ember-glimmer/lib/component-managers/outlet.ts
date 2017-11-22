@@ -10,13 +10,17 @@ import {
   Arguments,
   ComponentDefinition,
   DynamicScope,
-  Environment
+  Environment,
+  Invocation,
+  WithStaticLayout
 } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util/dist/types';
+import { Destroyable, Opaque } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { generateGuid, guidFor } from 'ember-utils';
+import {  TemplateMeta } from 'ember-views';
 import { DIRTY_TAG } from '../component';
+import RuntimeResolver from '../resolver';
 import {
   OwnedTemplate,
   WrappedTemplateFactory,
@@ -57,7 +61,8 @@ class StateBucket {
   }
 }
 
-class OutletComponentManager extends AbstractManager<StateBucket, DefinitionState> {
+class OutletComponentManager extends AbstractManager<StateBucket, DefinitionState>
+  implements WithStaticLayout<Opaque, DefinitionState, TemplateMeta, RuntimeResolver> {
   create(environment: Environment,
          definition: DefinitionState,
          _args: Arguments,
@@ -70,6 +75,14 @@ class OutletComponentManager extends AbstractManager<StateBucket, DefinitionStat
       dynamicScope.outletState.get('outlets').get(definition.outletName);
     let outletState = outletStateReference.value();
     return new StateBucket(outletState);
+  }
+
+  getLayout(state: DefinitionState, resolver: RuntimeResolver): Invocation {
+    const handle = resolver.lookupComponentDefinition(state.name, state.ComponentClass);
+    return {
+      handle,
+      symbolTable: state.symbolTable
+    };
   }
 
   getCapabilities(state: DefinitionState): ComponentCapabilities {

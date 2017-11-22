@@ -155,7 +155,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   getDynamicLayout(component: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
     const owner = getOwner(component.component);
     const layoutName = component.component.layoutName!;
-    const handle = resolver.lookupComponent(layoutName, {
+    const handle = resolver.lookupComponentDefinition(layoutName, {
       owner,
       moduleName: '',
     });
