@@ -16,7 +16,7 @@ let getStack = error => {
 let onerror;
 export const onErrorTarget = {
   get onerror() {
-    return dispatchOverride || onerror;
+    return onerror;
   }
 };
 
