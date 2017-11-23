@@ -98,9 +98,11 @@ function includeVendorDependencies() {
 
   let simpleDOM = new Rollup('node_modules/simple-dom/lib', {
     rollup: {
-      format: 'es',
-      entry: ['simple-dom.js'],
-      dest: 'simple-dom.js'
+      input: ['simple-dom.js'],
+      output: {
+        file: 'simple-dom.js',
+        format: 'es'
+      }
     }
   });
 
