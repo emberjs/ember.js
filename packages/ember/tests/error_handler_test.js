@@ -361,14 +361,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
   });
 
   test(`${message} when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
-    // this should be: `assert.expect(2);`, but currently non-testing
-    // Ember.onerror is called twice for errors in RSVP promises:
-    //
-    // 1) the default RSVP error handler calls `dispatchError` (which then calls
-    //   `Ember.onerror`)
-    // 2) the run wrapping that is done by the RSVP + Backburner
-    //   integration calls `dispatchError` (which then calls `Ember.onerror`)
-    assert.expect(3);
+    assert.expect(2);
 
     Ember.testing = false;
     let thrown = new Error('the error');
