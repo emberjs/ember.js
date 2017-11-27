@@ -99,7 +99,6 @@ export function statementCompiler() {
 
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
     let [, tag, _attrs, args, block] = sexp;
-
     let { resolver, referrer } = builder;
     let handle = resolver.lookupComponentDefinition(tag, referrer);
 
@@ -766,12 +765,24 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
   blocks.add('component', (_params, hash, template, inverse, builder) => {
     assert(_params && _params.length, 'SYNTAX ERROR: #component requires at least one argument');
 
+    let tag = _params[0];
+    if (typeof tag === 'string') {
+      let returned = builder.staticComponentHelper(_params[0] as string, hash, template);
+      if (returned) return;
+    }
+
     let [definition, ...params] = _params!;
     builder.dynamicComponent(definition, params, hash, true, template, inverse);
   });
 
   inlines.add('component', (_name, _params, hash, builder) => {
     assert(_params && _params.length, 'SYNTAX ERROR: component helper requires at least one argument');
+
+    let tag =_params && _params[0];
+    if (typeof tag === 'string') {
+      let returned = builder.staticComponentHelper(tag as string, hash, null);
+      if (returned) return true;
+    }
 
     let [definition, ...params] = _params!;
     builder.dynamicComponent(definition, params, hash, true, null, null);

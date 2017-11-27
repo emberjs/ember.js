@@ -32,6 +32,30 @@ export class EmberishComponentTests extends RenderTest {
   }
 
   @test({ kind: 'glimmer' })
+  "Static block component helper"() {
+    this.registerComponent('Glimmer', 'A', 'A {{#component "B" arg1=@one}}{{/component}}');
+    this.registerComponent('Glimmer', 'B', 'B {{@arg1}}');
+    this.render('<A @one={{arg}} />', { arg: 1 });
+    this.assertHTML('A B 1');
+    this.assertStableRerender();
+    this.rerender({arg: 2 });
+    this.assertHTML('A B 2');
+    this.assertStableNodes();
+  }
+
+  @test({ kind: 'glimmer' })
+  "Static inline component helper"() {
+    this.registerComponent('Glimmer', 'A', 'A {{component "B" arg1=@one}}');
+    this.registerComponent('Glimmer', 'B', 'B {{@arg1}}');
+    this.render('<A @one={{arg}} />', { arg: 1 });
+    this.assertHTML('A B 1');
+    this.assertStableRerender();
+    this.rerender({arg: 2 });
+    this.assertHTML('A B 2');
+    this.assertStableNodes();
+  }
+
+  @test({ kind: 'glimmer' })
   "top level in-element"() {
     this.registerComponent('Glimmer', 'Foo', '<Bar data-bar={{@childName}} @data={{@data}} />');
     this.registerComponent('Glimmer', 'Bar', '<div ...attributes>Hello World</div>');
