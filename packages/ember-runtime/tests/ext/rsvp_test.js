@@ -46,12 +46,10 @@ QUnit.test('Can reject with non-Error object', function(assert) {
   try {
     run(RSVP, 'reject', 'foo');
   } catch (e) {
-    ok(false, 'should not throw');
+    equal(e, 'foo', 'should throw with rejection message');
   } finally {
     setTesting(wasEmberTesting);
   }
-
-  ok(true);
 });
 
 QUnit.test('Can reject with no arguments', function(assert) {
