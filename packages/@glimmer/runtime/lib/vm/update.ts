@@ -319,8 +319,6 @@ class UpdatingVMFrame {
   private current: Option<UpdatingOpcode>;
 
   constructor(private vm: UpdatingVM<Opaque>, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
-    this.vm = vm;
-    this.ops = ops;
     this.current = ops.head();
   }
 
