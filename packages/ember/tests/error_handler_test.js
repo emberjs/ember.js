@@ -397,6 +397,57 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
   });
 
   if (DEBUG) {
+    test(`${message} when Ember.Test.adapter without \`exception\` method is present - rsvp`, function(assert) {
+      assert.expect(1);
+
+      let thrown = new Error('the error');
+      Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+        exception: undefined
+      });
+
+      window.onerror = function(message) {
+        assert.pushResult({
+          result: /the error/.test(message),
+          actual: message,
+          expected: 'to include `the error`',
+          message: 'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+        });
+
+        // prevent "bubbling" and therefore failing the test
+        return true;
+      };
+
+      generatePromise(thrown);
+
+      // RSVP.Promise's are configured to settle within the run loop, this
+      // ensures that run loop has completed
+      return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+    });
+
+    test(`${message} when both Ember.onerror and Ember.Test.adapter without \`exception\` method are present - rsvp`, function(assert) {
+      assert.expect(1);
+
+      let thrown = new Error('the error');
+      Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+        exception: undefined
+      });
+
+      Ember.onerror = function(error) {
+        assert.pushResult({
+          result: /the error/.test(error.message),
+          actual: error.message,
+          expected: 'to include `the error`',
+          message: 'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+        });
+      };
+
+      generatePromise(thrown);
+
+      // RSVP.Promise's are configured to settle within the run loop, this
+      // ensures that run loop has completed
+      return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+    });
+
     test(`${message} when Ember.Test.adapter is present - rsvp`, function(assert) {
       assert.expect(1);
 
