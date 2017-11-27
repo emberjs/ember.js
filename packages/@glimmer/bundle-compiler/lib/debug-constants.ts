@@ -1,5 +1,4 @@
 import { WriteOnlyConstants } from "@glimmer/program";
-import { SymbolTable } from "@glimmer/interfaces";
 
 export default class DebugConstants extends WriteOnlyConstants {
   getFloat(value: number): number {
@@ -30,15 +29,11 @@ export default class DebugConstants extends WriteOnlyConstants {
     return (this.arrays as number[][])[value];
   }
 
-  getSymbolTable<T extends SymbolTable>(value: number): T {
-    return this.tables[value] as T;
-  }
-
   resolveHandle<T>(s: number): T {
     return { handle: s } as any as T;
   }
 
   getSerializable<T>(s: number): T {
-    return this.serializables[s] as T;
+    return JSON.parse(this.strings[s]) as T;
   }
 }
