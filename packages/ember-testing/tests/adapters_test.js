@@ -4,12 +4,13 @@ import Adapter from '../adapters/adapter';
 import QUnitAdapter from '../adapters/qunit';
 import { Application as EmberApplication } from 'ember-application';
 
-var App, originalAdapter, originalQUnit;
+var App, originalAdapter, originalQUnit, originalWindowOnerror;
 
 QUnit.module('ember-testing Adapters', {
   setup() {
     originalAdapter = Test.adapter;
     originalQUnit = window.QUnit;
+    originalWindowOnerror = window.onerror;
   },
   teardown() {
     if (App) {
@@ -20,6 +21,7 @@ QUnit.module('ember-testing Adapters', {
 
     Test.adapter = originalAdapter;
     window.QUnit = originalQUnit;
+    window.onerror = originalWindowOnerror;
   }
 });
 
@@ -71,17 +73,22 @@ QUnit.test('Adapter is used by default (if QUnit is not available)', function() 
   ok(!(Test.adapter instanceof QUnitAdapter));
 });
 
-QUnit.test('With Ember.Test.adapter set, errors in Ember.run are caught', function () {
+QUnit.test('With Ember.Test.adapter set, errors in synchronous Ember.run are bubbled out', function (assert) {
   let thrown = new Error('Boom!');
 
-  let caught;
+  let caughtInAdapter, caughtInCatch;
   Test.adapter = QUnitAdapter.create({
     exception(error) {
-      caught = error;
+      caughtInAdapter = error;
     }
   });
 
-  run(() => { throw thrown; });
+  try {
+    run(() => { throw thrown; });
+  } catch(e) {
+    caughtInCatch = e;
+  }
 
-  deepEqual(caught, thrown);
+  assert.equal(caughtInAdapter, undefined, 'test adapter should never receive synchronous errors');
+  assert.equal(caughtInCatch, thrown, 'a "normal" try/catch should catch errors in sync run');
 });
