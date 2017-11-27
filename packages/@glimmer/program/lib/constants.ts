@@ -9,7 +9,6 @@ export type EMPTY_ARRAY = Array<ReadonlyArray<never>>;
 export interface ConstantPool {
   strings: string[];
   arrays: number[][] | EMPTY_ARRAY;
-  tables: SymbolTable[];
   handles: number[];
   floats: number[];
   negatives: number[];
@@ -82,16 +81,6 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     return (this.arrays as number[][]).push(values) - 1;
   }
 
-  table(t: SymbolTable): number {
-    let index = this.tables.indexOf(t);
-
-    if (index > -1) {
-      return index;
-    }
-
-    return this.tables.push(t) - 1;
-  }
-
   handle(handle: number): number {
     let index = this.handles.indexOf(handle);
     if (index > -1) {
@@ -116,7 +105,6 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     return {
       strings: this.strings,
       arrays: this.arrays,
-      tables: this.tables,
       handles: this.handles,
       floats: this.floats,
       negatives: this.negatives
@@ -127,7 +115,6 @@ export class WriteOnlyConstants implements CompileTimeConstants {
 export class RuntimeConstants<TemplateMeta> {
   protected strings: string[];
   protected arrays: number[][] | EMPTY_ARRAY;
-  protected tables: SymbolTable[];
   protected handles: number[];
   protected resolved: Opaque[];
   protected floats: number[];
@@ -136,7 +123,6 @@ export class RuntimeConstants<TemplateMeta> {
   constructor(public resolver: RuntimeResolver<TemplateMeta>, pool: ConstantPool) {
     this.strings = pool.strings;
     this.arrays = pool.arrays;
-    this.tables = pool.tables;
     this.handles = pool.handles;
     this.floats = pool.floats;
     this.negatives = pool.negatives;
@@ -173,10 +159,6 @@ export class RuntimeConstants<TemplateMeta> {
     return (this.arrays as number[][])[value];
   }
 
-  getSymbolTable<T extends SymbolTable>(value: number): T {
-    return this.tables[value] as T;
-  }
-
   resolveHandle<T>(index: number): T {
     let resolved = this.resolved[index];
 
@@ -201,7 +183,6 @@ export class Constants<TemplateMeta> extends WriteOnlyConstants {
     if (pool) {
       this.strings = pool.strings;
       this.arrays = pool.arrays;
-      this.tables = pool.tables;
       this.handles = pool.handles;
       this.floats = pool.floats;
       this.negatives = pool.negatives;
@@ -236,10 +217,6 @@ export class Constants<TemplateMeta> extends WriteOnlyConstants {
 
   getArray(value: number): number[] {
     return (this.arrays as number[][])[value];
-  }
-
-  getSymbolTable<T extends SymbolTable>(value: number): T {
-    return this.tables[value] as T;
   }
 
   resolveHandle<T>(index: number): T {

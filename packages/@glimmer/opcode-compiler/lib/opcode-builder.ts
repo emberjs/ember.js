@@ -977,7 +977,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   pushSymbolTable(table: Option<SymbolTable>): void {
     if (table) {
-      let constant = this.constants.table(table);
+      let constant = this.constants.serializable(table);
       this.push(Op.PushSymbolTable, constant);
     } else {
       this.primitive(null);

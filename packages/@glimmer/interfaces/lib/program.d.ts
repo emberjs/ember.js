@@ -36,7 +36,6 @@ export interface CompileTimeConstants {
   string(value: string): number;
   stringArray(strings: string[]): number;
   array(values: number[]): number;
-  table(t: SymbolTable): number;
   handle(locator: Opaque): number;
   serializable(value: Opaque): number;
   float(value: number): number;
