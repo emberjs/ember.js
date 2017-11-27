@@ -109,7 +109,7 @@ APPEND_OPCODES.add(Op.Exit, vm => {
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
-  stack.push(vm.constants.getSymbolTable(_table));
+  stack.push(vm.constants.getSerializable(_table));
 });
 
 APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {

@@ -3,7 +3,6 @@ import {
   CompileTimeConstants,
   Option,
   Opaque,
-  SymbolTable,
   Recast
 } from '@glimmer/interfaces';
 import { METADATA, Op, Register } from '@glimmer/vm';
@@ -18,7 +17,6 @@ export interface DebugConstants {
   getString(value: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
-  getSymbolTable<T extends SymbolTable>(value: number): T;
   getSerializable<T>(s: number): T;
   resolveHandle<T>(s: number): T;
 }
@@ -124,9 +122,6 @@ export function debug(c: DebugConstants, op: Op, ...operands: number[]): [string
         break;
       case 'register':
         out[operand.name] = Register[op];
-        break;
-      case 'table':
-        out[operand.name] = c.getSymbolTable(op);
         break;
       case 'serializable':
         out[operand.name] = c.getSerializable(op);
