@@ -8,7 +8,7 @@ export function getAdapter() {
 
 export function setAdapter(value) {
   adapter = value;
-  if (value) {
+  if (value && typeof value.exception === 'function') {
     setDispatchOverride(adapterDispatch);
   } else {
     setDispatchOverride(null);
