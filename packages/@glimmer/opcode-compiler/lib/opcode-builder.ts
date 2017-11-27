@@ -346,6 +346,26 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.push(Op.PushDynamicComponentManager, this.constants.serializable(referrer));
   }
 
+  staticComponentHelper(tag: string, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>) {
+    let handle = this.resolver.lookupComponentDefinition(tag, this.referrer);
+    if (handle) {
+      let capabilities = this.resolver.getCapabilities(handle);
+      if (capabilities.dynamicLayout === false) {
+        if (hash) {
+          for (let i = 0; i < hash.length; i = i + 2) {
+            hash[i][0] = `@${hash[i][0]}`;
+          }
+        }
+        let layout = this.resolver.getLayout(handle)!;
+        this.pushComponentDefinition(handle);
+        this.invokeStaticComponent(capabilities, layout, null, null, hash, false, template && template);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   // partial
 
   invokePartial(referrer: Locator, symbols: string[], evalInfo: number[]) {

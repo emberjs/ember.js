@@ -71,6 +71,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   protected compileTimeModules = new Modules();
   protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
   protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
+  public constants: DebugConstants;
 
   constructor(env: Environment) {
     this.env = env || new EagerTestEnvironment();
@@ -137,7 +138,8 @@ export default class EagerRenderDelegate implements RenderDelegate {
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
     let macros = new TestMacros();
     let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
-    let program = new WriteOnlyProgram(new DebugConstants());
+    this.constants = new DebugConstants();
+    let program = new WriteOnlyProgram(this.constants);
     let compiler = new BundleCompiler(delegate, { macros, program });
 
     let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
@@ -168,7 +170,6 @@ export default class EagerRenderDelegate implements RenderDelegate {
         symbolTable = wrapped.symbolTable;
       } else {
         block = compiler.add(locator, expect(state.template, 'expected component definition state to have template'));
-
         symbolTable = {
           hasEval: block.hasEval,
           symbols: block.symbols,
