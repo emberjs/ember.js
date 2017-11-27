@@ -69,7 +69,7 @@ export default class UpdatingVM<TemplateMeta = Opaque> {
   }
 
   try(ops: UpdatingOpSeq, handler: Option<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(this, ops, handler));
+    this.frameStack.push(new UpdatingVMFrame(ops, handler));
   }
 
   throw() {
@@ -318,7 +318,7 @@ export class ListBlockOpcode extends BlockOpcode {
 class UpdatingVMFrame {
   private current: Option<UpdatingOpcode>;
 
-  constructor(private vm: UpdatingVM<Opaque>, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
+  constructor(private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
     this.current = ops.head();
   }
 

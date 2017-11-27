@@ -8,6 +8,7 @@ export interface Opcode {
   op2: number;
   op3: number;
   size: number;
+  isMachine: number;
 }
 
 export type VMHandle = Unique<"Handle">;
