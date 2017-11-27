@@ -11,7 +11,6 @@ export interface ConstantPool {
   arrays: number[][] | EMPTY_ARRAY;
   tables: SymbolTable[];
   handles: number[];
-  serializables: string[];
   floats: number[];
   negatives: number[];
 }
@@ -31,7 +30,6 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   protected arrays: number[][] | EMPTY_ARRAY = [WELL_KNOW_EMPTY_ARRAY];
   protected tables: SymbolTable[] = [];
   protected handles: number[] = [];
-  protected serializables: string[] = [];
   protected resolved: Opaque[] = [];
   protected floats: number[] = [];
   protected negatives: number[] = [];
@@ -106,12 +104,12 @@ export class WriteOnlyConstants implements CompileTimeConstants {
 
   serializable(value: Opaque): number {
     let str = JSON.stringify(value);
-    let index = this.serializables.indexOf(str);
+    let index = this.strings.indexOf(str);
     if (index > -1) {
       return index;
     }
 
-    return this.serializables.push(str) - 1;
+    return this.strings.push(str) - 1;
   }
 
   toPool(): ConstantPool {
@@ -120,7 +118,6 @@ export class WriteOnlyConstants implements CompileTimeConstants {
       arrays: this.arrays,
       tables: this.tables,
       handles: this.handles,
-      serializables: this.serializables,
       floats: this.floats,
       negatives: this.negatives
     };
@@ -132,7 +129,6 @@ export class RuntimeConstants<TemplateMeta> {
   protected arrays: number[][] | EMPTY_ARRAY;
   protected tables: SymbolTable[];
   protected handles: number[];
-  protected serializables: string[];
   protected resolved: Opaque[];
   protected floats: number[];
   protected negatives: number[];
@@ -142,7 +138,6 @@ export class RuntimeConstants<TemplateMeta> {
     this.arrays = pool.arrays;
     this.tables = pool.tables;
     this.handles = pool.handles;
-    this.serializables = pool.serializables;
     this.floats = pool.floats;
     this.negatives = pool.negatives;
     this.resolved = this.handles.map(() => UNRESOLVED);
@@ -195,7 +190,7 @@ export class RuntimeConstants<TemplateMeta> {
 
   getSerializable<T>(s: number): T {
 
-    return JSON.parse(this.serializables[s]) as T;
+    return JSON.parse(this.strings[s]) as T;
   }
 }
 
@@ -208,7 +203,6 @@ export class Constants<TemplateMeta> extends WriteOnlyConstants {
       this.arrays = pool.arrays;
       this.tables = pool.tables;
       this.handles = pool.handles;
-      this.serializables = pool.serializables;
       this.floats = pool.floats;
       this.negatives = pool.negatives;
       this.resolved = this.handles.map(() => UNRESOLVED);
@@ -260,26 +254,26 @@ export class Constants<TemplateMeta> extends WriteOnlyConstants {
   }
 
   getSerializable<T>(s: number): T {
-    return JSON.parse(this.serializables[s]) as T;
+    return JSON.parse(this.strings[s]) as T;
   }
 }
 
 export class LazyConstants extends Constants<Opaque> {
   private others: Opaque[] = [];
-  protected meta: Opaque[] = [];
+  protected serializables: Opaque[] = [];
 
   serializable(value: Opaque): number {
-    let index = this.meta.indexOf(value);
+    let index = this.serializables.indexOf(value);
 
     if (index > -1) {
       return index;
     }
 
-    return this.meta.push(value) - 1;
+    return this.serializables.push(value) - 1;
   }
 
   getSerializable<T>(s: number): T {
-    return this.meta[s] as T;
+    return this.serializables[s] as T;
   }
 
   getOther<T>(value: number): T {

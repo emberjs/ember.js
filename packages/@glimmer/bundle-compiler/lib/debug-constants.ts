@@ -39,6 +39,6 @@ export default class DebugConstants extends WriteOnlyConstants {
   }
 
   getSerializable<T>(s: number): T {
-    return JSON.parse(this.serializables[s]) as T;
+    return JSON.parse(this.strings[s]) as T;
   }
 }
