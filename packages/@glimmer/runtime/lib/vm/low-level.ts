@@ -1,5 +1,7 @@
 import { Heap, Opcode } from "@glimmer/program";
-import { VMHandle, Option } from "@glimmer/interfaces";
+import { VMHandle, Option, Opaque } from "@glimmer/interfaces";
+import { APPEND_OPCODES } from "../opcodes";
+import VM from './append';
 
 export interface Stack {
   sp: number;
@@ -83,4 +85,27 @@ export default class LowLevelVM {
 
     return program.opcode(pc);
   }
+
+  next(vm: VM<Opaque>) {
+    let opcode = this.nextStatement();
+
+    if (opcode) {
+      this.nextOpcode(opcode, vm);
+    } else {
+
+    }
+  }
+
+  nextOpcode(opcode: Opcode, vm: VM<Opaque>) {
+    APPEND_OPCODES.evaluate(vm, opcode, opcode.type);
+    // if (opcode.isMachine) {
+    //   APPEND_OPCODES.evaluateMachine(this, opcode, opcode.type);
+    // } else {
+    //   this.nextSyscall(opcode, vm);
+    // }
+  }
+
+  // nextSyscall(opcode: Opcode, vm: VM<Opaque>) {
+  //   APPEND_OPCODES.evaluateSyscall(vm, opcode, opcode.type);
+  // }
 }

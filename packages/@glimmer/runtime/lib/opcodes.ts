@@ -1,4 +1,4 @@
-import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable } from '@glimmer/util';
+import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable, assert } from '@glimmer/util';
 import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
@@ -35,8 +35,7 @@ export class AppendOpcodes {
     this.evaluateOpcode[name as number] = { syscall: kind === 'syscall', evaluate } as Evaluate;
   }
 
-  evaluate(vm: VM<Opaque>, opcode: Opcode, type: number) {
-    let operation = this.evaluateOpcode[type];
+  debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): { sp: number, state: Opaque } {
     if (DEBUG) {
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
@@ -53,7 +52,6 @@ export class AppendOpcodes {
     }
 
     let sp: number;
-    let expectedChange: number;
     let state: Opaque;
 
     if (DEVMODE) {
@@ -69,30 +67,28 @@ export class AppendOpcodes {
     }
 
     recordStackSize(vm.stack);
+    return { sp: sp!, state };
+  }
 
-    if (operation.syscall) {
-      operation.evaluate(vm, opcode);
-    } else {
-      operation.evaluate(vm.inner, opcode);
+  debugAfter(vm: VM<Opaque>, opcode: Opcode, type: number, pre: { sp: number, state: Opaque }) {
+    let expectedChange: number;
+    let { sp, state } = pre;
+
+    let metadata = METADATA[type];
+    if (metadata !== null) {
+      if (typeof metadata.stackChange === 'number') {
+        expectedChange = metadata.stackChange;
+      } else {
+        expectedChange = metadata.stackChange({ opcode, constants: vm.constants, state });
+        if (isNaN(expectedChange)) throw unreachable();
+      }
     }
 
-    if (DEVMODE) {
-      let metadata = METADATA[type];
-      if (metadata !== null) {
-        if (typeof metadata.stackChange === 'number') {
-          expectedChange = metadata.stackChange;
-        } else {
-          expectedChange = metadata.stackChange({ opcode, constants: vm.constants, state });
-          if (isNaN(expectedChange)) throw unreachable();
-        }
-      }
+    let actualChange = vm.stack.sp - sp!;
+    if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
+      let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
 
-      let actualChange = vm.stack.sp - sp!;
-      if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
-        let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
-
-        throw new Error(`Error in ${name}:\n\n${(vm['pc'] + (opcode.size))}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
-      }
+      throw new Error(`Error in ${name}:\n\n${(vm['pc'] + (opcode.size))}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
     }
 
     if (DEBUG) {
@@ -102,6 +98,18 @@ export class AppendOpcodes {
       console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
       console.log('%c -> elements', 'color: blue', vm.elements()['cursorStack']['stack'].map((c: any) => c.element));
       /* tslint:enable */
+    }
+  }
+
+  evaluate(vm: VM<Opaque>, opcode: Opcode, type: number) {
+    let operation = this.evaluateOpcode[type];
+
+    if (operation.syscall) {
+      assert(!opcode.isMachine, `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`);
+      operation.evaluate(vm, opcode);
+    } else {
+      assert(opcode.isMachine, `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`);
+      operation.evaluate(vm.inner, opcode);
     }
   }
 }

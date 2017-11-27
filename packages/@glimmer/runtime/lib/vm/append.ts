@@ -9,6 +9,7 @@ import LowLevelVM from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import EvaluationStack from './stack';
+import { DEVMODE } from '@glimmer/local-debug-flags';
 
 import {
   APPEND_OPCODES,
@@ -413,7 +414,13 @@ export default class VM<TemplateMeta> implements PublicVM {
     let opcode = this.inner.nextStatement();
     let result: IteratorResult<RenderResult>;
     if (opcode !== null) {
-      APPEND_OPCODES.evaluate(this, opcode, opcode.type);
+      if (DEVMODE) {
+        let state = APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
+        APPEND_OPCODES.evaluate(this, opcode, opcode.type);
+        APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
+      } else {
+        APPEND_OPCODES.evaluate(this, opcode, opcode.type);
+      }
       result = { done: false, value: null };
     } else {
       // Unload the stack
