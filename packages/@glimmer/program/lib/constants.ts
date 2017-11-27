@@ -95,8 +95,13 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 
   handle(handle: number): number {
+    let index = this.handles.indexOf(handle);
+    if (index > -1) {
+      return index;
+    }
+
     this.resolved.push(UNRESOLVED);
-    return this.handles.push(handle);
+    return this.handles.push(handle) - 1;
   }
 
   serializable(value: Opaque): number {
@@ -177,8 +182,7 @@ export class RuntimeConstants<TemplateMeta> {
     return this.tables[value] as T;
   }
 
-  resolveHandle<T>(s: number): T {
-    let index = s - 1;
+  resolveHandle<T>(index: number): T {
     let resolved = this.resolved[index];
 
     if (resolved === UNRESOLVED) {
@@ -243,8 +247,7 @@ export class Constants<TemplateMeta> extends WriteOnlyConstants {
     return this.tables[value] as T;
   }
 
-  resolveHandle<T>(s: number): T {
-    let index = s - 1;
+  resolveHandle<T>(index: number): T {
     let resolved = this.resolved[index];
 
     if (resolved === UNRESOLVED) {
