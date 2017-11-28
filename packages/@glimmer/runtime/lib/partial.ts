@@ -1,4 +1,4 @@
-import { ProgramSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { ProgramSymbolTable } from '@glimmer/interfaces';
 import { Template } from './template';
 
 export class PartialDefinition {
@@ -8,7 +8,7 @@ export class PartialDefinition {
   ) {
   }
 
-  getPartial(): { symbolTable: ProgramSymbolTable, handle: VMHandle } {
+  getPartial(): { symbolTable: ProgramSymbolTable, handle: number } {
     let partial = this.template.asPartial();
     let handle = partial.compile();
     return { symbolTable: partial.symbolTable, handle };

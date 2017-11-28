@@ -1,6 +1,6 @@
 import { module, test, EagerTestEnvironment } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate } from "@glimmer/bundle-compiler";
-import { RuntimeResolver, ComponentCapabilities, Option, VMHandle, Recast } from "@glimmer/interfaces";
+import { RuntimeResolver, ComponentCapabilities, Option } from "@glimmer/interfaces";
 import { RuntimeProgram } from "@glimmer/program";
 import { LowLevelVM, NewElementBuilder, ComponentManager, MINIMAL_CAPABILITIES, ARGS, UNDEFINED_REFERENCE, PrimitiveReference } from "@glimmer/runtime";
 import { CONSTANT_TAG, VersionedPathReference, Tag } from "@glimmer/reference";
@@ -143,7 +143,7 @@ export class EntryPointTest {
     vm.stack.push({ state: null, manager: new BasicManager() });
 
     // invoke main()
-    vm.execute(main as Recast<number, VMHandle>);
+    vm.execute(main);
 
     env.commit();
 

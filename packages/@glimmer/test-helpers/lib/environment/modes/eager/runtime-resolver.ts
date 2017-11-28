@@ -1,4 +1,4 @@
-import { RuntimeResolver, ComponentDefinition, VMHandle, Recast, ProgramSymbolTable } from '@glimmer/interfaces';
+import { RuntimeResolver, ComponentDefinition, ProgramSymbolTable } from '@glimmer/interfaces';
 import { Opaque, Option, expect } from '@glimmer/util';
 import { Invocation } from "@glimmer/runtime";
 import { ExternalModuleTable, ModuleLocatorMap, ModuleLocator } from '@glimmer/bundle-compiler';
@@ -49,8 +49,8 @@ export default class EagerRuntimeResolver implements RuntimeResolver<TemplateMet
     };
   }
 
-  getVMHandle(locator: ModuleLocator): VMHandle {
+  getVMHandle(locator: ModuleLocator): number {
     let handle = expect(this.table.vmHandleByModuleLocator.get(locator), `could not find handle for module ${locator}`);
-    return handle as Recast<number, VMHandle>;
+    return handle;
   }
 }

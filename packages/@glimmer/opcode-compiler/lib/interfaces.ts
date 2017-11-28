@@ -1,12 +1,10 @@
 import {
-  VMHandle,
   Opaque,
   SymbolTable,
   Option,
   BlockSymbolTable,
   ComponentCapabilities,
-  CompileTimeProgram,
-  Recast
+  CompileTimeProgram
 } from '@glimmer/interfaces';
 import { Core, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { Macros } from './syntax';
@@ -23,10 +21,10 @@ export interface EagerCompilationOptions<TemplateMeta, R extends EagerResolver<T
 
 export interface CompilableTemplate<S extends SymbolTable> {
   symbolTable: S;
-  compile(): VMHandle;
+  compile(): number;
 }
 
-export const PLACEHOLDER_HANDLE: VMHandle = -1 as Recast<number, VMHandle>;
+export const PLACEHOLDER_HANDLE = -1;
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 

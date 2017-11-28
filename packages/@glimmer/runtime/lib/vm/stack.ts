@@ -41,7 +41,7 @@ export class InnerStack {
   }
 
   writeSmi(pos: number, value: number): void {
-    this.inner[pos] = encodeImmediate(value); // value << 3 | PrimitiveType.NUMBER;
+    this.inner[pos] = encodeSmi(value); // value << 3 | PrimitiveType.NUMBER;
   }
 
   writeImmediate(pos: number, value: number): void {
@@ -213,14 +213,18 @@ export const enum Immediates {
   Undef = 3 << 3 | Type.BOOLEAN_OR_VOID
 }
 
+function encodeSmi(primitive: number) {
+  if (primitive < 0) {
+    return Math.abs(primitive) << 3 | PrimitiveType.NEGATIVE;
+  } else {
+    return primitive << 3 | PrimitiveType.NUMBER;
+  }
+}
+
 function encodeImmediate(primitive: number | boolean | null | undefined): number {
   switch (typeof primitive) {
     case 'number':
-      if (primitive as number < 0) {
-        return Math.abs(primitive as number) << 3 | PrimitiveType.NEGATIVE;
-      } else {
-        return (primitive as number) << 3 | PrimitiveType.NUMBER;
-      }
+      return encodeSmi(primitive as number);
     case 'boolean':
       return primitive ? Immediates.True : Immediates.False;
     case 'object':
