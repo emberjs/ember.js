@@ -134,9 +134,8 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   expectStackChange(vm.stack, 1, 'PushComponentDefinition');
 });
 
-APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
+APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
-
   let component = check(stack.pop(), CheckPathReference).value();
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
@@ -152,9 +151,32 @@ APPEND_OPCODES.add(Op.PushDynamicComponentManager, (vm, { op1: _meta }) => {
     throw unreachable();
   }
 
-  stack.push({ definition, manager: null, state: null, handle: null, table: null });
+  stack.push(definition);
+  expectStackChange(vm.stack, 0, 'ResolveDynamicComponent');
+});
 
-  expectStackChange(vm.stack, 0, 'PushDynamicComponentManager');
+APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
+  let { stack } = vm;
+  let definition = stack.pop();
+  stack.push({ definition, manager: null, state: null, handle: null, table: null });
+  expectStackChange(vm.stack, 0, 'PushDynamicComponentInstance');
+});
+
+APPEND_OPCODES.add(Op.PushCurriedComponent, (vm, { op1: _meta }) => {
+  let stack = vm.stack;
+
+  let component = check(stack.pop(), CheckPathReference).value();
+  let definition: CurriedComponentDefinition;
+
+  if (isCurriedComponentDefinition(component)) {
+    definition = component;
+  } else {
+    throw unreachable();
+  }
+
+  stack.push(definition);
+
+  expectStackChange(vm.stack, 0, 'PushCurriedComponent');
 });
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
