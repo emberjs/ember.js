@@ -342,8 +342,16 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.push(Op.PushComponentDefinition, this.constants.handle(handle));
   }
 
-  pushDynamicComponentManager(referrer: Locator) {
-    this.push(Op.PushDynamicComponentManager, this.constants.serializable(referrer));
+  pushCurriedComponent() {
+    this.push(Op.PushCurriedComponent);
+  }
+
+  pushDynamicComponentInstance() {
+    this.push(Op.PushDynamicComponentInstance);
+  }
+
+  resolveDynamicComponent(referrer: Locator) {
+    this.push(Op.ResolveDynamicComponent, this.constants.serializable(referrer));
   }
 
   staticComponentHelper(tag: string, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>) {
@@ -751,7 +759,10 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.referrer);
+    this.pushCurriedComponent();
+
+    this.pushDynamicComponentInstance();
+
     this.invokeComponent(null, null, null, false, null, null);
 
     this.exit();
@@ -941,7 +952,10 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
     this.jumpUnless('ELSE');
 
-    this.pushDynamicComponentManager(this.referrer);
+    this.resolveDynamicComponent(this.referrer);
+
+    this.pushDynamicComponentInstance();
+
     this.invokeComponent(null, params, hash, synthetic, block, inverse);
 
     this.label('ELSE');
