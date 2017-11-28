@@ -32,7 +32,6 @@ import {
 import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';
 import {
-  routeArgs,
   resemblesURL,
   getActiveTargetName,
   calculateCacheKey,
@@ -146,7 +145,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = dictionary(null);
     this._engineInstances = Object.create(null);
-    this._engineInfoByRoute = Object.create(null)
+    this._engineInfoByRoute = Object.create(null);
   },
 
   /*
@@ -766,8 +765,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams, _keepDefaultQueryParamValues);
 
-    let transitionArgs = routeArgs(targetRouteName, models, queryParams);
-    let transition = this._routerMicrolib.transitionTo(...transitionArgs);
+    let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
 
     didBeginTransition(transition, this);
 
@@ -1277,7 +1275,7 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
     }
   }
 
-  let defaultHandler = defaultActionHandlers[name]
+  let defaultHandler = defaultActionHandlers[name];
   if (defaultHandler) {
     defaultHandler.apply(this, [handlerInfos, ...args]);
     return;

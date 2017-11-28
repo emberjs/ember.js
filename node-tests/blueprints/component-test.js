@@ -263,10 +263,8 @@ describe('Acceptance: ember generate component', function() {
           .to.contain("integration: true");
       }));
   });
-  /**
-   * Pod tests
-   *
-   */
+
+  // Pod tests
   it('component x-foo --pod', function() {
     var args = ['component', 'x-foo', '--pod'];
 
@@ -751,7 +749,7 @@ describe('Acceptance: ember generate component', function() {
             .to.contain("{{#x-foo}}");
         }));
     });
-  })
+  });
 
   it('component-test x-foo --unit', function() {
     var args = ['component-test', 'x-foo', '--unit'];

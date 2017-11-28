@@ -5,7 +5,7 @@ import { Error as EmberError } from 'ember-debug';
 const ALL_PERIODS_REGEX = /\./g;
 
 export function extractRouteArgs(args) {
-  args = args.slice()
+  args = args.slice();
   let possibleQueryParams = args[args.length - 1];
 
   let queryParams;
@@ -18,16 +18,6 @@ export function extractRouteArgs(args) {
   let routeName = args.shift();
 
   return { routeName, models: args, queryParams };
-}
-
-export function routeArgs(targetRouteName, models, queryParams) {
-  let args = [];
-  if (typeof targetRouteName === 'string') {
-    args.push(`${targetRouteName}`);
-  }
-  args.push(...models);
-  args.push({ queryParams });
-  return args;
 }
 
 export function getActiveTargetName(router) {

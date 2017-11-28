@@ -46,7 +46,7 @@ if (DEBUG) {
   */
   registerHandler = function registerHandler(handler) {
     genericRegisterHandler('warn', handler);
-  }
+  };
 
   registerHandler(function logWarning(message, options) {
     Logger.warn(`WARNING: ${message}`);
@@ -109,7 +109,7 @@ if (DEBUG) {
     }
 
     invoke('warn', message, test, options);
-  }
+  };
 }
 
 export default warn;
@@ -117,4 +117,4 @@ export {
   registerHandler,
   missingOptionsIdDeprecation,
   missingOptionsDeprecation
-}
+};

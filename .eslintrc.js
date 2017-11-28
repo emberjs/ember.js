@@ -1,7 +1,4 @@
-var fs = require('fs');
-var path = require('path');
-
-var options = {
+module.exports = {
   root: true,
   parserOptions: {
     ecmaVersion: 6,
@@ -38,10 +35,10 @@ var options = {
     'ember-internal/require-yuidoc-access': 'error',
     'ember-internal/no-const-outside-module-scope': 'error',
 
+    'semi': 'error',
+
     // temporarily disabled
     'no-unused-vars': 'off',
     'comma-dangle': 'off',
   },
 };
-
-module.exports = options;

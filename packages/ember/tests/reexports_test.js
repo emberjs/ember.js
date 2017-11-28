@@ -240,11 +240,11 @@ if (DEBUG) {
     assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
     assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
 
-    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false)
+    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false);
 
     expectDeprecation(function() {
       Ember.MODEL_FACTORY_INJECTIONS = true;
-    }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required')
-    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect')
+    }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required');
+    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect');
   });
 }

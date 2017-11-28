@@ -1,4 +1,4 @@
-import { DEBUG } from 'ember-env-flags'
+import { DEBUG } from 'ember-env-flags';
 import {
   assert as emberAssert,
   runInDebug

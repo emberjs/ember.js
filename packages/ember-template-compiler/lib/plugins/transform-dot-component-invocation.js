@@ -66,11 +66,11 @@ export default function transformDotComponentInvocation(env) {
       },
       BlockStatement: (node) => {
         if (isMultipartPath(node.path)) {
-          wrapInComponent(node, b)
+          wrapInComponent(node, b);
         }
       }
     }
-  }
+  };
 }
 
 function isMultipartPath(path)  {

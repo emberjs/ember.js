@@ -272,7 +272,7 @@ class extends ApplicationTestCase {
           'Monday through Friday: 9am to 5pm',
           'Saturday: Noon to Midnight',
           'Sunday: Noon to 6pm'
-        ]))
+        ]));
       }
     }));
     return this.visit('/').then(() => {

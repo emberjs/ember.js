@@ -596,12 +596,12 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         resolveLoading.resolve();
 
         this.runTaskNext(() => {
-          this.assertText('ApplicationEnginePost')
+          this.assertText('ApplicationEnginePost');
           done();
         });
       });
 
-      return transition
+      return transition;
     });
   }
 
@@ -674,7 +674,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         resolveLoading.resolve();
 
         this.runTaskNext(() => {
-          this.assertText('ApplicationEngineLikes')
+          this.assertText('ApplicationEngineLikes');
           done();
         });
       });

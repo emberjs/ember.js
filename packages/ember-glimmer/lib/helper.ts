@@ -2,6 +2,7 @@
 @module @ember/component
 */
 
+import { Dict, Opaque } from '@glimmer/util';
 import { DirtyableTag } from '@glimmer/reference';
 import { FrameworkObject } from 'ember-runtime';
 import { symbol } from 'ember-utils';
@@ -104,6 +105,18 @@ Helper.reopenClass({
   isHelperFactory: true,
 });
 
+export class SimpleHelper {
+  isHelperFactory = true;
+  isHelperInstance = true;
+  isSimpleHelperFactory = true;
+
+  constructor(public compute: (positional: any[], named: Dict<Opaque>) => any) { }
+
+  create() {
+    return this;
+  }
+}
+
 /**
   In many cases, the ceremony of a full `Helper` class is not required.
   The `helper` method create pure-function helpers without instances. For
@@ -127,10 +140,7 @@ Helper.reopenClass({
   @since 1.13.0
 */
 export function helper(helperFn: (params: any[], hash?: any) => string) {
-  return {
-    isHelperInstance: true,
-    compute: helperFn,
-  };
+  return new SimpleHelper(helperFn);
 }
 
 export default Helper;

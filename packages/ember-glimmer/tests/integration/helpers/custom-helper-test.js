@@ -564,6 +564,32 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     equal(destroyCount, 1, 'destroy is called after a view is destroyed');
   }
+
+  ['@test simple helper can be invoked manually via `owner.factoryFor(...).create().compute()'](assert) {
+    this.registerHelper('some-helper', () => {
+      assert.ok(true, 'some-helper helper invoked');
+      return 'lolol';
+    });
+
+    let instance = this.owner.factoryFor('helper:some-helper').create();
+
+    assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
+    assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
+  }
+
+  ['@test class-based helper can be invoked manually via `owner.factoryFor(...).create().compute()']() {
+    this.registerHelper('some-helper', {
+      compute() {
+        assert.ok(true, 'some-helper helper invoked');
+        return 'lolol';
+      }
+    });
+
+    let instance = this.owner.factoryFor('helper:some-helper').create();
+
+    assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
+    assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
+  }
 });
 
 // these feature detects prevent errors in these tests
