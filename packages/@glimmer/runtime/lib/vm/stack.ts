@@ -2,17 +2,26 @@ import { DEBUG } from '@glimmer/local-debug-flags';
 import { Opaque } from '@glimmer/interfaces';
 import { PrimitiveType } from '@glimmer/program';
 import { unreachable } from '@glimmer/util';
+import { Stack as WasmStack } from '@glimmer/low-level';
 
 const HI   = 0x80000000;
 const MASK = 0x7FFFFFFF;
 
 export class InnerStack {
-  [index: number]: never;
-
-  constructor(private inner: number[] = [], private js: Opaque[] = []) {}
+  constructor(private inner = new WasmStack(), private js: Opaque[] = []) {}
 
   slice(start?: number, end?: number): InnerStack {
-    return new InnerStack(this.inner.slice(start, end), this.js.slice(start, end));
+    let inner: WasmStack;
+
+    if (typeof start === 'number' && typeof end === 'number') {
+      inner = this.inner.slice(start, end);
+    } else if (typeof start === 'number' && end === undefined) {
+      inner = this.inner.sliceFrom(start);
+    } else {
+      inner = this.inner.clone();
+    }
+
+    return new InnerStack(inner, this.js.slice(start, end));
   }
 
   sliceInner<T = Opaque>(start: number, end: number): T[] {
@@ -26,30 +35,29 @@ export class InnerStack {
   }
 
   copy(from: number, to: number): void {
-    this.inner[to] = this.inner[from];
+    this.inner.copy(from, to);
   }
 
   write(pos: number, value: Opaque): void {
     if (isImmediate(value)) {
-      // if (typeof value === 'number') console.trace('immediate');
-      this.inner[pos] = encodeImmediate(value);
+      this.inner.writeRaw(pos, encodeImmediate(value));
     } else {
       let idx = this.js.length;
       this.js.push(value);
-      this.inner[pos] = idx | HI;
+      this.inner.writeRaw(pos, idx | HI);
     }
   }
 
   writeSmi(pos: number, value: number): void {
-    this.inner[pos] = encodeSmi(value); // value << 3 | PrimitiveType.NUMBER;
+    this.inner.writeSmi(pos, value);
   }
 
   writeImmediate(pos: number, value: number): void {
-    this.inner[pos] = value;
+    this.inner.writeRaw(pos, value);
   }
 
   get<T>(pos: number): T {
-    let value = this.inner[pos];
+    let value = this.inner.getRaw(pos);
 
     if (value & HI) {
       return this.js[value & MASK] as T;
@@ -59,15 +67,15 @@ export class InnerStack {
   }
 
   getSmi(pos: number): number {
-    return decodeSmi(this.inner[pos]);
+    return this.inner.getSmi(pos);
   }
 
   reset(): void {
-    this.inner.length = 0;
+    this.inner.reset();
   }
 
   get length(): number {
-    return this.inner.length;
+    return this.inner.len();
   }
 }
 
