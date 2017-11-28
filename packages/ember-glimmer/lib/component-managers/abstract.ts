@@ -1,5 +1,6 @@
 import {
   ComponentCapabilities,
+  Simple,
   VMHandle
 } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
@@ -55,7 +56,7 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
   abstract getSelf(component: T): VersionedPathReference<Opaque>;
   abstract getCapabilities(state: U): ComponentCapabilities;
 
-  didCreateElement(_component: T, _element: Element, _operations: ElementOperations): void {
+  didCreateElement(_component: T, _element: Simple.Element, _operations: ElementOperations): void {
     // noop
   }
 
