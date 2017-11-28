@@ -698,16 +698,41 @@ export const enum Op {
 
   /**
    * Operation:
-   *   Push an appropriate component manager onto the stack from
-   *   a runtime-resolved component definition.
+   *   Pushes the ComponentInstance onto the stack that is
+   *   used during the invoke.
    *
    * Format:
-   *   (PushDynamicComponentManager templateMeta:#TemplateMeta)
+   *   (PushDynamicComponentInstance)
+   * Operand Stack:
+   *   ..., ComponentDefinition →
+   *   ..., { ComponentDefinition, manager: null, layout: null, state: null, handle: null, table: null }
+   */
+
+  PushDynamicComponentInstance,
+
+  /**
+   * Operation:
+   *   Pushes a curried component definition on to the stack
+   *
+   * Format:
+   *   (PushCurriedComponent)
    * Operand Stack:
    *   ..., VersionedPathReference<Opaque> →
-   *   ..., { ComponentDefinition, ComponentManager }
+   *   ..., ComponentDefinition
    */
-  PushDynamicComponentManager,
+  PushCurriedComponent,
+
+  /**
+   * Operation:
+   *   Push a resolved component definition onto the stack
+   *
+   * Format:
+   *   (ResolveDynamicComponent templateMeta:#TemplateMeta)
+   * Operand Stack:
+   *   ..., VersionedPathReference<Opaque> →
+   *   ..., ComponentDefinition
+   */
+  ResolveDynamicComponent,
 
   /**
    * Operation: Push a user representation of args onto the stack.
