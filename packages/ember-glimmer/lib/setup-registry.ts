@@ -1,5 +1,6 @@
 import { privatize as P } from 'container';
 import { environment } from 'ember-environment';
+import CompileOptions from './compile-options';
 import Component from './component';
 import Checkbox from './components/checkbox';
 import LinkToComponent from './components/link-to';
@@ -62,7 +63,11 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register(P`template:components/-default`, ComponentTemplate);
 
   registry.register('service:-glimmer-environment', Environment);
+
+  registry.register('service:-compile-options', CompileOptions);
+
   registry.injection('template', 'env', 'service:-glimmer-environment');
+  registry.injection('template', 'compileOptions', 'service:-compile-options');
 
   registry.optionsForType('helper', { instantiate: false });
 

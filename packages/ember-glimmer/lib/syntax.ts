@@ -1,9 +1,5 @@
 import { assert } from 'ember-debug';
 import { textAreaMacro } from './syntax/-text-area';
-import {
-  blockComponentMacro,
-  inlineComponentMacro,
-} from './syntax/dynamic-component';
 import { inputMacro } from './syntax/input';
 import { mountMacro } from './syntax/mount';
 import { outletMacro } from './syntax/outlet';
@@ -64,13 +60,13 @@ export function registerMacros(macro: any) {
 
 export function populateMacros(blocks: any, inlines: any) {
   inlines.add('outlet', outletMacro);
-  inlines.add('component', inlineComponentMacro);
+  // inlines.add('component', inlineComponentMacro);
   inlines.add('render', renderMacro);
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
-  blocks.add('component', blockComponentMacro);
+  // blocks.add('component', blockComponentMacro);
   blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
