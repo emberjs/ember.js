@@ -1,10 +1,10 @@
 import { Option, Simple } from '@glimmer/interfaces';
-import { CONSTANT_TAG, CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
+import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
-  CapturedArguments,
   clientBuilder,
   ComponentDefinition,
   CurriedComponentDefinition,
+  curry,
   DynamicScope as GlimmerDynamicScope,
   IteratorResult,
   NULL_REFERENCE,
@@ -205,23 +205,6 @@ function loopEnd() {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-// const EMPTY_NAMED = new CapturedNamedArguments(CONSTANT_TAG, [], []);
-// const EMPTY_POSITIONAL = new CapturedPositionalArguments(CONSTANT_TAG, []);
-export const EMPTY_ARGS: CapturedArguments = {
-  tag: CONSTANT_TAG,
-  length: 0,
-  positional: {
-    tag: CONSTANT_TAG,
-    length: 0,
-    references: [] as VersionedPathReference<Opaque>[],
-  },
-  named: {
-    tag: CONSTANT_TAG,
-    length: 0,
-    names: [] as string[],
-    references: [] as VersionedPathReference<Opaque>[]
-  }} as any;
-
 export abstract class Renderer {
   private _env: Environment;
   private _rootTemplate: any;
@@ -253,13 +236,12 @@ export abstract class Renderer {
     let definition = new TopLevelOutletComponentDefinition(view);
     let outletStateReference = view.toReference();
 
-    this._appendDefinition(view, definition, target, outletStateReference);
+    this._appendDefinition(view, curry(definition), target, outletStateReference);
   }
 
   appendTo(view: Component, target: Simple.Element) {
-    let rootDef = new RootComponentDefinition(view);
-    let def = new CurriedComponentDefinition(rootDef as any, EMPTY_ARGS);
-    this._appendDefinition(view, def, target);
+    let def = new RootComponentDefinition(view);
+    this._appendDefinition(view, curry(def), target);
   }
 
   _appendDefinition(
