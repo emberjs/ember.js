@@ -177,6 +177,14 @@
             $('#qunit-tests').addClass('hideskipped');
           }
         });
+
+        QUnit.testDone(function() {
+          var oldFixture = document.getElementById('qunit-fixture');
+          var parent = oldFixture.parentElement;
+          var newFixture = document.createElement('div');
+          newFixture.id = 'qunit-fixture';
+          parent.replaceChild(newFixture, oldFixture);
+        });
       })();
     </script>
 
