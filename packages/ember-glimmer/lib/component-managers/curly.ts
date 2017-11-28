@@ -4,7 +4,10 @@ import {
   Simple,
   VMHandle
 } from '@glimmer/interfaces';
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import {
+  CompileOptions,
+  WrappedBuilder
+} from '@glimmer/opcode-compiler';
 import {
   combineTagged,
   Tag,
@@ -24,6 +27,9 @@ import {
   WithDynamicTagName,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque } from '@glimmer/util';
+import {
+  SerializedTemplate
+} from '@glimmer/wire-format';
 import { privatize as P } from 'container';
 import {
   assert,
@@ -36,6 +42,7 @@ import {
 import {
   assign,
   getOwner,
+  guidFor,
   OWNER,
 } from 'ember-utils';
 import { setViewElement, TemplateMeta } from 'ember-views';
@@ -74,7 +81,7 @@ function aliasIdToElementId(args: Arguments, props: any) {
 // We must traverse the attributeBindings in reverse keeping track of
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
-function applyAttributeBindings(element: Simple.Element, attributeBindings: any, component: Component, operations: ElementOperations) {
+function applyAttributeBindings(element: Simple.Element, attributeBindings: Array<string>, component: Component, operations: ElementOperations) {
   let seen: string[] = [];
   let i = attributeBindings.length - 1;
 
@@ -159,11 +166,12 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       owner,
       moduleName: '',
     });
-    if (!handle) {
+
+    if (handle === null) {
       throw new Error('Missing dynamic layout');
     }
 
-    return resolver.compileTemplate(handle, layoutName, (template, options) => {
+    return resolver.compileTemplate(handle, layoutName, (template: SerializedTemplate<any>, options: CompileOptions<Opaque>) => {
       const builder = new WrappedBuilder(
         assign({}, options, { asPartial: false, referrer: null }),
         template,
@@ -176,8 +184,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     });
   }
 
-  getTagName(_component: Opaque): Option<string> {
-    throw new Error('Method not implemented.');
+  getTagName(state: ComponentStateBucket): Option<string> {
+    let { component } = state;
+
+    return (component && component.tagName) || 'div';
+    // throw new Error('Method not implemented.');
   }
 
   getCapabilities(state: DefinitionState): ComponentCapabilities {
@@ -331,10 +342,15 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     let { attributeBindings, classNames, classNameBindings } = component;
 
+    operations.setAttribute('id', PrimitiveReference.create(guidFor(component)), false, null);
+    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
+
     if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(element, attributeBindings, component, operations);
     } else {
-      operations.setAttribute('id', PrimitiveReference.create(component.elementId), false, null);
+      if (component.elementId) {
+        operations.setAttribute('id', PrimitiveReference.create(component.elementId), false, null);
+      }
       IsVisibleBinding.install(element, component, operations);
     }
 
@@ -349,7 +365,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     if (classNameBindings && classNameBindings.length) {
-      classNameBindings.forEach((binding: any) => {
+      classNameBindings.forEach((binding: string) => {
         ClassNameBinding.install(element, component, binding, operations);
       });
     }
@@ -391,7 +407,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
-    if (!args!.tag.validate(argsRevision)) {
+    if (args && !args.tag.validate(argsRevision)) {
       let props = processComponentArgs(args!);
 
       bucket.argsRevision = args!.tag.value();

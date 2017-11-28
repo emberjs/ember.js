@@ -7,9 +7,9 @@ export interface Component {
   _debugContainerKey: string;
   _transitionTo(name: string): void;
   layoutName?: string;
-  attributeBindings: any;
-  classNames: any;
-  classNameBindings: any;
+  attributeBindings: Array<string>;
+  classNames: Array<string>;
+  classNameBindings: Array<string>;
   elementId: string;
   tagName: string;
   isDestroying: boolean;

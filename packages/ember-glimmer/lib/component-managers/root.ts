@@ -88,7 +88,6 @@ export class RootComponentDefinition implements ComponentDefinition {
     let manager = new RootComponentManager(component);
     this.manager = manager;
     let factory = peekMeta(component)._factory;
-    console.log(factory);
     this.state = {
       name: factory.fullName.slice(10),
       capabilities: ROOT_CAPABILITIES,

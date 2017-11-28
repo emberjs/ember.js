@@ -5,7 +5,7 @@ import {
   RuntimeResolver as IRuntimeResolver,
   VMHandle
 } from '@glimmer/interfaces';
-import { getDynamicVar, Helper, ModifierManager, PartialDefinition } from '@glimmer/runtime';
+import { getDynamicVar, Helper, ModifierManager, PartialDefinition, ScannableTemplate, Invocation } from '@glimmer/runtime';
 import { LookupOptions, Owner } from 'ember-utils';
 import {
   lookupComponent,
@@ -37,6 +37,8 @@ import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
+import { CompileOptions } from '@glimmer/opcode-compiler';
+import { SerializedTemplateBlock, SerializedTemplate } from '@glimmer/wire-format';
 
 function makeOptions(moduleName: string) {
   return moduleName !== undefined ? { source: `template:${moduleName}`} : undefined;
@@ -105,12 +107,23 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   }
   // End IRuntimeResolver
 
+  compileTemplate(_handle: number, layoutName: string, create: (block: SerializedTemplate<any>, options: CompileOptions<Opaque>) => Invocation) {
+    let template = this.owner.lookup<ScannableTemplate>(`template:${layoutName}`);
+
+    // TODO: handle template not found
+    let { parsedLayout, options } = template as any;
+    return create(parsedLayout, options);
+  }
+
   /**
    * Called by CompileTimeLookup compiling Unknown or Helper OpCode
    */
   lookupHelper(name: string, meta: TemplateMeta): Option<number> {
-    return this.getHandle(
-      this._lookupHelper(name, meta));
+    let handle = this._lookupHelper(name, meta);
+    if (handle !== null) {
+      return this.getHandle(handle);
+    }
+    return null;
   }
 
   /**
@@ -130,7 +143,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   }
   // end CompileTimeLookup
 
-  private _lookupHelper(name: string, meta: TemplateMeta): Helper {
+  private _lookupHelper(name: string, meta: TemplateMeta): Option<Helper> {
     if (name === 'component') {
       return (vm, args) => componentHelper(vm, args, meta);
     }
@@ -147,12 +160,13 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
     const helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helperFactory.class.isHelperInstance) {
+    if (helperFactory && helperFactory.class.isHelperInstance) {
       return (_vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
-    } else if (helperFactory.class.isHelperFactory) {
+    } else if (helperFactory && helperFactory.class.isHelperFactory) {
       return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
     } else {
-      throw new Error(`${name} is not a helper`);
+      return null;
+      // throw new Error(`${name} is not a helper`);
     }
   }
 
