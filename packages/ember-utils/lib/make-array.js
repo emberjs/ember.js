@@ -27,6 +27,6 @@ const { isArray } = Array;
  @private
  */
 export default function makeArray(obj) {
-  if (obj === null || obj === undefined) { return []; }
+  if (obj == null) { return []; }
   return isArray(obj) ? obj : [obj];
 }

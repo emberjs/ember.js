@@ -54,7 +54,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // primitive for array support.
   replace(idx, amt, objects) {
     assert(FROZEN_ERROR, !this.isFrozen);
-    assert('The third argument to replace needs to be an array.', objects === null || objects === undefined || Array.isArray(objects));
+    assert('The third argument to replace needs to be an array.', objects == null || Array.isArray(objects))
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length

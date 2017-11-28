@@ -11,7 +11,7 @@ export function addDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
   let depKeys = desc._dependentKeys;
-  if (depKeys === null || depKeys === undefined) {
+  if (depKeys == null) {
     return;
   }
 
@@ -28,7 +28,7 @@ export function removeDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // remove all of its dependent keys.
   let depKeys = desc._dependentKeys;
-  if (depKeys === null || depKeys === undefined) {
+  if (depKeys == null) {
     return;
   }
 

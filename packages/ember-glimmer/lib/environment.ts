@@ -364,7 +364,7 @@ if (DEBUG) {
   class StyleAttributeManager extends AttributeManager {
     setAttribute(dom: Environment, element: Simple.Element, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isSafeString(value)) {
+        if (value == null || isSafeString(value)) {
           return true;
         }
         return false;
@@ -374,7 +374,7 @@ if (DEBUG) {
 
     updateAttribute(dom: Environment, element: Element, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isSafeString(value)) {
+        if (value == null || isSafeString(value)) {
           return true;
         }
         return false;

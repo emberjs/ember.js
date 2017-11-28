@@ -164,7 +164,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     didDefineComputedProperty(obj.constructor);
 
     if (typeof desc.setup === 'function') { desc.setup(obj, keyName); }
-  } else if (desc === undefined || desc === null) {
+  } else if (desc == null) {
     value = data;
 
     if (MANDATORY_SETTER) {

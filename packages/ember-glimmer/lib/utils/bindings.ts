@@ -85,7 +85,7 @@ export const AttributeBinding = {
 
     if (attribute === 'id') {
       let elementId = get(component, prop);
-      if (elementId === undefined || elementId === null) {
+      if (elementId == null) {
         elementId = component.elementId;
       }
       operations.addStaticAttribute(element, 'id', elementId);

@@ -32,7 +32,7 @@ export class WeakMapPolyfill {
   constructor(iterable) {
     this._id = GUID_KEY + (id++);
 
-    if (iterable === null || iterable === undefined) {
+    if (iterable == null) {
       return;
     } else if (Array.isArray(iterable)) {
       for (let i = 0; i < iterable.length; i++) {
