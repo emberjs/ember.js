@@ -54,6 +54,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   };
 
   private handles: any[] = [];
+  private objToHandle = new WeakMap<any, number>();
 
   constructor(public owner: Owner) {
     this.builtInHelpers = {
@@ -211,9 +212,10 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
     if (obj === undefined || obj === null) {
       return null;
     }
-    let handle: number | undefined = obj.__handle;
+    let handle: number | undefined = this.objToHandle.get(obj);
     if (handle === undefined) {
-      handle = obj.__handle = this.handles.push(obj) - 1;
+      handle = this.handles.push(obj) - 1;
+      this.objToHandle.set(obj, handle);
     }
     return handle;
   }
