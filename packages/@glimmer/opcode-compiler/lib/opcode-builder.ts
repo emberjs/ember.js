@@ -106,7 +106,7 @@ export class SimpleOpcodeBuilder {
     this.encoder.encode(name, MACHINE_MASK, ...ops);
   }
 
-  commit(heap: CompileTimeHeap, scopeSize: number): VMHandle {
+  commit(heap: CompileTimeHeap, scopeSize: number): number {
     this.pushMachine(Op.Return);
 
     let { buffer } = this.encoder;

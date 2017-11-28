@@ -15,7 +15,7 @@ import {
 import { DebugConstants, BundleCompiler, ModuleLocatorMap, ModuleLocator } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
-import { ProgramSymbolTable, Recast, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
+import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import RenderDelegate from '../../../render-delegate';
@@ -202,7 +202,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
     let { heap, pool, table } = compiler.compile();
 
-    let handle = table.vmHandleByModuleLocator.get(locator)! as Recast<number, VMHandle>;
+    let handle = table.vmHandleByModuleLocator.get(locator)!;
     let { env } = this;
 
     let cursor = { element, nextSibling: null };

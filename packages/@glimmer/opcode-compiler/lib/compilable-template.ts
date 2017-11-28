@@ -1,9 +1,7 @@
 import {
   Option,
   SymbolTable,
-  ProgramSymbolTable,
-  VMHandle,
-  Recast
+  ProgramSymbolTable
 } from '@glimmer/interfaces';
 import { Statement, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { DEBUG } from '@glimmer/local-debug-flags';
@@ -13,7 +11,7 @@ import { CompileOptions, statementCompiler, Compilers } from './syntax';
 
 export { ICompilableTemplate };
 
-export const PLACEHOLDER_HANDLE: VMHandle = -1 as Recast<number, VMHandle>;
+export const PLACEHOLDER_HANDLE = -1;
 
 export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> implements ICompilableTemplate<S> {
   static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): ICompilableTemplate<ProgramSymbolTable> {
@@ -25,7 +23,7 @@ export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> imp
     );
   }
 
-  private compiled: Option<VMHandle> = null;
+  private compiled: Option<number> = null;
 
   private statementCompiler: Compilers<Statement>;
 
@@ -33,7 +31,7 @@ export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> imp
     this.statementCompiler = statementCompiler();
   }
 
-  compile(): VMHandle {
+  compile(): number {
     let { compiled } = this;
     if (compiled !== null) return compiled;
 

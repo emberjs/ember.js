@@ -26,6 +26,8 @@ export type MachineOpcode = (vm: LowLevelVM, opcode: Opcode) => void;
 
 export type Evaluate = { syscall: true, evaluate: Syscall } | { syscall: false, evaluate: MachineOpcode };
 
+export type DebugState = { sp: number, state: Opaque };
+
 export class AppendOpcodes {
   private evaluateOpcode: Evaluate[] = fillNulls<Evaluate>(Op.Size).slice();
 
@@ -35,7 +37,7 @@ export class AppendOpcodes {
     this.evaluateOpcode[name as number] = { syscall: kind === 'syscall', evaluate } as Evaluate;
   }
 
-  debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): { sp: number, state: Opaque } {
+  debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): DebugState {
     if (DEBUG) {
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
@@ -70,7 +72,7 @@ export class AppendOpcodes {
     return { sp: sp!, state };
   }
 
-  debugAfter(vm: VM<Opaque>, opcode: Opcode, type: number, pre: { sp: number, state: Opaque }) {
+  debugAfter(vm: VM<Opaque>, opcode: Opcode, type: number, pre: DebugState) {
     let expectedChange: number;
     let { sp, state } = pre;
 

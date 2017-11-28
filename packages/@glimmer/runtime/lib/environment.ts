@@ -1,6 +1,6 @@
 import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
 import { Macros, OpcodeBuilderConstructor, ICompilableTemplate } from '@glimmer/opcode-compiler';
-import { Simple, RuntimeResolver, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { Simple, RuntimeResolver, BlockSymbolTable } from '@glimmer/interfaces';
 import { Program } from "@glimmer/program";
 import {
   Dict,
@@ -23,7 +23,7 @@ import {
 } from './modifier/interfaces';
 import { Component, ComponentManager } from "./internal-interfaces";
 
-export type ScopeBlock = [VMHandle | ICompilableTemplate<BlockSymbolTable>, Scope, BlockSymbolTable];
+export type ScopeBlock = [number | ICompilableTemplate<BlockSymbolTable>, Scope, BlockSymbolTable];
 export type BlockValue = ScopeBlock[0 | 1 | 2];
 export type ScopeSlot = Option<PathReference<Opaque>> | Option<ScopeBlock>;
 

@@ -1,4 +1,4 @@
-import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
+import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
 import Bounds from '../bounds';
@@ -78,7 +78,7 @@ export interface ComponentManager<ComponentInstanceState, ComponentDefinitionSta
 }
 
 export interface Invocation {
-  handle: VMHandle;
+  handle: number;
   symbolTable: ProgramSymbolTable;
 }
 

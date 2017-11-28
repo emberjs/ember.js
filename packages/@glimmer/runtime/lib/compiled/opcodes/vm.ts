@@ -83,14 +83,6 @@ APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
   vm.bindDynamicScope(names);
 });
 
-APPEND_OPCODES.add(Op.PushFrame, vm => {
-  vm.pushFrame();
-}, 'machine');
-
-APPEND_OPCODES.add(Op.PopFrame, vm => {
-  vm.popFrame();
-}, 'machine');
-
 APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
   vm.enter(args);
 });
@@ -121,14 +113,6 @@ APPEND_OPCODES.add(Op.CompileBlock, vm => {
 
   check(vm.stack.peek(), CheckOption(CheckNumber));
 });
-
-APPEND_OPCODES.add(Op.InvokeVirtual, vm => {
-  vm.call(check(vm.stack.popSmi(), CheckHandle));
-}, 'machine');
-
-APPEND_OPCODES.add(Op.InvokeStatic, (vm, { op1: handle }) => {
-  vm.call(handle as Recast<number, VMHandle>);
-}, 'machine');
 
 APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
@@ -170,10 +154,6 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   vm.call(handle!);
 });
 
-APPEND_OPCODES.add(Op.Jump, (vm, { op1: target }) => {
-  vm.goto(target);
-}, 'machine');
-
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
@@ -209,14 +189,6 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
     vm.updateWith(new Assert(cache));
   }
 });
-
-APPEND_OPCODES.add(Op.Return, vm => {
-  vm.return();
-}, 'machine');
-
-APPEND_OPCODES.add(Op.ReturnTo, (vm, { op1: relative }) => {
-  vm.returnTo(relative);
-}, 'machine');
 
 APPEND_OPCODES.add(Op.ToBoolean, vm => {
   let { env, stack } = vm;

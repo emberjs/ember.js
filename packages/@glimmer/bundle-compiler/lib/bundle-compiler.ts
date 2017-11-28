@@ -212,14 +212,11 @@ export default class BundleCompiler<TemplateMeta> {
    * Performs the actual compilation of the template identified by the passed
    * locator into the Program. Returns the VM handle for the compiled template.
    */
-  protected compileTemplate(locator: ModuleLocator): VMHandle {
+  protected compileTemplate(locator: ModuleLocator): number {
     // If this locator already has an assigned VM handle, it means we've already
     // compiled it. We need to skip compiling it again and just return the same
     // VM handle.
-    let vmHandle = this.table.vmHandleByModuleLocator.get(locator) as Recast<
-      number,
-      VMHandle
-    >;
+    let vmHandle = this.table.vmHandleByModuleLocator.get(locator);
     if (vmHandle) return vmHandle;
 
     // It's an error to try to compile a template that wasn't first added to the

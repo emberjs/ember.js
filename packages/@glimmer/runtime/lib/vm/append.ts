@@ -9,19 +9,18 @@ import LowLevelVM from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import EvaluationStack from './stack';
-import { DEVMODE } from '@glimmer/local-debug-flags';
 
 import {
   APPEND_OPCODES,
-  UpdatingOpcode
+  UpdatingOpcode,
+  DebugState
 } from '../opcodes';
 
 import {
   UNDEFINED_REFERENCE
 } from '../references';
 
-import { VMHandle } from "@glimmer/interfaces";
-import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram } from "@glimmer/program";
+import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram, Opcode } from "@glimmer/program";
 
 export interface PublicVM {
   env: Environment;
@@ -145,7 +144,7 @@ export default class VM<TemplateMeta> implements PublicVM {
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
-  call(handle: VMHandle) {
+  call(handle: number) {
     this.inner.call(handle);
   }
 
@@ -170,7 +169,7 @@ export default class VM<TemplateMeta> implements PublicVM {
     args: Option<ICapturedArguments>,
     dynamicScope: DynamicScope,
     elementStack: ElementBuilder,
-    handle: VMHandle
+    handle: number
   ) {
     let scopeSize = program.heap.scopesizeof(handle);
     let scope = Scope.root(self, scopeSize);
@@ -218,7 +217,15 @@ export default class VM<TemplateMeta> implements PublicVM {
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
-    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap, program);
+    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap, program, {
+      debugBefore: (opcode: Opcode): DebugState => {
+        return APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
+      },
+
+      debugAfter: (opcode: Opcode, state: DebugState): void => {
+        APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
+      }
+    });
   }
 
   capture(args: number): VMState {
@@ -394,7 +401,7 @@ export default class VM<TemplateMeta> implements PublicVM {
 
   /// EXECUTION
 
-  execute(start: VMHandle, initialize?: (vm: VM<TemplateMeta>) => void): RenderResult {
+  execute(start: number, initialize?: (vm: VM<TemplateMeta>) => void): RenderResult {
     this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);
@@ -414,13 +421,7 @@ export default class VM<TemplateMeta> implements PublicVM {
     let opcode = this.inner.nextStatement();
     let result: IteratorResult<RenderResult>;
     if (opcode !== null) {
-      if (DEVMODE) {
-        let state = APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
-        APPEND_OPCODES.evaluate(this, opcode, opcode.type);
-        APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
-      } else {
-        APPEND_OPCODES.evaluate(this, opcode, opcode.type);
-      }
+      this.inner.evaluateOuter(opcode, this);
       result = { done: false, value: null };
     } else {
       // Unload the stack

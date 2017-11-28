@@ -73,7 +73,7 @@ export interface ComponentInstance {
   definition: ComponentDefinition;
   manager: InternalComponentManager;
   state: ComponentInstanceState;
-  handle: VMHandle;
+  handle: number;
   table: ProgramSymbolTable;
 }
 
@@ -89,7 +89,7 @@ export interface PopulatedComponentInstance {
   definition: ComponentDefinition;
   manager: InternalComponentManager;
   state: null;
-  handle: Option<VMHandle>;
+  handle: Option<number>;
   table: Option<ProgramSymbolTable>;
 }
 
@@ -374,7 +374,7 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let { state: instanceState } = instance;
   let { state: definitionState } = definition;
 
-  let invoke: { handle: VMHandle, symbolTable: ProgramSymbolTable };
+  let invoke: { handle: number, symbolTable: ProgramSymbolTable };
 
   if (hasStaticLayout(definitionState, manager)) {
     invoke = manager.getLayout(definitionState, resolver);
@@ -430,10 +430,8 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, (vm, { op1: _state }) => {
     let args = check(vm.stack.pop(), CheckArguments);
 
     let lookup: Option<Dict<ScopeSlot>> = null;
-    let $eval: Option<number> = -1;
 
     if (hasEval) {
-      $eval = symbols.indexOf('$eval') + 1;
       lookup = dict<ScopeSlot>();
     }
 
