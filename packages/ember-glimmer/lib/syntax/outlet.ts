@@ -1,3 +1,5 @@
+import { Option } from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import {
   combine,
   ConstReference,
@@ -8,6 +10,8 @@ import {
   Arguments,
   VM,
 } from '@glimmer/runtime';
+import * as WireFormat from '@glimmer/wire-format';
+import { TemplateMeta } from 'ember-views';
 import { OutletComponentDefinition } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
 
@@ -133,12 +137,13 @@ function outletComponentFor(vm: VM, args: Arguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function outletMacro(_name: string, params: any[], _hash: any[], builder: any) {
-  if (!params) {
-    params = [];
-  }
-  let definitionArgs = [params.slice(0, 1), null, null, null];
-  let emptyArgs = [[], null, null, null]; // FIXME
-  builder.component.dynamic(definitionArgs, outletComponentFor, emptyArgs);
+export const outletMacro = (_name: string, _params: Option<WireFormat.Core.Params>, _hash: Option<WireFormat.Core.Hash>, _builder: OpcodeBuilder<TemplateMeta>) => {
+  // if (!params) {
+  //   params = [];
+  // }
+  // let definitionArgs = [params.slice(0, 1), null, null, null];
+  // let emptyArgs = [[], null, null, null]; // FIXME
+  // builder.component.dynamic(definitionArgs, outletComponentFor, emptyArgs);
+
   return true;
-}
+};

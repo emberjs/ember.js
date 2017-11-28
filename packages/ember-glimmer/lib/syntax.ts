@@ -1,3 +1,4 @@
+import { Macros } from '@glimmer/opcode-compiler';
 import { assert } from 'ember-debug';
 import { textAreaMacro } from './syntax/-text-area';
 import { inputMacro } from './syntax/input';
@@ -58,7 +59,8 @@ export function registerMacros(macro: any) {
   experimentalMacros.push(macro);
 }
 
-export function populateMacros(blocks: any, inlines: any) {
+export function populateMacros(macros: Macros) {
+  let { inlines, blocks } = macros;
   inlines.add('outlet', outletMacro);
   // inlines.add('component', inlineComponentMacro);
   inlines.add('render', renderMacro);

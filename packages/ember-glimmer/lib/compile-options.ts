@@ -21,7 +21,7 @@ export default class CompileOptions implements TemplateOptions<TemplateMeta> {
   constructor(resolver: RuntimeResolver) {
     const program = new Program(new LazyConstants(resolver));
     const macros = new Macros();
-    populateMacros(macros.blocks, macros.inlines);
+    populateMacros(macros);
     this.program = program;
     this.macros = macros;
     this.resolver = new CompileTimeLookup(resolver);
