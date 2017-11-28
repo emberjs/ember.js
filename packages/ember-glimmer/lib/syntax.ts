@@ -67,7 +67,7 @@ export function populateMacros(macros: Macros) {
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);
-  inlines.addMissing(refineInlineSyntax);
+  // inlines.addMissing(refineInlineSyntax);
   // blocks.add('component', blockComponentMacro);
   blocks.addMissing(refineBlockSyntax);
 

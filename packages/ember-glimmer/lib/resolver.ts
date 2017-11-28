@@ -31,6 +31,7 @@ import {
 import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
+import { default as outlet } from './helpers/outlet';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
@@ -72,6 +73,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
       '-normalize-class': normalizeClassHelper,
       '-html-safe': htmlSafeHelper,
       '-get-dynamic-var': getDynamicVar,
+      '-outlet': outlet,
     };
 
     this.builtInModifiers = {

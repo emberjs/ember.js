@@ -1,91 +1,7 @@
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import {
-  combine,
-  ConstReference,
-  TagWrapper,
-  UpdatableTag,
-} from '@glimmer/reference';
-import {
-  Arguments,
-  VM,
-} from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
 import { TemplateMeta } from 'ember-views';
-import { OutletComponentDefinition } from '../component-managers/outlet';
-import { DynamicScope } from '../renderer';
-
-class OutletComponentReference {
-  public outletNameRef: any;
-  public parentOutletStateRef: any;
-  public definition: any;
-  public lastState: any;
-  public outletStateTag: TagWrapper<UpdatableTag>;
-  public tag: any;
-
-  constructor(outletNameRef: any, parentOutletStateRef: any) {
-    this.outletNameRef = outletNameRef;
-    this.parentOutletStateRef = parentOutletStateRef;
-    this.definition = null;
-    this.lastState = null;
-    let outletStateTag = this.outletStateTag = UpdatableTag.create(parentOutletStateRef.tag);
-    this.tag = combine([outletStateTag.inner, outletNameRef.tag]);
-  }
-
-  value() {
-    let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
-
-    let outletName = outletNameRef.value();
-    let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
-    let newState = this.lastState = outletStateRef.value();
-
-    this.outletStateTag.inner.update(outletStateRef.tag);
-
-    definition = revalidate(definition, lastState, newState);
-
-    let hasTemplate = newState && newState.render.template;
-
-    if (definition) {
-      return definition;
-    } else if (hasTemplate) {
-      return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
-    } else {
-      return this.definition = null;
-    }
-  }
-}
-
-function revalidate(definition: any, lastState: any, newState: any) {
-  if (!lastState && !newState) {
-    return definition;
-  }
-
-  if (!lastState && newState || lastState && !newState) {
-    return null;
-  }
-
-  if (
-    newState.render.template === lastState.render.template &&
-    newState.render.controller === lastState.render.controller
-  ) {
-    return definition;
-  }
-
-  return null;
-}
-
-function outletComponentFor(vm: VM, args: Arguments) {
-  let { outletState } = vm.dynamicScope() as DynamicScope;
-
-  let outletNameRef;
-  if (args.positional.length === 0) {
-    outletNameRef = new ConstReference('main');
-  } else {
-    outletNameRef = args.positional.at(0);
-  }
-
-  return new OutletComponentReference(outletNameRef, outletState);
-}
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -137,13 +53,8 @@ function outletComponentFor(vm: VM, args: Arguments) {
   @for Ember.Templates.helpers
   @public
 */
-export const outletMacro = (_name: string, _params: Option<WireFormat.Core.Params>, _hash: Option<WireFormat.Core.Hash>, _builder: OpcodeBuilder<TemplateMeta>) => {
-  // if (!params) {
-  //   params = [];
-  // }
-  // let definitionArgs = [params.slice(0, 1), null, null, null];
-  // let emptyArgs = [[], null, null, null]; // FIXME
-  // builder.component.dynamic(definitionArgs, outletComponentFor, emptyArgs);
-
+export const outletMacro = (_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<TemplateMeta>) => {
+  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
+  builder.guardedAppend(expr, false);
   return true;
 };
