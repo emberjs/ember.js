@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 2.18.0-beta.1 (November 29, 2017)
+
+- [#14590](https://github.com/emberjs/ember.js/pull/14590) [DEPRECATION] Deprecate using `targetObject`.
+- [#15754](https://github.com/emberjs/ember.js/pull/15754) [CLEANUP] Remove `router.router` deprecation.
+
 ### 2.17.0 (November 29, 2017)
 
 - [#15855](https://github.com/emberjs/ember.js/pull/15855) [BUGFIX] fix regression with computed `filter/map/sort`
