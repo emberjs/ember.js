@@ -162,7 +162,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
 
     // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
     if (helperFactory && helperFactory.class.isHelperInstance) {
-      return (_vm, args) => SimpleHelperReference.create(helperFactory.class.compute, args.capture());
+      return (vm, args) => SimpleHelperReference.create(helperFactory, vm, args.capture());
     } else if (helperFactory && helperFactory.class.isHelperFactory) {
       return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
     } else {
