@@ -71,7 +71,6 @@ export class RouterDSL {
   constructor(name: string, options: any);
   route(name: string, options: any, callback: ()=>any): void;
   push(url: string, name: string, callback: ()=>any, serialize: ()=>any): void;
-  resource(name: string, options: any, callback: ()=>any): void;
   genearte(): (match: any) => void;
   mount(_name: string, options: any): void;
 }
