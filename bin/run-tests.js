@@ -40,20 +40,10 @@ function runInBrowser(url, retries, resolve, reject) {
 
   puppeteer.launch().then(function(browser) {
     browser.newPage().then(function(page) {
-      page.on('console', function() {
+      page.on('console', function(msg) {
+        console.log(msg.text);
 
-        var string = Array.prototype.slice.call(arguments).join('');
-        var lines = string.split('\n');
-
-        lines.forEach(function(line) {
-          if (line.indexOf('0 failed.') > -1) {
-            console.log(chalk.green(line));
-          } else {
-            console.log(line);
-          }
-        });
-
-        result.output.push(string);
+        result.output.push(msg.text);
       });
 
       page.on('error', function(err) {
