@@ -5046,16 +5046,6 @@ qunit-extras@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/qunit-extras/-/qunit-extras-1.5.0.tgz#a64d1c5088ab20c01c0e1b04c72132c397b3964c"
 
-qunit-phantomjs-runner@^2.2.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/qunit-phantomjs-runner/-/qunit-phantomjs-runner-2.3.0.tgz#270acb197c0f2fcaaf06676ab0a48fd5aca66a99"
-  dependencies:
-    qunit-reporter-junit "^1.0.2"
-
-qunit-reporter-junit@^1.0.2:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/qunit-reporter-junit/-/qunit-reporter-junit-1.1.1.tgz#eeb6226457896993e795a11940f18af6afa579b4"
-
 qunitjs@^1.22.0:
   version "1.23.1"
   resolved "https://registry.yarnpkg.com/qunitjs/-/qunitjs-1.23.1.tgz#1971cf97ac9be01a64d2315508d2e48e6fd4e719"

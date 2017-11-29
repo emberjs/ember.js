@@ -28,7 +28,6 @@ function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
     var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
     runInBrowser(url, 3, resolve, reject);
-    //runInPhantom(url, 3, resolve, reject);
   });
 }
 
@@ -169,62 +168,6 @@ function runInBrowser(url, retries, resolve, reject) {
       page.goto(url, { timeout: 900 });
     });
   })
-}
-
-function runInPhantom(url, retries, resolve, reject) {
-  var args = [require.resolve('qunit-phantomjs-runner'), url, '900'];
-
-  console.log('Running: phantomjs ' + args.join(' '));
-
-  var crashed = false;
-  var child = spawn('phantomjs', args);
-  var result = {output: [], errors: [], code: null};
-
-  child.stdout.on('data', function (data) {
-    var string = data.toString();
-    var lines = string.split('\n');
-
-    lines.forEach(function(line) {
-      if (line.indexOf('0 failed.') > -1) {
-        console.log(chalk.green(line));
-      } else {
-        console.log(line);
-      }
-    });
-    result.output.push(string);
-  });
-
-  child.stderr.on('data', function (data) {
-    var string = data.toString();
-
-    if (string.indexOf('PhantomJS has crashed.') > -1) {
-      crashed = true;
-    }
-
-    result.errors.push(string);
-    console.error(chalk.red(string));
-  });
-
-  child.on('close', function (code) {
-    result.code = code;
-
-    if (!crashed && code === 0) {
-      resolve(result);
-    } else if (crashed) {
-      console.log(chalk.red('Phantom crashed with exit code ' + code));
-
-      if (retries > 1) {
-        console.log(chalk.yellow('Retrying... ¯\_(ツ)_/¯'));
-        runInPhantom(url, retries - 1, resolve, reject);
-      } else {
-        console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
-        console.log(chalk.yellow('This might be a known issue with PhantomJS 1.9.8, skipping for now'));
-        resolve(result);
-      }
-    } else {
-      reject(result);
-    }
-  });
 }
 
 var testFunctions = [];
