@@ -360,7 +360,7 @@ const LinkComponent = EmberComponent.extend({
   /**
     Used to determine when this `LinkComponent` is active.
 
-    @property currentWhen
+    @property current-when
     @public
   */
   'current-when': null,
