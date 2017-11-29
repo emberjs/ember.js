@@ -3,7 +3,7 @@
 */
 
 import { symbol, NAME_KEY, OWNER } from 'ember-utils';
-import { on, descriptor, meta as metaFor } from 'ember-metal';
+import { on, descriptor, peekMeta } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from 'ember-debug';
@@ -30,7 +30,7 @@ const EmberObject = CoreObject.extend(Observable, {
         return this[OVERRIDE_CONTAINER_KEY];
       }
 
-      let meta = metaFor(this);
+      let meta = peekMeta(this);
       let { factory } = meta;
 
       return factory && factory.fullName;
@@ -44,7 +44,7 @@ const EmberObject = CoreObject.extend(Observable, {
         return this[OVERRIDE_OWNER];
       }
 
-      let meta = metaFor(this);
+      let meta = peekMeta(this);
       let { factory } = meta;
 
       return factory && factory.owner;
