@@ -5,7 +5,6 @@ export function getOwner(obj: any): any;
 export function symbol(debugName: string): string;
 export function assign(original: any, ...args: any[]): any;
 export const OWNER: string;
-export const HAS_NATIVE_WEAKMAP: boolean;
 
 export function generateGuid(obj: Opaque, prefix?: string): string;
 export function guidFor(obj: Opaque): string;
