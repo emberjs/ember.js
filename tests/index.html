@@ -172,10 +172,28 @@
           QUnit.config.reorder = false;
         }
 
+        var testsTotal, testsPassed, testsFailed;
+
         QUnit.begin(function() {
+          testsTotal = testsPassed = testsFailed = 0;
+
           if (QUnit.urlParams.hideskipped) {
             $('#qunit-tests').addClass('hideskipped');
           }
+        });
+
+        QUnit.testDone(function(results) {
+          testsTotal++;
+
+          if (results.failed) {
+            testsFailed++;
+          } else {
+            testsPassed++;
+          }
+        });
+
+        QUnit.done(function(result) {
+            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
         });
       })();
     </script>

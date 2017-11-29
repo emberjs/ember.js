@@ -59,6 +59,9 @@ function runInBrowser(url, retries, resolve, reject) {
 
       var addLogging = function() {
         window.document.addEventListener('DOMContentLoaded', function() {
+          var testsTotal = 0;
+          var testsPassed = 0;
+          var testsFailed = 0;
           var currentTestAssertions = [];
 
           QUnit.log(function (details) {
@@ -96,19 +99,24 @@ function runInBrowser(url, retries, resolve, reject) {
             }
             name += result.name;
 
+            testsTotal++;
+
             if (result.failed) {
+              testsFailed++;
               console.log('\n' + 'Test failed: ' + name);
 
               for (i = 0, len = currentTestAssertions.length; i < len; i++) {
                 console.log('    ' + currentTestAssertions[i]);
               }
+            } else {
+              testsPassed++;
             }
 
             currentTestAssertions.length = 0;
           });
 
           QUnit.done(function (result) {
-            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + result.total + ' tests. ' + result.passed + ' passed, ' + result.failed + ' failed.');
+            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
 
             if (typeof window.callPhantom === 'function') {
               window.callPhantom({
