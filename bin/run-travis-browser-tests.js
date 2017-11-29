@@ -35,23 +35,7 @@ function run(command, _args) {
 }
 
 
-function setupChrome() {
-  return RSVP.resolve()
-    .then(function() {
-      return run('sudo', ['apt-get', 'install', '-y', 'google-chrome-stable']);
-    })
-    .then(function() {
-      return run('/usr/bin/google-chrome', ['--version']);
-    });
-}
-
 RSVP.resolve()
-  .then(function() {
-    return run('sudo', ['apt-get', 'update']);
-  })
-  .then(function() {
-    return setupChrome();
-  })
   .then(function() {
     return run('./node_modules/.bin/testem', ['launchers']);
   })
