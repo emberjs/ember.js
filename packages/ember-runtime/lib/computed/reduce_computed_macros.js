@@ -10,8 +10,7 @@ import {
   computed,
   addObserver,
   removeObserver,
-  getProperties,
-  WeakMap
+  getProperties
 } from 'ember-metal';
 import compare from '../compare';
 import { isArray } from '../utils';

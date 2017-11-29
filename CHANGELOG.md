@@ -1,30 +1,30 @@
 # Ember Changelog
 
-### 2.17.0-beta.6 (November 13, 2017)
+### 2.18.0-beta.1 (November 29, 2017)
+
+- [#14590](https://github.com/emberjs/ember.js/pull/14590) [DEPRECATION] Deprecate using `targetObject`.
+- [#15754](https://github.com/emberjs/ember.js/pull/15754) [CLEANUP] Remove `router.router` deprecation.
+
+### 2.17.0 (November 29, 2017)
+
+- [#15855](https://github.com/emberjs/ember.js/pull/15855) [BUGFIX] fix regression with computed `filter/map/sort`
+- [#15871](https://github.com/emberjs/ember.js/pull/15871) [BUGFIX lts] Refactor / fix error handling scenarios.
+    * Revert changes made in 2.11.3 which made all errors thrown within a run loop unable to be caught with normal `try` / `catch`.
+    * Prevent unhandled rejections from being thrown twice (once by the `RSVP` unhandled rejection system, and again by `Ember.onerror` if present).
+- [#15873](https://github.com/emberjs/ember.js/pull/15873) [BUGFIX] Update to `backburner.js@1.2.3` to prevent issues with swallowing errors thrown within `run.join` callbacks when `Ember.onerror` is present.
 - [#15848](https://github.com/emberjs/ember.js/pull/15848) [BUGFIX] Ensure helpers have a consistent API.
 - [#15849](https://github.com/emberjs/ember.js/pull/15849) [BUGFIX] Fix issue when observing a computed property that is clobbered during creation. 
-
-### 2.17.0-beta.5 (November 7, 2017)
 - [#15797](https://github.com/emberjs/ember.js/pull/15797) [BUGFIX] Fix issues with using partials nested within other partials.
 - [#15808](https://github.com/emberjs/ember.js/pull/15808) [BUGFIX] Fix a memory leak in certain testing scenarios.
-
-### 2.17.0-beta.4 (October 30, 2017)
 - [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initally `null`.
 - [#15777](https://github.com/emberjs/ember.js/pull/15777) [BUGFIX] Fix various issues around accessing dynamic data within a partial.
-
-### 2.17.0-beta.3 (October 23, 2017)
 - [#15606](https://github.com/emberjs/ember.js/pull/15606) [BUGFIX] Add fs-extra to deps
 - [#15697](https://github.com/emberjs/ember.js/pull/15697) [BUGFIX] Move accessing meta out of the loop
 - [#15710](https://github.com/emberjs/ember.js/pull/15710) [BUGFIX] Correctly reset container cache
-
-### 2.17.0-beta.2 (October 17, 2017)
 - [#15613](https://github.com/emberjs/ember.js/pull/15613) [BUGFIX] Don't throw an error, when not all query params are passed to routerService.transitionTo
 - [#15707](https://github.com/emberjs/ember.js/pull/15707) [BUGFIX] Fix `canInvoke` for edge cases
 - [#15722](https://github.com/emberjs/ember.js/pull/15722) [BUGFIX] empty path in `get` helper should not throw assertion
 - [#15733](https://github.com/emberjs/ember.js/pull/15733) [BUGFIX] Fix computed sort regression when array prop initially null
-
-### 2.17.0-beta.1 (October 9, 2017)
-
 - [#15265](https://github.com/emberjs/ember.js/pull/15265) [BUGFIX] fixed issue when passing `false` to `activeClass` for `{{link-to}}`
 - [#15672](https://github.com/emberjs/ember.js/pull/15672) Update router_js to 2.0.0.
 

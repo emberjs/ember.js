@@ -1,5 +1,4 @@
 import {
-  HAS_NATIVE_WEAKMAP,
   lookupDescriptor,
   symbol,
   toString
@@ -460,53 +459,35 @@ if (MANDATORY_SETTER) {
   };
 }
 
-let setMeta, peekMeta;
 
-// choose the one appropriate for given platform
-if (HAS_NATIVE_WEAKMAP) {
-  let getPrototypeOf = Object.getPrototypeOf;
-  let metaStore = new WeakMap();
+let getPrototypeOf = Object.getPrototypeOf;
+let metaStore = new WeakMap();
 
-  setMeta = function WeakMap_setMeta(obj, meta) {
+export function setMeta(obj, meta) {
+  if (DEBUG) {
+    counters.setCalls++;
+  }
+  metaStore.set(obj, meta);
+}
+
+export function peekMeta(obj) {
+  let pointer = obj;
+  let meta;
+  while (pointer !== undefined && pointer !== null) {
+    meta = metaStore.get(pointer);
+    // jshint loopfunc:true
     if (DEBUG) {
-      counters.setCalls++;
+      counters.peekCalls++;
     }
-    metaStore.set(obj, meta);
-  };
-
-  peekMeta = function WeakMap_peekParentMeta(obj) {
-    let pointer = obj;
-    let meta;
-    while (pointer !== undefined && pointer !== null) {
-      meta = metaStore.get(pointer);
-      // jshint loopfunc:true
-      if (DEBUG) {
-        counters.peekCalls++;
-      }
-      if (meta !== undefined) {
-        return meta;
-      }
-
-      pointer = getPrototypeOf(pointer);
-      if (DEBUG) {
-        counters.peekPrototypeWalks++;
-      }
-    }
-  };
-} else {
-  setMeta = function Fallback_setMeta(obj, meta) {
-    if (obj.__defineNonEnumerable) {
-      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-    } else {
-      Object.defineProperty(obj, META_FIELD, META_DESC);
+    if (meta !== undefined) {
+      return meta;
     }
 
-    obj[META_FIELD] = meta;
-  };
-
-  peekMeta = function Fallback_peekMeta(obj) {
-    return obj[META_FIELD];
-  };
+    pointer = getPrototypeOf(pointer);
+    if (DEBUG) {
+      counters.peekPrototypeWalks++;
+    }
+  }
 }
 
 /**
@@ -569,8 +550,4 @@ export function meta(obj) {
   return newMeta;
 }
 
-export {
-  peekMeta,
-  setMeta,
-  counters
-};
+export { counters };

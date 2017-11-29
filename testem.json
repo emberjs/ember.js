@@ -4,5 +4,5 @@
   "timeout": 540,
   "parallel": 4,
   "disable_watching": true,
-  "launch_in_dev": ["PhantomJS"]
+  "launch_in_dev": []
 }

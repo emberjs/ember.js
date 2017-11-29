@@ -10,7 +10,6 @@ import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
-import { EMBER_METAL_WEAKMAP } from 'ember/features';
 import * as FLAGS from 'ember/features';
 
 // ember-utils exports
@@ -139,9 +138,6 @@ Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
 Ember.isGlobalPath = metal.isGlobalPath;
 
-if (EMBER_METAL_WEAKMAP) {
-  Ember.WeakMap = metal.WeakMap;
-}
 
 Object.defineProperty(Ember, 'ENV', {
   get() { return ENV; },

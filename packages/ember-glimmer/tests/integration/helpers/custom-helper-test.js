@@ -2,7 +2,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 import { set } from 'ember-metal';
-import { HAS_NATIVE_WEAKMAP } from 'ember-utils';
 
 let assert = QUnit.assert;
 
@@ -634,7 +633,7 @@ let addingPropertyToFrozenObjectThrows = (() => {
   }
 })();
 
-if (!EmberDev.runningProdBuild && HAS_NATIVE_WEAKMAP && (
+if (!EmberDev.runningProdBuild && (
   pushingIntoFrozenArrayThrows ||
     assigningExistingFrozenPropertyThrows ||
     addingPropertyToFrozenObjectThrows

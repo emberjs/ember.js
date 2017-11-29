@@ -32,5 +32,4 @@ export { default as makeArray } from './make-array';
 export { default as applyStr } from './apply-str';
 export { default as NAME_KEY } from './name';
 export { default as toString } from './to-string';
-export { HAS_NATIVE_WEAKMAP } from './weak-map-utils';
 export { HAS_NATIVE_PROXY } from './proxy-utils';
