@@ -55,6 +55,6 @@ import { TemplateMeta } from 'ember-views';
 */
 export const outletMacro = (_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<TemplateMeta>) => {
   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
-  builder.guardedAppend(expr, false);
+  builder.dynamicComponent(expr, [], null, false, null, null);
   return true;
 };
