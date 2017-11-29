@@ -110,7 +110,7 @@
     "html-differ": "^1.3.4",
     "lodash.uniq": "^4.5.0",
     "mocha": "^2.4.5",
-    "puppeteer": "^0.10.1",
+    "puppeteer": "^0.13.0",
     "qunit-extras": "^1.5.0",
     "qunit-phantomjs-runner": "^2.2.0",
     "qunitjs": "^1.22.0",
