@@ -7,7 +7,7 @@ export default function deprecateRender(env) {
   return {
     name: 'deprecate-render',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         if (node.path.original !== 'render') { return; }
         if (node.params.length !== 1) { return; }

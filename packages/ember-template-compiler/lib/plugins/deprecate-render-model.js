@@ -8,7 +8,7 @@ export default function deprecateRenderModel(env) {
   return {
     name: 'deprecate-render-model',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         if (node.path.original === 'render' && node.params.length > 1) {
           node.params.forEach(param => {

@@ -24,7 +24,7 @@ export default function transformEachInIntoEach(env) {
   return {
     name: 'transform-each-in-into-each',
 
-    visitors: {
+    visitor: {
       BlockStatement(node) {
         if (node.path.original === 'each-in') {
           node.params[0] = b.sexpr(b.path('-each-in'), [node.params[0]]);

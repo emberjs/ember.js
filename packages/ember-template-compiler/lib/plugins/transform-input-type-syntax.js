@@ -29,7 +29,7 @@ export default function transformInputTypeSyntax(env) {
   return {
     name: 'transform-input-type-syntax',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         if (isInput(node)) {
           insertTypeHelperParameter(node, b);

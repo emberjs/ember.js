@@ -30,7 +30,7 @@ export default function transformInputOnToOnEvent(env) {
   return {
     name: 'transform-input-on-to-onEvent',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         if (node.path.original !== 'input') {
           return;

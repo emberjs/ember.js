@@ -58,7 +58,7 @@ export default function transformDotComponentInvocation(env) {
   return {
     name: 'transform-dot-component-invocation',
 
-    visitors: {
+    visitor: {
       MustacheStatement: (node) => {
         if (isInlineInvocation(node.path, node.params, node.hash)) {
           wrapInComponent(node, b);

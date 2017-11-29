@@ -6,7 +6,7 @@ export default function extractPragmaTag(env) {
   return {
     name: 'exract-pragma-tag',
 
-    visitors: {
+    visitor: {
       MustacheStatement: {
         enter(node) {
           if (node.path.type === 'PathExpression' && node.path.original === PRAGMA_TAG) {

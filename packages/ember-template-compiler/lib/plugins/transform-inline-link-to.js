@@ -26,7 +26,7 @@ export default function transformInlineLinkTo(env) {
   return {
     name: 'transform-inline-link-to',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         if (node.path.original === 'link-to') {
           let content = node.escaped ? node.params[0] : unsafeHtml(b, node.params[0]);

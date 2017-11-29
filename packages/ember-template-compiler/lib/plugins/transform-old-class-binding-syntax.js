@@ -4,7 +4,7 @@ export default function transformOldClassBindingSyntax(env) {
   return {
     name: 'transform-old-class-binding-syntax',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         process(b, node);
       },

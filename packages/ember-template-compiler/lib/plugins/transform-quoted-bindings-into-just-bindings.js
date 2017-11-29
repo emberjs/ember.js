@@ -3,7 +3,7 @@ export default function transformQuotedBindingsIntoJustBindings(env) {
   return {
     name: 'transform-quoted-bindings-into-just-bindings',
 
-    visitors: {
+    visitor: {
       ElementNode(node) {
         let styleAttr = getStyleAttr(node);
 

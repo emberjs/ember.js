@@ -8,7 +8,7 @@ export default function transformOldBindingSyntax(env) {
   return {
     name: 'transform-old-binding-syntax',
 
-    visitors: {
+    visitor: {
       BlockStatement(node) {
         processHash(b, node, moduleName);
       },

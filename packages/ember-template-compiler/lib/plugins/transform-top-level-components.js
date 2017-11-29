@@ -2,7 +2,7 @@ export default function transformTopLevelComponent(env) {
   return {
     name: 'transform-top-level-component',
 
-    visitors: {
+    visitor: {
       Program(node) {
         hasSingleComponentNode(node, component => {
           component.tag = `@${component.tag}`;

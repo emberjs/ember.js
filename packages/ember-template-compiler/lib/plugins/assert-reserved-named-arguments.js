@@ -7,7 +7,7 @@ export default function assertReservedNamedArguments(env) {
   return {
     name: 'assert-reserved-named-arguments',
 
-    visitors: {
+    visitor: {
       PathExpression(node) {
         if (node.original[0] === '@') {
           assert(assertMessage(moduleName, node));
