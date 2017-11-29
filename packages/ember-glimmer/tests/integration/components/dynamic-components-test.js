@@ -2,7 +2,6 @@ import { set, computed } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Components test: dynamic components', class extends RenderingTest {
 
@@ -731,13 +730,8 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "component:outer-component" and modified in "component:error-component"/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
+    expectAssertion(() => {
       this.render('{{component componentName}}', { componentName: 'outer-component' });
-    } else {
-      expectAssertion(() => {
-        this.render('{{component componentName}}', { componentName: 'outer-component' });
-      }, expectedBacktrackingMessage);
-    }
+    }, expectedBacktrackingMessage);
   }
 });
