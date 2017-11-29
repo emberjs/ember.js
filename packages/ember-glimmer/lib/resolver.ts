@@ -28,7 +28,6 @@ import {
   inlineIf,
   inlineUnless,
 } from './helpers/if-unless';
-import { default as loc } from './helpers/loc';
 import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
 import { default as outlet } from './helpers/outlet';
@@ -63,7 +62,6 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
       concat,
       get,
       hash,
-      loc,
       log,
       mut,
       'query-params': queryParams,

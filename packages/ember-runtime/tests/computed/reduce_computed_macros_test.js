@@ -344,6 +344,24 @@ QUnit.test('it updates as the array is replaced', function() {
   deepEqual(obj.get('filtered'), [20, 22, 24], 'computed array is updated when array is changed');
 });
 
+QUnit.test('it updates properly on @each with {} dependencies', function() {
+  let item = EmberObject.create({prop: true});
+
+  obj = EmberObject.extend({
+    filtered: filter('items.@each.{prop}', function(item, index) {
+      return item.get('prop') === true;
+    })
+  }).create({
+    items: emberA([item])
+  });
+
+  deepEqual(obj.get('filtered'), [item]);
+
+  item.set('prop', false);
+
+  deepEqual(obj.get('filtered'), []);
+});
+
 QUnit.module('filterBy', {
   setup() {
     obj = EmberObject.extend({
@@ -647,7 +665,7 @@ QUnit.test('it asserts if given fewer or more than two dependent properties', fu
       array: emberA([1, 2, 3, 4, 5, 6, 7]),
       array2: emberA([3, 4, 5])
     });
-  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /\`Ember\.computed\.setDiff\` requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 
   expectAssertion(function () {
     EmberObject.extend({
@@ -657,7 +675,7 @@ QUnit.test('it asserts if given fewer or more than two dependent properties', fu
       array2: emberA([3, 4, 5]),
       array3: emberA([7])
     });
-  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /\`Ember\.computed\.setDiff\` requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 });
 
 

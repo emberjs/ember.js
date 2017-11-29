@@ -158,10 +158,17 @@ if (DEBUG) {
 
   let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager();
 
+<<<<<<< HEAD
   Environment.prototype.attributeFor = function(element, attribute, isTrusting) {
     // if (attribute === 'style' && !isTrusting) {
     //   return STYLE_ATTRIBUTE_MANANGER;
     // }
+=======
+  Environment.prototype.attributeFor = function (element, attribute, isTrusting) {
+    if (attribute === 'style' && !isTrusting) {
+      return STYLE_ATTRIBUTE_MANANGER;
+    }
+>>>>>>> origin/master
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };

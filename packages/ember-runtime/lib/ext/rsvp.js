@@ -1,7 +1,7 @@
 import * as RSVP from 'rsvp';
 import {
   run,
-  dispatchError
+  getDispatchOverride
 } from 'ember-metal';
 import { assert } from 'ember-debug';
 
@@ -21,7 +21,12 @@ RSVP.on('error', onerrorDefault);
 export function onerrorDefault(reason) {
   let error = errorFor(reason);
   if (error) {
-    dispatchError(error);
+    let overrideDispatch = getDispatchOverride();
+    if (overrideDispatch) {
+      overrideDispatch(error);
+    } else {
+      throw error;
+    }
   }
 }
 

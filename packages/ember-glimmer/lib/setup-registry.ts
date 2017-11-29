@@ -17,6 +17,7 @@ import ComponentTemplate from './templates/component';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
+import loc from './helpers/loc';
 
 interface Registry {
   injection(name: string, name2: string, name3: string): void;
@@ -70,6 +71,8 @@ export function setupEngineRegistry(registry: Registry) {
   registry.injection('template', 'compileOptions', 'service:-compile-options');
 
   registry.optionsForType('helper', { instantiate: false });
+
+  registry.register('helper:loc', loc);
 
   registry.register('component:-text-field', TextField);
   registry.register('component:-text-area', TextArea);

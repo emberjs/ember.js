@@ -19,7 +19,6 @@ export {
 export {
   getOnerror,
   setOnerror,
-  dispatchError,
   setDispatchOverride,
   getDispatchOverride
 } from './error_handler';

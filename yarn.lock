@@ -916,9 +916,9 @@ backbone@^1.1.2:
   dependencies:
     underscore ">=1.8.3"
 
-backburner.js@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/backburner.js/-/backburner.js-1.2.2.tgz#0350aae362cf0522e6618f24d4b0a44cda2ec81e"
+backburner.js@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/backburner.js/-/backburner.js-1.3.1.tgz#f89ebd433063693f2ab13b6f8a3427fefc31cdcf"
 
 backo2@1.0.2:
   version "1.0.2"
