@@ -18,7 +18,7 @@ moduleFor('Ember.Application initializers', class extends AutobootApplicationTes
     });
   }
 
-  createSecondApplication(options, MyApplication=Application) {
+  createSecondApplication(options, MyApplication = Application) {
     let myOptions = assign(this.applicationOptions, {
       rootElement: '#two'
     }, options);
@@ -42,7 +42,7 @@ moduleFor('Ember.Application initializers', class extends AutobootApplicationTes
     });
 
     expectAssertion(() => {
-      MyApplication.initializer({ initialize() {} });
+      MyApplication.initializer({ initialize() { } });
     });
   }
 
@@ -329,20 +329,20 @@ moduleFor('Ember.Application initializers', class extends AutobootApplicationTes
 
     FirstApp.initializer({
       name: 'abc',
-      initialize() {}
+      initialize() { }
     });
 
     expectAssertion(() => {
       FirstApp.initializer({
         name: 'abc',
-        initialize() {}
+        initialize() { }
       });
     });
 
     let SecondApp = Application.extend();
     SecondApp.instanceInitializer({
       name: 'abc',
-      initialize() {}
+      initialize() { }
     });
 
     assert.ok(true, 'Two apps can have initializers named the same.');
@@ -361,21 +361,5 @@ moduleFor('Ember.Application initializers', class extends AutobootApplicationTes
     });
 
     this.runTask(() => this.createApplication({}, MyApplication));
-  }
-
-  [`@test initializers throw a deprecation warning when receiving a second argument`](assert) {
-    assert.expect(1);
-
-    let MyApplication = Application.extend();
-
-    MyApplication.initializer({
-      name: 'deprecated',
-      initialize(registry, application) { // eslint-disable-line no-unused-vars
-      }
-    });
-
-    expectDeprecation(() => {
-      this.runTask(() => this.createApplication({}, MyApplication));
-    }, /The `initialize` method for Application initializer 'deprecated' should take only one argument - `App`, an instance of an `Application`./);
   }
 });
