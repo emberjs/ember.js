@@ -21,22 +21,6 @@ export function Descriptor() {
   this.isDescriptor = true;
 }
 
-const REDEFINE_SUPPORTED = ((() => {
-  // https://github.com/spalger/kibana/commit/b7e35e6737df585585332857a4c397dc206e7ff9
-  let a = Object.create(Object.prototype, {
-    prop: {
-      configurable: true,
-      value: 1
-    }
-  });
-
-  Object.defineProperty(a, 'prop', {
-    configurable: true,
-    value: 2
-  });
-
-  return a.prop === 2;
-})());
 // ..........................................................
 // DEFINING PROPERTIES API
 //
@@ -178,11 +162,8 @@ export function defineProperty(obj, keyName, desc, data, meta) {
           get: DEFAULT_GETTER_FUNCTION(keyName)
         };
 
-        if (REDEFINE_SUPPORTED) {
-          Object.defineProperty(obj, keyName, defaultDescriptor);
-        } else {
-          handleBrokenPhantomDefineProperty(obj, keyName, defaultDescriptor);
-        }
+        Object.defineProperty(obj, keyName, defaultDescriptor);
+
       } else {
         obj[keyName] = data;
       }
@@ -219,11 +200,4 @@ function didDefineComputedProperty(constructor) {
   if (cache && cache._computedProperties !== undefined) {
     cache._computedProperties = undefined;
   }
-}
-
-
-function handleBrokenPhantomDefineProperty(obj, keyName, desc) {
-  // https://github.com/ariya/phantomjs/issues/11856
-  Object.defineProperty(obj, keyName, { configurable: true, writable: true, value: 'iCry' });
-  Object.defineProperty(obj, keyName, desc);
 }
