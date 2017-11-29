@@ -95,7 +95,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
   }
 
   getSelf({ outletState }: OutletInstanceState) {
-    return outletState;
+    return outletState.get('render').get('controller');
   }
 
   getTag({ outletState }: OutletInstanceState): Tag {
