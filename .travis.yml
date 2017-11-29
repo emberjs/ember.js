@@ -36,7 +36,7 @@ branches:
     - beta
     - stable
     # npm version tags
-    - /^v\d+\.\d+\.\d+$/
+    - /^v\d+\.\d+\.\d+/
 
 env:
   global:
