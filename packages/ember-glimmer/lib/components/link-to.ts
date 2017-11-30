@@ -774,17 +774,6 @@ const LinkComponent = EmberComponent.extend({
     for (let i = 0; i < modelCount; i++) {
       let value = params[i + 1];
 
-      while (ControllerMixin.detect(value)) {
-        deprecate(
-          'Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated. ' +
-            (this.parentView ? 'Please update `' + this.parentView +
-            '` to use `{{link-to "post" someController.model}}` instead.' : ''),
-          false,
-          { id: 'ember-routing-views.controller-wrapped-param', until: '3.0.0' },
-        );
-        value = value.get('model');
-      }
-
       models[i] = value;
     }
 

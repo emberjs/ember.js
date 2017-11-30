@@ -23,7 +23,6 @@
     "ember-debug.warn-options-missing": "2.1.0",
     "ember-debug.warn-id-missing": "2.1.0",
     "ember-views.component.defaultLayout": "2.3.0",
-    "ember-routing-views.controller-wrapped-param": "2.0.0",
     "ember-htmlbars.make-bound-helper": "1.13.6",
     "ember-htmlbars.ember-handlebars-safestring": "2.8.0",
     "ember-metal.binding": "2.7.0",
