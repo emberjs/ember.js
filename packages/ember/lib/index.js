@@ -221,32 +221,6 @@ Object.defineProperty(Ember, 'onerror', {
   enumerable: false
 });
 
-/**
-  An empty function useful for some operations. Always returns `this`.
-
-  @method K
-  @return {Object}
-  @public
-  @deprecated
-*/
-function deprecatedEmberK() { return this; }
-
-Object.defineProperty(Ember, 'K', {
-  get() {
-    deprecate(
-      'Ember.K is deprecated in favor of defining a function inline.',
-      false,
-      {
-        id: 'ember-metal.ember-k',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
-      }
-    );
-
-    return deprecatedEmberK;
-  }
-});
-
 Object.defineProperty(Ember, 'testing', {
   get: EmberDebug.isTesting,
   set: EmberDebug.setTesting,
