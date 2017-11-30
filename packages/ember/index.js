@@ -124,9 +124,6 @@ import Resolver from '@ember/application/globals-resolver';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
-import Map from '@ember/map';
-import MapWithDefault from '@ember/map/with-default';
-import OrderedSet, { __OrderedSet__ } from '@ember/map/lib/ordered-set';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
 
@@ -178,12 +175,6 @@ Ember.ApplicationInstance = ApplicationInstance;
 // ****@ember/engine****
 Ember.Engine = Engine;
 Ember.EngineInstance = EngineInstance;
-
-// ****@ember/map****
-Ember.OrderedSet = OrderedSet;
-Ember.__OrderedSet__ = __OrderedSet__;
-Ember.Map = Map;
-Ember.MapWithDefault = MapWithDefault;
 
 // ****@ember/polyfills****
 Ember.assign = assign;

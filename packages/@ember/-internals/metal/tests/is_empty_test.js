@@ -1,6 +1,4 @@
 import { isEmpty } from '..';
-import Map from '@ember/map';
-import OrderedSet from '@ember/map/lib/ordered-set';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -24,32 +22,6 @@ moduleFor(
       assert.equal(true, isEmpty([]), 'for an empty Array');
       assert.equal(false, isEmpty({}), 'for an empty Object');
       assert.equal(true, isEmpty(object), "for an Object that has zero 'length'");
-    }
-
-    ['@test isEmpty Map'](assert) {
-      expectDeprecation(
-        () => {
-          let map = new Map();
-          assert.equal(true, isEmpty(map), 'Empty map is empty');
-          map.set('foo', 'bar');
-          assert.equal(false, isEmpty(map), 'Map is not empty');
-        },
-        'Use of @ember/Map is deprecated. Please use native `Map` instead',
-        { id: 'ember-map-deprecation', until: '3.5.0' }
-      );
-    }
-
-    ['@test isEmpty Ember.OrderedSet'](assert) {
-      expectDeprecation(
-        () => {
-          let orderedSet = new OrderedSet();
-          assert.equal(true, isEmpty(orderedSet), 'Empty ordered set is empty');
-          orderedSet.add('foo');
-          assert.equal(false, isEmpty(orderedSet), 'Ordered set is not empty');
-        },
-        'Use of @ember/OrderedSet is deprecated. Please use native `Map` instead',
-        { id: 'ember-map-deprecation', until: '3.5.0' }
-      );
     }
   }
 );
