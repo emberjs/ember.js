@@ -785,47 +785,6 @@ export function observer(...args) {
 }
 
 /**
-  Specify a method that observes property changes.
-
-  ```javascript
-  import EmberObject from '@ember/object';
-
-  EmberObject.extend({
-    valueObserver: Ember.immediateObserver('value', function() {
-      // Executes whenever the "value" property changes
-    })
-  });
-  ```
-
-  In the future, `observer` may become asynchronous. In this event,
-  `immediateObserver` will maintain the synchronous behavior.
-
-  Also available as `Function.prototype.observesImmediately` if prototype extensions are
-  enabled.
-
-  @method _immediateObserver
-  @for Ember
-  @param {String} propertyNames*
-  @param {Function} func
-  @deprecated Use `observer` instead.
-  @return func
-  @private
-*/
-export function _immediateObserver() {
-  deprecate('Usage of `Ember.immediateObserver` is deprecated, use `observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
-
-  for (let i = 0; i < arguments.length; i++) {
-    let arg = arguments[i];
-    assert(
-      'Immediate observers must observe internal properties only, not properties on other objects.',
-      typeof arg !== 'string' || arg.indexOf('.') === -1
-    );
-  }
-
-  return observer.apply(this, arguments);
-}
-
-/**
   When observers fire, they are called with the arguments `obj`, `keyName`.
 
   Note, `@each.property` observer is called per each add or replace of an element

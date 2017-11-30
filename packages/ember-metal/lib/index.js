@@ -111,7 +111,6 @@ export {
 export {
   Mixin,
   aliasMethod,
-  _immediateObserver,
   _beforeObserver,
   mixin,
   observer,
