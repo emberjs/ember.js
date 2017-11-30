@@ -208,36 +208,6 @@ const Enumerable = Mixin.create({
   }).readOnly(),
 
   /**
-    Returns `true` if the passed object can be found in the receiver. The
-    default version will iterate through the enumerable until the object
-    is found. You may want to override this with a more efficient version.
-
-    ```javascript
-    let arr = ['a', 'b', 'c'];
-
-    arr.contains('a'); // true
-    arr.contains('z'); // false
-    ```
-
-    @method contains
-    @deprecated Use `Enumerable#includes` instead. See https://emberjs.com/deprecations/v2.x#toc_enumerable-contains
-    @param {Object} obj The object to search for.
-    @return {Boolean} `true` if object is found in enumerable.
-    @public
-  */
-  contains(obj) {
-    deprecate(
-      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-      false,
-      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-    );
-
-    let found = this.find(item => item === obj);
-
-    return found !== undefined;
-  },
-
-  /**
     Iterates through the enumerable, calling the passed function on each
     item. This method corresponds to the `forEach()` method defined in
     JavaScript 1.6.
