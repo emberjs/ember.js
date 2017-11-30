@@ -20,20 +20,6 @@ export class SafeString {
   }
 }
 
-export function getSafeString() {
-  deprecate(
-    'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe',
-    false,
-    {
-      id: 'ember-htmlbars.ember-handlebars-safestring',
-      until: '3.0.0',
-      url: 'https://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring',
-    },
-  );
-
-  return SafeString;
-}
-
 const escape = {
   '&': '&amp;',
   '<': '&lt;',
