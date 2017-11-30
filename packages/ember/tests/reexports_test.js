@@ -165,8 +165,6 @@ QUnit.module('ember reexports');
   ['CoreObject', 'ember-runtime'],
   ['NativeArray', 'ember-runtime'],
   ['Copyable', 'ember-runtime'],
-  ['Freezable', 'ember-runtime'],
-  ['FROZEN_ERROR', 'ember-runtime'],
   ['MutableEnumerable', 'ember-runtime'],
   ['MutableArray', 'ember-runtime'],
   ['TargetActionSupport', 'ember-runtime'],
