@@ -1,7 +1,9 @@
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 
 import Logger from 'ember-console';
 import deprecate from './deprecate';
+import { assert } from './index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 let registerHandler = () => {};
@@ -84,7 +86,13 @@ if (DEBUG) {
       options = test;
       test = false;
     }
-    if (!options) {
+
+    if (ENV._ENABLE_WARN_OPTIONS_SUPPORT !== true) {
+      assert(missingOptionsDeprecation, options);
+      assert(missingOptionsIdDeprecation, options && options.id);
+    }
+
+    if (!options && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsDeprecation,
         false,
@@ -96,7 +104,7 @@ if (DEBUG) {
       );
     }
 
-    if (options && !options.id) {
+    if (options && !options.id && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsIdDeprecation,
         false,
