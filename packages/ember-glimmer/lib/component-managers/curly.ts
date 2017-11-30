@@ -188,7 +188,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     let { component } = state;
 
     return (component && component.tagName) || 'div';
-    // throw new Error('Method not implemented.');
   }
 
   getCapabilities(state: DefinitionState): ComponentCapabilities {
@@ -261,6 +260,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     props.parentView = parentView;
     props[HAS_BLOCK] = hasBlock;
+    props.layoutName = `components/${state.name}`;
 
     props._targetObject = callerSelfRef.value();
 
@@ -504,17 +504,16 @@ export function initialRenderInstrumentDetails(component: any): any {
 export function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
-
+const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
 export class CurlyComponentDefinition implements ComponentDefinition {
   public template: OwnedTemplate;
   public args: Arguments | undefined;
   public state: DefinitionState;
 
   // tslint:disable-next-line:no-shadowed-variable
-  constructor(public name: string, public manager: CurlyComponentManager, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: Arguments) {
+  constructor(public name: string, public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: Arguments) {
     this.template = template;
     this.args = args;
-    this.manager = manager;
     this.state = {
       name,
       ComponentClass,

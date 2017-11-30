@@ -1,5 +1,6 @@
-import { Macros } from '@glimmer/opcode-compiler';
+import { Macros, WrappedBuilder } from '@glimmer/opcode-compiler';
 import { assert } from 'ember-debug';
+import { TemplateMeta } from 'ember-views';
 import { textAreaMacro } from './syntax/-text-area';
 import { inputMacro } from './syntax/input';
 import { mountMacro } from './syntax/mount';
@@ -9,11 +10,14 @@ import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 
 function refineInlineSyntax(name: string, params: any[], hash: any, builder: any) {
-  assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.env.builtInHelpers[name] && builder.env.owner.hasRegistration(`helper:${name}`)));
+  assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.resolver.resolver.builtInHelpers[name] && builder.resolver.resolver.owner.hasRegistration(`helper:${name}`)));
 
   let definition;
   if (name.indexOf('-') > -1) {
-    definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
+    definition = builder.resolver.lookupComponentDefinition(name, {
+      owner: builder.resolver.resolver.owner,
+      moduleName: ''
+    });
   }
 
   if (definition) {
@@ -67,7 +71,7 @@ export function populateMacros(macros: Macros) {
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);
-  // inlines.addMissing(refineInlineSyntax);
+  inlines.addMissing(refineInlineSyntax);
   // blocks.add('component', blockComponentMacro);
   blocks.addMissing(refineBlockSyntax);
 

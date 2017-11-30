@@ -33,6 +33,8 @@ import {
   EMBER_MODULE_UNIFICATION,
 } from 'ember/features';
 import { OwnedTemplate } from './template';
+import { Attribute } from '@glimmer/interfaces/dist/types/lib/dom/simple';
+import { DynamicAttribute } from '@glimmer/runtime/dist/types/lib/vm/attributes/dynamic';
 
 export interface CompilerFactory {
   id: string;
@@ -156,19 +158,12 @@ if (DEBUG) {
     }
   }
 
-  let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager();
+  // let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager();
 
-<<<<<<< HEAD
-  Environment.prototype.attributeFor = function(element, attribute, isTrusting) {
+  Environment.prototype.attributeFor = function (element, attribute, isTrusting) {
     // if (attribute === 'style' && !isTrusting) {
     //   return STYLE_ATTRIBUTE_MANANGER;
     // }
-=======
-  Environment.prototype.attributeFor = function (element, attribute, isTrusting) {
-    if (attribute === 'style' && !isTrusting) {
-      return STYLE_ATTRIBUTE_MANANGER;
-    }
->>>>>>> origin/master
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };

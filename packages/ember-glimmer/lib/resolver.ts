@@ -190,7 +190,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   }
 
   private _lookupComponentDefinition(name: string, meta: TemplateMeta): Option<ComponentDefinition> {
-    let { layout } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
+    let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
 
     let customManager;
     if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
@@ -203,7 +203,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
 
     let layoutHandle = this.getHandle(layout) as Option<VMHandle>;
 
-    return new CurlyComponentDefinition(name, customManager, undefined, layoutHandle, customManager);
+    return new CurlyComponentDefinition(name, customManager, component, layoutHandle, customManager);
   }
 
   private getHandle(obj: any | null | undefined) {

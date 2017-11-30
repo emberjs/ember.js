@@ -1,9 +1,12 @@
+import { Opaque } from '@glimmer/interfaces';
 import {
   combine,
   CONSTANT_TAG,
   ConstReference,
   DirtyableTag,
   isConst,
+  PathReference,
+  Tag,
   TagWrapper,
   UpdatableTag,
 } from '@glimmer/reference';
@@ -24,6 +27,7 @@ import {
   watchKey,
 } from 'ember-metal';
 import {
+  HAS_NATIVE_WEAKMAP,
   symbol,
 } from 'ember-utils';
 import {
@@ -49,7 +53,7 @@ if (DEBUG) {
     // performance penalty on Chrome (tested through 59).
     //
     // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
-    if (!Object.isFrozen(obj)) {
+    if (!Object.isFrozen(obj) && HAS_NATIVE_WEAKMAP) {
       Object.freeze(obj);
     }
   };
@@ -57,13 +61,16 @@ if (DEBUG) {
 
 // @abstract
 // @implements PathReference
-class EmberPathReference {
+abstract class EmberPathReference implements PathReference {
   // @abstract get tag()
   // @abstract value()
+  public tag: Tag;
 
   get(key: string): any {
     return PropertyReference.create(this, key);
   }
+
+  abstract value(): Opaque;
 }
 
 // @abstract
