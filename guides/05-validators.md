@@ -107,7 +107,7 @@ In this case, the inputs to both `ConcatReference` and `UppercaseReference` are
 quite clear: `ConcatReference` takes an array of references as input, therefore
 it only needs to be recomputed if and only if any of the input references have
 "changed" (i.e. a "reduce" operation); on the other hand, `UppercaseReference`
-takes a single reference as input, so it should only be recomputed if and only
+takes a single reference as input, so it should be recomputed if and only
 if the input reference has "changed" (i.e. a "map" operation).
 
 This presents a recursive problem – we know how to model the freshness of
@@ -138,7 +138,7 @@ Specifically, each entity tag has a `value()` method that returns an *opaque
 validation ticket* which encodes the current state of the computation.
 
 The validation ticket can later be passed back into the `validate` method on
-the same entity tag, which returns a boolean value indicating the whether the
+the same entity tag, which returns a boolean value indicating whether the
 computation result might have changed since the validation was produced.
 
 Specifically, if `validate` returns `true` for the given validation ticket, it
@@ -156,7 +156,7 @@ longer be relied on and a recomputation is necessary.
 However, a negative validation does not imply rerunning the computation would
 *always* yield a different result – it merely means that the entity tag can no
 longer be certain about the freshness of the computation. In other words, it
-operates like a bloom filter in that false positives are explicitly allowed and
+operates like a [bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) in that false positives are explicitly allowed and
 expected from time to time.
 
 Aside: if you are paying close attention, you might notice that `EntityTag`
@@ -171,7 +171,7 @@ The entity tag system in Glimmer is inspired by a similar system in the HTTP
 protocol. Understanding its origin might be helpful for understanding some of
 the operational details of the Glimmer validators system.
 
-In the HTTP protocol, entity tags (or "ETags") are used to handle revalidation
+In the HTTP protocol, entity tags (or ["ETags"](https://en.wikipedia.org/wiki/HTTP_ETag)) are used to handle revalidation
 of cached web content. When rendering a page, an HTTP server can optionally
 include an `ETag` header in the response. For example:
 
@@ -218,11 +218,11 @@ Since the server has confirmed that the cached content is still valid, the
 browser can simply fetch the document from its local cache and display it to
 the user.
 
-In an alternate universe, the server might find that a new version of the
+Alternatively, the server might find that a new version of the
 document has been uploaded since then, meaning that the browser's cached copy
 has become stale.
 
-In this universe, the server could simply return the new content along with a
+In this case, the server could simply return the new content along with a
 new `ETag`:
 
 ```
@@ -241,7 +241,7 @@ content to the user.
 
 ### Entity Tags in Glimmer
 
-While entity tags serves a slightly different purpose in Glimmer, the idea is
+While entity tags serve a slightly different purpose in Glimmer, the idea is
 similar.
 
 Let's define an extension to the `Reference` interface that requires each
@@ -259,13 +259,13 @@ interface TaggedReference<T> extends Reference<T>, Tagged {
 
 We will continue to defer the question of *how* exactly do we derive the
 freshness of a reference in the first place. For now, take a leap of faith and
-assume that they *do* work, and that a tag revalidation is cheap relative to
+assume that they *do* work, and that tag revalidation is cheap relative to
 recomputing the `value()` of a reference.
 
 With this infrastructure in place, we can finally apply this to our helper
 references.
 
-Let's start with `UppercaseReference`. If you recall, `UppercaseReference` only
+Let's start with `UppercaseReference`. If you recall, `UppercaseReference`
 needs to be recomputed if and only if its input reference has changed.
 Therefore, we can simply reuse the input reference's entity tag:
 
@@ -372,11 +372,11 @@ ticket up to each individual entity tag implementation.
 Furthermore, since we cannot make any assumptions about the semantics of these
 encodings, the only way to combine multiple tags is to store one validation
 ticket per entity tag and later validate each of the store tickets with the
-corresponding tag, i.e. the `CompositeTag` class used in the `ConcatReference`
+corresponding tag, e.g. the `CompositeTag` class used in the `ConcatReference`
 example.
 
 Since combining tags from multiple input sources is a very common pattern, it
-is very important that it could be implemented as efficiently as possible (both
+is very important that it can be implemented as efficiently as possible (both
 in terms of space and time complexity).
 
 To address this issue, Glimmer uses a specialized variant of the entity tag
@@ -389,14 +389,14 @@ just a fancy way of saying that it's a global number that only increases but
 never decreases.
 
 Conceptually, a discrete system (which is what Glimmer assumes) can be modeled
-a series of state transitions. The global revision counter is incremented by
+as a series of state transitions. The global revision counter is incremented by
 one every time the system undergoes a state transition. In other words, the
 global revision counter is incremented every time a variable is changed in the
 system.
 
 In practice, we are only concerned with a subset of all state changes that are
 *observable* from the perspective of the templating system. For example, when a
-variable that is not part of any templates is modified, it is not particularly
+variable that is not part of any template is modified, it is not particularly
 important that the global revision counter is incremented.
 
 In addition to the global counter, each (observable) object in the system has
@@ -571,7 +571,7 @@ modified when any of its input references was last modified, which is
 equivalent to saying a `ConcatReference` needs to be recomputed if and only if
 any of its input references needs to be recomputed.
 
-There revision tag system also has a few "special" tags.
+The revision tag system also has a few "special" tags.
 
 The constant tag has a `value()` of 0, which is smaller than the initial
 revision number. This can be used to model computation and values that can
@@ -657,12 +657,12 @@ const CURRENT_TAG: RevisionTag = {
 ```
 
 Alternatively, without a collaborating object model, this tag can be used
-in all root references that bridges the untracked objects into the system. The
+in all root references that bridge the untracked objects into the system. The
 revision counter can be artificially incremented once just before entering the
 global render loop: this will ensure that each computation is only performed
 once inside each render loop. This assumes the templates are side-effects-free.
 
-Together, this sets of primitives allows us to implement a very efficient yet
+Together, this set of primitives allows us to implement a very efficient yet
 expressive dirty-tracking system without notifications and subscriptions within
 the reference chain.
 
