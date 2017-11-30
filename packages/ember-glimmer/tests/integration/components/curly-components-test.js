@@ -23,7 +23,6 @@ import {
   styles
 } from '../../utils/test-helpers';
 import {
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
   MANDATORY_SETTER
 } from 'ember/features';
 
@@ -2138,29 +2137,9 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "value" twice on <\(.+> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
+    expectAssertion(() => {
       this.runTask(() => outer.set('value', 2));
-    } else {
-      expectAssertion(() => {
-        this.runTask(() => outer.set('value', 2));
-      }, expectedBacktrackingMessage);
-
-      return;
-    }
-
-    assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
-    assert.equal(this.$('#middle-value').text(), '2', 'second render of middle');
-
-    this.runTask(() => outer.set('value', 3));
-
-    assert.equal(this.$('#inner-value').text(), '3', 'third render of inner');
-    assert.equal(this.$('#middle-value').text(), '3', 'third render of middle');
-
-    this.runTask(() => outer.set('value', 1));
-
-    assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
-    assert.equal(this.$('#middle-value').text(), '1', 'reset render of middle');
+    }, expectedBacktrackingMessage);
   }
 
   ['@test when a shared dependency is changed during children\'s rendering'](assert) {
@@ -2190,39 +2169,9 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <Ember\.Object.+> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
+    expectAssertion(() => {
       this.render('{{x-outer}}');
-    } else {
-      expectAssertion(() => {
-        this.render('{{x-outer}}');
-      }, expectedBacktrackingMessage);
-
-      return;
-    }
-
-    assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-    assert.equal(this.$('#outer-value').text(), '1', 'initial render of outer');
-
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#inner-value').text(), '1', 're-render of inner');
-    assert.equal(this.$('#outer-value').text(), '1', 're-render of outer');
-
-    this.runTask(() => outer.set('value', 2));
-
-    assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
-    assert.equal(this.$('#outer-value').text(), '2', 'second render of outer');
-
-    this.runTask(() => outer.set('value', 3));
-
-    assert.equal(this.$('#inner-value').text(), '3', 'third render of inner');
-    assert.equal(this.$('#outer-value').text(), '3', 'third render of outer');
-
-    this.runTask(() => outer.set('value', 1));
-
-    assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
-    assert.equal(this.$('#outer-value').text(), '1', 'reset render of outer');
+    }, expectedBacktrackingMessage);
   }
 
   ['@test non-block with each rendering child components']() {

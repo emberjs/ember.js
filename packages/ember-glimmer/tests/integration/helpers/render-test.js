@@ -1,7 +1,6 @@
 import { observer, set, computed } from 'ember-metal';
 import { Controller } from 'ember-runtime';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
   ['@test should render given template']() {
@@ -451,14 +450,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
       this.registerTemplate('outer', `Hi {{model.name}} | {{render 'inner' model}}`);
       this.registerTemplate('inner', `Hi {{propertyWithError}}`);
 
-      if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-        expectDeprecation(expectedBacktrackingMessage);
+      expectAssertion(() => {
         this.render(`{{render 'outer' person}}`, { person });
-      } else {
-        expectAssertion(() => {
-          this.render(`{{render 'outer' person}}`, { person });
-        }, expectedBacktrackingMessage);
-      }
+      }, expectedBacktrackingMessage);
     });
   }
 });

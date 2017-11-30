@@ -8,7 +8,7 @@ import { compile, Component } from '../utils/helpers';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
 import { Engine, getEngineParent } from 'ember-application';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER, EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
+import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 
 if (EMBER_ENGINES_MOUNT_PARAMS) {
   moduleFor('{{mount}} single param assertion', class extends RenderingTest {
@@ -118,16 +118,11 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
 
     let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:route-with-mount" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
-      return this.visit('/route-with-mount');
-    } else {
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/route-with-mount');
-        }, expectedBacktrackingMessage);
-      });
-    }
+    return this.visit('/').then(() => {
+      expectAssertion(() => {
+        this.visit('/route-with-mount');
+      }, expectedBacktrackingMessage);
+    });
   }
 
   ['@test it renders with a bound engine name']() {

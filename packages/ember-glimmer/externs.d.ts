@@ -3,7 +3,6 @@ declare module 'ember/features' {
   export const GLIMMER_CUSTOM_COMPONENT_MANAGER: any;
   export const EMBER_ENGINES_MOUNT_PARAMS: any;
   export const EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER: any;
-  export const EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER: any;
   export const MANDATORY_SETTER: any;
 }
 

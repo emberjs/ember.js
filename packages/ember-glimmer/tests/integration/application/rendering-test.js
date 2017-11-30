@@ -3,7 +3,6 @@ import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
 import { Component } from 'ember-glimmer';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
 
@@ -400,15 +399,10 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
 
     let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:routeWithError" and modified in "component:x-foo"/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
-      return this.visit('/routeWithError');
-    } else {
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/routeWithError');
-        }, expectedBacktrackingMessage);
-      });
-    }
+    return this.visit('/').then(() => {
+      expectAssertion(() => {
+        this.visit('/routeWithError');
+      }, expectedBacktrackingMessage);
+    });
   }
 });

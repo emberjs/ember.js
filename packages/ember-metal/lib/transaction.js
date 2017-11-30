@@ -3,14 +3,13 @@ import { assert, deprecate } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER
 } from 'ember/features';
 
 let runInTransaction, didRender, assertNotRendered;
 
 // detect-backtracking-rerender by default is debug build only
 // detect-glimmer-allow-backtracking-rerender can be enabled in custom builds
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
 
   // there are 2 states
 
@@ -77,13 +76,7 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKI
             label = 'the same value';
           }
 
-          let message = `You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and`;
-
-          if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-            deprecate(`${message} will be removed in Ember 3.0.`, false, { id: 'ember-views.render-double-modify', until: '3.0.0' });
-          } else {
-            assert(`${message} is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`, false);
-          }
+          assert(`You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`, false);
         }
 
         this.shouldReflush = true;

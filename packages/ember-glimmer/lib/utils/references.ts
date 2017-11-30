@@ -27,7 +27,6 @@ import {
   symbol,
 } from 'ember-utils';
 import {
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
   EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
   MANDATORY_SETTER,
 } from 'ember/features';
@@ -116,8 +115,7 @@ export class RootReference<T> extends ConstReference<T> {
 
 let TwoWayFlushDetectionTag: any;
 
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
-    EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
   TwoWayFlushDetectionTag = class {
     public tag: any;
     public parent: any;
@@ -178,8 +176,7 @@ export class RootPropertyReference extends PropertyReference {
     this._parentValue = parentValue;
     this._propertyKey = propertyKey;
 
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
-        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
       this.tag = new TwoWayFlushDetectionTag(tagForProperty(parentValue, propertyKey), propertyKey, this);
     } else {
       this.tag = tagForProperty(parentValue, propertyKey);
@@ -193,8 +190,7 @@ export class RootPropertyReference extends PropertyReference {
   compute() {
     let { _parentValue, _propertyKey } = this;
 
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
-        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
       this.tag.didCompute(_parentValue);
     }
 
@@ -221,8 +217,7 @@ export class NestedPropertyReference extends PropertyReference {
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
-        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
       this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
     } else {
@@ -248,8 +243,7 @@ export class NestedPropertyReference extends PropertyReference {
         watchKey(parentValue, _propertyKey);
       }
 
-      if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
-          EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+      if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
         this.tag.didCompute(parentValue);
       }
 

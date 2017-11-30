@@ -11,7 +11,6 @@ import {
 import ObserverSet from './observer_set';
 import {
   EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER
 } from 'ember/features';
 import { assertNotRendered } from './transaction';
 
@@ -111,7 +110,7 @@ function propertyDidChange(obj, keyName, _meta) {
     markObjectAsDirty(meta, keyName);
   }
 
-  if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+  if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     assertNotRendered(obj, keyName, meta);
   }
 }
