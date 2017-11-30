@@ -757,17 +757,8 @@ export function aliasMethod(methodName) {
   @static
 */
 export function observer(...args) {
-  let _paths, func;
-  if (typeof args[args.length - 1] !== 'function') {
-    // revert to old, soft-deprecated argument ordering
-    deprecate('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
-
-    func = args.shift();
-    _paths = args;
-  } else {
-    func = args.pop();
-    _paths = args;
-  }
+  let func = args.pop();
+  let _paths = args;
 
   assert('observer called without a function', typeof func === 'function');
   assert('observer called without valid path', _paths.length > 0 && _paths.every((p)=> typeof p === 'string' && p.length));
@@ -841,19 +832,14 @@ export function _immediateObserver() {
   @private
 */
 export function _beforeObserver(...args) {
-  let func  = args[args.length - 1];
-
-  let _paths = args.slice(0, -1);
-  if (typeof func !== 'function') {
-    // revert to old, soft-deprecated argument ordering
-    func  = args[0];
-    _paths = args.slice(1);
-  }
+  let func  = args.pop();
+  let _paths = args;
 
   assert('_beforeObserver called without a function', typeof func === 'function');
 
   let paths = [];
   let addWatchedProperty = path => { paths.push(path); };
+
   for (let i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
   }
