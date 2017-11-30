@@ -13,8 +13,7 @@ import {
 import {
   debugSeal,
   assert,
-  deprecate,
-  EmberError
+  deprecate
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { meta as metaFor, peekMeta } from './meta';
@@ -843,27 +842,20 @@ export function _immediateObserver() {
 */
 export function _beforeObserver(...args) {
   let func  = args[args.length - 1];
-  let paths;
-
-  let addWatchedProperty = path => { paths.push(path); };
 
   let _paths = args.slice(0, -1);
-
   if (typeof func !== 'function') {
     // revert to old, soft-deprecated argument ordering
-
     func  = args[0];
     _paths = args.slice(1);
   }
 
-  paths = [];
+  assert('_beforeObserver called without a function', typeof func === 'function');
 
+  let paths = [];
+  let addWatchedProperty = path => { paths.push(path); };
   for (let i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
-  }
-
-  if (typeof func !== 'function') {
-    throw new EmberError('_beforeObserver called without a function');
   }
 
   func.__ember_observesBefore__ = paths;
