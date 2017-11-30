@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTest } from '../../utils/test-case';
+import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
 import { LinkComponent } from '../../utils/helpers';
@@ -154,5 +154,19 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
         content: 'Index'
       });
     });
+  }
+});
+
+moduleFor('Link-to component', class extends RenderingTest {
+  ['@test should be able to be inserted in DOM when the router is not present - block']() {
+    this.render(`{{#link-to 'index'}}Go to Index{{/link-to}}`);
+
+    this.assertText('Go to Index');
+  }
+
+  ['@test should be able to be inserted in DOM when the router is not present - inline']() {
+    this.render(`{{link-to 'Go to Index' 'index'}}`);
+
+    this.assertText('Go to Index');
   }
 });
