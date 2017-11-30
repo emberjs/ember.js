@@ -182,7 +182,7 @@
           }
         });
 
-        QUnit.testDone(function() {
+        QUnit.testDone(function(results) {
           var oldFixture = document.getElementById('qunit-fixture');
           var parent = oldFixture.parentElement;
           var newFixture = document.createElement('div');
