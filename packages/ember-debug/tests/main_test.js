@@ -22,11 +22,13 @@ import {
 
 let originalEnvValue;
 let originalDeprecateHandler;
+let originalWarnOptions;
 
 QUnit.module('ember-debug', {
   setup() {
     originalEnvValue = ENV.RAISE_ON_DEPRECATION;
     originalDeprecateHandler = HANDLERS.deprecate;
+    originalWarnOptions = ENV._ENABLE_WARN_OPTIONS_SUPPORT;
 
     ENV.RAISE_ON_DEPRECATION = true;
   },
@@ -35,6 +37,7 @@ QUnit.module('ember-debug', {
     HANDLERS.deprecate = originalDeprecateHandler;
 
     ENV.RAISE_ON_DEPRECATION = originalEnvValue;
+    ENV._ENABLE_WARN_OPTIONS_SUPPORT = originalWarnOptions;
   }
 });
 
@@ -245,6 +248,8 @@ QUnit.test('Ember.deprecate without options.until triggers a deprecation', funct
 QUnit.test('warn without options triggers a deprecation', function(assert) {
   assert.expect(2);
 
+  ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
+
   registerHandler(function(message) {
     assert.equal(message, missingWarnOptionsDeprecation, 'deprecation is triggered when options is missing');
   });
@@ -256,8 +261,20 @@ QUnit.test('warn without options triggers a deprecation', function(assert) {
   warn('foo');
 });
 
+QUnit.test('warn without options triggers an assert', function(assert) {
+  assert.expect(1);
+
+  assert.throws(
+    () => warn('foo'),
+    new RegExp(missingWarnOptionsDeprecation),
+    'deprecation is triggered when options is missing'
+  );
+});
+
 QUnit.test('warn without options.id triggers a deprecation', function(assert) {
   assert.expect(2);
+
+  ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
 
   registerHandler(function(message) {
     assert.equal(message, missingWarnOptionsIdDeprecation, 'deprecation is triggered when options is missing');
@@ -270,8 +287,20 @@ QUnit.test('warn without options.id triggers a deprecation', function(assert) {
   warn('foo', false, { });
 });
 
+QUnit.test('warn without options.id triggers an assertion', function(assert) {
+  assert.expect(1);
+
+  assert.throws(
+    () => warn('foo', false, { }),
+    new RegExp(missingWarnOptionsIdDeprecation),
+    'deprecation is triggered when options is missing'
+  );
+});
+
 QUnit.test('warn without options.id nor test triggers a deprecation', function(assert) {
   assert.expect(2);
+
+  ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
 
   registerHandler(function(message) {
     assert.equal(message, missingWarnOptionsIdDeprecation, 'deprecation is triggered when options is missing');
@@ -284,12 +313,34 @@ QUnit.test('warn without options.id nor test triggers a deprecation', function(a
   warn('foo', { });
 });
 
+QUnit.test('warn without options.id nor test triggers an assertion', function(assert) {
+  assert.expect(1);
+
+  assert.throws(
+    () =>   warn('foo', { }),
+    new RegExp(missingWarnOptionsIdDeprecation),
+    'deprecation is triggered when options is missing'
+  );
+});
+
 QUnit.test('warn without test but with options does not trigger a deprecation', function(assert) {
   assert.expect(1);
+
+  ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
 
   registerHandler(function(message) {
     assert.ok(false, `there should be no deprecation ${message}`);
   });
+
+  registerWarnHandler(function(message) {
+    assert.equal(message, 'foo', 'warning was triggered');
+  });
+
+  warn('foo', { id: 'ember-debug.do-not-raise' });
+});
+
+QUnit.test('warn without test but with options does not trigger an assertion', function(assert) {
+  assert.expect(1);
 
   registerWarnHandler(function(message) {
     assert.equal(message, 'foo', 'warning was triggered');
