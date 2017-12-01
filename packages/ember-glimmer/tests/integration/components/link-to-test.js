@@ -78,24 +78,6 @@ moduleFor('Link-to component', class extends ApplicationTest {
     });
   }
 
-  ['@test unwraps controllers']() {
-    this.router.map(function() {
-      this.route('profile', { path: '/profile/:id' });
-    });
-    this.addTemplate('application', `{{#link-to 'profile' otherController}}Text{{/link-to}}`);
-    this.add('controller:application', Controller.extend({
-      otherController: Controller.create({
-        model: 'foo'
-      })
-    }));
-
-    let deprecation = /Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated./;
-
-    return this.visitWithDeprecation('/', deprecation).then(() => {
-      this.assertText('Text');
-    });
-  }
-
   ['@test able to safely extend the built-in component and use the normal path']() {
     this.addComponent('custom-link-to', { ComponentClass: LinkComponent.extend() });
     this.addTemplate('application', `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`);
