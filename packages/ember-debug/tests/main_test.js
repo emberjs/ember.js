@@ -23,14 +23,17 @@ import {
 let originalEnvValue;
 let originalDeprecateHandler;
 let originalWarnOptions;
+let originalDeprecationOptions;
 
 QUnit.module('ember-debug', {
   setup() {
     originalEnvValue = ENV.RAISE_ON_DEPRECATION;
     originalDeprecateHandler = HANDLERS.deprecate;
     originalWarnOptions = ENV._ENABLE_WARN_OPTIONS_SUPPORT;
+    originalDeprecationOptions = ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT;
 
     ENV.RAISE_ON_DEPRECATION = true;
+    ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = true;
   },
 
   teardown() {
@@ -38,6 +41,7 @@ QUnit.module('ember-debug', {
 
     ENV.RAISE_ON_DEPRECATION = originalEnvValue;
     ENV._ENABLE_WARN_OPTIONS_SUPPORT = originalWarnOptions;
+    ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = originalDeprecationOptions;
   }
 });
 
@@ -217,6 +221,24 @@ QUnit.test('Ember.deprecate without options triggers a deprecation', function(as
   deprecate('foo', false, { });
 });
 
+QUnit.test('Ember.deprecate without options triggers an assertion', function(assert) {
+  expect(2);
+  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
+
+  assert.throws(
+    () => deprecate('foo'),
+    new RegExp(missingOptionsDeprecation),
+    'proper assertion is triggered when options is missing'
+  );
+
+  assert.throws(
+    () => deprecate('foo', false, { }),
+    new RegExp(missingOptionsDeprecation),
+    'proper assertion is triggered when options is missing'
+  );
+});
+
+
 QUnit.test('Ember.deprecate without options.id triggers a deprecation', function(assert) {
   assert.expect(2);
 
@@ -231,6 +253,17 @@ QUnit.test('Ember.deprecate without options.id triggers a deprecation', function
   deprecate('foo', false, { until: 'forever' });
 });
 
+QUnit.test('Ember.deprecate without options.id triggers an assertion', function(assert) {
+  expect(1);
+  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
+
+  assert.throws(
+    () => deprecate('foo', false, { until: 'forever' }),
+    new RegExp(missingOptionsIdDeprecation),
+    'proper assertion is triggered when options.id is missing'
+  );
+});
+
 QUnit.test('Ember.deprecate without options.until triggers a deprecation', function(assert) {
   assert.expect(2);
 
@@ -243,6 +276,17 @@ QUnit.test('Ember.deprecate without options.until triggers a deprecation', funct
   });
 
   deprecate('foo', false, { id: 'test' });
+});
+
+QUnit.test('Ember.deprecate without options.until triggers an assertion', function(assert) {
+  expect(1);
+  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
+
+  assert.throws(
+    () => deprecate('foo', false, { id: 'test' }),
+    new RegExp(missingOptionsUntilDeprecation),
+    'proper assertion is triggered when options.until is missing'
+  );
 });
 
 QUnit.test('warn without options triggers a deprecation', function(assert) {
