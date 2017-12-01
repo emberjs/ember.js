@@ -201,7 +201,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       let indexController = this.getController('index');
 
       this.setAndFlush(indexController, 'a', 1);
-      this.assertCurrentPath('/', 'QP did not update due to being overriden');
+      this.assertCurrentPath('/', 'QP did not update due to being overridden');
 
       this.setAndFlush(indexController, 'c', false);
       this.assertCurrentPath('/?c=false', 'QP updated with overridden param');
@@ -917,7 +917,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       this.assertCurrentPath('/?foo=false', 'longform supported (bool)');
 
       this.transitionTo({ queryParams: { foo: false } });
-      this.assertCurrentPath('/?foo=false', 'shorhand supported (bool)');
+      this.assertCurrentPath('/?foo=false', 'shorthand supported (bool)');
     });
   }
 
@@ -939,7 +939,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       this.assertCurrentPath('/?foo=false', 'longform supported (bool)');
 
       this.transitionTo({ queryParams: { foo: false } });
-      this.assertCurrentPath('/?foo=false', 'shorhand supported (bool)');
+      this.assertCurrentPath('/?foo=false', 'shorthand supported (bool)');
     });
   }
 

@@ -390,7 +390,7 @@ const Enumerable = Mixin.create({
     - *index* is the current index in the iteration
     - *enumerable* is the enumerable object itself.
 
-    It should return a falsey value to include the item in the results.
+    It should return a falsy value to include the item in the results.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as "this" on the context. This is a good way

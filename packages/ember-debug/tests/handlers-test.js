@@ -10,7 +10,7 @@ QUnit.module('ember-debug/handlers', {
   }
 });
 
-QUnit.test('calls handler on `invoke` when `falsey`', function(assert) {
+QUnit.test('calls handler on `invoke` when `falsy`', function(assert) {
   assert.expect(2);
 
   function handler(message) {
@@ -132,7 +132,7 @@ QUnit.test('handlers can call `next` with custom message and/or options', functi
 
   function handler2(message, options, next) {
     assert.equal(message, initialMessage, 'initial message provided to handler2');
-    assert.equal(options, initialOptions, 'initial options proivided to handler2');
+    assert.equal(options, initialOptions, 'initial options provided to handler2');
 
     next(handler2Message, handler2Options);
   }

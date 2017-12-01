@@ -333,7 +333,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     return promise;
   }
 
-  ['@test Prioritized error substate entry works with preserved-namespaec nested routes'](assert) {
+  ['@test Prioritized error substate entry works with preserved-namespace nested routes'](assert) {
     this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{model.msg}}');
     this.addTemplate('foo.bar', 'YAY');
 
@@ -663,7 +663,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       },
       actions: {
         error(err) {
-          // returns undefined which is falsey
+          // returns undefined which is falsy
           throw err;
         }
       }

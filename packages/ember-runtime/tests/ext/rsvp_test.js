@@ -155,7 +155,7 @@ function ajax(something) {
   });
 }
 
-QUnit.test('unambigiously unhandled rejection', function() {
+QUnit.test('unambiguously unhandled rejection', function() {
   QUnit.throws(function() {
     run(function() {
       RSVP.Promise.reject(reason);

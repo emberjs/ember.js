@@ -2,7 +2,7 @@ import { Route } from 'ember-routing';
 import { Controller, A as emberA } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-moduleFor('Basic Routing - Decoupled from global resovler',
+moduleFor('Basic Routing - Decoupled from global resolver',
 class extends ApplicationTestCase {
   constructor() {
     super();

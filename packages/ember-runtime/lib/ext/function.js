@@ -14,7 +14,7 @@ const FunctionPrototype = Function.prototype;
 
 if (ENV.EXTEND_PROTOTYPES.Function) {
   /**
-    The `property` extension of Javascript's Function prototype is available
+    The `property` extension of JavaScript's Function prototype is available
     when `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Function` is
     `true`, which is the default.
 
@@ -83,7 +83,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
   };
 
   /**
-    The `observes` extension of Javascript's Function prototype is available
+    The `observes` extension of JavaScript's Function prototype is available
     when `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Function` is
     true, which is the default.
 
@@ -132,7 +132,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     return this.observes(...arguments);
   };
   /**
-    The `observesImmediately` extension of Javascript's Function prototype is
+    The `observesImmediately` extension of JavaScript's Function prototype is
     available when `EmberENV.EXTEND_PROTOTYPES` or
     `EmberENV.EXTEND_PROTOTYPES.Function` is true, which is the default.
 
@@ -167,7 +167,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
   );
 
   /**
-    The `on` extension of Javascript's Function prototype is available
+    The `on` extension of JavaScript's Function prototype is available
     when `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Function` is
     true, which is the default.
 

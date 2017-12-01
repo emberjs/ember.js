@@ -304,7 +304,7 @@
 - [#13920](https://github.com/emberjs/ember.js/pull/13920) [BUGFIX] Add more info to the `Ember.Binding` deprecation.
 - [#13757](https://github.com/emberjs/ember.js/pull/13757) / [#13773](https://github.com/emberjs/ember.js/pull/13773) [CLEANUP] Remove legacy view layer features.
 - [#13819](https://github.com/emberjs/ember.js/pull/13819) [DOC] Add documentation for container (getOwner, etc.)
-- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-string-ishtmlsafe] Enable by defaut.
+- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-string-ishtmlsafe] Enable by default.
 - [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-application-engines] Enable by default.
 - [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-runtime-enumerable-includes] Enable by default.
 - [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-testing-check-waiters] Enable by default.
@@ -379,7 +379,7 @@
 - [#13192](https://github.com/emberjs/ember.js/pull/13192) [CLEANUP] Remove support for `ember-legacy-controllers` addon.
 - [#13295](https://github.com/emberjs/ember.js/pull/13295) [CLEANUP] Disable `render` helper in block form.
 - [#13204](https://github.com/emberjs/ember.js/pull/13204) [DEPRECATE] Deprecate Ember.Handlebars.SafeString in favor of Ember.String.htmlSafe
-- [#13207](https://github.com/emberjs/ember.js/pull/13207) [DEPRECATE] Depreacte `didInitAttrs` in components
+- [#13207](https://github.com/emberjs/ember.js/pull/13207) [DEPRECATE] Deprecate `didInitAttrs` in components
 - [#13268](https://github.com/emberjs/ember.js/pull/13268) [DEPRECATE] Deprecate usage of `{{render}}` helper with a model param
 - [#13285](https://github.com/emberjs/ember.js/pull/13285) [BUGFIX] Make `Enumerable#firstObject` read only.
 - [#13289](https://github.com/emberjs/ember.js/pull/13289) [BUGFIX] Make `Enumerable#lastObject` read only.
@@ -459,7 +459,7 @@
 - [#12757](https://github.com/emberjs/ember.js/pull/12757) Update build related deps.
 - [#12662](https://github.com/emberjs/ember.js/pull/12662) correction for Ember.String.capitalize docs
 - [#12674](https://github.com/emberjs/ember.js/pull/12674) removed unused `name` prop
-- [#12664](https://github.com/emberjs/ember.js/pull/12664) Include NaN as a falsey value in the `with` helper's docstring
+- [#12664](https://github.com/emberjs/ember.js/pull/12664) Include NaN as a falsy value in the `with` helper's docstring
 - [#12698](https://github.com/emberjs/ember.js/pull/12698) convert all this._super.apply(this, arguments) to this._super(...arguments)
 
 ### v2.3.2 (March 17, 2016)
@@ -515,7 +515,7 @@
 - [#12464](https://github.com/emberjs/ember.js/pull/12464) [BUGFIX] `Ember.String.htmlSafe()` should return a instance of SafeString for `null` / `undefined`.
 - [#12463](https://github.com/emberjs/ember.js/pull/12463) [BUGFIX] Fix uglification introduced bug with super wrapping.
 - [#12519](https://github.com/emberjs/ember.js/pull/12519) [BUGFIX] Ensure closure actions are wrapped in a run loop.
-- [#12214](https://github.com/emberjs/ember.js/pull/12214) Remove most of defeaturEify in favor of babel-plugin-filter-imports.
+- [#12214](https://github.com/emberjs/ember.js/pull/12214) Remove most of defeatureify in favor of babel-plugin-filter-imports.
 - [#12253](https://github.com/emberjs/ember.js/pull/12253) [BUGFIX] Remove superfluous `routing-service` initializer.
 - [#12247](https://github.com/emberjs/ember.js/pull/12247) [BUGFIX] Avoid dirtying based on `Ember.Object`'s when `Ember.set` is not used.
 - [#12262](https://github.com/emberjs/ember.js/pull/12262) [BUGFIX] Break circular references in rejected jqXhr promises.
@@ -558,7 +558,7 @@
 - [#12163](https://github.com/emberjs/ember.js/pull/12163) [BUGFIX] Move `View#currentState` to `View#_currentState`.
 - [#12163](https://github.com/emberjs/ember.js/pull/12163) [DEPRECATION] Deprecate using the private `currentState` property on views/components.
 - [#12132](https://github.com/emberjs/ember.js/pull/12132) [BUGFIX] Fix stack overflow issue in `_super` wrapper updates.
-- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require `this._super(...arguments)` when components implement `didRecieveAttrs`.
+- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require `this._super(...arguments)` when components implement `didReceiveAttrs`.
 - [#12170](https://github.com/emberjs/ember.js/pull/12170) [BUGFIX release] Ensure `Ember.computed.sum` returns `0` if the array to be operated on is `null` or `undefined`.
 - [#12176](https://github.com/emberjs/ember.js/pull/12176) [BUGFIX] Enable extending `Ember.LinkComponent` for customizations.
 - [#10173](https://github.com/emberjs/ember.js/pull/10173) [BUGFIX] Ensure non-singleton injections are not cached incorrectly.
@@ -578,7 +578,7 @@
 - [#12036](https://github.com/emberjs/ember.js/pull/12036) Cleanup CP Set and  Volatile
 - [#11993](https://github.com/emberjs/ember.js/pull/11993) [CLEANUP] Remove `Ember.TrackedArray` and `Ember.SubArray`.
 - [#11550](https://github.com/emberjs/ember.js/pull/11550) [BUGFIX] Ensure that specifying an observer in a child class only observes changes to the childs dependent keys.
-- [#10259](https://github.com/emberjs/ember.js/pull/10259) [BUGFIX] Make `Ember.computed.or` return the last falsey value (similar to `||`).
+- [#10259](https://github.com/emberjs/ember.js/pull/10259) [BUGFIX] Make `Ember.computed.or` return the last falsy value (similar to `||`).
 - [#11957](https://github.com/emberjs/ember.js/pull/11957) [BUGFIX] Enable `Ember.DefaultResolver` to properly normalize hyphens (`-`).
 - [#11969](https://github.com/emberjs/ember.js/pull/11969) / [#11959](https://github.com/emberjs/ember.js/pull/11959) [DEPRECATE] Deprecate usage of `Ember.String.fmt`.
 - [#11990](https://github.com/emberjs/ember.js/pull/11990) [PERF] `@each` should remain a stable node for chains.
@@ -673,7 +673,7 @@
 - [#11648](https://github.com/emberjs/ember.js/pull/11648) [CLEANUP] Remove `Ember.computed.mapProperty`.
 - [#11460](https://github.com/emberjs/ember.js/pull/11460) [CLEANUP] Remove `Object.create` polyfill.
 - [#11448](https://github.com/emberjs/ember.js/pull/11448) [CLEANUP] Remove `Ember.DeferredMixin`.
-- [#11458](https://github.com/emberjs/ember.js/pull/11458) [CLEANUP] Remove `Ember.ArrayPolyfils`.
+- [#11458](https://github.com/emberjs/ember.js/pull/11458) [CLEANUP] Remove `Ember.ArrayPolyfills`.
 - [#11449](https://github.com/emberjs/ember.js/pull/11449) [CLEANUP] Remove `Ember.RSVP.prototype.fail`.
 - [#11459](https://github.com/emberjs/ember.js/pull/11459) [CLEANUP] Remove `Ember.keys`.
 - [#11456](https://github.com/emberjs/ember.js/pull/11456) [CLEANUP] Remove `Ember.View.prototype.state & `Ember.View.prototype._states`.
@@ -727,7 +727,7 @@
 
 ### 1.13.9 (August 22, 2015)
 
-- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require calling `this._super(...arguments)` in views/components when implementing `didRecieveAttrs`.
+- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require calling `this._super(...arguments)` in views/components when implementing `didReceiveAttrs`.
 - [#12164](https://github.com/emberjs/ember.js/pull/12164) [BUGFIX] Properly handle block-less usage of a component without a template or layout specified in the component definition.
 
 ### 1.13.8 (August 13, 2015)
@@ -881,7 +881,7 @@
 - [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
 - [#10501](https://github.com/emberjs/ember.js/pull/10501) Implement Glimmer Engine.
 - [#11029](https://github.com/emberjs/ember.js/pull/11029) Allow bound outlet names.
-- [#11035](https://github.com/emberjs/ember.js/pull/11035) {{#with}} helper should not render if passed variable is falsey.
+- [#11035](https://github.com/emberjs/ember.js/pull/11035) {{#with}} helper should not render if passed variable is falsy.
 - [#11104](https://github.com/emberjs/ember.js/pull/11104) /  [#10501](https://github.com/emberjs/ember.js/pull/10501) Remove support for non-HTMLBars templates.
 - [#11116](https://github.com/emberjs/ember.js/pull/11116) / [emberjs/rfcs#50](https://github.com/emberjs/rfcs/pull/50) [FEATURE ember-routing-htmlbars-improved-actions].
 - [#11028](https://github.com/emberjs/ember.js/pull/11028) Add positional parameter support to components.
@@ -891,7 +891,7 @@
 ### 1.12.0 (May 13, 2015)
 
 - [#10874](https://github.com/emberjs/ember.js/pull/10874) Include all files in jspm package.
-- [#10876](https://github.com/emberjs/ember.js/pull/10876) [BUGFIX] Make the `{{component}}` helper deal with dynamically set falsey values.
+- [#10876](https://github.com/emberjs/ember.js/pull/10876) [BUGFIX] Make the `{{component}}` helper deal with dynamically set falsy values.
 - [#10883](https://github.com/emberjs/ember.js/pull/10883) [BUGFIX] Fix `View.prototype.replaceIn` functionality.
 - [#10920](https://github.com/emberjs/ember.js/pull/10920) [BUGFIX] Fix `Component.prototype.layout` so that it can now be set and recompute properly.
 - [#10968](https://github.com/emberjs/ember.js/pull/10968) [BUGFIX] Fix assertion that incorrectly fired on legacy settable computed properties.
@@ -1120,7 +1120,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [BUGFIX] Ensure ember-testing is not included in production build output.
 * Deprecate usage of quoted paths in `{{view}}` helper.
 * [BUGFIX] Ensure `{{view}}` lookup works properly when name is a keyword.
-* [BUGFIX] Ensure `Ember.Map` works properly with falsey values.
+* [BUGFIX] Ensure `Ember.Map` works properly with falsy values.
 * [BUGFIX] Make Ember.Namespace#toString ember-cli aware.
 * [PERF] Avoid using `for x in y` in `Ember.RenderBuffer.prototype.add`.
 * [BUGFIX] Enable setProperties to work on Object.create(null) objects.
@@ -1918,7 +1918,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Don't apply href to LinkView that isn't using 'a' tag
 * Documents {{linkTo}}
 * Include ember-testing in full build
-* Use `jQuery.is(':disabled')` instead of `jQuery(':disbled').length` for Opera
+* Use `jQuery.is(':disabled')` instead of `jQuery(':disabled').length` for Opera
 * Remove assigned but unused variable
 * Document run.scheduleOnce, truncate run.once docs. Fixes #2132.
 * fix failing tests for outerHTML fallback
@@ -2467,7 +2467,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 
 * Significant internal performance improvements
 * Improved performance of RenderBuffer
-* Avoid unneceesary ping-ponging in binding updates
+* Avoid unnecessary ping-ponging in binding updates
 * Fix infinite loop caused by jQuery.extend with array in older browsers
 * Added ENV.SHIM_ES5 option to improve compatibility with Prototype.js
 * Added Ember.Evented mixin for internal events

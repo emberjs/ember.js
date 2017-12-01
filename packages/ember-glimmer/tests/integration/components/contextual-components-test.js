@@ -697,7 +697,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
 
   ['@test adding parameters to a contextual component\'s instance does not add it to other instances']() {
     // If parameters and attributes are not handled correctly, setting a value
-    // in an invokation can leak to others invocation.
+    // in an invocation can leak to others invocation.
     this.registerComponent('select-box', {
       template: '{{yield (hash option=(component "select-box-option"))}}'
     });

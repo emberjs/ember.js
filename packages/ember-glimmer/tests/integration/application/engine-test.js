@@ -153,7 +153,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     }));
   }
 
-  setupAppAndRoutlessEngineWithPartial(hooks) {
+  setupAppAndRoutelessEngineWithPartial(hooks) {
     this.setupRoutelessEngine(hooks);
 
     this.add('engine:chat-engine', Engine.extend({
@@ -360,7 +360,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
 
     let hooks = [];
 
-    this.setupAppAndRoutlessEngineWithPartial(hooks);
+    this.setupAppAndRoutelessEngineWithPartial(hooks);
 
     return this.visit('/', { shouldRender: true }).then(() => {
       this.assertText('ApplicationEngine foo partial');

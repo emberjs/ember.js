@@ -310,7 +310,7 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
     assert.equal(this.$('h1').text(), 'Hello!');
   }
 
-  [`@test Application Controller backs the appplication template`](assert) {
+  [`@test Application Controller backs the application template`](assert) {
     this.runTask(() => {
       this.createApplication();
       this.addTemplate('application', '<h1>{{greeting}}</h1>');

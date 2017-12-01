@@ -170,7 +170,7 @@ const DefaultResolver = EmberObject.extend({
 
   /**
     Convert the string name of the form 'type:name' to
-    a Javascript object with the parsed aspects of the name
+    a JavaScript object with the parsed aspects of the name
     broken out.
 
     @param {String} fullName the lookup string

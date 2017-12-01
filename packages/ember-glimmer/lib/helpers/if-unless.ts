@@ -60,7 +60,7 @@ class ConditionalHelperReference extends CachedReference {
 /**
   The `if` helper allows you to conditionally render one of two branches,
   depending on the "truthiness" of a property.
-  For example the following values are all falsey: `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
+  For example the following values are all falsy: `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
 
   This helper has two forms, block and inline.
 
@@ -73,13 +73,13 @@ class ConditionalHelperReference extends CachedReference {
   Like so:
 
   ```handlebars
-  {{! will not render if foo is falsey}}
+  {{! will not render if foo is falsy}}
   {{#if foo}}
     Welcome to the {{foo.bar}}
   {{/if}}
   ```
 
-  You can also specify a template to show if the property is falsey by using
+  You can also specify a template to show if the property is falsy by using
   the `else` helper.
 
   ```handlebars
@@ -109,7 +109,7 @@ class ConditionalHelperReference extends CachedReference {
   The inline `if` helper conditionally renders a single property or string.
 
   In this form, the `if` helper receives three arguments, the conditional value,
-  the value to render when truthy, and the value to render when falsey.
+  the value to render when truthy, and the value to render when falsy.
 
   For example, if `useLongGreeting` is truthy, the following:
 

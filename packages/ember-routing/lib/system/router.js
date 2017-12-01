@@ -658,7 +658,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     @private
     @method _serializeQueryParams
-    @param {Arrray<HandlerInfo>} handlerInfos
+    @param {Array<HandlerInfo>} handlerInfos
     @param {Object} queryParams
     @return {Void}
   */
@@ -1506,7 +1506,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
       // right here that the user tried to target a nonexistent
       // thing. But for now we still need to support the `render`
       // helper, and people are allowed to target templates rendered
-      // by the render helper. So instead we defer doing anyting with
+      // by the render helper. So instead we defer doing anything with
       // these orphan renders until afterRender.
       appendOrphan(liveRoutes, renderOptions.into, myState);
     } else {

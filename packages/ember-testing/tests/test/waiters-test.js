@@ -128,7 +128,7 @@ QUnit.test('checkWaiters returns true if any waiters return false', function(ass
   assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
 });
 
-QUnit.test('checkWaiters short circuits after first falsey waiter', function(assert) {
+QUnit.test('checkWaiters short circuits after first falsy waiter', function(assert) {
   assert.expect(2);
 
   this.waiters.add(function() {

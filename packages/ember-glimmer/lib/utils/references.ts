@@ -40,7 +40,7 @@ export const UPDATE = symbol('UPDATE');
 
 let maybeFreeze: (obj: any) => void;
 if (DEBUG) {
-  // gaurding this in a DEBUG gaurd (as well as all invocations)
+  // guarding this in a DEBUG guard (as well as all invocations)
   // so that it is properly stripped during the minification's
   // dead code elimination
   maybeFreeze = (obj: any) => {

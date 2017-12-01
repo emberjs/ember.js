@@ -1014,7 +1014,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
   ['@test objects that define INVOKE can be casted to actions']() {
     let innerComponent;
     let actionArgs;
-    let invokableArgs;
+    let invocableArgs;
 
     let InnerComponent = Component.extend({
       init() {
@@ -1031,7 +1031,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       submitTask: computed(function() {
         return {
           [INVOKE]: (...args) => {
-            invokableArgs = args;
+            invocableArgs = args;
             return this.foo;
           }
         };
@@ -1055,7 +1055,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     });
 
     this.assert.equal(actionArgs, 123);
-    this.assert.deepEqual(invokableArgs, [1, 2, 3, 4, 5, 6]);
+    this.assert.deepEqual(invocableArgs, [1, 2, 3, 4, 5, 6]);
   }
 
   ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {

@@ -156,7 +156,7 @@ export default class Container {
 
     if (options.source) {
       let expandedFullName = this.registry.expandLocalLookup(fullName, options);
-      // if expandLocalLookup returns falsey, we do not support local lookup
+      // if expandLocalLookup returns falsy, we do not support local lookup
       if (!EMBER_MODULE_UNIFICATION) {
         if (!expandedFullName) {
           return;
@@ -238,7 +238,7 @@ function lookup(container, fullName, options = {}) {
     let expandedFullName = container.registry.expandLocalLookup(fullName, options);
 
     if (!EMBER_MODULE_UNIFICATION) {
-      // if expandLocalLookup returns falsey, we do not support local lookup
+      // if expandLocalLookup returns falsy, we do not support local lookup
       if (!expandedFullName) {
         return;
       }

@@ -145,18 +145,18 @@ class DynamicContentTest extends RenderingTest {
   ['@test it can render a capitalized path with no deprecation']() {
     expectNoDeprecation();
 
-    this.renderPath('CaptializedPath', { CaptializedPath: 'no deprecation' });
+    this.renderPath('CapitalizedPath', { CapitalizedPath: 'no deprecation' });
 
     this.assertContent('no deprecation');
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'CaptializedPath', 'still no deprecation'));
+    this.runTask(() => set(this.context, 'CapitalizedPath', 'still no deprecation'));
 
     this.assertContent('still no deprecation');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'CaptializedPath', 'no deprecation'));
+    this.runTask(() => set(this.context, 'CapitalizedPath', 'no deprecation'));
 
     this.assertContent('no deprecation');
     this.assertInvariants();
@@ -830,7 +830,7 @@ moduleFor('Dynamic content tests (integration)', class extends RenderingTest {
     this.assertText('');
   }
 
-  ['@test it should evaluate to nothing if part of the path is a primative']() {
+  ['@test it should evaluate to nothing if part of the path is a primitive']() {
     this.render('{{foo.bar.baz.bizz}}', {
       foo: { bar: true }
     });
