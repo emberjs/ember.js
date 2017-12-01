@@ -101,7 +101,6 @@ export default class EvaluationStack {
   }
 
   push(value: Opaque): void {
-    if (value === null) console.trace('null');
     this.stack.write(++this.sp, value);
   }
 
