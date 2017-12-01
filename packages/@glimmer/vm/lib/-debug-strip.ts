@@ -423,7 +423,7 @@ OPCODE_METADATA(Op.Comment, {
 OPCODE_METADATA(Op.DynamicContent, {
   name: 'DynamicContent',
   ops: [Bool('trusting')],
-  operands: 1,
+  operands: 0,
   stackChange: -1
 });
 

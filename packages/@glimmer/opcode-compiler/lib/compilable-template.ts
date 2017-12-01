@@ -8,6 +8,7 @@ import { DEBUG } from '@glimmer/local-debug-flags';
 import { debugSlice } from './debug';
 import { CompilableTemplate as ICompilableTemplate, ParsedLayout } from './interfaces';
 import { CompileOptions, statementCompiler, Compilers } from './syntax';
+import { STDLib } from './opcode-builder';
 
 export { ICompilableTemplate };
 
@@ -31,7 +32,7 @@ export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> imp
     this.statementCompiler = statementCompiler();
   }
 
-  compile(): number {
+  compile(stdLib?: STDLib): number {
     let { compiled } = this;
     if (compiled !== null) return compiled;
 
@@ -45,7 +46,7 @@ export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> imp
     let { referrer } = containingLayout;
     let { program, resolver, macros, asPartial, Builder } = options;
 
-    let builder = new Builder(program, resolver, referrer, macros, containingLayout, asPartial);
+    let builder = new Builder(program, resolver, referrer, macros, containingLayout, asPartial, stdLib);
 
     for (let i = 0; i < statements.length; i++) {
       this.statementCompiler.compile(statements[i], builder);

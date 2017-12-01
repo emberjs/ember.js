@@ -202,7 +202,9 @@ export function statementCompiler() {
         builder.guardedAppend(value, false);
       } else {
         builder.expr(value);
-        builder.dynamicContent(false);
+        builder.primitive(false);
+        builder.load(Register.t0);
+        builder.dynamicContent();
       }
     }
   });

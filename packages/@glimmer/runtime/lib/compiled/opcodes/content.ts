@@ -1,5 +1,5 @@
 import { isConst, Reference, Tag, VersionedReference } from '@glimmer/reference';
-import { Op } from '@glimmer/vm';
+import { Op, Register } from '@glimmer/vm';
 import { check, expectStackChange } from '@glimmer/debug';
 import { Opaque } from '@glimmer/util';
 
@@ -20,8 +20,10 @@ export class IsCurriedComponentDefinitionReference extends ConditionalReference 
   }
 }
 
-APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: isTrusting }) => {
+APPEND_OPCODES.add(Op.DynamicContent, (vm) => {
   let reference = check(vm.stack.pop(), CheckPathReference);
+  let isTrusting = vm.fetchValue(Register.t0);
+
   let value = reference.value();
   let content: DynamicContentWrapper;
 
@@ -35,6 +37,7 @@ APPEND_OPCODES.add(Op.DynamicContent, (vm, { op1: isTrusting }) => {
     vm.updateWith(new UpdateDynamicContentOpcode(reference, content));
   }
 
+  vm.loadValue(Register.t0, null);
   expectStackChange(vm.stack, -1, 'DynamicContent');
 });
 

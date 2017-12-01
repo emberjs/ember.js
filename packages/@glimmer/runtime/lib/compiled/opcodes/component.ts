@@ -137,11 +137,14 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
 APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
   let component = check(stack.pop(), CheckPathReference).value();
+  let meta = vm.constants.getSerializable(_meta);
+
+  vm.loadValue(Register.t1, null); // Clear the temp register
+
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
   if (typeof component === 'string') {
-    let { constants, constants: { resolver } } = vm;
-    let meta = constants.getSerializable<TemplateMeta>(_meta);
+    let { constants: { resolver } } = vm;
     let resolvedDefinition = resolveComponent(resolver, component, meta);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
