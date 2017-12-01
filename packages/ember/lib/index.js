@@ -248,8 +248,6 @@ import {
   inject,
   Array as EmberArray,
   Copyable,
-  Freezable,
-  FROZEN_ERROR,
   MutableEnumerable,
   MutableArray,
   TargetActionSupport,
@@ -331,8 +329,6 @@ Ember.ActionHandler = ActionHandler;
 Ember.CoreObject = CoreObject;
 Ember.NativeArray = NativeArray;
 Ember.Copyable = Copyable;
-Ember.Freezable = Freezable;
-Ember.FROZEN_ERROR = FROZEN_ERROR;
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
 Ember.TargetActionSupport = TargetActionSupport;

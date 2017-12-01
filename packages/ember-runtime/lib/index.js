@@ -35,10 +35,6 @@ export {
 export { default as Copyable } from './mixins/copyable';
 export { default as Enumerable } from './mixins/enumerable';
 export {
-  Freezable,
-  FROZEN_ERROR
-} from './mixins/freezable';
-export {
   default as _ProxyMixin
 } from './mixins/-proxy';
 export {
