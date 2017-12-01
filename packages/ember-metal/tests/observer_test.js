@@ -36,8 +36,6 @@ testBoth('observer should assert to invalid input', function(get, set) {
     observer(()=>{});
   }, 'observer called without valid path');
 
-  expectDeprecation('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.');
-
   expectAssertion(()=> {
     observer(null);
   }, 'observer called without a function');
