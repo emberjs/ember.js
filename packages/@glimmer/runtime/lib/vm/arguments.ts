@@ -1,7 +1,7 @@
-import { EvaluationStack } from './append';
+import EvaluationStack from './stack';
 import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
-import { Dict, Opaque, Option, unsafe, BlockSymbolTable, VMHandle } from '@glimmer/interfaces';
+import { Dict, Opaque, Option, unsafe, BlockSymbolTable } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference, CONSTANT_TAG } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
 import { ScopeBlock, Scope, BlockValue } from '../environment';
@@ -141,7 +141,7 @@ export class Arguments implements IArguments {
       let length = positional.length + named.length;
 
       for(let i=length-1; i>=0; i--) {
-        stack.set(stack.get(i, positional.base), i, newBase);
+        stack.copy(i + positional.base, i + newBase);
       }
 
       positional.base += offset;
@@ -237,7 +237,7 @@ export class PositionalArguments implements IPositionalArguments {
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.slice<VersionedPathReference<Opaque>>(base, base + length);
+      references = this._references = stack.sliceArray<VersionedPathReference<Opaque>>(base, base + length);
     }
 
     return references;
@@ -290,7 +290,6 @@ export class NamedArguments implements INamedArguments {
 
   private stack: EvaluationStack;
 
-  private _tag: Option<Tag> = null;
   private _references: Option<VersionedPathReference<Opaque>[]> = null;
 
   private _names: Option<string[]> = EMPTY_ARRAY;
@@ -302,12 +301,10 @@ export class NamedArguments implements INamedArguments {
     this.length = length;
 
     if (length === 0) {
-      this._tag = CONSTANT_TAG;
       this._references = EMPTY_ARRAY;
       this._names = EMPTY_ARRAY;
       this._atNames = EMPTY_ARRAY;
     } else {
-      this._tag = null;
       this._references = null;
 
       if (synthetic) {
@@ -388,7 +385,6 @@ export class NamedArguments implements INamedArguments {
       }
 
       this.length = length;
-      this._tag = null;
       this._references = null;
       this._names = names;
       this._atNames = null;
@@ -400,7 +396,7 @@ export class NamedArguments implements INamedArguments {
 
     if (!references) {
       let { base, length, stack } = this;
-      references = this._references = stack.slice<VersionedPathReference<Opaque>>(base, base + length);
+      references = this._references = stack.sliceArray<VersionedPathReference<Opaque>>(base, base + length);
     }
 
     return references;
@@ -475,7 +471,7 @@ class CapturedNamedArguments implements ICapturedNamedArguments {
 
 export class BlockArguments implements IBlockArguments {
   private stack: EvaluationStack;
-  private internalValues: Option<VMHandle[]> = null;
+  private internalValues: Option<number[]> = null;
 
   public internalTag: Option<Tag> = null;
   public names: string[] = EMPTY_ARRAY;
@@ -503,7 +499,7 @@ export class BlockArguments implements IBlockArguments {
 
     if (!values) {
       let { base, length, stack } = this;
-      values = this.internalValues = stack.slice<VMHandle>(base, base + length * 3);
+      values = this.internalValues = stack.sliceArray<number>(base, base + length * 3);
     }
 
     return values;
@@ -555,7 +551,7 @@ class CapturedBlockArguments implements ICapturedBlockArguments {
     if (idx === -1) return null;
 
     return [
-      this.values[idx * 3 + 2] as VMHandle,
+      this.values[idx * 3 + 2] as number,
       this.values[idx * 3 + 1] as Scope,
       this.values[idx * 3] as BlockSymbolTable
     ];

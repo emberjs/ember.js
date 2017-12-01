@@ -1,5 +1,5 @@
 
-import { CompileTimeProgram, Recast, VMHandle, RuntimeResolver } from "@glimmer/interfaces";
+import { CompileTimeProgram, Recast, VMHandle, RuntimeResolver, CompileTimeHeap } from "@glimmer/interfaces";
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { Constants, WriteOnlyConstants, RuntimeConstants, ConstantPool } from './constants';
 import { Opcode } from './opcode';
@@ -55,7 +55,7 @@ export type Placeholder = [number, () => number];
  * valid during the execution. This means you cannot close
  * over them as you will have a bad memory access exception.
  */
-export class Heap {
+export class Heap implements CompileTimeHeap {
   private heap: Uint16Array | Array<number>;
   private placeholders: Placeholder[] = [];
   private table: number[];
@@ -87,19 +87,19 @@ export class Heap {
     this.heap[address] = value;
   }
 
-  malloc(): VMHandle {
+  malloc(): number {
     this.table.push(this.offset, 0);
     let handle = this.handle;
     this.handle += ENTRY_SIZE;
-    return handle as Recast<number, VMHandle>;
+    return handle;
   }
 
-  finishMalloc(handle: VMHandle, scopeSize: number): void {
-    let start = this.table[handle as Recast<VMHandle, number>];
+  finishMalloc(handle: number, scopeSize: number): void {
+    let start = this.table[handle];
     let finish = this.offset;
     let instructionSize = finish - start;
     let info = encodeTableInfo(instructionSize, scopeSize, TableSlotState.Allocated);
-    this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET] = info;
+    this.table[handle + INFO_OFFSET] = info;
   }
 
   size(): number {
@@ -109,18 +109,18 @@ export class Heap {
   // It is illegal to close over this address, as compaction
   // may move it. However, it is legal to use this address
   // multiple times between compactions.
-  getaddr(handle: VMHandle): number {
-    return this.table[handle as Recast<VMHandle, number>];
+  getaddr(handle: number): number {
+    return this.table[handle];
   }
 
-  gethandle(address: number): VMHandle {
+  gethandle(address: number): number {
     this.table.push(address, encodeTableInfo(0, 0, TableSlotState.Pointer));
     let handle = this.handle;
     this.handle += ENTRY_SIZE;
-    return handle as Recast<number, VMHandle>;
+    return handle;
   }
 
-  sizeof(handle: VMHandle): number {
+  sizeof(handle: number): number {
     if (DEBUG) {
       let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
       return info & SIZE_MASK;
@@ -128,7 +128,7 @@ export class Heap {
     return -1;
   }
 
-  scopesizeof(handle: VMHandle): number {
+  scopesizeof(handle: number): number {
     let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
     return (info & SCOPE_MASK) >> 16;
   }

@@ -1,11 +1,11 @@
-import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable } from '@glimmer/util';
+import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable, assert } from '@glimmer/util';
 import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
 import { debug, logOpcode } from "@glimmer/opcode-compiler";
 import { METADATA } from "@glimmer/vm";
 import { Opcode, Opaque } from "@glimmer/interfaces";
-import { VM, UpdatingVM } from './vm';
+import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 
 export interface OpcodeJSON {
@@ -21,17 +21,23 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type EvaluateOpcode = (vm: VM<Opaque>, opcode: Opcode) => void;
+export type Syscall = (vm: VM<Opaque>, opcode: Opcode) => void;
+export type MachineOpcode = (vm: LowLevelVM, opcode: Opcode) => void;
+
+export type Evaluate = { syscall: true, evaluate: Syscall } | { syscall: false, evaluate: MachineOpcode };
+
+export type DebugState = { sp: number, state: Opaque };
 
 export class AppendOpcodes {
-  private evaluateOpcode: EvaluateOpcode[] = fillNulls<EvaluateOpcode>(Op.Size).slice();
+  private evaluateOpcode: Evaluate[] = fillNulls<Evaluate>(Op.Size).slice();
 
-  add<Name extends Op>(name: Name, evaluate: EvaluateOpcode): void {
-    this.evaluateOpcode[name as number] = evaluate;
+  add<Name extends Op>(name: Name, evaluate: Syscall): void;
+  add<Name extends Op>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
+  add<Name extends Op>(name: Name, evaluate: Syscall | MachineOpcode, kind = 'syscall'): void {
+    this.evaluateOpcode[name as number] = { syscall: kind === 'syscall', evaluate } as Evaluate;
   }
 
-  evaluate(vm: VM<Opaque>, opcode: Opcode, type: number) {
-    let func = this.evaluateOpcode[type];
+  debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): DebugState {
     if (DEBUG) {
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
@@ -48,7 +54,6 @@ export class AppendOpcodes {
     }
 
     let sp: number;
-    let expectedChange: number;
     let state: Opaque;
 
     if (DEVMODE) {
@@ -64,25 +69,28 @@ export class AppendOpcodes {
     }
 
     recordStackSize(vm.stack);
-    func(vm, opcode);
+    return { sp: sp!, state };
+  }
 
-    if (DEVMODE) {
-      let metadata = METADATA[type];
-      if (metadata !== null) {
-        if (typeof metadata.stackChange === 'number') {
-          expectedChange = metadata.stackChange;
-        } else {
-          expectedChange = metadata.stackChange({ opcode, constants: vm.constants, state });
-          if (isNaN(expectedChange)) throw unreachable();
-        }
+  debugAfter(vm: VM<Opaque>, opcode: Opcode, type: number, pre: DebugState) {
+    let expectedChange: number;
+    let { sp, state } = pre;
+
+    let metadata = METADATA[type];
+    if (metadata !== null) {
+      if (typeof metadata.stackChange === 'number') {
+        expectedChange = metadata.stackChange;
+      } else {
+        expectedChange = metadata.stackChange({ opcode, constants: vm.constants, state });
+        if (isNaN(expectedChange)) throw unreachable();
       }
+    }
 
-      let actualChange = vm.stack.sp - sp!;
-      if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
-        let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
+    let actualChange = vm.stack.sp - sp!;
+    if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
+      let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
 
-        throw new Error(`Error in ${name}:\n\n${(vm['pc'] + (opcode.size))}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
-      }
+      throw new Error(`Error in ${name}:\n\n${(vm['pc'] + (opcode.size))}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
     }
 
     if (DEBUG) {
@@ -92,6 +100,18 @@ export class AppendOpcodes {
       console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
       console.log('%c -> elements', 'color: blue', vm.elements()['cursorStack']['stack'].map((c: any) => c.element));
       /* tslint:enable */
+    }
+  }
+
+  evaluate(vm: VM<Opaque>, opcode: Opcode, type: number) {
+    let operation = this.evaluateOpcode[type];
+
+    if (operation.syscall) {
+      assert(!opcode.isMachine, `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`);
+      operation.evaluate(vm, opcode);
+    } else {
+      assert(opcode.isMachine, `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`);
+      operation.evaluate(vm.inner, opcode);
     }
   }
 }

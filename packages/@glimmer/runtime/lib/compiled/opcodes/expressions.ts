@@ -7,7 +7,7 @@ import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
 import { ConcatReference } from '../expressions/concat';
 import { assert } from "@glimmer/util";
-import { check, expectStackChange, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
+import { check, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { CheckArguments, CheckPathReference, CheckCompilableBlock, CheckScope } from './-debug-strip';
 
@@ -77,8 +77,6 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
     stack.push(null);
     stack.push(null);
   }
-
-  expectStackChange(vm.stack, 3, 'GetBlock');
 });
 
 APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {

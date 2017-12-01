@@ -5,6 +5,7 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/runtime",
   "license": "MIT",
   "dependencies": {
+    "@glimmer/low-level": "^0.30.3",
     "@glimmer/util": "^0.30.3",
     "@glimmer/reference": "^0.30.3",
     "@glimmer/object": "^0.30.3",

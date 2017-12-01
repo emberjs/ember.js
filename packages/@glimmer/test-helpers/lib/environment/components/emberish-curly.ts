@@ -1,5 +1,5 @@
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
-import { Option, Opaque, ProgramSymbolTable, ComponentCapabilities, Recast, VMHandle } from '@glimmer/interfaces';
+import { Option, Opaque, ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
 import { EMPTY_ARRAY, assign, Destroyable, expect } from '@glimmer/util';
@@ -86,7 +86,7 @@ export class EmberishCurlyComponentManager implements
   getLayout(state: EmberishCurlyComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
     let handle = resolver.getVMHandle(expect(state.locator, 'expected locator'));
     return {
-      handle: handle as Recast<number, VMHandle>,
+      handle,
       symbolTable: state.symbolTable! as ProgramSymbolTable
     };
   }

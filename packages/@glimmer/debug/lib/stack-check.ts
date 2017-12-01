@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple, VMHandle } from "@glimmer/interfaces";
+import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple } from "@glimmer/interfaces";
 
 export interface Checker<T> {
   type: T;
@@ -214,7 +214,7 @@ export const CheckPrimitive: Checker<Primitive> = new PrimitiveChecker();
 export const CheckFunction: Checker<Function> = new TypeofChecker<Function>('function');
 export const CheckNumber: Checker<number> = new TypeofChecker<number>('number');
 export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolean');
-export const CheckHandle: Checker<VMHandle> = CheckNumber as any as Checker<VMHandle>;
+export const CheckHandle: Checker<number> = CheckNumber;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckOpaque: Checker<Opaque> = new OpaqueChecker();
 
