@@ -10,7 +10,10 @@ import { assert } from 'ember-debug';
   @public
 */
 export default function inject() {
-  assert(`Injected properties must be created through helpers, see '${Object.keys(inject).join('"', '"')}'`);
+  const helpers = Object.keys(inject)
+    .map(k => `'inject.${k}'`)
+    .join(' or ');
+  assert(`Injected properties must be created through helpers, see '${helpers}'`);
 }
 
 // Dictionary of injection validations by type, added to by `createInjectionHelper`
