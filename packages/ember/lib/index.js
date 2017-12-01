@@ -433,8 +433,7 @@ import {
   escapeExpression,
   isHTMLSafe,
   getTemplates,
-  setTemplates,
-  _getSafeString
+  setTemplates
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -454,10 +453,6 @@ if (ENV.EXTEND_PROTOTYPES.String) {
 let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
 let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
 let EmberHandleBarsUtils = EmberHandlebars.Utils = EmberHandlebars.Utils || {};
-
-Object.defineProperty(EmberHandlebars, 'SafeString', {
-  get: _getSafeString
-});
 
 EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
