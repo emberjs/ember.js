@@ -49,8 +49,8 @@ function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
   return valueProvided ?
-    (item)=> value === get(item, key) :
-    (item)=> !!get(item, key);
+    (item)=> value === item[key] :
+    (item)=> !!item[key];
 }
 
 /**
