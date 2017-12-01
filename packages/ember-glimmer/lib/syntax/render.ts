@@ -1,5 +1,7 @@
 /**
 @module ember
+
+Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
 */
 
 import { ConstReference, isConst } from '@glimmer/reference';

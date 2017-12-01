@@ -65,7 +65,11 @@ export function registerMacros(macro: any) {
 export function populateMacros(blocks: any, inlines: any) {
   inlines.add('outlet', outletMacro);
   inlines.add('component', inlineComponentMacro);
-  inlines.add('render', renderMacro);
+
+  if (ENV._ENABLE_RENDER_SUPPORT === true) {
+    inlines.add('render', renderMacro);
+  }
+
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);

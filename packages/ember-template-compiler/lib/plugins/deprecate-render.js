@@ -1,6 +1,10 @@
 import { deprecate } from 'ember-debug';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
+/*
+ * Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no
+ * longer needed.
+ */
 export default function deprecateRender(env) {
   let { moduleName } = env.meta;
 
