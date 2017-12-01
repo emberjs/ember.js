@@ -8,7 +8,7 @@ export default class Cache {
     this.limit  = limit;
     this.func   = func;
     this.key    = key;
-    this.store  = store || new DefaultStore();
+    this.store  = store || new Map();
   }
 
   get(obj) {
@@ -51,23 +51,5 @@ export default class Cache {
     this.size   = 0;
     this.hits   = 0;
     this.misses = 0;
-  }
-}
-
-class DefaultStore {
-  constructor() {
-    this.data = Object.create(null);
-  }
-
-  get(key) {
-    return this.data[key];
-  }
-
-  set(key, value) {
-    this.data[key] = value;
-  }
-
-  clear() {
-    this.data = Object.create(null);
   }
 }
