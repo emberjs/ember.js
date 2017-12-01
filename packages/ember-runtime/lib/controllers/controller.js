@@ -2,7 +2,6 @@ import { assert } from 'ember-debug';
 import EmberObject from '../system/object';
 import Mixin from '../mixins/controller';
 import { createInjectionHelper } from '../inject';
-import { deprecateUnderscoreActions } from '../mixins/action_handler';
 
 /**
 @module @ember/controller
@@ -15,8 +14,6 @@ import { deprecateUnderscoreActions } from '../mixins/action_handler';
   @public
 */
 const Controller = EmberObject.extend(Mixin);
-
-deprecateUnderscoreActions(Controller);
 
 function controllerInjectionHelper(factory) {
   assert(

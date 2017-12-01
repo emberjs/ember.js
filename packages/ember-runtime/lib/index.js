@@ -29,8 +29,7 @@ export { default as ObjectProxy } from './system/object_proxy';
 export { default as CoreObject } from './system/core_object';
 export { default as NativeArray, A } from './system/native_array';
 export {
-  default as ActionHandler,
-  deprecateUnderscoreActions
+  default as ActionHandler
 } from './mixins/action_handler';
 export { default as Copyable } from './mixins/copyable';
 export { default as Enumerable } from './mixins/enumerable';

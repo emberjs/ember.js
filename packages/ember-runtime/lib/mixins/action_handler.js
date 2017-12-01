@@ -212,38 +212,7 @@ const ActionHandler = Mixin.create({
     }
   },
 
-  willMergeMixin(props) {
-    assert('Specifying `_actions` and `actions` in the same mixin is not supported.', !props.actions || !props._actions);
-
-    if (props._actions) {
-      deprecate(
-        'Specifying actions in `_actions` is deprecated, please use `actions` instead.',
-        false,
-        { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
-      );
-
-      props.actions = props._actions;
-      delete props._actions;
-    }
-  }
+  willMergeMixin() {}
 });
 
 export default ActionHandler;
-
-export function deprecateUnderscoreActions(factory) {
-  Object.defineProperty(factory.prototype, '_actions', {
-    configurable: true,
-    enumerable: false,
-    set(value) {
-      assert(`You cannot set \`_actions\` on ${this}, please use \`actions\` instead.`);
-    },
-    get() {
-      deprecate(
-        `Usage of \`_actions\` is deprecated, use \`actions\` instead.`,
-        false,
-        { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
-      );
-      return get(this, 'actions');
-    }
-  });
-}

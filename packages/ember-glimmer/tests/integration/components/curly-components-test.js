@@ -2447,33 +2447,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, 'Attempting to inject an unknown injection: \'service:missingService\'');
   }
 
-  ['@test can access `actions` hash via `_actions` [DEPRECATED]']() {
-    let component;
-
-    function derp() { }
-
-    this.registerComponent('foo-bar', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          component = this;
-        },
-
-        actions: {
-          derp
-        }
-      })
-    });
-
-    this.render('{{foo-bar}}');
-
-    this.assert.strictEqual(component.actions.derp, derp);
-
-    expectDeprecation(() => {
-      this.assert.strictEqual(component._actions.derp, derp);
-    }, 'Usage of `_actions` is deprecated, use `actions` instead.');
-  }
-
   ['@test throws if `this._super` is not called from `init`']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
