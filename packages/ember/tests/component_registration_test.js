@@ -120,53 +120,6 @@ moduleFor('Application Lifecycle - Component Registration', class extends Autobo
     assert.equal(text, 'inner-outer', 'The component is composed correctly');
   }
 
-  ['@test Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]'](assert) {
-    assert.expect(2);
-
-    expectDeprecation(() => {
-      this.runTask(() => {
-        this.createApplication();
-
-        this.addTemplate('application', `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`);
-
-        this.applicationInstance.register('controller:application', Controller.extend({
-          text: 'outer'
-        }));
-        this.applicationInstance.register('component:my-component', Component.extend({
-          text: 'inner',
-          defaultLayout: this.compile('{{text}}-{{yield}}')
-        }));
-      });
-    });
-
-    let text = this.$('#wrapper').text().trim();
-    assert.equal(text, 'inner-outer', 'The component is composed correctly');
-  }
-
-  ['@test Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]'](assert) {
-    assert.expect(2);
-
-    expectDeprecation(() => {
-      this.runTask(() => {
-        this.createApplication();
-
-        this.addTemplate('application', `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`);
-        this.addTemplate('components/my-component', '{{text}}-{{yield}}');
-
-        this.applicationInstance.register('controller:application', Controller.extend({
-          text: 'outer'
-        }));
-        this.applicationInstance.register('component:my-component', Component.extend({
-          text: 'inner',
-          defaultLayout: this.compile('should not see this!')
-        }));
-      });
-    }, /Specifying `defaultLayout` to .+ is deprecated\./);
-
-    let text = this.$('#wrapper').text().trim();
-    assert.equal(text, 'inner-outer', 'The component is composed correctly');
-  }
-
   /*
    * When an exception is thrown during the initial rendering phase, the
    * `visit` promise is not resolved or rejected. This means the `applicationInstance`
