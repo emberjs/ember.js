@@ -20,9 +20,10 @@ import {
 } from '@glimmer/reference';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
-import { Simple, VMHandle } from '@glimmer/interfaces';
+import { Simple } from '@glimmer/interfaces';
 
-import VM, { CapturedStack, EvaluationStack } from './append';
+import EvaluationStack from './stack';
+import VM from './append';
 import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
 
 export default class UpdatingVM<TemplateMeta = Opaque> {
@@ -68,7 +69,7 @@ export default class UpdatingVM<TemplateMeta = Opaque> {
   }
 
   try(ops: UpdatingOpSeq, handler: Option<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(this, ops, handler));
+    this.frameStack.push(new UpdatingVMFrame(ops, handler));
   }
 
   throw() {
@@ -86,7 +87,7 @@ export interface VMState {
   program: Program<Opaque>;
   scope: Scope;
   dynamicScope: DynamicScope;
-  stack: CapturedStack;
+  stack: Opaque[];
 }
 
 export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
@@ -97,7 +98,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
 
   protected bounds: DestroyableBounds;
 
-  constructor(public start: VMHandle, protected state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public start: number, protected state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
 
     this.children = children;
@@ -140,7 +141,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(start: VMHandle, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+  constructor(start: number, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
     super(start, state, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
@@ -265,7 +266,7 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: TagWrapper<UpdatableTag>;
 
-  constructor(start: VMHandle, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+  constructor(start: number, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
     super(start, state, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
@@ -317,9 +318,7 @@ export class ListBlockOpcode extends BlockOpcode {
 class UpdatingVMFrame {
   private current: Option<UpdatingOpcode>;
 
-  constructor(private vm: UpdatingVM<Opaque>, private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
-    this.vm = vm;
-    this.ops = ops;
+  constructor(private ops: UpdatingOpSeq, private exceptionHandler: Option<ExceptionHandler>) {
     this.current = ops.head();
   }
 

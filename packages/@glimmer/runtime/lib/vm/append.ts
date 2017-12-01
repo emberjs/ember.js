@@ -5,89 +5,28 @@ import { ElementBuilder } from './element-builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, assert } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
+import LowLevelVM from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import EvaluationStack from './stack';
 
 import {
   APPEND_OPCODES,
-  UpdatingOpcode
+  UpdatingOpcode,
+  DebugState
 } from '../opcodes';
 
 import {
   UNDEFINED_REFERENCE
 } from '../references';
 
-import { Opcode, VMHandle } from "@glimmer/interfaces";
-import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram } from "@glimmer/program";
+import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram, Opcode } from "@glimmer/program";
 
 export interface PublicVM {
   env: Environment;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
   newDestroyable(d: Destroyable): void;
-}
-
-export type CapturedStack = Opaque[];
-
-export class EvaluationStack {
-  static empty(): EvaluationStack {
-    return new this([], 0, -1);
-  }
-
-  static restore(snapshot: CapturedStack): EvaluationStack {
-    return new this(snapshot.slice(), 0, snapshot.length - 1);
-  }
-
-  constructor(private stack: Opaque[], public fp: number, public sp: number) {
-    if (DEBUG) {
-      Object.seal(this);
-    }
-  }
-
-  push(value: Opaque): void {
-    this.stack[++this.sp] = value;
-  }
-
-  dup(position = this.sp): void {
-    this.push(this.stack[position]);
-  }
-
-  pop<T>(n = 1): T {
-    let top = this.stack[this.sp] as T;
-    this.sp -= n;
-    return top;
-  }
-
-  peek<T>(offset = 0): T {
-    return this.stack[this.sp - offset] as T;
-  }
-
-  get<T>(offset: number, base = this.fp): T {
-    return this.stack[base + offset] as T;
-  }
-
-  set(value: Opaque, offset: number, base = this.fp) {
-    this.stack[base + offset] = value;
-  }
-
-  slice<T = Opaque>(start: number, end: number): T[] {
-    return this.stack.slice(start, end) as T[];
-  }
-
-  capture(items: number): CapturedStack {
-    let end = this.sp + 1;
-    let start = end - items;
-    return this.stack.slice(start, end);
-  }
-
-  reset() {
-    this.stack.length = 0;
-  }
-
-  toArray() {
-    return this.stack.slice(this.fp, this.sp + 1);
-  }
 }
 
 export type IteratorResult<T> = {
@@ -101,37 +40,46 @@ export type IteratorResult<T> = {
 export default class VM<TemplateMeta> implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
+  public inner: LowLevelVM;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
   public constants: RuntimeConstants<TemplateMeta>;
   public heap: Heap;
 
-  public stack = EvaluationStack.empty();
+  get stack(): EvaluationStack {
+    return this.inner.stack as EvaluationStack;
+  }
+
+  set stack(value: EvaluationStack) {
+    this.inner.stack = value;
+  }
 
   /* Registers */
 
-  private _pc = -1;
-  private _ra = -1;
+  set currentOpSize(value: number) {
+    this.inner.currentOpSize = value;
+  }
 
-  private currentOpSize = 0;
+  get currentOpSize(): number {
+    return this.inner.currentOpSize;
+  }
 
   get pc(): number {
-    return this._pc;
+    return this.inner.pc;
   }
 
   set pc(value: number) {
     assert(typeof value === 'number' && value >= -1, `invalid pc: ${value}`);
-    this._pc = value;
+    this.inner.pc = value;
   }
 
-  private set ra(value: number) {
-    assert(typeof value === 'number' && value >= -1, `invalid ra: ${value}`);
-    this._ra = value;
+  get ra(): number {
+    return this.inner.ra;
   }
 
-  private get ra(): number {
-    return this._ra;
+  set ra(value: number) {
+    this.inner.ra = value;
   }
 
   private get fp(): number {
@@ -176,42 +124,43 @@ export default class VM<TemplateMeta> implements PublicVM {
     this[Register[register]] = value;
   }
 
+  /**
+   * Migrated to Inner
+   */
+
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
-    this.stack.push(this.ra);
-    this.stack.push(this.fp);
-    this.fp = this.sp - 1;
+    this.inner.pushFrame();
   }
 
   // Restore $ra, $sp and $fp
   popFrame() {
-    this.sp = this.fp - 1;
-    this.ra = this.stack.get<number>(0);
-    this.fp = this.stack.get<number>(1);
+    this.inner.popFrame();
   }
 
   // Jump to an address in `program`
   goto(offset: number) {
-    let addr = (this.pc + offset) - this.currentOpSize;
-    this.pc = addr;
+    this.inner.goto(offset);
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
-  call(handle: VMHandle) {
-    this.ra = this.pc;
-    this.pc = this.heap.getaddr(handle);
+  call(handle: number) {
+    this.inner.call(handle);
   }
 
   // Put a specific `program` address in $ra
   returnTo(offset: number) {
-    let addr = (this.pc + offset) - this.currentOpSize;
-    this.ra = addr;
+    this.inner.returnTo(offset);
   }
 
   // Return to the `program` address stored in $ra
   return() {
-    this.pc = this.ra;
+    this.inner.return();
   }
+
+  /**
+   * End of migrated.
+   */
 
   static initial<TemplateMeta>(
     program: RuntimeProgram<TemplateMeta>,
@@ -220,7 +169,7 @@ export default class VM<TemplateMeta> implements PublicVM {
     args: Option<ICapturedArguments>,
     dynamicScope: DynamicScope,
     elementStack: ElementBuilder,
-    handle: VMHandle
+    handle: number
   ) {
     let scopeSize = program.heap.scopesizeof(handle);
     let scope = Scope.root(self, scopeSize);
@@ -268,6 +217,15 @@ export default class VM<TemplateMeta> implements PublicVM {
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
+    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap, program, {
+      debugBefore: (opcode: Opcode): DebugState => {
+        return APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
+      },
+
+      debugAfter: (opcode: Opcode, state: DebugState): void => {
+        APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
+      }
+    });
   }
 
   capture(args: number): VMState {
@@ -443,7 +401,7 @@ export default class VM<TemplateMeta> implements PublicVM {
 
   /// EXECUTION
 
-  execute(start: VMHandle, initialize?: (vm: VM<TemplateMeta>) => void): RenderResult {
+  execute(start: number, initialize?: (vm: VM<TemplateMeta>) => void): RenderResult {
     this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);
@@ -460,10 +418,10 @@ export default class VM<TemplateMeta> implements PublicVM {
 
   next(): IteratorResult<RenderResult> {
     let { env, program, updatingOpcodeStack, elementStack } = this;
-    let opcode = this.nextStatement();
+    let opcode = this.inner.nextStatement();
     let result: IteratorResult<RenderResult>;
     if (opcode !== null) {
-      APPEND_OPCODES.evaluate(this, opcode, opcode.type);
+      this.inner.evaluateOuter(opcode, this);
       result = { done: false, value: null };
     } else {
       // Unload the stack
@@ -480,24 +438,6 @@ export default class VM<TemplateMeta> implements PublicVM {
       };
     }
     return result;
-  }
-
-  private nextStatement(): Option<Opcode> {
-    let { pc, program } = this;
-
-    if (pc === -1) {
-      return null;
-    }
-    // We have to save off the current operations size so that
-    // when we do a jump we can calculate the correct offset
-    // to where we are going. We can't simply ask for the size
-    // in a jump because we have have already incremented the
-    // program counter to the next instruction prior to executing.
-    let { size } = this.program.opcode(pc);
-    let operationSize = this.currentOpSize = size;
-    this.pc += operationSize;
-
-    return program.opcode(pc);
   }
 
   bindDynamicScope(names: number[]) {

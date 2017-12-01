@@ -8,6 +8,7 @@ export interface Opcode {
   op2: number;
   op3: number;
   size: number;
+  isMachine: number;
 }
 
 export type VMHandle = Unique<"Handle">;
@@ -15,12 +16,12 @@ export type VMHandle = Unique<"Handle">;
 export interface CompileTimeHeap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;
   pushPlaceholder(valueFunc: () => number): void;
-  malloc(): VMHandle;
-  finishMalloc(handle: VMHandle, scopeSize: number): void;
+  malloc(): number;
+  finishMalloc(handle: number, scopeSize: number): void;
 
   // for debugging
-  getaddr(handle: VMHandle): number;
-  sizeof(handle: VMHandle): number;
+  getaddr(handle: number): number;
+  sizeof(handle: number): number;
 }
 
 export interface CompileTimeProgram {

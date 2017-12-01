@@ -36,22 +36,20 @@ import CompilableTemplate, { ICompilableTemplate, PLACEHOLDER_HANDLE } from './c
 import {
   ComponentBuilder
 } from './wrapped-component';
-import { InstructionEncoder, Operand } from "@glimmer/encoder";
+import { InstructionEncoder, Operand, MACHINE_MASK } from "@glimmer/encoder";
 
 export type Label = string;
 
-type TargetOpcode = Op.Jump | Op.JumpIf | Op.JumpUnless | Op.EnterList | Op.Iterate | Op.ReturnTo;
-
 class Labels {
   labels = dict<number>();
-  targets: Array<{ at: number, Target: TargetOpcode, target: string }> = [];
+  targets: Array<{ at: number, target: string }> = [];
 
   label(name: string, index: number) {
     this.labels[name] = index;
   }
 
-  target(at: number, Target: TargetOpcode, target: string) {
-    this.targets.push({ at, Target, target });
+  target(at: number, target: string) {
+    this.targets.push({ at, target });
   }
 
   patch(encoder: InstructionEncoder): void {
@@ -101,12 +99,15 @@ export class SimpleOpcodeBuilder {
   protected encoder = new InstructionEncoder([]);
 
   push(name: Op, ...ops: Operand[]) {
-    let { encoder } = this;
-    encoder.encode(name, ...ops);
+    this.encoder.encode(name, 0, ...ops);
   }
 
-  commit(heap: CompileTimeHeap, scopeSize: number): VMHandle {
-    this.push(Op.Return);
+  pushMachine(name: Op, ...ops: Operand[]) {
+    this.encoder.encode(name, MACHINE_MASK, ...ops);
+  }
+
+  commit(heap: CompileTimeHeap, scopeSize: number): number {
+    this.pushMachine(Op.Return);
 
     let { buffer } = this.encoder;
 
@@ -132,6 +133,15 @@ export class SimpleOpcodeBuilder {
     }
 
     this.push(name, ...reservedOperands);
+  }
+
+  reserveMachine(name: Op, size = 1) {
+    let reservedOperands = [];
+    for (let i = 0; i < size; i++) {
+      reservedOperands[i] = -1;
+    }
+
+    this.pushMachine(name, ...reservedOperands);
   }
 
   ///
@@ -223,15 +233,15 @@ export class SimpleOpcodeBuilder {
   }
 
   pushFrame() {
-    this.push(Op.PushFrame);
+    this.pushMachine(Op.PushFrame);
   }
 
   popFrame() {
-    this.push(Op.PopFrame);
+    this.pushMachine(Op.PopFrame);
   }
 
   invokeVirtual(): void {
-    this.push(Op.InvokeVirtual);
+    this.pushMachine(Op.InvokeVirtual);
   }
 
   invokeYield(): void {
@@ -464,7 +474,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   enterList(start: string) {
     this.reserve(Op.EnterList);
-    this.labels.target(this.pos, Op.EnterList, start);
+    this.labels.target(this.pos, start);
   }
 
   exitList() {
@@ -473,7 +483,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   iterate(breaks: string) {
     this.reserve(Op.Iterate);
-    this.labels.target(this.pos, Op.Iterate, breaks);
+    this.labels.target(this.pos, breaks);
   }
 
   // expressions
@@ -531,8 +541,8 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   // vm
 
   returnTo(label: string) {
-    this.reserve(Op.ReturnTo);
-    this.labels.target(this.pos, Op.ReturnTo, label);
+    this.reserveMachine(Op.ReturnTo);
+    this.labels.target(this.pos, label);
   }
 
   primitive(_primitive: Primitive) {
@@ -614,22 +624,22 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   }
 
   return() {
-    this.push(Op.Return);
+    this.pushMachine(Op.Return);
   }
 
   jump(target: string) {
-    this.reserve(Op.Jump);
-    this.labels.target(this.pos, Op.Jump, target);
+    this.reserveMachine(Op.Jump);
+    this.labels.target(this.pos, target);
   }
 
   jumpIf(target: string) {
     this.reserve(Op.JumpIf);
-    this.labels.target(this.pos, Op.JumpIf, target);
+    this.labels.target(this.pos, target);
   }
 
   jumpUnless(target: string) {
     this.reserve(Op.JumpUnless);
-    this.labels.target(this.pos, Op.JumpUnless, target);
+    this.labels.target(this.pos, target);
   }
 
   // internal helpers
@@ -1047,7 +1057,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
   invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
     this.pushOther(compilable);
     this.push(Op.CompileBlock);
-    this.push(Op.InvokeVirtual);
+    this.pushMachine(Op.InvokeVirtual);
   }
 
   protected pushOther<T>(value: T) {
@@ -1087,9 +1097,9 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
     // function that will produce the correct handle when the heap is
     // serialized.
     if (handle === PLACEHOLDER_HANDLE) {
-      this.push(Op.InvokeStatic, () => compilable.compile() as Recast<VMHandle, number>);
+      this.pushMachine(Op.InvokeStatic, () => compilable.compile() as Recast<VMHandle, number>);
     } else {
-      this.push(Op.InvokeStatic, handle as Recast<VMHandle, number>);
+      this.pushMachine(Op.InvokeStatic, handle as Recast<VMHandle, number>);
     }
   }
 }

@@ -1,13 +1,12 @@
 import {
   BlockSymbolTable,
   ProgramSymbolTable,
-  SymbolTable,
-  VMHandle
+  SymbolTable
 } from '@glimmer/interfaces';
 
 export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
-  compile(): VMHandle;
+  compile(): number;
 }
 
 export type BlockSyntax = CompilableTemplate<BlockSymbolTable>;

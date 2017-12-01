@@ -1,5 +1,5 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, BlockSymbolTable, VMHandle, ComponentCapabilities } from '@glimmer/interfaces';
+import { ProgramSymbolTable, BlockSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
@@ -31,7 +31,7 @@ export class WrappedBuilder<TemplateMeta> implements ICompilableTemplate<Program
     };
   }
 
-  compile(): VMHandle {
+  compile(): number {
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
