@@ -46,7 +46,6 @@ export class Meta {
     }
 
     this._cache = undefined;
-    this._weak = undefined;
     this._watching = undefined;
     this._mixins = undefined;
     this._bindings = undefined;
@@ -272,9 +271,6 @@ export class Meta {
 
   writableCache() { return this._getOrCreateOwnMap('_cache'); }
   readableCache() { return this._cache; }
-
-  writableWeak() { return this._getOrCreateOwnMap('_weak'); }
-  readableWeak() { return this._weak; }
 
   writableTags() { return this._getOrCreateOwnMap('_tags'); }
   readableTags() { return this._tags; }
