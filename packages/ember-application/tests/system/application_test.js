@@ -111,20 +111,6 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
 
 moduleFor('Ember.Application', class extends ApplicationTestCase {
 
-  ['@test includes deprecated access to `application.registry`'](assert) {
-    assert.expect(3);
-
-    assert.ok(typeof this.application.registry.register === 'function', '#registry.register is available as a function');
-
-    this.application.__registry__.register = function() {
-      assert.ok(true, '#register alias is called correctly');
-    };
-
-    expectDeprecation(() => {
-      this.application.registry.register();
-    }, /Using `Application.registry.register` is deprecated. Please use `Application.register` instead./);
-  }
-
   [`@test builds a registry`](assert) {
     let {application} = this;
     assert.strictEqual(application.resolveRegistration('application:main'), application, `application:main is registered`);

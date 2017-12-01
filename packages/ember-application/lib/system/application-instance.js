@@ -4,10 +4,7 @@
 
 import { assign } from 'ember-utils';
 import { get, set, run, computed } from 'ember-metal';
-import {
-  buildFakeRegistryWithDeprecations,
-  RSVP
-} from 'ember-runtime';
+import { RSVP } from 'ember-runtime';
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
@@ -486,13 +483,5 @@ BootOptions.prototype.toEnvironment = function() {
   env.options = this;
   return env;
 };
-
-Object.defineProperty(ApplicationInstance.prototype, 'registry', {
-  configurable: true,
-  enumerable: false,
-  get() {
-    return buildFakeRegistryWithDeprecations(this, 'ApplicationInstance');
-  }
-});
 
 export default ApplicationInstance;

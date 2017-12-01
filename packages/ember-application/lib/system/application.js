@@ -15,7 +15,6 @@ import {
   setNamespaceSearchDisabled,
   runLoadHooks,
   _loaded,
-  buildFakeRegistryWithDeprecations,
   RSVP
 } from 'ember-runtime';
 import { EventDispatcher, jQuery } from 'ember-views';
@@ -975,14 +974,6 @@ const Application = Engine.extend({
           throw error;
         });
     });
-  }
-});
-
-Object.defineProperty(Application.prototype, 'registry', {
-  configurable: true,
-  enumerable: false,
-  get() {
-    return buildFakeRegistryWithDeprecations(this, 'Application');
   }
 });
 

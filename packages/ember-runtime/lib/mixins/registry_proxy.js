@@ -5,7 +5,6 @@
 import {
   Mixin
 } from 'ember-metal';
-import { deprecate } from 'ember-debug';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -241,42 +240,5 @@ export default Mixin.create({
 function registryAlias(name) {
   return function () {
     return this.__registry__[name](...arguments);
-  };
-}
-
-export function buildFakeRegistryWithDeprecations(instance, typeForMessage) {
-  let fakeRegistry = {};
-  let registryProps = {
-    resolve: 'resolveRegistration',
-    register: 'register',
-    unregister: 'unregister',
-    has: 'hasRegistration',
-    option: 'registerOption',
-    options: 'registerOptions',
-    getOptions: 'registeredOptions',
-    optionsForType: 'registerOptionsForType',
-    getOptionsForType: 'registeredOptionsForType',
-    injection: 'inject'
-  };
-
-  for (let deprecatedProperty in registryProps) {
-    fakeRegistry[deprecatedProperty] = buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty, registryProps[deprecatedProperty]);
-  }
-
-  return fakeRegistry;
-}
-
-function buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty, nonDeprecatedProperty) {
-  return function() {
-    deprecate(
-      `Using \`${typeForMessage}.registry.${deprecatedProperty}\` is deprecated. Please use \`${typeForMessage}.${nonDeprecatedProperty}\` instead.`,
-      false,
-      {
-        id: 'ember-application.app-instance-registry',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-application-registry-ember-applicationinstance-registry'
-      }
-    );
-    return instance[nonDeprecatedProperty](...arguments);
   };
 }
