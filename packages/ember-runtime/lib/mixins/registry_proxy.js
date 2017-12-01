@@ -5,7 +5,6 @@
 import {
   Mixin
 } from 'ember-metal';
-import { deprecate } from 'ember-debug';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
