@@ -142,7 +142,6 @@ QUnit.module('ember reexports');
   ['TextField',     'ember-glimmer', 'TextField'],
   ['TEMPLATES',     'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
   ['Handlebars.template', 'ember-glimmer', 'template'],
-  ['Handlebars.SafeString', 'ember-glimmer', { get: '_getSafeString' }],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
 
@@ -165,8 +164,6 @@ QUnit.module('ember reexports');
   ['CoreObject', 'ember-runtime'],
   ['NativeArray', 'ember-runtime'],
   ['Copyable', 'ember-runtime'],
-  ['Freezable', 'ember-runtime'],
-  ['FROZEN_ERROR', 'ember-runtime'],
   ['MutableEnumerable', 'ember-runtime'],
   ['MutableArray', 'ember-runtime'],
   ['TargetActionSupport', 'ember-runtime'],

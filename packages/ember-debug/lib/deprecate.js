@@ -6,6 +6,7 @@ import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
 
+import { assert } from './index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 /**
  @module @ember/debug
@@ -159,7 +160,13 @@ if (DEBUG) {
     @since 1.0.0
   */
   deprecate = function deprecate(message, test, options) {
-    if (!options || (!options.id && !options.until)) {
+    if (ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT !== true) {
+      assert(missingOptionsDeprecation, options && (options.id || options.until));
+      assert(missingOptionsIdDeprecation, options.id);
+      assert(missingOptionsUntilDeprecation, options.until);
+    }
+
+    if ((!options || (!options.id && !options.until)) && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsDeprecation,
         false,
@@ -171,7 +178,7 @@ if (DEBUG) {
       );
     }
 
-    if (options && !options.id) {
+    if (options && !options.id && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsIdDeprecation,
         false,
@@ -183,7 +190,7 @@ if (DEBUG) {
       );
     }
 
-    if (options && !options.until) {
+    if (options && !options.until && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsUntilDeprecation,
         options && options.until,

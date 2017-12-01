@@ -571,23 +571,6 @@ const Component = CoreView.extend(
       this[ROOT_REF] = new RootReference(this);
       this[BOUNDS] = null;
 
-      // If a `defaultLayout` was specified move it to the `layout` prop.
-      // `layout` is no longer a CP, so this just ensures that the `defaultLayout`
-      // logic is supported with a deprecation
-      if (this.defaultLayout && !this.layout) {
-        deprecate(
-          `Specifying \`defaultLayout\` to ${this} is deprecated. Please use \`layout\` instead.`,
-          false,
-          {
-            id: 'ember-views.component.defaultLayout',
-            until: '3.0.0',
-            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-component-defaultlayout',
-          },
-        );
-
-        this.layout = this.defaultLayout;
-      }
-
       // If in a tagless component, assert that no event handlers are defined
       assert(
         // tslint:disable-next-line:max-line-length

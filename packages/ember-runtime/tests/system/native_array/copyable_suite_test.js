@@ -23,9 +23,8 @@ CopyableTests.extend({
     }
 
     return a[0] === b[0];
-  },
+  }
 
-  shouldBeFreezable: false
 }).run();
 
 QUnit.module('NativeArray Copyable');
