@@ -2,7 +2,6 @@ export { default as Object, FrameworkObject } from './system/object';
 export { default as String } from './system/string';
 export {
   default as RegistryProxyMixin,
-  buildFakeRegistryWithDeprecations
 } from './mixins/registry_proxy';
 export {
   default as ContainerProxyMixin
