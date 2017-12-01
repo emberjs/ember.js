@@ -38,6 +38,11 @@ import {
 } from './wrapped-component';
 import { InstructionEncoder, Operand, MACHINE_MASK } from "@glimmer/encoder";
 
+export interface STDLib {
+  main: number;
+  guardedAppend: number;
+}
+
 export type Label = string;
 
 class Labels {
@@ -92,7 +97,8 @@ export interface OpcodeBuilderConstructor {
       meta: Opaque,
       macros: Macros,
       containingLayout: ParsedLayout,
-      asPartial: boolean): OpcodeBuilder<TemplateMeta>;
+      asPartial: boolean,
+      stdLib?: STDLib): OpcodeBuilder<TemplateMeta>;
 }
 
 export class SimpleOpcodeBuilder {
@@ -151,8 +157,8 @@ export class SimpleOpcodeBuilder {
     this.invokePreparedComponent(false);
   }
 
-  dynamicContent(isTrusting: boolean) {
-    this.push(Op.DynamicContent, isTrusting ? 1 : 0);
+  dynamicContent() {
+    this.push(Op.DynamicContent);
   }
 
   beginComponentTransaction() {
@@ -302,7 +308,8 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     public referrer: Locator,
     public macros: Macros,
     public containingLayout: ParsedLayout,
-    public asPartial: boolean
+    public asPartial: boolean,
+    protected stdLib?: STDLib
   ) {
     super();
     this.constants = program.constants;
@@ -753,16 +760,11 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.popFrame();
   }
 
-  guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
+  builtInGuardedAppend() {
+    this.dup();
+
     this.startLabels();
 
-    this.pushFrame();
-
-    this.returnTo('END');
-
-    this.expr(expression);
-
-    this.dup();
     this.isComponent();
 
     this.enter(2);
@@ -781,17 +783,67 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
     this.label('ELSE');
 
-    this.dynamicContent(trusting);
+    this.dynamicContent();
 
     this.exit();
 
     this.return();
+    this.stopLabels();
+  }
+
+  guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
+    this.startLabels();
+
+    this.pushFrame();
+
+    this.returnTo('END');
+
+    if (this.stdLib) {
+      this.primitive(!!trusting);
+      this.load(Register.t0);
+      this.expr(expression);
+      this.primitive(this.stdLib.guardedAppend as Recast<VMHandle, number>);
+      this.invokeVirtual();
+    } else {
+
+      this.expr(expression);
+
+      this.dup();
+
+      this.isComponent();
+
+      this.enter(2);
+
+      this.jumpUnless('ELSE');
+
+      this.pushCurriedComponent();
+
+      this.pushDynamicComponentInstance();
+
+      this.invokeComponent(null, null, null, false, null, null);
+
+      this.exit();
+
+      this.return();
+
+      this.label('ELSE');
+
+      this.primitive(!!trusting);
+      this.load(Register.t0);
+
+      this.dynamicContent();
+
+      this.exit();
+
+      this.return();
+    }
 
     this.label('END');
 
     this.popFrame();
 
     this.stopLabels();
+
   }
 
   yield(to: number, params: Option<WireFormat.Core.Params>) {
@@ -1071,7 +1123,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
 
 export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta> {
   pushBlock(block: Option<ICompilableTemplate<BlockSymbolTable>>): void {
-    let handle = block ? block.compile() as Recast<VMHandle, number> : null;
+    let handle = block ? block.compile(this.stdLib) as Recast<VMHandle, number> : null;
     this.primitive(handle);
   }
 
@@ -1081,7 +1133,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
 
   pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, TemplateMeta>>): void {
     if (layout) {
-      this.primitive(layout.compile() as Recast<VMHandle, number>);
+      this.primitive(layout.compile(this.stdLib) as Recast<VMHandle, number>);
     } else {
       this.primitive(null);
     }
@@ -1097,7 +1149,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
     // function that will produce the correct handle when the heap is
     // serialized.
     if (handle === PLACEHOLDER_HANDLE) {
-      this.pushMachine(Op.InvokeStatic, () => compilable.compile() as Recast<VMHandle, number>);
+      this.pushMachine(Op.InvokeStatic, () => compilable.compile(this.stdLib) as Recast<VMHandle, number>);
     } else {
       this.pushMachine(Op.InvokeStatic, handle as Recast<VMHandle, number>);
     }
