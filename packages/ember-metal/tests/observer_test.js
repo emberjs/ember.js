@@ -16,7 +16,6 @@ import {
   mixin,
   observer,
   _beforeObserver,
-  _immediateObserver,
   run,
   beginPropertyChanges,
   endPropertyChanges,
@@ -963,115 +962,6 @@ testBoth('setting a cached computed property whose value has changed should trig
   set(obj, 'foo', 'bar');
   equal(count, 3);
   equal(get(obj, 'foo'), 'bar');
-});
-
-QUnit.module('Ember.immediateObserver (Deprecated)');
-
-testBoth('immediate observers should fire synchronously', function(get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
-  let obj = {};
-  let observerCalled = 0;
-  let mixin;
-
-  // explicitly create a run loop so we do not inadvertently
-  // trigger deferred behavior
-  run(function() {
-    mixin = Mixin.create({
-      fooDidChange: _immediateObserver('foo', function() {
-        observerCalled++;
-        equal(get(this, 'foo'), 'barbaz', 'newly set value is immediately available');
-      })
-    });
-
-    mixin.apply(obj);
-
-    defineProperty(obj, 'foo', computed({
-      get: function() { return 'yes hello this is foo'; },
-      set: function(key, value) { return value; }
-    }));
-
-    equal(get(obj, 'foo'), 'yes hello this is foo', 'precond - computed property returns a value');
-    equal(observerCalled, 0, 'observer has not yet been called');
-
-    set(obj, 'foo', 'barbaz');
-
-    equal(observerCalled, 1, 'observer was called once');
-  });
-});
-
-
-if (ENV.EXTEND_PROTOTYPES.Function) {
-  testBoth('immediate observers added declaratively via brace expansion fire synchronously', function (get, set) {
-    let obj = {};
-    let observerCalled = 0;
-    let mixin;
-
-    // explicitly create a run loop so we do not inadvertently
-    // trigger deferred behavior
-    run(function() {
-      expectDeprecation(function() {
-        mixin = Mixin.create({
-          fooDidChange: function() {
-            observerCalled++;
-            equal(get(this, 'foo'), 'barbaz', 'newly set value is immediately available');
-          }.observesImmediately('{foo,bar}')
-        });
-      }, /Function#observesImmediately is deprecated. Use Function#observes instead/);
-
-      mixin.apply(obj);
-
-      defineProperty(obj, 'foo', computed({
-        get: function(key) { return 'yes hello this is foo'; },
-        set: function(key, value) { return value; }
-      }));
-
-      equal(get(obj, 'foo'), 'yes hello this is foo', 'precond - computed property returns a value');
-      equal(observerCalled, 0, 'observer has not yet been called');
-
-      set(obj, 'foo', 'barbaz');
-
-      equal(observerCalled, 1, 'observer was called once');
-    });
-  });
-}
-
-testBoth('immediate observers watching multiple properties via brace expansion fire synchronously', function (get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
-  let obj = {};
-  let observerCalled = 0;
-  let mixin;
-
-  // explicitly create a run loop so we do not inadvertently
-  // trigger deferred behavior
-  run(function() {
-    mixin = Mixin.create({
-      fooDidChange: _immediateObserver('{foo,bar}', function() {
-        observerCalled++;
-        equal(get(this, 'foo'), 'barbaz', 'newly set value is immediately available');
-      })
-    });
-
-    mixin.apply(obj);
-
-    defineProperty(obj, 'foo', computed({
-      get: function() { return 'yes hello this is foo'; },
-      set: function(key, value) { return value; }
-    }));
-
-    equal(get(obj, 'foo'), 'yes hello this is foo', 'precond - computed property returns a value');
-    equal(observerCalled, 0, 'observer has not yet been called');
-
-    set(obj, 'foo', 'barbaz');
-
-    equal(observerCalled, 1, 'observer was called once');
-  });
-});
-
-testBoth('immediate observers are for internal properties only', function(get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
-  expectAssertion(function() {
-    _immediateObserver('foo.bar', function() { return this; });
-  }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 
 QUnit.module('changeProperties');

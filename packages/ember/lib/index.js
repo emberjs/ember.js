@@ -131,7 +131,6 @@ Ember._suspendObservers = metal._suspendObservers;
 Ember.required = metal.required;
 Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
-Ember.immediateObserver = metal._immediateObserver;
 Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;
 Ember.bind = metal.bind;

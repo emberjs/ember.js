@@ -112,7 +112,6 @@ QUnit.module('ember reexports');
   ['required', 'ember-metal'],
   ['aliasMethod', 'ember-metal'],
   ['observer', 'ember-metal'],
-  ['immediateObserver', 'ember-metal', '_immediateObserver'],
   ['mixin', 'ember-metal'],
   ['Mixin', 'ember-metal'],
   ['bind', 'ember-metal'],
