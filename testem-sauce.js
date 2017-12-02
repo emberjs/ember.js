@@ -29,11 +29,11 @@ module.exports = {
         "protocol": "tap"
       },
       "SL_Safari_Current": {
-        "command": "ember sauce:launch -b safari -v 10 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -b safari -v latest --no-ct -u '<url>'",
         "protocol": "tap"
       },
       "SL_Safari_Last": {
-        "command": "ember sauce:launch -b safari -v 8 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -b safari -v latest-1 --no-ct -u '<url>'",
         "protocol": "tap"
       },
       "SL_MS_Edge": {
