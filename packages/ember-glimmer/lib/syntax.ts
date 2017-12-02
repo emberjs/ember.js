@@ -1,6 +1,5 @@
-import { Macros, WrappedBuilder } from '@glimmer/opcode-compiler';
+import { Macros } from '@glimmer/opcode-compiler';
 import { assert } from 'ember-debug';
-import { TemplateMeta } from 'ember-views';
 import { textAreaMacro } from './syntax/-text-area';
 import { inputMacro } from './syntax/input';
 import { mountMacro } from './syntax/mount';
@@ -34,11 +33,14 @@ function refineBlockSyntax(name: string, params: any[], hash: any, _default: any
     return false;
   }
 
-  let meta = builder.meta.templateMeta;
+  let meta = {
+    owner: builder.resolver.resolver.owner,
+    moduleName: ''
+  };
 
   let definition;
   if (name.indexOf('-') > -1) {
-    definition = builder.env.getComponentDefinition(name, meta);
+    definition = builder.resolver.lookupComponentDefinition(name, meta);
   }
 
   if (definition) {
