@@ -1491,49 +1491,13 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
   if (target) {
     set(target.outlets, renderOptions.outlet, myState);
   } else {
-    if (renderOptions.into) {
-      deprecate(
-        `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
-        false,
-        {
-          id: 'ember-routing.top-level-render-helper',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
-        }
-      );
-
-      // Megahax time. Post-3.0-breaking-changes, we will just assert
-      // right here that the user tried to target a nonexistent
-      // thing. But for now we still need to support the `render`
-      // helper, and people are allowed to target templates rendered
-      // by the render helper. So instead we defer doing anyting with
-      // these orphan renders until afterRender.
-      appendOrphan(liveRoutes, renderOptions.into, myState);
-    } else {
-      liveRoutes = myState;
-    }
+    assert(`Cannot render into a {{render}} helper '${renderOptions.into}' that resolves to an {{outlet}}`, !renderOptions.into);
+    liveRoutes = myState;
   }
   return {
     liveRoutes,
     ownState: myState
   };
-}
-
-function appendOrphan(liveRoutes, into, myState) {
-  if (!liveRoutes.outlets.__ember_orphans__) {
-    liveRoutes.outlets.__ember_orphans__ = {
-      render: {
-        name: '__ember_orphans__'
-      },
-      outlets: Object.create(null)
-    };
-  }
-  liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
-  run.schedule('afterRender', () => {
-    // `wasUsed` gets set by the render helper.
-    assert(`You attempted to render into '${into}' but it was not found`,
-                 liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
-  });
 }
 
 function representEmptyRoute(liveRoutes, defaultParentState, route) {
