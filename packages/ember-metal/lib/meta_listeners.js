@@ -1,3 +1,5 @@
+import { DEBUG } from 'ember-env-flags';
+
 /*
  When we render a rich template hierarchy, the set of events that
  *might* happen tends to be much larger than the set of events that
@@ -116,9 +118,11 @@ export const protoMethods = {
         }
       }
     }
-  },
+  }
+};
 
-  watchedEvents() {
+if (DEBUG) {
+  protoMethods.watchedEvents = function watchedEvents() {
     let pointer = this;
     let names = {};
     while (pointer !== undefined) {
@@ -132,8 +136,8 @@ export const protoMethods = {
       pointer = pointer.parent;
     }
     return Object.keys(names);
-  }
-};
+  };
+}
 
 function pushUniqueListener(destination, source, index) {
   let target = source[index + 1];

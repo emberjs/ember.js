@@ -5,6 +5,8 @@ import { applyStr } from 'ember-utils';
 import { deprecate, assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
 import { ONCE, SUSPENDED } from './meta_listeners';
+import { DEBUG } from 'ember-env-flags';
+import Logger from 'ember-console';
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -149,8 +151,12 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  let meta = peekMeta(obj);
-  return meta !== undefined ? meta.watchedEvents() : [];
+  if (DEBUG) {
+    let meta = peekMeta(obj);
+    return meta !== undefined ? meta.watchedEvents() : [];
+  } else {
+    Logger.error(`watchedEvents is only available in development environment`);
+  }
 }
 
 /**
