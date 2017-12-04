@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### 2.18.0-beta.2 (December 4, 2017)
+
+- [#15902](https://github.com/emberjs/ember.js/pull/15902) [BUGFIX] Fix link-to throwing in integration tests
+- [#15905](https://github.com/emberjs/ember.js/pull/15905) [BUGFIX] Improve error message when calling `inject()`.
+- [#15919](https://github.com/emberjs/ember.js/pull/15919) [BUGFIX] Upgrade Backburner.js to v1.3.3, fixing an issue canceling tasks scheduled by scheduleOnce.
+
 ### 2.18.0-beta.1 (November 29, 2017)
 
 - [#14590](https://github.com/emberjs/ember.js/pull/14590) [DEPRECATION] Deprecate using `targetObject`.
