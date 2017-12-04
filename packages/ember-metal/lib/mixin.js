@@ -237,6 +237,7 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
     if (props === CONTINUE) { continue; }
 
     if (props) {
+      // remove willMergeMixin after 3.4 as it was used for _actions
       if (base.willMergeMixin) { base.willMergeMixin(props); }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);

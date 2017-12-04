@@ -210,9 +210,7 @@ const ActionHandler = Mixin.create({
       );
       target.send(...arguments);
     }
-  },
-
-  willMergeMixin() {}
+  }
 });
 
 export default ActionHandler;
