@@ -13,6 +13,7 @@ import {
   inject,
   Service
 } from 'ember-runtime';
+import { ENV } from 'ember-environment';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
@@ -27,6 +28,15 @@ import {
 } from 'ember/features';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
+  constructor() {
+    super();
+    this.originalDidInitAttrsSupport = ENV._ENABLE_DID_INIT_ATTRS_SUPPORT;
+  }
+
+  teardown() {
+    ENV._ENABLE_DID_INIT_ATTRS_SUPPORT = this.originalDidInitAttrsSupport;
+    super.teardown();
+  }
 
   ['@test it can render a basic component']() {
     this.registerComponent('foo-bar', { template: 'hello' });
@@ -2690,6 +2700,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test using didInitAttrs as an event is deprecated'](assert) {
+    ENV._ENABLE_DID_INIT_ATTRS_SUPPORT = true;
+
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         foo: on('didInitAttrs', function() {
@@ -2703,15 +2715,26 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /didInitAttrs called/);
   }
 
+  ['@test using didInitAttrs as an event throws an assert'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        foo: on('didInitAttrs', function() {
+          assert.ok(true, 'should fire `didInitAttrs` event');
+        })
+      })
+    });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /didInitAttrs called/);
+  }
+
   // This test is a replication of the "component unit tests" scenario. When we deprecate
   // and remove them, this test could be removed as well. This is not fully/intentionally
   // supported, and it is unclear that this particular behavior is actually relied on.
   // Since there is no real "invocation" here, it has other issues and inconsistencies,
   // like there is no real "attrs" here, and there is no "update" pass.
-  ['@test did{Init,Receive}Attrs fires even if component is not rendered'](assert) {
-    expectDeprecation(/didInitAttrs called/);
-
-    let didInitAttrsCount = 0;
+  ['@test didReceiveAttrs fires even if component is not rendered'](assert) {
     let didReceiveAttrsCount = 0;
 
     this.registerComponent('foo-bar', {
@@ -2719,11 +2742,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
         init() {
           this._super(...arguments);
           this.didInit = true;
-        },
-
-        didInitAttrs() {
-          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          didInitAttrsCount++;
         },
 
         didReceiveAttrs() {
@@ -2737,19 +2755,14 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       })
     });
 
-    assert.strictEqual(didInitAttrsCount, 0, 'precond: didInitAttrs is not fired');
     assert.strictEqual(didReceiveAttrsCount, 0, 'precond: didReceiveAttrs is not fired');
 
     this.runTask(() => this.component = this.owner.lookup('component:foo-bar'));
 
-    assert.strictEqual(didInitAttrsCount, 1, 'precond: didInitAttrs is fired');
     assert.strictEqual(didReceiveAttrsCount, 1, 'precond: didReceiveAttrs is fired');
   }
 
-  ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
-    expectDeprecation(/didInitAttrs called/);
-
-    let fooCopyDidChangeCount = 0;
+  ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
     let barCopyDidChangeCount = 0;
 
     this.registerComponent('foo-bar', {
@@ -2759,42 +2772,27 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this.didInit = true;
         },
 
-        didInitAttrs() {
-          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          this.set('fooCopy', this.attrs.foo.value + 1);
-        },
-
         didReceiveAttrs() {
           assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
           this.set('barCopy', this.attrs.bar.value + 1);
         },
 
-        fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
         barCopyDidChange: observer('barCopy', () => { barCopyDidChangeCount++; })
       }),
 
-      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+      template: '{{bar}}-{{barCopy}}'
     });
 
-    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+    this.render(`{{foo-bar bar=bar}}`, { bar: 3 });
 
-    this.assertText('1-2-3-4');
+    this.assertText('3-4');
 
-    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected NO observer firing for: fooCopy');
-    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
-
-    this.runTask(() => set(this.context, 'foo', 5));
-
-    this.assertText('5-2-3-4');
-
-    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
     assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
 
     this.runTask(() => set(this.context, 'bar', 7));
 
-    this.assertText('5-2-7-8');
+    this.assertText('7-8');
 
-    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
     assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
   }
 

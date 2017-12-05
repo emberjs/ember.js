@@ -50,17 +50,13 @@ class AbstractAppendTest extends RenderingTest {
       let options = {
         ComponentClass: _options.ComponentClass.extend({
           init() {
-            expectDeprecation(() => { this._super(...arguments); }, /didInitAttrs called/);
+            this._super(...arguments);
             if (name in componentsByName) {
               throw new TypeError('Component named: ` ' + name + ' ` already registered');
             }
             componentsByName[name] = this;
             pushHook('init');
             this.on('init', () => pushHook('on(init)'));
-          },
-
-          didInitAttrs(options) {
-            pushHook('didInitAttrs', options);
           },
 
           didReceiveAttrs() {
@@ -142,7 +138,6 @@ class AbstractAppendTest extends RenderingTest {
 
     assert.deepEqual(hooks, [
       ['x-parent', 'init'],
-      ['x-parent', 'didInitAttrs'],
       ['x-parent', 'didReceiveAttrs'],
       ['x-parent', 'on(init)']
     ], 'creation of x-parent');
@@ -155,7 +150,6 @@ class AbstractAppendTest extends RenderingTest {
       ['x-parent', 'willInsertElement'],
 
       ['x-child', 'init'],
-      ['x-child', 'didInitAttrs'],
       ['x-child', 'didReceiveAttrs'],
       ['x-child', 'on(init)'],
       ['x-child', 'willRender'],

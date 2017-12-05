@@ -70,7 +70,6 @@ export default Mixin.create({
   concatenatedProperties: ['attributeBindings'],
 
   [POST_INIT]() {
-    this.trigger('didInitAttrs');
     this.trigger('didReceiveAttrs');
   },
 
@@ -429,15 +428,19 @@ export default Mixin.create({
       }
     }
 
-    deprecate(
-      `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
-      typeof(this.didInitAttrs) !== 'function',
-      {
-        id: 'ember-views.did-init-attrs',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-      }
-    );
+    if (environment._ENABLE_DID_INIT_ATTRS_SUPPORT) {
+      deprecate(
+        `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
+        typeof(this.didInitAttrs) !== 'function',
+        {
+          id: 'ember-views.did-init-attrs',
+          until: '3.0.0',
+          url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+        }
+      );
+    } else {
+      assert(`didInitAttrs called in ${this.toString()} is no longer supported.`, typeof(this.didInitAttrs) !== 'function');
+    }
 
     assert(
       'Using a custom `.render` function is no longer supported.',
