@@ -49,10 +49,6 @@ class SingletonRenderManager extends AbstractRenderManager {
       this._pushToDebugStack(`controller:${name} (with the render helper)`, env);
     }
 
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
     return { controller } as RenderState;
   }
 
@@ -74,10 +70,6 @@ class NonSingletonRenderManager extends AbstractRenderManager {
 
     if (DEBUG) {
       this._pushToDebugStack(`controller:${name} (with the render helper)`, environment);
-    }
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
     }
 
     return { controller, model: modelRef };

@@ -1931,10 +1931,7 @@ QUnit.test('Route should tear down multiple outlets', function() {
   equal(jQuery('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 0, 'The posts/footer template was removed');
 });
 
-
-QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function () {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
-
+QUnit.test('Route will assert if you try to explicitly render {into: ...} a {{render}} helper that resolves to an {{outlet}}', function () {
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -1945,7 +1942,7 @@ QUnit.test('Route will assert if you try to explicitly render {into: ...} a miss
     }
   });
 
-  expectAssertion(() => bootApplication(), 'You attempted to render into \'nonexistent\' but it was not found');
+  expectAssertion(() => bootApplication(), 'Cannot render into a {{render}} helper \'nonexistent\' that resolves to an {{outlet}}');
 });
 
 QUnit.test('Route supports clearing outlet explicitly', function() {
@@ -3081,204 +3078,6 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
   equal(trim(jQuery('#qunit-fixture').text()), 'hilayer');
   run(router, 'send', 'close');
   equal(trim(jQuery('#qunit-fixture').text()), 'hi');
-});
-
-QUnit.test('Can this.render({into:...}) the render helper', function() {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
-
-  expectDeprecation(() => {
-    setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
-  setTemplate('index', compile('other'));
-  setTemplate('bar', compile('bar'));
-
-  App.IndexRoute = Route.extend({
-    renderTemplate() {
-      this.render({ into: 'sidebar' });
-    },
-    actions: {
-      changeToBar() {
-        this.disconnectOutlet({
-          parentView: 'sidebar',
-          outlet: 'main'
-        });
-        this.render('bar', { into: 'sidebar' });
-      }
-    }
-  });
-
-  bootApplication();
-  equal(jQuery('#qunit-fixture .sidebar').text(), 'other');
-  run(router, 'send', 'changeToBar');
-  equal(jQuery('#qunit-fixture .sidebar').text(), 'bar');
-});
-
-QUnit.test('Can disconnect from the render helper', function() {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
-
-  expectDeprecation(() => {
-    setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
-  setTemplate('index', compile('other'));
-
-  App.IndexRoute = Route.extend({
-    renderTemplate() {
-      this.render({ into: 'sidebar' });
-    },
-    actions: {
-      disconnect: function() {
-        this.disconnectOutlet({
-          parentView: 'sidebar',
-          outlet: 'main'
-        });
-      }
-    }
-  });
-
-  bootApplication();
-  equal(jQuery('#qunit-fixture .sidebar').text(), 'other');
-  run(router, 'send', 'disconnect');
-  equal(jQuery('#qunit-fixture .sidebar').text(), '');
-});
-
-QUnit.test('Can this.render({into:...}) the render helper\'s children', function() {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
-
-  expectDeprecation(() => {
-    setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
-  setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
-  setTemplate('other', compile('other'));
-  setTemplate('bar', compile('bar'));
-
-  App.IndexRoute = Route.extend({
-    renderTemplate() {
-      this.render({ into: 'sidebar' });
-      this.render('other', { into: 'index' });
-    },
-    actions: {
-      changeToBar() {
-        this.disconnectOutlet({
-          parentView: 'index',
-          outlet: 'main'
-        });
-        this.render('bar', { into: 'index' });
-      }
-    }
-  });
-
-  bootApplication();
-  equal(jQuery('#qunit-fixture .sidebar .index').text(), 'other');
-  run(router, 'send', 'changeToBar');
-  equal(jQuery('#qunit-fixture .sidebar .index').text(), 'bar');
-});
-
-QUnit.test('Can disconnect from the render helper\'s children', function() {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
-
-  expectDeprecation(() => {
-    setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
-  setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
-  setTemplate('other', compile('other'));
-
-  App.IndexRoute = Route.extend({
-    renderTemplate() {
-      this.render({ into: 'sidebar' });
-      this.render('other', { into: 'index' });
-    },
-    actions: {
-      disconnect() {
-        this.disconnectOutlet({
-          parentView: 'index',
-          outlet: 'main'
-        });
-      }
-    }
-  });
-
-  bootApplication();
-  equal(jQuery('#qunit-fixture .sidebar .index').text(), 'other');
-  run(router, 'send', 'disconnect');
-  equal(jQuery('#qunit-fixture .sidebar .index').text(), '');
-});
-
-QUnit.test('Can this.render({into:...}) nested render helpers', function() {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
-
-  expectDeprecation(() => {
-    setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  expectDeprecation(() => {
-    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
-  setTemplate('index', compile('other'));
-  setTemplate('baz', compile('baz'));
-
-  App.IndexRoute = Route.extend({
-    renderTemplate() {
-      this.render({ into: 'cart' });
-    },
-    actions: {
-      changeToBaz() {
-        this.disconnectOutlet({
-          parentView: 'cart',
-          outlet: 'main'
-        });
-        this.render('baz', { into: 'cart' });
-      }
-    }
-  });
-
-  bootApplication();
-  equal(jQuery('#qunit-fixture .cart').text(), 'other');
-  run(router, 'send', 'changeToBaz');
-  equal(jQuery('#qunit-fixture .cart').text(), 'baz');
-});
-
-QUnit.test('Can disconnect from nested render helpers', function() {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
-
-  expectDeprecation(() => {
-    setTemplate('application', compile('{{render "sidebar"}}'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  expectDeprecation(() => {
-    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
-  }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-  setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
-  setTemplate('index', compile('other'));
-
-  App.IndexRoute = Route.extend({
-    renderTemplate() {
-      this.render({ into: 'cart' });
-    },
-    actions: {
-      disconnect() {
-        this.disconnectOutlet({
-          parentView: 'cart',
-          outlet: 'main'
-        });
-      }
-    }
-  });
-
-  bootApplication();
-  equal(jQuery('#qunit-fixture .cart').text(), 'other');
-  run(router, 'send', 'disconnect');
-  equal(jQuery('#qunit-fixture .cart').text(), '');
 });
 
 QUnit.test('Components inside an outlet have their didInsertElement hook invoked when the route is displayed', function(assert) {

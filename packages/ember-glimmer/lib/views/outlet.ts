@@ -22,47 +22,8 @@ export class RootOutletStateReference implements VersionedPathReference<Option<O
     return this.outletView.outletState;
   }
 
-  getOrphan(name: string): VersionedPathReference<Option<OutletState>> {
-    return new OrphanedOutletStateReference(this, name);
-  }
-
   update(state: OutletState) {
     this.outletView.setOutletState(state);
-  }
-}
-
-// So this is a relic of the past that SHOULD go away
-// in 3.0. Preferably it is deprecated in the release that
-// follows the Glimmer release.
-class OrphanedOutletStateReference extends RootOutletStateReference {
-  public root: any;
-  public name: string;
-
-  constructor(root: RootOutletStateReference, name: string) {
-    super(root.outletView);
-    this.root = root;
-    this.name = name;
-  }
-
-  value(): Option<OutletState> {
-    let rootState = this.root.value();
-
-    let orphans = rootState.outlets.main.outlets.__ember_orphans__;
-
-    if (!orphans) {
-      return null;
-    }
-
-    let matched = orphans.outlets[this.name];
-
-    if (!matched) {
-      return null;
-    }
-
-    let state = Object.create(null);
-    state[matched.render.outlet] = matched;
-    matched.wasUsed = true;
-    return { outlets: state, render: undefined };
   }
 }
 
