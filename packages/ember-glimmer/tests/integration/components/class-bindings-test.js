@@ -293,6 +293,20 @@ moduleFor('ClassNameBindings integration', class extends RenderingTest {
     }, /classNameBindings must not have spaces in them/i);
   }
 
+  ['@test it asserts that items must be strings']() {
+    let FooBarComponent = Component.extend({
+      foo: 'foo',
+      bar: 'bar',
+      classNameBindings: ['foo', ,'bar'] // eslint-disable-line no-sparse-arrays
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /classNameBindings must be strings/);
+  }
+
   ['@test it can set class name bindings in the constructor']() {
     let FooBarComponent = Component.extend({
       classNameBindings: ['foo'],
