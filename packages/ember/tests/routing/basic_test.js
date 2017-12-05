@@ -1477,8 +1477,24 @@ QUnit.test('Route should tear down multiple outlets', function(assert) {
   assert.equal(jQuery('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 0, 'The posts/footer template was removed');
 });
 
+QUnit.test('Route will assert if you try to explicitly render {into: ...} a {{render}} helper that resolves to an {{outlet}}', function() {
+
+  Router.map(function() {
+    this.route('home', { path: '/' });
+  });
+
+  App.HomeRoute = Route.extend({
+    renderTemplate() {
+      this.render({ into: 'nonexistent' });
+    }
+  });
+
+  expectAssertion(() => bootApplication(), 'Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.');
+});
+
 
 QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function() {
+  ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = true;
   expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   Router.map(function() {
@@ -2630,6 +2646,7 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
 });
 
 QUnit.test('Can this.render({into:...}) the render helper', function(assert) {
+  ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = true;
   expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   expectDeprecation(() => {
@@ -2662,6 +2679,7 @@ QUnit.test('Can this.render({into:...}) the render helper', function(assert) {
 });
 
 QUnit.test('Can disconnect from the render helper', function(assert) {
+  ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = true;
   expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   expectDeprecation(() => {
@@ -2692,6 +2710,7 @@ QUnit.test('Can disconnect from the render helper', function(assert) {
 });
 
 QUnit.test('Can this.render({into:...}) the render helper\'s children', function(assert) {
+  ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = true;
   expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   expectDeprecation(() => {
@@ -2726,6 +2745,7 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
 });
 
 QUnit.test('Can disconnect from the render helper\'s children', function(assert) {
+  ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = true;
   expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   expectDeprecation(() => {
@@ -2758,6 +2778,7 @@ QUnit.test('Can disconnect from the render helper\'s children', function(assert)
 });
 
 QUnit.test('Can this.render({into:...}) nested render helpers', function(assert) {
+  ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = true;
   expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   expectDeprecation(() => {
@@ -2794,6 +2815,7 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function(assert)
 });
 
 QUnit.test('Can disconnect from nested render helpers', function(assert) {
+  ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = true;
   expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   expectDeprecation(() => {
