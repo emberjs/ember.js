@@ -412,7 +412,19 @@ export function validatePositionalParameters(named: NamedArguments, positional: 
 }
 
 export function processComponentInitializationAssertions(component: Component, props: any) {
-  assert(`classNameBindings must not have spaces in them: ${component.toString()}`, (() => {
+  assert(`classNameBindings must be strings: ${component}`, (() => {
+    let { classNameBindings } = component;
+    for (let i = 0; i < classNameBindings.length; i++) {
+      let binding = classNameBindings[i];
+
+      if (typeof binding !== 'string') {
+        return false;
+      }
+    }
+    return true;
+  })());
+
+  assert(`classNameBindings must not have spaces in them: ${component}`, (() => {
     let { classNameBindings } = component;
     for (let i = 0; i < classNameBindings.length; i++) {
       let binding = classNameBindings[i];
@@ -423,14 +435,14 @@ export function processComponentInitializationAssertions(component: Component, p
     return true;
   })());
 
-  assert('You cannot use `classNameBindings` on a tag-less component: ' + component.toString(),
+  assert(`You cannot use \`classNameBindings\` on a tag-less component: ${component}`,
     component.tagName !== '' || !component.classNameBindings || component.classNameBindings.length === 0);
 
-  assert('You cannot use `elementId` on a tag-less component: ' + component.toString(),
+  assert(`You cannot use \`elementId\` on a tag-less component: ${component}`,
     component.tagName !== '' || props.id === component.elementId ||
     (!component.elementId && component.elementId !== ''));
 
-  assert('You cannot use `attributeBindings` on a tag-less component: ' + component.toString(),
+  assert(`You cannot use \`attributeBindings\` on a tag-less component: ${component}`,
     component.tagName !== '' || !component.attributeBindings || component.attributeBindings.length === 0);
 }
 
