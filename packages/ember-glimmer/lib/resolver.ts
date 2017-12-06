@@ -6,6 +6,7 @@ import {
   VMHandle
 } from '@glimmer/interfaces';
 import { getDynamicVar, Helper, ModifierManager, PartialDefinition, ScannableTemplate, Invocation } from '@glimmer/runtime';
+import { privatize as P } from 'container';
 import { LookupOptions, Owner } from 'ember-utils';
 import {
   lookupComponent,
@@ -38,6 +39,8 @@ import ActionModifierManager from './modifiers/action';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 import { CompileOptions } from '@glimmer/opcode-compiler';
 import { SerializedTemplateBlock, SerializedTemplate } from '@glimmer/wire-format';
+
+const DEFAULT_LAYOUT = P`template:components/-default`;
 
 function makeOptions(moduleName: string) {
   return moduleName !== undefined ? { source: `template:${moduleName}`} : undefined;
@@ -109,7 +112,10 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   compileTemplate(_handle: number, layoutName: string, create: (block: SerializedTemplate<any>, options: CompileOptions<Opaque>) => Invocation) {
     let template = this.owner.lookup<ScannableTemplate>(`template:${layoutName}`);
 
-    // TODO: handle template not found
+    if (!template) {
+      template = this.owner.lookup<ScannableTemplate>(DEFAULT_LAYOUT);
+    }
+
     let { parsedLayout, options } = template as any;
     return create(parsedLayout, options);
   }

@@ -26,7 +26,7 @@ import {
   WithDynamicLayout,
   WithDynamicTagName,
 } from '@glimmer/runtime';
-import { Destroyable, Opaque } from '@glimmer/util';
+import { Destroyable, EMPTY_ARRAY, Opaque } from '@glimmer/util';
 import {
   SerializedTemplate
 } from '@glimmer/wire-format';
@@ -66,7 +66,7 @@ import ComponentStateBucket, { Component } from '../utils/curly-component-state-
 import { processComponentArgs } from '../utils/process-args';
 import { PropertyReference } from '../utils/references';
 import AbstractManager from './abstract';
-import DefinitionState, { CAPABILITIES } from './definition-state';
+import DefinitionState from './definition-state';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -175,7 +175,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       const builder = new WrappedBuilder(
         assign({}, options, { asPartial: false, referrer: null }),
         template,
-        CAPABILITIES
+        CURLY_CAPABILITIES
       );
       return {
         handle: builder.compile(),
@@ -195,53 +195,72 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 
   prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
-    let componentPositionalParamsDefinition = state.ComponentClass.class.positionalParams;
+    const { positionalParams } = state.ComponentClass.class;
 
-    if (DEBUG && componentPositionalParamsDefinition) {
-      validatePositionalParameters(args.named, args.positional, componentPositionalParamsDefinition);
-    }
+    if (typeof positionalParams === 'string') {
+      if (args.named.has(positionalParams)) {
+        if (args.positional.length === 0) {
+          return null;
+        } else {
+          throw new Error('You cannot specify positional parameters and the has argument...');
+        }
+      }
 
-    let componentHasRestStylePositionalParams = typeof componentPositionalParamsDefinition === 'string';
-    let componentHasPositionalParams = componentHasRestStylePositionalParams ||
-                                       componentPositionalParamsDefinition.length > 0;
-    let needsPositionalParamMunging = componentHasPositionalParams && args.positional.length !== 0;
-    let isClosureComponent = args;
+      const named = {
+        ...args.named.capture().map
+      };
+      named[positionalParams] = args.positional.capture();
+      return { positional: EMPTY_ARRAY, named };
+    } else if (Array.isArray(positionalParams)) {
+      const named = {
+        ...args.named.capture().map
+      };
+      const count = Math.min(positionalParams.length, args.positional.length);
+      for (let i=0; i<count; i++) {
+        const name = positionalParams[i];
+        if (named[name]) {
+          throw new Error(`You cannot specify both a positional parameter at ${i} and the hash argument ${name}`);
+        }
 
-    if (!needsPositionalParamMunging && !isClosureComponent) {
+        named[name] = args.positional.at(i);
+      }
+
+      return { positional: EMPTY_ARRAY, named };
+    } else {
       return null;
     }
 
-    let capturedArgs = args.capture();
-    // grab raw positional references array
-    let positional = capturedArgs.positional.references;
+    // let capturedArgs = args.capture();
+    // // grab raw positional references array
+    // let positional = capturedArgs.positional.references;
 
-    // handle prep for closure component with positional params
-    let curriedNamed;
-    if (args) {
-      let remainingDefinitionPositionals = args.positional.slice(positional.length);
-      positional = positional.concat(remainingDefinitionPositionals);
-      curriedNamed = args.named;
-    }
+    // // handle prep for closure component with positional params
+    // let curriedNamed;
+    // if (args) {
+    //   let remainingDefinitionPositionals = args.positional.references.slice(positional.length);
+    //   positional = positional.concat(remainingDefinitionPositionals);
+    //   curriedNamed = args.named;
+    // }
 
-    // handle positionalParams
-    let positionalParamsToNamed;
-    if (componentHasRestStylePositionalParams) {
-      positionalParamsToNamed = {
-        [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional),
-      };
-      positional = [];
-    } else if (componentHasPositionalParams) {
-      positionalParamsToNamed = {};
-      let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
-      for (let i = 0; i < length; i++) {
-        let name = componentPositionalParamsDefinition[i];
-        positionalParamsToNamed[name] = positional[i];
-      }
-    }
+    // // handle positionalParams
+    // let positionalParamsToNamed;
+    // if (componentHasRestStylePositionalParams) {
+    //   positionalParamsToNamed = {
+    //     [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional),
+    //   };
+    //   positional = [];
+    // } else if (componentHasPositionalParams) {
+    //   positionalParamsToNamed = {};
+    //   let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
+    //   for (let i = 0; i < length; i++) {
+    //     let name = componentPositionalParamsDefinition[i];
+    //     positionalParamsToNamed[name] = positional[i];
+    //   }
+    // }
 
-    let named = assign({}, curriedNamed, positionalParamsToNamed, capturedArgs.named.map);
+    // let named = assign({}, curriedNamed, positionalParamsToNamed, args.named.capture().map);
 
-    return { positional, named };
+    // return { positional, named };
   }
 
   create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
@@ -504,6 +523,16 @@ export function initialRenderInstrumentDetails(component: any): any {
 export function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
+
+export const CURLY_CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: true,
+  dynamicTag: true,
+  prepareArgs: true,
+  createArgs: true,
+  attributeHook: true,
+  elementHook: true
+};
+
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
 export class CurlyComponentDefinition implements ComponentDefinition {
   public template: OwnedTemplate;
@@ -518,7 +547,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
       name,
       ComponentClass,
       handle,
-      capabilities: CAPABILITIES
+      capabilities: CURLY_CAPABILITIES
     };
   }
 }
