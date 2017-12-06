@@ -1,8 +1,9 @@
 /* eslint-env node */
 
-var testInfo = require('ember-cli-test-info');
-var stringUtils = require('ember-cli-string-utils');
-var useTestFrameworkDetector = require('../test-framework-detector');
+const testInfo = require('ember-cli-test-info');
+const stringUtils = require('ember-cli-string-utils');
+
+const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates an initializer unit test.',

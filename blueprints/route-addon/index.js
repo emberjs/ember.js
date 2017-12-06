@@ -1,8 +1,8 @@
 /* eslint-env node */
 
-var stringUtil = require('ember-cli-string-utils');
-var path       = require('path');
-var inflector  = require('inflection');
+const path = require('path');
+const stringUtil = require('ember-cli-string-utils');
+const inflector = require('inflection');
 
 module.exports = {
   description: 'Generates import wrappers for a route and its template.',
@@ -46,13 +46,13 @@ module.exports = {
   },
 
   locals: function (options) {
-    var locals = {};
-    var addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
-    var addonName = stringUtil.dasherize(addonRawName);
-    var fileName = stringUtil.dasherize(options.entity.name);
+    let locals = {};
+    let addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
+    let addonName = stringUtil.dasherize(addonRawName);
+    let fileName = stringUtil.dasherize(options.entity.name);
 
     ['route', 'template'].forEach(function (blueprint) {
-      var pathName = [addonName, inflector.pluralize(blueprint), fileName].join('/');
+      let pathName = [addonName, inflector.pluralize(blueprint), fileName].join('/');
 
       if (options.pod) {
         pathName = [addonName, fileName, blueprint].join('/');

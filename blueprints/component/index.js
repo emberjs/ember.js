@@ -1,12 +1,11 @@
 /* eslint-env node */
 
-var stringUtil         = require('ember-cli-string-utils');
-var pathUtil           = require('ember-cli-path-utils');
-var validComponentName = require('ember-cli-valid-component-name');
-var getPathOption      = require('ember-cli-get-component-path-option');
-var path               = require('path');
-
-var normalizeEntityName = require('ember-cli-normalize-entity-name');
+const path = require('path');
+const stringUtil = require('ember-cli-string-utils');
+const pathUtil = require('ember-cli-path-utils');
+const validComponentName = require('ember-cli-valid-component-name');
+const getPathOption = require('ember-cli-get-component-path-option');
+const normalizeEntityName = require('ember-cli-normalize-entity-name');
 
 module.exports = {
   description: 'Generates a component. Name must contain a hyphen.',
@@ -52,9 +51,9 @@ module.exports = {
   },
 
   locals: function(options) {
-    var templatePath   = '';
-    var importTemplate = '';
-    var contents       = '';
+    let templatePath   = '';
+    let importTemplate = '';
+    let contents       = '';
     // if we're in an addon, build import statement
     if (options.project.isEmberCLIAddon() || options.inRepoAddon && !options.inDummy) {
       if (options.pod) {

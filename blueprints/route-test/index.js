@@ -1,9 +1,9 @@
 /* eslint-env node */
 
-var testInfo                 = require('ember-cli-test-info');
-var path                     = require('path');
-var stringUtil               = require('ember-cli-string-utils');
-var useTestFrameworkDetector = require('../test-framework-detector');
+const testInfo = require('ember-cli-test-info');
+const path = require('path');
+const stringUtil = require('ember-cli-string-utils');
+const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a route unit test.',
@@ -18,7 +18,7 @@ module.exports = useTestFrameworkDetector({
   fileMapTokens: function() {
     return {
       __test__: function (options) {
-        var moduleName = options.locals.moduleName;
+        let moduleName = options.locals.moduleName;
 
         if (options.pod) {
           moduleName = 'route';
@@ -36,7 +36,7 @@ module.exports = useTestFrameworkDetector({
   },
 
   locals: function(options) {
-    var moduleName = options.entity.name;
+    let moduleName = options.entity.name;
 
     if (options.resetNamespace) {
       moduleName = moduleName.split('/').pop();

@@ -1,10 +1,10 @@
 /* eslint-env node */
 
-var stringUtil         = require('ember-cli-string-utils');
-var validComponentName = require('ember-cli-valid-component-name');
-var getPathOption      = require('ember-cli-get-component-path-option');
-var path               = require('path');
-var normalizeEntityName = require('ember-cli-normalize-entity-name');
+const path = require('path');
+const stringUtil = require('ember-cli-string-utils');
+const validComponentName = require('ember-cli-valid-component-name');
+const getPathOption = require('ember-cli-get-component-path-option');
+const normalizeEntityName = require('ember-cli-normalize-entity-name');
 
 module.exports = {
   description: 'Generates a component. Name must contain a hyphen.',
@@ -39,10 +39,10 @@ module.exports = {
   },
 
   locals: function(options) {
-    var addonRawName   = options.inRepoAddon ? options.inRepoAddon : options.project.name();
-    var addonName      = stringUtil.dasherize(addonRawName);
-    var fileName       = stringUtil.dasherize(options.entity.name);
-    var importPathName       = [addonName, 'components', fileName].join('/');
+    let addonRawName   = options.inRepoAddon ? options.inRepoAddon : options.project.name();
+    let addonName      = stringUtil.dasherize(addonRawName);
+    let fileName       = stringUtil.dasherize(options.entity.name);
+    let importPathName       = [addonName, 'components', fileName].join('/');
 
     if (options.pod) {
       importPathName = [addonName, 'components', fileName, 'component'].join('/');
