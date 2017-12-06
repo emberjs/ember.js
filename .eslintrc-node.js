@@ -14,7 +14,6 @@ module.exports = {
     qunit: true
   },
   globals: {
-    Map: false,
     Set: false
   },
   rules: {
