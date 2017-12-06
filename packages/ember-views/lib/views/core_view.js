@@ -16,9 +16,9 @@ import { cloneStates, states } from './states';
 
   @class CoreView
   @namespace Ember
-  @extends Ember.Object
-  @deprecated Use `Ember.Component` instead.
-  @uses Ember.Evented
+  @extends EmberObject
+  @deprecated Use `Component` instead.
+  @uses Evented
   @uses Ember.ActionHandler
   @private
 */
