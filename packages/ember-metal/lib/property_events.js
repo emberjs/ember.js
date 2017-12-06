@@ -266,10 +266,10 @@ function accumulateListeners(obj, eventName, otherActions, meta) {
   for (let i = actions.length - 3; i >= 0; i -= 3) {
     let target = actions[i];
     let method = actions[i + 1];
-    let flags = actions[i + 2];
     let actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
+      let flags = actions[i + 2];
       otherActions.push(target, method, flags);
       newActions.push(target, method, flags);
     }
@@ -282,9 +282,9 @@ function notifyBeforeObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
   let eventName = beforeEvent(keyName);
-  let listeners, added;
+  let added;
   if (deferred > 0) {
-    listeners = beforeObserverSet.add(obj, keyName, eventName);
+    let listeners = beforeObserverSet.add(obj, keyName, eventName);
     added = accumulateListeners(obj, eventName, listeners, meta);
   }
   sendEvent(obj, eventName, [obj, keyName], added);
@@ -294,9 +294,8 @@ function notifyObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
   let eventName = changeEvent(keyName);
-  let listeners;
   if (deferred > 0) {
-    listeners = observerSet.add(obj, keyName, eventName);
+    let listeners = observerSet.add(obj, keyName, eventName);
     accumulateListeners(obj, eventName, listeners, meta);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
