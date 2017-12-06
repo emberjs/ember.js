@@ -805,6 +805,28 @@ describe('Acceptance: ember generate component', function() {
       }));
   });
 
+  it('component-test x-foo for RFC232', function() {
+    var args = ['component-test', 'x-foo'];
+
+    return emberNew()
+      .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.1'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/integration/components/x-foo-test.js'))
+          .to.equal(fixture('component-test/rfc232.js'));
+      }));
+  });
+
+  it('component-test x-foo --unit for RFC232', function() {
+    var args = ['component-test', 'x-foo', '--unit'];
+
+    return emberNew()
+      .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.1'))
+      .then(() => emberGenerateDestroy(args, _file => {
+        expect(_file('tests/unit/components/x-foo-test.js'))
+          .to.equal(fixture('component-test/rfc232-unit.js'));
+      }));
+  });
+
   it('component-test x-foo for mocha', function() {
     var args = ['component-test', 'x-foo'];
 
