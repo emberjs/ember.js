@@ -12,7 +12,7 @@ const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
-describe('Acceptance: ember generate and destroy service', function() {
+describe('Blueprint: service', function() {
   setupTestHooks(this);
 
   it('service foo', function() {

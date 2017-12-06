@@ -8,7 +8,7 @@ const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy instance-initializer-addon', function() {
+describe('Blueprint: instance-initializer-addon', function() {
   setupTestHooks(this);
 
   it('instance-initializer-addon foo', function() {

@@ -9,7 +9,7 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy acceptance-test', function() {
+describe('Blueprint: acceptance-test', function() {
   setupTestHooks(this);
 
   it('acceptance-test foo', function() {

@@ -13,7 +13,7 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const file = require('../helpers/file');
 
-describe('Acceptance: ember generate and destroy helper', function() {
+describe('Blueprint: helper', function() {
   setupTestHooks(this);
 
   it('helper foo/bar-baz', function() {

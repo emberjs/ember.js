@@ -15,7 +15,7 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/file');
 
-describe('Acceptance: ember generate component', function() {
+describe('Blueprint: component', function() {
   setupTestHooks(this);
 
   it('component x-foo', function() {

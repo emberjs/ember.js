@@ -8,7 +8,7 @@ const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy test-helper', function() {
+describe('Blueprint: test-helper', function() {
   setupTestHooks(this);
 
   it('test-helper foo', function() {

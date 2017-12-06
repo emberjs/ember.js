@@ -10,7 +10,7 @@ const setupPodConfig = blueprintHelpers.setupPodConfig;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy util', function() {
+describe('Blueprint: util', function() {
   setupTestHooks(this);
 
   it('util foo-bar', function() {

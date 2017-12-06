@@ -10,7 +10,7 @@ const setupPodConfig = blueprintHelpers.setupPodConfig;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy mixin', function() {
+describe('Blueprint: mixin', function() {
   setupTestHooks(this);
 
   it('mixin foo', function() {

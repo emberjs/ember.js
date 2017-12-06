@@ -10,7 +10,7 @@ const expect = chai.expect;
 
 const file = require('../helpers/file');
 
-describe('Acceptance: ember generate and destroy helper-addon', function() {
+describe('Blueprint: helper-addon', function() {
   setupTestHooks(this);
 
   it('in-addon helper-addon foo/bar-baz', function() {

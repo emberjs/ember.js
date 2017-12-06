@@ -17,7 +17,7 @@ const file = chai.file;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
-describe('Acceptance: ember generate and destroy route', function() {
+describe('Blueprint: route', function() {
   setupTestHooks(this);
 
   it('route foo', function() {

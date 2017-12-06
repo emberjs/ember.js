@@ -10,7 +10,7 @@ const setupPodConfig = blueprintHelpers.setupPodConfig;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy initializer', function() {
+describe('Blueprint: initializer', function() {
   setupTestHooks(this);
 
   it('initializer foo', function() {

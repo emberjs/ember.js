@@ -9,7 +9,7 @@ const setupPodConfig = blueprintHelpers.setupPodConfig;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy template', function() {
+describe('Blueprint: template', function() {
   setupTestHooks(this);
 
   it('template foo', function() {

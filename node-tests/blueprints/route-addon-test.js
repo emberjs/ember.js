@@ -8,7 +8,7 @@ const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy route-addon', function() {
+describe('Blueprint: route-addon', function() {
   setupTestHooks(this);
 
   it('route-addon foo', function() {
