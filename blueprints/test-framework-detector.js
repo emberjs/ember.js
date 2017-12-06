@@ -19,7 +19,7 @@ module.exports = function(blueprint) {
 
     } else if ('ember-cli-mocha' in dependencies) {
       var checker = new VersionChecker({ project: this.project });
-      if (fs.existsSync(this.path + '/mocha-0.12-files') && checker.for('ember-cli-mocha', 'npm').satisfies('>=0.12.0')) {
+      if (fs.existsSync(this.path + '/mocha-0.12-files') && checker.for('ember-cli-mocha', 'npm').gte('0.12.0')) {
         type = 'mocha-0.12';
       } else {
         type = 'mocha';
