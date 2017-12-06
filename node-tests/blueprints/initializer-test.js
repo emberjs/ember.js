@@ -14,10 +14,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   setupTestHooks(this);
 
   it('initializer foo', function() {
-    let args = ['initializer', 'foo'];
-
     return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo'], _file => {
         expect(_file('app/initializers/foo.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -33,10 +31,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('initializer foo/bar', function() {
-    let args = ['initializer', 'foo/bar'];
-
     return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo/bar'], _file => {
         expect(_file('app/initializers/foo/bar.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -52,10 +48,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('in-addon initializer foo', function() {
-    let args = ['initializer', 'foo'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo'], _file => {
         expect(_file('addon/initializers/foo.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -74,10 +68,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('in-addon initializer foo/bar', function() {
-    let args = ['initializer', 'foo/bar'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo/bar'], _file => {
         expect(_file('addon/initializers/foo/bar.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -96,10 +88,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('dummy initializer foo', function() {
-    let args = ['initializer', 'foo', '--dummy'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo', '--dummy'], _file => {
         expect(_file('tests/dummy/app/initializers/foo.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -118,10 +108,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('dummy initializer foo/bar', function() {
-    let args = ['initializer', 'foo/bar', '--dummy'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo/bar', '--dummy'], _file => {
         expect(_file('tests/dummy/app/initializers/foo/bar.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -140,10 +128,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('in-repo-addon initializer foo', function() {
-    let args = ['initializer', 'foo', '--in-repo-addon=my-addon'];
-
     return emberNew({ target: 'in-repo-addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo', '--in-repo-addon=my-addon'], _file => {
         expect(_file('lib/my-addon/addon/initializers/foo.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -162,10 +148,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('in-repo-addon initializer foo/bar', function() {
-    let args = ['initializer', 'foo/bar', '--in-repo-addon=my-addon'];
-
     return emberNew({ target: 'in-repo-addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
         expect(_file('lib/my-addon/addon/initializers/foo/bar.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -186,10 +170,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   /* Pod tests */
 
   it('initializer foo --pod', function() {
-    let args = ['initializer', 'foo', '--pod'];
-
     return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo', '--pod'], _file => {
         expect(_file('app/initializers/foo.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -202,11 +184,9 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('initializer foo --pod podModulePrefix', function() {
-    let args = ['initializer', 'foo', '--pod'];
-
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo', '--pod'], _file => {
         expect(_file('app/initializers/foo.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -219,10 +199,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('initializer foo/bar --pod', function() {
-    let args = ['initializer', 'foo/bar', '--pod'];
-
     return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo/bar', '--pod'], _file => {
         expect(_file('app/initializers/foo/bar.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -236,11 +214,9 @@ describe('Acceptance: ember generate and destroy initializer', function() {
 
 
   it('initializer foo/bar --pod podModulePrefix', function() {
-    let args = ['initializer', 'foo/bar', '--pod'];
-
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer', 'foo/bar', '--pod'], _file => {
         expect(_file('app/initializers/foo/bar.js'))
           .to.contain("export function initialize(/* application */) {\n" +
                       "  // application.inject('route', 'foo', 'service:foo');\n" +
@@ -254,10 +230,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
 
 
   it('initializer-test foo', function() {
-    let args = ['initializer-test', 'foo'];
-
     return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer-test', 'foo'], _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
           .to.contain("import { initialize } from 'my-app/initializers/foo';")
           .to.contain("module('Unit | Initializer | foo'")
@@ -267,10 +241,8 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('in-addon initializer-test foo', function() {
-    let args = ['initializer-test', 'foo'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer-test', 'foo'], _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
           .to.contain("import { initialize } from 'dummy/initializers/foo';")
           .to.contain("module('Unit | Initializer | foo'")
@@ -280,14 +252,12 @@ describe('Acceptance: ember generate and destroy initializer', function() {
   });
 
   it('initializer-test foo for mocha', function() {
-    let args = ['initializer-test', 'foo'];
-
     return emberNew()
       .then(() => modifyPackages([
         { name: 'ember-cli-qunit', delete: true },
         { name: 'ember-cli-mocha', dev: true }
       ]))
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer-test', 'foo'], _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
           .to.contain("import { initialize } from 'my-app/initializers/foo';")
           .to.contain("describe('Unit | Initializer | foo', function() {")

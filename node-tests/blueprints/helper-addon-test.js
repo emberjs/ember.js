@@ -14,10 +14,8 @@ describe('Acceptance: ember generate and destroy helper-addon', function() {
   setupTestHooks(this);
 
   it('in-addon helper-addon foo/bar-baz', function() {
-    let args = ['helper-addon', 'foo/bar-baz'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['helper-addon', 'foo/bar-baz'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.equal(file('helper-addon.js'));
       }));

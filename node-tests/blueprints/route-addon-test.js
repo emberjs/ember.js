@@ -12,9 +12,7 @@ describe('Acceptance: ember generate and destroy route-addon', function() {
   setupTestHooks(this);
 
   it('route-addon foo', function() {
-    let args = ['route-addon', 'foo'];
-
-    return emberNew({ target: 'addon' }).then(() => emberGenerateDestroy(args, _file => {
+    return emberNew({ target: 'addon' }).then(() => emberGenerateDestroy(['route-addon', 'foo'], _file => {
       expect(_file('app/routes/foo.js'))
         .to.contain("export { default } from 'my-addon/routes/foo';");
 

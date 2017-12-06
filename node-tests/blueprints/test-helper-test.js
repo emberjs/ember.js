@@ -12,10 +12,8 @@ describe('Acceptance: ember generate and destroy test-helper', function() {
   setupTestHooks(this);
 
   it('test-helper foo', function() {
-    let args = ['test-helper', 'foo'];
-
     return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['test-helper', 'foo'], _file => {
         expect(_file('tests/helpers/foo.js'))
           .to.contain("import { registerAsyncHelper } from '@ember/test';")
           .to.contain('export default registerAsyncHelper(\'foo\', function(app) {\n\n}');

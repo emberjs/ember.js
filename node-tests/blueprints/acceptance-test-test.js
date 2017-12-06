@@ -13,10 +13,8 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
   setupTestHooks(this);
 
   it('acceptance-test foo', function() {
-    let args = ['acceptance-test', 'foo'];
-
     return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
         expect(_file('tests/acceptance/foo-test.js'))
           .to.contain("import { test } from 'qunit';")
           .to.contain("moduleForAcceptance('Acceptance | foo');")
@@ -28,10 +26,8 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
   });
 
   it('in-addon acceptance-test foo', function() {
-    let args = ['acceptance-test', 'foo'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
         expect(_file('tests/acceptance/foo-test.js'))
           .to.contain("import { test } from 'qunit';")
           .to.contain("moduleForAcceptance('Acceptance | foo');")
@@ -46,10 +42,8 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
   });
 
   it('in-addon acceptance-test foo/bar', function() {
-    let args = ['acceptance-test', 'foo/bar'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['acceptance-test', 'foo/bar'], _file => {
         expect(_file('tests/acceptance/foo/bar-test.js'))
           .to.contain("import { test } from 'qunit';")
           .to.contain("moduleForAcceptance('Acceptance | foo/bar');")
@@ -64,14 +58,12 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
   });
 
   it('acceptance-test foo for mocha', function() {
-    let args = ['acceptance-test', 'foo'];
-
     return emberNew()
       .then(() => modifyPackages([
         { name: 'ember-cli-qunit', delete: true },
         { name: 'ember-cli-mocha', dev: true }
       ]))
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
         expect(_file('tests/acceptance/foo-test.js'))
           .to.contain("import { describe, it, beforeEach, afterEach } from 'mocha';")
           .to.contain("import { expect } from 'chai';")

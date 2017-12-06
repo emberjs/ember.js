@@ -12,10 +12,8 @@ describe('Acceptance: ember generate and destroy initializer-addon', function() 
   setupTestHooks(this);
 
   it('initializer-addon foo', function() {
-    let args = ['initializer-addon', 'foo'];
-
     return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+      .then(() => emberGenerateDestroy(['initializer-addon', 'foo'], _file => {
         expect(_file('app/initializers/foo.js'))
           .to.contain("export { default, initialize } from 'my-addon/initializers/foo';");
       }));
