@@ -1,4 +1,3 @@
-import { GUID_KEY } from 'ember-utils';
 import { assert, isTesting } from 'ember-debug';
 import {
   onErrorTarget
@@ -18,7 +17,6 @@ function onEnd(current, next) {
 }
 
 const backburner = new Backburner(['sync', 'actions', 'destroy'], {
-  GUID_KEY,
   sync: {
     before: beginPropertyChanges,
     after: endPropertyChanges
@@ -138,7 +136,7 @@ run.join = function() {
         setup: Ember.run.bind(this, this.setupEditor)
       });
     }),
-    
+
     didInsertElement() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
