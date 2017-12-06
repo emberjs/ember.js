@@ -1,20 +1,20 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy mixin', function() {
   setupTestHooks(this);
 
   it('mixin foo', function() {
-    var args = ['mixin', 'foo'];
+    let args = ['mixin', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -28,7 +28,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin foo/bar', function() {
-    var args = ['mixin', 'foo/bar'];
+    let args = ['mixin', 'foo/bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -42,7 +42,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin foo/bar/baz', function() {
-    var args = ['mixin', 'foo/bar/baz'];
+    let args = ['mixin', 'foo/bar/baz'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -52,7 +52,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('in-addon mixin foo', function() {
-    var args = ['mixin', 'foo'];
+    let args = ['mixin', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -69,7 +69,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('in-addon mixin foo/bar', function() {
-    var args = ['mixin', 'foo/bar'];
+    let args = ['mixin', 'foo/bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -86,7 +86,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('in-addon mixin foo/bar/baz', function() {
-    var args = ['mixin', 'foo/bar/baz'];
+    let args = ['mixin', 'foo/bar/baz'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -103,7 +103,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('in-repo-addon mixin foo', function() {
-    var args = ['mixin', 'foo', '--in-repo-addon=my-addon'];
+    let args = ['mixin', 'foo', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -117,7 +117,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('in-repo-addon mixin foo/bar', function() {
-    var args = ['mixin', 'foo/bar', '--in-repo-addon=my-addon'];
+    let args = ['mixin', 'foo/bar', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -131,7 +131,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('in-repo-addon mixin foo/bar/baz', function() {
-    var args = ['mixin', 'foo/bar/baz', '--in-repo-addon=my-addon'];
+    let args = ['mixin', 'foo/bar/baz', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -143,7 +143,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   /* Pod tests */
 
   it('mixin foo --pod', function() {
-    var args = ['mixin', 'foo', '--pod'];
+    let args = ['mixin', 'foo', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -157,7 +157,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin foo --pod podModulePrefix', function() {
-    var args = ['mixin', 'foo', '--pod'];
+    let args = ['mixin', 'foo', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -172,7 +172,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin foo/bar --pod', function() {
-    var args = ['mixin', 'foo/bar', '--pod'];
+    let args = ['mixin', 'foo/bar', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -186,7 +186,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin foo/bar --pod podModulePrefix', function() {
-    var args = ['mixin', 'foo/bar', '--pod'];
+    let args = ['mixin', 'foo/bar', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -201,7 +201,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin foo/bar/baz --pod', function() {
-    var args = ['mixin', 'foo/bar/baz', '--pod'];
+    let args = ['mixin', 'foo/bar/baz', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -211,7 +211,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin-test foo', function() {
-    var args = ['mixin-test', 'foo'];
+    let args = ['mixin-test', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -221,7 +221,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('in-addon mixin-test foo', function() {
-    var args = ['mixin-test', 'foo'];
+    let args = ['mixin-test', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -231,7 +231,7 @@ describe('Acceptance: ember generate and destroy mixin', function() {
   });
 
   it('mixin-test foo for mocha', function() {
-    var args = ['mixin-test', 'foo'];
+    let args = ['mixin-test', 'foo'];
 
     return emberNew()
       .then(() => modifyPackages([

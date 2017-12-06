@@ -1,20 +1,20 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy instance-initializer', function() {
   setupTestHooks(this);
 
   it('instance-initializer foo', function() {
-    var args = ['instance-initializer', 'foo'];
+    let args = ['instance-initializer', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -33,7 +33,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('instance-initializer foo/bar', function() {
-    var args = ['instance-initializer', 'foo/bar'];
+    let args = ['instance-initializer', 'foo/bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -52,7 +52,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('in-addon instance-initializer foo', function() {
-    var args = ['instance-initializer', 'foo'];
+    let args = ['instance-initializer', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -73,7 +73,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('in-addon instance-initializer foo/bar', function() {
-    var args = ['instance-initializer', 'foo/bar'];
+    let args = ['instance-initializer', 'foo/bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -94,7 +94,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('dummy instance-initializer foo', function() {
-    var args = ['instance-initializer', 'foo', '--dummy'];
+    let args = ['instance-initializer', 'foo', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -116,7 +116,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('dummy instance-initializer foo/bar', function() {
-    var args = ['instance-initializer', 'foo/bar', '--dummy'];
+    let args = ['instance-initializer', 'foo/bar', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -138,7 +138,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('in-repo-addon instance-initializer foo', function() {
-    var args = ['instance-initializer', 'foo', '--in-repo-addon=my-addon'];
+    let args = ['instance-initializer', 'foo', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -160,7 +160,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('in-repo-addon instance-initializer foo/bar', function() {
-    var args = ['instance-initializer', 'foo/bar', '--in-repo-addon=my-addon'];
+    let args = ['instance-initializer', 'foo/bar', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -184,7 +184,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   /* Pod tests */
 
   it('instance-initializer foo --pod', function() {
-    var args = ['instance-initializer', 'foo', '--pod'];
+    let args = ['instance-initializer', 'foo', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -200,7 +200,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('instance-initializer foo --pod podModulePrefix', function() {
-    var args = ['instance-initializer', 'foo', '--pod'];
+    let args = ['instance-initializer', 'foo', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -217,7 +217,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('instance-initializer foo/bar --pod', function() {
-    var args = ['instance-initializer', 'foo/bar', '--pod'];
+    let args = ['instance-initializer', 'foo/bar', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -234,7 +234,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
 
 
   it('instance-initializer foo/bar --pod podModulePrefix', function() {
-    var args = ['instance-initializer', 'foo/bar', '--pod'];
+    let args = ['instance-initializer', 'foo/bar', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -252,7 +252,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
 
 
   it('instance-initializer-test foo', function() {
-    var args = ['instance-initializer-test', 'foo'];
+    let args = ['instance-initializer-test', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -266,7 +266,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('in-addon instance-initializer-test foo', function() {
-    var args = ['instance-initializer-test', 'foo'];
+    let args = ['instance-initializer-test', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -280,7 +280,7 @@ describe('Acceptance: ember generate and destroy instance-initializer', function
   });
 
   it('instance-initializer-test foo for mocha', function() {
-    var args = ['instance-initializer-test', 'foo'];
+    let args = ['instance-initializer-test', 'foo'];
 
     return emberNew()
       .then(() => modifyPackages([

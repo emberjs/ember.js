@@ -1,23 +1,23 @@
 'use strict';
 
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
+
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
+
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const file = require('../helpers/file');
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
-
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
-
-var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
 describe('Acceptance: ember generate and destroy helper', function() {
   setupTestHooks(this);
 
   it('helper foo/bar-baz', function() {
-    var args = ['helper', 'foo/bar-baz'];
+    let args = ['helper', 'foo/bar-baz'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -29,7 +29,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper foo/bar-baz unit', function() {
-    var args = ['helper', '--test-type=unit', 'foo/bar-baz'];
+    let args = ['helper', '--test-type=unit', 'foo/bar-baz'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -41,7 +41,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('in-addon helper foo/bar-baz', function() {
-    var args = ['helper', 'foo/bar-baz'];
+    let args = ['helper', 'foo/bar-baz'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -55,7 +55,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('in-addon helper foo/bar-baz', function() {
-    var args = ['helper', 'foo/bar-baz'];
+    let args = ['helper', 'foo/bar-baz'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -69,7 +69,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('dummy helper foo/bar-baz', function() {
-    var args = ['helper', 'foo/bar-baz', '--dummy'];
+    let args = ['helper', 'foo/bar-baz', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -83,7 +83,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('in-repo-addon helper foo/bar-baz', function() {
-    var args = ['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'];
+    let args = ['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -97,7 +97,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('in-repo-addon helper foo/bar-baz', function() {
-    var args = ['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'];
+    let args = ['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -111,7 +111,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper foo/bar-baz --pod', function() {
-    var args = ['helper', 'foo/bar-baz', '--pod'];
+    let args = ['helper', 'foo/bar-baz', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -123,7 +123,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper foo/bar-baz --pod podModulePrefix', function() {
-    var args = ['helper', 'foo/bar-baz', '--pod'];
+    let args = ['helper', 'foo/bar-baz', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -136,7 +136,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper foo/bar-baz --pod', function() {
-    var args = ['helper', 'foo/bar-baz', '--pod'];
+    let args = ['helper', 'foo/bar-baz', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -148,7 +148,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper foo/bar-baz --pod podModulePrefix', function() {
-    var args = ['helper', 'foo/bar-baz', '--pod'];
+    let args = ['helper', 'foo/bar-baz', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -161,7 +161,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper-test foo/bar-baz --integration', function() {
-    var args = ['helper-test', 'foo/bar-baz', '--integration'];
+    let args = ['helper-test', 'foo/bar-baz', '--integration'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -171,7 +171,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper-test foo/bar-baz', function() {
-    var args = ['helper-test', 'foo/bar-baz'];
+    let args = ['helper-test', 'foo/bar-baz'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -181,7 +181,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('in-addon helper-test foo/bar-baz', function() {
-    var args = ['helper-test', 'foo/bar-baz'];
+    let args = ['helper-test', 'foo/bar-baz'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -191,7 +191,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper-test foo/bar-baz --integration for mocha', function() {
-    var args = ['helper-test', 'foo/bar-baz', '--integration'];
+    let args = ['helper-test', 'foo/bar-baz', '--integration'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -207,7 +207,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper-test foo/bar-baz --integration for mocha v0.12+', function() {
-    var args = ['helper-test', 'foo/bar-baz', '--integration'];
+    let args = ['helper-test', 'foo/bar-baz', '--integration'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -225,7 +225,7 @@ describe('Acceptance: ember generate and destroy helper', function() {
   });
 
   it('helper-test foo/bar-baz for mocha', function() {
-    var args = ['helper-test', 'foo/bar-baz'];
+    let args = ['helper-test', 'foo/bar-baz'];
 
     return emberNew()
       .then(() => modifyPackages([

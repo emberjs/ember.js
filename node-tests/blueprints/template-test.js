@@ -1,19 +1,19 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy template', function() {
   setupTestHooks(this);
 
   it('template foo', function() {
-    var args = ['template', 'foo'];
+    let args = ['template', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -22,7 +22,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('template foo/bar', function() {
-    var args = ['template', 'foo/bar'];
+    let args = ['template', 'foo/bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -31,7 +31,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('template foo --pod', function() {
-    var args = ['template', 'foo'];
+    let args = ['template', 'foo'];
 
     return emberNew()
       .then(() => setupPodConfig({
@@ -43,7 +43,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('template foo/bar --pod', function() {
-    var args = ['template', 'foo/bar'];
+    let args = ['template', 'foo/bar'];
 
     return emberNew()
       .then(() => setupPodConfig({
@@ -55,7 +55,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('template foo --pod podModulePrefix', function() {
-    var args = ['template', 'foo'];
+    let args = ['template', 'foo'];
 
     return emberNew()
       .then(() => setupPodConfig({
@@ -68,7 +68,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('template foo/bar --pod podModulePrefix', function() {
-    var args = ['template', 'foo/bar'];
+    let args = ['template', 'foo/bar'];
 
     return emberNew()
       .then(() => setupPodConfig({
@@ -81,7 +81,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('in-addon template foo', function() {
-    var args = ['template', 'foo'];
+    let args = ['template', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -90,7 +90,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('in-addon template foo/bar', function() {
-    var args = ['template', 'foo/bar'];
+    let args = ['template', 'foo/bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -99,7 +99,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('dummy template foo', function() {
-    var args = ['template', 'foo', '--dummy'];
+    let args = ['template', 'foo', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -108,7 +108,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('dummy template foo/bar', function() {
-    var args = ['template', 'foo/bar', '--dummy'];
+    let args = ['template', 'foo/bar', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -117,7 +117,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('in-repo-addon template foo', function() {
-    var args = ['template', 'foo', '--in-repo-addon=my-addon'];
+    let args = ['template', 'foo', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -126,7 +126,7 @@ describe('Acceptance: ember generate and destroy template', function() {
   });
 
   it('in-repo-addon template foo/bar', function() {
-    var args = ['template', 'foo/bar', '--in-repo-addon=my-addon'];
+    let args = ['template', 'foo/bar', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {

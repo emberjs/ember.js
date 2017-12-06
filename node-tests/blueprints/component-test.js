@@ -1,25 +1,25 @@
 'use strict';
 
-var fs = require('fs');
+const fs = require('fs');
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
-var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
-var fixture = require('../helpers/file');
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const fixture = require('../helpers/file');
 
 describe('Acceptance: ember generate component', function() {
   setupTestHooks(this);
 
   it('component x-foo', function() {
-    var args = ['component', 'x-foo'];
+    let args = ['component', 'x-foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -41,7 +41,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo', function() {
-    var args = ['component', 'foo/x-foo'];
+    let args = ['component', 'foo/x-foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -64,7 +64,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo ignores --path option', function() {
-    var args = ['component', 'x-foo', '--path', 'foo'];
+    let args = ['component', 'x-foo', '--path', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -87,7 +87,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-addon component x-foo', function() {
-    var args = ['component', 'x-foo'];
+    let args = ['component', 'x-foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -115,7 +115,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-addon component nested/x-foo', function() {
-    var args = ['component', 'nested/x-foo'];
+    let args = ['component', 'nested/x-foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -143,7 +143,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('dummy component x-foo', function() {
-    var args = ['component', 'x-foo', '--dummy'];
+    let args = ['component', 'x-foo', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -164,7 +164,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('dummy component nested/x-foo', function() {
-    var args = ['component', 'nested/x-foo', '--dummy'];
+    let args = ['component', 'nested/x-foo', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -185,7 +185,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-repo-addon component x-foo', function() {
-    var args = ['component', 'x-foo', '--in-repo-addon=my-addon'];
+    let args = ['component', 'x-foo', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -213,7 +213,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-repo-addon component-test x-foo', function() {
-    var args = ['component-test', 'x-foo', '--in-repo-addon=my-addon'];
+    let args = ['component-test', 'x-foo', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -228,7 +228,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-repo-addon component-test x-foo --unit', function() {
-    var args = ['component-test', 'x-foo', '--in-repo-addon=my-addon', '--unit'];
+    let args = ['component-test', 'x-foo', '--in-repo-addon=my-addon', '--unit'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -240,7 +240,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-repo-addon component nested/x-foo', function() {
-    var args = ['component', 'nested/x-foo', '--in-repo-addon=my-addon'];
+    let args = ['component', 'nested/x-foo', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -267,7 +267,7 @@ describe('Acceptance: ember generate component', function() {
 
   // Pod tests
   it('component x-foo --pod', function() {
-    var args = ['component', 'x-foo', '--pod'];
+    let args = ['component', 'x-foo', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -288,7 +288,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo --pod podModulePrefix', function() {
-    var args = ['component', 'x-foo', '--pod'];
+    let args = ['component', 'x-foo', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -312,7 +312,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod', function() {
-    var args = ['component', 'foo/x-foo', '--pod'];
+    let args = ['component', 'foo/x-foo', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -335,7 +335,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod podModulePrefix', function() {
-    var args = ['component', 'foo/x-foo', '--pod'];
+    let args = ['component', 'foo/x-foo', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -359,7 +359,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo --pod --path', function() {
-    var args = ['component', 'x-foo', '--pod', '--path', 'bar'];
+    let args = ['component', 'x-foo', '--pod', '--path', 'bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -382,7 +382,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo --pod --path podModulePrefix', function() {
-    var args = ['component', 'x-foo', '--pod', '--path', 'bar'];
+    let args = ['component', 'x-foo', '--pod', '--path', 'bar'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -406,7 +406,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod --path', function() {
-    var args = ['component', 'foo/x-foo', '--pod', '--path', 'bar'];
+    let args = ['component', 'foo/x-foo', '--pod', '--path', 'bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -429,7 +429,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod --path podModulePrefix', function() {
-    var args = ['component', 'foo/x-foo', '--pod', '--path', 'bar'];
+    let args = ['component', 'foo/x-foo', '--pod', '--path', 'bar'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -452,7 +452,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo --pod --path nested', function() {
-    var args = ['component', 'x-foo', '--pod', '--path', 'bar/baz'];
+    let args = ['component', 'x-foo', '--pod', '--path', 'bar/baz'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -475,7 +475,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo --pod --path nested podModulePrefix', function() {
-    var args = ['component', 'x-foo', '--pod', '--path', 'bar/baz'];
+    let args = ['component', 'x-foo', '--pod', '--path', 'bar/baz'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -499,7 +499,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod --path nested', function() {
-    var args = ['component', 'foo/x-foo', '--pod', '--path', 'bar/baz'];
+    let args = ['component', 'foo/x-foo', '--pod', '--path', 'bar/baz'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -522,7 +522,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod --path nested podModulePrefix', function() {
-    var args = ['component', 'foo/x-foo', '--pod', '--path', 'bar/baz'];
+    let args = ['component', 'foo/x-foo', '--pod', '--path', 'bar/baz'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -546,7 +546,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo --pod -no-path', function() {
-    var args = ['component', 'x-foo', '--pod', '-no-path'];
+    let args = ['component', 'x-foo', '--pod', '-no-path'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -569,7 +569,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component x-foo --pod -no-path podModulePrefix', function() {
-    var args = ['component', 'x-foo', '--pod', '-no-path'];
+    let args = ['component', 'x-foo', '--pod', '-no-path'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -593,7 +593,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod -no-path', function() {
-    var args = ['component', 'foo/x-foo', '--pod', '-no-path'];
+    let args = ['component', 'foo/x-foo', '--pod', '-no-path'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -616,7 +616,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component foo/x-foo --pod -no-path podModulePrefix', function() {
-    var args = ['component', 'foo/x-foo', '--pod', '-no-path'];
+    let args = ['component', 'foo/x-foo', '--pod', '-no-path'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -640,7 +640,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-addon component x-foo --pod', function() {
-    var args = ['component', 'x-foo', '--pod'];
+    let args = ['component', 'x-foo', '--pod'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -665,7 +665,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-repo-addon component x-foo --pod', function() {
-    var args = ['component', 'x-foo', '--in-repo-addon=my-addon', '--pod'];
+    let args = ['component', 'x-foo', '--in-repo-addon=my-addon', '--pod'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -690,7 +690,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-repo-addon component nested/x-foo', function() {
-    var args = ['component', 'nested/x-foo', '--in-repo-addon=my-addon', '--pod'];
+    let args = ['component', 'nested/x-foo', '--in-repo-addon=my-addon', '--pod'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -715,7 +715,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo', function() {
-    var args = ['component-test', 'x-foo'];
+    let args = ['component-test', 'x-foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -726,7 +726,7 @@ describe('Acceptance: ember generate component', function() {
 
   describe('usePods: true', function() {
     it('component-test x-foo', function() {
-      var args = ['component-test', 'x-foo'];
+      let args = ['component-test', 'x-foo'];
 
       return emberNew()
         .then(() => {
@@ -748,7 +748,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo --unit', function() {
-    var args = ['component-test', 'x-foo', '--unit'];
+    let args = ['component-test', 'x-foo', '--unit'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -758,7 +758,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-addon component-test x-foo', function() {
-    var args = ['component-test', 'x-foo'];
+    let args = ['component-test', 'x-foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -776,7 +776,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('in-addon component-test x-foo --unit', function() {
-    var args = ['component-test', 'x-foo', '--unit'];
+    let args = ['component-test', 'x-foo', '--unit'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -791,7 +791,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('dummy component-test x-foo', function() {
-    var args = ['component-test', 'x-foo', '--dummy'];
+    let args = ['component-test', 'x-foo', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -806,7 +806,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo for RFC232', function() {
-    var args = ['component-test', 'x-foo'];
+    let args = ['component-test', 'x-foo'];
 
     return emberNew()
       .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.1'))
@@ -817,7 +817,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo --unit for RFC232', function() {
-    var args = ['component-test', 'x-foo', '--unit'];
+    let args = ['component-test', 'x-foo', '--unit'];
 
     return emberNew()
       .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.1'))
@@ -828,7 +828,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo for mocha', function() {
-    var args = ['component-test', 'x-foo'];
+    let args = ['component-test', 'x-foo'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -843,7 +843,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo --unit for mocha', function() {
-    var args = ['component-test', 'x-foo', '--unit'];
+    let args = ['component-test', 'x-foo', '--unit'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -858,7 +858,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo for mocha v0.12+', function() {
-    var args = ['component-test', 'x-foo'];
+    let args = ['component-test', 'x-foo'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -873,7 +873,7 @@ describe('Acceptance: ember generate component', function() {
   });
 
   it('component-test x-foo --unit for mocha v0.12+', function() {
-    var args = ['component-test', 'x-foo', '--unit'];
+    let args = ['component-test', 'x-foo', '--unit'];
 
     return emberNew()
       .then(() => modifyPackages([

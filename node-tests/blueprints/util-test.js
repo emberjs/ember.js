@@ -1,20 +1,20 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy util', function() {
   setupTestHooks(this);
 
   it('util foo-bar', function() {
-    var args = ['util', 'foo-bar'];
+    let args = ['util', 'foo-bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -29,7 +29,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('util foo-bar/baz', function() {
-    var args = ['util', 'foo/bar-baz'];
+    let args = ['util', 'foo/bar-baz'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -44,7 +44,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('in-addon util foo-bar', function() {
-    var args = ['util', 'foo-bar'];
+    let args = ['util', 'foo-bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -62,7 +62,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('in-addon util foo-bar/baz', function() {
-    var args = ['util', 'foo/bar-baz'];
+    let args = ['util', 'foo/bar-baz'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -80,7 +80,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('util foo-bar --pod', function() {
-    var args = ['util', 'foo-bar', '--pod'];
+    let args = ['util', 'foo-bar', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -95,7 +95,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('util foo-bar --pod podModulePrefix', function() {
-    var args = ['util', 'foo-bar', '--pod'];
+    let args = ['util', 'foo-bar', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -111,7 +111,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('util foo-bar/baz --pod', function() {
-    var args = ['util', 'foo/bar-baz', '--pod'];
+    let args = ['util', 'foo/bar-baz', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -126,7 +126,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('util-test foo-bar', function() {
-    var args = ['util-test', 'foo-bar'];
+    let args = ['util-test', 'foo-bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -136,7 +136,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('in-addon util-test foo-bar', function() {
-    var args = ['util-test', 'foo-bar'];
+    let args = ['util-test', 'foo-bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -146,7 +146,7 @@ describe('Acceptance: ember generate and destroy util', function() {
   });
 
   it('util-test foo-bar for mocha', function() {
-    var args = ['util-test', 'foo-bar'];
+    let args = ['util-test', 'foo-bar'];
 
     return emberNew()
       .then(() => modifyPackages([

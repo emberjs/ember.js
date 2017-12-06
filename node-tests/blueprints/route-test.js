@@ -1,27 +1,27 @@
 'use strict';
 
-var path = require('path');
+const path = require('path');
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerate = blueprintHelpers.emberGenerate;
-var emberDestroy = blueprintHelpers.emberDestroy;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerate = blueprintHelpers.emberGenerate;
+const emberDestroy = blueprintHelpers.emberDestroy;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
-var file = chai.file;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
+const file = chai.file;
 
-var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
 describe('Acceptance: ember generate and destroy route', function() {
   setupTestHooks(this);
 
   it('route foo', function() {
-    var args = ['route', 'foo'];
+    let args = ['route', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -44,7 +44,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route foo with --skip-router', function() {
-    var args = ['route', 'foo', '--skip-router'];
+    let args = ['route', 'foo', '--skip-router'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -57,7 +57,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route foo with --path', function() {
-    var args = ['route', 'foo', '--path=:foo_id/show'];
+    let args = ['route', 'foo', '--path=:foo_id/show'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -83,7 +83,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route --reset-namespace', function() {
-    var args = ['route', 'parent/child', '--reset-namespace'];
+    let args = ['route', 'parent/child', '--reset-namespace'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -107,7 +107,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route --reset-namespace --pod', function() {
-    var args = ['route', 'parent/child', '--reset-namespace', '--pod'];
+    let args = ['route', 'parent/child', '--reset-namespace', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -131,7 +131,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route index', function() {
-    var args = ['route', 'index'];
+    let args = ['route', 'index'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -144,7 +144,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route application', function() {
-    var args = ['route', 'application'];
+    let args = ['route', 'application'];
 
     return emberNew()
       .then(() => emberGenerate(args))
@@ -152,7 +152,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route basic isn\'t added to router', function() {
-    var args = ['route', 'basic'];
+    let args = ['route', 'basic'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -163,7 +163,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('in-addon route foo', function() {
-    var args = ['route', 'foo'];
+    let args = ['route', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -192,7 +192,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('in-addon route foo/bar', function() {
-    var args = ['route', 'foo/bar'];
+    let args = ['route', 'foo/bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -221,7 +221,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('dummy route foo', function() {
-    var args = ['route', 'foo', '--dummy'];
+    let args = ['route', 'foo', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -244,7 +244,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('dummy route foo/bar', function() {
-    var args = ['route', 'foo/bar', '--dummy'];
+    let args = ['route', 'foo/bar', '--dummy'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -268,7 +268,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('in-repo-addon route foo', function() {
-    var args = ['route', 'foo', '--in-repo-addon=my-addon'];
+    let args = ['route', 'foo', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -292,7 +292,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('in-repo-addon route foo/bar', function() {
-    var args = ['route', 'foo/bar', '--in-repo-addon=my-addon'];
+    let args = ['route', 'foo/bar', '--in-repo-addon=my-addon'];
 
     return emberNew({ target: 'in-repo-addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -316,7 +316,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route foo --pod', function() {
-    var args = ['route', 'foo', '--pod'];
+    let args = ['route', 'foo', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -339,7 +339,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route foo --pod with --path', function() {
-    var args = ['route', 'foo', '--pod', '--path=:foo_id/show'];
+    let args = ['route', 'foo', '--pod', '--path=:foo_id/show'];
 
     return emberNew()
       .then(() => emberGenerate(args))
@@ -355,7 +355,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route foo --pod podModulePrefix', function() {
-    var args = ['route', 'foo', '--pod'];
+    let args = ['route', 'foo', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -379,7 +379,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route index --pod', function() {
-    var args = ['route', 'index', '--pod'];
+    let args = ['route', 'index', '--pod'];
 
     return emberNew()
       .then(() => emberGenerate(args))
@@ -388,7 +388,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route application --pod', function() {
-    var args = ['route', 'application', '--pod'];
+    let args = ['route', 'application', '--pod'];
 
     return emberNew()
       .then(() => emberGenerate(args))
@@ -398,7 +398,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route basic --pod isn\'t added to router', function() {
-    var args = ['route', 'basic', '--pod'];
+    let args = ['route', 'basic', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -409,7 +409,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('in-addon route foo --pod', function() {
-    var args = ['route', 'foo', '--pod'];
+    let args = ['route', 'foo', '--pod'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -433,7 +433,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route-test foo', function() {
-    var args = ['route-test', 'foo'];
+    let args = ['route-test', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -444,7 +444,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('in-addon route-test foo', function() {
-    var args = ['route-test', 'foo'];
+    let args = ['route-test', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, (_file) => {
@@ -455,7 +455,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route-test foo for mocha', function() {
-    var args = ['route-test', 'foo'];
+    let args = ['route-test', 'foo'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -471,7 +471,7 @@ describe('Acceptance: ember generate and destroy route', function() {
   });
 
   it('route-test foo for mocha v0.12+', function() {
-    var args = ['route-test', 'foo'];
+    let args = ['route-test', 'foo'];
 
     return emberNew()
       .then(() => modifyPackages([

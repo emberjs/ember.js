@@ -1,19 +1,19 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
 describe('Acceptance: ember generate and destroy acceptance-test', function() {
   setupTestHooks(this);
 
   it('acceptance-test foo', function() {
-    var args = ['acceptance-test', 'foo'];
+    let args = ['acceptance-test', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -28,7 +28,7 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
   });
 
   it('in-addon acceptance-test foo', function() {
-    var args = ['acceptance-test', 'foo'];
+    let args = ['acceptance-test', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -46,7 +46,7 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
   });
 
   it('in-addon acceptance-test foo/bar', function() {
-    var args = ['acceptance-test', 'foo/bar'];
+    let args = ['acceptance-test', 'foo/bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -64,7 +64,7 @@ describe('Acceptance: ember generate and destroy acceptance-test', function() {
   });
 
   it('acceptance-test foo for mocha', function() {
-    var args = ['acceptance-test', 'foo'];
+    let args = ['acceptance-test', 'foo'];
 
     return emberNew()
       .then(() => modifyPackages([

@@ -1,22 +1,22 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
-var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
 describe('Acceptance: ember generate and destroy service', function() {
   setupTestHooks(this);
 
   it('service foo', function() {
-    var args = ['service', 'foo'];
+    let args = ['service', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -31,7 +31,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service foo/bar', function() {
-    var args = ['service', 'foo/bar'];
+    let args = ['service', 'foo/bar'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -45,7 +45,7 @@ describe('Acceptance: ember generate and destroy service', function() {
       }));
   });
   it('in-addon service foo', function() {
-    var args = ['service', 'foo'];
+    let args = ['service', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -63,7 +63,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('in-addon service foo/bar', function() {
-    var args = ['service', 'foo/bar'];
+    let args = ['service', 'foo/bar'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -81,7 +81,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service foo --pod', function() {
-    var args = ['service', 'foo', '--pod'];
+    let args = ['service', 'foo', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -96,7 +96,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service foo/bar --pod', function() {
-    var args = ['service', 'foo/bar', '--pod'];
+    let args = ['service', 'foo/bar', '--pod'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -111,7 +111,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service foo --pod podModulePrefix', function() {
-    var args = ['service', 'foo', '--pod'];
+    let args = ['service', 'foo', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -127,7 +127,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service foo/bar --pod podModulePrefix', function() {
-    var args = ['service', 'foo/bar', '--pod'];
+    let args = ['service', 'foo/bar', '--pod'];
 
     return emberNew()
       .then(() => setupPodConfig({ podModulePrefix: true }))
@@ -143,7 +143,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service-test foo', function() {
-    var args = ['service-test', 'foo'];
+    let args = ['service-test', 'foo'];
 
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
@@ -154,7 +154,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('in-addon service-test foo', function() {
-    var args = ['service-test', 'foo'];
+    let args = ['service-test', 'foo'];
 
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
@@ -168,7 +168,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service-test foo for mocha', function() {
-    var args = ['service-test', 'foo'];
+    let args = ['service-test', 'foo'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -184,7 +184,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service-test foo for mocha --pod', function() {
-    var args = ['service-test', 'foo', '--pod'];
+    let args = ['service-test', 'foo', '--pod'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -200,7 +200,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service-test foo for mocha v0.12+', function() {
-    var args = ['service-test', 'foo'];
+    let args = ['service-test', 'foo'];
 
     return emberNew()
       .then(() => modifyPackages([
@@ -218,7 +218,7 @@ describe('Acceptance: ember generate and destroy service', function() {
   });
 
   it('service-test foo for mocha v0.12+ --pod', function() {
-    var args = ['service-test', 'foo', '--pod'];
+    let args = ['service-test', 'foo', '--pod'];
 
     return emberNew()
       .then(() => modifyPackages([
