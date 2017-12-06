@@ -11,14 +11,22 @@ module.exports = function(blueprint) {
     var type;
 
     var dependencies = this.project.dependencies();
-    if ('ember-qunit' in dependencies || 'ember-cli-qunit' in dependencies) {
-      type = 'qunit';
+    if ('ember-qunit' in dependencies) {
+      type = 'qunit-rfc-232';
+
+    } else if ('ember-cli-qunit' in dependencies) {
+      let checker = new VersionChecker(this.project);
+      if (fs.existsSync(this.path + '/qunit-rfc-232-files') && checker.for('ember-cli-qunit', 'npm').gte('4.1.1')) {
+        type = 'qunit-rfc-232';
+      } else {
+        type = 'qunit';
+      }
 
     } else if ('ember-mocha' in dependencies) {
       type = 'mocha-0.12';
 
     } else if ('ember-cli-mocha' in dependencies) {
-      var checker = new VersionChecker({ root: this.project.root });
+      let checker = new VersionChecker(this.project);
       if (fs.existsSync(this.path + '/mocha-0.12-files') && checker.for('ember-cli-mocha', 'npm').satisfies('>=0.12.0')) {
         type = 'mocha-0.12';
       } else {
