@@ -1,72 +1,42 @@
 import { sendEvent } from './events';
 
-/*
-  this.observerMap = {
-    [senderGuid]: { // variable name: `keyMap`
-      [keyName]: listIndex
-    }
-  },
-  this.observers = [
-    {
-      sender: obj,
-      keyName: keyName,
-      eventName: eventName,
-      listeners: [
-        [target, method, flags]
-      ]
-    },
-    ...
-  ]
-*/
 export default class ObserverSet {
-  constructor() {
+  constructor(postfix) {
+    this.postfix = postfix || '';
     this.observerMap = new Map();
-    this.observers = [];
   }
 
-  add(sender, keyName, eventName) {
-    let observerMap = this.observerMap;
-    let observers = this.observers;
-    let keyMap = observerMap.get(sender);
+  add(sender, keyName) {
+    let keyMap = this.observerMap.get(sender);
 
-    let index;
+    let listeners;
     if (keyMap === undefined) {
-      keyMap = {};
-      observerMap.set(sender, keyMap);
+      keyMap = new Map();
+      this.observerMap.set(sender, keyMap);
     } else {
-      index = keyMap[keyName];
+      listeners = keyMap.get(keyName);
     }
 
-    if (index === undefined) {
-      index = observers.push(
-        sender,
-        keyName,
-        eventName,
-        [] // listeners
-      ) - 4;
-
-      keyMap[keyName] = index;
+    if (listeners === undefined) {
+      listeners = [];
+      keyMap.set(keyName, listeners);
     }
 
-    return observers[index + 3];
+    return listeners;
   }
 
   flush() {
-    let observers = this.observers;
-    let sender, keyName, eventName, listeners;
+    let postfix = this.postfix;
+    this.observerMap.forEach(function(keyMap, sender) {
+      keyMap.forEach(function(listeners, keyName) {
+        if (sender.isDestroying || sender.isDestroyed) { return; }
+        sendEvent(sender, keyName + postfix, [sender, keyName], listeners);
+      });
+    });
     this.clear();
-    for (let i = 0; i < observers.length; i += 4) {
-      sender = observers[i];
-      if (sender.isDestroying || sender.isDestroyed) { continue; }
-      keyName = observers[i + 1];
-      eventName = observers[i + 2];
-      listeners = observers[i + 3];
-      sendEvent(sender, eventName, [sender, keyName], listeners);
-    }
   }
 
   clear() {
     this.observerMap.clear();
-    this.observers = [];
   }
 }

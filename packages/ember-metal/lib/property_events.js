@@ -23,8 +23,8 @@ import { changeEvent, beforeEvent } from './observer';
 
 export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
-const beforeObserverSet = new ObserverSet();
-const observerSet = new ObserverSet();
+const beforeObserverSet = new ObserverSet(':before');
+const observerSet = new ObserverSet(':change');
 let deferred = 0;
 
 // ..........................................................
@@ -284,7 +284,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
   let eventName = beforeEvent(keyName);
   let added;
   if (deferred > 0) {
-    let listeners = beforeObserverSet.add(obj, keyName, eventName);
+    let listeners = beforeObserverSet.add(obj, keyName);
     added = accumulateListeners(obj, eventName, listeners, meta);
   }
   sendEvent(obj, eventName, [obj, keyName], added);
@@ -295,7 +295,7 @@ function notifyObservers(obj, keyName, meta) {
 
   let eventName = changeEvent(keyName);
   if (deferred > 0) {
-    let listeners = observerSet.add(obj, keyName, eventName);
+    let listeners = observerSet.add(obj, keyName);
     accumulateListeners(obj, eventName, listeners, meta);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
