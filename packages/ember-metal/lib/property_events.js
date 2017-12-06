@@ -23,8 +23,8 @@ import { changeEvent, beforeEvent } from './observer';
 
 export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
-const beforeObserverSet = new ObserverSet(':before');
-const observerSet = new ObserverSet(':change');
+const beforeObserverSet = new ObserverSet();
+const observerSet = new ObserverSet();
 let deferred = 0;
 
 // ..........................................................
@@ -216,7 +216,12 @@ function endPropertyChanges() {
   deferred--;
   if (deferred <= 0) {
     beforeObserverSet.clear();
-    observerSet.flush();
+    observerSet.forEach(function(sender, keyName, listeners) {
+      if (sender.isDestroying || sender.isDestroyed) { return; }
+      let eventName = changeEvent(keyName);
+      sendEvent(sender, eventName, [sender, keyName], listeners);
+    });
+    observerSet.clear();
   }
 }
 

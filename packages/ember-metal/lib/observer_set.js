@@ -1,8 +1,13 @@
-import { sendEvent } from './events';
+/*
+  observerMap = {
+    [sender] : {
+      [keyMap] : [ target, method, flags ] // listeners
+    }
+  }
+*/
 
 export default class ObserverSet {
-  constructor(postfix) {
-    this.postfix = postfix || '';
+  constructor() {
     this.observerMap = new Map();
   }
 
@@ -25,15 +30,12 @@ export default class ObserverSet {
     return listeners;
   }
 
-  flush() {
-    let postfix = this.postfix;
+  forEach(cb) {
     this.observerMap.forEach(function(keyMap, sender) {
       keyMap.forEach(function(listeners, keyName) {
-        if (sender.isDestroying || sender.isDestroyed) { return; }
-        sendEvent(sender, keyName + postfix, [sender, keyName], listeners);
+        cb(sender, keyName, listeners);
       });
     });
-    this.clear();
   }
 
   clear() {
