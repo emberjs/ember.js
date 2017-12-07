@@ -10,6 +10,7 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const fixture = require('../helpers/fixture');
 
 describe('Blueprint: route-test', function() {
   setupTestHooks(this);
@@ -22,8 +23,7 @@ describe('Blueprint: route-test', function() {
     it('route-test foo', function() {
       return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
         expect(_file('tests/unit/routes/foo-test.js'))
-          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
-          .to.contain('moduleFor(\'route:foo\'');
+          .to.equal(fixture('route-test/default.js'));
       });
     });
 
@@ -39,8 +39,7 @@ describe('Blueprint: route-test', function() {
       it('route-test foo', function() {
         return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
           expect(_file('tests/unit/routes/foo-test.js'))
-            .to.contain('import { describeModule, it } from \'ember-mocha\';')
-            .to.contain('describeModule(\'route:foo\', \'Unit | Route | foo\'');
+            .to.equal(fixture('route-test/mocha.js'));
         });
       });
     });
@@ -57,10 +56,7 @@ describe('Blueprint: route-test', function() {
       it('route-test foo', function() {
         return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
           expect(_file('tests/unit/routes/foo-test.js'))
-            .to.contain('import { describe, it } from \'mocha\';')
-            .to.contain('import { setupTest } from \'ember-mocha\';')
-            .to.contain('describe(\'Unit | Route | foo\', function() {')
-            .to.contain('setupTest(\'route:foo\',');
+            .to.equal(fixture('route-test/mocha-0.12.js'));
         });
       });
     });
@@ -74,8 +70,7 @@ describe('Blueprint: route-test', function() {
     it('route-test foo', function() {
       return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
         expect(_file('tests/unit/routes/foo-test.js'))
-          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
-          .to.contain('moduleFor(\'route:foo\'');
+          .to.equal(fixture('route-test/default.js'));
       });
     });
   });
