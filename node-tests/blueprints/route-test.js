@@ -1,66 +1,65 @@
 'use strict';
 
-var path = require('path');
+const path = require('path');
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerate = blueprintHelpers.emberGenerate;
-var emberDestroy = blueprintHelpers.emberDestroy;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var modifyPackages = blueprintHelpers.modifyPackages;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerate = blueprintHelpers.emberGenerate;
+const emberDestroy = blueprintHelpers.emberDestroy;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const modifyPackages = blueprintHelpers.modifyPackages;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
-var file = chai.file;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
+const file = chai.file;
 
-var generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
-describe('Acceptance: ember generate and destroy route', function() {
+describe('Blueprint: route', function() {
   setupTestHooks(this);
 
-  it('route foo', function() {
-    var args = ['route', 'foo'];
+  describe('in app', function() {
+    beforeEach(function() {
+      return emberNew();
+    });
 
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('app/routes/foo.js'))
-          .to.contain('import Route from \'@ember/routing/route\';')
-          .to.contain('export default Route.extend({\n});');
+    it('route foo', function() {
+      return emberGenerateDestroy(['route', 'foo'], (_file) => {
+          expect(_file('app/routes/foo.js'))
+            .to.contain('import Route from \'@ember/routing/route\';')
+            .to.contain('export default Route.extend({\n});');
 
-        expect(_file('app/templates/foo.hbs'))
-          .to.equal('{{outlet}}');
+          expect(_file('app/templates/foo.hbs'))
+            .to.equal('{{outlet}}');
 
-        expect(_file('tests/unit/routes/foo-test.js'))
-          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
-          .to.contain('moduleFor(\'route:foo\'');
+          expect(_file('tests/unit/routes/foo-test.js'))
+            .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+            .to.contain('moduleFor(\'route:foo\'');
 
-        expect(file('app/router.js'))
-          .to.contain('this.route(\'foo\')');
-      }))
-      .then(() => expect(file('app/router.js'))
-        .to.not.contain('this.route(\'foo\')'));
-  });
+          expect(file('app/router.js'))
+            .to.contain('this.route(\'foo\')');
 
-  it('route foo with --skip-router', function() {
-    var args = ['route', 'foo', '--skip-router'];
+        }).then(() => {
+          expect(file('app/router.js'))
+          .to.not.contain('this.route(\'foo\')');
+        });
+    });
 
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo --skip-router', function() {
+      return emberGenerateDestroy(['route', 'foo', '--skip-router'], (_file) => {
         expect(_file('app/routes/foo.js')).to.exist;
         expect(_file('app/templates/foo.hbs')).to.exist;
         expect(_file('tests/unit/routes/foo-test.js')).to.exist;
         expect(file('app/router.js')).to.not.contain('this.route(\'foo\')');
-      }))
-      .then(() => expect(file('app/router.js')).to.not.contain('this.route(\'foo\')'));
-  });
+      }).then(() => {
+        expect(file('app/router.js')).to.not.contain('this.route(\'foo\')');
+      });
+    });
 
-  it('route foo with --path', function() {
-    var args = ['route', 'foo', '--path=:foo_id/show'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo --path=:foo_id/show', function() {
+      return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], (_file) => {
         expect(_file('app/routes/foo.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -76,17 +75,16 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('this.route(\'foo\', {')
           .to.contain('path: \':foo_id/show\'')
           .to.contain('});');
-      }))
-      .then(() => expect(file('app/router.js'))
-        .to.not.contain('this.route(\'foo\'')
-        .to.not.contain('path: \':foo_id/show\''));
-  });
 
-  it('route --reset-namespace', function() {
-    var args = ['route', 'parent/child', '--reset-namespace'];
+      }).then(() => {
+        expect(file('app/router.js'))
+          .to.not.contain('this.route(\'foo\'')
+          .to.not.contain('path: \':foo_id/show\'');
+      });
+    });
 
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route parent/child --reset-namespace', function() {
+      return emberGenerateDestroy(['route', 'parent/child', '--reset-namespace'], (_file) => {
         expect(_file('app/routes/child.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -103,14 +101,11 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('this.route(\'child\', {')
           .to.contain('resetNamespace: true')
           .to.contain('});');
-      }));
-  });
+      });
+    });
 
-  it('route --reset-namespace --pod', function() {
-    var args = ['route', 'parent/child', '--reset-namespace', '--pod'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route parent/child --reset-namespace --pod', function() {
+      return emberGenerateDestroy(['route', 'parent/child', '--reset-namespace', '--pod'], (_file) => {
         expect(_file('app/child/route.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -127,46 +122,174 @@ describe('Acceptance: ember generate and destroy route', function() {
           .to.contain('this.route(\'child\', {')
           .to.contain('resetNamespace: true')
           .to.contain('});');
-      }));
-  });
+      });
+    });
 
-  it('route index', function() {
-    var args = ['route', 'index'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route index', function() {
+      return emberGenerateDestroy(['route', 'index'], (_file) => {
         expect(_file('app/routes/index.js')).to.exist;
         expect(_file('app/templates/index.hbs')).to.exist;
         expect(_file('tests/unit/routes/index-test.js')).to.exist;
         expect(file('app/router.js')).to.not.contain('this.route(\'index\')');
-      }))
-      .then(() => expect(file('app/router.js')).to.not.contain('this.route(\'index\')'));
-  });
+      }).then(() => {
+        expect(file('app/router.js')).to.not.contain('this.route(\'index\')');
+      });
+    });
 
-  it('route application', function() {
-    var args = ['route', 'application'];
+    it('route application', function() {
+      return emberGenerate(['route', 'application']).then(() => {
+        expect(file('app/router.js')).to.not.contain('this.route(\'application\')');
+      });
+    });
 
-    return emberNew()
-      .then(() => emberGenerate(args))
-      .then(() => expect(file('app/router.js')).to.not.contain('this.route(\'application\')'));
-  });
-
-  it('route basic isn\'t added to router', function() {
-    var args = ['route', 'basic'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route basic', function() {
+      return emberGenerateDestroy(['route', 'basic'], (_file) => {
         expect(_file('app/routes/basic.js')).to.exist;
         expect(file('app/router.js')).to.not.contain('this.route(\'basic\')');
-      }))
-      .then(() => expect(file('app/router.js')).to.not.contain('this.route(\'basic\')'));
+      }).then(() => {
+        expect(file('app/router.js')).to.not.contain('this.route(\'basic\')');
+      });
+    });
+
+
+    it('route foo --pod', function() {
+      return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
+        expect(_file('app/foo/route.js'))
+          .to.contain('import Route from \'@ember/routing/route\';')
+          .to.contain('export default Route.extend({\n});');
+
+        expect(_file('app/foo/template.hbs'))
+          .to.equal('{{outlet}}');
+
+        expect(_file('tests/unit/foo/route-test.js'))
+          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+          .to.contain('moduleFor(\'route:foo\'');
+
+        expect(file('app/router.js'))
+          .to.contain('this.route(\'foo\')');
+
+      }).then(() => {
+        expect(file('app/router.js'))
+          .to.not.contain('this.route(\'foo\')');
+      });
+    });
+
+    it('route foo --pod with --path', function() {
+      return emberGenerate(['route', 'foo', '--pod', '--path=:foo_id/show'])
+        .then(() => expect(file('app/router.js'))
+          .to.contain('this.route(\'foo\', {')
+          .to.contain('path: \':foo_id/show\'')
+          .to.contain('});'))
+
+        .then(() => emberDestroy(['route', 'foo', '--pod', '--path=:foo_id/show']))
+        .then(() => expect(file('app/router.js'))
+          .to.not.contain('this.route(\'foo\', {')
+          .to.not.contain('path: \':foo_id/show\''));
+    });
+
+    it('route index --pod', function() {
+      return emberGenerate(['route', 'index', '--pod'])
+        .then(() => expect(file('app/router.js'))
+          .to.not.contain('this.route(\'index\')'));
+    });
+
+    it('route application --pod', function() {
+      return emberGenerate(['route', 'application', '--pod'])
+        .then(() => expect(file('app/application/route.js')).to.exist)
+        .then(() => expect(file('app/application/template.hbs')).to.exist)
+        .then(() => expect(file('app/router.js')).to.not.contain('this.route(\'application\')'));
+    });
+
+    it('route basic --pod', function() {
+      return emberGenerateDestroy(['route', 'basic', '--pod'], (_file) => {
+        expect(_file('app/basic/route.js')).to.exist;
+        expect(file('app/router.js'))
+          .to.not.contain('this.route(\'index\')');
+      });
+    });
+
+    it('route-test foo', function() {
+      return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
+        expect(_file('tests/unit/routes/foo-test.js'))
+          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+          .to.contain('moduleFor(\'route:foo\'');
+      });
+    });
+
+    describe('with podModulePrefix', function() {
+      beforeEach(function() {
+        setupPodConfig({ podModulePrefix: true });
+      });
+
+      it('route foo --pod', function() {
+        return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
+          expect(_file('app/pods/foo/route.js'))
+            .to.contain('import Route from \'@ember/routing/route\';')
+            .to.contain('export default Route.extend({\n});');
+
+          expect(_file('app/pods/foo/template.hbs'))
+            .to.equal('{{outlet}}');
+
+          expect(_file('tests/unit/pods/foo/route-test.js'))
+            .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+            .to.contain('moduleFor(\'route:foo\'');
+
+          expect(file('app/router.js'))
+            .to.contain('this.route(\'foo\')');
+
+        }).then(() => {
+          expect(file('app/router.js'))
+            .to.not.contain('this.route(\'foo\')');
+        });
+      });
+    });
+
+    describe('with ember-cli-mocha@0.11.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-cli-mocha', dev: true }
+        ]);
+        generateFakePackageManifest('ember-cli-mocha', '0.11.0');
+      });
+
+      it('route-test foo', function() {
+        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/routes/foo-test.js'))
+            .to.contain('import { describeModule, it } from \'ember-mocha\';')
+            .to.contain('describeModule(\'route:foo\', \'Unit | Route | foo\'');
+        });
+      });
+    });
+
+    describe('with ember-cli-mocha@0.12.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-cli-mocha', dev: true }
+        ]);
+        generateFakePackageManifest('ember-cli-mocha', '0.12.0');
+      });
+
+      it('route-test foo', function() {
+        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/routes/foo-test.js'))
+            .to.contain('import { describe, it } from \'mocha\';')
+            .to.contain('import { setupTest } from \'ember-mocha\';')
+            .to.contain('describe(\'Unit | Route | foo\', function() {')
+            .to.contain('setupTest(\'route:foo\',');
+        });
+      });
+    });
   });
 
-  it('in-addon route foo', function() {
-    var args = ['route', 'foo'];
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
 
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo', function() {
+      return emberGenerateDestroy(['route', 'foo'], (_file) => {
         expect(_file('addon/routes/foo.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -186,16 +309,15 @@ describe('Acceptance: ember generate and destroy route', function() {
 
         expect(file('tests/dummy/app/router.js'))
           .to.not.contain('this.route(\'foo\')');
-      }))
-      .then(() => expect(file('tests/dummy/app/router.js'))
-        .to.not.contain('this.route(\'foo\')'));
-  });
 
-  it('in-addon route foo/bar', function() {
-    var args = ['route', 'foo/bar'];
+      }).then(() => {
+        expect(file('tests/dummy/app/router.js'))
+          .to.not.contain('this.route(\'foo\')');
+      });
+    });
 
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo/bar', function() {
+      return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
         expect(_file('addon/routes/foo/bar.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -215,16 +337,15 @@ describe('Acceptance: ember generate and destroy route', function() {
 
         expect(file('tests/dummy/app/router.js'))
           .to.not.contain('this.route(\'bar\')');
-      }))
-      .then(() => expect(file('tests/dummy/app/router.js'))
-        .to.not.contain('this.route(\'bar\')'));
-  });
 
-  it('dummy route foo', function() {
-    var args = ['route', 'foo', '--dummy'];
+      }).then(() => {
+        expect(file('tests/dummy/app/router.js'))
+          .to.not.contain('this.route(\'bar\')');
+      });
+    });
 
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo --dummy', function() {
+      return emberGenerateDestroy(['route', 'foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -238,16 +359,15 @@ describe('Acceptance: ember generate and destroy route', function() {
 
         expect(file('tests/dummy/app/router.js'))
           .to.contain('this.route(\'foo\')');
-      }))
-      .then(() => expect(file('tests/dummy/app/router.js'))
-        .to.not.contain('this.route(\'foo\')'));
-  });
 
-  it('dummy route foo/bar', function() {
-    var args = ['route', 'foo/bar', '--dummy'];
+      }).then(() => {
+        expect(file('tests/dummy/app/router.js'))
+          .to.not.contain('this.route(\'foo\')');
+      });
+    });
 
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo/bar --dummy', function() {
+      return emberGenerateDestroy(['route', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo/bar.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -262,157 +382,15 @@ describe('Acceptance: ember generate and destroy route', function() {
         expect(file('tests/dummy/app/router.js'))
           .to.contain('this.route(\'foo\', function() {')
           .to.contain('this.route(\'bar\')');
-      }))
-      .then(() => expect(file('tests/dummy/app/router.js'))
-        .to.not.contain('this.route(\'bar\')'));
-  });
 
-  it('in-repo-addon route foo', function() {
-    var args = ['route', 'foo', '--in-repo-addon=my-addon'];
+      }).then(() => {
+        expect(file('tests/dummy/app/router.js'))
+          .to.not.contain('this.route(\'bar\')');
+      });
+    });
 
-    return emberNew({ target: 'in-repo-addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('lib/my-addon/addon/routes/foo.js'))
-          .to.contain('import Route from \'@ember/routing/route\';')
-          .to.contain('export default Route.extend({\n});');
-
-        expect(_file('lib/my-addon/addon/templates/foo.hbs'))
-          .to.equal('{{outlet}}');
-
-        expect(_file('lib/my-addon/app/routes/foo.js'))
-          .to.contain('export { default } from \'my-addon/routes/foo\';');
-
-        expect(_file('lib/my-addon/app/templates/foo.js'))
-          .to.contain('export { default } from \'my-addon/templates/foo\';');
-
-        expect(_file('tests/unit/routes/foo-test.js'))
-          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
-          .to.contain('moduleFor(\'route:foo\'');
-      }));
-  });
-
-  it('in-repo-addon route foo/bar', function() {
-    var args = ['route', 'foo/bar', '--in-repo-addon=my-addon'];
-
-    return emberNew({ target: 'in-repo-addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('lib/my-addon/addon/routes/foo/bar.js'))
-          .to.contain('import Route from \'@ember/routing/route\';')
-          .to.contain('export default Route.extend({\n});');
-
-        expect(_file('lib/my-addon/addon/templates/foo/bar.hbs'))
-          .to.equal('{{outlet}}');
-
-        expect(_file('lib/my-addon/app/routes/foo/bar.js'))
-          .to.contain('export { default } from \'my-addon/routes/foo/bar\';');
-
-        expect(_file('lib/my-addon/app/templates/foo/bar.js'))
-          .to.contain('export { default } from \'my-addon/templates/foo/bar\';');
-
-        expect(_file('tests/unit/routes/foo/bar-test.js'))
-          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
-          .to.contain('moduleFor(\'route:foo/bar\'');
-      }));
-  });
-
-  it('route foo --pod', function() {
-    var args = ['route', 'foo', '--pod'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('app/foo/route.js'))
-          .to.contain('import Route from \'@ember/routing/route\';')
-          .to.contain('export default Route.extend({\n});');
-
-        expect(_file('app/foo/template.hbs'))
-          .to.equal('{{outlet}}');
-
-        expect(_file('tests/unit/foo/route-test.js'))
-          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
-          .to.contain('moduleFor(\'route:foo\'');
-
-        expect(file('app/router.js'))
-          .to.contain('this.route(\'foo\')');
-      }))
-      .then(() => expect(file('app/router.js'))
-        .to.not.contain('this.route(\'foo\')'));
-  });
-
-  it('route foo --pod with --path', function() {
-    var args = ['route', 'foo', '--pod', '--path=:foo_id/show'];
-
-    return emberNew()
-      .then(() => emberGenerate(args))
-      .then(() => expect(file('app/router.js'))
-        .to.contain('this.route(\'foo\', {')
-        .to.contain('path: \':foo_id/show\'')
-        .to.contain('});'))
-
-      .then(() => emberDestroy(args))
-      .then(() => expect(file('app/router.js'))
-        .to.not.contain('this.route(\'foo\', {')
-        .to.not.contain('path: \':foo_id/show\''));
-  });
-
-  it('route foo --pod podModulePrefix', function() {
-    var args = ['route', 'foo', '--pod'];
-
-    return emberNew()
-      .then(() => setupPodConfig({ podModulePrefix: true }))
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('app/pods/foo/route.js'))
-          .to.contain('import Route from \'@ember/routing/route\';')
-          .to.contain('export default Route.extend({\n});');
-
-        expect(_file('app/pods/foo/template.hbs'))
-          .to.equal('{{outlet}}');
-
-        expect(_file('tests/unit/pods/foo/route-test.js'))
-          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
-          .to.contain('moduleFor(\'route:foo\'');
-
-        expect(file('app/router.js'))
-          .to.contain('this.route(\'foo\')');
-      }))
-      .then(() => expect(file('app/router.js'))
-        .to.not.contain('this.route(\'foo\')'));
-  });
-
-  it('route index --pod', function() {
-    var args = ['route', 'index', '--pod'];
-
-    return emberNew()
-      .then(() => emberGenerate(args))
-      .then(() => expect(file('app/router.js'))
-        .to.not.contain('this.route(\'index\')'));
-  });
-
-  it('route application --pod', function() {
-    var args = ['route', 'application', '--pod'];
-
-    return emberNew()
-      .then(() => emberGenerate(args))
-      .then(() => expect(file('app/application/route.js')).to.exist)
-      .then(() => expect(file('app/application/template.hbs')).to.exist)
-      .then(() => expect(file('app/router.js')).to.not.contain('this.route(\'application\')'));
-  });
-
-  it('route basic --pod isn\'t added to router', function() {
-    var args = ['route', 'basic', '--pod'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('app/basic/route.js')).to.exist;
-        expect(file('app/router.js'))
-          .to.not.contain('this.route(\'index\')');
-      }));
-  });
-
-  it('in-addon route foo --pod', function() {
-    var args = ['route', 'foo', '--pod'];
-
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo --pod', function() {
+      return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
         expect(_file('addon/foo/route.js'))
           .to.contain('import Route from \'@ember/routing/route\';')
           .to.contain('export default Route.extend({\n});');
@@ -429,62 +407,63 @@ describe('Acceptance: ember generate and destroy route', function() {
         expect(_file('tests/unit/foo/route-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
           .to.contain('moduleFor(\'route:foo\'');
-      }));
-  });
+      });
+    });
 
-  it('route-test foo', function() {
-    var args = ['route-test', 'foo'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route-test foo', function() {
+      return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
         expect(_file('tests/unit/routes/foo-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
           .to.contain('moduleFor(\'route:foo\'');
-      }));
+      });
+    });
   });
 
-  it('in-addon route-test foo', function() {
-    var args = ['route-test', 'foo'];
+  describe('in in-repo-addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'in-repo-addon' });
+    });
 
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, (_file) => {
+    it('route foo --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['route', 'foo', '--in-repo-addon=my-addon'], (_file) => {
+        expect(_file('lib/my-addon/addon/routes/foo.js'))
+          .to.contain('import Route from \'@ember/routing/route\';')
+          .to.contain('export default Route.extend({\n});');
+
+        expect(_file('lib/my-addon/addon/templates/foo.hbs'))
+          .to.equal('{{outlet}}');
+
+        expect(_file('lib/my-addon/app/routes/foo.js'))
+          .to.contain('export { default } from \'my-addon/routes/foo\';');
+
+        expect(_file('lib/my-addon/app/templates/foo.js'))
+          .to.contain('export { default } from \'my-addon/templates/foo\';');
+
         expect(_file('tests/unit/routes/foo-test.js'))
           .to.contain('import { moduleFor, test } from \'ember-qunit\';')
           .to.contain('moduleFor(\'route:foo\'');
-      }));
-  });
+      });
+    });
 
-  it('route-test foo for mocha', function() {
-    var args = ['route-test', 'foo'];
+    it('route foo/bar --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['route', 'foo/bar', '--in-repo-addon=my-addon'], (_file) => {
+        expect(_file('lib/my-addon/addon/routes/foo/bar.js'))
+          .to.contain('import Route from \'@ember/routing/route\';')
+          .to.contain('export default Route.extend({\n});');
 
-    return emberNew()
-      .then(() => modifyPackages([
-        { name: 'ember-cli-qunit', delete: true },
-        { name: 'ember-cli-mocha', dev: true }
-      ]))
-      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.11.0'))
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('tests/unit/routes/foo-test.js'))
-          .to.contain('import { describeModule, it } from \'ember-mocha\';')
-          .to.contain('describeModule(\'route:foo\', \'Unit | Route | foo\'');
-      }));
-  });
+        expect(_file('lib/my-addon/addon/templates/foo/bar.hbs'))
+          .to.equal('{{outlet}}');
 
-  it('route-test foo for mocha v0.12+', function() {
-    var args = ['route-test', 'foo'];
+        expect(_file('lib/my-addon/app/routes/foo/bar.js'))
+          .to.contain('export { default } from \'my-addon/routes/foo/bar\';');
 
-    return emberNew()
-      .then(() => modifyPackages([
-        { name: 'ember-cli-qunit', delete: true },
-        { name: 'ember-cli-mocha', dev: true }
-      ]))
-      .then(() => generateFakePackageManifest('ember-cli-mocha', '0.12.0'))
-      .then(() => emberGenerateDestroy(args, (_file) => {
-        expect(_file('tests/unit/routes/foo-test.js'))
-          .to.contain('import { describe, it } from \'mocha\';')
-          .to.contain('import { setupTest } from \'ember-mocha\';')
-          .to.contain('describe(\'Unit | Route | foo\', function() {')
-          .to.contain('setupTest(\'route:foo\',');
-      }));
+        expect(_file('lib/my-addon/app/templates/foo/bar.js'))
+          .to.contain('export { default } from \'my-addon/templates/foo/bar\';');
+
+        expect(_file('tests/unit/routes/foo/bar-test.js'))
+          .to.contain('import { moduleFor, test } from \'ember-qunit\';')
+          .to.contain('moduleFor(\'route:foo/bar\'');
+      });
+    });
   });
 });

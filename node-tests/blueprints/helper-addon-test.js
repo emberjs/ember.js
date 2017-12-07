@@ -1,24 +1,28 @@
 'use strict';
 
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
+
 const file = require('../helpers/file');
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
-
-describe('Acceptance: ember generate and destroy helper-addon', function() {
+describe('Blueprint: helper-addon', function() {
   setupTestHooks(this);
 
-  it('in-addon helper-addon foo/bar-baz', function() {
-    var args = ['helper-addon', 'foo/bar-baz'];
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
 
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('helper-addon foo/bar-baz', function() {
+      return emberGenerateDestroy(['helper-addon', 'foo/bar-baz'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.equal(file('helper-addon.js'));
-      }));
+      });
+    });
   });
 });

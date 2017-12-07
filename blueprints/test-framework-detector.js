@@ -1,6 +1,8 @@
-var fs = require('fs');
-var path = require('path');
-var VersionChecker = require('ember-cli-version-checker');
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const VersionChecker = require('ember-cli-version-checker');
 
 module.exports = function(blueprint) {
   blueprint.supportsAddon = function() {
@@ -8,9 +10,9 @@ module.exports = function(blueprint) {
   };
 
   blueprint.filesPath = function() {
-    var type;
+    let type;
 
-    var dependencies = this.project.dependencies();
+    let dependencies = this.project.dependencies();
     if ('ember-qunit' in dependencies) {
       type = 'qunit-rfc-232';
 

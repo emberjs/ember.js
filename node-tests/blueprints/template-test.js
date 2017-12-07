@@ -1,136 +1,119 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-var setupPodConfig = blueprintHelpers.setupPodConfig;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const setupPodConfig = blueprintHelpers.setupPodConfig;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy template', function() {
+describe('Blueprint: template', function() {
   setupTestHooks(this);
 
-  it('template foo', function() {
-    var args = ['template', 'foo'];
+  describe('in app', function() {
+    beforeEach(function() {
+      return emberNew();
+    });
 
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo', function() {
+      return emberGenerateDestroy(['template', 'foo'], _file => {
         expect(_file('app/templates/foo.hbs')).to.equal('');
-      }));
-  });
+      });
+    });
 
-  it('template foo/bar', function() {
-    var args = ['template', 'foo/bar'];
-
-    return emberNew()
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo/bar', function() {
+      return emberGenerateDestroy(['template', 'foo/bar'], _file => {
         expect(_file('app/templates/foo/bar.hbs')).to.equal('');
-      }));
+      });
+    });
+
+    describe('with usePods', function() {
+      beforeEach(function() {
+        setupPodConfig({ usePods: true });
+      });
+
+      it('template foo', function() {
+        return emberGenerateDestroy(['template', 'foo'], _file => {
+          expect(_file('app/foo/template.hbs')).to.equal('');
+        });
+      });
+
+      it('template foo/bar', function() {
+        return emberGenerateDestroy(['template', 'foo/bar'], _file => {
+          expect(_file('app/foo/bar/template.hbs')).to.equal('');
+        });
+      });
+    });
+
+    describe('with usePods + podModulePrefix', function() {
+      beforeEach(function() {
+        setupPodConfig({
+          usePods: true,
+          podModulePrefix: true
+        });
+      });
+
+      it('template foo', function() {
+        return emberGenerateDestroy(['template', 'foo'], _file => {
+          expect(_file('app/pods/foo/template.hbs')).to.equal('');
+        });
+      });
+
+      it('template foo/bar', function() {
+        return emberGenerateDestroy(['template', 'foo/bar'], _file => {
+          expect(_file('app/pods/foo/bar/template.hbs')).to.equal('');
+        });
+      });
+    });
   });
 
-  it('template foo --pod', function() {
-    var args = ['template', 'foo'];
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
 
-    return emberNew()
-      .then(() => setupPodConfig({
-        usePods: true
-      }))
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('app/foo/template.hbs')).to.equal('');
-      }));
-  });
-
-  it('template foo/bar --pod', function() {
-    var args = ['template', 'foo/bar'];
-
-    return emberNew()
-      .then(() => setupPodConfig({
-        usePods: true
-      }))
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('app/foo/bar/template.hbs')).to.equal('');
-      }));
-  });
-
-  it('template foo --pod podModulePrefix', function() {
-    var args = ['template', 'foo'];
-
-    return emberNew()
-      .then(() => setupPodConfig({
-        usePods: true,
-        podModulePrefix: true
-      }))
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('app/pods/foo/template.hbs')).to.equal('');
-      }));
-  });
-
-  it('template foo/bar --pod podModulePrefix', function() {
-    var args = ['template', 'foo/bar'];
-
-    return emberNew()
-      .then(() => setupPodConfig({
-        usePods: true,
-        podModulePrefix: true
-      }))
-      .then(() => emberGenerateDestroy(args, _file => {
-        expect(_file('app/pods/foo/bar/template.hbs')).to.equal('');
-      }));
-  });
-
-  it('in-addon template foo', function() {
-    var args = ['template', 'foo'];
-
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo', function() {
+      return emberGenerateDestroy(['template', 'foo'], _file => {
         expect(_file('addon/templates/foo.hbs')).to.equal('');
-      }));
-  });
+      });
+    });
 
-  it('in-addon template foo/bar', function() {
-    var args = ['template', 'foo/bar'];
-
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo/bar', function() {
+      return emberGenerateDestroy(['template', 'foo/bar'], _file => {
         expect(_file('addon/templates/foo/bar.hbs')).to.equal('');
-      }));
-  });
+      });
+    });
 
-  it('dummy template foo', function() {
-    var args = ['template', 'foo', '--dummy'];
-
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo --dummy', function() {
+      return emberGenerateDestroy(['template', 'foo', '--dummy'], _file => {
         expect(_file('tests/dummy/app/templates/foo.hbs')).to.equal('');
-      }));
-  });
+      });
+    });
 
-  it('dummy template foo/bar', function() {
-    var args = ['template', 'foo/bar', '--dummy'];
-
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo/bar --dummy', function() {
+      return emberGenerateDestroy(['template', 'foo/bar', '--dummy'], _file => {
         expect(_file('tests/dummy/app/templates/foo/bar.hbs')).to.equal('');
-      }));
+      });
+    });
   });
 
-  it('in-repo-addon template foo', function() {
-    var args = ['template', 'foo', '--in-repo-addon=my-addon'];
+  describe('in in-repo-addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'in-repo-addon' });
+    });
 
-    return emberNew({ target: 'in-repo-addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['template', 'foo', '--in-repo-addon=my-addon'], _file => {
         expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal('');
-      }));
-  });
+      });
+    });
 
-  it('in-repo-addon template foo/bar', function() {
-    var args = ['template', 'foo/bar', '--in-repo-addon=my-addon'];
-
-    return emberNew({ target: 'in-repo-addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('template foo/bar --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['template', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
         expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal('');
-      }));
+      });
+    });
   });
 });

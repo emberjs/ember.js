@@ -1,11 +1,14 @@
+'use strict';
+
 /* eslint-env node */
 
-var path          = require('path');
-var testInfo      = require('ember-cli-test-info');
-var stringUtil    = require('ember-cli-string-utils');
-var isPackageMissing = require('ember-cli-is-package-missing');
-var getPathOption = require('ember-cli-get-component-path-option');
-var useTestFrameworkDetector = require('../test-framework-detector');
+const path = require('path');
+const testInfo = require('ember-cli-test-info');
+const stringUtil = require('ember-cli-string-utils');
+const isPackageMissing = require('ember-cli-is-package-missing');
+const getPathOption = require('ember-cli-get-component-path-option');
+
+const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a component integration or unit test.',
@@ -38,10 +41,10 @@ module.exports = useTestFrameworkDetector({
     };
   },
   locals: function(options) {
-    var dasherizedModuleName = stringUtil.dasherize(options.entity.name);
-    var componentPathName = dasherizedModuleName;
-    var testType = options.testType || 'integration';
-    var friendlyTestDescription = testInfo.description(options.entity.name, 'Integration', 'Component');
+    let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
+    let componentPathName = dasherizedModuleName;
+    let testType = options.testType || 'integration';
+    let friendlyTestDescription = testInfo.description(options.entity.name, 'Integration', 'Component');
 
     if (options.pod && options.path !== 'components' && options.path !== '') {
       componentPathName = [options.path, dasherizedModuleName].filter(Boolean).join('/');
