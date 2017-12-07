@@ -297,14 +297,28 @@ moduleFor('ClassNameBindings integration', class extends RenderingTest {
     let FooBarComponent = Component.extend({
       foo: 'foo',
       bar: 'bar',
-      classNameBindings: ['foo', ,'bar'] // eslint-disable-line no-sparse-arrays
+      classNameBindings: ['foo', , 'bar'] // eslint-disable-line no-sparse-arrays
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
     expectAssertion(() => {
       this.render('{{foo-bar}}');
-    }, /classNameBindings must be strings/);
+    }, /classNameBindings must be non-empty strings/);
+  }
+
+  ['@test it asserts that items must be non-empty strings']() {
+    let FooBarComponent = Component.extend({
+      foo: 'foo',
+      bar: 'bar',
+      classNameBindings: ['foo', '', 'bar']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /classNameBindings must be non-empty strings/);
   }
 
   ['@test it can set class name bindings in the constructor']() {
