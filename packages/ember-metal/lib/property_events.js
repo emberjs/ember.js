@@ -13,6 +13,7 @@ import {
   EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
 } from 'ember/features';
 import { assertNotRendered } from './transaction';
+import { changeEvent, beforeEvent } from './observer';
 
 /**
  @module ember
@@ -283,7 +284,7 @@ function accumulateListeners(obj, eventName, otherActions, meta) {
 function notifyBeforeObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
-  let eventName = `${keyName}:before`;
+  let eventName = beforeEvent(keyName);
   let listeners, added;
   if (deferred > 0) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
@@ -295,7 +296,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
 function notifyObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
-  let eventName = `${keyName}:change`;
+  let eventName = changeEvent(keyName);
   let listeners;
   if (deferred > 0) {
     listeners = observerSet.add(obj, keyName, eventName);
