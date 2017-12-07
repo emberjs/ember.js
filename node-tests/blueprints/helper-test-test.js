@@ -10,7 +10,7 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
-const file = require('../helpers/file');
+const fixture = require('../helpers/fixture');
 
 describe('Blueprint: helper-test', function() {
   setupTestHooks(this);
@@ -23,14 +23,14 @@ describe('Blueprint: helper-test', function() {
     it('helper-test foo/bar-baz', function() {
       return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.equal(file('helper-test/integration.js'));
+          .to.equal(fixture('helper-test/integration.js'));
       });
     });
 
     it('helper-test foo/bar-baz --integration', function() {
       return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.equal(file('helper-test/integration.js'));
+          .to.equal(fixture('helper-test/integration.js'));
       });
     });
 
@@ -90,7 +90,7 @@ describe('Blueprint: helper-test', function() {
     it('helper-test foo/bar-baz', function() {
       return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-          .to.equal(file('helper-test/integration.js'));
+          .to.equal(fixture('helper-test/integration.js'));
       });
     });
   });

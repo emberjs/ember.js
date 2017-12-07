@@ -12,7 +12,7 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
-const fixture = require('../helpers/file');
+const fixture = require('../helpers/fixture');
 
 describe('Blueprint: component-test', function() {
   setupTestHooks(this);
