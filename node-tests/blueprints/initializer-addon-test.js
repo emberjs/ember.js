@@ -11,11 +11,16 @@ const expect = chai.expect;
 describe('Blueprint: initializer-addon', function() {
   setupTestHooks(this);
 
-  it('initializer-addon foo', function() {
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(['initializer-addon', 'foo'], _file => {
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
+
+    it('initializer-addon foo', function() {
+      return emberGenerateDestroy(['initializer-addon', 'foo'], _file => {
         expect(_file('app/initializers/foo.js'))
           .to.contain("export { default, initialize } from 'my-addon/initializers/foo';");
-      }));
+      });
+    });
   });
 });

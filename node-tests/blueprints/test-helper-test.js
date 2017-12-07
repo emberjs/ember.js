@@ -11,12 +11,17 @@ const expect = chai.expect;
 describe('Blueprint: test-helper', function() {
   setupTestHooks(this);
 
-  it('test-helper foo', function() {
-    return emberNew()
-      .then(() => emberGenerateDestroy(['test-helper', 'foo'], _file => {
+  describe('in app', function() {
+    beforeEach(function() {
+      return emberNew();
+    });
+
+    it('test-helper foo', function() {
+      return emberGenerateDestroy(['test-helper', 'foo'], _file => {
         expect(_file('tests/helpers/foo.js'))
           .to.contain("import { registerAsyncHelper } from '@ember/test';")
           .to.contain('export default registerAsyncHelper(\'foo\', function(app) {\n\n}');
-      }));
+      });
+    });
   });
 });

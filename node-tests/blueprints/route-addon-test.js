@@ -11,13 +11,19 @@ const expect = chai.expect;
 describe('Blueprint: route-addon', function() {
   setupTestHooks(this);
 
-  it('route-addon foo', function() {
-    return emberNew({ target: 'addon' }).then(() => emberGenerateDestroy(['route-addon', 'foo'], _file => {
-      expect(_file('app/routes/foo.js'))
-        .to.contain("export { default } from 'my-addon/routes/foo';");
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
 
-      expect(_file('app/templates/foo.js'))
-        .to.contain("export { default } from 'my-addon/templates/foo';");
-    }));
+    it('route-addon foo', function() {
+      return emberGenerateDestroy(['route-addon', 'foo'], _file => {
+        expect(_file('app/routes/foo.js'))
+          .to.contain("export { default } from 'my-addon/routes/foo';");
+
+        expect(_file('app/templates/foo.js'))
+          .to.contain("export { default } from 'my-addon/templates/foo';");
+      });
+    });
   });
 });

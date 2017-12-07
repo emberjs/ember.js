@@ -12,9 +12,13 @@ const expect = chai.expect;
 describe('Blueprint: acceptance-test', function() {
   setupTestHooks(this);
 
-  it('acceptance-test foo', function() {
-    return emberNew()
-      .then(() => emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
+  describe('in app', function() {
+    beforeEach(function() {
+      return emberNew();
+    });
+
+    it('acceptance-test foo', function() {
+      return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
         expect(_file('tests/acceptance/foo-test.js'))
           .to.contain("import { test } from 'qunit';")
           .to.contain("moduleForAcceptance('Acceptance | foo');")
@@ -22,12 +26,40 @@ describe('Blueprint: acceptance-test', function() {
           .to.contain("visit('/foo');")
           .to.contain("andThen(function() {")
           .to.contain("assert.equal(currentURL(), '/foo');");
-      }));
+      });
+    });
+
+    describe('with ember-cli-mocha', function() {
+      beforeEach(function() {
+        return modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-cli-mocha', dev: true }
+        ]);
+      });
+
+      it('acceptance-test foo', function() {
+        return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
+          expect(_file('tests/acceptance/foo-test.js'))
+            .to.contain("import { describe, it, beforeEach, afterEach } from 'mocha';")
+            .to.contain("import { expect } from 'chai';")
+            .to.contain("describe('Acceptance | foo', function() {")
+            .to.contain("it('can visit /foo', function() {")
+            .to.contain("visit('/foo');")
+            .to.contain("return andThen(() => {")
+            .to.contain("expect(currentURL()).to.equal('/foo');");
+        });
+      });
+    });
   });
 
-  it('in-addon acceptance-test foo', function() {
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
+
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
+
+    it('acceptance-test foo', function() {
+      return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
         expect(_file('tests/acceptance/foo-test.js'))
           .to.contain("import { test } from 'qunit';")
           .to.contain("moduleForAcceptance('Acceptance | foo');")
@@ -38,12 +70,11 @@ describe('Blueprint: acceptance-test', function() {
 
         expect(_file('app/acceptance-tests/foo.js'))
           .to.not.exist;
-      }));
-  });
+      });
+    });
 
-  it('in-addon acceptance-test foo/bar', function() {
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(['acceptance-test', 'foo/bar'], _file => {
+    it('acceptance-test foo/bar', function() {
+      return emberGenerateDestroy(['acceptance-test', 'foo/bar'], _file => {
         expect(_file('tests/acceptance/foo/bar-test.js'))
           .to.contain("import { test } from 'qunit';")
           .to.contain("moduleForAcceptance('Acceptance | foo/bar');")
@@ -54,24 +85,7 @@ describe('Blueprint: acceptance-test', function() {
 
         expect(_file('app/acceptance-tests/foo/bar.js'))
           .to.not.exist;
-      }));
-  });
-
-  it('acceptance-test foo for mocha', function() {
-    return emberNew()
-      .then(() => modifyPackages([
-        { name: 'ember-cli-qunit', delete: true },
-        { name: 'ember-cli-mocha', dev: true }
-      ]))
-      .then(() => emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-        expect(_file('tests/acceptance/foo-test.js'))
-          .to.contain("import { describe, it, beforeEach, afterEach } from 'mocha';")
-          .to.contain("import { expect } from 'chai';")
-          .to.contain("describe('Acceptance | foo', function() {")
-          .to.contain("it('can visit /foo', function() {")
-          .to.contain("visit('/foo');")
-          .to.contain("return andThen(() => {")
-          .to.contain("expect(currentURL()).to.equal('/foo');");
-      }));
+      });
+    });
   });
 });

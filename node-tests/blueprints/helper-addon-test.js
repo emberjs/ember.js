@@ -13,11 +13,16 @@ const file = require('../helpers/file');
 describe('Blueprint: helper-addon', function() {
   setupTestHooks(this);
 
-  it('in-addon helper-addon foo/bar-baz', function() {
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(['helper-addon', 'foo/bar-baz'], _file => {
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
+
+    it('helper-addon foo/bar-baz', function() {
+      return emberGenerateDestroy(['helper-addon', 'foo/bar-baz'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js'))
           .to.equal(file('helper-addon.js'));
-      }));
+      });
+    });
   });
 });
