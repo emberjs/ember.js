@@ -105,11 +105,6 @@ export default Mixin.create({
   unknownProperty(key) {
     let content = get(this, 'content');
     if (content) {
-      deprecate(
-        `You attempted to access \`${key}\` from \`${this}\`, but object proxying is deprecated. Please use \`model.${key}\` instead.`,
-        !this.isController,
-        { id: 'ember-runtime.controller-proxy', until: '3.0.0' }
-      );
       return get(content, key);
     }
   },
@@ -126,12 +121,6 @@ export default Mixin.create({
 
     let content = get(this, 'content');
     assert(`Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`, content);
-
-    deprecate(
-      `You attempted to set \`${key}\` from \`${this}\`, but object proxying is deprecated. Please use \`model.${key}\` instead.`,
-      !this.isController,
-      { id: 'ember-runtime.controller-proxy', until: '3.0.0' }
-    );
 
     return set(content, key, value);
   }
