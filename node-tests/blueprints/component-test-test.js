@@ -47,12 +47,7 @@ describe('Blueprint: component-test', function() {
       it('component-test x-foo', function() {
         return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
           expect(_file('tests/integration/components/x-foo/component-test.js'))
-            .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
-            .to.contain("import hbs from 'htmlbars-inline-precompile';")
-            .to.contain("moduleForComponent('x-foo'")
-            .to.contain("integration: true")
-            .to.contain("{{x-foo}}")
-            .to.contain("{{#x-foo}}");
+            .to.equal(fixture('component-test/default.js'));
         });
       });
     });
@@ -134,12 +129,7 @@ describe('Blueprint: component-test', function() {
     it('component-test x-foo', function() {
       return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
         expect(_file('tests/integration/components/x-foo-test.js'))
-          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
-          .to.contain("import hbs from 'htmlbars-inline-precompile';")
-          .to.contain("moduleForComponent('x-foo'")
-          .to.contain("integration: true")
-          .to.contain("{{x-foo}}")
-          .to.contain("{{#x-foo}}");
+          .to.equal(fixture('component-test/default.js'));
 
         expect(_file('app/component-test/x-foo.js'))
           .to.not.exist;
@@ -149,9 +139,7 @@ describe('Blueprint: component-test', function() {
     it('component-test x-foo --unit', function() {
       return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
         expect(_file('tests/unit/components/x-foo-test.js'))
-          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
-          .to.contain("moduleForComponent('x-foo'")
-          .to.contain("unit: true");
+          .to.equal(fixture('component-test/unit.js'));
 
         expect(_file('app/component-test/x-foo.js'))
           .to.not.exist;
@@ -161,9 +149,7 @@ describe('Blueprint: component-test', function() {
     it('component-test x-foo --dummy', function() {
       return emberGenerateDestroy(['component-test', 'x-foo', '--dummy'], _file => {
         expect(_file('tests/integration/components/x-foo-test.js'))
-          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
-          .to.contain("import hbs from 'htmlbars-inline-precompile';")
-          .to.contain("moduleForComponent('x-foo'");
+          .to.equal(fixture('component-test/default.js'));
 
         expect(_file('app/component-test/x-foo.js'))
           .to.not.exist;
@@ -179,21 +165,14 @@ describe('Blueprint: component-test', function() {
     it('component-test x-foo --in-repo-addon=my-addon', function() {
       return emberGenerateDestroy(['component-test', 'x-foo', '--in-repo-addon=my-addon'], _file => {
         expect(_file('tests/integration/components/x-foo-test.js'))
-          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
-          .to.contain("import hbs from 'htmlbars-inline-precompile';")
-          .to.contain("moduleForComponent('x-foo'")
-          .to.contain("integration: true")
-          .to.contain("{{x-foo}}")
-          .to.contain("{{#x-foo}}");
+          .to.equal(fixture('component-test/default.js'));
       });
     });
 
     it('component-test x-foo --in-repo-addon=my-addon --unit', function() {
       return emberGenerateDestroy(['component-test', 'x-foo', '--in-repo-addon=my-addon', '--unit'], _file => {
         expect(_file('tests/unit/components/x-foo-test.js'))
-          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
-          .to.contain("moduleForComponent('x-foo'")
-          .to.contain("unit: true");
+          .to.equal(fixture('component-test/unit.js'));
       });
     });
   });
