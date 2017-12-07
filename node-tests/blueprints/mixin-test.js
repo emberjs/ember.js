@@ -4,7 +4,6 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const modifyPackages = blueprintHelpers.modifyPackages;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -12,7 +11,6 @@ const expect = chai.expect;
 
 describe('Blueprint: mixin', function() {
   setupTestHooks(this);
-
 
   describe('in app', function() {
     beforeEach(function() {
@@ -77,13 +75,6 @@ describe('Blueprint: mixin', function() {
       });
     });
 
-    it('mixin-test foo', function() {
-      return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('tests/unit/mixins/foo-test.js'))
-          .to.contain("import FooMixin from 'my-app/mixins/foo';");
-      });
-    });
-
     describe('with podModulePrefix', function() {
       beforeEach(function() {
         setupPodConfig({ podModulePrefix: true });
@@ -108,24 +99,6 @@ describe('Blueprint: mixin', function() {
 
           expect(_file('tests/unit/mixins/foo/bar-test.js'))
             .to.contain("import FooBarMixin from 'my-app/mixins/foo/bar';");
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha', function() {
-      beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
-        ]);
-      });
-
-      it('mixin-test foo', function() {
-        return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-          expect(_file('tests/unit/mixins/foo-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import FooMixin from 'my-app/mixins/foo';")
-            .to.contain("describe('Unit | Mixin | foo', function() {");
         });
       });
     });
@@ -175,13 +148,6 @@ describe('Blueprint: mixin', function() {
 
         expect(_file('app/mixins/foo/bar/baz.js'))
           .to.not.exist;
-      });
-    });
-
-    it('mixin-test foo', function() {
-      return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('tests/unit/mixins/foo-test.js'))
-          .to.contain("import FooMixin from 'my-addon/mixins/foo';");
       });
     });
   });

@@ -4,7 +4,6 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const modifyPackages = blueprintHelpers.modifyPackages;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -66,13 +65,6 @@ describe('Blueprint: util', function() {
       });
     });
 
-    it('util-test foo-bar', function() {
-      return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('tests/unit/utils/foo-bar-test.js'))
-          .to.contain("import fooBar from 'my-app/utils/foo-bar';");
-      });
-    });
-
     describe('with podModulePrefix', function() {
       beforeEach(function() {
         return setupPodConfig({ podModulePrefix: true });
@@ -87,24 +79,6 @@ describe('Blueprint: util', function() {
 
           expect(_file('tests/unit/utils/foo-bar-test.js'))
             .to.contain("import fooBar from 'my-app/utils/foo-bar';");
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha', function() {
-      beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
-        ]);
-      });
-
-      it('util-test foo-bar', function() {
-        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-          expect(_file('tests/unit/utils/foo-bar-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import fooBar from 'my-app/utils/foo-bar';")
-            .to.contain("describe('Unit | Utility | foo bar', function() {");
         });
       });
     });
@@ -142,13 +116,6 @@ describe('Blueprint: util', function() {
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js'))
           .to.contain("import fooBarBaz from 'dummy/utils/foo/bar-baz';");
-      });
-    });
-
-    it('util-test foo-bar', function() {
-      return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('tests/unit/utils/foo-bar-test.js'))
-          .to.contain("import fooBar from 'dummy/utils/foo-bar';");
       });
     });
   });
