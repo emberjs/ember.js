@@ -412,12 +412,12 @@ export function validatePositionalParameters(named: NamedArguments, positional: 
 }
 
 export function processComponentInitializationAssertions(component: Component, props: any) {
-  assert(`classNameBindings must be strings: ${component}`, (() => {
+  assert(`classNameBindings must be non-empty strings: ${component}`, (() => {
     let { classNameBindings } = component;
     for (let i = 0; i < classNameBindings.length; i++) {
       let binding = classNameBindings[i];
 
-      if (typeof binding !== 'string') {
+      if (typeof binding !== 'string' || binding.length === 0) {
         return false;
       }
     }
