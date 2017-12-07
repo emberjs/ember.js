@@ -9,6 +9,8 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const fixture = require('../helpers/fixture');
+
 describe('Blueprint: util-test', function() {
   setupTestHooks(this);
 
@@ -20,7 +22,7 @@ describe('Blueprint: util-test', function() {
     it('util-test foo-bar', function() {
       return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
         expect(_file('tests/unit/utils/foo-bar-test.js'))
-          .to.contain("import fooBar from 'my-app/utils/foo-bar';");
+          .to.equal(fixture('util-test/default.js'));
       });
     });
 
@@ -35,9 +37,7 @@ describe('Blueprint: util-test', function() {
       it('util-test foo-bar', function() {
         return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
           expect(_file('tests/unit/utils/foo-bar-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import fooBar from 'my-app/utils/foo-bar';")
-            .to.contain("describe('Unit | Utility | foo bar', function() {");
+            .to.equal(fixture('util-test/mocha.js'));
         });
       });
     });
@@ -51,7 +51,7 @@ describe('Blueprint: util-test', function() {
     it('util-test foo-bar', function() {
       return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
         expect(_file('tests/unit/utils/foo-bar-test.js'))
-          .to.contain("import fooBar from 'dummy/utils/foo-bar';");
+          .to.equal(fixture('util-test/dummy.js'));
       });
     });
   });

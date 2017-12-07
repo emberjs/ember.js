@@ -10,6 +10,7 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const fixture = require('../helpers/fixture');
 
 describe('Blueprint: controller-test', function() {
   setupTestHooks(this);
@@ -22,8 +23,7 @@ describe('Blueprint: controller-test', function() {
     it('controller-test foo', function() {
       return emberGenerateDestroy(['controller-test', 'foo'], _file => {
         expect(_file('tests/unit/controllers/foo-test.js'))
-          .to.contain("import { moduleFor, test } from 'ember-qunit';")
-          .to.contain("moduleFor('controller:foo'");
+          .to.equal(fixture('controller-test/default.js'));
       });
     });
 
@@ -39,8 +39,7 @@ describe('Blueprint: controller-test', function() {
       it('controller-test foo for mocha', function() {
         return emberGenerateDestroy(['controller-test', 'foo'], _file => {
           expect(_file('tests/unit/controllers/foo-test.js'))
-            .to.contain("import { describeModule, it } from 'ember-mocha';")
-            .to.contain("describeModule('controller:foo', 'Unit | Controller | foo'");
+            .to.equal(fixture('controller-test/mocha.js'));
         });
       });
     });
@@ -57,10 +56,7 @@ describe('Blueprint: controller-test', function() {
       it('controller-test foo', function() {
         return emberGenerateDestroy(['controller-test', 'foo'], _file => {
           expect(_file('tests/unit/controllers/foo-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import { setupTest } from 'ember-mocha';")
-            .to.contain("describe('Unit | Controller | foo'")
-            .to.contain("setupTest('controller:foo',");
+            .to.equal(fixture('controller-test/mocha-0.12.js'));
         });
       });
     });
@@ -74,8 +70,7 @@ describe('Blueprint: controller-test', function() {
     it('controller-test foo', function() {
       return emberGenerateDestroy(['controller-test', 'foo'], _file => {
         expect(_file('tests/unit/controllers/foo-test.js'))
-          .to.contain("import { moduleFor, test } from 'ember-qunit';")
-          .to.contain("moduleFor('controller:foo'");
+          .to.equal(fixture('controller-test/default.js'));
       });
     });
   });

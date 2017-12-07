@@ -46,8 +46,7 @@ describe('Blueprint: helper-test', function() {
       it('helper-test foo/bar-baz --integration', function() {
         return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-            .to.contain("import { describeComponent, it } from 'ember-mocha';")
-            .to.contain("import hbs from 'htmlbars-inline-precompile';");
+            .to.equal(fixture('helper-test/mocha.js'));
         });
       });
     });
@@ -64,19 +63,14 @@ describe('Blueprint: helper-test', function() {
       it('helper-test foo/bar-baz --integration', function() {
         return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import { setupComponentTest } from 'ember-mocha';")
-            .to.contain("import hbs from 'htmlbars-inline-precompile';")
-            .to.contain("describe('Integration | Helper | foo/bar baz', function() {");
+            .to.equal(fixture('helper-test/mocha-0.12.js'));
         });
       });
 
       it('helper-test foo/bar-baz for mocha', function() {
         return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("setupComponentTest('foo/bar-baz', {")
-            .to.contain("describe('Integration | Helper | foo/bar baz', function() {");
+            .to.equal(fixture('helper-test/mocha-0.12.js'));
         });
       });
     });

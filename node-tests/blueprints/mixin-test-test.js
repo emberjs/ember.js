@@ -9,6 +9,8 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const fixture = require('../helpers/fixture');
+
 describe('Blueprint: mixin-test', function() {
   setupTestHooks(this);
 
@@ -20,7 +22,7 @@ describe('Blueprint: mixin-test', function() {
     it('mixin-test foo', function() {
       return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
         expect(_file('tests/unit/mixins/foo-test.js'))
-          .to.contain("import FooMixin from 'my-app/mixins/foo';");
+          .to.equal(fixture('mixin-test/default.js'));
       });
     });
 
@@ -35,9 +37,7 @@ describe('Blueprint: mixin-test', function() {
       it('mixin-test foo', function() {
         return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
           expect(_file('tests/unit/mixins/foo-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import FooMixin from 'my-app/mixins/foo';")
-            .to.contain("describe('Unit | Mixin | foo', function() {");
+            .to.equal(fixture('mixin-test/mocha.js'));
         });
       });
     });
@@ -51,7 +51,7 @@ describe('Blueprint: mixin-test', function() {
     it('mixin-test foo', function() {
       return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
         expect(_file('tests/unit/mixins/foo-test.js'))
-          .to.contain("import FooMixin from 'my-addon/mixins/foo';");
+          .to.equal(fixture('mixin-test/addon.js'));
       });
     });
   });

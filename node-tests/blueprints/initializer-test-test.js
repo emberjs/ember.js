@@ -9,6 +9,8 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const fixture = require('../helpers/fixture');
+
 describe('Blueprint: initializer-test', function() {
   setupTestHooks(this);
 
@@ -20,10 +22,7 @@ describe('Blueprint: initializer-test', function() {
     it('initializer-test foo', function() {
       return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
-          .to.contain("import { initialize } from 'my-app/initializers/foo';")
-          .to.contain("module('Unit | Initializer | foo'")
-          .to.contain("application = Application.create();")
-          .to.contain("initialize(this.application);");
+          .to.equal(fixture('initializer-test/default.js'));
       });
     });
 
@@ -38,10 +37,7 @@ describe('Blueprint: initializer-test', function() {
       it('initializer-test foo', function() {
         return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
           expect(_file('tests/unit/initializers/foo-test.js'))
-            .to.contain("import { initialize } from 'my-app/initializers/foo';")
-            .to.contain("describe('Unit | Initializer | foo', function() {")
-            .to.contain("application = Application.create();")
-            .to.contain("initialize(application);");
+            .to.equal(fixture('initializer-test/mocha.js'));
         });
       });
     });
@@ -55,10 +51,7 @@ describe('Blueprint: initializer-test', function() {
     it('initializer-test foo', function() {
       return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
-          .to.contain("import { initialize } from 'dummy/initializers/foo';")
-          .to.contain("module('Unit | Initializer | foo'")
-          .to.contain("application = Application.create();")
-          .to.contain("initialize(this.application);");
+          .to.equal(fixture('initializer-test/dummy.js'));
       });
     });
   });
