@@ -25,11 +25,11 @@ describeComponent('<%= dasherizedModuleName %>', 'helper:<%= dasherizedModuleNam
     });
   }
 );
-<% } else if (testType == 'unit') { %>
-import { describe, it } from 'mocha';
+<% } else if (testType == 'unit') { %>import { describe, it } from 'mocha';
 import { <%= camelizedModuleName %> } from '<%= dasherizedPackageName %>/helpers/<%= dasherizedModuleName %>';
 
 describe('<%= friendlyTestName %>', function() {
+
   // Replace this with your real tests.
   it('works', function() {
     let result = <%= camelizedModuleName %>(42);
