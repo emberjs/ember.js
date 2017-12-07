@@ -4,7 +4,6 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const modifyPackages = blueprintHelpers.modifyPackages;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -76,16 +75,6 @@ describe('Blueprint: initializer', function() {
       });
     });
 
-    it('initializer-test foo', function() {
-      return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
-        expect(_file('tests/unit/initializers/foo-test.js'))
-          .to.contain("import { initialize } from 'my-app/initializers/foo';")
-          .to.contain("module('Unit | Initializer | foo'")
-          .to.contain("application = Application.create();")
-          .to.contain("initialize(this.application);");
-      });
-    });
-
     describe('with podModulePrefix', function() {
       beforeEach(function() {
         setupPodConfig({ podModulePrefix: true });
@@ -114,25 +103,6 @@ describe('Blueprint: initializer', function() {
                         "export default {\n" +
                         "  initialize\n" +
                         "};");
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha', function() {
-      beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
-        ]);
-      });
-
-      it('initializer-test foo', function() {
-        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
-          expect(_file('tests/unit/initializers/foo-test.js'))
-            .to.contain("import { initialize } from 'my-app/initializers/foo';")
-            .to.contain("describe('Unit | Initializer | foo', function() {")
-            .to.contain("application = Application.create();")
-            .to.contain("initialize(application);");
         });
       });
     });

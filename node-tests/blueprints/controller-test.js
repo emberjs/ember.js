@@ -68,14 +68,6 @@ describe('Blueprint: controller', function() {
       });
     });
 
-    it('controller-test foo', function() {
-      return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-        expect(_file('tests/unit/controllers/foo-test.js'))
-          .to.contain("import { moduleFor, test } from 'ember-qunit';")
-          .to.contain("moduleFor('controller:foo'");
-      });
-    });
-
     describe('with podModulePrefix', function() {
       beforeEach(function() {
         setupPodConfig({ podModulePrefix: true });
@@ -102,44 +94,6 @@ describe('Blueprint: controller', function() {
           expect(_file('tests/unit/pods/foo/bar/controller-test.js'))
             .to.contain("import { moduleFor, test } from 'ember-qunit';")
             .to.contain("moduleFor('controller:foo/bar'");
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha@0.11.0', function() {
-      beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.11.0');
-      });
-
-      it('controller-test foo for mocha', function() {
-        return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-          expect(_file('tests/unit/controllers/foo-test.js'))
-            .to.contain("import { describeModule, it } from 'ember-mocha';")
-            .to.contain("describeModule('controller:foo', 'Unit | Controller | foo'");
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha@0.12.0', function() {
-      beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.12.0');
-      });
-
-      it('controller-test foo', function() {
-        return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-          expect(_file('tests/unit/controllers/foo-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import { setupTest } from 'ember-mocha';")
-            .to.contain("describe('Unit | Controller | foo'")
-            .to.contain("setupTest('controller:foo',");
         });
       });
     });
@@ -205,14 +159,6 @@ describe('Blueprint: controller', function() {
 
         expect(_file('tests/unit/controllers/foo/bar-test.js'))
           .to.not.exist;
-      });
-    });
-
-    it('controller-test foo', function() {
-      return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-        expect(_file('tests/unit/controllers/foo-test.js'))
-          .to.contain("import { moduleFor, test } from 'ember-qunit';")
-          .to.contain("moduleFor('controller:foo'");
       });
     });
   });

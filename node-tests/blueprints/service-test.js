@@ -68,14 +68,6 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service-test foo', function() {
-      return emberGenerateDestroy(['service-test', 'foo'], _file => {
-        expect(_file('tests/unit/services/foo-test.js'))
-          .to.contain("import { moduleFor, test } from 'ember-qunit';")
-          .to.contain("moduleFor('service:foo'");
-      });
-    });
-
     describe('with podModulePrefix', function() {
       beforeEach(function() {
         setupPodConfig({ podModulePrefix: true });
@@ -102,62 +94,6 @@ describe('Blueprint: service', function() {
           expect(_file('tests/unit/pods/foo/bar/service-test.js'))
             .to.contain("import { moduleFor, test } from 'ember-qunit';")
             .to.contain("moduleFor('service:foo/bar'");
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha@0.11.0', function() {
-      beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.11.0');
-      });
-
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
-          expect(_file('tests/unit/services/foo-test.js'))
-            .to.contain("import { describeModule, it } from 'ember-mocha';")
-            .to.contain("describeModule('service:foo', 'Unit | Service | foo'");
-        });
-      });
-
-      it('service-test foo --pod', function() {
-        return emberGenerateDestroy(['service-test', 'foo', '--pod'], _file => {
-          expect(_file('tests/unit/foo/service-test.js'))
-            .to.contain("import { describeModule, it } from 'ember-mocha';")
-            .to.contain("describeModule('service:foo', 'Unit | Service | foo'");
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha@0.12.0', function() {
-      beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.12.0');
-      });
-
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
-          expect(_file('tests/unit/services/foo-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import { setupTest } from 'ember-mocha';")
-            .to.contain("describe('Unit | Service | foo', function() {")
-            .to.contain("setupTest('service:foo',");
-        });
-      });
-
-      it('service-test foo --pod', function() {
-        return emberGenerateDestroy(['service-test', 'foo', '--pod'], _file => {
-          expect(_file('tests/unit/foo/service-test.js'))
-            .to.contain("import { describe, it } from 'mocha';")
-            .to.contain("import { setupTest } from 'ember-mocha';")
-            .to.contain("describe('Unit | Service | foo', function() {")
-            .to.contain("setupTest('service:foo',");
         });
       });
     });
@@ -195,17 +131,6 @@ describe('Blueprint: service', function() {
         expect(_file('tests/unit/services/foo/bar-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
           .to.contain("moduleFor('service:foo/bar'");
-      });
-    });
-
-    it('service-test foo', function() {
-      return emberGenerateDestroy(['service-test', 'foo'], _file => {
-        expect(_file('tests/unit/services/foo-test.js'))
-          .to.contain("import { moduleFor, test } from 'ember-qunit';")
-          .to.contain("moduleFor('service:foo'");
-
-        expect(_file('app/service-test/foo.js'))
-          .to.not.exist;
       });
     });
   });
