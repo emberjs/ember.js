@@ -34,6 +34,26 @@ describe('Blueprint: helper-test', function() {
       });
     });
 
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('helper-test foo/bar-baz', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js'))
+            .to.equal(fixture('helper-test/rfc232.js'));
+        });
+      });
+
+      it('helper-test foo/bar-baz --unit', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+          expect(_file('tests/unit/helpers/foo/bar-baz-test.js'))
+            .to.equal(fixture('helper-test/rfc232-unit.js'));
+        });
+      });
+    });
+
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
