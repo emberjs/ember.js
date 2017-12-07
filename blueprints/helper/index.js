@@ -1,4 +1,5 @@
 'use strict';
+
 /* eslint-env node */
 
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
