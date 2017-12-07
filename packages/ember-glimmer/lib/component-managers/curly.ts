@@ -187,6 +187,9 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   getTagName(state: ComponentStateBucket): Option<string> {
     let { component } = state;
 
+    if (component.tagName === '') {
+      return null;
+    }
     return (component && component.tagName) || 'div';
   }
 
