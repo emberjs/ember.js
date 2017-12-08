@@ -27,6 +27,19 @@ describe('Blueprint: route-test', function() {
       });
     });
 
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('route-test foo', function() {
+        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/routes/foo-test.js'))
+            .to.equal(fixture('route-test/rfc232.js'));
+        });
+      });
+    });
+
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
