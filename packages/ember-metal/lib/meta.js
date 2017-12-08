@@ -161,27 +161,55 @@ export class Meta {
     return this[key] || (this[key] = Object.create(null));
   }
 
-  _getInherited(key) {
+  _forEachInherited() {
     let pointer = this;
+    let keys = arguments;
+    let len = keys.length - 1;
+    let callback = arguments[len];
+    let value, key, i;
+    let seen = Object.create(null);
+
     while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        return map;
+      value = pointer;
+      i = 0;
+      for (; i < len; i++) {
+        key = keys[i];
+        value = value[key];
+        if (value === undefined) {
+          break;
+        }
       }
+
+      if (i === len) {
+        for (let innerKey in value) {
+          if (seen[innerKey] === undefined) {
+            seen[innerKey] = true;
+            callback(innerKey, value[innerKey]);
+          }
+        }
+      }
+
       pointer = pointer.parent;
     }
   }
 
-  _findInherited(key, subkey) {
+  _findInherited() {
     let pointer = this;
+    let keys = arguments;
+    let len = keys.length;
+    let value, key, i;
+
     while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined) {
-          return value;
+      value = pointer;
+      i = 0;
+      for (; i < len; i++) {
+        key = keys[i];
+        value = value[key];
+        if (value === undefined) {
+          break;
         }
       }
+      if (i === len) { return value; }
       pointer = pointer.parent;
     }
   }
@@ -200,65 +228,15 @@ export class Meta {
   }
 
   peekDeps(subkey, itemkey) {
-    let pointer = this;
-    while (pointer !== undefined) {
-      let map = pointer._deps;
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined) {
-          let itemvalue = value[itemkey];
-          if (itemvalue !== undefined) {
-            return itemvalue;
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
+    return this._findInherited('_deps', subkey, itemkey);
   }
 
   hasDeps(subkey) {
-    let pointer = this;
-    while (pointer !== undefined) {
-      let deps = pointer._deps;
-      if (deps !== undefined && deps[subkey] !== undefined) {
-        return true;
-      }
-      pointer = pointer.parent;
-    }
-    return false;
+    return this._findInherited('_deps', subkey) !== undefined;
   }
 
   forEachInDeps(subkey, fn) {
-    return this._forEachIn('_deps', subkey, fn);
-  }
-
-  _forEachIn(key, subkey, fn) {
-    let pointer = this;
-    let seen;
-    let calls;
-    while (pointer !== undefined) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        let innerMap = map[subkey];
-        if (innerMap !== undefined) {
-          for (let innerKey in innerMap) {
-            seen = seen || Object.create(null);
-            if (seen[innerKey] === undefined) {
-              seen[innerKey] = true;
-              calls = calls || [];
-              calls.push(innerKey, innerMap[innerKey]);
-            }
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
-
-    if (calls !== undefined) {
-      for (let i = 0; i < calls.length; i+=2) {
-        fn(calls[i], calls[i + 1]);
-      }
-    }
+    return this._forEachInherited('_deps', subkey, fn);
   }
 
   set factory(factory) {
@@ -316,7 +294,7 @@ export class Meta {
   }
 
   readableChains() {
-    return this._getInherited('_chains');
+    return this._findInherited('_chains');
   }
 
   writeWatching(subkey, value) {
@@ -326,7 +304,7 @@ export class Meta {
   }
 
   peekWatching(subkey) {
-   return this._findInherited('_watching', subkey);
+    return this._findInherited('_watching', subkey);
   }
 
   writeMixins(subkey, value) {
@@ -340,21 +318,7 @@ export class Meta {
   }
 
   forEachMixins(fn) {
-    let pointer = this;
-    let seen;
-    while (pointer !== undefined) {
-      let map = pointer._mixins;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
-            fn(key, map[key]);
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
+    return this._forEachInherited('_mixins', fn);
   }
 
   writeBindings(subkey, value) {
@@ -369,21 +333,7 @@ export class Meta {
   }
 
   forEachBindings(fn) {
-    let pointer = this;
-    let seen;
-    while (pointer !== undefined) {
-      let map = pointer._bindings;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
-            fn(key, map[key]);
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
+    return this._forEachInherited('_bindings', fn);
   }
 
   clearBindings() {
