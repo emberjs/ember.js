@@ -9,6 +9,7 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: instance-initializer-test', function() {
@@ -23,6 +24,19 @@ describe('Blueprint: instance-initializer-test', function() {
       return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
         expect(_file('tests/unit/instance-initializers/foo-test.js'))
           .to.equal(fixture('instance-initializer-test/default.js'));
+      });
+    });
+
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('instance-initializer-test foo', function() {
+        return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
+          expect(_file('tests/unit/instance-initializers/foo-test.js'))
+            .to.equal(fixture('instance-initializer-test/rfc232.js'));
+        });
       });
     });
 
