@@ -177,8 +177,6 @@ const ComputedPropertyPrototype = ComputedProperty.prototype;
   ```
 
   @method volatile
-  @static
-  @for @ember/object/computed
   @return {ComputedProperty} this
   @chainable
   @public
@@ -207,8 +205,6 @@ ComputedPropertyPrototype.volatile = function() {
   ```
 
   @method readOnly
-  @static
-  @for @ember/object/computed
   @return {ComputedProperty} this
   @chainable
   @public
@@ -244,8 +240,6 @@ ComputedPropertyPrototype.readOnly = function() {
   ```
 
   @method property
-  @static
-  @for @ember/object/computed
   @param {String} path* zero or more property paths
   @return {ComputedProperty} this
   @chainable
@@ -297,8 +291,6 @@ ComputedPropertyPrototype.property = function() {
   via the `metaForProperty()` function.
 
   @method meta
-  @static
-  @for @ember/object/computed
   @param {Object} meta
   @chainable
   @public
