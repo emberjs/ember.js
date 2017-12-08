@@ -411,18 +411,6 @@ for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
 
-export const META_DESC = {
-  writable: true,
-  configurable: true,
-  enumerable: false,
-  value: null
-};
-
-const EMBER_META_PROPERTY = {
-  name: META_FIELD,
-  descriptor: META_DESC
-};
-
 if (MANDATORY_SETTER) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
@@ -455,9 +443,8 @@ if (MANDATORY_SETTER) {
   };
 }
 
-
-let getPrototypeOf = Object.getPrototypeOf;
-let metaStore = new WeakMap();
+const getPrototypeOf = Object.getPrototypeOf;
+const metaStore = new WeakMap();
 
 export function setMeta(obj, meta) {
   if (DEBUG) {
