@@ -9,6 +9,7 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: mixin-test', function() {
@@ -38,6 +39,19 @@ describe('Blueprint: mixin-test', function() {
         return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
           expect(_file('tests/unit/mixins/foo-test.js'))
             .to.equal(fixture('mixin-test/mocha.js'));
+        });
+      });
+    });
+
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('mixin-test foo', function() {
+        return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
+          expect(_file('tests/unit/mixins/foo-test.js'))
+            .to.equal(fixture('mixin-test/rfc232.js'));
         });
       });
     });
