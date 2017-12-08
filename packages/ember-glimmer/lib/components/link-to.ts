@@ -515,7 +515,7 @@ const LinkComponent = EmberComponent.extend({
   */
   init() {
     this._super(...arguments);
-    this._isDisabled = false;
+    this._isDisabled = this._isDisabled || false;
 
     // Map desired event name to invoke function
     let eventName = get(this, 'eventName');
