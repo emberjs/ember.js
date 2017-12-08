@@ -134,9 +134,20 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class via bound param');
   }
 
-  [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
+  [`@test the {{link-to}} helper does not respond to clicks when disabledWhen`](assert) {
     this.addTemplate('index', `
       {{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}
+    `);
+
+    this.visit('/');
+    this.click('#about-link');
+
+    assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
+  }
+
+  [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
+    this.addTemplate('index', `
+      {{#link-to "about" id="about-link" disabled=true}}About{{/link-to}}
     `);
 
     this.visit('/');
