@@ -96,7 +96,7 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
 function tagName(vm: VM) {
   let dynamicScope: DynamicScope = vm.dynamicScope() as DynamicScope;
   // tslint:disable-next-line:no-shadowed-variable
-  let { tagName } = dynamicScope.view!;
+  let { tagName } = dynamicScope.view;
   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
 }
 
