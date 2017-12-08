@@ -306,17 +306,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return objectAt(this, get(this, 'length') - 1);
   }).readOnly(),
 
-  // optimized version from Enumerable
-  contains(obj) {
-    deprecate(
-      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-      false,
-      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-    );
-
-    return this.indexOf(obj) >= 0;
-  },
-
   // Add any extra methods to EmberArray that are native to the built-in Array.
   /**
     Returns a new array that is a slice of the receiver. This implementation
