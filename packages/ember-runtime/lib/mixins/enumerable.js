@@ -7,7 +7,6 @@
 // HELPERS
 //
 
-import { guidFor } from 'ember-utils';
 import {
   get,
   set,
@@ -811,9 +810,11 @@ const Enumerable = Mixin.create({
   uniq() {
     let ret = emberA();
 
-    this.forEach(k => {
-      if (ret.indexOf(k) < 0) {
-        ret.push(k);
+    let seen = new Set();
+    this.forEach(item => {
+      if (!seen.has(item)) {
+        seen.add(item);
+        ret.push(item);
       }
     });
 
@@ -1066,12 +1067,12 @@ const Enumerable = Mixin.create({
 
   uniqBy(key) {
     let ret = emberA();
-    let seen = Object.create(null);
+    let seen = new Set();
 
     this.forEach((item) => {
-      let guid = guidFor(get(item, key));
-      if (!(guid in seen)) {
-        seen[guid] = true;
+      let val = get(item, key);
+      if (!seen.has(val)) {
+        seen.add(val);
         ret.push(item);
       }
     });
