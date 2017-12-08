@@ -74,6 +74,19 @@ describe('Blueprint: service-test', function() {
         });
       });
     });
+
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('service-test foo', function() {
+        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+          expect(_file('tests/unit/services/foo-test.js'))
+            .to.equal(fixture('service-test/rfc232.js'));
+        });
+      });
+    });
   });
 
   describe('in addon', function() {
