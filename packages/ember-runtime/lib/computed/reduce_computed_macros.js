@@ -1,8 +1,6 @@
 /**
 @module @ember/object
 */
-
-import { guidFor } from 'ember-utils';
 import { assert } from 'ember-debug';
 import {
   get,
@@ -407,12 +405,14 @@ export function filterBy(dependentKey, propertyKey, value) {
 export function uniq(...args) {
   return multiArrayMacro(args, function(dependentKeys) {
     let uniq = emberA();
+    let seen = new Set();
 
     dependentKeys.forEach(dependentKey => {
       let value = get(this, dependentKey);
       if (isArray(value)) {
         value.forEach(item => {
-          if (uniq.indexOf(item) === -1) {
+          if (!seen.has(item)) {
+            seen.add(item);
             uniq.push(item);
           }
         });
@@ -461,13 +461,13 @@ export function uniqBy(dependentKey, propertyKey) {
 
   let cp = new ComputedProperty(function() {
     let uniq = emberA();
-    let seen = Object.create(null);
     let list = get(this, dependentKey);
     if (isArray(list)) {
+      let seen = new Set();
       list.forEach(item => {
-        let guid = guidFor(get(item, propertyKey));
-        if (!(guid in seen)) {
-          seen[guid] = true;
+        let val = get(item, propertyKey);
+        if (!seen.has(val)) {
+          seen.add(val);
           uniq.push(item);
         }
       });
