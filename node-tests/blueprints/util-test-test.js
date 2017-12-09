@@ -9,6 +9,7 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: util-test', function() {
@@ -23,6 +24,19 @@ describe('Blueprint: util-test', function() {
       return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
         expect(_file('tests/unit/utils/foo-bar-test.js'))
           .to.equal(fixture('util-test/default.js'));
+      });
+    });
+
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('util-test foo-bar', function() {
+        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
+          expect(_file('tests/unit/utils/foo-bar-test.js'))
+            .to.equal(fixture('util-test/rfc232.js'));
+        });
       });
     });
 
