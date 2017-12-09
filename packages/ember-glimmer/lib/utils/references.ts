@@ -31,7 +31,6 @@ import {
   MANDATORY_SETTER,
 } from 'ember/features';
 import {
-  RECOMPUTE_TAG,
   SimpleHelper,
 } from '../helper';
 import emberToBool from './to-bool';
@@ -387,7 +386,7 @@ export class ClassBasedHelperReference extends CachedReference {
   constructor(instance: any, args: CapturedArguments) {
     super();
 
-    this.tag = combine([instance[RECOMPUTE_TAG], args.tag]);
+    this.tag = combine([tagFor(instance), args.tag]);
     this.instance = instance;
     this.args = args;
   }
