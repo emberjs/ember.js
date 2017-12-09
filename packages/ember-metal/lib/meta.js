@@ -242,9 +242,9 @@ export class Meta {
         let innerMap = map[subkey];
         if (innerMap !== undefined) {
           for (let innerKey in innerMap) {
-            seen = seen || Object.create(null);
-            if (seen[innerKey] === undefined) {
-              seen[innerKey] = true;
+            seen = seen === undefined ? new Set() : seen;
+            if (!seen.has(innerKey)) {
+              seen.add(innerKey);
               calls = calls || [];
               calls.push(innerKey, innerMap[innerKey]);
             }
@@ -346,9 +346,9 @@ export class Meta {
       let map = pointer._mixins;
       if (map !== undefined) {
         for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
+          seen = seen === undefined ? new Set() : seen;
+          if (!seen.has(key)) {
+            seen.add(key);
             fn(key, map[key]);
           }
         }
