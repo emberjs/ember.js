@@ -6,7 +6,7 @@ module('Unit | Controller | foo', function(hooks) {
 
   // Replace this with your real tests.
   test('it exists', function(assert) {
-    let controller = this.owner.factoryFor('controller:foo').create();
+    let controller = this.owner.lookup('controller:foo');
     assert.ok(controller);
   });
 });
