@@ -195,6 +195,14 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /You cannot invoke a component with both 'id' and 'elementId' at the same time./);
   }
 
+  ['@test cannot pass attributes with duplicate keys'](assert) {
+    this.registerComponent('foo-bar', { template: '' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar foo="pizza" foo="burger" bar="pepperoni"}}');
+    }, /You are passing more than one attribute with key "foo"/);
+  }
+
   ['@test it can have a custom tagName']() {
     let FooBarComponent = Component.extend({
       tagName: 'foo-bar'
