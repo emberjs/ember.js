@@ -47,10 +47,12 @@ function pushCtx(ctx) {
 
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
-
-  return valueProvided ?
-    (item)=> value === get(item, key) :
-    (item)=> !!get(item, key);
+  let i = (item => {
+    let itemVal = item[key];
+    let cur = itemVal === undefined ? get(item, key) : itemVal;
+    return valueProvided ? value === cur : !!cur;
+  });
+  return i;
 }
 
 /**

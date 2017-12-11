@@ -60,7 +60,7 @@ export function get(obj, keyName) {
 
   if (isDescriptor) {
     return value.get(obj, keyName);
-  } else if (isPath(keyName)) {
+  } else if (isPath(keyName) && !(keyName in obj)) {
     return _getPath(obj, keyName);
   } else if (value === undefined && 'object' === typeof obj && !(keyName in obj) &&
     typeof obj.unknownProperty === 'function') {
