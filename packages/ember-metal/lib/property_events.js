@@ -235,13 +235,12 @@ function endPropertyChanges() {
 
   @method changeProperties
   @param {Function} callback
-  @param [binding]
   @private
 */
-function changeProperties(callback, binding) {
+function changeProperties(callback) {
   beginPropertyChanges();
   try {
-    callback.call(binding);
+    callback();
   } finally {
     endPropertyChanges();
   }
