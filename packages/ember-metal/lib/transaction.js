@@ -8,7 +8,6 @@ import {
 let runInTransaction, didRender, assertNotRendered;
 
 // detect-backtracking-rerender by default is debug build only
-// detect-glimmer-allow-backtracking-rerender can be enabled in custom builds
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
 
   // there are 2 states

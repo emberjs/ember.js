@@ -1,3 +1,4 @@
+import { isFeatureEnabled } from 'ember-debug';
 import { RSVP } from 'ember-runtime';
 import applyMixins from './apply-mixins';
 
@@ -31,6 +32,17 @@ export default function moduleFor(description, TestClass, ...mixins) {
       QUnit.test(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf('@skip ') === 0) {
       QUnit.skip(name.slice(5), assert => context[name](assert));
+    } else {
+      let match = /^@feature\((!?)([a-z-]+)\) /.exec(name);
+      let shouldTest = match && isFeatureEnabled(match[2]);
+
+      if (match && match[1] === '!') {
+        shouldTest = !shouldTest;
+      }
+
+      if (shouldTest) {
+        QUnit.test(name.slice(match[0].length), assert => context[name](assert));
+      }
     }
   }
 }
