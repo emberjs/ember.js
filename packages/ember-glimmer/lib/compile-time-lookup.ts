@@ -13,9 +13,18 @@ export default class CompileTimeLookup implements ICompileTimeLookup<TemplateMet
     return manager.getCapabilities(state);
   }
 
-  getLayout(_handle: number): Option<CompilableTemplate<ProgramSymbolTable>> {
-    // const componentDefintion: CurlyComponentDefinition = this.resolver.resolve(handle);
-    return null;
+  getLayout(handle: number): Option<CompilableTemplate<ProgramSymbolTable>> {
+    const { manager, state } = this.resolver.resolve(handle);
+    const capabilities = manager.getCapabilities(state);
+    if (capabilities.dynamicLayout === true) {
+      return null;
+    }
+
+    const invocation = manager.getLayout(state, this.resolver);
+    return {
+      compile() { return invocation.handle; },
+      symbolTable: invocation.symbolTable
+    };
   }
 
   lookupHelper(name: string, referrer: TemplateMeta): Option<number> {

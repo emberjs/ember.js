@@ -1,6 +1,7 @@
 import {
   ComponentCapabilities,
   Option,
+  ProgramSymbolTable,
   Simple,
   VMHandle
 } from '@glimmer/interfaces';
@@ -30,7 +31,6 @@ import { Destroyable, EMPTY_ARRAY, Opaque } from '@glimmer/util';
 import {
   SerializedTemplate
 } from '@glimmer/wire-format';
-import { privatize as P } from 'container';
 import {
   assert,
 } from 'ember-debug';
@@ -43,7 +43,6 @@ import {
   assign,
   getOwner,
   guidFor,
-  OWNER,
 } from 'ember-utils';
 import { setViewElement, TemplateMeta } from 'ember-views';
 import {
@@ -67,8 +66,6 @@ import { processComponentArgs } from '../utils/process-args';
 import { PropertyReference } from '../utils/references';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
-
-const DEFAULT_LAYOUT = P`template:components/-default`;
 
 function aliasIdToElementId(args: Arguments, props: any) {
   if (args.named.has('id')) {
@@ -159,8 +156,25 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   implements WithDynamicTagName<Opaque>,
              WithDynamicLayout<Opaque, TemplateMeta, RuntimeResolver> {
 
+  getLayout(state: DefinitionState, resolver: RuntimeResolver) {
+    const handle = resolver.lookupComponentDefinition(state.name, {
+      // TODO: How do I find an owner here?
+      owner: getOwner(/* ??? */),
+      moduleName: ''
+    });
+    return {
+      handle,
+      symbolTable: state.symbolTable
+    };
+  }
+
   getDynamicLayout(component: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
+    console.log('dynamic');
+    const Template = get(component.component, 'layout');
     const owner = getOwner(component.component);
+    if (Template) {
+      return Template;
+    }
     const layoutName = component.component.layoutName!;
     const handle = resolver.lookupComponentDefinition(layoutName, {
       owner,
@@ -194,7 +208,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 
   getCapabilities(state: DefinitionState): ComponentCapabilities {
-    return state.capabilities;
+    const capabilities = {
+      ...state.capabilities,
+      dynamicLayout: !state.handle
+    };
+    return capabilities;
   }
 
   prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
@@ -282,11 +300,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     props.parentView = parentView;
     props[HAS_BLOCK] = hasBlock;
-    props.layoutName = `components/${state.name}`;
 
     props._targetObject = callerSelfRef.value();
 
     let component = factory.create(props);
+    component.layoutName = component.layoutName || `components/${state.name}`;
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -326,34 +344,34 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return bucket;
   }
 
-  layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): VMHandle {
-    let template = definition.template;
-    if (!template) {
-      // move templateFor to resolver
-      template = this.templateFor(bucket.component, env);
-    }
-    throw Error('use resolver');
-    // needs to use resolver
-    // return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
-  }
+  // layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): VMHandle {
+  //   let template = definition.template;
+  //   if (!template) {
+  //     // move templateFor to resolver
+  //     template = this.templateFor(bucket.component, env);
+  //   }
+  //   throw Error('use resolver');
+  //   // needs to use resolver
+  //   // return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
+  // }
 
-  templateFor(component: Component, _env: Environment): OwnedTemplate {
-    let Template = get(component, 'layout');
-    let owner = component[OWNER];
-    if (Template) {
-      throw new Error('TODO layout not looked up but direct import');
-      // we should move this to the resolver
-      // return env.getTemplate(Template, owner);
-    }
-    let layoutName = get(component, 'layoutName');
-    if (layoutName) {
-      let template = owner.lookup('template:' + layoutName);
-      if (template) {
-        return template;
-      }
-    }
-    return owner.lookup(DEFAULT_LAYOUT);
-  }
+  // templateFor(component: Component, _env: Environment): OwnedTemplate {
+  //   let Template = get(component, 'layout');
+  //   let owner = component[OWNER];
+  //   if (Template) {
+  //     throw new Error('TODO layout not looked up but direct import');
+  //     // we should move this to the resolver
+  //     // return env.getTemplate(Template, owner);
+  //   }
+  //   let layoutName = get(component, 'layoutName');
+  //   if (layoutName) {
+  //     let template = owner.lookup('template:' + layoutName);
+  //     if (template) {
+  //       return template;
+  //     }
+  //   }
+  //   return owner.lookup(DEFAULT_LAYOUT);
+  // }
 
   getSelf({ component }: ComponentStateBucket): VersionedPathReference<Opaque> {
     return component[ROOT_REF];
@@ -541,16 +559,22 @@ export class CurlyComponentDefinition implements ComponentDefinition {
   public template: OwnedTemplate;
   public args: Arguments | undefined;
   public state: DefinitionState;
+  public symbolTable: ProgramSymbolTable | undefined;
 
   // tslint:disable-next-line:no-shadowed-variable
   constructor(public name: string, public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: Arguments) {
+    const layout = template && template.asLayout();
+    const symbolTable = layout ? layout.symbolTable : undefined;
+    this.symbolTable = symbolTable;
     this.template = template;
     this.args = args;
     this.state = {
       name,
       ComponentClass,
       handle,
-      capabilities: CURLY_CAPABILITIES
+      template,
+      capabilities: CURLY_CAPABILITIES,
+      symbolTable
     };
   }
 }

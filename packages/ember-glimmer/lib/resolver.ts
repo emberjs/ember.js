@@ -5,7 +5,16 @@ import {
   RuntimeResolver as IRuntimeResolver,
   VMHandle
 } from '@glimmer/interfaces';
-import { getDynamicVar, Helper, ModifierManager, PartialDefinition, ScannableTemplate, Invocation } from '@glimmer/runtime';
+import { CompileOptions } from '@glimmer/opcode-compiler';
+import {
+  getDynamicVar,
+  Helper,
+  Invocation,
+  ModifierManager,
+  PartialDefinition,
+  ScannableTemplate
+} from '@glimmer/runtime';
+import { SerializedTemplate } from '@glimmer/wire-format';
 import { privatize as P } from 'container';
 import { LookupOptions, Owner } from 'ember-utils';
 import {
@@ -37,8 +46,6 @@ import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
-import { CompileOptions } from '@glimmer/opcode-compiler';
-import { SerializedTemplateBlock, SerializedTemplate } from '@glimmer/wire-format';
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -136,7 +143,8 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
    */
   lookupComponentDefinition(name: string, meta: TemplateMeta): Option<number> {
     return this.getHandle(
-      this._lookupComponentDefinition(name, meta));
+      this._lookupComponentDefinition(name, meta)
+    );
   }
 
   /**
