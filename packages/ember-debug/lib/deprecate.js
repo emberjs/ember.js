@@ -159,50 +159,53 @@ if (DEBUG) {
     @public
     @since 1.0.0
   */
-  deprecate = function deprecate(message, test, options) {
-    if (ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT !== true) {
-      assert(missingOptionsDeprecation, options && (options.id || options.until));
-      assert(missingOptionsIdDeprecation, options.id);
-      assert(missingOptionsUntilDeprecation, options.until);
+  deprecate = function deprecate(message, test, { id, until } = {}) {
+    if (ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
+      // ember-2-legacy
+      if (!id && !until) {
+        deprecate(
+          missingOptionsDeprecation,
+          false,
+          {
+            id: 'ember-debug.deprecate-options-missing',
+            until: '3.0.0',
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          }
+        );
+      } else if (!id) {
+        deprecate(
+          missingOptionsIdDeprecation,
+          false,
+          {
+            id: 'ember-debug.deprecate-id-missing',
+            until: '3.0.0',
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          }
+        );
+      } else if (!until) {
+        deprecate(
+          missingOptionsUntilDeprecation,
+          false,
+          {
+            id: 'ember-debug.deprecate-until-missing',
+            until: '3.0.0',
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+          }
+        );
+      }
+    } else {
+      if (!id && !until) {
+        assert(missingOptionsDeprecation);
+      } else if (!id) {
+        assert(missingOptionsIdDeprecation);
+      } else if (!until) {
+        assert(missingOptionsUntilDeprecation);
+      }
     }
 
-    if ((!options || (!options.id && !options.until)) && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsDeprecation,
-        false,
-        {
-          id: 'ember-debug.deprecate-options-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
+    if (until !== 'TBD' || ENV._ENABLE_TBD_DEPRECATIONS === true) {
+      invoke('deprecate', ...arguments);
     }
-
-    if (options && !options.id && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsIdDeprecation,
-        false,
-        {
-          id: 'ember-debug.deprecate-id-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
-    }
-
-    if (options && !options.until && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsUntilDeprecation,
-        options && options.until,
-        {
-          id: 'ember-debug.deprecate-until-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
-    }
-
-    invoke('deprecate', ...arguments);
   };
 }
 

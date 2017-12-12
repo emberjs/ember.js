@@ -24,6 +24,7 @@ let originalEnvValue;
 let originalDeprecateHandler;
 let originalWarnOptions;
 let originalDeprecationOptions;
+let originalTBD;
 
 QUnit.module('ember-debug', {
   setup() {
@@ -31,9 +32,12 @@ QUnit.module('ember-debug', {
     originalDeprecateHandler = HANDLERS.deprecate;
     originalWarnOptions = ENV._ENABLE_WARN_OPTIONS_SUPPORT;
     originalDeprecationOptions = ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT;
+    originalTBD = ENV._ENABLE_TBD_DEPRECATIONS;
 
     ENV.RAISE_ON_DEPRECATION = true;
-    ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = true;
+    ENV._ENABLE_WARN_OPTIONS_SUPPORT = undefined;
+    ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = undefined;
+    ENV._ENABLE_TBD_DEPRECATIONS = undefined;
   },
 
   teardown() {
@@ -42,6 +46,7 @@ QUnit.module('ember-debug', {
     ENV.RAISE_ON_DEPRECATION = originalEnvValue;
     ENV._ENABLE_WARN_OPTIONS_SUPPORT = originalWarnOptions;
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = originalDeprecationOptions;
+    ENV._ENABLE_TBD_DEPRECATIONS = originalTBD;
   }
 });
 
@@ -209,6 +214,8 @@ QUnit.test('Ember.deprecate does not throw a deprecation at log and silence leve
 QUnit.test('Ember.deprecate without options triggers a deprecation', function(assert) {
   assert.expect(4);
 
+  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = true;
+
   registerHandler(function(message) {
     if (message === missingOptionsDeprecation) {
       assert.ok(true, 'proper deprecation is triggered when options is missing');
@@ -223,7 +230,6 @@ QUnit.test('Ember.deprecate without options triggers a deprecation', function(as
 
 QUnit.test('Ember.deprecate without options triggers an assertion', function(assert) {
   expect(2);
-  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
   assert.throws(
     () => deprecate('foo'),
@@ -242,6 +248,8 @@ QUnit.test('Ember.deprecate without options triggers an assertion', function(ass
 QUnit.test('Ember.deprecate without options.id triggers a deprecation', function(assert) {
   assert.expect(2);
 
+  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = true;
+
   registerHandler(function(message) {
     if (message === missingOptionsIdDeprecation) {
       assert.ok(true, 'proper deprecation is triggered when options.id is missing');
@@ -255,7 +263,6 @@ QUnit.test('Ember.deprecate without options.id triggers a deprecation', function
 
 QUnit.test('Ember.deprecate without options.id triggers an assertion', function(assert) {
   expect(1);
-  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
   assert.throws(
     () => deprecate('foo', false, { until: 'forever' }),
@@ -266,6 +273,8 @@ QUnit.test('Ember.deprecate without options.id triggers an assertion', function(
 
 QUnit.test('Ember.deprecate without options.until triggers a deprecation', function(assert) {
   assert.expect(2);
+
+  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = true;
 
   registerHandler(function(message) {
     if (message === missingOptionsUntilDeprecation) {
@@ -280,12 +289,28 @@ QUnit.test('Ember.deprecate without options.until triggers a deprecation', funct
 
 QUnit.test('Ember.deprecate without options.until triggers an assertion', function(assert) {
   expect(1);
-  ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
   assert.throws(
     () => deprecate('foo', false, { id: 'test' }),
     new RegExp(missingOptionsUntilDeprecation),
     'proper assertion is triggered when options.until is missing'
+  );
+});
+
+QUnit.test('Ember.deprecate with TBD is ignored', function(assert) {
+  expect(0);
+  deprecate('foo', false, { id: 'test', until: 'TBD' });
+});
+
+
+QUnit.test('Ember.deprecate with TBD can be enabled in tests', function(assert) {
+  expect(1);
+
+  ENV._ENABLE_TBD_DEPRECATIONS = true;
+
+  assert.throws(
+    () => deprecate('foo', false, { id: 'test', until: 'TBD' }),
+    'TBD assertions should be triggered when explictly enabled'
   );
 });
 
