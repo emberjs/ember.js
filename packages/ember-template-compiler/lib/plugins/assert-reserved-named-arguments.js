@@ -1,5 +1,10 @@
 import { assert } from 'ember-debug';
+import { EMBER_GLIMMER_NAMED_ARGUMENTS } from 'ember/features';
 import calculateLocationDisplay from '../system/calculate-location-display';
+
+const RESERVED = ['@arguments', '@args'];
+
+let isReserved, assertMessage;
 
 export default function assertReservedNamedArguments(env) {
   let { moduleName } = env.meta;
@@ -8,18 +13,19 @@ export default function assertReservedNamedArguments(env) {
     name: 'assert-reserved-named-arguments',
 
     visitors: {
-      PathExpression(node) {
-        if (node.original[0] === '@') {
-          assert(assertMessage(moduleName, node));
+      PathExpression({ original, loc }) {
+        if (isReserved(original)) {
+          assert(`${assertMessage(original)} ${calculateLocationDisplay(moduleName, loc)}`);
         }
       }
     }
   };
 }
 
-function assertMessage(moduleName, node) {
-  let path = node.original;
-  let source = calculateLocationDisplay(moduleName, node.loc);
-
-  return `'${path}' is not a valid path. ${source}`;
+if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
+  isReserved = name => RESERVED.indexOf(name) !== -1 || name.match(/^@[^a-z]/);
+  assertMessage = name => `'${name}' is reserved.`;
+} else {
+  isReserved = name => name[0] === '@';
+  assertMessage = name => `'${name}' is not a valid path.`;
 }

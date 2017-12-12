@@ -3,6 +3,7 @@
     "features-stripped-test": null,
     "ember-libraries-isregistered": null,
     "ember-improved-instrumentation": null,
+    "ember-glimmer-named-arguments": null,
     "ember-routing-router-service": true,
     "ember-engines-mount-params": true,
     "ember-module-unification": null,
