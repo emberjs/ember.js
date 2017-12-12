@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### 2.18.0-beta.3 (December 12, 2017)
+
+- [#15924](https://github.com/emberjs/ember.js/pull/15924) / [#15940](https://github.com/emberjs/ember.js/pull/15940) [BUGFIX] Assert that `classNameBinding` items are non-empty strings
+- [#15927](https://github.com/emberjs/ember.js/pull/15927) [BUGFIX] Extend test framework detection to `ember-qunit` and `ember-mocha`
+- [#15935](https://github.com/emberjs/ember.js/pull/15935) [BUGFIX] Fix framework detection in blueprints to work with prerelease versions of ember-cli-mocha
+
 ### 2.18.0-beta.2 (December 4, 2017)
 
 - [#15902](https://github.com/emberjs/ember.js/pull/15902) [BUGFIX] Fix link-to throwing in integration tests
