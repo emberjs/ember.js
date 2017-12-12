@@ -22,13 +22,6 @@ function getFeatures(isDebug) {
     }
   }
 
-  features['ember-glimmer-allow-backtracking-rerender'] = false;
-
-  if (process.env.ALLOW_BACKTRACKING) {
-    features['ember-glimmer-allow-backtracking-rerender'] = true;
-    features['ember-glimmer-detect-backtracking-rerender'] = false;
-  }
-
   features['mandatory-setter'] = isDebug;
   features['ember-glimmer-detect-backtracking-rerender'] = isDebug;
 
