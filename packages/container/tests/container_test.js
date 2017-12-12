@@ -1,7 +1,11 @@
 import { OWNER, assign } from 'ember-utils';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
-import { Registry } from '..';
-import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  factoryForWithRawString,
+  lookupWithRawString,
+  Registry
+} from '..';
+import { factory, moduleFor, AbstractTestCase, ModuleBasedTestResolver } from 'internal-test-helpers';
 
 moduleFor('Container', class extends AbstractTestCase {
   ['@test A registered factory returns the same instance each time'](assert) {
@@ -676,8 +680,77 @@ if (EMBER_MODULE_UNIFICATION) {
       let result = container.lookup(lookup, { source: expectedSource });
       this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
 
-      this.assert.ok(container.cache[`template:routes/application:component:my-input`] instanceof PrivateComponent,
-        'The correct factory was stored in the cache with the correct key which includes the source.');
+      this.assert.ok(
+        container.cache[`component:my-input\0template:routes/application\0`] instanceof PrivateComponent,
+        'The correct factory was stored in the cache with the correct key which includes the source.'
+      );
+    }
+
+    ['@test The container can pass a namespaced path to factoryFor']() {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let namespace = 'my-addon';
+      let name = 'my-component';
+      let rawString = `${namespace}::${name}`;
+      let resolver = new ModuleBasedTestResolver();
+      let registry = new Registry({resolver});
+
+      resolver.add({
+        specifier: type,
+        rawString: rawString
+      }, PrivateComponent);
+
+      let container = registry.container();
+
+      this.assert.equal(
+        container.factoryFor(`${type}:${name}`), undefined,
+        'Cannot find factoryFor by name'
+      );
+      expectAssertion(() => {
+        container.factoryFor(`${type}:${rawString}`);
+      }, /must be a proper full name/, 'Cannot find factoryFor by rawString');
+
+      let result = factoryForWithRawString(container, 'component', rawString);
+      this.assert.strictEqual(
+        result.class, PrivateComponent,
+        'The correct factory was provided'
+      );
+      this.assert.strictEqual(
+        result.class, PrivateComponent,
+        'The correct factory was provided again'
+      );
+    }
+
+    ['@test The container can pass a namespace to lookup']() {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let namespace = 'my-addon';
+      let name = 'my-component';
+      let rawString = `${namespace}::${name}`;
+      let resolver = new ModuleBasedTestResolver();
+      let registry = new Registry({resolver});
+
+      resolver.add({
+        specifier: type,
+        rawString: rawString
+      }, PrivateComponent);
+
+      let container = registry.container();
+
+      this.assert.equal(
+        container.lookup(`${type}:${name}`), undefined,
+        'Cannot lookup by type:name'
+      );
+      expectAssertion(() => {
+        container.lookup(`${type}:${rawString}`);
+      }, /must be a proper full name/, 'Cannot lookup by type:rawString');
+
+      let result = lookupWithRawString(container, 'component', rawString);
+      this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
+      this.assert.ok(
+        container.cache[`${type}\0\0${rawString}`] instanceof PrivateComponent,
+        'The correct factory was stored in the cache with the correct key which includes the raw string.'
+      );
     }
   });
 }

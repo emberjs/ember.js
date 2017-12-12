@@ -2,7 +2,7 @@ import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { inject, Service } from 'ember-runtime';
 import { computed } from 'ember-metal';
-import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
+import { EMBER_METAL_ES5_GETTERS, EMBER_MODULE_UNIFICATION } from 'ember/features';
 
 moduleFor('Service Injection', class extends ApplicationTestCase {
 
@@ -39,6 +39,26 @@ if (EMBER_METAL_ES5_GETTERS) {
         let controller = this.applicationInstance.lookup('controller:application');
         assert.ok(controller.myService instanceof MyService);
         assert.equal(controller.myService.name, 'The service name', 'service property accessible');
+      });
+    }
+  });
+}
+
+if (EMBER_MODULE_UNIFICATION) {
+  moduleFor('Service Injection (MU)', class extends ApplicationTestCase {
+    ['@test Service with namespace can be injected and is resolved'](assert) {
+      this.add('controller:application', Controller.extend({
+        myService: inject.service('my-namespace::my-service')
+      }));
+      let MyService = Service.extend();
+      this.add({
+        specifier: 'service',
+        rawString: 'my-namespace::my-service'
+      }, MyService);
+
+      this.visit('/').then(() => {
+        let controller = this.applicationInstance.lookup('controller:application');
+        assert.ok(controller.get('myService') instanceof MyService);
       });
     }
   });

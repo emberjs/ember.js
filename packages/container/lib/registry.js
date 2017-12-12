@@ -1,12 +1,16 @@
 import { dictionary, assign, intern } from 'ember-utils';
 import { assert, deprecate } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
-import Container from './container';
+import Container, {
+  parseInjectionString,
+  RAW_STRING_OPTION_KEY
+} from './container';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
-const missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
+
+let missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
 
 /**
  A registry used to store factory and option information keyed
@@ -147,15 +151,16 @@ export default class Registry {
    @param {Object} options
    */
   register(fullName, factory, options = {}) {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName, options));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
-    assert(`Cannot re-register: '${fullName}', as it has already been resolved.`, !this._resolveCache[normalizedName]);
+    let cacheKey = this.resolverCacheKey(normalizedName, options);
+    assert(`Cannot re-register: '${fullName}', as it has already been resolved.`, !this._resolveCache[cacheKey]);
 
-    this._failSet.delete(normalizedName);
+    this._failSet.delete(cacheKey);
     this.registrations[normalizedName] = factory;
-    this._options[normalizedName] = options;
+    this._options[cacheKey] = options;
   }
 
   /**
@@ -179,13 +184,15 @@ export default class Registry {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
+    let cacheKey = this.resolverCacheKey(normalizedName);
 
     this._localLookupCache = Object.create(null);
 
+
     delete this.registrations[normalizedName];
-    delete this._resolveCache[normalizedName];
-    delete this._options[normalizedName];
-    this._failSet.delete(normalizedName);
+    delete this._resolveCache[cacheKey];
+    delete this._options[cacheKey];
+    this._failSet.delete(cacheKey);
   }
 
   /**
@@ -224,7 +231,7 @@ export default class Registry {
    @return {Function} fullName's factory
    */
   resolve(fullName, options) {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName, options));
     let factory = resolve(this, this.normalize(fullName), options);
     if (factory === undefined && this.fallback !== null) {
       factory = this.fallback.resolve(...arguments);
@@ -317,13 +324,14 @@ export default class Registry {
    @return {Boolean}
    */
   has(fullName, options) {
-    if (!this.isValidFullName(fullName)) {
+    if (!this.isValidFullName(fullName, options)) {
       return false;
     }
 
     let source = options && options.source && this.normalize(options.source);
+    let rawString = options && options[RAW_STRING_OPTION_KEY];
 
-    return has(this, this.normalize(fullName), source);
+    return has(this, this.normalize(fullName), source, rawString);
   }
 
   /**
@@ -374,13 +382,13 @@ export default class Registry {
    @param {Object} options
    */
   options(fullName, options = {}) {
-    let normalizedName = this.normalize(fullName);
-    this._options[normalizedName] = options;
+    let cacheKey = this.resolverCacheKey(this.normalize(fullName));
+    this._options[cacheKey] = options;
   }
 
   getOptions(fullName) {
-    let normalizedName = this.normalize(fullName);
-    let options = this._options[normalizedName];
+    let cacheKey = this.resolverCacheKey(this.normalize(fullName));
+    let options = this._options[cacheKey];
 
     if (options === undefined && this.fallback !== null) {
       options = this.fallback.getOptions(fullName);
@@ -388,8 +396,8 @@ export default class Registry {
     return options;
   }
 
-  getOption(fullName, optionName) {
-    let options = this._options[fullName];
+  getOption(fullName, optionName, __options={}) {
+    let options = this._options[this.resolverCacheKey(fullName, __options)];
 
     if (options && options[optionName] !== undefined) {
       return options[optionName];
@@ -401,7 +409,7 @@ export default class Registry {
     if (options && options[optionName] !== undefined) {
       return options[optionName];
     } else if (this.fallback !== null) {
-      return this.fallback.getOption(fullName, optionName);
+      return this.fallback.getOption(fullName, optionName, __options);
     }
   }
 
@@ -499,8 +507,8 @@ export default class Registry {
    @param {String} property
    @param {String} injectionName
    */
-  injection(fullName, property, injectionName) {
-    assert(`Invalid injectionName, expected: 'type:name' got: ${injectionName}`, this.isValidFullName(injectionName));
+  injection(fullName, property, injectionName, options) {
+    assert(`Invalid injectionName, expected: 'type:name' got: ${injectionName}`, this.isValidFullName(injectionName, options));
 
     let normalizedInjectionName = this.normalize(injectionName);
 
@@ -546,7 +554,14 @@ export default class Registry {
     return assign({}, fallbackKnown, localKnown, resolverKnown);
   }
 
-  isValidFullName(fullName) {
+  isValidFullName(fullName, options) {
+    if(EMBER_MODULE_UNIFICATION) {
+      /* With a rawString, the fullName doesn't need to contain a : */
+      if (options && options[RAW_STRING_OPTION_KEY] && fullName) {
+        return true;
+      }
+    }
+
     return VALID_FULL_NAME_REGEXP.test(fullName);
   }
 
@@ -566,12 +581,12 @@ export default class Registry {
     return injections;
   }
 
-  resolverCacheKey(name, options) {
-    if (!EMBER_MODULE_UNIFICATION) {
-      return name;
-    }
-
-    return (options && options.source) ? `${options.source}:${name}` : name;
+  resolverCacheKey(name, options={}) {
+    return [
+      name,
+      options.source,
+      options[RAW_STRING_OPTION_KEY]
+    ].join('\0');
   }
 
   /**
@@ -625,7 +640,11 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
-        assert(`Expected a proper full name, given '${hash[key]}'`, this.isValidFullName(hash[key]));
+        let {
+          fullName,
+          rawString
+        } = parseInjectionString(hash[key]);
+        assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName, {[RAW_STRING_OPTION_KEY]: rawString}));
 
         injections.push({
           property: key,
@@ -640,12 +659,13 @@ if (DEBUG) {
   Registry.prototype.validateInjections = function(injections) {
     if (!injections) { return; }
 
-    let fullName;
-
     for (let i = 0; i < injections.length; i++) {
-      fullName = injections[i].fullName;
+      let {
+        fullName,
+        rawString
+      } = parseInjectionString(injections[i].fullName);
 
-      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
+      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName, {[RAW_STRING_OPTION_KEY]: rawString}));
     }
   };
 }
@@ -696,7 +716,7 @@ function resolve(registry, normalizedName, options) {
   let resolved;
 
   if (registry.resolver) {
-    resolved = registry.resolver.resolve(normalizedName, options && options.source);
+    resolved = registry.resolver.resolve(normalizedName, options && options.source, options && options[RAW_STRING_OPTION_KEY]);
   }
 
   if (resolved === undefined) {
@@ -712,8 +732,11 @@ function resolve(registry, normalizedName, options) {
   return resolved;
 }
 
-function has(registry, fullName, source) {
-  return registry.resolve(fullName, { source }) !== undefined;
+function has(registry, fullName, source, rawString) {
+  return registry.resolve(fullName, {
+    source,
+    [RAW_STRING_OPTION_KEY]: rawString
+  }) !== undefined;
 }
 
 const privateNames = dictionary(null);
