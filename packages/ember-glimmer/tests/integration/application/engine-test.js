@@ -6,6 +6,7 @@ import { Component } from 'ember-glimmer';
 import { Engine } from 'ember-application';
 import { Route, Router } from 'ember-routing';
 import { run } from 'ember-metal';
+import { EMBER_GLIMMER_NAMED_ARGUMENTS } from 'ember/features';
 
 moduleFor('Application test: engine rendering', class extends ApplicationTest {
   get routerOptions() {
@@ -182,7 +183,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       init() {
         this._super(...arguments);
         this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
-        this.register('template:troll', compile('{{attrs.wat}}'));
+        this.register('template:troll', EMBER_GLIMMER_NAMED_ARGUMENTS ? compile('{{@wat}}') : compile('{{attrs.wat}}'));
         this.register('controller:application', Controller.extend({
           contextType: 'Engine'
         }));

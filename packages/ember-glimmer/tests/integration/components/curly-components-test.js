@@ -24,6 +24,7 @@ import {
   styles
 } from '../../utils/test-helpers';
 import {
+  EMBER_GLIMMER_NAMED_ARGUMENTS,
   MANDATORY_SETTER
 } from 'ember/features';
 
@@ -1066,6 +1067,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test non-block with properties on attrs']() {
+    if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
+      expectDeprecation('Accessing `attrs.someProp` is deprecated, use `@someProp` instead.');
+    }
+
     this.registerComponent('non-block', {
       template: 'In layout - someProp: {{attrs.someProp}}'
     });
@@ -1259,6 +1264,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@feature(ember-glimmer-named-arguments) this.attrs.foo === attrs.foo === @foo === foo']() {
+    expectDeprecation('Accessing `attrs.value` is deprecated, use `@value` instead.');
+
     this.registerComponent('foo-bar', {
       template: strip`
         Args: {{this.attrs.value}} | {{attrs.value}} | {{@value}} | {{value}}
@@ -1351,6 +1358,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test block with properties on attrs']() {
+    if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
+      expectDeprecation('Accessing `attrs.someProp` is deprecated, use `@someProp` instead.');
+    }
+
     this.registerComponent('with-block', {
       template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}'
     });
@@ -3070,6 +3081,11 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test using attrs for positional params'](assert) {
+    if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
+      expectDeprecation('Accessing `attrs.myVar` is deprecated, use `@myVar` instead.');
+      expectDeprecation('Accessing `attrs.myVar2` is deprecated, use `@myVar2` instead.');
+    }
+
     let MyComponent = Component.extend();
 
     this.registerComponent('foo-bar', {

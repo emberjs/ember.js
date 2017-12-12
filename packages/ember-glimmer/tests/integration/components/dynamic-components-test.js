@@ -446,9 +446,9 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
   }
 
   ['@test nested component helpers'](assert) {
-    this.registerComponent('foo-bar', { template: 'yippie! {{attrs.location}} {{yield}}' });
-    this.registerComponent('baz-qux', { template: 'yummy {{attrs.location}} {{yield}}' });
-    this.registerComponent('corge-grault', { template: 'delicious {{attrs.location}} {{yield}}' });
+    this.registerComponent('foo-bar', { template: 'yippie! {{location}} {{yield}}' });
+    this.registerComponent('baz-qux', { template: 'yummy {{location}} {{yield}}' });
+    this.registerComponent('corge-grault', { template: 'delicious {{location}} {{yield}}' });
 
     this.render('{{#component componentName1 location=location}}{{#component componentName2 location=location}}arepas!{{/component}}{{/component}}', {
       componentName1: 'foo-bar',

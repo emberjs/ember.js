@@ -1,3 +1,7 @@
+import { deprecate } from 'ember-debug';
+import { EMBER_GLIMMER_NAMED_ARGUMENTS } from 'ember/features';
+import calculateLocationDisplay from '../system/calculate-location-display';
+
 /**
  @module ember
 */
@@ -43,6 +47,13 @@ export default function transformAttrsIntoArgs(env) {
 
       PathExpression(node) {
         if (isAttrs(node, stack[stack.length - 1])) {
+          if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
+            deprecate(deprecationMessage(env.meta.moduleName, node), false, {
+              id: 'ember-template-compiler.deprecate-attrs',
+              until: 'TBD'
+            });
+          }
+
           let path = b.path(node.original.substr(6));
           path.original = `@${path.original}`;
           path.data = true;
@@ -70,4 +81,13 @@ function isAttrs(node, symbols) {
   }
 
   return false;
+}
+
+function deprecationMessage(moduleName, node) {
+  let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
+  let name = node.original.substr(6);
+  let original = `attrs.${name}`;
+  let preferred = `@${name}`;
+
+  return `Accessing \`${original}\` is deprecated, use \`${preferred}\` instead.`;
 }

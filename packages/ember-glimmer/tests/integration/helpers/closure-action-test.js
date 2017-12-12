@@ -5,7 +5,10 @@ import {
   instrumentationSubscribe,
   instrumentationUnsubscribe
 } from 'ember-metal';
-import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
+import {
+  EMBER_GLIMMER_NAMED_ARGUMENTS,
+  EMBER_IMPROVED_INSTRUMENTATION
+} from 'ember/features';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Component, INVOKE } from '../../utils/helpers';
@@ -232,6 +235,10 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
   }
 
   ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
+    if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
+      expectDeprecation('Accessing `attrs.external-action` is deprecated, use `@external-action` instead.');
+    }
+
     this.registerComponent('inner-component', {
       template: '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>'
     });
@@ -905,6 +912,10 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
   }
 
   ['@test action closure does not get auto-mut wrapped'](assert) {
+    if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
+      expectDeprecation('Accessing `attrs.submit` is deprecated, use `@submit` instead.');
+    }
+
     let first = 'raging robert';
     let second = 'mild machty';
     let returnValue = 'butch brian';
@@ -972,6 +983,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
 
   ['@test action should be called within a run loop']() {
     let innerComponent;
+
     let capturedRunLoop;
 
     let InnerComponent = Component.extend({
