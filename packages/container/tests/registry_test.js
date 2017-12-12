@@ -767,4 +767,26 @@ if (EMBER_MODULE_UNIFICATION) {
       assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
     }
   });
+
+  QUnit.test('The registry can pass a namespaced lookup to the resolver', function(assert) {
+    let PrivateComponent = factory();
+    let lookup = 'template:components/my-addon::my-input';
+    let resolveCount = 0;
+    let resolver = {
+      resolve(fullName) {
+        resolveCount++;
+        if (fullName === lookup) {
+          return PrivateComponent;
+        }
+      }
+    };
+    let registry = new Registry({ resolver });
+    registry.normalize = function(name) {
+      return name;
+    };
+
+    assert.strictEqual(registry.resolve(lookup), PrivateComponent, 'The correct factory was provided');
+    assert.strictEqual(registry.resolve(lookup), PrivateComponent, 'The correct factory was provided again');
+    assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+  });
 }

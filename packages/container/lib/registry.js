@@ -6,6 +6,7 @@ import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
+const MODULE_UNIFICATION_VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+(::[^:]+)?$/;
 const missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
 
 /**
@@ -547,7 +548,11 @@ export default class Registry {
   }
 
   isValidFullName(fullName) {
-    return VALID_FULL_NAME_REGEXP.test(fullName);
+    if(!EMBER_MODULE_UNIFICATION) {
+      return VALID_FULL_NAME_REGEXP.test(fullName);
+    }
+
+    return MODULE_UNIFICATION_VALID_FULL_NAME_REGEXP.test(fullName);
   }
 
   getInjections(fullName) {
