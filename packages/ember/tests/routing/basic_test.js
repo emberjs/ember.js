@@ -27,13 +27,14 @@ import {
   setTemplate
 } from 'ember-glimmer';
 import { jQuery } from 'ember-views';
+import { ENV } from 'ember-environment';
 import { compile } from 'ember-template-compiler';
 import { Application, Engine } from 'ember-application';
 import { Transition } from 'router';
 
 let trim = jQuery.trim;
 
-let Router, App, router, registry, container, originalLoggerError;
+let Router, App, router, registry, container, originalLoggerError, originalRenderSupport;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -100,6 +101,9 @@ QUnit.module('Basic Routing', {
       setTemplate('camelot', compile('<section><h3>Is a silly place</h3></section>'));
 
       originalLoggerError = Logger.error;
+      originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
+
+      ENV._ENABLE_RENDER_SUPPORT = true;
     });
   },
 
@@ -110,6 +114,7 @@ QUnit.module('Basic Routing', {
 
       setTemplates({});
       Logger.error = originalLoggerError;
+      ENV._ENABLE_RENDER_SUPPORT = originalRenderSupport;
     });
   }
 });

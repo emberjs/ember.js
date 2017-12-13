@@ -1,8 +1,20 @@
 import { observer, set, computed } from 'ember-metal';
 import { Controller } from 'ember-runtime';
+import { ENV } from 'ember-environment';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
+  constructor() {
+    super();
+    this.originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
+    ENV._ENABLE_RENDER_SUPPORT = true;
+  }
+
+  teardown() {
+    super.teardown();
+    ENV._ENABLE_RENDER_SUPPORT = this.originalRenderSupport;
+  }
+
   ['@test should render given template']() {
     this.registerTemplate('home', '<p>BYE</p>');
 
