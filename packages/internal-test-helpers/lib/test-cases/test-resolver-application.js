@@ -1,5 +1,6 @@
 import AbstractApplicationTestCase from './abstract-application';
 import { ModuleBasedResolver } from '../test-resolver';
+import { Component } from 'ember-glimmer';
 import { assign } from 'ember-utils';
 
 export default class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
@@ -20,7 +21,7 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
     }));
   }
 
-  addComponent(name, { ComponentClass = null, template = null }) {
+  addComponent(name, { ComponentClass = Component, template = null }) {
     if (ComponentClass) {
       this.resolver.add(`component:${name}`, ComponentClass);
     }

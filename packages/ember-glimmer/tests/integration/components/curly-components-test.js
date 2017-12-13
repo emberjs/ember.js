@@ -50,18 +50,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello' });
   }
 
-  ['@test it can render a template only component']() {
-    this.registerComponent('foo-bar', { template: 'hello' });
-
-    this.render('{{foo-bar}}');
-
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-    this.runTask(() => this.rerender());
-
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
-  }
-
   ['@test it can have a custom id and it is not bound']() {
     this.registerComponent('foo-bar', { template: '{{id}} {{elementId}}' });
 
