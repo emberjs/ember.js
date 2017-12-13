@@ -1,5 +1,9 @@
 import { privatize as P } from 'container';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import {
+  EMBER_MODULE_UNIFICATION,
+  EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS
+} from 'ember/features';
+import { ENV } from 'ember-environment';
 
 function lookupModuleUnificationComponentPair(componentLookup, owner, name, options) {
   let localComponent = componentLookup.componentFor(name, owner, options);
@@ -19,7 +23,11 @@ function lookupModuleUnificationComponentPair(componentLookup, owner, name, opti
     return { layout: null, component: localComponent };
   }
 
-  let defaultComponentFactory = owner.factoryFor(P`component:-default`);
+  let defaultComponentFactory = null;
+
+  if (!EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
+    defaultComponentFactory = owner.factoryFor(P`component:-default`);
+  }
 
   if (!localAndUniqueComponent && localAndUniqueLayout) {
     return { layout: localLayout, component: defaultComponentFactory };
@@ -39,7 +47,7 @@ function lookupComponentPair(componentLookup, owner, name, options) {
 
   let result = { layout, component };
 
-  if (layout && !component) {
+  if (!EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS && layout && !component) {
     result.component = owner.factoryFor(P`component:-default`);
   }
 

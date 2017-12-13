@@ -103,7 +103,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerComponent(name, { ComponentClass = null, template = null }) {
+  registerComponent(name, { ComponentClass = Component, template = null }) {
     let { owner } = this;
 
     if (ComponentClass) {
