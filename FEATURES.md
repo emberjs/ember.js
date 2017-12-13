@@ -32,6 +32,11 @@ for a detailed explanation.
   Add `{{@foo}}` syntax to access named arguments in component templates per
   [RFC](https://github.com/emberjs/rfcs/pull/276).
 
+* `ember-glimmer-template-only-components`
+
+  Use Glimmer Components semantics for template-only components per
+  [RFC](https://github.com/emberjs/rfcs/pull/278).
+
 * `ember-module-unification`
 
   Introduces support for Module Unification

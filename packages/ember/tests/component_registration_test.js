@@ -4,7 +4,7 @@ import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor('Application Lifecycle - Component Registration', class extends AutobootApplicationTestCase {
 
-  ['@test The helper becomes the body of the component'](assert) {
+  ['@feature(!ember-glimmer-template-only-components) The helper becomes the body of the component'](assert) {
     this.runTask(() => {
       this.createApplication();
 
@@ -12,8 +12,20 @@ moduleFor('Application Lifecycle - Component Registration', class extends Autobo
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
     });
 
-    let text = this.$('div.ember-view > div.ember-view').text().trim();
-    assert.equal(text, 'hello world', 'The component is composed correctly');
+    let text = this.$('div.ember-view > div.ember-view').html().trim();
+    assert.equal(text, '<p>hello world</p>', 'The component is composed correctly');
+  }
+
+  ['@feature(ember-glimmer-template-only-components) The helper becomes the body of the component'](assert) {
+    this.runTask(() => {
+      this.createApplication();
+
+      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
+      this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
+    });
+
+    let text = this.$('div.ember-view').html().trim();
+    assert.equal(text, 'Hello world <p>hello world</p>', 'The component is composed correctly');
   }
 
   ['@test If a component is registered, it is used'](assert) {

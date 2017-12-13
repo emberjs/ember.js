@@ -17,6 +17,7 @@ import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
 import loc from './helpers/loc';
+import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS } from 'ember/features';
 
 interface Registry {
   injection(name: string, name2: string, name3: string): void;
@@ -73,5 +74,8 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register('component:-text-area', TextArea);
   registry.register('component:-checkbox', Checkbox);
   registry.register('component:link-to', LinkToComponent);
-  registry.register(P`component:-default`, Component);
+
+  if (!EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
+    registry.register(P`component:-default`, Component);
+  }
 }

@@ -36,6 +36,9 @@ import {
   CurlyComponentDefinition,
 } from './component-managers/curly';
 import {
+  TemplateOnlyComponentDefinition,
+} from './component-managers/template-only';
+import {
   populateMacros,
 } from './syntax';
 import DebugStack from './utils/debug-stack';
@@ -73,6 +76,7 @@ import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
 import {
   EMBER_MODULE_UNIFICATION,
+  EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
 } from 'ember/features';
 import { Container, OwnedTemplate, WrappedTemplateFactory } from './template';
@@ -110,7 +114,7 @@ export default class Environment extends GlimmerEnvironment {
     name: string;
     source: string;
     owner: Container;
-  }, CurlyComponentDefinition | undefined>;
+  }, CurlyComponentDefinition | TemplateOnlyComponentDefinition | undefined>;
   private _templateCache: Cache<{
     Template: WrappedTemplateFactory | OwnedTemplate;
     owner: Container;
@@ -130,7 +134,9 @@ export default class Environment extends GlimmerEnvironment {
     this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
       let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
       let customManager: any;
-      if (componentFactory || layout) {
+      if (EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS && layout && !componentFactory) {
+        return new TemplateOnlyComponentDefinition(name, layout);
+      } else if (componentFactory || layout) {
         if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           let managerId = layout && layout.meta.managerId;
 
