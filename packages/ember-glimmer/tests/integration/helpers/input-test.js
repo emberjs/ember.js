@@ -1,17 +1,10 @@
 import { assign } from 'ember-utils';
 import { set } from 'ember-metal';
-import { TextField, Checkbox, Component } from '../../utils/helpers';
+import { Component } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 
 class InputRenderingTest extends RenderingTest {
-  constructor() {
-    super();
-
-    this.registerComponent('-text-field', { ComponentClass: TextField });
-    this.registerComponent('-checkbox', { ComponentClass: Checkbox });
-  }
-
   $input() {
     return this.$('input');
   }

@@ -1,17 +1,10 @@
 import { assign } from 'ember-utils';
 import { set } from 'ember-metal';
-import { TextArea } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
 import { applyMixins } from '../../utils/abstract-test-case';
 
 class TextAreaRenderingTest extends RenderingTest {
-  constructor() {
-    super();
-
-    this.registerComponent('-text-area', { ComponentClass: TextArea });
-  }
-
   assertTextArea({ attrs, value } = {}) {
     let mergedAttrs = assign({ 'class': classes('ember-view ember-text-area') }, attrs);
     this.assertComponentElement(this.firstChild, { tagName: 'textarea', attrs: mergedAttrs });
