@@ -1,4 +1,5 @@
 import { assert } from 'ember-debug';
+import { ENV } from 'ember-environment';
 import { textAreaMacro } from './syntax/-text-area';
 import {
   blockComponentMacro,
