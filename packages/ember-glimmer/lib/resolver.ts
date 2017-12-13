@@ -217,7 +217,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
 
     let layoutHandle = this.getHandle(layout) as Option<VMHandle>;
 
-    return new CurlyComponentDefinition(name, customManager, component, layoutHandle, customManager);
+    return new CurlyComponentDefinition(name, customManager, component, layoutHandle, layout);
   }
 
   private getHandle(obj: any | null | undefined) {

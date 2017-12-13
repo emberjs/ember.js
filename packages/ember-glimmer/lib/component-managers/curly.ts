@@ -156,14 +156,10 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   implements WithDynamicTagName<Opaque>,
              WithDynamicLayout<Opaque, TemplateMeta, RuntimeResolver> {
 
-  getLayout(state: DefinitionState, resolver: RuntimeResolver) {
-    const handle = resolver.lookupComponentDefinition(state.name, {
-      // TODO: How do I find an owner here?
-      owner: getOwner(/* ??? */),
-      moduleName: ''
-    });
+  getLayout(state: DefinitionState) {
+    console.log('static');
     return {
-      handle,
+      handle: state.handle,
       symbolTable: state.symbolTable
     };
   }
@@ -186,6 +182,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     return resolver.compileTemplate(handle, layoutName, (template: SerializedTemplate<any>, options: CompileOptions<Opaque>) => {
+      console.log('recompiling');
       const builder = new WrappedBuilder(
         assign({}, options, { asPartial: false, referrer: null }),
         template,
