@@ -95,22 +95,14 @@ export default class LowLevelVM {
   }
 
   evaluateOuter(opcode: Opcode, vm: VM<Opaque>) {
-    let { externs: { debugBefore, debugAfter } } = this;
-
     if (DEVMODE) {
+      let { externs: { debugBefore, debugAfter } } = this;
       let state = debugBefore(opcode);
       this.evaluateInner(opcode, vm);
-      // APPEND_OPCODES.evaluate(vm, opcode, opcode.type);
       debugAfter(opcode, state);
     } else {
       this.evaluateInner(opcode, vm);
-      APPEND_OPCODES.evaluate(vm, opcode, opcode.type);
     }
-    // if (opcode.isMachine) {
-    //   APPEND_OPCODES.evaluateMachine(this, opcode, opcode.type);
-    // } else {
-    //   this.nextSyscall(opcode, vm);
-    // }
   }
 
   evaluateInner(opcode: Opcode, vm: VM<Opaque>) {
