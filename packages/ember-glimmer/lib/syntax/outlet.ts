@@ -1,7 +1,7 @@
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import * as WireFormat from '@glimmer/wire-format';
-import { TemplateMeta } from 'ember-views';
+import { OwnedTemplateMeta } from 'ember-views';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -53,7 +53,7 @@ import { TemplateMeta } from 'ember-views';
   @for Ember.Templates.helpers
   @public
 */
-export const outletMacro = (_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<TemplateMeta>) => {
+export const outletMacro = (_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) => {
   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
   builder.dynamicComponent(expr, [], null, false, null, null);
   return true;

@@ -27,7 +27,6 @@ import {
   watchKey,
 } from 'ember-metal';
 import {
-  HAS_NATIVE_WEAKMAP,
   symbol,
 } from 'ember-utils';
 import {
@@ -53,7 +52,7 @@ if (DEBUG) {
     // performance penalty on Chrome (tested through 59).
     //
     // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
-    if (!Object.isFrozen(obj) && HAS_NATIVE_WEAKMAP) {
+    if (!Object.isFrozen(obj)) {
       Object.freeze(obj);
     }
   };

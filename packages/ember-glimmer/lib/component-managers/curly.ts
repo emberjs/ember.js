@@ -3,12 +3,10 @@ import {
   Option,
   ProgramSymbolTable,
   Simple,
+  Unique,
   VMHandle
 } from '@glimmer/interfaces';
-import {
-  CompileOptions,
-  WrappedBuilder
-} from '@glimmer/opcode-compiler';
+import { ParsedLayout, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   combineTagged,
   Tag,
@@ -26,25 +24,22 @@ import {
   PrimitiveReference,
   WithDynamicLayout,
   WithDynamicTagName,
+  WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY, Opaque } from '@glimmer/util';
-import {
-  SerializedTemplate
-} from '@glimmer/wire-format';
+import { privatize as P } from 'container';
 import {
   assert,
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
-  _instrumentStart,
-  get,
+  _instrumentStart, get,
 } from 'ember-metal';
 import {
-  assign,
   getOwner,
   guidFor,
 } from 'ember-utils';
-import { setViewElement, TemplateMeta } from 'ember-views';
+import { OwnedTemplateMeta, setViewElement } from 'ember-views';
 import {
   BOUNDS,
   DIRTY_TAG,
@@ -55,7 +50,7 @@ import {
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
-import { OwnedTemplate, WrappedTemplateFactory } from '../template';
+import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -118,9 +113,9 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: Arra
 
 class CurlyComponentLayoutCompiler {
   static id: string;
-  public template: WrappedTemplateFactory;
+  public template: TemplateFactory;
 
-  constructor(template: WrappedTemplateFactory) {
+  constructor(template: TemplateFactory) {
     this.template = template;
   }
 
@@ -152,52 +147,68 @@ export class PositionalArgumentReference {
   }
 }
 
-export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, DefinitionState>
-  implements WithDynamicTagName<Opaque>,
-             WithDynamicLayout<Opaque, TemplateMeta, RuntimeResolver> {
+const DEFAULT_LAYOUT = P`template:components/-default`;
 
-  getLayout(state: DefinitionState) {
+export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, DefinitionState>
+  implements WithStaticLayout<ComponentStateBucket, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
+             WithDynamicTagName<ComponentStateBucket>,
+             WithDynamicLayout<ComponentStateBucket, OwnedTemplateMeta, RuntimeResolver> {
+
+  layoutFor(_state: DefinitionState, _component: ComponentStateBucket, _env: Environment): Unique<'Handle'> {
+    throw new Error('Method not implemented.');
+  }
+
+  getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
     console.log('static');
     return {
-      handle: state.handle,
-      symbolTable: state.symbolTable
+      handle: state.handle!,
+      symbolTable: state.symbolTable!
     };
   }
 
-  getDynamicLayout(component: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
-    console.log('dynamic');
-    const Template = get(component.component, 'layout');
-    const owner = getOwner(component.component);
+  templateFor(component: Component): OwnedTemplate {
+    let Template = get(component, 'layout');
+    let owner = getOwner(component);
     if (Template) {
-      return Template;
+      throw new Error('need to add injections to directly imported factory');
+      // return env.getTemplate(Template, owner);
     }
-    const layoutName = component.component.layoutName!;
-    const handle = resolver.lookupComponentDefinition(layoutName, {
-      owner,
-      moduleName: '',
-    });
-
-    if (handle === null) {
-      throw new Error('Missing dynamic layout');
+    let layoutName = get(component, 'layoutName');
+    if (layoutName) {
+      let template = owner.lookup<OwnedTemplate>('template:' + layoutName);
+      if (template) {
+        return template;
+      }
     }
+    return owner.lookup<OwnedTemplate>(DEFAULT_LAYOUT);
+  }
 
-    return resolver.compileTemplate(handle, layoutName, (template: SerializedTemplate<any>, options: CompileOptions<Opaque>) => {
-      console.log('recompiling');
-      const builder = new WrappedBuilder(
-        assign({}, options, { asPartial: false, referrer: null }),
-        template,
-        CURLY_CAPABILITIES
-      );
-      return {
-        handle: builder.compile(),
-        symbolTable: builder.symbolTable
-      };
-    });
+  compileDynamicLayout(component: Component, resolver: RuntimeResolver): Invocation {
+    const template = this.templateFor(component);
+    const compileOptions = Object.assign({},
+      resolver.templateOptions,
+      { asPartial: false, referrer: template.referrer});
+    // TODO fix this getting private
+    const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
+    const layout = new WrappedBuilder(
+      compileOptions,
+      parsed,
+      CURLY_CAPABILITIES,
+    );
+    // NEEDS TO BE CACHED
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable,
+    };
+  }
+
+  getDynamicLayout(state: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
+    console.log('dynamic');
+    return this.compileDynamicLayout(state.component, resolver);
   }
 
   getTagName(state: ComponentStateBucket): Option<string> {
-    let { component } = state;
-
+    const { component } = state;
     if (component.tagName === '') {
       return null;
     }

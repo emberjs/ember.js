@@ -13,9 +13,7 @@ import {
 import {
   ElementOperations
 } from '@glimmer/runtime';
-import {
-  Ops,
-} from '@glimmer/wire-format';
+import { Core, Ops } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
@@ -43,26 +41,28 @@ function referenceForParts(component: Component, parts: string[]): Reference {
 }
 
 // TODO we should probably do this transform at build time
-export function wrapComponentClassAttribute(hash: any[]) {
-  if (!hash) {
-    return hash;
+export function wrapComponentClassAttribute(hash: Core.Hash) {
+  if (hash === null) {
+    return;
   }
 
   let [ keys, values ] = hash;
-  let index = keys.indexOf('class');
+  let index = keys === null ? -1 : keys.indexOf('class');
 
   if (index !== -1) {
-    let [ type ] = values[index];
+    let value = values[index];
+    if (!Array.isArray(value)) {
+      return;
+    }
+
+    let [ type ] = value;
 
     if (type === Ops.Get || type === Ops.MaybeLocal) {
-      let getExp = values[index];
-      let path = getExp[getExp.length - 1];
+      let path = value[value.length - 1];
       let propName = path[path.length - 1];
-      hash[1][index] = [Ops.Helper, ['-class'], [getExp, propName]];
+      values[index] = [Ops.Helper, '-class', [value, propName], null];
     }
   }
-
-  return hash;
 }
 
 export const AttributeBinding = {

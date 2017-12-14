@@ -26,12 +26,8 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getLayout(state: DefinitionState, resolver: RuntimeResolver) {
-    const handle = resolver.lookupComponent(state.name, state.ComponentClass);
-    return {
-      handle,
-      symbolTable: state.symbolTable
-    };
+  getLayout(_state: DefinitionState, resolver: RuntimeResolver) {
+    return this.compileDynamicLayout(this.component, resolver);
   }
 
   create(environment: Environment,

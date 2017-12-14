@@ -1,9 +1,14 @@
-import { Opaque } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
+import { Opaque } from '@glimmer/util';
 import { Template } from '@glimmer/runtime';
 import { Owner, Factory } from 'ember-utils';
 
-export interface TemplateMeta {
+export interface StaticTemplateMeta {
+  moduleName: string;
+  managerId?: string;
+}
+
+export interface OwnedTemplateMeta extends StaticTemplateMeta {
   owner: Owner;
   moduleName: string;
   managerId?: string;
@@ -27,7 +32,7 @@ export function constructStyleDeprecationMessage(affectedStyle: any): string;
 export function hasPartial(name: string, owner: any): boolean;
 
 export function lookupComponent(owner: Owner, name: string, options?: { source?: string }): {
-  layout: Template<TemplateMeta>;
+  layout: Template<OwnedTemplateMeta>;
   component: Factory<Opaque>;
 };
 

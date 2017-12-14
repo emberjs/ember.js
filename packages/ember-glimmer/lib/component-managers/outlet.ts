@@ -19,7 +19,7 @@ import { Destroyable } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { guidFor } from 'ember-utils';
-import { TemplateMeta } from 'ember-views';
+import { OwnedTemplateMeta } from 'ember-views';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import {
@@ -62,7 +62,7 @@ export const CAPABILITIES: ComponentCapabilities = {
 };
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletComponentDefinitionState>
-  implements WithStaticLayout<OutletInstanceState, OutletComponentDefinitionState, TemplateMeta, RuntimeResolver> {
+  implements WithStaticLayout<OutletInstanceState, OutletComponentDefinitionState, OwnedTemplateMeta, RuntimeResolver> {
 
   create(environment: Environment,
          definition: OutletComponentDefinitionState,

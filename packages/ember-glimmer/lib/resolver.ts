@@ -5,24 +5,23 @@ import {
   RuntimeResolver as IRuntimeResolver,
   VMHandle
 } from '@glimmer/interfaces';
-import { CompileOptions } from '@glimmer/opcode-compiler';
+import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, TemplateOptions } from '@glimmer/opcode-compiler';
+import { LazyConstants, Program } from '@glimmer/program';
 import {
   getDynamicVar,
   Helper,
   Invocation,
   ModifierManager,
-  PartialDefinition,
-  ScannableTemplate
+  PartialDefinition
 } from '@glimmer/runtime';
-import { SerializedTemplate } from '@glimmer/wire-format';
-import { privatize as P } from 'container';
-import { LookupOptions, Owner } from 'ember-utils';
+import { LookupOptions } from 'ember-utils';
 import {
   lookupComponent,
   lookupPartial,
-  TemplateMeta,
+  OwnedTemplateMeta,
 } from 'ember-views';
 import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
+import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { default as classHelper } from './helpers/-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
@@ -45,51 +44,65 @@ import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
+import { populateMacros } from './syntax';
+import { OwnedTemplate } from './template';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
-
-const DEFAULT_LAYOUT = P`template:components/-default`;
 
 function makeOptions(moduleName: string) {
   return moduleName !== undefined ? { source: `template:${moduleName}`} : undefined;
 }
 
-export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
-  public builtInHelpers: {
-    [name: string]: Helper | undefined;
+const BUILTINS_HELPERS = {
+  'if': inlineIf,
+  action,
+  concat,
+  get,
+  hash,
+  log,
+  mut,
+  'query-params': queryParams,
+  readonly,
+  unbound,
+  'unless': inlineUnless,
+  '-class': classHelper,
+  '-each-in': eachIn,
+  '-input-type': inputTypeHelper,
+  '-normalize-class': normalizeClassHelper,
+  '-html-safe': htmlSafeHelper,
+  '-get-dynamic-var': getDynamicVar,
+  '-outlet': outlet,
+};
+
+const BUILTIN_MODIFIERS = {
+  action: new ActionModifierManager(),
+};
+
+export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
+  public templateOptions = {
+    program: new Program<OwnedTemplateMeta>(new LazyConstants(this)),
+    macros: new Macros(),
+    resolver: new CompileTimeLookup(this),
+    Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor,
   };
 
-  public builtInModifiers: {
-    [name: string]: ModifierManager<Opaque>;
-  };
+  // creates compileOptions for DI
+  public static create() {
+    return new this().templateOptions;
+  }
 
   private handles: any[] = [];
   private objToHandle = new WeakMap<any, number>();
 
-  constructor(public owner: Owner) {
-    this.builtInHelpers = {
-      'if': inlineIf,
-      action,
-      concat,
-      get,
-      hash,
-      log,
-      mut,
-      'query-params': queryParams,
-      readonly,
-      unbound,
-      'unless': inlineUnless,
-      '-class': classHelper,
-      '-each-in': eachIn,
-      '-input-type': inputTypeHelper,
-      '-normalize-class': normalizeClassHelper,
-      '-html-safe': htmlSafeHelper,
-      '-get-dynamic-var': getDynamicVar,
-      '-outlet': outlet,
-    };
+  private builtInHelpers: {
+    [name: string]: Helper | undefined;
+  } = BUILTINS_HELPERS;
 
-    this.builtInModifiers = {
-      action: new ActionModifierManager(),
-    };
+  private builtInModifiers: {
+    [name: string]: ModifierManager<Opaque>;
+  } = BUILTIN_MODIFIERS;
+
+  constructor() {
+    populateMacros(this.templateOptions.macros);
   }
 
   /***  IRuntimeResolver ***/
@@ -97,15 +110,15 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   /**
    * Called while executing Append Op.PushDynamicComponentManager if string
    */
-  lookupComponent(name: string, meta: TemplateMeta): Option<ComponentDefinition> {
+  lookupComponent(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let handle = this.lookupComponentDefinition(name, meta);
     if (handle === null) return null;
     return this.resolve(handle);
   }
 
-  lookupPartial(name: string, meta: TemplateMeta): Option<number> {
+  lookupPartial(name: string, meta: OwnedTemplateMeta): Option<number> {
     let partial = this._lookupPartial(name, meta);
-    return this.getHandle(partial);
+    return this.handle(partial);
   }
 
   /**
@@ -116,24 +129,17 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   }
   // End IRuntimeResolver
 
-  compileTemplate(_handle: number, layoutName: string, create: (block: SerializedTemplate<any>, options: CompileOptions<Opaque>) => Invocation) {
-    let template = this.owner.lookup<ScannableTemplate>(`template:${layoutName}`);
-
-    if (!template) {
-      template = this.owner.lookup<ScannableTemplate>(DEFAULT_LAYOUT);
-    }
-
-    let { parsedLayout, options } = template as any;
-    return create(parsedLayout, options);
+  compileTemplate(template: OwnedTemplate, create: (template: OwnedTemplate, templateOptions: TemplateOptions<OwnedTemplateMeta>) => Invocation): Invocation {
+    return create(template, this.templateOptions);
   }
 
   /**
    * Called by CompileTimeLookup compiling Unknown or Helper OpCode
    */
-  lookupHelper(name: string, meta: TemplateMeta): Option<number> {
+  lookupHelper(name: string, meta: OwnedTemplateMeta): Option<number> {
     let handle = this._lookupHelper(name, meta);
     if (handle !== null) {
-      return this.getHandle(handle);
+      return this.handle(handle);
     }
     return null;
   }
@@ -141,22 +147,32 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
   /**
    * Called by CompileTimeLookup compiling the Component OpCode
    */
-  lookupComponentDefinition(name: string, meta: TemplateMeta): Option<number> {
-    return this.getHandle(
-      this._lookupComponentDefinition(name, meta)
-    );
+  lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<number> {
+    return this.handle(this._lookupComponentDefinition(name, meta));
   }
 
   /**
    * Called by CompileTimeLookup compiling the
    */
-  lookupModifier(name: string, _meta: TemplateMeta): Option<number> {
-    return this.getHandle(
-      this._lookupModifier(name));
+  lookupModifier(name: string, _meta: OwnedTemplateMeta): Option<number> {
+    return this.handle(this._lookupModifier(name));
   }
   // end CompileTimeLookup
 
-  private _lookupHelper(name: string, meta: TemplateMeta): Option<Helper> {
+  // needed for latebound
+  private handle(obj: any | null | undefined) {
+    if (obj === undefined || obj === null) {
+      return null;
+    }
+    let handle: number | undefined = this.objToHandle.get(obj);
+    if (handle === undefined) {
+      handle = this.handles.push(obj) - 1;
+      this.objToHandle.set(obj, handle);
+    }
+    return handle;
+  }
+
+  private _lookupHelper(name: string, meta: OwnedTemplateMeta): Option<Helper> {
     if (name === 'component') {
       return (vm, args) => componentHelper(vm, args, meta);
     }
@@ -183,7 +199,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
     }
   }
 
-  private _lookupPartial(name: string, meta: TemplateMeta): PartialDefinition {
+  private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
     const template = lookupPartial(name, meta.owner);
     const partial = new PartialDefinition( name, lookupPartial(name, meta.owner));
 
@@ -203,7 +219,7 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
     }
   }
 
-  private _lookupComponentDefinition(name: string, meta: TemplateMeta): Option<ComponentDefinition> {
+  private _lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
 
     let customManager;
@@ -215,20 +231,8 @@ export default class RuntimeResolver implements IRuntimeResolver<TemplateMeta> {
       }
     }
 
-    let layoutHandle = this.getHandle(layout) as Option<VMHandle>;
+    let layoutHandle = this.handle(layout) as Option<VMHandle>;
 
     return new CurlyComponentDefinition(name, customManager, component, layoutHandle, layout);
-  }
-
-  private getHandle(obj: any | null | undefined) {
-    if (obj === undefined || obj === null) {
-      return null;
-    }
-    let handle: number | undefined = this.objToHandle.get(obj);
-    if (handle === undefined) {
-      handle = this.handles.push(obj) - 1;
-      this.objToHandle.set(obj, handle);
-    }
-    return handle;
   }
 }

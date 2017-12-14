@@ -1,5 +1,7 @@
-import { Macros } from '@glimmer/opcode-compiler';
-import { assert } from 'ember-debug';
+import { CompilableBlock, Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
+import { Option } from '@glimmer/util';
+import { Core } from '@glimmer/wire-format';
+import { OwnedTemplateMeta } from 'ember-views';
 import { textAreaMacro } from './syntax/-text-area';
 import { inputMacro } from './syntax/input';
 import { mountMacro } from './syntax/mount';
@@ -8,50 +10,38 @@ import { renderMacro } from './syntax/render';
 import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 
-function refineInlineSyntax(name: string, params: any[], hash: any, builder: any) {
-  assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.resolver.resolver.builtInHelpers[name] && builder.resolver.resolver.owner.hasRegistration(`helper:${name}`)));
-
-  let definition;
-  if (name.indexOf('-') > -1) {
-    definition = builder.resolver.lookupComponentDefinition(name, {
-      owner: builder.resolver.resolver.owner,
-      moduleName: ''
-    });
+function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Option<Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>): boolean {
+  // assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.resolver.resolver.builtInHelpers[name] && builder.resolver.resolver.owner.hasRegistration(`helper:${name}`)));
+  if (name.indexOf('-') === -1) {
+    return false;
   }
 
-  if (definition) {
-    wrapComponentClassAttribute(hash);
-    builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+  let handle = builder.resolver.lookupComponentDefinition(name, builder.referrer);
+
+  if (handle !== null) {
+    builder.component.static(handle, [params === null ? [] : params, hashToArgs(hash), null, null]);
     return true;
   }
 
   return false;
 }
 
-function refineBlockSyntax(name: string, params: any[], hash: any, _default: any, inverse: any, builder: any) {
+function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
   if (name.indexOf('-') === -1) {
     return false;
   }
 
-  let meta = {
-    owner: builder.resolver.resolver.owner,
-    moduleName: ''
-  };
+  let handle = builder.resolver.lookupComponentDefinition(name, builder.referrer);
 
-  let definition;
-  if (name.indexOf('-') > -1) {
-    definition = builder.resolver.lookupComponentDefinition(name, meta);
-  }
-
-  if (definition) {
+  if (handle !== null) {
     wrapComponentClassAttribute(hash);
-    builder.component.static(definition, [params, hashToArgs(hash), _default, inverse]);
+    builder.component.static(handle, [params, hashToArgs(hash), template, inverse]);
     return true;
   }
 
-  assert(`A component or helper named "${name}" could not be found`, builder.env.hasHelper(name, meta));
+  // assert(`A component or helper named "${name}" could not be found`, builder.resolver.hasHelper(name, builder.referrer));
 
-  assert(`Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`, !builder.env.hasHelper(name, meta));
+  // assert(`Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`, !builder.env.hasHelper(name, meta));
 
   return false;
 }

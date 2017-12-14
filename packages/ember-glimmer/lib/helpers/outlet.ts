@@ -3,6 +3,7 @@ import {
   Arguments,
   CurriedComponentDefinition,
   curry,
+  UNDEFINED_REFERENCE,
   VM,
 } from '@glimmer/runtime';
 import { OutletComponentDefinition } from '../component-managers/outlet';
@@ -20,7 +21,7 @@ export default function outlet(vm: VM, args: Arguments) {
   return new OutletComponentReference(outletNameRef, scope.outletState);
 }
 
-class OutletComponentReference implements Reference<CurriedComponentDefinition | null> {
+class OutletComponentReference implements VersionedPathReference<CurriedComponentDefinition | null> {
   public tag: TagWrapper<RevisionTag | null>;
   private outletStateTag: TagWrapper<UpdatableTag>;
   private definition: any | null;
@@ -47,5 +48,9 @@ class OutletComponentReference implements Reference<CurriedComponentDefinition |
     let template = renderState.template;
     if (!template) return null;
     return curry(new OutletComponentDefinition(outletName, template));
+  }
+
+  get(_key: string) {
+    return UNDEFINED_REFERENCE;
   }
 }

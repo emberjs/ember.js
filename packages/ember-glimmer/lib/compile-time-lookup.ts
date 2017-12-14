@@ -1,10 +1,14 @@
 import { ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
 import { CompileTimeLookup as ICompileTimeLookup } from '@glimmer/opcode-compiler';
-import { CompilableTemplate, ComponentDefinition } from '@glimmer/runtime';
-import { TemplateMeta } from 'ember-views';
+import { CompilableTemplate, ComponentDefinition, ComponentManager, WithStaticLayout } from '@glimmer/runtime';
+import { OwnedTemplateMeta } from 'ember-views';
 import RuntimeResolver from './resolver';
 
-export default class CompileTimeLookup implements ICompileTimeLookup<TemplateMeta> {
+interface StaticComponentManager<DefinitionState> extends WithStaticLayout<any, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
+                                                          ComponentManager<any, DefinitionState> {
+}
+
+export default class CompileTimeLookup implements ICompileTimeLookup<OwnedTemplateMeta> {
   constructor(private resolver: RuntimeResolver) {}
 
   getCapabilities(handle: number): ComponentCapabilities {
@@ -13,33 +17,35 @@ export default class CompileTimeLookup implements ICompileTimeLookup<TemplateMet
     return manager.getCapabilities(state);
   }
 
-  getLayout(handle: number): Option<CompilableTemplate<ProgramSymbolTable>> {
-    const { manager, state } = this.resolver.resolve(handle);
+  getLayout<DefinitionState>(handle: number): Option<CompilableTemplate<ProgramSymbolTable>> {
+    const { manager, state } = this.resolver.resolve<ComponentDefinition<DefinitionState, StaticComponentManager<DefinitionState>>>(handle);
     const capabilities = manager.getCapabilities(state);
-    if (capabilities.dynamicLayout === true) {
+
+    if (capabilities.dynamicLayout) {
       return null;
     }
 
     const invocation = manager.getLayout(state, this.resolver);
     return {
+      // TODO: this seems weird, it already is compiled
       compile() { return invocation.handle; },
       symbolTable: invocation.symbolTable
     };
   }
 
-  lookupHelper(name: string, referrer: TemplateMeta): Option<number> {
+  lookupHelper(name: string, referrer: OwnedTemplateMeta): Option<number> {
     return this.resolver.lookupHelper(name, referrer);
   }
 
-  lookupModifier(name: string, referrer: TemplateMeta): Option<number> {
+  lookupModifier(name: string, referrer: OwnedTemplateMeta): Option<number> {
     return this.resolver.lookupModifier(name, referrer);
   }
 
-  lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number> {
+  lookupComponentDefinition(name: string, referrer: OwnedTemplateMeta): Option<number> {
     return this.resolver.lookupComponentDefinition(name, referrer);
   }
 
-  lookupPartial(name: string, referrer: TemplateMeta): Option<number> {
+  lookupPartial(name: string, referrer: OwnedTemplateMeta): Option<number> {
     return this.resolver.lookupPartial(name, referrer);
   }
 }
