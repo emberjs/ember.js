@@ -14,6 +14,7 @@ import {
   ModifierManager,
   PartialDefinition
 } from '@glimmer/runtime';
+import { privatize as P } from 'container';
 import { LookupOptions } from 'ember-utils';
 import {
   lookupComponent,
@@ -233,6 +234,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     let layoutHandle = this.handle(layout) as Option<VMHandle>;
 
-    return new CurlyComponentDefinition(name, customManager, component, layoutHandle, layout);
+    return new CurlyComponentDefinition(name, customManager, component || meta.owner.factoryFor(P`component:-default`), layoutHandle, layout);
   }
 }
