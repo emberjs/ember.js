@@ -3,6 +3,7 @@ import {
   Option,
   Unique
 } from '@glimmer/interfaces';
+import { WrappedBuilder, ParsedLayout } from '@glimmer/opcode-compiler';
 import {
   Tag, VersionedPathReference
 } from '@glimmer/reference';
@@ -126,6 +127,25 @@ class TopLevelOutletComponentManager extends OutletComponentManager
 
   getTagName(_component: OutletInstanceState) {
     return 'div';
+  }
+
+  getLayout(state: OutletComponentDefinitionState, resolver: RuntimeResolver): Invocation {
+    // The router has already resolved the template
+    const template = state.template;
+    const compileOptions = Object.assign({},
+      resolver.templateOptions,
+      { asPartial: false, referrer: template.referrer});
+    // TODO fix this getting private
+    const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
+    const layout = new WrappedBuilder(
+      compileOptions,
+      parsed,
+      TOP_CAPABILITIES,
+    );
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable
+    };
   }
 
   create(environment: Environment, definition: TopOutletComponentDefinitionState, _args: Arguments, dynamicScope: DynamicScope) {
