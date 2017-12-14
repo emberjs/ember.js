@@ -1738,7 +1738,7 @@ QUnit.test('Child routes should render inside the application template if the ap
 
   bootApplication();
 
-  equal(jQuery('#qunit-fixture > div').text(), 'App posts');
+  equal(jQuery('#qunit-fixture').text(), 'App posts');
 });
 
 QUnit.test('The template is not re-rendered when the route\'s context changes', function() {

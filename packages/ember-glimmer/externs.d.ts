@@ -3,6 +3,7 @@ declare module 'ember/features' {
   export const GLIMMER_CUSTOM_COMPONENT_MANAGER: boolean | null;
   export const EMBER_ENGINES_MOUNT_PARAMS: boolean | null;
   export const EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER: boolean | null;
+  export const EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER: boolean | null;
   export const EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS: boolean | null;
   export const MANDATORY_SETTER: boolean | null;
 }

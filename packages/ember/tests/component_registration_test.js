@@ -12,8 +12,8 @@ moduleFor('Application Lifecycle - Component Registration', class extends Autobo
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
     });
 
-    let text = this.$('div.ember-view > div.ember-view').html().trim();
-    assert.equal(text, '<p>hello world</p>', 'The component is composed correctly');
+    this.assertText('Hello world hello world');
+    this.assertComponentElement(this.element.firstElementChild, { tagName: 'div', content: '<p>hello world</p>' });
   }
 
   ['@feature(ember-glimmer-template-only-components) The helper becomes the body of the component'](assert) {
@@ -24,8 +24,7 @@ moduleFor('Application Lifecycle - Component Registration', class extends Autobo
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
     });
 
-    let text = this.$('div.ember-view').html().trim();
-    assert.equal(text, 'Hello world <p>hello world</p>', 'The component is composed correctly');
+    this.assertInnerHTML('Hello world <p>hello world</p>');
   }
 
   ['@test If a component is registered, it is used'](assert) {

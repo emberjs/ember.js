@@ -285,7 +285,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
         'promise is resolved with an ApplicationInstance'
       );
       assert.equal(
-        this.$('.ember-view h1').text(), 'Hello world',
+        this.$('h1').text(), 'Hello world',
         'the application was rendered once the promise resolves'
       );
     });
@@ -576,8 +576,8 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
       }
     }));
 
-    let $foo = jQuery('<div />').appendTo(this.$());
-    let $bar = jQuery('<div />').appendTo(this.$());
+    let $foo = jQuery('<div />').appendTo('#qunit-fixture');
+    let $bar = jQuery('<div />').appendTo('#qunit-fixture');
 
     let data = encodeURIComponent(JSON.stringify({ name: 'Godfrey' }));
     let instances = [];

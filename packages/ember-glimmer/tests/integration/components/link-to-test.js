@@ -118,7 +118,7 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
     this.addTemplate('index', `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`);
 
     return this.visit('/').then(() => {
-      this.assertComponentElement(this.firstChild.firstElementChild, {
+      this.assertComponentElement(this.firstChild, {
         tagName: 'a',
         attrs: { href: '/?bar=NAW&foo=456' },
         content: 'Index'
@@ -130,7 +130,7 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
     this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
 
     return this.visit('/').then(() => {
-      this.assertComponentElement(this.firstChild.firstElementChild, {
+      this.assertComponentElement(this.firstChild, {
         tagName: 'a',
         attrs: { href: '/', class: classMatcher('ember-view active') },
         content: 'Index'

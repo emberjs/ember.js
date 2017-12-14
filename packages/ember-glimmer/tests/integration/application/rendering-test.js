@@ -3,14 +3,23 @@ import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
 import { Component } from 'ember-glimmer';
+import { jQuery } from 'ember-views';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
 
-  ['@test it can render the application template'](assert) {
+  ['@feature(!ember-glimmer-remove-application-template-wrapper) it can render the application template'](assert) {
     this.addTemplate('application', 'Hello world!');
 
     return this.visit('/').then(() => {
-      this.assertText('Hello world!');
+      this.assertComponentElement(this.element, { content: 'Hello world!' });
+    });
+  }
+
+  ['@feature(ember-glimmer-remove-application-template-wrapper) it can render the application template'](assert) {
+    this.addTemplate('application', 'Hello world!');
+
+    return this.visit('/').then(() => {
+      this.assertInnerHTML('Hello world!');
     });
   }
 
@@ -30,15 +39,13 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     `);
 
     return this.visit('/').then(() => {
-      this.assertComponentElement(this.firstChild, {
-        content: strip`
-          <ul>
-            <li>red</li>
-            <li>yellow</li>
-            <li>blue</li>
-          </ul>
-        `
-      });
+      this.assertInnerHTML(strip`
+        <ul>
+          <li>red</li>
+          <li>yellow</li>
+          <li>blue</li>
+        </ul>
+      `);
     });
   }
 
@@ -67,15 +74,67 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     `);
 
     return this.visit('/lists/colors/favorite').then(() => {
-      this.assertComponentElement(this.firstChild, {
-        content: strip`
+      this.assertInnerHTML(strip`
+        <ul>
+          <li>red</li>
+          <li>yellow</li>
+          <li>blue</li>
+        </ul>
+      `);
+    });
+  }
+
+  ['@test it can render into named outlets'](assert) {
+    this.router.map(function() {
+      this.route('colors');
+    });
+
+    this.addTemplate('application', strip`
+      <nav>{{outlet "nav"}}</nav>
+      <main>{{outlet}}</main>
+    `);
+
+    this.addTemplate('nav', strip`
+      <a href="https://emberjs.com/">Ember</a>
+    `);
+
+    this.add('route:application', Route.extend({
+      renderTemplate() {
+        this.render();
+        this.render('nav', {
+          into: 'application',
+          outlet: 'nav'
+        });
+      }
+    }));
+
+    this.add('route:colors', Route.extend({
+      model() {
+        return ['red', 'yellow', 'blue'];
+      }
+    }));
+
+    this.addTemplate('colors', strip`
+      <ul>
+        {{#each model as |item|}}
+          <li>{{item}}</li>
+        {{/each}}
+      </ul>
+    `);
+
+    return this.visit('/colors').then(() => {
+      this.assertInnerHTML(strip`
+        <nav>
+          <a href="https://emberjs.com/">Ember</a>
+        </nav>
+        <main>
           <ul>
             <li>red</li>
             <li>yellow</li>
             <li>blue</li>
           </ul>
-        `
-      });
+        </main>
+      `);
     });
   }
 
@@ -118,76 +177,18 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     `);
 
     return this.visit('/colors').then(() => {
-      this.assertComponentElement(this.firstChild, {
-        content: strip`
-          <nav>
-            <a href="https://emberjs.com/">Ember</a>
-          </nav>
-          <main>
-            <ul>
-              <li>red</li>
-              <li>yellow</li>
-              <li>blue</li>
-            </ul>
-          </main>
-        `
-      });
-    });
-  }
-
-  ['@test it can render into named outlets'](assert) {
-    this.router.map(function() {
-      this.route('colors');
-    });
-
-    this.addTemplate('application', strip`
-      <nav>{{outlet "nav"}}</nav>
-      <main>{{outlet}}</main>
-    `);
-
-    this.addTemplate('nav', strip`
-      <a href="https://emberjs.com/">Ember</a>
-    `);
-
-    this.add('route:application', Route.extend({
-      renderTemplate() {
-        this.render();
-        this.render('nav', {
-          into: 'application',
-          outlet: 'nav'
-        });
-      }
-    }));
-
-    this.add('route:colors', Route.extend({
-      model() {
-        return ['red', 'yellow', 'blue'];
-      }
-    }));
-
-    this.addTemplate('colors', strip`
-      <ul>
-        {{#each model as |item|}}
-          <li>{{item}}</li>
-        {{/each}}
-      </ul>
-    `);
-
-    return this.visit('/colors').then(() => {
-      this.assertComponentElement(this.firstChild, {
-        content: strip`
-          <nav>
-            <a href="https://emberjs.com/">Ember</a>
-          </nav>
-          <main>
-            <ul>
-              <li>red</li>
-              <li>yellow</li>
-              <li>blue</li>
-            </ul>
-          </main>
-        `
-      });
+      this.assertInnerHTML(strip`
+        <nav>
+          <a href="https://emberjs.com/">Ember</a>
+        </nav>
+        <main>
+          <ul>
+            <li>red</li>
+            <li>yellow</li>
+            <li>blue</li>
+          </ul>
+        </main>
+      `);
     });
   }
 
@@ -233,11 +234,11 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     this.addTemplate('color', 'color: {{model}}');
 
     return this.visit('/colors/red').then(() => {
-      this.assertComponentElement(this.firstChild, { content: 'color: red' });
+      this.assertInnerHTML('color: red');
       this.takeSnapshot();
       return this.visit('/colors/green');
     }).then(() => {
-      this.assertComponentElement(this.firstChild, { content: 'color: green' });
+      this.assertInnerHTML('color: green');
       this.assertInvariants();
     });
   }
@@ -291,12 +292,10 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     this.addTemplate('color', 'model color: {{model.color}}, controller color: {{color}}');
 
     return this.visit('/colors/red').then(() => {
-      this.assertComponentElement(this.firstChild, { content: 'model color: red, controller color: red' });
-      this.takeSnapshot();
+      this.assertInnerHTML('model color: red, controller color: red');
       return this.visit('/colors/green');
     }).then(() => {
-      this.assertComponentElement(this.firstChild, { content: 'model color: green, controller color: green' });
-      this.assertInvariants();
+      this.assertInnerHTML('model color: green, controller color: green');
     });
   }
 
@@ -333,11 +332,11 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     this.addTemplate('common', '{{prefix}} {{model}}');
 
     return this.visit('/a').then(() => {
-      this.assertComponentElement(this.firstChild, { content: 'common A' });
+      this.assertInnerHTML('common A');
       this.takeSnapshot();
       return this.visit('/b');
     }).then(() => {
-      this.assertComponentElement(this.firstChild, { content: 'common B' });
+      this.assertInnerHTML('common B');
       this.assertInvariants();
     });
   }
@@ -350,7 +349,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     this.addTemplate('application', '{{outlet}}');
     this.addTemplate('index', '{{#if true}}1{{/if}}<div>2</div>');
     return this.visit('/').then(() => {
-      this.assertComponentElement(this.firstChild, { content: '1<div>2</div>' });
+      this.assertInnerHTML('1<div>2</div>');
     });
   }
 
@@ -368,9 +367,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     this.addTemplate('a', 'Hello from A!');
 
     return this.visit('/').then(() => {
-      this.assertComponentElement(this.firstChild, {
-        content: `Hello from A!`
-      });
+      this.assertInnerHTML('Hello from A!');
     });
   }
 
