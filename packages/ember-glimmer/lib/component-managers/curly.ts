@@ -312,7 +312,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     props._targetObject = callerSelfRef.value();
 
     let component = factory.create(props);
-    component.layoutName = component.layoutName || `components/${state.name}`;
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
