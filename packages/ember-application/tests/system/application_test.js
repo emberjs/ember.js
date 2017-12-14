@@ -215,10 +215,9 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Def
   }
 
   [`@test Minimal Application initialized with just an application template`](assert) {
-    this.$().html('<script type="text/x-handlebars">Hello World</script>');
+    jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
     this.runTask(() => this.createApplication());
-
-    assert.equal(this.$().text().trim(), 'Hello World');
+    this.assertInnerHTML('Hello World');
   }
 
 });

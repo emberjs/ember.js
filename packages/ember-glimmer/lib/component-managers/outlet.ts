@@ -9,6 +9,7 @@ import { Destroyable } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { generateGuid, guidFor } from 'ember-utils';
+import { EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER } from 'ember/features';
 import EmberEnvironment from '../environment';
 import {
   OwnedTemplate,
@@ -92,13 +93,35 @@ class TopLevelOutletComponentManager extends OutletComponentManager {
     }
     return new StateBucket(dynamicScope.outletState.value());
   }
-
-  layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
-    return (env as EmberEnvironment).getCompiledBlock(TopLevelOutletLayoutCompiler, definition.template);
-  }
 }
 
-const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
+const TOP_LEVEL_MANAGER = (() => {
+  if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
+    return new TopLevelOutletComponentManager();
+  } else {
+    class WrappedTopLevelOutletLayoutCompiler {
+      static id = 'wrapped-top-level-outlet';
+
+      constructor(public template: WrappedTemplateFactory) {
+      }
+
+      compile(builder: any) {
+        builder.wrapLayout(this.template);
+        builder.tag.static('div');
+        builder.attrs.static('id', guidFor(this));
+        builder.attrs.static('class', 'ember-view');
+      }
+    }
+
+    class WrappedTopLevelOutletComponentManager extends TopLevelOutletComponentManager {
+      layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
+        return (env as EmberEnvironment).getCompiledBlock(WrappedTopLevelOutletLayoutCompiler, definition.template);
+      }
+    }
+
+    return new WrappedTopLevelOutletComponentManager();
+  }
+})();
 
 export class TopLevelOutletComponentDefinition extends ComponentDefinition<StateBucket> {
   public template: WrappedTemplateFactory;
@@ -108,23 +131,6 @@ export class TopLevelOutletComponentDefinition extends ComponentDefinition<State
     generateGuid(this);
   }
 }
-
-class TopLevelOutletLayoutCompiler {
-  static id: string;
-  public template: WrappedTemplateFactory;
-  constructor(template: WrappedTemplateFactory) {
-    this.template = template;
-  }
-
-  compile(builder: any) {
-    builder.wrapLayout(this.template);
-    builder.tag.static('div');
-    builder.attrs.static('id', guidFor(this));
-    builder.attrs.static('class', 'ember-view');
-  }
-}
-
-TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
 
 export class OutletComponentDefinition extends ComponentDefinition<StateBucket> {
   public outletName: string;
