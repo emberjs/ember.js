@@ -29,7 +29,7 @@ export function unwatchPath(obj, keyPath, meta) {
 
   if (counter === 1) {
     m.writeWatching(keyPath, 0);
-    m.readableChains().remove(keyPath);
+    m.writableChains(makeChainNode).remove(keyPath);
   } else if (counter > 1) {
     m.writeWatching(keyPath, counter - 1);
   }
