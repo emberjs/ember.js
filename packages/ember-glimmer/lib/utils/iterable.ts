@@ -20,6 +20,8 @@ import {
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
+type KeyFor = (value: any, memo: any) => any;
+
 export default function iterableFor(ref: any, keyPath: string) {
   if (isEachIn(ref)) {
     return new EachInIterable(ref, keyForEachIn(keyPath));
@@ -81,19 +83,26 @@ function ensureUniqueKey(seen: any, key: string) {
   return key;
 }
 
-class ArrayIterator {
-  public array: any[];
-  public length: number;
-  public keyFor: (value: any, memo: any) => any;
-  public position: number;
-  public seen: any;
+interface Iterator {
+  isEmpty(): boolean;
+  next(): any;
+}
 
-  constructor(array: any[], keyFor: (value: any, memo: any) => any) {
-    this.array = array;
-    this.length = array.length;
-    this.keyFor = keyFor;
-    this.position = 0;
-    this.seen = Object.create(null);
+class ArrayIterator implements Iterator {
+  static from(array: any[], keyFor: KeyFor): Iterator {
+    let { length } = array;
+
+    if (length > 0) {
+      return new this(array, array.length, keyFor);
+    } else {
+      return EMPTY_ITERATOR;
+    }
+  }
+
+  public position = 0;
+  public seen: any = Object.create(null);
+
+  constructor(public array: any[], public length: number, public keyFor: KeyFor) {
   }
 
   isEmpty() {
@@ -124,9 +133,18 @@ class ArrayIterator {
 }
 
 class EmberArrayIterator extends ArrayIterator {
-  constructor(array: any[], keyFor: (value: any, memo: any) => any) {
-    super(array, keyFor);
-    this.length = get(array, 'length');
+  static from(array: any[], keyFor: KeyFor): Iterator {
+    let length = get(array, 'length');
+
+    if (length > 0) {
+      return new this(array, length, keyFor);
+    } else {
+      return EMPTY_ITERATOR;
+    }
+  }
+
+  constructor(array: any[], length: number, keyFor: KeyFor) {
+    super(array, length, keyFor);
   }
 
   getValue(position: number) {
@@ -135,12 +153,19 @@ class EmberArrayIterator extends ArrayIterator {
 }
 
 class ObjectKeysIterator extends ArrayIterator {
-  public keys: any[];
-  public length: number;
+  static from(obj: object, keyFor: KeyFor): Iterator {
+    let keys = Object.keys(obj);
+    let { length } = keys;
 
-  constructor(keys: any[], values: any[], keyFor: (value: any, memo: any) => any) {
-    super(values, keyFor);
-    this.keys = keys;
+    if (length > 0) {
+      return new this(keys, keys.map((key) => obj[key]), length, keyFor);
+    } else{
+      return EMPTY_ITERATOR;
+    }
+  }
+
+  constructor(public keys: any[], values: any[], length: number, keyFor: KeyFor) {
+    super(values, length, keyFor);
   }
 
   getMemo(position: number) {
@@ -148,7 +173,7 @@ class ObjectKeysIterator extends ArrayIterator {
   }
 }
 
-class EmptyIterator {
+class EmptyIterator implements Iterator {
   isEmpty() {
     return true;
   }
@@ -189,9 +214,7 @@ class EachInIterable {
     let typeofIterable = typeof iterable;
 
     if (iterable !== null && (typeofIterable === 'object' || typeofIterable === 'function')) {
-      let keys = Object.keys(iterable);
-      let values = keys.map((key) => iterable[key]);
-      return keys.length > 0 ? new ObjectKeysIterator(keys, values, keyFor) : EMPTY_ITERATOR;
+      return ObjectKeysIterator.from(iterable, keyFor);
     } else {
       return EMPTY_ITERATOR;
     }
@@ -219,11 +242,11 @@ class EachInIterable {
 
 class ArrayIterable {
   public ref: UpdatableReference;
-  public keyFor: (value: any, memo: any) => any;
+  public keyFor: KeyFor;
   public valueTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
-  constructor(ref: UpdatableReference, keyFor: (value: any, memo: any) => any) {
+  constructor(ref: UpdatableReference, keyFor: KeyFor) {
     this.ref = ref;
     this.keyFor = keyFor;
 
@@ -232,7 +255,7 @@ class ArrayIterable {
     this.tag = combine([ref.tag, valueTag]);
   }
 
-  iterate() {
+  iterate(): Iterator {
     let { ref, keyFor, valueTag } = this;
 
     let iterable = ref.value();
@@ -244,15 +267,13 @@ class ArrayIterable {
     }
 
     if (Array.isArray(iterable)) {
-      return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+      return ArrayIterator.from(iterable, keyFor);
     } else if (isEmberArray(iterable)) {
-      return get(iterable, 'length') > 0 ? new EmberArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
+      return EmberArrayIterator.from(iterable, keyFor);
     } else if (typeof iterable.forEach === 'function') {
       let array: any[] = [];
-      iterable.forEach((item: any) => {
-        array.push(item);
-      });
-      return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
+      iterable.forEach((item: any) => array.push(item));
+      return ArrayIterator.from(array, keyFor);
     } else {
       return EMPTY_ITERATOR;
     }
