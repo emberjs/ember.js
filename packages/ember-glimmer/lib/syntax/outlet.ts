@@ -10,6 +10,7 @@ import {
 } from '@glimmer/runtime';
 import { OutletComponentDefinition } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
+import { privateRouteInfos } from 'ember-routing';
 
 class OutletComponentReference {
   public outletNameRef: any;
@@ -32,19 +33,18 @@ class OutletComponentReference {
     let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
 
     let outletName = outletNameRef.value();
-    let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
+    let outletStateRef = parentOutletStateRef.get(outletName);
     let newState = this.lastState = outletStateRef.value();
-
     this.outletStateTag.inner.update(outletStateRef.tag);
 
     definition = revalidate(definition, lastState, newState);
 
-    let hasTemplate = newState && newState.render.template;
+    let template = newState && privateRouteInfos.get(newState).template;
 
     if (definition) {
       return definition;
-    } else if (hasTemplate) {
-      return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
+    } else if (template) {
+      return this.definition = new OutletComponentDefinition(outletName, template);
     } else {
       return this.definition = null;
     }
@@ -60,9 +60,12 @@ function revalidate(definition: any, lastState: any, newState: any) {
     return null;
   }
 
+  let newPrivate = privateRouteInfos.get(newState);
+  let oldPrivate = privateRouteInfos.get(lastState);
+
   if (
-    newState.render.template === lastState.render.template &&
-    newState.render.controller === lastState.render.controller
+    newPrivate.template === oldPrivate.template &&
+    newPrivate.controller === oldPrivate.controller
   ) {
     return definition;
   }

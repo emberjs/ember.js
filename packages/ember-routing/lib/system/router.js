@@ -38,6 +38,7 @@ import {
 } from '../utils';
 import RouterState from './router_state';
 import { DEBUG } from 'ember-env-flags';
+import RouteInfo, { privateRouteInfos } from './route_info';
 
 /**
 @module @ember/routing
@@ -287,10 +288,10 @@ const EmberRouter = EmberObject.extend(Evented, {
       let connections = route.connections;
       let ownState;
       for (let j = 0; j < connections.length; j++) {
-        let appended = appendLiveRoute(liveRoutes, defaultParentState, connections[j]);
-        liveRoutes = appended.liveRoutes;
-        if (appended.ownState.render.name === route.routeName || appended.ownState.render.outlet === 'main') {
-          ownState = appended.ownState;
+        let routeInfo = connections[j];
+        liveRoutes = appendLiveRoute(liveRoutes, defaultParentState, routeInfo);
+        if (routeInfo.name === route.routeName || privateRouteInfos.get(routeInfo).outlet === 'main') {
+          ownState = routeInfo;
         }
       }
       if (connections.length === 0) {
@@ -1465,32 +1466,31 @@ function findLiveRoute(liveRoutes, name) {
   let stack = [liveRoutes];
   while (stack.length > 0) {
     let test = stack.shift();
-    if (test.render.name === name) {
+    if (test.name === name) {
       return test;
     }
-    let outlets = test.outlets;
-    for (let outletName in outlets) {
-      stack.push(outlets[outletName]);
+    let outlets = privateRouteInfos.get(test).outlets;
+    if (outlets) {
+      for (let outletName in outlets) {
+        stack.push(outlets[outletName]);
+      }
     }
   }
 }
 
-function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
+function appendLiveRoute(liveRoutes, defaultParentState, routeInfo) {
   let target;
-  let myState = {
-    render: renderOptions,
-    outlets: Object.create(null),
-    wasUsed: false
-  };
-  if (renderOptions.into) {
-    target = findLiveRoute(liveRoutes, renderOptions.into);
+  let privateInfo = privateRouteInfos.get(routeInfo);
+
+  if (privateInfo.into) {
+    target = findLiveRoute(liveRoutes, privateInfo.into);
   } else {
     target = defaultParentState;
   }
   if (target) {
-    set(target.outlets, renderOptions.outlet, myState);
+    target.setChild(privateInfo.outletName, routeInfo);
   } else {
-    if (renderOptions.into) {
+    if (privateInfo.into) {
       deprecate(
         `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
         false,
@@ -1507,31 +1507,24 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
       // helper, and people are allowed to target templates rendered
       // by the render helper. So instead we defer doing anyting with
       // these orphan renders until afterRender.
-      appendOrphan(liveRoutes, renderOptions.into, myState);
+      appendOrphan(liveRoutes, privateInfo.into, routeInfo);
     } else {
-      liveRoutes = myState;
+      liveRoutes = routeInfo;
     }
   }
-  return {
-    liveRoutes,
-    ownState: myState
-  };
+  return liveRoutes;
 }
 
 function appendOrphan(liveRoutes, into, myState) {
-  if (!liveRoutes.outlets.__ember_orphans__) {
-    liveRoutes.outlets.__ember_orphans__ = {
-      render: {
-        name: '__ember_orphans__'
-      },
-      outlets: Object.create(null)
-    };
+  let orphans = liveRoutes.getChild('__ember_orphans__');
+  if (!orphans) {
+    orphans = new RouteInfo('__ember_orphans__');
+    liveRoutes.setChild('__ember_orphans__', orphans);
   }
-  liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
+  orphans.setChild(into, myState);
   run.schedule('afterRender', () => {
     // `wasUsed` gets set by the render helper.
-    assert(`You attempted to render into '${into}' but it was not found`,
-                 liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
+    assert(`You attempted to render into '${into}' but it was not found`, myState.wasUsed);
   });
 }
 

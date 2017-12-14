@@ -17,6 +17,7 @@ import {
 } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
+import { privateRouteInfos } from 'ember-routing';
 
 function instrumentationPayload({ render: { name, outlet } }: {render: {name: string, outlet: string}}) {
   return { object: `${name}:${outlet}` };
@@ -29,7 +30,7 @@ interface OutletDynamicScope extends DynamicScope {
 }
 
 class StateBucket {
-  public outletState: any;
+  public outletState: any; // TODO: type as a RouteInfo
   public finalizer: any;
 
   constructor(outletState: any) {
@@ -57,8 +58,8 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
       this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
     }
 
-    let outletStateReference = dynamicScope.outletState =
-      dynamicScope.outletState.get('outlets').get(definition.outletName);
+    let outletStateReference = dynamicScope.outletState.get(definition.outletName);
+    dynamicScope.outletState = outletStateReference;
     let outletState = outletStateReference.value();
     return new StateBucket(outletState);
   }
@@ -68,7 +69,7 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
   }
 
   getSelf({ outletState }: StateBucket) {
-    return new RootReference(outletState.render.controller);
+    return new RootReference(privateRouteInfos.get(outletState).controller);
   }
 
   didRenderLayout(bucket: StateBucket) {

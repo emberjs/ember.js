@@ -6,6 +6,7 @@ import { run } from 'ember-metal';
 import { assign, OWNER } from 'ember-utils';
 import { Renderer } from '../renderer';
 import { Container, OwnedTemplate } from '../template';
+import { RouteInfo } from 'ember-routing';
 
 export class RootOutletStateReference implements VersionedPathReference<Option<OutletState>> {
   tag: Tag;
@@ -47,22 +48,21 @@ class OrphanedOutletStateReference extends RootOutletStateReference {
   value(): Option<OutletState> {
     let rootState = this.root.value();
 
-    let orphans = rootState.outlets.main.outlets.__ember_orphans__;
+    let orphans = rootState.child.getChild('__ember_orphans__');
 
     if (!orphans) {
       return null;
     }
 
-    let matched = orphans.outlets[this.name];
+    let matched = orphans.getChild(this.name);
 
     if (!matched) {
       return null;
     }
 
-    let state = Object.create(null);
-    state[matched.render.outlet] = matched;
     matched.wasUsed = true;
-    return { outlets: state, render: undefined };
+    // TODO: this used to be wrapped in another layer
+    return matched;
   }
 }
 
@@ -83,7 +83,7 @@ class ChildOutletStateReference implements VersionedPathReference<any> {
 
   value(): any {
     let parent = this.parent.value();
-    return parent && parent[this.key];
+    return parent && parent.getChild(this.key);
   }
 }
 
@@ -164,19 +164,9 @@ export default class OutletView {
   rerender() { /**/ }
 
   setOutletState(state: OutletState) {
-    this.outletState = {
-      outlets: {
-        main: state,
-      },
-      render: {
-        owner: undefined,
-        into: undefined,
-        outlet: 'main',
-        name: '-top-level',
-        controller: undefined,
-        template: undefined,
-      },
-    };
+    let routeInfo = new RouteInfo('-top-level');
+    routeInfo.setChild('main', state);
+    this.outletState = routeInfo;
     this._tag.inner.dirty();
   }
 
