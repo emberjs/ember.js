@@ -2,7 +2,7 @@ import {
   Simple
 } from '@glimmer/interfaces';
 import {
-  TagWrapper
+  TagWrapper, RevisionTag
 } from '@glimmer/reference';
 import {
   Arguments,
@@ -11,7 +11,7 @@ import {
   DynamicScope,
   ModifierManager,
 } from '@glimmer/runtime';
-import { 
+import {
   Destroyable
 } from '@glimmer/util';
 import { assert } from 'ember-debug';
@@ -78,8 +78,9 @@ export class ActionState {
   public implicitTarget: any;
   public dom: any;
   public eventName: any;
+  public tag: TagWrapper<RevisionTag | null>;
 
-  constructor(element: Simple.Element, actionId: number, actionName: any, actionArgs: any[], namedArgs: CapturedNamedArguments, positionalArgs: CapturedPositionalArguments, implicitTarget: any, dom: any) {
+  constructor(element: Simple.Element, actionId: number, actionName: any, actionArgs: any[], namedArgs: CapturedNamedArguments, positionalArgs: CapturedPositionalArguments, implicitTarget: any, dom: any, tag: TagWrapper<RevisionTag | null>) {
     this.element = element;
     this.actionId = actionId;
     this.actionName = actionName;
@@ -89,6 +90,7 @@ export class ActionState {
     this.implicitTarget = implicitTarget;
     this.dom = dom;
     this.eventName = this.getEventName();
+    this.tag = tag;
   }
 
   getEventName() {
@@ -182,7 +184,7 @@ export class ActionState {
 // implements ModifierManager<Action>
 export default class ActionModifierManager implements ModifierManager<ActionState> {
   create(element: Simple.Element, args: Arguments, _dynamicScope: DynamicScope, dom: any) {
-    let { named, positional } = args.capture();
+    let { named, positional, tag } = args.capture();
     let implicitTarget;
     let actionName;
     let actionNameRef: any;
@@ -223,6 +225,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       positional,
       implicitTarget,
       dom,
+      tag,
     );
   }
 
@@ -246,9 +249,8 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     actionState.eventName = actionState.getEventName();
   }
 
-  getTag() {
-    // TODO: ModifierManager needs a getTag method. Where does this tag come from?
-    return new TagWrapper();
+  getTag(actionState: ActionState) {
+    return actionState.tag;
   }
 
   getDestructor(modifier: Destroyable) {
