@@ -1,5 +1,6 @@
 import { getOwner } from 'ember-utils';
 import { assert } from 'ember-debug';
+import { peekMeta } from './meta';
 import { ComputedProperty } from './computed';
 import { AliasedProperty } from './alias';
 import { Descriptor } from './properties';
@@ -28,7 +29,8 @@ export default function InjectedProperty(type, name) {
 }
 
 function injectedPropertyGet(keyName) {
-  let desc = this[keyName];
+  let meta = peekMeta(this);
+  let desc = meta !== undefined && meta.peekDescriptors(keyName);
   let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
   assert(`InjectedProperties should be defined with the inject computed property macros.`, desc && desc.isDescriptor && desc.type);

@@ -49,15 +49,10 @@ export default function isEmpty(obj) {
     }
   }
 
-  if (typeof obj.length === 'number' && objectType !== 'function') {
-    return !obj.length;
-  }
+  let length = get(obj, 'length');
 
-  if (objectType === 'object') {
-    let length = get(obj, 'length');
-    if (typeof length === 'number') {
-      return !length;
-    }
+  if (typeof length === 'number' && objectType !== 'function') {
+    return !length;
   }
 
   return false;

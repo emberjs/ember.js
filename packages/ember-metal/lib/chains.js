@@ -323,8 +323,10 @@ function lazyGet(obj, key) {
     return;
   }
 
+  let possibleDesc = meta !== undefined && meta.peekDescriptors(key);
+
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key])) {
+  if (isVolatile(possibleDesc)) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {

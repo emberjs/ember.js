@@ -3,6 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { MANDATORY_SETTER } from 'ember/features';
@@ -37,6 +38,12 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 
   SETTER_FUNCTION.isMandatorySetter = true;
   return SETTER_FUNCTION;
+}
+
+export function MANDATORY_GETTER_FUNCTION(name) {
+  return function GETTER_FUNCTION() {
+    assert(`You must use get() to access the \`${name}\` property (of ${this}).`, false);
+  };
 }
 
 export function DEFAULT_GETTER_FUNCTION(name) {
@@ -120,29 +127,33 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   let watchEntry = meta.peekWatching(keyName);
   let watching = watchEntry !== undefined && watchEntry > 0;
-  let possibleDesc = obj[keyName];
-  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+  let possibleDesc = meta.peekDescriptors(keyName);
+  let wasDescriptor = possibleDesc !== undefined;
 
-  if (isDescriptor) {
+  if (wasDescriptor) {
     possibleDesc.teardown(obj, keyName, meta);
+    meta.removeDescriptors(keyName);
   }
 
   let value;
   if (desc instanceof Descriptor) {
     value = desc;
-    if (MANDATORY_SETTER) {
-      if (watching) {
-        Object.defineProperty(obj, keyName, {
-          configurable: true,
-          enumerable: true,
-          writable: true,
-          value
-        });
-      } else {
-        obj[keyName] = value;
-      }
+
+    meta.writeDescriptors(keyName, value);
+
+    if (MANDATORY_SETTER && watching) {
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        get: MANDATORY_GETTER_FUNCTION(keyName),
+        set: MANDATORY_SETTER_FUNCTION(keyName)
+      });
     } else {
-      obj[keyName] = value;
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        get: MANDATORY_GETTER_FUNCTION(keyName)
+      });
     }
 
     didDefineComputedProperty(obj.constructor);
@@ -151,24 +162,24 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   } else if (desc === undefined || desc === null) {
     value = data;
 
-    if (MANDATORY_SETTER) {
-      if (watching) {
-        meta.writeValues(keyName, data);
+    if (MANDATORY_SETTER && watching) {
+      meta.writeValues(keyName, data);
 
-        let defaultDescriptor = {
-          configurable: true,
-          enumerable: true,
-          set: MANDATORY_SETTER_FUNCTION(keyName),
-          get: DEFAULT_GETTER_FUNCTION(keyName)
-        };
-
-        Object.defineProperty(obj, keyName, defaultDescriptor);
-
-      } else {
-        obj[keyName] = data;
-      }
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        set: MANDATORY_SETTER_FUNCTION(keyName),
+        get: DEFAULT_GETTER_FUNCTION(keyName)
+      });
+    } else if (wasDescriptor) {
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value
+      });
     } else {
-      obj[keyName] = data;
+      obj[keyName] = value;
     }
   } else {
     value = desc;

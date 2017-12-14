@@ -125,10 +125,11 @@ function makeCtor() {
               !((keyName === 'actions') && ActionHandler.detect(this))
             );
 
-            let baseValue = this[keyName];
-            let isDescriptor = baseValue !== null && typeof baseValue === 'object' && baseValue.isDescriptor;
+            let possibleDesc = m.peekDescriptors(keyName);
+            let isDescriptor = possibleDesc !== undefined;
+            let baseValue = isDescriptor ? undefined : this[keyName];
 
-            if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+            if (!isDescriptor && hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
               if (baseValue) {
                 value = makeArray(baseValue).concat(value);
               } else {
@@ -136,12 +137,12 @@ function makeCtor() {
               }
             }
 
-            if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+            if (!isDescriptor && hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
               value = assign({}, baseValue, value);
             }
 
             if (isDescriptor) {
-              baseValue.set(this, keyName, value);
+              possibleDesc.set(this, keyName, value);
             } else if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
               this.setUnknownProperty(keyName, value);
             } else {
@@ -857,31 +858,36 @@ let ClassMixinProps = {
   */
   metaForProperty(key) {
     let proto = this.proto();
-    let possibleDesc = proto[key];
+    let meta = peekMeta(proto);
+    let possibleDesc = meta && meta.peekDescriptors(key);
 
-    assert(
-      `metaForProperty() could not find a computed property with key '${key}'.`,
-      possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor
-    );
+    assert(`metaForProperty() could not find a computed property with key '${key}'.`, possibleDesc !== undefined);
     return possibleDesc._meta || {};
   },
 
   _computedProperties: computed(function() {
     _hasCachedComputedProperties();
     let proto = this.proto();
-    let property;
+    let meta = peekMeta(proto);
+
+    if (meta === undefined) {
+      return [];
+    }
+
+    let possibleDesc;
     let properties = [];
 
     for (let name in proto) {
-      property = proto[name];
+      possibleDesc = meta.peekDescriptors(name);
 
-      if (property !== null && typeof property === 'object' && property.isDescriptor) {
+      if (possibleDesc !== undefined) {
         properties.push({
           name,
-          meta: property._meta
+          meta: possibleDesc._meta
         });
       }
     }
+
     return properties;
   }).readOnly(),
 
@@ -931,13 +937,17 @@ if (DEBUG) {
   ClassMixinProps._lazyInjections = function() {
     let injections = {};
     let proto = this.proto();
-    let key;
-    let desc;
+    let meta = peekMeta(proto);
 
-    for (key in proto) {
-      desc = proto[key];
-      if (desc instanceof InjectedProperty) {
-        injections[key] = `${desc.type}:${desc.name || key}`;
+    if (meta !== undefined) {
+      let key;
+      let desc;
+
+      for (key in proto) {
+        desc = meta.peekDescriptors(key);
+        if (desc instanceof InjectedProperty) {
+          injections[key] = `${desc.type}:${desc.name || key}`;
+        }
       }
     }
 
