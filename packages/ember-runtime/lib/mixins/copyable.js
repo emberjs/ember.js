@@ -2,11 +2,7 @@
 @module ember
 */
 
-import {
-  get,
-  Mixin
-} from 'ember-metal';
-import { deprecate, Error as EmberError } from 'ember-debug';
+import { Mixin } from 'ember-metal';
 
 /**
   Implements some standard methods for copying an object. Add this mixin to
