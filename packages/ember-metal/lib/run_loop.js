@@ -50,10 +50,9 @@ const backburner = new Backburner(['sync', 'actions', 'destroy'], {
     // code to be executed within a RunLoop
   });
   ```
-
-  @class @ember/runloop
+  @method run
+  @for @ember/runloop
   @static
-  @constructor
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
     May be a function or a string. If you pass a string
