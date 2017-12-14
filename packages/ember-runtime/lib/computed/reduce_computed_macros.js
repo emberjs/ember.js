@@ -782,6 +782,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
       this.notifyPropertyChange(key);
     }
 
+    let itemsKeyIsAtThis = (itemsKey === '@this');
     let normalizedSortProperties = normalizeSortProperties(sortProperties);
     activeObservers = normalizedSortProperties.map(([prop]) => {
       let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
@@ -791,7 +792,6 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     activeObserversMap.set(this, activeObservers);
 
-    let itemsKeyIsAtThis = (itemsKey === '@this');
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
     if (!isArray(items)) { return emberA(); }
 
