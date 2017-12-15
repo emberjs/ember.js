@@ -32,7 +32,7 @@ const {
   dagES,
   routeRecognizerES,
   emberPkgES,
-  glimmerPkgES,
+  glimmerTrees,
   emberTestsES,
   nodeModuleUtils,
   emberVersionES,
@@ -57,17 +57,7 @@ module.exports = function(options) {
   let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
   let emberTemplateCompiler = emberPkgES('ember-template-compiler');
   let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
-  let glimmerSyntax = toES5(
-    glimmerPkgES('@glimmer/syntax', ['@glimmer/util', 'handlebars', 'simple-html-tokenizer']),
-    { annotation: '@glimmer/syntax' }
-  );
-  let glimmerCompiler = toES5(
-    glimmerPkgES('@glimmer/compiler', ['@glimmer/util', '@glimmer/wire-format', '@glimmer/syntax']),
-    { annotation: '@glimmer/compiler' }
-  );
-  let glimmerReference = toES5(glimmerPkgES('@glimmer/reference', ['@glimmer/util']));
-  let glimmerUtil = toES5(glimmerPkgES('@glimmer/util'));
-  let glimmerWireFormat = toES5(glimmerPkgES('@glimmer/wire-format', ['@glimmer/util']));
+
   let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
   let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
@@ -136,9 +126,6 @@ module.exports = function(options) {
     emberMetalES5,
     emberConsoleES5,
     emberDebugES5,
-    glimmerReference,
-    glimmerUtil,
-    glimmerWireFormat,
     backburner,
     version,
     license,
@@ -195,11 +182,8 @@ module.exports = function(options) {
       emberConsoleES5,
       emberTemplateCompilerES5,
       emberDebugES5,
-      glimmerSyntax,
-      glimmerCompiler,
-      glimmerReference,
-      glimmerUtil,
-      glimmerWireFormat,
+      // metal depends on @glimmer/reference
+      ...glimmerTrees(['@glimmer/compiler', '@glimmer/reference']).map(toES5),
       backburner,
       debugFeatures,
       tokenizer,
@@ -229,9 +213,6 @@ module.exports = function(options) {
     });
 
     let depsProd = [
-      glimmerReference,
-      glimmerUtil,
-      glimmerWireFormat,
       backburner,
       rsvp
     ].map(stripForProd);
@@ -342,12 +323,7 @@ function dependenciesES6() {
     dagES(),
     routerES(),
     routeRecognizerES(),
-    glimmerPkgES('@glimmer/node', ['@glimmer/runtime']),
-    glimmerPkgES('@glimmer/runtime', [
-      '@glimmer/util',
-      '@glimmer/reference',
-      '@glimmer/wire-format'
-    ])
+    ...glimmerTrees(['@glimmer/node', '@glimmer/runtime']),
   ];
 }
 

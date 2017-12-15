@@ -1,12 +1,13 @@
 'use strict';
 /* eslint-env node */
-const { readFileSync } = require('fs');
+const { readFileSync, existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
 const filterTypeScript = require('broccoli-typescript-compiler').filterTypeScript;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
+const findPackage = require('./find-package');
 const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
 const WriteFile = require('broccoli-file-creator');
@@ -169,7 +170,6 @@ module.exports.routeRecognizerES = function _routeRecognizerES() {
   });
 }
 
-
 module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
   return new Rollup(findLib('simple-html-tokenizer', 'dist/es6'), {
     annotation: 'simple-html-tokenizer es',
@@ -207,19 +207,64 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
   });
 }
 
-module.exports.glimmerPkgES = function _glimmerPkgES(name, externs = []) {
-  return new Rollup(findLib(name, 'dist/modules/es5'), {
-    annotation: `${name} es`,
-    rollup: {
-      input: 'index.js',
-      external: externs,
-      output: {
-        file: `${name}.js`,
-        format: 'es',
-        exports: 'named'
-      }
+const glimmerTrees = new Map();
+
+function rollupGlimmerPackage(pkg, deps) {
+  let name = pkg.name;
+  let tree = glimmerTrees.get(name);
+  if (tree === undefined) {
+    tree = new Rollup(pkg.module.dir, {
+      rollup: {
+        input: pkg.module.base,
+        external: pkg.dependencies,
+        output: {
+          file: name + '.js',
+          format: 'es'
+        },
+      },
+      annotation: name
+    });
+    glimmerTrees.set(name, tree);
+  }
+  return tree;
+}
+
+module.exports.glimmerPkgES = function glimmerPkgES(name) {
+  return rollupGlimmerPackage(findPackage(name));
+}
+
+module.exports.glimmerTrees = function glimmerTrees(entries) {
+  let seen = new Set();
+
+  // glimmer runtime has dependency on this even though it is only in tests
+  seen.add('@glimmer/object');
+  seen.add('@glimmer/object-reference');
+
+  let trees = [];
+  let queue = Array.isArray(entries) ? entries.slice() : [ entries ];
+  let name;
+  while ((name = queue.pop()) !== undefined) {
+    if (seen.has(name)) {
+      continue;
     }
-  });
+    seen.add(name);
+
+    if (!name.startsWith('@glimmer/')) {
+      continue;
+    }
+
+    let pkg = findPackage(name);
+
+    if (pkg.module && existsSync(pkg.module.path)) {
+      trees.push(rollupGlimmerPackage(pkg));
+    }
+
+    let dependencies = pkg.dependencies;
+    if (dependencies) {
+      queue.push(...dependencies);
+    }
+  }
+  return trees;
 }
 
 module.exports.emberTestsES = function _emberTestES(name) {
