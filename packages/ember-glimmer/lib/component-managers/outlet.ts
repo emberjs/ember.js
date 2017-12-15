@@ -19,8 +19,8 @@ import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import { privateRouteInfos } from 'ember-routing';
 
-function instrumentationPayload({ render: { name, outlet } }: {render: {name: string, outlet: string}}) {
-  return { object: `${name}:${outlet}` };
+function instrumentationPayload(routeInfo: RouteInfo) {
+  return { object: `${routeInfo.name}` };
 }
 
 function NOOP() {/**/}

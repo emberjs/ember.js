@@ -1469,10 +1469,13 @@ function findLiveRoute(liveRoutes, name) {
     if (test.name === name) {
       return test;
     }
-    let outlets = privateRouteInfos.get(test).outlets;
-    if (outlets) {
-      for (let outletName in outlets) {
-        stack.push(outlets[outletName]);
+    if (test.child) {
+      stack.push(test.child);
+    }
+    let otherOutlets = privateRouteInfos.get(test).outlets;
+    if (otherOutlets) {
+      for (let outletName in otherOutlets) {
+        stack.push(otherOutlets[outletName]);
       }
     }
   }
@@ -1540,13 +1543,7 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
     // Create an entry to represent our default template name,
     // just so other routes can target it and inherit its place
     // in the outlet hierarchy.
-    defaultParentState.outlets.main = {
-      render: {
-        name: route.routeName,
-        outlet: 'main'
-      },
-      outlets: {}
-    };
+    defaultParentState.setChild('main', new RouteInfo(route.routeName));
     return defaultParentState;
   }
 }

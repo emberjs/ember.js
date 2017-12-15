@@ -26,7 +26,7 @@ import {
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
-import RouteInfo from './route_info';
+import RouteInfo, { privateRouteInfos } from './route_info';
 
 function K() { return this; }
 
@@ -2161,22 +2161,16 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       parentView = undefined;
     }
     for (let i = 0; i < this.connections.length; i++) {
-      let connection = this.connections[i];
-      if (connection.outlet === outletName && connection.into === parentView) {
+      let routeInfo = this.connections[i];
+      let privRouteInfo = privateRouteInfos.get(routeInfo);
+      if (privRouteInfo.outletName === outletName && privRouteInfo.into === parentView) {
         // This neuters the disconnected outlet such that it doesn't
         // render anything, but it leaves an entry in the outlet
         // hierarchy so that any existing other renders that target it
         // don't suddenly blow up. They will still stick themselves
         // into its outlets, which won't render anywhere. All of this
         // statefulness should get the machete in 2.0.
-        this.connections[i] = {
-          owner: connection.owner,
-          into: connection.into,
-          outlet: connection.outlet,
-          name: connection.name,
-          controller: undefined,
-          template: undefined,
-        };
+        this.connections[i] = new RouteInfo(routeInfo.name, undefined, undefined, privRouteInfo.outletName, privRouteInfo.into);
         run.once(this.router, '_setOutlets');
       }
     }
