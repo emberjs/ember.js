@@ -41,14 +41,18 @@ export default function inspect(obj) {
   let ret = [];
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
-      v = obj[key];
-      if (v === 'toString') { continue; } // ignore useless items
-      if (typeof v === 'function') { v = 'function() { ... }'; }
+      try {
+        v = obj[key];
+        if (v === 'toString') { continue; } // ignore useless items
+        if (typeof v === 'function') { v = 'function() { ... }'; }
 
-      if (v && typeof v.toString !== 'function') {
-        ret.push(`${key}: ${objectToString.call(v)}`);
-      } else {
-        ret.push(`${key}: ${v}`);
+        if (v && typeof v.toString !== 'function') {
+          ret.push(`${key}: ${objectToString.call(v)}`);
+        } else {
+          ret.push(`${key}: ${v}`);
+        }
+      } catch(e) {
+        ret.push(`${key}: ${e}`);
       }
     }
   }

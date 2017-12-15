@@ -1,4 +1,4 @@
-import { InjectedProperty } from 'ember-metal';
+import { InjectedProperty, peekMeta } from 'ember-metal';
 import { assert } from 'ember-debug';
 
 /**
@@ -48,10 +48,16 @@ export function createInjectionHelper(type, validator) {
 */
 export function validatePropertyInjections(factory) {
   let proto = factory.proto();
+  let meta = peekMeta(proto);
+
+  if (meta === undefined) {
+    return true;
+  }
+
   let types = [];
 
   for (let key in proto) {
-    let desc = proto[key];
+    let desc = meta.peekDescriptors(key);
     if (desc instanceof InjectedProperty && types.indexOf(desc.type) === -1) {
       types.push(desc.type);
     }

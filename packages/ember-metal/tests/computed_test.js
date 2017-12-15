@@ -44,6 +44,17 @@ QUnit.test('computed properties defined with an object only allow `get` and `set
   }, 'Config object passed to computed can only contain `get` or `set` keys.');
 });
 
+QUnit.test('accessing computed property without get is not allowed', assert => {
+  let obj = {};
+  let count = 0;
+  defineProperty(obj, 'foo', computed(function(key) {
+    count++;
+    return 'computed ' + key;
+  }));
+
+  expectAssertion(() => obj.foo, /You must use get\(\) to access the `foo` property/);
+  assert.strictEqual(count, 0, 'should not have invoked computed property');
+});
 
 QUnit.test('defining computed property should invoke property on get', function() {
   let obj = {};

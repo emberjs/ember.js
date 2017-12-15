@@ -49,12 +49,13 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let currentValue = obj[keyName];
-  let isDescriptor = currentValue !== null && typeof currentValue === 'object' && currentValue.isDescriptor;
+  let meta = peekMeta(obj);
+  let possibleDesc = meta && meta.peekDescriptors(keyName);
+  let currentValue;
 
-  if (isDescriptor) { /* computed property */
-    currentValue.set(obj, keyName, value);
-  } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
+  if (possibleDesc !== undefined) { /* computed property */
+    possibleDesc.set(obj, keyName, value);
+  } else if ((currentValue = obj[keyName]) === undefined && 'object' === typeof obj && !(keyName in obj) &&
     typeof obj.setUnknownProperty === 'function') { /* unknown property */
     obj.setUnknownProperty(keyName, value);
   } else if (currentValue === value) { /* no change */

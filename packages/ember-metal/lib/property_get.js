@@ -3,6 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
+import { peekMeta } from './meta';
 import { isPath } from './path_cache';
 
 const ALLOWABLE_TYPES = {
@@ -55,14 +56,19 @@ export function get(obj, keyName) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
-  let value = obj[keyName];
-  let isDescriptor = value !== null && typeof value === 'object' && value.isDescriptor;
+  let meta = peekMeta(obj);
+  let possibleDesc = undefined;
+  let value;
 
-  if (isDescriptor) {
-    return value.get(obj, keyName);
+  if (meta !== undefined) {
+    possibleDesc = meta.peekDescriptors(keyName);
+  }
+
+  if (possibleDesc !== undefined) {
+    return possibleDesc.get(obj, keyName);
   } else if (isPath(keyName)) {
     return _getPath(obj, keyName);
-  } else if (value === undefined && 'object' === typeof obj && !(keyName in obj) &&
+  } else if ((value = obj[keyName]) === undefined && 'object' === typeof obj && !(keyName in obj) &&
     typeof obj.unknownProperty === 'function') {
     return obj.unknownProperty(keyName);
   } else {

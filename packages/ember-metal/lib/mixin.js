@@ -22,6 +22,7 @@ import {
   Descriptor,
   defineProperty
 } from './properties';
+import { get } from './property_get';
 import { ComputedProperty } from './computed';
 import { Binding } from './binding';
 import {
@@ -85,10 +86,7 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   // If we didn't find the original descriptor in a parent mixin, find
   // it on the original object.
   if (!superProperty) {
-    let possibleDesc = base[key];
-    let superDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
-    superProperty = superDesc;
+    superProperty = meta.peekDescriptors(key);
   }
 
   if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
@@ -317,6 +315,13 @@ function updateObserversAndListeners(obj, key, paths, updateMethod) {
 }
 
 function replaceObserversAndListeners(obj, key, observerOrListener) {
+  let meta = peekMeta(obj);
+  let possibleDesc = meta && meta.peekDescriptors(key);
+
+  if (possibleDesc !== undefined) {
+    return;
+  }
+
   let prev = obj[key];
 
   if (typeof prev === 'function') {

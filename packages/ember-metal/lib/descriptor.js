@@ -1,4 +1,5 @@
-import { Descriptor as EmberDescriptor } from './properties';
+import { meta } from './meta';
+import { Descriptor as EmberDescriptor, defineProperty } from './properties';
 
 export default function descriptor(desc) {
   return new Descriptor(desc);
@@ -19,7 +20,17 @@ class Descriptor extends EmberDescriptor {
   }
 
   setup(obj, key) {
-    Object.defineProperty(obj, key, this.desc);
+    defineProperty(obj, key, this.desc);
+    // meta(obj).removeDescriptors(key);
+    // Object.defineProperty(obj, key, this.desc);
+  }
+
+  get(obj, key) {
+    return obj[key];
+  }
+
+  set(obj, key, value) {
+    return obj[key] = value;
   }
 
   teardown(obj, key) {

@@ -46,6 +46,7 @@ export class Meta {
     }
 
     this._cache = undefined;
+    this._descriptors = undefined;
     this._watching = undefined;
     this._mixins = undefined;
     this._bindings = undefined;
@@ -319,6 +320,21 @@ export class Meta {
     return this._getInherited('_chains');
   }
 
+  writeDescriptors(subkey, value) {
+    assert(`Cannot update descriptors for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    let map = this._getOrCreateOwnMap('_descriptors');
+    map[subkey] = value;
+  }
+
+  peekDescriptors(subkey) {
+    let possibleDesc = this._findInherited('_descriptors', subkey);
+    return possibleDesc === UNDEFINED ? undefined : possibleDesc;
+  }
+
+  removeDescriptors(subkey) {
+    this.writeDescriptors(subkey, UNDEFINED);
+  }
+
   writeWatching(subkey, value) {
     assert(`Cannot update watchers for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_watching');
@@ -326,7 +342,7 @@ export class Meta {
   }
 
   peekWatching(subkey) {
-   return this._findInherited('_watching', subkey);
+    return this._findInherited('_watching', subkey);
   }
 
   writeMixins(subkey, value) {

@@ -2,7 +2,6 @@ import { DirtyableTag } from '@glimmer/reference';
 import { readDOMAttr } from '@glimmer/runtime';
 import {
   assert,
-  deprecate,
 } from 'ember-debug';
 import {
   get,
@@ -590,9 +589,6 @@ const Component = CoreView.extend(
           return false;
         }
       )());
-
-      // tslint:disable-next-line:max-line-length
-      assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, !(this.tagName && this.tagName.isDescriptor));
     },
 
     rerender() {
