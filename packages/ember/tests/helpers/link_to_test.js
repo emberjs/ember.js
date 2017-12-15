@@ -417,26 +417,6 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
   }
 
-  ['@test The {{link-to}} helper supports currentWhen (DEPRECATED)'](assert) {
-    expectDeprecation('Usage of `currentWhen` is deprecated, use `current-when` instead.');
-
-    this.router.map(function() {
-      this.route('index', { path: '/' }, function() {
-        this.route('about');
-      });
-      this.route('item');
-    });
-
-    this.addTemplate('index', `<h3>Home</h3>{{outlet}}`);
-    this.addTemplate('index.about', `
-      {{#link-to 'item' id='other-link' currentWhen='index'}}ITEM{{/link-to}}
-    `);
-
-    this.visit('/about');
-
-    assert.equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
-  }
-
   [`@test The {{link-to}} helper supports custom, nested, current-when`](assert) {
     this.router.map(function() {
       this.route('index', { path: '/' }, function() {

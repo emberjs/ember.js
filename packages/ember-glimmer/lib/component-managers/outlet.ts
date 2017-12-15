@@ -1,9 +1,5 @@
-import {
-  ComponentCapabilities,
-  Option,
-  Unique
-} from '@glimmer/interfaces';
-import { WrappedBuilder, ParsedLayout } from '@glimmer/opcode-compiler';
+import { ComponentCapabilities, Option, Unique } from '@glimmer/interfaces';
+import { ParsedLayout, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   Tag, VersionedPathReference
 } from '@glimmer/reference';
@@ -13,6 +9,7 @@ import {
   ElementOperations,
   Environment,
   Invocation,
+  TopLevelSyntax,
   WithDynamicTagName,
   WithStaticLayout
 } from '@glimmer/runtime';
@@ -21,6 +18,9 @@ import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { guidFor } from 'ember-utils';
 import { OwnedTemplateMeta } from 'ember-views';
+import {
+  EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER,
+} from 'ember/features';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import {
@@ -132,16 +132,21 @@ class TopLevelOutletComponentManager extends OutletComponentManager
   getLayout(state: OutletComponentDefinitionState, resolver: RuntimeResolver): Invocation {
     // The router has already resolved the template
     const template = state.template;
-    const compileOptions = Object.assign({},
-      resolver.templateOptions,
-      { asPartial: false, referrer: template.referrer});
-    // TODO fix this getting private
-    const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
-    const layout = new WrappedBuilder(
-      compileOptions,
-      parsed,
-      TOP_CAPABILITIES,
-    );
+    let layout: TopLevelSyntax;
+    if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
+      const compileOptions = Object.assign({},
+        resolver.templateOptions,
+        { asPartial: false, referrer: template.referrer});
+      // TODO fix this getting private
+      const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
+      layout = new WrappedBuilder(
+        compileOptions,
+        parsed,
+        TOP_CAPABILITIES,
+      );
+    } else {
+      layout = template.asLayout();
+    }
     return {
       handle: layout.compile(),
       symbolTable: layout.symbolTable
@@ -157,6 +162,9 @@ class TopLevelOutletComponentManager extends OutletComponentManager
   }
 
   getCapabilities(): ComponentCapabilities {
+    if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
+      return CAPABILITIES;
+    }
     return TOP_CAPABILITIES;
   }
 

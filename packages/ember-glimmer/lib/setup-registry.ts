@@ -1,5 +1,6 @@
 import { privatize as P } from 'container';
 import { environment } from 'ember-environment';
+import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS } from 'ember/features';
 import Component from './component';
 import Checkbox from './components/checkbox';
 import LinkToComponent from './components/link-to';
@@ -77,5 +78,8 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register('component:-text-area', TextArea);
   registry.register('component:-checkbox', Checkbox);
   registry.register('component:link-to', LinkToComponent);
-  registry.register(P`component:-default`, Component);
+
+  if (!EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
+    registry.register(P`component:-default`, Component);
+  }
 }

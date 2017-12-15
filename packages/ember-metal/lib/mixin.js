@@ -13,8 +13,7 @@ import {
 import {
   debugSeal,
   assert,
-  deprecate,
-  EmberError
+  deprecate
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { meta as metaFor, peekMeta } from './meta';
@@ -238,6 +237,7 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
     if (props === CONTINUE) { continue; }
 
     if (props) {
+      // remove willMergeMixin after 3.4 as it was used for _actions
       if (base.willMergeMixin) { base.willMergeMixin(props); }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
@@ -758,17 +758,8 @@ export function aliasMethod(methodName) {
   @static
 */
 export function observer(...args) {
-  let _paths, func;
-  if (typeof args[args.length - 1] !== 'function') {
-    // revert to old, soft-deprecated argument ordering
-    deprecate('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.', false, { id: 'ember-metal.observer-argument-order', until: '3.0.0' });
-
-    func = args.shift();
-    _paths = args;
-  } else {
-    func = args.pop();
-    _paths = args;
-  }
+  let func = args.pop();
+  let _paths = args;
 
   assert('observer called without a function', typeof func === 'function');
   assert('observer called without valid path', _paths.length > 0 && _paths.every((p)=> typeof p === 'string' && p.length));
@@ -782,47 +773,6 @@ export function observer(...args) {
 
   func.__ember_observes__ = paths;
   return func;
-}
-
-/**
-  Specify a method that observes property changes.
-
-  ```javascript
-  import EmberObject from '@ember/object';
-
-  EmberObject.extend({
-    valueObserver: Ember.immediateObserver('value', function() {
-      // Executes whenever the "value" property changes
-    })
-  });
-  ```
-
-  In the future, `observer` may become asynchronous. In this event,
-  `immediateObserver` will maintain the synchronous behavior.
-
-  Also available as `Function.prototype.observesImmediately` if prototype extensions are
-  enabled.
-
-  @method _immediateObserver
-  @for Ember
-  @param {String} propertyNames*
-  @param {Function} func
-  @deprecated Use `observer` instead.
-  @return func
-  @private
-*/
-export function _immediateObserver() {
-  deprecate('Usage of `Ember.immediateObserver` is deprecated, use `observer` instead.', false, { id: 'ember-metal.immediate-observer', until: '3.0.0' });
-
-  for (let i = 0; i < arguments.length; i++) {
-    let arg = arguments[i];
-    assert(
-      'Immediate observers must observe internal properties only, not properties on other objects.',
-      typeof arg !== 'string' || arg.indexOf('.') === -1
-    );
-  }
-
-  return observer.apply(this, arguments);
 }
 
 /**
@@ -842,28 +792,16 @@ export function _immediateObserver() {
   @private
 */
 export function _beforeObserver(...args) {
-  let func  = args[args.length - 1];
-  let paths;
+  let func  = args.pop();
+  let _paths = args;
 
+  assert('_beforeObserver called without a function', typeof func === 'function');
+
+  let paths = [];
   let addWatchedProperty = path => { paths.push(path); };
-
-  let _paths = args.slice(0, -1);
-
-  if (typeof func !== 'function') {
-    // revert to old, soft-deprecated argument ordering
-
-    func  = args[0];
-    _paths = args.slice(1);
-  }
-
-  paths = [];
 
   for (let i = 0; i < _paths.length; ++i) {
     expandProperties(_paths[i], addWatchedProperty);
-  }
-
-  if (typeof func !== 'function') {
-    throw new EmberError('_beforeObserver called without a function');
   }
 
   func.__ember_observesBefore__ = paths;

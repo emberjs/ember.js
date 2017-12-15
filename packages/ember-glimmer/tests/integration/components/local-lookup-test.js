@@ -263,7 +263,7 @@ if (EMBER_MODULE_UNIFICATION) {
       return new LocalLookupTestResolver();
     }
 
-    registerComponent(name, { ComponentClass = null, template = null }) {
+    registerComponent(name, { ComponentClass = Component, template = null }) {
       let { resolver } = this;
 
       if (ComponentClass) {

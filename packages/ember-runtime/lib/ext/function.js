@@ -131,40 +131,6 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     // observes handles property expansion
     return this.observes(...arguments);
   };
-  /**
-    The `observesImmediately` extension of Javascript's Function prototype is
-    available when `EmberENV.EXTEND_PROTOTYPES` or
-    `EmberENV.EXTEND_PROTOTYPES.Function` is true, which is the default.
-
-    You can observe property changes simply by adding the `observesImmediately`
-    call to the end of your method declarations in classes that you write.
-    For example:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    EmberObject.extend({
-      valueObserver: function() {
-        // Executes immediately after the "value" property changes
-      }.observesImmediately('value')
-    });
-    ```
-
-    In the future, `observes` may become asynchronous. In this event,
-    `observesImmediately` will maintain the synchronous behavior.
-
-    See `Ember.immediateObserver`.
-
-    @method observesImmediately
-    @for Function
-    @deprecated
-    @private
-  */
-  FunctionPrototype.observesImmediately = deprecateFunc(
-    'Function#observesImmediately is deprecated. Use Function#observes instead',
-    { id: 'ember-runtime.ext-function', until: '3.0.0' },
-    FunctionPrototype._observesImmediately
-  );
 
   /**
     The `on` extension of Javascript's Function prototype is available

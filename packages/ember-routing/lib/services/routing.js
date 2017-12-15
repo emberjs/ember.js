@@ -48,13 +48,17 @@ export default Service.extend({
   },
 
   generateURL(routeName, models, queryParams) {
+    let router = get(this, 'router');
+    // return early when the router microlib is not present, which is the case for {{link-to}} in integration tests
+    if (!router._routerMicrolib) { return; }
+
     let visibleQueryParams = {};
     if (queryParams) {
       assign(visibleQueryParams, queryParams);
       this.normalizeQueryParams(routeName, models, visibleQueryParams);
     }
 
-    return get(this, 'router').generate(routeName, ...models, { queryParams: visibleQueryParams });
+    return router.generate(routeName, ...models, { queryParams: visibleQueryParams });
   },
 
   isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {

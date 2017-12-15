@@ -4,7 +4,7 @@ import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor('Application Lifecycle - Component Registration', class extends AutobootApplicationTestCase {
 
-  ['@test The helper becomes the body of the component'](assert) {
+  ['@feature(!ember-glimmer-template-only-components) The helper becomes the body of the component'](assert) {
     this.runTask(() => {
       this.createApplication();
 
@@ -12,8 +12,19 @@ moduleFor('Application Lifecycle - Component Registration', class extends Autobo
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
     });
 
-    let text = this.$('div.ember-view > div.ember-view').text().trim();
-    assert.equal(text, 'hello world', 'The component is composed correctly');
+    this.assertText('Hello world hello world');
+    this.assertComponentElement(this.element.firstElementChild, { tagName: 'div', content: '<p>hello world</p>' });
+  }
+
+  ['@feature(ember-glimmer-template-only-components) The helper becomes the body of the component'](assert) {
+    this.runTask(() => {
+      this.createApplication();
+
+      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
+      this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
+    });
+
+    this.assertInnerHTML('Hello world <p>hello world</p>');
   }
 
   ['@test If a component is registered, it is used'](assert) {
@@ -115,53 +126,6 @@ moduleFor('Application Lifecycle - Component Registration', class extends Autobo
         layout: this.compile('{{text}}-{{yield}}')
       }));
     });
-
-    let text = this.$('#wrapper').text().trim();
-    assert.equal(text, 'inner-outer', 'The component is composed correctly');
-  }
-
-  ['@test Assigning defaultLayout to a component should set it up as a layout if no layout was found [DEPRECATED]'](assert) {
-    assert.expect(2);
-
-    expectDeprecation(() => {
-      this.runTask(() => {
-        this.createApplication();
-
-        this.addTemplate('application', `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`);
-
-        this.applicationInstance.register('controller:application', Controller.extend({
-          text: 'outer'
-        }));
-        this.applicationInstance.register('component:my-component', Component.extend({
-          text: 'inner',
-          defaultLayout: this.compile('{{text}}-{{yield}}')
-        }));
-      });
-    });
-
-    let text = this.$('#wrapper').text().trim();
-    assert.equal(text, 'inner-outer', 'The component is composed correctly');
-  }
-
-  ['@test Assigning defaultLayout to a component should set it up as a layout if layout was found [DEPRECATED]'](assert) {
-    assert.expect(2);
-
-    expectDeprecation(() => {
-      this.runTask(() => {
-        this.createApplication();
-
-        this.addTemplate('application', `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`);
-        this.addTemplate('components/my-component', '{{text}}-{{yield}}');
-
-        this.applicationInstance.register('controller:application', Controller.extend({
-          text: 'outer'
-        }));
-        this.applicationInstance.register('component:my-component', Component.extend({
-          text: 'inner',
-          defaultLayout: this.compile('should not see this!')
-        }));
-      });
-    }, /Specifying `defaultLayout` to .+ is deprecated\./);
 
     let text = this.$('#wrapper').text().trim();
     assert.equal(text, 'inner-outer', 'The component is composed correctly');

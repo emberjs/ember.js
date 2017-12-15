@@ -25,24 +25,12 @@ const CopyableTests = Suite.extend({
 
     @returns {Boolean}
   */
-  isEqual: null,
-
-  /*
-    Set this to true if you expect the objects you test to be freezable.
-    The suite will verify that your objects actually match this.  (i.e. if
-    you say you can't test freezable it will verify that your objects really
-    aren't freezable.)
-
-    @type Boolean
-  */
-  shouldBeFreezable: false
+  isEqual: null
 
 });
 
 import copyTests from './copyable/copy';
-import frozenCopyTests from './copyable/frozenCopy';
 
 CopyableTests.importModuleTests(copyTests);
-CopyableTests.importModuleTests(frozenCopyTests);
 
 export default CopyableTests;

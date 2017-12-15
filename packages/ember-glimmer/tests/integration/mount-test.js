@@ -8,7 +8,7 @@ import { compile, Component } from '../utils/helpers';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
 import { Engine, getEngineParent } from 'ember-application';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER, EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
+import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 
 if (EMBER_ENGINES_MOUNT_PARAMS) {
   moduleFor('{{mount}} single param assertion', class extends RenderingTest {
@@ -83,15 +83,15 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       let engineInstance = getOwner(controller);
       assert.strictEqual(getEngineParent(engineInstance), this.applicationInstance, 'engine instance has the application instance as its parent');
 
-      this.assertComponentElement(this.firstChild, { content: '<h2>Chat here, dgeb</h2>' });
+      this.assertInnerHTML('<h2>Chat here, dgeb</h2>');
 
       this.runTask(() => set(controller, 'username', 'chancancode'));
 
-      this.assertComponentElement(this.firstChild, { content: '<h2>Chat here, chancancode</h2>' });
+      this.assertInnerHTML('<h2>Chat here, chancancode</h2>');
 
       this.runTask(() => set(controller, 'username', 'dgeb'));
 
-      this.assertComponentElement(this.firstChild, { content: '<h2>Chat here, dgeb</h2>' });
+      this.assertInnerHTML('<h2>Chat here, dgeb</h2>');
     });
   }
 
@@ -118,16 +118,11 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
 
     let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:route-with-mount" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
-      return this.visit('/route-with-mount');
-    } else {
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/route-with-mount');
-        }, expectedBacktrackingMessage);
-      });
-    }
+    return this.visit('/').then(() => {
+      expectAssertion(() => {
+        this.visit('/route-with-mount');
+      }, expectedBacktrackingMessage);
+    });
   }
 
   ['@test it renders with a bound engine name']() {
@@ -160,31 +155,31 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
     }));
 
     return this.visit('/bound-engine-name').then(() => {
-      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+      this.assertInnerHTML('<!---->');
 
       this.runTask(() => set(controller, 'engineName', 'foo'));
 
-      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+      this.assertInnerHTML('<h2>Foo Engine</h2>');
 
       this.runTask(() => set(controller, 'engineName', undefined));
 
-      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+      this.assertInnerHTML('<!---->');
 
       this.runTask(() => set(controller, 'engineName', 'foo'));
 
-      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+      this.assertInnerHTML('<h2>Foo Engine</h2>');
 
       this.runTask(() => set(controller, 'engineName', 'bar'));
 
-      this.assertComponentElement(this.firstChild, { content: '<h2>Bar Engine</h2>' });
+      this.assertInnerHTML('<h2>Bar Engine</h2>');
 
       this.runTask(() => set(controller, 'engineName', 'foo'));
 
-      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine</h2>' });
+      this.assertInnerHTML('<h2>Foo Engine</h2>');
 
       this.runTask(() => set(controller, 'engineName', null));
 
-      this.assertComponentElement(this.firstChild, { content: '<!---->' });
+      this.assertInnerHTML('<!---->');
     });
   }
 
@@ -221,7 +216,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
     }));
 
     return this.visit('/engine-event-dispatcher-singleton').then(() => {
-      this.assertComponentElement(this.firstChild, { content: '<h2>Foo Engine: Tagless Component</h2>' });
+      this.assertInnerHTML('<h2>Foo Engine: Tagless Component</h2>');
 
       let controllerOwnerEventDispatcher = getOwner(controller).lookup('event_dispatcher:main');
       let taglessComponentOwnerEventDispatcher = getOwner(component).lookup('event_dispatcher:main');
@@ -253,7 +248,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
       this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
 
       return this.visit('/engine-params-static').then(() => {
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: bar</h2>' });
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
       });
     }
 
@@ -272,31 +267,31 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
       this.addTemplate('engine-params-bound', '{{mount "paramEngine" model=(hash foo=boundParamValue)}}');
 
       return this.visit('/engine-params-bound').then(() => {
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: </h2>' });
+        this.assertInnerHTML('<h2>Param Engine: </h2>');
 
         this.runTask(() => set(controller, 'boundParamValue', 'bar'));
 
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: bar</h2>' });
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
 
         this.runTask(() => set(controller, 'boundParamValue', undefined));
 
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: </h2>' });
+        this.assertInnerHTML('<h2>Param Engine: </h2>');
 
         this.runTask(() => set(controller, 'boundParamValue', 'bar'));
 
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: bar</h2>' });
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
 
         this.runTask(() => set(controller, 'boundParamValue', 'baz'));
 
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: baz</h2>' });
+        this.assertInnerHTML('<h2>Param Engine: baz</h2>');
 
         this.runTask(() => set(controller, 'boundParamValue', 'bar'));
 
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: bar</h2>' });
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
 
         this.runTask(() => set(controller, 'boundParamValue', null));
 
-        this.assertComponentElement(this.firstChild, { content: '<h2>Param Engine: </h2>' });
+        this.assertInnerHTML('<h2>Param Engine: </h2>');
       });
     }
 
@@ -322,7 +317,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
       this.addTemplate('engine-params-contextual-component', '{{mount "componentParamEngine" model=(hash foo=(component "foo-component"))}}');
 
       return this.visit('/engine-params-contextual-component').then(() => {
-        this.assertComponentElement(this.firstChild.firstChild, { content: 'foo-component rendered! - rendered app-bar-component from the app' });
+        this.assertComponentElement(this.firstChild, { content: 'foo-component rendered! - rendered app-bar-component from the app' });
       });
     }
   });

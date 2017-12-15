@@ -1,12 +1,13 @@
 'use strict';
 /* eslint-env node */
-const { readFileSync } = require('fs');
+const { readFileSync, existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
 const filterTypeScript = require('broccoli-typescript-compiler').filterTypeScript;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
+const findPackage = require('./find-package');
 const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
 const WriteFile = require('broccoli-file-creator');
@@ -23,11 +24,11 @@ module.exports.routerES = function _routerES() {
   return new Rollup(findLib('router_js'), {
     rollup: {
       external: ['route-recognizer', 'rsvp'],
-      entry: 'index.js',
-      targets: [{
-        dest: 'router.js',
+      input: 'index.js',
+      output: {
+        file: 'router.js',
         format: 'es'
-      }]
+      }
     },
     annotation: 'router.js'
   });
@@ -90,14 +91,16 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
 
 module.exports.handlebarsES = function _handlebars() {
   return new Rollup(findLib('handlebars', 'lib'), {
+    annotation: 'handlebars',
     rollup: {
-      entry: 'handlebars/compiler/base.js',
-      dest: 'handlebars.js',
-      format: 'es',
-      exports: 'named',
+      input: 'handlebars/compiler/base.js',
+      output: {
+        file: 'handlebars.js',
+        format: 'es',
+        exports: 'named'
+      },
       plugins: [handlebarsFix()]
-    },
-    annotation: 'handlebars'
+    }
   })
 }
 
@@ -122,13 +125,15 @@ function handlebarsFix() {
 module.exports.rsvpES = function _rsvpES() {
   let lib = path.resolve(path.dirname(require.resolve('rsvp')), '../lib');
   return new Rollup(lib, {
+    annotation: 'rsvp.js',
     rollup: {
-      entry: 'rsvp.js',
-      dest: 'rsvp.js',
-      format: 'es',
-      exports: 'named'
-    },
-    annotation: 'rsvp.js'
+      input: 'rsvp.js',
+      output: {
+        file: 'rsvp.js',
+        format: 'es',
+        exports: 'named'
+      },
+    }
   });
 }
 
@@ -165,30 +170,33 @@ module.exports.routeRecognizerES = function _routeRecognizerES() {
   });
 }
 
-
 module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
   return new Rollup(findLib('simple-html-tokenizer', 'dist/es6'), {
+    annotation: 'simple-html-tokenizer es',
     rollup: {
-      entry: 'index.js',
-      dest: 'simple-html-tokenizer.js',
-      format: 'es',
-      exports: 'named'
-    },
-    annotation: 'simple-html-tokenizer es'
+      input: 'index.js',
+      output: {
+        file: 'simple-html-tokenizer.js',
+        format: 'es',
+        exports: 'named'
+      }
+    }
   })
 }
 
 module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
   if (rollup) {
     return new Rollup(`packages/${name}/lib`, {
+      annotation: `rollup ${name}`,
       rollup: {
-        entry: 'index.js',
-        dest: `${name}.js`,
+        input: 'index.js',
         external: externs,
-        format: 'es',
-        exports: 'named'
-      },
-      annotation: `rollup ${name}`
+        output: {
+          file: `${name}.js`,
+          format: 'es',
+          exports: 'named'
+        }
+      }
     });
   }
 
@@ -199,17 +207,64 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
   });
 }
 
-module.exports.glimmerPkgES = function _glimmerPkgES(name, externs = []) {
-  return new Rollup(findLib(name, 'dist/modules/es5'), {
-    rollup: {
-      entry: 'index.js',
-      dest: `${name}.js`,
-      external: externs,
-      format: 'es',
-      exports: 'named'
-    },
-    annotation: `${name} es`
-  });
+const glimmerTrees = new Map();
+
+function rollupGlimmerPackage(pkg, deps) {
+  let name = pkg.name;
+  let tree = glimmerTrees.get(name);
+  if (tree === undefined) {
+    tree = new Rollup(pkg.module.dir, {
+      rollup: {
+        input: pkg.module.base,
+        external: pkg.dependencies,
+        output: {
+          file: name + '.js',
+          format: 'es'
+        },
+      },
+      annotation: name
+    });
+    glimmerTrees.set(name, tree);
+  }
+  return tree;
+}
+
+module.exports.glimmerPkgES = function glimmerPkgES(name) {
+  return rollupGlimmerPackage(findPackage(name));
+}
+
+module.exports.glimmerTrees = function glimmerTrees(entries) {
+  let seen = new Set();
+
+  // glimmer runtime has dependency on this even though it is only in tests
+  seen.add('@glimmer/object');
+  seen.add('@glimmer/object-reference');
+
+  let trees = [];
+  let queue = Array.isArray(entries) ? entries.slice() : [ entries ];
+  let name;
+  while ((name = queue.pop()) !== undefined) {
+    if (seen.has(name)) {
+      continue;
+    }
+    seen.add(name);
+
+    if (!name.startsWith('@glimmer/')) {
+      continue;
+    }
+
+    let pkg = findPackage(name);
+
+    if (pkg.module && existsSync(pkg.module.path)) {
+      trees.push(rollupGlimmerPackage(pkg));
+    }
+
+    let dependencies = pkg.dependencies;
+    if (dependencies) {
+      queue.push(...dependencies);
+    }
+  }
+  return trees;
 }
 
 module.exports.emberTestsES = function _emberTestES(name) {
@@ -296,10 +351,15 @@ module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
   options = Object.assign({ transformModules: false, annotation: 'ember metal' }, options);
   let emberMetalES5 = toES5(tree, options);
   return toES5(new Rollup(emberMetalES5, {
+    annotation: `rollup ember-metal`,
     rollup: {
-      entry: `index.js`,
-      dest: `ember-metal.js`,
-      moduleId: 'ember-metal',
+      input: `index.js`,
+      output: {
+        moduleId: 'ember-metal',
+        file: 'ember-metal.js',
+        format: 'amd',
+        exports: 'named'
+      },
       external: [
         'node-module',
         'ember-babel',
@@ -312,10 +372,7 @@ module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
         'ember-console',
         'ember-env-flags',
         'ember/features'
-      ],
-      format: 'amd',
-      exports: 'named'
-    },
-    annotation: `rollup ember-metal`
+      ]
+    }
   }), { transformDefine: true });
 }

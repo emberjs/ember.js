@@ -7,7 +7,6 @@
 // HELPERS
 //
 
-import { guidFor } from 'ember-utils';
 import {
   get,
   set,
@@ -206,36 +205,6 @@ const Enumerable = Mixin.create({
 
     return last;
   }).readOnly(),
-
-  /**
-    Returns `true` if the passed object can be found in the receiver. The
-    default version will iterate through the enumerable until the object
-    is found. You may want to override this with a more efficient version.
-
-    ```javascript
-    let arr = ['a', 'b', 'c'];
-
-    arr.contains('a'); // true
-    arr.contains('z'); // false
-    ```
-
-    @method contains
-    @deprecated Use `Enumerable#includes` instead. See https://emberjs.com/deprecations/v2.x#toc_enumerable-contains
-    @param {Object} obj The object to search for.
-    @return {Boolean} `true` if object is found in enumerable.
-    @public
-  */
-  contains(obj) {
-    deprecate(
-      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-      false,
-      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-    );
-
-    let found = this.find(item => item === obj);
-
-    return found !== undefined;
-  },
 
   /**
     Iterates through the enumerable, calling the passed function on each
@@ -841,9 +810,11 @@ const Enumerable = Mixin.create({
   uniq() {
     let ret = emberA();
 
-    this.forEach(k => {
-      if (ret.indexOf(k) < 0) {
-        ret.push(k);
+    let seen = new Set();
+    this.forEach(item => {
+      if (!seen.has(item)) {
+        seen.add(item);
+        ret.push(item);
       }
     });
 
@@ -1096,12 +1067,12 @@ const Enumerable = Mixin.create({
 
   uniqBy(key) {
     let ret = emberA();
-    let seen = Object.create(null);
+    let seen = new Set();
 
     this.forEach((item) => {
-      let guid = guidFor(get(item, key));
-      if (!(guid in seen)) {
-        seen[guid] = true;
+      let val = get(item, key);
+      if (!seen.has(val)) {
+        seen.add(val);
         ret.push(item);
       }
     });

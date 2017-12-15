@@ -1,6 +1,5 @@
 import TransformOldBindingSyntax from './transform-old-binding-syntax';
 import TransformAngleBracketComponents from './transform-angle-bracket-components';
-import TransformInputOnToOnEvent from './transform-input-on-to-onEvent';
 import TransformTopLevelComponents from './transform-top-level-components';
 import TransformInlineLinkTo from './transform-inline-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
@@ -24,7 +23,6 @@ const transforms = [
   TransformDotComponentInvocation,
   TransformOldBindingSyntax,
   TransformAngleBracketComponents,
-  TransformInputOnToOnEvent,
   TransformTopLevelComponents,
   TransformInlineLinkTo,
   TransformOldClassBindingSyntax,

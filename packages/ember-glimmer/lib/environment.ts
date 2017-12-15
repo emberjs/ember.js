@@ -31,10 +31,10 @@ import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
 import {
   EMBER_MODULE_UNIFICATION,
+  // EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS,
+  // GLIMMER_CUSTOM_COMPONENT_MANAGER,
 } from 'ember/features';
 import { OwnedTemplate } from './template';
-import { Attribute } from '@glimmer/interfaces/dist/types/lib/dom/simple';
-import { DynamicAttribute } from '@glimmer/runtime/dist/types/lib/vm/attributes/dynamic';
 
 export interface CompilerFactory {
   id: string;
@@ -52,6 +52,16 @@ export default class Environment extends GlimmerEnvironment {
 
   public debugStack: typeof DebugStack;
   public inTransaction: boolean;
+  // private _definitionCache: Cache<{
+  //   name: string;
+  //   source: string;
+  //   owner: Container;
+  // }, CurlyComponentDefinition | TemplateOnlyComponentDefinition | undefined>;
+  // private _templateCache: Cache<{
+  //   Template: WrappedTemplateFactory | OwnedTemplate;
+  //   owner: Container;
+  // }, OwnedTemplate>;
+  // private _compilerCache: Cache<CompilerFactory, Cache<OwnedTemplate, CompiledDynamicProgram>>;
 
   constructor(injections: any) {
     super(injections);
@@ -62,6 +72,74 @@ export default class Environment extends GlimmerEnvironment {
     this.destroyedComponents = [];
 
     installPlatformSpecificProtocolForURL(this);
+
+    // this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
+    //   let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
+    //   let customManager: any;
+    //   if (EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS && layout && !componentFactory) {
+    //     return new TemplateOnlyComponentDefinition(name, layout);
+    //   } else if (componentFactory || layout) {
+    //     if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+    //       let managerId = layout && layout.meta.managerId;
+
+    //       if (managerId) {
+    //         customManager = owner.factoryFor<any>(`component-manager:${managerId}`).class;
+    //       }
+    //     }
+    //     return new CurlyComponentDefinition(name, componentFactory, layout, undefined, customManager);
+    //   }
+    //   return undefined;
+    // }, ({ name, source, owner }) => {
+    //   let expandedName = source && this._resolveLocalLookupName(name, source, owner) || name;
+
+    //   let ownerGuid = guidFor(owner);
+
+    //   return ownerGuid + '|' + expandedName;
+    // });
+
+    // this._templateCache = new Cache(1000, ({ Template, owner }) => {
+    //   if (isTemplateFactory(Template)) {
+    //     // we received a factory
+    //     return Template.create({ env: this, [OWNER]: owner });
+    //   } else {
+    //     // we were provided an instance already
+    //     return Template;
+    //   }
+    // }, ({ Template, owner }) => guidFor(owner) + '|' + Template.id);
+
+    // this._compilerCache = new Cache(10, (Compiler) => {
+    //   return new Cache(2000, (template) => {
+    //     let compilable = new Compiler(template);
+    //     return compileLayout(compilable, this);
+    //   }, (template) => {
+    //     let owner = template.meta.owner;
+    //     return guidFor(owner) + '|' + template.id;
+    //   });
+    // }, (Compiler) => Compiler.id);
+
+    // this.builtInModifiers = {
+    //   action: new ActionModifierManager(),
+    // };
+
+    // this.builtInHelpers = {
+    //   'if': inlineIf,
+    //   action,
+    //   concat,
+    //   get,
+    //   hash,
+    //   log,
+    //   mut,
+    //   'query-params': queryParams,
+    //   readonly,
+    //   unbound,
+    //   'unless': inlineUnless,
+    //   '-class': classHelper,
+    //   '-each-in': eachIn,
+    //   '-input-type': inputTypeHelper,
+    //   '-normalize-class': normalizeClassHelper,
+    //   '-html-safe': htmlSafeHelper,
+    //   '-get-dynamic-var': getDynamicVar,
+    // };
 
     if (DEBUG) {
       this.debugStack = new DebugStack();

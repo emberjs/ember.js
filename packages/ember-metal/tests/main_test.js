@@ -31,13 +31,3 @@ QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', fu
   validateVersionString('1.11.3.aba18a', false);
   validateVersionString('1.11', false);
 });
-
-QUnit.test('Ember.K is deprecated', function(assert) {
-  expectDeprecation(function() {
-    let obj = {
-      noop: Ember.K
-    };
-
-    assert.equal(obj, obj.noop());
-  }, 'Ember.K is deprecated in favor of defining a function inline.');
-});

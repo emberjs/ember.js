@@ -273,8 +273,7 @@ export {
   SafeString,
   escapeExpression,
   htmlSafe,
-  isHTMLSafe,
-  getSafeString as _getSafeString,
+  isHTMLSafe
 } from './utils/string';
 export {
   Renderer,

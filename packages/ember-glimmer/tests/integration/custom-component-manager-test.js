@@ -4,7 +4,6 @@ import {
 } from '@glimmer/runtime';
 import { moduleFor, RenderingTest } from '../utils/test-case';
 import {
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   MANDATORY_SETTER
 } from 'ember/features';

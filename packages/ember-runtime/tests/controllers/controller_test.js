@@ -9,22 +9,6 @@ import { buildOwner } from 'internal-test-helpers';
 
 QUnit.module('Controller event handling');
 
-QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
-  expect(2);
-
-  let controller = Controller.extend({
-    actions: {
-      foo: function() {
-        ok(true, 'called foo action');
-      }
-    }
-  }).create();
-
-  expectDeprecation(function() {
-    controller._actions.foo();
-  }, 'Usage of `_actions` is deprecated, use `actions` instead.');
-});
-
 QUnit.test('Action can be handled by a function on actions object', function() {
   expect(1);
   let TestController = Controller.extend({

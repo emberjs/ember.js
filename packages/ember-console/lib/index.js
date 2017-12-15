@@ -1,37 +1,3 @@
-import { context } from 'ember-environment';
-
-function K() {}
-
-function consoleMethod(name) {
-  let consoleObj;
-  if (context.imports.console) {
-    consoleObj = context.imports.console;
-  } else if (typeof console !== 'undefined') { // eslint-disable-line no-undef
-    consoleObj = console; // eslint-disable-line no-undef
-  }
-
-  let method = typeof consoleObj === 'object' ? consoleObj[name] : null;
-
-  if (typeof method !== 'function') {
-    return;
-  }
-
-  return method.bind(consoleObj);
-}
-
-function assertPolyfill(test, message) {
-  if (!test) {
-    try {
-      // attempt to preserve the stack
-      throw new Error(`assertion failed: ${message}`);
-    } catch (error) {
-      setTimeout(() => {
-        throw error;
-      }, 0);
-    }
-  }
-}
-
 /**
   Inside Ember-Metal, simply uses the methods from `imports.console`.
   Override this to provide more robust logging functionality.
@@ -56,7 +22,7 @@ export default {
    @param {*} arguments
    @public
   */
-  log: consoleMethod('log') || K,
+  log() { return console.log(...arguments);}, // eslint-disable-line no-console
 
   /**
    Prints the arguments to the console with a warning icon.
@@ -72,7 +38,7 @@ export default {
    @param {*} arguments
    @public
   */
-  warn: consoleMethod('warn') || K,
+  warn() { return console.warn(...arguments);}, // eslint-disable-line no-console
 
   /**
    Prints the arguments to the console with an error icon, red text and a stack trace.
@@ -88,7 +54,7 @@ export default {
    @param {*} arguments
    @public
   */
-  error: consoleMethod('error') || K,
+  error() { return console.error(...arguments);}, // eslint-disable-line no-console
 
   /**
    Logs the arguments to the console.
@@ -105,7 +71,7 @@ export default {
    @param {*} arguments
    @public
   */
-  info: consoleMethod('info') || K,
+  info() { return console.info(...arguments);}, // eslint-disable-line no-console
 
   /**
    Logs the arguments to the console in blue text.
@@ -122,7 +88,9 @@ export default {
    @param {*} arguments
    @public
   */
-  debug: consoleMethod('debug') || consoleMethod('info') || K,
+  debug() {
+    return console.debug && console.debug(...arguments) || console.info(...arguments); // eslint-disable-line no-console
+  },
 
   /**
    If the value passed into `Ember.Logger.assert` is not truthy it will throw an error with a stack trace.
@@ -139,5 +107,5 @@ export default {
    @param {String} message Assertion message on failed
    @public
   */
-  assert: consoleMethod('assert') || assertPolyfill
+  assert() { return console.assert(...arguments);} // eslint-disable-line no-console
 };

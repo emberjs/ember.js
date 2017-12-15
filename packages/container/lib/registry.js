@@ -3,8 +3,10 @@ import { assert, deprecate } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import Container from './container';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
+let missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
 
 /**
  A registry used to store factory and option information keyed
@@ -24,7 +26,14 @@ export default class Registry {
     this.fallback = options.fallback || null;
     this.resolver = options.resolver || null;
 
-    if (typeof this.resolver === 'function') {
+    if (ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT !== true) {
+      assert(
+        missingResolverFunctionsDeprecation,
+        typeof this.resolver !== 'function'
+      );
+    }
+
+    if (typeof this.resolver === 'function' && ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT === true) {
       deprecateResolverFunction(this);
     }
 
@@ -604,7 +613,7 @@ export default class Registry {
 
 function deprecateResolverFunction(registry) {
   deprecate(
-    'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.',
+    missingResolverFunctionsDeprecation,
     false,
     { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' }
   );

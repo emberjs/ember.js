@@ -1,4 +1,3 @@
-import { GUID_KEY } from 'ember-utils';
 import { assert, isTesting } from 'ember-debug';
 import {
   onErrorTarget
@@ -18,7 +17,6 @@ function onEnd(current, next) {
 }
 
 const backburner = new Backburner(['sync', 'actions', 'destroy'], {
-  GUID_KEY,
   sync: {
     before: beginPropertyChanges,
     after: endPropertyChanges
@@ -52,10 +50,9 @@ const backburner = new Backburner(['sync', 'actions', 'destroy'], {
     // code to be executed within a RunLoop
   });
   ```
-
-  @class @ember/runloop
+  @method run
+  @for @ember/runloop
   @static
-  @constructor
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
     May be a function or a string. If you pass a string
@@ -138,7 +135,7 @@ run.join = function() {
         setup: Ember.run.bind(this, this.setupEditor)
       });
     }),
-    
+
     didInsertElement() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),

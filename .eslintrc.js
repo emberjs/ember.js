@@ -27,7 +27,9 @@ module.exports = {
     'clearTimeout': true,
     'setInterval': true,
     'clearInterval': true,
+    'console': true,
 
+    'Set': true,
     'Symbol': true,
     'WeakMap': true,
   },

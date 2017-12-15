@@ -203,55 +203,6 @@ QUnit.test('.send just calls an action if the routers internal router property i
   equal(undefined, route.send('nonexistent', 1, 2, 3));
 });
 
-QUnit.test('can access `actions` hash via `_actions` [DEPRECATED]', function() {
-  expect(2);
-
-  let route = EmberRoute.extend({
-    actions: {
-      foo: function() {
-        ok(true, 'called foo action');
-      }
-    }
-  }).create();
-
-  expectDeprecation(function() {
-    route._actions.foo();
-  }, 'Usage of `_actions` is deprecated, use `actions` instead.');
-});
-
-QUnit.test('actions in both `_actions` and `actions` results in an assertion', function() {
-  expectAssertion(function() {
-    EmberRoute.extend({
-      _actions: { },
-      actions: { }
-    }).create();
-  }, 'Specifying `_actions` and `actions` in the same mixin is not supported.');
-});
-
-QUnit.test('actions added via `_actions` can be used [DEPRECATED]', function() {
-  expect(3);
-
-  let route;
-  expectDeprecation(function() {
-    route = EmberRoute.extend({
-      _actions: {
-        bar: function() {
-          ok(true, 'called bar action');
-        }
-      }
-    }, {
-      actions: {
-        foo: function() {
-          ok(true, 'called foo action');
-        }
-      }
-    }).create();
-  }, 'Specifying actions in `_actions` is deprecated, please use `actions` instead.');
-
-  route.send('foo');
-  route.send('bar');
-});
-
 QUnit.module('Ember.Route serialize', {
   setup: setup,
   teardown: teardown

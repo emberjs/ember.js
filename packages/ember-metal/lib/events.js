@@ -2,6 +2,7 @@
 @module @ember/object
 */
 import { applyStr } from 'ember-utils';
+import { ENV } from 'ember-environment';
 import { deprecate, assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
 import { ONCE, SUSPENDED } from './meta_listeners';
@@ -40,15 +41,20 @@ import { ONCE, SUSPENDED } from './meta_listeners';
 export function addListener(obj, eventName, target, method, once) {
   assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
 
-  deprecate(
-    `didInitAttrs called in ${obj && obj.toString && obj.toString()}.`,
-    eventName !== 'didInitAttrs',
-    {
-      id: 'ember-views.did-init-attrs',
-      until: '3.0.0',
-      url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-    }
-  );
+  if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
+    deprecate(
+      `didInitAttrs called in ${obj && obj.toString && obj.toString()}.`,
+      eventName !== 'didInitAttrs',
+      {
+        id: 'ember-views.did-init-attrs',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+      }
+    );
+  }
+  else {
+    assert(`didInitAttrs called in ${obj && obj.toString && obj.toString()} is no longer supported.`, eventName !== 'didInitAttrs');
+  }
 
   if (!method && 'function' === typeof target) {
     method = target;

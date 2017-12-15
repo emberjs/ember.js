@@ -16,11 +16,11 @@ import {
 const AFTER_OBSERVERS = ':change';
 const BEFORE_OBSERVERS = ':before';
 
-function changeEvent(keyName) {
+export function changeEvent(keyName) {
   return keyName + AFTER_OBSERVERS;
 }
 
-function beforeEvent(keyName) {
+export function beforeEvent(keyName) {
   return keyName + BEFORE_OBSERVERS;
 }
 

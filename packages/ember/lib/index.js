@@ -68,7 +68,6 @@ Ember.Instrumentation = {
 };
 
 Ember.Error = EmberDebug.Error;
-Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;
@@ -131,7 +130,6 @@ Ember._suspendObservers = metal._suspendObservers;
 Ember.required = metal.required;
 Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
-Ember.immediateObserver = metal._immediateObserver;
 Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;
 Ember.bind = metal.bind;
@@ -221,32 +219,6 @@ Object.defineProperty(Ember, 'onerror', {
   enumerable: false
 });
 
-/**
-  An empty function useful for some operations. Always returns `this`.
-
-  @method K
-  @return {Object}
-  @public
-  @deprecated
-*/
-function deprecatedEmberK() { return this; }
-
-Object.defineProperty(Ember, 'K', {
-  get() {
-    deprecate(
-      'Ember.K is deprecated in favor of defining a function inline.',
-      false,
-      {
-        id: 'ember-metal.ember-k',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
-      }
-    );
-
-    return deprecatedEmberK;
-  }
-});
-
 Object.defineProperty(Ember, 'testing', {
   get: EmberDebug.isTesting,
   set: EmberDebug.setTesting,
@@ -274,8 +246,6 @@ import {
   inject,
   Array as EmberArray,
   Copyable,
-  Freezable,
-  FROZEN_ERROR,
   MutableEnumerable,
   MutableArray,
   TargetActionSupport,
@@ -357,8 +327,6 @@ Ember.ActionHandler = ActionHandler;
 Ember.CoreObject = CoreObject;
 Ember.NativeArray = NativeArray;
 Ember.Copyable = Copyable;
-Ember.Freezable = Freezable;
-Ember.FROZEN_ERROR = FROZEN_ERROR;
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
 Ember.TargetActionSupport = TargetActionSupport;
@@ -463,8 +431,7 @@ import {
   escapeExpression,
   isHTMLSafe,
   getTemplates,
-  setTemplates,
-  _getSafeString
+  setTemplates
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -484,10 +451,6 @@ if (ENV.EXTEND_PROTOTYPES.String) {
 let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
 let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
 let EmberHandleBarsUtils = EmberHandlebars.Utils = EmberHandlebars.Utils || {};
-
-Object.defineProperty(EmberHandlebars, 'SafeString', {
-  get: _getSafeString
-});
 
 EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;

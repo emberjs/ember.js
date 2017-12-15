@@ -27,6 +27,21 @@ for a detailed explanation.
   Adds an ability to for developers to integrate their own custom component managers
   into Ember Applications per [RFC](https://github.com/emberjs/rfcs/blob/custom-components/text/0000-custom-components.md).
 
+* `ember-glimmer-named-arguments`
+
+  Add `{{@foo}}` syntax to access named arguments in component templates per
+  [RFC](https://github.com/emberjs/rfcs/pull/276).
+
+* `ember-glimmer-remove-application-template-wrapper`
+
+  Remove the `<div>` wrapper around the application template per
+  [RFC](https://github.com/emberjs/rfcs/pull/280).
+
+* `ember-glimmer-template-only-components`
+
+  Use Glimmer Components semantics for template-only components per
+  [RFC](https://github.com/emberjs/rfcs/pull/278).
+
 * `ember-module-unification`
 
   Introduces support for Module Unification

@@ -1,8 +1,7 @@
 import {
   ActionHandler,
   Evented,
-  FrameworkObject,
-  deprecateUnderscoreActions
+  FrameworkObject
 } from 'ember-runtime';
 import { initViewElement } from '../system/utils';
 import { cloneStates, states } from './states';
@@ -17,9 +16,9 @@ import { cloneStates, states } from './states';
 
   @class CoreView
   @namespace Ember
-  @extends Ember.Object
-  @deprecated Use `Ember.Component` instead.
-  @uses Ember.Evented
+  @extends EmberObject
+  @deprecated Use `Component` instead.
+  @uses Evented
   @uses Ember.ActionHandler
   @private
 */
@@ -78,8 +77,6 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     return typeof this[name] === 'function' || this._super(name);
   }
 });
-
-deprecateUnderscoreActions(CoreView);
 
 CoreView.reopenClass({
   isViewFactory: true

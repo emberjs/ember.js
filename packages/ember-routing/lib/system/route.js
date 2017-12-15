@@ -18,8 +18,7 @@ import {
   Object as EmberObject,
   A as emberA,
   Evented,
-  ActionHandler,
-  deprecateUnderscoreActions
+  ActionHandler
 } from 'ember-runtime';
 import generateController from './generate_controller';
 import {
@@ -2199,8 +2198,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     }
   }
 });
-
-deprecateUnderscoreActions(Route);
 
 Route.reopenClass({
   isRouteFactory: true

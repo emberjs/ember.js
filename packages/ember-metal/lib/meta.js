@@ -46,7 +46,6 @@ export class Meta {
     }
 
     this._cache = undefined;
-    this._weak = undefined;
     this._watching = undefined;
     this._mixins = undefined;
     this._bindings = undefined;
@@ -243,9 +242,9 @@ export class Meta {
         let innerMap = map[subkey];
         if (innerMap !== undefined) {
           for (let innerKey in innerMap) {
-            seen = seen || Object.create(null);
-            if (seen[innerKey] === undefined) {
-              seen[innerKey] = true;
+            seen = seen === undefined ? new Set() : seen;
+            if (!seen.has(innerKey)) {
+              seen.add(innerKey);
               calls = calls || [];
               calls.push(innerKey, innerMap[innerKey]);
             }
@@ -272,9 +271,6 @@ export class Meta {
 
   writableCache() { return this._getOrCreateOwnMap('_cache'); }
   readableCache() { return this._cache; }
-
-  writableWeak() { return this._getOrCreateOwnMap('_weak'); }
-  readableWeak() { return this._weak; }
 
   writableTags() { return this._getOrCreateOwnMap('_tags'); }
   readableTags() { return this._tags; }
@@ -350,9 +346,9 @@ export class Meta {
       let map = pointer._mixins;
       if (map !== undefined) {
         for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
+          seen = seen === undefined ? new Set() : seen;
+          if (!seen.has(key)) {
+            seen.add(key);
             fn(key, map[key]);
           }
         }
@@ -415,18 +411,6 @@ for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
 
-export const META_DESC = {
-  writable: true,
-  configurable: true,
-  enumerable: false,
-  value: null
-};
-
-const EMBER_META_PROPERTY = {
-  name: META_FIELD,
-  descriptor: META_DESC
-};
-
 if (MANDATORY_SETTER) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
@@ -459,9 +443,8 @@ if (MANDATORY_SETTER) {
   };
 }
 
-
-let getPrototypeOf = Object.getPrototypeOf;
-let metaStore = new WeakMap();
+const getPrototypeOf = Object.getPrototypeOf;
+const metaStore = new WeakMap();
 
 export function setMeta(obj, meta) {
   if (DEBUG) {

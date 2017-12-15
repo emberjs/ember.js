@@ -1,3 +1,4 @@
+import { get } from 'ember-metal';
 import { SuiteModuleBuilder } from '../suite';
 
 const suite = SuiteModuleBuilder.create();
@@ -45,14 +46,14 @@ suite.test('should return -1 when no match is found even startAt search location
   let obj = this.newObject(this.newFixture(3));
   let foo = {};
 
-  equal(obj.lastIndexOf(foo, obj.length), -1, 'obj.lastIndexOf(foo) should be -1');
+  equal(obj.lastIndexOf(foo, get(obj, 'length')), -1, 'obj.lastIndexOf(foo) should be -1');
 });
 
 suite.test('should return -1 when no match is found even startAt search location is greater than length', function() {
   let obj = this.newObject(this.newFixture(3));
   let foo = {};
 
-  equal(obj.lastIndexOf(foo, obj.length + 1), -1, 'obj.lastIndexOf(foo) should be -1');
+  equal(obj.lastIndexOf(foo, get(obj, 'length') + 1), -1, 'obj.lastIndexOf(foo) should be -1');
 });
 
 export default suite;

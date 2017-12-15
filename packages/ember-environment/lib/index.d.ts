@@ -7,3 +7,5 @@ export const environment: {
   userAgent: string;
   window: Window | null;
 };
+
+export const ENV: any;

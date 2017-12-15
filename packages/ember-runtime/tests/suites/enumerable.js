@@ -280,7 +280,6 @@ const EnumerableTests = Suite.extend({
 import anyTests         from './enumerable/any';
 import isAnyTests       from './enumerable/is_any';
 import compactTests     from './enumerable/compact';
-import containsTests    from './enumerable/contains';
 import includesTests    from './enumerable/includes';
 import everyTests       from './enumerable/every';
 import filterTests      from './enumerable/filter';
@@ -302,7 +301,6 @@ import withoutTests     from './enumerable/without';
 EnumerableTests.importModuleTests(anyTests);
 EnumerableTests.importModuleTests(isAnyTests);
 EnumerableTests.importModuleTests(compactTests);
-EnumerableTests.importModuleTests(containsTests);
 EnumerableTests.importModuleTests(everyTests);
 EnumerableTests.importModuleTests(filterTests);
 EnumerableTests.importModuleTests(findTests);

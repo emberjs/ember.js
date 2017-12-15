@@ -1,17 +1,10 @@
 import { assign } from 'ember-utils';
 import { set } from 'ember-metal';
-import { TextField, Checkbox, Component } from '../../utils/helpers';
+import { Component } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 
 class InputRenderingTest extends RenderingTest {
-  constructor() {
-    super();
-
-    this.registerComponent('-text-field', { ComponentClass: TextField });
-    this.registerComponent('-checkbox', { ComponentClass: Checkbox });
-  }
-
   $input() {
     return this.$('input');
   }
@@ -270,30 +263,6 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     // this.runTask(() => set(this.context, 'value', 'original'));
     //
     // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
-  }
-
-  ['@test specifying `on="someevent" action="foo"` results in a deprecation warning']() {
-    expectDeprecation(() => {
-      this.render(`{{input on="focus-in" action="doFoo" value="hello"}}`);
-    }, `Using '{{input on="focus-in" action="doFoo"}}' ('-top-level' @ L1:C0) is deprecated. Please use '{{input focus-in="doFoo"}}' instead.`);
-  }
-
-  ['@test sends an action with `{{input action="foo"}}` when <enter> is pressed [DEPRECATED]'](assert) {
-    assert.expect(2);
-
-    expectDeprecation(() => {
-      this.render(`{{input action='foo'}}`, {
-        actions: {
-          foo() {
-            assert.ok(true, 'action was triggered');
-          }
-        }
-      });
-    }, /Please use '{{input enter="foo"}}' instead/);
-
-    this.triggerEvent('keyup', {
-      keyCode: 13
-    });
   }
 
   ['@test sends an action with `{{input enter="foo"}}` when <enter> is pressed'](assert) {

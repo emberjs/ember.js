@@ -23,7 +23,6 @@ export {
   getDispatchOverride
 } from './error_handler';
 export {
-  META_DESC,
   meta,
   peekMeta,
   deleteMeta
@@ -111,7 +110,6 @@ export {
 export {
   Mixin,
   aliasMethod,
-  _immediateObserver,
   _beforeObserver,
   mixin,
   observer,
