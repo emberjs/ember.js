@@ -1,9 +1,13 @@
 import EmberError from '../error';
+import {
+  moduleFor,
+  AbstractTestCase as TestCase
+} from 'internal-test-helpers';
 
-QUnit.module('Ember Error Throwing');
-
-QUnit.test('new Ember.Error displays provided message', function() {
-  throws(() => {
-    throw new EmberError('A Message');
-  }, e => e.message === 'A Message', 'the assigned message was displayed');
+moduleFor('Ember Error Throwing', class extends TestCase {
+  ['@test new Ember.Error displays provided message'](assert) {
+    assert.throws(() => {
+      throw new EmberError('A Message');
+    }, e => e.message === 'A Message', 'the assigned message was displayed');
+  }
 });
