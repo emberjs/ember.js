@@ -7,7 +7,7 @@ export default class RouteInfo {
     privateRouteInfos.set(this,{
       controller,
       template,
-      outletName,
+      outletName: outletName || 'main',
       into,
       outlets: null
     });

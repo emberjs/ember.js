@@ -1,6 +1,7 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { runAppend } from 'internal-test-helpers';
 import { set } from 'ember-metal';
+import { RouteInfo } from 'ember-routing';
 
 moduleFor('outlet view', class extends RenderingTest {
   constructor() {
@@ -12,19 +13,7 @@ moduleFor('outlet view', class extends RenderingTest {
   }
 
   ['@test should not error when initial rendered template is undefined']() {
-    let outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'application',
-        controller: undefined,
-        template: undefined
-      },
-
-      outlets: Object.create(null)
-    };
-
+    let outletState = new RouteInfo('application');
     this.runTask(() => this.component.setOutletState(outletState));
 
     runAppend(this.component);
@@ -33,19 +22,7 @@ moduleFor('outlet view', class extends RenderingTest {
   }
 
   ['@test should render the outlet when set after DOM insertion']() {
-    let outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'application',
-        controller: undefined,
-        template: undefined
-      },
-
-      outlets: Object.create(null)
-    };
-
+    let outletState = new RouteInfo('application');
     this.runTask(() => this.component.setOutletState(outletState));
 
     runAppend(this.component);
@@ -53,17 +30,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertText('');
 
     this.registerTemplate('application', 'HI{{outlet}}');
-    outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'application',
-        controller: {},
-        template: this.owner.lookup('template:application')
-      },
-      outlets: Object.create(null)
-    };
+    outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -72,17 +39,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('index', '<p>BYE</p>');
-    outletState.outlets.main = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'index',
-        controller: {},
-        template: this.owner.lookup('template:index')
-      },
-      outlets: Object.create(null)
-    };
+    outletState.setChild('main', new RouteInfo('index', {}, this.owner.lookup('template:index')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -91,17 +48,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
   ['@test should render the outlet when set before DOM insertion']() {
     this.registerTemplate('application', 'HI{{outlet}}');
-    let outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'application',
-        controller: {},
-        template: this.owner.lookup('template:application')
-      },
-      outlets: Object.create(null)
-    };
+    let outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -112,17 +59,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('index', '<p>BYE</p>');
-    outletState.outlets.main = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'index',
-        controller: {},
-        template: this.owner.lookup('template:index')
-      },
-      outlets: Object.create(null)
-    };
+    outletState.setChild('main', new RouteInfo('index', {}, this.owner.lookup('template:index')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -131,17 +68,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
   ['@test should support an optional name']() {
     this.registerTemplate('application', '<h1>HI</h1>{{outlet "special"}}');
-    let outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'application',
-        controller: {},
-        template: this.owner.lookup('template:application')
-      },
-      outlets: Object.create(null)
-    };
+    let outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -152,17 +79,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('special', '<p>BYE</p>');
-    outletState.outlets.special = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'special',
-        controller: {},
-        template: this.owner.lookup('template:special')
-      },
-      outlets: Object.create(null)
-    };
+    outletState.setChild('special', new RouteInfo('special', {}, this.owner.lookup('template:special'), 'special'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -171,17 +88,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
   ['@test does not default outlet name when positional argument is present']() {
     this.registerTemplate('application', '<h1>HI</h1>{{outlet someUndefinedThing}}');
-    let outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'application',
-        controller: {},
-        template: this.owner.lookup('template:application')
-      },
-      outlets: Object.create(null)
-    };
+    let outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -192,17 +99,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('special', '<p>BYE</p>');
-    outletState.outlets.main = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'special',
-        controller: {},
-        template: this.owner.lookup('template:special')
-      },
-      outlets: Object.create(null)
-    };
+    outletState.setChild('main', new RouteInfo('special', {}, this.owner.lookup('template:special')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -212,17 +109,7 @@ moduleFor('outlet view', class extends RenderingTest {
   ['@test should support bound outlet name']() {
     let controller = { outletName: 'foo' };
     this.registerTemplate('application', '<h1>HI</h1>{{outlet outletName}}');
-    let outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'application',
-        controller,
-        template: this.owner.lookup('template:application')
-      },
-      outlets: Object.create(null)
-    };
+    let outletState = new RouteInfo('application', controller, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -233,30 +120,10 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('foo', '<p>FOO</p>');
-    outletState.outlets.foo = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'foo',
-        controller: {},
-        template: this.owner.lookup('template:foo')
-      },
-      outlets: Object.create(null)
-    };
+    outletState.setChild('foo', new RouteInfo('foo', {}, this.owner.lookup('template:foo')));
 
     this.registerTemplate('bar', '<p>BAR</p>');
-    outletState.outlets.bar = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'bar',
-        controller: {},
-        template: this.owner.lookup('template:bar')
-      },
-      outlets: Object.create(null)
-    };
+    outletState.setChild('bar', new RouteInfo('bar', {}, this.owner.lookup('template:bar')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -277,29 +144,8 @@ moduleFor('outlet view', class extends RenderingTest {
     // testing here.
     this.registerHelper('identity', ([a]) => a);
 
-    let outletState = {
-      render: {
-        owner: this.owner,
-        into: undefined,
-        outlet: 'main',
-        name: 'outer',
-        controller: {},
-        template: this.owner.lookup('template:outer')
-      },
-      outlets: {
-        main: {
-          render: {
-            owner: this.owner,
-            into: undefined,
-            outlet: 'main',
-            name: 'inner',
-            controller: {},
-            template: this.owner.lookup('template:inner')
-          },
-          outlets: Object.create(null)
-        }
-      }
-    };
+    let outletState = new RouteInfo('outer', {}, this.owner.lookup('template:outer'));
+    outletState.setChild('main', new RouteInfo('inner', {}, this.owner.lookup('template:inner')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
