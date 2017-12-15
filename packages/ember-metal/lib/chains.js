@@ -1,5 +1,5 @@
 import { get } from './property_get';
-import { meta as metaFor, peekMeta } from './meta';
+import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
 import { cacheFor } from './computed';
 
@@ -13,8 +13,9 @@ function isObject(obj) {
   return typeof obj === 'object' && obj !== null;
 }
 
-function isVolatile(obj) {
-  return !(isObject(obj) && obj.isDescriptor && obj._volatile === false);
+function isVolatile(obj, keyName, meta) {
+  let desc = descriptorFor(obj, keyName, meta);
+  return !(desc !== undefined && desc._volatile === false);
 }
 
 class ChainWatchers {
@@ -321,7 +322,7 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key])) {
+  if (isVolatile(obj, key, meta)) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
@@ -333,6 +334,7 @@ function lazyGet(obj, key) {
 }
 
 import { makeChainNode } from './watch_path';
+import descriptor from './descriptor';
 
 export function finishChains(meta) {
   // finish any current chains node watchers that reference obj

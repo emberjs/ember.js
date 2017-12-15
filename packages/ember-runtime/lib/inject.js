@@ -1,4 +1,4 @@
-import { InjectedProperty } from 'ember-metal';
+import { InjectedProperty, descriptorFor } from 'ember-metal';
 import { assert } from 'ember-debug';
 
 /**
@@ -51,7 +51,7 @@ export function validatePropertyInjections(factory) {
   let types = [];
 
   for (let key in proto) {
-    let desc = proto[key];
+    let desc = descriptorFor(proto, key);
     if (desc instanceof InjectedProperty && types.indexOf(desc.type) === -1) {
       types.push(desc.type);
     }
