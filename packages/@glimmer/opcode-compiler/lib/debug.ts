@@ -39,7 +39,7 @@ export function debugSlice(program: CompileTimeProgram, start: number, end: numb
       console.log(`${i}. ${logOpcode(name, params)}`);
       _size = size;
     }
-
+    program.opcode(-_size);
     console.groupEnd();
     /* tslint:enable:no-console */
   }
