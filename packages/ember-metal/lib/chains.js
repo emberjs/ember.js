@@ -1,6 +1,7 @@
 import { get } from './property_get';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
+import { makeChainNode } from './watch_path';
 import { cacheFor } from './computed';
 
 const FIRST_KEY = /^([^\.]+)/;
@@ -333,10 +334,7 @@ function lazyGet(obj, key) {
   }
 }
 
-import { makeChainNode } from './watch_path';
-import descriptor from './descriptor';
-
-export function finishChains(meta) {
+function finishChains(meta) {
   // finish any current chains node watchers that reference obj
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
@@ -350,6 +348,7 @@ export function finishChains(meta) {
 }
 
 export {
+  finishChains,
   removeChainWatcher,
   ChainNode
 };
