@@ -23,6 +23,7 @@ export {
   getDispatchOverride
 } from './error_handler';
 export {
+  descriptorFor,
   meta,
   peekMeta,
   deleteMeta

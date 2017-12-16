@@ -533,4 +533,31 @@ export function meta(obj) {
   return newMeta;
 }
 
+/**
+  Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
+
+  @method descriptorFor
+  @param {Object} obj the object to check
+  @param {String} keyName the key to check
+  @param {Object} [meta] the meta hash for the object (optional)
+  @return {Descriptor}
+  @private
+*/
+export function descriptorFor(obj, keyName, meta) {
+  let possibleDesc = obj[keyName];
+  return isDescriptor(possibleDesc) ? possibleDesc : undefined;
+}
+
+/**
+  Check whether a value is a CP descriptor.
+
+  @method descriptorFor
+  @param {any} possibleDesc the value to check
+  @return {boolean}
+  @private
+*/
+export function isDescriptor(possibleDesc) {
+  return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+}
+
 export { counters };

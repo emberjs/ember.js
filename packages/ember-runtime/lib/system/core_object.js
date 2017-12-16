@@ -15,6 +15,7 @@ import {
   GUID_KEY
 } from 'ember-utils';
 import {
+  descriptorFor,
   get,
   meta,
   peekMeta,
@@ -125,23 +126,27 @@ function makeCtor() {
               !((keyName === 'actions') && ActionHandler.detect(this))
             );
 
-            let baseValue = this[keyName];
-            let isDescriptor = baseValue !== null && typeof baseValue === 'object' && baseValue.isDescriptor;
+            let possibleDesc = descriptorFor(this, keyName, m);
+            let isDescriptor = possibleDesc !== undefined;
 
-            if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
-              if (baseValue) {
-                value = makeArray(baseValue).concat(value);
-              } else {
-                value = makeArray(value);
+            if (!isDescriptor) {
+              let baseValue = this[keyName];
+
+              if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+                if (baseValue) {
+                  value = makeArray(baseValue).concat(value);
+                } else {
+                  value = makeArray(value);
+                }
+              }
+
+              if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+                value = assign({}, baseValue, value);
               }
             }
 
-            if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
-              value = assign({}, baseValue, value);
-            }
-
             if (isDescriptor) {
-              baseValue.set(this, keyName, value);
+              possibleDesc.set(this, keyName, value);
             } else if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
               this.setUnknownProperty(keyName, value);
             } else {
@@ -857,11 +862,11 @@ let ClassMixinProps = {
   */
   metaForProperty(key) {
     let proto = this.proto();
-    let possibleDesc = proto[key];
+    let possibleDesc = descriptorFor(proto, key);
 
     assert(
       `metaForProperty() could not find a computed property with key '${key}'.`,
-      possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor
+      possibleDesc !== undefined
     );
     return possibleDesc._meta || {};
   },
@@ -869,16 +874,16 @@ let ClassMixinProps = {
   _computedProperties: computed(function() {
     _hasCachedComputedProperties();
     let proto = this.proto();
-    let property;
+    let possibleDesc;
     let properties = [];
 
     for (let name in proto) {
-      property = proto[name];
+      possibleDesc = descriptorFor(proto, name);
 
-      if (property !== null && typeof property === 'object' && property.isDescriptor) {
+      if (possibleDesc !== undefined) {
         properties.push({
           name,
-          meta: property._meta
+          meta: possibleDesc._meta
         });
       }
     }
@@ -935,7 +940,7 @@ if (DEBUG) {
     let desc;
 
     for (key in proto) {
-      desc = proto[key];
+      desc = descriptorFor(proto, key);
       if (desc instanceof InjectedProperty) {
         injections[key] = `${desc.type}:${desc.name || key}`;
       }

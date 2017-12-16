@@ -1,6 +1,7 @@
 import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
 import {
+  descriptorFor,
   meta as metaFor,
   peekMeta,
   UNDEFINED
@@ -21,10 +22,11 @@ export function watchKey(obj, keyName, _meta) {
   meta.writeWatching(keyName, count + 1);
 
   if (count === 0) { // activate watching first time
-    let possibleDesc = obj[keyName];
-    let isDescriptor = possibleDesc !== null &&
-      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
-    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName, meta); }
+    let possibleDesc = descriptorFor(obj, keyName, meta);
+
+    if (possibleDesc !== undefined && possibleDesc.willWatch) {
+      possibleDesc.willWatch(obj, keyName, meta);
+    }
 
     if (typeof obj.willWatchProperty === 'function') {
       obj.willWatchProperty(keyName);
