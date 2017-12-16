@@ -1,7 +1,6 @@
 import { get } from './property_get';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
-import { makeChainNode } from './watch_path';
 import { cacheFor } from './computed';
 
 const FIRST_KEY = /^([^\.]+)/;
@@ -108,6 +107,10 @@ function makeChainWatcher() {
   return new ChainWatchers();
 }
 
+function makeChainNode(obj) {
+  return new ChainNode(null, null, obj);
+}
+
 function addChainWatcher(obj, keyName, node) {
   let m = metaFor(obj);
   m.writableChainWatchers(makeChainWatcher).add(keyName, node);
@@ -183,7 +186,7 @@ class ChainNode {
 
   // copies a top level object only
   copy(obj) {
-    let ret = new ChainNode(null, null, obj);
+    let ret = makeChainNode(obj);
     let paths = this._paths;
     if (paths !== undefined) {
       let path;
@@ -349,6 +352,7 @@ function finishChains(meta) {
 
 export {
   finishChains,
+  makeChainNode,
   removeChainWatcher,
   ChainNode
 };
