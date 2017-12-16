@@ -1,4 +1,5 @@
 import { Object as EmberObject } from 'ember-runtime';
+import { EMBER_METAL_ES5_GETTERS, MANDATORY_GETTER } from 'ember/features';
 import { testBoth } from 'internal-test-helpers';
 import {
   ComputedProperty,
@@ -44,6 +45,32 @@ QUnit.test('computed properties defined with an object only allow `get` and `set
   }, 'Config object passed to computed can only contain `get` or `set` keys.');
 });
 
+if (EMBER_METAL_ES5_GETTERS) {
+  QUnit.test('computed property can be accessed without `get`', assert => {
+    let obj = {};
+    let count = 0;
+    defineProperty(obj, 'foo', computed(function(key) {
+      count++;
+      return 'computed ' + key;
+    }));
+
+    assert.equal(obj.foo, 'computed foo', 'should return value');
+    assert.equal(count, 1, 'should have invoked computed property');
+  });
+} else if (MANDATORY_GETTER) {
+  QUnit.test('accessing computed property descriptor through the object triggers an assertion', assert => {
+    let obj = { toString() { return 'obj'; } };
+    let count = 0;
+    defineProperty(obj, 'foo', computed(function(key) {
+      count++;
+      return 'computed ' + key;
+    }));
+
+    expectAssertion(() => obj.foo.isDescriptor, /You attempted to access the `foo\.isDescriptor` property \(of obj\)\./);
+    expectAssertion(() => obj.foo.get(), /You attempted to access the `foo\.get` property \(of obj\)\./);
+    assert.strictEqual(count, 0, 'should not have invoked computed property');
+  });
+}
 
 QUnit.test('defining computed property should invoke property on get', function() {
   let obj = {};

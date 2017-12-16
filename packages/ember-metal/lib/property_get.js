@@ -4,7 +4,9 @@
 
 import { assert } from 'ember-debug';
 import { isPath } from './path_cache';
-import { isDescriptor } from './meta';
+import { descriptorFor, isDescriptor } from './meta';
+import { isDescriptorTrap } from './properties';
+import { EMBER_METAL_ES5_GETTERS, MANDATORY_GETTER } from 'ember/features';
 
 const ALLOWABLE_TYPES = {
   object: true,
@@ -56,11 +58,12 @@ export function get(obj, keyName) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
-  // we can't use `descriptorFor` here because we don't want to access the property
-  // more than once (e.g. side-effectful ES5 getters, etc)
   let value = obj[keyName];
 
-  if (isDescriptor(value)) {
+  if (!EMBER_METAL_ES5_GETTERS && MANDATORY_GETTER && isDescriptorTrap(value)) {
+    return descriptorFor(obj, keyName).get(obj, keyName);
+  } else if (isDescriptor(value)) {
+    // TODO: deprecate
     return value.get(obj, keyName);
   } else if (isPath(keyName)) {
     return _getPath(obj, keyName);

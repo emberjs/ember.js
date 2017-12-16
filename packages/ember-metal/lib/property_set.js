@@ -11,7 +11,8 @@ import {
 } from './path_cache';
 import {
   isDescriptor,
-  peekMeta
+  peekMeta,
+  descriptorFor
 } from './meta';
 import { MANDATORY_SETTER } from 'ember/features';
 /**
@@ -50,11 +51,17 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  // we can't use `descriptorFor` here because we don't want to access the property
-  // more than once (e.g. side-effectful ES5 getters, etc)
+  let descriptor = descriptorFor(obj, keyName);
+
+  if (descriptor !== undefined) {
+    descriptor.set(obj, keyName, value);
+    return value;
+  }
+
   let currentValue = obj[keyName];
 
   if (isDescriptor(currentValue)) { /* computed property */
+    // TODO: deprecate
     currentValue.set(obj, keyName, value);
   } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
     typeof obj.setUnknownProperty === 'function') { /* unknown property */
