@@ -69,9 +69,9 @@ class RootComponentManager extends CurlyComponentManager {
 // it is supposed to have a dummy element
 export const ROOT_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
-  dynamicTag: false,
-  prepareArgs: false,
-  createArgs: false,
+  dynamicTag: true,
+  prepareArgs: true,
+  createArgs: true,
   attributeHook: true,
   elementHook: true
 };

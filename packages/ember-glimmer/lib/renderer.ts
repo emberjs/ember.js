@@ -148,11 +148,12 @@ class RootState {
       if (needsTransaction) {
         env.begin();
       }
-
-      result.destroy();
-
-      if (needsTransaction) {
-        env.commit();
+      try {
+        result.destroy();
+      } finally {
+        if (needsTransaction) {
+          env.commit();
+        }
       }
     }
   }
@@ -347,44 +348,45 @@ export abstract class Renderer {
 
     do {
       env.begin();
+      try {
+        // ensure that for the first iteration of the loop
+        // each root is processed
+        initialRootsLength = roots.length;
+        globalShouldReflush = false;
 
-      // ensure that for the first iteration of the loop
-      // each root is processed
-      initialRootsLength = roots.length;
-      globalShouldReflush = false;
+        for (let i = 0; i < roots.length; i++) {
+          let root = roots[i];
 
-      for (let i = 0; i < roots.length; i++) {
-        let root = roots[i];
+          if (root.destroyed) {
+            // add to the list of roots to be removed
+            // they will be removed from `this._roots` later
+            removedRoots.push(root);
 
-        if (root.destroyed) {
-          // add to the list of roots to be removed
-          // they will be removed from `this._roots` later
-          removedRoots.push(root);
+            // skip over roots that have been marked as destroyed
+            continue;
+          }
 
-          // skip over roots that have been marked as destroyed
-          continue;
+          let { shouldReflush } = root;
+
+          // when processing non-initial reflush loops,
+          // do not process more roots than needed
+          if (i >= initialRootsLength && !shouldReflush) {
+            continue;
+          }
+
+          root.options.alwaysRevalidate = shouldReflush;
+          // track shouldReflush based on this roots render result
+          shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
+
+          // globalShouldReflush should be `true` if *any* of
+          // the roots need to reflush
+          globalShouldReflush = globalShouldReflush || shouldReflush;
         }
 
-        let { shouldReflush } = root;
-
-        // when processing non-initial reflush loops,
-        // do not process more roots than needed
-        if (i >= initialRootsLength && !shouldReflush) {
-          continue;
-        }
-
-        root.options.alwaysRevalidate = shouldReflush;
-        // track shouldReflush based on this roots render result
-        shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
-
-        // globalShouldReflush should be `true` if *any* of
-        // the roots need to reflush
-        globalShouldReflush = globalShouldReflush || shouldReflush;
+        this._lastRevision = CURRENT_TAG.value();
+      } finally {
+        env.commit();
       }
-
-      this._lastRevision = CURRENT_TAG.value();
-
-      env.commit();
     } while (globalShouldReflush || roots.length > initialRootsLength);
 
     // remove any roots that were destroyed during this transaction

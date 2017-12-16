@@ -34,9 +34,7 @@ class FactoryWrapper implements Factory {
     this.meta = factory.meta;
   }
 
-  create(injections: {
-    options: TemplateOptions<OwnedTemplateMeta>;
-  }): OwnedTemplate {
+  create(injections: Injections): OwnedTemplate {
     const owner = getOwner(injections);
     return this.factory.create(injections.options, { owner });
   }

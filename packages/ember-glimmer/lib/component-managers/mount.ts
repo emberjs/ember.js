@@ -24,7 +24,7 @@ import Environment from '../environment';
 import { Component } from '../utils/curly-component-state-bucket';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
-import DefinitionState, { CAPABILITIES } from './definition-state';
+import DefinitionState from './definition-state';
 
 // TODO: remove these stubbed interfaces when better typing is in place
 interface EngineType {
@@ -90,7 +90,7 @@ class MountManager extends AbstractManager<EngineBucket, DefinitionState> {
 
   getTag({ component }: EngineBucket): Tag {
     // TODO: is this the right tag?
-    return component[DIRTY_TAG];
+    return component![DIRTY_TAG];
   }
 
   getDestructor({ engine }: EngineBucket): Option<Destroyable> {
@@ -124,7 +124,14 @@ export class MountDefinition implements ComponentDefinition {
       name,
       ComponentClass,
       handle,
-      capabilities: CAPABILITIES
+      capabilities: {
+        dynamicLayout: true,
+        dynamicTag: true,
+        prepareArgs: true,
+        createArgs: true,
+        attributeHook: true,
+        elementHook: true
+      }
     };
   }
 }

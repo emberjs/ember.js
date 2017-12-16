@@ -79,7 +79,7 @@ const BUILTIN_MODIFIERS = {
 };
 
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
-  public templateOptions = {
+  public templateOptions: TemplateOptions<OwnedTemplateMeta> = {
     program: new Program<OwnedTemplateMeta>(new LazyConstants(this)),
     macros: new Macros(),
     resolver: new CompileTimeLookup(this),

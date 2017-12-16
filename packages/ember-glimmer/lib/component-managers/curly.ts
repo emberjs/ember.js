@@ -6,7 +6,7 @@ import {
   Unique,
   VMHandle
 } from '@glimmer/interfaces';
-import { ParsedLayout, WrappedBuilder } from '@glimmer/opcode-compiler';
+import { ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   combineTagged,
   Tag,
@@ -70,6 +70,10 @@ function aliasIdToElementId(args: Arguments, props: any) {
   }
 }
 
+function isTemplateFactory(template: OwnedTemplate | TemplateFactory): template is TemplateFactory {
+  return typeof (template as TemplateFactory).create === 'function';
+}
+
 // We must traverse the attributeBindings in reverse keeping track of
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
@@ -111,24 +115,6 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: Arra
 //   return vm.getSelf().get('ariaRole');
 // }
 
-class CurlyComponentLayoutCompiler {
-  static id: string;
-  public template: TemplateFactory;
-
-  constructor(template: TemplateFactory) {
-    this.template = template;
-  }
-
-  compile(builder: any) {
-    builder.wrapLayout(this.template);
-    // builder.tag.dynamic(tagName);
-    // builder.attrs.dynamic('role', ariaRole);
-    builder.attrs.static('class', 'ember-view');
-  }
-}
-
-CurlyComponentLayoutCompiler.id = 'curly';
-
 export class PositionalArgumentReference {
   public tag: any;
   private _references: any;
@@ -161,18 +147,24 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
     console.log('static');
     return {
-      handle: state.handle!,
+      // TODO fix
+      handle: state.handle as any as number,
       symbolTable: state.symbolTable!
     };
   }
 
-  templateFor(component: Component): OwnedTemplate {
-    let Template = get(component, 'layout');
-    let owner = getOwner(component);
-    if (Template) {
-      throw new Error('need to add injections to directly imported factory');
-      // return env.getTemplate(Template, owner);
+  templateFor(component: Component, options: TemplateOptions<OwnedTemplateMeta>): OwnedTemplate {
+    let Template = get(component, 'layout') as TemplateFactory | OwnedTemplate | undefined;
+    if (Template !== undefined) {
+      // This needs to be cached by template.id
+      if (isTemplateFactory(Template)) {
+        return Template.create({ options });
+      } else {
+        // we were provided an instance already
+        return Template;
+      }
     }
+    let owner = getOwner(component);
     let layoutName = get(component, 'layoutName');
     if (layoutName) {
       let template = owner.lookup<OwnedTemplate>('template:' + layoutName);
@@ -184,7 +176,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 
   compileDynamicLayout(component: Component, resolver: RuntimeResolver): Invocation {
-    const template = this.templateFor(component);
+    const template = this.templateFor(component, resolver.templateOptions);
     const compileOptions = Object.assign({},
       resolver.templateOptions,
       { asPartial: false, referrer: template.referrer});
@@ -215,12 +207,8 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return (component && component.tagName) || 'div';
   }
 
-  getCapabilities(state: DefinitionState): ComponentCapabilities {
-    const capabilities = {
-      ...state.capabilities,
-      dynamicLayout: !state.handle
-    };
-    return capabilities;
+  getCapabilities(state: DefinitionState) {
+    return state.capabilities;
   }
 
   prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
@@ -310,6 +298,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     props[HAS_BLOCK] = hasBlock;
 
     props._targetObject = callerSelfRef.value();
+
+    // static layout asserts CurriedDefinition
+    if (state.template) {
+      props.layout = state.template;
+    }
 
     let component = factory.create(props);
 
@@ -567,7 +560,7 @@ export function rerenderInstrumentDetails(component: any): any {
 export const CURLY_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
-  prepareArgs: true,
+  prepareArgs: false,
   createArgs: true,
   attributeHook: true,
   elementHook: true
