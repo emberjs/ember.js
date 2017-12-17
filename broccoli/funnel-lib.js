@@ -1,4 +1,3 @@
-/* eslint-env node */
 "use strict";
 
 const Funnel = require('broccoli-funnel');

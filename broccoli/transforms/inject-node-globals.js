@@ -6,7 +6,7 @@ function injectNodeGlobals({ types: t }) {
     name: 'inject require',
     visitor: {
       Program: {
-        enter(path, state) {
+        enter(path) {
           requireId = path.scope.globals.require;
           moduleId = path.scope.globals.module;
 
@@ -30,7 +30,7 @@ function injectNodeGlobals({ types: t }) {
           }
 
         },
-        exit(path, state) {
+        exit(path) {
           if (requireId) {
             path.scope.rename("require");
           }

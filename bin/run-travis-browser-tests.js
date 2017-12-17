@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint-disable no-console */
+
 var RSVP  = require('rsvp');
 var spawn = require('child_process').spawn;
 

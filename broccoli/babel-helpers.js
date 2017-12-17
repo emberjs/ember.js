@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-env node */
+
 const Funnel = require('broccoli-funnel');
 
 module.exports = function(env) {

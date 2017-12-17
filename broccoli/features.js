@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 function getFeatures(isDebug) {
   let features = Object.assign({}, require('../features').features);

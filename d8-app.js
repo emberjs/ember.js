@@ -1,3 +1,5 @@
+/* globals print, Ember, SimpleDOM */
+
 var Router = Ember.Router.extend({
   location: 'none',
   rootURL: '/'

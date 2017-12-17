@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 const Funnel = require('broccoli-funnel');
 const semver = require('semver');

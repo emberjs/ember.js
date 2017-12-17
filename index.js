@@ -1,4 +1,3 @@
-/* eslint-env node */
 'use strict';
 
 var fs = require('fs');
@@ -24,7 +23,7 @@ add(absolutePaths, 'templateCompiler', __dirname + '/dist/ember-template-compile
 
 module.exports = {
   init: function() {
-		this._super.init && this._super.init.apply(this, arguments);
+                this._super.init && this._super.init.apply(this, arguments);
     if ('ember' in this.project.bowerDependencies()) {
       // TODO: move this to a throw soon.
       this.ui.writeWarnLine('Ember.js is now provided by node_module `ember-source`, please remove it from bower');

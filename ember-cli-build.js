@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 // To create fast production builds (without ES3 support, minification, derequire, or JSHint)
 // run the following:

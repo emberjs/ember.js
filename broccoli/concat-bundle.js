@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 const concat = require('broccoli-concat');
 

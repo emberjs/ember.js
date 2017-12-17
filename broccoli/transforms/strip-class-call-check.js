@@ -1,8 +1,7 @@
 // TODO there are like 3 things that do this
 'use strict';
-/* eslint-env node */
 
-function stripClassCallCheck( { types: t, traverse }) {
+function stripClassCallCheck( { traverse }) {
   return {
     name: 'remove classCallCheck',
     visitor: {

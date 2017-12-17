@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-env node */
+
 const { readFileSync, existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
@@ -209,7 +209,7 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
 
 const glimmerTrees = new Map();
 
-function rollupGlimmerPackage(pkg, deps) {
+function rollupGlimmerPackage(pkg) {
   let name = pkg.name;
   let tree = glimmerTrees.get(name);
   if (tree === undefined) {

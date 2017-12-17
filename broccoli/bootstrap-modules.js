@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 const WriteFile = require('broccoli-file-creator');
 

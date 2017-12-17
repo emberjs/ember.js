@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 const Babel = require('broccoli-babel-transpiler');
 const injectBabelHelpers = require('./transforms/inject-babel-helpers');

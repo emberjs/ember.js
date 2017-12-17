@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 function transformDefine(babel) {
   let { types: t } = babel;
