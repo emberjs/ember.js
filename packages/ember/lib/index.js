@@ -34,7 +34,7 @@ Ember.Registry = Registry;
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
 import * as EmberDebug from 'ember-debug';
-import { deprecate, deprecateFunc } from 'ember-debug';
+import { deprecate } from 'ember-debug';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
@@ -171,7 +171,7 @@ Object.defineProperty(Ember, 'LOG_VERSION', {
 if (DEBUG) {
   Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
     get()      { return false; },
-    set(value) {
+    set() {
       deprecate(
         'Ember.MODEL_FACTORY_INJECTIONS is no longer required',
         false,

@@ -44,7 +44,7 @@ QUnit.test('calling `invoke` without handlers does not throw an error', function
 QUnit.test('invoking `next` argument calls the next handler', function(assert) {
   assert.expect(2);
 
-  function handler1(message, options, next) {
+  function handler1() {
     assert.ok(true, 'called handler1');
   }
 
@@ -102,11 +102,11 @@ QUnit.test('handlers are called in the proper order', function(assert) {
 QUnit.test('not invoking `next` prevents further handlers from being called', function(assert) {
   assert.expect(1);
 
-  function handler1(message, options, next) {
+  function handler1() {
     assert.ok(false, 'called handler1');
   }
 
-  function handler2(message, options, next) {
+  function handler2() {
     assert.ok(true, 'called handler2');
   }
 
@@ -125,7 +125,7 @@ QUnit.test('handlers can call `next` with custom message and/or options', functi
   let handler2Message = 'Handler2 Message';
   let handler2Options = { id: 'handler-2' };
 
-  function handler1(message, options, next) {
+  function handler1(message, options) {
     assert.equal(message, handler2Message, 'handler2 message provided to handler1');
     assert.equal(options, handler2Options, 'handler2 options provided to handler1');
   }

@@ -19,7 +19,7 @@ QUnit.test('Ensure that errors thrown from within a promise are sent to the cons
 
   try {
     run(function() {
-      new RSVP.Promise(function(resolve, reject) {
+      new RSVP.Promise(function() {
         throw error;
       });
     });
@@ -38,7 +38,7 @@ QUnit.test('TransitionAborted errors are not re-thrown', function() {
   ok(true, 'did not throw an error when dealing with TransitionAborted');
 });
 
-QUnit.test('Can reject with non-Error object', function(assert) {
+QUnit.test('Can reject with non-Error object', function() {
   let wasEmberTesting = isTesting();
   setTesting(false);
   expect(1);
@@ -52,7 +52,7 @@ QUnit.test('Can reject with non-Error object', function(assert) {
   }
 });
 
-QUnit.test('Can reject with no arguments', function(assert) {
+QUnit.test('Can reject with no arguments', function() {
   let wasEmberTesting = isTesting();
   setTesting(false);
   expect(1);
@@ -145,7 +145,7 @@ QUnit.test('rejections can be serialized to JSON', function (assert) {
 const reason = 'i failed';
 QUnit.module('Ember.test: rejection assertions');
 
-function ajax(something) {
+function ajax() {
   return RSVP.Promise(function(resolve) {
     QUnit.stop();
     setTimeout(function() {

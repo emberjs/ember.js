@@ -427,7 +427,7 @@ class AbstractAppendTest extends RenderingTest {
     this.assert.equal(willDestroyCalled, 2);
   }
 
-  ['@test can appendTo while rendering'](assert) {
+  ['@test can appendTo while rendering']() {
     let owner = this.owner;
 
     let append = (component) => {

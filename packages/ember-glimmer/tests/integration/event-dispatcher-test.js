@@ -95,7 +95,7 @@ moduleFor('EventDispatcher', class extends RenderingTest {
 
     this.registerComponent('x-foo', {
       ComponentClass: Component.extend({
-        click(event) {
+        click() {
           assert.notOk(true, 'should not trigger `click` on component');
         },
 
@@ -195,7 +195,7 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.$('div').trigger('myevent');
   }
 
-  ['@test eventManager is deprecated'](assert) {
+  ['@test eventManager is deprecated']() {
     this.registerComponent('x-foo', {
       ComponentClass: Component.extend({
         eventManager: {
@@ -261,7 +261,7 @@ moduleFor('custom EventDispatcher subclass with #setup', class extends Rendering
     this.owner.unregister('event_dispatcher:main');
   }
 
-  ['@test canDispatchToEventManager is deprecated in EventDispatcher'](assert) {
+  ['@test canDispatchToEventManager is deprecated in EventDispatcher']() {
     let MyDispatcher = EventDispatcher.extend({
       canDispatchToEventManager: null
     });
@@ -284,7 +284,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
       this.registerComponent('x-foo', {
         ComponentClass: Component.extend({
-          click(evt) {
+          click() {
             clicked++;
           }
         }),

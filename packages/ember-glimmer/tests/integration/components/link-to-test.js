@@ -114,7 +114,7 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
     }));
   }
 
-  ['@test populates href with fully supplied query param values'](assert) {
+  ['@test populates href with fully supplied query param values']() {
     this.addTemplate('index', `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`);
 
     return this.visit('/').then(() => {

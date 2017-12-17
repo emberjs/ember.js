@@ -16,7 +16,6 @@ import {
   mixin,
   observer,
   _beforeObserver,
-  run,
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties
@@ -30,7 +29,7 @@ function K() {}
 
 QUnit.module('addObserver');
 
-testBoth('observer should assert to invalid input', function(get, set) {
+testBoth('observer should assert to invalid input', function() {
   expectAssertion(()=> {
     observer(()=>{});
   }, 'observer called without valid path');
@@ -71,7 +70,7 @@ testBoth('observer should fire when dependent property is modified', function(ge
   equal(count, 1, 'should have invoked observer');
 });
 
-testBoth('observer should continue to fire after dependent properties are accessed', function(get, set) {
+testBoth('observer should continue to fire after dependent properties are accessed', function(get) {
   let observerCount = 0;
   let obj = {};
 
@@ -541,7 +540,7 @@ testBoth('addObserver should allow multiple objects to observe a property', func
   let target1 = {
     count: 0,
 
-    didChange(obj, keyName, value) {
+    didChange() {
       this.count++;
     }
   };
@@ -549,7 +548,7 @@ testBoth('addObserver should allow multiple objects to observe a property', func
   let target2 = {
     count: 0,
 
-    didChange(obj, keyName, value) {
+    didChange() {
       this.count++;
     }
   };
@@ -1065,7 +1064,7 @@ testBoth('observing a non existent property', function (get, set) {
   removeObserver(beer, 'brand', K);
 });
 
-testBoth('with observers switched on and off', function (get, set) {
+testBoth('with observers switched on and off', function () {
   function Beer() { }
   Beer.prototype.type = 'ipa';
 

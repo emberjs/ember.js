@@ -39,7 +39,7 @@ QUnit.module('object.propertyChanges', {
         this.set('newFoo', 'changedNewFooValue');
       }),
 
-      starObserver(target, key, value, rev) {
+      starObserver(target, key) {
         this.starProp = key;
       }
     }).create({

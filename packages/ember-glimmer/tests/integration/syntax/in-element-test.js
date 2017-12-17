@@ -5,7 +5,7 @@ import Component from '../../../component';
 import { set } from 'ember-metal';
 
 moduleFor('{{-in-element}}', class extends RenderingTest {
-  ['@test allows rendering into an external element'](assert) {
+  ['@test allows rendering into an external element']() {
     let someElement = document.createElement('div');
 
     this.render(strip`

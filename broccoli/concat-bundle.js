@@ -12,7 +12,7 @@ module.exports = function(tree, options) {
   let footerFiles = [];
 
   if (hasBootstrap) {
-    footerFiles = ['bootstrap']
+    footerFiles = ['bootstrap'];
   }
 
   if (!footer) {
@@ -29,4 +29,4 @@ module.exports = function(tree, options) {
     annotation: outputFile,
     footer: footer + '\n}());'
   });
-}
+};

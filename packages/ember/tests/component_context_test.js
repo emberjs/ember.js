@@ -137,7 +137,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
   }
 
-  ['@test Components trigger actions in the parents context when called from within a block'](assert) {
+  ['@test Components trigger actions in the parents context when called from within a block']() {
     this.addTemplate('application', `
       <div id='wrapper'>
         {{#my-component}}
@@ -160,7 +160,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
   }
 
-  ['@test Components trigger actions in the components context when called from within its template'](assert) {
+  ['@test Components trigger actions in the components context when called from within its template']() {
     this.addTemplate('application', `
       <div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>
     `);

@@ -261,7 +261,7 @@ const EnumerableTests = Suite.extend({
     After running the test, call the validate() method on the observer to
     validate the results.
   */
-  newObserver(obj) {
+  newObserver(/* obj */) {
     let ret = get(this, 'observerClass').create();
     if (arguments.length > 0) {
       ret.observeBefore.apply(ret, arguments);

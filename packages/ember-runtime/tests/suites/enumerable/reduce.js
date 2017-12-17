@@ -6,13 +6,13 @@ suite.module('reduce');
 
 suite.test('collects a summary value from an enumeration', function() {
   let obj = this.newObject([1, 2, 3]);
-  let res = obj.reduce((previousValue, item, index, enumerable) => previousValue + item, 0);
+  let res = obj.reduce((previousValue, item) => previousValue + item, 0);
   equal(res, 6);
 });
 
 suite.test('passes index of item to callback', function() {
   let obj = this.newObject([1, 2, 3]);
-  let res = obj.reduce((previousValue, item, index, enumerable) => previousValue + index, 0);
+  let res = obj.reduce((previousValue, item, index) => previousValue + index, 0);
   equal(res, 3);
 });
 

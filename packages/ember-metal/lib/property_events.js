@@ -151,7 +151,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  let possibleDesc, isDescriptor;
+  let possibleDesc;
   let guid = guidFor(obj);
   let current = seen[guid];
 

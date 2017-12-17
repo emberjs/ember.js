@@ -4,8 +4,7 @@ import { Route, NoneLocation } from 'ember-routing';
 import { Controller } from 'ember-runtime';
 import {
   run,
-  get,
-  set
+  get
 } from 'ember-metal';
 import {
   RouterTestCase,

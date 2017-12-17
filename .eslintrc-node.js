@@ -16,5 +16,9 @@ module.exports = {
   globals: {
     Map: false,
     Set: false
+  },
+  rules: {
+    'semi': 'error',
+    'no-unused-vars': 'error'
   }
 };

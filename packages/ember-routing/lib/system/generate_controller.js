@@ -13,7 +13,7 @@ import { DEBUG } from 'ember-env-flags';
   @private
 */
 
-export function generateControllerFactory(owner, controllerName, context) {
+export function generateControllerFactory(owner, controllerName) {
   let Factory = owner.factoryFor('controller:basic').class;
 
   Factory = Factory.extend({

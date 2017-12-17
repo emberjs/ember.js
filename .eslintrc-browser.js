@@ -38,9 +38,7 @@ module.exports = {
     'ember-internal/no-const-outside-module-scope': 'error',
 
     'semi': 'error',
-
-    // temporarily disabled
-    'no-unused-vars': 'off',
+    'no-unused-vars': 'error',
     'comma-dangle': 'off',
   },
 };

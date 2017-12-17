@@ -23,7 +23,7 @@ class extends ApplicationTestCase {
     return this.getController('application').get('currentPath');
   }
 
-  ['@test warn on URLs not included in the route set'](assert) {
+  ['@test warn on URLs not included in the route set']() {
     return this.visit('/').then(() => {
       expectAssertion(() => {
         this.visit('/what-is-this-i-dont-even');

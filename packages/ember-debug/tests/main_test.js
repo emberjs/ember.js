@@ -173,7 +173,7 @@ QUnit.test('Ember.deprecate does not throw a deprecation at log and silence leve
   let until = 'forever';
   let shouldThrow = false;
 
-  registerHandler(function(message, options, next) {
+  registerHandler(function(message, options) {
     if (options && options.id === id) {
       if (shouldThrow) {
         throw new Error(message);

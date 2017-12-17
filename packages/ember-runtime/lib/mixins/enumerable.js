@@ -20,7 +20,7 @@ import {
   sendEvent,
   hasListeners
 } from 'ember-metal';
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 import compare from '../compare';
 import require from 'require';
 
@@ -420,7 +420,7 @@ const Enumerable = Mixin.create({
     @return {Array} filtered array
     @public
   */
-  filterBy(key, value) {
+  filterBy(key, value) { // eslint-disable-line no-unused-vars
     return this.filter(iter.apply(this, arguments));
   },
 
@@ -516,7 +516,7 @@ const Enumerable = Mixin.create({
     @return {Object} found item or `undefined`
     @public
   */
-  findBy(key, value) {
+  findBy(key, value) {  // eslint-disable-line no-unused-vars
     return this.find(iter.apply(this, arguments));
   },
 
@@ -576,7 +576,7 @@ const Enumerable = Mixin.create({
     @since 1.3.0
     @public
   */
-  isEvery(key, value) {
+  isEvery(key, value) {  // eslint-disable-line no-unused-vars
     return this.every(iter.apply(this, arguments));
   },
 
@@ -653,7 +653,7 @@ const Enumerable = Mixin.create({
     @since 1.3.0
     @public
   */
-  isAny(key, value) {
+  isAny(key, value) {  // eslint-disable-line no-unused-vars
     return this.any(iter.apply(this, arguments));
   },
 
@@ -835,7 +835,7 @@ const Enumerable = Mixin.create({
     @private
   */
   '[]': computed({
-    get(key) { return this; }
+    get(key) { return this; }  // eslint-disable-line no-unused-vars
   }),
 
   // ..........................................................

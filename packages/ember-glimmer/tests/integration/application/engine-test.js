@@ -4,12 +4,11 @@ import { compile } from '../../utils/helpers';
 import { Controller, RSVP } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Engine } from 'ember-application';
-import { Route, Router } from 'ember-routing';
+import { Route } from 'ember-routing';
 import { run } from 'ember-metal';
 
 moduleFor('Application test: engine rendering', class extends ApplicationTest {
   get routerOptions() {
-    let { assert } = this;
     return {
       location: 'none',
 
@@ -175,7 +174,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this._additionalEngineRegistrations = callback;
   }
 
-  setupEngineWithAttrs(hooks) {
+  setupEngineWithAttrs() {
     this.addTemplate('application', 'Application{{mount "chat-engine"}}');
 
     this.add('engine:chat-engine', Engine.extend({
@@ -395,7 +394,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test engine should lookup and use correct controller'](assert) {
+  ['@test engine should lookup and use correct controller']() {
     this.setupAppAndRoutableEngine();
 
     return this.visit('/blog?lang=English').then(() => {

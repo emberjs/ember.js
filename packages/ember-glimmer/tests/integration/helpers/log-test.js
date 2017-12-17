@@ -4,7 +4,7 @@ import Logger from 'ember-console';
 
 moduleFor('Helpers test: {{log}}', class extends RenderingTest {
 
-  constructor(assert) {
+  constructor() {
     super();
 
     this.originalLog = Logger.log;

@@ -7,7 +7,7 @@ module.exports = function(env) {
   if (env === 'debug') {
     file = 'external-helpers-dev.js';
   } else if (env === 'prod') {
-    file = 'external-helpers-prod.js'
+    file = 'external-helpers-prod.js';
   }
 
   return new Funnel('packages/external-helpers/lib', {
@@ -16,4 +16,4 @@ module.exports = function(env) {
       return 'ember-babel.js';
     }
   });
-}
+};

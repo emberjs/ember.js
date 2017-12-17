@@ -13,4 +13,4 @@ module.exports = function addon(name, project) {
   }
 
   return new Funnel(tree, options);
-}
+};

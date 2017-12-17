@@ -50,7 +50,7 @@ if (DEBUG) {
     genericRegisterHandler('warn', handler);
   };
 
-  registerHandler(function logWarning(message, options) {
+  registerHandler(function logWarning(message) {
     Logger.warn(`WARNING: ${message}`);
     if ('trace' in Logger) {
       Logger.trace();

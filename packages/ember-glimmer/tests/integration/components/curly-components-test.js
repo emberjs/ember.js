@@ -175,7 +175,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(foundId, newFoundId);
   }
 
-  ['@test cannot pass both id and elementId at the same time'](assert) {
+  ['@test cannot pass both id and elementId at the same time']() {
     this.registerComponent('foo-bar', { template: '' });
 
     expectAssertion(() => {
@@ -230,7 +230,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
   }
 
-  ['@test tagName can not be a computed property'](assert) {
+  ['@test tagName can not be a computed property']() {
     let FooBarComponent = Component.extend({
       tagName: computed(function() {
         return 'foo-bar';
@@ -404,7 +404,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertSameNode(element2, element1);
   }
 
-  ['@test it has a jQuery proxy to the element'](assert) {
+  ['@test it has a jQuery proxy to the element']() {
     let instance;
 
     let FooBarComponent = Component.extend({
@@ -874,7 +874,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
   }
 
-  ['@test should not escape HTML in triple mustaches'](assert) {
+  ['@test should not escape HTML in triple mustaches']() {
     let expectedHtmlBold = 'you need to be more <b>bold</b>';
     let expectedHtmlItalic = 'you are so <i>super</i>';
     let component;
@@ -905,7 +905,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     equalTokens(this.firstChild, expectedHtmlBold);
   }
 
-  ['@test should not escape HTML if string is a htmlSafe'](assert) {
+  ['@test should not escape HTML if string is a htmlSafe']() {
     let expectedHtmlBold = 'you need to be more <b>bold</b>';
     let expectedHtmlItalic = 'you are so <i>super</i>';
     let component;
@@ -1437,7 +1437,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, 'You cannot specify positional parameters and the hash argument `names`.');
   }
 
-  ['@test can use hash parameter instead of arbitrary positional param [GH #12444]'](assert) {
+  ['@test can use hash parameter instead of arbitrary positional param [GH #12444]']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'names'
@@ -1500,7 +1500,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#no-positional').text(), 'one - two');
   }
 
-  ['@test dynamic arbitrary number of positional parameters'](assert) {
+  ['@test dynamic arbitrary number of positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'n'
@@ -1787,7 +1787,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Yes:Hello42');
   }
 
-  ['@test expression hasBlock inverse'](assert) {
+  ['@test expression hasBlock inverse']() {
     this.registerComponent('check-inverse', {
       template: strip`
         {{#if (hasBlock "inverse")}}
@@ -1807,7 +1807,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlock default'](assert) {
+  ['@test expression hasBlock default']() {
     this.registerComponent('check-block', {
       template: strip`
         {{#if (hasBlock)}}
@@ -1827,7 +1827,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlockParams inverse'](assert) {
+  ['@test expression hasBlockParams inverse']() {
     this.registerComponent('check-inverse', {
       template: strip`
         {{#if (hasBlockParams "inverse")}}
@@ -1847,7 +1847,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlockParams default'](assert) {
+  ['@test expression hasBlockParams default']() {
     this.registerComponent('check-block', {
       template: strip`
         {{#if (hasBlockParams)}}
@@ -1868,7 +1868,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
 
-  ['@test non-expression hasBlock'](assert) {
+  ['@test non-expression hasBlock']() {
     this.registerComponent('check-block', {
       template: strip`
         {{#if hasBlock}}
@@ -1888,7 +1888,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlockParams'](assert) {
+  ['@test expression hasBlockParams']() {
     this.registerComponent('check-params', {
       template: strip`
         {{#if (hasBlockParams)}}
@@ -1908,7 +1908,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test non-expression hasBlockParams'](assert) {
+  ['@test non-expression hasBlockParams']() {
     this.registerComponent('check-params', {
       template: strip`
         {{#if hasBlockParams}}
@@ -1928,7 +1928,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock expression in an attribute'](assert) {
+  ['@test hasBlock expression in an attribute']() {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlock}}></button>'
     });
@@ -1943,7 +1943,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock inverse expression in an attribute'](assert) {
+  ['@test hasBlock inverse expression in an attribute']() {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlock "inverse"}}></button>'
     }, '');
@@ -1958,7 +1958,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams expression in an attribute'](assert) {
+  ['@test hasBlockParams expression in an attribute']() {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlockParams}}></button>'
     });
@@ -1973,7 +1973,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams inverse expression in an attribute'](assert) {
+  ['@test hasBlockParams inverse expression in an attribute']() {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlockParams "inverse"}}></button>'
     }, '');
@@ -1988,7 +1988,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock as a param to a helper'](assert) {
+  ['@test hasBlock as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if hasBlock "true" "false"}}'
     });
@@ -2003,7 +2003,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock as an expression param to a helper'](assert) {
+  ['@test hasBlock as an expression param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlock) "true" "false"}}'
     });
@@ -2018,7 +2018,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock inverse as a param to a helper'](assert) {
+  ['@test hasBlock inverse as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlock "inverse") "true" "false"}}'
     });
@@ -2033,7 +2033,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams as a param to a helper'](assert) {
+  ['@test hasBlockParams as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if hasBlockParams "true" "false"}}'
     });
@@ -2048,7 +2048,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams as an expression param to a helper'](assert) {
+  ['@test hasBlockParams as an expression param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlockParams) "true" "false"}}'
     });
@@ -2063,7 +2063,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams inverse as a param to a helper'](assert) {
+  ['@test hasBlockParams inverse as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlockParams "inverse") "true" "false"}}'
     });
@@ -2222,15 +2222,9 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, expectedBacktrackingMessage);
   }
 
-  ['@test when a shared dependency is changed during children\'s rendering'](assert) {
-    let outer;
-
+  ['@test when a shared dependency is changed during children\'s rendering']() {
     this.registerComponent('x-outer', {
       ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          outer = this;
-        },
         value: 1,
         wrapper: EmberObject.create({ content: null })
       }),
@@ -2320,7 +2314,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'button', attrs: { 'class': classes(expectedClassNames.join(' ')) } });
   }
 
-  ['@test specifying custom concatenatedProperties avoids clobbering'](assert) {
+  ['@test specifying custom concatenatedProperties avoids clobbering']() {
     this.registerComponent('some-clicky-thing', {
       ComponentClass: Component.extend({
         concatenatedProperties: ['blahzz'],
@@ -2515,7 +2509,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Jackson');
   }
 
-  ['@test injecting an unknown service raises an exception'](assert) {
+  ['@test injecting an unknown service raises an exception']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         missingService: inject.service()
@@ -2571,7 +2565,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assertStyle('display: none;');
   }
 
-  ['@test isVisible does not overwrite component style'](assert) {
+  ['@test isVisible does not overwrite component style']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         attributeBindings: ['style'],
@@ -3048,7 +3042,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('|foo||bar||qux||baz|');
   }
 
-  ['@test unimplimented positionalParams do not cause an error GH#14416'](assert) {
+  ['@test unimplimented positionalParams do not cause an error GH#14416']() {
     this.registerComponent('foo-bar', {
       template: 'hello'
     });
@@ -3057,7 +3051,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('hello');
   }
 
-  ['@test using attrs for positional params'](assert) {
+  ['@test using attrs for positional params']() {
     let MyComponent = Component.extend();
 
     this.registerComponent('foo-bar', {
@@ -3072,7 +3066,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('MyVar1: 1 1 MyVar2: 2 2');
   }
 
-  ['@feature(ember-glimmer-named-arguments) using named arguments for positional params'](assert) {
+  ['@feature(ember-glimmer-named-arguments) using named arguments for positional params']() {
     let MyComponent = Component.extend();
 
     this.registerComponent('foo-bar', {
@@ -3087,7 +3081,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('MyVar1: 1 1 MyVar2: 2 2');
   }
 
-  ['@test can use `{{this}}` to emit the component\'s toString value [GH#14581]'](assert) {
+  ['@test can use `{{this}}` to emit the component\'s toString value [GH#14581]']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         toString() {
@@ -3102,7 +3096,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('special sauce goes here!');
   }
 
-  ['@test can use `{{this` to access paths on current context [GH#14581]'](assert) {
+  ['@test can use `{{this` to access paths on current context [GH#14581]']() {
     let instance;
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
@@ -3136,7 +3130,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('huzzah!');
   }
 
-  ['@test can use custom element in component layout'](assert) {
+  ['@test can use custom element in component layout']() {
     this.registerComponent('foo-bar', {
       template: '<blah-zorz>Hi!</blah-zorz>'
     });
@@ -3146,7 +3140,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Hi!');
   }
 
-  ['@test can use nested custom element in component layout'](assert) {
+  ['@test can use nested custom element in component layout']() {
     this.registerComponent('foo-bar', {
       template: '<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>'
     });
@@ -3156,7 +3150,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Hi!');
   }
 
-  ['@feature(!ember-glimmer-named-arguments) can access properties off of rest style positionalParams array'](assert) {
+  ['@feature(!ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend().reopenClass({ positionalParams: 'things' }),
       // using `attrs` here to simulate `@things.length`
@@ -3168,7 +3162,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('3');
   }
 
-  ['@feature(ember-glimmer-named-arguments) can access properties off of rest style positionalParams array'](assert) {
+  ['@feature(ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend().reopenClass({ positionalParams: 'things' }),
       template: `{{@things.length}}`

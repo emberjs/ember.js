@@ -1,11 +1,9 @@
 import {
-  compileLayout,
   PrimitiveReference
 } from '@glimmer/runtime';
 import { moduleFor, RenderingTest } from '../utils/test-case';
 import {
-  GLIMMER_CUSTOM_COMPONENT_MANAGER,
-  MANDATORY_SETTER
+  GLIMMER_CUSTOM_COMPONENT_MANAGER
 } from 'ember/features';
 import { AbstractComponentManager } from 'ember-glimmer';
 
@@ -33,7 +31,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
     Implementation of custom component manager, `ComponentManager` interface
   */
   class TestComponentManager extends AbstractComponentManager {
-    create(env, definition, args, dynamicScope, caller, hasBlock) {
+    create(env, definition) {
       return definition.ComponentClass.create();
     }
 

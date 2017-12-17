@@ -9,7 +9,7 @@ import { run } from 'ember-metal';
 import Application from '../../system/application';
 import ApplicationInstance from '../../system/application-instance';
 import Engine from '../../system/engine';
-import { Route, Router } from 'ember-routing';
+import { Route } from 'ember-routing';
 import { Component, helper } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
 import { jQuery } from 'ember-views';
@@ -228,7 +228,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
     }));
 
     this.add('route:c', Route.extend({
-      afterModel(params) {
+      afterModel() {
         throw new Error('transition failure');
       }
     }));
@@ -444,7 +444,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
       'there are no elements in the fixture element'
     );
 
-    return this.visit('/blog', { shouldRender: true }).then(instance => {
+    return this.visit('/blog', { shouldRender: true }).then(() => {
       assert.strictEqual(
         this.$().find('p').text(), 'Dis cache money',
         'Engine component is resolved'

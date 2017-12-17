@@ -105,7 +105,7 @@ testBoth('unwatching "length" property on an object', function(get, set) {
   equal(didCount, 0, 'should NOT have invoked didCount');
 });
 
-testBoth('unwatching should not destroy non MANDATORY_SETTER descriptor', function(get, set) {
+testBoth('unwatching should not destroy non MANDATORY_SETTER descriptor', function() {
   let obj = { get foo() { return 'RUN'; } };
 
   equal(obj.foo, 'RUN', 'obj.foo');

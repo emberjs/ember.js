@@ -42,11 +42,11 @@ function injectNodeGlobals({ types: t }) {
         }
       }
     }
-  }
+  };
 }
 
 injectNodeGlobals.baseDir = function() {
   return 'babel-plugin-transform-es2015-modules-amd';
-}
+};
 
 module.exports = injectNodeGlobals;

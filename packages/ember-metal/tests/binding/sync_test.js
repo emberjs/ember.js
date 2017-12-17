@@ -20,7 +20,7 @@ testBoth('bindings should not sync twice in a single run loop', function(get, se
     a = {};
 
     defineProperty(a, 'foo', computed({
-      get(key) {
+      get() {
         getCalled++;
         return setValue;
       },
@@ -52,7 +52,7 @@ testBoth('bindings should not sync twice in a single run loop', function(get, se
   equal(getCalled, 1, 'Get should only be called once');
 });
 
-testBoth('bindings should not infinite loop if computed properties return objects', function(get, set) {
+testBoth('bindings should not infinite loop if computed properties return objects', function(get) {
   let a, b;
   let getCalled = 0;
 

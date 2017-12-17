@@ -46,7 +46,7 @@ QUnit.module('object.get()', {
     object = ObservableObject.extend(Observable, {
       computed: computed(function() { return 'value'; }).volatile(),
       method() { return 'value'; },
-      unknownProperty(key, value) {
+      unknownProperty(key) {
         this.lastUnknownProperty = key;
         return 'unknown';
       }
@@ -90,7 +90,7 @@ QUnit.module('Ember.get()', {
     objectA = ObservableObject.extend({
       computed: computed(function() { return 'value'; }).volatile(),
       method() { return 'value'; },
-      unknownProperty(key, value) {
+      unknownProperty(key) {
         this.lastUnknownProperty = key;
         return 'unknown';
       }
@@ -183,7 +183,7 @@ QUnit.module('object.set()', {
   setup() {
     object = ObservableObject.extend({
       computed: computed({
-        get(key) {
+        get() {
           return this._computed;
         },
         set(key, value) {
@@ -199,7 +199,7 @@ QUnit.module('object.set()', {
         return this._method;
       },
 
-      unknownProperty(key) {
+      unknownProperty() {
         return this._unknown;
       },
 
@@ -323,7 +323,7 @@ QUnit.module('Computed properties', {
         return this.incCallCount++;
       }),
 
-      nestedInc: computed(function(key) {
+      nestedInc: computed(function() {
         get(this, 'inc');
         return this.nestedIncCallCount++;
       }).property('inc'),
@@ -332,7 +332,7 @@ QUnit.module('Computed properties', {
         get() {
           return this.get('state') === 'on';
         },
-        set(key, value) {
+        set() {
           this.set('state', 'on');
           return this.get('state') === 'on';
         }
@@ -342,7 +342,7 @@ QUnit.module('Computed properties', {
         get() {
           return this.get('state') === 'off';
         },
-        set(key, value) {
+        set() {
           this.set('state', 'off');
           return this.get('state') === 'off';
         }
@@ -889,7 +889,7 @@ QUnit.test('changing chained observer object to null should not raise exception'
   });
 
   var callCount = 0;
-  obj.foo.addObserver('bar.bat', obj, function(target, key, value) {
+  obj.foo.addObserver('bar.bat', obj, function() {
     callCount++;
   });
 

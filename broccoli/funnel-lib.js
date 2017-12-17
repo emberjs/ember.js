@@ -15,4 +15,4 @@ module.exports = function funnelLib(name) {
 
 
   return new Funnel(findLib(name, libPath), options);
-}
+};

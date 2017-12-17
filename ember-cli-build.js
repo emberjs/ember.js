@@ -250,7 +250,7 @@ module.exports = function(options) {
     // because we strip babel helpers in the prod build
     let prodTemplateCompiler = new MergeTrees(templateCompiler(babelProdHelpersES5));
 
-    prodTemplateCompiler = stripForProd(prodTemplateCompiler)
+    prodTemplateCompiler = stripForProd(prodTemplateCompiler);
 
     prodTemplateCompiler = new MergeTrees([
       nodeModule,

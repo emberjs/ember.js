@@ -4,12 +4,11 @@ import {
   set,
   getProperties,
   setProperties,
-  isNone,
   computed,
   run,
   isEmpty
 } from 'ember-metal';
-import { assert, info, Error as EmberError, isTesting } from 'ember-debug';
+import { assert, info, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   typeOf,
@@ -1115,7 +1114,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  transitionTo(name, context) {
+  transitionTo(name, context) { // eslint-disable-line no-unused-vars
     return this.router.transitionTo(...prefixRouteNameArg(this, arguments));
   },
 
@@ -1743,7 +1742,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  setupController(controller, context, transition) {
+  setupController(controller, context, transition) {  // eslint-disable-line no-unused-vars
     if (controller && (context !== undefined)) {
       set(controller, 'model', context);
     }
@@ -1919,7 +1918,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  renderTemplate(controller, model) {
+  renderTemplate(controller, model) {  // eslint-disable-line no-unused-vars
     this.render();
   },
 
@@ -2119,7 +2118,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         }
       }
     });
-	```
+        ```
 
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name

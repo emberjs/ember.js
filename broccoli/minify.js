@@ -27,10 +27,10 @@ module.exports = function _minify(tree, name) {
     getDestinationPath(relativePath) {
       let ext = path.extname(relativePath);
       if (ext === '.map') {
-        return `${name}.map`
+        return `${name}.map`;
       }
       return `${name}.js`;
     },
     annotation: name
   });
-}
+};

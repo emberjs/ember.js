@@ -6,4 +6,4 @@ module.exports = function _lint(tree) {
   return new ESLint(tree, {
     testGenerator: 'qunit'
   });
-}
+};

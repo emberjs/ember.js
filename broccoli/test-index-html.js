@@ -22,4 +22,4 @@ module.exports = function testIndexHTML() {
   });
   index._annotation = 'tests/index.html FEATURES';
   return index;
-}
+};

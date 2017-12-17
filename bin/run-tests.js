@@ -167,7 +167,7 @@ function runInBrowser(url, retries, resolve, reject) {
 
       page.goto(url, { timeout: 900 });
     });
-  })
+  });
 }
 
 var testFunctions = [];

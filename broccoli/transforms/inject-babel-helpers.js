@@ -12,6 +12,6 @@ function injectBabelHelpers() {
 
 injectBabelHelpers.baseDir = function() {
   return 'babel-core';
-}
+};
 
 module.exports = injectBabelHelpers;

@@ -1,5 +1,4 @@
-import { meta as metaFor } from './meta';
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,

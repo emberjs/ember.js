@@ -1,4 +1,4 @@
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 
 const VALIDATED_TYPES = {
   route:     ['assert',    'isRouteFactory',     'Ember.Route'],
@@ -14,7 +14,7 @@ export default function validateType(resolvedType, parsedName) {
     return;
   }
 
-  let [action, factoryFlag, expectedType] = validationAttributes;
+  let [, factoryFlag, expectedType] = validationAttributes;
 
   assert(
     `Expected ${parsedName.fullName} to resolve to an ${expectedType} but ` +

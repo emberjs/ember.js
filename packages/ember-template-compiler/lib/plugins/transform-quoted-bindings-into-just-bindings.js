@@ -1,4 +1,4 @@
-export default function transformQuotedBindingsIntoJustBindings(env) {
+export default function transformQuotedBindingsIntoJustBindings(/* env */) {
 
   return {
     name: 'transform-quoted-bindings-into-just-bindings',

@@ -19,11 +19,11 @@ function transformDefine(babel) {
         }
       }
     }
-  }
+  };
 }
 
 transformDefine.baseDir = function() {
   return 'babel-plugin-transform-es2015-modules-amd';
-}
+};
 
 module.exports = transformDefine;

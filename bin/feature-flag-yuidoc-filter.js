@@ -42,7 +42,7 @@ function updateClassReferencesInNamespaces(data) {
     var originalClasses = data.modules[namespace].classes;
     for (var className in originalClasses) {
       if (data.classes.hasOwnProperty(className)) {
-        namespaceClasses[className] = originalClasses[className]
+        namespaceClasses[className] = originalClasses[className];
       }
     }
     data.modules[namespace].classes = namespaceClasses;

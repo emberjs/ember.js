@@ -66,7 +66,7 @@ QUnit.test('caches computation correctly with custom cache keys', function() {
 
 QUnit.test('handles undefined value correctly', function() {
   let count = 0;
-  let cache = new Cache(100, key => { count++; });
+  let cache = new Cache(100, () => { count++; });
 
   equal(count, 0);
   strictEqual(cache.get('foo'), undefined);

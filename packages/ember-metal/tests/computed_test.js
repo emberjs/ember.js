@@ -249,7 +249,7 @@ QUnit.module('computed - cacheable', {
   setup() {
     obj = {};
     count = 0;
-    let func = function(key, value) {
+    let func = function() {
       count++;
       return 'bar ' + count;
     };
@@ -261,7 +261,7 @@ QUnit.module('computed - cacheable', {
   }
 });
 
-testBoth('cacheable should cache', function(get, set) {
+testBoth('cacheable should cache', function(get) {
   equal(get(obj, 'foo'), 'bar 1', 'first get');
   equal(get(obj, 'foo'), 'bar 1', 'second get');
   equal(count, 1, 'should only invoke once');
@@ -290,7 +290,7 @@ testBoth('inherited property should not pick up cache', function(get, set) {
   equal(get(objB, 'foo'), 'bar 2', 'objB third get');
 });
 
-testBoth('cacheFor should return the cached value', function(get, set) {
+testBoth('cacheFor should return the cached value', function(get) {
   equal(cacheFor(obj, 'foo'), undefined, 'should not yet be a cached value');
 
   get(obj, 'foo');
@@ -298,7 +298,7 @@ testBoth('cacheFor should return the cached value', function(get, set) {
   equal(cacheFor(obj, 'foo'), 'bar 1', 'should retrieve cached value');
 });
 
-testBoth('cacheFor should return falsy cached values', function(get, set) {
+testBoth('cacheFor should return falsy cached values', function(get) {
   defineProperty(obj, 'falsy', computed(function() {
     return false;
   }));
@@ -343,7 +343,7 @@ QUnit.module('computed - dependentkey', {
   setup() {
     obj = { bar: 'baz' };
     count = 0;
-    let getterAndSetter = function(key, value) {
+    let getterAndSetter = function() {
       count++;
       get(this, 'bar');
       return 'bar ' + count;
@@ -365,7 +365,7 @@ testBoth('should lazily watch dependent keys on set', function (get, set) {
   equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
 });
 
-testBoth('should lazily watch dependent keys on get', function (get, set) {
+testBoth('should lazily watch dependent keys on get', function (get) {
   equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
   get(obj, 'foo');
   equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
@@ -409,13 +409,13 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
 });
 
 testBoth('circular keys should not blow up', function(get, set) {
-  let func = function(key, value) {
+  let func = function() {
     count++;
     return 'bar ' + count;
   };
   defineProperty(obj, 'bar', computed({ get: func, set: func }).property('foo'));
 
-  defineProperty(obj, 'foo', computed(function(key) {
+  defineProperty(obj, 'foo', computed(function() {
     count++;
     return 'foo ' + count;
   }).property('bar'));
@@ -451,7 +451,7 @@ testBoth('redefining a property should undo old dependent keys', function(get, s
 });
 
 testBoth('can watch multiple dependent keys specified declaratively via brace expansion', function (get, set) {
-  defineProperty(obj, 'foo', computed(function(key) {
+  defineProperty(obj, 'foo', computed(function() {
     count++;
     return 'foo ' + count;
   }).property('qux.{bar,baz}'));
@@ -473,16 +473,16 @@ testBoth('can watch multiple dependent keys specified declaratively via brace ex
   equal(get(obj, 'foo'), 'foo 3', 'foo not invalidated by quux');
 });
 
-testBoth('throws assertion if brace expansion notation has spaces', function (get, set) {
+testBoth('throws assertion if brace expansion notation has spaces', function () {
   expectAssertion(function () {
-    defineProperty(obj, 'roo', computed(function (key) {
+    defineProperty(obj, 'roo', computed(function () {
       count++;
       return 'roo ' + count;
     }).property('fee.{bar, baz,bop , }'));
   }, /cannot contain spaces/);
 });
 
-testBoth('throws an assertion if an uncached `get` is called after object is destroyed', function(get, set) {
+testBoth('throws an assertion if an uncached `get` is called after object is destroyed', function(get) {
   equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
 
   let meta = metaFor(obj);
@@ -573,7 +573,7 @@ testBoth('depending on simple chain', function(get, set) {
   equal(count, 8, 'should be not have invoked computed again');
 });
 
-testBoth('chained dependent keys should evaluate computed properties lazily', function(get, set) {
+testBoth('chained dependent keys should evaluate computed properties lazily', function() {
   defineProperty(obj.foo.bar, 'b', computed(func));
   defineProperty(obj.foo, 'c', computed(function() {}).property('bar.b'));
   equal(count, 0, 'b should not run');
@@ -632,11 +632,11 @@ QUnit.test('the return value of the setter gets cached', function() {
   let testObj = EmberObject.extend({
     a: '1',
     sampleCP: computed('a', {
-      get(keyName) {
+      get() {
         ok(false, 'The getter should not be invoked');
         return 'get-value';
       },
-      set(keyName, value, oldValue) {
+      set() {
         return 'set-value';
       }
     })
@@ -751,7 +751,7 @@ testBoth('setting a cached computed property that modifies the value you give it
   };
 
   defineProperty(obj, 'plusOne', computed({
-    get(key) { return get(this, 'foo') + 1; },
+    get() { return get(this, 'foo') + 1; },
     set(key, value) {
       set(this, 'foo', value);
       return value + 1;
@@ -823,7 +823,7 @@ QUnit.test('throws assertion if called over a CP with a setter defined with the 
 testBoth('protects against setting', function(get, set) {
   let obj = {  };
 
-  defineProperty(obj, 'bar', computed(function(key) {
+  defineProperty(obj, 'bar', computed(function() {
     return 'barValue';
   }).readOnly());
 

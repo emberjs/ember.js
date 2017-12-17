@@ -121,7 +121,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
     });
   }
 
-  ['@test getRootViews'](assert) {
+  ['@test getRootViews']() {
     return this.visit('/').then(() => {
       this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5']);
 
@@ -155,7 +155,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
     this.assert.deepEqual(actual, expected, 'root views');
   }
 
-  ['@test getChildViews'](assert) {
+  ['@test getChildViews']() {
     return this.visit('/').then(() => {
       this.assertChildViews('root-2', ['inner-1', 'inner-2']);
       this.assertChildViews('root-5', []);
@@ -200,7 +200,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
     });
   }
 
-  ['@test getChildViews does not return duplicates'](assert) {
+  ['@test getChildViews does not return duplicates']() {
     return this.visit('/').then(() => {
       this.assertChildViews('root-2', ['inner-1', 'inner-2']);
 
