@@ -27,6 +27,19 @@ describe('Blueprint: acceptance-test', function() {
       });
     });
 
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('acceptance-test foo', function() {
+        return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
+          expect(_file('tests/acceptance/foo-test.js'))
+            .to.equal(fixture('acceptance-test/qunit-rfc268.js'));
+        });
+      });
+    });
+
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         return modifyPackages([
@@ -67,6 +80,19 @@ describe('Blueprint: acceptance-test', function() {
 
         expect(_file('app/acceptance-tests/foo/bar.js'))
           .to.not.exist;
+      });
+    });
+
+    describe('with ember-cli-qunit@4.1.1', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+      });
+
+      it('acceptance-test foo', function() {
+        return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
+          expect(_file('tests/acceptance/foo-test.js'))
+            .to.equal(fixture('acceptance-test/qunit-rfc268.js'));
+        });
       });
     });
   });
