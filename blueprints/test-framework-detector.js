@@ -18,7 +18,7 @@ module.exports = function(blueprint) {
 
     } else if ('ember-cli-qunit' in dependencies) {
       let checker = new VersionChecker(this.project);
-      if (fs.existsSync(this.path + '/qunit-rfc-232-files') && checker.for('ember-cli-qunit', 'npm').gte('4.1.1')) {
+      if (fs.existsSync(this.path + '/qunit-rfc-232-files') && checker.for('ember-cli-qunit', 'npm').gte('4.2.0')) {
         type = 'qunit-rfc-232';
       } else {
         type = 'qunit';
