@@ -3,10 +3,12 @@
 /* eslint-disable no-console */
 
 var RSVP  = require('rsvp');
+var execFile = require('child_process').execFile;
 var chalk = require('chalk');
 var FEATURES = require('../broccoli/features');
 var getPackages = require('../lib/packages');
 var runInSequence = require('../lib/run-in-sequence');
+var path = require('path');
 
 var finalhandler = require('finalhandler');
 var http = require('http');
@@ -227,6 +229,49 @@ function generateExtendPrototypeTests() {
   });
 }
 
+function runChecker(bin, args) {
+  return new RSVP.Promise(function(resolve) {
+    execFile(bin, args, {}, function(error, stdout, stderr) {
+      // I'm buffering instead of inheriting these so that each
+      // checker doesn't interleave its output
+      process.stdout.write(stdout.toString('utf8'));
+      process.stderr.write(stderr.toString('utf8'));
+      resolve({ name: path.basename(args[0]), ok: !error });
+    });
+  });
+}
+
+function codeQualityChecks() {
+  var checkers = [
+    // TODO: Uncomment this to enable TS checker too
+    // runChecker('node', [
+    //   require.resolve('typescript/bin/tsc'),
+    //   '--noEmit'
+    // ]),
+    runChecker('node', [
+      require.resolve('tslint/bin/tslint'),
+      '-p',
+      'tsconfig.json'
+    ]),
+    runChecker('node', [
+      require.resolve('eslint/bin/eslint'),
+      '.'
+    ])
+  ];
+  return RSVP.Promise.all(checkers).then(function(results) {
+    results.forEach(result => {
+      if (result.ok) {
+        console.log(result.name + ': ' + chalk.green('OK'));
+      } else {
+        console.log(result.name + ': ' + chalk.red('Failed'));
+      }
+    });
+    if (!results.every(result => result.ok)) {
+      throw new Error("Some quality checks failed");
+    }
+  });
+}
+
 switch (process.env.TEST_SUITE) {
   case 'built-tests':
     console.log('suite: built-tests');
@@ -264,6 +309,9 @@ switch (process.env.TEST_SUITE) {
     console.log('suite: sauce');
     require('./run-sauce-tests');
     process.exit(0);
+    break;
+  case 'code-quality':
+    testFunctions.push(codeQualityChecks);
     break;
   default:
     console.log('suite: default (generate each package)');
