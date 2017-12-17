@@ -14,7 +14,7 @@ import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
 import {
   Destroyable,
   Opaque,
-  Option 
+  Option
 } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import DebugStack from '../utils/debug-stack';
