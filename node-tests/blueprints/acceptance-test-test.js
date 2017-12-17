@@ -9,6 +9,9 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const fixture = require('../helpers/fixture');
+
 describe('Blueprint: acceptance-test', function() {
   setupTestHooks(this);
 
@@ -20,12 +23,7 @@ describe('Blueprint: acceptance-test', function() {
     it('acceptance-test foo', function() {
       return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
         expect(_file('tests/acceptance/foo-test.js'))
-          .to.contain("import { test } from 'qunit';")
-          .to.contain("moduleForAcceptance('Acceptance | foo');")
-          .to.contain("test('visiting /foo', function(assert) {")
-          .to.contain("visit('/foo');")
-          .to.contain("andThen(function() {")
-          .to.contain("assert.equal(currentURL(), '/foo');");
+        .to.equal(fixture('acceptance-test/default.js'));
       });
     });
 
@@ -40,13 +38,7 @@ describe('Blueprint: acceptance-test', function() {
       it('acceptance-test foo', function() {
         return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
           expect(_file('tests/acceptance/foo-test.js'))
-            .to.contain("import { describe, it, beforeEach, afterEach } from 'mocha';")
-            .to.contain("import { expect } from 'chai';")
-            .to.contain("describe('Acceptance | foo', function() {")
-            .to.contain("it('can visit /foo', function() {")
-            .to.contain("visit('/foo');")
-            .to.contain("return andThen(() => {")
-            .to.contain("expect(currentURL()).to.equal('/foo');");
+            .to.equal(fixture('acceptance-test/mocha.js'));
         });
       });
     });
@@ -61,12 +53,7 @@ describe('Blueprint: acceptance-test', function() {
     it('acceptance-test foo', function() {
       return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
         expect(_file('tests/acceptance/foo-test.js'))
-          .to.contain("import { test } from 'qunit';")
-          .to.contain("moduleForAcceptance('Acceptance | foo');")
-          .to.contain("test('visiting /foo', function(assert) {")
-          .to.contain("visit('/foo');")
-          .to.contain("andThen(function() {")
-          .to.contain("assert.equal(currentURL(), '/foo');");
+        .to.equal(fixture('acceptance-test/addon-default.js'));
 
         expect(_file('app/acceptance-tests/foo.js'))
           .to.not.exist;
@@ -76,12 +63,7 @@ describe('Blueprint: acceptance-test', function() {
     it('acceptance-test foo/bar', function() {
       return emberGenerateDestroy(['acceptance-test', 'foo/bar'], _file => {
         expect(_file('tests/acceptance/foo/bar-test.js'))
-          .to.contain("import { test } from 'qunit';")
-          .to.contain("moduleForAcceptance('Acceptance | foo/bar');")
-          .to.contain("test('visiting /foo/bar', function(assert) {")
-          .to.contain("visit('/foo/bar');")
-          .to.contain("andThen(function() {")
-          .to.contain("assert.equal(currentURL(), '/foo/bar');");
+          .to.equal(fixture('acceptance-test/addon-nested.js'));
 
         expect(_file('app/acceptance-tests/foo/bar.js'))
           .to.not.exist;
