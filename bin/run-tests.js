@@ -243,11 +243,10 @@ function runChecker(bin, args) {
 
 function codeQualityChecks() {
   var checkers = [
-    // TODO: Uncomment this to enable TS checker too
-    // runChecker('node', [
-    //   require.resolve('typescript/bin/tsc'),
-    //   '--noEmit'
-    // ]),
+    runChecker('node', [
+      require.resolve('typescript/bin/tsc'),
+      '--noEmit'
+    ]),
     runChecker('node', [
       require.resolve('tslint/bin/tslint'),
       '-p',
