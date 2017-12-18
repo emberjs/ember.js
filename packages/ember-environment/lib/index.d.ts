@@ -6,4 +6,8 @@ export const environment: {
   history: History | null;
   userAgent: string;
   window: Window | null;
+}
+
+export const ENV: {
+  _ENABLE_RENDER_SUPPORT: boolean;
 };

@@ -312,15 +312,13 @@
 */
 
 import { DEBUG } from 'ember-env-flags';
-import { assert, deprecate, warn } from 'ember-debug';
+import { assert, warn } from 'ember-debug';
 import {
   computed,
   flaggedInstrument,
   get,
 } from 'ember-metal';
 import {
-  ControllerMixin,
-  deprecatingAlias,
   inject,
 } from 'ember-runtime';
 import { isSimpleClick } from 'ember-views';

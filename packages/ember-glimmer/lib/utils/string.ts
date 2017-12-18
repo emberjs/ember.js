@@ -2,8 +2,6 @@
 @module @ember/string
 */
 
-import { deprecate } from 'ember-debug';
-
 export class SafeString {
   public string: string;
 
