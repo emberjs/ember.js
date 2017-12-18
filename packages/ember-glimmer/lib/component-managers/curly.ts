@@ -12,8 +12,6 @@ import {
   ComponentDefinition,
   ComponentManager,
   ElementOperations,
-  NamedArguments,
-  PositionalArguments,
   PreparedArguments,
   PrimitiveReference,
   Simple,
@@ -383,7 +381,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 }
 
-export function validatePositionalParameters(named: NamedArguments, positional: PositionalArguments, positionalParamsDefinition: any) {
+export function validatePositionalParameters(named: { has(name: string): boolean }, positional: { length: number }, positionalParamsDefinition: any) {
   if (DEBUG) {
     if (!named || !positional || !positional.length) {
       return;
@@ -456,12 +454,20 @@ export function rerenderInstrumentDetails(component: any): any {
 
 const MANAGER = new CurlyComponentManager();
 
+// This is not any of glimmer-vm's proper Argument types because we
+// don't have sufficient public constructors to conveniently
+// reassemble one after we mangle the various arguments.
+interface CurriedArgs {
+  positional: any[];
+  named: any;
+}
+
 export class CurlyComponentDefinition extends ComponentDefinition<ComponentStateBucket> {
   public template: OwnedTemplate;
-  public args: Arguments | undefined;
+  public args: CurriedArgs | undefined;
 
   // tslint:disable-next-line:no-shadowed-variable
-  constructor(name: string, ComponentClass: ComponentClass, template: OwnedTemplate, args: Arguments | undefined, customManager?: ComponentManager<ComponentStateBucket>) {
+  constructor(name: string, ComponentClass: ComponentClass, template: OwnedTemplate, args: CurriedArgs | undefined, customManager?: ComponentManager<ComponentStateBucket>) {
     super(name, customManager || MANAGER, ComponentClass);
     this.template = template;
     this.args = args;

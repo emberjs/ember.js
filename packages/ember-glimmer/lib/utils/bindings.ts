@@ -133,7 +133,12 @@ class StyleBindingReference extends CachedReference<string | SafeString> {
 
 export const IsVisibleBinding = {
   install(element: Simple.Element, component: Component, operations: ElementOperations) {
-    operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue), false);
+    let ref = map(referenceForKey(component, 'isVisible'), this.mapStyleValue);
+
+    // the upstream type for addDynamicAttribute's `value` argument
+    // appears to be incorrect. It is currently a Reference<string>, I
+    // think it should be a Reference<string|null>.
+    operations.addDynamicAttribute(element, 'style', ref as any as Reference<string>, false);
   },
 
   mapStyleValue(isVisible: boolean) {
@@ -160,7 +165,10 @@ export const ClassNameBinding = {
         ref = new ColonClassNameBindingReference(value, truthy, falsy);
       }
 
-      operations.addDynamicAttribute(element, 'class', ref, false);
+      // the upstream type for addDynamicAttribute's `value` argument
+      // appears to be incorrect. It is currently a Reference<string>, I
+      // think it should be a Reference<string|null>.
+      operations.addDynamicAttribute(element, 'class', ref as any as Reference<string>, false);
     }
   },
 };
