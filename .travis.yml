@@ -66,3 +66,7 @@ env:
     - TEST_SUITE=blueprints
     - TEST_SUITE=travis-browsers DISABLE_JSCS=true DISABLE_JSHINT=true
     - TEST_SUITE=each-package-tests BUILD_TYPE=alpha PUBLISH=true
+matrix:
+  allow_failures:
+    env:
+      - TEST_SUITE=sauce
