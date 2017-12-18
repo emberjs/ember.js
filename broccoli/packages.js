@@ -355,7 +355,7 @@ module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
     rollup: {
       input: `index.js`,
       output: {
-        moduleId: 'ember-metal',
+        amd: { id: 'ember-metal' },
         file: 'ember-metal.js',
         format: 'amd',
         exports: 'named'
