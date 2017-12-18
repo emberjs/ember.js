@@ -36,11 +36,11 @@ QUnit.module('Ember.HistoryLocation', {
     FakeHistory = {
       state: null,
       _states: [],
-      replaceState(state, title, url) {
+      replaceState(state) {
         this.state = state;
         this._states[0] = state;
       },
-      pushState(state, title, url) {
+      pushState(state) {
         this.state = state;
         this._states.unshift(state);
       }

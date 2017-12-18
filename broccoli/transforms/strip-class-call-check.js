@@ -1,8 +1,7 @@
 // TODO there are like 3 things that do this
 'use strict';
-/* eslint-env node */
 
-function stripClassCallCheck( { types: t, traverse }) {
+function stripClassCallCheck( { traverse }) {
   return {
     name: 'remove classCallCheck',
     visitor: {
@@ -28,7 +27,7 @@ function stripClassCallCheck( { types: t, traverse }) {
         exit(path) {
           if (!this.binding) { return; }
 
-          traverse.clearCache()
+          traverse.clearCache();
           path.scope.crawl();
 
           let [amd] = path.get('body');
@@ -45,10 +44,10 @@ function stripClassCallCheck( { types: t, traverse }) {
       CallExpression(path) {
         let callee = path.get('callee');
 
-        if (!this.binding) { return }
+        if (!this.binding) { return; }
 
         if (callee.isSequenceExpression()) {
-          let [, member] = callee.get('expressions')
+          let [, member] = callee.get('expressions');
 
           if (member.node.object.name === this.binding.node.name && member.node.property.name.indexOf('classCallCheck') > -1) {
             path.remove();
@@ -62,15 +61,15 @@ function stripClassCallCheck( { types: t, traverse }) {
         }
       }
     }
-  }
+  };
 }
 
 stripClassCallCheck.baseDir = function() {
   return 'babel-core';
-}
+};
 
 stripClassCallCheck.cacheKey = function() {
   return stripClassCallCheck.toString();
-}
+};
 
 module.exports = stripClassCallCheck;

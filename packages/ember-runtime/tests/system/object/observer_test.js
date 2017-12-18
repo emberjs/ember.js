@@ -200,11 +200,11 @@ testBoth('chain observer on class that has a reference to an uninitialized objec
 
   equal(changed, false, 'precond');
 
-  parent.set('one.two', 'new');
+  set(parent, 'one.two', 'new');
 
   equal(changed, true, 'child should have been notified of change to path');
 
-  parent.set('one', { two: 'newer' });
+  set(parent, 'one', { two: 'newer' });
 
   equal(changed, true, 'child should have been notified of change to path');
 });

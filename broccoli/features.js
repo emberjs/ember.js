@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 function getFeatures(isDebug) {
   let features = Object.assign({}, require('../features').features);
@@ -31,7 +30,7 @@ function getFeatures(isDebug) {
 function toConst(features) {
   let consted = {};
   Object.keys(features).forEach((feature) => {
-    consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature]
+    consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature];
   });
 
   return consted;

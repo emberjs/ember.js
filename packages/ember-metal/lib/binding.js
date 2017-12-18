@@ -221,12 +221,12 @@ class Binding {
   //
 
   /* Called when the from side changes. */
-  fromDidChange(target) {
+  fromDidChange(target) { // eslint-disable-line no-unused-vars
     this._scheduleSync('fwd');
   }
 
   /* Called when the to side changes. */
-  toDidChange(target) {
+  toDidChange(target) { // eslint-disable-line no-unused-vars
     this._scheduleSync('back');
   }
 

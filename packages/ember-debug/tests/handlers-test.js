@@ -47,7 +47,7 @@ moduleFor('Ember Error Throwing', class extends TestCase {
   ['@test invoking `next` argument calls the next handler'](assert) {
     assert.expect(2);
 
-    function handler1(message, options, next) {
+    function handler1() {
       assert.ok(true, 'called handler1');
     }
 
@@ -105,16 +105,17 @@ moduleFor('Ember Error Throwing', class extends TestCase {
   ['@test not invoking `next` prevents further handlers from being called'](assert) {
     assert.expect(1);
 
-    function handler1(message, options, next) {
+    function handler1() {
       assert.ok(false, 'called handler1');
     }
 
-    function handler2(message, options, next) {
+    function handler2() {
       assert.ok(true, 'called handler2');
     }
 
     registerHandler('blarz', handler1);
     registerHandler('blarz', handler2);
+
 
     invoke('blarz', 'Foo', false);
   }
@@ -128,7 +129,7 @@ moduleFor('Ember Error Throwing', class extends TestCase {
     let handler2Message = 'Handler2 Message';
     let handler2Options = { id: 'handler-2' };
 
-    function handler1(message, options, next) {
+    function handler1(message, options) {
       assert.equal(message, handler2Message, 'handler2 message provided to handler1');
       assert.equal(options, handler2Options, 'handler2 options provided to handler1');
     }

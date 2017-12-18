@@ -161,9 +161,10 @@ moduleFor('Container', class extends AbstractTestCase {
     let fooInstance = {};
     let fooFactory  = {};
 
+
     let Foo = {
-      create(args) { return fooInstance; },
-      extend(args) { return fooFactory;  }
+      create() { return fooInstance; },
+      extend() { return fooFactory;  }
     };
 
     registry.register('model:foo', Foo);
@@ -242,7 +243,7 @@ moduleFor('Container', class extends AbstractTestCase {
     let container = registry.container();
     let PostController = factory();
 
-    registry.normalizeFullName = function(fullName) {
+    registry.normalizeFullName = function() {
       return 'controller:post';
     };
 
@@ -257,7 +258,7 @@ moduleFor('Container', class extends AbstractTestCase {
     let container = registry.container();
     let PostController = factory();
 
-    registry.normalizeFullName = function(fullName) {
+    registry.normalizeFullName = function() {
       return 'controller:post';
     };
 
@@ -584,20 +585,17 @@ moduleFor('Container', class extends AbstractTestCase {
     registry.injection('component:foo-bar', 'ajax', 'util:ajax');
 
     let componentFactory = container.factoryFor('component:foo-bar');
-
     let instrance = componentFactory.create({ ajax: 'fetch' });
 
     assert.equal(instrance.ajax, 'fetch');
   }
 
   ['@test #factoryFor does not add properties to the object being instantiated when _initFactory is present'](assert) {
-    let owner = {};
     let registry = new Registry();
     let container = registry.container();
 
-    let factory;
     class Component {
-      static _initFactory(_factory) { factory = _factory; }
+      static _initFactory() {}
       static create(options) {
         let instance = new this();
         assign(instance, options);
@@ -617,11 +615,9 @@ moduleFor('Container', class extends AbstractTestCase {
   // this is skipped until templates and the glimmer environment do not require `OWNER` to be
   // passed in as constructor args
   ['@skip #factoryFor does not add properties to the object being instantiated'](assert) {
-    let owner = {};
     let registry = new Registry();
     let container = registry.container();
 
-    let factory;
     class Component {
       static create(options) {
         let instance = new this();

@@ -10,7 +10,7 @@ import EmberDataAdapter from '../data_adapter';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 
-let adapter, App;
+let adapter;
 const Model = EmberObject.extend();
 
 const PostClass = Model.extend();
@@ -22,10 +22,10 @@ const DataAdapter = EmberDataAdapter.extend({
   init() {
     this._super(...arguments);
     this.set('containerDebugAdapter', {
-      canCatalogEntriesByType(type) {
+      canCatalogEntriesByType() {
         return true;
       },
-      catalogEntriesByType(type) {
+      catalogEntriesByType() {
         return emberA(['post']);
       }
     });
@@ -79,10 +79,10 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
 
   ['@test Model types added with custom container-debug-adapter']() {
     let StubContainerDebugAdapter = EmberObject.extend({
-      canCatalogEntriesByType(type) {
+      canCatalogEntriesByType() {
         return true;
       },
-      catalogEntriesByType(type) {
+      catalogEntriesByType() {
         return emberA(['post']);
       }
     });
@@ -116,7 +116,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
   ['@test Model Types Updated']() {
     let records = emberA([1, 2, 3]);
     this.add('data-adapter:main', DataAdapter.extend({
-      getRecords(klass, name) {
+      getRecords() {
         return records;
       }
     }));
@@ -125,7 +125,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
     return this.visit('/').then(() => {
       adapter = this.applicationInstance.lookup('data-adapter:main');
 
-      function modelTypesAdded(types) {
+      function modelTypesAdded() {
         run(() => {
           records.pushObject(4);
         });
@@ -144,7 +144,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
     expect(0);
     let records = emberA([1, 2, 3]);
     this.add('data-adapter:main', DataAdapter.extend({
-      getRecords(klass, name) {
+      getRecords() {
         return records;
       }
     }));
@@ -153,13 +153,13 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
     return this.visit('/').then(() => {
       adapter = this.applicationInstance.lookup('data-adapter:main');
 
-      function modelTypesAdded(types) {
+      function modelTypesAdded() {
         run(() => {
           records.arrayContentDidChange(0, 0, 0);
         });
       }
 
-      function modelTypesUpdated(types) {
+      function modelTypesUpdated() {
         ok(false, "modelTypesUpdated should not be triggered if the array didn't change");
       }
 
@@ -173,7 +173,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
     let recordList = emberA([post]);
 
     this.add('data-adapter:main', DataAdapter.extend({
-      getRecords(klass, name) {
+      getRecords() {
         return recordList;
       },
       getRecordColor() {

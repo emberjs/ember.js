@@ -2,8 +2,7 @@ import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import {
   instrumentationSubscribe,
-  instrumentationReset,
-  set
+  instrumentationReset
 } from 'ember-metal';
 
 moduleFor('Components compile instrumentation', class extends RenderingTest {
@@ -45,7 +44,7 @@ moduleFor('Components compile instrumentation', class extends RenderingTest {
     instrumentationReset();
   }
 
-  ['@test it should only receive an instrumentation event for initial render'](assert) {
+  ['@test it should only receive an instrumentation event for initial render']() {
     let testCase = this;
 
     let BaseClass = Component.extend({

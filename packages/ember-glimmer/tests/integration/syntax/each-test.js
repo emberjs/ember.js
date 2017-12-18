@@ -441,7 +441,7 @@ class SingleEachTest extends AbstractEachTest {
     this.assertText('aaa');
   }
 
-  [`@test updating and setting within #each`](assert) {
+  [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
     let FooBarComponent = Component.extend({
@@ -906,7 +906,7 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
 });
 
 moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTest {
-  ['@test keying off of `undefined` does not render'](assert) {
+  ['@test keying off of `undefined` does not render']() {
     this.render(strip`
       {{#each foo.bar.baz as |thing|}}
         {{thing}}
@@ -929,7 +929,7 @@ moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTes
 });
 
 moduleFor('Syntax test: {{#each}} with sparse arrays', class extends RenderingTest {
-  ['@test it should itterate over holes'](assert) {
+  ['@test it should itterate over holes']() {
     let sparseArray = [];
     sparseArray[3] = 'foo';
     sparseArray[4] = 'bar';
@@ -981,7 +981,7 @@ if (typeof MutationObserver === 'function') {
       this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
     }
 
-    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]'](assert) {
+    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]']() {
       let page = { title: 'Blog Posts' };
 
       let model = [

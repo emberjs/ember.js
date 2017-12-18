@@ -226,7 +226,7 @@ moduleFor('ember-testing Acceptance', class extends AutobootApplicationTestCase 
     assert.expect(0);
 
     Test.adapter = QUnitAdapter.create({
-      exception(error) {
+      exception() {
         assert.ok(false, 'aborted transitions are not logged');
       }
     });

@@ -47,7 +47,7 @@ moduleFor('Components instrumentation', class extends RenderingTest {
 
   ['@test zomg'](assert) { assert.ok(true); }
 
-  ['@test it should receive an instrumentation event for both initial render and updates'](assert) {
+  ['@test it should receive an instrumentation event for both initial render and updates']() {
     let testCase = this;
 
     let BaseClass = Component.extend({

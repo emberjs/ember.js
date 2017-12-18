@@ -4,7 +4,7 @@ import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor('Application Lifecycle - Component Registration', class extends AutobootApplicationTestCase {
 
-  ['@feature(!ember-glimmer-template-only-components) The helper becomes the body of the component'](assert) {
+  ['@feature(!ember-glimmer-template-only-components) The helper becomes the body of the component']() {
     this.runTask(() => {
       this.createApplication();
 
@@ -16,7 +16,7 @@ moduleFor('Application Lifecycle - Component Registration', class extends Autobo
     this.assertComponentElement(this.element.firstElementChild, { tagName: 'div', content: '<p>hello world</p>' });
   }
 
-  ['@feature(ember-glimmer-template-only-components) The helper becomes the body of the component'](assert) {
+  ['@feature(ember-glimmer-template-only-components) The helper becomes the body of the component']() {
     this.runTask(() => {
       this.createApplication();
 

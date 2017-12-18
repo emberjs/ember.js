@@ -55,7 +55,7 @@ testBoth('Connecting a binding between two properties', function(get, set) {
   }, /`Ember\.Binding` is deprecated./);
 });
 
-testBoth('Connecting a oneWay binding raises a deprecation', function(get, set) {
+testBoth('Connecting a oneWay binding raises a deprecation', function() {
   let a = { foo: 'FOO', bar: 'BAR', toString() { return '<custom object ID here>'; } };
 
   // a.bar -> a.foo

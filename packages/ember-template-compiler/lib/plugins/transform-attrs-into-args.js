@@ -36,7 +36,7 @@ export default function transformAttrsIntoArgs(env) {
           let parent = stack[stack.length - 1];
           stack.push(parent.concat(node.blockParams));
         },
-        exit(node) {
+        exit() {
           stack.pop();
         }
       },

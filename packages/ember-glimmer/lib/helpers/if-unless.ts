@@ -14,7 +14,7 @@ import {
   Arguments,
   PrimitiveReference,
   VM
-} from '@glimmer/runtime'
+} from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import {
   CachedReference,

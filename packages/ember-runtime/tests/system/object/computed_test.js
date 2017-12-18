@@ -11,7 +11,7 @@ function K() { return this; }
 
 QUnit.module('EmberObject computed property');
 
-testWithDefault('computed property on instance', function(get, set) {
+testWithDefault('computed property on instance', function(get) {
   let MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
@@ -20,7 +20,7 @@ testWithDefault('computed property on instance', function(get, set) {
 });
 
 
-testWithDefault('computed property on subclass', function(get, set) {
+testWithDefault('computed property on subclass', function(get) {
   let MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });
@@ -33,7 +33,7 @@ testWithDefault('computed property on subclass', function(get, set) {
 });
 
 
-testWithDefault('replacing computed property with regular val', function(get, set) {
+testWithDefault('replacing computed property with regular val', function(get) {
   let MyClass = EmberObject.extend({
     foo: computed(function() { return 'FOO'; })
   });

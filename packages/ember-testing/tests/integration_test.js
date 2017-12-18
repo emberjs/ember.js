@@ -5,7 +5,6 @@ import {
 import Test from '../test';
 
 import {
-  Controller,
   A as emberA
 } from 'ember-runtime';
 import { Route } from 'ember-routing';

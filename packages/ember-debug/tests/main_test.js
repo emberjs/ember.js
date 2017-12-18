@@ -173,13 +173,14 @@ moduleFor('ember-debug', class extends TestCase {
     assert.ok(true, 'assertions were not thrown');
   }
 
+
   ['@test Ember.deprecate does not throw a deprecation at log and silence'](assert) {
     expect(4);
     let id = 'ABC';
     let until = 'forever';
     let shouldThrow = false;
 
-    registerHandler(function(message, options, next) {
+    registerHandler(function(message, options) {
       if (options && options.id === id) {
         if (shouldThrow) {
           throw new Error(message);

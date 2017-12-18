@@ -1,3 +1,5 @@
+/* globals print, Ember, SimpleDOM */
+
 var Router = Ember.Router.extend({
   location: 'none',
   rootURL: '/'
@@ -27,7 +29,7 @@ app.visit('/', options).then(function (instance) {
   return router.transitionTo('/my-route');
 }).then(function () {
   return new Ember.RSVP.Promise(function (resolve) {
-    Ember.run.schedule('afterRender', resolve)
+    Ember.run.schedule('afterRender', resolve);
   });
 }).then(function () {
   print(serializer.serialize(doc.body));

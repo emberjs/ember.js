@@ -146,7 +146,6 @@ QUnit.test('rejection', function() {
 
 // https://github.com/emberjs/ember.js/issues/15694
 QUnit.test('rejection without specifying reason', function() {
-  let reason = new Error('failure');
   let deferred = RSVP.defer();
   let proxy = ObjectPromiseProxy.create({
     promise: deferred.promise

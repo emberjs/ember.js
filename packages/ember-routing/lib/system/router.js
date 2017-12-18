@@ -10,8 +10,7 @@ import {
   set,
   defineProperty,
   computed,
-  run,
-  deprecateProperty
+  run
 } from 'ember-metal';
 import {
   Error as EmberError,
@@ -1135,7 +1134,7 @@ let defaultActionHandlers = {
   },
 
   // Attempt to find an appropriate loading route or substate to enter.
-  loading(handlerInfos, transition, originRoute) {
+  loading(handlerInfos, transition) {
     let router = this;
 
     let handlerInfoWithSlowLoading = handlerInfos[handlerInfos.length - 1];

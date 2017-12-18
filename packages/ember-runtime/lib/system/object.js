@@ -2,7 +2,7 @@
 @module @ember/object
 */
 
-import { symbol, NAME_KEY, OWNER } from 'ember-utils';
+import { symbol, OWNER } from 'ember-utils';
 import { on, descriptor, peekMeta } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';

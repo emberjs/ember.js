@@ -95,7 +95,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
     });
   }
 
-  ['@test it emits a useful backtracking re-render assertion message'](assert) {
+  ['@test it emits a useful backtracking re-render assertion message']() {
     this.router.map(function() {
       this.route('route-with-mount');
     });
@@ -241,7 +241,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
       }));
     }
 
-    ['@test it renders with static parameters'](assert) {
+    ['@test it renders with static parameters']() {
       this.router.map(function() {
         this.route('engine-params-static');
       });
@@ -252,7 +252,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
       });
     }
 
-    ['@test it renders with bound parameters'](assert) {
+    ['@test it renders with bound parameters']() {
       this.router.map(function() {
         this.route('engine-params-bound');
       });
@@ -295,7 +295,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
       });
     }
 
-    ['@test it renders contextual components passed as parameter values'](assert) {
+    ['@test it renders contextual components passed as parameter values']() {
       this.router.map(function() {
         this.route('engine-params-contextual-component');
       });

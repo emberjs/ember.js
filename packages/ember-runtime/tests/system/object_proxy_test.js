@@ -9,10 +9,10 @@ import ObjectProxy from '../../system/object_proxy';
 
 QUnit.module('ObjectProxy');
 
-testBoth('should not proxy properties passed to create', function (get, set) {
+testBoth('should not proxy properties passed to create', function (get) {
   let Proxy = ObjectProxy.extend({
     cp: computed({
-      get(key) { return this._cp; },
+      get() { return this._cp; },
       set(key, value) {
         this._cp = value;
         return this._cp;

@@ -36,7 +36,6 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
-const META_FIELD = '__ember_meta__';
 const NODE_STACK = [];
 
 export class Meta {
@@ -539,11 +538,10 @@ export function meta(obj) {
   @method descriptorFor
   @param {Object} obj the object to check
   @param {String} keyName the key to check
-  @param {Object} [meta] the meta hash for the object (optional)
   @return {Descriptor}
   @private
 */
-export function descriptorFor(obj, keyName, meta) {
+export function descriptorFor(obj, keyName) {
   let possibleDesc = obj[keyName];
   return isDescriptor(possibleDesc) ? possibleDesc : undefined;
 }

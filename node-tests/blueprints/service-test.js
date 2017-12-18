@@ -4,13 +4,10 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const modifyPackages = blueprintHelpers.modifyPackages;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 
 describe('Blueprint: service', function() {
   setupTestHooks(this);

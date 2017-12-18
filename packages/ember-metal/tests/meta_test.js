@@ -76,7 +76,7 @@ QUnit.test('meta.listeners deduplication', function(assert) {
   assert.equal(matching[0], t);
 });
 
-QUnit.test('meta.writeWatching issues useful error after destroy', function(assert) {
+QUnit.test('meta.writeWatching issues useful error after destroy', function() {
   let target = {
     toString() { return '<special-sauce:123>'; }
   };
@@ -89,7 +89,7 @@ QUnit.test('meta.writeWatching issues useful error after destroy', function(asse
   }, 'Cannot update watchers for `hello` on `<special-sauce:123>` after it has been destroyed.');
 });
 
-QUnit.test('meta.writableTag issues useful error after destroy', function(assert) {
+QUnit.test('meta.writableTag issues useful error after destroy', function() {
   let target = {
     toString() { return '<special-sauce:123>'; }
   };
@@ -102,7 +102,7 @@ QUnit.test('meta.writableTag issues useful error after destroy', function(assert
   }, 'Cannot create a new tag for `<special-sauce:123>` after it has been destroyed.');
 });
 
-QUnit.test('meta.writableChainWatchers issues useful error after destroy', function(assert) {
+QUnit.test('meta.writableChainWatchers issues useful error after destroy', function() {
   let target = {
     toString() { return '<special-sauce:123>'; }
   };
@@ -115,7 +115,7 @@ QUnit.test('meta.writableChainWatchers issues useful error after destroy', funct
   }, 'Cannot create a new chain watcher for `<special-sauce:123>` after it has been destroyed.');
 });
 
-QUnit.test('meta.writableChains issues useful error after destroy', function(assert) {
+QUnit.test('meta.writableChains issues useful error after destroy', function() {
   let target = {
     toString() { return '<special-sauce:123>'; }
   };
@@ -128,7 +128,7 @@ QUnit.test('meta.writableChains issues useful error after destroy', function(ass
   }, 'Cannot create a new chains for `<special-sauce:123>` after it has been destroyed.');
 });
 
-QUnit.test('meta.writeValues issues useful error after destroy', function(assert) {
+QUnit.test('meta.writeValues issues useful error after destroy', function() {
   let target = {
     toString() { return '<special-sauce:123>'; }
   };
@@ -141,7 +141,7 @@ QUnit.test('meta.writeValues issues useful error after destroy', function(assert
   }, 'Cannot set the value of `derp` on `<special-sauce:123>` after it has been destroyed.');
 });
 
-QUnit.test('meta.writeDeps issues useful error after destroy', function(assert) {
+QUnit.test('meta.writeDeps issues useful error after destroy', function() {
   let target = {
     toString() { return '<special-sauce:123>'; }
   };

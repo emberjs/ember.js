@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 const getGitInfo = require('git-repo-info');
 const path = require('path');

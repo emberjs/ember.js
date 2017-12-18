@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 const Babel = require('broccoli-babel-transpiler');
 const injectBabelHelpers = require('./transforms/inject-babel-helpers');
@@ -73,7 +72,7 @@ module.exports = function toES5(tree, _options) {
   delete options.environment;
 
   return new Babel(tree, options);
-}
+};
 
 function stripForProd(tree) {
   let options = {
@@ -83,7 +82,7 @@ function stripForProd(tree) {
     ]
   };
 
-  return new Babel(tree, options)
+  return new Babel(tree, options);
 }
 
 module.exports.stripForProd = stripForProd;

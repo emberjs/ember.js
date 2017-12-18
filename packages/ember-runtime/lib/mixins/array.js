@@ -9,7 +9,6 @@ import { symbol, toString } from 'ember-utils';
 import Ember, { // ES6TODO: Ember.A
   get,
   computed,
-  cacheFor,
   isNone,
   Mixin,
   propertyWillChange,
@@ -25,7 +24,7 @@ import Ember, { // ES6TODO: Ember.A
   meta,
   peekMeta
 } from 'ember-metal';
-import { deprecate, assert } from 'ember-debug';
+import { assert } from 'ember-debug';
 import Enumerable from './enumerable';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
@@ -289,7 +288,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '[]': computed({
-    get(key) {
+    get(key) {   // eslint-disable-line no-unused-vars
       return this;
     },
     set(key, value) {
@@ -639,7 +638,7 @@ EachProxy.prototype = {
   // ARRAY CHANGES
   // Invokes whenever the content array itself changes.
 
-  arrayWillChange(content, idx, removedCnt, addedCnt) {
+  arrayWillChange(content, idx, removedCnt, addedCnt) {   // eslint-disable-line no-unused-vars
     let keys = this._keys;
     let lim = removedCnt > 0 ? idx + removedCnt : -1;
     let meta = peekMeta(this);

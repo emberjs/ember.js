@@ -329,7 +329,7 @@ const Application = Engine.extend({
   */
   _globalsMode: true,
 
-  init(options) {
+  init(options) { // eslint-disable-line no-unused-vars
     this._super(...arguments);
 
     if (!this.$) {
@@ -1003,7 +1003,7 @@ Application.reopenClass({
     @return {Ember.Registry} the built registry
     @private
   */
-  buildRegistry(application, options = {}) {
+  buildRegistry(application, options = {}) { // eslint-disable-line no-unused-vars
     let registry = this._super(...arguments);
 
     commonSetupRegistry(registry);

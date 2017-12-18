@@ -36,7 +36,7 @@ import {
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
-import { assert, Error as EmberError } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { MANDATORY_SETTER } from 'ember/features';
 

@@ -41,12 +41,12 @@ class LifeCycleHooksTest extends RenderingTest {
   }
 
   /* abstract */
-  invocationFor(name, namedArgs = {}) {
+  invocationFor(/* name, namedArgs = {} */) {
     throw new Error('Not implemented: `invocationFor`');
   }
 
   /* abstract */
-  attrFor(name) {
+  attrFor(/* name */) {
     throw new Error('Not implemented: `attrFor`');
   }
 
@@ -287,10 +287,6 @@ class LifeCycleHooksTest extends RenderingTest {
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
     this.assertRegisteredViews('intial render');
-
-    let topAttrs = { twitter: '@tomdale' };
-    let middleAttrs = { name: 'Tom Dale' };
-    let bottomAttrs = { website: 'tomdale.net' };
 
     this.assertHooks({
       label: 'after initial render',
@@ -1007,7 +1003,7 @@ class LifeCycleHooksTest extends RenderingTest {
     this.assertText('Item: 1Item: 2Item: 3Item: 4Item: 5');
     this.assertRegisteredViews('intial render');
 
-    let initialHooks = (count) => {
+    let initialHooks = () => {
       let ret = [
         ['an-item', 'init'],
         ['an-item', 'didReceiveAttrs'],
@@ -1033,7 +1029,7 @@ class LifeCycleHooksTest extends RenderingTest {
       return ret;
     };
 
-    let initialAfterRenderHooks = (count) => {
+    let initialAfterRenderHooks = () => {
       if (this.isInteractive) {
         return [
           ['nested-item', 'didInsertElement'],
@@ -1324,7 +1320,7 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
     this.assertText('wat');
   }
 
-  ['@test `willRender` can set before render (GH#14458)'](assert) {
+  ['@test `willRender` can set before render (GH#14458)']() {
     let ComponentClass = Component.extend({
       tagName: 'a',
       customHref: 'http://google.com',

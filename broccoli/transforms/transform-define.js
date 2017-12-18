@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 function transformDefine(babel) {
   let { types: t } = babel;
@@ -20,11 +19,11 @@ function transformDefine(babel) {
         }
       }
     }
-  }
+  };
 }
 
 transformDefine.baseDir = function() {
   return 'babel-plugin-transform-es2015-modules-amd';
-}
+};
 
 module.exports = transformDefine;

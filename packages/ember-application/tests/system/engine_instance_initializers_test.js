@@ -70,7 +70,7 @@ QUnit.test('initializers can be registered in a specified order', function() {
   MyEngine.instanceInitializer({
     name: 'fourth',
     after: 'third',
-    initialize(engine) {
+    initialize() {
       order.push('fourth');
     }
   });
@@ -79,7 +79,7 @@ QUnit.test('initializers can be registered in a specified order', function() {
     name: 'second',
     after: 'first',
     before: 'third',
-    initialize(engine) {
+    initialize() {
       order.push('second');
     }
   });
@@ -88,7 +88,7 @@ QUnit.test('initializers can be registered in a specified order', function() {
     name: 'fifth',
     after: 'fourth',
     before: 'sixth',
-    initialize(engine) {
+    initialize() {
       order.push('fifth');
     }
   });
@@ -96,21 +96,21 @@ QUnit.test('initializers can be registered in a specified order', function() {
   MyEngine.instanceInitializer({
     name: 'first',
     before: 'second',
-    initialize(engine) {
+    initialize() {
       order.push('first');
     }
   });
 
   MyEngine.instanceInitializer({
     name: 'third',
-    initialize(engine) {
+    initialize() {
       order.push('third');
     }
   });
 
   MyEngine.instanceInitializer({
     name: 'sixth',
-    initialize(engine) {
+    initialize() {
       order.push('sixth');
     }
   });
@@ -129,7 +129,7 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
 
   MyEngine.instanceInitializer({
     name: 'third',
-    initialize(engine) {
+    initialize() {
       order.push('third');
     }
   });
@@ -138,7 +138,7 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
     name: 'second',
     after: 'first',
     before: ['third', 'fourth'],
-    initialize(engine) {
+    initialize() {
       order.push('second');
     }
   });
@@ -146,7 +146,7 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
   MyEngine.instanceInitializer({
     name: 'fourth',
     after: ['second', 'third'],
-    initialize(engine) {
+    initialize() {
       order.push('fourth');
     }
   });
@@ -155,7 +155,7 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
     name: 'fifth',
     after: 'fourth',
     before: 'sixth',
-    initialize(engine) {
+    initialize() {
       order.push('fifth');
     }
   });
@@ -163,14 +163,14 @@ QUnit.test('initializers can be registered in a specified order as an array', fu
   MyEngine.instanceInitializer({
     name: 'first',
     before: ['second'],
-    initialize(engine) {
+    initialize() {
       order.push('first');
     }
   });
 
   MyEngine.instanceInitializer({
     name: 'sixth',
-    initialize(engine) {
+    initialize() {
       order.push('sixth');
     }
   });
@@ -191,34 +191,34 @@ QUnit.test('initializers can have multiple dependencies', function () {
   let a = {
     name: 'a',
     before: 'b',
-    initialize(engine) {
+    initialize() {
       order.push('a');
     }
   };
   let b = {
     name: 'b',
-    initialize(engine) {
+    initialize() {
       order.push('b');
     }
   };
   let c = {
     name: 'c',
     after: 'b',
-    initialize(engine) {
+    initialize() {
       order.push('c');
     }
   };
   let afterB = {
     name: 'after b',
     after: 'b',
-    initialize(engine) {
+    initialize() {
       order.push('after b');
     }
   };
   let afterC = {
     name: 'after c',
     after: 'c',
-    initialize(engine) {
+    initialize() {
       order.push('after c');
     }
   };
@@ -248,7 +248,7 @@ QUnit.test('initializers set on Engine subclasses should not be shared between e
 
   FirstEngine.instanceInitializer({
     name: 'first',
-    initialize(engine) {
+    initialize() {
       firstInitializerRunCount++;
     }
   });
@@ -258,7 +258,7 @@ QUnit.test('initializers set on Engine subclasses should not be shared between e
 
   SecondEngine.instanceInitializer({
     name: 'second',
-    initialize(engine) {
+    initialize() {
       secondInitializerRunCount++;
     }
   });
@@ -296,7 +296,7 @@ QUnit.test('initializers are concatenated', function() {
 
   FirstEngine.instanceInitializer({
     name: 'first',
-    initialize(engine) {
+    initialize() {
       firstInitializerRunCount++;
     }
   });
@@ -305,7 +305,7 @@ QUnit.test('initializers are concatenated', function() {
 
   SecondEngine.instanceInitializer({
     name: 'second',
-    initialize(engine) {
+    initialize() {
       secondInitializerRunCount++;
     }
   });
@@ -346,20 +346,20 @@ QUnit.test('initializers are per-engine', function() {
 
   FirstEngine.instanceInitializer({
     name: 'abc',
-    initialize(engine) {}
+    initialize() {}
   });
 
   expectAssertion(() => {
     FirstEngine.instanceInitializer({
       name: 'abc',
-      initialize(engine) {}
+      initialize() {}
     });
   });
 
   let SecondEngine = Engine.extend();
   SecondEngine.instanceInitializer({
     name: 'abc',
-    initialize(engine) {}
+    initialize() {}
   });
 
   ok(true, 'Two engines can have initializers named the same.');
@@ -373,7 +373,7 @@ QUnit.test('initializers are executed in their own context', function() {
   MyEngine.instanceInitializer({
     name: 'coolInitializer',
     myProperty: 'cool',
-    initialize(engine) {
+    initialize() {
       equal(this.myProperty, 'cool', 'should have access to its own context');
     }
   });

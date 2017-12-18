@@ -48,14 +48,14 @@ QUnit.test('isWatching is true for computed properties', function() {
   testObserver((obj, key, fn) => {
     defineProperty(obj, 'computed', computed(fn).property(key));
     get(obj, 'computed');
-  }, (obj, key, fn) => defineProperty(obj, 'computed', null));
+  }, obj => defineProperty(obj, 'computed', null));
 });
 
 QUnit.test('isWatching is true for chained computed properties', function() {
   testObserver((obj, key, fn) => {
     defineProperty(obj, 'computed', computed(fn).property(key + '.bar'));
     get(obj, 'computed');
-  }, (obj, key, fn) => defineProperty(obj, 'computed', null));
+  }, obj => defineProperty(obj, 'computed', null));
 });
 
 // can't watch length on Array - it is special...

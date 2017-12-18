@@ -40,12 +40,12 @@ QUnit.test('should be able to use setProperties to set multiple properties at on
   equal('Cook', obj.get('lastName'));
 });
 
-testBoth('calling setProperties completes safely despite exceptions', function(get, set) {
+testBoth('calling setProperties completes safely despite exceptions', function() {
   let exc = new Error('Something unexpected happened!');
   let obj = EmberObject.extend({
     companyName: computed({
       get() { return 'Apple, Inc.'; },
-      set(key, value) { throw exc; }
+      set() { throw exc; }
     })
   }).create({
     firstName: 'Steve',

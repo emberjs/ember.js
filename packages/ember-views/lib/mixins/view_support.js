@@ -5,7 +5,6 @@ import { environment, ENV } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
 import jQuery from '../system/jquery';
-import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 

@@ -62,7 +62,7 @@ QUnit.test('returning a value from the before callback passes it to the after ca
   let passthru2 = {};
 
   subscribe('render', {
-    before(name, timestamp, payload) {
+    before() {
       return passthru1;
     },
     after(name, timestamp, payload, beforeValue) {
@@ -71,7 +71,7 @@ QUnit.test('returning a value from the before callback passes it to the after ca
   });
 
   subscribe('render', {
-    before(name, timestamp, payload) {
+    before() {
       return passthru2;
     },
     after(name, timestamp, payload, beforeValue) {

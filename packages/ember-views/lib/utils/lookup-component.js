@@ -3,7 +3,6 @@ import {
   EMBER_MODULE_UNIFICATION,
   EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS
 } from 'ember/features';
-import { ENV } from 'ember-environment';
 
 function lookupModuleUnificationComponentPair(componentLookup, owner, name, options) {
   let localComponent = componentLookup.componentFor(name, owner, options);

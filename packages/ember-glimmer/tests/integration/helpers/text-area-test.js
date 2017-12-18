@@ -30,7 +30,7 @@ class BoundTextAreaAttributes {
 
   generate({ attribute, first, second }) {
     return {
-      [`@test ${attribute}`](assert) {
+      [`@test ${attribute}`]() {
         this.render(`{{textarea ${attribute}=value}}`, {
           value: first
         });

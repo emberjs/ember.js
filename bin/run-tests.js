@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
+/* eslint-disable no-console */
+
 var RSVP  = require('rsvp');
-var spawn = require('child_process').spawn;
+var execFile = require('child_process').execFile;
 var chalk = require('chalk');
 var FEATURES = require('../broccoli/features');
 var getPackages = require('../lib/packages');
 var runInSequence = require('../lib/run-in-sequence');
+var path = require('path');
 
 var finalhandler = require('finalhandler');
 var http = require('http');
@@ -40,6 +43,9 @@ function runInBrowser(url, retries, resolve, reject) {
 
   puppeteer.launch().then(function(browser) {
     browser.newPage().then(function(page) {
+      /* globals window */
+      var crashed;
+
       page.on('console', function(msg) {
         console.log(msg.text);
 
@@ -131,15 +137,13 @@ function runInBrowser(url, retries, resolve, reject) {
       page.exposeFunction('callPhantom', function(message) {
         if (message && message.name === 'QUnit.done') {
           result = message.data;
-          failed = !result || !result.total || result.failed;
+          var failed = !result || !result.total || result.failed;
 
           if (!result.total) {
             console.error('No tests were executed. Are you loading tests asynchronously?');
           }
 
           var code = failed ? 1 : 0;
-          var crashed = false;
-
           result.code = code;
 
           if (!crashed && code === 0) {
@@ -165,7 +169,7 @@ function runInBrowser(url, retries, resolve, reject) {
 
       page.goto(url, { timeout: 900 });
     });
-  })
+  });
 }
 
 var testFunctions = [];
@@ -225,6 +229,49 @@ function generateExtendPrototypeTests() {
   });
 }
 
+function runChecker(bin, args) {
+  return new RSVP.Promise(function(resolve) {
+    execFile(bin, args, {}, function(error, stdout, stderr) {
+      // I'm buffering instead of inheriting these so that each
+      // checker doesn't interleave its output
+      process.stdout.write(stdout.toString('utf8'));
+      process.stderr.write(stderr.toString('utf8'));
+      resolve({ name: path.basename(args[0]), ok: !error });
+    });
+  });
+}
+
+function codeQualityChecks() {
+  var checkers = [
+    // TODO: Uncomment this to enable TS checker too
+    // runChecker('node', [
+    //   require.resolve('typescript/bin/tsc'),
+    //   '--noEmit'
+    // ]),
+    runChecker('node', [
+      require.resolve('tslint/bin/tslint'),
+      '-p',
+      'tsconfig.json'
+    ]),
+    runChecker('node', [
+      require.resolve('eslint/bin/eslint'),
+      '.'
+    ])
+  ];
+  return RSVP.Promise.all(checkers).then(function(results) {
+    results.forEach(result => {
+      if (result.ok) {
+        console.log(result.name + ': ' + chalk.green('OK'));
+      } else {
+        console.log(result.name + ': ' + chalk.red('Failed'));
+      }
+    });
+    if (!results.every(result => result.ok)) {
+      throw new Error("Some quality checks failed");
+    }
+  });
+}
+
 switch (process.env.TEST_SUITE) {
   case 'built-tests':
     console.log('suite: built-tests');
@@ -245,21 +292,27 @@ switch (process.env.TEST_SUITE) {
   case 'node':
     console.log('suite: node');
     require('./run-node-tests');
-    return;
+    process.exit(0);
+    break;
   case 'blueprints':
     console.log('suite: blueprints');
     require('../node-tests/nodetest-runner');
     server.close();
-    return;
+    process.exit(0);
+    break;
   case 'travis-browsers':
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
-    return;
-
+    process.exit(0);
+    break;
   case 'sauce':
     console.log('suite: sauce');
     require('./run-sauce-tests');
-    return;
+    process.exit(0);
+    break;
+  case 'code-quality':
+    testFunctions.push(codeQualityChecks);
+    break;
   default:
     console.log('suite: default (generate each package)');
     generateEachPackageTests();

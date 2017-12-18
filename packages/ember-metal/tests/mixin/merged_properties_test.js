@@ -146,7 +146,7 @@ QUnit.test('mergedProperties\' overwriting methods can call _super', function() 
 
   let MixinB = Mixin.create({
     foo: {
-      meth(a) {
+      meth() {
         ok(true, 'MixinB\'s `foo.meth` method called');
         return this._super(...arguments);
       }

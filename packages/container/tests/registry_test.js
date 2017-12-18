@@ -110,7 +110,7 @@ moduleFor('Registry', class extends AbstractTestCase{
     let registry = new Registry();
     let PostController = factory();
 
-    registry.normalizeFullName = function(fullName) {
+    registry.normalizeFullName = function() {
       return 'controller:post';
     };
 
@@ -139,7 +139,7 @@ moduleFor('Registry', class extends AbstractTestCase{
     let PostController = factory();
     let user = { name: 'Stef' };
 
-    registry.normalize = function(fullName) {
+    registry.normalize = function() {
       return 'controller:post';
     };
 
@@ -191,7 +191,7 @@ moduleFor('Registry', class extends AbstractTestCase{
     let FirstApple = factory('first');
     let SecondApple = factory('second');
 
-    SecondApple.extend = function(a, b, c) {
+    SecondApple.extend = function() {
       assert.ok(false, 'should not extend or touch the injected model, merely to inspect existence of another');
     };
 
@@ -503,10 +503,8 @@ moduleFor('Registry', class extends AbstractTestCase{
 
     ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT = false;
 
-    let registry;
-
     expectAssertion(() => {
-      registry = new Registry({
+      new Registry({
         resolver(fullName) {
           return `${fullName}-resolved`;
         }
@@ -610,7 +608,7 @@ moduleFor('Registry', class extends AbstractTestCase{
     let result;
 
     let resolver = {
-      expandLocalLookup: (targetFullName, sourceFullName) => {
+      expandLocalLookup: () => {
         assert.ok(true, 'expandLocalLookup is called on the resolver');
 
         return 'foo:qux/bar';
@@ -639,7 +637,7 @@ moduleFor('Registry', class extends AbstractTestCase{
     let result;
 
     let resolver = {
-      expandLocalLookup: (targetFullName, sourceFullName) => {
+      expandLocalLookup: () => {
         assert.ok(true, 'expandLocalLookup is called on the resolver');
 
         return 'foo:qux/bar';
@@ -701,7 +699,7 @@ moduleFor('Registry', class extends AbstractTestCase{
         return 'yippie!';
       },
 
-      expandLocalLookup: (targetFullName, sourceFullName) => {
+      expandLocalLookup: (targetFullName) => {
         assert.ok(true, 'expandLocalLookup is called on the resolver');
 
         if (targetFullName === 'foo:bar') {

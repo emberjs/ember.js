@@ -35,6 +35,9 @@
 // --print-opt-code --code-comments
 //
 // begin MISC setup;
+
+/* globals load, print, Promise */
+
 const global = new Function('return this;')();
 global.self = global;
 function loadFile(file) {

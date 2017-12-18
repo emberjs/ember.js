@@ -1,5 +1,3 @@
-/*globals __dirname*/
-
 var path = require('path');
 var QUnit = require('qunitjs');
 

@@ -3,8 +3,7 @@ import {
   get,
   getWithDefault,
   Mixin,
-  observer,
-  addObserver
+  observer
 } from '../..';
 
 QUnit.module('Ember.get');
@@ -37,21 +36,13 @@ QUnit.test('should not access a property more than once', function() {
   equal(count, 1);
 });
 
-testBoth('should call unknownProperty on watched values if the value is undefined', function(get, set) {
+testBoth('should call unknownProperty on watched values if the value is undefined', function(get) {
   let obj = {
-    count: 0,
     unknownProperty(key) {
       equal(key, 'foo', 'should pass key');
-      this.count++;
       return 'FOO';
     }
   };
-
-  let count = 0;
-  addObserver(obj, 'foo', function() {
-    count++;
-  });
-
   equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
 });
 
@@ -163,21 +154,15 @@ QUnit.test('should call unknownProperty if defined and value is undefined', func
   equal(obj.count, 1, 'should have invoked');
 });
 
-testBoth('if unknownProperty is present, it is called', function(get, set) {
+testBoth('if unknownProperty is present, it is called', function() {
   let obj = {
-    count: 0,
     unknownProperty(key) {
       if (key === 'foo') {
         equal(key, 'foo', 'should pass key');
-        this.count++;
         return 'FOO';
       }
     }
   };
-
-  let count = 0;
-  addObserver(obj, 'foo', () => count++);
-
   equal(getWithDefault(obj, 'foo', 'fail'), 'FOO', 'should return value from unknownProperty');
   equal(getWithDefault(obj, 'bar', 'default'), 'default', 'should convert undefined from unknownProperty into default');
 });

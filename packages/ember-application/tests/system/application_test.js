@@ -19,7 +19,6 @@ import {
   setNamespaceSearchDisabled,
   _loaded
 } from 'ember-runtime';
-import { compile } from 'ember-template-compiler';
 import { setTemplates } from 'ember-glimmer';
 import { privatize as P } from 'container';
 import {
@@ -34,8 +33,6 @@ import {
   AutobootApplicationTestCase,
   DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
-
-let secondApp;
 
 moduleFor('Ember.Application, autobooting multiple apps', class extends ApplicationTestCase {
   constructor() {
@@ -214,7 +211,7 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Def
     );
   }
 
-  [`@test Minimal Application initialized with just an application template`](assert) {
+  [`@test Minimal Application initialized with just an application template`]() {
     jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
     this.runTask(() => this.createApplication());
     this.assertInnerHTML('Hello World');

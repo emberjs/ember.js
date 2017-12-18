@@ -8,7 +8,7 @@ import {
   computed,
   observer
 } from 'ember-metal';
-import { assert, deprecateFunc } from 'ember-debug';
+import { assert } from 'ember-debug';
 
 const FunctionPrototype = Function.prototype;
 

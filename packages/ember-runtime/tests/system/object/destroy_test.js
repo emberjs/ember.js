@@ -13,7 +13,7 @@ import { MANDATORY_SETTER } from 'ember/features';
 
 QUnit.module('ember-runtime/system/object/destroy_test');
 
-testBoth('should schedule objects to be destroyed at the end of the run loop', function(get, set) {
+testBoth('should schedule objects to be destroyed at the end of the run loop', function(get /*, set */) {
   let obj = EmberObject.create();
   let meta;
 
