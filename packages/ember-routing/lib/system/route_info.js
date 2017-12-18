@@ -9,7 +9,10 @@ export default class RouteInfo {
       template,
       outletName: outletName || 'main',
       into,
-      outlets: null
+      outlets: null,
+
+      // this is for legacy render helper support
+      wasUsed: false
     });
   }
 

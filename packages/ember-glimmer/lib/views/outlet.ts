@@ -1,33 +1,39 @@
 import { Simple } from '@glimmer/interfaces';
 import { DirtyableTag, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 import { environment } from 'ember-environment';
 import { run } from 'ember-metal';
 import { assign, OWNER } from 'ember-utils';
 import { Renderer } from '../renderer';
 import { Container, OwnedTemplate } from '../template';
-import { RouteInfo } from 'ember-routing';
+import { RouteInfo, privateRouteInfos } from 'ember-routing';
 
-export class RootOutletStateReference implements VersionedPathReference<Option<OutletState>> {
+interface RouteInfoReference {
+  tag: Tag;
+  get(key: string): RouteInfoReference;
+  value(): Option<RouteInfo>;
+}
+
+export class RootOutletStateReference implements RouteInfoReference {
   tag: Tag;
 
   constructor(public outletView: OutletView) {
     this.tag = outletView._tag;
   }
 
-  get(key: string): VersionedPathReference<any> {
+  get(key: string) : RouteInfoReference {
     return new ChildOutletStateReference(this, key);
   }
 
-  value(): Option<OutletState> {
+  value(): Option<RouteInfo> {
     return this.outletView.outletState;
   }
 
-  getOrphan(name: string): VersionedPathReference<Option<OutletState>> {
+  getOrphan(name: string): RouteInfoReference {
     return new OrphanedOutletStateReference(this, name);
   }
 
-  update(state: OutletState) {
+  update(state: RouteInfo) {
     this.outletView.setOutletState(state);
   }
 }
@@ -36,7 +42,7 @@ export class RootOutletStateReference implements VersionedPathReference<Option<O
 // in 3.0. Preferably it is deprecated in the release that
 // follows the Glimmer release.
 class OrphanedOutletStateReference extends RootOutletStateReference {
-  public root: any;
+  public root: RootOutletStateReference;
   public name: string;
 
   constructor(root: RootOutletStateReference, name: string) {
@@ -45,10 +51,9 @@ class OrphanedOutletStateReference extends RootOutletStateReference {
     this.name = name;
   }
 
-  value(): Option<OutletState> {
+  value(): Option<RouteInfo> {
     let rootState = this.root.value();
-
-    let orphans = rootState.child.getChild('__ember_orphans__');
+    let orphans = rootState && rootState.child && rootState.child.getChild('__ember_orphans__');
 
     if (!orphans) {
       return null;
@@ -60,13 +65,15 @@ class OrphanedOutletStateReference extends RootOutletStateReference {
       return null;
     }
 
-    matched.wasUsed = true;
+    let privMatch = privateRouteInfos.get(matched)!;
+    privMatch.wasUsed = true;
+
     // TODO: this used to be wrapped in another layer
     return matched;
   }
 }
 
-class ChildOutletStateReference implements VersionedPathReference<any> {
+class ChildOutletStateReference implements RouteInfoReference {
   public parent: VersionedPathReference<any>;
   public key: string;
   public tag: Tag;
@@ -77,30 +84,14 @@ class ChildOutletStateReference implements VersionedPathReference<any> {
     this.tag = parent.tag;
   }
 
-  get(key: string): VersionedPathReference<any> {
+  get(key: string): RouteInfoReference {
     return new ChildOutletStateReference(this, key);
   }
 
-  value(): any {
+  value(): Option<RouteInfo> {
     let parent = this.parent.value();
     return parent && parent.getChild(this.key);
   }
-}
-
-export interface RenderState {
-  owner: Container | undefined;
-  into: string | undefined;
-  outlet: string;
-  name: string;
-  controller: Opaque;
-  template: OwnedTemplate | undefined;
-}
-
-export interface OutletState {
-  outlets: {
-    [name: string]: OutletState | undefined;
-  };
-  render: RenderState | undefined;
 }
 
 export interface BootEnvironment {
@@ -114,7 +105,7 @@ export default class OutletView {
   public renderer: Renderer;
   public owner: Container;
   public template: OwnedTemplate;
-  public outletState: Option<OutletState>;
+  public outletState: Option<RouteInfo>;
   public _tag: TagWrapper<DirtyableTag>;
 
   static extend(injections: any) {
@@ -163,7 +154,7 @@ export default class OutletView {
 
   rerender() { /**/ }
 
-  setOutletState(state: OutletState) {
+  setOutletState(state: RouteInfo) {
     let routeInfo = new RouteInfo('-top-level');
     routeInfo.setChild('main', state);
     this.outletState = routeInfo;

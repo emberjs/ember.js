@@ -1,3 +1,5 @@
+import { OwnedTemplate } from "ember-glimmer";
+
 export const Location: {
   create(options: any): any
 };
@@ -197,7 +199,7 @@ export const QueryParams: {
   isQueryParams: boolean;
   values: any;
   create(obj: any): any;
-}; 
+};
 export const RoutingService: {
   router: any;
   targetState: any;
@@ -228,3 +230,18 @@ export const BucketCache: {
   stash(bucketKey: string, key: string, value: any): void;
   lookup(bucketKey: string, prop: any, defaultValue: any): any;
 };
+
+export class RouteInfo {
+  name: string;
+  constructor(name: string);
+  child: RouteInfo | null;
+  getChild(outletName: string) : RouteInfo | null;
+  setChild(outletName: string, info: RouteInfo) : void;
+}
+
+export class PrivateRouteInfo {
+  controller: object;
+  template: OwnedTemplate;
+  wasUsed: boolean;
+}
+export const privateRouteInfos: WeakMap<RouteInfo, PrivateRouteInfo>;

@@ -24,7 +24,8 @@ import Environment from './environment';
 import { OwnedTemplate } from './template';
 import ComponentStateBucket, { Component } from './utils/curly-component-state-bucket';
 import { RootReference } from './utils/references';
-import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
+import OutletView, { RootOutletStateReference } from './views/outlet';
+import { RouteInfo } from 'ember-routing';
 
 import { ComponentDefinition, NULL_REFERENCE, RenderResult } from '@glimmer/runtime';
 
@@ -36,12 +37,12 @@ export interface View {
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
-  outletState: VersionedPathReference<Option<OutletState>>;
+  outletState: VersionedPathReference<Option<RouteInfo>>;
   rootOutletState: RootOutletStateReference | undefined;
 
   constructor(
     public view: View | null,
-    outletState: VersionedPathReference<Option<OutletState>>,
+    outletState: VersionedPathReference<Option<RouteInfo>>,
     rootOutletState?: RootOutletStateReference) {
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
@@ -53,13 +54,13 @@ export class DynamicScope implements GlimmerDynamicScope {
     );
   }
 
-  get(key: 'outletState'): VersionedPathReference<Option<OutletState>> {
+  get(key: 'outletState'): VersionedPathReference<Option<RouteInfo>> {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     return this.outletState;
   }
 
-  set(key: 'outletState', value: VersionedPathReference<Option<OutletState>>) {
+  set(key: 'outletState', value: VersionedPathReference<Option<RouteInfo>>) {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     this.outletState = value;

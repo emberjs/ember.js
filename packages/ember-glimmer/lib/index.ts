@@ -261,7 +261,7 @@
 
 export { INVOKE } from './helpers/action';
 export { default as RootTemplate } from './templates/root';
-export { default as template } from './template';
+export { default as template, OwnedTemplate } from './template';
 export { default as Checkbox } from './components/checkbox';
 export { default as TextField } from './components/text_field';
 export { default as TextArea } from './components/text_area';
