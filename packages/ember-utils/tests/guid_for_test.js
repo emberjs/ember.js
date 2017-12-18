@@ -1,85 +1,89 @@
 import {
   guidFor
 } from '..';
+import {
+  moduleFor,
+  AbstractTestCase as TestCase
+} from 'internal-test-helpers';
 
-QUnit.module('guidFor');
-
-function sameGuid(a, b, message) {
-  equal(guidFor(a), guidFor(b), message);
+function sameGuid(assert, a, b, message) {
+  assert.equal(guidFor(a), guidFor(b), message);
 }
 
-function diffGuid(a, b, message) {
-  ok(guidFor(a) !== guidFor(b), message);
+function diffGuid(assert, a, b, message) {
+  assert.ok(guidFor(a) !== guidFor(b), message);
 }
 
-function nanGuid(obj) {
+function nanGuid(assert, obj) {
   let type = typeof obj;
-  ok(isNaN(parseInt(guidFor(obj), 0)), 'guids for ' + type + 'don\'t parse to numbers');
+  assert.ok(isNaN(parseInt(guidFor(obj), 0)), 'guids for ' + type + 'don\'t parse to numbers');
 }
 
-QUnit.test('Object', function() {
-  let a = {};
-  let b = {};
+moduleFor('guidFor', class extends TestCase {
+  ['@test Object'](assert) {
+    let a = {};
+    let b = {};
 
-  sameGuid(a, a, 'same object always yields same guid');
-  diffGuid(a, b, 'different objects yield different guids');
-  nanGuid(a);
-});
+    sameGuid(assert, a, a, 'same object always yields same guid');
+    diffGuid(assert, a, b, 'different objects yield different guids');
+    nanGuid(assert, a);
+  }
 
-QUnit.test('strings', function() {
-  let a = 'string A';
-  let aprime = 'string A';
-  let b = 'String B';
+  ['@test strings'](assert) {
+    let a = 'string A';
+    let aprime = 'string A';
+    let b = 'String B';
 
-  sameGuid(a, a, 'same string always yields same guid');
-  sameGuid(a, aprime, 'identical strings always yield the same guid');
-  diffGuid(a, b, 'different strings yield different guids');
-  nanGuid(a);
-});
+    sameGuid(assert, a, a, 'same string always yields same guid');
+    sameGuid(assert, a, aprime, 'identical strings always yield the same guid');
+    diffGuid(assert, a, b, 'different strings yield different guids');
+    nanGuid(assert, a);
+  }
 
-QUnit.test('numbers', function() {
-  let a = 23;
-  let aprime = 23;
-  let b = 34;
+  ['@test numbers'](assert) {
+    let a = 23;
+    let aprime = 23;
+    let b = 34;
 
-  sameGuid(a, a, 'same numbers always yields same guid');
-  sameGuid(a, aprime, 'identical numbers always yield the same guid');
-  diffGuid(a, b, 'different numbers yield different guids');
-  nanGuid(a);
-});
+    sameGuid(assert, a, a, 'same numbers always yields same guid');
+    sameGuid(assert, a, aprime, 'identical numbers always yield the same guid');
+    diffGuid(assert, a, b, 'different numbers yield different guids');
+    nanGuid(assert, a);
+  }
 
-QUnit.test('numbers', function() {
-  let a = true;
-  let aprime = true;
-  let b = false;
+  ['@test numbers'](assert) {
+    let a = true;
+    let aprime = true;
+    let b = false;
 
-  sameGuid(a, a, 'same booleans always yields same guid');
-  sameGuid(a, aprime, 'identical booleans always yield the same guid');
-  diffGuid(a, b, 'different boolean yield different guids');
-  nanGuid(a);
-  nanGuid(b);
-});
+    sameGuid(assert, a, a, 'same booleans always yields same guid');
+    sameGuid(assert, a, aprime, 'identical booleans always yield the same guid');
+    diffGuid(assert, a, b, 'different boolean yield different guids');
+    nanGuid(assert, a);
+    nanGuid(assert, b);
+  }
 
-QUnit.test('null and undefined', function() {
-  let a = null;
-  let aprime = null;
-  let b;
+  ['@test null and undefined'](assert) {
+    let a = null;
+    let aprime = null;
+    let b;
 
-  sameGuid(a, a, 'null always returns the same guid');
-  sameGuid(b, b, 'undefined always returns the same guid');
-  sameGuid(a, aprime, 'different nulls return the same guid');
-  diffGuid(a, b, 'null and undefined return different guids');
-  nanGuid(a);
-  nanGuid(b);
-});
+    sameGuid(assert, a, a, 'null always returns the same guid');
+    sameGuid(assert, b, b, 'undefined always returns the same guid');
+    sameGuid(assert, a, aprime, 'different nulls return the same guid');
+    diffGuid(assert, a, b, 'null and undefined return different guids');
+    nanGuid(assert, a);
+    nanGuid(assert, b);
+  }
 
-QUnit.test('arrays', function() {
-  let a = ['a', 'b', 'c'];
-  let aprime = ['a', 'b', 'c'];
-  let b = ['1', '2', '3'];
+  ['@test arrays'](assert) {
+    let a = ['a', 'b', 'c'];
+    let aprime = ['a', 'b', 'c'];
+    let b = ['1', '2', '3'];
 
-  sameGuid(a, a, 'same instance always yields same guid');
-  diffGuid(a, aprime, 'identical arrays always yield the same guid');
-  diffGuid(a, b, 'different arrays yield different guids');
-  nanGuid(a);
+    sameGuid(assert, a, a, 'same instance always yields same guid');
+    diffGuid(assert, a, aprime, 'identical arrays always yield the same guid');
+    diffGuid(assert, a, b, 'different arrays yield different guids');
+    nanGuid(assert, a);
+  }
 });
