@@ -3,6 +3,7 @@
 */
 import {
   Arguments,
+  CapturedArguments,
   Environment,
   isComponentDefinition,
   VM
@@ -147,19 +148,19 @@ import { CachedReference } from '../utils/references';
   @public
 */
 export class ClosureComponentReference extends CachedReference {
-  static create(args: Arguments, meta: any, env: Environment) {
+  static create(args: CapturedArguments, meta: any, env: Environment) {
     return new ClosureComponentReference(args, meta, env);
   }
 
   public defRef: any;
   public tag: any;
-  public args: Arguments;
+  public args: CapturedArguments;
   public meta: any;
   public env: Environment;
   public lastDefinition: any;
   public lastName: string | undefined;
 
-  constructor(args: Arguments, meta: any, env: Environment) {
+  constructor(args: CapturedArguments, meta: any, env: Environment) {
     super();
 
     let firstArg = args.positional.at(0);
@@ -212,7 +213,7 @@ export class ClosureComponentReference extends CachedReference {
   }
 }
 
-function createCurriedDefinition(definition: CurlyComponentDefinition, args: Arguments) {
+function createCurriedDefinition(definition: CurlyComponentDefinition, args: CapturedArguments) {
   let curriedArgs = curryArgs(definition, args);
 
   return new CurlyComponentDefinition(
@@ -223,7 +224,7 @@ function createCurriedDefinition(definition: CurlyComponentDefinition, args: Arg
   );
 }
 
-function curryArgs(definition: CurlyComponentDefinition, newArgs: Arguments): Arguments {
+function curryArgs(definition: CurlyComponentDefinition, newArgs: CapturedArguments): any {
   let { args, ComponentClass } = definition;
   let positionalParams = ComponentClass.class.positionalParams;
 
