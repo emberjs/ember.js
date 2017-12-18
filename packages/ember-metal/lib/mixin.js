@@ -16,7 +16,7 @@ import {
   deprecate
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { descriptorFor, meta as metaFor, peekMeta } from './meta';
+import { descriptorFor, isDescriptor, meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {
   Descriptor,
@@ -294,7 +294,7 @@ function followAlias(obj, desc, descs, values) {
   if (descs[altKey] || values[altKey]) {
     value = values[altKey];
     desc  = descs[altKey];
-  } else if ((possibleDesc = obj[altKey]) && possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) {
+  } else if ((possibleDesc = obj[altKey]) && isDescriptor(possibleDesc)) {
     desc  = possibleDesc;
     value = undefined;
   } else {
