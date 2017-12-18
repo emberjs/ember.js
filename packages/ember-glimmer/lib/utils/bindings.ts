@@ -143,7 +143,10 @@ export const IsVisibleBinding = {
       false,
       null
     );
-    // operations.addDynamicAttribute(element, 'style', map(referenceForKey(component, 'isVisible'), this.mapStyleValue), false);
+    // // the upstream type for addDynamicAttribute's `value` argument
+    // // appears to be incorrect. It is currently a Reference<string>, I
+    // // think it should be a Reference<string|null>.
+    // operations.addDynamicAttribute(element, 'style', ref as any as Reference<string>, false);
   },
 
   mapStyleValue(isVisible: boolean) {
@@ -172,7 +175,10 @@ export const ClassNameBinding = {
       }
 
       operations.setAttribute('class', ref, false, null);
-      // operations.addDynamicAttribute(element, 'class', ref, false);
+      // // the upstream type for addDynamicAttribute's `value` argument
+      // // appears to be incorrect. It is currently a Reference<string>, I
+      // // think it should be a Reference<string|null>.
+      // operations.addDynamicAttribute(element, 'class', ref as any as Reference<string>, false);
     }
   },
 };

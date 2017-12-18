@@ -7,7 +7,6 @@ import {
   get,
   set,
   meta,
-  on,
   addObserver,
   removeObserver,
   _addBeforeObserver,
@@ -16,12 +15,10 @@ import {
   propertyDidChange,
   defineProperty,
   Mixin,
-  observer,
   tagFor,
 } from 'ember-metal';
 import {
   assert,
-  deprecate
 } from 'ember-debug';
 import { bool } from '../computed/computed_macros';
 

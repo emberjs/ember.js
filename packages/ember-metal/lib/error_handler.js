@@ -1,6 +1,3 @@
-import Logger from 'ember-console';
-import { isTesting } from 'ember-debug';
-
 let onerror;
 export const onErrorTarget = {
   get onerror() {

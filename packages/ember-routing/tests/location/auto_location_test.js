@@ -131,7 +131,7 @@ QUnit.test('AutoLocation should use an index path (i.e. \'/\') without any locat
     pathname: '/',
     hash: '',
     search: '',
-    replace(path) {
+    replace() {
       ok(false, 'location.replace should not be called');
     }
   });

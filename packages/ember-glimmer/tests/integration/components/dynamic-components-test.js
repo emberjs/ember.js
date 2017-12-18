@@ -80,7 +80,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertSameNode(element2, element1);
   }
 
-  ['@test it has a jQuery proxy to the element'](assert) {
+  ['@test it has a jQuery proxy to the element']() {
     let instance;
 
     let FooBarComponent = Component.extend({
@@ -352,7 +352,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     assert.deepEqual(destroyed, { 'foo-bar': 1, 'foo-bar-baz': 1 });
   }
 
-  ['@test component helper with bound properties are updating correctly in init of component'](assert) {
+  ['@test component helper with bound properties are updating correctly in init of component']() {
     this.registerComponent('foo-bar', {
       template: 'foo-bar {{location}} {{locationCopy}} {{yield}}',
       ComponentClass: Component.extend({
@@ -445,7 +445,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     assert.equal(actionTriggered, 1, 'action was triggered');
   }
 
-  ['@test nested component helpers'](assert) {
+  ['@test nested component helpers']() {
     this.registerComponent('foo-bar', { template: 'yippie! {{attrs.location}} {{yield}}' });
     this.registerComponent('baz-qux', { template: 'yummy {{attrs.location}} {{yield}}' });
     this.registerComponent('corge-grault', { template: 'delicious {{attrs.location}} {{yield}}' });
@@ -478,19 +478,19 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('yippie! Caracas yummy Caracas arepas!');
   }
 
-  ['@test component with dynamic name argument resolving to non-existent component'](assert) {
+  ['@test component with dynamic name argument resolving to non-existent component']() {
     expectAssertion(() => {
       this.render('{{component componentName}}', { componentName: 'does-not-exist' });
     }, /Could not find component named "does-not-exist"/);
   }
 
-  ['@test component with static name argument for non-existent component'](assert) {
+  ['@test component with static name argument for non-existent component']() {
     expectAssertion(() => {
       this.render('{{component "does-not-exist"}}');
     }, /Could not find component named "does-not-exist"/);
   }
 
-  ['@test component with dynamic component name resolving to a component, then non-existent component'](assert) {
+  ['@test component with dynamic component name resolving to a component, then non-existent component']() {
     this.registerComponent('foo-bar', { template: 'hello {{name}}' });
 
     this.render('{{component componentName name=name}}', { componentName: 'foo-bar', name: 'Alex' });
@@ -510,7 +510,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('hello Alex');
   }
 
-  ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
+  ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044']() {
     this.registerComponent('foo-bar', {
       template: '[{{internalName}} - {{name}}]',
       ComponentClass: Component.extend({
@@ -550,7 +550,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('[Robert - Robert][Jacquie - Jacquie]');
   }
 
-  ['@test dashless components should not be found'](assert) {
+  ['@test dashless components should not be found']() {
     this.registerComponent('dashless2', { template: 'Do not render me!' });
 
     expectAssertion(() => {
@@ -558,7 +558,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
   }
 
-  ['@test positional parameters does not clash when rendering different components'](assert) {
+  ['@test positional parameters does not clash when rendering different components']() {
     this.registerComponent('foo-bar', {
       template: 'hello {{name}} ({{age}}) from foo-bar',
       ComponentClass: Component.extend().reopenClass({
@@ -606,7 +606,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello Alex (29) from foo-bar' });
   }
 
-  ['@test positional parameters does not pollute the attributes when changing components'](assert) {
+  ['@test positional parameters does not pollute the attributes when changing components']() {
     this.registerComponent('normal-message', {
       template: 'Normal: {{something}}!',
       ComponentClass: Component.extend().reopenClass({
@@ -647,7 +647,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'Normal: Hello!' });
   }
 
-  ['@test static arbitrary number of positional parameters'](assert) {
+  ['@test static arbitrary number of positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'names'
@@ -667,7 +667,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('Foo4Bar5Baz');
   }
 
-  ['@test dynamic arbitrary number of positional parameters'](assert) {
+  ['@test dynamic arbitrary number of positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'n'
@@ -707,7 +707,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('Foo4');
   }
 
-  ['@test component helper emits useful backtracking re-render assertion message'](assert) {
+  ['@test component helper emits useful backtracking re-render assertion message']() {
     this.registerComponent('outer-component', {
       ComponentClass: Component.extend({
         init() {

@@ -60,7 +60,7 @@ suite.test('any should produce correct results even if the matching element is u
   let obj = emberA([undefined]);
   let result;
 
-  result = obj.any(i => true);
+  result = obj.any(() => true);
   equal(result, true, 'return value of obj.any');
 });
 

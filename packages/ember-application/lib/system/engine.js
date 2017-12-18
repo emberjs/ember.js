@@ -416,7 +416,7 @@ Engine.reopenClass({
     @return {Ember.Registry} the built registry
     @private
   */
-  buildRegistry(namespace, options = {}) {
+  buildRegistry(namespace) {
     let registry = new Registry({
       resolver: resolverFor(namespace)
     });

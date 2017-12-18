@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint-env node */
-
 const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const validComponentName = require('ember-cli-valid-component-name');

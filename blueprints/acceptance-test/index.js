@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint-env node */
-
 const path = require('path');
 const testInfo = require('ember-cli-test-info');
 const pathUtil = require('ember-cli-path-utils');

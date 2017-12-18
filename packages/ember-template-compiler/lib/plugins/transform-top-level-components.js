@@ -1,4 +1,4 @@
-export default function transformTopLevelComponent(env) {
+export default function transformTopLevelComponent(/* env */) {
   return {
     name: 'transform-top-level-component',
 

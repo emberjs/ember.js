@@ -1,5 +1,5 @@
 import { get } from './property_get';
-import { meta as metaFor, peekMeta } from './meta';
+import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
 import { cacheFor } from './computed';
 
@@ -13,8 +13,9 @@ function isObject(obj) {
   return typeof obj === 'object' && obj !== null;
 }
 
-function isVolatile(obj) {
-  return !(isObject(obj) && obj.isDescriptor && obj._volatile === false);
+function isVolatile(obj, keyName, meta) {
+  let desc = descriptorFor(obj, keyName, meta);
+  return !(desc !== undefined && desc._volatile === false);
 }
 
 class ChainWatchers {
@@ -106,6 +107,10 @@ function makeChainWatcher() {
   return new ChainWatchers();
 }
 
+function makeChainNode(obj) {
+  return new ChainNode(null, null, obj);
+}
+
 function addChainWatcher(obj, keyName, node) {
   let m = metaFor(obj);
   m.writableChainWatchers(makeChainWatcher).add(keyName, node);
@@ -181,7 +186,7 @@ class ChainNode {
 
   // copies a top level object only
   copy(obj) {
-    let ret = new ChainNode(null, null, obj);
+    let ret = makeChainNode(obj);
     let paths = this._paths;
     if (paths !== undefined) {
       let path;
@@ -321,7 +326,7 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key])) {
+  if (isVolatile(obj, key, meta)) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
@@ -332,9 +337,7 @@ function lazyGet(obj, key) {
   }
 }
 
-import { makeChainNode } from './watch_path';
-
-export function finishChains(meta) {
+function finishChains(meta) {
   // finish any current chains node watchers that reference obj
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
@@ -348,6 +351,8 @@ export function finishChains(meta) {
 }
 
 export {
+  finishChains,
+  makeChainNode,
   removeChainWatcher,
   ChainNode
 };

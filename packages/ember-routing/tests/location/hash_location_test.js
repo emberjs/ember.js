@@ -150,7 +150,7 @@ QUnit.test('HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL ===
     lastSetURL: '/foo/bar'
   });
 
-  let callback = function (param) {
+  let callback = function () {
     ok(false, 'callback should not be called');
   };
 
@@ -172,7 +172,7 @@ QUnit.test('HashLocation.willDestroy() cleans up hashchange event listener', fun
 
   createLocation();
 
-  let callback = function (param) {
+  let callback = function () {
     ok(true, 'should invoke callback once');
   };
 

@@ -69,7 +69,7 @@ testBoth('Ember.computed.notEmpty', function(get, set) {
   equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
 });
 
-testBoth('computed.not', function(get, set) {
+testBoth('computed.not', function(get) {
   let obj = { foo: true };
   defineProperty(obj, 'notFoo', not('foo'));
   equal(get(obj, 'notFoo'), false);
@@ -96,7 +96,7 @@ testBoth('computed.empty', function(get, set) {
   equal(get(obj, 'quzEmpty'), false);
 });
 
-testBoth('computed.bool', function(get, set) {
+testBoth('computed.bool', function(get) {
   let obj = { foo() {}, bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'fooBool', bool('foo'));
   defineProperty(obj, 'barBool', bool('bar'));
@@ -110,7 +110,7 @@ testBoth('computed.bool', function(get, set) {
 
 testBoth('computed.alias', function(get, set) {
   let obj = { bar: 'asdf', baz: null, quz: false };
-  defineProperty(obj, 'bay', computed(function(key) {
+  defineProperty(obj, 'bay', computed(function() {
     return 'apple';
   }));
 
@@ -142,8 +142,8 @@ testBoth('computed.alias set', function(get, set) {
   let constantValue = 'always `a`';
 
   defineProperty(obj, 'original', computed({
-    get: function(key) { return constantValue; },
-    set: function(key, value) { return constantValue; }
+    get: function() { return constantValue; },
+    set: function() { return constantValue; }
   }));
   defineProperty(obj, 'aliased', alias('original'));
 
@@ -393,7 +393,7 @@ testBoth('computed.or expand properties', function(get, set) {
   equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
 });
 
-testBoth('computed.or and computed.and warn about dependent keys with spaces', function(get, set) {
+testBoth('computed.or and computed.and warn about dependent keys with spaces', function() {
   let obj = { one: true, two: true };
   expectAssertion(function() {
     defineProperty(obj, 'oneOrTwo', or('one', 'two three'));
@@ -456,7 +456,7 @@ testBoth('computed.readOnly', function(get, set) {
 
 testBoth('computed.deprecatingAlias', function(get, set) {
   let obj = { bar: 'asdf', baz: null, quz: false };
-  defineProperty(obj, 'bay', computed(function(key) {
+  defineProperty(obj, 'bay', computed(function() {
     return 'apple';
   }));
 

@@ -36,7 +36,6 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 const IS_PROXY = 1 << 4;
 
-const META_FIELD = '__ember_meta__';
 const NODE_STACK = [];
 
 export class Meta {
@@ -531,6 +530,32 @@ export function meta(obj) {
   let newMeta = new Meta(obj, parent);
   setMeta(obj, newMeta);
   return newMeta;
+}
+
+/**
+  Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
+
+  @method descriptorFor
+  @param {Object} obj the object to check
+  @param {String} keyName the key to check
+  @return {Descriptor}
+  @private
+*/
+export function descriptorFor(obj, keyName) {
+  let possibleDesc = obj[keyName];
+  return isDescriptor(possibleDesc) ? possibleDesc : undefined;
+}
+
+/**
+  Check whether a value is a CP descriptor.
+
+  @method descriptorFor
+  @param {any} possibleDesc the value to check
+  @return {boolean}
+  @private
+*/
+export function isDescriptor(possibleDesc) {
+  return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 }
 
 export { counters };

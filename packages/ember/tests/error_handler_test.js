@@ -53,7 +53,7 @@ test('when Ember.onerror (which rethrows) is registered - sync run', function(as
 
 test('when Ember.onerror (which does not rethrow) is registered - sync run', function(assert) {
   assert.expect(2);
-  Ember.onerror = function(error) {
+  Ember.onerror = function() {
     assert.ok(true, 'onerror called');
   };
   runThatThrowsSync();
@@ -65,7 +65,7 @@ if (DEBUG) {
     assert.expect(1);
 
     Ember.Test.adapter = {
-      exception(error) {
+      exception() {
         assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
       }
     };
@@ -77,7 +77,7 @@ if (DEBUG) {
     assert.expect(2);
 
     Ember.Test.adapter = {
-      exception(error) {
+      exception() {
         assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
       }
     };
@@ -94,12 +94,12 @@ if (DEBUG) {
     assert.expect(2);
 
     Ember.Test.adapter = {
-      exception(error) {
+      exception() {
         assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
       }
     };
 
-    Ember.onerror = function(error) {
+    Ember.onerror = function() {
       assert.ok(true, 'onerror is called for sync errors even if Ember.Test.adapter is setup');
     };
 
@@ -150,12 +150,12 @@ if (DEBUG) {
     let done = assert.async();
 
     Ember.Test.adapter = {
-      exception(error) {
+      exception() {
         assert.notOk(true, 'Adapter.exception is not called for errors thrown in run.next');
       }
     };
 
-    Ember.onerror = function(error) {
+    Ember.onerror = function() {
       assert.ok(true, 'onerror is invoked for errors thrown in run.next/run.later');
     };
 
@@ -206,7 +206,7 @@ QUnit.test('Ember.onerror can intercept errors (aka swallow) by not rethrowing (
   assert.expect(1);
   Ember.testing = false;
 
-  Ember.onerror = function(error) {
+  Ember.onerror = function() {
     assert.ok(true, 'Ember.onerror was called');
   };
 
@@ -282,7 +282,7 @@ QUnit.test('Ember.onerror can intercept errors (aka swallow) by not rethrowing (
 
   Ember.testing = false;
 
-  window.onerror = function(message) {
+  window.onerror = function() {
     assert.notOk(true, 'window.onerror is never invoked when Ember.onerror intentionally swallows errors');
     // prevent "bubbling" and therefore failing the test
     return true;
@@ -468,7 +468,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
         }
       });
 
-      Ember.onerror = function(error) {
+      Ember.onerror = function() {
         assert.notOk(true, 'Ember.onerror is not called if Test.adapter does not rethrow');
       };
 

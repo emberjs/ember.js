@@ -1,6 +1,5 @@
-/* eslint-env node */
 "use strict";
-const path = require('path');
+
 const findPackage = require('./find-package');
 
 module.exports = function findLib(name, libPath) {

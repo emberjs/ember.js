@@ -16,7 +16,7 @@ const STRING_DASHERIZE_CACHE = new Cache(1000, key => decamelize(key).replace(ST
 const STRING_CAMELIZE_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);
 const STRING_CAMELIZE_REGEXP_2 = (/(^|\/)([A-Z])/g);
 
-const CAMELIZE_CACHE = new Cache(1000, key => key.replace(STRING_CAMELIZE_REGEXP_1, (match, separator, chr) => chr ? chr.toUpperCase() : '').replace(STRING_CAMELIZE_REGEXP_2, (match, separator, chr) => match.toLowerCase()));
+const CAMELIZE_CACHE = new Cache(1000, key => key.replace(STRING_CAMELIZE_REGEXP_1, (match, separator, chr) => chr ? chr.toUpperCase() : '').replace(STRING_CAMELIZE_REGEXP_2, (match /*, separator, chr */) => match.toLowerCase()));
 
 const STRING_CLASSIFY_REGEXP_1 = (/^(\-|_)+(.)?/);
 const STRING_CLASSIFY_REGEXP_2 = (/(.)(\-|\_|\.|\s)+(.)?/g);
@@ -32,7 +32,7 @@ const CLASSIFY_CACHE = new Cache(1000, str => {
       .replace(STRING_CLASSIFY_REGEXP_2, replace2);
   }
   return parts.join('/')
-  .replace(STRING_CLASSIFY_REGEXP_3, (match, separator, chr) => match.toUpperCase());
+  .replace(STRING_CLASSIFY_REGEXP_3, (match /*, separator, chr */) => match.toUpperCase());
 });
 
 const STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
@@ -43,7 +43,7 @@ const UNDERSCORE_CACHE = new Cache(1000, str => str.replace(STRING_UNDERSCORE_RE
 
 const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z\u00C0-\u024F])/g);
 
-const CAPITALIZE_CACHE = new Cache(1000, str => str.replace(STRING_CAPITALIZE_REGEXP, (match, separator, chr) => match.toUpperCase()));
+const CAPITALIZE_CACHE = new Cache(1000, str => str.replace(STRING_CAPITALIZE_REGEXP, (match /*, separator, chr */) => match.toUpperCase()));
 
 const STRING_DECAMELIZE_REGEXP = (/([a-z\d])([A-Z])/g);
 
@@ -69,7 +69,7 @@ function _fmt(str, formats) {
   });
 }
 
-function fmt(str, formats) {
+function fmt(/* str, formats */) {
   deprecate(
     'Ember.String.fmt is deprecated, use ES6 template strings instead.',
     false,

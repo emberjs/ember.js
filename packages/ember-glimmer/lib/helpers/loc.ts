@@ -41,4 +41,3 @@ import { String as StringUtils } from 'ember-runtime';
 export default helper(function (params) {
   return StringUtils.loc.apply(null, params);
 });
-

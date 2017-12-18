@@ -3,11 +3,10 @@ import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
 import { Component } from 'ember-glimmer';
-import { jQuery } from 'ember-views';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
 
-  ['@feature(!ember-glimmer-remove-application-template-wrapper) it can render the application template'](assert) {
+  ['@feature(!ember-glimmer-remove-application-template-wrapper) it can render the application template']() {
     this.addTemplate('application', 'Hello world!');
 
     return this.visit('/').then(() => {
@@ -15,7 +14,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@feature(ember-glimmer-remove-application-template-wrapper) it can render the application template'](assert) {
+  ['@feature(ember-glimmer-remove-application-template-wrapper) it can render the application template']() {
     this.addTemplate('application', 'Hello world!');
 
     return this.visit('/').then(() => {
@@ -23,7 +22,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it can access the model provided by the route'](assert) {
+  ['@test it can access the model provided by the route']() {
     this.add('route:application', Route.extend({
       model() {
         return ['red', 'yellow', 'blue'];
@@ -49,7 +48,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it can render a nested route'](assert) {
+  ['@test it can render a nested route']() {
     this.router.map(function() {
       this.route('lists', function() {
         this.route('colors', function() {
@@ -84,7 +83,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it can render into named outlets'](assert) {
+  ['@test it can render into named outlets']() {
     this.router.map(function() {
       this.route('colors');
     });
@@ -138,7 +137,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it can render into named outlets'](assert) {
+  ['@test it can render into named outlets']() {
     this.router.map(function() {
       this.route('colors');
     });
@@ -192,7 +191,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it should update the outlets when switching between routes'](assert) {
+  ['@test it should update the outlets when switching between routes']() {
     this.router.map(function() {
       this.route('a');
       this.route('b', function() {
@@ -220,7 +219,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it should produce a stable DOM when the model changes'](assert) {
+  ['@test it should produce a stable DOM when the model changes']() {
     this.router.map(function() {
       this.route('color', { path: '/colors/:color' });
     });
@@ -266,7 +265,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     }).then(() => this.assertText('b'));
   }
 
-  ['@test it should update correctly when the controller changes'](assert) {
+  ['@test it should update correctly when the controller changes']() {
     this.router.map(function() {
       this.route('color', { path: '/colors/:color' });
     });
@@ -299,7 +298,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it should produce a stable DOM when two routes render the same template'](assert) {
+  ['@test it should produce a stable DOM when two routes render the same template']() {
     this.router.map(function() {
       this.route('a');
       this.route('b');
@@ -353,7 +352,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it allows a transition during route activate'](assert) {
+  ['@test it allows a transition during route activate']() {
     this.router.map(function() {
       this.route('a');
     });
@@ -371,7 +370,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test it emits a useful backtracking re-render assertion message'](assert) {
+  ['@test it emits a useful backtracking re-render assertion message']() {
     this.router.map(function() {
       this.route('routeWithError');
     });

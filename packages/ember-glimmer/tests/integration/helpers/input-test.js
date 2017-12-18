@@ -73,7 +73,7 @@ class InputRenderingTest extends RenderingTest {
 
 moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
 
-  ['@test a single text field is inserted into the DOM'](assert) {
+  ['@test a single text field is inserted into the DOM']() {
     this.render(`{{input type="text" value=value}}`, { value: 'hello' });
 
     let id = this.inputID();
@@ -229,7 +229,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
   }
 
-  ['@test cursor selection range'](assert) {
+  ['@test cursor selection range']() {
     // Modifying input.selectionStart, which is utilized in the cursor tests,
     // causes an event in Safari.
     runDestroy(this.owner.lookup('event_dispatcher:main'));
@@ -503,7 +503,7 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     }, /you must use `checked=/);
   }
 
-  ['@test with a bound type'](assert) {
+  ['@test with a bound type']() {
     this.render(`{{input type=inputType checked=isChecked}}`, { inputType: 'checkbox', isChecked: true });
 
     this.assertSingleCheckbox();
@@ -522,7 +522,7 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertCheckboxIsChecked();
   }
 
-  ['@test native click changes check property'](assert) {
+  ['@test native click changes check property']() {
     this.render(`{{input type="checkbox"}}`);
 
     this.assertSingleCheckbox();
@@ -533,7 +533,7 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertCheckboxIsNotChecked();
   }
 
-  ['@test with static values'](assert) {
+  ['@test with static values']() {
     this.render(`{{input type="checkbox" disabled=false tabindex=10 name="original-name" checked=false}}`);
 
     this.assertSingleCheckbox();
@@ -554,7 +554,7 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
 
 moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTest {
 
-  ['@test null values'](assert) {
+  ['@test null values']() {
     let attributes = ['disabled', 'placeholder', 'name', 'maxlength', 'size', 'tabindex'];
 
     this.render(`
@@ -649,27 +649,27 @@ moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTes
       super.assertValue(expected);
     }
 
-    ['@test value over default max but below set max is kept'](assert) {
+    ['@test value over default max but below set max is kept']() {
       this.renderInput("25");
       this.assertValue("25");
     }
 
-    ['@test value below default min but above set min is kept'](assert) {
+    ['@test value below default min but above set min is kept']() {
       this.renderInput("-2");
       this.assertValue("-2");
     }
 
-    ['@test in the valid default range is kept'](assert) {
+    ['@test in the valid default range is kept']() {
       this.renderInput("5");
       this.assertValue("5");
     }
 
-    ['@test value above max is reset to max'](assert) {
+    ['@test value above max is reset to max']() {
       this.renderInput("55");
       this.assertValue("50");
     }
 
-    ['@test value below min is reset to min'](assert) {
+    ['@test value below min is reset to min']() {
       this.renderInput("-10");
       this.assertValue("-5");
     }

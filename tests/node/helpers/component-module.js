@@ -1,4 +1,3 @@
-/* globals global */
 var path = require('path');
 var SimpleDOM = require('simple-dom');
 var buildOwner = require('./build-owner');
@@ -92,7 +91,7 @@ function setupComponentTest() {
     module.run(function() {
       module.Ember.set(module, property, value);
     });
-  }
+  };
 }
 
 function render(_template) {

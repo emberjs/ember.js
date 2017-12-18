@@ -1,5 +1,4 @@
 import {
-  run,
   instrumentationSubscribe as subscribe,
   instrumentationReset as reset
 } from 'ember-metal';

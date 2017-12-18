@@ -591,79 +591,27 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
   }
 });
 
-// these feature detects prevent errors in these tests
-// on platforms (*cough* IE9 *cough*) that do not
-// property support `Object.freeze`
-let pushingIntoFrozenArrayThrows = (() => {
-  let array = [];
-  Object.freeze(array);
-
-  try {
-    array.push('foo');
-
-    return false;
-  } catch (e) {
-    return true;
-  }
-})();
-
-let assigningExistingFrozenPropertyThrows = (() => {
-  let obj = { foo: 'asdf' };
-  Object.freeze(obj);
-
-  try {
-    obj.foo = 'derp';
-
-    return false;
-  } catch (e) {
-    return true;
-  }
-})();
-
-let addingPropertyToFrozenObjectThrows = (() => {
-  let obj = { foo: 'asdf' };
-  Object.freeze(obj);
-
-  try {
-    obj.bar = 'derp';
-
-    return false;
-  } catch (e) {
-    return true;
-  }
-})();
-
-if (!EmberDev.runningProdBuild && (
-  pushingIntoFrozenArrayThrows ||
-    assigningExistingFrozenPropertyThrows ||
-    addingPropertyToFrozenObjectThrows
-)) {
+if (!EmberDev.runningProdBuild) {
   class HelperMutatingArgsTests extends RenderingTest {
     buildCompute() {
       return (params, hash) => {
-        if (pushingIntoFrozenArrayThrows) {
-          this.assert.throws(() => {
-            params.push('foo');
+        this.assert.throws(() => {
+          params.push('foo');
 
-            // cannot assert error message as it varies by platform
-          });
-        }
+          // cannot assert error message as it varies by platform
+        });
 
-        if (assigningExistingFrozenPropertyThrows) {
-          this.assert.throws(() => {
-            hash.foo = 'bar';
+        this.assert.throws(() => {
+          hash.foo = 'bar';
 
-            // cannot assert error message as it varies by platform
-          });
-        }
+          // cannot assert error message as it varies by platform
+        });
 
-        if (addingPropertyToFrozenObjectThrows) {
-          this.assert.throws(() => {
-            hash.someUnusedHashProperty = 'bar';
+        this.assert.throws(() => {
+          hash.someUnusedHashProperty = 'bar';
 
-            // cannot assert error message as it varies by platform
-          });
-        }
+          // cannot assert error message as it varies by platform
+        });
       };
     }
 

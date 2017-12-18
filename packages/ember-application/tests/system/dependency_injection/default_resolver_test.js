@@ -147,7 +147,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     );
   }
 
-  [`@test the default resolver throws an error if the fullName to resolve is invalid`](assert) {
+  [`@test the default resolver throws an error if the fullName to resolve is invalid`]() {
     expectAssertion(() => { this.applicationInstance.resolveRegistration(undefined);}, /fullName must be a proper full name/);
     expectAssertion(() => { this.applicationInstance.resolveRegistration(null);     }, /fullName must be a proper full name/);
     expectAssertion(() => { this.applicationInstance.resolveRegistration('');       }, /fullName must be a proper full name/);
@@ -179,7 +179,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     );
   }
 
-  [`@test assertion for routes without isRouteFactory property`](assert) {
+  [`@test assertion for routes without isRouteFactory property`]() {
     this.application.FooRoute = Component.extend();
 
     expectAssertion(() => {
@@ -193,7 +193,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     this.privateRegistry.resolve(`route:foo`);
   }
 
-  [`@test deprecation warning for service factories without isServiceFactory property`](assert) {
+  [`@test deprecation warning for service factories without isServiceFactory property`]() {
     expectAssertion(() =>{
       this.application.FooService = EmberObject.extend();
       this.privateRegistry.resolve('service:foo');
@@ -206,14 +206,14 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     this.privateRegistry.resolve('service:foo');
   }
 
-  [`@test deprecation warning for component factories without isComponentFactory property`](assert) {
+  [`@test deprecation warning for component factories without isComponentFactory property`]() {
     expectAssertion(() => {
       this.application.FooComponent = EmberObject.extend();
       this.privateRegistry.resolve('component:foo');
     }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
   }
 
-  [`@test no deprecation warning for component factories that extend from Ember.Component`](assert) {
+  [`@test no deprecation warning for component factories that extend from Ember.Component`]() {
     expectNoDeprecation();
     this.application.FooView = Component.extend();
     this.privateRegistry.resolve('component:foo');
@@ -341,7 +341,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
 
     this.application.ScoobyDoo = EmberObject.extend();
 
-    setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1);
+    setDebugFunction('info', () => infoCount = infoCount + 1);
 
     this.applicationInstance.resolveRegistration('doo:scooby');
     this.applicationInstance.resolveRegistration('doo:scrappy');

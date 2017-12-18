@@ -1,5 +1,6 @@
 import { guidFor, symbol } from 'ember-utils';
 import {
+  descriptorFor,
   peekMeta
 } from './meta';
 import {
@@ -51,10 +52,9 @@ function propertyWillChange(obj, keyName, _meta) {
   if (meta !== undefined && !meta.isInitialized(obj)) { return; }
 
   let watching = meta !== undefined && meta.peekWatching(keyName) > 0;
-  let possibleDesc = obj[keyName];
-  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+  let possibleDesc = descriptorFor(obj, keyName, meta);
 
-  if (isDescriptor && possibleDesc.willChange) {
+  if (possibleDesc !== undefined && possibleDesc.willChange) {
     possibleDesc.willChange(obj, keyName);
   }
 
@@ -88,11 +88,10 @@ function propertyDidChange(obj, keyName, _meta) {
 
   if (hasMeta && !meta.isInitialized(obj)) { return; }
 
-  let possibleDesc = obj[keyName];
-  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+  let possibleDesc = descriptorFor(obj, keyName, meta);
 
   // shouldn't this mean that we're watching this key?
-  if (isDescriptor && possibleDesc.didChange) {
+  if (possibleDesc !== undefined && possibleDesc.didChange) {
     possibleDesc.didChange(obj, keyName);
   }
 
@@ -152,7 +151,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  let possibleDesc, isDescriptor;
+  let possibleDesc;
   let guid = guidFor(obj);
   let current = seen[guid];
 
@@ -169,10 +168,9 @@ function iterDeps(method, obj, depKey, seen, meta) {
   meta.forEachInDeps(depKey, (key, value) => {
     if (!value) { return; }
 
-    possibleDesc = obj[key];
-    isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    possibleDesc = descriptorFor(obj, key, meta);
 
-    if (isDescriptor && possibleDesc._suspended === obj) {
+    if (possibleDesc !== undefined && possibleDesc._suspended === obj) {
       return;
     }
 

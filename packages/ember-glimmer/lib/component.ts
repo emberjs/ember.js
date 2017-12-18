@@ -1,7 +1,6 @@
 import { DirtyableTag } from '@glimmer/reference';
 import {
-  assert,
-  deprecate,
+  assert
 } from 'ember-debug';
 import {
   get,

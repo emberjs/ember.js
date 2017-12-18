@@ -38,7 +38,7 @@ QUnit.test('toString should be not be added as a property when calling toString(
   notOk(obj.hasOwnProperty('toString'), 'Calling toString() should not create a toString class property');
 });
 
-QUnit.test('[POST_INIT] invoked during construction', function(assert) {
+QUnit.test('[POST_INIT] invoked during construction', function() {
   let callCount = 0;
   let Obj = CoreObject.extend({
     [POST_INIT]() {
@@ -53,7 +53,7 @@ QUnit.test('[POST_INIT] invoked during construction', function(assert) {
   equal(callCount, 1);
 });
 
-QUnit.test('[POST_INIT] invoked before finishChains', function(assert) {
+QUnit.test('[POST_INIT] invoked before finishChains', function() {
   let callCount = 0;
 
   let Obj = CoreObject.extend({

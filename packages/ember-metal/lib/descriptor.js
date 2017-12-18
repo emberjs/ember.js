@@ -22,6 +22,6 @@ class Descriptor extends EmberDescriptor {
     Object.defineProperty(obj, key, this.desc);
   }
 
-  teardown(obj, key) {
+  teardown(obj, key) { // eslint-disable-line no-unused-vars
   }
 }

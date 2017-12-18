@@ -7,7 +7,7 @@ moduleFor('registerMacros', class extends RenderingTest {
   constructor() {
     let originalMacros = _experimentalMacros.slice();
 
-    _registerMacros((blocks, inlines) => {
+    _registerMacros(blocks => {
       blocks.add('-let', (params, hash, _default, inverse, builder) => {
         compileExpression(params[0], builder);
         builder.invokeStatic(_default, 1);
@@ -25,7 +25,7 @@ moduleFor('registerMacros', class extends RenderingTest {
     super.teardown();
   }
 
-  ['@test allows registering custom syntax via private API'](assert) {
+  ['@test allows registering custom syntax via private API']() {
     this.render(strip`
       {{#-let obj as |bar|}}
         {{bar}}

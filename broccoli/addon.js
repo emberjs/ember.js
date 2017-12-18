@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 const Funnel = require('broccoli-funnel');
 const semver = require('semver');
@@ -14,4 +13,4 @@ module.exports = function addon(name, project) {
   }
 
   return new Funnel(tree, options);
-}
+};

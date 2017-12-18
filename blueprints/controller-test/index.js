@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint-env node */
-
 const stringUtil = require('ember-cli-string-utils');
 const testInfo = require('ember-cli-test-info');
 

@@ -1,6 +1,5 @@
 import { guidFor, assign } from 'ember-utils';
 import { Object as EmberObject } from 'ember-runtime';
-import { Resolver as DefaultResolver } from 'ember-application';
 import {
   moduleFor,
   ApplicationTestCase,

@@ -3,7 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
+import { descriptorFor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { MANDATORY_SETTER } from 'ember/features';
 // ..........................................................
@@ -120,11 +120,10 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   let watchEntry = meta.peekWatching(keyName);
   let watching = watchEntry !== undefined && watchEntry > 0;
-  let possibleDesc = obj[keyName];
-  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+  let previousDesc = descriptorFor(obj, keyName, meta);
 
-  if (isDescriptor) {
-    possibleDesc.teardown(obj, keyName, meta);
+  if (previousDesc) {
+    previousDesc.teardown(obj, keyName, meta);
   }
 
   let value;

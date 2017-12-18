@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint-disable no-console */
+
 global.QUnit = require('qunitjs');
 
 // Adds test reporting.

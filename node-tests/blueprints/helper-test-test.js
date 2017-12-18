@@ -34,9 +34,9 @@ describe('Blueprint: helper-test', function() {
       });
     });
 
-    describe('with ember-cli-qunit@4.1.1', function() {
+    describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
-        generateFakePackageManifest('ember-cli-qunit', '4.1.1');
+        generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
       it('helper-test foo/bar-baz', function() {

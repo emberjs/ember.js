@@ -38,7 +38,7 @@ const TestArray = EmberObject.extend(EmberArray, {
     arrayContentDidChange(this, idx, 0, 1);
   },
 
-  removeFirst(idx) {
+  removeFirst() {
     arrayContentWillChange(this, 0, 1, 0);
     this._content.shift();
     arrayContentDidChange(this, 0, 1, 0);

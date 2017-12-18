@@ -29,7 +29,7 @@ QUnit.test('default store utilizes the container to acquire the model factory', 
   let post = {};
 
   Post.reopenClass({
-    find(id) {
+    find() {
       return post;
     }
   });

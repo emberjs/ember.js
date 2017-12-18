@@ -16,7 +16,7 @@ import {
   deprecate
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { meta as metaFor, peekMeta } from './meta';
+import { descriptorFor, isDescriptor, meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {
   Descriptor,
@@ -85,10 +85,7 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   // If we didn't find the original descriptor in a parent mixin, find
   // it on the original object.
   if (!superProperty) {
-    let possibleDesc = base[key];
-    let superDesc = (possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) ? possibleDesc : undefined;
-
-    superProperty = superDesc;
+    superProperty = descriptorFor(base, key, meta);
   }
 
   if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
@@ -297,7 +294,7 @@ function followAlias(obj, desc, descs, values) {
   if (descs[altKey] || values[altKey]) {
     value = values[altKey];
     desc  = descs[altKey];
-  } else if ((possibleDesc = obj[altKey]) && possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor) {
+  } else if ((possibleDesc = obj[altKey]) && isDescriptor(possibleDesc)) {
     desc  = possibleDesc;
     value = undefined;
   } else {

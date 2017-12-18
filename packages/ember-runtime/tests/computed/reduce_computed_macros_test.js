@@ -348,7 +348,7 @@ QUnit.test('it updates properly on @each with {} dependencies', function() {
   let item = EmberObject.create({prop: true});
 
   obj = EmberObject.extend({
-    filtered: filter('items.@each.{prop}', function(item, index) {
+    filtered: filter('items.@each.{prop}', function(item) {
       return item.get('prop') === true;
     })
   }).create({

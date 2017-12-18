@@ -8,7 +8,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
 
     this.add('controller:application', Controller.extend({
       actions: {
-        handleIt(arg) {
+        handleIt() {
           assert.ok(true, 'controller received action properly');
         }
       }
@@ -27,7 +27,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
 
     this.add('controller:application', Controller.extend({
       actions: {
-        handleIt(arg) {
+        handleIt() {
           assert.ok(false, 'application controller should not have received action!');
         }
       }
@@ -35,7 +35,7 @@ moduleFor('Application test: actions', class extends ApplicationTest {
 
     this.add('controller:index', Controller.extend({
       actions: {
-        handleIt(arg) {
+        handleIt() {
           assert.ok(true, 'controller received action properly');
         }
       }

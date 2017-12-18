@@ -5,7 +5,6 @@ import { assert } from 'ember-debug';
 import {
   get,
   ComputedProperty,
-  computed,
   addObserver,
   removeObserver,
   getProperties

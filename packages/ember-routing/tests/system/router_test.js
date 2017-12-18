@@ -116,7 +116,7 @@ QUnit.test('Ember.Router._routePath should consume identical prefixes', function
 
   expect(8);
 
-  function routePath(s1, s2, s3) {
+  function routePath() {
     let handlerInfos = Array.prototype.slice.call(arguments).map(function(s) {
       return { name: s };
     });

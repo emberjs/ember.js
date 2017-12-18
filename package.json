@@ -32,7 +32,6 @@
     "release": "node scripts/release.js",
     "sauce:launch": "ember sauce:launch",
     "start": "ember serve",
-    "pretest": "ember build",
     "prepare": "ember build -prod",
     "lint": "tslint -p tsconfig.json && eslint node-tests",
     "test": "node bin/run-tests.js",

@@ -353,7 +353,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
 
     return this.visit('/').then(() => {
       return this.visit('/foo/bar').then(() => {
-        
+
         let text = this.$('#app').text();
         assert.equal(
           text,
@@ -424,10 +424,10 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     }));
 
     return this.visit('/').then(() => {
-      
+
       return this.visit('/foo').then(() => {
         let text = this.$('#app').text();
-        
+
         assert.equal(
           text,
           'FOO ERROR: did it broke?',
@@ -504,7 +504,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
     super();
 
     counter = 1;
-    
+
     this.addTemplate('application', `<div id="app">{{outlet}}</div>`);
     this.addTemplate('index', 'INDEX');
     this.addTemplate('grandma', 'GRANDMA {{outlet}}');
@@ -582,7 +582,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:application', Route.extend({
       actions: {
-        loading(transition, route) {
+        loading() {
           assert.ok(true, 'loading action received on ApplicationRoute');
         }
       }
@@ -643,12 +643,12 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       }
     }));
 
-    
+
     return this.visit('/grandma/mom/sally').then(() => {
       step(3, 'App finished loading');
-      
+
       let text = this.$('#app').text();
-      
+
       assert.equal(text, 'GRANDMA ERROR: did it broke?', 'error bubbles');
       assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
     });
@@ -716,7 +716,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
         });
       },
       actions: {
-        error(err) {
+        error() {
           step(2, 'MomSallyRoute#actions.error');
           return true;
         }
@@ -782,16 +782,16 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     return this.visit('/grandma/mom/sally').then(() => {
       step(3, 'Application finished booting');
-      
+
       assert.equal(
         this.$('#app').text(),
         'GRANDMA MOM ERROR: did it broke?',
         'the more specifically named mome error substate was entered over the other error route'
       );
-      
+
       assert.equal(this.currentPath, 'grandma.mom_error',
         'Initial route fully loaded'
-      ); 
+      );
     });
   }
 

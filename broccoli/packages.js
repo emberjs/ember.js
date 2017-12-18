@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-env node */
+
 const { readFileSync, existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
@@ -32,7 +32,7 @@ module.exports.routerES = function _routerES() {
     },
     annotation: 'router.js'
   });
-}
+};
 
 
 module.exports.jquery = function _jquery() {
@@ -41,7 +41,7 @@ module.exports.jquery = function _jquery() {
     destDir: 'jquery',
     annotation: 'jquery'
   });
-}
+};
 
 module.exports.internalLoader = function _internalLoader() {
   return new Funnel('packages/loader/lib', {
@@ -51,7 +51,7 @@ module.exports.internalLoader = function _internalLoader() {
     },
     annotation: 'internal loader'
   });
-}
+};
 
 module.exports.qunit = function _qunit() {
   return new Funnel(findLib('qunitjs'), {
@@ -59,7 +59,7 @@ module.exports.qunit = function _qunit() {
     destDir: 'qunit',
     annotation: 'qunit'
   });
-}
+};
 
 module.exports.emberGlimmerES = function _emberGlimmerES() {
   let input = new Funnel('packages/ember-glimmer/lib', {
@@ -87,7 +87,7 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
   });
 
   return debugTree(funneled, 'ember-glimmer:output');
-}
+};
 
 module.exports.handlebarsES = function _handlebars() {
   return new Rollup(findLib('handlebars', 'lib'), {
@@ -101,8 +101,8 @@ module.exports.handlebarsES = function _handlebars() {
       },
       plugins: [handlebarsFix()]
     }
-  })
-}
+  });
+};
 
 function handlebarsFix() {
   var HANDLEBARS_PARSER = /[\/\\]parser.js$/;
@@ -119,7 +119,7 @@ function handlebarsFix() {
         };
       }
     }
-  }
+  };
 }
 
 module.exports.rsvpES = function _rsvpES() {
@@ -135,14 +135,14 @@ module.exports.rsvpES = function _rsvpES() {
       },
     }
   });
-}
+};
 
 module.exports.backburnerES = function _backburnerES() {
   return funnelLib('backburner.js', 'dist/es6', {
     files: ['backburner.js'],
     annotation: 'backburner es'
   });
-}
+};
 
 module.exports.dagES = function _dagES() {
   let lib = funnelLib('dag-map', {
@@ -158,17 +158,17 @@ module.exports.dagES = function _dagES() {
     }],
     annotation: 'remove sourcemap annotation (dag-map)'
   });
-}
+};
 
 module.exports.routeRecognizerES = function _routeRecognizerES() {
   return funnelLib('route-recognizer', {
     files: ['route-recognizer.es.js'],
     getDestinationPath() {
-      return 'route-recognizer.js'
+      return 'route-recognizer.js';
     },
     annotation: 'route-recognizer es'
   });
-}
+};
 
 module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
   return new Rollup(findLib('simple-html-tokenizer', 'dist/es6'), {
@@ -181,8 +181,8 @@ module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
         exports: 'named'
       }
     }
-  })
-}
+  });
+};
 
 module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
   if (rollup) {
@@ -205,11 +205,11 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
     destDir: name,
     annotation: `${name} es`
   });
-}
+};
 
 const glimmerTrees = new Map();
 
-function rollupGlimmerPackage(pkg, deps) {
+function rollupGlimmerPackage(pkg) {
   let name = pkg.name;
   let tree = glimmerTrees.get(name);
   if (tree === undefined) {
@@ -231,7 +231,7 @@ function rollupGlimmerPackage(pkg, deps) {
 
 module.exports.glimmerPkgES = function glimmerPkgES(name) {
   return rollupGlimmerPackage(findPackage(name));
-}
+};
 
 module.exports.glimmerTrees = function glimmerTrees(entries) {
   let seen = new Set();
@@ -265,7 +265,7 @@ module.exports.glimmerTrees = function glimmerTrees(entries) {
     }
   }
   return trees;
-}
+};
 
 module.exports.emberTestsES = function _emberTestES(name) {
   return new Funnel(`packages/${name}/tests`, {
@@ -273,20 +273,20 @@ module.exports.emberTestsES = function _emberTestES(name) {
     destDir: `${name}/tests`,
     annotation: `${name} tests es`
   });
-}
+};
 
 module.exports.nodeModuleUtils = function _nodeModuleUtils() {
   return new Funnel('packages/node-module/lib', {
     files: ['node-module.js']
   });
-}
+};
 
 module.exports.emberVersionES = function _emberVersionES() {
   let content = 'export default ' + JSON.stringify(VERSION) + ';\n';
   return new WriteFile('ember/version.js', content, {
     annotation: 'ember/version'
   });
-}
+};
 
 module.exports.emberLicense = function _emberLicense() {
   let license = new Funnel('generators', {
@@ -302,7 +302,7 @@ module.exports.emberLicense = function _emberLicense() {
     }],
     annotation: 'license'
   });
-}
+};
 
 module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
   let FEATURES = production ? RELEASE : DEBUG;
@@ -314,14 +314,14 @@ module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
 
 
     ${Object.keys(toConst(FEATURES)).map((FEATURE) => {
-      return `export const ${FEATURE} = FEATURES["${FEATURE.replace(/_/g, '-').toLowerCase()}"];`
+      return `export const ${FEATURE} = FEATURES["${FEATURE.replace(/_/g, '-').toLowerCase()}"];`;
     }).join('\n')}
   `;
 
   return new WriteFile('ember/features.js', content, {
     annotation: `ember/features ${production ? 'production' : 'debug' }`
   });
-}
+};
 
 module.exports.packageManagerJSONs = function _packageManagerJSONs() {
   var packageJsons = new Funnel('config/package_manager_files', {
@@ -339,13 +339,13 @@ module.exports.packageManagerJSONs = function _packageManagerJSONs() {
   });
   packageJsons._annotation = 'package.json VERSION';
   return packageJsons;
-}
+};
 
 module.exports.nodeTests = function _nodeTests() {
   return new Funnel('tests', {
     include: ['**/*/*.js']
   });
-}
+};
 
 module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
   options = Object.assign({ transformModules: false, annotation: 'ember metal' }, options);
@@ -375,4 +375,4 @@ module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
       ]
     }
   }), { transformDefine: true });
-}
+};

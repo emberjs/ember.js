@@ -68,7 +68,7 @@ QUnit.test('calls setUnknownProperty if defined', function() {
   let setUnknownPropertyCalled = false;
 
   let MyClass = EmberObject.extend({
-    setUnknownProperty(key, value) {
+    setUnknownProperty(/* key, value */) {
       setUnknownPropertyCalled = true;
     }
   });

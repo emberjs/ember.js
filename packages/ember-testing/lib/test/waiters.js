@@ -1,5 +1,3 @@
-import { deprecate } from 'ember-debug';
-
 /**
  @module @ember/test
 */

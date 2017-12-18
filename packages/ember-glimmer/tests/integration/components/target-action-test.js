@@ -387,7 +387,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
 
     this.addTemplate('application', '{{x-parent}}');
     this.add('controller:application', Controller.extend({
-      send(actionName) {
+      send() {
         throw new Error('controller action should not be called');
       }
     }));

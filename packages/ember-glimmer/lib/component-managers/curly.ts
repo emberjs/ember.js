@@ -486,7 +486,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 }
 
-export function validatePositionalParameters(named: NamedArguments, positional: PositionalArguments, positionalParamsDefinition: any) {
+export function validatePositionalParameters(named: { has(name: string): boolean }, positional: { length: number }, positionalParamsDefinition: any) {
   if (DEBUG) {
     if (!named || !positional || !positional.length) {
       return;
@@ -557,6 +557,14 @@ export function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
 
+// This is not any of glimmer-vm's proper Argument types because we
+// don't have sufficient public constructors to conveniently
+// reassemble one after we mangle the various arguments.
+interface CurriedArgs {
+  positional: any[];
+  named: any;
+}
+
 export const CURLY_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
@@ -569,12 +577,12 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
 export class CurlyComponentDefinition implements ComponentDefinition {
   public template: OwnedTemplate;
-  public args: Arguments | undefined;
+  public args: CurriedArgs | undefined;
   public state: DefinitionState;
   public symbolTable: ProgramSymbolTable | undefined;
 
   // tslint:disable-next-line:no-shadowed-variable
-  constructor(public name: string, public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: Arguments) {
+  constructor(public name: string, public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: CurriedArgs) {
     const layout = template && template.asLayout();
     const symbolTable = layout ? layout.symbolTable : undefined;
     this.symbolTable = symbolTable;
