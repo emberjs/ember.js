@@ -17,6 +17,7 @@ export default function template(json: StaticTemplate): Factory {
 
 export interface Injections {
   options: TemplateOptions<OwnedTemplateMeta>;
+  [key: string]: any;
 }
 
 export interface Factory {

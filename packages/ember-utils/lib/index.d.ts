@@ -25,6 +25,7 @@ export interface Owner {
 
 export const NAME_KEY: string;
 export function getOwner(obj: {}): Owner;
+export function setOwner(obj: {}, owner: Owner): void;
 export function symbol(debugName: string): string;
 export function assign(original: any, ...args: any[]): any;
 export const OWNER: string;

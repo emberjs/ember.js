@@ -38,6 +38,7 @@ import {
 import {
   getOwner,
   guidFor,
+  setOwner
 } from 'ember-utils';
 import { OwnedTemplateMeta, setViewElement } from 'ember-views';
 import {
@@ -50,7 +51,11 @@ import {
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
-import { Factory as TemplateFactory, OwnedTemplate } from '../template';
+import {
+  Factory as TemplateFactory,
+  Injections,
+  OwnedTemplate
+} from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -145,7 +150,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 
   getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
-    console.log('static');
     return {
       // TODO fix
       handle: state.handle as any as number,
@@ -158,7 +162,9 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     if (Template !== undefined) {
       // This needs to be cached by template.id
       if (isTemplateFactory(Template)) {
-        return Template.create({ options });
+        const injections: Injections = { options };
+        setOwner(injections, getOwner(component));
+        return Template.create(injections);
       } else {
         // we were provided an instance already
         return Template;
@@ -195,7 +201,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 
   getDynamicLayout(state: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
-    console.log('dynamic');
     return this.compileDynamicLayout(state.component, resolver);
   }
 
@@ -394,7 +399,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       IsVisibleBinding.install(element, component, operations);
     }
 
-    if (classRef) {
+    if (classRef && classRef.value()) {
       operations.setAttribute('class', classRef as any, false, null);
     }
 
