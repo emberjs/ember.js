@@ -3,11 +3,7 @@ import {
   peekMeta
 } from './meta';
 
-import { ChainNode } from './chains';
-
-export function makeChainNode(obj) {
-  return new ChainNode(null, null, obj);
-}
+import { makeChainNode } from './chains';
 
 export function watchPath(obj, keyPath, meta) {
   if (typeof obj !== 'object' || obj === null) { return; }
