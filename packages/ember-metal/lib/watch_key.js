@@ -2,6 +2,7 @@ import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
 import {
   descriptorFor,
+  isDescriptor,
   meta as metaFor,
   peekMeta,
   UNDEFINED
@@ -50,15 +51,11 @@ if (MANDATORY_SETTER) {
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
     let hasDescriptor = descriptor !== null;
+    let possibleDesc = hasDescriptor && descriptor.value;
+    if (isDescriptor(possibleDesc)) { return; }
     let configurable = hasDescriptor ? descriptor.configurable : true;
     let isWritable = hasDescriptor ? descriptor.writable : true;
     let hasValue = hasDescriptor ? 'value' in descriptor : true;
-    let possibleDesc = hasDescriptor && descriptor.value;
-    let isDescriptor = possibleDesc !== null &&
-                       typeof possibleDesc === 'object' &&
-                       possibleDesc.isDescriptor;
-
-    if (isDescriptor) { return; }
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
@@ -94,11 +91,11 @@ export function unwatchKey(obj, keyName, _meta) {
   if (count === 1) {
     meta.writeWatching(keyName, 0);
 
-    let possibleDesc = obj[keyName];
-    let isDescriptor = possibleDesc !== null &&
-      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    let possibleDesc = descriptorFor(obj, keyName, meta);
 
-    if (isDescriptor && possibleDesc.didUnwatch) { possibleDesc.didUnwatch(obj, keyName, meta); }
+    if (possibleDesc !== undefined && possibleDesc.didUnwatch) {
+      possibleDesc.didUnwatch(obj, keyName, meta);
+    }
 
     if (typeof obj.didUnwatchProperty === 'function') {
       obj.didUnwatchProperty(keyName);
@@ -113,7 +110,7 @@ export function unwatchKey(obj, keyName, _meta) {
       // for mutation, will bypass observation. This code exists to assert when
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
-      if (!isDescriptor && keyName in obj) {
+      if (possibleDesc === undefined && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
