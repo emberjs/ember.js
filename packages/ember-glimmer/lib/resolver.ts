@@ -234,6 +234,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     let layoutHandle = this.handle(layout) as Option<VMHandle>;
 
-    return new CurlyComponentDefinition(name, customManager, component || meta.owner.factoryFor(P`component:-default`), layoutHandle, layout);
+    return (layout || component) ? new CurlyComponentDefinition(name, customManager, component || meta.owner.factoryFor(P`component:-default`), layoutHandle, layout) : null;
   }
 }

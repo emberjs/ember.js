@@ -224,7 +224,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
         if (args.positional.length === 0) {
           return null;
         } else {
-          throw new Error('You cannot specify positional parameters and the has argument...');
+          assert(`You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`, false);
         }
       }
 
@@ -388,7 +388,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     let { attributeBindings, classNames, classNameBindings } = component;
 
     operations.setAttribute('id', PrimitiveReference.create(guidFor(component)), false, null);
-    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
 
     if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(element, attributeBindings, component, operations);
@@ -413,6 +412,12 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       classNameBindings.forEach((binding: string) => {
         ClassNameBinding.install(element, component, binding, operations);
       });
+    }
+    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
+
+    const ariaRole = get(component, 'ariaRole');
+    if (ariaRole) {
+      operations.setAttribute('role', PrimitiveReference.create(ariaRole), false, null);
     }
 
     component._transitionTo('hasElement');
@@ -573,7 +578,7 @@ interface CurriedArgs {
 export const CURLY_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
-  prepareArgs: false,
+  prepareArgs: true,
   createArgs: true,
   attributeHook: true,
   elementHook: true
