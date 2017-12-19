@@ -1,15 +1,13 @@
 export const privateRouteInfos = new WeakMap();
 
 export default class RouteInfo {
-  constructor(name, controller, template, outletName, into) {
+  constructor(name, controller, template) {
     this.name = name;
     privateRouteInfos.set(this,{
       child: null,
+      outlets: null,
       controller,
       template,
-      outletName: outletName || 'main',
-      into,
-      outlets: null,
       orphanCheck: null
     });
   }

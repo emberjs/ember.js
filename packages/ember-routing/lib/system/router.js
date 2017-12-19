@@ -1483,7 +1483,7 @@ function findLiveRoute(liveRoutes, name) {
 }
 
 function appendLiveRoute(liveRoutes, defaultParentState, connection) {
-  let ownState = new RouteInfo(connection.name, connection.controller, connection.template, connection.outletName, connection.into);
+  let ownState = new RouteInfo(connection.name, connection.controller, connection.template);
   let target;
 
   if (connection.into) {

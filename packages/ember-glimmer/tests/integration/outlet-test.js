@@ -79,7 +79,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('special', '<p>BYE</p>');
-    outletState.setChild('special', new RouteInfo('special', {}, this.owner.lookup('template:special'), 'special'));
+    outletState.setChild('special', new RouteInfo('special', {}, this.owner.lookup('template:special')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
