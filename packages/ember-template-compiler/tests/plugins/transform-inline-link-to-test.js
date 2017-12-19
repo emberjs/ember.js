@@ -1,11 +1,12 @@
 import { compile } from '../../index';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('ember-template-compiler: assert-no-view-and-controller-paths without legacy view support');
+moduleFor('ember-template-compiler: inline-link-to', class extends AbstractTestCase {
+  ['@test Can transform an inline {{link-to}} without error'](assert) {
+    assert.expect(0);
 
-QUnit.test('Can transform an inline {{link-to}} without error', function() {
-  expect(0);
-
-  compile(`{{link-to 'foo' 'index'}}`, {
-    moduleName: 'foo/bar/baz'
-  });
+    compile(`{{link-to 'foo' 'index'}}`, {
+      moduleName: 'foo/bar/baz'
+    });
+  }
 });
