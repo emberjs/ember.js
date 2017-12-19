@@ -3,8 +3,8 @@ export const privateRouteInfos = new WeakMap();
 export default class RouteInfo {
   constructor(name, controller, template, outletName, into) {
     this.name = name;
-    this._child = null;
     privateRouteInfos.set(this,{
+      child: null,
       controller,
       template,
       outletName: outletName || 'main',
@@ -17,7 +17,7 @@ export default class RouteInfo {
   }
 
   get child() {
-    return this._child;
+    return privateRouteInfos.get(this).child;
   }
 
   getChild(name) {

@@ -1,4 +1,4 @@
-import { Option, Simple } from '@glimmer/interfaces';
+import { Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
   DynamicScope as GlimmerDynamicScope,
@@ -24,8 +24,7 @@ import Environment from './environment';
 import { OwnedTemplate } from './template';
 import ComponentStateBucket, { Component } from './utils/curly-component-state-bucket';
 import { RootReference } from './utils/references';
-import OutletView, { RootOutletStateReference } from './views/outlet';
-import { RouteInfo } from 'ember-routing';
+import OutletView, { RouteInfoReference } from './views/outlet';
 
 import { ComponentDefinition, NULL_REFERENCE, RenderResult } from '@glimmer/runtime';
 
@@ -37,13 +36,13 @@ export interface View {
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
-  outletState: VersionedPathReference<Option<RouteInfo>>;
-  rootOutletState: RootOutletStateReference | undefined;
+  outletState:  RouteInfoReference | undefined;
+  rootOutletState: RouteInfoReference | undefined;
 
   constructor(
     public view: View | null,
-    outletState: VersionedPathReference<Option<RouteInfo>>,
-    rootOutletState?: RootOutletStateReference) {
+    outletState: RouteInfoReference | undefined,
+    rootOutletState?: RouteInfoReference) {
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
   }
@@ -54,16 +53,20 @@ export class DynamicScope implements GlimmerDynamicScope {
     );
   }
 
-  get(key: 'outletState'): VersionedPathReference<Option<RouteInfo>> {
+  get(key: 'outletState'): VersionedPathReference<Opaque> {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
-    return this.outletState;
+    return this.outletState || NULL_REFERENCE;
   }
 
-  set(key: 'outletState', value: VersionedPathReference<Option<RouteInfo>>) {
+  set(key: 'outletState', value: VersionedPathReference<Opaque>) {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
-    this.outletState = value;
+    if (value) {
+      this.outletState = RouteInfoReference.fromRef(value);
+    } else {
+      this.outletState = value;
+    }
     return value;
   }
 }
@@ -235,7 +238,7 @@ export abstract class Renderer {
     let definition = new TopLevelOutletComponentDefinition(view);
     let outletStateReference = view.toReference();
 
-    this._appendDefinition(view, definition, target, outletStateReference);
+    this._appendDefinition(view, definition, target, RouteInfoReference.fromRef(outletStateReference));
   }
 
   appendTo(view: ComponentStateBucket, target: Simple.Element) {
@@ -248,9 +251,9 @@ export abstract class Renderer {
     root: Opaque,
     definition: ComponentDefinition<Opaque>,
     target: Simple.Element,
-    outletStateReference?: RootOutletStateReference) {
+    outletStateReference?: RouteInfoReference) {
     let self = new RootReference(definition);
-    let dynamicScope = new DynamicScope(null, outletStateReference || NULL_REFERENCE, outletStateReference);
+    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
 
     this._renderRoot(rootState);

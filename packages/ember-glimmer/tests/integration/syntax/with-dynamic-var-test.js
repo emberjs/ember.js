@@ -1,5 +1,6 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
+import { RouteInfo } from 'ember-routing';
 
 moduleFor('{{-with-dynamic-var}}', class extends RenderingTest {
   ['@test does not allow setting values other than outletState']() {
@@ -12,20 +13,23 @@ moduleFor('{{-with-dynamic-var}}', class extends RenderingTest {
     }, /Using `-with-dynamic-scope` is only supported for `outletState` \(you used `foo`\)./);
   }
 
-  ['@test allows setting/getting outletState']() {
-    // this is simply asserting that we can write and read outletState
-    // the actual value being used here is not what is used in real life
-    // feel free to change the value being set and asserted as needed
-    this.render(strip`
-      {{#-with-dynamic-vars outletState="bar"}}
-        {{-get-dynamic-var 'outletState'}}
-      {{/-with-dynamic-vars}}
-    `);
+  ['@test allows setting/getting outletState'](assert) {
+    assert.expect(1);
 
-    this.assertText('bar');
+    let myOutletState = new RouteInfo("some-route");
+
+    this.registerHelper('my-inspect-helper', function([outletState]) {
+      assert.equal(outletState, myOutletState, 'expected to receive outletState');
+    });
+
+    this.render(strip`
+      {{#-with-dynamic-vars outletState=myOutletState}}
+        {{my-inspect-helper (-get-dynamic-var 'outletState')}}
+      {{/-with-dynamic-vars}}
+    `, { myOutletState });
   }
 
-  ['@test does not allow setting values other than outletState']() {
+  ['@test does not allow getting values other than outletState']() {
     expectAssertion(() => {
       this.render(`{{-get-dynamic-var 'foo'}}`);
     }, /Using `-get-dynamic-scope` is only supported for `outletState` \(you used `foo`\)./);
