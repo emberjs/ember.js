@@ -26,7 +26,6 @@ import {
   calculateCacheKey,
   prefixRouteNameArg
 } from '../utils';
-import RouteInfo, { privateRouteInfos } from './route_info';
 
 function K() { return this; }
 
@@ -2064,8 +2063,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
     }
 
-    let routeInfo = buildRenderOptions(this, isDefaultRender, name, options);
-    this.connections.push(routeInfo);
+    let connection = buildRenderOptions(this, isDefaultRender, name, options);
+    this.connections.push(connection);
     run.once(this.router, '_setOutlets');
   },
 
@@ -2161,16 +2160,15 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       parentView = undefined;
     }
     for (let i = 0; i < this.connections.length; i++) {
-      let routeInfo = this.connections[i];
-      let privRouteInfo = privateRouteInfos.get(routeInfo);
-      if (privRouteInfo.outletName === outletName && privRouteInfo.into === parentView) {
+      let connection = this.connections[i];
+      if (connection.outletName === outletName && connection.into === parentView) {
         // This neuters the disconnected outlet such that it doesn't
         // render anything, but it leaves an entry in the outlet
         // hierarchy so that any existing other renders that target it
         // don't suddenly blow up. They will still stick themselves
         // into its outlets, which won't render anywhere. All of this
         // statefulness should get the machete in 2.0.
-        this.connections[i] = new RouteInfo(routeInfo.name, undefined, undefined, privRouteInfo.outletName, privRouteInfo.into);
+        this.connections[i] = new RouteConnection(connection.name, undefined, undefined, connection.outletName, connection.into);
         run.once(this.router, '_setOutlets');
       }
     }
@@ -2265,7 +2263,7 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     into = undefined;
   }
 
-  let renderOptions = new RouteInfo(name, controller, template || route._topLevelViewTemplate, outlet, into);
+  let renderOptions = new RouteConnection(name, controller, template || route._topLevelViewTemplate, outlet, into);
 
   if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
@@ -2379,6 +2377,16 @@ function getEngineRouteName(engine, routeName) {
   }
 
   return routeName;
+}
+
+class RouteConnection {
+  constructor(name, controller, template, outletName, into) {
+    this.name = name;
+    this.controller = controller;
+    this.template = template;
+    this.outletName = outletName;
+    this.into = into;
+  }
 }
 
 export default Route;

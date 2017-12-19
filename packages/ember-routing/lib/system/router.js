@@ -288,10 +288,11 @@ const EmberRouter = EmberObject.extend(Evented, {
       let connections = route.connections;
       let ownState;
       for (let j = 0; j < connections.length; j++) {
-        let routeInfo = connections[j];
-        liveRoutes = appendLiveRoute(liveRoutes, defaultParentState, routeInfo);
-        if (routeInfo.name === route.routeName || privateRouteInfos.get(routeInfo).outlet === 'main') {
-          ownState = routeInfo;
+        let connection = connections[j];
+        let result = appendLiveRoute(liveRoutes, defaultParentState, connection);
+        liveRoutes = result.liveRoutes;
+        if (connection.name === route.routeName || connection.outlet === 'main') {
+          ownState = result.ownState;
         }
       }
       if (connections.length === 0) {
@@ -1481,19 +1482,19 @@ function findLiveRoute(liveRoutes, name) {
   }
 }
 
-function appendLiveRoute(liveRoutes, defaultParentState, routeInfo) {
+function appendLiveRoute(liveRoutes, defaultParentState, connection) {
+  let ownState = new RouteInfo(connection.name, connection.controller, connection.template, connection.outletName, connection.into);
   let target;
-  let privateInfo = privateRouteInfos.get(routeInfo);
 
-  if (privateInfo.into) {
-    target = findLiveRoute(liveRoutes, privateInfo.into);
+  if (connection.into) {
+    target = findLiveRoute(liveRoutes, connection.into);
   } else {
     target = defaultParentState;
   }
   if (target) {
-    target.setChild(privateInfo.outletName, routeInfo);
+    target.setChild(connection.outletName, ownState);
   } else {
-    if (privateInfo.into) {
+    if (connection.into) {
       deprecate(
         `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
         false,
@@ -1510,12 +1511,12 @@ function appendLiveRoute(liveRoutes, defaultParentState, routeInfo) {
       // helper, and people are allowed to target templates rendered
       // by the render helper. So instead we defer doing anyting with
       // these orphan renders until afterRender.
-      appendOrphan(liveRoutes, privateInfo.into, routeInfo);
+      appendOrphan(liveRoutes, connection.into, ownState);
     } else {
-      liveRoutes = routeInfo;
+      liveRoutes = ownState;
     }
   }
-  return liveRoutes;
+  return { liveRoutes, ownState };
 }
 
 function appendOrphan(liveRoutes, into, myState) {

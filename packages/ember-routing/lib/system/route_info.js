@@ -21,10 +21,11 @@ export default class RouteInfo {
   }
 
   getChild(name) {
+    let priv = privateRouteInfos.get(this);
     if (name === 'main') {
-      return this._child;
+      return priv.child;
     } else {
-      let outlets = privateRouteInfos.get(this).outlets;
+      let outlets = priv.outlets;
       if (outlets) {
         return outlets[name];
       }
@@ -32,10 +33,10 @@ export default class RouteInfo {
   }
 
   setChild(name, routeInfo) {
+    let priv = privateRouteInfos.get(this);
     if (name === 'main') {
-      this._child = routeInfo;
+      priv.child = routeInfo;
     } else {
-      let priv = privateRouteInfos.get(this);
       let outlets = priv.outlets;
       if (!outlets) {
         outlets = priv.outlets = Object.create(null);
