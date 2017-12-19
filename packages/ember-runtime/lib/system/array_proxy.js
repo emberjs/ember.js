@@ -1,11 +1,9 @@
 import {
   get,
   computed,
-  _beforeObserver,
   observer,
   beginPropertyChanges,
   endPropertyChanges,
-  alias
 } from 'ember-metal';
 import {
   isArray
@@ -69,6 +67,8 @@ function K() { return this; }
   @public
 */
 export default EmberObject.extend(MutableArray, {
+  _content: null,
+  _arrangedContent: null,
 
   /**
     The content array. Must be an object that implements `Ember.Array` and/or
@@ -78,7 +78,15 @@ export default EmberObject.extend(MutableArray, {
     @type EmberArray
     @private
   */
-  content: null,
+  set content(val) {
+    this._contentWillChange();
+    this._content = val;
+    this._contentDidChange();
+  }
+
+  get content() {
+    return this._content
+  }
 
   /**
    The array that the proxy pretends to be. In the default `ArrayProxy`
@@ -88,7 +96,23 @@ export default EmberObject.extend(MutableArray, {
    @property arrangedContent
    @private
   */
-  arrangedContent: alias('content'),
+  arrangedContent: computed('_content', function() {
+    get() {
+      let arrangedContent = this._arrangedContent;
+      if (arrangedContent === null) {
+        this._arrangedContentWillChange();
+        return this.get('_content');
+      } else {
+        return arrangedContent;
+      }
+    },
+
+    set(key, val) {
+      this._arrangedContentWillChange();
+      this._arrangedContent = val;
+      return val;
+    }
+  }),
 
   /**
     Should actually retrieve the object at the specified index from the
@@ -132,9 +156,9 @@ export default EmberObject.extend(MutableArray, {
     @private
     @method _contentWillChange
   */
-  _contentWillChange: _beforeObserver('content', function() {
+  _contentWillChange() {
     this._teardownContent();
-  }),
+  },
 
   _teardownContent() {
     let content = get(this, 'content');
@@ -179,13 +203,13 @@ export default EmberObject.extend(MutableArray, {
     @private
     @method _contentDidChange
   */
-  _contentDidChange: observer('content', function() {
+  _contentDidChange() {
     let content = get(this, 'content');
 
     assert('Can\'t set ArrayProxy\'s content to itself', content !== this);
 
     this._setupContent();
-  }),
+  },
 
   _setupContent() {
     let content = get(this, 'content');
@@ -200,7 +224,7 @@ export default EmberObject.extend(MutableArray, {
     }
   },
 
-  _arrangedContentWillChange: _beforeObserver('arrangedContent', function() {
+  _arrangedContentWillChange() {
     let arrangedContent = get(this, 'arrangedContent');
     let len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
@@ -208,7 +232,7 @@ export default EmberObject.extend(MutableArray, {
     this.arrangedContentWillChange(this);
 
     this._teardownArrangedContent(arrangedContent);
-  }),
+  },
 
   _arrangedContentDidChange: observer('arrangedContent', function() {
     let arrangedContent = get(this, 'arrangedContent');
