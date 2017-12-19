@@ -11,16 +11,17 @@ import {
 import { OutletComponentDefinition } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
 import { privateRouteInfos } from 'ember-routing';
+import { RouteInfoReference } from '../views/outlet';
 
 class OutletComponentReference {
   public outletNameRef: any;
-  public parentOutletStateRef: any;
+  public parentOutletStateRef: RouteInfoReference;
   public definition: any;
   public lastState: any;
   public outletStateTag: TagWrapper<UpdatableTag>;
   public tag: any;
 
-  constructor(outletNameRef: any, parentOutletStateRef: any) {
+  constructor(outletNameRef: any, parentOutletStateRef: RouteInfoReference) {
     this.outletNameRef = outletNameRef;
     this.parentOutletStateRef = parentOutletStateRef;
     this.definition = null;
@@ -83,7 +84,11 @@ function outletComponentFor(vm: VM, args: Arguments) {
     outletNameRef = args.positional.at(0);
   }
 
-  return new OutletComponentReference(outletNameRef, outletState);
+  if (outletState) {
+    return new OutletComponentReference(outletNameRef, outletState);
+  } else {
+    return null;
+  }
 }
 
 /**

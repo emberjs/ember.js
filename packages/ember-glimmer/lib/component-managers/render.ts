@@ -50,7 +50,7 @@ class SingletonRenderManager extends AbstractRenderManager {
     }
 
     if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
+      dynamicScope.outletState = dynamicScope.rootOutletState.get('main').get('__ember_orphans__').get(name);
     }
 
     return { controller } as RenderState;
@@ -77,7 +77,7 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     }
 
     if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
+      dynamicScope.outletState = dynamicScope.rootOutletState.get('main').get('__ember_orphans__').get(name);
     }
 
     return { controller, model: modelRef };

@@ -48,9 +48,13 @@ class ChildRouteInfoReference extends RouteInfoReference {
   }
 
   value(): Option<RouteInfo> {
-    let value = this._ref.value();
-    if (value) {
-      return value.getChild(this.outletName);
+    let parentValue = this._ref.value();
+    if (parentValue) {
+      let value = parentValue.getChild(this.outletName);
+      if (value) {
+        value.markAsUsed();
+      }
+      return value;
     }
     return null;
   }
@@ -69,7 +73,6 @@ export default class OutletView {
   public template: OwnedTemplate;
   public outletState: Option<RouteInfo>;
   private _outletStateReference: UpdatableReference | null;
-
 
   static extend(injections: any) {
     return class extends OutletView {
@@ -119,7 +122,7 @@ export default class OutletView {
 
   setOutletState(state: RouteInfo) {
     let routeInfo = new RouteInfo('-top-level');
-    routeInfo.setChild('main', state)
+    routeInfo.setChild('main', state);
     this.outletState = routeInfo;
     if (this._outletStateReference) {
       this._outletStateReference.update(routeInfo);

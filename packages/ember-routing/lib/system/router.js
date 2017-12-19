@@ -1511,7 +1511,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, connection) {
       // helper, and people are allowed to target templates rendered
       // by the render helper. So instead we defer doing anyting with
       // these orphan renders until afterRender.
-      appendOrphan(liveRoutes, connection.into, ownState);
+      appendOrphan(liveRoutes, connection.into, connection, ownState);
     } else {
       liveRoutes = ownState;
     }
@@ -1519,17 +1519,23 @@ function appendLiveRoute(liveRoutes, defaultParentState, connection) {
   return { liveRoutes, ownState };
 }
 
-function appendOrphan(liveRoutes, into, myState) {
+function appendOrphan(liveRoutes, into, connection, myState) {
   let orphans = liveRoutes.getChild('__ember_orphans__');
   if (!orphans) {
     orphans = new RouteInfo('__ember_orphans__');
     liveRoutes.setChild('__ember_orphans__', orphans);
   }
-  orphans.setChild(into, myState);
-  run.schedule('afterRender', () => {
-    // `wasUsed` gets set by the render helper.
-    assert(`You attempted to render into '${into}' but it was not found`, myState.wasUsed);
-  });
+  let wrapper = new RouteInfo('-orphan-wrapper');
+  wrapper.setChild(connection.outletName, myState);
+  orphans.setChild(into, wrapper);
+  if (connection.template && !connection.orphanCheck) {
+    connection.orphanCheck = { wasUsed: false };
+    myState.checkIfUsed(connection.orphanCheck);
+    run.schedule('afterRender', () => {
+      assert(`You attempted to render into '${into}' but it was not found`, connection.orphanCheck.wasUsed);
+    });
+  }
+
 }
 
 function representEmptyRoute(liveRoutes, defaultParentState, route) {

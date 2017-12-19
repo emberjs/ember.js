@@ -10,9 +10,7 @@ export default class RouteInfo {
       outletName: outletName || 'main',
       into,
       outlets: null,
-
-      // this is for legacy render helper support
-      wasUsed: false
+      orphanCheck: null
     });
   }
 
@@ -42,6 +40,20 @@ export default class RouteInfo {
         outlets = priv.outlets = Object.create(null);
       }
       outlets[name] = routeInfo;
+    }
+  }
+
+  // this is for legacy {{render}} helper support
+  checkIfUsed(checker) {
+    let priv = privateRouteInfos.get(this);
+    priv.orphanCheck = checker;
+  }
+
+  // this is for legacy {{render}} helper support
+  markAsUsed() {
+    let priv = privateRouteInfos.get(this);
+    if (priv.orphanCheck) {
+      priv.orphanCheck.wasUsed = true;
     }
   }
 }
