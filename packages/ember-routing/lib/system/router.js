@@ -291,7 +291,7 @@ const EmberRouter = EmberObject.extend(Evented, {
         let connection = connections[j];
         let result = appendLiveRoute(liveRoutes, defaultParentState, connection);
         liveRoutes = result.liveRoutes;
-        if (connection.name === route.routeName || connection.outlet === 'main') {
+        if (connection.name === route.routeName || connection.outletName === 'main') {
           ownState = result.ownState;
         }
       }
