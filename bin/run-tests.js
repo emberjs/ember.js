@@ -271,15 +271,30 @@ function codeQualityChecks() {
   });
 }
 
+function runAndExit() {
+  runInSequence(testFunctions)
+    .then(function() {
+      console.log(chalk.green('Passed!'));
+      process.exit(0);
+    })
+    .catch(function() {
+      console.error(chalk.red('Failed!'));
+      process.exit(1);
+    });
+}
+
+
 switch (process.env.TEST_SUITE) {
   case 'built-tests':
     console.log('suite: built-tests');
     generateBuiltTests();
+    runAndExit();
     break;
   case 'old-jquery-and-extend-prototypes':
     console.log('suite: old-jquery-and-extend-prototypes');
     generateOldJQueryTests();
     generateExtendPrototypeTests();
+    runAndExit();
     break;
   case 'all':
     console.log('suite: all');
@@ -287,42 +302,31 @@ switch (process.env.TEST_SUITE) {
     generateOldJQueryTests();
     generateExtendPrototypeTests();
     generateEachPackageTests();
+    runAndExit();
     break;
   case 'node':
     console.log('suite: node');
     require('./run-node-tests');
-    process.exit(0);
     break;
   case 'blueprints':
     console.log('suite: blueprints');
     require('../node-tests/nodetest-runner');
     server.close();
-    process.exit(0);
     break;
   case 'travis-browsers':
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
-    process.exit(0);
     break;
   case 'sauce':
     console.log('suite: sauce');
     require('./run-sauce-tests');
-    process.exit(0);
     break;
   case 'code-quality':
     testFunctions.push(codeQualityChecks);
+    runAndExit();
     break;
   default:
     console.log('suite: default (generate each package)');
     generateEachPackageTests();
+    runAndExit();
 }
-
-runInSequence(testFunctions)
-  .then(function() {
-    console.log(chalk.green('Passed!'));
-    process.exit(0);
-  })
-  .catch(function() {
-    console.error(chalk.red('Failed!'));
-    process.exit(1);
-  });
