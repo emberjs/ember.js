@@ -60,17 +60,6 @@ class PrivateRouteInfo {
 }
 
 export default class RouteInfo {
-
-  // NEXT: we need a nice public API for creating RouteInfo. We should
-  // describe what to render in terms that are portable to a regular
-  // template invocation ("routable component"-ish).
-  //
-  // It would be nice if we keep this publicly-immutable (have people
-  // built up from the bottom, passing child into constructor).
-  //
-  // Non-default outlets should go through private API, I would like
-  // the modern public API to prevent they don't exist.
-
   // routeName: string, childRoute?: RouteInfo, params?: Map, queryParams?: Map
   constructor(routeName, childRoute, params, queryParams) {
     privateRouteInfos.set(this, new PrivateRouteInfo(routeName, childRoute, params || new Map(), queryParams || new Map()));
