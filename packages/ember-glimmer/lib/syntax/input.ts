@@ -1,13 +1,17 @@
 /**
 @module ember
 */
+import {
+  LazyOpcodeBuilder,
+  TemplateMeta
+} from '@glimmer/opcode-compiler';
 import { assert } from 'ember-debug';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 import { dynamicComponentMacro } from './dynamic-component';
 import { hashToArgs } from './utils';
 
-function buildSyntax(type: string, params: any[], hash: any, builder: any) {
-  let definition = builder.env.getComponentDefinition(type, builder.meta.templateMeta);
+function buildSyntax(type: string, params: any[], hash: any, builder: LazyOpcodeBuilder<TemplateMeta>) {
+  let definition = builder.resolver.lookupComponentDefinition(type, builder.referrer);
   builder.component.static(definition, [params, hashToArgs(hash), null, null]);
   return true;
 }
