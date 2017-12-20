@@ -1499,7 +1499,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, connection) {
     target = defaultParentState;
   }
   if (target) {
-    privateAccess(target).setChild(connection.outletName, ownState);
+    privateAccess(target).setChild(target, connection.outletName, ownState);
   } else {
     if (connection.into) {
       deprecate(
@@ -1530,11 +1530,11 @@ function appendOrphan(liveRoutes, into, connection, myState) {
   let orphans = privateAccess(liveRoutes).getChild('__ember_orphans__');
   if (!orphans) {
     orphans = new RouteInfo('__ember_orphans__');
-    privateAccess(liveRoutes).setChild('__ember_orphans__', orphans);
+    privateAccess(liveRoutes).setChild(liveRoutes, '__ember_orphans__', orphans);
   }
   let wrapper = new RouteInfo('-orphan-wrapper');
-  privateAccess(wrapper).setChild(connection.outletName, myState);
-  privateAccess(orphans).setChild(into, wrapper);
+  privateAccess(wrapper).setChild(wrapper, connection.outletName, myState);
+  privateAccess(orphans).setChild(orphans, into, wrapper);
   if (connection.template && !connection.orphanCheck) {
     connection.orphanCheck = { wasUsed: false };
     privateAccess(myState).checkIfUsed(connection.orphanCheck);
@@ -1557,7 +1557,7 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
     // Create an entry to represent our default template name,
     // just so other routes can target it and inherit its place
     // in the outlet hierarchy.
-    privateAccess(defaultParentState).setChild('main', new RouteInfo(route.routeName));
+    privateAccess(defaultParentState).setChild(defaultParentState, 'main', new RouteInfo(route.routeName));
     return defaultParentState;
   }
 }

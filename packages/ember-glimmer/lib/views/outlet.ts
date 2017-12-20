@@ -122,7 +122,7 @@ export default class OutletView {
 
   setOutletState(state: RouteInfo) {
     let routeInfo = new RouteInfo('-top-level');
-    privateAccess(routeInfo).setChild('main', state);
+    privateAccess(routeInfo).setChild(routeInfo, 'main', state);
     this.outletState = routeInfo;
     if (this._outletStateReference) {
       this._outletStateReference.update(routeInfo);

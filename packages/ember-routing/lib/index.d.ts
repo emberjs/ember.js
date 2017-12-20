@@ -242,7 +242,7 @@ export class PrivateRouteInfo {
   template: OwnedTemplate;
   wasUsed: boolean;
   getChild(outletName: string) : RouteInfo | null;
-  setChild(outletName: string, info: RouteInfo) : void;
+  setChild(thisPublic: RouteInfo, outletName: string, info: RouteInfo) : void;
   markAsUsed(): void;
 }
 

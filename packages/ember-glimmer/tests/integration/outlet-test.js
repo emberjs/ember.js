@@ -12,7 +12,7 @@ function makeRouteInfo(routeName, controller, template) {
 }
 
 function setChild(routeInfo, outletName, child) {
-  privateAccess(routeInfo).setChild(outletName, child);
+  privateAccess(routeInfo).setChild(routeInfo, outletName, child);
 }
 
 moduleFor('outlet view', class extends RenderingTest {

@@ -34,7 +34,8 @@ class PrivateRouteInfo {
     }
   }
 
-  setChild(name, routeInfo) {
+  setChild(thisPublic, name, routeInfo) {
+    privateAccess(routeInfo).parent = thisPublic;
     if (name === 'main') {
       this.child = routeInfo;
     } else {
