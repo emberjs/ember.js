@@ -2179,7 +2179,16 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         // don't suddenly blow up. They will still stick themselves
         // into its outlets, which won't render anywhere. All of this
         // statefulness should get the machete in 2.0.
-        this.connections[i] = new RouteConnection(connection.name, undefined, undefined, connection.outletName, connection.into, connection.params, connection.queryParams);
+        this.connections[i] = new RouteConnection(
+          connection.name,
+          connection.templateName,
+          undefined,
+          undefined,
+          connection.outletName,
+          connection.into,
+          connection.params,
+          connection.queryParams
+        );
         run.once(this.router, '_setOutlets');
       }
     }
@@ -2275,6 +2284,7 @@ function buildRenderOptions(route, isDefaultRender, _name, options, params, quer
   }
 
   let renderOptions = new RouteConnection(
+    route.routeName,
     name,
     controller,
     template || route._topLevelViewTemplate,
@@ -2399,8 +2409,16 @@ function getEngineRouteName(engine, routeName) {
 }
 
 class RouteConnection {
-  constructor(name, controller, template, outletName, into, params, queryParams) {
+  constructor(name, templateName, controller, template, outletName, into, params, queryParams) {
+
+    // name and templateName are different because we care about what
+    // route this connection actually came from ("name") but we are
+    // also forced to care which template it looked up
+    // ("templateName") because it's actually the templateName that
+    // gets targed by `render({ into })`.
     this.name = name;
+    this.templateName = templateName;
+
     this.controller = controller;
     this.template = template;
     this.outletName = outletName;

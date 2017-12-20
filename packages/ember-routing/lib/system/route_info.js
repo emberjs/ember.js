@@ -16,6 +16,7 @@ class PrivateRouteInfo {
     this.outlets = null;
     this.controller = null,
     this.template = null;
+    this.templateName = null;
     this.orphanCheck = null;
   }
 

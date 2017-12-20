@@ -291,7 +291,7 @@ const EmberRouter = EmberObject.extend(Evented, {
         let connection = connections[j];
         let result = appendLiveRoute(liveRoutes, defaultParentState, connection);
         liveRoutes = result.liveRoutes;
-        if (connection.name === route.routeName || connection.outletName === 'main') {
+        if (connection.templateName === route.routeName || connection.outletName === 'main') {
           ownState = result.ownState;
         }
       }
@@ -1467,13 +1467,14 @@ function findLiveRoute(liveRoutes, name) {
   let stack = [liveRoutes];
   while (stack.length > 0) {
     let test = stack.shift();
-    if (test.name === name) {
+    let privTest = privateAccess(test);
+    if (privTest.templateName === name) {
       return test;
     }
     if (test.child) {
       stack.push(test.child);
     }
-    let otherOutlets = privateAccess(test).outlets;
+    let otherOutlets = privTest.outlets;
     if (otherOutlets) {
       for (let outletName in otherOutlets) {
         stack.push(otherOutlets[outletName]);
@@ -1488,6 +1489,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, connection) {
     let privState = privateAccess(ownState);
     privState.template = connection.template;
     privState.controller = connection.controller;
+    privState.templateName = connection.templateName;
   }
   let target;
 
