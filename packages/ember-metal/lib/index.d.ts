@@ -1,3 +1,5 @@
+import { Tag } from '@glimmer/reference';
+
 interface IBackburner {
   join(...args: any[]): void;
   on(...args: any[]): void;
@@ -35,9 +37,9 @@ export function didRender(object: any, key: string, reference: any): boolean;
 
 export function isNone(obj: any): boolean;
 
-export function tagForProperty(object: any, propertyKey: string, _meta?: any): any;
+export function tagForProperty(object: any, propertyKey: string, _meta?: any): Tag;
 
-export function tagFor(object: any, _meta?: any): any;
+export function tagFor(object: any, _meta?: any): Tag;
 
 export function watchKey(obj: any, keyName: string, meta?: any): void;
 

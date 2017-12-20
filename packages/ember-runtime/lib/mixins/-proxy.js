@@ -41,8 +41,8 @@ class ProxyTag extends CachedTag {
     let content = get(proxy, 'content');
 
     this.proxy = proxy;
-    this.proxyWrapperTag = new DirtyableTag();
-    this.proxyContentTag = new UpdatableTag(tagFor(content));
+    this.proxyWrapperTag = DirtyableTag.create();
+    this.proxyContentTag = UpdatableTag.create(tagFor(content));
   }
 
   compute() {

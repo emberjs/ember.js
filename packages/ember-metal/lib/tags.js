@@ -9,7 +9,7 @@ export function setHasViews(fn) {
 }
 
 function makeTag() {
-  return new DirtyableTag();
+  return DirtyableTag.create();
 }
 
 export function tagForProperty(object, propertyKey, _meta) {

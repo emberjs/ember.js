@@ -56,7 +56,7 @@ let Helper = FrameworkObject.extend({
 
   init() {
     this._super(...arguments);
-    this[RECOMPUTE_TAG] = new DirtyableTag();
+    this[RECOMPUTE_TAG] = DirtyableTag.create();
   },
 
   /**

@@ -565,7 +565,7 @@ const Component = CoreView.extend(
     init() {
       this._super(...arguments);
       this[IS_DISPATCHING_ATTRS] = false;
-      this[DIRTY_TAG] = new DirtyableTag();
+      this[DIRTY_TAG] = DirtyableTag.create();
       this[ROOT_REF] = new RootReference(this);
       this[BOUNDS] = null;
 
