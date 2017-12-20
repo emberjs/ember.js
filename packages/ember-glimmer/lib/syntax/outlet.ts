@@ -10,7 +10,7 @@ import {
 } from '@glimmer/runtime';
 import { OutletComponentDefinition } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
-import { privateRouteInfos } from 'ember-routing';
+import { privateAccess } from 'ember-routing';
 import { RouteInfoReference } from '../views/outlet';
 
 class OutletComponentReference {
@@ -40,7 +40,7 @@ class OutletComponentReference {
 
     definition = revalidate(definition, lastState, newState);
 
-    let template = newState && privateRouteInfos.get(newState)!.template;
+    let template = newState && privateAccess(newState).template;
 
     if (definition) {
       return definition;
@@ -61,8 +61,8 @@ function revalidate(definition: any, lastState: any, newState: any) {
     return null;
   }
 
-  let newPrivate = privateRouteInfos.get(newState)!;
-  let oldPrivate = privateRouteInfos.get(lastState)!;
+  let newPrivate = privateAccess(newState);
+  let oldPrivate = privateAccess(lastState);
 
   if (
     newPrivate.template === oldPrivate.template &&

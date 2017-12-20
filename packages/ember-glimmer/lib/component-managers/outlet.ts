@@ -17,7 +17,7 @@ import {
 } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
-import { privateRouteInfos, RouteInfo } from 'ember-routing';
+import { privateAccess, RouteInfo } from 'ember-routing';
 
 function instrumentationPayload(routeInfo: RouteInfo) {
   return { object: `${routeInfo.name}` };
@@ -69,7 +69,7 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
   }
 
   getSelf({ outletState }: StateBucket) {
-    return new RootReference(privateRouteInfos.get(outletState)!.controller);
+    return new RootReference(privateAccess(outletState).controller);
   }
 
   didRenderLayout(bucket: StateBucket) {

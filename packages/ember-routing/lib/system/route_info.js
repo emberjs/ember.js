@@ -1,27 +1,32 @@
-export const privateRouteInfos = new WeakMap();
+import { Map } from 'ember-metal';
 
-export default class RouteInfo {
-  constructor(name, controller, template) {
-    this.name = name;
-    privateRouteInfos.set(this,{
-      child: null,
-      outlets: null,
-      controller,
-      template,
-      orphanCheck: null
-    });
+const privateRouteInfos = new WeakMap();
+
+export function privateAccess(routeInfo) {
+  return privateRouteInfos.get(routeInfo);
+}
+
+class PrivateRouteInfo {
+  constructor(routeName, childRoute, params, queryParams) {
+    this.name = routeName;
+    this.params = params;
+    this.queryParams = queryParams;
+    this.child = childRoute;
+    this.parent = null;
+    this.outlets = null;
+    this.controller = null,
+    this.template = null;
+    this.orphanCheck = null;
   }
 
-  get child() {
-    return privateRouteInfos.get(this).child;
-  }
-
+  // the public constructor can set `child`, which is the child route
+  // that goes into the "main" outlet. But this (private) method can
+  // set any other outlet name too.
   getChild(name) {
-    let priv = privateRouteInfos.get(this);
     if (name === 'main') {
-      return priv.child;
+      return this.child;
     } else {
-      let outlets = priv.outlets;
+      let outlets = this.outlets;
       if (outlets) {
         return outlets[name];
       }
@@ -29,13 +34,12 @@ export default class RouteInfo {
   }
 
   setChild(name, routeInfo) {
-    let priv = privateRouteInfos.get(this);
     if (name === 'main') {
-      priv.child = routeInfo;
+      this.child = routeInfo;
     } else {
-      let outlets = priv.outlets;
+      let outlets = this.outlets;
       if (!outlets) {
-        outlets = priv.outlets = Object.create(null);
+        outlets = this.outlets = Object.create(null);
       }
       outlets[name] = routeInfo;
     }
@@ -43,15 +47,51 @@ export default class RouteInfo {
 
   // this is for legacy {{render}} helper support
   checkIfUsed(checker) {
-    let priv = privateRouteInfos.get(this);
-    priv.orphanCheck = checker;
+    this.orphanCheck = checker;
   }
 
   // this is for legacy {{render}} helper support
   markAsUsed() {
-    let priv = privateRouteInfos.get(this);
-    if (priv.orphanCheck) {
-      priv.orphanCheck.wasUsed = true;
+    if (this.orphanCheck) {
+      this.orphanCheck.wasUsed = true;
     }
+  }
+}
+
+export default class RouteInfo {
+
+  // NEXT: we need a nice public API for creating RouteInfo. We should
+  // describe what to render in terms that are portable to a regular
+  // template invocation ("routable component"-ish).
+  //
+  // It would be nice if we keep this publicly-immutable (have people
+  // built up from the bottom, passing child into constructor).
+  //
+  // Non-default outlets should go through private API, I would like
+  // the modern public API to prevent they don't exist.
+
+  // routeName: string, childRoute?: RouteInfo, params?: Map, queryParams?: Map
+  constructor(routeName, childRoute, params, queryParams) {
+    privateRouteInfos.set(this, new PrivateRouteInfo(routeName, childRoute, params || new Map(), queryParams || new Map()));
+  }
+
+  get name() {
+    return privateAccess(this).name;
+  }
+
+  get params() {
+    return privateAccess(this).params;
+  }
+
+  get queryParams() {
+    return privateAccess(this).queryParams;
+  }
+
+  get child() {
+    return privateAccess(this).child;
+  }
+
+  get parent() {
+    return privateAccess(this).parent;
   }
 }

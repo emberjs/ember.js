@@ -6,7 +6,7 @@ import { run } from 'ember-metal';
 import { assign, OWNER } from 'ember-utils';
 import { Renderer } from '../renderer';
 import { Container, OwnedTemplate } from '../template';
-import { RouteInfo } from 'ember-routing';
+import { RouteInfo, privateAccess } from 'ember-routing';
 import { UpdatableReference } from '../utils/references';
 
 export class RouteInfoReference {
@@ -50,9 +50,9 @@ class ChildRouteInfoReference extends RouteInfoReference {
   value(): Option<RouteInfo> {
     let parentValue = this._ref.value();
     if (parentValue) {
-      let value = parentValue.getChild(this.outletName);
+      let value = privateAccess(parentValue).getChild(this.outletName);
       if (value) {
-        value.markAsUsed();
+        privateAccess(value).markAsUsed();
       }
       return value;
     }
@@ -122,7 +122,7 @@ export default class OutletView {
 
   setOutletState(state: RouteInfo) {
     let routeInfo = new RouteInfo('-top-level');
-    routeInfo.setChild('main', state);
+    privateAccess(routeInfo).setChild('main', state);
     this.outletState = routeInfo;
     if (this._outletStateReference) {
       this._outletStateReference.update(routeInfo);

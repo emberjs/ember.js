@@ -6,7 +6,8 @@ import {
   setProperties,
   computed,
   run,
-  isEmpty
+  isEmpty,
+  Map
 } from 'ember-metal';
 import { assert, info, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
@@ -2063,7 +2064,17 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
     }
 
-    let connection = buildRenderOptions(this, isDefaultRender, name, options);
+    let params, queryParams;
+    {
+      let transition = this.router._routerMicrolib.activeTransition;
+      let state = transition ? transition.state : this.router._routerMicrolib.state;
+
+      let fullName = this.fullRouteName;
+      params = assign({}, state.params[fullName]);
+      queryParams = getQueryParamsFor(this, state);
+    }
+
+    let connection = buildRenderOptions(this, isDefaultRender, name, options, params, queryParams);
     this.connections.push(connection);
     run.once(this.router, '_setOutlets');
   },
@@ -2168,7 +2179,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         // don't suddenly blow up. They will still stick themselves
         // into its outlets, which won't render anywhere. All of this
         // statefulness should get the machete in 2.0.
-        this.connections[i] = new RouteConnection(connection.name, undefined, undefined, connection.outletName, connection.into);
+        this.connections[i] = new RouteConnection(connection.name, undefined, undefined, connection.outletName, connection.into, connection.params, connection.queryParams);
         run.once(this.router, '_setOutlets');
       }
     }
@@ -2210,7 +2221,7 @@ function handlerInfoFor(route, handlerInfos, offset = 0) {
   }
 }
 
-function buildRenderOptions(route, isDefaultRender, _name, options) {
+function buildRenderOptions(route, isDefaultRender, _name, options, params, queryParams) {
   assert(
     'You passed undefined as the outlet name.',
     isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
@@ -2263,7 +2274,15 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     into = undefined;
   }
 
-  let renderOptions = new RouteConnection(name, controller, template || route._topLevelViewTemplate, outlet, into);
+  let renderOptions = new RouteConnection(
+    name,
+    controller,
+    template || route._topLevelViewTemplate,
+    outlet,
+    into,
+    new Map(Object.entries(params)),
+    new Map(Object.entries(queryParams))
+  );
 
   if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
@@ -2380,12 +2399,14 @@ function getEngineRouteName(engine, routeName) {
 }
 
 class RouteConnection {
-  constructor(name, controller, template, outletName, into) {
+  constructor(name, controller, template, outletName, into, params, queryParams) {
     this.name = name;
     this.controller = controller;
     this.template = template;
     this.outletName = outletName;
     this.into = into;
+    this.params = params;
+    this.queryParams = queryParams;
   }
 }
 

@@ -1,7 +1,17 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { runAppend } from 'internal-test-helpers';
 import { set } from 'ember-metal';
-import { RouteInfo } from 'ember-routing';
+import { RouteInfo, privateAccess } from 'ember-routing';
+
+function makeRouteInfo(routeName, controller, template) {
+  let info = new RouteInfo(routeName);
+  privateAccess(info).controller = controller;
+  privateAccess(info).template = template;
+  info.setChild = function(outletName, child) {
+    privateAccess(info).setChild(outletName, child);
+  };
+  return info;
+}
 
 moduleFor('outlet view', class extends RenderingTest {
   constructor() {
@@ -13,7 +23,7 @@ moduleFor('outlet view', class extends RenderingTest {
   }
 
   ['@test should not error when initial rendered template is undefined']() {
-    let outletState = new RouteInfo('application');
+    let outletState = makeRouteInfo('application');
     this.runTask(() => this.component.setOutletState(outletState));
 
     runAppend(this.component);
@@ -22,7 +32,7 @@ moduleFor('outlet view', class extends RenderingTest {
   }
 
   ['@test should render the outlet when set after DOM insertion']() {
-    let outletState = new RouteInfo('application');
+    let outletState = makeRouteInfo('application');
     this.runTask(() => this.component.setOutletState(outletState));
 
     runAppend(this.component);
@@ -30,7 +40,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertText('');
 
     this.registerTemplate('application', 'HI{{outlet}}');
-    outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
+    outletState = makeRouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -39,7 +49,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('index', '<p>BYE</p>');
-    outletState.setChild('main', new RouteInfo('index', {}, this.owner.lookup('template:index')));
+    outletState.setChild('main', makeRouteInfo('index', {}, this.owner.lookup('template:index')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -48,7 +58,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
   ['@test should render the outlet when set before DOM insertion']() {
     this.registerTemplate('application', 'HI{{outlet}}');
-    let outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
+    let outletState = makeRouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -59,7 +69,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('index', '<p>BYE</p>');
-    outletState.setChild('main', new RouteInfo('index', {}, this.owner.lookup('template:index')));
+    outletState.setChild('main', makeRouteInfo('index', {}, this.owner.lookup('template:index')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -68,7 +78,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
   ['@test should support an optional name']() {
     this.registerTemplate('application', '<h1>HI</h1>{{outlet "special"}}');
-    let outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
+    let outletState = makeRouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -79,7 +89,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('special', '<p>BYE</p>');
-    outletState.setChild('special', new RouteInfo('special', {}, this.owner.lookup('template:special')));
+    outletState.setChild('special', makeRouteInfo('special', {}, this.owner.lookup('template:special')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -88,7 +98,7 @@ moduleFor('outlet view', class extends RenderingTest {
 
   ['@test does not default outlet name when positional argument is present']() {
     this.registerTemplate('application', '<h1>HI</h1>{{outlet someUndefinedThing}}');
-    let outletState = new RouteInfo('application', {}, this.owner.lookup('template:application'));
+    let outletState = makeRouteInfo('application', {}, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -99,7 +109,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('special', '<p>BYE</p>');
-    outletState.setChild('main', new RouteInfo('special', {}, this.owner.lookup('template:special')));
+    outletState.setChild('main', makeRouteInfo('special', {}, this.owner.lookup('template:special')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -109,7 +119,7 @@ moduleFor('outlet view', class extends RenderingTest {
   ['@test should support bound outlet name']() {
     let controller = { outletName: 'foo' };
     this.registerTemplate('application', '<h1>HI</h1>{{outlet outletName}}');
-    let outletState = new RouteInfo('application', controller, this.owner.lookup('template:application'));
+    let outletState = makeRouteInfo('application', controller, this.owner.lookup('template:application'));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -120,10 +130,10 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('foo', '<p>FOO</p>');
-    outletState.setChild('foo', new RouteInfo('foo', {}, this.owner.lookup('template:foo')));
+    outletState.setChild('foo', makeRouteInfo('foo', {}, this.owner.lookup('template:foo')));
 
     this.registerTemplate('bar', '<p>BAR</p>');
-    outletState.setChild('bar', new RouteInfo('bar', {}, this.owner.lookup('template:bar')));
+    outletState.setChild('bar', makeRouteInfo('bar', {}, this.owner.lookup('template:bar')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -144,8 +154,8 @@ moduleFor('outlet view', class extends RenderingTest {
     // testing here.
     this.registerHelper('identity', ([a]) => a);
 
-    let outletState = new RouteInfo('outer', {}, this.owner.lookup('template:outer'));
-    outletState.setChild('main', new RouteInfo('inner', {}, this.owner.lookup('template:inner')));
+    let outletState = makeRouteInfo('outer', {}, this.owner.lookup('template:outer'));
+    outletState.setChild('main', makeRouteInfo('inner', {}, this.owner.lookup('template:inner')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 

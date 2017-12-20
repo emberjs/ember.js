@@ -38,7 +38,7 @@ import {
 } from '../utils';
 import RouterState from './router_state';
 import { DEBUG } from 'ember-env-flags';
-import RouteInfo, { privateRouteInfos } from './route_info';
+import RouteInfo, { privateAccess } from './route_info';
 
 /**
 @module @ember/routing
@@ -1473,7 +1473,7 @@ function findLiveRoute(liveRoutes, name) {
     if (test.child) {
       stack.push(test.child);
     }
-    let otherOutlets = privateRouteInfos.get(test).outlets;
+    let otherOutlets = privateAccess(test).outlets;
     if (otherOutlets) {
       for (let outletName in otherOutlets) {
         stack.push(otherOutlets[outletName]);
@@ -1483,7 +1483,12 @@ function findLiveRoute(liveRoutes, name) {
 }
 
 function appendLiveRoute(liveRoutes, defaultParentState, connection) {
-  let ownState = new RouteInfo(connection.name, connection.controller, connection.template);
+  let ownState = new RouteInfo(connection.name, null, connection.params, connection.queryParams);
+  {
+    let privState = privateAccess(ownState);
+    privState.template = connection.template;
+    privState.controller = connection.controller;
+  }
   let target;
 
   if (connection.into) {
@@ -1492,7 +1497,7 @@ function appendLiveRoute(liveRoutes, defaultParentState, connection) {
     target = defaultParentState;
   }
   if (target) {
-    target.setChild(connection.outletName, ownState);
+    privateAccess(target).setChild(connection.outletName, ownState);
   } else {
     if (connection.into) {
       deprecate(
@@ -1520,17 +1525,17 @@ function appendLiveRoute(liveRoutes, defaultParentState, connection) {
 }
 
 function appendOrphan(liveRoutes, into, connection, myState) {
-  let orphans = liveRoutes.getChild('__ember_orphans__');
+  let orphans = privateAccess(liveRoutes).getChild('__ember_orphans__');
   if (!orphans) {
     orphans = new RouteInfo('__ember_orphans__');
-    liveRoutes.setChild('__ember_orphans__', orphans);
+    privateAccess(liveRoutes).setChild('__ember_orphans__', orphans);
   }
   let wrapper = new RouteInfo('-orphan-wrapper');
-  wrapper.setChild(connection.outletName, myState);
-  orphans.setChild(into, wrapper);
+  privateAccess(wrapper).setChild(connection.outletName, myState);
+  privateAccess(orphans).setChild(into, wrapper);
   if (connection.template && !connection.orphanCheck) {
     connection.orphanCheck = { wasUsed: false };
-    myState.checkIfUsed(connection.orphanCheck);
+    privateAccess(myState).checkIfUsed(connection.orphanCheck);
     run.schedule('afterRender', () => {
       assert(`You attempted to render into '${into}' but it was not found`, connection.orphanCheck.wasUsed);
     });
@@ -1550,7 +1555,7 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
     // Create an entry to represent our default template name,
     // just so other routes can target it and inherit its place
     // in the outlet hierarchy.
-    defaultParentState.setChild('main', new RouteInfo(route.routeName));
+    privateAccess(defaultParentState).setChild('main', new RouteInfo(route.routeName));
     return defaultParentState;
   }
 }

@@ -235,13 +235,15 @@ export class RouteInfo {
   name: string;
   constructor(name: string);
   child: RouteInfo | null;
-  getChild(outletName: string) : RouteInfo | null;
-  setChild(outletName: string, info: RouteInfo) : void;
 }
 
 export class PrivateRouteInfo {
   controller: object;
   template: OwnedTemplate;
   wasUsed: boolean;
+  getChild(outletName: string) : RouteInfo | null;
+  setChild(outletName: string, info: RouteInfo) : void;
+  markAsUsed(): void;
 }
-export const privateRouteInfos: WeakMap<RouteInfo, PrivateRouteInfo>;
+
+export function privateAccess(routeInfo: RouteInfo): PrivateRouteInfo;
