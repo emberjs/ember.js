@@ -1,5 +1,8 @@
 # Ember Changelog
 
+### 2.18.0-beta.4 (December 19, 2017)
+- [#15982](https://github.com/emberjs/ember.js/pull/15982) [BUGFIX] Fix issue with unchaining ChainNodes (again)
+
 ### 2.18.0-beta.3 (December 12, 2017)
 
 - [#15924](https://github.com/emberjs/ember.js/pull/15924) / [#15940](https://github.com/emberjs/ember.js/pull/15940) [BUGFIX] Assert that `classNameBinding` items are non-empty strings
