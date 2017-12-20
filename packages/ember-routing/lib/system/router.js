@@ -1484,7 +1484,7 @@ function findLiveRoute(liveRoutes, name) {
 }
 
 function appendLiveRoute(liveRoutes, defaultParentState, connection) {
-  let ownState = new RouteInfo(connection.name, null, connection.params, connection.queryParams);
+  let ownState = new RouteInfo(connection.name, null, connection.params, connection.queryParams, connection.data);
   {
     let privState = privateAccess(ownState);
     privState.template = connection.template;

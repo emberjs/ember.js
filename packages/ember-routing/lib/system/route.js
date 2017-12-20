@@ -2073,8 +2073,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       params = assign({}, state.params[fullName]);
       queryParams = getQueryParamsFor(this, state);
     }
+    let model = this.modelFor(this.routeName);
 
-    let connection = buildRenderOptions(this, isDefaultRender, name, options, params, queryParams);
+    let connection = buildRenderOptions(this, isDefaultRender, name, options, params, queryParams, model);
     this.connections.push(connection);
     run.once(this.router, '_setOutlets');
   },
@@ -2187,7 +2188,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           connection.outletName,
           connection.into,
           connection.params,
-          connection.queryParams
+          connection.queryParams,
+          connection.data
         );
         run.once(this.router, '_setOutlets');
       }
@@ -2230,7 +2232,7 @@ function handlerInfoFor(route, handlerInfos, offset = 0) {
   }
 }
 
-function buildRenderOptions(route, isDefaultRender, _name, options, params, queryParams) {
+function buildRenderOptions(route, isDefaultRender, _name, options, params, queryParams, resolvedModel) {
   assert(
     'You passed undefined as the outlet name.',
     isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
@@ -2284,14 +2286,15 @@ function buildRenderOptions(route, isDefaultRender, _name, options, params, quer
   }
 
   let renderOptions = new RouteConnection(
-    route.routeName,
+    route.fullRouteName,
     name,
     controller,
     template || route._topLevelViewTemplate,
     outlet,
     into,
     new Map(Object.entries(params)),
-    new Map(Object.entries(queryParams))
+    new Map(Object.entries(queryParams)),
+    { model: resolvedModel }
   );
 
   if (DEBUG) {
@@ -2409,7 +2412,7 @@ function getEngineRouteName(engine, routeName) {
 }
 
 class RouteConnection {
-  constructor(name, templateName, controller, template, outletName, into, params, queryParams) {
+  constructor(name, templateName, controller, template, outletName, into, params, queryParams, data) {
 
     // name and templateName are different because we care about what
     // route this connection actually came from ("name") but we are
@@ -2425,6 +2428,7 @@ class RouteConnection {
     this.into = into;
     this.params = params;
     this.queryParams = queryParams;
+    this.data = data;
   }
 }
 

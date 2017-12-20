@@ -7,11 +7,12 @@ export function privateAccess(routeInfo) {
 }
 
 class PrivateRouteInfo {
-  constructor(routeName, childRoute, params, queryParams) {
+  constructor(routeName, childRoute, params, queryParams, data) {
     this.name = routeName;
+    this.child = childRoute;
     this.params = params;
     this.queryParams = queryParams;
-    this.child = childRoute;
+    this.data = data;
     this.parent = null;
     this.outlets = null;
     this.controller = null,
@@ -61,9 +62,16 @@ class PrivateRouteInfo {
 }
 
 export default class RouteInfo {
-  // routeName: string, childRoute?: RouteInfo, params?: Map, queryParams?: Map
-  constructor(routeName, childRoute, params, queryParams) {
-    privateRouteInfos.set(this, new PrivateRouteInfo(routeName, childRoute, params || new Map(), queryParams || new Map()));
+  // routeName: string, childRoute?: RouteInfo, params?: Map, queryParams?: Map, data?: object
+  constructor(routeName, childRoute, params, queryParams, data) {
+    privateRouteInfos.set(
+      this,
+      new PrivateRouteInfo(routeName,
+                           childRoute,
+                           params || new Map(),
+                           queryParams || new Map(),
+                           data)
+    );
   }
 
   get name() {
@@ -84,5 +92,9 @@ export default class RouteInfo {
 
   get parent() {
     return privateAccess(this).parent;
+  }
+
+  get data() {
+    return privateAccess(this).data;
   }
 }
