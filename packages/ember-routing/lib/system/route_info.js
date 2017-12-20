@@ -78,6 +78,11 @@ export default class RouteInfo {
     return privateAccess(this).name;
   }
 
+  get localName() {
+    let parts = this.name.split('.');
+    return parts[parts.length - 1];
+  }
+
   get params() {
     return privateAccess(this).params;
   }

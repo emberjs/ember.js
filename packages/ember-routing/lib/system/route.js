@@ -873,6 +873,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           }
 
           set(controller, qp.prop, value);
+          for (let index in this.connections) {
+            route.connections[index].queryParams.set(qp.prop, value);
+          }
+          run.once(this.router, '_setOutlets');
         }
 
         // Stash current serialized value of controller.
@@ -2292,8 +2296,8 @@ function buildRenderOptions(route, isDefaultRender, _name, options, params, quer
     template || route._topLevelViewTemplate,
     outlet,
     into,
-    new Map(Object.entries(params)),
-    new Map(Object.entries(queryParams)),
+    toMap(params),
+    toMap(queryParams),
     { model: resolvedModel }
   );
 
@@ -2305,6 +2309,14 @@ function buildRenderOptions(route, isDefaultRender, _name, options, params, quer
   }
 
   return renderOptions;
+}
+
+function toMap(pojo) {
+  let m = new Map();
+  for (let key in pojo) {
+    m.set(key, pojo[key]);
+  }
+  return m;
 }
 
 function getFullQueryParams(router, state) {
