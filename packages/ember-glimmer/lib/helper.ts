@@ -2,8 +2,8 @@
 @module @ember/component
 */
 
-import { Dict, Opaque } from '@glimmer/util';
 import { DirtyableTag } from '@glimmer/reference';
+import { Dict, Opaque } from '@glimmer/util';
 import { FrameworkObject } from 'ember-runtime';
 import { symbol } from 'ember-utils';
 
@@ -87,7 +87,7 @@ let Helper = FrameworkObject.extend({
     @since 1.13.0
   */
   recompute() {
-    this[RECOMPUTE_TAG].dirty();
+    this[RECOMPUTE_TAG].inner.dirty();
   },
 
   /**

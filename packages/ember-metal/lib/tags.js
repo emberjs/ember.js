@@ -47,7 +47,7 @@ export function markObjectAsDirty(meta, propertyKey) {
   let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
 
   if (propertyTag !== undefined) {
-    propertyTag.dirty();
+    propertyTag.inner.dirty();
   }
 
   if (propertyKey === 'content' && meta.isProxy()) {

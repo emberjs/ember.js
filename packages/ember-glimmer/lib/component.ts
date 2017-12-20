@@ -594,7 +594,7 @@ const Component = CoreView.extend(
     },
 
     rerender() {
-      this[DIRTY_TAG].dirty();
+      this[DIRTY_TAG].inner.dirty();
       this._super();
     },
 
