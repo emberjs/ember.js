@@ -5,12 +5,14 @@ import { RouteInfo, privateAccess } from 'ember-routing';
 
 function makeRouteInfo(routeName, controller, template) {
   let info = new RouteInfo(routeName);
-  privateAccess(info).controller = controller;
-  privateAccess(info).template = template;
-  info.setChild = function(outletName, child) {
-    privateAccess(info).setChild(outletName, child);
-  };
+  let p = privateAccess(info);
+  p.controller = controller;
+  p.template = template;
   return info;
+}
+
+function setChild(routeInfo, outletName, child) {
+  privateAccess(routeInfo).setChild(outletName, child);
 }
 
 moduleFor('outlet view', class extends RenderingTest {
@@ -49,7 +51,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('index', '<p>BYE</p>');
-    outletState.setChild('main', makeRouteInfo('index', {}, this.owner.lookup('template:index')));
+    setChild(outletState, 'main', makeRouteInfo('index', {}, this.owner.lookup('template:index')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -69,7 +71,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('index', '<p>BYE</p>');
-    outletState.setChild('main', makeRouteInfo('index', {}, this.owner.lookup('template:index')));
+    setChild(outletState, 'main', makeRouteInfo('index', {}, this.owner.lookup('template:index')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -89,7 +91,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('special', '<p>BYE</p>');
-    outletState.setChild('special', makeRouteInfo('special', {}, this.owner.lookup('template:special')));
+    setChild(outletState, 'special', makeRouteInfo('special', {}, this.owner.lookup('template:special')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -109,7 +111,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('special', '<p>BYE</p>');
-    outletState.setChild('main', makeRouteInfo('special', {}, this.owner.lookup('template:special')));
+    setChild(outletState, 'main', makeRouteInfo('special', {}, this.owner.lookup('template:special')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -130,10 +132,10 @@ moduleFor('outlet view', class extends RenderingTest {
     this.assertStableRerender();
 
     this.registerTemplate('foo', '<p>FOO</p>');
-    outletState.setChild('foo', makeRouteInfo('foo', {}, this.owner.lookup('template:foo')));
+    setChild(outletState, 'foo', makeRouteInfo('foo', {}, this.owner.lookup('template:foo')));
 
     this.registerTemplate('bar', '<p>BAR</p>');
-    outletState.setChild('bar', makeRouteInfo('bar', {}, this.owner.lookup('template:bar')));
+    setChild(outletState, 'bar', makeRouteInfo('bar', {}, this.owner.lookup('template:bar')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
@@ -155,7 +157,7 @@ moduleFor('outlet view', class extends RenderingTest {
     this.registerHelper('identity', ([a]) => a);
 
     let outletState = makeRouteInfo('outer', {}, this.owner.lookup('template:outer'));
-    outletState.setChild('main', makeRouteInfo('inner', {}, this.owner.lookup('template:inner')));
+    setChild(outletState, 'main', makeRouteInfo('inner', {}, this.owner.lookup('template:inner')));
 
     this.runTask(() => this.component.setOutletState(outletState));
 
