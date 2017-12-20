@@ -304,3 +304,25 @@ QUnit.test('HistoryLocation.getURL() drops duplicate slashes', function() {
 
   equal(location.getURL(), '/');
 });
+
+QUnit.test('Existing state is preserved on init', function() {
+  expect(1);
+
+  let existingState = {
+    path: '/route/path',
+    uuid: 'abcd'
+  };
+
+  FakeHistory.state = existingState;
+
+  HistoryTestLocation.reopen({
+    init() {
+      this._super(...arguments);
+      set(this, 'location', mockBrowserLocation('/route/path'));
+    }
+  });
+
+  createLocation();
+  location.initState();
+  deepEqual(location.getState(), existingState);
+});
