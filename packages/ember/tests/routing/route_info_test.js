@@ -184,8 +184,10 @@ QUnit.test('RouteInfo can see queryParams', function(assert) {
   }));
 
   let lastInfo;
+  let helperRunCount = 0;
   registry.register('helper:inspect-info', helper(function([info]) {
     lastInfo = info;
+    helperRunCount++;
   }));
 
   registry.register('template:things', compile(
@@ -195,7 +197,8 @@ QUnit.test('RouteInfo can see queryParams', function(assert) {
   bootApplication();
   handleURL('/things?flavor=vanilla');
   assert.equal(lastInfo.queryParams.get('flavor'), "vanilla");
-  equal(jQuery('.flavor', '#qunit-fixture').text(), 'vanilla', 'sanity check query param');
+  assert.equal(jQuery('.flavor', '#qunit-fixture').text(), 'vanilla', 'sanity check query param');
+  assert.equal(helperRunCount, 1, "expected single render pass");
 });
 
 
@@ -221,9 +224,9 @@ QUnit.test('RouteInfo can see queryParam only transition', function(assert) {
   bootApplication();
   handleURL('/things');
   assert.equal(lastInfo.queryParams.get('flavor'), "chocolate");
-  equal(jQuery('.flavor', '#qunit-fixture').text(), 'chocolate', 'sanity check query param');
+  assert.equal(jQuery('.flavor', '#qunit-fixture').text(), 'chocolate', 'sanity check query param');
   handleURL('/things?flavor=vanilla');
   assert.equal(lastInfo.queryParams.get('flavor'), "vanilla");
-  equal(jQuery('.flavor', '#qunit-fixture').text(), 'vanilla', 'sanity check query param');
+  assert.equal(jQuery('.flavor', '#qunit-fixture').text(), 'vanilla', 'sanity check query param');
 
 });
