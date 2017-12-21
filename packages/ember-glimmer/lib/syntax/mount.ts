@@ -1,14 +1,18 @@
 /**
 @module ember
 */
+import { Option } from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import {
   Arguments,
   VM
 } from '@glimmer/runtime';
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
+import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
-import Environment from '../environment';
 import { MountDefinition } from '../component-managers/mount';
+import Environment from '../environment';
 import { hashToArgs } from './utils';
 
 function dynamicEngineFor(vm: VM, args: Arguments, meta: any) {
@@ -59,22 +63,21 @@ function dynamicEngineFor(vm: VM, args: Arguments, meta: any) {
   @category ember-application-engines
   @public
 */
-export function mountMacro(_name: string, params: any[], hash: any, builder: any) {
+export function mountMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params.length === 1,
+      params!.length === 1,
     );
   } else {
     assert(
       'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params.length === 1 && hash === null,
+      params!.length === 1 && hash === null,
     );
   }
 
-  let definitionArgs = [params.slice(0, 1), null, null, null];
-  let args = [null, hashToArgs(hash), null, null];
-  builder.component.dynamic(definitionArgs, dynamicEngineFor, args);
+  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, 'mount', params || [], hash];
+  builder.dynamicComponent(expr, [], null, false, null, null);
   return true;
 }
 

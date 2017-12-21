@@ -50,7 +50,7 @@ class ProxyTag extends CachedTag {
   }
 
   dirty() {
-    this.proxyWrapperTag.dirty();
+    this.proxyWrapperTag.inner.dirty();
   }
 
   contentDidChange() {
