@@ -126,7 +126,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       ComponentClass: Component.extend({
         didInsertElement() {
           // FIXME: I'm unsure if this is even the right way to access attrs
-          this.$().html(this.get('attrs.attrs.value'));
+          this.$().html(this.get('attrs.attrs'));
         }
       })
     });
