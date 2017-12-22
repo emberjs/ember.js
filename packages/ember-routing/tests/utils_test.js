@@ -1,36 +1,34 @@
-import {
-  normalizeControllerQueryParams
-} from '../utils';
+import { normalizeControllerQueryParams } from '../utils';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
+moduleFor('Routing query parameter utils - normalizeControllerQueryParams', class extends AbstractTestCase {
+  ['@test converts array style into verbose object style'](assert) {
+    let paramName = 'foo';
+    let params = [paramName];
+    let normalized = normalizeControllerQueryParams(params);
 
-QUnit.module('Routing query parameter utils - normalizeControllerQueryParams');
+    assert.ok(normalized[paramName], 'turns the query param name into key');
+    assert.equal(normalized[paramName].as, null, 'includes a blank alias in \'as\' key');
+    assert.equal(normalized[paramName].scope, 'model', 'defaults scope to model');
+  }
 
-QUnit.test('converts array style into verbose object style', function() {
-  let paramName = 'foo';
-  let params = [paramName];
-  let normalized = normalizeControllerQueryParams(params);
+  ['@test converts object style [{foo: \'an_alias\'}]'](assert) {
+    let paramName = 'foo';
+    let params = [{ 'foo': 'an_alias' }];
+    let normalized = normalizeControllerQueryParams(params);
 
-  ok(normalized[paramName], 'turns the query param name into key');
-  equal(normalized[paramName].as, null, 'includes a blank alias in \'as\' key');
-  equal(normalized[paramName].scope, 'model', 'defaults scope to model');
-});
+    assert.ok(normalized[paramName], 'retains the query param name as key');
+    assert.equal(normalized[paramName].as, 'an_alias', 'includes the provided alias in \'as\' key');
+    assert.equal(normalized[paramName].scope, 'model', 'defaults scope to model');
+  }
 
-QUnit.test('converts object style [{foo: \'an_alias\'}]', function() {
-  let paramName = 'foo';
-  let params = [{ 'foo': 'an_alias' }];
-  let normalized = normalizeControllerQueryParams(params);
+  ['@test retains maximally verbose object style [{foo: {as: \'foo\'}}]'](assert) {
+    let paramName = 'foo';
+    let params = [{ 'foo': { as: 'an_alias' } }];
+    let normalized = normalizeControllerQueryParams(params);
 
-  ok(normalized[paramName], 'retains the query param name as key');
-  equal(normalized[paramName].as, 'an_alias', 'includes the provided alias in \'as\' key');
-  equal(normalized[paramName].scope, 'model', 'defaults scope to model');
-});
-
-QUnit.test('retains maximally verbose object style [{foo: {as: \'foo\'}}]', function() {
-  let paramName = 'foo';
-  let params = [{ 'foo': { as: 'an_alias' } }];
-  let normalized = normalizeControllerQueryParams(params);
-
-  ok(normalized[paramName], 'retains the query param name as key');
-  equal(normalized[paramName].as, 'an_alias', 'includes the provided alias in \'as\' key');
-  equal(normalized[paramName].scope, 'model', 'defaults scope to model');
+    assert.ok(normalized[paramName], 'retains the query param name as key');
+    assert.equal(normalized[paramName].as, 'an_alias', 'includes the provided alias in \'as\' key');
+    assert.equal(normalized[paramName].scope, 'model', 'defaults scope to model');
+  }
 });
