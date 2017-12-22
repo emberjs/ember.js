@@ -23,6 +23,6 @@ moduleFor('Ember.Application with default resolver and autoboot', class extends 
 
   ['@test templates in script tags are extracted at application creation'](assert) {
     this.runTask(() => this.createApplication());
-    assert.equal(this.$('#app').text(), 'Hello World!');
+    assert.equal(document.getElementById('app').textContent, 'Hello World!');
   }
 });

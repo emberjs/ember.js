@@ -1,15 +1,12 @@
 import { assign } from 'ember-utils';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import { Application } from 'ember-application';
-import { jQuery } from 'ember-views';
 
 moduleFor('Ember.Application initializers', class extends AutobootApplicationTestCase {
-  constructor() {
-    jQuery('#qunit-fixture').html(`
-      <div id="one">ONE</div>
+  get fixture() {
+    return `<div id="one">ONE</div>
       <div id="two">TWO</div>
-    `);
-    super();
+    `;
   }
 
   get applicationOptions() {
