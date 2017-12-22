@@ -515,7 +515,6 @@ const LinkComponent = EmberComponent.extend({
   */
   init() {
     this._super(...arguments);
-    this._isDisabled = this._isDisabled || false;
 
     // Map desired event name to invoke function
     let eventName = get(this, 'eventName');
@@ -534,10 +533,14 @@ const LinkComponent = EmberComponent.extend({
   */
   disabled: computed({
     get(_key: string): boolean {
+      // always returns false for `get` because (due to the `set` just below)
+      // the cached return value from the set will prevent this getter from _ever_
+      // being called after a set has occured
       return false;
     },
+
     set(_key: string, value: any): boolean {
-      if (value !== undefined) { this.set('_isDisabled', value); }
+      this._isDisabled = value;
 
       return value ? get(this, 'disabledClass') : false;
     },
@@ -636,7 +639,7 @@ const LinkComponent = EmberComponent.extend({
 
     if (get(this, 'bubbles') === false) { event.stopPropagation(); }
 
-    if (get(this, '_isDisabled')) { return false; }
+    if (this._isDisabled) { return false; }
 
     if (get(this, 'loading')) {
       // tslint:disable-next-line:max-line-length
