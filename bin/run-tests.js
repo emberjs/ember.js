@@ -184,9 +184,15 @@ function generateEachPackageTests() {
     testFunctions.push(function() {
       return run('package=' + packageName);
     });
+    if (packages[packageName].requiresJQuery === false) {
+      testFunctions.push(function() {
+        return run('package=' + packageName + '&jquery=none');
+      });
+    }
     testFunctions.push(function() {
       return run('package=' + packageName + '&enableoptionalfeatures=true');
     });
+
   });
 }
 
