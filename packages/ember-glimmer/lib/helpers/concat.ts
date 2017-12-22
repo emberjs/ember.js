@@ -26,7 +26,7 @@ import { InternalHelperReference } from '../utils/references';
   @since 1.13.0
 */
 function concat({ positional }: CapturedArguments) {
-  return positional.value().map(normalizeTextValue).join('');
+  return positional.value().join('');
 }
 
 export default function(_vm: VM, args: Arguments) {
