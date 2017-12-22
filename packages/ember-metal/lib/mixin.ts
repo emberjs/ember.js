@@ -62,8 +62,10 @@ function concatenatedMixinProperties(
 ) {
   // reset before adding each new mixin to pickup concats from previous
   let concats = values[concatProp] || base[concatProp];
-  if (props[concatProp]) {
-    concats = concats ? a_concat.call(concats, props[concatProp]) : props[concatProp];
+  if (concatProp in props) {
+    let value = props[concatProp];
+    assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${concatProp}\` but \`${concatProp}\` should be an Array`, isArray(value));
+    concats = concats ? a_concat.call(concats, value) : value;
   }
   return concats;
 }
@@ -224,11 +226,7 @@ function addNormalizedProperty(
     descs[key] = value;
     values[key] = undefined;
   } else {
-    if (
-      (concats && concats.indexOf(key) >= 0) ||
-      key === 'concatenatedProperties' ||
-      key === 'mergedProperties'
-    ) {
+    if (concats && concats.indexOf(key) > -1) {
       value = applyConcatenatedProperties(base, key, value, values);
     } else if (mergings && mergings.indexOf(key) > -1) {
       value = applyMergedProperties(base, key, value, values);
@@ -282,12 +280,13 @@ function mergeMixins(
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
+      let allConcats = ['concatenatedProperties', 'mergedProperties'].concat(concats ? concats : []);
       for (key in props) {
         if (!props.hasOwnProperty(key)) {
           continue;
         }
         keys.push(key);
-        addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
+        addNormalizedProperty(base, key, props[key], meta, descs, values, allConcats, mergings);
       }
 
       // manually copy toString() because some JS engines do not enumerate it

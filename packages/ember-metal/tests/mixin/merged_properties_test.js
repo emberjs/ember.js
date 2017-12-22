@@ -82,7 +82,7 @@ moduleFor(
       });
 
       let MixinB = Mixin.create({
-        mergedProperties: 'bar',
+        mergedProperties: ['bar'],
         foo: { d: true, e: true, f: true },
         bar: { a: true, l: true },
       });
@@ -195,6 +195,32 @@ moduleFor(
       expectAssertion(() => {
         mixin({}, MixinA, MixinB);
       }, 'You passed in `["a"]` as the value for `foo` but `foo` cannot be an Array');
+    }
+
+    ['@test should assert for non-array value in mergedProperties']() {
+      let mixinA = Mixin.create({
+        mergedProperties: ['a', 'b', 'c'],
+      });
+
+      let mixinB = Mixin.create({
+        mergedProperties: null,
+      });
+
+      let mixinC = Mixin.create({
+        mergedProperties: 'bar',
+      });
+
+      expectAssertion(()=> {
+        mixin({}, mixinA, mixinB);
+      }, 'You passed in `null` as the value for `mergedProperties` but `mergedProperties` should be an Array');
+
+      expectAssertion(()=> {
+        mixin({}, mixinA, mixinC);
+      }, 'You passed in `"bar"` as the value for `mergedProperties` but `mergedProperties` should be an Array');
+
+      expectAssertion(()=> {
+        mixin({}, mixinB, mixinA);
+      }, 'You passed in `null` as the value for `mergedProperties` but `mergedProperties` should be an Array');
     }
   }
 );

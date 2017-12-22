@@ -18,20 +18,6 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
     }
 
-    ['@test defining concatenated properties should concat future version'](assert) {
-      let MixinA = Mixin.create({
-        concatenatedProperties: null,
-      });
-
-      let MixinB = Mixin.create({
-        concatenatedProperties: null,
-      });
-
-      let obj = mixin({}, MixinA, MixinB);
-
-      assert.deepEqual(obj.concatenatedProperties, []);
-    }
-
     ['@test concatenatedProperties should be concatenated'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
@@ -39,7 +25,7 @@ moduleFor(
       });
 
       let MixinB = Mixin.create({
-        concatenatedProperties: 'bar',
+        concatenatedProperties: ['bar'],
         foo: ['d', 'e', 'f'],
         bar: [1, 2, 3],
       });
@@ -112,6 +98,32 @@ moduleFor(
 
       let obj = mixin({}, mixinA, mixinB);
       assert.deepEqual(get(obj, 'foobar'), ['foo', 'bar']);
+    }
+
+    ['@test should assert for non-array value in concatenatedProperties']() {
+      let mixinA = Mixin.create({
+        concatenatedProperties: ['a', 'b', 'c'],
+      });
+
+      let mixinB = Mixin.create({
+        concatenatedProperties: null,
+      });
+
+      let mixinC = Mixin.create({
+        concatenatedProperties: 'bar',
+      });
+
+      expectAssertion(()=> {
+        mixin({}, mixinA, mixinB);
+      }, 'You passed in `null` as the value for `concatenatedProperties` but `concatenatedProperties` should be an Array');
+
+      expectAssertion(()=> {
+        mixin({}, mixinA, mixinC);
+      }, 'You passed in `"bar"` as the value for `concatenatedProperties` but `concatenatedProperties` should be an Array');
+
+      expectAssertion(()=> {
+        mixin({}, mixinB, mixinA);
+      }, 'You passed in `null` as the value for `concatenatedProperties` but `concatenatedProperties` should be an Array');
     }
   }
 );

@@ -412,7 +412,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default null
     @public
   */
-  concatenatedProperties: null,
+  // concatenatedProperties: null,
 
   /**
     Defines the properties that will be merged from the superclass
@@ -488,7 +488,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default null
     @public
   */
-  mergedProperties: null,
+  // mergedProperties: null,
 
   /**
     Destroyed object property flag.
