@@ -88,11 +88,17 @@ export default class AbstractTestCase {
   }
 
   click(selector) {
-    return this.$(selector).click();
+    let element;
+    if (typeof selector === 'string') {
+      element = this.element.querySelector(selector);
+    } else {
+      element = selector;
+    }
+    return element.click();
   }
 
   textValue() {
-    return this.$().text();
+    return this.element.textContent;
   }
 
   takeSnapshot() {

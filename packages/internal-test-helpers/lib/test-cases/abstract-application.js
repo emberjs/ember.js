@@ -1,5 +1,4 @@
 import { compile } from 'ember-template-compiler';
-import { jQuery } from 'ember-views';
 import { EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER } from 'ember/features';
 import AbstractTestCase from './abstract';
 import { runDestroy } from '../run';
@@ -10,9 +9,9 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     if (this._element) {
       return this._element;
     } else if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
-      return this._element = jQuery('#qunit-fixture')[0];
+      return this._element = document.querySelector('#qunit-fixture');
     } else {
-      return this._element = jQuery('#qunit-fixture > div.ember-view')[0];
+      return this._element = document.querySelector('#qunit-fixture > div.ember-view');
     }
   }
 

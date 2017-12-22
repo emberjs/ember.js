@@ -1,6 +1,6 @@
 import { assign } from 'ember-utils';
 import { compile } from 'ember-template-compiler';
-import { jQuery, EventDispatcher } from 'ember-views';
+import { EventDispatcher } from 'ember-views';
 import { helper, Helper, Component, _resetRenderers} from 'ember-glimmer';
 
 import AbstractTestCase from './abstract';
@@ -21,7 +21,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     });
 
     this.renderer = this.owner.lookup('renderer:-dom');
-    this.element = jQuery('#qunit-fixture')[0];
+    this.element = document.querySelector('#qunit-fixture');
     this.component = null;
 
     owner.register('event_dispatcher:main', EventDispatcher);
