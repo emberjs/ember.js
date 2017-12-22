@@ -31,6 +31,11 @@ export default class AbstractTestCase {
     this.element = null;
     this.snapshot = null;
     this.assert = QUnit.config.current.assert;
+
+    let { fixture } = this;
+    if (fixture) {
+      this.setupFixture(fixture);
+    }
   }
 
   teardown() {}
@@ -41,6 +46,11 @@ export default class AbstractTestCase {
 
   runTaskNext(callback) {
     return run.next(callback);
+  }
+
+  setupFixture(innerHTML) {
+    let fixture = document.getElementById('#qunit-fixture');
+    fixture.innerHTML = innerHTML;
   }
 
   // The following methods require `this.element` to work
