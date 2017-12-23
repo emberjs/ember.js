@@ -4,14 +4,11 @@ import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
   dictionary,
-  symbol,
   setOwner,
   OWNER,
   assign,
   HAS_NATIVE_PROXY
 } from 'ember-utils';
-
-const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 
 /**
  A container used to instantiate and cache objects.
@@ -32,7 +29,6 @@ export default class Container {
     this.owner           = options.owner || null;
     this.cache           = dictionary(options.cache || null);
     this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
-    this[CONTAINER_OVERRIDE] = undefined;
     this.isDestroyed = false;
 
     if (DEBUG) {
