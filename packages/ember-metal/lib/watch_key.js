@@ -92,8 +92,9 @@ export function unwatchKey(obj, keyName, _meta) {
     meta.writeWatching(keyName, 0);
 
     let possibleDesc = descriptorFor(obj, keyName, meta);
+    let isDescriptor = possibleDesc !== undefined;
 
-    if (possibleDesc !== undefined && possibleDesc.didUnwatch) {
+    if (isDescriptor && possibleDesc.didUnwatch) {
       possibleDesc.didUnwatch(obj, keyName, meta);
     }
 
@@ -110,7 +111,7 @@ export function unwatchKey(obj, keyName, _meta) {
       // for mutation, will bypass observation. This code exists to assert when
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
-      if (possibleDesc === undefined && keyName in obj) {
+      if (!isDescriptor && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
