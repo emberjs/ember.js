@@ -6,7 +6,7 @@ import { assert } from 'ember-debug';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { descriptorFor, meta as metaFor, peekMeta, DESCRIPTOR, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
-import { DESCRIPTOR_TRAP, MANDATORY_SETTER } from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 // ..........................................................
 // DESCRIPTOR
 //
@@ -71,7 +71,13 @@ export function INHERITING_GETTER_FUNCTION(name) {
 
 let DESCRIPTOR_GETTER_FUNCTION;
 
-if (DESCRIPTOR_TRAP) {
+if (EMBER_METAL_ES5_GETTERS) {
+  DESCRIPTOR_GETTER_FUNCTION = function(name, descriptor) {
+    return function CPGETTER_FUNCTION() {
+      return descriptor.get(this, name);
+    };
+  };
+} else if (DESCRIPTOR_TRAP) {
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
   // ember strip this entire branch out.
@@ -206,13 +212,17 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   if (wasDescriptor) {
     previousDesc.teardown(obj, keyName, meta);
+
+    if (EMBER_METAL_ES5_GETTERS) {
+      meta.removeDescriptors(keyName);
+    }
   }
 
   let value;
   if (desc instanceof Descriptor) {
     value = desc;
 
-    if (DESCRIPTOR_TRAP) {
+    if (EMBER_METAL_ES5_GETTERS || DESCRIPTOR_TRAP) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable: true,
@@ -227,6 +237,10 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       });
     } else {
       obj[keyName] = value;
+    }
+
+    if (EMBER_METAL_ES5_GETTERS) {
+      meta.writeDescriptors(keyName, value);
     }
 
     didDefineComputedProperty(obj.constructor);
@@ -246,7 +260,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       };
 
       Object.defineProperty(obj, keyName, defaultDescriptor);
-    } else if (DESCRIPTOR_TRAP && wasDescriptor) {
+    } else if ((EMBER_METAL_ES5_GETTERS || DESCRIPTOR_TRAP) && wasDescriptor) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable: true,

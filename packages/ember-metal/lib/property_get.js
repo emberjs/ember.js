@@ -57,8 +57,6 @@ export function get(obj, keyName) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
-  // we can't use `descriptorFor` here because we don't want to access the property
-  // more than once (e.g. side-effectful ES5 getters, etc)
   let value = obj[keyName];
 
   if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {

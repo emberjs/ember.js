@@ -1,4 +1,4 @@
-import { DESCRIPTOR_TRAP } from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import { Object as EmberObject } from 'ember-runtime';
 import { testBoth } from 'internal-test-helpers';
 import {
@@ -45,7 +45,19 @@ QUnit.test('computed properties defined with an object only allow `get` and `set
   }, 'Config object passed to computed can only contain `get` or `set` keys.');
 });
 
-if (DESCRIPTOR_TRAP) {
+if (EMBER_METAL_ES5_GETTERS) {
+  QUnit.test('computed property can be accessed without `get`', assert => {
+    let obj = {};
+    let count = 0;
+    defineProperty(obj, 'foo', computed(function(key) {
+      count++;
+      return 'computed ' + key;
+    }));
+
+    assert.equal(obj.foo, 'computed foo', 'should return value');
+    assert.equal(count, 1, 'should have invoked computed property');
+  });
+} else if (DESCRIPTOR_TRAP) {
   QUnit.test('accessing computed property descriptor through the object triggers an assertion', assert => {
     let obj = { toString() { return 'obj'; } };
     let count = 0;
