@@ -3,9 +3,10 @@
 */
 
 import { assert } from 'ember-debug';
-import { descriptorFor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
+import { HAS_NATIVE_PROXY } from 'ember-utils';
+import { descriptorFor, meta as metaFor, peekMeta, DESCRIPTOR, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DESCRIPTOR_TRAP, MANDATORY_SETTER } from 'ember/features';
 // ..........................................................
 // DESCRIPTOR
 //
@@ -68,6 +69,86 @@ export function INHERITING_GETTER_FUNCTION(name) {
   return IGETTER_FUNCTION;
 }
 
+let DESCRIPTOR_GETTER_FUNCTION;
+
+if (DESCRIPTOR_TRAP) {
+  // Future traveler, although this code looks scary. It merely exists in
+  // development to aid in development asertions. Production builds of
+  // ember strip this entire branch out.
+  let messageFor = function(obj, keyName, property, value) {
+    return `You attempted to access the \`${keyName}.${property}\` property ` +
+      `(of ${obj}). Due to certain internal implementation details of Ember, ` +
+      `the \`${keyName}\` property previously contained an internal "descriptor" ` +
+      `object (a private API), therefore \`${keyName}.${property}\` would have ` +
+      `been \`${String(value).replace(/\n/g, ' ')}\`. This internal implementaiton ` +
+      `detail was never intended to be a public (or even intimate) API.\n\n` +
+      `This internal implementation detail has now changed and the (still private) ` +
+      `"descriptor" object has been relocated to the object's "meta" (also a ` +
+      `private API). Soon, accessing \`${keyName}\` on this object will ` +
+      `return the computed value (see RFC #281 for more details).\n\n` +
+      `If you are seeing this error, you are likely using an addon that ` +
+      `relies on this now-defunct private implementation detail. If you can, ` +
+      `find out which addon is doing this from the stack trace below and ` +
+      `report this bug to the addon authors. If you feel stuck, the Ember ` +
+      `Community Slack (https://ember-community-slackin.herokuapp.com/) ` +
+      `may be able to offer some help.\n\n` +
+      `If you are an addon author and need help transitioning your code, ` +
+      `please get in touch in the #dev-ember channel in the Ember Community ` +
+      `Slack.`;
+  };
+
+  let trapFor;
+
+  if (HAS_NATIVE_PROXY) {
+    /* globals Proxy */
+    trapFor = function(obj, keyName, descriptor) {
+      return new Proxy(descriptor, {
+        get(descriptor, property) {
+          if (property === DESCRIPTOR) {
+            return descriptor;
+          } else if (property === 'toString' || property == 'valueOf' || (Symbol && property === Symbol.toPrimitive)) {
+            return () => '[COMPUTED PROPERTY]';
+          }
+
+          assert(messageFor(obj, keyName, property, descriptor[property]));
+        }
+      });
+    };
+  } else {
+    trapFor = function(obj, keyName, descriptor) {
+      let trap = Object.create(null);
+
+      Object.defineProperty(trap, DESCRIPTOR, {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: descriptor
+      });
+
+      trap.toString = trap.valueOf = () => '[COMPUTED PROPERTY]';
+
+      // Without a proxy, we can only trap the "likely" properties
+      ['isDescriptor', 'setup', 'teardown', 'get', '_getter', 'set', '_setter', 'meta'].forEach(property => {
+        Object.defineProperty(trap, property, {
+          configurable: false,
+          enumerable: false,
+          get() {
+            assert(messageFor(obj, keyName, property, descriptor[property]));
+          }
+        });
+      });
+
+      return trap;
+    };
+  }
+
+  DESCRIPTOR_GETTER_FUNCTION = function(name, descriptor) {
+    return function CPGETTER_FUNCTION() {
+      return trapFor(this, name, descriptor);
+    };
+  };
+}
+
 /**
   NOTE: This is a low-level method used by other parts of the API. You almost
   never want to call this method directly. Instead you should use
@@ -121,25 +202,29 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   let watchEntry = meta.peekWatching(keyName);
   let watching = watchEntry !== undefined && watchEntry > 0;
   let previousDesc = descriptorFor(obj, keyName, meta);
+  let wasDescriptor = previousDesc !== undefined;
 
-  if (previousDesc) {
+  if (wasDescriptor) {
     previousDesc.teardown(obj, keyName, meta);
   }
 
   let value;
   if (desc instanceof Descriptor) {
     value = desc;
-    if (MANDATORY_SETTER) {
-      if (watching) {
-        Object.defineProperty(obj, keyName, {
-          configurable: true,
-          enumerable: true,
-          writable: true,
-          value
-        });
-      } else {
-        obj[keyName] = value;
-      }
+
+    if (DESCRIPTOR_TRAP) {
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        get: DESCRIPTOR_GETTER_FUNCTION(keyName, value)
+      });
+    } else if (MANDATORY_SETTER && watching) {
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value
+      });
     } else {
       obj[keyName] = value;
     }
@@ -150,22 +235,24 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   } else if (desc === undefined || desc === null) {
     value = data;
 
-    if (MANDATORY_SETTER) {
-      if (watching) {
-        meta.writeValues(keyName, data);
+    if (MANDATORY_SETTER && watching) {
+      meta.writeValues(keyName, data);
 
-        let defaultDescriptor = {
-          configurable: true,
-          enumerable: true,
-          set: MANDATORY_SETTER_FUNCTION(keyName),
-          get: DEFAULT_GETTER_FUNCTION(keyName)
-        };
+      let defaultDescriptor = {
+        configurable: true,
+        enumerable: true,
+        set: MANDATORY_SETTER_FUNCTION(keyName),
+        get: DEFAULT_GETTER_FUNCTION(keyName)
+      };
 
-        Object.defineProperty(obj, keyName, defaultDescriptor);
-
-      } else {
-        obj[keyName] = data;
-      }
+      Object.defineProperty(obj, keyName, defaultDescriptor);
+    } else if (DESCRIPTOR_TRAP && wasDescriptor) {
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value
+      });
     } else {
       obj[keyName] = data;
     }

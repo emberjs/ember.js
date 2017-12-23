@@ -6,7 +6,7 @@ import {
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DESCRIPTOR_TRAP, MANDATORY_SETTER } from 'ember/features';
 import {
   removeChainWatcher
 } from './chains';
@@ -548,6 +548,12 @@ export function meta(obj) {
   return newMeta;
 }
 
+// Using `symbol()` here causes some node test to fail, presumably
+// because we define the CP with one copy of Ember and boot the app
+// with a different copy, so the random key we generate do not line
+// up. Is that testing a legit scenario?
+export const DESCRIPTOR = '__DESCRIPTOR__';
+
 /**
   Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
 
@@ -563,7 +569,20 @@ export function descriptorFor(obj, keyName) {
   assert(`Cannot call \`descriptorFor\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
 
   let possibleDesc = obj[keyName];
-  return isDescriptor(possibleDesc) ? possibleDesc : undefined;
+
+  if (DESCRIPTOR_TRAP && isDescriptorTrap(possibleDesc)) {
+    return possibleDesc[DESCRIPTOR];
+  } else {
+    return isDescriptor(possibleDesc) ? possibleDesc : undefined;
+  }
+}
+
+export function isDescriptorTrap(possibleDesc) {
+  if (DESCRIPTOR_TRAP) {
+    return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc[DESCRIPTOR] !== undefined;
+  } else {
+    throw new Error('Cannot call `isDescriptorTrap` in production');
+  }
 }
 
 /**

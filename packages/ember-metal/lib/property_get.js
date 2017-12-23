@@ -3,8 +3,9 @@
 */
 
 import { assert } from 'ember-debug';
+import { DESCRIPTOR_TRAP } from 'ember/features';
 import { isPath } from './path_cache';
-import { isDescriptor } from './meta';
+import { isDescriptor, isDescriptorTrap, DESCRIPTOR } from './meta';
 
 const ALLOWABLE_TYPES = {
   object: true,
@@ -59,6 +60,10 @@ export function get(obj, keyName) {
   // we can't use `descriptorFor` here because we don't want to access the property
   // more than once (e.g. side-effectful ES5 getters, etc)
   let value = obj[keyName];
+
+  if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
+    value = value[DESCRIPTOR];
+  }
 
   if (isDescriptor(value)) {
     return value.get(obj, keyName);

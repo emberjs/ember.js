@@ -11,9 +11,11 @@ import {
 } from './path_cache';
 import {
   isDescriptor,
-  peekMeta
+  isDescriptorTrap,
+  peekMeta,
+  DESCRIPTOR
 } from './meta';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DESCRIPTOR_TRAP, MANDATORY_SETTER } from 'ember/features';
 /**
  @module @ember/object
 */
@@ -53,6 +55,10 @@ export function set(obj, keyName, value, tolerant) {
   // we can't use `descriptorFor` here because we don't want to access the property
   // more than once (e.g. side-effectful ES5 getters, etc)
   let currentValue = obj[keyName];
+
+  if (DESCRIPTOR_TRAP && isDescriptorTrap(currentValue)) {
+    currentValue = currentValue[DESCRIPTOR];
+  }
 
   if (isDescriptor(currentValue)) { /* computed property */
     currentValue.set(obj, keyName, value);
