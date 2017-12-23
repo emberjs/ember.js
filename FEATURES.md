@@ -42,6 +42,11 @@ for a detailed explanation.
   Use Glimmer Components semantics for template-only components per
   [RFC](https://github.com/emberjs/rfcs/pull/278).
 
+* `ember-metal-es5-getters`
+
+  Define ES5 getters for computed properties, eliminating the need to access them
+  using `Ember.get()`. See [RFC](https://github.com/emberjs/rfcs/pull/281).
+
 * `ember-module-unification`
 
   Introduces support for Module Unification

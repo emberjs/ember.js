@@ -6,7 +6,7 @@ import {
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 import {
   removeChainWatcher
 } from './chains';
@@ -45,6 +45,11 @@ export class Meta {
     }
 
     this._cache = undefined;
+
+    if (EMBER_METAL_ES5_GETTERS) {
+      this._descriptors = undefined;
+    }
+
     this._watching = undefined;
     this._mixins = undefined;
     this._bindings = undefined;
@@ -325,7 +330,7 @@ export class Meta {
   }
 
   peekWatching(subkey) {
-   return this._findInherited('_watching', subkey);
+    return this._findInherited('_watching', subkey);
   }
 
   writeMixins(subkey, value) {
@@ -442,6 +447,23 @@ if (MANDATORY_SETTER) {
   };
 }
 
+if (EMBER_METAL_ES5_GETTERS) {
+  Meta.prototype.writeDescriptors = function(subkey, value) {
+    assert(`Cannot update descriptors for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    let map = this._getOrCreateOwnMap('_descriptors');
+    map[subkey] = value;
+  };
+
+  Meta.prototype.peekDescriptors = function(subkey) {
+    let possibleDesc = this._findInherited('_descriptors', subkey);
+    return possibleDesc === UNDEFINED ? undefined : possibleDesc;
+  };
+
+  Meta.prototype.removeDescriptors = function(subkey) {
+    this.writeDescriptors(subkey, UNDEFINED);
+  };
+}
+
 const getPrototypeOf = Object.getPrototypeOf;
 const metaStore = new WeakMap();
 
@@ -548,6 +570,12 @@ export function meta(obj) {
   return newMeta;
 }
 
+// Using `symbol()` here causes some node test to fail, presumably
+// because we define the CP with one copy of Ember and boot the app
+// with a different copy, so the random key we generate do not line
+// up. Is that testing a legit scenario?
+export const DESCRIPTOR = '__DESCRIPTOR__';
+
 /**
   Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
 
@@ -557,13 +585,34 @@ export function meta(obj) {
   @return {Descriptor}
   @private
 */
-export function descriptorFor(obj, keyName) {
+export function descriptorFor(obj, keyName, _meta) {
   assert('Cannot call `descriptorFor` on null', obj !== null);
   assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
   assert(`Cannot call \`descriptorFor\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
 
-  let possibleDesc = obj[keyName];
-  return isDescriptor(possibleDesc) ? possibleDesc : undefined;
+  if (EMBER_METAL_ES5_GETTERS) {
+    let meta = _meta === undefined ? peekMeta(obj) : _meta;
+
+    if (meta !== undefined) {
+      return meta.peekDescriptors(keyName);
+    }
+  } else {
+    let possibleDesc = obj[keyName];
+
+    if (DESCRIPTOR_TRAP && isDescriptorTrap(possibleDesc)) {
+      return possibleDesc[DESCRIPTOR];
+    } else {
+      return isDescriptor(possibleDesc) ? possibleDesc : undefined;
+    }
+  }
+}
+
+export function isDescriptorTrap(possibleDesc) {
+  if (DESCRIPTOR_TRAP) {
+    return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc[DESCRIPTOR] !== undefined;
+  } else {
+    throw new Error('Cannot call `isDescriptorTrap` in production');
+  }
 }
 
 /**

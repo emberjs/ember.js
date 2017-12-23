@@ -11,9 +11,12 @@ import {
 } from './path_cache';
 import {
   isDescriptor,
-  peekMeta
+  isDescriptorTrap,
+  peekMeta,
+  DESCRIPTOR,
+  descriptorFor
 } from './meta';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 /**
  @module @ember/object
 */
@@ -50,9 +53,20 @@ export function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  // we can't use `descriptorFor` here because we don't want to access the property
-  // more than once (e.g. side-effectful ES5 getters, etc)
+  if (EMBER_METAL_ES5_GETTERS) {
+    let possibleDesc = descriptorFor(obj, keyName);
+
+    if (possibleDesc !== undefined) { /* computed property */
+      possibleDesc.set(obj, keyName, value);
+      return value;
+    }
+  }
+
   let currentValue = obj[keyName];
+
+  if (DESCRIPTOR_TRAP && isDescriptorTrap(currentValue)) {
+    currentValue = currentValue[DESCRIPTOR];
+  }
 
   if (isDescriptor(currentValue)) { /* computed property */
     currentValue.set(obj, keyName, value);

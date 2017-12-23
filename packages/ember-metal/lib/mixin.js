@@ -1,6 +1,7 @@
 /**
 @module @ember/object
 */
+import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import {
   assign,
   guidFor,
@@ -109,24 +110,26 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
 }
 
 function giveMethodSuper(obj, key, method, values, descs) {
-  let superMethod;
-
   // Methods overwrite computed properties, and do not call super to them.
-  if (descs[key] === undefined) {
-    // Find the original method in a parent mixin
-    superMethod = values[key];
-  }
-
-  // If we didn't find the original value in a parent mixin, find it in
-  // the original object
-  superMethod = superMethod || obj[key];
-
-  // Only wrap the new method if the original method was a function
-  if (superMethod === undefined || 'function' !== typeof superMethod) {
+  if (descs[key] !== undefined) {
     return method;
   }
 
-  return wrap(method, superMethod);
+  // Find the original method in a parent mixin
+  let superMethod = values[key];
+
+  // If we didn't find the original value in a parent mixin, find it in
+  // the original object
+  if (superMethod === undefined && (!EMBER_METAL_ES5_GETTERS || descriptorFor(obj, key) === undefined)) {
+    superMethod = obj[key];
+  }
+
+  // Only wrap the new method if the original method was a function
+  if (typeof superMethod === 'function') {
+    return wrap(method, superMethod);
+  }
+
+  return method;
 }
 
 function applyConcatenatedProperties(obj, key, value, values) {
@@ -313,19 +316,17 @@ function updateObserversAndListeners(obj, key, paths, updateMethod) {
   }
 }
 
-function replaceObserversAndListeners(obj, key, observerOrListener) {
-  let prev = obj[key];
-
+function replaceObserversAndListeners(obj, key, prev, next) {
   if (typeof prev === 'function') {
     updateObserversAndListeners(obj, key, prev.__ember_observesBefore__, _removeBeforeObserver);
     updateObserversAndListeners(obj, key, prev.__ember_observes__, removeObserver);
     updateObserversAndListeners(obj, key, prev.__ember_listens__, removeListener);
   }
 
-  if (typeof observerOrListener === 'function') {
-    updateObserversAndListeners(obj, key, observerOrListener.__ember_observesBefore__, _addBeforeObserver);
-    updateObserversAndListeners(obj, key, observerOrListener.__ember_observes__, addObserver);
-    updateObserversAndListeners(obj, key, observerOrListener.__ember_listens__, addListener);
+  if (typeof next === 'function') {
+    updateObserversAndListeners(obj, key, next.__ember_observesBefore__, _addBeforeObserver);
+    updateObserversAndListeners(obj, key, next.__ember_observes__, addObserver);
+    updateObserversAndListeners(obj, key, next.__ember_listens__, addListener);
   }
 }
 
@@ -364,7 +365,11 @@ function applyMixin(obj, mixins, partial) {
 
     if (desc === undefined && value === undefined) { continue; }
 
-    replaceObserversAndListeners(obj, key, value);
+    if (EMBER_METAL_ES5_GETTERS && descriptorFor(obj, key) !== undefined) {
+      replaceObserversAndListeners(obj, key, null, value);
+    } else {
+      replaceObserversAndListeners(obj, key, obj[key], value);
+    }
 
     if (detectBinding(key)) {
       meta.writeBindings(key, value);
