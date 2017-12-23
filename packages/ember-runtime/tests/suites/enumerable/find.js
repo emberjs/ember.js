@@ -102,4 +102,33 @@ suite.test('should return first undefined property match', function() {
   equal(obj.findBy('bar', undefined), ary[1], 'findBy(\'bar\', undefined)');
 });
 
+suite.test('findBy keyName with dot and as path', function() {
+  let obj = {};
+  let arrWithPath = [
+    { id: 1, foo: { bar: true } },
+    { id: 2, foo: { bar: false } }
+  ];
+  let arrWithDotKey = [
+      { id: 1, foo: { bar: true } },
+      { id: 2, foo: { bar: false }, 'bar.baz': true }
+  ];
+  let arrWithDotKeyAndPath = [
+      { id: 1, foo: { bar: true } },
+      { id: 2, foo: { bar: true } },
+      { id: 3, foo: { bar: false }, 'foo.bar': 'baz' }
+  ];
+
+  obj = this.newObject(arrWithPath);
+  let fooBarAsPath = obj.findBy('foo.bar');
+  equal(fooBarAsPath, arrWithPath[0], 'works for keyName as path');
+
+  obj = this.newObject(arrWithDotKey);
+  let fooBarWithDotKey = obj.findBy('bar.baz');
+  equal(fooBarWithDotKey, arrWithDotKey[1], 'works for keyName with dot');
+
+  obj = this.newObject(arrWithDotKeyAndPath);
+  let fooBarWithDotAndPath = obj.findBy('foo.bar', 'baz');
+  equal(fooBarWithDotAndPath, arrWithDotKeyAndPath[2], 'works for keyName as path also with dot');
+});
+
 export default suite;
