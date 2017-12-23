@@ -446,6 +446,10 @@ const getPrototypeOf = Object.getPrototypeOf;
 const metaStore = new WeakMap();
 
 export function setMeta(obj, meta) {
+  assert('Cannot call `setMeta` on null', obj !== null);
+  assert('Cannot call `setMeta` on undefined', obj !== undefined);
+  assert(`Cannot call \`setMeta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
   if (DEBUG) {
     counters.setCalls++;
   }
@@ -453,6 +457,10 @@ export function setMeta(obj, meta) {
 }
 
 export function peekMeta(obj) {
+  assert('Cannot call `peekMeta` on null', obj !== null);
+  assert('Cannot call `peekMeta` on undefined', obj !== undefined);
+  assert(`Cannot call \`peekMeta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
   let pointer = obj;
   let meta;
   while (pointer !== undefined && pointer !== null) {
@@ -483,6 +491,10 @@ export function peekMeta(obj) {
   @private
 */
 export function deleteMeta(obj) {
+  assert('Cannot call `deleteMeta` on null', obj !== null);
+  assert('Cannot call `deleteMeta` on undefined', obj !== undefined);
+  assert(`Cannot call \`deleteMeta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
   if (DEBUG) {
     counters.deleteCalls++;
   }
@@ -512,6 +524,10 @@ export function deleteMeta(obj) {
   @return {Object} the meta hash for an object
 */
 export function meta(obj) {
+  assert('Cannot call `meta` on null', obj !== null);
+  assert('Cannot call `meta` on undefined', obj !== undefined);
+  assert(`Cannot call \`meta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
   if (DEBUG) {
     counters.metaCalls++;
   }
@@ -542,6 +558,10 @@ export function meta(obj) {
   @private
 */
 export function descriptorFor(obj, keyName) {
+  assert('Cannot call `descriptorFor` on null', obj !== null);
+  assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
+  assert(`Cannot call \`descriptorFor\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
   let possibleDesc = obj[keyName];
   return isDescriptor(possibleDesc) ? possibleDesc : undefined;
 }

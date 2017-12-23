@@ -200,6 +200,32 @@ function makeCtor() {
   return Class;
 }
 
+const IS_DESTROYED = descriptor({
+  configurable: true,
+  enumerable: false,
+
+  get() {
+    return peekMeta(this).isSourceDestroyed();
+  },
+
+  set(value) {
+    assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, value === IS_DESTROYED);
+  }
+});
+
+const IS_DESTROYING = descriptor({
+  configurable: true,
+  enumerable: false,
+
+  get() {
+    return peekMeta(this).isSourceDestroying();
+  },
+
+  set(value) {
+    assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, value === IS_DESTROYING);
+  }
+});
+
 /**
   @class CoreObject
   @public
@@ -407,20 +433,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroyed: descriptor({
-    get() {
-      return peekMeta(this).isSourceDestroyed();
-    },
-
-    set(value) {
-      // prevent setting while applying mixins
-      if (value !== null && typeof value === 'object' && value.isDescriptor) {
-        return;
-      }
-
-      assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, false);
-    }
-  }),
+  isDestroyed: IS_DESTROYED,
 
   /**
     Destruction scheduled flag. The `destroy()` method has been called.
@@ -432,20 +445,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroying: descriptor({
-    get() {
-      return peekMeta(this).isSourceDestroying();
-    },
-
-    set(value) {
-      // prevent setting while applying mixins
-      if (value !== null && typeof value === 'object' && value.isDescriptor) {
-        return;
-      }
-
-      assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, false);
-    }
-  }),
+  isDestroying: IS_DESTROYING,
 
   /**
     Destroys an object by setting the `isDestroyed` flag and removing its

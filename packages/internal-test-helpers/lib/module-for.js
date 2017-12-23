@@ -26,21 +26,32 @@ export default function moduleFor(description, TestClass, ...mixins) {
     proto = Object.getPrototypeOf(proto);
   }
 
+  function shouldTest(features) {
+    return features.every(feature => {
+      if (feature[0] === '!' && isFeatureEnabled(feature.slice(1))) {
+        return false;
+      } else if (!isFeatureEnabled(feature)) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+  }
+
   function generateTest(name) {
     if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf('@skip ') === 0) {
       QUnit.skip(name.slice(5), assert => context[name](assert));
     } else {
-      let match = /^@feature\((!?)([a-z-]+)\) /.exec(name);
-      let shouldTest = match && isFeatureEnabled(match[2]);
+      let match = /^@feature\(([a-z-!]+)\) /.exec(name);
 
-      if (match && match[1] === '!') {
-        shouldTest = !shouldTest;
-      }
+      if (match) {
+        let features = match[1].replace(/ /g, '').split(',');
 
-      if (shouldTest) {
-        QUnit.test(name.slice(match[0].length), assert => context[name](assert));
+        if (shouldTest(features)) {
+          QUnit.test(name.slice(match[0].length), assert => context[name](assert));
+        }
       }
     }
   }

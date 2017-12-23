@@ -78,7 +78,6 @@ class RootState {
     alwaysRevalidate: boolean;
   };
   public render: () => void;
-  private _removing: boolean;
 
   constructor(
     root: Opaque,
@@ -95,7 +94,6 @@ class RootState {
     this.result = undefined;
     this.shouldReflush = false;
     this.destroyed = false;
-    this._removing = false;
 
     let options = this.options = {
       alwaysRevalidate: false,

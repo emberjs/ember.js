@@ -1,5 +1,5 @@
 import { guidFor, getOwner } from 'ember-utils';
-import { descriptor, Mixin } from 'ember-metal';
+import { descriptor, descriptorFor, Mixin } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
 import { environment, ENV } from 'ember-environment';
 import { matches } from '../system/utils';
@@ -404,6 +404,12 @@ export default Mixin.create({
   */
   init() {
     this._super(...arguments);
+
+    // tslint:disable-next-line:max-line-length
+    assert(`You cannot use a computed property for the component's \`elementId\` (${this}).`, descriptorFor(this, 'elementId') === undefined);
+
+    // tslint:disable-next-line:max-line-length
+    assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, descriptorFor(this, 'tagName') === undefined);
 
     if (!this.elementId && this.tagName !== '') {
       this.elementId = guidFor(this);
