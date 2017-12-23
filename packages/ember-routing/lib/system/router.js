@@ -1,7 +1,5 @@
 import {
   assign,
-  guidFor,
-  dictionary,
   getOwner
 } from 'ember-utils';
 import Logger from 'ember-console';
@@ -142,7 +140,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     this._qpCache = Object.create(null);
     this._resetQueuedQueryParameterChanges();
-    this._handledErrors = dictionary(null);
+    this._handledErrors = new Set();
     this._engineInstances = Object.create(null);
     this._engineInfoByRoute = Object.create(null);
   },
@@ -1011,16 +1009,16 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   // These three helper functions are used to ensure errors aren't
   // re-raised if they're handled in a route's error action.
-  _markErrorAsHandled(errorGuid) {
-    this._handledErrors[errorGuid] = true;
+  _markErrorAsHandled(error) {
+    this._handledErrors.add(error);
   },
 
-  _isErrorHandled(errorGuid) {
-    return this._handledErrors[errorGuid];
+  _isErrorHandled(error) {
+    return this._handledErrors.has(error);
   },
 
-  _clearHandledError(errorGuid) {
-    delete this._handledErrors[errorGuid];
+  _clearHandledError(error) {
+    this._handledErrors.delete(error);
   },
 
   _getEngineInstance({ name, instanceId, mountPoint }) {
@@ -1111,8 +1109,7 @@ let defaultActionHandlers = {
         // Check for the existence of an 'error' route.
         let errorRouteName = findRouteStateName(route, 'error');
         if (errorRouteName) {
-          let errorId = guidFor(error);
-          router._markErrorAsHandled(errorId);
+          router._markErrorAsHandled(error);
           router.intermediateTransitionTo(errorRouteName, error);
           return false;
         }
@@ -1121,8 +1118,7 @@ let defaultActionHandlers = {
       // Check for an 'error' substate route
       let errorSubstateName = findRouteSubstateName(route, 'error');
       if (errorSubstateName) {
-        var errorId = guidFor(error);
-        router._markErrorAsHandled(errorId);
+        router._markErrorAsHandled(error);
         router.intermediateTransitionTo(errorSubstateName, error);
         return false;
       }
@@ -1266,8 +1262,7 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
       } else {
         // Should only hit here if a non-bubbling error action is triggered on a route.
         if (name === 'error') {
-          let errorId = guidFor(args[0]);
-          handler.router._markErrorAsHandled(errorId);
+          handler.router._markErrorAsHandled(args[0]);
         }
         return;
       }
@@ -1438,10 +1433,8 @@ function didBeginTransition(transition, router) {
   router.set('targetState', routerState);
 
   transition.promise = transition.catch(error => {
-    let errorId = guidFor(error);
-
-    if (router._isErrorHandled(errorId)) {
-      router._clearHandledError(errorId);
+    if (router._isErrorHandled(error)) {
+      router._clearHandledError(error);
     } else {
       throw error;
     }
