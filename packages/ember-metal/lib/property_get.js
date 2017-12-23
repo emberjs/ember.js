@@ -3,9 +3,9 @@
 */
 
 import { assert } from 'ember-debug';
-import { DESCRIPTOR_TRAP } from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import { isPath } from './path_cache';
-import { isDescriptor, isDescriptorTrap, DESCRIPTOR } from './meta';
+import { isDescriptor, isDescriptorTrap, DESCRIPTOR, descriptorFor } from './meta';
 
 const ALLOWABLE_TYPES = {
   object: true,
@@ -57,17 +57,40 @@ export function get(obj, keyName) {
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `Ember.get` with an empty string', keyName !== '');
 
-  let value = obj[keyName];
+  let type = typeof obj;
 
-  if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
-    value = value[DESCRIPTOR];
+  let isObject = type === 'object';
+  let isFunction = type === 'function';
+  let isObjectLike = isObject || isFunction;
+
+  let descriptor = undefined;
+  let value;
+
+  if (isObjectLike) {
+    if (EMBER_METAL_ES5_GETTERS) {
+      descriptor = descriptorFor(obj, keyName);
+    }
+
+    if (!EMBER_METAL_ES5_GETTERS || descriptor === undefined) {
+      value = obj[keyName];
+
+      if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
+        descriptor = value[DESCRIPTOR];
+      } else if (isDescriptor(value)) {
+        descriptor = value;
+      }
+    }
+
+    if (descriptor !== undefined) {
+      return descriptor.get(obj, keyName);
+    }
+  } else {
+    value = obj[keyName];
   }
 
-  if (isDescriptor(value)) {
-    return value.get(obj, keyName);
-  } else if (isPath(keyName)) {
+  if (isPath(keyName)) {
     return _getPath(obj, keyName);
-  } else if (value === undefined && 'object' === typeof obj && !(keyName in obj) &&
+  } else if (value === undefined && isObject && !(keyName in obj) &&
     typeof obj.unknownProperty === 'function') {
     return obj.unknownProperty(keyName);
   } else {
