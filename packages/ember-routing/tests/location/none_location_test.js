@@ -1,5 +1,6 @@
 import { set, run } from 'ember-metal';
 import NoneLocation from '../../location/none_location';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let NoneTestLocation, location;
 
@@ -8,77 +9,70 @@ function createLocation(options) {
   location = NoneTestLocation.create(options);
 }
 
-QUnit.module('Ember.NoneLocation', {
-  setup() {
+moduleFor('Ember.NoneLocation', class extends AbstractTestCase {
+  constructor() {
+    super();
     NoneTestLocation = NoneLocation.extend({});
-  },
+  }
 
   teardown() {
     run(() => {
       if (location) { location.destroy(); }
     });
   }
-});
 
-QUnit.test('NoneLocation.formatURL() returns the current url always appending rootURL', function() {
-  expect(1);
+  ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](assert) {
+    NoneTestLocation.reopen({
+      init() {
+        this._super(...arguments);
+        set(this, 'rootURL', '/en/');
+      }
+    });
 
-  NoneTestLocation.reopen({
-    init() {
-      this._super(...arguments);
-      set(this, 'rootURL', '/en/');
-    }
-  });
+    createLocation();
 
-  createLocation();
+    assert.equal(location.formatURL('/foo/bar'), '/en/foo/bar');
+  }
 
-  equal(location.formatURL('/foo/bar'), '/en/foo/bar');
-});
+  ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
+    NoneTestLocation.reopen({
+      init() {
+        this._super(...arguments);
+        set(this, 'rootURL', '/foo/');
+        set(this, 'path', '/foo/bar');
+      }
+    });
 
-QUnit.test('NoneLocation.getURL() returns the current path minus rootURL', function() {
-  expect(1);
+    createLocation();
 
-  NoneTestLocation.reopen({
-    init() {
-      this._super(...arguments);
-      set(this, 'rootURL', '/foo/');
-      set(this, 'path', '/foo/bar');
-    }
-  });
+    assert.equal(location.getURL(), '/bar');
+  }
 
-  createLocation();
+  ['@test NoneLocation.getURL() will remove the rootURL only from the beginning of a url'](assert) {
+    NoneTestLocation.reopen({
+      init() {
+        this._super(...arguments);
+        set(this, 'rootURL', '/bar/');
+        set(this, 'path', '/foo/bar/baz');
+      }
+    });
 
-  equal(location.getURL(), '/bar');
-});
+    createLocation();
 
-QUnit.test('NoneLocation.getURL() will remove the rootURL only from the beginning of a url', function() {
-  expect(1);
+    assert.equal(location.getURL(), '/foo/bar/baz');
+  }
 
-  NoneTestLocation.reopen({
-    init() {
-      this._super(...arguments);
-      set(this, 'rootURL', '/bar/');
-      set(this, 'path', '/foo/bar/baz');
-    }
-  });
+  ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](assert) {
+    NoneTestLocation.reopen({
+      init() {
+        this._super(...arguments);
+        set(this, 'rootURL', '/bar/');
+        set(this, 'path', '/bars/baz');
+      }
+    });
 
-  createLocation();
+    createLocation();
 
-  equal(location.getURL(), '/foo/bar/baz');
-});
-
-QUnit.test('NoneLocation.getURL() will not remove the rootURL when only a partial match', function() {
-  expect(1);
-
-  NoneTestLocation.reopen({
-    init() {
-      this._super(...arguments);
-      set(this, 'rootURL', '/bar/');
-      set(this, 'path', '/bars/baz');
-    }
-  });
-
-  createLocation();
-
-  equal(location.getURL(), '/bars/baz');
+    assert.equal(location.getURL(), '/bars/baz');
+  }
 });
