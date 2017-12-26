@@ -127,7 +127,9 @@ Ember.observersFor = metal.observersFor;
 Ember.removeObserver = metal.removeObserver;
 Ember._suspendObserver = metal._suspendObserver;
 Ember._suspendObservers = metal._suspendObservers;
-Ember.required = metal.required;
+if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
+  Ember.required = metal.required;
+}
 Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
 Ember.mixin = metal.mixin;

@@ -17,6 +17,7 @@ import {
   deprecate
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {
@@ -192,7 +193,7 @@ function applyMergedProperties(obj, key, value, values) {
 
 function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
   if (value instanceof Descriptor) {
-    if (value === REQUIRED && descs[key]) { return CONTINUE; }
+    if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT && value === REQUIRED && descs[key]) { return CONTINUE; }
 
     // Wrap descriptor function to implement
     // _super() if needed
@@ -355,7 +356,7 @@ function applyMixin(obj, mixins, partial) {
     desc = descs[key];
     value = values[key];
 
-    if (desc === REQUIRED) { continue; }
+    if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT && desc === REQUIRED) { continue; }
 
     while (desc && desc instanceof Alias) {
       let followed = followAlias(obj, desc, descs, values);

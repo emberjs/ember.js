@@ -4,11 +4,14 @@ import {
   required,
   get
 } from '../..';
+import { ENV } from 'ember-environment';
 
 let PartialMixin, FinalMixin, obj;
-
+let originalEnvVal;
 QUnit.module('Module.required', {
   setup() {
+    originalEnvVal = ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT;
+    ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT = true;
     expectDeprecation(() => {
       PartialMixin = Mixin.create({
         foo: required(),
@@ -25,6 +28,7 @@ QUnit.module('Module.required', {
 
   teardown() {
     PartialMixin = FinalMixin = obj = null;
+    ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT = originalEnvVal;
   }
 });
 
@@ -54,4 +58,3 @@ QUnit.test('using apply', function() {
   mixin(obj, PartialMixin, { foo: 'FOO' });
   equal(get(obj, 'foo'), 'FOO', 'should now be defined');
 });
-
