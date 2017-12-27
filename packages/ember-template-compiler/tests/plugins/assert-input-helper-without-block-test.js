@@ -1,16 +1,16 @@
 import { compile } from '../../index';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('ember-template-compiler: assert-input-helper-without-block');
+moduleFor('ember-template-compiler: assert-input-helper-without-block', class extends AbstractTestCase {
+  ['@test Using {{#input}}{{/input}} is not valid']() {
 
-QUnit.test('Using {{#input}}{{/input}} is not valid', function() {
-  expect(1);
+    let expectedMessage =
+      `The {{input}} helper cannot be used in block form. ('baz/foo-bar' @ L1:C0) `;
 
-  let expectedMessage =
-    `The {{input}} helper cannot be used in block form. ('baz/foo-bar' @ L1:C0) `;
-
-  expectAssertion(() => {
-    compile('{{#input value="123"}}Completely invalid{{/input}}', {
-      moduleName: 'baz/foo-bar'
-    });
-  }, expectedMessage);
+    expectAssertion(() => {
+      compile('{{#input value="123"}}Completely invalid{{/input}}', {
+        moduleName: 'baz/foo-bar'
+      });
+    }, expectedMessage);
+  }
 });
