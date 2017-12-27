@@ -6,7 +6,7 @@ import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
-let missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
+const missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
 
 /**
  A registry used to store factory and option information keyed
@@ -45,7 +45,7 @@ export default class Registry {
     this._localLookupCache      = Object.create(null);
     this._normalizeCache        = dictionary(null);
     this._resolveCache          = dictionary(null);
-    this._failCache             = dictionary(null);
+    this._failSet               = new Set();
 
     this._options               = dictionary(null);
     this._typeOptions           = dictionary(null);
@@ -153,7 +153,7 @@ export default class Registry {
     let normalizedName = this.normalize(fullName);
     assert(`Cannot re-register: '${fullName}', as it has already been resolved.`, !this._resolveCache[normalizedName]);
 
-    delete this._failCache[normalizedName];
+    this._failSet.delete(normalizedName);
     this.registrations[normalizedName] = factory;
     this._options[normalizedName] = options;
   }
@@ -184,8 +184,8 @@ export default class Registry {
 
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
-    delete this._failCache[normalizedName];
     delete this._options[normalizedName];
+    this._failSet.delete(normalizedName);
   }
 
   /**
@@ -523,8 +523,6 @@ export default class Registry {
    @param {String} type the type to iterate over
   */
   knownForType(type) {
-    let fallbackKnown, resolverKnown;
-
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
     for (let index = 0; index < registeredNames.length; index++) {
@@ -536,6 +534,7 @@ export default class Registry {
       }
     }
 
+    let fallbackKnown, resolverKnown;
     if (this.fallback !== null) {
       fallbackKnown = this.fallback.knownForType(type);
     }
@@ -692,7 +691,7 @@ function resolve(registry, normalizedName, options) {
   let cacheKey = registry.resolverCacheKey(normalizedName, options);
   let cached = registry._resolveCache[cacheKey];
   if (cached !== undefined) { return cached; }
-  if (registry._failCache[cacheKey]) { return; }
+  if (registry._failSet.has(cacheKey)) { return; }
 
   let resolved;
 
@@ -705,7 +704,7 @@ function resolve(registry, normalizedName, options) {
   }
 
   if (resolved === undefined) {
-    registry._failCache[cacheKey] = true;
+    registry._failSet.add(cacheKey);
   } else {
     registry._resolveCache[cacheKey] = resolved;
   }
