@@ -16,8 +16,6 @@ import {
   AbstractTestCase
 } from 'internal-test-helpers';
 
-const { trim } = jQuery;
-
 let component, fixture;
 
 function checkTemplate(templateName, assert) {
@@ -84,7 +82,7 @@ moduleFor('ember-templates: bootstrap', class extends AbstractTestCase {
     assert.ok(template, 'template with name funkyTemplate available');
 
     // This won't even work with Ember templates
-    assert.equal(trim(template({ name: 'Tobias' })), 'Tobias');
+    assert.equal(template({ name: 'Tobias' }).trim(), 'Tobias');
   }
 
   ['@test duplicated default application templates should throw exception'](assert) {

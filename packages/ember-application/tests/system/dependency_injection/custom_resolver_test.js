@@ -26,9 +26,8 @@ moduleFor('Ember.Application with extended default resolver and autoboot', class
     });
   }
 
-  [`@test a resolver can be supplied to application`](assert) {
+  [`@test a resolver can be supplied to application`]() {
     this.runTask(() => this.createApplication());
-    assert.equal(this.$('h1').text(), 'Fallback');
+    this.assertText('Fallback');
   }
-
 });

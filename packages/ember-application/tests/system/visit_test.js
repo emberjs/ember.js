@@ -12,7 +12,6 @@ import Engine from '../../system/engine';
 import { Route } from 'ember-routing';
 import { Component, helper } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
-import { jQuery } from 'ember-views';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -27,6 +26,13 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
 
   createApplication(options) {
     return super.createApplication(options, Application.extend());
+  }
+
+  assertEmptyFixture(message) {
+    this.assert.strictEqual(
+      document.getElementById('qunit-fixture').children.length, 0,
+      `there are no elements in the fixture element ${message ? message : ''}`
+    );
   }
 
   // This tests whether the application is "autobooted" by registering an
@@ -274,10 +280,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
   [`@test visit() returns a promise that resolves when the view has rendered`](assert) {
     this.addTemplate('application', `<h1>Hello world</h1>`);
 
-    assert.strictEqual(
-      this.$().children().length, 0,
-      'there are no elements in the fixture element'
-    );
+    this.assertEmptyFixture();
 
     return this.visit('/').then(instance => {
       assert.ok(
@@ -285,7 +288,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
         'promise is resolved with an ApplicationInstance'
       );
       assert.equal(
-        this.$('h1').text(), 'Hello world',
+        this.element.textContent, 'Hello world',
         'the application was rendered once the promise resolves'
       );
     });
@@ -296,20 +299,15 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
 
     this.addTemplate('application', '<h1>Hello world</h1>');
 
-    assert.strictEqual(
-      this.$().children().length, 0,
-      'there are no elements in the fixture element'
-    );
+    this.assertEmptyFixture();
 
     return this.visit('/', { shouldRender: false }).then(instance => {
       assert.ok(
         instance instanceof ApplicationInstance,
         'promise is resolved with an ApplicationInstance'
       );
-      assert.strictEqual(
-        this.$().children().length, 0,
-        'there are still no elements in the fixture element after visit'
-      );
+
+      this.assertEmptyFixture('after visit');
     });
   }
 
@@ -318,10 +316,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
 
     this.addTemplate('application', '<h1>Hello world</h1>');
 
-    assert.strictEqual(
-      this.$('#qunit-fixture').children().length, 0,
-      'there are no elements in the fixture element'
-    );
+    this.assertEmptyFixture();
 
     return this.visit('/', { shouldRender: true }).then(instance => {
       assert.ok(
@@ -329,7 +324,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
         'promise is resolved with an ApplicationInstance'
       );
       assert.strictEqual(
-        this.$().children().length, 1,
+        document.querySelector('#qunit-fixture').children.length, 1,
         'there is 1 element in the fixture element after visit'
       );
     });
@@ -352,20 +347,15 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
     let BlogMap = function() {};
     this.add('route-map:blog', BlogMap);
 
-    assert.strictEqual(
-      this.$('#qunit-fixture').children().length, 0,
-      'there are no elements in the fixture element'
-    );
+    this.assertEmptyFixture();
 
     return this.visit('/blog', { shouldRender: false }).then(instance => {
       assert.ok(
         instance instanceof ApplicationInstance,
         'promise is resolved with an ApplicationInstance'
       );
-      assert.strictEqual(
-        this.$().children().length, 0,
-        'there are still no elements in the fixture element after visit'
-      );
+
+      this.assertEmptyFixture('after visit');
     });
   }
 
@@ -398,10 +388,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
     let BlogMap = function() {};
     this.add('route-map:blog', BlogMap);
 
-    assert.strictEqual(
-      this.$('#qunit-fixture').children().length, 0,
-      'there are no elements in the fixture element'
-    );
+    this.assertEmptyFixture();
 
     return this.visit('/blog', { isInteractive: false }).then(instance => {
       assert.ok(
@@ -409,7 +396,7 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
         'promise is resolved with an ApplicationInstance'
       );
       assert.strictEqual(
-        this.$().find('p').text(), 'Dis cache money',
+        this.element.querySelector('p').textContent, 'Dis cache money',
         'Engine component is resolved'
       );
     });
@@ -439,14 +426,11 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
     let BlogMap = function() {};
     this.add('route-map:blog', BlogMap);
 
-    assert.strictEqual(
-      this.$().children().length, 0,
-      'there are no elements in the fixture element'
-    );
+    this.assertEmptyFixture();
 
     return this.visit('/blog', { shouldRender: true }).then(() => {
       assert.strictEqual(
-        this.$().find('p').text(), 'Dis cache money',
+        this.element.querySelector('p').textContent, 'Dis cache money',
         'Engine component is resolved'
       );
     });
@@ -475,14 +459,11 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
     let BlogMap = function() {};
     this.add('route-map:blog', BlogMap);
 
-    assert.strictEqual(
-      this.$().children().length, 0,
-      'there are no elements in the fixture element'
-    );
+    this.assertEmptyFixture();
 
     return this.visit('/blog', { shouldRender: true }).then(() => {
       assert.strictEqual(
-        this.$().text(), 'turnt up',
+        this.element.textContent, 'turnt up',
         'Engine component is resolved'
       );
     });
@@ -576,18 +557,21 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
       }
     }));
 
-    let $foo = jQuery('<div />').appendTo('#qunit-fixture');
-    let $bar = jQuery('<div />').appendTo('#qunit-fixture');
+    let fixtureElement = document.querySelector('#qunit-fixture');
+    let foo = document.createElement('div');
+    let bar = document.createElement('div');
+    fixtureElement.appendChild(foo);
+    fixtureElement.appendChild(bar);
 
     let data = encodeURIComponent(JSON.stringify({ name: 'Godfrey' }));
     let instances = [];
 
     return RSVP.all([
       this.runTask(() => {
-        return this.application.visit(`/x-foo?data=${data}`, { rootElement: $foo[0] });
+        return this.application.visit(`/x-foo?data=${data}`, { rootElement: foo });
       }),
       this.runTask(() => {
-        return this.application.visit('/x-bar', { rootElement: $bar[0] });
+        return this.application.visit('/x-bar', { rootElement: bar });
       })
     ]).then(_instances => {
       instances = _instances;
@@ -598,28 +582,28 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
       assert.ok(xBarInitCalled);
       assert.ok(xBarDidInsertElementCalled);
 
-      assert.equal($foo.find('h1').text(), 'X-Foo');
-      assert.equal($foo.find('p').text(), 'Hello Godfrey, I have been clicked 0 times (0 times combined)!');
-      assert.ok($foo.text().indexOf('X-Bar') === -1);
+      assert.equal(foo.querySelector('h1').textContent, 'X-Foo');
+      assert.equal(foo.querySelector('p').textContent, 'Hello Godfrey, I have been clicked 0 times (0 times combined)!');
+      assert.ok(foo.textContent.indexOf('X-Bar') === -1);
 
-      assert.equal($bar.find('h1').text(), 'X-Bar');
-      assert.equal($bar.find('button').text(), 'Join 0 others in clicking me!');
-      assert.ok($bar.text().indexOf('X-Foo') === -1);
-
-      this.runTask(() => {
-        $foo.find('x-foo').click();
-      });
-
-      assert.equal($foo.find('p').text(), 'Hello Godfrey, I have been clicked 1 times (1 times combined)!');
-      assert.equal($bar.find('button').text(), 'Join 1 others in clicking me!');
+      assert.equal(bar.querySelector('h1').textContent, 'X-Bar');
+      assert.equal(bar.querySelector('button').textContent, 'Join 0 others in clicking me!');
+      assert.ok(bar.textContent.indexOf('X-Foo') === -1);
 
       this.runTask(() => {
-        $bar.find('button').click();
-        $bar.find('button').click();
+        this.click(foo.querySelector('x-foo'));
       });
 
-      assert.equal($foo.find('p').text(), 'Hello Godfrey, I have been clicked 1 times (3 times combined)!');
-      assert.equal($bar.find('button').text(), 'Join 3 others in clicking me!');
+      assert.equal(foo.querySelector('p').textContent, 'Hello Godfrey, I have been clicked 1 times (1 times combined)!');
+      assert.equal(bar.querySelector('button').textContent, 'Join 1 others in clicking me!');
+
+      this.runTask(() => {
+        this.click(bar.querySelector('button'));
+        this.click(bar.querySelector('button'));
+      });
+
+      assert.equal(foo.querySelector('p').textContent, 'Hello Godfrey, I have been clicked 1 times (3 times combined)!');
+      assert.equal(bar.querySelector('button').textContent, 'Join 3 others in clicking me!');
 
     }).finally(() => {
       this.runTask(() => {
