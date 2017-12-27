@@ -49,7 +49,7 @@ export default class AbstractTestCase {
   }
 
   setupFixture(innerHTML) {
-    let fixture = document.getElementById('#qunit-fixture');
+    let fixture = document.getElementById('qunit-fixture');
     fixture.innerHTML = innerHTML;
   }
 
