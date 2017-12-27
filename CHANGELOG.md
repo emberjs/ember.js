@@ -1,5 +1,8 @@
 # Ember Changelog
 
+### 2.18.0-beta.5 (December 27, 2017)
+- [#15952](https://github.com/emberjs/ember.js/pull/15952) [BUGFIX] fix regression of clicking link-to with disabled=true
+
 ### 2.18.0-beta.4 (December 19, 2017)
 - [#15982](https://github.com/emberjs/ember.js/pull/15982) [BUGFIX] Fix issue with unchaining ChainNodes (again)
 
