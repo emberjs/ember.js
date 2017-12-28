@@ -1,24 +1,27 @@
 import { setProperties } from '..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('Ember.setProperties');
+moduleFor('Ember.setProperties', class extends AbstractTestCase {
+  ['@test supports setting multiple attributes at once'](assert) {
+    assert.deepEqual(setProperties(null, null), null, 'noop for null properties and null object');
+    assert.deepEqual(setProperties(undefined, undefined), undefined, 'noop for undefined properties and undefined object');
 
-QUnit.test('supports setting multiple attributes at once', function() {
-  deepEqual(setProperties(null, null), null, 'noop for null properties and null object');
-  deepEqual(setProperties(undefined, undefined), undefined, 'noop for undefined properties and undefined object');
+    assert.deepEqual(setProperties({}), undefined, 'noop for no properties');
+    assert.deepEqual(setProperties({}, undefined), undefined, 'noop for undefined');
+    assert.deepEqual(setProperties({}, null), null, 'noop for null');
+    assert.deepEqual(setProperties({}, NaN), NaN, 'noop for NaN');
+    assert.deepEqual(setProperties({}, {}), {}, 'meh');
 
-  deepEqual(setProperties({}), undefined, 'noop for no properties');
-  deepEqual(setProperties({}, undefined), undefined, 'noop for undefined');
-  deepEqual(setProperties({}, null), null, 'noop for null');
-  deepEqual(setProperties({}, NaN), NaN, 'noop for NaN');
-  deepEqual(setProperties({}, {}), {}, 'meh');
+    assert.deepEqual(setProperties({}, { foo: 1 }), { foo: 1 }, 'Set a single property');
 
-  deepEqual(setProperties({}, { foo: 1 }), { foo: 1 }, 'Set a single property');
+    assert.deepEqual(setProperties({}, { foo: 1, bar: 1 }), { foo: 1, bar: 1 }, 'Set multiple properties');
 
-  deepEqual(setProperties({}, { foo: 1, bar: 1 }), { foo: 1, bar: 1 }, 'Set multiple properties');
+    assert.deepEqual(setProperties({ foo: 2, baz: 2 }, { foo: 1 }), { foo: 1 }, 'Set one of multiple properties');
 
-  deepEqual(setProperties({ foo: 2, baz: 2 }, { foo: 1 }), { foo: 1 }, 'Set one of multiple properties');
-
-  deepEqual(setProperties({ foo: 2, baz: 2 }, { bar: 2 }), {
-    bar: 2
-  }, 'Set an additional, previously unset property');
+    assert.deepEqual(setProperties({ foo: 2, baz: 2 }, { bar: 2 }), {
+      bar: 2
+    }, 'Set an additional, previously unset property');
+  }
 });
+
+
