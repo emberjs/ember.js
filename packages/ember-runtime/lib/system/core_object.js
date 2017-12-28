@@ -38,6 +38,7 @@ import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 import { MANDATORY_SETTER } from 'ember/features';
 
 const schedule = run.schedule;
@@ -553,10 +554,6 @@ CoreObject.__super__ = null;
 
 let ClassMixinProps = {
 
-  ClassMixin: REQUIRED,
-
-  PrototypeMixin: REQUIRED,
-
   isClass: true,
 
   isMethod: false,
@@ -912,6 +909,11 @@ let ClassMixinProps = {
     }
   }
 };
+
+if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
+  ClassMixinProps.ClassMixin = REQUIRED;
+  ClassMixinProps.PrototypeMixin = REQUIRED;
+}
 
 function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));

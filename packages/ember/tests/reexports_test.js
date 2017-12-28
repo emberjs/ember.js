@@ -1,10 +1,11 @@
 import Ember from '../index';
+import { ENV } from 'ember-environment';
 import { confirmExport } from 'internal-test-helpers';
 import { DEBUG } from 'ember-env-flags';
 
 QUnit.module('ember reexports');
 
-[
+let allExports =[
   // ember-utils
   ['getOwner', 'ember-utils', 'getOwner'],
   ['setOwner', 'ember-utils', 'setOwner'],
@@ -108,7 +109,6 @@ QUnit.module('ember reexports');
   ['removeObserver', 'ember-metal'],
   ['_suspendObserver', 'ember-metal'],
   ['_suspendObservers', 'ember-metal'],
-  ['required', 'ember-metal'],
   ['aliasMethod', 'ember-metal'],
   ['observer', 'ember-metal'],
   ['mixin', 'ember-metal'],
@@ -205,7 +205,13 @@ QUnit.module('ember reexports');
   // ember-extension-support
   ['DataAdapter', 'ember-extension-support'],
   ['ContainerDebugAdapter', 'ember-extension-support']
-].forEach(reexport => {
+];
+
+if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
+  allExports.push(['required', 'ember-metal']);
+}
+
+allExports.forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
 
   // default path === exportName if none present
