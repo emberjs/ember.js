@@ -1,8 +1,11 @@
 import { get } from '../..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj;
-const moduleOpts = {
-  setup() {
+
+moduleFor('Ember.get with path', class extends AbstractTestCase {
+  constructor() {
+    super();
     obj = {
       foo: {
         bar: {
@@ -21,59 +24,57 @@ const moduleOpts = {
       },
       nullValue: null
     };
-  },
+  }
 
   teardown() {
     obj = undefined;
   }
-};
 
-QUnit.module('Ember.get with path', moduleOpts);
+  // ..........................................................
+  // LOCAL PATHS
+  //
+  ['@test [obj, foo] -> obj.foo'](assert) {
+    assert.deepEqual(get(obj, 'foo'), obj.foo);
+  }
 
-// ..........................................................
-// LOCAL PATHS
-//
+  ['@test [obj, foo.bar] -> obj.foo.bar'](assert) {
+    assert.deepEqual(get(obj, 'foo.bar'), obj.foo.bar);
+  }
 
-QUnit.test('[obj, foo] -> obj.foo', function() {
-  deepEqual(get(obj, 'foo'), obj.foo);
+  ['@test [obj, foothis.bar] -> obj.foothis.bar'](assert) {
+    assert.deepEqual(get(obj, 'foothis.bar'), obj.foothis.bar);
+  }
+
+  ['@test [obj, falseValue.notDefined] -> (undefined)'](assert) {
+    assert.strictEqual(get(obj, 'falseValue.notDefined'), undefined);
+  }
+
+  ['@test [obj, emptyString.length] -> 0'](assert) {
+    assert.strictEqual(get(obj, 'emptyString.length'), 0);
+  }
+
+  ['@test [obj, nullValue.notDefined] -> (undefined)'](assert) {
+    assert.strictEqual(get(obj, 'nullValue.notDefined'), undefined);
+  }
+
+  // ..........................................................
+  // GLOBAL PATHS TREATED LOCAL WITH GET
+  //
+
+  ['@test [obj, Wuz] -> obj.Wuz'](assert) {
+    assert.deepEqual(get(obj, 'Wuz'), obj.Wuz);
+  }
+
+  ['@test [obj, Wuz.nar] -> obj.Wuz.nar'](assert) {
+    assert.deepEqual(get(obj, 'Wuz.nar'), obj.Wuz.nar);
+  }
+
+  ['@test [obj, Foo] -> (undefined)'](assert) {
+    assert.strictEqual(get(obj, 'Foo'), undefined);
+  }
+
+  ['@test [obj, Foo.bar] -> (undefined)'](assert) {
+    assert.strictEqual(get(obj, 'Foo.bar'), undefined);
+  }
 });
 
-QUnit.test('[obj, foo.bar] -> obj.foo.bar', function() {
-  deepEqual(get(obj, 'foo.bar'), obj.foo.bar);
-});
-
-QUnit.test('[obj, foothis.bar] -> obj.foothis.bar', function() {
-  deepEqual(get(obj, 'foothis.bar'), obj.foothis.bar);
-});
-
-QUnit.test('[obj, falseValue.notDefined] -> (undefined)', function() {
-  strictEqual(get(obj, 'falseValue.notDefined'), undefined);
-});
-
-QUnit.test('[obj, emptyString.length] -> 0', function() {
-  strictEqual(get(obj, 'emptyString.length'), 0);
-});
-
-QUnit.test('[obj, nullValue.notDefined] -> (undefined)', function() {
-  strictEqual(get(obj, 'nullValue.notDefined'), undefined);
-});
-
-// ..........................................................
-// GLOBAL PATHS TREATED LOCAL WITH GET
-//
-
-QUnit.test('[obj, Wuz] -> obj.Wuz', function() {
-  deepEqual(get(obj, 'Wuz'), obj.Wuz);
-});
-
-QUnit.test('[obj, Wuz.nar] -> obj.Wuz.nar', function() {
-  deepEqual(get(obj, 'Wuz.nar'), obj.Wuz.nar);
-});
-
-QUnit.test('[obj, Foo] -> (undefined)', function() {
-  strictEqual(get(obj, 'Foo'), undefined);
-});
-
-QUnit.test('[obj, Foo.bar] -> (undefined)', function() {
-  strictEqual(get(obj, 'Foo.bar'), undefined);
-});
