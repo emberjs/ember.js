@@ -3,6 +3,7 @@ import {
   unregisterWaiter,
   checkWaiters
 } from '../../test/waiters';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 class Waiters {
   constructor() {
@@ -42,104 +43,106 @@ class Waiters {
   }
 }
 
-QUnit.module('ember-testing: waiters', {
-  setup() {
+moduleFor('ember-testing: waiters', class extends AbstractTestCase {
+  constructor() {
+    super();
     this.waiters = new Waiters();
-  },
+  }
 
   teardown() {
     this.waiters.unregister();
   }
+
+  ['@test registering a waiter'](assert) {
+    assert.expect(2);
+
+    let obj = { foo: true };
+
+    this.waiters.add(obj, function() {
+      assert.ok(this.foo, 'has proper `this` context');
+      return true;
+    });
+
+    this.waiters.add(function() {
+      assert.ok(true, 'is called');
+      return true;
+    });
+
+    this.waiters.check();
+  }
+
+  ['@test unregistering a waiter'](assert) {
+    assert.expect(2);
+
+    let obj = { foo: true };
+
+    this.waiters.add(obj, function() {
+      assert.ok(true, 'precond - waiter with context is registered');
+      return true;
+    });
+
+    this.waiters.add(function() {
+      assert.ok(true, 'precond - waiter without context is registered');
+      return true;
+    });
+
+
+    this.waiters.check();
+    this.waiters.unregister();
+
+    checkWaiters();
+  }
+
+  ['@test checkWaiters returns false if all waiters return true'](assert) {
+    assert.expect(3);
+
+    this.waiters.add(function() {
+      assert.ok(true, 'precond - waiter is registered');
+
+      return true;
+    });
+
+    this.waiters.add(function() {
+      assert.ok(true, 'precond - waiter is registered');
+
+      return true;
+    });
+
+    assert.notOk(this.waiters.check(), 'checkWaiters returns true if all waiters return true');
+  }
+
+  ['@test checkWaiters returns true if any waiters return false'](assert) {
+    assert.expect(3);
+
+    this.waiters.add(function() {
+      assert.ok(true, 'precond - waiter is registered');
+
+      return true;
+    });
+
+    this.waiters.add(function() {
+      assert.ok(true, 'precond - waiter is registered');
+
+      return false;
+    });
+
+    assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
+  }
+
+  ['@test checkWaiters short circuits after first falsey waiter'](assert) {
+    assert.expect(2);
+
+    this.waiters.add(function() {
+      assert.ok(true, 'precond - waiter is registered');
+
+      return false;
+    });
+
+    this.waiters.add(function() {
+      assert.notOk(true, 'waiter should not be called');
+    });
+
+    assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
+  }
 });
 
-QUnit.test('registering a waiter', function(assert) {
-  assert.expect(2);
-
-  let obj = { foo: true };
-
-  this.waiters.add(obj, function() {
-    assert.ok(this.foo, 'has proper `this` context');
-    return true;
-  });
-
-  this.waiters.add(function() {
-    assert.ok(true, 'is called');
-    return true;
-  });
-
-  this.waiters.check();
-});
-
-QUnit.test('unregistering a waiter', function(assert) {
-  assert.expect(2);
-
-  let obj = { foo: true };
-
-  this.waiters.add(obj, function() {
-    assert.ok(true, 'precond - waiter with context is registered');
-    return true;
-  });
-
-  this.waiters.add(function() {
-    assert.ok(true, 'precond - waiter without context is registered');
-    return true;
-  });
-
-
-  this.waiters.check();
-  this.waiters.unregister();
-
-  checkWaiters();
-});
-
-QUnit.test('checkWaiters returns false if all waiters return true', function(assert) {
-  assert.expect(3);
-
-  this.waiters.add(function() {
-    assert.ok(true, 'precond - waiter is registered');
-
-    return true;
-  });
-
-  this.waiters.add(function() {
-    assert.ok(true, 'precond - waiter is registered');
-
-    return true;
-  });
-
-  assert.notOk(this.waiters.check(), 'checkWaiters returns true if all waiters return true');
-});
-
-QUnit.test('checkWaiters returns true if any waiters return false', function(assert) {
-  assert.expect(3);
-
-  this.waiters.add(function() {
-    assert.ok(true, 'precond - waiter is registered');
-
-    return true;
-  });
-
-  this.waiters.add(function() {
-    assert.ok(true, 'precond - waiter is registered');
-
-    return false;
-  });
-
-  assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
-});
-
-QUnit.test('checkWaiters short circuits after first falsey waiter', function(assert) {
-  assert.expect(2);
-
-  this.waiters.add(function() {
-    assert.ok(true, 'precond - waiter is registered');
-
-    return false;
-  });
-
-  this.waiters.add(function() {
-    assert.notOk(true, 'waiter should not be called');
-  });
-
-  assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
-});
