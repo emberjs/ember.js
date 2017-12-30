@@ -38,17 +38,19 @@ moduleFor('ember-testing QUnitAdapter', class extends AbstractTestCase {
     }
   }
 
-  ['@test exception causes a failing assertion']() {
+  ['@test exception causes a failing assertion'](assert) {
     var error = { err: 'hai' };
-    var originalOk = window.ok;
+    let originalPushResult = assert.pushResult;
     try {
-      window.ok = function(val, msg) {
-        originalOk(!val, 'ok is called with false');
-        originalOk(msg, '{err: "hai"}');
+      assert.pushResult = function (resultInfo) {
+        // Inverts the result so we can test failing assertions
+        resultInfo.result = !resultInfo.result;
+        resultInfo.message = `Failed: ${resultInfo.message}`;
+        originalPushResult(resultInfo);
       };
       adapter.exception(error);
     } finally {
-      window.ok = originalOk;
+      assert.pushResult = originalPushResult;
     }
   }
 });
