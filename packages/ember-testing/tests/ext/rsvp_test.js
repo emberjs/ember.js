@@ -18,11 +18,9 @@ moduleFor('ember-testing RSVP', class extends AbstractTestCase {
     setAdapter({
       asyncStart() {
         asyncStarted++;
-        QUnit.stop();
       },
       asyncEnd() {
         asyncEnded++;
-        QUnit.start();
       }
     });
   }
@@ -35,6 +33,7 @@ moduleFor('ember-testing RSVP', class extends AbstractTestCase {
   }
 
   ['@test given `Ember.testing = true`, correctly informs the test suite about async steps'](assert) {
+    let done = assert.async();
     assert.expect(19);
 
     assert.ok(!run.currentRunLoop, 'expect no run-loop');
@@ -44,9 +43,7 @@ moduleFor('ember-testing RSVP', class extends AbstractTestCase {
     assert.equal(asyncStarted, 0);
     assert.equal(asyncEnded, 0);
 
-    let user = RSVP.Promise.resolve({
-      name: 'tomster'
-    });
+    let user = RSVP.Promise.resolve({ name: 'tomster' });
 
     assert.equal(asyncStarted, 0);
     assert.equal(asyncEnded, 0);
@@ -66,16 +63,11 @@ moduleFor('ember-testing RSVP', class extends AbstractTestCase {
       assert.equal(asyncEnded, 1);
 
       return new RSVP.Promise(function(resolve) {
-        QUnit.stop(); // raw async, we must inform the test framework manually
         setTimeout(function() {
-          QUnit.start(); // raw async, we must inform the test framework manually
-
           assert.equal(asyncStarted, 1);
           assert.equal(asyncEnded, 1);
 
-          resolve({
-            name: 'async tomster'
-          });
+          resolve({ name: 'async tomster' });
 
           assert.equal(asyncStarted, 2);
           assert.equal(asyncEnded, 1);
@@ -85,9 +77,9 @@ moduleFor('ember-testing RSVP', class extends AbstractTestCase {
       assert.equal(user.name, 'async tomster');
       assert.equal(asyncStarted, 2);
       assert.equal(asyncEnded, 2);
+      done();
     });
   }
-
 });
 
 
