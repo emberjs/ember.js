@@ -25,7 +25,6 @@ publisher.currentBranch = function() {
     beta: 'beta',
     release: 'release',
     'lts-2-4': 'lts-2-4',
-    'release-1-13': 'release-1-13'
   }[this.CURRENT_BRANCH];
 };
 

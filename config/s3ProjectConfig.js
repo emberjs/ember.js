@@ -38,11 +38,6 @@ function fileObject(baseName, extension, contentType, currentRevision, tag, date
         "release/daily/" + date + fullName,
         "release/shas/" + currentRevision + fullName
       ],
-      'release-1-13': [
-        "release-1-13" + fullName,
-        "release-1-13/daily/" + date + fullName,
-        "release-1-13/shas/" + currentRevision + fullName
-      ],
       beta: [
         "beta" + fullName,
         "beta/daily/" + date + fullName,
