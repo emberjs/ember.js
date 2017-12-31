@@ -11,7 +11,8 @@ module.exports.VERSION = (() => {
 
   let packageVersion  = require('../package.json').version;
   let sha = info.sha || '';
-  let prefix = `${packageVersion}-${(process.env.BUILD_TYPE || info.branch)}`;
+  let suffix = process.env.BUILD_TYPE || info.branch;
+  let metadata = sha.slice(0, 8);
 
-  return `${prefix}+${sha.slice(0, 8)}`;
+  return `${packageVersion}${suffix ? '-' + suffix : ''}+${metadata}`;
 })();
