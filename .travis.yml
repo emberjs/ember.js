@@ -23,6 +23,10 @@ before_install:
     sudo apt-get install -y -qq yarn
     yarn --version
 
+    # install the most recent `npm version`
+    # used when publishing to build a properly packed tarball
+    npm i -g npm
+
 install:
 - |
     yarn install
