@@ -1,5 +1,9 @@
+'use strict';
+
+const semver = require('semver');
+
 function fileMap(revision, tag, date) {
-  return {
+  let filesToPublish = {
     "ember.debug.js":             fileObject("ember.debug",             ".js",   "text/javascript",  revision, tag, date),
     "ember-testing.js":           fileObject("ember-testing",           ".js",   "text/javascript",  revision, tag, date),
     "ember-tests.js":             fileObject("ember-tests",             ".js",   "text/javascript",  revision, tag, date),
@@ -14,6 +18,37 @@ function fileMap(revision, tag, date) {
     "composer.json":              fileObject("composer",                ".json", "application/json", revision, tag, date),
     "package.json":               fileObject("package",                 ".json", "application/json", revision, tag, date),
   };
+
+  let version = require('../package').version;
+  // semver.parse(...).version drops the `+build-info-metadata` stuff
+  let sanitizedVersion = semver.parse(version).version;
+  filesToPublish[`../ember-source-${sanitizedVersion}.tgz`] = {
+    contentType: 'application/x-gzip',
+    destinations: {
+      'alpha': [
+        `alpha.tgz`,
+        `alpha/daily/${date}.tgz`,
+        `alpha/shas/${revision}.tgz`,
+      ],
+      'canary': [
+        `canary.tgz`,
+        `canary/daily/${date}.tgz`,
+        `canary/shas/${revision}.tgz`,
+      ],
+      'beta': [
+        `beta.tgz`,
+        `beta/daily/${date}.tgz`,
+        `beta/shas/${revision}.tgz`,
+      ],
+      'release': [
+        `release.tgz`,
+        `release/daily/${date}.tgz`,
+        `release/shas/${revision}.tgz`,
+      ],
+    }
+  };
+
+  return filesToPublish;
 }
 
 function fileObject(baseName, extension, contentType, currentRevision, tag, date) {
