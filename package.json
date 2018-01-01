@@ -18,6 +18,7 @@
     "!dist/qunit",
     "!dist/jquery",
     "!dist/tests",
+    "docs/data.json",
     "vendor/ember",
     "index.js"
   ],

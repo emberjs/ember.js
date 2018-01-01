@@ -21,11 +21,32 @@ function updatePackageJSONVersion() {
   fs.writeFileSync(packageJSONPath, JSON.stringify(pkg, null, 2), { encoding: 'utf-8' });
 }
 
+/*
+  Updates the version number listed within the docs/data.json file to match
+  `Ember.VERSION` and `package.json` version.
+
+  This is needed because ember-cli-yuidoc automatically sets the version string
+  property in the generated `docs/data.json` to
+`${packageJsonVersion}.${gitSha}`.
+*/
+function updateDocumentationVersion() {
+  let docsPath = path.join(__dirname, '..', 'docs', 'data.json');
+  let VERSION = require('../broccoli/version').VERSION;
+
+  let contents = fs.readFileSync(docsPath, { encoding: 'utf-8' });
+  let docs = JSON.parse(contents);
+  docs.project.version = VERSION;
+  fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2), { encoding: 'utf-8' });
+}
 
 updatePackageJSONVersion();
 
 // do a production build
 execSync('yarn build');
+
+// generate docs
+execSync('yarn docs');
+updateDocumentationVersion();
 
 // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
 // property properly, and therefore the tarball generated is quite large (~7MB).

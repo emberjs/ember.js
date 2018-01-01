@@ -7,7 +7,6 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$PUBLISH" == "true" ]; then
 
   ./bin/build-for-publishing.js
 
-  yarn run docs # Generate documentation to be published.
   ./bin/publish_to_s3.js
   ./bin/publish_npm_and_bower
 fi
