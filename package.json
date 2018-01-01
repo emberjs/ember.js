@@ -14,10 +14,13 @@
     "blueprints",
     "dist",
     "!dist/ember-tests.prod.js",
+    "!dist/ember-tests.prod.map",
     "!dist/ember-tests.js",
+    "!dist/ember-tests.map",
     "!dist/qunit",
     "!dist/jquery",
     "!dist/tests",
+    "!dist/node",
     "docs/data.json",
     "vendor/ember",
     "index.js"
