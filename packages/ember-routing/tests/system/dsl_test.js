@@ -15,10 +15,9 @@ moduleFor('Ember Router DSL', class extends AbstractTestCase {
   }
 
   ['@test should fail when using a reserved route name'](assert) {
-    expectDeprecation('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
     let reservedNames = ['array', 'basic', 'object', 'application'];
 
-    assert.expect((reservedNames.length * 2) + 1);
+    assert.expect(reservedNames.length);
 
     reservedNames.forEach(reservedName => {
       expectAssertion(() => {
@@ -31,37 +30,7 @@ moduleFor('Ember Router DSL', class extends AbstractTestCase {
         let router = Router.create();
         router._initRouterJs();
       }, '\'' + reservedName + '\' cannot be used as a route name.');
-
-      expectAssertion(() => {
-        Router = EmberRouter.extend();
-
-        Router.map(function() {
-          this.resource(reservedName);
-        });
-
-        let router = Router.create();
-        router._initRouterJs();
-      }, `'${reservedName}' cannot be used as a route name.`);
     });
-  }
-
-  ['@test should reset namespace if nested with resource'](assert) {
-    expectDeprecation('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.');
-
-    Router = Router.map(function() {
-      this.resource('bleep', function() {
-        this.resource('bloop', function() {
-          this.resource('blork');
-        });
-      });
-    });
-
-    let router = Router.create();
-    router._initRouterJs();
-
-    assert.ok(router._routerMicrolib.recognizer.names['bleep'], 'nested resources do not contain parent name');
-    assert.ok(router._routerMicrolib.recognizer.names['bloop'], 'nested resources do not contain parent name');
-    assert.ok(router._routerMicrolib.recognizer.names['blork'], 'nested resources do not contain parent name');
   }
 
   ['@test should retain resource namespace if nested with routes'](assert) {
