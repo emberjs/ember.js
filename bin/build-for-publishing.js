@@ -24,6 +24,9 @@ function updatePackageJSONVersion() {
 
 updatePackageJSONVersion();
 
+// do a production build
+execSync('yarn build');
+
 // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
 // property properly, and therefore the tarball generated is quite large (~7MB).
 execSync('npm pack');
