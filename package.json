@@ -35,6 +35,7 @@
     "link:glimmer": "node bin/yarn-link-glimmer.js",
     "sauce:launch": "ember sauce:launch",
     "start": "ember serve",
+    "pretest": "ember build",
     "lint": "tslint -p tsconfig.json && eslint node-tests",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
