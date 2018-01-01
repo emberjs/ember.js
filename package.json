@@ -29,7 +29,6 @@
     "build": "ember build --environment production",
     "docs": "ember ember-cli-yuidoc",
     "link:glimmer": "node bin/yarn-link-glimmer.js",
-    "release": "node scripts/release.js",
     "sauce:launch": "ember sauce:launch",
     "start": "ember serve",
     "prepare": "ember build -prod",
