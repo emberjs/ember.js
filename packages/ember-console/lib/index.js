@@ -89,7 +89,13 @@ export default {
    @public
   */
   debug() {
-    return console.debug && console.debug(...arguments) || console.info(...arguments); // eslint-disable-line no-console
+    /* eslint-disable no-console */
+    if (console.debug) {
+      return console.debug(...arguments);
+    }
+
+    return console.info(...arguments);
+    /* eslint-enable no-console */
   },
 
   /**
