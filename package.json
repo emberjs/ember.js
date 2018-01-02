@@ -100,7 +100,7 @@
     "chalk": "^2.3.0",
     "common-tags": "^1.7.2",
     "dag-map": "^2.0.2",
-    "ember-cli": "2.18.0",
+    "ember-cli": "github:ember-cli/ember-cli#76175513c5e49caf5405b7304e83ddf3e799c68e",
     "ember-cli-blueprint-test-helpers": "^0.18.3",
     "ember-cli-browserstack": "^0.0.6",
     "ember-cli-dependency-checker": "^2.1.0",
