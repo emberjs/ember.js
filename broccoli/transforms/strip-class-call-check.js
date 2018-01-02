@@ -1,7 +1,7 @@
 // TODO there are like 3 things that do this
 'use strict';
 
-function stripClassCallCheck( { traverse }) {
+function stripClassCallCheck({ traverse }) {
   return {
     name: 'remove classCallCheck',
     visitor: {
