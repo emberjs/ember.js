@@ -1,5 +1,40 @@
 # Ember Changelog
 
+### 3.0.0-beta.1 (January 1, 2018)
+
+- [#15901](https://github.com/emberjs/ember.js/pull/15901) [CLEANUP] Remove Ember.Handlebars.SafeString
+- [#15894](https://github.com/emberjs/ember.js/pull/15894) [CLEANUP] removed `immediateObserver`
+- [#15897](https://github.com/emberjs/ember.js/pull/15897) [CLEANUP] Remove controller wrapped param deprecation
+- [#15883](https://github.com/emberjs/ember.js/pull/15883) [CLEANUP] Remove this.resource from RouterDSL
+- [#15882](https://github.com/emberjs/ember.js/pull/15882) [CLEANUP] Remove Ember.String.fmt
+- [#15892](https://github.com/emberjs/ember.js/pull/15892) [CLEANUP] removed `Ember.required`
+- [#15223](https://github.com/emberjs/ember.js/pull/15223) Preserve current history state on app boot
+- [#15886](https://github.com/emberjs/ember.js/pull/15886) [CLEANUP] Remove arity check from initializer
+- [#15893](https://github.com/emberjs/ember.js/pull/15893) [CLEANUP] removed `providing reversed arguments to observer`
+- [#15881](https://github.com/emberjs/ember.js/pull/15881) [CLEANUP] Removed console polyfills/shims
+- [#15999](https://github.com/emberjs/ember.js/pull/15999) Update acceptance test blueprint to conform to emberjs/rfcs#268
+- [#15927](https://github.com/emberjs/ember.js/pull/15927) [BUGFIX] Extend test framework detection to `ember-qunit` and `ember-mocha`
+- [#15912](https://github.com/emberjs/ember.js/pull/15912) [CLEANUP] Remove deprecated `{Application,Engine,ApplicationInstance}.registry`
+- [#15910](https://github.com/emberjs/ember.js/pull/15910) [CLEANUP] removed `transform-input-on-to-onEvent`
+- [#15922](https://github.com/emberjs/ember.js/pull/15922) [CLEANUP] Remove legacy controller proxy behavior
+- [#15914](https://github.com/emberjs/ember.js/pull/15914) [CLEANUP] Remove ability to specify `_actions` in `Ember.Route`, `Ember.Controller`, and `Ember.Component`
+- [#15923](https://github.com/emberjs/ember.js/pull/15923) [CLEANUP] Remove didInitAttrs lifecycle method
+- [#15915](https://github.com/emberjs/ember.js/pull/15915) [CLEANUP] Remove {{render}}
+- [#15950](https://github.com/emberjs/ember.js/pull/15950) blueprints/mixin-test: Added RFC-232 variant
+- [#15951](https://github.com/emberjs/ember.js/pull/15951) blueprints/service-test: Added RFC-232 variant
+- [#15949](https://github.com/emberjs/ember.js/pull/15949) [CLEANUP canary] use `Set` for uniqBy and uniq
+- [#15947](https://github.com/emberjs/ember.js/pull/15947) blueprints/util-test: Add RFC232 variants
+- [#15943](https://github.com/emberjs/ember.js/pull/15943) blueprints/controller-test: Add RFC232 variants
+- [#15948](https://github.com/emberjs/ember.js/pull/15948) [CLEANUP] remove ArrayMixin#contains
+- [#15946](https://github.com/emberjs/ember.js/pull/15946) blueprints/initializer-test: Add RFC232 variants
+- [#15945](https://github.com/emberjs/ember.js/pull/15945) blueprints/instance-initializers-test: Add RFC232 variants
+- [#15957](https://github.com/emberjs/ember.js/pull/15957) RFC 232 route-test blueprints
+- [#15934](https://github.com/emberjs/ember.js/pull/15934) blueprints/component-test: Add RFC232 variants
+- [#16010](https://github.com/emberjs/ember.js/pull/16010) Cleanup ember-template-compiler's tests
+- [#16015](https://github.com/emberjs/ember.js/pull/16015) [CLEANUP] Convert ember-router tests to new style
+- [#16036](https://github.com/emberjs/ember.js/pull/16036) [CLEANUP] Convert ember-metal accessors tests to new style
+- [#16023](https://github.com/emberjs/ember.js/pull/16023) Make event dispatcher work without jQuery
+
 ### 2.18.0 (January 1, 2018)
 
 - [95b449](https://github.com/emberjs/ember.js/commit/95b4499b3667712a202bef834268e23867fc8842) [BUGFIX] Ensure `Ember.run.cancel` while the run loop is flushing works properly.
