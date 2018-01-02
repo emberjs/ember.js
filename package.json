@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -14,10 +14,14 @@
     "blueprints",
     "dist",
     "!dist/ember-tests.prod.js",
+    "!dist/ember-tests.prod.map",
     "!dist/ember-tests.js",
+    "!dist/ember-tests.map",
     "!dist/qunit",
     "!dist/jquery",
     "!dist/tests",
+    "!dist/node",
+    "docs/data.json",
     "vendor/ember",
     "index.js"
   ],
@@ -29,10 +33,9 @@
     "build": "ember build --environment production",
     "docs": "ember ember-cli-yuidoc",
     "link:glimmer": "node bin/yarn-link-glimmer.js",
-    "release": "node scripts/release.js",
     "sauce:launch": "ember sauce:launch",
     "start": "ember serve",
-    "prepare": "ember build -prod",
+    "pretest": "ember build",
     "lint": "tslint -p tsconfig.json && eslint node-tests",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
