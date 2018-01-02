@@ -8,6 +8,7 @@ const setupPodConfig = blueprintHelpers.setupPodConfig;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
+const fs = require('fs-extra');
 
 describe('Blueprint: component', function() {
   setupTestHooks(this);
@@ -400,6 +401,50 @@ describe('Blueprint: component', function() {
     });
   });
 
+  describe('in app - module unification', function() {
+    beforeEach(function() {
+      return emberNew().then(() => fs.ensureDirSync('src'));
+    });
+
+    it('component x-foo', function() {
+      return emberGenerateDestroy(['component', 'x-foo'], _file => {
+        expect(_file('src/ui/components/x-foo/component.js')).to.contain("import Component from '@ember/component';")
+          .to.contain("export default Component.extend({")
+          .to.contain("});");
+
+        expect(_file('src/ui/components/x-foo/template.hbs'))
+          .to.equal("{{yield}}");
+
+        expect(_file('src/ui/components/x-foo/component-test.js'))
+          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
+          .to.contain("import hbs from 'htmlbars-inline-precompile';")
+          .to.contain("moduleForComponent('x-foo'")
+          .to.contain("integration: true")
+          .to.contain("{{x-foo}}")
+          .to.contain("{{#x-foo}}");
+      });
+    });
+
+    it('component foo/x-foo', function() {
+      return emberGenerateDestroy(['component', 'x-foo/x-bar'], _file => {
+        expect(_file('src/ui/components/x-foo/x-bar/component.js')).to.contain("import Component from '@ember/component';")
+          .to.contain("export default Component.extend({")
+          .to.contain("});");
+
+        expect(_file('src/ui/components/x-foo/x-bar/template.hbs'))
+          .to.equal("{{yield}}");
+
+        expect(_file('src/ui/components/x-foo/x-bar/component-test.js'))
+          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
+          .to.contain("import hbs from 'htmlbars-inline-precompile';")
+          .to.contain("moduleForComponent('x-foo/x-bar'")
+          .to.contain("integration: true")
+          .to.contain("{{x-foo/x-bar}}")
+          .to.contain("{{#x-foo/x-bar}}");
+      });
+    });
+  });
+
   describe('in addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'addon' });
@@ -514,6 +559,88 @@ describe('Blueprint: component', function() {
     });
   });
 
+  describe('in addon - module unification', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+    });
+
+    it('component x-foo', function() {
+      return emberGenerateDestroy(['component', 'x-foo'], _file => {
+        expect(_file('src/ui/components/x-foo/component.js')).to.contain("import Component from '@ember/component';")
+          .to.contain("export default Component.extend({")
+          .to.contain("});");
+
+          expect(_file('src/ui/components/x-foo/template.hbs'))
+            .to.equal("{{yield}}");
+
+          expect(_file('src/ui/components/x-foo/component-test.js'))
+            .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
+            .to.contain("import hbs from 'htmlbars-inline-precompile';")
+            .to.contain("moduleForComponent('my-addon::x-foo'")
+            .to.contain("integration: true")
+            .to.contain("{{my-addon::x-foo}}")
+            .to.contain("{{#my-addon::x-foo}}")
+            .to.contain("{{/my-addon::x-foo}}");
+      });
+    });
+
+    it('component nested/x-foo', function() {
+      return emberGenerateDestroy(['component', 'x-foo/x-bar'], _file => {
+        expect(_file('src/ui/components/x-foo/x-bar/component.js')).to.contain("import Component from '@ember/component';")
+          .to.contain("export default Component.extend({")
+          .to.contain("});");
+
+          expect(_file('src/ui/components/x-foo/x-bar/template.hbs'))
+            .to.equal("{{yield}}");
+
+          expect(_file('src/ui/components/x-foo/x-bar/component-test.js'))
+            .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
+            .to.contain("import hbs from 'htmlbars-inline-precompile';")
+            .to.contain("moduleForComponent('my-addon::x-foo/x-bar'")
+            .to.contain("integration: true")
+            .to.contain("{{my-addon::x-foo/x-bar}}")
+            .to.contain("{{#my-addon::x-foo/x-bar}}")
+            .to.contain("{{/my-addon::x-foo/x-bar}}");
+      });
+    });
+
+    it('component x-foo --dummy', function() {
+      return emberGenerateDestroy(['component', 'x-foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/x-foo/component.js'))
+          .to.contain("import Component from '@ember/component';")
+          .to.contain("export default Component.extend({")
+          .to.contain("});");
+
+        expect(_file('tests/dummy/src/ui/components/x-foo/template.hbs'))
+          .to.equal("{{yield}}");
+
+        expect(_file('src/ui/components/x-foo/component.js'))
+          .to.not.exist;
+
+        expect(_file('src/ui/components/x-foo/component-test.js'))
+          .to.not.exist;
+      });
+    });
+
+    it('component nested/x-foo --dummy', function() {
+      return emberGenerateDestroy(['component', 'x-foo/x-bar', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/x-foo/x-bar/component.js'))
+          .to.contain("import Component from '@ember/component';")
+          .to.contain("export default Component.extend({")
+          .to.contain("});");
+
+        expect(_file('tests/dummy/src/ui/components/x-foo/x-bar/template.hbs'))
+          .to.equal("{{yield}}");
+
+        expect(_file('src/ui/components/x-foo/x-bar/component.js'))
+          .to.not.exist;
+
+        expect(_file('src/ui/components/x-foo/x-bar/component-test.js'))
+          .to.not.exist;
+      });
+    });
+  });
+
   describe('in in-repo-addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'in-repo-addon' });
@@ -608,6 +735,31 @@ describe('Blueprint: component', function() {
           .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
           .to.contain("moduleForComponent('nested/x-foo'")
           .to.contain("integration: true");
+      });
+    });
+  });
+
+  describe('in in-repo-addon - module unification', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'in-repo-addon' }).then(() => fs.ensureDirSync('src'));
+    });
+
+    it('component x-foo --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['component', 'x-foo', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component.js'))
+          .to.contain("export default Component.extend({")
+          .to.contain("});");
+
+        expect(_file('packages/my-addon/src/ui/components/x-foo/template.hbs'))
+          .to.equal("{{yield}}");
+
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component-test.js'))
+          .to.contain("import { moduleForComponent, test } from 'ember-qunit';")
+          .to.contain("import hbs from 'htmlbars-inline-precompile';")
+          .to.contain("moduleForComponent('my-addon::x-foo'")
+          .to.contain("integration: true")
+          .to.contain("{{#my-addon::x-foo}}")
+          .to.contain("{{my-addon::x-foo}}");
       });
     });
   });
