@@ -323,24 +323,6 @@ module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
   });
 };
 
-module.exports.packageManagerJSONs = function _packageManagerJSONs() {
-  var packageJsons = new Funnel('config/package_manager_files', {
-    include: ['*.json'],
-    destDir: '/',
-    annotation: 'package.json'
-  });
-
-  packageJsons = new StringReplace(packageJsons, {
-    patterns: [{
-      match: VERSION_PLACEHOLDER,
-      replacement: VERSION
-    }],
-    files: ['*.json']
-  });
-  packageJsons._annotation = 'package.json VERSION';
-  return packageJsons;
-};
-
 module.exports.nodeTests = function _nodeTests() {
   return new Funnel('tests', {
     include: ['**/*/*.js']
