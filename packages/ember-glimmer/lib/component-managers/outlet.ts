@@ -134,6 +134,8 @@ class TopLevelOutletComponentManager extends OutletComponentManager
     const template = state.template;
     let layout: TopLevelSyntax;
     if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
+      layout = template.asLayout();
+    } else {
       const compileOptions = Object.assign({},
         resolver.templateOptions,
         { asPartial: false, referrer: template.referrer});
@@ -144,8 +146,6 @@ class TopLevelOutletComponentManager extends OutletComponentManager
         parsed,
         TOP_CAPABILITIES,
       );
-    } else {
-      layout = template.asLayout();
     }
     return {
       handle: layout.compile(),
