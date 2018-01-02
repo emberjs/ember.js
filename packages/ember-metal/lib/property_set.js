@@ -1,6 +1,6 @@
 import { toString } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
-import { _getPath as getPath } from './property_get';
+import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 import {
   propertyWillChange,
   propertyDidChange
@@ -62,7 +62,7 @@ export function set(obj, keyName, value, tolerant) {
     }
   }
 
-  let currentValue = obj[keyName];
+  let currentValue = getPossibleMandatoryProxyValue(obj, keyName);
 
   if (DESCRIPTOR_TRAP && isDescriptorTrap(currentValue)) {
     currentValue = currentValue[DESCRIPTOR];

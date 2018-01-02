@@ -3,7 +3,8 @@
 */
 
 import { assert } from 'ember-debug';
-import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS } from 'ember/features';
+import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_GETTER } from 'ember/features';
 import { isPath } from './path_cache';
 import { isDescriptor, isDescriptorTrap, DESCRIPTOR, descriptorFor } from './meta';
 
@@ -12,6 +13,23 @@ const ALLOWABLE_TYPES = {
   function: true,
   string: true
 };
+
+export const PROXY_CONTENT = symbol('PROXY_CONTENT');
+
+export function getPossibleMandatoryProxyValue(obj, keyName) {
+  if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY) {
+    let content = obj[PROXY_CONTENT];
+    if (content === undefined) {
+      return obj[keyName];
+    } else {
+      /* global Reflect */
+      return Reflect.get(content, keyName, obj);
+    }
+  } else {
+    return obj[keyName];
+  }
+}
+
 
 // ..........................................................
 // GET AND SET
@@ -72,7 +90,7 @@ export function get(obj, keyName) {
     }
 
     if (!EMBER_METAL_ES5_GETTERS || descriptor === undefined) {
-      value = obj[keyName];
+      value = getPossibleMandatoryProxyValue(obj, keyName);
 
       if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
         descriptor = value[DESCRIPTOR];

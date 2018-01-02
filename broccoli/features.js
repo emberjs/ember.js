@@ -22,6 +22,7 @@ function getFeatures(isDebug) {
   }
 
   features['descriptor-trap'] = isDebug;
+  features['mandatory-getter'] = isDebug;
   features['mandatory-setter'] = isDebug;
   features['ember-glimmer-detect-backtracking-rerender'] = isDebug;
 
