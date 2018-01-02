@@ -59,16 +59,3 @@ if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
     npm publish --tag $CHANNEL
   fi
 fi
-
-#### RUBYGEMS PUBLISHING
-
-if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
-  echo -e "Publishing to RubyGems...\n"
-
-  mkdir -p ~/.gem
-  echo $RUBYGEMS_AUTH_TOKEN > ~/.gem/credentials
-  chmod 0600 ~/.gem/credentials
-
-  gem build ember-source.gemspec
-  gem push `echo *.gem`
-fi
