@@ -39,7 +39,7 @@ branches:
   only:
     - master
     - beta
-    - stable
+    - release
     # npm version tags
     - /^v\d+\.\d+\.\d+/
 
