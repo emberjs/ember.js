@@ -64,10 +64,10 @@ env:
   matrix:
     - TEST_SUITE=sauce
     - TEST_SUITE=each-package-tests BUILD_TYPE=canary PUBLISH=true
-    - TEST_SUITE=built-tests EMBER_ENV=production DISABLE_JSCS=true DISABLE_JSHINT=true
-    - TEST_SUITE=old-jquery-and-extend-prototypes DISABLE_JSCS=true DISABLE_JSHINT=true
-    - TEST_SUITE=node DISABLE_JSCS=true DISABLE_JSHINT=true
+    - TEST_SUITE=built-tests EMBER_ENV=production
+    - TEST_SUITE=old-jquery-and-extend-prototypes
+    - TEST_SUITE=node
     - TEST_SUITE=blueprints
-    - TEST_SUITE=travis-browsers DISABLE_JSCS=true DISABLE_JSHINT=true
+    - TEST_SUITE=travis-browsers
     - TEST_SUITE=each-package-tests BUILD_TYPE=alpha PUBLISH=true
     - TEST_SUITE=code-quality
