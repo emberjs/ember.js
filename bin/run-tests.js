@@ -255,12 +255,11 @@ switch (process.env.TEST_SUITE) {
   case 'travis-browsers':
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
-    return;
-
-  case 'sauce':
-    console.log('suite: sauce');
-    require('./run-sauce-tests');
-    return;
+    break;
+  case 'browserstack':
+    console.log('suite: browserstack');
+    require('./run-browserstack-tests');
+    break;
   default:
     console.log('suite: default (generate each package)');
     generateEachPackageTests();
