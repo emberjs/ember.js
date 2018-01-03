@@ -248,7 +248,7 @@ Within the Travis build, you can see that we (currently) run six different test 
 
 * The `each-package-tests` test suite is closest to what you normally run locally on your machine.
 * The `build-tests EMBER_ENV=production...` test suite runs tests against a production build.
-* The `sauce` test suite runs tests against various supported browsers.
+* The `browserstack` test suite runs tests against various supported browsers.
 
 ## Common Travis CI Build Issues
 
