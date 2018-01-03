@@ -32,6 +32,15 @@ export function removeAt(array, start, len) {
   return array;
 }
 
+export function insertAt(array, idx, object) {
+  if (idx > get(array, 'length')) {
+    throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+  }
+
+  array.replace(idx, 0, [object]);
+  return array;
+}
+
 /**
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
@@ -116,12 +125,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   insertAt(idx, object) {
-    if (idx > get(this, 'length')) {
-      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    this.replace(idx, 0, [object]);
-    return this;
+    return insertAt(this, idx, object);
   },
 
   /**
@@ -166,7 +170,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   pushObject(obj) {
-    this.insertAt(get(this, 'length'), obj);
+    insertAt(this, get(this, 'length'), obj);
     return obj;
   },
 
@@ -261,7 +265,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   unshiftObject(obj) {
-    this.insertAt(0, obj);
+    insertAt(this, 0, obj);
     return obj;
   },
 
