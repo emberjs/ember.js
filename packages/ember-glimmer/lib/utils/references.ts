@@ -5,10 +5,11 @@ import {
   ConstReference,
   DirtyableTag,
   isConst,
-  PathReference,
+  RevisionTag,
   Tag,
   TagWrapper,
   UpdatableTag,
+  VersionedPathReference,
 } from '@glimmer/reference';
 import {
   CapturedArguments,
@@ -59,7 +60,7 @@ if (DEBUG) {
 
 // @abstract
 // @implements PathReference
-abstract class EmberPathReference implements PathReference {
+abstract class EmberPathReference implements VersionedPathReference<Opaque> {
   // @abstract get tag()
   // @abstract value()
   public tag: Tag;
@@ -75,7 +76,7 @@ abstract class EmberPathReference implements PathReference {
 export class CachedReference extends EmberPathReference {
   private _lastRevision: any;
   private _lastValue: any;
-  public tag: any;
+  public tag: Tag;
 
   constructor() {
     super();
@@ -119,16 +120,27 @@ export class RootReference<T> extends ConstReference<T> {
   }
 }
 
-let TwoWayFlushDetectionTag: any;
+interface TwoWayFlushDetectionTag extends RevisionTag {
+  didCompute(parent: Opaque): void;
+}
+
+let TwoWayFlushDetectionTag: {
+  new (tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TwoWayFlushDetectionTag;
+  create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TagWrapper<TwoWayFlushDetectionTag>;
+};
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
   TwoWayFlushDetectionTag = class {
-    public tag: any;
-    public parent: any;
+    public tag: Tag;
+    public parent: Opaque;
     public key: string;
     public ref: any;
 
-    constructor(tag: TagWrapper<UpdatableTag>, key: string, ref: any) {
+    static create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TagWrapper<TwoWayFlushDetectionTag> {
+      return new TagWrapper((tag as any).type, new TwoWayFlushDetectionTag(tag, key, ref));
+    }
+
+    constructor(tag: Tag, key: string, ref: any) {
       this.tag = tag;
       this.parent = null;
       this.key = key;
@@ -159,7 +171,7 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
 }
 
 export class PropertyReference extends CachedReference {
-  static create(parentReference: any, propertyKey: string) {
+  static create(parentReference: VersionedPathReference<Opaque>, propertyKey: string) {
     if (isConst(parentReference)) {
       return new RootPropertyReference(parentReference.value(), propertyKey);
     } else {
@@ -167,12 +179,12 @@ export class PropertyReference extends CachedReference {
     }
   }
 
-  get(key: string) {
+  get(key: string): VersionedPathReference<Opaque> {
     return new NestedPropertyReference(this, key);
   }
 }
 
-export class RootPropertyReference extends PropertyReference {
+export class RootPropertyReference extends PropertyReference implements VersionedPathReference<Opaque> {
   private _parentValue: any;
   private _propertyKey: string;
 
@@ -183,7 +195,7 @@ export class RootPropertyReference extends PropertyReference {
     this._propertyKey = propertyKey;
 
     if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-      this.tag = new TwoWayFlushDetectionTag(tagForProperty(parentValue, propertyKey), propertyKey, this);
+      this.tag = TwoWayFlushDetectionTag.create(tagForProperty(parentValue, propertyKey), propertyKey, this);
     } else {
       this.tag = tagForProperty(parentValue, propertyKey);
     }
@@ -197,7 +209,7 @@ export class RootPropertyReference extends PropertyReference {
     let { _parentValue, _propertyKey } = this;
 
     if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-      this.tag.didCompute(_parentValue);
+      (this.tag.inner as TwoWayFlushDetectionTag).didCompute(_parentValue);
     }
 
     return get(_parentValue, _propertyKey);
@@ -213,7 +225,7 @@ export class NestedPropertyReference extends PropertyReference {
   private _parentObjectTag: TagWrapper<UpdatableTag>;
   private _propertyKey: string;
 
-  constructor(parentReference: any, propertyKey: string) {
+  constructor(parentReference: VersionedPathReference<Opaque>, propertyKey: string) {
     super();
 
     let parentReferenceTag = parentReference.tag;
@@ -225,7 +237,7 @@ export class NestedPropertyReference extends PropertyReference {
 
     if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
-      this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
+      this.tag = TwoWayFlushDetectionTag.create(tag, propertyKey, this);
     } else {
       this.tag = combine([parentReferenceTag, parentObjectTag]);
     }
@@ -250,7 +262,7 @@ export class NestedPropertyReference extends PropertyReference {
       }
 
       if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-        this.tag.didCompute(parentValue);
+        (this.tag.inner as TwoWayFlushDetectionTag).didCompute(parentValue);
       }
 
       return get(parentValue, _propertyKey);
