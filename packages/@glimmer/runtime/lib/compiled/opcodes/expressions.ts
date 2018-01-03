@@ -86,8 +86,10 @@ APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
 
 APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
   // FIXME(mmun): should only need to push the symbol table
-  check(vm.stack.pop(), CheckOption(CheckOr(CheckHandle, CheckCompilableBlock)));
-  check(vm.stack.pop(), CheckOption(CheckScope));
+  let block = vm.stack.pop();
+  let scope = vm.stack.pop();
+  check(block, CheckOption(CheckOr(CheckHandle, CheckCompilableBlock)));
+  check(scope, CheckOption(CheckScope));
   let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
