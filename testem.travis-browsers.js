@@ -33,5 +33,5 @@ module.exports = {
   launch_in_ci: [
     'Firefox',
   ],
-  reporter: new FailureOnlyReporter()
+  reporter: FailureOnlyReporter
 };

@@ -122,7 +122,7 @@
     "serve-static": "^1.12.2",
     "simple-dom": "^0.3.0",
     "simple-html-tokenizer": "^0.4.1",
-    "testem": "1.15.0",
+    "testem": "^1.18.4",
     "tslint": "^5.8.0"
   },
   "ember-addon": {
