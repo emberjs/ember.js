@@ -15,6 +15,15 @@ import { Error as EmberError } from 'ember-debug';
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
 
+function replace(array, idx, amt, objects) {
+  if (typeof array.replace === 'function') {
+    array.replace(idx, amt, objects);
+    return array;
+  }
+
+  return array.splice(idx, amt, ...objects);
+}
+
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
     if ((start < 0) || (start >= get(array, 'length'))) {
@@ -26,7 +35,7 @@ export function removeAt(array, start, len) {
       len = 1;
     }
 
-    array.replace(start, len, EMPTY);
+    array = replace(array, start, len, EMPTY);
   }
 
   return array;
@@ -37,7 +46,7 @@ export function insertAt(array, idx, object) {
     throw new EmberError(OUT_OF_RANGE_EXCEPTION);
   }
 
-  array.replace(idx, 0, [object]);
+  array = replace(array, idx, 0, [object]);
   return array;
 }
 
