@@ -133,9 +133,20 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class via bound param');
   }
 
-  [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
+  [`@test the {{link-to}} helper does not respond to clicks when disabledWhen`](assert) {
     this.addTemplate('index', `
       {{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}
+    `);
+
+    this.visit('/');
+    this.click('#about-link');
+
+    assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
+  }
+
+  [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
+    this.addTemplate('index', `
+      {{#link-to "about" id="about-link" disabled=true}}About{{/link-to}}
     `);
 
     this.visit('/');
@@ -643,7 +654,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       <ul>
         {{#each model as |person|}}
           <li>
-            {{#link-to 'item' person}}
+            {{#link-to 'item' person id=person.id}}
               {{person.name}}
             {{/link-to}}
           </li>
@@ -678,7 +689,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(this.$('h3:contains(List)').length, 1, 'The home template was rendered');
     assert.equal(normalizeUrl(this.$('#home-link').attr('href')), '/', 'The home link points back at /');
 
-    this.click('li a:contains(Yehuda)');
+    this.click('#yehuda');
 
     assert.equal(this.$('h3:contains(Item)').length, 1, 'The item template was rendered');
     assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
@@ -690,7 +701,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(normalizeUrl(this.$('li a:contains(Tom)').attr('href')), '/item/tom');
     assert.equal(normalizeUrl(this.$('li a:contains(Erik)').attr('href')), '/item/erik');
 
-    this.click('li a:contains(Erik)');
+    this.click('#erik');
 
     assert.equal(this.$('h3:contains(Item)').length, 1, 'The item template was rendered');
     assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
@@ -1127,7 +1138,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       <ul>
         {{#each model as |person|}}
           <li>
-            {{link-to person.name 'item' person}}
+            {{link-to person.name 'item' person id=person.id}}
           </li>
         {{/each}}
       </ul>
@@ -1140,7 +1151,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.visit('/');
 
-    this.click('li a:contains(Yehuda)');
+    this.click('#yehuda');
 
     assert.equal(this.$('h3:contains(Item)').length, 1, 'The item template was rendered');
     assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
@@ -1459,7 +1470,7 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
     assertLinkStatus(staticLink);
 
     expectWarning(()=> {
-      this.click(contextLink);
+      this.click(contextLink[0]);
     }, warningMessage);
 
     // Set the destinationRoute (context is still null).
@@ -1485,14 +1496,14 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
     assertLinkStatus(contextLink);
 
     expectWarning(()=> {
-      this.click(staticLink);
+      this.click(staticLink[0]);
     }, warningMessage);
 
     this.runTask(() => controller.set('secondRoute', 'about'));
     assertLinkStatus(staticLink, '/about');
 
     // Click the now-active link
-    this.click(staticLink);
+    this.click(staticLink[0]);
   }
 
 });

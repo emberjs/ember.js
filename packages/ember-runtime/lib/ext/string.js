@@ -4,7 +4,6 @@
 
 import { ENV } from 'ember-environment';
 import {
-  fmt,
   w,
   loc,
   camelize,
@@ -18,19 +17,6 @@ import {
 const StringPrototype = String.prototype;
 
 if (ENV.EXTEND_PROTOTYPES.String) {
-  /**
-    See [Ember.String.fmt](/api/classes/Ember.String.html#method_fmt).
-
-    @method fmt
-    @for @ember/string
-    @static
-    @private
-    @deprecated
-  */
-  StringPrototype.fmt = function (...args) {
-    return fmt(this, args);
-  };
-
   /**
     See [Ember.String.w](/api/classes/Ember.String.html#method_w).
 

@@ -311,7 +311,10 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.setupAppAndRoutableEngine(hooks);
 
     return this.visit('/blog', { shouldRender: false }).then(() => {
-      this.assertText('');
+      assert.strictEqual(
+        document.getElementById('qunit-fixture').children.length, 0,
+        `there are no elements in the qunit-fixture element`
+      );
 
       this.assert.deepEqual(hooks, [
         'application - application',

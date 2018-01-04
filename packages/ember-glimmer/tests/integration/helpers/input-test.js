@@ -638,17 +638,6 @@ moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTes
       this.render(`{{input ${ attrs.replace("%x", value) }}}`);
     }
 
-    assertValue(expected) {
-      let type = this.$input().attr('type');
-
-      if (type !== 'range') {
-        this.assert.ok(true, 'IE9 does not support range items');
-        return;
-      }
-
-      super.assertValue(expected);
-    }
-
     ['@test value over default max but below set max is kept']() {
       this.renderInput("25");
       this.assertValue("25");

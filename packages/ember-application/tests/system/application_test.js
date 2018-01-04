@@ -35,14 +35,13 @@ import {
 } from 'internal-test-helpers';
 
 moduleFor('Ember.Application, autobooting multiple apps', class extends ApplicationTestCase {
-  constructor() {
-    jQuery('#qunit-fixture').html(`
+  get fixture() {
+    return `
       <div id="one">
         <div id="one-child">HI</div>
       </div>
       <div id="two">HI</div>
-    `);
-    super();
+    `;
   }
 
   get applicationOptions() {
@@ -212,7 +211,7 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Def
   }
 
   [`@test Minimal Application initialized with just an application template`]() {
-    jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
+    this.setupFixture('<script type="text/x-handlebars">Hello World</script>');
     this.runTask(() => this.createApplication());
     this.assertInnerHTML('Hello World');
   }
@@ -235,14 +234,14 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
     super.teardown();
   }
 
-  [`@test initialized application goes to initial route`](assert) {
+  [`@test initialized application goes to initial route`]() {
     this.runTask(() => {
       this.createApplication();
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('index', '<h1>Hi from index</h1>');
     });
 
-    assert.equal(this.$('h1').text(), 'Hi from index');
+    this.assertText('Hi from index');
   }
 
   [`@test ready hook is called before routing begins`](assert) {
@@ -289,10 +288,10 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
     // need to make some assertions about the created router
     let router = this.application.__deprecatedInstance__.lookup('router:main');
     assert.equal(router instanceof Router, true, 'Router was set from initialize call');
-    assert.equal(this.$('h1').text(), 'Hello!');
+    this.assertText('Hello!');
   }
 
-  [`@test Application Controller backs the appplication template`](assert) {
+  [`@test Application Controller backs the appplication template`]() {
     this.runTask(() => {
       this.createApplication();
       this.addTemplate('application', '<h1>{{greeting}}</h1>');
@@ -300,7 +299,7 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
         greeting: 'Hello!'
       }));
     });
-    assert.equal(this.$('h1').text(), 'Hello!');
+    this.assertText('Hello!');
   }
 
   [`@test enable log of libraries with an ENV var`](assert) {
@@ -320,8 +319,12 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
     this.runTask(() => this.createApplication());
 
     assert.equal(messages[1], 'Ember  : ' + VERSION);
-    assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
-    assert.equal(messages[3], 'my-lib : ' + '2.0.0a');
+    if (jQuery) {
+      assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
+      assert.equal(messages[3], 'my-lib : ' + '2.0.0a');
+    } else {
+      assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
+    }
 
     libraries.deRegister('my-lib');
   }

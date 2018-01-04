@@ -3,18 +3,21 @@ import {
   setEngineParent,
   ENGINE_PARENT
 } from '../../system/engine-parent';
+import {
+  moduleFor,
+  AbstractTestCase as TestCase
+} from 'internal-test-helpers';
 
-QUnit.module('EngineParent', {});
+moduleFor('EngineParent', class extends TestCase {
+  ['@test An engine\'s parent can be set with `setEngineParent` and retrieved with `getEngineParent`'](assert) {
+    let engine = {};
+    let parent = {};
 
-QUnit.test('An engine\'s parent can be set with `setEngineParent` and retrieved with `getEngineParent`', function() {
-  let engine = {};
-  let parent = {};
+    assert.strictEqual(getEngineParent(engine), undefined, 'parent has not been set');
 
-  strictEqual(getEngineParent(engine), undefined, 'parent has not been set');
+    setEngineParent(engine, parent);
 
-  setEngineParent(engine, parent);
-
-  strictEqual(getEngineParent(engine), parent, 'parent has been set');
-
-  strictEqual(engine[ENGINE_PARENT], parent, 'parent has been set to the ENGINE_PARENT symbol');
+    assert.strictEqual(getEngineParent(engine), parent, 'parent has been set');
+    assert.strictEqual(engine[ENGINE_PARENT], parent, 'parent has been set to the ENGINE_PARENT symbol');
+  }
 });

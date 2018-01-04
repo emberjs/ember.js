@@ -71,7 +71,6 @@ export class RouterDSL {
   constructor(name: string, options: any);
   route(name: string, options: any, callback: ()=>any): void;
   push(url: string, name: string, callback: ()=>any, serialize: ()=>any): void;
-  resource(name: string, options: any, callback: ()=>any): void;
   genearte(): (match: any) => void;
   mount(_name: string, options: any): void;
 }
@@ -126,9 +125,9 @@ export const Router: {
   _scheduleLoadingEvent(transition: any, originRoute: any): void;
   _handleSlowTransition(transition: any, originRoute: any): void;
   _cancelSlowTransitionTimer(): void;
-  _markErrorAsHandled(errorGuid: string): void;
-  _isErrorHandled(errorGuid: string): boolean;
-  _clearHandledError(errorGuid: string): void;
+  _markErrorAsHandled(error: any): void;
+  _isErrorHandled(error: any): boolean;
+  _clearHandledError(error: any): void;
   _getEngineInstance({ name, instanceId, mountPoint }: any): any;
   map(callback: ()=>any): any;
   _routePath(handlerInfos: any[]): string;
@@ -197,7 +196,7 @@ export const QueryParams: {
   isQueryParams: boolean;
   values: any;
   create(obj: any): any;
-}; 
+};
 export const RoutingService: {
   router: any;
   targetState: any;

@@ -38,6 +38,7 @@ import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 import { MANDATORY_SETTER } from 'ember/features';
 
 const schedule = run.schedule;
@@ -199,6 +200,32 @@ function makeCtor() {
 
   return Class;
 }
+
+const IS_DESTROYED = descriptor({
+  configurable: true,
+  enumerable: false,
+
+  get() {
+    return peekMeta(this).isSourceDestroyed();
+  },
+
+  set(value) {
+    assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, value === IS_DESTROYED);
+  }
+});
+
+const IS_DESTROYING = descriptor({
+  configurable: true,
+  enumerable: false,
+
+  get() {
+    return peekMeta(this).isSourceDestroying();
+  },
+
+  set(value) {
+    assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, value === IS_DESTROYING);
+  }
+});
 
 /**
   @class CoreObject
@@ -407,20 +434,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroyed: descriptor({
-    get() {
-      return peekMeta(this).isSourceDestroyed();
-    },
-
-    set(value) {
-      // prevent setting while applying mixins
-      if (value !== null && typeof value === 'object' && value.isDescriptor) {
-        return;
-      }
-
-      assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, false);
-    }
-  }),
+  isDestroyed: IS_DESTROYED,
 
   /**
     Destruction scheduled flag. The `destroy()` method has been called.
@@ -432,20 +446,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroying: descriptor({
-    get() {
-      return peekMeta(this).isSourceDestroying();
-    },
-
-    set(value) {
-      // prevent setting while applying mixins
-      if (value !== null && typeof value === 'object' && value.isDescriptor) {
-        return;
-      }
-
-      assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, false);
-    }
-  }),
+  isDestroying: IS_DESTROYING,
 
   /**
     Destroys an object by setting the `isDestroyed` flag and removing its
@@ -552,10 +553,6 @@ CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
 CoreObject.__super__ = null;
 
 let ClassMixinProps = {
-
-  ClassMixin: REQUIRED,
-
-  PrototypeMixin: REQUIRED,
 
   isClass: true,
 
@@ -912,6 +909,11 @@ let ClassMixinProps = {
     }
   }
 };
+
+if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
+  ClassMixinProps.ClassMixin = REQUIRED;
+  ClassMixinProps.PrototypeMixin = REQUIRED;
+}
 
 function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));

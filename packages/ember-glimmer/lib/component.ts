@@ -1,7 +1,5 @@
 import { DirtyableTag } from '@glimmer/reference';
-import {
-  assert
-} from 'ember-debug';
+import { assert } from 'ember-debug';
 import {
   get,
   PROPERTY_DID_CHANGE,
@@ -588,9 +586,6 @@ const Component = CoreView.extend(
           return false;
         }
       )());
-
-      // tslint:disable-next-line:max-line-length
-      assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, !(this.tagName && this.tagName.isDescriptor));
     },
 
     rerender() {
@@ -655,8 +650,9 @@ const Component = CoreView.extend(
       @public
      */
     readDOMAttr(name: string) {
-      let element = getViewElement(this);
-      return readDOMAttr(element, name);
+      // TODO revisit this
+      let element = getViewElement(this) as HTMLElement;
+      return element && element.getAttribute(name);
     },
 
     /**

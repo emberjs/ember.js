@@ -1,38 +1,41 @@
 import { assignPolyfill as assign } from '..';
+import {
+  moduleFor,
+  AbstractTestCase as TestCase
+} from 'internal-test-helpers';
 
-QUnit.module('Ember.assign');
+moduleFor('Ember.assign', class extends TestCase {
+  ['@test merging objects'](assert) {
+    let trgt = { a: 1 };
+    let src1 = { b: 2 };
+    let src2 = { c: 3 };
+    assign(trgt, src1, src2);
 
-QUnit.test('merging objects', function() {
-  let trgt = { a: 1 };
-  let src1 = { b: 2 };
-  let src2 = { c: 3 };
+    assert.deepEqual(trgt, { a: 1, b: 2, c: 3 }, 'assign copies values from one or more source objects to a target object');
+    assert.deepEqual(src1, { b: 2 }, 'assign does not change source object 1');
+    assert.deepEqual(src2, { c: 3 }, 'assign does not change source object 2');
+  }
 
-  assign(trgt, src1, src2);
+  ['@test merging objects with same property'](assert) {
+    let trgt = { a: 1, b: 1 };
+    let src1 = { a: 2, b: 2 };
+    let src2 = { a: 3 };
+    assign(trgt, src1, src2);
 
-  deepEqual(trgt, { a: 1, b: 2, c: 3 }, 'assign copies values from one or more source objects to a target object');
-  deepEqual(src1, { b: 2 }, 'assign does not change source object 1');
-  deepEqual(src2, { c: 3 }, 'assign does not change source object 2');
-});
+    assert.deepEqual(trgt, { a: 3, b: 2 }, 'properties are overwritten by other objects that have the same properties later in the parameters order');
+  }
 
-QUnit.test('merging objects with same property', function() {
-  let trgt = { a: 1, b: 1 };
-  let src1 = { a: 2, b: 2 };
-  let src2 = { a: 3 };
+  ['@test null'](assert) {
+    let trgt = { a: 1 };
+    assign(trgt, null);
 
-  assign(trgt, src1, src2);
-  deepEqual(trgt, { a: 3, b: 2 }, 'properties are overwritten by other objects that have the same properties later in the parameters order');
-});
+    assert.deepEqual(trgt, { a: 1 }, 'null as a source parameter is ignored');
+  }
 
-QUnit.test('null', function() {
-  let trgt = { a: 1 };
+  ['@test undefined'](assert) {
+    let trgt = { a: 1 };
+    assign(trgt, null);
 
-  assign(trgt, null);
-  deepEqual(trgt, { a: 1 }, 'null as a source parameter is ignored');
-});
-
-QUnit.test('undefined', function() {
-  let trgt = { a: 1 };
-
-  assign(trgt, null);
-  deepEqual(trgt, { a: 1 }, 'undefined as a source parameter is ignored');
+    assert.deepEqual(trgt, { a: 1 }, 'undefined as a source parameter is ignored');
+  }
 });

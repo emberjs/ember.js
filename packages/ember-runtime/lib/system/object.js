@@ -9,7 +9,6 @@ import Observable from '../mixins/observable';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 
-let OVERRIDE_CONTAINER_KEY = symbol('OVERRIDE_CONTAINER_KEY');
 let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
 
 /**
@@ -26,10 +25,6 @@ const EmberObject = CoreObject.extend(Observable, {
   _debugContainerKey: descriptor({
     enumerable: false,
     get() {
-      if (this[OVERRIDE_CONTAINER_KEY]) {
-        return this[OVERRIDE_CONTAINER_KEY];
-      }
-
       let meta = peekMeta(this);
       let { factory } = meta;
 

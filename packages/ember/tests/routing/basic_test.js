@@ -32,8 +32,6 @@ import { compile } from 'ember-template-compiler';
 import { Application, Engine } from 'ember-application';
 import { Transition } from 'router';
 
-let trim = jQuery.trim;
-
 let Router, App, router, registry, container, originalLoggerError, originalRenderSupport;
 
 function bootApplication() {
@@ -3020,13 +3018,13 @@ QUnit.test('Tolerates stacked renders', function() {
     }
   });
   bootApplication();
-  equal(trim(jQuery('#qunit-fixture').text()), 'hi');
+  equal(jQuery('#qunit-fixture').text().trim(), 'hi');
   run(router, 'send', 'openLayer');
-  equal(trim(jQuery('#qunit-fixture').text()), 'hilayer');
+  equal(jQuery('#qunit-fixture').text().trim(), 'hilayer');
   run(router, 'send', 'openLayer');
-  equal(trim(jQuery('#qunit-fixture').text()), 'hilayer');
+  equal(jQuery('#qunit-fixture').text().trim(), 'hilayer');
   run(router, 'send', 'close');
-  equal(trim(jQuery('#qunit-fixture').text()), 'hi');
+  equal(jQuery('#qunit-fixture').text().trim(), 'hi');
 });
 
 QUnit.test('Renders child into parent with non-default template name', function() {
@@ -3081,11 +3079,11 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
     }
   });
   bootApplication();
-  equal(trim(jQuery('#qunit-fixture').text()), 'hi');
+  equal(jQuery('#qunit-fixture').text().trim(), 'hi');
   run(router, 'send', 'openLayer');
-  equal(trim(jQuery('#qunit-fixture').text()), 'hilayer');
+  equal(jQuery('#qunit-fixture').text().trim(), 'hilayer');
   run(router, 'send', 'close');
-  equal(trim(jQuery('#qunit-fixture').text()), 'hi');
+  equal(jQuery('#qunit-fixture').text().trim(), 'hi');
 });
 
 QUnit.test('Can this.render({into:...}) the render helper', function() {

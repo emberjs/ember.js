@@ -72,25 +72,9 @@
   {{/link-to}}
   ```
 
-  any passed value to `disabled` will disable it except `undefined`.
-  to ensure that only `true` disable the `link-to` component you can
-  override the global behavior of `LinkComponent`.
+  any truthy value passed to `disabled` will disable it except `undefined`.
 
-  ```javascript
-  import LinkComponent from '@ember/routing/link-component';
-  import { computed } from '@ember/object';
-
-  LinkComponent.reopen({
-    disabled: computed(function(key, value) {
-      if (value !== undefined) {
-        this.set('_isDisabled', value === true);
-      }
-      return value === true ? get(this, 'disabledClass') : false;
-    })
-  });
-  ```
-
-  see "Overriding Application-wide Defaults" for more.
+  See "Overriding Application-wide Defaults" for more.
 
   ### Handling `href`
   `{{link-to}}` will use your application's Router to
@@ -277,30 +261,31 @@
   check out inherited properties of `LinkComponent`.
 
   ### Overriding Application-wide Defaults
-  ``{{link-to}}`` creates an instance of `LinkComponent`
-  for rendering. To override options for your entire
-  application, reopen `LinkComponent` and supply the
-  desired values:
 
-  ``` javascript
+  ``{{link-to}}`` creates an instance of `LinkComponent` for rendering. To
+  override options for your entire application, export your customized
+  `LinkComponent` from `app/components/link-to.js` with the desired overrides:
+
+  ```javascript
+  // app/components/link-to.js
   import LinkComponent from '@ember/routing/link-component';
 
-  LinkComponent.reopen({
+  export default LinkComponent.extend({
     activeClass: "is-active",
     tagName: 'li'
   })
   ```
 
-  It is also possible to override the default event in
-  this manner:
+  It is also possible to override the default event in this manner:
 
-  ``` javascript
+  ```javascript
   import LinkCompoennt from '@ember/routing/link-component';
 
-  LinkComponent.reopen({
+  export default LinkComponent.extend({
     eventName: 'customEventName'
   });
   ```
+
   @method link-to
   @for Ember.Templates.helpers
   @param {String} routeName
@@ -515,7 +500,6 @@ const LinkComponent = EmberComponent.extend({
   */
   init() {
     this._super(...arguments);
-    this._isDisabled = false;
 
     // Map desired event name to invoke function
     let eventName = get(this, 'eventName');
@@ -534,10 +518,14 @@ const LinkComponent = EmberComponent.extend({
   */
   disabled: computed({
     get(_key: string): boolean {
+      // always returns false for `get` because (due to the `set` just below)
+      // the cached return value from the set will prevent this getter from _ever_
+      // being called after a set has occured
       return false;
     },
+
     set(_key: string, value: any): boolean {
-      if (value !== undefined) { this.set('_isDisabled', value); }
+      this._isDisabled = value;
 
       return value ? get(this, 'disabledClass') : false;
     },
@@ -636,7 +624,7 @@ const LinkComponent = EmberComponent.extend({
 
     if (get(this, 'bubbles') === false) { event.stopPropagation(); }
 
-    if (get(this, '_isDisabled')) { return false; }
+    if (this._isDisabled) { return false; }
 
     if (get(this, 'loading')) {
       // tslint:disable-next-line:max-line-length

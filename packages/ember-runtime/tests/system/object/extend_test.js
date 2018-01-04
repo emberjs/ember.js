@@ -1,4 +1,4 @@
-import { get } from 'ember-metal';
+import { computed, get, observer } from 'ember-metal';
 import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject.extend');
@@ -93,3 +93,30 @@ QUnit.test('With concatenatedProperties class properties', function() {
   deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
 });
 
+QUnit.test('Overriding a computed property with an observer', assert => {
+  let Parent = EmberObject.extend({
+    foo: computed(function() {
+      return 'FOO';
+    })
+  });
+
+  let seen = [];
+
+  let Child = Parent.extend({
+    foo: observer('bar', function() {
+      seen.push(this.get('bar'));
+    })
+  });
+
+  let child = Child.create({ bar: 0 });
+
+  assert.deepEqual(seen, []);
+
+  child.set('bar', 1);
+
+  assert.deepEqual(seen, [1]);
+
+  child.set('bar', 2);
+
+  assert.deepEqual(seen, [1, 2]);
+});

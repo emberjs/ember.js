@@ -18,6 +18,6 @@ export default Adapter.extend({
     QUnit.start();
   },
   exception(error) {
-    ok(false, inspect(error));
+    QUnit.config.current.assert.ok(false, inspect(error));
   }
 });

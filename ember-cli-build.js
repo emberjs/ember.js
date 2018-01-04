@@ -1,10 +1,5 @@
 'use strict';
 
-// To create fast production builds (without ES3 support, minification, derequire, or JSHint)
-// run the following:
-//
-// DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
-
 const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');

@@ -6,6 +6,7 @@
     "ember-glimmer-named-arguments": null,
     "ember-glimmer-remove-application-template-wrapper": null,
     "ember-glimmer-template-only-components": null,
+    "ember-metal-es5-getters": null,
     "ember-routing-router-service": true,
     "ember-engines-mount-params": true,
     "ember-module-unification": null,
