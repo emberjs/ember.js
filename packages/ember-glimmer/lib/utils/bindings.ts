@@ -9,6 +9,7 @@ import {
   map,
   Reference,
   Tag,
+  VersionedPathReference
 } from '@glimmer/reference';
 import {
   ElementOperations
@@ -25,6 +26,16 @@ function referenceForKey(component: Component, key: string) {
   return component[ROOT_REF].get(key);
 }
 
+function referenceFromParts(root: VersionedPathReference<Opaque>, parts: string[]): VersionedPathReference<Opaque> {
+  let reference = root;
+
+  for (let i=0; i<parts.length; i++) {
+    reference = reference.get(parts[i]);
+  }
+
+  return reference;
+}
+
 function referenceForParts(component: Component, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';
 
@@ -37,7 +48,7 @@ function referenceForParts(component: Component, parts: string[]): Reference {
     }
   }
 
-  return referenceForParts(component[ROOT_REF], parts);
+  return referenceFromParts(component[ROOT_REF], parts);
 }
 
 // TODO we should probably do this transform at build time
