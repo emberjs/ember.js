@@ -142,7 +142,9 @@ moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
        * Visit on the application a second time. The application should remain
        * booted, but a new instance will be created.
        */
-      return this.visit('/');
+      return this.application.visit('/').then(instance => {
+        this.applicationInstance = instance;
+      });
     }).then(() => {
       assert.ok(appBooted === 1, 'the app should not be booted again');
       assert.ok(instanceBooted === 2, 'another instance should be booted');
