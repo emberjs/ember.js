@@ -112,9 +112,19 @@ if (EMBER_METAL_ES5_GETTERS) {
         get(descriptor, property) {
           if (property === DESCRIPTOR) {
             return descriptor;
-          } else if (property === 'toString' || property == 'valueOf' ||
-            property == 'inspect' || property == 'constructor' ||
-            (Symbol && property === Symbol.toPrimitive)) {
+          } else if (
+            property === 'prototype' ||
+            property === 'constructor' ||
+            property === 'nodeType'
+          ) {
+            return undefined;
+          } else if (
+            property === 'toString' ||
+            property === 'valueOf' ||
+            property === 'inspect' ||
+            Symbol && property === Symbol.toPrimitive ||
+            Symbol && property === Symbol.toStringTag
+          ) {
             return () => '[COMPUTED PROPERTY]';
           }
 
