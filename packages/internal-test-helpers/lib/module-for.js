@@ -13,7 +13,7 @@ export default function moduleFor(description, TestClass, ...mixins) {
     },
 
     teardown() {
-      context.teardown();
+      return context.teardown();
     }
   });
 
