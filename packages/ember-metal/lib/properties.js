@@ -82,10 +82,10 @@ if (EMBER_METAL_ES5_GETTERS) {
   // development to aid in development asertions. Production builds of
   // ember strip this entire branch out.
   let messageFor = function(obj, keyName, property, value) {
-    return `You attempted to access the \`${keyName}.${property}\` property ` +
+    return `You attempted to access the \`${keyName}.${String(property)}\` property ` +
       `(of ${obj}). Due to certain internal implementation details of Ember, ` +
       `the \`${keyName}\` property previously contained an internal "descriptor" ` +
-      `object (a private API), therefore \`${keyName}.${property}\` would have ` +
+      `object (a private API), therefore \`${keyName}.${String(property)}\` would have ` +
       `been \`${String(value).replace(/\n/g, ' ')}\`. This internal implementation ` +
       `detail was never intended to be a public (or even intimate) API.\n\n` +
       `This internal implementation detail has now changed and the (still private) ` +
