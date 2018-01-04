@@ -1,3 +1,4 @@
+import { ENV } from 'ember-environment';
 import { SuiteModuleBuilder } from '../suite';
 import { get } from 'ember-metal';
 import { insertAt } from '../../../mixins/mutable_array';
@@ -195,6 +196,12 @@ suite.test('insertAt([A,B,C], 3, X) => [A,B,C,X] + notify', function(assert) {
 
   assert.equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
 });
+
+if (ENV.EXTEND_PROTOTYPES.Array) {
+  suite.test('Array.prototype.insertAt is modified with EXTEND_PROTOTYPES', function(assert) {
+    assert.equal(typeof Array.prototype.insertAt, 'function', 'Array.prototype modified');
+  });
+}
 
 suite.test('[A,B,C].insertAt(3, X) => [A,B,C,X] + notify', function(assert) {
   let item = this.newFixture(1)[0];

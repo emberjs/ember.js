@@ -1,3 +1,4 @@
+import { ENV } from 'ember-environment';
 import { SuiteModuleBuilder } from '../suite';
 import { get } from 'ember-metal';
 import { removeAt } from '../../../mixins/mutable_array';
@@ -114,6 +115,12 @@ suite.test('removeAt([A,B,C,D], 1,2) => [A,D] + notify', function(assert) {
   assert.equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
   assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
 });
+
+if (ENV.EXTEND_PROTOTYPES.Array) {
+  suite.test('Array.prototype.removeAt is defined by default due to EXTEND_PROTOTYPES', function(assert) {
+    assert.equal(typeof Array.prototype.removeAt, 'function', 'Array.prototype modified');
+  });
+}
 
 suite.test('[A,B,C,D].removeAt(1,2) => [A,D] + notify', function(assert) {
   var obj, before, after, observer;
