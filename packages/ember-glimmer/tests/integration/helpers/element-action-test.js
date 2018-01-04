@@ -10,7 +10,7 @@ import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 
-import { ActionManager, jQuery } from 'ember-views';
+import { ActionManager } from 'ember-views';
 
 function getActionAttributes(element) {
   let attributes = element.attributes;
@@ -173,7 +173,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let button = this.$('button');
 
-    let attributes = getActionAttributes(button.get(0));
+    let attributes = getActionAttributes(button[0]);
 
     this.assert.ok(button.attr('data-ember-action').match(''), 'An empty data-ember-action attribute was added');
     this.assert.ok(attributes[0].match(/data-ember-action-\d+/), 'A data-ember-action-xyz attribute with a guid was added');
@@ -198,8 +198,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.render('{{example-component}}');
 
     this.runTask(() => {
-      let event = jQuery.Event('mouseup');
-      this.$('#show').trigger(event);
+      this.$('#show').trigger('mouseup');
     });
 
     this.assert.ok(showCalled, 'show action was called on mouseUp');
@@ -355,17 +354,13 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.render('{{example-component}}');
 
     this.runTask(() => {
-      let event = jQuery.Event('click');
-      event.altKey = true;
-      this.$('a[data-ember-action]').trigger(event);
+      this.$('a[data-ember-action]').trigger('click', { altKey: true });
     });
 
     this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
 
     this.runTask(() => {
-      let event = jQuery.Event('click');
-      event.ctrlKey = true;
-      this.$('div[data-ember-action]').trigger(event);
+      this.$('div[data-ember-action]').trigger('click', { ctrlKey: true });
     });
 
     this.assert.equal(shortcutHandlerWasCalled, true, 'the "any" shortcut\'s event handler was called');
@@ -392,17 +387,13 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.render('{{example-component}}');
 
     this.runTask(() => {
-      let event = jQuery.Event('click');
-      event.altKey = true;
-      this.$('a[data-ember-action]').trigger(event);
+      this.$('a[data-ember-action]').trigger('click', { altKey: true });
     });
 
     this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
 
     this.runTask(() => {
-      let event = jQuery.Event('click');
-      event.ctrlKey = true;
-      this.$('div[data-ember-action]').trigger(event);
+      this.$('div[data-ember-action]').trigger('click', { ctrlKey: true });
     });
 
     this.assert.equal(shortcutHandlerWasCalled, true, 'the "any" shortcut\'s event handler was called');
@@ -431,9 +422,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.render('{{example-component}}');
 
     this.runTask(() => {
-      let event = jQuery.Event('click');
-      event.altKey = true;
-      this.$('a[data-ember-action]').trigger(event);
+      this.$('a[data-ember-action]').trigger('click', { altKey: true });
     });
 
     this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
@@ -445,8 +434,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     });
 
     this.runTask(() => {
-      let event = jQuery.Event('click');
-      this.$('div[data-ember-action]').trigger(event);
+      this.$('div[data-ember-action]').click();
     });
 
     this.assert.equal(editHandlerWasCalled, false, 'the event handler was not called');
@@ -498,7 +486,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
     this.runTask(() => {
-      component.$().click();
+      this.wrap(component.element).click();
     });
 
     this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
@@ -552,7 +540,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
     this.runTask(() => {
-      component.$().click();
+      this.wrap(component.element).click();
     });
 
     this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
@@ -607,7 +595,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
     this.runTask(() => {
-      component.$().click();
+      this.wrap(component.element).click();
     });
 
     this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
@@ -726,7 +714,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let actionId;
 
-    actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
+    actionId = getActionIds(this.$('a[data-ember-action]')[0])[0];
 
     ok(ActionManager.registeredActions[actionId], 'An action is registered');
 
@@ -746,7 +734,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
-    actionId = getActionIds(this.$('a[data-ember-action]').get(0))[0];
+    actionId = getActionIds(this.$('a[data-ember-action]')[0])[0];
 
     ok(ActionManager.registeredActions[actionId], 'A new action is registered');
   }
@@ -1010,20 +998,17 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let assert = this.assert;
 
-    function checkClick(prop, value, expected) {
-      var event = jQuery.Event('click');
-      event[prop] = value;
-
-      component.$('button').trigger(event);
+    let checkClick = (prop, value, expected) => {
+      let event = this.wrap(component.element).findAll('button').trigger('click', { [prop]: value })[0];
 
       if (expected) {
         assert.ok(showCalled, `should call action with ${prop}:${value}`);
-        assert.ok(event.isDefaultPrevented(), 'should prevent default');
+        assert.ok(event.defaultPrevented, 'should prevent default');
       } else {
         assert.notOk(showCalled, `should not call action with ${prop}:${value}`);
-        assert.notOk(event.isDefaultPrevented(), 'should not prevent default');
+        assert.notOk(event.defaultPrevented, 'should not prevent default');
       }
-    }
+    };
 
     checkClick('ctrlKey', true, false);
     checkClick('altKey', true, false);
@@ -1054,10 +1039,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.render('{{example-component}}');
 
     this.runTask(() => {
-      let event = jQuery.Event('keyup');
-      event.char = 'a';
-      event.which = 65;
-      this.$('input').trigger(event);
+      this.$('input').trigger('keyup', { char: 'a', which: 65 });
     });
 
     this.assert.ok(showCalled, 'the action was called with keyup');
@@ -1099,17 +1081,17 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let test = this;
 
-    function testBoundAction(propertyValue) {
+    let testBoundAction = (propertyValue) => {
       test.runTask(() => {
         component.set('hookMeUp', propertyValue);
       });
 
       test.runTask(() => {
-        component.$('#bound-param').click();
+        this.wrap(component.element).findAll('#bound-param').click();
       });
 
       test.assert.ok(lastAction, propertyValue, `lastAction set to ${propertyValue}`);
-    }
+    };
 
     testBoundAction('rock');
     testBoundAction('paper');
@@ -1158,13 +1140,13 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     let test = this;
 
-    function testBoundAction(propertyValue) {
+    let testBoundAction = (propertyValue) => {
       test.runTask(() => {
-        component.$(`#${propertyValue}`).click();
+        this.wrap(component.element).findAll(`#${propertyValue}`).click();
       });
 
       test.assert.ok(lastAction, propertyValue, `lastAction set to ${propertyValue}`);
-    }
+    };
 
     testBoundAction('rock');
     testBoundAction('paper');
@@ -1274,13 +1256,13 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     this.render('{{example-component}}');
 
-    let event = jQuery.Event('click');
+    let event;
 
     this.runTask(() => {
-      this.$('a').trigger(event);
+      event = this.$('a').click()[0];
     });
 
-    this.assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+    this.assert.equal(event.defaultPrevented, false, 'should not preventDefault');
   }
 
   ['@test it should respect preventDefault option if provided bound']() {
@@ -1305,22 +1287,20 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     this.render('{{example-component}}');
 
-    let event = jQuery.Event('click');
+    let event;
 
     this.runTask(() => {
-      this.$('a').trigger(event);
+      event = this.$('a').trigger(event)[0];
     });
 
-    this.assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault');
-
-    event = jQuery.Event('click');
+    this.assert.equal(event.defaultPrevented, false, 'should not preventDefault');
 
     this.runTask(() => {
       component.set('shouldPreventDefault', true);
-      this.$('a').trigger(event);
+      event = this.$('a').trigger(event)[0];
     });
 
-    this.assert.equal(event.isDefaultPrevented(), true, 'should preventDefault');
+    this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
   }
 
   ['@test it should target the proper component when `action` is in yielded block [GH #12409]']() {

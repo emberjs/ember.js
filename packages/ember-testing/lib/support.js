@@ -1,5 +1,5 @@
 import { warn } from 'ember-debug';
-import { jQuery } from 'ember-views';
+import { jQuery, noJqueryMode } from 'ember-views';
 
 import { environment } from 'ember-environment';
 
@@ -28,7 +28,7 @@ function testCheckboxClick(handler) {
     .remove();
 }
 
-if (environment.hasDOM && typeof $ === 'function') {
+if (environment.hasDOM && !noJqueryMode) {
   $(function() {
     /*
       Determine whether a checkbox checked using jQuery's "click" method will have

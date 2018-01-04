@@ -1,7 +1,7 @@
 import { assign } from 'ember-utils';
 import { run } from 'ember-metal';
-import { jQuery } from 'ember-views';
 
+import NodeQuery from './node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
 import {
@@ -94,7 +94,11 @@ export default class AbstractTestCase {
   }
 
   $(sel) {
-    return sel ? jQuery(sel, this.element) : jQuery(this.element);
+    return sel ? NodeQuery.query(sel, this.element) : NodeQuery.element(this.element);
+  }
+
+  wrap(element) {
+    return NodeQuery.element(element);
   }
 
   click(selector) {

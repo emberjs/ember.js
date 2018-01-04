@@ -762,7 +762,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#about-link').trigger(event);
 
-    assert.equal(event.isDefaultPrevented(), true, 'should preventDefault');
+    assert.equal(event.defaultPrevented, true, 'should preventDefault');
   }
 
   [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=false' is passed as an option`](assert) {
@@ -779,7 +779,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#about-link').trigger(event);
 
-    assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+    assert.equal(event.defaultPrevented, false, 'should not preventDefault');
   }
 
   [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`]() {
@@ -800,7 +800,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#about-link').trigger(event);
 
-    equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+    equal(event.defaultPrevented, false, 'should not preventDefault');
   }
 
   [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`](assert) {
@@ -814,7 +814,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#self-link').trigger(event);
 
-    assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault when target attribute is specified');
+    assert.equal(event.defaultPrevented, false, 'should not preventDefault when target attribute is specified');
   }
 
   [`@test The {{link-to}} helper should preventDefault when 'target = _self'`]() {
@@ -828,7 +828,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#self-link').trigger(event);
 
-    equal(event.isDefaultPrevented(), true, 'should preventDefault when target attribute is `_self`');
+    equal(event.defaultPrevented, true, 'should preventDefault when target attribute is `_self`');
   }
 
   [`@test The {{link-to}} helper should not transition if target is not equal to _self or empty`](assert) {

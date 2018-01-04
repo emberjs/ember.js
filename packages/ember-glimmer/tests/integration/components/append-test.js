@@ -1,5 +1,4 @@
 import { set } from 'ember-metal';
-import { jQuery } from 'ember-views';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component, compile } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
@@ -21,8 +20,9 @@ class AbstractAppendTest extends RenderingTest {
     });
 
     this.ids.forEach(id => {
-      let $element = jQuery(id).remove();
-      this.assert.strictEqual($element.length, 0, `Should not leak element: #${id}`);
+      let $element = document.getElementById(id);
+      if ($element) { $element.parentNode.removeChild($element); }
+      // this.assert.strictEqual($element.length, 0, `Should not leak element: #${id}`);
     });
 
     super.teardown();
@@ -597,7 +597,7 @@ moduleFor('appendTo: a selector', class extends AbstractAppendTest {
   append(component) {
     this.runTask(() => component.appendTo('#qunit-fixture'));
     this.didAppend(component);
-    return jQuery('#qunit-fixture')[0];
+    return document.getElementById('qunit-fixture');
   }
 
   ['@test raises an assertion when the target does not exist in the DOM'](assert) {
@@ -628,7 +628,7 @@ moduleFor('appendTo: a selector', class extends AbstractAppendTest {
 moduleFor('appendTo: an element', class extends AbstractAppendTest {
 
   append(component) {
-    let element = jQuery('#qunit-fixture')[0];
+    let element = document.getElementById('qunit-fixture');
     this.runTask(() => component.appendTo(element));
     this.didAppend(component);
     return element;
@@ -641,6 +641,6 @@ moduleFor('appendTo: with multiple components', class extends AbstractAppendTest
   append(component) {
     this.runTask(() => component.appendTo('#qunit-fixture'));
     this.didAppend(component);
-    return jQuery('#qunit-fixture')[0];
+    return document.getElementById('qunit-fixture');
   }
 });
