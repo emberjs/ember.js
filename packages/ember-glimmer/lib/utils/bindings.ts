@@ -12,7 +12,8 @@ import {
   VersionedPathReference
 } from '@glimmer/reference';
 import {
-  ElementOperations
+  ElementOperations,
+  PrimitiveReference
 } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
@@ -82,7 +83,7 @@ export const AttributeBinding = {
 
     if (colonIndex === -1) {
       assert('You cannot use class as an attributeBinding, use classNameBindings instead.', microsyntax !== 'class');
-      return [microsyntax, microsyntax, true];
+      return [microsyntax, microsyntax.toLowerCase(), true];
     } else {
       let prop = microsyntax.substring(0, colonIndex);
       let attribute = microsyntax.substring(colonIndex + 1);
@@ -101,6 +102,7 @@ export const AttributeBinding = {
       if (elementId === undefined || elementId === null) {
         elementId = component.elementId;
       }
+      elementId = PrimitiveReference.create(elementId);
       operations.setAttribute('id', elementId, true, null);
       // operations.addStaticAttribute(element, 'id', elementId);
       return;
