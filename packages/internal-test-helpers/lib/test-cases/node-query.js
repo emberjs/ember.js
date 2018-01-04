@@ -1,8 +1,9 @@
+import { assert } from 'ember-debug';
 import { fireEvent, matches } from '../system/synthetic-events';
 
 export default class NodeQuery {
   static query(selector, context = document) {
-    return new NodeQuery(context.querySelectorAll(selector));
+    return new NodeQuery(toArray(context.querySelectorAll(selector)));
   }
 
   static element(element) {
@@ -10,6 +11,7 @@ export default class NodeQuery {
   }
 
   constructor(nodes) {
+    assert(Array.isArray(nodes), 'NodeQuery must be initialized with a literal array');
     this.nodes = nodes;
 
     for (let i=0; i<nodes.length; i++) {
@@ -30,21 +32,15 @@ export default class NodeQuery {
   findAll(selector) {
     let nodes = [];
 
-    for (let node of this.nodes) {
+    this.nodes.forEach(node => {
       nodes.push(...node.querySelectorAll(selector));
-    }
+    });
 
     return new NodeQuery(nodes);
   }
 
   trigger(eventName, options) {
-    let events = [];
-
-    for (let node of this.nodes) {
-      events.push(fireEvent(node, eventName, options));
-    }
-
-    return events;
+    return this.nodes.map(node => fireEvent(node, eventName, options));
   }
 
   click() {
@@ -52,13 +48,7 @@ export default class NodeQuery {
   }
 
   text() {
-    let out = "";
-
-    for (let node of this.nodes) {
-      out += node.innerText;
-    }
-
-    return out;
+    return this.nodes.map(node => node.innerText).join('');
   }
 
   attr(name) {
@@ -82,9 +72,7 @@ export default class NodeQuery {
   }
 
   setProp(name, value) {
-    for (let node of this.nodes) {
-      node[name] = value;
-    }
+    this.nodes.forEach(node => node[name] = value);
 
     return this;
   }
@@ -98,13 +86,7 @@ export default class NodeQuery {
   }
 
   is(selector) {
-    for (let node of this.nodes) {
-      if (!matches(node, selector)) {
-        return false;
-      }
-    }
-
-    return true;
+    return this.nodes.every(node => matches(node, selector));
   }
 
   hasClass(className) {
@@ -116,4 +98,14 @@ function assertSingle(nodeQuery) {
   if (nodeQuery.length !== 1) {
     throw new Error(`attr(name) called on a NodeQuery with ${this.nodes.length} elements. Expected one element.`);
   }
+}
+
+function toArray(nodes) {
+  let out = [];
+
+  for (let i=0; i<nodes.length; i++) {
+    out.push(nodes[i]);
+  }
+
+  return out;
 }
