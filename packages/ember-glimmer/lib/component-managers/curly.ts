@@ -8,6 +8,7 @@ import {
 } from '@glimmer/interfaces';
 import { ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
+  combine,
   combineTagged,
   Tag,
   VersionedPathReference,
@@ -436,8 +437,9 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
   }
 
-  getTag({ component }: ComponentStateBucket): Tag {
-    return component[DIRTY_TAG];
+  getTag({ args, component }: ComponentStateBucket): Tag {
+    return args ? combine([args.tag, component[DIRTY_TAG]]) :
+                  component[DIRTY_TAG];
   }
 
   didCreate({ component, environment }: ComponentStateBucket): void {
