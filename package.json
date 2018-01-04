@@ -100,7 +100,6 @@
     "ember-cli-dependency-checker": "^2.0.1",
     "ember-cli-sauce": "^2.1.0",
     "ember-cli-yuidoc": "^0.8.8",
-    "ember-dev": "github:emberjs/ember-dev#eace534",
     "ember-publisher": "0.0.7",
     "eslint": "^3.0.0",
     "eslint-plugin-ember-internal": "^1.1.0",
