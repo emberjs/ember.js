@@ -9,12 +9,12 @@ import { buildOwner } from 'internal-test-helpers';
 
 QUnit.module('Controller event handling');
 
-QUnit.test('Action can be handled by a function on actions object', function() {
-  expect(1);
+QUnit.test('Action can be handled by a function on actions object', function(assert) {
+  assert.expect(1);
   let TestController = Controller.extend({
     actions: {
       poke() {
-        ok(true, 'poked');
+        assert.ok(true, 'poked');
       }
     }
   });
@@ -22,12 +22,12 @@ QUnit.test('Action can be handled by a function on actions object', function() {
   controller.send('poke');
 });
 
-QUnit.test('A handled action can be bubbled to the target for continued processing', function() {
-  expect(2);
+QUnit.test('A handled action can be bubbled to the target for continued processing', function(assert) {
+  assert.expect(2);
   let TestController = Controller.extend({
     actions: {
       poke() {
-        ok(true, 'poked 1');
+        assert.ok(true, 'poked 1');
         return true;
       }
     }
@@ -37,7 +37,7 @@ QUnit.test('A handled action can be bubbled to the target for continued processi
     target: Controller.extend({
       actions: {
         poke() {
-          ok(true, 'poked 2');
+          assert.ok(true, 'poked 2');
         }
       }
     }).create()
@@ -45,16 +45,16 @@ QUnit.test('A handled action can be bubbled to the target for continued processi
   controller.send('poke');
 });
 
-QUnit.test('Action can be handled by a superclass\' actions object', function() {
-  expect(4);
+QUnit.test('Action can be handled by a superclass\' actions object', function(assert) {
+  assert.expect(4);
 
   let SuperController = Controller.extend({
     actions: {
       foo() {
-        ok(true, 'foo');
+        assert.ok(true, 'foo');
       },
       bar(msg) {
-        equal(msg, 'HELLO');
+        assert.equal(msg, 'HELLO');
       }
     }
   });
@@ -62,7 +62,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
   let BarControllerMixin = Mixin.create({
     actions: {
       bar(msg) {
-        equal(msg, 'HELLO');
+        assert.equal(msg, 'HELLO');
         this._super(msg);
       }
     }
@@ -71,7 +71,7 @@ QUnit.test('Action can be handled by a superclass\' actions object', function() 
   let IndexController = SuperController.extend(BarControllerMixin, {
     actions: {
       baz() {
-        ok(true, 'baz');
+        assert.ok(true, 'baz');
       }
     }
   });
@@ -86,19 +86,19 @@ QUnit.module('Controller deprecations');
 
 QUnit.module('Controller Content -> Model Alias');
 
-QUnit.test('`content` is a deprecated alias of `model`', function() {
-  expect(2);
+QUnit.test('`content` is a deprecated alias of `model`', function(assert) {
+  assert.expect(2);
   let controller = Controller.extend({
     model: 'foo-bar'
   }).create();
 
   expectDeprecation(function () {
-    equal(controller.get('content'), 'foo-bar', 'content is an alias of model');
+    assert.equal(controller.get('content'), 'foo-bar', 'content is an alias of model');
   });
 });
 
-QUnit.test('`content` is not moved to `model` when `model` is unset', function() {
-  expect(2);
+QUnit.test('`content` is not moved to `model` when `model` is unset', function(assert) {
+  assert.expect(2);
   let controller;
 
   ignoreDeprecation(function() {
@@ -107,23 +107,23 @@ QUnit.test('`content` is not moved to `model` when `model` is unset', function()
     }).create();
   });
 
-  notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
-  equal(controller.get('content'), 'foo-bar', 'content is not set properly');
+  assert.notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
+  assert.equal(controller.get('content'), 'foo-bar', 'content is not set properly');
 });
 
-QUnit.test('specifying `content` (without `model` specified) does not result in deprecation', function() {
-  expect(2);
+QUnit.test('specifying `content` (without `model` specified) does not result in deprecation', function(assert) {
+  assert.expect(2);
   expectNoDeprecation();
 
   let controller = Controller.extend({
     content: 'foo-bar'
   }).create();
 
-  equal(get(controller, 'content'), 'foo-bar');
+  assert.equal(get(controller, 'content'), 'foo-bar');
 });
 
-QUnit.test('specifying `content` (with `model` specified) does not result in deprecation', function() {
-  expect(3);
+QUnit.test('specifying `content` (with `model` specified) does not result in deprecation', function(assert) {
+  assert.expect(3);
   expectNoDeprecation();
 
   let controller = Controller.extend({
@@ -131,14 +131,14 @@ QUnit.test('specifying `content` (with `model` specified) does not result in dep
     model: 'blammo'
   }).create();
 
-  equal(get(controller, 'content'), 'foo-bar');
-  equal(get(controller, 'model'), 'blammo');
+  assert.equal(get(controller, 'content'), 'foo-bar');
+  assert.equal(get(controller, 'model'), 'blammo');
 });
 
 QUnit.module('Controller injected properties');
 
 if (!EmberDev.runningProdBuild) {
-  QUnit.test('defining a controller on a non-controller should fail assertion', function() {
+  QUnit.test('defining a controller on a non-controller should fail assertion', function(assert) {
     expectAssertion(function() {
       let owner = buildOwner();
 
@@ -154,7 +154,7 @@ if (!EmberDev.runningProdBuild) {
   });
 }
 
-QUnit.test('controllers can be injected into controllers', function() {
+QUnit.test('controllers can be injected into controllers', function(assert) {
   let owner = buildOwner();
 
   owner.register('controller:post', Controller.extend({
@@ -166,10 +166,10 @@ QUnit.test('controllers can be injected into controllers', function() {
   let postController = owner.lookup('controller:post');
   let postsController = owner.lookup('controller:posts');
 
-  equal(postsController, postController.get('postsController'), 'controller.posts is injected');
+  assert.equal(postsController, postController.get('postsController'), 'controller.posts is injected');
 });
 
-QUnit.test('services can be injected into controllers', function() {
+QUnit.test('services can be injected into controllers', function(assert) {
   let owner = buildOwner();
 
   owner.register('controller:application', Controller.extend({
@@ -181,5 +181,5 @@ QUnit.test('services can be injected into controllers', function() {
   let appController = owner.lookup('controller:application');
   let authService = owner.lookup('service:auth');
 
-  equal(authService, appController.get('authService'), 'service.auth is injected');
+  assert.equal(authService, appController.get('authService'), 'service.auth is injected');
 });

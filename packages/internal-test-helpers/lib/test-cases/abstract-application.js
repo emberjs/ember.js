@@ -41,7 +41,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     this._element = element;
   }
 
-  teardown() {
+  afterEach() {
     runDestroy(this.applicationInstance);
     runDestroy(this.application);
 

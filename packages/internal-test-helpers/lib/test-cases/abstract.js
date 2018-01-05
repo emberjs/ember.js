@@ -39,6 +39,7 @@ export default class AbstractTestCase {
   }
 
   teardown() {}
+  afterEach() {}
 
   runTask(callback) {
     return run(callback);

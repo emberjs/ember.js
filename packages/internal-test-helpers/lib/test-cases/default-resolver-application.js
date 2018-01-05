@@ -23,9 +23,9 @@ export default class ApplicationTestCase extends AbstractApplicationTestCase {
     });
   }
 
-  teardown() {
-    super.teardown();
+  afterEach() {
     setTemplates({});
+    return super.afterEach();
   }
 
   get appRouter() {

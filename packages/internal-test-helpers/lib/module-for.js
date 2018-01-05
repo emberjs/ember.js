@@ -1,19 +1,28 @@
 import { isFeatureEnabled } from 'ember-debug';
 import applyMixins from './apply-mixins';
+import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
   let context;
 
   QUnit.module(description, {
-    setup() {
+    beforeEach() {
       context = new TestClass();
       if (context.beforeEach) {
         return context.beforeEach();
       }
     },
 
-    teardown() {
-      return context.teardown();
+    afterEach() {
+      let promises = [];
+      if (context.teardown) {
+        promises.push(context.teardown());
+      }
+      if (context.afterEach) {
+        promises.push(context.afterEach());
+      }
+
+      return all(promises);
     }
   });
 
