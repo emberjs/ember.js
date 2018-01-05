@@ -136,11 +136,11 @@ moduleFor('Container', class extends AbstractTestCase {
     assert.equal(container.lookup('template:foo'), template);
   }
 
-  ['@test A failed lookup returns undefined']() {
+  ['@test A failed lookup returns undefined'](assert) {
     let registry = new Registry();
     let container = registry.container();
 
-    equal(container.lookup('doesnot:exist'), undefined);
+    assert.equal(container.lookup('doesnot:exist'), undefined);
   }
 
   ['@test An invalid factory throws an error'](assert) {
