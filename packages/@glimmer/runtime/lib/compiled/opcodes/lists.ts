@@ -7,7 +7,7 @@ import {
 } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckPathReference } from './-debug-strip';
-import { check, CheckString, expectStackChange, CheckInstanceof } from "@glimmer/debug";
+import { check, expectStackChange, CheckInstanceof } from "@glimmer/debug";
 
 class IterablePresenceReference implements Reference<boolean> {
   public tag: Tag;
@@ -27,7 +27,7 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
   let stack = vm.stack;
   let listRef = check(stack.pop(), CheckPathReference);
   let key = check(stack.pop(), CheckPathReference);
-  let iterable = vm.env.iterableFor(listRef, check(key.value(), CheckString));
+  let iterable = vm.env.iterableFor(listRef, key.value());
   let iterator = new ReferenceIterator(iterable);
 
   stack.push(iterator);

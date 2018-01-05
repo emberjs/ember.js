@@ -1,5 +1,6 @@
 import { Environment, DOMTreeConstruction, IDOMChanges, PrimitiveReference, ConditionalReference } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
+import { check, CheckString } from '@glimmer/debug';
 import { Dict, RuntimeResolver, Opaque, VMHandle } from '@glimmer/interfaces';
 import { Program } from '@glimmer/program';
 import { Reference, isConst, OpaqueIterable } from '@glimmer/reference';
@@ -38,6 +39,7 @@ export default abstract class TestEnvironment<TemplateMeta> extends Environment 
 
   iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {
     let keyFor: KeyFor<Opaque>;
+    check(keyPath, CheckString);
 
     if (!keyPath) {
       throw new Error('Must specify a key for #each');
