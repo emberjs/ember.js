@@ -1,26 +1,12 @@
-var TapReporter = require('testem/lib/reporters/tap_reporter');
+var FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
 
 function FailureOnlyPerBrowserReporter() {
-  TapReporter.apply(this, arguments);
-  this._reportCount = 0;
+  FailureOnlyReporter.apply(this, arguments);
   this._resultsByBrowser = {};
 }
 
-FailureOnlyPerBrowserReporter.prototype = Object.create(TapReporter.prototype);
+FailureOnlyPerBrowserReporter.prototype = Object.create(FailureOnlyReporter.prototype);
 FailureOnlyPerBrowserReporter.prototype.constructor = FailureOnlyPerBrowserReporter;
-
-FailureOnlyPerBrowserReporter.prototype.display = function(prefix, result) {
-  this._reportCount++;
-
-  if (!result.passed) {
-    TapReporter.prototype.display.apply(this, arguments);
-  }
-
-  if (this._reportCount > 100) {
-    this.out.write('pass count: ' + this.pass + '\n');
-    this._reportCount = 0;
-  }
-};
 
 FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
   if (!this._resultsByBrowser[prefix]) {
@@ -38,11 +24,11 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
     this._resultsByBrowser[prefix].pass++;
   }
 
-  TapReporter.prototype.report.apply(this, arguments);
+  FailureOnlyReporter.prototype.report.apply(this, arguments);
 };
 
 FailureOnlyPerBrowserReporter.prototype.summaryDisplay = function() {
-  var originalSummary = TapReporter.prototype.summaryDisplay.apply(this, arguments);
+  var originalSummary = FailureOnlyReporter.prototype.summaryDisplay.apply(this, arguments);
   var lines = [];
   var resultsByBrowser = this._resultsByBrowser;
   Object.keys(resultsByBrowser).forEach(function(browser) {
