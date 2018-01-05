@@ -23,7 +23,7 @@ import EmberObject from '../../../system/object';
 let MyApp;
 
 QUnit.module('System:run_loop() - chained binding', {
-  setup() {
+  beforeEach() {
     MyApp = {};
     MyApp.first = EmberObject.extend(Observable).create({
       output: 'MyApp.first'
@@ -46,7 +46,7 @@ QUnit.module('System:run_loop() - chained binding', {
 
 let deprecationMessage = /`Ember.Binding` is deprecated/;
 
-QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.RunLoop)', function() {
+QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.RunLoop)', function(assert) {
   run(() => {
     //Binding of output of MyApp.first object to input of MyApp.second object
     expectDeprecation(() => {
@@ -68,20 +68,20 @@ QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.R
     MyApp.first.set('output', 'change');
 
     //Changes the output of the MyApp.first object
-    equal(MyApp.first.get('output'), 'change');
+    assert.equal(MyApp.first.get('output'), 'change');
 
     //since binding has not taken into effect the value still remains as change.
-    equal(MyApp.second.get('output'), 'MyApp.first');
+    assert.equal(MyApp.second.get('output'), 'MyApp.first');
   }); // allows bindings to trigger...
 
   //Value of the output variable changed to 'change'
-  equal(MyApp.first.get('output'), 'change');
+  assert.equal(MyApp.first.get('output'), 'change');
 
   //Since binding triggered after the end loop the value changed to 'change'.
-  equal(MyApp.second.get('output'), 'change');
+  assert.equal(MyApp.second.get('output'), 'change');
 });
 
-QUnit.test('Should propagate bindings after the RunLoop completes', function() {
+QUnit.test('Should propagate bindings after the RunLoop completes', function(assert) {
   run(() => {
     //Binding of output of MyApp.first object to input of MyApp.second object
     expectDeprecation(() => {
@@ -102,15 +102,15 @@ QUnit.test('Should propagate bindings after the RunLoop completes', function() {
     MyApp.first.set('output', 'change');
 
     //Changes the output of the MyApp.first object
-    equal(MyApp.first.get('output'), 'change');
+    assert.equal(MyApp.first.get('output'), 'change');
 
     //since binding has not taken into effect the value still remains as change.
-    equal(MyApp.second.get('output'), 'MyApp.first');
+    assert.equal(MyApp.second.get('output'), 'MyApp.first');
   });
 
   //Value of the output variable changed to 'change'
-  equal(MyApp.first.get('output'), 'change');
+  assert.equal(MyApp.first.get('output'), 'change');
 
   //Since binding triggered after the end loop the value changed to 'change'.
-  equal(MyApp.second.get('output'), 'change');
+  assert.equal(MyApp.second.get('output'), 'change');
 });

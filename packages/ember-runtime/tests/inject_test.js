@@ -20,9 +20,9 @@ QUnit.test('calling `inject` directly should error', function() {
 if (!EmberDev.runningProdBuild) {
   // this check is done via an assertion which is stripped from
   // production builds
-  QUnit.test('injection type validation is run when first looked up', function() {
+  QUnit.test('injection type validation is run when first looked up', function(assert) {
     createInjectionHelper('foo', function() {
-      ok(true, 'should call validation method');
+      assert.ok(true, 'should call validation method');
     });
 
     let owner = buildOwner();
@@ -36,11 +36,11 @@ if (!EmberDev.runningProdBuild) {
     owner.register('foo:bar', EmberObject.extend());
     owner.register('foo:baz', EmberObject.extend());
 
-    expect(1);
+    assert.expect(1);
     owner.lookup('foo:main');
   });
 
-  QUnit.test('attempting to inject a nonexistent container key should error', function() {
+  QUnit.test('attempting to inject a nonexistent container key should error', function(assert) {
     let owner = buildOwner();
     let AnObject = EmberObject.extend({
       foo: new InjectedProperty('bar', 'baz')
@@ -48,19 +48,19 @@ if (!EmberDev.runningProdBuild) {
 
     owner.register('foo:main', AnObject);
 
-    throws(() => {
+    assert.throws(() => {
       owner.lookup('foo:main');
     }, /Attempting to inject an unknown injection: 'bar:baz'/);
   });
 }
 
 if (DEBUG) {
-  QUnit.test('factories should return a list of lazy injection full names', function() {
+  QUnit.test('factories should return a list of lazy injection full names', function(assert) {
     let AnObject = EmberObject.extend({
       foo: new InjectedProperty('foo', 'bar'),
       bar: new InjectedProperty('quux')
     });
 
-    deepEqual(AnObject._lazyInjections(), { 'foo': 'foo:bar', 'bar': 'quux:bar' }, 'should return injected container keys');
+    assert.deepEqual(AnObject._lazyInjections(), { 'foo': 'foo:bar', 'bar': 'quux:bar' }, 'should return injected container keys');
   });
 }

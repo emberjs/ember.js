@@ -7,18 +7,18 @@ import {
 
 QUnit.module('Ember.Mixin#reopen');
 
-QUnit.test('using reopen() to add more properties to a simple', function() {
+QUnit.test('using reopen() to add more properties to a simple', function(assert) {
   let MixinA = Mixin.create({ foo: 'FOO', baz: 'BAZ' });
   MixinA.reopen({ bar: 'BAR', foo: 'FOO2' });
   let obj = {};
   MixinA.apply(obj);
 
-  equal(get(obj, 'foo'), 'FOO2', 'mixin() should override');
-  equal(get(obj, 'baz'), 'BAZ', 'preserve MixinA props');
-  equal(get(obj, 'bar'), 'BAR', 'include MixinB props');
+  assert.equal(get(obj, 'foo'), 'FOO2', 'mixin() should override');
+  assert.equal(get(obj, 'baz'), 'BAZ', 'preserve MixinA props');
+  assert.equal(get(obj, 'bar'), 'BAR', 'include MixinB props');
 });
 
-QUnit.test('using reopen() and calling _super where there is not a super function does not cause infinite recursion', function() {
+QUnit.test('using reopen() and calling _super where there is not a super function does not cause infinite recursion', function(assert) {
   let Taco = EmberObject.extend({
     createBreakfast() {
       // There is no original createBreakfast function.
@@ -46,6 +46,6 @@ QUnit.test('using reopen() and calling _super where there is not a super functio
     }
   });
 
-  equal(result, 'Breakfast!');
+  assert.equal(result, 'Breakfast!');
 });
 

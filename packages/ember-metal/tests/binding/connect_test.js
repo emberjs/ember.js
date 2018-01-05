@@ -13,32 +13,34 @@ function performTest(binding, a, b, get, set, connect) {
     connect = () => binding.connect(a);
   }
 
-  ok(!run.currentRunLoop, 'performTest should not have a currentRunLoop');
+  let { assert } = QUnit.config.current;
 
-  equal(get(a, 'foo'), 'FOO', 'a should not have changed');
-  equal(get(b, 'bar'), 'BAR', 'b should not have changed');
+  assert.ok(!run.currentRunLoop, 'performTest should not have a currentRunLoop');
+
+  assert.equal(get(a, 'foo'), 'FOO', 'a should not have changed');
+  assert.equal(get(b, 'bar'), 'BAR', 'b should not have changed');
 
   connect();
 
-  equal(get(a, 'foo'), 'BAR', 'a should have changed');
-  equal(get(b, 'bar'), 'BAR', 'b should have changed');
+  assert.equal(get(a, 'foo'), 'BAR', 'a should have changed');
+  assert.equal(get(b, 'bar'), 'BAR', 'b should have changed');
   //
   // make sure changes sync both ways
   run(() => set(b, 'bar', 'BAZZ'));
-  equal(get(a, 'foo'), 'BAZZ', 'a should have changed');
+  assert.equal(get(a, 'foo'), 'BAZZ', 'a should have changed');
 
   run(() => set(a, 'foo', 'BARF'));
-  equal(get(b, 'bar'), 'BARF', 'a should have changed');
+  assert.equal(get(b, 'bar'), 'BARF', 'a should have changed');
 }
 
 let originalLookup, lookup, GlobalB;
 
 QUnit.module('Ember.Binding', {
-  setup() {
+  beforeEach() {
     originalLookup = context.lookup;
     context.lookup = lookup = {};
   },
-  teardown() {
+  afterEach() {
     lookup = null;
     context.lookup = originalLookup;
   }
@@ -76,7 +78,7 @@ testBoth('Connecting a binding between two objects', function(get, set) {
   }, /`Ember\.Binding` is deprecated./);
 });
 
-testBoth('Connecting a binding to path', function(get, set) {
+testBoth('Connecting a binding to path', function(get, set, assert) {
   let a = { foo: 'FOO' };
   lookup['GlobalB'] = GlobalB = {
     b: { bar: 'BAR' }
@@ -96,7 +98,7 @@ testBoth('Connecting a binding to path', function(get, set) {
 
   run(() => set(GlobalB, 'b', b));
 
-  equal(get(a, 'foo'), 'BIFF', 'a should have changed');
+  assert.equal(get(a, 'foo'), 'BIFF', 'a should have changed');
 });
 
 testBoth('Calling connect more than once', function(get, set) {
@@ -114,7 +116,7 @@ testBoth('Calling connect more than once', function(get, set) {
   }, /`Ember\.Binding` is deprecated./);
 });
 
-QUnit.test('inherited bindings should sync on create', function() {
+QUnit.test('inherited bindings should sync on create', function(assert) {
   let a;
   run(() => {
     function A() {
@@ -126,5 +128,5 @@ QUnit.test('inherited bindings should sync on create', function() {
     set(a, 'bar', { baz: 'BAZ' });
   });
 
-  equal(get(a, 'foo'), 'BAZ', 'should have synced binding on new obj');
+  assert.equal(get(a, 'foo'), 'BAZ', 'should have synced binding on new obj');
 });

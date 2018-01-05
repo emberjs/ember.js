@@ -15,7 +15,7 @@ import { A as emberA } from '../../../../system/native_array';
 
 QUnit.module('Ember.Observable - Observing with @each');
 
-QUnit.test('chained observers on enumerable properties are triggered when the observed property of any item changes', function() {
+QUnit.test('chained observers on enumerable properties are triggered when the observed property of any item changes', function(assert) {
   let family = EmberObject.create({ momma: null });
   let momma = EmberObject.create({ children: [] });
 
@@ -34,20 +34,20 @@ QUnit.test('chained observers on enumerable properties are triggered when the ob
 
   observerFiredCount = 0;
   run(() => get(momma, 'children').setEach('name', 'Juan'));
-  equal(observerFiredCount, 3, 'observer fired after changing child names');
+  assert.equal(observerFiredCount, 3, 'observer fired after changing child names');
 
   observerFiredCount = 0;
   run(() => get(momma, 'children').pushObject(child4));
-  equal(observerFiredCount, 1, 'observer fired after adding a new item');
+  assert.equal(observerFiredCount, 1, 'observer fired after adding a new item');
 
   observerFiredCount = 0;
   run(() => set(child4, 'name', 'Herbert'));
-  equal(observerFiredCount, 1, 'observer fired after changing property on new object');
+  assert.equal(observerFiredCount, 1, 'observer fired after changing property on new object');
 
   set(momma, 'children', []);
 
   observerFiredCount = 0;
   run(() => set(child1, 'name', 'Hanna'));
-  equal(observerFiredCount, 0, 'observer did not fire after removing changing property on a removed object');
+  assert.equal(observerFiredCount, 0, 'observer did not fire after removing changing property on a removed object');
 });
 
