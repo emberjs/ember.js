@@ -644,7 +644,7 @@ moduleFor('ember-testing: Helper methods', class extends HelpersApplicationTestC
     assert.expect(1);
 
     return this.application.testHelpers.wait().then(() => {
-      ok(true, 'should not error without `visit`');
+      assert.ok(true, 'should not error without `visit`');
     });
   }
 
