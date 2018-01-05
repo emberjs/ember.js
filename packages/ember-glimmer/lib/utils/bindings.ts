@@ -173,8 +173,7 @@ export const ClassNameBinding = {
     let isStatic = prop === '';
 
     if (isStatic) {
-      operations.setAttribute('class', truthy, true, null);
-      // operations.addStaticAttribute(element, 'class', truthy);
+      operations.setAttribute('class', PrimitiveReference.create(truthy), true, null);
     } else {
       let isPath = prop.indexOf('.') > -1;
       let parts = isPath ? prop.split('.') : [];
