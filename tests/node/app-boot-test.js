@@ -1,5 +1,4 @@
 /*jshint multistr:true*/
-var QUnit = require('qunitjs');
 var appModule = require('./helpers/app-module');
 var assertHTMLMatches = require('./helpers/assert-html-matches');
 

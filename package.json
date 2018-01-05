@@ -38,7 +38,7 @@
     "lint": "tslint -p tsconfig.json && eslint node-tests",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
-    "test:node": "node bin/run-node-tests.js",
+    "test:node": "qunit tests/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:testem": "testem -f testem.dist.js"
   },
@@ -102,6 +102,7 @@
     "ember-publisher": "0.0.7",
     "eslint": "^3.0.0",
     "eslint-plugin-ember-internal": "^1.1.0",
+    "execa": "^0.8.0",
     "express": "^4.15.2",
     "finalhandler": "^1.0.2",
     "git-repo-info": "^1.4.1",

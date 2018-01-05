@@ -1,4 +1,3 @@
-var QUnit = require('qunitjs');
 var diffOptions = {
   ignoreAttributes: ['id'],
   ignoreWhitespaces: true

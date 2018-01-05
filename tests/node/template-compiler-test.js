@@ -1,5 +1,4 @@
 var path = require('path');
-var QUnit = require('qunitjs');
 
 var distPath = path.join(__dirname, '../../dist');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
