@@ -22,7 +22,19 @@ export default function moduleFor(description, TestClass, ...mixins) {
         promises.push(context.afterEach());
       }
 
-      return all(promises);
+      // this seems odd, but actually saves significant time
+      // in the test suite
+      //
+      // returning a promise from a QUnit test always adds a 13ms
+      // delay to the test, this filtering prevents returning a
+      // promise when it is not needed
+      //
+      // Remove after we can update to QUnit that includes
+      // https://github.com/qunitjs/qunit/pull/1246
+      let filteredPromises = promises.filter(Boolean);
+      if (filteredPromises.length > 0) {
+        return all(filteredPromises);
+      }
     }
   });
 
