@@ -2612,7 +2612,7 @@ QUnit.test('rejecting the model hooks promise with a string shows a good error',
     }
   });
 
-  assert.throws(() => bootApplication(), rejectedMessage, 'expected an exception');
+  assert.throws(() => bootApplication(), new RegExp(rejectedMessage), 'expected an exception');
 
   Logger.error = originalLoggerError;
 });

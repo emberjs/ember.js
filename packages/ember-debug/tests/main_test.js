@@ -27,6 +27,7 @@ import {
 
 let originalEnvValue;
 let originalDeprecateHandler;
+let originalWarnHandler;
 let originalWarnOptions;
 let originalDeprecationOptions;
 
@@ -37,6 +38,7 @@ moduleFor('ember-debug', class extends TestCase {
 
     originalEnvValue = ENV.RAISE_ON_DEPRECATION;
     originalDeprecateHandler = HANDLERS.deprecate;
+    originalWarnHandler = HANDLERS.warn;
     originalWarnOptions = ENV._ENABLE_WARN_OPTIONS_SUPPORT;
     originalDeprecationOptions = ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT;
 
@@ -46,11 +48,13 @@ moduleFor('ember-debug', class extends TestCase {
 
   teardown() {
     HANDLERS.deprecate = originalDeprecateHandler;
+    HANDLERS.warn = originalWarnHandler;
 
     ENV.RAISE_ON_DEPRECATION = originalEnvValue;
     ENV._ENABLE_WARN_OPTIONS_SUPPORT = originalWarnOptions;
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = originalDeprecationOptions;
   }
+
   ['@test Ember.deprecate does not throw if RAISE_ON_DEPRECATION is false'](assert) {
     assert.expect(1);
 
