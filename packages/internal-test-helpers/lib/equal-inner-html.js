@@ -23,7 +23,12 @@ function normalizeInnerHTML(actualHTML) {
   return actualHTML;
 }
 
-export default function equalInnerHTML(fragment, html) {
+export default function equalInnerHTML(assert, fragment, html) {
   let actualHTML = normalizeInnerHTML(fragment.innerHTML);
-  QUnit.push(actualHTML === html, actualHTML, html);
+
+  assert.pushResult({
+    result: actualHTML === html,
+    actual: actualHTML,
+    expected: html
+  });
 }
