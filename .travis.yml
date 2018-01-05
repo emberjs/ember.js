@@ -44,6 +44,8 @@ branches:
 
 env:
   global:
+    - BROWSERSTACK_USERNAME=emberjscoreteam1
+    - BROWSERSTACK_ACCESS_KEY=YsPxXKcahx9XszyHS2Gr
     - DISABLE_SOURCE_MAPS=true
     - BROCCOLI_ENV=production
     - S3_BUCKET_NAME=builds.emberjs.com
