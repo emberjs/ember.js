@@ -146,12 +146,8 @@ const reason = 'i failed';
 QUnit.module('Ember.test: rejection assertions');
 
 function ajax() {
-  return RSVP.Promise(function(resolve) {
-    QUnit.stop();
-    setTimeout(function() {
-      QUnit.start();
-      resolve();
-    }, 0); // fake true / foreign async
+  return new RSVP.Promise(function(resolve) {
+    setTimeout(resolve, 0); // fake true / foreign async
   });
 }
 
@@ -188,16 +184,16 @@ QUnit.test('handled within the same micro-task (via direct run-loop)', function(
 
 QUnit.test('handled in the next microTask queue flush (run.next)', function(assert) {
   assert.expect(2);
+  let done = assert.async();
 
   assert.throws(function() {
     run(function() {
       let rejection = RSVP.Promise.reject(reason);
 
-      QUnit.stop();
       run.next(() => {
-        QUnit.start();
         rejection.catch(function() { });
         assert.ok(true, 'reached end of test');
+        done();
       });
     });
   }, reason);
@@ -223,6 +219,7 @@ QUnit.test('handled in the same microTask Queue flush do to data locality', func
 });
 
 QUnit.test('handled in a different microTask Queue flush do to data locality', function(assert) {
+  let done = assert.async();
   // an ambiguous scenario, this may or may not assert
   // it depends on the locality of `user#1`
   let store = {
@@ -236,18 +233,22 @@ QUnit.test('handled in a different microTask Queue flush do to data locality', f
       store.find('user', 1).then(() => {
         rejection.catch(function() { });
         assert.ok(true, 'reached end of test');
+        done();
       });
     });
   }, reason);
 });
 
 QUnit.test('handled in the next microTask queue flush (ajax example)', function(assert) {
+  let done = assert.async();
+
   assert.throws(function() {
     run(function() {
       let rejection = RSVP.Promise.reject(reason);
-      ajax('/something/').then(() => {
+      ajax().then(() => {
         rejection.catch(function() {});
         assert.ok(true, 'reached end of test');
+        done();
       });
     });
   }, reason);

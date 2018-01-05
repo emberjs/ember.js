@@ -33,11 +33,17 @@ export default function equalTokens(actualContainer, expectedHTML, message = nul
   normalizeTokens(actual.tokens);
   normalizeTokens(expected.tokens);
 
+  let { assert } = QUnit.config.current;
   let equiv = QUnit.equiv(actual.tokens, expected.tokens);
 
   if (equiv && expected.html !== actual.html) {
-    deepEqual(actual.tokens, expected.tokens, message);
+    assert.deepEqual(actual.tokens, expected.tokens, message);
   } else {
-    QUnit.push(QUnit.equiv(actual.tokens, expected.tokens), actual.html, expected.html, message);
+    assert.pushResult({
+      result: QUnit.equiv(actual.tokens, expected.tokens),
+      actual: actual.html,
+      expected: expected.html,
+      message
+    });
   }
 }

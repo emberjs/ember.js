@@ -2,12 +2,12 @@ import { RSVP } from 'ember-runtime';
 import { Route } from 'ember-routing';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-  let counter;
+let counter;
 
-  function step(expectedValue, description) {
-    equal(counter, expectedValue, 'Step ' + expectedValue + ': ' + description);
-    counter++;
-  }
+function step(assert, expectedValue, description) {
+  assert.equal(counter, expectedValue, 'Step ' + expectedValue + ': ' + description);
+  counter++;
+}
 
 moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
   constructor() {
@@ -35,13 +35,13 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
 
     this.add('route:application', Route.extend({
       setupController() {
-        step(2, 'ApplicationRoute#setupController');
+        step(assert, 2, 'ApplicationRoute#setupController');
       }
     }));
 
     this.add('route:turtle', Route.extend({
       model() {
-        step(1, 'TurtleRoute#model');
+        step(assert, 1, 'TurtleRoute#model');
         return turtleDeferred.promise;
       }
     }));
@@ -78,7 +78,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     }));
     this.add('route:loading', Route.extend({
       setupController() {
-        ok(false, `shouldn't get here`);
+        assert.ok(false, `shouldn't get here`);
       }
     }));
 
@@ -134,13 +134,13 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
 
     this.add('route:dummy', Route.extend({
       model() {
-        step(1, 'DummyRoute#model');
+        step(assert, 1, 'DummyRoute#model');
         return deferred.promise;
       }
     }));
     this.add('route:loading', Route.extend({
       setupController() {
-        step(2, 'LoadingRoute#setupController');
+        step(assert, 2, 'LoadingRoute#setupController');
       }
     }));
     this.addTemplate('dummy', 'DUMMY');
@@ -603,14 +603,14 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(1, 'MomSallyRoute#model');
+        step(assert, 1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
         });
       },
       actions: {
         error() {
-          step(2, 'MomSallyRoute#actions.error');
+          step(assert, 2, 'MomSallyRoute#actions.error');
           return true;
         }
       }
@@ -618,7 +618,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
 
     return this.visit('/grandma/mom/sally').then(() => {
-      step(3, 'App finished loading');
+      step(assert, 3, 'App finished loading');
 
       let text = this.$('#app').text();
 
@@ -652,14 +652,14 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(1, 'MomSallyRoute#model');
+        step(assert, 1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
         });
       },
       actions: {
         error(err) {
-          step(2, 'MomSallyRoute#actions.error');
+          step(assert, 2, 'MomSallyRoute#actions.error');
           handledError = err;
           this.transitionTo('mom.this-route-throws');
 
@@ -670,7 +670,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.this-route-throws', Route.extend({
       model() {
-        step(3, 'MomThisRouteThrows#model');
+        step(assert, 3, 'MomThisRouteThrows#model');
         throw handledError;
       }
     }));
@@ -683,14 +683,14 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
   ['@test errors that are bubbled are thrown at a higher level if not handled'](assert) {
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(1, 'MomSallyRoute#model');
+        step(assert, 1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
         });
       },
       actions: {
         error() {
-          step(2, 'MomSallyRoute#actions.error');
+          step(assert, 2, 'MomSallyRoute#actions.error');
           return true;
         }
       }
@@ -706,14 +706,14 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(1, 'MomSallyRoute#model');
+        step(assert, 1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
         });
       },
       actions: {
         error(err) {
-          step(2, 'MomSallyRoute#actions.error');
+          step(assert, 2, 'MomSallyRoute#actions.error');
           handledError = err;
           this.transitionTo('mom.this-route-throws');
 
@@ -724,7 +724,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.this-route-throws', Route.extend({
       model() {
-        step(3, 'MomThisRouteThrows#model');
+        step(assert, 3, 'MomThisRouteThrows#model');
         return RSVP.reject(handledError);
       }
     }));
@@ -740,21 +740,21 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(1, 'MomSallyRoute#model');
+        step(assert, 1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
         });
       },
       actions: {
         error() {
-          step(2, 'MomSallyRoute#actions.error');
+          step(assert, 2, 'MomSallyRoute#actions.error');
           return true;
         }
       }
     }));
 
     return this.visit('/grandma/mom/sally').then(() => {
-      step(3, 'Application finished booting');
+      step(assert, 3, 'Application finished booting');
 
       assert.equal(
         this.$('#app').text(),
@@ -779,25 +779,25 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:grandma', Route.extend({
       model() {
-        step(1, 'GrandmaRoute#model');
+        step(assert, 1, 'GrandmaRoute#model');
         return grandmaDeferred.promise;
       }
     }));
 
     this.add('route:mom', Route.extend({
       model() {
-        step(2, 'MomRoute#model');
+        step(assert, 2, 'MomRoute#model');
         return {};
       }
     }));
 
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(3, 'SallyRoute#model');
+        step(assert, 3, 'SallyRoute#model');
         return sallyDeferred.promise;
       },
       setupController() {
-        step(4, 'SallyRoute#setupController');
+        step(assert, 4, 'SallyRoute#setupController');
       }
     }));
 
@@ -837,7 +837,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.sally', Route.extend({
       setupController() {
-        step(1, 'SallyRoute#setupController');
+        step(assert, 1, 'SallyRoute#setupController');
       }
     }));
 
@@ -876,14 +876,14 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
   [`@test Error events that aren't bubbled don't throw application assertions`](assert) {
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(1, 'MomSallyRoute#model');
+        step(assert, 1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
         });
       },
       actions: {
         error(err) {
-          step(2, 'MomSallyRoute#actions.error');
+          step(assert, 2, 'MomSallyRoute#actions.error');
           assert.equal(err.msg, 'did it broke?', `it didn't break`);
           return false;
         }
@@ -899,7 +899,7 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
     this.add('route:mom', Route.extend({
       actions: {
         error(err) {
-          step(3, 'MomRoute#actions.error');
+          step(assert, 3, 'MomRoute#actions.error');
           assert.equal(
             err,
             handledError,
@@ -911,14 +911,14 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
 
     this.add('route:mom.sally', Route.extend({
       model() {
-        step(1, 'MomSallyRoute#model');
+        step(assert, 1, 'MomSallyRoute#model');
         return RSVP.reject({
           msg: 'did it broke?'
         });
       },
       actions: {
         error(err) {
-          step(2, 'MomSallyRoute#actions.error');
+          step(assert, 2, 'MomSallyRoute#actions.error');
           handledError = err;
 
           return true;

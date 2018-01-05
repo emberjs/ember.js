@@ -43,41 +43,41 @@ moduleFor('Ember.Engine', class extends TestCase {
     assert.strictEqual(engine.resolveRegistration('application:main'), engine, `application:main is registered`);
     assert.deepEqual(engine.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
     assert.deepEqual(engine.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
-    verifyRegistration(engine, 'controller:basic');
-    verifyInjection(engine, 'view', '_viewRegistry', '-view-registry:main');
-    verifyInjection(engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
-    verifyInjection(engine, 'view:-outlet', 'namespace', 'application:main');
+    verifyRegistration(assert, engine, 'controller:basic');
+    verifyInjection(assert, engine, 'view', '_viewRegistry', '-view-registry:main');
+    verifyInjection(assert, engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
+    verifyInjection(assert, engine, 'view:-outlet', 'namespace', 'application:main');
 
-    verifyInjection(engine, 'controller', 'target', 'router:main');
-    verifyInjection(engine, 'controller', 'namespace', 'application:main');
+    verifyInjection(assert, engine, 'controller', 'target', 'router:main');
+    verifyInjection(assert, engine, 'controller', 'namespace', 'application:main');
 
-    verifyInjection(engine, 'router', '_bucketCache', P`-bucket-cache:main`);
-    verifyInjection(engine, 'route', '_bucketCache', P`-bucket-cache:main`);
+    verifyInjection(assert, engine, 'router', '_bucketCache', P`-bucket-cache:main`);
+    verifyInjection(assert, engine, 'route', '_bucketCache', P`-bucket-cache:main`);
 
-    verifyInjection(engine, 'route', 'router', 'router:main');
+    verifyInjection(assert, engine, 'route', 'router', 'router:main');
 
-    verifyRegistration(engine, 'component:-text-field');
-    verifyRegistration(engine, 'component:-text-area');
-    verifyRegistration(engine, 'component:-checkbox');
-    verifyRegistration(engine, 'component:link-to');
+    verifyRegistration(assert, engine, 'component:-text-field');
+    verifyRegistration(assert, engine, 'component:-text-area');
+    verifyRegistration(assert, engine, 'component:-checkbox');
+    verifyRegistration(assert, engine, 'component:link-to');
 
-    verifyRegistration(engine, 'service:-routing');
-    verifyInjection(engine, 'service:-routing', 'router', 'router:main');
+    verifyRegistration(assert, engine, 'service:-routing');
+    verifyInjection(assert, engine, 'service:-routing', 'router', 'router:main');
 
     // DEBUGGING
-    verifyRegistration(engine, 'resolver-for-debugging:main');
-    verifyInjection(engine, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-    verifyInjection(engine, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
-    verifyRegistration(engine, 'container-debug-adapter:main');
-    verifyRegistration(engine, 'component-lookup:main');
+    verifyRegistration(assert, engine, 'resolver-for-debugging:main');
+    verifyInjection(assert, engine, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+    verifyInjection(assert, engine, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+    verifyRegistration(assert, engine, 'container-debug-adapter:main');
+    verifyRegistration(assert, engine, 'component-lookup:main');
 
-    verifyInjection(engine, 'service:-dom-changes', 'document', 'service:-document');
-    verifyInjection(engine, 'service:-dom-tree-construction', 'document', 'service:-document');
-    verifyRegistration(engine, 'view:-outlet');
-    verifyRegistration(engine, P`template:components/-default`);
-    verifyRegistration(engine, 'template:-outlet');
-    verifyInjection(engine, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(engine, 'template', 'env', 'service:-glimmer-environment');
+    verifyInjection(assert, engine, 'service:-dom-changes', 'document', 'service:-document');
+    verifyInjection(assert, engine, 'service:-dom-tree-construction', 'document', 'service:-document');
+    verifyRegistration(assert, engine, 'view:-outlet');
+    verifyRegistration(assert, engine, P`template:components/-default`);
+    verifyRegistration(assert, engine, 'template:-outlet');
+    verifyInjection(assert, engine, 'view:-outlet', 'template', 'template:-outlet');
+    verifyInjection(assert, engine, 'template', 'env', 'service:-glimmer-environment');
     assert.deepEqual(engine.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
   }
 });

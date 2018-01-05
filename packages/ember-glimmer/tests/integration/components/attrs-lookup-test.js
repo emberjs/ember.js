@@ -144,9 +144,9 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
         let attrFirst = this.getAttr('first');
         let attrSecond = this.getAttr('second');
 
-        equal(rootFirstPositional, attrFirstPositional, 'root property matches attrs value');
-        equal(rootFirst, attrFirst, 'root property matches attrs value');
-        equal(rootSecond, attrSecond, 'root property matches attrs value');
+        assert.equal(rootFirstPositional, attrFirstPositional, 'root property matches attrs value');
+        assert.equal(rootFirst, attrFirst, 'root property matches attrs value');
+        assert.equal(rootSecond, attrSecond, 'root property matches attrs value');
       }
     });
 

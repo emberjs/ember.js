@@ -1,5 +1,3 @@
-/* globals QUnit */
-
 import { checkTest } from './utils';
 
 var MethodCallTracker = function(env, methodName) {
@@ -54,6 +52,7 @@ MethodCallTracker.prototype = {
   },
 
   assert() {
+    let { assert } = QUnit.config.current;
     let env = this._env;
     let methodName = this._methodName;
     let isExpectingNoCalls = this._isExpectingNoCalls;
@@ -66,7 +65,7 @@ MethodCallTracker.prototype = {
     }
 
     if (env.runningProdBuild) {
-      QUnit.ok(true, `calls to Ember.${methodName} disabled in production builds.`);
+      assert.ok(true, `calls to Ember.${methodName} disabled in production builds.`);
       return;
     }
 
@@ -77,7 +76,7 @@ MethodCallTracker.prototype = {
           actualMessages.push(actuals[i][0]);
         }
       }
-      QUnit.ok(actualMessages.length === 0, `Expected no Ember.${methodName} calls, got ${actuals.length}: ${actualMessages.join(', ')}`);
+      assert.ok(actualMessages.length === 0, `Expected no Ember.${methodName} calls, got ${actuals.length}: ${actualMessages.join(', ')}`);
       return;
     }
 
@@ -103,15 +102,15 @@ MethodCallTracker.prototype = {
       }
 
       if (!actual) {
-        QUnit.ok(false, `Received no Ember.${methodName} calls at all, expecting: ${expected}`);
+        assert.ok(false, `Received no Ember.${methodName} calls at all, expecting: ${expected}`);
       } else if (match && !match[1]) {
-        QUnit.ok(true, `Received failing Ember.${methodName} call with message: ${match[0]}`);
+        assert.ok(true, `Received failing Ember.${methodName} call with message: ${match[0]}`);
       } else if (match && match[1]) {
-        QUnit.ok(false, `Expected failing Ember.${methodName} call, got succeeding with message: ${match[0]}`);
+        assert.ok(false, `Expected failing Ember.${methodName} call, got succeeding with message: ${match[0]}`);
       } else if (actual[1]) {
-        QUnit.ok(false, `Did not receive failing Ember.${methodName} call matching '${expected}', last was success with '${actual[0]}'`);
+        assert.ok(false, `Did not receive failing Ember.${methodName} call matching '${expected}', last was success with '${actual[0]}'`);
       } else if (!actual[1]) {
-        QUnit.ok(false, `Did not receive failing Ember.${methodName} call matching '${expected}', last was failure with '${actual[0]}'`);
+        assert.ok(false, `Did not receive failing Ember.${methodName} call matching '${expected}', last was failure with '${actual[0]}'`);
       }
     }
   }

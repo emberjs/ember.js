@@ -529,7 +529,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('Who overcomes by force hath overcome but half his foe');
   }
 
-  ['@test class-based helper used in subexpression is destroyed']() {
+  ['@test class-based helper used in subexpression is destroyed'](assert) {
     let destroyCount = 0;
 
     this.registerHelper('dynamic-segment', {
@@ -561,7 +561,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     runDestroy(this.component);
 
-    equal(destroyCount, 1, 'destroy is called after a view is destroyed');
+    assert.equal(destroyCount, 1, 'destroy is called after a view is destroyed');
   }
 
   ['@test simple helper can be invoked manually via `owner.factoryFor(...).create().compute()'](assert) {

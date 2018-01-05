@@ -130,7 +130,7 @@ moduleFor('Ember Router', class extends AbstractTestCase {
     assert.equal(routePath('foo', 'foo.bar', 'foo.bar.baz'), 'foo.bar.baz');
     assert.equal(routePath('foo', 'foo.bar', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
     assert.equal(routePath('foo', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
-    equal(routePath('foo.bar', 'bar.baz.wow'), 'foo.bar.baz.wow');
+    assert.equal(routePath('foo.bar', 'bar.baz.wow'), 'foo.bar.baz.wow');
 
     // This makes no sense, not trying to handle it, just
     // making sure it doesn't go boom.

@@ -1,5 +1,3 @@
-/* globals QUnit */
-
 export default function setupQUnit(assertion, _qunitGlobal) {
   var qunitGlobal = QUnit;
 
