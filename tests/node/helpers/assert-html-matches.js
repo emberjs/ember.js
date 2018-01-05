@@ -11,10 +11,15 @@ var htmlDiffer = new HtmlDiffer(diffOptions);
  * ignore whitespace and certain attributes values, such as IDs, which Ember
  * auto-generates. Attribute ordering is also ignored.
  */
-function assertHTMLMatches(actual, expected, message) {
+function assertHTMLMatches(assert, actual, expected, message) {
   var isEqual = htmlDiffer.isEqual(actual, expected);
 
-  QUnit.push(isEqual, actual, expected, message);
+  assert.pushResult({
+    result: isEqual,
+    actual,
+    expected,
+    message
+  });
 }
 
 module.exports = assertHTMLMatches;

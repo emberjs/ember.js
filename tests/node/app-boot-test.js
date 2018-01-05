@@ -9,7 +9,7 @@ QUnit.test("App boots and routes to a URL", function(assert) {
   assert.ok(this.app);
 });
 
-QUnit.test("nested {{component}}", function() {
+QUnit.test("nested {{component}}", function(assert) {
   this.template('index', "{{root-component}}");
 
   this.template('components/root-component', "\
@@ -27,22 +27,22 @@ QUnit.test("nested {{component}}", function() {
 ");
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><div id="EMBER_ID" class="ember-view"><h1>Hello World</h1><div><div id="EMBER_ID" class="ember-view"><p>The files are *inside* the computer?!</p></div></div></div></div></body>');
+    assertHTMLMatches(assert, html, '<body><div id="EMBER_ID" class="ember-view"><div id="EMBER_ID" class="ember-view"><h1>Hello World</h1><div><div id="EMBER_ID" class="ember-view"><p>The files are *inside* the computer?!</p></div></div></div></div></body>');
   });
 });
 
-QUnit.test("{{link-to}}", function() {
+QUnit.test("{{link-to}}", function(assert) {
   this.template('application', "<h1>{{#link-to 'photos'}}Go to photos{{/link-to}}</h1>");
   this.routes(function() {
     this.route('photos');
   });
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a><\/h1></div></body>');
+    assertHTMLMatches(assert, html, '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a><\/h1></div></body>');
   });
 });
 
-QUnit.test("non-escaped content", function() {
+QUnit.test("non-escaped content", function(assert) {
   this.routes(function() {
     this.route('photos');
   });
@@ -53,11 +53,11 @@ QUnit.test("non-escaped content", function() {
   });
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><h1><b>Hello world</b></h1></div></body>');
+    assertHTMLMatches(assert, html, '<body><div id="EMBER_ID" class="ember-view"><h1><b>Hello world</b></h1></div></body>');
   });
 });
 
-QUnit.test("outlets", function() {
+QUnit.test("outlets", function(assert) {
   this.routes(function() {
     this.route('photos');
   });
@@ -68,11 +68,11 @@ QUnit.test("outlets", function() {
 
   var promises = [];
   promises.push(this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><p><span>index</span></p></div></body>');
+    assertHTMLMatches(assert, html, '<body><div id="EMBER_ID" class="ember-view"><p><span>index</span></p></div></body>');
   }));
 
   promises.push(this.renderToHTML('/photos').then(function(html) {
-    assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><p><em>photos</em></p></div></body>');
+    assertHTMLMatches(assert, html, '<body><div id="EMBER_ID" class="ember-view"><p><em>photos</em></p></div></body>');
   }));
 
   return this.all(promises);
@@ -111,6 +111,6 @@ QUnit.test("Should not attempt to render element modifiers GH#14220", function(a
 
   return this.renderToHTML('/')
     .then(function(html) {
-      assertHTMLMatches(html, '<body><div id="EMBER_ID" class="ember-view"><div></div></div></body>');
+      assertHTMLMatches(assert, html, '<body><div id="EMBER_ID" class="ember-view"><div></div></div></body>');
     });
 });

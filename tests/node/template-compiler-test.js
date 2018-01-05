@@ -9,11 +9,11 @@ var test = QUnit.test;
 var templateCompiler;
 
 module('ember-template-compiler.js', {
-  setup: function() {
+  beforeEach: function() {
     templateCompiler = require(templateCompilerPath);
   },
 
-  teardown: function() {
+  afterEach: function() {
     // clear the previously cached version of this module
     delete require.cache[templateCompilerPath + '.js'];
   }
