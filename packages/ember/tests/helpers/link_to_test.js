@@ -1,7 +1,6 @@
 import {
   moduleFor,
-  ApplicationTestCase,
-  AutobootApplicationTestCase
+  ApplicationTestCase
 } from 'internal-test-helpers';
 
 import {
@@ -13,7 +12,7 @@ import {
   instrumentationSubscribe as subscribe,
   alias
 } from 'ember-metal';
-import { Router, Route, NoneLocation } from 'ember-routing';
+import { Route, NoneLocation } from 'ember-routing';
 import { jQuery } from 'ember-views';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
@@ -1210,6 +1209,20 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(this.$('b').length, 0);
   }
 
+  [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
+    assert.expect(1);
+
+    this.router.map(function() {
+      this.route('post', { path: 'post/:post_id' });
+    });
+
+    this.addTemplate('application', `{{#link-to 'post'}}Post{{/link-to}}`);
+
+    assert.throws(() => {
+      this.visit('/');
+    }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
+  }
+
   [`@test the {{link-to}} helper does not throw an error if its route has exited`](assert) {
     assert.expect(0);
 
@@ -1504,49 +1517,6 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
 
     // Click the now-active link
     this.click(staticLink[0]);
-  }
-
-});
-
-moduleFor('The {{link-to}} helper - globals mode app', class extends AutobootApplicationTestCase {
-
-  /*
-   * When an exception is thrown during the initial rendering phase, the
-   * `visit` promise is not resolved or rejected. This means the `applicationInstance`
-   * is never torn down and tests running after this one will fail.
-   *
-   * It is ugly, but since this test intentionally causes an initial render
-   * error, it requires globals mode to access the `applicationInstance`
-   * for teardown after test completion.
-   *
-   * Application "globals mode" is trigged by `autoboot: true`. It doesn't
-   * have anything to do with the resolver.
-   *
-   * We should be able to fix this by having the application eagerly stash a
-   * copy of each application instance it creates. When the application is
-   * destroyed, it can also destroy the instances (this is how the globals
-   * mode avoid the problem).
-   *
-   * See: https://github.com/emberjs/ember.js/issues/15327
-   */
-  [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
-    assert.expect(1);
-
-    assert.throws(() => {
-      this.runTask(() => {
-        this.createApplication();
-
-        this.add('router:main', Router.extend({
-          location: 'none'
-        }));
-
-        this.router.map(function() {
-          this.route('post', { path: 'post/:post_id' });
-        });
-
-        this.addTemplate('application', `{{#link-to 'post'}}Post{{/link-to}}`);
-      });
-    }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
   }
 
 });
