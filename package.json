@@ -33,15 +33,14 @@
     "build": "ember build --environment production",
     "docs": "ember ember-cli-yuidoc",
     "link:glimmer": "node bin/yarn-link-glimmer.js",
-    "sauce:launch": "ember sauce:launch",
     "start": "ember serve",
     "pretest": "ember build",
     "lint": "tslint -p tsconfig.json && eslint node-tests",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "test:node": "node bin/run-node-tests.js",
-    "test:sauce": "node bin/run-sauce-tests.js",
-    "test:testem": "testem -f testem.dist.json"
+    "test:browserstack": "node bin/run-browserstack-tests.js",
+    "test:testem": "testem -f testem.dist.js"
   },
   "dependencies": {
     "broccoli-funnel": "^2.0.1",
@@ -97,8 +96,8 @@
     "dag-map": "^2.0.2",
     "ember-cli": "2.10.0",
     "ember-cli-blueprint-test-helpers": "^0.18.3",
+    "ember-cli-browserstack": "^0.0.4",
     "ember-cli-dependency-checker": "^2.0.1",
-    "ember-cli-sauce": "^2.1.0",
     "ember-cli-yuidoc": "^0.8.8",
     "ember-publisher": "0.0.7",
     "eslint": "^3.0.0",

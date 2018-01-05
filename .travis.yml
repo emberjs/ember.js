@@ -44,8 +44,8 @@ branches:
 
 env:
   global:
-    - SAUCE_USERNAME=ember-ci
-    - SAUCE_ACCESS_KEY=b5cff982-069f-4a0d-ac34-b77e57c2e295
+    - BROWSERSTACK_USERNAME=emberjscoreteam1
+    - BROWSERSTACK_ACCESS_KEY=YsPxXKcahx9XszyHS2Gr
     - DISABLE_SOURCE_MAPS=true
     - BROCCOLI_ENV=production
     - S3_BUCKET_NAME=builds.emberjs.com
@@ -62,7 +62,7 @@ env:
       I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
   matrix:
-    - TEST_SUITE=sauce
+    - TEST_SUITE=browserstack
     - TEST_SUITE=each-package-tests BUILD_TYPE=canary PUBLISH=true
     - TEST_SUITE=built-tests EMBER_ENV=production
     - TEST_SUITE=old-jquery-and-extend-prototypes
