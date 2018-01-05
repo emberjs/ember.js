@@ -63,39 +63,39 @@ applyMixins(
 
 moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
 
-  ['@test Should insert a textarea']() {
+  ['@test Should insert a textarea'](assert) {
     this.render('{{textarea}}');
 
-    equal(this.$('textarea').length, 1);
+    assert.equal(this.$('textarea').length, 1);
 
     this.assertStableRerender();
   }
 
-  ['@test Should respect disabled']() {
+  ['@test Should respect disabled'](assert) {
     this.render('{{textarea disabled=disabled}}', {
       disabled: true
     });
-    ok(this.$('textarea').is(':disabled'));
+    assert.ok(this.$('textarea').is(':disabled'));
   }
 
-  ['@test Should respect disabled when false']() {
+  ['@test Should respect disabled when false'](assert) {
     this.render('{{textarea disabled=disabled}}', {
       disabled: false
     });
-    ok(this.$('textarea').is(':not(:disabled)'));
+    assert.ok(this.$('textarea').is(':not(:disabled)'));
   }
 
-  ['@test Should become disabled when the context changes']() {
+  ['@test Should become disabled when the context changes'](assert) {
     this.render('{{textarea disabled=disabled}}');
-    ok(this.$('textarea').is(':not(:disabled)'));
+    assert.ok(this.$('textarea').is(':not(:disabled)'));
 
     this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'disabled', true));
-    ok(this.$('textarea').is(':disabled'));
+    assert.ok(this.$('textarea').is(':disabled'));
 
     this.runTask(() => set(this.context, 'disabled', false));
-    ok(this.$('textarea').is(':not(:disabled)'));
+    assert.ok(this.$('textarea').is(':not(:disabled)'));
   }
 
   ['@test Should bind its contents to the specified value']() {
