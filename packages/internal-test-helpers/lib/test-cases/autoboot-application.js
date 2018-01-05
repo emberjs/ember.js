@@ -24,7 +24,13 @@ export default class AutobootApplicationTestCase extends TestResolverApplication
   }
 
   get applicationInstance() {
-    return this.application.__deprecatedInstance__;
+    let { application } = this;
+
+    if (!application) {
+      return undefined;
+    }
+
+    return application.__deprecatedInstance__;
   }
 
 }
