@@ -15,7 +15,6 @@ import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
 export class Libraries {
   constructor() {
     this._registry = [];
-    this._coreLibIndex = 0;
   }
 
   _getLibraryByName(name) {
@@ -29,21 +28,17 @@ export class Libraries {
     }
   }
 
-  register(name, version, isCoreLibrary) {
+  register(name, version) {
     let index = this._registry.length;
-
-    if (!this._getLibraryByName(name)) {
-      if (isCoreLibrary) {
-        index = this._coreLibIndex++;
-      }
-      this._registry.splice(index, 0, { name, version });
-    } else {
+    if (this._getLibraryByName(name)) {
       warn(`Library "${name}" is already registered with Ember.`, false, { id: 'ember-metal.libraries-register' });
+    } else {
+      this._registry.splice(index, 0, { name, version });
     }
   }
 
   registerCoreLibrary(name, version) {
-    this.register(name, version, true);
+    this.register(name, version);
   }
 
   deRegister(name) {
