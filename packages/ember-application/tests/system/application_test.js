@@ -33,6 +33,7 @@ import {
   AutobootApplicationTestCase,
   DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
+import { run } from 'ember-metal';
 
 moduleFor('Ember.Application, autobooting multiple apps', class extends ApplicationTestCase {
   get fixture() {
@@ -387,4 +388,27 @@ moduleFor('Ember.Application#buildRegistry', class extends AbstractTestCase {
     assert.equal(registry.resolve('application:main'), namespace);
   }
 
+});
+
+moduleFor('Ember.Application - instance tracking', class extends ApplicationTestCase {
+
+  ['@test tracks built instance'](assert) {
+    let instance = this.application.buildInstance();
+    run(() => {
+      this.application.destroy();
+    });
+
+    assert.ok(instance.isDestroyed, 'instance was destroyed');
+  }
+
+  ['@test tracks built instances'](assert) {
+    let instanceA = this.application.buildInstance();
+    let instanceB = this.application.buildInstance();
+    run(() => {
+      this.application.destroy();
+    });
+
+    assert.ok(instanceA.isDestroyed, 'instanceA was destroyed');
+    assert.ok(instanceB.isDestroyed, 'instanceB was destroyed');
+  }
 });

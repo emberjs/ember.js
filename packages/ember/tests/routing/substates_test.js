@@ -1,9 +1,6 @@
 import { RSVP } from 'ember-runtime';
 import { Route } from 'ember-routing';
-import {
-  moduleFor,
-  ApplicationTestCase,
-  AutobootApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
   let counter;
 
@@ -436,64 +433,40 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
       });
     });
   }
-});
 
-moduleFor('Loading/Error Substates - globals mode app', class extends AutobootApplicationTestCase {
-  /*
-   * When an exception is thrown during the initial rendering phase, the
-   * `visit` promise is not resolved or rejected. This means the `applicationInstance`
-   * is never torn down and tests running after this one will fail.
-   *
-   * It is ugly, but since this test intentionally causes an initial render
-   * error, it requires globals mode to access the `applicationInstance`
-   * for teardown after test completion.
-   *
-   * Application "globals mode" is trigged by `autoboot: true`. It doesn't
-   * have anything to do with the resolver.
-   *
-   * We should be able to fix this by having the application eagerly stash a
-   * copy of each application instance it creates. When the application is
-   * destroyed, it can also destroy the instances (this is how the globals
-   * mode avoid the problem).
-   *
-   * See: https://github.com/emberjs/ember.js/issues/15327
-   */
   ['@test Rejected promises returned from ApplicationRoute transition into top-level application_error'](assert) {
     let reject = true;
 
-    this.runTask(() => {
-      this.createApplication();
-      this.addTemplate('index', '<div id="app">INDEX</div>');
-      this.add('route:application', Route.extend({
-        init() {
-          this._super(...arguments);
-        },
-        model() {
-          if (reject) {
-            return RSVP.reject({ msg: 'BAD NEWS BEARS' });
-          } else {
-            return {};
-          }
+    this.addTemplate('index', '<div id="app">INDEX</div>');
+    this.add('route:application', Route.extend({
+      init() {
+        this._super(...arguments);
+      },
+      model() {
+        if (reject) {
+          return RSVP.reject({ msg: 'BAD NEWS BEARS' });
+        } else {
+          return {};
         }
-      }));
+      }
+    }));
 
-      this.addTemplate('application_error', `
-        <p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>
-      `);
-    });
-
-    let text = this.$('#toplevel-error').text();
-    assert.equal(
-      text,
-      'TOPLEVEL ERROR: BAD NEWS BEARS',
-      'toplevel error rendered'
-    );
-
-    reject = false;
+    this.addTemplate('application_error', `
+      <p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>
+    `);
 
     return this.visit('/').then(() => {
+      let text = this.$('#toplevel-error').text();
+      assert.equal(
+        text,
+        'TOPLEVEL ERROR: BAD NEWS BEARS',
+        'toplevel error rendered'
+      );
+      reject = false;
+    }).then(() => {
+      return this.visit('/');
+    }).then(() => {
       let text = this.$('#app').text();
-
       assert.equal(text, 'INDEX', 'the index route resolved');
     });
   }
