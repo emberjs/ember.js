@@ -150,7 +150,7 @@ moduleFor('ember-debug', class extends TestCase {
 
     emberAssert('Assertion is thrown', () => true);
 
-    ok(true, 'assertions were not thrown');
+    assert.ok(true, 'assertions were not thrown');
   }
 
   ['@test Ember.assert does not throw if second argument is falsy'](assert) {
@@ -175,7 +175,7 @@ moduleFor('ember-debug', class extends TestCase {
 
 
   ['@test Ember.deprecate does not throw a deprecation at log and silence'](assert) {
-    expect(4);
+    assert.expect(4);
     let id = 'ABC';
     let until = 'forever';
     let shouldThrow = false;
@@ -229,7 +229,7 @@ moduleFor('ember-debug', class extends TestCase {
   }
 
   ['@test Ember.deprecate without options triggers an assertion'](assert) {
-    expect(2);
+    assert.expect(2);
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
     assert.throws(
@@ -261,7 +261,7 @@ moduleFor('ember-debug', class extends TestCase {
   }
 
   ['@test Ember.deprecate without options.id triggers an assertion'](assert) {
-    expect(1);
+    assert.expect(1);
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
     assert.throws(
@@ -286,7 +286,7 @@ moduleFor('ember-debug', class extends TestCase {
   }
 
   ['@test Ember.deprecate without options.until triggers an assertion'](assert) {
-    expect(1);
+    assert.expect(1);
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
     assert.throws(
