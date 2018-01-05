@@ -3,11 +3,10 @@
 */
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
-import { assert, debug, isTesting } from 'ember-debug';
+import { assert, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   libraries,
-  get,
   run
 } from 'ember-metal';
 import {
@@ -339,7 +338,11 @@ const Application = Engine.extend({
     registerLibraries();
 
     if (DEBUG) {
-      logLibraryVersions();
+      if (ENV.LOG_VERSION) {
+        // we only need to see this once per Application#init
+        ENV.LOG_VERSION = false;
+        libraries.logVersions();
+      }
     }
 
     // Start off the number of deferrals at 1. This will be decremented by
@@ -1042,28 +1045,6 @@ function registerLibraries() {
 
     if (environment.hasDOM && typeof jQuery === 'function') {
       libraries.registerCoreLibrary('jQuery', jQuery().jquery);
-    }
-  }
-}
-
-function logLibraryVersions() {
-  if (DEBUG) {
-    if (ENV.LOG_VERSION) {
-      // we only need to see this once per Application#init
-      ENV.LOG_VERSION = false;
-      let libs = libraries._registry;
-
-      let nameLengths = libs.map(item => get(item, 'name.length'));
-
-      let maxNameLength = Math.max.apply(this, nameLengths);
-
-      debug('-------------------------------');
-      for (let i = 0; i < libs.length; i++) {
-        let lib = libs[i];
-        let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
-        debug([lib.name, spaces, ' : ', lib.version].join(''));
-      }
-      debug('-------------------------------');
     }
   }
 }

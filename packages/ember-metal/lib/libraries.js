@@ -1,4 +1,6 @@
-import { warn } from 'ember-debug';
+import { warn, debug } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { get } from './property_get';
 import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
 /**
  @module ember
@@ -60,6 +62,22 @@ export class Libraries {
 if (EMBER_LIBRARIES_ISREGISTERED) {
   Libraries.prototype.isRegistered = function(name) {
     return !!this._getLibraryByName(name);
+  };
+}
+
+if (DEBUG) {
+  Libraries.prototype.logVersions = function() {
+    let libs = this._registry;
+    let nameLengths = libs.map(item => get(item, 'name.length'));
+    let maxNameLength = Math.max.apply(null, nameLengths);
+
+    debug('-------------------------------');
+    for (let i = 0; i < libs.length; i++) {
+      let lib = libs[i];
+      let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+      debug([lib.name, spaces, ' : ', lib.version].join(''));
+    }
+    debug('-------------------------------');
   };
 }
 
