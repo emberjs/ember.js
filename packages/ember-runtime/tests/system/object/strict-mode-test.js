@@ -2,7 +2,7 @@ import EmberObject from '../../../system/object';
 
 QUnit.module('strict mode tests');
 
-QUnit.test('__superWrapper does not throw errors in strict mode', function() {
+QUnit.test('__superWrapper does not throw errors in strict mode', function(assert) {
   let Foo = EmberObject.extend({
     blah() {
       return 'foo';
@@ -23,5 +23,5 @@ QUnit.test('__superWrapper does not throw errors in strict mode', function() {
 
   let bar = Bar.create();
 
-  equal(bar.callBlah(), 'bar', 'can call local function without call/apply');
+  assert.equal(bar.callBlah(), 'bar', 'can call local function without call/apply');
 });

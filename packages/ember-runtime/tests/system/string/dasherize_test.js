@@ -4,16 +4,16 @@ import { dasherize } from '../../../system/string';
 QUnit.module('EmberStringUtils.dasherize');
 
 if (!ENV.EXTEND_PROTOTYPES.String) {
-  QUnit.test('String.prototype.dasherize is not modified without EXTEND_PROTOTYPES', function() {
-    ok('undefined' === typeof String.prototype.dasherize, 'String.prototype helper disabled');
+  QUnit.test('String.prototype.dasherize is not modified without EXTEND_PROTOTYPES', function(assert) {
+    assert.ok('undefined' === typeof String.prototype.dasherize, 'String.prototype helper disabled');
   });
 }
 
 function test(given, expected, description) {
-  QUnit.test(description, function () {
-    deepEqual(dasherize(given), expected);
+  QUnit.test(description, function(assert) {
+    assert.deepEqual(dasherize(given), expected);
     if (ENV.EXTEND_PROTOTYPES.String) {
-      deepEqual(given.dasherize(), expected);
+      assert.deepEqual(given.dasherize(), expected);
     }
   });
 }

@@ -9,12 +9,12 @@ import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject.create', {});
 
-QUnit.test('simple properties are set', function() {
+QUnit.test('simple properties are set', function(assert) {
   let o = EmberObject.create({ ohai: 'there' });
-  equal(o.get('ohai'), 'there');
+  assert.equal(o.get('ohai'), 'there');
 });
 
-QUnit.test('calls computed property setters', function() {
+QUnit.test('calls computed property setters', function(assert) {
   let MyClass = EmberObject.extend({
     foo: computed({
       get() {
@@ -27,11 +27,11 @@ QUnit.test('calls computed property setters', function() {
   });
 
   let o = MyClass.create({ foo: 'bar' });
-  equal(o.get('foo'), 'bar');
+  assert.equal(o.get('foo'), 'bar');
 });
 
 if (MANDATORY_SETTER) {
-  QUnit.test('sets up mandatory setters for watched simple properties', function() {
+  QUnit.test('sets up mandatory setters for watched simple properties', function(assert) {
     let MyClass = EmberObject.extend({
       foo: null,
       bar: null,
@@ -39,17 +39,17 @@ if (MANDATORY_SETTER) {
     });
 
     let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-    equal(o.get('foo'), 'bar');
+    assert.equal(o.get('foo'), 'bar');
 
     let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
-    ok(descriptor.set, 'Mandatory setter was setup');
+    assert.ok(descriptor.set, 'Mandatory setter was setup');
 
     descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
-    ok(!descriptor.set, 'Mandatory setter was not setup');
+    assert.ok(!descriptor.set, 'Mandatory setter was not setup');
   });
 }
 
-QUnit.test('allows bindings to be defined', function() {
+QUnit.test('allows bindings to be defined', function(assert) {
   let obj;
 
   let deprecationMessage = /`Ember.Binding` is deprecated/;
@@ -61,10 +61,10 @@ QUnit.test('allows bindings to be defined', function() {
     });
   }, deprecationMessage);
 
-  equal(obj.get('bar'), 'foo', 'The binding value is correct');
+  assert.equal(obj.get('bar'), 'foo', 'The binding value is correct');
 });
 
-QUnit.test('calls setUnknownProperty if defined', function() {
+QUnit.test('calls setUnknownProperty if defined', function(assert) {
   let setUnknownPropertyCalled = false;
 
   let MyClass = EmberObject.extend({
@@ -74,7 +74,7 @@ QUnit.test('calls setUnknownProperty if defined', function() {
   });
 
   MyClass.create({ foo: 'bar' });
-  ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
+  assert.ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
 });
 
 QUnit.test('throws if you try to define a computed property', function() {
@@ -107,11 +107,11 @@ QUnit.test('throws if you try to \'mixin\' a definition', function() {
   }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
 });
 
-QUnit.test('inherits properties from passed in EmberObject', function() {
+QUnit.test('inherits properties from passed in EmberObject', function(assert) {
   let baseObj = EmberObject.create({ foo: 'bar' });
   let secondaryObj = EmberObject.create(baseObj);
 
-  equal(secondaryObj.foo, baseObj.foo, 'Em.O.create inherits properties from EmberObject parameter');
+  assert.equal(secondaryObj.foo, baseObj.foo, 'Em.O.create inherits properties from EmberObject parameter');
 });
 
 QUnit.test('throws if you try to pass anything a string as a parameter', function() {
@@ -120,18 +120,18 @@ QUnit.test('throws if you try to pass anything a string as a parameter', functio
   expectAssertion(() => EmberObject.create('some-string'), expected);
 });
 
-QUnit.test('EmberObject.create can take undefined as a parameter', function() {
+QUnit.test('EmberObject.create can take undefined as a parameter', function(assert) {
   let o = EmberObject.create(undefined);
-  deepEqual(EmberObject.create(), o);
+  assert.deepEqual(EmberObject.create(), o);
 });
 
-QUnit.test('EmberObject.create can take null as a parameter', function() {
+QUnit.test('EmberObject.create can take null as a parameter', function(assert) {
   let o = EmberObject.create(null);
-  deepEqual(EmberObject.create(), o);
+  assert.deepEqual(EmberObject.create(), o);
 });
 
-QUnit.test('EmberObject.create avoids allocating a binding map when not necessary', function() {
+QUnit.test('EmberObject.create avoids allocating a binding map when not necessary', function(assert) {
   let o = EmberObject.create();
   let m = meta(o);
-  ok(!m.peekBindings(), 'A binding map is not allocated');
+  assert.ok(!m.peekBindings(), 'A binding map is not allocated');
 });

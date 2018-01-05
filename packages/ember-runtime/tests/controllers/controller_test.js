@@ -138,7 +138,7 @@ QUnit.test('specifying `content` (with `model` specified) does not result in dep
 QUnit.module('Controller injected properties');
 
 if (!EmberDev.runningProdBuild) {
-  QUnit.test('defining a controller on a non-controller should fail assertion', function(assert) {
+  QUnit.test('defining a controller on a non-controller should fail assertion', function() {
     expectAssertion(function() {
       let owner = buildOwner();
 

@@ -7,7 +7,7 @@ QUnit.module('Ember Type Checking');
 
 const global = this;
 
-QUnit.test('Ember.isArray', function() {
+QUnit.test('Ember.isArray', function(assert) {
   let numarray      = [1, 2, 3];
   let number        = 23;
   let strarray      = ['Hello', 'Hi'];
@@ -18,23 +18,23 @@ QUnit.test('Ember.isArray', function() {
   let fn            = function() {};
   let arrayProxy = ArrayProxy.create({ content: emberA() });
 
-  equal(isArray(numarray), true, '[1,2,3]');
-  equal(isArray(number), false, '23');
-  equal(isArray(strarray), true, '["Hello", "Hi"]');
-  equal(isArray(string), false, '"Hello"');
-  equal(isArray(object), false, '{}');
-  equal(isArray(length), true, '{ length: 12 }');
-  equal(isArray(strangeLength), false, '{ length: "yes" }');
-  equal(isArray(global), false, 'global');
-  equal(isArray(fn), false, 'function() {}');
-  equal(isArray(arrayProxy), true, '[]');
+  assert.equal(isArray(numarray), true, '[1,2,3]');
+  assert.equal(isArray(number), false, '23');
+  assert.equal(isArray(strarray), true, '["Hello", "Hi"]');
+  assert.equal(isArray(string), false, '"Hello"');
+  assert.equal(isArray(object), false, '{}');
+  assert.equal(isArray(length), true, '{ length: 12 }');
+  assert.equal(isArray(strangeLength), false, '{ length: "yes" }');
+  assert.equal(isArray(global), false, 'global');
+  assert.equal(isArray(fn), false, 'function() {}');
+  assert.equal(isArray(arrayProxy), true, '[]');
 });
 
 if (environment.window && typeof environment.window.FileList === 'function') {
-  QUnit.test('Ember.isArray(fileList)', function() {
+  QUnit.test('Ember.isArray(fileList)', function(assert) {
     let fileListElement = document.createElement('input');
     fileListElement.type = 'file';
     let fileList = fileListElement.files;
-    equal(isArray(fileList), false, 'fileList');
+    assert.equal(isArray(fileList), false, 'fileList');
   });
 }

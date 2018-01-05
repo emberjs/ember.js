@@ -4,8 +4,8 @@ import { A as emberA } from '../../system/native_array';
 
 QUnit.module('Ember.isEmpty');
 
-QUnit.test('Ember.isEmpty', function() {
+QUnit.test('Ember.isEmpty', function(assert) {
   let arrayProxy = ArrayProxy.create({ content: emberA() });
 
-  equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
+  assert.equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
 });

@@ -4,16 +4,16 @@ import { capitalize } from '../../../system/string';
 QUnit.module('EmberStringUtils.capitalize');
 
 if (!ENV.EXTEND_PROTOTYPES.String) {
-  QUnit.test('String.prototype.capitalize is not modified without EXTEND_PROTOTYPES', function() {
-    ok('undefined' === typeof String.prototype.capitalize, 'String.prototype helper disabled');
+  QUnit.test('String.prototype.capitalize is not modified without EXTEND_PROTOTYPES', function(assert) {
+    assert.ok('undefined' === typeof String.prototype.capitalize, 'String.prototype helper disabled');
   });
 }
 
 function test(given, expected, description) {
-  QUnit.test(description, function () {
-    deepEqual(capitalize(given), expected);
+  QUnit.test(description, function(assert) {
+    assert.deepEqual(capitalize(given), expected);
     if (ENV.EXTEND_PROTOTYPES.String) {
-      deepEqual(given.capitalize(), expected);
+      assert.deepEqual(given.capitalize(), expected);
     }
   });
 }

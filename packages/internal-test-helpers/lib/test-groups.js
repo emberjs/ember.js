@@ -12,13 +12,13 @@ export function testBoth(testname, callback) {
   function aget(x, y) { return x[y]; }
   function aset(x, y, z) { return (x[y] = z); }
 
-  QUnit.test(`${testname} using getFromEmberMetal()/Ember.set()`, function() {
-    callback(emberget, emberset);
+  QUnit.test(`${testname} using getFromEmberMetal()/Ember.set()`, function(assert) {
+    callback(emberget, emberset, assert);
   });
 
-  QUnit.test(`${testname} using accessors`, function() {
+  QUnit.test(`${testname} using accessors`, function(assert) {
     if (ENV.USES_ACCESSORS) {
-      callback(aget, aset);
+      callback(aget, aset, assert);
     } else {
       ok('SKIPPING ACCESSORS');
     }
@@ -33,25 +33,25 @@ export function testWithDefault(testname, callback) {
   function aget(x, y) { return x[y]; }
   function aset(x, y, z) { return (x[y] = z); }
 
-  QUnit.test(`${testname} using obj.get()`, function() {
-    callback(emberget, emberset);
+  QUnit.test(`${testname} using obj.get()`, function(assert) {
+    callback(emberget, emberset, assert);
   });
 
-  QUnit.test(`${testname} using obj.getWithDefault()`, function() {
-    callback(getwithdefault, emberset);
+  QUnit.test(`${testname} using obj.getWithDefault()`, function(assert) {
+    callback(getwithdefault, emberset, assert);
   });
 
-  QUnit.test(`${testname} using getFromEmberMetal()`, function() {
-    callback(emberget, emberset);
+  QUnit.test(`${testname} using getFromEmberMetal()`, function(assert) {
+    callback(emberget, emberset, assert);
   });
 
-  QUnit.test(`${testname} using Ember.getWithDefault()`, function() {
-    callback(embergetwithdefault, emberset);
+  QUnit.test(`${testname} using Ember.getWithDefault()`, function(assert) {
+    callback(embergetwithdefault, emberset, assert);
   });
 
-  QUnit.test(`${testname} using accessors`, function() {
+  QUnit.test(`${testname} using accessors`, function(assert) {
     if (ENV.USES_ACCESSORS) {
-      callback(aget, aset);
+      callback(aget, aset, assert);
     } else {
       ok('SKIPPING ACCESSORS');
     }

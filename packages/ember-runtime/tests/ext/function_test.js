@@ -6,9 +6,9 @@ import Evented from '../../mixins/evented';
 
 QUnit.module('Function.prototype.observes() helper');
 
-testBoth('global observer helper takes multiple params', function(get, set) {
+testBoth('global observer helper takes multiple params', function(get, set, assert) {
   if (!ENV.EXTEND_PROTOTYPES.Function) {
-    ok('undefined' === typeof Function.prototype.observes, 'Function.prototype helper disabled');
+    assert.ok('undefined' === typeof Function.prototype.observes, 'Function.prototype helper disabled');
     return;
   }
 
@@ -23,18 +23,18 @@ testBoth('global observer helper takes multiple params', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
   set(obj, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 2, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 2, 'should invoke observer after change');
 });
 
 QUnit.module('Function.prototype.on() helper');
 
-testBoth('sets up an event listener, and can trigger the function on multiple events', function(get, set) {
+testBoth('sets up an event listener, and can trigger the function on multiple events', function(get, set, assert) {
   if (!ENV.EXTEND_PROTOTYPES.Function) {
-    ok('undefined' === typeof Function.prototype.on, 'Function.prototype helper disabled');
+    assert.ok('undefined' === typeof Function.prototype.on, 'Function.prototype helper disabled');
     return;
   }
 
@@ -49,16 +49,16 @@ testBoth('sets up an event listener, and can trigger the function on multiple ev
   });
 
   let obj = mixin({}, Evented, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
 
   obj.trigger('bar');
   obj.trigger('baz');
-  equal(get(obj, 'count'), 2, 'should invoke listeners when events trigger');
+  assert.equal(get(obj, 'count'), 2, 'should invoke listeners when events trigger');
 });
 
-testBoth('can be chained with observes', function(get, set) {
+testBoth('can be chained with observes', function(get, set, assert) {
   if (!ENV.EXTEND_PROTOTYPES.Function) {
-    ok('Function.prototype helper disabled');
+    assert.ok('Function.prototype helper disabled');
     return;
   }
 
@@ -72,18 +72,18 @@ testBoth('can be chained with observes', function(get, set) {
   });
 
   let obj = mixin({}, Evented, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
 
   set(obj, 'bay', 'BAY');
   obj.trigger('bar');
-  equal(get(obj, 'count'), 2, 'should invoke observer and listener');
+  assert.equal(get(obj, 'count'), 2, 'should invoke observer and listener');
 });
 
 QUnit.module('Function.prototype.property() helper');
 
-testBoth('sets up a ComputedProperty', function(get, set) {
+testBoth('sets up a ComputedProperty', function(get, set, assert) {
   if (!ENV.EXTEND_PROTOTYPES.Function) {
-    ok('undefined' === typeof Function.prototype.property, 'Function.prototype helper disabled');
+    assert.ok('undefined' === typeof Function.prototype.property, 'Function.prototype helper disabled');
     return;
   }
 
@@ -96,11 +96,11 @@ testBoth('sets up a ComputedProperty', function(get, set) {
   });
 
   let obj = MyClass.create({ firstName: 'Fred', lastName: 'Flinstone' });
-  equal(get(obj, 'fullName'), 'Fred Flinstone', 'should return the computed value');
+  assert.equal(get(obj, 'fullName'), 'Fred Flinstone', 'should return the computed value');
 
   set(obj, 'firstName', 'Wilma');
-  equal(get(obj, 'fullName'), 'Wilma Flinstone', 'should return the new computed value');
+  assert.equal(get(obj, 'fullName'), 'Wilma Flinstone', 'should return the new computed value');
 
   set(obj, 'lastName', '');
-  equal(get(obj, 'fullName'), 'Wilma ', 'should return the new computed value');
+  assert.equal(get(obj, 'fullName'), 'Wilma ', 'should return the new computed value');
 });

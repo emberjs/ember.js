@@ -13,27 +13,27 @@ import { MANDATORY_SETTER } from 'ember/features';
 
 QUnit.module('ember-runtime/system/object/destroy_test');
 
-testBoth('should schedule objects to be destroyed at the end of the run loop', function(get /*, set */) {
+testBoth('should schedule objects to be destroyed at the end of the run loop', function(get , set, assert) {
   let obj = EmberObject.create();
   let meta;
 
   run(() => {
     obj.destroy();
     meta = peekMeta(obj);
-    ok(meta, 'meta is not destroyed immediately');
-    ok(get(obj, 'isDestroying'), 'object is marked as destroying immediately');
-    ok(!get(obj, 'isDestroyed'), 'object is not destroyed immediately');
+    assert.ok(meta, 'meta is not destroyed immediately');
+    assert.ok(get(obj, 'isDestroying'), 'object is marked as destroying immediately');
+    assert.ok(!get(obj, 'isDestroyed'), 'object is not destroyed immediately');
   });
 
   meta = peekMeta(obj);
-  ok(get(obj, 'isDestroyed'), 'object is destroyed after run loop finishes');
+  assert.ok(get(obj, 'isDestroyed'), 'object is destroyed after run loop finishes');
 });
 
 if (MANDATORY_SETTER) {
   // MANDATORY_SETTER moves value to meta.values
   // a destroyed object removes meta but leaves the accessor
   // that looks it up
-  QUnit.test('should raise an exception when modifying watched properties on a destroyed object', function() {
+  QUnit.test('should raise an exception when modifying watched properties on a destroyed object', function(assert) {
     let obj = EmberObject.extend({
       fooDidChange: observer('foo', function() { })
     }).create({
@@ -42,11 +42,11 @@ if (MANDATORY_SETTER) {
 
     run(() => obj.destroy());
 
-    throws(() => set(obj, 'foo', 'baz'), Error, 'raises an exception');
+    assert.throws(() => set(obj, 'foo', 'baz'), Error, 'raises an exception');
   });
 }
 
-QUnit.test('observers should not fire after an object has been destroyed', function() {
+QUnit.test('observers should not fire after an object has been destroyed', function(assert) {
   let count = 0;
   let obj = EmberObject.extend({
     fooDidChange: observer('foo', function() {
@@ -56,7 +56,7 @@ QUnit.test('observers should not fire after an object has been destroyed', funct
 
   obj.set('foo', 'bar');
 
-  equal(count, 1, 'observer was fired once');
+  assert.equal(count, 1, 'observer was fired once');
 
   run(() => {
     beginPropertyChanges();
@@ -65,10 +65,10 @@ QUnit.test('observers should not fire after an object has been destroyed', funct
     endPropertyChanges();
   });
 
-  equal(count, 1, 'observer was not called after object was destroyed');
+  assert.equal(count, 1, 'observer was not called after object was destroyed');
 });
 
-QUnit.test('destroyed objects should not see each others changes during teardown but a long lived object should', function () {
+QUnit.test('destroyed objects should not see each others changes during teardown but a long lived object should', function(assert) {
   let shouldChange = 0;
   let shouldNotChange = 0;
 
@@ -138,11 +138,11 @@ QUnit.test('destroyed objects should not see each others changes during teardown
     }
   });
 
-  equal(shouldNotChange, 0, 'destroyed graph objs should not see change in willDestroy');
-  equal(shouldChange, 1, 'long lived should see change in willDestroy');
+  assert.equal(shouldNotChange, 0, 'destroyed graph objs should not see change in willDestroy');
+  assert.equal(shouldChange, 1, 'long lived should see change in willDestroy');
 });
 
-QUnit.test('bindings should be synced when are updated in the willDestroy hook', function() {
+QUnit.test('bindings should be synced when are updated in the willDestroy hook', function(assert) {
   let bar = EmberObject.create({
     value: false,
     willDestroy() {
@@ -163,9 +163,9 @@ QUnit.test('bindings should be synced when are updated in the willDestroy hook',
     }, deprecationMessage);
   });
 
-  ok(bar.get('value') === false, 'the initial value has been bound');
+  assert.ok(bar.get('value') === false, 'the initial value has been bound');
 
   run(() => bar.destroy());
 
-  ok(foo.get('value'), 'foo is synced when the binding is updated in the willDestroy hook');
+  assert.ok(foo.get('value'), 'foo is synced when the binding is updated in the willDestroy hook');
 });

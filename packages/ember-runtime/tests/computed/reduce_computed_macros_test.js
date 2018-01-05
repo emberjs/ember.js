@@ -58,7 +58,7 @@ QUnit.module('map', {
 });
 
 QUnit.test('map is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('mapped', 1);
   }, /Cannot set read-only property "mapped" on object:/);
 });
@@ -191,7 +191,7 @@ QUnit.module('mapBy', {
 });
 
 QUnit.test('mapBy is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('mapped', 1);
   }, /Cannot set read-only property "mapped" on object:/);
 });
@@ -234,7 +234,7 @@ QUnit.module('filter', {
 });
 
 QUnit.test('filter is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('filtered', 1);
   }, /Cannot set read-only property "filtered" on object:/);
 });
@@ -383,7 +383,7 @@ QUnit.module('filterBy', {
 });
 
 QUnit.test('filterBy is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('as', 1);
   }, /Cannot set read-only property "as" on object:/);
 });
@@ -475,7 +475,7 @@ QUnit.test('properties values can be replaced', function(assert) {
   });
 
   QUnit.test(`${name} is readOnly`, function(assert) {
-    QUnit.throws(function() {
+    assert.throws(function() {
       obj.set('union', 1);
     }, /Cannot set read-only property "union" on object:/);
   });
@@ -537,7 +537,7 @@ QUnit.module('computed.uniqBy', {
 });
 
 QUnit.test('uniqBy is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('uniqueById', 1);
   }, /Cannot set read-only property "uniqueById" on object:/);
 });
@@ -605,7 +605,7 @@ QUnit.module('computed.intersect', {
 });
 
 QUnit.test('intersect is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('intersection', 1);
   }, /Cannot set read-only property "intersection" on object:/);
 });
@@ -652,12 +652,12 @@ QUnit.module('setDiff', {
 });
 
 QUnit.test('setDiff is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('diff', 1);
   }, /Cannot set read-only property "diff" on object:/);
 });
 
-QUnit.test('it asserts if given fewer or more than two dependent properties', function(assert) {
+QUnit.test('it asserts if given fewer or more than two dependent properties', function() {
   expectAssertion(function () {
     EmberObject.extend({
       diff: setDiff('array')
@@ -893,7 +893,7 @@ QUnit.module('sort - sortProperties', {
 });
 
 QUnit.test('sort is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('sortedItems', 1);
   }, /Cannot set read-only property "sortedItems" on object:/);
 });
@@ -1267,7 +1267,7 @@ QUnit.test('sort has correct `this`', function(assert) {
 });
 
 QUnit.test('sort (with function) is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('sortedItems', 1);
   }, /Cannot set read-only property "sortedItems" on object:/);
 });
@@ -1463,7 +1463,7 @@ QUnit.module('max', {
 });
 
 QUnit.test('max is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('max', 1);
   }, /Cannot set read-only property "max" on object:/);
 });
@@ -1508,7 +1508,7 @@ QUnit.module('min', {
 });
 
 QUnit.test('min is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('min', 1);
   }, /Cannot set read-only property "min" on object:/);
 });
@@ -1689,7 +1689,7 @@ QUnit.module('sum', {
 });
 
 QUnit.test('sum is readOnly', function(assert) {
-  QUnit.throws(function() {
+  assert.throws(function() {
     obj.set('total', 1);
   }, /Cannot set read-only property "total" on object:/);
 });
@@ -1720,7 +1720,7 @@ QUnit.test('updates when array is modified', function(assert) {
 
 QUnit.module('collect');
 
-testBoth('works', function(get, set) {
+testBoth('works', function(get, set, assert) {
   let obj = { one: 'foo', two: 'bar', three: null };
   defineProperty(obj, 'all', collect('one', 'two', 'three', 'four'));
 

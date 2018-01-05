@@ -27,7 +27,7 @@ import { A as emberA } from '../../system/native_array';
 
 QUnit.module('CP macros');
 
-testBoth('Ember.computed.empty', function (get, set) {
+testBoth('Ember.computed.empty', function (get, set, assert) {
   let obj = EmberObject.extend({
     bestLannister: null,
     lannisters: null,
@@ -48,7 +48,7 @@ testBoth('Ember.computed.empty', function (get, set) {
   assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
 });
 
-testBoth('Ember.computed.notEmpty', function(get, set) {
+testBoth('Ember.computed.notEmpty', function(get, set, assert) {
   let obj = EmberObject.extend({
     bestLannister: null,
     lannisters: null,
@@ -69,7 +69,7 @@ testBoth('Ember.computed.notEmpty', function(get, set) {
   assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
 });
 
-testBoth('computed.not', function(get) {
+testBoth('computed.not', function(get, set, assert) {
   let obj = { foo: true };
   defineProperty(obj, 'notFoo', not('foo'));
   assert.equal(get(obj, 'notFoo'), false);
@@ -79,7 +79,7 @@ testBoth('computed.not', function(get) {
   assert.equal(get(obj, 'notFoo'), false);
 });
 
-testBoth('computed.empty', function(get, set) {
+testBoth('computed.empty', function(get, set, assert) {
   let obj = { foo: [], bar: undefined, baz: null, quz: '' };
   defineProperty(obj, 'fooEmpty', empty('foo'));
   defineProperty(obj, 'barEmpty', empty('bar'));
@@ -96,7 +96,7 @@ testBoth('computed.empty', function(get, set) {
   assert.equal(get(obj, 'quzEmpty'), false);
 });
 
-testBoth('computed.bool', function(get) {
+testBoth('computed.bool', function(get, set, assert) {
   let obj = { foo() {}, bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'fooBool', bool('foo'));
   defineProperty(obj, 'barBool', bool('bar'));
@@ -108,7 +108,7 @@ testBoth('computed.bool', function(get) {
   assert.equal(get(obj, 'quzBool'), false);
 });
 
-testBoth('computed.alias', function(get, set) {
+testBoth('computed.alias', function(get, set, assert) {
   let obj = { bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'bay', computed(function() {
     return 'apple';
@@ -137,7 +137,7 @@ testBoth('computed.alias', function(get, set) {
   assert.equal(get(obj, 'quz'), null);
 });
 
-testBoth('computed.alias set', function(get, set) {
+testBoth('computed.alias set', function(get, set, assert) {
   let obj = {};
   let constantValue = 'always `a`';
 
@@ -156,7 +156,7 @@ testBoth('computed.alias set', function(get, set) {
   assert.equal(get(obj, 'aliased'), constantValue);
 });
 
-testBoth('computed.match', function(get, set) {
+testBoth('computed.match', function(get, set, assert) {
   let obj = { name: 'Paul' };
   defineProperty(obj, 'isPaul', match('name', /Paul/));
 
@@ -167,7 +167,7 @@ testBoth('computed.match', function(get, set) {
   assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
 });
 
-testBoth('computed.notEmpty', function(get, set) {
+testBoth('computed.notEmpty', function(get, set, assert) {
   let obj = { items: [1] };
   defineProperty(obj, 'hasItems', notEmpty('items'));
 
@@ -178,7 +178,7 @@ testBoth('computed.notEmpty', function(get, set) {
   assert.equal(get(obj, 'hasItems'), false, 'is empty');
 });
 
-testBoth('computed.equal', function(get, set) {
+testBoth('computed.equal', function(get, set, assert) {
   let obj = { name: 'Paul' };
   defineProperty(obj, 'isPaul', computedEqual('name', 'Paul'));
 
@@ -189,7 +189,7 @@ testBoth('computed.equal', function(get, set) {
   assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
 });
 
-testBoth('computed.gt', function(get, set) {
+testBoth('computed.gt', function(get, set, assert) {
   let obj = { number: 2 };
   defineProperty(obj, 'isGreaterThenOne', gt('number', 1));
 
@@ -204,7 +204,7 @@ testBoth('computed.gt', function(get, set) {
   assert.equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
 });
 
-testBoth('computed.gte', function(get, set) {
+testBoth('computed.gte', function(get, set, assert) {
   let obj = { number: 2 };
   defineProperty(obj, 'isGreaterOrEqualThenOne', gte('number', 1));
 
@@ -219,7 +219,7 @@ testBoth('computed.gte', function(get, set) {
   assert.equal(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
 });
 
-testBoth('computed.lt', function(get, set) {
+testBoth('computed.lt', function(get, set, assert) {
   let obj = { number: 0 };
   defineProperty(obj, 'isLesserThenOne', lt('number', 1));
 
@@ -234,7 +234,7 @@ testBoth('computed.lt', function(get, set) {
   assert.equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
 });
 
-testBoth('computed.lte', function(get, set) {
+testBoth('computed.lte', function(get, set, assert) {
   let obj = { number: 0 };
   defineProperty(obj, 'isLesserOrEqualThenOne', lte('number', 1));
 
@@ -249,7 +249,7 @@ testBoth('computed.lte', function(get, set) {
   assert.equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
 });
 
-testBoth('computed.and two properties', function(get, set) {
+testBoth('computed.and two properties', function(get, set, assert) {
   let obj = { one: true, two: true };
   defineProperty(obj, 'oneAndTwo', and('one', 'two'));
 
@@ -270,7 +270,7 @@ testBoth('computed.and two properties', function(get, set) {
   assert.equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
 });
 
-testBoth('computed.and three properties', function(get, set) {
+testBoth('computed.and three properties', function(get, set, assert) {
   let obj = { one: true, two: true, three: true };
   defineProperty(obj, 'oneTwoThree', and('one', 'two', 'three'));
 
@@ -287,7 +287,7 @@ testBoth('computed.and three properties', function(get, set) {
   assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
 });
 
-testBoth('computed.and expand properties', function(get, set) {
+testBoth('computed.and expand properties', function(get, set, assert) {
   let obj = { one: true, two: true, three: true };
   defineProperty(obj, 'oneTwoThree', and('{one,two,three}'));
 
@@ -304,7 +304,7 @@ testBoth('computed.and expand properties', function(get, set) {
   assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
 });
 
-testBoth('computed.or two properties', function(get, set) {
+testBoth('computed.or two properties', function(get, set, assert) {
   let obj = { one: true, two: true };
   defineProperty(obj, 'oneOrTwo', or('one', 'two'));
 
@@ -331,7 +331,7 @@ testBoth('computed.or two properties', function(get, set) {
   assert.equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
 });
 
-testBoth('computed.or three properties', function(get, set) {
+testBoth('computed.or three properties', function(get, set, assert) {
   let obj = { one: true, two: true, three: true };
   defineProperty(obj, 'oneTwoThree', or('one', 'two', 'three'));
 
@@ -362,7 +362,7 @@ testBoth('computed.or three properties', function(get, set) {
   assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
 });
 
-testBoth('computed.or expand properties', function(get, set) {
+testBoth('computed.or expand properties', function(get, set, assert) {
   let obj = { one: true, two: true, three: true };
   defineProperty(obj, 'oneTwoThree', or('{one,two,three}'));
 
@@ -404,7 +404,7 @@ testBoth('computed.or and computed.and warn about dependent keys with spaces', f
   }, /Dependent keys passed to Ember\.computed\.and\(\) can't have spaces\./);
 });
 
-testBoth('computed.oneWay', function(get, set) {
+testBoth('computed.oneWay', function(get, set, assert) {
   let obj = {
     firstName: 'Teddy',
     lastName: 'Zeenny'
@@ -428,7 +428,7 @@ testBoth('computed.oneWay', function(get, set) {
   assert.equal(get(obj, 'nickName'), 'TeddyBear');
 });
 
-testBoth('computed.readOnly', function(get, set) {
+testBoth('computed.readOnly', function(get, set, assert) {
   let obj = {
     firstName: 'Teddy',
     lastName: 'Zeenny'
@@ -454,7 +454,7 @@ testBoth('computed.readOnly', function(get, set) {
   assert.equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
 });
 
-testBoth('computed.deprecatingAlias', function(get, set) {
+testBoth('computed.deprecatingAlias', function(get, set, assert) {
   let obj = { bar: 'asdf', baz: null, quz: false };
   defineProperty(obj, 'bay', computed(function() {
     return 'apple';
