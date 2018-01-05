@@ -8,19 +8,19 @@ suite.module('map');
 
 const mapFunc = item => item ? item.toString() : null;
 
-suite.test('map should iterate over list', function() {
+suite.test('map should iterate over list', function(assert) {
   let obj = this.newObject();
   let ary = this.toArray(obj).map(mapFunc);
   let found = [];
 
   found = obj.map(mapFunc);
-  deepEqual(found, ary, 'mapped arrays should match');
+  assert.deepEqual(found, ary, 'mapped arrays should match');
 });
 
 
-suite.test('map should iterate over list after mutation', function() {
+suite.test('map should iterate over list after mutation', function(assert) {
   if (get(this, 'canTestMutation')) {
-    expect(0);
+    assert.expect(0);
     return;
   }
 
@@ -29,15 +29,15 @@ suite.test('map should iterate over list after mutation', function() {
   let found;
 
   found = obj.map(mapFunc);
-  deepEqual(found, ary, 'items passed during forEach should match');
+  assert.deepEqual(found, ary, 'items passed during forEach should match');
 
   this.mutate(obj);
   ary = this.toArray(obj).map(mapFunc);
   found = obj.map(mapFunc);
-  deepEqual(found, ary, 'items passed during forEach should match');
+  assert.deepEqual(found, ary, 'items passed during forEach should match');
 });
 
-suite.test('2nd target parameter', function() {
+suite.test('2nd target parameter', function(assert) {
   let obj = this.newObject();
   let target = this;
 
@@ -51,20 +51,20 @@ suite.test('2nd target parameter', function() {
   });
 
   obj.map(() => {
-    equal(guidFor(this), guidFor(target), 'should pass target as this if context');
+    assert.equal(guidFor(this), guidFor(target), 'should pass target as this if context');
   }, target);
 });
 
 
-suite.test('callback params', function() {
+suite.test('callback params', function(assert) {
   let obj = this.newObject();
   let ary = this.toArray(obj);
   let loc = 0;
 
   obj.map((item, idx, enumerable) => {
-    equal(item, ary[loc], 'item param');
-    equal(idx, loc, 'idx param');
-    equal(guidFor(enumerable), guidFor(obj), 'enumerable param');
+    assert.equal(item, ary[loc], 'item param');
+    assert.equal(idx, loc, 'idx param');
+    assert.equal(guidFor(enumerable), guidFor(obj), 'enumerable param');
     loc++;
   });
 });

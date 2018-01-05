@@ -4,10 +4,10 @@ const suite = SuiteModuleBuilder.create();
 
 suite.module('copy');
 
-suite.test('should return an equivalent copy', function() {
+suite.test('should return an equivalent copy', function(assert) {
   let obj = this.newObject();
   let copy = obj.copy();
-  ok(this.isEqual(obj, copy), 'old object and new object should be equivalent');
+  assert.ok(this.isEqual(obj, copy), 'old object and new object should be equivalent');
 });
 
 export default suite;

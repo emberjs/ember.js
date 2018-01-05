@@ -9,7 +9,7 @@ const suite = SuiteModuleBuilder.create();
 
 suite.module('filter');
 
-suite.test('filter should invoke on each item', function() {
+suite.test('filter should invoke on each item', function(assert) {
   let obj = this.newObject();
   let ary = this.toArray(obj);
   let cnt = ary.length - 2;
@@ -21,8 +21,8 @@ suite.test('filter should invoke on each item', function() {
     found.push(i);
     return --cnt >= 0;
   });
-  deepEqual(found, ary, 'should have invoked on each item');
-  deepEqual(result, ary.slice(0, -2), 'filtered array should exclude items');
+  assert.deepEqual(found, ary, 'should have invoked on each item');
+  assert.deepEqual(result, ary.slice(0, -2), 'filtered array should exclude items');
 });
 
 // ..........................................................
@@ -31,7 +31,7 @@ suite.test('filter should invoke on each item', function() {
 
 suite.module('filterBy');
 
-suite.test('should filter based on object', function() {
+suite.test('should filter based on object', function(assert) {
   let obj, ary;
 
   ary = [
@@ -41,11 +41,11 @@ suite.test('should filter based on object', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', 'foo'), ary, 'filterBy(foo)');
-  deepEqual(obj.filterBy('bar', 'bar'), [ary[1]], 'filterBy(bar)');
+  assert.deepEqual(obj.filterBy('foo', 'foo'), ary, 'filterBy(foo)');
+  assert.deepEqual(obj.filterBy('bar', 'bar'), [ary[1]], 'filterBy(bar)');
 });
 
-suite.test('should include in result if property is true', function() {
+suite.test('should include in result if property is true', function(assert) {
   let obj, ary;
 
   ary = [
@@ -56,11 +56,11 @@ suite.test('should include in result if property is true', function() {
   obj = this.newObject(ary);
 
   // different values - all eval to true
-  deepEqual(obj.filterBy('foo'), ary, 'filterBy(foo)');
-  deepEqual(obj.filterBy('bar'), [ary[0]], 'filterBy(bar)');
+  assert.deepEqual(obj.filterBy('foo'), ary, 'filterBy(foo)');
+  assert.deepEqual(obj.filterBy('bar'), [ary[0]], 'filterBy(bar)');
 });
 
-suite.test('should filter on second argument if provided', function() {
+suite.test('should filter on second argument if provided', function(assert) {
   let obj, ary;
 
   ary = [
@@ -72,10 +72,10 @@ suite.test('should filter on second argument if provided', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', 3), [ary[0], ary[3]], 'filterBy(\'foo\', 3)\')');
+  assert.deepEqual(obj.filterBy('foo', 3), [ary[0], ary[3]], 'filterBy(\'foo\', 3)\')');
 });
 
-suite.test('should correctly filter null second argument', function() {
+suite.test('should correctly filter null second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -87,10 +87,10 @@ suite.test('should correctly filter null second argument', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', null), [ary[1], ary[2]], 'filterBy(\'foo\', 3)\')');
+  assert.deepEqual(obj.filterBy('foo', null), [ary[1], ary[2]], 'filterBy(\'foo\', 3)\')');
 });
 
-suite.test('should not return all objects on undefined second argument', function() {
+suite.test('should not return all objects on undefined second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -100,10 +100,10 @@ suite.test('should not return all objects on undefined second argument', functio
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', undefined), [], 'filterBy(\'foo\', 3)\')');
+  assert.deepEqual(obj.filterBy('foo', undefined), [], 'filterBy(\'foo\', 3)\')');
 });
 
-suite.test('should correctly filter explicit undefined second argument', function() {
+suite.test('should correctly filter explicit undefined second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -117,10 +117,10 @@ suite.test('should correctly filter explicit undefined second argument', functio
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo', undefined), ary.slice(2), 'filterBy(\'foo\', 3)\')');
+  assert.deepEqual(obj.filterBy('foo', undefined), ary.slice(2), 'filterBy(\'foo\', 3)\')');
 });
 
-suite.test('should not match undefined properties without second argument', function() {
+suite.test('should not match undefined properties without second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -134,7 +134,7 @@ suite.test('should not match undefined properties without second argument', func
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterBy('foo'), ary.slice(0, 2), 'filterBy(\'foo\', 3)\')');
+  assert.deepEqual(obj.filterBy('foo'), ary.slice(0, 2), 'filterBy(\'foo\', 3)\')');
 });
 
 export default suite;
