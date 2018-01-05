@@ -255,7 +255,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     assert.equal(secondInitializerRunCount, 1, 'second initializer only was run');
   }
 
-  [`@test initializers are concatenated`]() {
+  [`@test initializers are concatenated`](assert) {
     let firstInitializerRunCount = 0;
     let secondInitializerRunCount = 0;
     let FirstApp = Application.extend();
@@ -277,14 +277,14 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
 
     this.runTask(() => this.createApplication({}, FirstApp));
 
-    equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
-    equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
+    assert.equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
+    assert.equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
 
     firstInitializerRunCount = 0;
     this.runTask(() => this.createSecondApplication({}, SecondApp));
 
-    equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
-    equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
+    assert.equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
+    assert.equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
   }
 
   [`@test initializers are per-app`](assert) {
