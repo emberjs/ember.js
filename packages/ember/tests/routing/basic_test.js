@@ -405,42 +405,6 @@ QUnit.test('The loading state doesn\'t get entered for promises that resolve on 
   assert.equal(jQuery('p', '#qunit-fixture').text(), '1', 'The app is now in the specials state');
 });
 
-/*
-asyncTest("The Special page returning an error fires the error hook on SpecialRoute", function(assert) {
-  Router.map(function() {
-    this.route("home", { path: "/" });
-    this.route("special", { path: "/specials/:menu_item_id" });
-  });
-
-  let menuItem;
-
-  App.MenuItem = Ember.Object.extend();
-  App.MenuItem.reopenClass({
-    find: function(id) {
-      menuItem = App.MenuItem.create({ id: id });
-      run.later(function() { menuItem.resolve(menuItem); }, 1);
-      return menuItem;
-    }
-  });
-
-  App.SpecialRoute = Route.extend({
-    setup: function() {
-      throw 'Setup error';
-    },
-    actions: {
-      error: function(reason) {
-        equal(reason, 'Setup error');
-        QUnit.start();
-      }
-    }
-  });
-
-  bootApplication();
-
-  handleURLRejectsWith(assert, '/specials/1', 'Setup error');
-});
-*/
-
 QUnit.test('The Special page returning an error invokes SpecialRoute\'s error handler', function(assert) {
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -523,8 +487,9 @@ QUnit.test('ApplicationRoute\'s default error handler can be overridden', functi
   run(() => resolve(menuItem));
 });
 
-QUnit.asyncTest('Moving from one page to another triggers the correct callbacks', function(assert) {
+QUnit.test('Moving from one page to another triggers the correct callbacks', function(assert) {
   assert.expect(3);
+  let done = assert.async();
 
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -563,12 +528,13 @@ QUnit.asyncTest('Moving from one page to another triggers the correct callbacks'
       return router.transitionTo('special', promiseContext);
     }).then(function() {
       assert.deepEqual(router.location.path, '/specials/1');
-      QUnit.start();
+      done();
     });
   });
 });
 
-QUnit.asyncTest('Nested callbacks are not exited when moving to siblings', function(assert) {
+QUnit.test('Nested callbacks are not exited when moving to siblings', function(assert) {
+  let done = assert.async();
   Router.map(function() {
     this.route('root', { path: '/' }, function() {
       this.route('special', { path: '/specials/:menu_item_id', resetNamespace: true });
@@ -671,12 +637,14 @@ QUnit.asyncTest('Nested callbacks are not exited when moving to siblings', funct
       assert.deepEqual(router.location.path, '/specials/1');
       assert.equal(currentPath, 'root.special');
 
-      QUnit.start();
+      done();
     });
   });
 });
 
-QUnit.asyncTest('Events are triggered on the controller if a matching action name is implemented', function(assert) {
+QUnit.test('Events are triggered on the controller if a matching action name is implemented', function(assert) {
+  let done = assert.async();
+
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -705,7 +673,7 @@ QUnit.asyncTest('Events are triggered on the controller if a matching action nam
       showStuff(context) {
         assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
         assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
-        QUnit.start();
+        done();
       }
     }
   });
@@ -717,7 +685,8 @@ QUnit.asyncTest('Events are triggered on the controller if a matching action nam
   jQuery('#qunit-fixture a').click();
 });
 
-QUnit.asyncTest('Events are triggered on the current state when defined in `actions` object', function(assert) {
+QUnit.test('Events are triggered on the current state when defined in `actions` object', function(assert) {
+  let done = assert.async();
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -734,7 +703,7 @@ QUnit.asyncTest('Events are triggered on the current state when defined in `acti
         assert.ok(this instanceof App.HomeRoute, 'the handler is an App.HomeRoute');
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
-        QUnit.start();
+        done();
       }
     }
   });
@@ -748,7 +717,9 @@ QUnit.asyncTest('Events are triggered on the current state when defined in `acti
   jQuery('#qunit-fixture a').click();
 });
 
-QUnit.asyncTest('Events defined in `actions` object are triggered on the current state when routes are nested', function(assert) {
+QUnit.test('Events defined in `actions` object are triggered on the current state when routes are nested', function(assert) {
+  let done = assert.async();
+
   Router.map(function() {
     this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
@@ -763,7 +734,7 @@ QUnit.asyncTest('Events defined in `actions` object are triggered on the current
         assert.ok(this instanceof App.RootRoute, 'the handler is an App.HomeRoute');
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
-        QUnit.start();
+        done();
       }
     }
   });
@@ -821,7 +792,9 @@ QUnit.test('Events can be handled by inherited event handlers', function(assert)
   router.send('baz');
 });
 
-QUnit.asyncTest('Actions are not triggered on the controller if a matching action name is implemented as a method', function(assert) {
+QUnit.test('Actions are not triggered on the controller if a matching action name is implemented as a method', function(assert) {
+  let done = assert.async();
+
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -838,7 +811,7 @@ QUnit.asyncTest('Actions are not triggered on the controller if a matching actio
       showStuff(context) {
         assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
         assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
-        QUnit.start();
+        done();
       }
     }
   });
@@ -861,7 +834,8 @@ QUnit.asyncTest('Actions are not triggered on the controller if a matching actio
   jQuery('#qunit-fixture a').click();
 });
 
-QUnit.asyncTest('actions can be triggered with multiple arguments', function(assert) {
+QUnit.test('actions can be triggered with multiple arguments', function(assert) {
+  let done = assert.async();
   Router.map(function() {
     this.route('root', { path: '/' }, function() {
       this.route('index', { path: '/' });
@@ -878,7 +852,7 @@ QUnit.asyncTest('actions can be triggered with multiple arguments', function(ass
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         assert.deepEqual(copy(obj1, true), { name: 'Tilde' }, 'the first context is correct');
         assert.deepEqual(copy(obj2, true), { name: 'Tom Dale' }, 'the second context is correct');
-        QUnit.start();
+        done();
       }
     }
   });
