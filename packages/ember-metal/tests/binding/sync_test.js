@@ -11,7 +11,7 @@ import {
 
 QUnit.module('system/binding/sync_test.js');
 
-testBoth('bindings should not sync twice in a single run loop', function(get, set) {
+testBoth('bindings should not sync twice in a single run loop', function(get, set, assert) {
   let a, b, setValue;
   let setCalled = 0;
   let getCalled = 0;
@@ -47,12 +47,12 @@ testBoth('bindings should not sync twice in a single run loop', function(get, se
     set(a, 'foo', 'trollface');
   });
 
-  equal(get(b, 'foo'), 'trollface', 'the binding should sync');
-  equal(setCalled, 1, 'Set should only be called once');
-  equal(getCalled, 1, 'Get should only be called once');
+  assert.equal(get(b, 'foo'), 'trollface', 'the binding should sync');
+  assert.equal(setCalled, 1, 'Set should only be called once');
+  assert.equal(getCalled, 1, 'Get should only be called once');
 });
 
-testBoth('bindings should not infinite loop if computed properties return objects', function(get) {
+testBoth('bindings should not infinite loop if computed properties return objects', function(get, set, assert) {
   let a, b;
   let getCalled = 0;
 
@@ -74,11 +74,11 @@ testBoth('bindings should not infinite loop if computed properties return object
     expectDeprecation(() => bind(b, 'foo', 'a.foo'), /`Ember.Binding` is deprecated/);
   });
 
-  deepEqual(get(b, 'foo'), ['foo', 'bar'], 'the binding should sync');
-  equal(getCalled, 1, 'Get should only be called once');
+  assert.deepEqual(get(b, 'foo'), ['foo', 'bar'], 'the binding should sync');
+  assert.equal(getCalled, 1, 'Get should only be called once');
 });
 
-testBoth('bindings should do the right thing when observers trigger bindings in the opposite direction', function(get, set) {
+testBoth('bindings should do the right thing when observers trigger bindings in the opposite direction', function(get, set, assert) {
   let a, b, c;
 
   run(() => {
@@ -107,10 +107,10 @@ testBoth('bindings should do the right thing when observers trigger bindings in 
 
   run(() => set(a, 'foo', 'trollface'));
 
-  equal(get(a, 'foo'), 'what is going on');
+  assert.equal(get(a, 'foo'), 'what is going on');
 });
 
-testBoth('bindings should not try to sync destroyed objects', function(get, set) {
+testBoth('bindings should not try to sync destroyed objects', function(get, set, assert) {
   let a, b;
 
   run(() => {
@@ -130,7 +130,7 @@ testBoth('bindings should not try to sync destroyed objects', function(get, set)
   run(() => {
     set(a, 'foo', 'trollface');
     set(b, 'isDestroyed', true);
-    ok(true, 'should not raise');
+    assert.ok(true, 'should not raise');
   });
 
   run(() => {
@@ -150,6 +150,6 @@ testBoth('bindings should not try to sync destroyed objects', function(get, set)
   run(() => {
     set(b, 'foo', 'trollface');
     set(a, 'isDestroyed', true);
-    ok(true, 'should not raise');
+    assert.ok(true, 'should not raise');
   });
 });

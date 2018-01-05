@@ -35,7 +35,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test should not setup mandatory-setter if property is not writable'](assert) {
-      expect(6);
+      assert.expect(6);
 
       let obj = { };
 
@@ -62,7 +62,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test should not teardown non mandatory-setter descriptor'](assert) {
-      expect(1);
+      assert.expect(1);
 
       let obj = { get a() { return 'hi'; } };
 
@@ -73,7 +73,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test should not confuse non descriptor watched gets'](assert) {
-      expect(2);
+      assert.expect(2);
 
       let obj = { get a() { return 'hi'; } };
 
@@ -83,7 +83,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test should not setup mandatory-setter if setter is already setup on property'](assert) {
-      expect(2);
+      assert.expect(2);
 
       let obj = { someProp: null };
 
@@ -119,7 +119,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test should not setup mandatory-setter if setter is already setup on property in parent prototype'](assert) {
-      expect(2);
+      assert.expect(2);
 
       function Foo() { }
 
@@ -142,7 +142,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test should not setup mandatory-setter if setter is already setup on property in grandparent prototype'](assert) {
-      expect(2);
+      assert.expect(2);
 
       function Foo() { }
 
@@ -169,7 +169,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test should not setup mandatory-setter if setter is already setup on property in great grandparent prototype'](assert) {
-      expect(2);
+      assert.expect(2);
 
       function Foo() { }
 
@@ -350,7 +350,7 @@ if (MANDATORY_SETTER) {
     }
 
     ['@test sets up mandatory-setter if property comes from prototype'](assert) {
-      expect(2);
+      assert.expect(2);
 
       let obj = {
         someProp: null,

@@ -8,7 +8,7 @@ moduleFor('system/run_loop/run_bind_test', class extends AbstractTestCase {
     let obj = {
       value: 0,
       increment(increment) {
-        ok(run.currentRunLoop, 'expected a run-loop');
+        assert.ok(run.currentRunLoop, 'expected a run-loop');
         return this.value += increment;
       }
     };

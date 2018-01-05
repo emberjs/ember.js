@@ -5,20 +5,20 @@ const SEMVER_REGEX = /^\bv?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]
 
 QUnit.module('ember-metal/core/main');
 
-QUnit.test('Ember registers itself', function() {
+QUnit.test('Ember registers itself', function(assert) {
   let lib = Ember.libraries._registry[0];
 
-  equal(lib.name, 'Ember');
-  equal(lib.version, Ember.VERSION);
+  assert.equal(lib.name, 'Ember');
+  assert.equal(lib.version, Ember.VERSION);
 });
 
-QUnit.test('Ember.VERSION is in alignment with SemVer v2.0.0', function () {
-  ok(SEMVER_REGEX.test(Ember.VERSION), `Ember.VERSION (${Ember.VERSION})is valid SemVer v2.0.0`);
+QUnit.test('Ember.VERSION is in alignment with SemVer v2.0.0', function(assert) {
+  assert.ok(SEMVER_REGEX.test(Ember.VERSION), `Ember.VERSION (${Ember.VERSION})is valid SemVer v2.0.0`);
 });
 
-QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', function () {
+QUnit.test('SEMVER_REGEX properly validates and invalidates version numbers', function(assert) {
   function validateVersionString(versionString, expectedResult) {
-    equal(SEMVER_REGEX.test(versionString), expectedResult);
+    assert.equal(SEMVER_REGEX.test(versionString), expectedResult);
   }
 
   // Positive test cases
