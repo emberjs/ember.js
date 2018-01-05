@@ -143,6 +143,9 @@ function ComputedProperty(config, opts) {
     this._setter = config.set;
   }
   assert('Computed properties must receive a getter or a setter, you passed none.', !!this._getter || !!this._setter);
+  if (!this._getter) {
+    this._getter = () => undefined;
+  }
   this._suspended = undefined;
   this._meta = undefined;
   this._volatile = false;
