@@ -1,5 +1,3 @@
-/* globals QUnit */
-
 import { callWithStub, checkTest } from './utils';
 
 const BREAK = {};
@@ -31,6 +29,8 @@ AssertionAssert.prototype = {
 
   inject() {
     let expectAssertion = (func, expectedMessage) => {
+      let { assert } = QUnit.config.current;
+
       if (this.env.runningProdBuild) {
         QUnit.ok(true, 'Assertions disabled in production builds.');
         return;
@@ -54,7 +54,7 @@ AssertionAssert.prototype = {
         }
       }
 
-      assert(sawCall, actualMessage, expectedMessage);
+      check(assert, sawCall, actualMessage, expectedMessage);
     };
 
     let ignoreAssertion = (func) => {
@@ -71,22 +71,22 @@ AssertionAssert.prototype = {
   }
 };
 
-function assert(sawCall, actualMessage, expectedMessage) {
+function check(assert, sawCall, actualMessage, expectedMessage) {
   // Run assertions in an order that is useful when debugging a test failure.
   if (!sawCall) {
-    QUnit.ok(false, `Expected Ember.assert to be called (Not called with any value).`);
+    assert.ok(false, `Expected Ember.assert to be called (Not called with any value).`);
   } else if (!actualMessage) {
-    QUnit.ok(false, `Expected a failing Ember.assert (Ember.assert called, but without a failing test).`);
+    assert.ok(false, `Expected a failing Ember.assert (Ember.assert called, but without a failing test).`);
   } else {
     if (expectedMessage) {
       if (expectedMessage instanceof RegExp) {
-        QUnit.ok(expectedMessage.test(actualMessage), `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`);
+        assert.ok(expectedMessage.test(actualMessage), `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`);
       } else {
-        QUnit.equal(actualMessage, expectedMessage, `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`);
+        assert.equal(actualMessage, expectedMessage, `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`);
       }
     } else {
       // Positive assertion that assert was called
-      QUnit.ok(true, 'Expected a failing Ember.assert.');
+      assert.ok(true, 'Expected a failing Ember.assert.');
     }
   }
 }

@@ -20,7 +20,7 @@ export function testBoth(testname, callback) {
     if (ENV.USES_ACCESSORS) {
       callback(aget, aset, assert);
     } else {
-      ok('SKIPPING ACCESSORS');
+      assert.ok('SKIPPING ACCESSORS');
     }
   });
 }
@@ -53,7 +53,7 @@ export function testWithDefault(testname, callback) {
     if (ENV.USES_ACCESSORS) {
       callback(aget, aset, assert);
     } else {
-      ok('SKIPPING ACCESSORS');
+      assert.ok('SKIPPING ACCESSORS');
     }
   });
 }
