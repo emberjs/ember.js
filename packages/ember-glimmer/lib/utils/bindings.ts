@@ -21,20 +21,11 @@ import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
 import { ROOT_REF } from '../component';
 import { Component } from './curly-component-state-bucket';
+import { referenceFromParts } from './references';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
 function referenceForKey(component: Component, key: string) {
   return component[ROOT_REF].get(key);
-}
-
-function referenceFromParts(root: VersionedPathReference<Opaque>, parts: string[]): VersionedPathReference<Opaque> {
-  let reference = root;
-
-  for (let i=0; i<parts.length; i++) {
-    reference = reference.get(parts[i]);
-  }
-
-  return reference;
 }
 
 function referenceForParts(component: Component, parts: string[]): Reference {

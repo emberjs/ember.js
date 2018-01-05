@@ -1,11 +1,13 @@
+import { Opaque } from '@glimmer/interfaces';
 import {
   combine,
   CONSTANT_TAG,
   isConst,
   PathReference,
-  referenceForParts,
+  Tag,
   TagWrapper,
   UpdatableTag,
+  VersionedPathReference,
 } from '@glimmer/reference';
 import {
   Arguments,
@@ -13,7 +15,7 @@ import {
   VM
 } from '@glimmer/runtime';
 import { set } from 'ember-metal';
-import { CachedReference, UPDATE } from '../utils/references';
+import { CachedReference, referenceFromParts, UPDATE } from '../utils/references';
 
 /**
 @module ember
@@ -68,23 +70,23 @@ export default function(_vm: VM, args: Arguments) {
 }
 
 class GetHelperReference extends CachedReference {
-  public sourceReference: any;
-  public pathReference: PathReference<any>;
-  public lastPath: any;
-  public innerReference: any;
+  public sourceReference: VersionedPathReference<Opaque>;
+  public pathReference: PathReference<string>;
+  public lastPath: string | null;
+  public innerReference: VersionedPathReference<Opaque>;
   public innerTag: TagWrapper<UpdatableTag>;
-  public tag: any;
+  public tag: Tag;
 
-  static create(sourceReference: any, pathReference: PathReference<any>) {
+  static create(sourceReference: VersionedPathReference<Opaque>, pathReference: PathReference<string>) {
     if (isConst(pathReference)) {
       let parts = pathReference.value().split('.');
-      return referenceForParts(sourceReference, parts);
+      return referenceFromParts(sourceReference, parts);
     } else {
       return new GetHelperReference(sourceReference, pathReference);
     }
   }
 
-  constructor(sourceReference: any, pathReference: PathReference<any>) {
+  constructor(sourceReference: VersionedPathReference<Opaque>, pathReference: PathReference<string>) {
     super();
     this.sourceReference = sourceReference;
     this.pathReference = pathReference;
@@ -107,7 +109,7 @@ class GetHelperReference extends CachedReference {
         let pathType = typeof path;
 
         if (pathType === 'string') {
-          innerReference = referenceForParts(this.sourceReference, path.split('.'));
+          innerReference = referenceFromParts(this.sourceReference, path.split('.'));
         } else if (pathType === 'number') {
           innerReference = this.sourceReference.get('' + path);
         }
