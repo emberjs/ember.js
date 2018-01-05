@@ -137,7 +137,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
   }
 
-  ['@test Components trigger actions in the parents context when called from within a block']() {
+  ['@test Components trigger actions in the parents context when called from within a block'](assert) {
     this.addTemplate('application', `
       <div id='wrapper'>
         {{#my-component}}
@@ -149,7 +149,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     this.add('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
-          ok(true, 'action triggered on parent');
+          assert.ok(true, 'action triggered on parent');
         }
       }
     }));
@@ -160,7 +160,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
   }
 
-  ['@test Components trigger actions in the components context when called from within its template']() {
+  ['@test Components trigger actions in the components context when called from within its template'](assert) {
     this.addTemplate('application', `
       <div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>
     `);
@@ -168,7 +168,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     this.add('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
-          ok(false, 'action on the wrong context');
+          assert.ok(false, 'action on the wrong context');
         }
       }
     }));
@@ -176,7 +176,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       ComponentClass: Component.extend({
         actions: {
           fizzbuzz() {
-            ok(true, 'action triggered on component');
+            assert.ok(true, 'action triggered on component');
           }
         }
       }),

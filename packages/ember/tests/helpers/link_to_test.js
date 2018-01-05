@@ -426,7 +426,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
   }
 
-  [`@test The {{link-to}} helper supports custom, nested, current-when`]() {
+  [`@test The {{link-to}} helper supports custom, nested, current-when`](assert) {
     this.router.map(function() {
       this.route('index', { path: '/' }, function() {
         this.route('about');
@@ -442,7 +442,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.visit('/about');
 
-    equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
+    assert.equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
   }
 
   [`@test The {{link-to}} helper does not disregard current-when when it is given explicitly for a route`](assert) {
@@ -781,7 +781,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault');
   }
 
-  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`]() {
+  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](assert) {
     this.router.map(function() {
       this.route('about');
     });
@@ -799,7 +799,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#about-link').trigger(event);
 
-    equal(event.isDefaultPrevented(), false, 'should not preventDefault');
+    assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault');
   }
 
   [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`](assert) {
@@ -816,7 +816,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(event.isDefaultPrevented(), false, 'should not preventDefault when target attribute is specified');
   }
 
-  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`]() {
+  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`](assert) {
     this.addTemplate('index', `
       <h3>Home</h3>
       {{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}
@@ -827,7 +827,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#self-link').trigger(event);
 
-    equal(event.isDefaultPrevented(), true, 'should preventDefault when target attribute is `_self`');
+    assert.equal(event.isDefaultPrevented(), true, 'should preventDefault when target attribute is `_self`');
   }
 
   [`@test The {{link-to}} helper should not transition if target is not equal to _self or empty`](assert) {
@@ -1020,7 +1020,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.visit('/');
 
     let linksEqual = (links, expected) => {
-      equal(links.length, expected.length, 'Has correct number of links');
+      assert.equal(links.length, expected.length, 'Has correct number of links');
 
       let idx;
       for (idx = 0; idx < links.length; idx++) {
