@@ -40,7 +40,7 @@ export function markObjectAsDirty(meta, propertyKey) {
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {
-    objectTag.dirty();
+    objectTag.inner.dirty();
   }
 
   let tags = meta.readableTags();
@@ -51,7 +51,7 @@ export function markObjectAsDirty(meta, propertyKey) {
   }
 
   if (propertyKey === 'content' && meta.isProxy()) {
-    objectTag.contentDidChange();
+    objectTag.inner.contentDidChange();
   }
 
   if (objectTag !== undefined || propertyTag !== undefined) {
