@@ -1508,7 +1508,7 @@ function assertNav(options, callback) {
   let nav = false;
 
   function check(event) {
-    QUnit.equal(event.defaultPrevented, options.prevented, `expected defaultPrevented=${options.prevented}`);
+    QUnit.assert.equal(event.defaultPrevented, options.prevented, `expected defaultPrevented=${options.prevented}`);
     nav = true;
     event.preventDefault();
   }
@@ -1518,6 +1518,6 @@ function assertNav(options, callback) {
     callback();
   } finally {
     document.removeEventListener('click', check);
-    QUnit.ok(nav, 'Expected a link to be clicked');
+    QUnit.assert.ok(nav, 'Expected a link to be clicked');
   }
 }
