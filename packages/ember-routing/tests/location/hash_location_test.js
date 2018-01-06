@@ -97,7 +97,7 @@ moduleFor('Ember.HashLocation', class extends AbstractTestCase {
   }
 
   ['@test HashLocation.replaceURL() correctly replaces to the path with a page reload'](assert) {
-    expect(2);
+    assert.expect(2);
 
     createLocation({
       _location: {
@@ -113,7 +113,7 @@ moduleFor('Ember.HashLocation', class extends AbstractTestCase {
   }
 
   ['@test HashLocation.onUpdateURL callback executes as expected'](assert) {
-    expect(1);
+    assert.expect(1);
 
     createLocation({
       _location: mockBrowserLocation('/#/foo/bar')
@@ -129,7 +129,7 @@ moduleFor('Ember.HashLocation', class extends AbstractTestCase {
   }
 
   ['@test HashLocation.onUpdateURL doesn\'t execute callback if lastSetURL === path'](assert) {
-    expect(0);
+    assert.expect(0);
 
     createLocation({
       _location: {
@@ -154,7 +154,7 @@ moduleFor('Ember.HashLocation', class extends AbstractTestCase {
   }
 
   ['@test HashLocation.willDestroy() cleans up hashchange event listener'](assert) {
-    expect(1);
+    assert.expect(1);
 
     createLocation({}, assert);
 

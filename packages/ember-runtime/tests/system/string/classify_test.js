@@ -4,16 +4,16 @@ import { classify } from '../../../system/string';
 QUnit.module('EmberStringUtils.classify');
 
 if (!ENV.EXTEND_PROTOTYPES.String) {
-  QUnit.test('String.prototype.classify is not modified without EXTEND_PROTOTYPES', function() {
-    ok('undefined' === typeof String.prototype.classify, 'String.prototype helper disabled');
+  QUnit.test('String.prototype.classify is not modified without EXTEND_PROTOTYPES', function(assert) {
+    assert.ok('undefined' === typeof String.prototype.classify, 'String.prototype helper disabled');
   });
 }
 
 function test(given, expected, description) {
-  QUnit.test(description, function() {
-    deepEqual(classify(given), expected);
+  QUnit.test(description, function(assert) {
+    assert.deepEqual(classify(given), expected);
     if (ENV.EXTEND_PROTOTYPES.String) {
-      deepEqual(given.classify(), expected);
+      assert.deepEqual(given.classify(), expected);
     }
   });
 }

@@ -65,21 +65,21 @@ Suite.reopenClass({
       opts = {};
     }
 
-    let setup = opts.setup;
-    let teardown = opts.teardown;
+    let setup = opts.setup || opts.beforeEach;
+    let teardown = opts.teardown || opts.afterEach;
     this.reopen({
       run() {
         this._super(...arguments);
         let title = get(this, 'name') + ': ' + desc;
         let ctx = this;
         QUnit.module(title, {
-          setup() {
+          beforeEach() {
             if (setup) {
               setup.call(ctx);
             }
           },
 
-          teardown() {
+          afterEach() {
             if (teardown) {
               teardown.call(ctx);
             }
@@ -98,7 +98,7 @@ Suite.reopenClass({
         if (!func) {
           QUnit.test(name); // output warning
         } else {
-          QUnit.test(name, () => func.call(ctx));
+          QUnit.test(name, (assert) => func.call(ctx, assert));
         }
       }
     });

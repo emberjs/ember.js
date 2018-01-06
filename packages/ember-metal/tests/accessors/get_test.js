@@ -118,7 +118,7 @@ moduleFor('Ember.get', class extends AbstractTestCase {
   // BUGS
   //
 
-  ['@test (regression) watched properties on unmodified inherited objects should still return their original value']() {
+  ['@test (regression) watched properties on unmodified inherited objects should still return their original value'](assert) {
     let MyMixin = Mixin.create({
       someProperty: 'foo',
       propertyDidChange: observer('someProperty', () => {})
@@ -127,7 +127,7 @@ moduleFor('Ember.get', class extends AbstractTestCase {
     let baseObject = MyMixin.apply({});
     let theRealObject = Object.create(baseObject);
 
-    equal(get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');
+    assert.equal(get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');
   }
 });
 
@@ -160,7 +160,7 @@ moduleFor('Ember.getWithDefault', class extends AbstractTestCase {
     let obj = {
       count: 0,
       unknownProperty(key) {
-        equal(key, 'foo', 'should pass key');
+        assert.equal(key, 'foo', 'should pass key');
         this.count++;
         return 'FOO';
       }
@@ -174,7 +174,7 @@ moduleFor('Ember.getWithDefault', class extends AbstractTestCase {
     let obj = {
       unknownProperty(key) {
         if (key === 'foo') {
-          equal(key, 'foo', 'should pass key');
+          assert.equal(key, 'foo', 'should pass key');
           return 'FOO';
         }
       }

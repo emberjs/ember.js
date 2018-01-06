@@ -39,6 +39,7 @@ export default class AbstractTestCase {
   }
 
   teardown() {}
+  afterEach() {}
 
   runTask(callback) {
     return run(callback);
@@ -136,7 +137,7 @@ export default class AbstractTestCase {
   }
 
   assertInnerHTML(html) {
-    equalInnerHTML(this.element, html);
+    equalInnerHTML(this.assert, this.element, html);
   }
 
   assertHTML(html) {
@@ -148,7 +149,7 @@ export default class AbstractTestCase {
       throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
     }
 
-    equalsElement(node, tagName, attrs, content);
+    equalsElement(this.assert, node, tagName, attrs, content);
   }
 
   assertComponentElement(node, { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }) {

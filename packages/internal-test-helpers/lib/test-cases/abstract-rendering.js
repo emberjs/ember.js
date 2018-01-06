@@ -43,7 +43,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   getBootOptions() { }
   getResolver() { }
 
-  teardown() {
+  afterEach() {
     try {
       if (this.component) {
         runDestroy(this.component);

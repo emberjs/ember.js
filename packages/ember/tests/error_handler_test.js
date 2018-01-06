@@ -9,13 +9,13 @@ const TESTING = Ember.testing;
 let WINDOW_ONERROR;
 
 QUnit.module('error_handler', {
-  setup() {
+  beforeEach() {
     // capturing this outside of module scope to ensure we grab
     // the test frameworks own window.onerror to reset it
     WINDOW_ONERROR = window.onerror;
   },
 
-  teardown() {
+  afterEach() {
     Ember.onerror = ONERROR;
     Ember.testing = TESTING;
     window.onerror = WINDOW_ONERROR;
@@ -37,12 +37,12 @@ function runThatThrowsAsync(message = 'Error for testing error handling') {
   });
 }
 
-test('by default there is no onerror - sync run', function(assert) {
+QUnit.test('by default there is no onerror - sync run', function(assert) {
   assert.strictEqual(Ember.onerror, undefined, 'precond - there should be no Ember.onerror set by default');
   assert.throws(runThatThrowsSync, Error, 'errors thrown sync are catchable');
 });
 
-test('when Ember.onerror (which rethrows) is registered - sync run', function(assert) {
+QUnit.test('when Ember.onerror (which rethrows) is registered - sync run', function(assert) {
   assert.expect(2);
   Ember.onerror = function(error) {
     assert.ok(true, 'onerror called');
@@ -51,7 +51,7 @@ test('when Ember.onerror (which rethrows) is registered - sync run', function(as
   assert.throws(runThatThrowsSync, Error, 'error is thrown');
 });
 
-test('when Ember.onerror (which does not rethrow) is registered - sync run', function(assert) {
+QUnit.test('when Ember.onerror (which does not rethrow) is registered - sync run', function(assert) {
   assert.expect(2);
   Ember.onerror = function() {
     assert.ok(true, 'onerror called');
@@ -61,7 +61,7 @@ test('when Ember.onerror (which does not rethrow) is registered - sync run', fun
 });
 
 if (DEBUG) {
-  test('when Ember.Test.adapter is registered and error is thrown - sync run', function(assert) {
+  QUnit.test('when Ember.Test.adapter is registered and error is thrown - sync run', function(assert) {
     assert.expect(1);
 
     Ember.Test.adapter = {
@@ -73,7 +73,7 @@ if (DEBUG) {
     assert.throws(runThatThrowsSync, Error);
   });
 
-  test('when both Ember.onerror (which rethrows) and Ember.Test.adapter are registered - sync run', function(assert) {
+  QUnit.test('when both Ember.onerror (which rethrows) and Ember.Test.adapter are registered - sync run', function(assert) {
     assert.expect(2);
 
     Ember.Test.adapter = {
@@ -90,7 +90,7 @@ if (DEBUG) {
     assert.throws(runThatThrowsSync, Error, 'error is thrown');
   });
 
-  test('when both Ember.onerror (which does not rethrow) and Ember.Test.adapter are registered - sync run', function(assert) {
+  QUnit.test('when both Ember.onerror (which does not rethrow) and Ember.Test.adapter are registered - sync run', function(assert) {
     assert.expect(2);
 
     Ember.Test.adapter = {
@@ -145,7 +145,7 @@ if (DEBUG) {
     }, 20);
   });
 
-  test('when both Ember.onerror and Ember.Test.adapter are registered - async run', function(assert) {
+  QUnit.test('when both Ember.onerror and Ember.Test.adapter are registered - async run', function(assert) {
     assert.expect(1);
     let done = assert.async();
 
@@ -301,7 +301,7 @@ QUnit.test('Ember.onerror can intercept errors (aka swallow) by not rethrowing (
 });
 
 function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) {
-  test(`${message} when Ember.onerror which does not rethrow is present - rsvp`, function(assert) {
+  QUnit.test(`${message} when Ember.onerror which does not rethrow is present - rsvp`, function(assert) {
     assert.expect(1);
 
     let thrown = new Error('the error');
@@ -316,7 +316,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
     return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
 
-  test(`${message} when Ember.onerror which does rethrow is present - rsvp`, function(assert) {
+  QUnit.test(`${message} when Ember.onerror which does rethrow is present - rsvp`, function(assert) {
     assert.expect(2);
 
     let thrown = new Error('the error');
@@ -344,7 +344,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
     return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
 
-  test(`${message} when Ember.onerror which does not rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
+  QUnit.test(`${message} when Ember.onerror which does not rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
     assert.expect(1);
 
     Ember.testing = false;
@@ -360,7 +360,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
     return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
 
-  test(`${message} when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
+  QUnit.test(`${message} when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
     assert.expect(2);
 
     Ember.testing = false;
@@ -390,7 +390,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
   });
 
   if (DEBUG) {
-    test(`${message} when Ember.Test.adapter without \`exception\` method is present - rsvp`, function(assert) {
+    QUnit.test(`${message} when Ember.Test.adapter without \`exception\` method is present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -417,7 +417,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when both Ember.onerror and Ember.Test.adapter without \`exception\` method are present - rsvp`, function(assert) {
+    QUnit.test(`${message} when both Ember.onerror and Ember.Test.adapter without \`exception\` method are present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -441,7 +441,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when Ember.Test.adapter is present - rsvp`, function(assert) {
+    QUnit.test(`${message} when Ember.Test.adapter is present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -458,7 +458,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
+    QUnit.test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -479,7 +479,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
+    QUnit.test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
       assert.expect(2);
 
       let thrown = new Error('the error');

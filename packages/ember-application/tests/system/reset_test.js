@@ -49,7 +49,7 @@ moduleFor('Ember.Application - resetting', class extends AutobootApplicationTest
 
     assert.strictEqual(firstController, secondController, 'controllers looked up in succession should be the same instance');
 
-    ok(firstController.isDestroying, 'controllers are destroyed when their application is reset');
+    assert.ok(firstController.isDestroying, 'controllers are destroyed when their application is reset');
 
     assert.notStrictEqual(firstController, thirdController, 'controllers looked up after the application is reset should not be the same instance');
   }

@@ -1,7 +1,6 @@
 import {
   moduleFor,
-  ApplicationTestCase,
-  AutobootApplicationTestCase
+  ApplicationTestCase
 } from 'internal-test-helpers';
 
 import {
@@ -13,7 +12,7 @@ import {
   instrumentationSubscribe as subscribe,
   alias
 } from 'ember-metal';
-import { Router, Route, NoneLocation } from 'ember-routing';
+import { Route, NoneLocation } from 'ember-routing';
 import { jQuery } from 'ember-views';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
@@ -427,7 +426,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
   }
 
-  [`@test The {{link-to}} helper supports custom, nested, current-when`]() {
+  [`@test The {{link-to}} helper supports custom, nested, current-when`](assert) {
     this.router.map(function() {
       this.route('index', { path: '/' }, function() {
         this.route('about');
@@ -443,7 +442,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.visit('/about');
 
-    equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
+    assert.equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
   }
 
   [`@test The {{link-to}} helper does not disregard current-when when it is given explicitly for a route`](assert) {
@@ -782,7 +781,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(event.defaultPrevented, false, 'should not preventDefault');
   }
 
-  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`]() {
+  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](assert) {
     this.router.map(function() {
       this.route('about');
     });
@@ -800,7 +799,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#about-link').trigger(event);
 
-    equal(event.defaultPrevented, false, 'should not preventDefault');
+    assert.equal(event.defaultPrevented, false, 'should not preventDefault');
   }
 
   [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`](assert) {
@@ -817,7 +816,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(event.defaultPrevented, false, 'should not preventDefault when target attribute is specified');
   }
 
-  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`]() {
+  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`](assert) {
     this.addTemplate('index', `
       <h3>Home</h3>
       {{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}
@@ -828,7 +827,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     let event = jQuery.Event('click');
     this.$('#self-link').trigger(event);
 
-    equal(event.defaultPrevented, true, 'should preventDefault when target attribute is `_self`');
+    assert.equal(event.defaultPrevented, true, 'should preventDefault when target attribute is `_self`');
   }
 
   [`@test The {{link-to}} helper should not transition if target is not equal to _self or empty`](assert) {
@@ -1021,7 +1020,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.visit('/');
 
     let linksEqual = (links, expected) => {
-      equal(links.length, expected.length, 'Has correct number of links');
+      assert.equal(links.length, expected.length, 'Has correct number of links');
 
       let idx;
       for (idx = 0; idx < links.length; idx++) {
@@ -1208,6 +1207,20 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     assert.equal(this.$('#link').text(), '<b>BLAMMO</b>');
     assert.equal(this.$('b').length, 0);
+  }
+
+  [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
+    assert.expect(1);
+
+    this.router.map(function() {
+      this.route('post', { path: 'post/:post_id' });
+    });
+
+    this.addTemplate('application', `{{#link-to 'post'}}Post{{/link-to}}`);
+
+    assert.throws(() => {
+      this.visit('/');
+    }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
   }
 
   [`@test the {{link-to}} helper does not throw an error if its route has exited`](assert) {
@@ -1504,49 +1517,6 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
 
     // Click the now-active link
     this.click(staticLink[0]);
-  }
-
-});
-
-moduleFor('The {{link-to}} helper - globals mode app', class extends AutobootApplicationTestCase {
-
-  /*
-   * When an exception is thrown during the initial rendering phase, the
-   * `visit` promise is not resolved or rejected. This means the `applicationInstance`
-   * is never torn down and tests running after this one will fail.
-   *
-   * It is ugly, but since this test intentionally causes an initial render
-   * error, it requires globals mode to access the `applicationInstance`
-   * for teardown after test completion.
-   *
-   * Application "globals mode" is trigged by `autoboot: true`. It doesn't
-   * have anything to do with the resolver.
-   *
-   * We should be able to fix this by having the application eagerly stash a
-   * copy of each application instance it creates. When the application is
-   * destroyed, it can also destroy the instances (this is how the globals
-   * mode avoid the problem).
-   *
-   * See: https://github.com/emberjs/ember.js/issues/15327
-   */
-  [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
-    assert.expect(1);
-
-    assert.throws(() => {
-      this.runTask(() => {
-        this.createApplication();
-
-        this.add('router:main', Router.extend({
-          location: 'none'
-        }));
-
-        this.router.map(function() {
-          this.route('post', { path: 'post/:post_id' });
-        });
-
-        this.addTemplate('application', `{{#link-to 'post'}}Post{{/link-to}}`);
-      });
-    }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
   }
 
 });

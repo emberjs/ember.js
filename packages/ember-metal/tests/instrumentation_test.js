@@ -6,20 +6,20 @@ import {
 } from '..';
 
 QUnit.module('Ember Instrumentation', {
-  teardown() {
+  afterEach() {
     reset();
   }
 });
 
-QUnit.test('execute block even if no listeners', function() {
+QUnit.test('execute block even if no listeners', function(assert) {
   let result = instrument('render', {}, function() {
     return 'hello';
   });
-  equal(result, 'hello', 'called block');
+  assert.equal(result, 'hello', 'called block');
 });
 
-QUnit.test('subscribing to a simple path receives the listener', function() {
-  expect(12);
+QUnit.test('subscribing to a simple path receives the listener', function(assert) {
+  assert.expect(12);
 
   let sentPayload = {};
   let count = 0;
@@ -27,24 +27,24 @@ QUnit.test('subscribing to a simple path receives the listener', function() {
   subscribe('render', {
     before(name, timestamp, payload) {
       if (count === 0) {
-        strictEqual(name, 'render');
+        assert.strictEqual(name, 'render');
       } else {
-        strictEqual(name, 'render.handlebars');
+        assert.strictEqual(name, 'render.handlebars');
       }
 
-      ok(typeof timestamp === 'number');
-      strictEqual(payload, sentPayload);
+      assert.ok(typeof timestamp === 'number');
+      assert.strictEqual(payload, sentPayload);
     },
 
     after(name, timestamp, payload) {
       if (count === 0) {
-        strictEqual(name, 'render');
+        assert.strictEqual(name, 'render');
       } else {
-        strictEqual(name, 'render.handlebars');
+        assert.strictEqual(name, 'render.handlebars');
       }
 
-      ok(typeof timestamp === 'number');
-      strictEqual(payload, sentPayload);
+      assert.ok(typeof timestamp === 'number');
+      assert.strictEqual(payload, sentPayload);
 
       count++;
     }
@@ -55,8 +55,8 @@ QUnit.test('subscribing to a simple path receives the listener', function() {
   instrument('render.handlebars', sentPayload, function() {});
 });
 
-QUnit.test('returning a value from the before callback passes it to the after callback', function() {
-  expect(2);
+QUnit.test('returning a value from the before callback passes it to the after callback', function(assert) {
+  assert.expect(2);
 
   let passthru1 = {};
   let passthru2 = {};
@@ -66,7 +66,7 @@ QUnit.test('returning a value from the before callback passes it to the after ca
       return passthru1;
     },
     after(name, timestamp, payload, beforeValue) {
-      strictEqual(beforeValue, passthru1);
+      assert.strictEqual(beforeValue, passthru1);
     }
   });
 
@@ -75,19 +75,19 @@ QUnit.test('returning a value from the before callback passes it to the after ca
       return passthru2;
     },
     after(name, timestamp, payload, beforeValue) {
-      strictEqual(beforeValue, passthru2);
+      assert.strictEqual(beforeValue, passthru2);
     }
   });
 
   instrument('render', null, function() {});
 });
 
-QUnit.test('instrument with 2 args (name, callback) no payload', function() {
-  expect(1);
+QUnit.test('instrument with 2 args (name, callback) no payload', function(assert) {
+  assert.expect(1);
 
   subscribe('render', {
     before(name, timestamp, payload) {
-      deepEqual(payload, {});
+      assert.deepEqual(payload, {});
     },
     after() {}
   });
@@ -95,30 +95,30 @@ QUnit.test('instrument with 2 args (name, callback) no payload', function() {
   instrument('render', function() {});
 });
 
-QUnit.test('instrument with 3 args (name, callback, binding) no payload', function() {
-  expect(2);
+QUnit.test('instrument with 3 args (name, callback, binding) no payload', function(assert) {
+  assert.expect(2);
 
   let binding = {};
   subscribe('render', {
     before(name, timestamp, payload) {
-      deepEqual(payload, {});
+      assert.deepEqual(payload, {});
     },
     after() {}
   });
 
   instrument('render', function() {
-    deepEqual(this, binding);
+    assert.deepEqual(this, binding);
   }, binding);
 });
 
 
-QUnit.test('instrument with 3 args (name, payload, callback) with payload', function() {
-  expect(1);
+QUnit.test('instrument with 3 args (name, payload, callback) with payload', function(assert) {
+  assert.expect(1);
 
   let expectedPayload = { hi: 1 };
   subscribe('render', {
     before(name, timestamp, payload) {
-      deepEqual(payload, expectedPayload);
+      assert.deepEqual(payload, expectedPayload);
     },
     after() {}
   });
@@ -126,40 +126,40 @@ QUnit.test('instrument with 3 args (name, payload, callback) with payload', func
   instrument('render', expectedPayload, function() {});
 });
 
-QUnit.test('instrument with 4 args (name, payload, callback, binding) with payload', function() {
-  expect(2);
+QUnit.test('instrument with 4 args (name, payload, callback, binding) with payload', function(assert) {
+  assert.expect(2);
 
   let expectedPayload = { hi: 1 };
   let binding = {};
   subscribe('render', {
     before(name, timestamp, payload) {
-      deepEqual(payload, expectedPayload);
+      assert.deepEqual(payload, expectedPayload);
     },
     after() {}
   });
 
   instrument('render', expectedPayload, function() {
-    deepEqual(this, binding);
+    assert.deepEqual(this, binding);
   }, binding);
 });
 
 
-QUnit.test('raising an exception in the instrumentation attaches it to the payload', function() {
-  expect(2);
+QUnit.test('raising an exception in the instrumentation attaches it to the payload', function(assert) {
+  assert.expect(2);
 
   let error = new Error('Instrumentation');
 
   subscribe('render', {
     before() {},
     after(name, timestamp, payload) {
-      strictEqual(payload.exception, error);
+      assert.strictEqual(payload.exception, error);
     }
   });
 
   subscribe('render', {
     before() {},
     after(name, timestamp, payload) {
-      strictEqual(payload.exception, error);
+      assert.strictEqual(payload.exception, error);
     }
   });
 
@@ -168,34 +168,34 @@ QUnit.test('raising an exception in the instrumentation attaches it to the paylo
   });
 });
 
-QUnit.test('it is possible to add a new subscriber after the first instrument', function() {
+QUnit.test('it is possible to add a new subscriber after the first instrument', function(assert) {
   instrument('render.handlebars', null, function() {});
 
   subscribe('render', {
     before() {
-      ok(true, 'Before callback was called');
+      assert.ok(true, 'Before callback was called');
     },
     after() {
-      ok(true, 'After callback was called');
+      assert.ok(true, 'After callback was called');
     }
   });
 
   instrument('render.handlebars', null, function() {});
 });
 
-QUnit.test('it is possible to remove a subscriber', function() {
-  expect(4);
+QUnit.test('it is possible to remove a subscriber', function(assert) {
+  assert.expect(4);
 
   let count = 0;
 
   let subscriber = subscribe('render', {
     before() {
-      equal(count, 0);
-      ok(true, 'Before callback was called');
+      assert.equal(count, 0);
+      assert.ok(true, 'Before callback was called');
     },
     after() {
-      equal(count, 0);
-      ok(true, 'After callback was called');
+      assert.equal(count, 0);
+      assert.ok(true, 'After callback was called');
       count++;
     }
   });

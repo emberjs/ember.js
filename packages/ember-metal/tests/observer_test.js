@@ -39,20 +39,20 @@ testBoth('observer should assert to invalid input', function() {
   }, 'observer called without a function');
 });
 
-testBoth('observer should fire when property is modified', function(get, set) {
+testBoth('observer should fire when property is modified', function(get, set, assert) {
   let obj = {};
   let count = 0;
 
   addObserver(obj, 'foo', function() {
-    equal(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
+    assert.equal(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
     count++;
   });
 
   set(obj, 'foo', 'bar');
-  equal(count, 1, 'should have invoked observer');
+  assert.equal(count, 1, 'should have invoked observer');
 });
 
-testBoth('observer should fire when dependent property is modified', function(get, set) {
+testBoth('observer should fire when dependent property is modified', function(get, set, assert) {
   let obj = { bar: 'bar' };
   defineProperty(obj, 'foo', computed(function() {
     return get(this, 'bar').toUpperCase();
@@ -62,15 +62,15 @@ testBoth('observer should fire when dependent property is modified', function(ge
 
   let count = 0;
   addObserver(obj, 'foo', function() {
-    equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
+    assert.equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
     count++;
   });
 
   set(obj, 'bar', 'baz');
-  equal(count, 1, 'should have invoked observer');
+  assert.equal(count, 1, 'should have invoked observer');
 });
 
-testBoth('observer should continue to fire after dependent properties are accessed', function(get) {
+testBoth('observer should continue to fire after dependent properties are accessed', function(get, set, assert) {
   let observerCount = 0;
   let obj = {};
 
@@ -86,11 +86,11 @@ testBoth('observer should continue to fire after dependent properties are access
     propertyDidChange(obj, 'prop');
   }
 
-  equal(observerCount, 10, 'should continue to fire indefinitely');
+  assert.equal(observerCount, 10, 'should continue to fire indefinitely');
 });
 
 if (ENV.EXTEND_PROTOTYPES.Function) {
-  testBoth('observer added declaratively via brace expansion should fire when property changes', function (get, set) {
+  testBoth('observer added declaratively via brace expansion should fire when property changes', function(get, set, assert) {
     let obj = { };
     let count = 0;
 
@@ -101,16 +101,16 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     });
 
     set(obj, 'foo', 'foo');
-    equal(count, 1, 'observer specified via brace expansion invoked on property change');
+    assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
 
     set(obj, 'bar', 'bar');
-    equal(count, 2, 'observer specified via brace expansion invoked on property change');
+    assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
 
     set(obj, 'baz', 'baz');
-    equal(count, 2, 'observer not invoked on unspecified property');
+    assert.equal(count, 2, 'observer not invoked on unspecified property');
   });
 
-  testBoth('observer specified declaratively via brace expansion should fire when dependent property changes', function (get, set) {
+  testBoth('observer specified declaratively via brace expansion should fire when dependent property changes', function(get, set, assert) {
     let obj = { baz: 'Initial' };
     let count = 0;
 
@@ -131,14 +131,14 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     get(obj, 'foo');
     set(obj, 'baz', 'Baz');
     // fire once for foo, once for bar
-    equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
+    assert.equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
 
     set(obj, 'quux', 'Quux');
-    equal(count, 2, 'observer not fired on unspecified property');
+    assert.equal(count, 2, 'observer not fired on unspecified property');
   });
 }
 
-testBoth('observers watching multiple properties via brace expansion should fire when the properties change', function (get, set) {
+testBoth('observers watching multiple properties via brace expansion should fire when the properties change', function(get, set, assert) {
   let obj = { };
   let count = 0;
 
@@ -149,16 +149,16 @@ testBoth('observers watching multiple properties via brace expansion should fire
   });
 
   set(obj, 'foo', 'foo');
-  equal(count, 1, 'observer specified via brace expansion invoked on property change');
+  assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
 
   set(obj, 'bar', 'bar');
-  equal(count, 2, 'observer specified via brace expansion invoked on property change');
+  assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
 
   set(obj, 'baz', 'baz');
-  equal(count, 2, 'observer not invoked on unspecified property');
+  assert.equal(count, 2, 'observer not invoked on unspecified property');
 });
 
-testBoth('observers watching multiple properties via brace expansion should fire when dependent properties change', function (get, set) {
+testBoth('observers watching multiple properties via brace expansion should fire when dependent properties change', function(get, set, assert) {
   let obj = { baz: 'Initial' };
   let count = 0;
 
@@ -179,13 +179,13 @@ testBoth('observers watching multiple properties via brace expansion should fire
   get(obj, 'foo');
   set(obj, 'baz', 'Baz');
   // fire once for foo, once for bar
-  equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
+  assert.equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
 
   set(obj, 'quux', 'Quux');
-  equal(count, 2, 'observer not fired on unspecified property');
+  assert.equal(count, 2, 'observer not fired on unspecified property');
 });
 
-testBoth('nested observers should fire in order', function(get, set) {
+testBoth('nested observers should fire in order', function(get, set, assert) {
   let obj = { foo: 'foo', bar: 'bar' };
   let fooCount = 0;
   let barCount = 0;
@@ -193,16 +193,16 @@ testBoth('nested observers should fire in order', function(get, set) {
   addObserver(obj, 'foo', function() { fooCount++; });
   addObserver(obj, 'bar', function() {
     set(obj, 'foo', 'BAZ');
-    equal(fooCount, 1, 'fooCount should have fired already');
+    assert.equal(fooCount, 1, 'fooCount should have fired already');
     barCount++;
   });
 
   set(obj, 'bar', 'BIFF');
-  equal(barCount, 1, 'barCount should have fired');
-  equal(fooCount, 1, 'foo should have fired');
+  assert.equal(barCount, 1, 'barCount should have fired');
+  assert.equal(fooCount, 1, 'foo should have fired');
 });
 
-testBoth('removing an chain observer on change should not fail', function(get, set) {
+testBoth('removing an chain observer on change should not fail', function(get, set, assert) {
   let foo = { bar: 'bar' };
   let obj1 = { foo: foo };
   let obj2 = { foo: foo };
@@ -230,13 +230,13 @@ testBoth('removing an chain observer on change should not fail', function(get, s
 
   set(foo, 'bar', 'baz');
 
-  equal(count1, 1, 'observer1 fired');
-  equal(count2, 1, 'observer2 fired');
-  equal(count3, 1, 'observer3 fired');
-  equal(count4, 0, 'observer4 did not fire');
+  assert.equal(count1, 1, 'observer1 fired');
+  assert.equal(count2, 1, 'observer2 fired');
+  assert.equal(count3, 1, 'observer3 fired');
+  assert.equal(count4, 0, 'observer4 did not fire');
 });
 
-testBoth('removing an chain before observer on change should not fail', function(get, set) {
+testBoth('removing an chain before observer on change should not fail', function(get, set, assert) {
   let foo = { bar: 'bar' };
   let obj1 = { foo: foo };
   let obj2 = { foo: foo };
@@ -264,13 +264,13 @@ testBoth('removing an chain before observer on change should not fail', function
 
   set(foo, 'bar', 'baz');
 
-  equal(count1, 1, 'observer1 fired');
-  equal(count2, 1, 'observer2 fired');
-  equal(count3, 1, 'observer3 fired');
-  equal(count4, 0, 'observer4 did not fire');
+  assert.equal(count1, 1, 'observer1 fired');
+  assert.equal(count2, 1, 'observer2 fired');
+  assert.equal(count3, 1, 'observer3 fired');
+  assert.equal(count4, 0, 'observer4 did not fire');
 });
 
-testBoth('suspending an observer should not fire during callback', function(get, set) {
+testBoth('suspending an observer should not fire during callback', function(get, set, assert) {
   let obj = {};
   let target, otherTarget;
 
@@ -289,7 +289,7 @@ testBoth('suspending an observer should not fire during callback', function(get,
 
   function callback() {
     /*jshint validthis:true */
-    equal(this, target);
+    assert.equal(this, target);
 
     set(obj, 'foo', '2');
 
@@ -298,16 +298,16 @@ testBoth('suspending an observer should not fire during callback', function(get,
 
   set(obj, 'foo', '1');
 
-  equal(_suspendObserver(obj, 'foo', target, target.method, callback), 'result');
+  assert.equal(_suspendObserver(obj, 'foo', target, target.method, callback), 'result');
 
   set(obj, 'foo', '3');
 
-  deepEqual(target.values, ['1', '3'], 'should invoke');
-  deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
+  assert.deepEqual(target.values, ['1', '3'], 'should invoke');
+  assert.deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
 });
 
 
-testBoth('suspending an observer should not defer change notifications during callback', function(get, set) {
+testBoth('suspending an observer should not defer change notifications during callback', function(get, set, assert) {
   let obj = {};
   let target, otherTarget;
 
@@ -326,82 +326,7 @@ testBoth('suspending an observer should not defer change notifications during ca
 
   function callback() {
     /*jshint validthis:true */
-    equal(this, target);
-
-    set(obj, 'foo', '2');
-
-    return 'result';
-  }
-
-  set(obj, 'foo', '1');
-
-  beginPropertyChanges();
-  equal(_suspendObserver(obj, 'foo', target, target.method, callback), 'result');
-  endPropertyChanges();
-
-  set(obj, 'foo', '3');
-
-  deepEqual(target.values, ['1', '3'], 'should invoke');
-  deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
-});
-
-testBoth('suspending observers should not fire during callback', function(get, set) {
-  let obj = {};
-  let target, otherTarget;
-
-  target = {
-    values: [],
-    method() { this.values.push(get(obj, 'foo')); }
-  };
-
-  otherTarget = {
-    values: [],
-    method() { this.values.push(get(obj, 'foo')); }
-  };
-
-  addObserver(obj, 'foo', target, target.method);
-  addObserver(obj, 'foo', otherTarget, otherTarget.method);
-
-  function callback() {
-    /*jshint validthis:true */
-    equal(this, target);
-
-    set(obj, 'foo', '2');
-
-    return 'result';
-  }
-
-  set(obj, 'foo', '1');
-
-  equal(_suspendObservers(obj, ['foo'], target, target.method, callback), 'result');
-
-  set(obj, 'foo', '3');
-
-  deepEqual(target.values, ['1', '3'], 'should invoke');
-  deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
-});
-
-
-testBoth('suspending observers should not defer change notifications during callback', function(get, set) {
-  let obj = {};
-  let target, otherTarget;
-
-  target = {
-    values: [],
-    method() { this.values.push(get(obj, 'foo')); }
-  };
-
-  otherTarget = {
-    values: [],
-    method() { this.values.push(get(obj, 'foo')); }
-  };
-
-  addObserver(obj, 'foo', target, target.method);
-  addObserver(obj, 'foo', otherTarget, otherTarget.method);
-
-  function callback() {
-    /*jshint validthis:true */
-    equal(this, target);
+    assert.equal(this, target);
 
     set(obj, 'foo', '2');
 
@@ -411,16 +336,91 @@ testBoth('suspending observers should not defer change notifications during call
   set(obj, 'foo', '1');
 
   beginPropertyChanges();
-  equal(_suspendObservers(obj, ['foo'], target, target.method, callback), 'result');
+  assert.equal(_suspendObserver(obj, 'foo', target, target.method, callback), 'result');
   endPropertyChanges();
 
   set(obj, 'foo', '3');
 
-  deepEqual(target.values, ['1', '3'], 'should invoke');
-  deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
+  assert.deepEqual(target.values, ['1', '3'], 'should invoke');
+  assert.deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
 });
 
-testBoth('deferring property change notifications', function(get, set) {
+testBoth('suspending observers should not fire during callback', function(get, set, assert) {
+  let obj = {};
+  let target, otherTarget;
+
+  target = {
+    values: [],
+    method() { this.values.push(get(obj, 'foo')); }
+  };
+
+  otherTarget = {
+    values: [],
+    method() { this.values.push(get(obj, 'foo')); }
+  };
+
+  addObserver(obj, 'foo', target, target.method);
+  addObserver(obj, 'foo', otherTarget, otherTarget.method);
+
+  function callback() {
+    /*jshint validthis:true */
+    assert.equal(this, target);
+
+    set(obj, 'foo', '2');
+
+    return 'result';
+  }
+
+  set(obj, 'foo', '1');
+
+  assert.equal(_suspendObservers(obj, ['foo'], target, target.method, callback), 'result');
+
+  set(obj, 'foo', '3');
+
+  assert.deepEqual(target.values, ['1', '3'], 'should invoke');
+  assert.deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
+});
+
+
+testBoth('suspending observers should not defer change notifications during callback', function(get, set, assert) {
+  let obj = {};
+  let target, otherTarget;
+
+  target = {
+    values: [],
+    method() { this.values.push(get(obj, 'foo')); }
+  };
+
+  otherTarget = {
+    values: [],
+    method() { this.values.push(get(obj, 'foo')); }
+  };
+
+  addObserver(obj, 'foo', target, target.method);
+  addObserver(obj, 'foo', otherTarget, otherTarget.method);
+
+  function callback() {
+    /*jshint validthis:true */
+    assert.equal(this, target);
+
+    set(obj, 'foo', '2');
+
+    return 'result';
+  }
+
+  set(obj, 'foo', '1');
+
+  beginPropertyChanges();
+  assert.equal(_suspendObservers(obj, ['foo'], target, target.method, callback), 'result');
+  endPropertyChanges();
+
+  set(obj, 'foo', '3');
+
+  assert.deepEqual(target.values, ['1', '3'], 'should invoke');
+  assert.deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
+});
+
+testBoth('deferring property change notifications', function(get, set, assert) {
   let obj = { foo: 'foo' };
   let fooCount = 0;
 
@@ -431,15 +431,15 @@ testBoth('deferring property change notifications', function(get, set) {
   set(obj, 'foo', 'BAZ');
   endPropertyChanges(obj);
 
-  equal(fooCount, 1, 'foo should have fired once');
+  assert.equal(fooCount, 1, 'foo should have fired once');
 });
 
-testBoth('deferring property change notifications safely despite exceptions', function(get, set) {
+testBoth('deferring property change notifications safely despite exceptions', function(get, set, assert) {
   let obj = { foo: 'foo' };
   let fooCount = 0;
   let exc = new Error('Something unexpected happened!');
 
-  expect(2);
+  assert.expect(2);
   addObserver(obj, 'foo', function() { fooCount++; });
 
   try {
@@ -454,17 +454,17 @@ testBoth('deferring property change notifications safely despite exceptions', fu
     }
   }
 
-  equal(fooCount, 1, 'foo should have fired once');
+  assert.equal(fooCount, 1, 'foo should have fired once');
 
   changeProperties(function() {
     set(obj, 'foo', 'BIFF2');
     set(obj, 'foo', 'BAZ2');
   });
 
-  equal(fooCount, 2, 'foo should have fired again once');
+  assert.equal(fooCount, 2, 'foo should have fired again once');
 });
 
-testBoth('deferring property change notifications will not defer before observers', function(get, set) {
+testBoth('deferring property change notifications will not defer before observers', function(get, set, assert) {
   let obj = { foo: 'foo' };
   let fooCount = 0;
 
@@ -472,14 +472,14 @@ testBoth('deferring property change notifications will not defer before observer
 
   beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
-  equal(fooCount, 1, 'should fire before observer immediately');
+  assert.equal(fooCount, 1, 'should fire before observer immediately');
   set(obj, 'foo', 'BAZ');
   endPropertyChanges(obj);
 
-  equal(fooCount, 1, 'should not fire before observer twice');
+  assert.equal(fooCount, 1, 'should not fire before observer twice');
 });
 
-testBoth('addObserver should propagate through prototype', function(get, set) {
+testBoth('addObserver should propagate through prototype', function(get, set, assert) {
   let obj = { foo: 'foo', count: 0 };
   let obj2;
 
@@ -488,16 +488,16 @@ testBoth('addObserver should propagate through prototype', function(get, set) {
 
   set(obj2, 'foo', 'bar');
 
-  equal(obj2.count, 1, 'should have invoked observer on inherited');
-  equal(obj.count, 0, 'should not have invoked observer on parent');
+  assert.equal(obj2.count, 1, 'should have invoked observer on inherited');
+  assert.equal(obj.count, 0, 'should not have invoked observer on parent');
 
   obj2.count = 0;
   set(obj, 'foo', 'baz');
-  equal(obj.count, 1, 'should have invoked observer on parent');
-  equal(obj2.count, 0, 'should not have invoked observer on inherited');
+  assert.equal(obj.count, 1, 'should have invoked observer on parent');
+  assert.equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addObserver should respect targets with methods', function(get, set) {
+testBoth('addObserver should respect targets with methods', function(get, set, assert) {
   let observed = { foo: 'foo' };
 
   let target1 = {
@@ -505,10 +505,10 @@ testBoth('addObserver should respect targets with methods', function(get, set) {
 
     didChange(obj, keyName) {
       let value = get(obj, keyName);
-      equal(this, target1, 'should invoke with this');
-      equal(obj, observed, 'param1 should be observed object');
-      equal(keyName, 'foo', 'param2 should be keyName');
-      equal(value, 'BAZ', 'param3 should new value');
+      assert.equal(this, target1, 'should invoke with this');
+      assert.equal(obj, observed, 'param1 should be observed object');
+      assert.equal(keyName, 'foo', 'param2 should be keyName');
+      assert.equal(value, 'BAZ', 'param3 should new value');
       this.count++;
     }
   };
@@ -518,10 +518,10 @@ testBoth('addObserver should respect targets with methods', function(get, set) {
 
     didChange(obj, keyName) {
       let value = get(obj, keyName);
-      equal(this, target2, 'should invoke with this');
-      equal(obj, observed, 'param1 should be observed object');
-      equal(keyName, 'foo', 'param2 should be keyName');
-      equal(value, 'BAZ', 'param3 should new value');
+      assert.equal(this, target2, 'should invoke with this');
+      assert.equal(obj, observed, 'param1 should be observed object');
+      assert.equal(keyName, 'foo', 'param2 should be keyName');
+      assert.equal(value, 'BAZ', 'param3 should new value');
       this.count++;
     }
   };
@@ -530,11 +530,11 @@ testBoth('addObserver should respect targets with methods', function(get, set) {
   addObserver(observed, 'foo', target2, target2.didChange);
 
   set(observed, 'foo', 'BAZ');
-  equal(target1.count, 1, 'target1 observer should have fired');
-  equal(target2.count, 1, 'target2 observer should have fired');
+  assert.equal(target1.count, 1, 'target1 observer should have fired');
+  assert.equal(target2.count, 1, 'target2 observer should have fired');
 });
 
-testBoth('addObserver should allow multiple objects to observe a property', function(get, set) {
+testBoth('addObserver should allow multiple objects to observe a property', function(get, set, assert) {
   let observed = { foo: 'foo' };
 
   let target1 = {
@@ -557,8 +557,8 @@ testBoth('addObserver should allow multiple objects to observe a property', func
   addObserver(observed, 'foo', target2, 'didChange');
 
   set(observed, 'foo', 'BAZ');
-  equal(target1.count, 1, 'target1 observer should have fired');
-  equal(target2.count, 1, 'target2 observer should have fired');
+  assert.equal(target1.count, 1, 'target1 observer should have fired');
+  assert.equal(target2.count, 1, 'target2 observer should have fired');
 });
 
 // ..........................................................
@@ -567,22 +567,22 @@ testBoth('addObserver should allow multiple objects to observe a property', func
 
 QUnit.module('removeObserver');
 
-testBoth('removing observer should stop firing', function(get, set) {
+testBoth('removing observer should stop firing', function(get, set, assert) {
   let obj = {};
   let count = 0;
   function F() { count++; }
   addObserver(obj, 'foo', F);
 
   set(obj, 'foo', 'bar');
-  equal(count, 1, 'should have invoked observer');
+  assert.equal(count, 1, 'should have invoked observer');
 
   removeObserver(obj, 'foo', F);
 
   set(obj, 'foo', 'baz');
-  equal(count, 1, 'removed observer shouldn\'t fire');
+  assert.equal(count, 1, 'removed observer shouldn\'t fire');
 });
 
-testBoth('local observers can be removed', function(get, set) {
+testBoth('local observers can be removed', function(get, set, assert) {
   let barObserved = 0;
 
   let MyMixin = Mixin.create({
@@ -599,17 +599,17 @@ testBoth('local observers can be removed', function(get, set) {
   MyMixin.apply(obj);
 
   set(obj, 'bar', 'HI!');
-  equal(barObserved, 2, 'precond - observers should be fired');
+  assert.equal(barObserved, 2, 'precond - observers should be fired');
 
   removeObserver(obj, 'bar', null, 'foo1');
 
   barObserved = 0;
   set(obj, 'bar', 'HI AGAIN!');
 
-  equal(barObserved, 1, 'removed observers should not be called');
+  assert.equal(barObserved, 1, 'removed observers should not be called');
 });
 
-testBoth('removeObserver should respect targets with methods', function(get, set) {
+testBoth('removeObserver should respect targets with methods', function(get, set, assert) {
   let observed = { foo: 'foo' };
 
   let target1 = {
@@ -632,16 +632,16 @@ testBoth('removeObserver should respect targets with methods', function(get, set
   addObserver(observed, 'foo', target2, target2.didChange);
 
   set(observed, 'foo', 'BAZ');
-  equal(target1.count, 1, 'target1 observer should have fired');
-  equal(target2.count, 1, 'target2 observer should have fired');
+  assert.equal(target1.count, 1, 'target1 observer should have fired');
+  assert.equal(target2.count, 1, 'target2 observer should have fired');
 
   removeObserver(observed, 'foo', target1, 'didChange');
   removeObserver(observed, 'foo', target2, target2.didChange);
 
   target1.count = target2.count = 0;
   set(observed, 'foo', 'BAZ');
-  equal(target1.count, 0, 'target1 observer should not fire again');
-  equal(target2.count, 0, 'target2 observer should not fire again');
+  assert.equal(target1.count, 0, 'target1 observer should not fire again');
+  assert.equal(target2.count, 0, 'target2 observer should not fire again');
 });
 
 // ..........................................................
@@ -650,20 +650,20 @@ testBoth('removeObserver should respect targets with methods', function(get, set
 
 QUnit.module('_addBeforeObserver');
 
-testBoth('observer should fire before a property is modified', function(get, set) {
+testBoth('observer should fire before a property is modified', function(get, set, assert) {
   let obj = { foo: 'foo' };
   let count = 0;
 
   _addBeforeObserver(obj, 'foo', function() {
-    equal(get(obj, 'foo'), 'foo', 'should invoke before value changed');
+    assert.equal(get(obj, 'foo'), 'foo', 'should invoke before value changed');
     count++;
   });
 
   set(obj, 'foo', 'bar');
-  equal(count, 1, 'should have invoked observer');
+  assert.equal(count, 1, 'should have invoked observer');
 });
 
-testBoth('observer should fire before dependent property is modified', function(get, set) {
+testBoth('observer should fire before dependent property is modified', function(get, set, assert) {
   let obj = { bar: 'bar' };
   defineProperty(obj, 'foo', computed(function() {
     return get(this, 'bar').toUpperCase();
@@ -673,15 +673,15 @@ testBoth('observer should fire before dependent property is modified', function(
 
   let count = 0;
   _addBeforeObserver(obj, 'foo', function() {
-    equal(get(obj, 'foo'), 'BAR', 'should have invoked after prop change');
+    assert.equal(get(obj, 'foo'), 'BAR', 'should have invoked after prop change');
     count++;
   });
 
   set(obj, 'bar', 'baz');
-  equal(count, 1, 'should have invoked observer');
+  assert.equal(count, 1, 'should have invoked observer');
 });
 
-testBoth('before observer watching multiple properties via brace expansion should fire when properties change', function (get, set) {
+testBoth('before observer watching multiple properties via brace expansion should fire when properties change', function(get, set, assert) {
   let obj = {};
   let count = 0;
 
@@ -692,16 +692,16 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   });
 
   set(obj, 'foo', 'foo');
-  equal(count, 1, 'observer specified via brace expansion invoked on property change');
+  assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
 
   set(obj, 'bar', 'bar');
-  equal(count, 2, 'observer specified via brace expansion invoked on property change');
+  assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
 
   set(obj, 'baz', 'baz');
-  equal(count, 2, 'observer not invoked on unspecified property');
+  assert.equal(count, 2, 'observer not invoked on unspecified property');
 });
 
-testBoth('before observer watching multiple properties via brace expansion should fire when dependent property changes', function (get, set) {
+testBoth('before observer watching multiple properties via brace expansion should fire when dependent property changes', function(get, set, assert) {
   let obj = { baz: 'Initial' };
   let count = 0;
 
@@ -722,13 +722,13 @@ testBoth('before observer watching multiple properties via brace expansion shoul
   get(obj, 'foo');
   set(obj, 'baz', 'Baz');
   // fire once for foo, once for bar
-  equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
+  assert.equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
 
   set(obj, 'quux', 'Quux');
-  equal(count, 2, 'observer not fired on unspecified property');
+  assert.equal(count, 2, 'observer not fired on unspecified property');
 });
 
-testBoth('_addBeforeObserver should propagate through prototype', function(get, set) {
+testBoth('_addBeforeObserver should propagate through prototype', function(get, set, assert) {
   let obj = { foo: 'foo', count: 0 };
   let obj2;
 
@@ -736,16 +736,16 @@ testBoth('_addBeforeObserver should propagate through prototype', function(get, 
   obj2 = Object.create(obj);
 
   set(obj2, 'foo', 'bar');
-  equal(obj2.count, 1, 'should have invoked observer on inherited');
-  equal(obj.count, 0, 'should not have invoked observer on parent');
+  assert.equal(obj2.count, 1, 'should have invoked observer on inherited');
+  assert.equal(obj.count, 0, 'should not have invoked observer on parent');
 
   obj2.count = 0;
   set(obj, 'foo', 'baz');
-  equal(obj.count, 1, 'should have invoked observer on parent');
-  equal(obj2.count, 0, 'should not have invoked observer on inherited');
+  assert.equal(obj.count, 1, 'should have invoked observer on parent');
+  assert.equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('_addBeforeObserver should respect targets with methods', function(get, set) {
+testBoth('_addBeforeObserver should respect targets with methods', function(get, set, assert) {
   let observed = { foo: 'foo' };
 
   let target1 = {
@@ -753,10 +753,10 @@ testBoth('_addBeforeObserver should respect targets with methods', function(get,
 
     willChange(obj, keyName) {
       let value = get(obj, keyName);
-      equal(this, target1, 'should invoke with this');
-      equal(obj, observed, 'param1 should be observed object');
-      equal(keyName, 'foo', 'param2 should be keyName');
-      equal(value, 'foo', 'param3 should old value');
+      assert.equal(this, target1, 'should invoke with this');
+      assert.equal(obj, observed, 'param1 should be observed object');
+      assert.equal(keyName, 'foo', 'param2 should be keyName');
+      assert.equal(value, 'foo', 'param3 should old value');
       this.count++;
     }
   };
@@ -766,10 +766,10 @@ testBoth('_addBeforeObserver should respect targets with methods', function(get,
 
     willChange(obj, keyName) {
       let value = get(obj, keyName);
-      equal(this, target2, 'should invoke with this');
-      equal(obj, observed, 'param1 should be observed object');
-      equal(keyName, 'foo', 'param2 should be keyName');
-      equal(value, 'foo', 'param3 should old value');
+      assert.equal(this, target2, 'should invoke with this');
+      assert.equal(obj, observed, 'param1 should be observed object');
+      assert.equal(keyName, 'foo', 'param2 should be keyName');
+      assert.equal(value, 'foo', 'param3 should old value');
       this.count++;
     }
   };
@@ -778,8 +778,8 @@ testBoth('_addBeforeObserver should respect targets with methods', function(get,
   _addBeforeObserver(observed, 'foo', target2, target2.willChange);
 
   set(observed, 'foo', 'BAZ');
-  equal(target1.count, 1, 'target1 observer should have fired');
-  equal(target2.count, 1, 'target2 observer should have fired');
+  assert.equal(target1.count, 1, 'target1 observer should have fired');
+  assert.equal(target2.count, 1, 'target2 observer should have fired');
 });
 
 // ..........................................................
@@ -789,7 +789,7 @@ testBoth('_addBeforeObserver should respect targets with methods', function(get,
 let obj, count;
 
 QUnit.module('addObserver - dependentkey with chained properties', {
-  setup() {
+  beforeEach() {
     obj = {
       foo: {
         bar: {
@@ -812,13 +812,13 @@ QUnit.module('addObserver - dependentkey with chained properties', {
     count = 0;
   },
 
-  teardown() {
+  afterEach() {
     obj = count = null;
   }
 });
 
 
-testBoth('depending on a chain with a computed property', function (get, set) {
+testBoth('depending on a chain with a computed property', function(get, set, assert) {
   defineProperty(obj, 'computed', computed(function () {
     return { foo: 'bar' };
   }));
@@ -828,14 +828,14 @@ testBoth('depending on a chain with a computed property', function (get, set) {
     changed++;
   });
 
-  equal(cacheFor(obj, 'computed'), undefined, 'addObserver should not compute CP');
+  assert.equal(cacheFor(obj, 'computed'), undefined, 'addObserver should not compute CP');
 
   set(obj, 'computed.foo', 'baz');
 
-  equal(changed, 1, 'should fire observer');
+  assert.equal(changed, 1, 'should fire observer');
 });
 
-testBoth('depending on a simple chain', function(get, set) {
+testBoth('depending on a simple chain', function(get, set, assert) {
   let val;
   addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
     val = get(target, key);
@@ -843,36 +843,36 @@ testBoth('depending on a simple chain', function(get, set) {
   });
 
   set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(val, 'BUZZ');
-  equal(count, 1);
+  assert.equal(val, 'BUZZ');
+  assert.equal(count, 1);
 
   set(get(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
-  equal(val, 'BLARG');
-  equal(count, 2);
+  assert.equal(val, 'BLARG');
+  assert.equal(count, 2);
 
   set(get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equal(val, 'BOOM');
-  equal(count, 3);
+  assert.equal(val, 'BOOM');
+  assert.equal(count, 3);
 
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(val, 'BLARG');
-  equal(count, 4);
+  assert.equal(val, 'BLARG');
+  assert.equal(count, 4);
 
   set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(val, 'BUZZ');
-  equal(count, 5);
+  assert.equal(val, 'BUZZ');
+  assert.equal(count, 5);
 
   let foo = get(obj, 'foo');
 
   set(obj, 'foo', 'BOO');
-  equal(val, undefined);
-  equal(count, 6);
+  assert.equal(val, undefined);
+  assert.equal(count, 6);
 
   set(foo.bar.baz, 'biff', 'BOOM');
-  equal(count, 6, 'should be not have invoked observer');
+  assert.equal(count, 6, 'should be not have invoked observer');
 });
 
-testBoth('depending on a chain with a capitalized first key', function(get, set) {
+testBoth('depending on a chain with a capitalized first key', function(get, set, assert) {
   let val;
 
   addObserver(obj, 'Capital.foo.bar.baz.biff', function(target, key) {
@@ -881,33 +881,33 @@ testBoth('depending on a chain with a capitalized first key', function(get, set)
   });
 
   set(get(obj, 'Capital.foo.bar.baz'), 'biff', 'BUZZ');
-  equal(val, 'BUZZ');
-  equal(count, 1);
+  assert.equal(val, 'BUZZ');
+  assert.equal(count, 1);
 
   set(get(obj, 'Capital.foo.bar'), 'baz', { biff: 'BLARG' });
-  equal(val, 'BLARG');
-  equal(count, 2);
+  assert.equal(val, 'BLARG');
+  assert.equal(count, 2);
 
   set(get(obj, 'Capital.foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equal(val, 'BOOM');
-  equal(count, 3);
+  assert.equal(val, 'BOOM');
+  assert.equal(count, 3);
 
   set(obj, 'Capital.foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(val, 'BLARG');
-  equal(count, 4);
+  assert.equal(val, 'BLARG');
+  assert.equal(count, 4);
 
   set(get(obj, 'Capital.foo.bar.baz'), 'biff', 'BUZZ');
-  equal(val, 'BUZZ');
-  equal(count, 5);
+  assert.equal(val, 'BUZZ');
+  assert.equal(count, 5);
 
   let foo = get(obj, 'foo');
 
   set(obj, 'Capital.foo', 'BOO');
-  equal(val, undefined);
-  equal(count, 6);
+  assert.equal(val, undefined);
+  assert.equal(count, 6);
 
   set(foo.bar.baz, 'biff', 'BOOM');
-  equal(count, 6, 'should be not have invoked observer');
+  assert.equal(count, 6, 'should be not have invoked observer');
 });
 
 QUnit.module('_removeBeforeObserver');
@@ -918,26 +918,26 @@ QUnit.module('_removeBeforeObserver');
 
 QUnit.module('props/observer_test - setting identical values');
 
-testBoth('setting simple prop should not trigger', function(get, set) {
+testBoth('setting simple prop should not trigger', function(get, set, assert) {
   let obj = { foo: 'bar' };
   let count = 0;
 
   addObserver(obj, 'foo', function() { count++; });
 
   set(obj, 'foo', 'bar');
-  equal(count, 0, 'should not trigger observer');
+  assert.equal(count, 0, 'should not trigger observer');
 
   set(obj, 'foo', 'baz');
-  equal(count, 1, 'should trigger observer');
+  assert.equal(count, 1, 'should trigger observer');
 
   set(obj, 'foo', 'baz');
-  equal(count, 1, 'should not trigger observer again');
+  assert.equal(count, 1, 'should not trigger observer again');
 });
 
 // The issue here is when a computed property is directly set with a value, then has a
 // dependent key change (which triggers a cache expiration and recomputation), observers will
 // not be fired if the CP setter is called with the last set value.
-testBoth('setting a cached computed property whose value has changed should trigger', function(get, set) {
+testBoth('setting a cached computed property whose value has changed should trigger', function(get, set, assert) {
   let obj = {};
 
   defineProperty(obj, 'foo', computed({
@@ -950,22 +950,22 @@ testBoth('setting a cached computed property whose value has changed should trig
   addObserver(obj, 'foo', function() { count++; });
 
   set(obj, 'foo', 'bar');
-  equal(count, 1);
-  equal(get(obj, 'foo'), 'bar');
+  assert.equal(count, 1);
+  assert.equal(get(obj, 'foo'), 'bar');
 
   set(obj, 'baz', 'qux');
-  equal(count, 2);
-  equal(get(obj, 'foo'), 'qux');
+  assert.equal(count, 2);
+  assert.equal(get(obj, 'foo'), 'qux');
 
   get(obj, 'foo');
   set(obj, 'foo', 'bar');
-  equal(count, 3);
-  equal(get(obj, 'foo'), 'bar');
+  assert.equal(count, 3);
+  assert.equal(get(obj, 'foo'), 'bar');
 });
 
 QUnit.module('changeProperties');
 
-testBoth('observers added/removed during changeProperties should do the right thing.', function(get, set) {
+testBoth('observers added/removed during changeProperties should do the right thing.', function(get, set, assert) {
   let obj = {
     foo: 0
   };
@@ -1004,51 +1004,51 @@ testBoth('observers added/removed during changeProperties should do the right th
 
     set(obj, 'foo', 1);
 
-    equal(addedBeforeFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called before the first change invoked immediately');
-    equal(addedBeforeFirstChangeObserver.didChangeCount, 0, 'addObserver called before the first change is deferred');
+    assert.equal(addedBeforeFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called before the first change invoked immediately');
+    assert.equal(addedBeforeFirstChangeObserver.didChangeCount, 0, 'addObserver called before the first change is deferred');
 
     addedAfterFirstChangeObserver.add();
     removedBeforeLastChangeObserver.remove();
 
     set(obj, 'foo', 2);
 
-    equal(addedAfterFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called after the first change invoked immediately');
-    equal(addedAfterFirstChangeObserver.didChangeCount, 0, 'addObserver called after the first change is deferred');
+    assert.equal(addedAfterFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called after the first change invoked immediately');
+    assert.equal(addedAfterFirstChangeObserver.didChangeCount, 0, 'addObserver called after the first change is deferred');
 
     addedAfterLastChangeObserver.add();
     removedAfterLastChangeObserver.remove();
   });
 
-  equal(removedBeforeFirstChangeObserver.willChangeCount, 0, '_removeBeforeObserver called before the first change sees none');
-  equal(removedBeforeFirstChangeObserver.didChangeCount, 0, 'removeObserver called before the first change sees none');
-  equal(addedBeforeFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called before the first change sees only 1');
-  equal(addedBeforeFirstChangeObserver.didChangeCount, 1, 'addObserver called before the first change sees only 1');
-  equal(addedAfterFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called after the first change sees 1');
-  equal(addedAfterFirstChangeObserver.didChangeCount, 1, 'addObserver called after the first change sees 1');
-  equal(addedAfterLastChangeObserver.willChangeCount, 0, '_addBeforeObserver called after the last change sees none');
-  equal(addedAfterLastChangeObserver.didChangeCount, 0, 'addObserver called after the last change sees none');
-  equal(removedBeforeLastChangeObserver.willChangeCount, 1, '_removeBeforeObserver called before the last change still sees 1');
-  equal(removedBeforeLastChangeObserver.didChangeCount, 1, 'removeObserver called before the last change still sees 1');
-  equal(removedAfterLastChangeObserver.willChangeCount, 1, '_removeBeforeObserver called after the last change still sees 1');
-  equal(removedAfterLastChangeObserver.didChangeCount, 1, 'removeObserver called after the last change still sees 1');
+  assert.equal(removedBeforeFirstChangeObserver.willChangeCount, 0, '_removeBeforeObserver called before the first change sees none');
+  assert.equal(removedBeforeFirstChangeObserver.didChangeCount, 0, 'removeObserver called before the first change sees none');
+  assert.equal(addedBeforeFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called before the first change sees only 1');
+  assert.equal(addedBeforeFirstChangeObserver.didChangeCount, 1, 'addObserver called before the first change sees only 1');
+  assert.equal(addedAfterFirstChangeObserver.willChangeCount, 1, '_addBeforeObserver called after the first change sees 1');
+  assert.equal(addedAfterFirstChangeObserver.didChangeCount, 1, 'addObserver called after the first change sees 1');
+  assert.equal(addedAfterLastChangeObserver.willChangeCount, 0, '_addBeforeObserver called after the last change sees none');
+  assert.equal(addedAfterLastChangeObserver.didChangeCount, 0, 'addObserver called after the last change sees none');
+  assert.equal(removedBeforeLastChangeObserver.willChangeCount, 1, '_removeBeforeObserver called before the last change still sees 1');
+  assert.equal(removedBeforeLastChangeObserver.didChangeCount, 1, 'removeObserver called before the last change still sees 1');
+  assert.equal(removedAfterLastChangeObserver.willChangeCount, 1, '_removeBeforeObserver called after the last change still sees 1');
+  assert.equal(removedAfterLastChangeObserver.didChangeCount, 1, 'removeObserver called after the last change still sees 1');
 });
 
 
 QUnit.module('Keys behavior with observers');
 
 
-testBoth('should not leak properties on the prototype', function () {
+testBoth('should not leak properties on the prototype', function (get, set, assert) {
   function Beer() { }
   Beer.prototype.type = 'ipa';
 
   let beer = new Beer();
 
   addObserver(beer, 'type', K);
-  deepEqual(Object.keys(beer), []);
+  assert.deepEqual(Object.keys(beer), []);
   removeObserver(beer, 'type', K);
 });
 
-testBoth('observing a non existent property', function (get, set) {
+testBoth('observing a non existent property', function(get, set, assert) {
   function Beer() { }
   Beer.prototype.type = 'ipa';
 
@@ -1056,15 +1056,15 @@ testBoth('observing a non existent property', function (get, set) {
 
   addObserver(beer, 'brand', K);
 
-  deepEqual(Object.keys(beer), []);
+  assert.deepEqual(Object.keys(beer), []);
 
   set(beer, 'brand', 'Corona');
-  deepEqual(Object.keys(beer), ['brand']);
+  assert.deepEqual(Object.keys(beer), ['brand']);
 
   removeObserver(beer, 'brand', K);
 });
 
-testBoth('with observers switched on and off', function () {
+testBoth('with observers switched on and off', function (get, set, assert) {
   function Beer() { }
   Beer.prototype.type = 'ipa';
 
@@ -1073,10 +1073,10 @@ testBoth('with observers switched on and off', function () {
   addObserver(beer, 'type', K);
   removeObserver(beer, 'type', K);
 
-  deepEqual(Object.keys(beer), []);
+  assert.deepEqual(Object.keys(beer), []);
 });
 
-testBoth('observers switched on and off with setter in between', function (get, set) {
+testBoth('observers switched on and off with setter in between', function(get, set, assert) {
   function Beer() { }
   Beer.prototype.type = 'ipa';
 
@@ -1086,10 +1086,10 @@ testBoth('observers switched on and off with setter in between', function (get, 
   set(beer, 'type', 'ale');
   removeObserver(beer, 'type', K);
 
-  deepEqual(Object.keys(beer), ['type']);
+  assert.deepEqual(Object.keys(beer), ['type']);
 });
 
-testBoth('observer switched on and off and then setter', function (get, set) {
+testBoth('observer switched on and off and then setter', function(get, set, assert) {
   function Beer() { }
   Beer.prototype.type = 'ipa';
 
@@ -1099,54 +1099,54 @@ testBoth('observer switched on and off and then setter', function (get, set) {
   removeObserver(beer, 'type', K);
   set(beer, 'type', 'ale');
 
-  deepEqual(Object.keys(beer), ['type']);
+  assert.deepEqual(Object.keys(beer), ['type']);
 });
 
-testBoth('observers switched on and off with setter in between (observed property is not shadowing)', function (get, set) {
+testBoth('observers switched on and off with setter in between (observed property is not shadowing)', function(get, set, assert) {
   function Beer() { }
 
   let beer = new Beer();
   set(beer, 'type', 'ale');
-  deepEqual(Object.keys(beer), ['type'], 'only set');
+  assert.deepEqual(Object.keys(beer), ['type'], 'only set');
 
   let otherBeer = new Beer();
   addObserver(otherBeer, 'type', K);
   set(otherBeer, 'type', 'ale');
-  deepEqual(Object.keys(otherBeer), ['type'], 'addObserver -> set');
+  assert.deepEqual(Object.keys(otherBeer), ['type'], 'addObserver -> set');
 
   let yetAnotherBeer = new Beer();
   addObserver(yetAnotherBeer, 'type', K);
   set(yetAnotherBeer, 'type', 'ale');
   removeObserver(beer, 'type', K);
-  deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeObserver');
+  assert.deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeObserver');
 
   let itsMyLastBeer = new Beer();
   set(itsMyLastBeer, 'type', 'ale');
   removeObserver(beer, 'type', K);
-  deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
+  assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
 });
 
-testBoth('observers switched on and off with setter in between (observed property is shadowing one on the prototype)', function (get, set) {
+testBoth('observers switched on and off with setter in between (observed property is shadowing one on the prototype)', function(get, set, assert) {
   function Beer() { }
   Beer.prototype.type = 'ipa';
 
   let beer = new Beer();
   set(beer, 'type', 'ale');
-  deepEqual(Object.keys(beer), ['type'], 'after set');
+  assert.deepEqual(Object.keys(beer), ['type'], 'after set');
 
   let otherBeer = new Beer();
   addObserver(otherBeer, 'type', K);
   set(otherBeer, 'type', 'ale');
-  deepEqual(Object.keys(otherBeer), ['type'], 'addObserver -> set');
+  assert.deepEqual(Object.keys(otherBeer), ['type'], 'addObserver -> set');
 
   let yetAnotherBeer = new Beer();
   addObserver(yetAnotherBeer, 'type', K);
   set(yetAnotherBeer, 'type', 'ale');
   removeObserver(beer, 'type', K);
-  deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeObserver');
+  assert.deepEqual(Object.keys(yetAnotherBeer), ['type'], 'addObserver -> set -> removeObserver');
 
   let itsMyLastBeer = new Beer();
   set(itsMyLastBeer, 'type', 'ale');
   removeObserver(beer, 'type', K);
-  deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
+  assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
 });

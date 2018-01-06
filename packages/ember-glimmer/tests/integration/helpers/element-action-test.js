@@ -696,7 +696,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
   }
 
-  ['@test it should unregister event handlers when an element action is removed']() {
+  ['@test it should unregister event handlers when an element action is removed'](assert) {
     let ExampleComponent = Component.extend({
       actions: {
         edit() { }
@@ -710,33 +710,33 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     this.render('{{example-component isActive=isActive}}', { isActive: true });
 
-    equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
+    assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
     let actionId;
 
     actionId = getActionIds(this.$('a[data-ember-action]')[0])[0];
 
-    ok(ActionManager.registeredActions[actionId], 'An action is registered');
+    assert.ok(ActionManager.registeredActions[actionId], 'An action is registered');
 
     this.runTask(() => this.rerender());
 
-    equal(this.$('a[data-ember-action]').length, 1, 'The element is still present');
+    assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is still present');
 
-    ok(ActionManager.registeredActions[actionId], 'The action is still registered');
+    assert.ok(ActionManager.registeredActions[actionId], 'The action is still registered');
 
     this.runTask(() => set(this.context, 'isActive', false));
 
-    strictEqual(this.$('a[data-ember-action]').length, 0, 'The element is removed');
+    assert.strictEqual(this.$('a[data-ember-action]').length, 0, 'The element is removed');
 
-    ok(!ActionManager.registeredActions[actionId], 'The action is unregistered');
+    assert.ok(!ActionManager.registeredActions[actionId], 'The action is unregistered');
 
     this.runTask(() => set(this.context, 'isActive', true));
 
-    equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
+    assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
     actionId = getActionIds(this.$('a[data-ember-action]')[0])[0];
 
-    ok(ActionManager.registeredActions[actionId], 'A new action is registered');
+    assert.ok(ActionManager.registeredActions[actionId], 'A new action is registered');
   }
 
   ['@test it should capture events from child elements and allow them to trigger the action']() {

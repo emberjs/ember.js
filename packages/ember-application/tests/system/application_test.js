@@ -33,6 +33,7 @@ import {
   AutobootApplicationTestCase,
   DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
+import { run } from 'ember-metal';
 
 moduleFor('Ember.Application, autobooting multiple apps', class extends ApplicationTestCase {
   get fixture() {
@@ -112,57 +113,59 @@ moduleFor('Ember.Application', class extends ApplicationTestCase {
     assert.strictEqual(application.resolveRegistration('application:main'), application, `application:main is registered`);
     assert.deepEqual(application.registeredOptionsForType('component'), { singleton: false }, `optionsForType 'component'`);
     assert.deepEqual(application.registeredOptionsForType('view'), { singleton: false }, `optionsForType 'view'`);
-    verifyRegistration(application, 'controller:basic');
-    verifyRegistration(application, '-view-registry:main');
-    verifyInjection(application, 'view', '_viewRegistry', '-view-registry:main');
-    verifyInjection(application, 'route', '_topLevelViewTemplate', 'template:-outlet');
-    verifyRegistration(application, 'route:basic');
-    verifyRegistration(application, 'event_dispatcher:main');
-    verifyInjection(application, 'router:main', 'namespace', 'application:main');
-    verifyInjection(application, 'view:-outlet', 'namespace', 'application:main');
 
-    verifyRegistration(application, 'location:auto');
-    verifyRegistration(application, 'location:hash');
-    verifyRegistration(application, 'location:history');
-    verifyRegistration(application, 'location:none');
+    verifyRegistration(assert, application, 'controller:basic');
+    verifyRegistration(assert, application, '-view-registry:main');
+    verifyInjection(assert, application, 'view', '_viewRegistry', '-view-registry:main');
+    verifyInjection(assert, application, 'route', '_topLevelViewTemplate', 'template:-outlet');
+    verifyRegistration(assert, application, 'route:basic');
+    verifyRegistration(assert, application, 'event_dispatcher:main');
+    verifyInjection(assert, application, 'router:main', 'namespace', 'application:main');
+    verifyInjection(assert, application, 'view:-outlet', 'namespace', 'application:main');
 
-    verifyInjection(application, 'controller', 'target', 'router:main');
-    verifyInjection(application, 'controller', 'namespace', 'application:main');
+    verifyRegistration(assert, application, 'location:auto');
+    verifyRegistration(assert, application, 'location:hash');
+    verifyRegistration(assert, application, 'location:history');
+    verifyRegistration(assert, application, 'location:none');
 
-    verifyRegistration(application, P`-bucket-cache:main`);
-    verifyInjection(application, 'router', '_bucketCache', P`-bucket-cache:main`);
-    verifyInjection(application, 'route', '_bucketCache', P`-bucket-cache:main`);
+    verifyInjection(assert, application, 'controller', 'target', 'router:main');
+    verifyInjection(assert, application, 'controller', 'namespace', 'application:main');
 
-    verifyInjection(application, 'route', 'router', 'router:main');
+    verifyRegistration(assert, application, P`-bucket-cache:main`);
+    verifyInjection(assert, application, 'router', '_bucketCache', P`-bucket-cache:main`);
+    verifyInjection(assert, application, 'route', '_bucketCache', P`-bucket-cache:main`);
 
-    verifyRegistration(application, 'component:-text-field');
-    verifyRegistration(application, 'component:-text-area');
-    verifyRegistration(application, 'component:-checkbox');
-    verifyRegistration(application, 'component:link-to');
+    verifyInjection(assert, application, 'route', 'router', 'router:main');
 
-    verifyRegistration(application, 'service:-routing');
-    verifyInjection(application, 'service:-routing', 'router', 'router:main');
+    verifyRegistration(assert, application, 'component:-text-field');
+    verifyRegistration(assert, application, 'component:-text-area');
+    verifyRegistration(assert, application, 'component:-checkbox');
+    verifyRegistration(assert, application, 'component:link-to');
+
+    verifyRegistration(assert, application, 'service:-routing');
+    verifyInjection(assert, application, 'service:-routing', 'router', 'router:main');
 
     // DEBUGGING
-    verifyRegistration(application, 'resolver-for-debugging:main');
-    verifyInjection(application, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-    verifyInjection(application, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
-    verifyRegistration(application, 'container-debug-adapter:main');
-    verifyRegistration(application, 'component-lookup:main');
+    verifyRegistration(assert, application, 'resolver-for-debugging:main');
+    verifyInjection(assert, application, 'container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+    verifyInjection(assert, application, 'data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+    verifyRegistration(assert, application, 'container-debug-adapter:main');
+    verifyRegistration(assert, application, 'component-lookup:main');
 
-    verifyRegistration(application, 'service:-glimmer-environment');
-    verifyRegistration(application, 'service:-dom-changes');
-    verifyRegistration(application, 'service:-dom-tree-construction');
-    verifyInjection(application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
-    verifyInjection(application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
-    verifyInjection(application, 'renderer', 'env', 'service:-glimmer-environment');
-    verifyRegistration(application, 'view:-outlet');
-    verifyRegistration(application, 'renderer:-dom');
-    verifyRegistration(application, 'renderer:-inert');
-    verifyRegistration(application, P`template:components/-default`);
-    verifyRegistration(application, 'template:-outlet');
-    verifyInjection(application, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(application, 'template', 'env', 'service:-glimmer-environment');
+    verifyRegistration(assert, application, 'service:-glimmer-environment');
+    verifyRegistration(assert, application, 'service:-dom-changes');
+    verifyRegistration(assert, application, 'service:-dom-tree-construction');
+    verifyInjection(assert, application, 'service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
+    verifyInjection(assert, application, 'service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
+    verifyInjection(assert, application, 'renderer', 'env', 'service:-glimmer-environment');
+    verifyRegistration(assert, application, 'view:-outlet');
+    verifyRegistration(assert, application, 'renderer:-dom');
+    verifyRegistration(assert, application, 'renderer:-inert');
+    verifyRegistration(assert, application, P`template:components/-default`);
+    verifyRegistration(assert, application, 'template:-outlet');
+    verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
+    verifyInjection(assert, application, 'template', 'env', 'service:-glimmer-environment');
+
     assert.deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
   }
 
@@ -266,7 +269,7 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
 
       let app = this.createApplication({}, MyApplication);
 
-      registerRoute(app, 'application', () => ok(true, 'normal route is activated'));
+      registerRoute(app, 'application', () => assert.ok(true, 'normal route is activated'));
     });
   }
 
@@ -387,4 +390,27 @@ moduleFor('Ember.Application#buildRegistry', class extends AbstractTestCase {
     assert.equal(registry.resolve('application:main'), namespace);
   }
 
+});
+
+moduleFor('Ember.Application - instance tracking', class extends ApplicationTestCase {
+
+  ['@test tracks built instance'](assert) {
+    let instance = this.application.buildInstance();
+    run(() => {
+      this.application.destroy();
+    });
+
+    assert.ok(instance.isDestroyed, 'instance was destroyed');
+  }
+
+  ['@test tracks built instances'](assert) {
+    let instanceA = this.application.buildInstance();
+    let instanceB = this.application.buildInstance();
+    run(() => {
+      this.application.destroy();
+    });
+
+    assert.ok(instanceA.isDestroyed, 'instanceA was destroyed');
+    assert.ok(instanceB.isDestroyed, 'instanceB was destroyed');
+  }
 });

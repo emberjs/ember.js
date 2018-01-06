@@ -1,8 +1,8 @@
-export function verifyRegistration(owner, fullName) {
-  ok(owner.resolveRegistration(fullName), `has registration: ${fullName}`);
+export function verifyRegistration(assert, owner, fullName) {
+  assert.ok(owner.resolveRegistration(fullName), `has registration: ${fullName}`);
 }
 
-export function verifyInjection(owner, fullName, property, injectionName) {
+export function verifyInjection(assert, owner, fullName, property, injectionName) {
   let registry = owner.__registry__;
   let injections;
 
@@ -24,5 +24,5 @@ export function verifyInjection(owner, fullName, property, injectionName) {
     }
   }
 
-  ok(hasInjection, `has injection: ${fullName}.${property} = ${injectionName}`);
+  assert.ok(hasInjection, `has injection: ${fullName}.${property} = ${injectionName}`);
 }

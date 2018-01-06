@@ -323,9 +323,9 @@ switch (process.env.TEST_SUITE) {
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
     break;
-  case 'sauce':
-    console.log('suite: sauce');
-    require('./run-sauce-tests');
+  case 'browserstack':
+    console.log('suite: browserstack');
+    require('./run-browserstack-tests');
     break;
   case 'code-quality':
     testFunctions.push(codeQualityChecks);

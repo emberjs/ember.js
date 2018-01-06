@@ -69,6 +69,8 @@ const ApplicationInstance = EngineInstance.extend({
   init() {
     this._super(...arguments);
 
+    this.application._watchInstance(this);
+
     // Register this instance in the per-instance registry.
     //
     // Why do we need to register the instance in the first place?
@@ -271,6 +273,11 @@ const ApplicationInstance = EngineInstance.extend({
 
     // getURL returns the set url with the rootURL stripped off
     return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
+  },
+
+  willDestroy() {
+    this._super(...arguments);
+    this.application._unwatchInstance(this);
   }
 });
 
