@@ -1,3 +1,5 @@
+/* global Element */
+
 import { assign } from 'ember-utils';
 import { run } from 'ember-metal';
 
@@ -95,7 +97,15 @@ export default class AbstractTestCase {
   }
 
   $(sel) {
-    return sel ? NodeQuery.query(sel, this.element) : NodeQuery.element(this.element);
+    if (sel instanceof Element) {
+      return NodeQuery.element(sel);
+    } else if (typeof sel === 'string') {
+      return NodeQuery.query(sel, this.element);
+    } else if (sel !== undefined) {
+      throw new Error(`Invalid this.$(${sel})`);
+    } else {
+      return NodeQuery.element(this.element);
+    }
   }
 
   wrap(element) {

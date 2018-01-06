@@ -276,7 +276,7 @@ class extends ApplicationTestCase {
       }
     }));
     return this.visit('/').then(() => {
-      let text = this.$('ul li').eq(2).text();
+      let text = this.$('ul li:nth-child(3)').text();
 
       assert.equal(text, 'Sunday: Noon to 6pm',
         'The template was rendered with the hours context'

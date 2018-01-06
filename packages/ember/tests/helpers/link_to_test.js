@@ -13,7 +13,6 @@ import {
   alias
 } from 'ember-metal';
 import { Route, NoneLocation } from 'ember-routing';
-import { jQuery } from 'ember-views';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
 // IE includes the host name
@@ -44,12 +43,12 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     });
 
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link'}}About{{/link-to}}
       {{#link-to 'index' id='self-link'}}Self{{/link-to}}
     `);
     this.addTemplate('about', `
-      <h3>About</h3>
+      <h3 class="about">About</h3>
       {{#link-to 'index' id='home-link'}}Home{{/link-to}}
       {{#link-to 'about' id='self-link'}}Self{{/link-to}}
     `);
@@ -57,13 +56,13 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
 
   ['@test The {{link-to}} helper moves into the named route'](assert) {
     this.visit('/');
-    assert.equal(this.$('h3:contains(Home)').length, 1, 'The home template was rendered');
+    assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
     assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
     assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
 
     this.click('#about-link');
 
-    assert.equal(this.$('h3:contains(About)').length, 1, 'The about template was rendered');
+    assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
     assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
     assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
   }
@@ -140,7 +139,7 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     this.visit('/');
     this.click('#about-link');
 
-    assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
+    assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
   }
 
   [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
@@ -151,7 +150,7 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
     this.visit('/');
     this.click('#about-link');
 
-    assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
+    assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
   }
 
   [`@test the {{link-to}} helper responds to clicks according to its disabledWhen bound param`](assert) {
@@ -167,33 +166,33 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
 
     this.click('#about-link');
 
-    assert.equal(this.$('h3:contains(About)').length, 0, 'Transitioning did not occur');
+    assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
 
     let controller = this.applicationInstance.lookup('controller:index');
     this.runTask(() => controller.set('disabledWhen', false));
 
     this.click('#about-link');
 
-    assert.equal(this.$('h3:contains(About)').length, 1, 'Transitioning did occur when disabledWhen became false');
+    assert.equal(this.$('h3.about').length, 1, 'Transitioning did occur when disabledWhen became false');
   }
 
   [`@test The {{link-to}} helper supports a custom activeClass`](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link'}}About{{/link-to}}
       {{#link-to 'index' id='self-link' activeClass='zomg-active'}}Self{{/link-to}}
     `);
 
     this.visit('/');
 
-    assert.equal(this.$('h3:contains(Home)').length, 1, 'The home template was rendered');
+    assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
     assert.equal(this.$('#self-link.zomg-active').length, 1, 'The self-link was rendered with active class');
     assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
   }
 
   [`@test The {{link-to}} helper supports a custom activeClass from a bound param`](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link'}}About{{/link-to}}
       {{#link-to 'index' id='self-link' activeClass=activeClass}}Self{{/link-to}}
     `);
@@ -204,14 +203,14 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
 
     this.visit('/');
 
-    assert.equal(this.$('h3:contains(Home)').length, 1, 'The home template was rendered');
+    assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
     assert.equal(this.$('#self-link.zomg-active').length, 1, 'The self-link was rendered with active class');
     assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
   }
 
   [`@test The {{link-to}} helper supports 'classNameBindings' with custom values [GH #11699]`](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link' classNameBindings='foo:foo-is-true:foo-is-false'}}About{{/link-to}}
     `);
 
@@ -255,12 +254,12 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
     });
 
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link'}}About{{/link-to}}
       {{#link-to 'index' id='self-link'}}Self{{/link-to}}
     `);
     this.addTemplate('about', `
-      <h3>About</h3>
+      <h3 class="about">About</h3>
       {{#link-to 'index' id='home-link'}}Home{{/link-to}}
       {{#link-to 'about' id='self-link'}}Self{{/link-to}}
     `);
@@ -274,7 +273,7 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
 
   ['@test The {{link-to}} helper supports URL replacement'](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link' replace=true}}About{{/link-to}}
     `);
 
@@ -293,7 +292,7 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
 
   ['@test The {{link-to}} helper supports URL replacement via replace=boundTruthyThing'](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link' replace=boundTruthyThing}}About{{/link-to}}
     `);
 
@@ -316,7 +315,7 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
 
   ['@test The {{link-to}} helper supports setting replace=boundFalseyThing'](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link' replace=boundFalseyThing}}About{{/link-to}}
     `);
 
@@ -350,12 +349,12 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
       });
 
       this.addTemplate('index', `
-        <h3>Home</h3>
+        <h3 class="home">Home</h3>
         {{#link-to 'about' id='about-link'}}About{{/link-to}}
         {{#link-to 'index' id='self-link'}}Self{{/link-to}}
       `);
       this.addTemplate('about', `
-        <h3>About</h3>
+        <h3 class="about">About</h3>
         {{#link-to 'index' id='home-link'}}Home{{/link-to}}
         {{#link-to 'about' id='self-link'}}Self{{/link-to}}
       `);
@@ -435,7 +434,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       this.route('item');
     });
 
-    this.addTemplate('index', `<h3>Home</h3>{{outlet}}`);
+    this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
     this.addTemplate('index.about', `
       {{#link-to 'item' id='other-link' current-when='index'}}ITEM{{/link-to}}
     `);
@@ -456,7 +455,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       });
     });
 
-    this.addTemplate('index', `<h3>Home</h3>{{outlet}}`);
+    this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
     this.addTemplate('index.about', `
       {{#link-to 'items' id='other-link' current-when='index'}}ITEM{{/link-to}}
     `);
@@ -481,7 +480,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       currentWhen: 'index'
     }));
 
-    this.addTemplate('index', `<h3>Home</h3>{{outlet}}`);
+    this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
     this.addTemplate('index.about', `{{#link-to 'items' id='other-link' current-when=currentWhen}}ITEM{{/link-to}}`);
 
     this.visit('/about');
@@ -498,7 +497,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       this.route('foo');
     });
 
-    this.addTemplate('index', `<h3>Home</h3>{{outlet}}`);
+    this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
     this.addTemplate('index.about', `{{#link-to 'item' id='link1' current-when='item index'}}ITEM{{/link-to}}`);
     this.addTemplate('item', `{{#link-to 'item' id='link2' current-when='item index'}}ITEM{{/link-to}}`);
     this.addTemplate('foo', `{{#link-to 'item' id='link3' current-when='item index'}}ITEM{{/link-to}}`);
@@ -524,7 +523,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       this.route('item');
     });
 
-    this.addTemplate('index', `<h3>Home</h3>{{outlet}}`);
+    this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
     this.addTemplate('index.about', `{{#link-to 'item' id='other-link' current-when=true}}ITEM{{/link-to}}`);
 
     this.visit('/about');
@@ -649,7 +648,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     });
 
     this.addTemplate('about', `
-      <h3>List</h3>
+      <h3 class="list">List</h3>
       <ul>
         {{#each model as |person|}}
           <li>
@@ -663,13 +662,13 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     `);
 
     this.addTemplate('item', `
-      <h3>Item</h3>
+      <h3 class="item">Item</h3>
       <p>{{model.name}}</p>
       {{#link-to 'index' id='home-link'}}Home{{/link-to}}
     `);
 
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'about' id='about-link'}}About{{/link-to}}
     `);
 
@@ -685,30 +684,30 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.visit('/about');
 
-    assert.equal(this.$('h3:contains(List)').length, 1, 'The home template was rendered');
+    assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
     assert.equal(normalizeUrl(this.$('#home-link').attr('href')), '/', 'The home link points back at /');
 
     this.click('#yehuda');
 
-    assert.equal(this.$('h3:contains(Item)').length, 1, 'The item template was rendered');
+    assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
     assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
 
     this.click('#home-link');
     this.click('#about-link');
 
-    assert.equal(normalizeUrl(this.$('li a:contains(Yehuda)').attr('href')), '/item/yehuda');
-    assert.equal(normalizeUrl(this.$('li a:contains(Tom)').attr('href')), '/item/tom');
-    assert.equal(normalizeUrl(this.$('li a:contains(Erik)').attr('href')), '/item/erik');
+    assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
+    assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
+    assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
 
     this.click('#erik');
 
-    assert.equal(this.$('h3:contains(Item)').length, 1, 'The item template was rendered');
+    assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
     assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
   }
 
   [`@test The {{link-to}} helper binds some anchor html tag common attributes`](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'index' id='self-link' title='title-attr' rel='rel-attr' tabindex='-1'}}
         Self
       {{/link-to}}
@@ -724,7 +723,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
   [`@test The {{link-to}} helper supports 'target' attribute`](assert) {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
     `);
 
@@ -735,7 +734,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
   }
 
   [`@test The {{link-to}} helper supports 'target' attribute specified as a bound param`](assert) {
-    this.addTemplate('index', `<h3>Home</h3>{{#link-to 'index' id='self-link' target=boundLinkTarget}}Self{{/link-to}}`);
+    this.addTemplate('index', `<h3 class="home">Home</h3>{{#link-to 'index' id='self-link' target=boundLinkTarget}}Self{{/link-to}}`);
 
     this.add('controller:index', Controller.extend({
       boundLinkTarget: '_blank'
@@ -747,7 +746,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
   }
 
-  [`@test the {{link-to}} helper calls preventDefault`](assert) {
+  [`@test the {{link-to}} helper calls preventDefault`]() {
     this.router.map(function() {
       this.route('about');
     });
@@ -758,13 +757,10 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.visit('/');
 
-    let event = jQuery.Event('click');
-    this.$('#about-link').trigger(event);
-
-    assert.equal(event.defaultPrevented, true, 'should preventDefault');
+    assertNav({ prevented: true }, () => this.$('#about-link').click());
   }
 
-  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=false' is passed as an option`](assert) {
+  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=false' is passed as an option`]() {
     this.router.map(function() {
       this.route('about');
     });
@@ -775,13 +771,10 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.visit('/');
 
-    let event = jQuery.Event('click');
-    this.$('#about-link').trigger(event);
-
-    assert.equal(event.defaultPrevented, false, 'should not preventDefault');
+    assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'));
   }
 
-  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](assert) {
+  [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`]() {
     this.router.map(function() {
       this.route('about');
     });
@@ -796,38 +789,29 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.visit('/');
 
-    let event = jQuery.Event('click');
-    this.$('#about-link').trigger(event);
-
-    assert.equal(event.defaultPrevented, false, 'should not preventDefault');
+    assertNav({ prevented: false }, () =>  this.$('#about-link').trigger('click')[0]);
   }
 
-  [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`](assert) {
+  [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`]() {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
     `);
 
     this.visit('/');
 
-    let event = jQuery.Event('click');
-    this.$('#self-link').trigger(event);
-
-    assert.equal(event.defaultPrevented, false, 'should not preventDefault when target attribute is specified');
+    assertNav({ prevented: false }, () => this.$('#self-link').click());
   }
 
-  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`](assert) {
+  [`@test The {{link-to}} helper should preventDefault when 'target = _self'`]() {
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}
     `);
 
     this.visit('/');
 
-    let event = jQuery.Event('click');
-    this.$('#self-link').trigger(event);
-
-    assert.equal(event.defaultPrevented, true, 'should preventDefault when target attribute is `_self`');
+    assertNav({ prevented: true }, () => this.$('#self-link').click());
   }
 
   [`@test The {{link-to}} helper should not transition if target is not equal to _self or empty`](assert) {
@@ -1049,12 +1033,12 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     });
 
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{link-to 'Contact us' 'contact' id='contact-link'}}
       {{#link-to 'index' id='self-link'}}Self{{/link-to}}
     `);
     this.addTemplate('contact', `
-      <h3>Contact</h3>
+      <h3 class="contact">Contact</h3>
       {{link-to 'Home' 'index' id='home-link'}}
       {{link-to 'Self' 'contact' id='self-link'}}
     `);
@@ -1063,7 +1047,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.click('#contact-link');
 
-    assert.equal(this.$('h3:contains(Contact)').length, 1, 'The contact template was rendered');
+    assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
     assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
     assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
   }
@@ -1079,40 +1063,39 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     }));
 
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{link-to contactName 'contact' id='contact-link'}}
       {{#link-to 'index' id='self-link'}}Self{{/link-to}}
     `);
     this.addTemplate('contact', `
-      <h3>Contact</h3>
+      <h3 class="contact">Contact</h3>
       {{link-to 'Home' 'index' id='home-link'}}
       {{link-to 'Self' 'contact' id='self-link'}}
     `);
 
     this.visit('/');
 
-
-    assert.equal(this.$('#contact-link:contains(Jane)').length, 1, 'The link title is correctly resolved');
+    assert.equal(this.$('#contact-link').text(), 'Jane', 'The link title is correctly resolved');
 
     let controller = this.applicationInstance.lookup('controller:index');
     this.runTask(() => controller.set('contactName', 'Joe'));
 
-    assert.equal(this.$('#contact-link:contains(Joe)').length, 1, 'The link title is correctly updated when the bound property changes');
+    assert.equal(this.$('#contact-link').text(), 'Joe', 'The link title is correctly updated when the bound property changes');
 
     this.runTask(() => controller.set('contactName', 'Robert'));
 
-    assert.equal(this.$('#contact-link:contains(Robert)').length, 1, 'The link title is correctly updated when the bound property changes a second time');
+    assert.equal(this.$('#contact-link').text(), 'Robert', 'The link title is correctly updated when the bound property changes a second time');
 
     this.click('#contact-link');
 
-    assert.equal(this.$('h3:contains(Contact)').length, 1, 'The contact template was rendered');
+    assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
     assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
     assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
 
     this.click('#home-link');
 
-    assert.equal(this.$('h3:contains(Home)').length, 1, 'The index template was rendered');
-    assert.equal(this.$('#contact-link:contains(Robert)').length, 1, 'The link title is correctly updated when the route changes');
+    assert.equal(this.$('h3.home').length, 1, 'The index template was rendered');
+    assert.equal(this.$('#contact-link').text(), 'Robert', 'The link title is correctly updated when the route changes');
   }
 
   [`@test The non-block form {{link-to}} helper moves into the named route with context`](assert) {
@@ -1133,7 +1116,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     }));
 
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       <ul>
         {{#each model as |person|}}
           <li>
@@ -1143,7 +1126,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       </ul>
     `);
     this.addTemplate('item', `
-      <h3>Item</h3>
+      <h3 class="item">Item</h3>
       <p>{{model.name}}</p>
       {{#link-to 'index' id='home-link'}}Home{{/link-to}}
     `);
@@ -1152,14 +1135,14 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.click('#yehuda');
 
-    assert.equal(this.$('h3:contains(Item)').length, 1, 'The item template was rendered');
+    assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
     assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
 
     this.click('#home-link');
 
-    assert.equal(normalizeUrl(this.$('li a:contains(Yehuda)').attr('href')), '/item/yehuda');
-    assert.equal(normalizeUrl(this.$('li a:contains(Tom)').attr('href')), '/item/tom');
-    assert.equal(normalizeUrl(this.$('li a:contains(Erik)').attr('href')), '/item/erik');
+    assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
+    assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
+    assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
   }
 
   [`@test The non-block form {{link-to}} performs property lookup`](assert) {
@@ -1380,7 +1363,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     }));
 
     this.addTemplate('index', `
-      <h3>Home</h3>
+      <h3 class="home">Home</h3>
       {{#link-to params=dynamicLinkParams id="dynamic-link"}}Dynamic{{/link-to}}
     `);
 
@@ -1520,3 +1503,21 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
   }
 
 });
+
+function assertNav(options, callback) {
+  let nav = false;
+
+  function check(event) {
+    QUnit.equal(event.defaultPrevented, options.prevented, `expected defaultPrevented=${options.prevented}`);
+    nav = true;
+    event.preventDefault();
+  }
+
+  try {
+    document.addEventListener('click', check);
+    callback();
+  } finally {
+    document.removeEventListener('click', check);
+    QUnit.ok(nav, 'Expected a link to be clicked');
+  }
+}

@@ -60,8 +60,8 @@ moduleFor('Query Params - async get handler', class extends QueryParamTestCase {
 
     let setupAppTemplate = () => {
       this.addTemplate('application', `
-        {{link-to 'Post' 'post' 1337 (query-params foo='bar') class='post-link'}}
-        {{link-to 'Post' 'post' 7331 (query-params foo='boo') class='post-link'}}
+        {{link-to 'Post' 'post' 1337 (query-params foo='bar') class='post-link is-1337'}}
+        {{link-to 'Post' 'post' 7331 (query-params foo='boo') class='post-link is-7331'}}
         {{outlet}}
       `);
     };
@@ -69,8 +69,8 @@ moduleFor('Query Params - async get handler', class extends QueryParamTestCase {
     setupAppTemplate();
 
     return this.visitAndAssert('/').then(() => {
-      assert.equal(this.$('.post-link').eq(0).attr('href'), '/post/1337?foo=bar', 'renders correctly with default QP value');
-      assert.equal(this.$('.post-link').eq(1).attr('href'), '/post/7331?foo=boo', 'renders correctly with non-default QP value');
+      assert.equal(this.$('.post-link.is-1337').attr('href'), '/post/1337?foo=bar', 'renders correctly with default QP value');
+      assert.equal(this.$('.post-link.is-7331').attr('href'), '/post/7331?foo=boo', 'renders correctly with non-default QP value');
       assert.deepEqual(this.fetchedHandlers, ['application', 'index'], `only fetched the handlers for the route we're on`);
     });
   }

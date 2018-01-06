@@ -94,9 +94,9 @@ QUnit.module('Basic Routing', {
       container = App.__container__;
 
       setTemplate('application', compile('{{outlet}}'));
-      setTemplate('home', compile('<h3>Hours</h3>'));
-      setTemplate('homepage', compile('<h3>Megatroll</h3><p>{{model.home}}</p>'));
-      setTemplate('camelot', compile('<section><h3>Is a silly place</h3></section>'));
+      setTemplate('home', compile('<h3 class="hours">Hours</h3>'));
+      setTemplate('homepage', compile('<h3 class="megatroll">Megatroll</h3><p>{{model.home}}</p>'));
+      setTemplate('camelot', compile('<section><h3 class="silly">Is a silly place</h3></section>'));
 
       originalLoggerError = Logger.error;
       originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
@@ -191,7 +191,7 @@ QUnit.test('The Homepage with a `setupController` hook modifying other controlle
 
   bootApplication();
 
-  assert.equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
+  assert.equal(document.querySelectorAll('#qunit-fixture ul li')[2].textContent, 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
 });
 
 QUnit.test('The Homepage with a computed context that does not get overridden', function(assert) {
@@ -215,7 +215,7 @@ QUnit.test('The Homepage with a computed context that does not get overridden', 
 
   bootApplication();
 
-  assert.equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the context intact');
+  assert.equal(document.querySelectorAll('#qunit-fixture ul li')[2].textContent, 'Sunday: Noon to 6pm', 'The template was rendered with the context intact');
 });
 
 QUnit.test('The Homepage getting its controller context via model', function(assert) {
@@ -245,7 +245,7 @@ QUnit.test('The Homepage getting its controller context via model', function(ass
 
   bootApplication();
 
-  assert.equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
+  assert.equal(document.querySelectorAll('#qunit-fixture ul li', '#qunit-fixture')[2].textContent, 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
 });
 
 QUnit.test('The Specials Page getting its controller context by deserializing the params hash', function(assert) {
@@ -1164,7 +1164,7 @@ QUnit.test('A redirection hook is provided', function(assert) {
   bootApplication();
 
   assert.equal(chooseFollowed, 0, 'The choose route wasn\'t entered since a transition occurred');
-  assert.equal(jQuery('h3:contains(Hours)', '#qunit-fixture').length, 1, 'The home template was rendered');
+  assert.equal(jQuery('h3.hours', '#qunit-fixture').length, 1, 'The home template was rendered');
   assert.equal(getOwner(router).lookup('controller:application').get('currentPath'), 'home');
 });
 
@@ -1669,7 +1669,7 @@ QUnit.test('Nested index route is not overridden by parent\'s implicit index rou
 });
 
 QUnit.test('Application template does not duplicate when re-rendered', function(assert) {
-  setTemplate('application', compile('<h3>I Render Once</h3>{{outlet}}'));
+  setTemplate('application', compile('<h3 class="render-once">I render once</h3>{{outlet}}'));
 
   Router.map(function() {
     this.route('posts');
@@ -1686,7 +1686,7 @@ QUnit.test('Application template does not duplicate when re-rendered', function(
   // should cause application template to re-render
   handleURL(assert, '/posts');
 
-  assert.equal(jQuery('h3:contains(I Render Once)').length, 1);
+  assert.equal(jQuery('h3.render-once').text(), "I render once");
 });
 
 QUnit.test('Child routes should render inside the application template if the application template causes a redirect', function(assert) {

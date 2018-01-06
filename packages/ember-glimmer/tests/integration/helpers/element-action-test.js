@@ -999,8 +999,8 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     let assert = this.assert;
 
     let checkClick = (prop, value, expected) => {
+      showCalled = false;
       let event = this.wrap(component.element).findAll('button').trigger('click', { [prop]: value })[0];
-
       if (expected) {
         assert.ok(showCalled, `should call action with ${prop}:${value}`);
         assert.ok(event.defaultPrevented, 'should prevent default');
@@ -1014,10 +1014,12 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
     checkClick('altKey', true, false);
     checkClick('metaKey', true, false);
     checkClick('shiftKey', true, false);
-    checkClick('which', 2, false);
 
-    checkClick('which', 1, true);
-    checkClick('which', undefined, true); // IE <9
+    checkClick('button', 0, true);
+    checkClick('button', 1, false);
+    checkClick('button', 2, false);
+    checkClick('button', 3, false);
+    checkClick('button', 4, false);
   }
 
   ['@test it can trigger actions for keyboard events']() {
@@ -1297,7 +1299,7 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
 
     this.runTask(() => {
       component.set('shouldPreventDefault', true);
-      event = this.$('a').trigger(event)[0];
+      event = this.$('a').trigger('click')[0];
     });
 
     this.assert.equal(event.defaultPrevented, true, 'should preventDefault');

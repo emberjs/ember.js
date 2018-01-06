@@ -1,8 +1,11 @@
+/* global Node */
+
 import { assert } from 'ember-debug';
-import { fireEvent, matches } from '../system/synthetic-events';
+import { fireEvent, focus, matches } from '../system/synthetic-events';
 
 export default class NodeQuery {
   static query(selector, context = document) {
+    assert(`Invalid second parameter to NodeQuery.query`, context && context instanceof Node);
     return new NodeQuery(toArray(context.querySelectorAll(selector)));
   }
 
@@ -11,7 +14,7 @@ export default class NodeQuery {
   }
 
   constructor(nodes) {
-    assert(Array.isArray(nodes), 'NodeQuery must be initialized with a literal array');
+    assert('NodeQuery must be initialized with a literal array', Array.isArray(nodes));
     this.nodes = nodes;
 
     for (let i=0; i<nodes.length; i++) {
@@ -47,8 +50,12 @@ export default class NodeQuery {
     return this.trigger('click');
   }
 
+  focus() {
+    this.nodes.forEach(focus);
+  }
+
   text() {
-    return this.nodes.map(node => node.innerText).join('');
+    return this.nodes.map(node => node.textContent).join('');
   }
 
   attr(name) {
