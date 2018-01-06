@@ -74,6 +74,8 @@ if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
   if [[ "$CHANNEL" == "release" ]]; then
     npm publish
   else
+    npm install -g auto-dist-tag
+    CHANNEL=`auto-dist-tag`
     npm publish --tag $CHANNEL
   fi
 fi
