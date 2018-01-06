@@ -10,6 +10,7 @@ import {
 } from 'ember-runtime';
 import {
   instrumentationSubscribe as subscribe,
+  instrumentationReset as reset,
   alias
 } from 'ember-metal';
 import { Route, NoneLocation } from 'ember-routing';
@@ -359,8 +360,16 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         {{#link-to 'index' id='home-link'}}Home{{/link-to}}
         {{#link-to 'about' id='self-link'}}Self{{/link-to}}
       `);
+    }
 
-      this.visit('/');
+    beforeEach() {
+      return this.visit('/');
+    }
+
+    afterEach() {
+      reset();
+
+      return super.afterEach();
     }
 
     ['@test The {{link-to}} helper fires an interaction event'](assert) {
