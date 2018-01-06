@@ -1,5 +1,6 @@
-import { jQuery } from 'ember-views';
 import { run } from 'ember-metal';
+import { assign } from 'ember-utils';
+import isFormControl from './helpers/-is-form-control';
 
 const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };
 const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'];
@@ -7,19 +8,25 @@ const MOUSE_EVENT_TYPES = ['click', 'mousedown', 'mouseup', 'dblclick', 'mouseen
 
 export function focus(el) {
   if (!el) { return; }
-  let $el = jQuery(el);
-  if ($el.is(':input, [contenteditable=true]')) {
-    let type = $el.prop('type');
+  if (el.isContentEditable || isFormControl(el)) {
+    let type = el.getAttribute('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
       run(null, function() {
-        // Firefox does not trigger the `focusin` event if the window
-        // does not have focus. If the document doesn't have focus just
-        // use trigger('focusin') instead.
+        let browserIsNotFocused = document.hasFocus && !document.hasFocus();
 
-        if (!document.hasFocus || document.hasFocus()) {
-          el.focus();
-        } else {
-          $el.trigger('focusin');
+        // makes `document.activeElement` be `element`. If the browser is focused, it also fires a focus event
+        el.focus();
+      
+        // Firefox does not trigger the `focusin` event if the window
+        // does not have focus. If the document does not have focus then
+        // fire `focusin` event as well.
+        if (browserIsNotFocused) {
+          // if the browser is not focused the previous `el.focus()` didn't fire an event, so we simulate it
+          fireEvent(el, 'focus', {
+            bubbles: false,
+          });
+      
+          fireEvent(el, 'focusin');
         }
       });
     }
@@ -43,7 +50,7 @@ export function fireEvent(element, type, options = {}) {
       clientX: x,
       clientY: y
     };
-    event = buildMouseEvent(type, jQuery.extend(simulatedCoordinates, options));
+    event = buildMouseEvent(type, assign(simulatedCoordinates, options));
   } else {
     event = buildBasicEvent(type, options);
   }
@@ -52,8 +59,16 @@ export function fireEvent(element, type, options = {}) {
 
 function buildBasicEvent(type, options = {}) {
   let event = document.createEvent('Events');
-  event.initEvent(type, true, true);
-  jQuery.extend(event, options);
+
+  // Event.bubbles is read only
+  let bubbles = options.bubbles !== undefined ? options.bubbles : true;
+  let cancelable = options.cancelable !== undefined ? options.cancelable : true;
+
+  delete options.bubbles;
+  delete options.cancelable;
+
+  event.initEvent(type, bubbles, cancelable);
+  assign(event, options);
   return event;
 }
 
@@ -61,7 +76,7 @@ function buildMouseEvent(type, options = {}) {
   let event;
   try {
     event = document.createEvent('MouseEvents');
-    let eventOpts = jQuery.extend({}, DEFAULT_EVENT_OPTIONS, options);
+    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS, options);
     event.initMouseEvent(
       type,
       eventOpts.canBubble,
@@ -88,7 +103,7 @@ function buildKeyboardEvent(type, options = {}) {
   let event;
   try {
     event = document.createEvent('KeyEvents');
-    let eventOpts = jQuery.extend({}, DEFAULT_EVENT_OPTIONS, options);
+    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS, options);
     event.initKeyEvent(
       type,
       eventOpts.canBubble,

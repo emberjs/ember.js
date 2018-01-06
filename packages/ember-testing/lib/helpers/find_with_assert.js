@@ -22,7 +22,7 @@
   @param {String} [context] (optional) jQuery selector that will limit the
   selector argument to find only within the context's children
   @return {Object} jQuery object representing the results of the query
-  @throws {Error} throws error if jQuery object returned has a length of 0
+  @throws {Error} throws error if object returned has a length of 0
   @public
 */
 export default function findWithAssert(app, selector, context) {
