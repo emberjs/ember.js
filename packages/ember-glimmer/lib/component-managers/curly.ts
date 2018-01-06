@@ -19,8 +19,6 @@ import {
   ComponentDefinition,
   ElementOperations,
   Invocation,
-  NamedArguments,
-  PositionalArguments,
   PreparedArguments,
   PrimitiveReference,
   WithDynamicLayout,
@@ -61,6 +59,7 @@ import {
   AttributeBinding,
   ClassNameBinding,
   IsVisibleBinding,
+  referenceForKey
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
@@ -242,7 +241,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       for (let i=0; i<count; i++) {
         const name = positionalParams[i];
         if (named[name]) {
-          throw new Error(`You cannot specify both a positional parameter at ${i} and the hash argument ${name}`);
+          assert(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`);
         }
 
         named[name] = args.positional.at(i);
@@ -418,7 +417,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     const ariaRole = get(component, 'ariaRole');
     if (ariaRole) {
-      operations.setAttribute('role', PrimitiveReference.create(ariaRole), false, null);
+      operations.setAttribute('role', referenceForKey(component, 'ariaRole'), false, null);
     }
 
     component._transitionTo('hasElement');

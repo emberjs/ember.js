@@ -8,8 +8,7 @@ import {
   combine,
   map,
   Reference,
-  Tag,
-  VersionedPathReference
+  Tag
 } from '@glimmer/reference';
 import {
   ElementOperations,
@@ -24,7 +23,7 @@ import { Component } from './curly-component-state-bucket';
 import { referenceFromParts } from './references';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
-function referenceForKey(component: Component, key: string) {
+export function referenceForKey(component: Component, key: string) {
   return component[ROOT_REF].get(key);
 }
 
