@@ -23,6 +23,10 @@ export function canInvoke(obj, methodName) {
 }
 
 /**
+  @module @ember/utils
+*/
+
+/**
   Checks to see if the `methodName` exists on the `obj`,
   and if it does, invokes it with the arguments passed.
 
@@ -35,7 +39,8 @@ export function canInvoke(obj, methodName) {
   ```
 
   @method tryInvoke
-  @for Ember
+  @for @ember/utils
+  @static
   @param {Object} obj The object to check for the method
   @param {String} methodName The method name to check for
   @param {Array} [args] The arguments to pass to the method
