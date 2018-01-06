@@ -33,7 +33,7 @@ export {
 export { default as Copyable } from './mixins/copyable';
 export { default as Enumerable } from './mixins/enumerable';
 export {
-  default as _ProxyMixin
+  default as _ProxyMixin, contentFor as _contentFor
 } from './mixins/-proxy';
 export {
   onLoad,

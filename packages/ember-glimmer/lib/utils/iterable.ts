@@ -8,6 +8,7 @@ import {
 import { Opaque } from '@glimmer/util';
 import { get, isProxy, tagFor, tagForProperty } from 'ember-metal';
 import {
+  _contentFor,
   isEmberArray,
   objectAt,
 } from 'ember-runtime';
@@ -204,12 +205,15 @@ class EachInIterable {
     let { ref, keyFor, valueTag } = this;
 
     let iterable = ref.value();
-
-    valueTag.inner.update(tagFor(iterable));
+    let tag = tagFor(iterable);
 
     if (isProxy(iterable)) {
-      iterable = get(iterable, 'content');
+      // this is because the each-in doesn't actually get(proxy, 'key') but bypasses it
+      // and the proxy's tag is lazy updated on access
+      iterable = _contentFor(iterable);
     }
+
+    valueTag.inner.update(tag);
 
     let typeofIterable = typeof iterable;
 

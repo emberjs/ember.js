@@ -21,3 +21,5 @@ export const String: {
 export function objectAt(arr: any, i: number): any;
 
 export function isEmberArray(arr: any): boolean;
+
+export function _contentFor(proxy: any): any;

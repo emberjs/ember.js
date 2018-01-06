@@ -40,7 +40,11 @@ export function markObjectAsDirty(meta, propertyKey) {
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {
-    objectTag.inner.dirty();
+    if (meta.isProxy()) {
+      objectTag.inner.first.inner.dirty();
+    } else {
+      objectTag.inner.dirty();
+    }
   }
 
   let tags = meta.readableTags();
@@ -48,10 +52,6 @@ export function markObjectAsDirty(meta, propertyKey) {
 
   if (propertyTag !== undefined) {
     propertyTag.inner.dirty();
-  }
-
-  if (propertyKey === 'content' && meta.isProxy()) {
-    objectTag.inner.contentDidChange();
   }
 
   if (objectTag !== undefined || propertyTag !== undefined) {
@@ -62,6 +62,7 @@ export function markObjectAsDirty(meta, propertyKey) {
 let backburner;
 function ensureRunloop() {
   if (backburner === undefined) {
+    // TODO why does this need to be lazy
     backburner = require('ember-metal').run.backburner;
   }
 
