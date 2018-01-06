@@ -101,6 +101,15 @@ QUnit.test('defining computed property should invoke property on set', function(
   assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value');
 });
 
+QUnit.test('defining a computed property with only a set key returns undefined', function(assert) {
+  let obj = {};
+  defineProperty(obj, 'foo', computed({
+    set() {}
+  }));
+
+  assert.strictEqual(get(obj, 'foo'), undefined, 'returns undefined');
+});
+
 QUnit.test('defining a computed property with a dependent key ending with @each is expanded to []', function(assert) {
   let cp = computed('blazo.@each', function() { });
 
