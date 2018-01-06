@@ -73,15 +73,15 @@ Suite.reopenClass({
         let title = get(this, 'name') + ': ' + desc;
         let ctx = this;
         QUnit.module(title, {
-          beforeEach() {
+          beforeEach(assert) {
             if (setup) {
-              setup.call(ctx);
+              setup.call(ctx, assert);
             }
           },
 
-          afterEach() {
+          afterEach(assert) {
             if (teardown) {
-              teardown.call(ctx);
+              teardown.call(ctx, assert);
             }
           }
         });

@@ -23,12 +23,12 @@ const ObserverClass = EnumerableTestsObserverClass.extend({
   },
 
   arrayWillChange() {
-    equal(this._before, null, 'should only call once');
+    QUnit.config.current.assert.equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
   arrayDidChange() {
-    equal(this._after, null, 'should only call once');
+    QUnit.config.current.assert.equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
 });

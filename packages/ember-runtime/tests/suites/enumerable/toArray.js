@@ -4,9 +4,9 @@ const suite = SuiteModuleBuilder.create();
 
 suite.module('toArray');
 
-suite.test('toArray should convert to an array', function() {
+suite.test('toArray should convert to an array', function(assert) {
   let obj = this.newObject();
-  deepEqual(obj.toArray(), this.toArray(obj));
+  assert.deepEqual(obj.toArray(), this.toArray(obj));
 });
 
 export default suite;

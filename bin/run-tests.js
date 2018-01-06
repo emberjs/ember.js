@@ -2,6 +2,7 @@
 
 /* eslint-disable no-console */
 
+var execa = require('execa');
 var RSVP  = require('rsvp');
 var execFile = require('child_process').execFile;
 var chalk = require('chalk');
@@ -310,10 +311,22 @@ switch (process.env.TEST_SUITE) {
     generateEachPackageTests();
     runAndExit();
     break;
-  case 'node':
+  case 'node': {
     console.log('suite: node');
-    require('./run-node-tests');
+    let stream = execa('yarn', ['test:node']);
+    stream.stdout.pipe(process.stdout);
+    stream.then(
+      function() {
+        console.log(chalk.green('Passed!'));
+        process.exit(0);
+      },
+      function() {
+        console.error(chalk.red('Failed!'));
+        process.exit(1);
+      }
+    );
     break;
+  }
   case 'blueprints':
     console.log('suite: blueprints');
     require('../node-tests/nodetest-runner');

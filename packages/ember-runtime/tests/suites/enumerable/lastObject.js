@@ -5,26 +5,26 @@ const suite = SuiteModuleBuilder.create();
 
 suite.module('lastObject');
 
-suite.test('returns last item in enumerable', function() {
+suite.test('returns last item in enumerable', function(assert) {
   let obj = this.newObject();
   let ary = this.toArray(obj);
 
-  equal(get(obj, 'lastObject'), ary[ary.length - 1]);
+  assert.equal(get(obj, 'lastObject'), ary[ary.length - 1]);
 });
 
-suite.test('returns undefined if enumerable is empty', function() {
+suite.test('returns undefined if enumerable is empty', function(assert) {
   let obj = this.newObject([]);
 
-  equal(get(obj, 'lastObject'), undefined);
+  assert.equal(get(obj, 'lastObject'), undefined);
 });
 
-suite.test('can not be set', function() {
+suite.test('can not be set', function(assert) {
   let obj = this.newObject();
   let ary = this.toArray(obj);
 
-  equal(get(obj, 'lastObject'), ary[ary.length - 1]);
+  assert.equal(get(obj, 'lastObject'), ary[ary.length - 1]);
 
-  throws(function() {
+  assert.throws(function() {
     set(obj, 'lastObject', 'foo!');
   }, /Cannot set read-only property "lastObject" on object/);
 });
