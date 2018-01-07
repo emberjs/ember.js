@@ -5,6 +5,7 @@ import {
 } from 'ember-metal';
 import Observable from '../../../mixins/observable';
 import EmberObject from '../../../system/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -21,8 +22,9 @@ import EmberObject from '../../../system/object';
 */
 
 let MyApp;
+let deprecationMessage = /`Ember.Binding` is deprecated/;
 
-QUnit.module('System:run_loop() - chained binding', {
+moduleFor('System:run_loop() - chained binding', class extends AbstractTestCase {
   beforeEach() {
     MyApp = {};
     MyApp.first = EmberObject.extend(Observable).create({
@@ -42,75 +44,73 @@ QUnit.module('System:run_loop() - chained binding', {
       input: 'MyApp.third'
     });
   }
-});
 
-let deprecationMessage = /`Ember.Binding` is deprecated/;
+  ['@test Should propagate bindings after the RunLoop completes (using Ember.RunLoop)'](assert) {
+    run(() => {
+      //Binding of output of MyApp.first object to input of MyApp.second object
+      expectDeprecation(() => {
+        Binding.from('first.output')
+          .to('second.input').connect(MyApp);
+      }, deprecationMessage);
 
-QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.RunLoop)', function(assert) {
-  run(() => {
-    //Binding of output of MyApp.first object to input of MyApp.second object
-    expectDeprecation(() => {
-      Binding.from('first.output')
-        .to('second.input').connect(MyApp);
-    }, deprecationMessage);
+      //Binding of output of MyApp.second object to input of MyApp.third object
+      expectDeprecation(() => {
+        Binding.from('second.output')
+          .to('third.input').connect(MyApp);
+      }, deprecationMessage);
+    });
 
-    //Binding of output of MyApp.second object to input of MyApp.third object
-    expectDeprecation(() => {
-      Binding.from('second.output')
-        .to('third.input').connect(MyApp);
-    }, deprecationMessage);
-  });
+    run(() => {
+      // Based on the above binding if you change the output of MyApp.first
+      // object it should change the all the variable of
+      //  MyApp.first,MyApp.second and MyApp.third object
+      MyApp.first.set('output', 'change');
 
-  run(() => {
-    // Based on the above binding if you change the output of MyApp.first
-    // object it should change the all the variable of
-    //  MyApp.first,MyApp.second and MyApp.third object
-    MyApp.first.set('output', 'change');
+      //Changes the output of the MyApp.first object
+      assert.equal(MyApp.first.get('output'), 'change');
 
-    //Changes the output of the MyApp.first object
+      //since binding has not taken into effect the value still remains as change.
+      assert.equal(MyApp.second.get('output'), 'MyApp.first');
+    }); // allows bindings to trigger...
+
+    //Value of the output variable changed to 'change'
     assert.equal(MyApp.first.get('output'), 'change');
 
-    //since binding has not taken into effect the value still remains as change.
-    assert.equal(MyApp.second.get('output'), 'MyApp.first');
-  }); // allows bindings to trigger...
+    //Since binding triggered after the end loop the value changed to 'change'.
+    assert.equal(MyApp.second.get('output'), 'change');
+  }
 
-  //Value of the output variable changed to 'change'
-  assert.equal(MyApp.first.get('output'), 'change');
+  ['@test Should propagate bindings after the RunLoop completes'](assert) {
+    run(() => {
+      //Binding of output of MyApp.first object to input of MyApp.second object
+      expectDeprecation(() => {
+        Binding.from('first.output')
+          .to('second.input').connect(MyApp);
+      }, deprecationMessage);
 
-  //Since binding triggered after the end loop the value changed to 'change'.
-  assert.equal(MyApp.second.get('output'), 'change');
-});
+      //Binding of output of MyApp.second object to input of MyApp.third object
+      expectDeprecation(() => {
+        Binding.from('second.output')
+          .to('third.input').connect(MyApp);
+      }, deprecationMessage);
+    });
 
-QUnit.test('Should propagate bindings after the RunLoop completes', function(assert) {
-  run(() => {
-    //Binding of output of MyApp.first object to input of MyApp.second object
-    expectDeprecation(() => {
-      Binding.from('first.output')
-        .to('second.input').connect(MyApp);
-    }, deprecationMessage);
+    run(() => {
+      //Based on the above binding if you change the output of MyApp.first object it should
+      //change the all the variable of MyApp.first,MyApp.second and MyApp.third object
+      MyApp.first.set('output', 'change');
 
-    //Binding of output of MyApp.second object to input of MyApp.third object
-    expectDeprecation(() => {
-      Binding.from('second.output')
-        .to('third.input').connect(MyApp);
-    }, deprecationMessage);
-  });
+      //Changes the output of the MyApp.first object
+      assert.equal(MyApp.first.get('output'), 'change');
 
-  run(() => {
-    //Based on the above binding if you change the output of MyApp.first object it should
-    //change the all the variable of MyApp.first,MyApp.second and MyApp.third object
-    MyApp.first.set('output', 'change');
+      //since binding has not taken into effect the value still remains as change.
+      assert.equal(MyApp.second.get('output'), 'MyApp.first');
+    });
 
-    //Changes the output of the MyApp.first object
+    //Value of the output variable changed to 'change'
     assert.equal(MyApp.first.get('output'), 'change');
 
-    //since binding has not taken into effect the value still remains as change.
-    assert.equal(MyApp.second.get('output'), 'MyApp.first');
-  });
-
-  //Value of the output variable changed to 'change'
-  assert.equal(MyApp.first.get('output'), 'change');
-
-  //Since binding triggered after the end loop the value changed to 'change'.
-  assert.equal(MyApp.second.get('output'), 'change');
+    //Since binding triggered after the end loop the value changed to 'change'.
+    assert.equal(MyApp.second.get('output'), 'change');
+  }
 });

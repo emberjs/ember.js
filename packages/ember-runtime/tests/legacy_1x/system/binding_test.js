@@ -8,6 +8,7 @@ import {
   observer as emberObserver
 } from 'ember-metal';
 import EmberObject from '../../../system/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 
 /*
@@ -51,7 +52,7 @@ let TestNamespace, fromObject, toObject, binding, Bon1, bon2, root; // global va
 const originalLookup = context.lookup;
 let lookup;
 
-QUnit.module('basic object binding', {
+moduleFor('basic object binding', class extends AbstractTestCase {
   beforeEach() {
     fromObject = EmberObject.create({ value: 'start' });
     toObject = EmberObject.create({ value: 'end' });
@@ -62,82 +63,82 @@ QUnit.module('basic object binding', {
       }, /`Ember\.Binding` is deprecated./);
     });
   }
-});
 
-QUnit.test('binding should have synced on connect', function(assert) {
-  assert.equal(get(toObject, 'value'), 'start', 'toObject.value should match fromObject.value');
-});
 
-QUnit.test('fromObject change should propagate to toObject only after flush', function(assert) {
-  run(() => {
-    set(fromObject, 'value', 'change');
+  ['@test binding should have synced on connect'](assert) {
+    assert.equal(get(toObject, 'value'), 'start', 'toObject.value should match fromObject.value');
+  }
+
+  ['@test fromObject change should propagate to toObject only after flush'](assert) {
+    run(() => {
+      set(fromObject, 'value', 'change');
+      assert.equal(get(toObject, 'value'), 'start');
+    });
+    assert.equal(get(toObject, 'value'), 'change');
+  }
+
+  ['@test toObject change should propagate to fromObject only after flush'](assert) {
+    run(() => {
+      set(toObject, 'value', 'change');
+      assert.equal(get(fromObject, 'value'), 'start');
+    });
+    assert.equal(get(fromObject, 'value'), 'change');
+  }
+
+  ['@test deferred observing during bindings'](assert) {
+    // setup special binding
+    fromObject = EmberObject.create({
+      value1: 'value1',
+      value2: 'value2'
+    });
+
+    toObject = EmberObject.extend({
+      observer: emberObserver('value1', 'value2', function() {
+        assert.equal(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
+        assert.equal(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
+        this.callCount++;
+      })
+    }).create({
+      value1: 'value1',
+      value2: 'value2',
+
+      callCount: 0
+    });
+
+    let root = { fromObject: fromObject, toObject: toObject };
+    run(function () {
+      expectDeprecation(() => {
+        bind(root, 'toObject.value1', 'fromObject.value1');
+      }, /`Ember\.Binding` is deprecated./);
+
+      expectDeprecation(() => {
+        bind(root, 'toObject.value2', 'fromObject.value2');
+      }, /`Ember\.Binding` is deprecated./);
+
+      // change both value1 + value2, then  flush bindings.  observer should only
+      // fire after bindings are done flushing.
+      set(fromObject, 'value1', 'CHANGED');
+      set(fromObject, 'value2', 'CHANGED');
+    });
+
+    assert.equal(toObject.callCount, 2, 'should call observer twice');
+  }
+
+  ['@test binding disconnection actually works'](assert) {
+    binding.disconnect(root);
+    run(function () {
+      set(fromObject, 'value', 'change');
+    });
     assert.equal(get(toObject, 'value'), 'start');
-  });
-  assert.equal(get(toObject, 'value'), 'change');
+  }      
 });
-
-QUnit.test('toObject change should propagate to fromObject only after flush', function(assert) {
-  run(() => {
-    set(toObject, 'value', 'change');
-    assert.equal(get(fromObject, 'value'), 'start');
-  });
-  assert.equal(get(fromObject, 'value'), 'change');
-});
-
-QUnit.test('deferred observing during bindings', function(assert) {
-  // setup special binding
-  fromObject = EmberObject.create({
-    value1: 'value1',
-    value2: 'value2'
-  });
-
-  toObject = EmberObject.extend({
-    observer: emberObserver('value1', 'value2', function() {
-      assert.equal(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
-      assert.equal(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
-      this.callCount++;
-    })
-  }).create({
-    value1: 'value1',
-    value2: 'value2',
-
-    callCount: 0
-  });
-
-  let root = { fromObject: fromObject, toObject: toObject };
-  run(function () {
-    expectDeprecation(() => {
-      bind(root, 'toObject.value1', 'fromObject.value1');
-    }, /`Ember\.Binding` is deprecated./);
-
-    expectDeprecation(() => {
-      bind(root, 'toObject.value2', 'fromObject.value2');
-    }, /`Ember\.Binding` is deprecated./);
-
-    // change both value1 + value2, then  flush bindings.  observer should only
-    // fire after bindings are done flushing.
-    set(fromObject, 'value1', 'CHANGED');
-    set(fromObject, 'value2', 'CHANGED');
-  });
-
-  assert.equal(toObject.callCount, 2, 'should call observer twice');
-});
-
-QUnit.test('binding disconnection actually works', function(assert) {
-  binding.disconnect(root);
-  run(function () {
-    set(fromObject, 'value', 'change');
-  });
-  assert.equal(get(toObject, 'value'), 'start');
-});
-
 let first, second, third; // global variables
 
 // ..........................................................
 // chained binding
 //
 
-QUnit.module('chained binding', {
+moduleFor('chained binding', class extends AbstractTestCase {
 
   beforeEach() {
     run(function() {
@@ -164,30 +165,31 @@ QUnit.module('chained binding', {
         bind(root, 'second.output', 'third.input');
       }, /`Ember\.Binding` is deprecated./);
     });
-  },
+  }
+
   afterEach() {
     run.cancelTimers();
   }
-});
 
-QUnit.test('changing first output should propagate to third after flush', function(assert) {
-  run(function() {
-    set(first, 'output', 'change');
+  ['@test changing first output should propagate to third after flush'](assert) {
+    run(function() {
+      set(first, 'output', 'change');
+      assert.equal('change', get(first, 'output'), 'first.output');
+      assert.ok('change' !== get(third, 'input'), 'third.input');
+    });
+
     assert.equal('change', get(first, 'output'), 'first.output');
-    assert.ok('change' !== get(third, 'input'), 'third.input');
-  });
-
-  assert.equal('change', get(first, 'output'), 'first.output');
-  assert.equal('change', get(second, 'input'), 'second.input');
-  assert.equal('change', get(second, 'output'), 'second.output');
-  assert.equal('change', get(third, 'input'), 'third.input');
+    assert.equal('change', get(second, 'input'), 'second.input');
+    assert.equal('change', get(second, 'output'), 'second.output');
+    assert.equal('change', get(third, 'input'), 'third.input');
+  }
 });
 
 // ..........................................................
 // Custom Binding
 //
 
-QUnit.module('Custom Binding', {
+moduleFor('Custom Binding', class extends AbstractTestCase {
   beforeEach() {
     context.lookup = lookup = {};
 
@@ -207,53 +209,54 @@ QUnit.module('Custom Binding', {
       bon2: bon2,
       Bon1: Bon1
     };
-  },
+  }
   afterEach() {
     context.lookup = originalLookup;
     Bon1 = bon2 = TestNamespace  = null;
     run.cancelTimers();
   }
-});
 
-QUnit.test('two bindings to the same value should sync in the order they are initialized', function(assert) {
-  run.begin();
 
-  let a = EmberObject.create({
-    foo: 'bar'
-  });
+  ['@test two bindings to the same value should sync in the order they are initialized'](assert) {
+    run.begin();
 
-  let b = EmberObject.extend({
-    C: EmberObject.extend({
-      foo: 'bee',
-      fooBinding: 'owner.foo'
-    }),
-
-    init() {
-      this._super(...arguments);
-      set(this, 'c', this.C.create({ owner: this }));
-    }
-  });
-
-  expectDeprecation(() => {
-    b = b.create({
-      foo: 'baz',
-      fooBinding: 'a.foo',
-      a: a
+    let a = EmberObject.create({
+      foo: 'bar'
     });
-  }, /`Ember\.Binding` is deprecated./);
 
-  run.end();
+    let b = EmberObject.extend({
+      C: EmberObject.extend({
+        foo: 'bee',
+        fooBinding: 'owner.foo'
+      }),
 
-  assert.equal(get(a, 'foo'), 'bar', 'a.foo should not change');
-  assert.equal(get(b, 'foo'), 'bar', 'a.foo should propagate up to b.foo');
-  assert.equal(get(b.c, 'foo'), 'bar', 'a.foo should propagate up to b.c.foo');
+      init() {
+        this._super(...arguments);
+        set(this, 'c', this.C.create({ owner: this }));
+      }
+    });
+
+    expectDeprecation(() => {
+      b = b.create({
+        foo: 'baz',
+        fooBinding: 'a.foo',
+        a: a
+      });
+    }, /`Ember\.Binding` is deprecated./);
+
+    run.end();
+
+    assert.equal(get(a, 'foo'), 'bar', 'a.foo should not change');
+    assert.equal(get(b, 'foo'), 'bar', 'a.foo should propagate up to b.foo');
+    assert.equal(get(b.c, 'foo'), 'bar', 'a.foo should propagate up to b.c.foo');
+  }
 });
 
 // ..........................................................
 // propertyNameBinding with longhand
 //
 
-QUnit.module('propertyNameBinding with longhand', {
+moduleFor('propertyNameBinding with longhand', class extends AbstractTestCase {
   beforeEach() {
     context.lookup = lookup = {};
 
@@ -272,29 +275,30 @@ QUnit.module('propertyNameBinding with longhand', {
         });
       }, /`Ember\.Binding` is deprecated./);
     });
-  },
+  }
+
   afterEach() {
     TestNamespace = undefined;
     context.lookup = originalLookup;
   }
-});
 
-QUnit.test('works with full path', function(assert) {
-  run(() => set(TestNamespace.fromObject, 'value', 'updatedValue'));
+  ['@test works with full path'](assert) {
+    run(() => set(TestNamespace.fromObject, 'value', 'updatedValue'));
 
-  assert.equal(get(TestNamespace.toObject, 'value'), 'updatedValue');
+    assert.equal(get(TestNamespace.toObject, 'value'), 'updatedValue');
 
-  run(() => set(TestNamespace.fromObject, 'value', 'newerValue'));
+    run(() => set(TestNamespace.fromObject, 'value', 'newerValue'));
 
-  assert.equal(get(TestNamespace.toObject, 'value'), 'newerValue');
-});
+    assert.equal(get(TestNamespace.toObject, 'value'), 'newerValue');
+  }
 
-QUnit.test('works with local path', function(assert) {
-  run(() => set(TestNamespace.toObject, 'localValue', 'updatedValue'));
+  ['@test works with local path'](assert) {
+    run(() => set(TestNamespace.toObject, 'localValue', 'updatedValue'));
 
-  assert.equal(get(TestNamespace.toObject, 'relative'), 'updatedValue');
+    assert.equal(get(TestNamespace.toObject, 'relative'), 'updatedValue');
 
-  run(() => set(TestNamespace.toObject, 'localValue', 'newerValue'));
+    run(() => set(TestNamespace.toObject, 'localValue', 'newerValue'));
 
-  assert.equal(get(TestNamespace.toObject, 'relative'), 'newerValue');
+    assert.equal(get(TestNamespace.toObject, 'relative'), 'newerValue');
+  }
 });
