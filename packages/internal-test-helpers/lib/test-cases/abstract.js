@@ -9,6 +9,7 @@ import {
   regex,
   classes
 } from '../matchers';
+import { Promise } from 'rsvp';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -105,7 +106,27 @@ export default class AbstractTestCase {
     } else {
       element = selector;
     }
-    return element.click();
+
+    let event = element.click();
+
+    return this.runLoopSettled(event);
+  }
+
+  // TODO: Find a better name 😎
+  runLoopSettled(value) {
+    return new Promise(function(resolve) {
+      // Every 5ms, poll for the async thing to have finished
+      let watcher = setInterval(() => {
+        // If there are scheduled timers or we are inside of a run loop, keep polling
+        if (run.hasScheduledTimers() || run.currentRunLoop) { return; }
+
+        // Stop polling
+        clearInterval(watcher);
+
+        // Synchronously resolve the promise
+        resolve(value);
+      }, 5);
+    });
   }
 
   textValue() {

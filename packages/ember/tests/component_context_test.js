@@ -20,7 +20,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       template: `{{text}}-{{yield}}`
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'inner-outer', 'The component is composed correctly');
     });
@@ -42,7 +42,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'outer', 'The component is composed correctly');
     });
@@ -62,7 +62,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       template: '{{text}}'
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'inner', 'The component is composed correctly');
     });
@@ -84,7 +84,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
     });
@@ -107,7 +107,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
     });
@@ -131,7 +131,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
     });
@@ -155,7 +155,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     }));
     this.addComponent('my-component', { ComponentClass: Component.extend({}) });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       this.$('#fizzbuzz', '#wrapper').click();
     });
   }
@@ -183,7 +183,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       template: `<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>`
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       this.$('#fizzbuzz', '#wrapper').click();
     });
   }

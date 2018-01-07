@@ -17,10 +17,11 @@ export default class AutobootApplicationTestCase extends TestResolverApplication
     return application;
   }
 
-  visit(url, options) {
-    return this.runTask(() => {
-      return this.applicationInstance.visit(url, options);
-    });
+  visit(url) {
+    return this.application.boot()
+      .then(() => {
+        return this.applicationInstance.visit(url);
+      });
   }
 
   get applicationInstance() {

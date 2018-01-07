@@ -174,5 +174,7 @@ moduleFor('Application Lifecycle - Component Registration', class extends Applic
     expectAssertion(() => {
       this.visit('/');
     }, /.* named "no-good" .*/);
+
+    return this.runLoopSettled();
   }
 });
