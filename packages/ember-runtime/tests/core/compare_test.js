@@ -2,6 +2,7 @@ import { typeOf } from '../../utils';
 import EmberObject from '../../system/object';
 import compare from '../../compare';
 import Comparable from '../../mixins/comparable';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let data = [];
 let Comp = EmberObject.extend(Comparable);
@@ -12,7 +13,7 @@ Comp.reopenClass({
   }
 });
 
-QUnit.module('Ember.compare()', {
+moduleFor('Ember.compare()', class extends AbstractTestCase {
   beforeEach() {
     data[0]  = null;
     data[1]  = false;
@@ -31,46 +32,47 @@ QUnit.module('Ember.compare()', {
     data[14] = new Date('2012/01/01');
     data[15] = new Date('2012/06/06');
   }
-});
 
-QUnit.test('ordering should work', function(assert) {
-  let suspect, comparable, failureMessage, suspectIndex, comparableIndex;
 
-  for (suspectIndex = 0; suspectIndex < data.length; suspectIndex++) {
-    suspect = data[suspectIndex];
+  ['@test ordering should work'](assert) {
+    let suspect, comparable, failureMessage, suspectIndex, comparableIndex;
 
-    assert.equal(compare(suspect, suspect), 0, suspectIndex + ' should equal itself');
+    for (suspectIndex = 0; suspectIndex < data.length; suspectIndex++) {
+      suspect = data[suspectIndex];
 
-    for (comparableIndex = suspectIndex + 1; comparableIndex < data.length; comparableIndex++) {
-      comparable = data[comparableIndex];
+      assert.equal(compare(suspect, suspect), 0, suspectIndex + ' should equal itself');
 
-      failureMessage = 'data[' + suspectIndex + '] (' + typeOf(suspect) +
-        ') should be smaller than data[' + comparableIndex + '] (' +
-        typeOf(comparable) + ')';
+      for (comparableIndex = suspectIndex + 1; comparableIndex < data.length; comparableIndex++) {
+        comparable = data[comparableIndex];
 
-      assert.equal(compare(suspect, comparable), -1, failureMessage);
+        failureMessage = 'data[' + suspectIndex + '] (' + typeOf(suspect) +
+          ') should be smaller than data[' + comparableIndex + '] (' +
+          typeOf(comparable) + ')';
+
+        assert.equal(compare(suspect, comparable), -1, failureMessage);
+      }
     }
   }
-});
 
-QUnit.test('comparables should return values in the range of -1, 0, 1', function(assert) {
-  let negOne = Comp.create({
-    val: -1
-  });
+  ['@test comparables should return values in the range of -1, 0, 1'](assert) {
+    let negOne = Comp.create({
+      val: -1
+    });
 
-  let zero = Comp.create({
-    val: 0
-  });
+    let zero = Comp.create({
+      val: 0
+    });
 
-  let one = Comp.create({
-    val: 1
-  });
+    let one = Comp.create({
+      val: 1
+    });
 
-  assert.equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
-  assert.equal(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');
-  assert.equal(compare(one, 'c'), 1, 'First item comparable - returns  1 (not negated)');
+    assert.equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
+    assert.equal(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');
+    assert.equal(compare(one, 'c'), 1, 'First item comparable - returns  1 (not negated)');
 
-  assert.equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
-  assert.equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
-  assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
+    assert.equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
+    assert.equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
+    assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
+  }
 });
