@@ -20,7 +20,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       template: `{{text}}-{{yield}}`
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'inner-outer', 'The component is composed correctly');
     });
@@ -42,7 +42,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'outer', 'The component is composed correctly');
     });
@@ -62,7 +62,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       template: '{{text}}'
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'inner', 'The component is composed correctly');
     });
@@ -84,7 +84,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
     });
@@ -107,7 +107,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
     });
@@ -131,13 +131,13 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       })
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
       assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
     });
   }
 
-  ['@test Components trigger actions in the parents context when called from within a block']() {
+  ['@test Components trigger actions in the parents context when called from within a block'](assert) {
     this.addTemplate('application', `
       <div id='wrapper'>
         {{#my-component}}
@@ -149,18 +149,18 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     this.add('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
-          ok(true, 'action triggered on parent');
+          assert.ok(true, 'action triggered on parent');
         }
       }
     }));
     this.addComponent('my-component', { ComponentClass: Component.extend({}) });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       this.$('#fizzbuzz', '#wrapper').click();
     });
   }
 
-  ['@test Components trigger actions in the components context when called from within its template']() {
+  ['@test Components trigger actions in the components context when called from within its template'](assert) {
     this.addTemplate('application', `
       <div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>
     `);
@@ -168,7 +168,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     this.add('controller:application', Controller.extend({
       actions: {
         fizzbuzz() {
-          ok(false, 'action on the wrong context');
+          assert.ok(false, 'action on the wrong context');
         }
       }
     }));
@@ -176,14 +176,14 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
       ComponentClass: Component.extend({
         actions: {
           fizzbuzz() {
-            ok(true, 'action triggered on component');
+            assert.ok(true, 'action triggered on component');
           }
         }
       }),
       template: `<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>`
     });
 
-    this.visit('/').then(() => {
+    return this.visit('/').then(() => {
       this.$('#fizzbuzz', '#wrapper').click();
     });
   }

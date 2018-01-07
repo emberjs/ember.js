@@ -49,7 +49,7 @@ moduleFor('Ember.Application - resetting', class extends AutobootApplicationTest
 
     assert.strictEqual(firstController, secondController, 'controllers looked up in succession should be the same instance');
 
-    ok(firstController.isDestroying, 'controllers are destroyed when their application is reset');
+    assert.ok(firstController.isDestroying, 'controllers are destroyed when their application is reset');
 
     assert.notStrictEqual(firstController, thirdController, 'controllers looked up after the application is reset should not be the same instance');
   }
@@ -98,20 +98,37 @@ moduleFor('Ember.Application - resetting', class extends AutobootApplicationTest
       });
     });
 
-    this.visit('/one');
+    let initialRouter, initialApplicationController;
+    return this.visit('/one')
+      .then(() => {
+        initialApplicationController = this.applicationInstance.lookup('controller:application');
+        initialRouter = this.applicationInstance.lookup('router:main');
+        let location = initialRouter.get('location');
 
-    this.application.reset();
+        assert.equal(location.getURL(), '/one');
+        assert.equal(get(initialApplicationController, 'currentPath'), 'one');
 
-    let applicationController = this.applicationInstance.lookup('controller:application');
-    let router = this.applicationInstance.lookup('router:main');
-    let location = router.get('location');
+        this.application.reset();
 
-    assert.equal(location.getURL(), '');
-    assert.equal(get(applicationController, 'currentPath'), 'index');
+        return this.application._bootPromise;
+      })
+      .then(() => {
+        let applicationController = this.applicationInstance.lookup('controller:application');
+        assert.strictEqual(applicationController, undefined, 'application controller no longer exists');
 
-    this.visit('/one');
+        return this.visit('/one');
+      })
+      .then(() => {
+        let applicationController = this.applicationInstance.lookup('controller:application');
+        let router = this.applicationInstance.lookup('router:main');
+        let location = router.get('location');
 
-    assert.equal(get(applicationController, 'currentPath'), 'one');
+        assert.notEqual(initialRouter, router, 'a different router instance was created');
+        assert.notEqual(initialApplicationController, applicationController, 'a different application controller is created');
+
+        assert.equal(location.getURL(), '/one');
+        assert.equal(get(applicationController, 'currentPath'), 'one');
+      });
   }
 
   ['@test When an application with advance/deferReadiness is reset, the app does correctly become ready after reset'](assert) {

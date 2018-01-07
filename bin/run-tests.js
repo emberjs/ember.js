@@ -2,6 +2,7 @@
 
 /* eslint-disable no-console */
 
+var execa = require('execa');
 var RSVP  = require('rsvp');
 var execFile = require('child_process').execFile;
 var chalk = require('chalk');
@@ -310,10 +311,22 @@ switch (process.env.TEST_SUITE) {
     generateEachPackageTests();
     runAndExit();
     break;
-  case 'node':
+  case 'node': {
     console.log('suite: node');
-    require('./run-node-tests');
+    let stream = execa('yarn', ['test:node']);
+    stream.stdout.pipe(process.stdout);
+    stream.then(
+      function() {
+        console.log(chalk.green('Passed!'));
+        process.exit(0);
+      },
+      function() {
+        console.error(chalk.red('Failed!'));
+        process.exit(1);
+      }
+    );
     break;
+  }
   case 'blueprints':
     console.log('suite: blueprints');
     require('../node-tests/nodetest-runner');
@@ -323,9 +336,9 @@ switch (process.env.TEST_SUITE) {
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
     break;
-  case 'sauce':
-    console.log('suite: sauce');
-    require('./run-sauce-tests');
+  case 'browserstack':
+    console.log('suite: browserstack');
+    require('./run-browserstack-tests');
     break;
   case 'code-quality':
     testFunctions.push(codeQualityChecks);

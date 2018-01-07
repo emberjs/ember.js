@@ -47,13 +47,13 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
     });
   }
 
-  ['@test initializers are passed an engine instance']() {
+  ['@test initializers are passed an engine instance'](assert) {
     MyEngine = Engine.extend();
 
     MyEngine.instanceInitializer({
       name: 'initializer',
       initialize(instance) {
-        ok(instance instanceof EngineInstance, 'initialize is passed an engine instance');
+        assert.ok(instance instanceof EngineInstance, 'initialize is passed an engine instance');
       }
     });
 
@@ -62,7 +62,7 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
     return myEngineInstance.boot();
   }
 
-  ['@test initializers can be registered in a specified order']() {
+  ['@test initializers can be registered in a specified order'](assert) {
     let order = [];
 
     MyEngine = Engine.extend();
@@ -119,11 +119,11 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
     myEngineInstance = buildEngineInstance(myEngine);
 
     return myEngineInstance.boot().then(() => {
-      deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
+      assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
     });
   }
 
-  ['@test initializers can be registered in a specified order as an array']() {
+  ['@test initializers can be registered in a specified order as an array'](assert) {
     let order = [];
     MyEngine = Engine.extend();
 
@@ -179,11 +179,11 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
     myEngineInstance = buildEngineInstance(myEngine);
 
     return myEngineInstance.boot().then(() => {
-      deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
+      assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
     });
   }
 
-  ['@test initializers can have multiple dependencies']() {
+  ['@test initializers can have multiple dependencies'](assert) {
     let order = [];
 
     MyEngine = Engine.extend();
@@ -233,14 +233,14 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
     myEngineInstance = buildEngineInstance(myEngine);
 
     return myEngineInstance.boot().then(() => {
-      ok(order.indexOf(a.name) < order.indexOf(b.name), 'a < b');
-      ok(order.indexOf(b.name) < order.indexOf(c.name), 'b < c');
-      ok(order.indexOf(b.name) < order.indexOf(afterB.name), 'b < afterB');
-      ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
+      assert.ok(order.indexOf(a.name) < order.indexOf(b.name), 'a < b');
+      assert.ok(order.indexOf(b.name) < order.indexOf(c.name), 'b < c');
+      assert.ok(order.indexOf(b.name) < order.indexOf(afterB.name), 'b < afterB');
+      assert.ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
     });
   }
 
-  ['@test initializers set on Engine subclasses should not be shared between engines']() {
+  ['@test initializers set on Engine subclasses should not be shared between engines'](assert) {
     let firstInitializerRunCount = 0;
     let secondInitializerRunCount = 0;
     let FirstEngine = Engine.extend();
@@ -268,16 +268,16 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
 
     return firstEngineInstance.boot()
       .then(() => {
-        equal(firstInitializerRunCount, 1, 'first initializer only was run');
-        equal(secondInitializerRunCount, 0, 'first initializer only was run');
+        assert.equal(firstInitializerRunCount, 1, 'first initializer only was run');
+        assert.equal(secondInitializerRunCount, 0, 'first initializer only was run');
 
         secondEngine = SecondEngine.create();
         secondEngineInstance = buildEngineInstance(secondEngine);
         return secondEngineInstance.boot();
       })
       .then(() => {
-        equal(firstInitializerRunCount, 1, 'second initializer only was run');
-        equal(secondInitializerRunCount, 1, 'second initializer only was run');
+        assert.equal(firstInitializerRunCount, 1, 'second initializer only was run');
+        assert.equal(secondInitializerRunCount, 1, 'second initializer only was run');
 
         run(() => {
           firstEngineInstance.destroy();
@@ -289,7 +289,7 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
       });
   }
 
-  ['@test initializers are concatenated']() {
+  ['@test initializers are concatenated'](assert) {
     let firstInitializerRunCount = 0;
     let secondInitializerRunCount = 0;
     let FirstEngine = Engine.extend();
@@ -317,8 +317,8 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
 
     return firstEngineInstance.boot()
       .then(() => {
-        equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
-        equal(secondInitializerRunCount, 0, 'second initializer was not run when first base class created');
+        assert.equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
+        assert.equal(secondInitializerRunCount, 0, 'second initializer was not run when first base class created');
         firstInitializerRunCount = 0;
 
         secondEngine = SecondEngine.create();
@@ -326,8 +326,8 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
         return secondEngineInstance.boot();
       })
       .then(() => {
-        equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
-        equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
+        assert.equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
+        assert.equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
 
         run(() => {
           firstEngineInstance.destroy();
@@ -339,8 +339,8 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
       });
   }
 
-  ['@test initializers are per-engine']() {
-    expect(2);
+  ['@test initializers are per-engine'](assert) {
+    assert.expect(2);
 
     let FirstEngine = Engine.extend();
 
@@ -362,11 +362,11 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
       initialize() { }
     });
 
-    ok(true, 'Two engines can have initializers named the same.');
+    assert.ok(true, 'Two engines can have initializers named the same.');
   }
 
-  ['@test initializers are executed in their own context']() {
-    expect(1);
+  ['@test initializers are executed in their own context'](assert) {
+    assert.expect(1);
 
     let MyEngine = Engine.extend();
 
@@ -374,7 +374,7 @@ moduleFor('Ember.Engine instance initializers', class extends TestCase {
       name: 'coolInitializer',
       myProperty: 'cool',
       initialize() {
-        equal(this.myProperty, 'cool', 'should have access to its own context');
+        assert.equal(this.myProperty, 'cool', 'should have access to its own context');
       }
     });
 

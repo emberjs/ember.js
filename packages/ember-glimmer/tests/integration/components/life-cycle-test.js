@@ -17,8 +17,8 @@ class LifeCycleHooksTest extends RenderingTest {
     this.teardownAssertions = [];
   }
 
-  teardown() {
-    super.teardown();
+  afterEach() {
+    super.afterEach();
 
     for (let i = 0; i < this.teardownAssertions.length; i++) {
       this.teardownAssertions[i]();

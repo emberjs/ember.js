@@ -9,6 +9,7 @@ import {
   regex,
   classes
 } from '../matchers';
+import { Promise } from 'rsvp';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -39,6 +40,7 @@ export default class AbstractTestCase {
   }
 
   teardown() {}
+  afterEach() {}
 
   runTask(callback) {
     return run(callback);
@@ -104,7 +106,27 @@ export default class AbstractTestCase {
     } else {
       element = selector;
     }
-    return element.click();
+
+    let event = element.click();
+
+    return this.runLoopSettled(event);
+  }
+
+  // TODO: Find a better name 😎
+  runLoopSettled(value) {
+    return new Promise(function(resolve) {
+      // Every 5ms, poll for the async thing to have finished
+      let watcher = setInterval(() => {
+        // If there are scheduled timers or we are inside of a run loop, keep polling
+        if (run.hasScheduledTimers() || run.currentRunLoop) { return; }
+
+        // Stop polling
+        clearInterval(watcher);
+
+        // Synchronously resolve the promise
+        resolve(value);
+      }, 5);
+    });
   }
 
   textValue() {
@@ -132,7 +154,7 @@ export default class AbstractTestCase {
   }
 
   assertInnerHTML(html) {
-    equalInnerHTML(this.element, html);
+    equalInnerHTML(this.assert, this.element, html);
   }
 
   assertHTML(html) {
@@ -144,7 +166,7 @@ export default class AbstractTestCase {
       throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
     }
 
-    equalsElement(node, tagName, attrs, content);
+    equalsElement(this.assert, node, tagName, attrs, content);
   }
 
   assertComponentElement(node, { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }) {

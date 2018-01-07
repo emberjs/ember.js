@@ -329,6 +329,17 @@ const Application = Engine.extend({
   */
   _globalsMode: true,
 
+  /**
+    An array of application instances created by `buildInstance()`. Used
+    internally to ensure that all instances get destroyed.
+
+    @property _applicationInstances
+    @type Array
+    @default null
+    @private
+  */
+  _applicationInstances: null,
+
   init(options) { // eslint-disable-line no-unused-vars
     this._super(...arguments);
 
@@ -346,6 +357,7 @@ const Application = Engine.extend({
     // the Application's own `boot` method.
     this._readinessDeferrals = 1;
     this._booted = false;
+    this._applicationInstances = [];
 
     this.autoboot = this._globalsMode = !!this.autoboot;
 
@@ -369,6 +381,31 @@ const Application = Engine.extend({
     options.base = this;
     options.application = this;
     return ApplicationInstance.create(options);
+  },
+
+  /**
+    Start tracking an ApplicationInstance for this application.
+    Used when the ApplicationInstance is created.
+
+    @private
+    @method _watchInstance
+  */
+  _watchInstance(instance) {
+    this._applicationInstances.push(instance);
+  },
+
+  /**
+    Stop tracking an ApplicationInstance for this application.
+    Used when the ApplicationInstance is about to be destroyed.
+
+    @private
+    @method _unwatchInstance
+  */
+  _unwatchInstance(instance) {
+    let index = this._applicationInstances.indexOf(instance);
+    if (index > -1) {
+      this._applicationInstances.splice(index, 1);
+    }
   },
 
   /**
@@ -761,8 +798,9 @@ const Application = Engine.extend({
       _loaded.application = undefined;
     }
 
-    if (this._globalsMode && this.__deprecatedInstance__) {
-      this.__deprecatedInstance__.destroy();
+    if (this._applicationInstances.length) {
+      this._applicationInstances.forEach(i => i.destroy());
+      this._applicationInstances.length = 0;
     }
   },
 

@@ -34,16 +34,16 @@ const Combined = Mixin.create(BarProperties, BarMethods);
 let obj;
 
 QUnit.module('Basic introspection', {
-  setup() {
+  beforeEach() {
     obj = {};
     mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
   }
 });
 
-QUnit.test('Ember.mixins()', function() {
+QUnit.test('Ember.mixins()', function(assert) {
   function mapGuids(ary) {
     return ary.map(x => guidFor(x));
   }
 
-  deepEqual(mapGuids(Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
+  assert.deepEqual(mapGuids(Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
 });

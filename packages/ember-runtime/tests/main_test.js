@@ -5,7 +5,7 @@ import {
 
 QUnit.module('ember-runtime/main');
 
-QUnit.test('Ember.computed.collect', function() {
+QUnit.test('Ember.computed.collect', function(assert) {
   let MyObj = EmberObject.extend({
     props: collect('foo', 'bar', 'baz')
   });
@@ -18,5 +18,5 @@ QUnit.test('Ember.computed.collect', function() {
 
   let propsValue = myObj.get('props');
 
-  deepEqual(propsValue, [3, 5, 'asdf']);
+  assert.deepEqual(propsValue, [3, 5, 'asdf']);
 });

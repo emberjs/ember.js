@@ -223,8 +223,8 @@ moduleFor('Ember.Route serialize', class extends AbstractTestCase {
     assert.deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, 'serialized correctly');
   }
 
-  ['@test returns undefined if model is not set']() {
-    equal(route.serialize(undefined, ['post_id']), undefined, 'serialized correctly');
+  ['@test returns undefined if model is not set'](assert) {
+    assert.equal(route.serialize(undefined, ['post_id']), undefined, 'serialized correctly');
   }
 });
 

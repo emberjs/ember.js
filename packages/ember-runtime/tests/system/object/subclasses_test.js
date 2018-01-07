@@ -3,7 +3,7 @@ import EmberObject from '../../../system/object';
 
 QUnit.module('system/object/subclasses');
 
-QUnit.test('chains should copy forward to subclasses when prototype created', function () {
+QUnit.test('chains should copy forward to subclasses when prototype created', function(assert) {
   let ObjectWithChains, objWithChains, SubWithChains, SubSub, subSub;
   run(() => {
     ObjectWithChains = EmberObject.extend({
@@ -38,7 +38,7 @@ QUnit.test('chains should copy forward to subclasses when prototype created', fu
       subSub = SubSub.create();
     }, deprecationMessage);
   });
-  equal(subSub.get('greeting'), 'hi world');
+  assert.equal(subSub.get('greeting'), 'hi world');
   run(() => objWithChains.set('obj.hi', 'hello'));
-  equal(subSub.get('greeting'), 'hello world');
+  assert.equal(subSub.get('greeting'), 'hello world');
 });

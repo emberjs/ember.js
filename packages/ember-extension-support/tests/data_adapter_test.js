@@ -35,7 +35,7 @@ const DataAdapter = EmberDataAdapter.extend({
 
 moduleFor('Data Adapter', class extends ApplicationTestCase {
 
-  ['@test Model types added']() {
+  ['@test Model types added'](assert) {
     this.add('data-adapter:main', DataAdapter.extend({
       getRecords() {
         return emberA([1, 2, 3]);
@@ -50,22 +50,22 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
       let adapter = this.applicationInstance.lookup('data-adapter:main');
 
       function modelTypesAdded(types) {
-        equal(types.length, 1);
+        assert.equal(types.length, 1);
         let postType = types[0];
-        equal(postType.name, 'post', 'Correctly sets the name');
-        equal(postType.count, 3, 'Correctly sets the record count');
-        strictEqual(postType.object, PostClass, 'Correctly sets the object');
-        deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
+        assert.equal(postType.name, 'post', 'Correctly sets the name');
+        assert.equal(postType.count, 3, 'Correctly sets the record count');
+        assert.strictEqual(postType.object, PostClass, 'Correctly sets the object');
+        assert.deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
       }
 
       adapter.watchModelTypes(modelTypesAdded);
     });
   }
 
-  ['@test getRecords gets a model name as second argument']() {
+  ['@test getRecords gets a model name as second argument'](assert) {
     this.add('data-adapter:main', DataAdapter.extend({
       getRecords(klass, name) {
-        equal(name, 'post');
+        assert.equal(name, 'post');
         return emberA();
       }
     }));
@@ -77,7 +77,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
     });
   }
 
-  ['@test Model types added with custom container-debug-adapter']() {
+  ['@test Model types added with custom container-debug-adapter'](assert) {
     let StubContainerDebugAdapter = EmberObject.extend({
       canCatalogEntriesByType() {
         return true;
@@ -101,19 +101,19 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
       let adapter = this.applicationInstance.lookup('data-adapter:main');
 
       function modelTypesAdded(types) {
-        equal(types.length, 1);
+        assert.equal(types.length, 1);
         let postType = types[0];
-        equal(postType.name, 'post', 'Correctly sets the name');
-        equal(postType.count, 3, 'Correctly sets the record count');
-        strictEqual(postType.object, PostClass, 'Correctly sets the object');
-        deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
+        assert.equal(postType.name, 'post', 'Correctly sets the name');
+        assert.equal(postType.count, 3, 'Correctly sets the record count');
+        assert.strictEqual(postType.object, PostClass, 'Correctly sets the object');
+        assert.deepEqual(postType.columns, [{ name: 'title', desc: 'Title' }], 'Correctly sets the columns');
       }
 
       adapter.watchModelTypes(modelTypesAdded);
     });
   }
 
-  ['@test Model Types Updated']() {
+  ['@test Model Types Updated'](assert) {
     let records = emberA([1, 2, 3]);
     this.add('data-adapter:main', DataAdapter.extend({
       getRecords() {
@@ -133,15 +133,15 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
 
       function modelTypesUpdated(types) {
         let postType = types[0];
-        equal(postType.count, 4, 'Correctly updates the count');
+        assert.equal(postType.count, 4, 'Correctly updates the count');
       }
 
       adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
     });
   }
 
-  ['@test Model Types Updated but Unchanged Do not Trigger Callbacks']() {
-    expect(0);
+  ['@test Model Types Updated but Unchanged Do not Trigger Callbacks'](assert) {
+    assert.expect(0);
     let records = emberA([1, 2, 3]);
     this.add('data-adapter:main', DataAdapter.extend({
       getRecords() {
@@ -160,14 +160,14 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
       }
 
       function modelTypesUpdated() {
-        ok(false, "modelTypesUpdated should not be triggered if the array didn't change");
+        assert.ok(false, "modelTypesUpdated should not be triggered if the array didn't change");
       }
 
       adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
     });
   }
 
-  ['@test Records Added']() {
+  ['@test Records Added'](assert) {
     let countAdded = 1;
     let post = PostClass.create();
     let recordList = emberA([post]);
@@ -193,10 +193,10 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
 
       function recordsAdded(records) {
         let record = records[0];
-        equal(record.color, 'blue', 'Sets the color correctly');
-        deepEqual(record.columnValues, { title: 'Post ' + countAdded }, 'Sets the column values correctly');
-        deepEqual(record.searchKeywords, ['Post ' + countAdded], 'Sets search keywords correctly');
-        strictEqual(record.object, post, 'Sets the object to the record instance');
+        assert.equal(record.color, 'blue', 'Sets the color correctly');
+        assert.deepEqual(record.columnValues, { title: 'Post ' + countAdded }, 'Sets the column values correctly');
+        assert.deepEqual(record.searchKeywords, ['Post ' + countAdded], 'Sets search keywords correctly');
+        assert.strictEqual(record.object, post, 'Sets the object to the record instance');
       }
 
       adapter.watchRecords('post', recordsAdded);
@@ -206,7 +206,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
     });
   }
 
-  ['@test Observes and releases a record correctly']() {
+  ['@test Observes and releases a record correctly'](assert) {
     let updatesCalled = 0;
     let post = PostClass.create({ title: 'Post' });
     let recordList = emberA([post]);
@@ -240,17 +240,17 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
 
       function recordsUpdated(records) {
         updatesCalled++;
-        equal(records[0].columnValues.title, 'Post Modified');
+        assert.equal(records[0].columnValues.title, 'Post Modified');
       }
 
       let release = adapter.watchRecords('post', recordsAdded, recordsUpdated);
       release();
       set(post, 'title', 'New Title');
-      equal(updatesCalled, 1, 'Release function removes observers');
+      assert.equal(updatesCalled, 1, 'Release function removes observers');
     });
   }
 
-  ['@test _nameToClass does not error when not found']() {
+  ['@test _nameToClass does not error when not found'](assert) {
     this.add('data-adapter:main', DataAdapter);
 
     return this.visit('/').then(() => {
@@ -258,7 +258,7 @@ moduleFor('Data Adapter', class extends ApplicationTestCase {
 
       let klass = adapter._nameToClass('foo');
 
-      equal(klass, undefined, 'returns undefined');
+      assert.equal(klass, undefined, 'returns undefined');
     });
   }
 });

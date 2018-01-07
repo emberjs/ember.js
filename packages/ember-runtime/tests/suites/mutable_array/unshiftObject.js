@@ -5,14 +5,14 @@ const suite = SuiteModuleBuilder.create();
 
 suite.module('unshiftObject');
 
-suite.test('returns unshifted object', function() {
+suite.test('returns unshifted object', function(assert) {
   let obj = this.newObject([]);
   let item = this.newFixture(1)[0];
 
-  equal(obj.unshiftObject(item), item, 'should return unshifted object');
+  assert.equal(obj.unshiftObject(item), item, 'should return unshifted object');
 });
 
-suite.test('[].unshiftObject(X) => [X] + notify', function() {
+suite.test('[].unshiftObject(X) => [X] + notify', function(assert) {
   let before = [];
   let item = this.newFixture(1)[0];
   let after  = [item];
@@ -23,17 +23,17 @@ suite.test('[].unshiftObject(X) => [X] + notify', function() {
 
   obj.unshiftObject(item);
 
-  deepEqual(this.toArray(obj), after, 'post item results');
-  equal(get(obj, 'length'), after.length, 'length');
+  assert.deepEqual(this.toArray(obj), after, 'post item results');
+  assert.equal(get(obj, 'length'), after.length, 'length');
 
-  equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-  equal(observer.timesCalled('length'), 1, 'should have notified length once');
-  equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
-  equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
+  assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+  assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+  assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
+  assert.equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
+  assert.equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
 
-suite.test('[A,B,C].unshiftObject(X) => [X,A,B,C] + notify', function() {
+suite.test('[A,B,C].unshiftObject(X) => [X,A,B,C] + notify', function(assert) {
   let before = this.newFixture(3);
   let item = this.newFixture(1)[0];
   let after  = [item, before[0], before[1], before[2]];
@@ -44,18 +44,18 @@ suite.test('[A,B,C].unshiftObject(X) => [X,A,B,C] + notify', function() {
 
   obj.unshiftObject(item);
 
-  deepEqual(this.toArray(obj), after, 'post item results');
-  equal(get(obj, 'length'), after.length, 'length');
+  assert.deepEqual(this.toArray(obj), after, 'post item results');
+  assert.equal(get(obj, 'length'), after.length, 'length');
 
-  equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-  equal(observer.timesCalled('length'), 1, 'should have notified length once');
-  equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
+  assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+  assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+  assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
+  assert.equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
 
-  equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
+  assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 
-suite.test('[A,B,C].unshiftObject(A) => [A,A,B,C] + notify', function() {
+suite.test('[A,B,C].unshiftObject(A) => [A,A,B,C] + notify', function(assert) {
   let before = this.newFixture(3);
   let item = before[0]; // note same object as current head. should end up twice
   let after = [item, before[0], before[1], before[2]];
@@ -66,15 +66,15 @@ suite.test('[A,B,C].unshiftObject(A) => [A,A,B,C] + notify', function() {
 
   obj.unshiftObject(item);
 
-  deepEqual(this.toArray(obj), after, 'post item results');
-  equal(get(obj, 'length'), after.length, 'length');
+  assert.deepEqual(this.toArray(obj), after, 'post item results');
+  assert.equal(get(obj, 'length'), after.length, 'length');
 
-  equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-  equal(observer.timesCalled('length'), 1, 'should have notified length once');
+  assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+  assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+  assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
-  equal(observer.validate('firstObject'), true, 'should have notified firstObject');
-  equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
+  assert.equal(observer.validate('firstObject'), true, 'should have notified firstObject');
+  assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 
 export default suite;

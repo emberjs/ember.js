@@ -27,6 +27,7 @@ import {
 
 let originalEnvValue;
 let originalDeprecateHandler;
+let originalWarnHandler;
 let originalWarnOptions;
 let originalDeprecationOptions;
 
@@ -37,6 +38,7 @@ moduleFor('ember-debug', class extends TestCase {
 
     originalEnvValue = ENV.RAISE_ON_DEPRECATION;
     originalDeprecateHandler = HANDLERS.deprecate;
+    originalWarnHandler = HANDLERS.warn;
     originalWarnOptions = ENV._ENABLE_WARN_OPTIONS_SUPPORT;
     originalDeprecationOptions = ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT;
 
@@ -46,11 +48,13 @@ moduleFor('ember-debug', class extends TestCase {
 
   teardown() {
     HANDLERS.deprecate = originalDeprecateHandler;
+    HANDLERS.warn = originalWarnHandler;
 
     ENV.RAISE_ON_DEPRECATION = originalEnvValue;
     ENV._ENABLE_WARN_OPTIONS_SUPPORT = originalWarnOptions;
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = originalDeprecationOptions;
   }
+
   ['@test Ember.deprecate does not throw if RAISE_ON_DEPRECATION is false'](assert) {
     assert.expect(1);
 
@@ -150,7 +154,7 @@ moduleFor('ember-debug', class extends TestCase {
 
     emberAssert('Assertion is thrown', () => true);
 
-    ok(true, 'assertions were not thrown');
+    assert.ok(true, 'assertions were not thrown');
   }
 
   ['@test Ember.assert does not throw if second argument is falsy'](assert) {
@@ -175,7 +179,7 @@ moduleFor('ember-debug', class extends TestCase {
 
 
   ['@test Ember.deprecate does not throw a deprecation at log and silence'](assert) {
-    expect(4);
+    assert.expect(4);
     let id = 'ABC';
     let until = 'forever';
     let shouldThrow = false;
@@ -229,7 +233,7 @@ moduleFor('ember-debug', class extends TestCase {
   }
 
   ['@test Ember.deprecate without options triggers an assertion'](assert) {
-    expect(2);
+    assert.expect(2);
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
     assert.throws(
@@ -261,7 +265,7 @@ moduleFor('ember-debug', class extends TestCase {
   }
 
   ['@test Ember.deprecate without options.id triggers an assertion'](assert) {
-    expect(1);
+    assert.expect(1);
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
     assert.throws(
@@ -286,7 +290,7 @@ moduleFor('ember-debug', class extends TestCase {
   }
 
   ['@test Ember.deprecate without options.until triggers an assertion'](assert) {
-    expect(1);
+    assert.expect(1);
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
     assert.throws(

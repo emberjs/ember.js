@@ -4,7 +4,7 @@ import { A as emberA } from '../../../system/native_array';
 
 QUnit.module('Ember.ArrayProxy - content update');
 
-QUnit.test('The `contentArrayDidChange` method is invoked after `content` is updated.', function() {
+QUnit.test('The `contentArrayDidChange` method is invoked after `content` is updated.', function(assert) {
   let observerCalled = false;
   let proxy = ArrayProxy.extend({
     arrangedContent: computed('content', function() {
@@ -21,5 +21,5 @@ QUnit.test('The `contentArrayDidChange` method is invoked after `content` is upd
 
   proxy.pushObject(1);
 
-  ok(observerCalled, 'contentArrayDidChange is invoked');
+  assert.ok(observerCalled, 'contentArrayDidChange is invoked');
 });

@@ -5,7 +5,6 @@ const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
-const addon = require('./broccoli/addon');
 const concat = require('./broccoli/concat-bundle');
 const testIndexHTML = require('./broccoli/test-index-html');
 const toES5 = require('./broccoli/to-es5');
@@ -38,7 +37,7 @@ const {
 } = require('./broccoli/packages');
 const SHOULD_ROLLUP = true;
 
-module.exports = function(options) {
+module.exports = function() {
   let loader = internalLoader();
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
@@ -88,7 +87,6 @@ module.exports = function(options) {
   // ES5
   let dependenciesES5 = dependenciesES6().map(toES5);
   let emberES5 = emberCoreES6.map(toES5);
-  emberTests.push(addon('ember-dev', options.project));
   let emberTestsES5 = emberTests.map(toES5);
 
   // Bundling

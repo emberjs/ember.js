@@ -18,7 +18,7 @@ function K() { return this; }
 let klass;
 
 QUnit.module('EmberObject Concatenated Properties', {
-  setup() {
+  beforeEach() {
     klass = EmberObject.extend({
       concatenatedProperties: ['values', 'functions'],
       values: ['a', 'b', 'c'],
@@ -27,7 +27,7 @@ QUnit.module('EmberObject Concatenated Properties', {
   }
 });
 
-QUnit.test('concatenates instances', function() {
+QUnit.test('concatenates instances', function(assert) {
   let obj = klass.create({
     values: ['d', 'e', 'f']
   });
@@ -35,10 +35,10 @@ QUnit.test('concatenates instances', function() {
   let values = get(obj, 'values');
   let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
+  assert.deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
 });
 
-QUnit.test('concatenates subclasses', function() {
+QUnit.test('concatenates subclasses', function(assert) {
   let subKlass = klass.extend({
     values: ['d', 'e', 'f']
   });
@@ -47,10 +47,10 @@ QUnit.test('concatenates subclasses', function() {
   let values = get(obj, 'values');
   let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
+  assert.deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
 });
 
-QUnit.test('concatenates reopen', function() {
+QUnit.test('concatenates reopen', function(assert) {
   klass.reopen({
     values: ['d', 'e', 'f']
   });
@@ -59,10 +59,10 @@ QUnit.test('concatenates reopen', function() {
   let values = get(obj, 'values');
   let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
+  assert.deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
 });
 
-QUnit.test('concatenates mixin', function() {
+QUnit.test('concatenates mixin', function(assert) {
   let mixin = {
     values: ['d', 'e']
   };
@@ -74,10 +74,10 @@ QUnit.test('concatenates mixin', function() {
   let values = get(obj, 'values');
   let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
+  assert.deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
 });
 
-QUnit.test('concatenates reopen, subclass, and instance', function() {
+QUnit.test('concatenates reopen, subclass, and instance', function(assert) {
   klass.reopen({ values: ['d'] });
   let subKlass = klass.extend({ values: ['e'] });
   let obj = subKlass.create({ values: ['f'] });
@@ -85,10 +85,10 @@ QUnit.test('concatenates reopen, subclass, and instance', function() {
   let values = get(obj, 'values');
   let expected = ['a', 'b', 'c', 'd', 'e', 'f'];
 
-  deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
+  assert.deepEqual(values, expected, `should concatenate values property (expected: ${expected}, got: ${values})`);
 });
 
-QUnit.test('concatenates subclasses when the values are functions', function() {
+QUnit.test('concatenates subclasses when the values are functions', function(assert) {
   let subKlass = klass.extend({
     functions: K
   });
@@ -97,5 +97,5 @@ QUnit.test('concatenates subclasses when the values are functions', function() {
   let values = get(obj, 'functions');
   let expected = [K, K];
 
-  deepEqual(values, expected, `should concatenate functions property (expected: ${expected}, got: ${values})`);
+  assert.deepEqual(values, expected, `should concatenate functions property (expected: ${expected}, got: ${values})`);
 });

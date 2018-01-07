@@ -54,12 +54,14 @@ moduleFor('The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
       {{link-to 'Other' 'other' id='other-link'}}
       {{link-to 'News' 'news' activeClass=false id='news-link'}}
     `);
-
-    this.visit('/');
   }
 
-  teardown() {
-    super.teardown();
+  beforeEach() {
+    return this.visit('/');
+  }
+
+  afterEach() {
+    super.afterEach();
     this.aboutDefer = null;
     this.otherDefer = null;
     this.newsDefer = null;
@@ -172,8 +174,10 @@ moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
         {{link-to 'Other' 'parent-route.other' id='other-link'}}
       {{/link-to}}
     `);
+  }
 
-    this.visit('/');
+  beforeEach() {
+    return this.visit('/');
   }
 
   resolveAbout() {

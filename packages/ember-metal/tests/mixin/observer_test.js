@@ -8,7 +8,7 @@ import {
 
 QUnit.module('Mixin observer');
 
-testBoth('global observer helper', function(get, set) {
+testBoth('global observer helper', function(get, set, assert) {
   let MyMixin = Mixin.create({
 
     count: 0,
@@ -20,13 +20,13 @@ testBoth('global observer helper', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('global observer helper takes multiple params', function(get, set) {
+testBoth('global observer helper takes multiple params', function(get, set, assert) {
   let MyMixin = Mixin.create({
 
     count: 0,
@@ -38,14 +38,14 @@ testBoth('global observer helper takes multiple params', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
   set(obj, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 2, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 2, 'should invoke observer after change');
 });
 
-testBoth('replacing observer should remove old observer', function(get, set) {
+testBoth('replacing observer should remove old observer', function(get, set, assert) {
   let MyMixin = Mixin.create({
 
     count: 0,
@@ -63,16 +63,16 @@ testBoth('replacing observer should remove old observer', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin, Mixin2);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
-  equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
   set(obj, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 10, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 10, 'should invoke observer after change');
 });
 
-testBoth('observing chain with property before', function(get, set) {
+testBoth('observing chain with property before', function(get, set, assert) {
   let obj2 = { baz: 'baz' };
 
   let MyMixin = Mixin.create({
@@ -84,13 +84,13 @@ testBoth('observing chain with property before', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj2, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with property after', function(get, set) {
+testBoth('observing chain with property after', function(get, set, assert) {
   let obj2 = { baz: 'baz' };
 
   let MyMixin = Mixin.create({
@@ -102,13 +102,13 @@ testBoth('observing chain with property after', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj2, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with property in mixin applied later', function(get, set) {
+testBoth('observing chain with property in mixin applied later', function(get, set, assert) {
   let obj2 = { baz: 'baz' };
 
   let MyMixin = Mixin.create({
@@ -122,16 +122,16 @@ testBoth('observing chain with property in mixin applied later', function(get, s
   let MyMixin2 = Mixin.create({ bar: obj2 });
 
   let obj = mixin({}, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   MyMixin2.apply(obj);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj2, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with existing property', function(get, set) {
+testBoth('observing chain with existing property', function(get, set, assert) {
   let obj2 = { baz: 'baz' };
 
   let MyMixin = Mixin.create({
@@ -142,13 +142,13 @@ testBoth('observing chain with existing property', function(get, set) {
   });
 
   let obj = mixin({ bar: obj2 }, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj2, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with property in mixin before', function(get, set) {
+testBoth('observing chain with property in mixin before', function(get, set, assert) {
   let obj2 = { baz: 'baz' };
   let MyMixin2 = Mixin.create({ bar: obj2 });
 
@@ -160,13 +160,13 @@ testBoth('observing chain with property in mixin before', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin2, MyMixin);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj2, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with property in mixin after', function(get, set) {
+testBoth('observing chain with property in mixin after', function(get, set, assert) {
   let obj2 = { baz: 'baz' };
   let MyMixin2 = Mixin.create({ bar: obj2 });
 
@@ -178,13 +178,13 @@ testBoth('observing chain with property in mixin after', function(get, set) {
   });
 
   let obj = mixin({}, MyMixin, MyMixin2);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj2, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with overridden property', function(get, set) {
+testBoth('observing chain with overridden property', function(get, set, assert) {
   let obj2 = { baz: 'baz' };
   let obj3 = { baz: 'foo' };
 
@@ -198,14 +198,14 @@ testBoth('observing chain with overridden property', function(get, set) {
   });
 
   let obj = mixin({ bar: obj2 }, MyMixin, MyMixin2);
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  equal(isWatching(obj2, 'baz'), false, 'should not be watching baz');
-  equal(isWatching(obj3, 'baz'), true, 'should be watching baz');
+  assert.equal(isWatching(obj2, 'baz'), false, 'should not be watching baz');
+  assert.equal(isWatching(obj3, 'baz'), true, 'should be watching baz');
 
   set(obj2, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
   set(obj3, 'baz', 'BEAR');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });

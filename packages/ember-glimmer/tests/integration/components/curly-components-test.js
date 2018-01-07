@@ -1928,7 +1928,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock expression in an attribute']() {
+  ['@test hasBlock expression in an attribute'](assert) {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlock}}></button>'
     });
@@ -1937,13 +1937,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{check-attr}}
       {{#check-attr}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
     this.assertStableRerender();
   }
 
-  ['@test hasBlock inverse expression in an attribute']() {
+  ['@test hasBlock inverse expression in an attribute'](assert) {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlock "inverse"}}></button>'
     }, '');
@@ -1952,13 +1952,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{#check-attr}}{{/check-attr}}
       {{#check-attr}}{{else}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams expression in an attribute']() {
+  ['@test hasBlockParams expression in an attribute'](assert) {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlockParams}}></button>'
     });
@@ -1967,13 +1967,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams inverse expression in an attribute']() {
+  ['@test hasBlockParams inverse expression in an attribute'](assert) {
     this.registerComponent('check-attr', {
       template: '<button name={{hasBlockParams "inverse"}}></button>'
     }, '');
@@ -1982,8 +1982,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'false' }, '');
 
     this.assertStableRerender();
   }

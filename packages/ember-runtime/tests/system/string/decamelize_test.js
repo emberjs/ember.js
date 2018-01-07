@@ -4,16 +4,16 @@ import { decamelize } from '../../../system/string';
 QUnit.module('EmberStringUtils.decamelize');
 
 if (!ENV.EXTEND_PROTOTYPES.String) {
-  QUnit.test('String.prototype.decamelize is not modified without EXTEND_PROTOTYPES', function() {
-    ok('undefined' === typeof String.prototype.decamelize, 'String.prototype helper disabled');
+  QUnit.test('String.prototype.decamelize is not modified without EXTEND_PROTOTYPES', function(assert) {
+    assert.ok('undefined' === typeof String.prototype.decamelize, 'String.prototype helper disabled');
   });
 }
 
 function test(given, expected, description) {
-  QUnit.test(description, function() {
-    deepEqual(decamelize(given), expected);
+  QUnit.test(description, function(assert) {
+    assert.deepEqual(decamelize(given), expected);
     if (ENV.EXTEND_PROTOTYPES.String) {
-      deepEqual(given.decamelize(), expected);
+      assert.deepEqual(given.decamelize(), expected);
     }
   });
 }

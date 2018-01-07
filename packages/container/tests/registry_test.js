@@ -460,8 +460,8 @@ moduleFor('Registry', class extends AbstractTestCase{
 
     let resolver = {
       knownForType(type) {
-        ok(true, 'knownForType called on the resolver');
-        equal(type, 'foo', 'the type was passed through');
+        assert.ok(true, 'knownForType called on the resolver');
+        assert.equal(type, 'foo', 'the type was passed through');
 
         return { 'foo:yorp': true };
       }

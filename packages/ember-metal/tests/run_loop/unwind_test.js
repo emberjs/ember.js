@@ -6,7 +6,7 @@ moduleFor('system/run_loop/unwind_test', class extends AbstractTestCase {
   ['@test RunLoop unwinds despite unhandled exception'](assert) {
     let initialRunLoop = run.currentRunLoop;
 
-    throws(() => {
+    assert.throws(() => {
       run(() => {
         run.schedule('actions', function() { throw new EmberError('boom!'); });
       });

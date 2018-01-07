@@ -6,7 +6,6 @@ import {
   setTemplate
 } from 'ember-glimmer';
 import { assign } from 'ember-utils';
-import { runDestroy } from '../run';
 import { Router } from 'ember-routing';
 
 export default class ApplicationTestCase extends AbstractApplicationTestCase {
@@ -24,24 +23,9 @@ export default class ApplicationTestCase extends AbstractApplicationTestCase {
     });
   }
 
-  teardown() {
-    runDestroy(this.applicationInstance);
-    super.teardown();
+  afterEach() {
     setTemplates({});
-  }
-
-  visit(url, options) {
-    let { applicationInstance } = this;
-
-    if (applicationInstance) {
-      return this.runTask(() => applicationInstance.visit(url, options));
-    } else {
-      return this.runTask(() => {
-        return this.application.visit(url, options).then(instance => {
-          this.applicationInstance = instance;
-        });
-      });
-    }
+    return super.afterEach();
   }
 
   get appRouter() {
