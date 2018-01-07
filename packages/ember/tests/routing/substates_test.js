@@ -645,6 +645,8 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
     assert.throws(() => {
       this.visit('/grandma/mom/sally');
     }, (err) => err.msg === 'did it broke?', 'it broke');
+
+    return this.runLoopSettled();
   }
 
   [`@test Handled errors that re-throw aren't swallowed`](assert) {
@@ -678,6 +680,8 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
     assert.throws(() => {
       this.visit('/grandma/mom/sally');
     }, (err) => err.msg  === 'did it broke?', `it broke`);
+
+    return this.runLoopSettled();
   }
 
   ['@test errors that are bubbled are thrown at a higher level if not handled'](assert) {
@@ -699,6 +703,8 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
     assert.throws(() => {
       this.visit('/grandma/mom/sally');
     }, (err) => err.msg == "did it broke?", 'Correct error was thrown');
+
+    return this.runLoopSettled();
   }
 
   [`@test Handled errors that are thrown through rejection aren't swallowed`](assert) {
@@ -732,6 +738,8 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
     assert.throws(() => {
       this.visit('/grandma/mom/sally');
     }, (err) => err.msg === 'did it broke?', 'it broke');
+
+    return this.runLoopSettled();
   }
 
   ['@test Default error events move into nested route, prioritizing more specifically named error routes - NEW'](assert) {
