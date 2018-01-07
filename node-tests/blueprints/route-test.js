@@ -11,6 +11,7 @@ const setupPodConfig = blueprintHelpers.setupPodConfig;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 const file = chai.file;
+const fs = require('fs-extra');
 
 describe('Blueprint: route', function() {
   setupTestHooks(this);
@@ -132,6 +133,7 @@ describe('Blueprint: route', function() {
     });
 
     it('route application', function() {
+      fs.removeSync('app/templates/application.hbs');
       return emberGenerate(['route', 'application']).then(() => {
         expect(file('app/router.js')).to.not.contain('this.route(\'application\')');
       });
