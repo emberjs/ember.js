@@ -34,9 +34,12 @@ export default Mixin.create({
     A simple example:
 
     ```javascript
-    let App = Ember.Application.create();
+    import Application from '@ember/application';
+    import EmberObject from '@ember/object';
 
-    App.Orange = Ember.Object.extend();
+    let App = Application.create();
+
+    App.Orange = EmberObject.extend();
     App.register('fruit:favorite', App.Orange);
     ```
 
@@ -47,14 +50,17 @@ export default Mixin.create({
     An example of registering a controller with a non-standard name:
 
     ```javascript
-    let App = Ember.Application.create();
-    let Session = Ember.Controller.extend();
+    import Application from '@ember/application';
+    import Controller from '@ember/controller';
+
+    let App = Application.create();
+    let Session = Controller.extend();
 
     App.register('controller:session', Session);
 
     // The Session controller can now be treated like a normal controller,
     // despite its non-standard name.
-    App.ApplicationController = Ember.Controller.extend({
+    App.ApplicationController = Controller.extend({
       needs: ['session']
     });
     ```
@@ -66,12 +72,15 @@ export default Mixin.create({
     Some examples modifying that default behavior:
 
     ```javascript
-    let App = Ember.Application.create();
+    import Application from '@ember/application';
+    import EmberObject from '@ember/object';
 
-    App.Person = Ember.Object.extend();
-    App.Orange = Ember.Object.extend();
-    App.Email = Ember.Object.extend();
-    App.session = Ember.Object.create();
+    let App = Application.create();
+
+    App.Person = EmberObject.extend();
+    App.Orange = EmberObject.extend();
+    App.Email = EmberObject.extend();
+    App.session = EmberObject.create();
 
     App.register('model:user', App.Person, { singleton: false });
     App.register('fruit:favorite', App.Orange);
@@ -91,8 +100,11 @@ export default Mixin.create({
    Unregister a factory.
 
    ```javascript
-   let App = Ember.Application.create();
-   let User = Ember.Object.extend();
+   import Application from '@ember/application';
+   import EmberObject from '@ember/object';
+
+   let App = Application.create();
+   let User = EmberObject.extend();
    App.register('model:user', User);
 
    App.resolveRegistration('model:user').create() instanceof User //=> true
@@ -152,7 +164,9 @@ export default Mixin.create({
    Allow registering options for all factories of a type.
 
    ```javascript
-   let App = Ember.Application.create();
+   import Application from '@ember/application';
+
+   let App = Application.create();
    let appInstance = App.buildInstance();
 
    // if all of type `connection` must not be singletons
@@ -200,8 +214,13 @@ export default Mixin.create({
     An example of providing a session object to all controllers:
 
     ```javascript
-    let App = Ember.Application.create();
-    let Session = Ember.Object.extend({ isAuthenticated: false });
+    import { alias } from '@ember/object/computed';
+    import Application from '@ember/application';
+    import Controller from '@ember/controller';
+    import EmberObject from '@ember/object';
+
+    let App = Application.create();
+    let Session = EmberObject.extend({ isAuthenticated: false });
 
     // A factory must be registered before it can be injected
     App.register('session:main', Session);
@@ -210,8 +229,8 @@ export default Mixin.create({
     // with the name 'session'
     App.inject('controller', 'session', 'session:main');
 
-    App.IndexController = Ember.Controller.extend({
-      isLoggedIn: Ember.computed.alias('session.isAuthenticated')
+    App.IndexController = Controller.extend({
+      isLoggedIn: alias('session.isAuthenticated')
     });
     ```
 

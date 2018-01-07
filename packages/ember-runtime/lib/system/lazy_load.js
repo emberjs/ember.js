@@ -18,7 +18,9 @@ export let _loaded = loaded;
   resolved from a string into the object:
 
   ``` javascript
-  Ember.onLoad('Ember.Application' function(hbars) {
+  import { onLoad } from '@ember/application';
+
+  onLoad('Ember.Application' function(hbars) {
     hbars.registerHelper(...);
   });
   ```
