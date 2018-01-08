@@ -1,6 +1,6 @@
 /* globals Element */
 
-import { run } from 'ember-metal';
+import { merge, run } from 'ember-metal';
 
 const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };
 const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'];
@@ -15,8 +15,6 @@ const MOUSE_EVENT_TYPES = [
   'mouseout',
   'mouseover',
 ];
-
-const merge = Object.assign;
 
 export const elMatches =
   typeof Element !== 'undefined' &&

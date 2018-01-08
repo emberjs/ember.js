@@ -88,10 +88,10 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
       assert.equal(text, 'INDEX', `index template has been rendered`);
     });
 
-    assert.equal(this.element, null, `There's no element yet`);
-    // let text = this.$('#app').text();
+    if (this.element) {
+      assert.equal(this.element.textContent, '');
+    }
 
-    // assert.equal(text, '', `nothing has been rendered yet`);
     appDeferred.resolve();
 
     return promise;
