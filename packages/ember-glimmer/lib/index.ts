@@ -280,6 +280,7 @@ export {
   InertRenderer,
   InteractiveRenderer,
   _resetRenderers,
+  renderSettled,
 } from './renderer';
 export {
   getTemplate,

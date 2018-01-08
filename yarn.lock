@@ -96,6 +96,10 @@
     "@types/acorn" "*"
     "@types/source-map" "*"
 
+"@types/rsvp@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@types/rsvp/-/rsvp-4.0.1.tgz#82956bc8d0a8151ec3b7e9cae64fd06808a1c714"
+
 "@types/source-map@*":
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/@types/source-map/-/source-map-0.5.2.tgz#973459e744cc7445c85b97f770275b479b138e08"

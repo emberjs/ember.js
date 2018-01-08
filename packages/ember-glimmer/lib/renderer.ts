@@ -27,6 +27,7 @@ import { RootReference } from './utils/references';
 import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
 
 import { ComponentDefinition, NULL_REFERENCE, RenderResult } from '@glimmer/runtime';
+import RSVP from 'rsvp';
 
 const { backburner } = run;
 
@@ -181,6 +182,39 @@ function loopBegin(): void {
 
 function K() { /* noop */ }
 
+let renderSettledDeferred: RSVP.Deferred<void> | null = null;
+/*
+  Returns a promise which will resolve when rendering has settled. Settled in
+  this context is defined as when all of the tags in use are "current" (e.g.
+  `renderers.every(r => r._isValid())`). When this is checked at the _end_ of
+  the run loop, this essentially guarantees that all rendering is completed.
+
+  @method renderSettled
+  @returns {Promise<void>} a promise which fulfills when rendering has settled
+*/
+export function renderSettled() {
+  if (renderSettledDeferred === null) {
+    renderSettledDeferred = RSVP.defer();
+    // if there is no current runloop, the promise created above will not have
+    // a chance to resolve (because its resolved in backburner's "end" event)
+    if (!run.currentRunLoop) {
+      // ensure a runloop has been kicked off
+      backburner.schedule('actions', null, K);
+    }
+  }
+
+  return renderSettledDeferred.promise;
+}
+
+function resolveRenderPromise() {
+  if (renderSettledDeferred !== null) {
+    let resolve = renderSettledDeferred.resolve;
+    renderSettledDeferred = null;
+
+    backburner.join(null, resolve);
+  }
+}
+
 let loops = 0;
 function loopEnd() {
   for (let i = 0; i < renderers.length; i++) {
@@ -196,6 +230,7 @@ function loopEnd() {
     }
   }
   loops = 0;
+  resolveRenderPromise();
 }
 
 backburner.on('begin', loopBegin);
