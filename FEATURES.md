@@ -62,3 +62,7 @@ for a detailed explanation.
   This feature is paired with the
   [`EMBER_RESOLVER_MODULE_UNIFICATION`](https://github.com/ember-cli/ember-resolver#ember_resolver_module_unification)
   flag on the ember-resolver package.
+
+* `ember-template-block-let-helper`
+
+  Introduce the block form of the `let` helper per [RFC](https://github.com/locks/rfcs/blob/block-let-helper/text/0000-block-let-template-helper.md).

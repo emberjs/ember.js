@@ -10,7 +10,9 @@ import { mountMacro } from './syntax/mount';
 import { outletMacro } from './syntax/outlet';
 import { renderMacro } from './syntax/render';
 import { hashToArgs } from './syntax/utils';
+import { blockLetMacro } from './syntax/let';
 import { wrapComponentClassAttribute } from './utils/bindings';
+import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
 
 function refineInlineSyntax(name: string, params: any[], hash: any, builder: any) {
   assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.env.builtInHelpers[name] && builder.env.owner.hasRegistration(`helper:${name}`)));
@@ -76,6 +78,9 @@ export function populateMacros(blocks: any, inlines: any) {
   inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
   blocks.add('component', blockComponentMacro);
+  if (EMBER_TEMPLATE_BLOCK_LET_HELPER === true) {
+    blocks.add('let', blockLetMacro);
+  }
   blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
