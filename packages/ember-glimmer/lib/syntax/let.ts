@@ -22,7 +22,7 @@ import { compileList } from "@glimmer/runtime";
 
   ```handlebars
   {{#let
-      (concat post ' | The Ember.js Blog')
+      (concat post.title ' | The Ember.js Blog')
       post.content
       (hash
         theme="high-contrast"
