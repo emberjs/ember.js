@@ -31,6 +31,8 @@ function getActionIds(element) {
   return getActionAttributes(element).map(attribute => attribute.slice('data-ember-action-'.length));
 }
 
+const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
+
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('Helpers test: element action instrumentation', class extends RenderingTest {
     teardown() {
@@ -1003,7 +1005,11 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
       let event = this.wrap(component.element).findAll('button').trigger('click', { [prop]: value })[0];
       if (expected) {
         assert.ok(showCalled, `should call action with ${prop}:${value}`);
-        assert.ok(event.defaultPrevented, 'should prevent default');
+
+        // IE11 does not allow simulated events to have a valid `defaultPrevented`
+        if (!isIE11) {
+          assert.ok(event.defaultPrevented, 'should prevent default');
+        }
       } else {
         assert.notOk(showCalled, `should not call action with ${prop}:${value}`);
         assert.notOk(event.defaultPrevented, 'should not prevent default');
@@ -1302,7 +1308,10 @@ moduleFor('Helpers test: element action', class extends RenderingTest {
       event = this.$('a').trigger('click')[0];
     });
 
-    this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
+    // IE11 does not allow simulated events to have a valid `defaultPrevented`
+    if (!isIE11) {
+      this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
+    }
   }
 
   ['@test it should target the proper component when `action` is in yielded block [GH #12409]']() {
