@@ -38,6 +38,10 @@ function spaceship(a, b) {
 }
 
 /**
+ @module @ember/utils
+*/
+
+/**
  Compares two javascript values and returns:
 
   - -1 if the first is smaller than the second,
@@ -72,7 +76,8 @@ function spaceship(a, b) {
   ```
 
  @method compare
- @for Ember
+ @for @ember/utils
+ @static
  @param {Object} v First value to compare
  @param {Object} w Second value to compare
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.

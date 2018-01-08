@@ -410,12 +410,11 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
         classNames: 'inner-component',
         didInsertElement() {
           // trigger action on click in absence of app's EventDispatcher
-          this.$().on('click', () => {
-            this.sendAction('somethingClicked');
-          });
+          let sendAction = this.eventHandler = () => this.sendAction('somethingClicked');
+          this.element.addEventListener('click', sendAction);
         },
         willDestroyElement() {
-          this.$().off('click');
+          this.element.removeEventListener('click', this.eventHandler);
         }
       })
     });
@@ -439,7 +438,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     assert.equal(actionTriggered, 0, 'action was not triggered');
 
     this.runTask(() => {
-      this.$('.inner-component').trigger('click');
+      this.$('.inner-component').click();
     });
 
     assert.equal(actionTriggered, 1, 'action was triggered');

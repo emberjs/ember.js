@@ -1,5 +1,6 @@
 import { get, set } from 'ember-metal';
 import EmberObject from '../../../../system/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -25,7 +26,7 @@ import EmberObject from '../../../../system/object';
 
 let obj, obj1; // global variables
 
-QUnit.module('A new EmberObject instance', {
+moduleFor('A new EmberObject instance', class extends AbstractTestCase {
 
   beforeEach() {
     obj = EmberObject.create({
@@ -36,31 +37,30 @@ QUnit.module('A new EmberObject instance', {
       aMethodThatReturnsFoobar() { return 'Foobar'; },
       aMethodThatReturnsFalse() { return false; }
     });
-  },
+  }
 
   afterEach() {
     obj = undefined;
   }
 
+  ['@test Should return its properties when requested using EmberObject#get'](assert) {
+    assert.equal(get(obj, 'foo'), 'bar');
+    assert.equal(get(obj, 'total'), 12345);
+  }
+
+  ['@test Should allow changing of those properties by calling EmberObject#set'](assert) {
+    assert.equal(get(obj, 'foo'), 'bar');
+    assert.equal(get(obj, 'total'), 12345);
+
+    set(obj, 'foo', 'Chunky Bacon');
+    set(obj, 'total', 12);
+
+    assert.equal(get(obj, 'foo'), 'Chunky Bacon');
+    assert.equal(get(obj, 'total'), 12);
+  }
 });
 
-QUnit.test('Should return its properties when requested using EmberObject#get', function(assert) {
-  assert.equal(get(obj, 'foo'), 'bar');
-  assert.equal(get(obj, 'total'), 12345);
-});
-
-QUnit.test('Should allow changing of those properties by calling EmberObject#set', function(assert) {
-  assert.equal(get(obj, 'foo'), 'bar');
-  assert.equal(get(obj, 'total'), 12345);
-
-  set(obj, 'foo', 'Chunky Bacon');
-  set(obj, 'total', 12);
-
-  assert.equal(get(obj, 'foo'), 'Chunky Bacon');
-  assert.equal(get(obj, 'total'), 12);
-});
-
-QUnit.module('EmberObject superclass and subclasses', {
+moduleFor('EmberObject superclass and subclasses', class extends AbstractTestCase {
   beforeEach() {
     obj = EmberObject.extend({
       method1() {
@@ -68,20 +68,20 @@ QUnit.module('EmberObject superclass and subclasses', {
       }
     });
     obj1 = obj.extend();
-  },
+  }
 
   afterEach() {
     obj = undefined;
     obj1 = undefined;
   }
-});
 
-QUnit.test('Checking the detect() function on an object and its subclass', function(assert) {
-  assert.equal(obj.detect(obj1), true);
-  assert.equal(obj1.detect(obj), false);
-});
+  ['@test Checking the detect() function on an object and its subclass'](assert) {
+    assert.equal(obj.detect(obj1), true);
+    assert.equal(obj1.detect(obj), false);
+  }
 
-QUnit.test('Checking the detectInstance() function on an object and its subclass', function(assert) {
-  assert.ok(EmberObject.detectInstance(obj.create()));
-  assert.ok(obj.detectInstance(obj.create()));
+  ['@test Checking the detectInstance() function on an object and its subclass'](assert) {
+    assert.ok(EmberObject.detectInstance(obj.create()));
+    assert.ok(obj.detectInstance(obj.create()));
+  }
 });

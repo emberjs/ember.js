@@ -328,7 +328,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       }
     });
 
-    this.runTask(() => { this.$input().trigger('focusin'); });
+    this.runTask(() => { this.$input().focus(); });
   }
 
   ['@test sends `insert-newline` when <enter> is pressed'](assert) {

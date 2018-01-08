@@ -83,14 +83,15 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     }));
 
     let promise = this.visit('/').then(() => {
-      text = this.$('#app').text();
+      let text = this.$('#app').text();
 
       assert.equal(text, 'INDEX', `index template has been rendered`);
     });
 
-    let text = this.$('#app').text();
+    if (this.element) {
+      assert.equal(this.element.textContent, '');
+    }
 
-    assert.equal(text, '', `nothing has been rendered yet`);
     appDeferred.resolve();
 
     return promise;
@@ -437,7 +438,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
   ['@test Rejected promises returned from ApplicationRoute transition into top-level application_error'](assert) {
     let reject = true;
 
-    this.addTemplate('index', '<div id="app">INDEX</div>');
+    this.addTemplate('index', '<div id="index">INDEX</div>');
     this.add('route:application', Route.extend({
       init() {
         this._super(...arguments);
@@ -466,7 +467,7 @@ moduleFor('Loading/Error Substates', class extends ApplicationTestCase {
     }).then(() => {
       return this.visit('/');
     }).then(() => {
-      let text = this.$('#app').text();
+      let text = this.$('#index').text();
       assert.equal(text, 'INDEX', 'the index route resolved');
     });
   }

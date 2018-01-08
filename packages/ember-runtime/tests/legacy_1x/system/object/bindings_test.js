@@ -1,6 +1,7 @@
 import { context } from 'ember-environment';
 import { get, set, run } from 'ember-metal';
 import EmberObject from '../../../../system/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -23,7 +24,7 @@ let originalLookup = context.lookup;
 let testObject, fromObject, TestObject;
 let TestNamespace, lookup;
 
-QUnit.module('bind() method', {
+moduleFor('bind() method', class extends AbstractTestCase {
   beforeEach() {
     context.lookup = lookup = {};
 
@@ -42,43 +43,44 @@ QUnit.module('bind() method', {
       fromObject: fromObject,
       testObject: testObject
     };
-  },
+  }
 
   afterEach() {
     testObject = fromObject = null;
     context.lookup = originalLookup;
   }
+
+  ['@test bind(TestNamespace.fromObject.bar) should follow absolute path'](assert) {
+    run(() => {
+      expectDeprecation(() => {
+        // create binding
+        testObject.bind('foo', 'TestNamespace.fromObject.bar');
+      }, /`Ember.Binding` is deprecated/);
+
+      // now make a change to see if the binding triggers.
+      set(fromObject, 'bar', 'changedValue');
+    });
+
+    assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
+  }
+
+  ['@test bind(.bar) should bind to relative path'](assert) {
+    run(() => {
+      expectDeprecation(() => {
+        // create binding
+        testObject.bind('foo', 'bar');
+      }, /`Ember.Binding` is deprecated/);
+
+      // now make a change to see if the binding triggers.
+      set(testObject, 'bar', 'changedValue');
+    });
+
+    assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
+  }
 });
 
-QUnit.test('bind(TestNamespace.fromObject.bar) should follow absolute path', function(assert) {
-  run(() => {
-    expectDeprecation(() => {
-      // create binding
-      testObject.bind('foo', 'TestNamespace.fromObject.bar');
-    }, /`Ember.Binding` is deprecated/);
-
-    // now make a change to see if the binding triggers.
-    set(fromObject, 'bar', 'changedValue');
-  });
-
-  assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
-});
-
-QUnit.test('bind(.bar) should bind to relative path', function(assert) {
-  run(() => {
-    expectDeprecation(() => {
-      // create binding
-      testObject.bind('foo', 'bar');
-    }, /`Ember.Binding` is deprecated/);
-
-    // now make a change to see if the binding triggers.
-    set(testObject, 'bar', 'changedValue');
-  });
-
-  assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
-});
-
-QUnit.module('fooBinding method', {
+let deprecationMessage = /`Ember.Binding` is deprecated/;
+moduleFor('fooBinding method', class extends AbstractTestCase {
   beforeEach() {
     context.lookup = lookup = {};
 
@@ -97,66 +99,64 @@ QUnit.module('fooBinding method', {
       fromObject: fromObject,
       testObject: TestObject
     };
-  },
+  }
 
   afterEach() {
     context.lookup = originalLookup;
     TestObject = fromObject = null;
     //  delete TestNamespace;
   }
-});
 
-let deprecationMessage = /`Ember.Binding` is deprecated/;
+  ['@test fooBinding: TestNamespace.fromObject.bar should follow absolute path'](assert) {
+    run(() => {
+      expectDeprecation(() => {
+        // create binding
+        testObject = TestObject.extend({
+          fooBinding: 'TestNamespace.fromObject.bar'
+        }).create();
+      }, deprecationMessage);
 
-QUnit.test('fooBinding: TestNamespace.fromObject.bar should follow absolute path', function(assert) {
-  run(() => {
-    expectDeprecation(() => {
-      // create binding
-      testObject = TestObject.extend({
-        fooBinding: 'TestNamespace.fromObject.bar'
-      }).create();
-    }, deprecationMessage);
+      // now make a change to see if the binding triggers.
+      set(fromObject, 'bar', 'changedValue');
+    });
 
-    // now make a change to see if the binding triggers.
-    set(fromObject, 'bar', 'changedValue');
-  });
+    assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
+  }
 
-  assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
-});
+  ['@test fooBinding: .bar should bind to relative path'](assert) {
+    run(() => {
+      expectDeprecation(() => {
+        // create binding
+        testObject = TestObject.extend({
+          fooBinding: 'bar'
+        }).create();
+      }, deprecationMessage);
 
-QUnit.test('fooBinding: .bar should bind to relative path', function(assert) {
-  run(() => {
-    expectDeprecation(() => {
-      // create binding
-      testObject = TestObject.extend({
-        fooBinding: 'bar'
-      }).create();
-    }, deprecationMessage);
+      // now make a change to see if the binding triggers.
+      set(testObject, 'bar', 'changedValue');
+    });
 
-    // now make a change to see if the binding triggers.
-    set(testObject, 'bar', 'changedValue');
-  });
+    assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
+  }
 
-  assert.equal('changedValue', get(testObject, 'foo'), 'testObject.foo');
-});
+  ['@test fooBinding: should disconnect bindings when destroyed'](assert) {
+    run(() => {
+      expectDeprecation(() => {
+        // create binding
+        testObject = TestObject.extend({
+          fooBinding: 'TestNamespace.fromObject.bar'
+        }).create();
+      }, deprecationMessage);
 
-QUnit.test('fooBinding: should disconnect bindings when destroyed', function(assert) {
-  run(() => {
-    expectDeprecation(() => {
-      // create binding
-      testObject = TestObject.extend({
-        fooBinding: 'TestNamespace.fromObject.bar'
-      }).create();
-    }, deprecationMessage);
+      set(TestNamespace.fromObject, 'bar', 'BAZ');
+    });
 
-    set(TestNamespace.fromObject, 'bar', 'BAZ');
-  });
+    assert.equal(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
 
-  assert.equal(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
+    run(() => testObject.destroy());
 
-  run(() => testObject.destroy());
+    run(() => set(TestNamespace.fromObject, 'bar', 'BIFF'));
 
-  run(() => set(TestNamespace.fromObject, 'bar', 'BIFF'));
-
-  assert.ok(get(testObject, 'foo') !== 'bar', 'binding should not have synced');
+    assert.ok(get(testObject, 'foo') !== 'bar', 'binding should not have synced');
+  }
 });
