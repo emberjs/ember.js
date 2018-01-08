@@ -2,13 +2,15 @@ interface IBackburner {
   join(...args: any[]): void;
   on(...args: any[]): void;
   scheduleOnce(...args: any[]): void;
+  schedule(queueName: string, target: Object | null, method: Function | string): void;
 }
 interface IRun {
   (...args: any[]): any;
   schedule(...args: any[]): void;
   later(...args: any[]): void;
   join(...args: any[]): void;
-  backburner: IBackburner
+  backburner: IBackburner;
+  currentRunLoop: boolean;
 }
 
 export const run: IRun;
