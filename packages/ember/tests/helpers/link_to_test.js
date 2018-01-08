@@ -1597,3 +1597,29 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
       });
   }
 });
+
+QUnit.test('The {{link-to}} helper active works with routes with glob paths', function() {
+  expect(0);
+  Router.map(function(match) {
+    this.route('foos', function() {
+      this.route('bar', { path: '/:bar' });
+    });
+
+    this.route('not-found', { path: '/*path' });
+  });
+
+  Ember.TEMPLATES.application = compile(`
+    <h3>Home</h3>
+    {{#link-to 'index' id="glob-link"}}Glob{{/link-to}}
+  `);
+
+  bootApplication();
+
+  run(function() {
+    router.transitionTo('/foos/foo');
+  });
+
+  run(function() {
+    router.transitionTo('not-found');
+  });
+});
