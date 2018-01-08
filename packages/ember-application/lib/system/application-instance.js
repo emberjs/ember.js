@@ -3,11 +3,11 @@
 */
 
 import { assign } from 'ember-utils';
-import { get, set, run, computed } from 'ember-metal';
-import { RSVP } from 'ember-runtime';
+import { get, set, computed } from 'ember-metal';
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
+import { renderSettled } from 'ember-glimmer';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -241,14 +241,8 @@ const ApplicationInstance = EngineInstance.extend({
         // No rendering is needed, and routing has completed, simply return.
         return this;
       } else {
-        return new RSVP.Promise((resolve) => {
-          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thennable)
-          // which resolves once the transition is completed, but the transition completion only queues up
-          // a scheduled revalidation (into the `render` queue) in the Renderer.
-          //
-          // This uses `run.schedule('afterRender', ....)` to resolve after that rendering has completed.
-          run.schedule('afterRender', null, resolve, this);
-        });
+        // Ensure that the visit promise resolves when all rendering has completed
+        return renderSettled().then(() => this);
       }
     };
 
