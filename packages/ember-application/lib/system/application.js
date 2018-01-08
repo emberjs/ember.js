@@ -17,7 +17,7 @@ import {
   _loaded,
   RSVP
 } from 'ember-runtime';
-import { EventDispatcher, jQuery, noJqueryMode } from 'ember-views';
+import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
 import {
   Route,
   Router,
@@ -1078,7 +1078,7 @@ function registerLibraries() {
   if (!librariesRegistered) {
     librariesRegistered = true;
 
-    if (environment.hasDOM && !noJqueryMode) {
+    if (environment.hasDOM && !jQueryDisabled) {
       libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
   }

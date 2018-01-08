@@ -1,5 +1,5 @@
 
-export { default as jQuery, noJqueryMode } from './system/jquery';
+export { default as jQuery, jQueryDisabled } from './system/jquery';
 export {
   isSimpleClick,
   getViewBounds,

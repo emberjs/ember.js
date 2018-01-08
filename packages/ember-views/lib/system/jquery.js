@@ -1,7 +1,7 @@
 import { context, environment } from 'ember-environment';
 
 let jQuery;
-export let noJqueryMode;
+export let jQueryDisabled = false;
 
 if (environment.hasDOM) {
   jQuery = context.imports.jQuery;
@@ -25,10 +25,8 @@ if (environment.hasDOM) {
         };
       });
     }
-
-    noJqueryMode = false;
   } else {
-    noJqueryMode = true;
+    jQueryDisabled = true;
   }
 }
 
