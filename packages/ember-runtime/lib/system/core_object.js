@@ -21,7 +21,6 @@ import {
   peekMeta,
   finishChains,
   sendEvent,
-  detectBinding,
   Mixin,
   REQUIRED,
   defineProperty,
@@ -43,7 +42,6 @@ import { MANDATORY_SETTER } from 'ember/features';
 
 const schedule = run.schedule;
 const applyMixin = Mixin._apply;
-const finishPartial = Mixin.finishPartial;
 const reopen = Mixin.prototype.reopen;
 
 export const POST_INIT = symbol('POST_INIT');
@@ -107,7 +105,7 @@ function makeCtor() {
             let keyName = keyNames[j];
             let value = properties[keyName];
 
-            if (detectBinding(keyName)) {
+            if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
               m.writeBindings(keyName, value);
             }
 
@@ -161,7 +159,9 @@ function makeCtor() {
         }
       }
 
-      finishPartial(this, m);
+      if (ENV._ENABLE_BINDING_SUPPORT) {
+        Mixin.finishPartial(this, m);
+      }
 
       this.init(...arguments);
 
