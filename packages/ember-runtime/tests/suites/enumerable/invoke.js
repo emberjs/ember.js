@@ -5,7 +5,7 @@ const suite = SuiteModuleBuilder.create();
 
 suite.module('invoke');
 
-suite.test('invoke should call on each object that implements', function() {
+suite.test('invoke should call on each object that implements', function(assert) {
   let cnt, ary, obj;
 
   function F(amt) {
@@ -24,11 +24,11 @@ suite.test('invoke should call on each object that implements', function() {
 
   obj = this.newObject(ary);
   obj.invoke('foo');
-  equal(cnt, 3, 'should have invoked 3 times');
+  assert.equal(cnt, 3, 'should have invoked 3 times');
 
   cnt = 0;
   obj.invoke('foo', 2);
-  equal(cnt, 6, 'should have invoked 3 times, passing param');
+  assert.equal(cnt, 6, 'should have invoked 3 times, passing param');
 });
 
 export default suite;

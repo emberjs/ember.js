@@ -54,7 +54,7 @@ module.exports.internalLoader = function _internalLoader() {
 };
 
 module.exports.qunit = function _qunit() {
-  return new Funnel(findLib('qunitjs'), {
+  return new Funnel(findLib('qunit'), {
     files: ['qunit.js', 'qunit.css'],
     destDir: 'qunit',
     annotation: 'qunit'

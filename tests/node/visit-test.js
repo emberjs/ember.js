@@ -1,4 +1,3 @@
-var QUnit = require('qunitjs');
 var RSVP = require('rsvp');
 var SimpleDOM = require('simple-dom');
 var appModule = require('./helpers/app-module');

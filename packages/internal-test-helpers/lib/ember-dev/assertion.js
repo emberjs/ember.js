@@ -32,7 +32,7 @@ AssertionAssert.prototype = {
       let { assert } = QUnit.config.current;
 
       if (this.env.runningProdBuild) {
-        QUnit.ok(true, 'Assertions disabled in production builds.');
+        assert.ok(true, 'Assertions disabled in production builds.');
         return;
       }
 

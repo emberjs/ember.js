@@ -24,7 +24,10 @@ export default Adapter.extend({
     }
   },
   asyncEnd() {
-    if (typeof QUnit.start === 'function') {
+    // checking for QUnit.stop here (even though we _need_ QUnit.start) because
+    // QUnit.start() still exists in QUnit 2.x (it just throws an error when calling
+    // inside a test context)
+    if (typeof QUnit.stop === 'function') {
       QUnit.start();
     } else {
       let done = this.doneCallbacks.pop();

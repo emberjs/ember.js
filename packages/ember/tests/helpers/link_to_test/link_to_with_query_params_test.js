@@ -548,5 +548,7 @@ moduleFor('The {{link-to}} helper: invoking with query params', class extends Ap
     expectAssertion(() => {
       this.visit('/');
     }, /You must provide one or more parameters to the link-to component/);
+
+    return this.runLoopSettled();
   }
 });

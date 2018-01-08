@@ -263,14 +263,14 @@ QUnit.test('should reset isFulfilled and isRejected when promise is reset', func
   assert.equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 });
 
-QUnit.test('should have content when isFulfilled is set', function() {
+QUnit.test('should have content when isFulfilled is set', function(assert) {
   let deferred = EmberRSVP.defer();
 
   let proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
   });
 
-  proxy.addObserver('isFulfilled', () => equal(get(proxy, 'content'), true));
+  proxy.addObserver('isFulfilled', () => assert.equal(get(proxy, 'content'), true));
 
   run(deferred, 'resolve', true);
 });
@@ -283,7 +283,7 @@ QUnit.test('should have reason when isRejected is set', function(assert) {
     promise: deferred.promise
   });
 
-  proxy.addObserver('isRejected', () => equal(get(proxy, 'reason'), error));
+  proxy.addObserver('isRejected', () => assert.equal(get(proxy, 'reason'), error));
 
   try {
     run(deferred, 'reject', error);

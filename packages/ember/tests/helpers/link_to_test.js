@@ -10,6 +10,7 @@ import {
 } from 'ember-runtime';
 import {
   instrumentationSubscribe as subscribe,
+  instrumentationReset as reset,
   alias
 } from 'ember-metal';
 import { Route, NoneLocation } from 'ember-routing';
@@ -55,16 +56,19 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
   }
 
   ['@test The {{link-to}} helper moves into the named route'](assert) {
-    this.visit('/');
-    assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-    assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
-    assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
-
-    this.click('#about-link');
-
-    assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
-    assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
-    assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
+    return this.visit('/')
+      .then(() => {
+        assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+        assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
+        assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
+    
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
+        assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
+        assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
+      });
   }
 
   [`@test the {{link-to}} helper doesn't add an href when the tagName isn't 'a'`](assert) {
@@ -72,9 +76,9 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       {{#link-to 'about' id='about-link' tagName='div'}}About{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assert.equal(this.$('#about-link').attr('href'), undefined, 'there is no href attribute');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#about-link').attr('href'), undefined, 'there is no href attribute');
+    });
   }
 
   [`@test the {{link-to}} applies a 'disabled' class when disabled`](assert) {
@@ -88,23 +92,23 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       dynamicDisabledWhen: 'shouldDisable'
     }));
 
-    this.visit('/');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#about-link-static.disabled').length, 1, 'The static link is disabled when its disabledWhen is true');
+      assert.equal(this.$('#about-link-dynamic.disabled').length, 1, 'The dynamic link is disabled when its disabledWhen is true');
 
-    assert.equal(this.$('#about-link-static.disabled').length, 1, 'The static link is disabled when its disabledWhen is true');
-    assert.equal(this.$('#about-link-dynamic.disabled').length, 1, 'The dynamic link is disabled when its disabledWhen is true');
+      let controller = this.applicationInstance.lookup('controller:index');
+      this.runTask(() => controller.set('dynamicDisabledWhen', false));
 
-    let controller = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => controller.set('dynamicDisabledWhen', false));
-
-    assert.equal(this.$('#about-link-dynamic.disabled').length, 0, 'The dynamic link is re-enabled when its disabledWhen becomes false');
+      assert.equal(this.$('#about-link-dynamic.disabled').length, 0, 'The dynamic link is re-enabled when its disabledWhen becomes false');
+    });
   }
 
   [`@test the {{link-to}} doesn't apply a 'disabled' class if disabledWhen is not provided`](assert) {
     this.addTemplate('index', `{{#link-to "about" id="about-link"}}About{{/link-to}}`);
 
-    this.visit('/');
-
-    assert.ok(!this.$('#about-link').hasClass('disabled'), 'The link is not disabled if disabledWhen not provided');
+    return this.visit('/').then(() => {
+      assert.ok(!this.$('#about-link').hasClass('disabled'), 'The link is not disabled if disabledWhen not provided');
+    });
   }
 
   [`@test the {{link-to}} helper supports a custom disabledClass`](assert) {
@@ -112,9 +116,9 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       {{#link-to "about" id="about-link" disabledWhen=true disabledClass="do-not-want"}}About{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class');
+    });
   }
 
   [`@test the {{link-to}} helper supports a custom disabledClass set via bound param`](assert) {
@@ -126,9 +130,9 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       disabledClass: 'do-not-want'
     }));
 
-    this.visit('/');
-
-    assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class via bound param');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#about-link.do-not-want').length, 1, 'The link can apply a custom disabled class via bound param');
+    });
   }
 
   [`@test the {{link-to}} helper does not respond to clicks when disabledWhen`](assert) {
@@ -136,10 +140,13 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       {{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}
     `);
 
-    this.visit('/');
-    this.click('#about-link');
-
-    assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
+    return this.visit('/')
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
+      });
   }
 
   [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
@@ -147,10 +154,13 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       {{#link-to "about" id="about-link" disabled=true}}About{{/link-to}}
     `);
 
-    this.visit('/');
-    this.click('#about-link');
-
-    assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
+    return this.visit('/')
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
+      });
   }
 
   [`@test the {{link-to}} helper responds to clicks according to its disabledWhen bound param`](assert) {
@@ -162,18 +172,24 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       disabledWhen: true
     }));
 
-    this.visit('/');
+    return this.visit('/')
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
 
-    this.click('#about-link');
+        let controller = this.applicationInstance.lookup('controller:index');
+        controller.set('disabledWhen', false);
 
-    assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
-
-    let controller = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => controller.set('disabledWhen', false));
-
-    this.click('#about-link');
-
-    assert.equal(this.$('h3.about').length, 1, 'Transitioning did occur when disabledWhen became false');
+        return this.runLoopSettled();
+      })
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.about').length, 1, 'Transitioning did occur when disabledWhen became false');
+      });
   }
 
   [`@test The {{link-to}} helper supports a custom activeClass`](assert) {
@@ -183,11 +199,11 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       {{#link-to 'index' id='self-link' activeClass='zomg-active'}}Self{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-    assert.equal(this.$('#self-link.zomg-active').length, 1, 'The self-link was rendered with active class');
-    assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.equal(this.$('#self-link.zomg-active').length, 1, 'The self-link was rendered with active class');
+      assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
+    });
   }
 
   [`@test The {{link-to}} helper supports a custom activeClass from a bound param`](assert) {
@@ -201,11 +217,11 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       activeClass: 'zomg-active'
     }));
 
-    this.visit('/');
-
-    assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-    assert.equal(this.$('#self-link.zomg-active').length, 1, 'The self-link was rendered with active class');
-    assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.equal(this.$('#self-link.zomg-active').length, 1, 'The self-link was rendered with active class');
+      assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
+    });
   }
 
   [`@test The {{link-to}} helper supports 'classNameBindings' with custom values [GH #11699]`](assert) {
@@ -218,14 +234,14 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
       foo: false
     }));
 
-    this.visit('/');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#about-link.foo-is-false').length, 1, 'The about-link was rendered with the falsy class');
 
-    assert.equal(this.$('#about-link.foo-is-false').length, 1, 'The about-link was rendered with the falsy class');
+      let controller = this.applicationInstance.lookup('controller:index');
+      this.runTask(() => controller.set('foo', true));
 
-    let controller = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => controller.set('foo', true));
-
-    assert.equal(this.$('#about-link.foo-is-true').length, 1, 'The about-link was rendered with the truthy class after toggling the property');
+      assert.equal(this.$('#about-link.foo-is-true').length, 1, 'The about-link was rendered with the truthy class after toggling the property');
+    });
   }
 });
 
@@ -266,9 +282,10 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
   }
 
   visit() {
-    super.visit(...arguments);
-    this.updateCountAfterVisit = this.updateCount;
-    this.replaceCountAfterVisit = this.replaceCount;
+    return super.visit(...arguments).then(() => {
+      this.updateCountAfterVisit = this.updateCount;
+      this.replaceCountAfterVisit = this.replaceCount;
+    });
   }
 
   ['@test The {{link-to}} helper supports URL replacement'](assert) {
@@ -277,17 +294,20 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
       {{#link-to 'about' id='about-link' replace=true}}About{{/link-to}}
     `);
 
-    this.visit('/');
-    this.click('#about-link');
-
-    assert.equal(
-      this.updateCount, this.updateCountAfterVisit,
-      'setURL should not be called'
-    );
-    assert.equal(
-      this.replaceCount, this.replaceCountAfterVisit + 1,
-      'replaceURL should be called once'
-    );
+    return this.visit('/')
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(
+          this.updateCount, this.updateCountAfterVisit,
+          'setURL should not be called'
+        );
+        assert.equal(
+          this.replaceCount, this.replaceCountAfterVisit + 1,
+          'replaceURL should be called once'
+        );
+      });
   }
 
   ['@test The {{link-to}} helper supports URL replacement via replace=boundTruthyThing'](assert) {
@@ -300,17 +320,20 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
       boundTruthyThing: true
     }));
 
-    this.visit('/');
-    this.click('#about-link');
-
-    assert.equal(
-      this.updateCount, this.updateCountAfterVisit,
-      'setURL should not be called'
-    );
-    assert.equal(
-      this.replaceCount, this.replaceCountAfterVisit + 1,
-      'replaceURL should be called once'
-    );
+    return this.visit('/')
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(
+          this.updateCount, this.updateCountAfterVisit,
+          'setURL should not be called'
+        );
+        assert.equal(
+          this.replaceCount, this.replaceCountAfterVisit + 1,
+          'replaceURL should be called once'
+        );
+      });
   }
 
   ['@test The {{link-to}} helper supports setting replace=boundFalseyThing'](assert) {
@@ -323,17 +346,20 @@ moduleFor('The {{link-to}} helper - location hooks', class extends ApplicationTe
       boundFalseyThing: false
     }));
 
-    this.visit('/');
-    this.click('#about-link');
-
-    assert.equal(
-      this.updateCount, this.updateCountAfterVisit + 1,
-      'setURL should be called'
-    );
-    assert.equal(
-      this.replaceCount, this.replaceCountAfterVisit,
-      'replaceURL should not be called'
-    );
+    return this.visit('/')
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(
+          this.updateCount, this.updateCountAfterVisit + 1,
+          'setURL should be called'
+        );
+        assert.equal(
+          this.replaceCount, this.replaceCountAfterVisit,
+          'replaceURL should not be called'
+        );
+      });
   }
 
 });
@@ -358,8 +384,16 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         {{#link-to 'index' id='home-link'}}Home{{/link-to}}
         {{#link-to 'about' id='self-link'}}Self{{/link-to}}
       `);
+    }
 
-      this.visit('/');
+    beforeEach() {
+      return this.visit('/');
+    }
+
+    afterEach() {
+      reset();
+
+      return super.afterEach();
     }
 
     ['@test The {{link-to}} helper fires an interaction event'](assert) {
@@ -374,7 +408,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         }
       });
 
-      this.click('#about-link');
+      return this.click('#about-link');
     }
 
     ['@test The {{link-to}} helper interaction event includes the route name'](assert) {
@@ -389,7 +423,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         }
       });
 
-      this.click('#about-link');
+      return this.click('#about-link');
     }
 
     ['@test The {{link-to}} helper interaction event includes the transition in the after hook'](assert) {
@@ -402,7 +436,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         }
       });
 
-      this.click('#about-link');
+      return this.click('#about-link');
     }
   });
 }
@@ -420,9 +454,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.addTemplate('about.index', `<div id='index'>Index</div>`);
     this.addTemplate('about.item', `<div id='item'>{{#link-to 'about'}}About{{/link-to}}</div>`);
 
-    this.visit('/about/item');
-
-    assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+    return this.visit('/about/item').then(() => {
+      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+    });
   }
 
   [`@test The {{link-to}} helper supports custom, nested, current-when`](assert) {
@@ -439,9 +473,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'item' id='other-link' current-when='index'}}ITEM{{/link-to}}
     `);
 
-    this.visit('/about');
-
-    assert.equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
+    return this.visit('/about').then(() => {
+      assert.equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
+    });
   }
 
   [`@test The {{link-to}} helper does not disregard current-when when it is given explicitly for a route`](assert) {
@@ -460,9 +494,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'items' id='other-link' current-when='index'}}ITEM{{/link-to}}
     `);
 
-    this.visit('/about');
-
-    assert.equal(this.$('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
+    return this.visit('/about').then(() => {
+      assert.equal(this.$('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
+    });
   }
 
   ['@test The {{link-to}} helper does not disregard current-when when it is set via a bound param'](assert) {
@@ -483,9 +517,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
     this.addTemplate('index.about', `{{#link-to 'items' id='other-link' current-when=currentWhen}}ITEM{{/link-to}}`);
 
-    this.visit('/about');
-
-    assert.equal(this.$('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
+    return this.visit('/about').then(() => {
+      assert.equal(this.$('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
+    });
   }
 
   ['@test The {{link-to}} helper supports multiple current-when routes'](assert) {
@@ -502,17 +536,20 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.addTemplate('item', `{{#link-to 'item' id='link2' current-when='item index'}}ITEM{{/link-to}}`);
     this.addTemplate('foo', `{{#link-to 'item' id='link3' current-when='item index'}}ITEM{{/link-to}}`);
 
-    this.visit('/about');
+    return this.visit('/about')
+      .then(() => {
+        assert.equal(this.$('#link1.active').length, 1, 'The link is active since current-when contains the parent route');
 
-    assert.equal(this.$('#link1.active').length, 1, 'The link is active since current-when contains the parent route');
+        return this.visit('/item');
+      })
+      .then(() => {
+        assert.equal(this.$('#link2.active').length, 1, 'The link is active since you are on the active route');
 
-    this.visit('/item');
-
-    assert.equal(this.$('#link2.active').length, 1, 'The link is active since you are on the active route');
-
-    this.visit('/foo');
-
-    assert.equal(this.$('#link3.active').length, 0, 'The link is not active since current-when does not contain the active route');
+        return this.visit('/foo');
+      })
+      .then(() => {
+        assert.equal(this.$('#link3.active').length, 0, 'The link is not active since current-when does not contain the active route');
+      });
   }
 
   ['@test The {{link-to}} helper supports boolean values for current-when'](assert) {
@@ -526,9 +563,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
     this.addTemplate('index.about', `{{#link-to 'item' id='other-link' current-when=true}}ITEM{{/link-to}}`);
 
-    this.visit('/about');
-
-    assert.equal(this.$('#other-link').length, 1, 'The link is active since current-when is true');
+    return this.visit('/about').then(() => {
+      assert.equal(this.$('#other-link').length, 1, 'The link is active since current-when is true');
+    });
   }
 
   ['@test The {{link-to}} helper defaults to bubbling'](assert) {
@@ -558,13 +595,15 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       }
     }));
 
-    this.visit('/about');
+    return this.visit('/about')
+      .then(() => {
+        return this.click('#about-contact');
+      })
+      .then(() => {
+        assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
 
-    this.click('#about-contact');
-
-    assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-
-    assert.equal(hidden, 1, 'The link bubbles');
+        assert.equal(hidden, 1, 'The link bubbles');
+      });
   }
 
   [`@test The {{link-to}} helper supports bubbles=false`](assert) {
@@ -594,13 +633,15 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       }
     }));
 
-    this.visit('/about');
+    return this.visit('/about')
+      .then(() => {
+        return this.click('#about-contact');
+      })
+      .then(() => {
+        assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
 
-    this.click('#about-contact');
-
-    assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-
-    assert.equal(hidden, 0, "The link didn't bubble");
+        assert.equal(hidden, 0, "The link didn't bubble");
+      });
   }
 
   [`@test The {{link-to}} helper supports bubbles=boundFalseyThing`](assert) {
@@ -634,11 +675,14 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       }
     }));
 
-    this.visit('/about');
-    this.click('#about-contact');
-
-    assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-    assert.equal(hidden, 0, "The link didn't bubble");
+    return this.visit('/about')
+      .then(() => {
+        return this.click('#about-contact');
+      })
+      .then(() => {
+        assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+        assert.equal(hidden, 0, "The link didn't bubble");
+      });
   }
 
   [`@test The {{link-to}} helper moves into the named route with context`](assert) {
@@ -682,27 +726,33 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       }
     }));
 
-    this.visit('/about');
-
-    assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-    assert.equal(normalizeUrl(this.$('#home-link').attr('href')), '/', 'The home link points back at /');
-
-    this.click('#yehuda');
-
-    assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-    assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
-
-    this.click('#home-link');
-    this.click('#about-link');
-
-    assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
-    assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
-    assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
-
-    this.click('#erik');
-
-    assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-    assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
+    return this.visit('/about')
+      .then(() => {
+        assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
+        assert.equal(normalizeUrl(this.$('#home-link').attr('href')), '/', 'The home link points back at /');
+    
+        return this.click('#yehuda');    
+      })
+      .then(() => {
+        assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+        assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
+    
+        return this.click('#home-link');
+      })
+      .then(() => {
+        return this.click('#about-link');
+      })
+      .then(() => {
+        assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
+        assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
+        assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+    
+        return this.click('#erik');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+        assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
+      });
   }
 
   [`@test The {{link-to}} helper binds some anchor html tag common attributes`](assert) {
@@ -713,12 +763,12 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{/link-to}}
     `);
 
-    this.visit('/');
-
-    let link = this.$('#self-link');
-    assert.equal(link.attr('title'), 'title-attr', 'The self-link contains title attribute');
-    assert.equal(link.attr('rel'), 'rel-attr', 'The self-link contains rel attribute');
-    assert.equal(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
+    return this.visit('/').then(() => {
+      let link = this.$('#self-link');
+      assert.equal(link.attr('title'), 'title-attr', 'The self-link contains title attribute');
+      assert.equal(link.attr('rel'), 'rel-attr', 'The self-link contains rel attribute');
+      assert.equal(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
+    });
   }
 
   [`@test The {{link-to}} helper supports 'target' attribute`](assert) {
@@ -727,10 +777,10 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
     `);
 
-    this.visit('/');
-
-    let link = this.$('#self-link');
-    assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+    return this.visit('/').then(() => {
+      let link = this.$('#self-link');
+      assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+    });
   }
 
   [`@test The {{link-to}} helper supports 'target' attribute specified as a bound param`](assert) {
@@ -740,10 +790,10 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       boundLinkTarget: '_blank'
     }));
 
-    this.visit('/');
-
-    let link = this.$('#self-link');
-    assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+    return this.visit('/').then(() => {
+      let link = this.$('#self-link');
+      assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+    });
   }
 
   [`@test the {{link-to}} helper calls preventDefault`]() {
@@ -755,9 +805,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'about' id='about-link'}}About{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assertNav({ prevented: true }, () => this.$('#about-link').click());
+    return this.visit('/').then(() => {
+      assertNav({ prevented: true }, () => this.$('#about-link').click());
+    });
   }
 
   [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=false' is passed as an option`]() {
@@ -769,9 +819,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'about' id='about-link' preventDefault=false}}About{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'));
+    return this.visit('/').then(() => {
+      assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'));
+    });
   }
 
   [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`]() {
@@ -787,9 +837,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       boundFalseyThing: false
     }));
 
-    this.visit('/');
-
-    assertNav({ prevented: false }, () =>  this.$('#about-link').trigger('click')[0]);
+    return this.visit('/').then(() => {
+      assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'));
+    });
   }
 
   [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`]() {
@@ -798,9 +848,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assertNav({ prevented: false }, () => this.$('#self-link').click());
+    return this.visit('/').then(() => {
+      assertNav({ prevented: false }, () => this.$('#self-link').click());
+    });
   }
 
   [`@test The {{link-to}} helper should preventDefault when 'target = _self'`]() {
@@ -809,9 +859,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assertNav({ prevented: true }, () => this.$('#self-link').click());
+    return this.visit('/').then(() => {
+      assertNav({ prevented: true }, () => this.$('#self-link').click());
+    });
   }
 
   [`@test The {{link-to}} helper should not transition if target is not equal to _self or empty`](assert) {
@@ -825,11 +875,12 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       this.route('about');
     });
 
-    this.visit('/');
-    this.click('#about-link');
-
-    let currentRouteName = this.applicationInstance.lookup('controller:application').get('currentRouteName');
-    assert.notEqual(currentRouteName, 'about', 'link-to should not transition if target is not equal to _self or empty');
+    return this.visit('/')
+      .then(() => this.click('#about-link'))
+      .then(() => {
+        let currentRouteName = this.applicationInstance.lookup('controller:application').get('currentRouteName');
+        assert.notEqual(currentRouteName, 'about', 'link-to should not transition if target is not equal to _self or empty');
+    });
   }
 
   [`@test The {{link-to}} helper accepts string/numeric arguments`](assert) {
@@ -854,13 +905,13 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to "repo" repo id="repo-object-link"}}Repo{{/link-to}}
     `);
 
-    this.visit('/filters/popular');
-
-    assert.equal(normalizeUrl(this.$('#link').attr('href')), '/filters/unpopular');
-    assert.equal(normalizeUrl(this.$('#path-link').attr('href')), '/filters/unpopular');
-    assert.equal(normalizeUrl(this.$('#post-path-link').attr('href')), '/post/123');
-    assert.equal(normalizeUrl(this.$('#post-number-link').attr('href')), '/post/123');
-    assert.equal(normalizeUrl(this.$('#repo-object-link').attr('href')), '/repo/ember/ember.js');
+    return this.visit('/filters/popular').then(() => {
+      assert.equal(normalizeUrl(this.$('#link').attr('href')), '/filters/unpopular');
+      assert.equal(normalizeUrl(this.$('#path-link').attr('href')), '/filters/unpopular');
+      assert.equal(normalizeUrl(this.$('#post-path-link').attr('href')), '/post/123');
+      assert.equal(normalizeUrl(this.$('#post-number-link').attr('href')), '/post/123');
+      assert.equal(normalizeUrl(this.$('#repo-object-link').attr('href')), '/repo/ember/ember.js');
+    });
   }
 
   [`@test Issue 4201 - Shorthand for route.index shouldn't throw errors about context arguments`](assert) {
@@ -886,10 +937,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'lobby' 'foobar' id='lobby-link'}}Lobby{{/link-to}}
     `);
 
-    this.visit('/lobby/list');
-    this.click('#lobby-link');
-
-    shouldBeActive(assert, this.$('#lobby-link'));
+    return this.visit('/lobby/list')
+    .then(() => this.click('#lobby-link'))
+    .then(() => shouldBeActive(assert, this.$('#lobby-link')));
   }
 
   [`@test Quoteless route param performs property lookup`](assert) {
@@ -911,14 +961,14 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
     };
 
-    this.visit('/');
+    return this.visit('/').then(() => {
+      assertEquality('/');
 
-    assertEquality('/');
+      let controller = this.applicationInstance.lookup('controller:index');
+      this.runTask(() => controller.set('foo', 'about'));
 
-    let controller = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => controller.set('foo', 'about'));
-
-    assertEquality('/about');
+      assertEquality('/about');
+    });
   }
 
   [`@test The {{link-to}} helper refreshes href element when one of params changes`](assert) {
@@ -935,20 +985,20 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.add('controller:index', Controller.extend());
 
-    this.visit('/');
+    return this.visit('/').then(() => {
+      let indexController = this.applicationInstance.lookup('controller:index');
+      this.runTask(() => indexController.set('post', post));
 
-    let indexController = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => indexController.set('post', post));
+      assert.equal(normalizeUrl(this.$('#post').attr('href')), '/posts/1', 'precond - Link has rendered href attr properly');
 
-    assert.equal(normalizeUrl(this.$('#post').attr('href')), '/posts/1', 'precond - Link has rendered href attr properly');
+      this.runTask(() => indexController.set('post', secondPost));
 
-    this.runTask(() => indexController.set('post', secondPost));
+      assert.equal(this.$('#post').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
 
-    assert.equal(this.$('#post').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
+      this.runTask(() => indexController.set('post', null));
 
-    this.runTask(() => indexController.set('post', null));
-
-    assert.equal(this.$('#post').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
+      assert.equal(this.$('#post').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
+    });
   }
 
   [`@test The {{link-to}} helper is active when a route is active`](assert) {
@@ -966,15 +1016,17 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       </div>
     `);
 
-    this.visit('/about');
+    return this.visit('/about')
+      .then(() => {
+        assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
+        assert.equal(this.$('#item-link.active').length, 0, 'The item route link is inactive');
 
-    assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
-    assert.equal(this.$('#item-link.active').length, 0, 'The item route link is inactive');
-
-    this.visit('/about/item');
-
-    assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
-    assert.equal(this.$('#item-link.active').length, 1, 'The item route link is active');
+        return this.visit('/about/item');
+      })
+      .then(() => {
+        assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
+        assert.equal(this.$('#item-link.active').length, 1, 'The item route link is active');
+      });
   }
 
   [`@test The {{link-to}} helper works in an #each'd array of string route names`](assert) {
@@ -1001,8 +1053,6 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to route2}}b{{/link-to}}
     `);
 
-    this.visit('/');
-
     let linksEqual = (links, expected) => {
       assert.equal(links.length, expected.length, 'Has correct number of links');
 
@@ -1014,16 +1064,18 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       }
     };
 
-    linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
+    return this.visit('/').then(() => {
+      linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
-    let indexController = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => indexController.set('route1', 'rar'));
+      let indexController = this.applicationInstance.lookup('controller:index');
+      this.runTask(() => indexController.set('route1', 'rar'));
 
-    linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
+      linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
-    this.runTask(() => indexController.routeNames.shiftObject());
+      this.runTask(() => indexController.routeNames.shiftObject());
 
-    linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
+      linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
+    });
   }
 
   [`@test The non-block form {{link-to}} helper moves into the named route`](assert) {
@@ -1043,13 +1095,15 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{link-to 'Self' 'contact' id='self-link'}}
     `);
 
-    this.visit('/');
-
-    this.click('#contact-link');
-
-    assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
-    assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
-    assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
+    return this.visit('/')
+      .then(() => {
+        return this.click('#contact-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
+        assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
+        assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
+      });
   }
 
   [`@test The non-block form {{link-to}} helper updates the link text when it is a binding`](assert) {
@@ -1073,29 +1127,32 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{link-to 'Self' 'contact' id='self-link'}}
     `);
 
-    this.visit('/');
+    return this.visit('/')
+      .then(() => {
+        assert.equal(this.$('#contact-link').text(), 'Jane', 'The link title is correctly resolved');
 
-    assert.equal(this.$('#contact-link').text(), 'Jane', 'The link title is correctly resolved');
+        let controller = this.applicationInstance.lookup('controller:index');
+        this.runTask(() => controller.set('contactName', 'Joe'));
 
-    let controller = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => controller.set('contactName', 'Joe'));
+        assert.equal(this.$('#contact-link').text(), 'Joe', 'The link title is correctly updated when the bound property changes');
 
-    assert.equal(this.$('#contact-link').text(), 'Joe', 'The link title is correctly updated when the bound property changes');
+        this.runTask(() => controller.set('contactName', 'Robert'));
 
-    this.runTask(() => controller.set('contactName', 'Robert'));
+        assert.equal(this.$('#contact-link').text(), 'Robert', 'The link title is correctly updated when the bound property changes a second time');
 
-    assert.equal(this.$('#contact-link').text(), 'Robert', 'The link title is correctly updated when the bound property changes a second time');
+        return this.click('#contact-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
+        assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
+        assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
 
-    this.click('#contact-link');
-
-    assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
-    assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
-    assert.equal(this.$('#home-link:not(.active)').length, 1, 'The other link was rendered without active class');
-
-    this.click('#home-link');
-
-    assert.equal(this.$('h3.home').length, 1, 'The index template was rendered');
-    assert.equal(this.$('#contact-link').text(), 'Robert', 'The link title is correctly updated when the route changes');
+        return this.click('#home-link');
+      })
+      .then(() => {
+        assert.equal(this.$('h3.home').length, 1, 'The index template was rendered');
+        assert.equal(this.$('#contact-link').text(), 'Robert', 'The link title is correctly updated when the route changes');
+      });
   }
 
   [`@test The non-block form {{link-to}} helper moves into the named route with context`](assert) {
@@ -1131,18 +1188,22 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'index' id='home-link'}}Home{{/link-to}}
     `);
 
-    this.visit('/');
+    return this.visit('/')
+      .then(() => {
+        return this.click('#yehuda');
+      })
+      .then(() => {
 
-    this.click('#yehuda');
+        assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+        assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
 
-    assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-    assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
-
-    this.click('#home-link');
-
-    assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
-    assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
-    assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+        return this.click('#home-link');
+      })
+      .then(() => {
+        assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
+        assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
+        assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+      });
   }
 
   [`@test The non-block form {{link-to}} performs property lookup`](assert) {
@@ -1159,19 +1220,19 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       foo: 'index'
     }));
 
-    this.visit('/');
+    return this.visit('/').then(() => {
+      let assertEquality = href => {
+        assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
+        assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
+      };
 
-    let assertEquality = href => {
-      assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
-      assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
-    };
+      assertEquality('/');
 
-    assertEquality('/');
+      let controller = this.applicationInstance.lookup('controller:index');
+      this.runTask(() => controller.set('foo', 'about'));
 
-    let controller = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => controller.set('foo', 'about'));
-
-    assertEquality('/about');
+      assertEquality('/about');
+    });
   }
 
   [`@test The non-block form {{link-to}} protects against XSS`](assert) {
@@ -1181,15 +1242,15 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       display: 'blahzorz'
     }));
 
-    this.visit('/');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#link').text(), 'blahzorz');
 
-    assert.equal(this.$('#link').text(), 'blahzorz');
+      let controller = this.applicationInstance.lookup('controller:application');
+      this.runTask(() => controller.set('display', '<b>BLAMMO</b>'));
 
-    let controller = this.applicationInstance.lookup('controller:application');
-    this.runTask(() => controller.set('display', '<b>BLAMMO</b>'));
-
-    assert.equal(this.$('#link').text(), '<b>BLAMMO</b>');
-    assert.equal(this.$('b').length, 0);
+      assert.equal(this.$('#link').text(), '<b>BLAMMO</b>');
+      assert.equal(this.$('b').length, 0);
+    });
   }
 
   [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
@@ -1204,6 +1265,8 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     assert.throws(() => {
       this.visit('/');
     }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
+
+    return this.runLoopSettled();
   }
 
   [`@test the {{link-to}} helper does not throw an error if its route has exited`](assert) {
@@ -1238,12 +1301,11 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       }
     }));
 
-    this.visit('/');
-
-    this.click('#default-post-link');
-    this.click('#home-link');
-    this.click('#current-post-link');
-    this.click('#home-link');
+    return this.visit('/')
+      .then(() => this.click('#default-post-link'))
+      .then(() => this.click('#home-link'))
+      .then(() => this.click('#current-post-link'))
+      .then(() => this.click('#home-link'));
   }
 
   [`@test {{link-to}} active property respects changing parent route context`](assert) {
@@ -1258,15 +1320,17 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{link-to 'LOL' 'things' 'lol' id='lol-link'}}
     `);
 
-    this.visit('/things/omg');
+    return this.visit('/things/omg')
+      .then(() => {
+        shouldBeActive(assert, this.$('#omg-link'));
+        shouldNotBeActive(assert, this.$('#lol-link'));
 
-    shouldBeActive(assert, this.$('#omg-link'));
-    shouldNotBeActive(assert, this.$('#lol-link'));
-
-    this.visit('/things/omg/other');
-
-    shouldBeActive(assert, this.$('#omg-link'));
-    shouldNotBeActive(assert, this.$('#lol-link'));
+        return this.visit('/things/omg/other');
+      })
+      .then(() => {
+        shouldBeActive(assert, this.$('#omg-link'));
+        shouldNotBeActive(assert, this.$('#lol-link'));
+      });
   }
 
   [`@test {{link-to}} populates href with default query param values even without query-params object`](assert) {
@@ -1277,9 +1341,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     this.addTemplate('index', `{{#link-to 'index' id='the-link'}}Index{{/link-to}}`);
 
-    this.visit('/');
-
-    assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
+    });
   }
 
   [`@test {{link-to}} populates href with default query param values with empty query-params object`](assert) {
@@ -1292,9 +1356,9 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}
     `);
 
-    this.visit('/');
-
-    assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
+    return this.visit('/').then(() => {
+      assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
+    });
   }
 
   [`@test {{link-to}} with only query-params and a block updates when route changes`](assert) {
@@ -1312,13 +1376,15 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}
     `);
 
-    this.visit('/');
+    return this.visit('/')
+      .then(() => {
+        assert.equal(this.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 
-    assert.equal(this.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
-
-    this.visit('/about');
-
-    assert.equal(this.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+        return this.visit('/about');
+      })
+      .then(() => {
+        assert.equal(this.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+      });
   }
 
   [`@test Block-less {{link-to}} with only query-params updates when route changes`](assert) {
@@ -1336,13 +1402,15 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{link-to "Index" (query-params foo='456' bar='NAW') id='the-link'}}
     `);
 
-    this.visit('/');
+    return this.visit('/')
+      .then(() => {
+        assert.equal(this.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
 
-    assert.equal(this.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
-
-    this.visit('/about');
-
-    assert.equal(this.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+        return this.visit('/about');
+      })
+      .then(() => {
+        assert.equal(this.$('#the-link').attr('href'), '/about?bar=NAW&foo=456', 'link has right href');
+      });
   }
 
   [`@test The {{link-to}} helper can use dynamic params`](assert) {
@@ -1367,23 +1435,23 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{#link-to params=dynamicLinkParams id="dynamic-link"}}Dynamic{{/link-to}}
     `);
 
-    this.visit('/');
+    return this.visit('/').then(() => {
+      let link = this.$('#dynamic-link');
 
-    let link = this.$('#dynamic-link');
+      assert.equal(link.attr('href'), '/foo/one/two');
 
-    assert.equal(link.attr('href'), '/foo/one/two');
+      let controller = this.applicationInstance.lookup('controller:index');
+      this.runTask(() => {
+        controller.set('dynamicLinkParams', [
+          'bar',
+          'one',
+          'two',
+          'three'
+        ]);
+      });
 
-    let controller = this.applicationInstance.lookup('controller:index');
-    this.runTask(() => {
-      controller.set('dynamicLinkParams', [
-        'bar',
-        'one',
-        'two',
-        'three'
-      ]);
+      assert.equal(link.attr('href'), '/bar/one/two/three');
     });
-
-    assert.equal(link.attr('href'), '/bar/one/two/three');
   }
 
   [`@test GJ: {{link-to}} to a parent root model hook which performs a 'transitionTo' has correct active class #13256`](assert) {
@@ -1405,11 +1473,13 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       {{link-to 'Parent' 'parent' id='parent-link'}}
     `);
 
-    this.visit('/');
-
-    this.click('#parent-link');
-
-    shouldBeActive(assert, this.$('#parent-link'));
+    return this.visit('/')
+      .then(() => {
+        return this.click('#parent-link');
+      })
+      .then(() => {
+        shouldBeActive(assert, this.$('#parent-link'));
+      });
   }
 
 });
@@ -1446,8 +1516,6 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
       }
     }));
 
-    this.visit('/');
-
     function assertLinkStatus(link, url) {
       if (url) {
         assert.equal(normalizeUrl(link.attr('href')), url, 'loaded link-to has expected href');
@@ -1458,50 +1526,57 @@ moduleFor('The {{link-to}} helper - loading states and warnings', class extends 
       }
     }
 
-    let contextLink = this.$('#context-link');
-    let staticLink = this.$('#static-link');
-    let controller = this.applicationInstance.lookup('controller:index');
+    let contextLink, staticLink, controller;
 
-    assertLinkStatus(contextLink);
-    assertLinkStatus(staticLink);
+    return this.visit('/')
+      .then(() => {
+        contextLink = this.$('#context-link');
+        staticLink = this.$('#static-link');
+        controller = this.applicationInstance.lookup('controller:index');
 
-    expectWarning(()=> {
-      this.click(contextLink[0]);
-    }, warningMessage);
+        assertLinkStatus(contextLink);
+        assertLinkStatus(staticLink);
 
-    // Set the destinationRoute (context is still null).
-    this.runTask(() => controller.set('destinationRoute', 'thing'));
-    assertLinkStatus(contextLink);
+        return expectWarning(()=> {
+          return this.click(contextLink[0]);
+        }, warningMessage);
+      })
+      .then(() => {
 
-    // Set the routeContext to an id
-    this.runTask(() => controller.set('routeContext', '456'));
-    assertLinkStatus(contextLink, '/thing/456');
+        // Set the destinationRoute (context is still null).
+        this.runTask(() => controller.set('destinationRoute', 'thing'));
+        assertLinkStatus(contextLink);
 
-    // Test that 0 isn't interpreted as falsy.
-    this.runTask(() => controller.set('routeContext', 0));
-    assertLinkStatus(contextLink, '/thing/0');
+        // Set the routeContext to an id
+        this.runTask(() => controller.set('routeContext', '456'));
+        assertLinkStatus(contextLink, '/thing/456');
 
-    // Set the routeContext to an object
-    this.runTask(() => {
-      controller.set('routeContext', { id: 123 });
-    });
-    assertLinkStatus(contextLink, '/thing/123');
+        // Test that 0 isn't interpreted as falsy.
+        this.runTask(() => controller.set('routeContext', 0));
+        assertLinkStatus(contextLink, '/thing/0');
 
-    // Set the destinationRoute back to null.
-    this.runTask(() => controller.set('destinationRoute', null));
-    assertLinkStatus(contextLink);
+        // Set the routeContext to an object
+        this.runTask(() => {
+          controller.set('routeContext', { id: 123 });
+        });
+        assertLinkStatus(contextLink, '/thing/123');
 
-    expectWarning(()=> {
-      this.click(staticLink[0]);
-    }, warningMessage);
+        // Set the destinationRoute back to null.
+        this.runTask(() => controller.set('destinationRoute', null));
+        assertLinkStatus(contextLink);
 
-    this.runTask(() => controller.set('secondRoute', 'about'));
-    assertLinkStatus(staticLink, '/about');
+        return expectWarning(()=> {
+          return this.click(staticLink[0]);
+        }, warningMessage);
+      })
+      .then(() => {
+        this.runTask(() => controller.set('secondRoute', 'about'));
+        assertLinkStatus(staticLink, '/about');
 
-    // Click the now-active link
-    this.click(staticLink[0]);
+        // Click the now-active link
+        return this.click(staticLink[0]);
+      });
   }
-
 });
 
 function assertNav(options, callback) {

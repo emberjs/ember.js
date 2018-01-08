@@ -9,15 +9,15 @@ const suite = SuiteModuleBuilder.create();
 
 suite.module('reject');
 
-suite.test('should reject any item that does not meet the condition', function() {
+suite.test('should reject any item that does not meet the condition', function(assert) {
   let obj = this.newObject([1, 2, 3, 4]);
   let result;
 
   result = obj.reject(i => i < 3);
-  deepEqual(result, [3, 4], 'reject the correct items');
+  assert.deepEqual(result, [3, 4], 'reject the correct items');
 });
 
-suite.test('should be the inverse of filter', function() {
+suite.test('should be the inverse of filter', function(assert) {
   let obj = this.newObject([1, 2, 3, 4]);
   let isEven = i => i % 2 === 0;
   let filtered, rejected;
@@ -25,8 +25,8 @@ suite.test('should be the inverse of filter', function() {
   filtered = obj.filter(isEven);
   rejected = obj.reject(isEven);
 
-  deepEqual(filtered, [2, 4], 'filtered evens');
-  deepEqual(rejected, [1, 3], 'rejected evens');
+  assert.deepEqual(filtered, [2, 4], 'filtered evens');
+  assert.deepEqual(rejected, [1, 3], 'rejected evens');
 });
 
 // ..........................................................
@@ -35,7 +35,7 @@ suite.test('should be the inverse of filter', function() {
 
 suite.module('rejectBy');
 
-suite.test('should reject based on object', function() {
+suite.test('should reject based on object', function(assert) {
   let obj, ary;
 
   ary = [
@@ -45,11 +45,11 @@ suite.test('should reject based on object', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectBy('foo', 'foo'), [], 'rejectBy(foo)');
-  deepEqual(obj.rejectBy('bar', 'bar'), [ary[0]], 'rejectBy(bar)');
+  assert.deepEqual(obj.rejectBy('foo', 'foo'), [], 'rejectBy(foo)');
+  assert.deepEqual(obj.rejectBy('bar', 'bar'), [ary[0]], 'rejectBy(bar)');
 });
 
-suite.test('should include in result if property is false', function() {
+suite.test('should include in result if property is false', function(assert) {
   let obj, ary;
 
   ary = [
@@ -59,11 +59,11 @@ suite.test('should include in result if property is false', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectBy('foo'), ary, 'rejectBy(foo)');
-  deepEqual(obj.rejectBy('bar'), [ary[1]], 'rejectBy(bar)');
+  assert.deepEqual(obj.rejectBy('foo'), ary, 'rejectBy(foo)');
+  assert.deepEqual(obj.rejectBy('bar'), [ary[1]], 'rejectBy(bar)');
 });
 
-suite.test('should reject on second argument if provided', function() {
+suite.test('should reject on second argument if provided', function(assert) {
   let obj, ary;
 
   ary = [
@@ -75,10 +75,10 @@ suite.test('should reject on second argument if provided', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectBy('foo', 3), [ary[1], ary[2]], 'rejectBy(\'foo\', 3)\')');
+  assert.deepEqual(obj.rejectBy('foo', 3), [ary[1], ary[2]], 'rejectBy(\'foo\', 3)\')');
 });
 
-suite.test('should correctly reject null second argument', function() {
+suite.test('should correctly reject null second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -90,10 +90,10 @@ suite.test('should correctly reject null second argument', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectBy('foo', null), [ary[0], ary[3]], 'rejectBy(\'foo\', null)\')');
+  assert.deepEqual(obj.rejectBy('foo', null), [ary[0], ary[3]], 'rejectBy(\'foo\', null)\')');
 });
 
-suite.test('should correctly reject undefined second argument', function() {
+suite.test('should correctly reject undefined second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -103,10 +103,10 @@ suite.test('should correctly reject undefined second argument', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectBy('bar', undefined), [], 'rejectBy(\'bar\', undefined)\')');
+  assert.deepEqual(obj.rejectBy('bar', undefined), [], 'rejectBy(\'bar\', undefined)\')');
 });
 
-suite.test('should correctly reject explicit undefined second argument', function() {
+suite.test('should correctly reject explicit undefined second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -120,10 +120,10 @@ suite.test('should correctly reject explicit undefined second argument', functio
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectBy('foo', undefined), ary.slice(0, 2), 'rejectBy(\'foo\', undefined)\')');
+  assert.deepEqual(obj.rejectBy('foo', undefined), ary.slice(0, 2), 'rejectBy(\'foo\', undefined)\')');
 });
 
-suite.test('should match undefined, null, or false properties without second argument', function() {
+suite.test('should match undefined, null, or false properties without second argument', function(assert) {
   let obj, ary;
 
   ary = [
@@ -141,7 +141,7 @@ suite.test('should match undefined, null, or false properties without second arg
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectBy('foo'), ary.slice(2), 'rejectBy(\'foo\')\')');
+  assert.deepEqual(obj.rejectBy('foo'), ary.slice(2), 'rejectBy(\'foo\')\')');
 });
 
 export default suite;
