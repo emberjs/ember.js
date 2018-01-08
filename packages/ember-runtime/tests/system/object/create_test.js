@@ -1,5 +1,4 @@
 import {
-  meta,
   computed,
   Mixin,
   observer
@@ -49,22 +48,7 @@ if (MANDATORY_SETTER) {
   });
 }
 
-QUnit.test('allows bindings to be defined', function() {
-  let obj;
-
-  let deprecationMessage = /`Ember.Binding` is deprecated/;
-
-  expectDeprecation(() => {
-    obj = EmberObject.create({
-      foo: 'foo',
-      barBinding: 'foo'
-    });
-  }, deprecationMessage);
-
-  equal(obj.get('bar'), 'foo', 'The binding value is correct');
-});
-
-QUnit.test('calls setUnknownProperty if defined', function() {
+QUnit.test('calls setUnknownProperty if defined', function(assert) {
   let setUnknownPropertyCalled = false;
 
   let MyClass = EmberObject.extend({
@@ -128,10 +112,4 @@ QUnit.test('EmberObject.create can take undefined as a parameter', function() {
 QUnit.test('EmberObject.create can take null as a parameter', function() {
   let o = EmberObject.create(null);
   deepEqual(EmberObject.create(), o);
-});
-
-QUnit.test('EmberObject.create avoids allocating a binding map when not necessary', function() {
-  let o = EmberObject.create();
-  let m = meta(o);
-  ok(!m.peekBindings(), 'A binding map is not allocated');
 });
