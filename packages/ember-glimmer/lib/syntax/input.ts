@@ -1,12 +1,15 @@
 /**
 @module ember
 */
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 import { dynamicComponentMacro } from './dynamic-component';
 import { hashToArgs } from './utils';
+import { OpcodeBuilderDSL } from '@glimmer/runtime';
+import { unwrap } from '@glimmer/util';
 
-function buildSyntax(type: string, params: any[], hash: any, builder: any) {
+function buildSyntax(type: string, params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, builder: OpcodeBuilderDSL) {
   let definition = builder.env.getComponentDefinition(type, builder.meta.templateMeta);
   builder.component.static(definition, [params, hashToArgs(hash), null, null]);
   return true;
@@ -148,7 +151,7 @@ function buildSyntax(type: string, params: any[], hash: any, builder: any) {
   @public
 */
 
-export function inputMacro(_name: string, params: any[], hash: any[], builder: any) {
+export function inputMacro(_name: string, params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, builder: OpcodeBuilderDSL): boolean {
   let keys;
   let values;
   let typeIndex = -1;
@@ -164,7 +167,7 @@ export function inputMacro(_name: string, params: any[], hash: any[], builder: a
   if (!params) { params = []; }
 
   if (typeIndex > -1) {
-    let typeArg = values[typeIndex];
+    let typeArg = unwrap(values)[typeIndex];
     if (Array.isArray(typeArg)) {
       return dynamicComponentMacro(params, hash, null, null, builder);
     } else if (typeArg === 'checkbox') {
@@ -173,7 +176,7 @@ export function inputMacro(_name: string, params: any[], hash: any[], builder: a
           'you must use `checked=someBooleanValue` instead.',
         valueIndex === -1,
       );
-      wrapComponentClassAttribute(hash);
+      wrapComponentClassAttribute(unwrap(hash));
       return buildSyntax('-checkbox', params, hash, builder);
     }
   }

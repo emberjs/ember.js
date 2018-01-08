@@ -3,47 +3,57 @@ import {
   ConstReference,
   TagWrapper,
   UpdatableTag,
+  PathReference,
+  Tag,
 } from '@glimmer/reference';
 import {
   Arguments,
   VM,
+  OpcodeBuilderDSL,
+  ComponentArgs,
 } from '@glimmer/runtime';
+import * as WireFormat from '@glimmer/wire-format';
+import { Option, unwrap } from '@glimmer/util';
+
 import { OutletComponentDefinition } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
+import { OutletState } from '../views/outlet';
 
 class OutletComponentReference {
-  public outletNameRef: any;
-  public parentOutletStateRef: any;
-  public definition: any;
-  public lastState: any;
+  public outletNameRef: PathReference<string>;
+  public parentOutletStateRef: PathReference<Option<OutletState>>;
+  public definition: Option<OutletComponentDefinition>;
+  public lastState: Option<OutletState>;
   public outletStateTag: TagWrapper<UpdatableTag>;
-  public tag: any;
+  public tag: Tag;
 
-  constructor(outletNameRef: any, parentOutletStateRef: any) {
+  constructor(outletNameRef: PathReference<string>, parentOutletStateRef: PathReference<Option<OutletState>>) {
     this.outletNameRef = outletNameRef;
     this.parentOutletStateRef = parentOutletStateRef;
     this.definition = null;
     this.lastState = null;
     let outletStateTag = this.outletStateTag = UpdatableTag.create(parentOutletStateRef.tag);
-    this.tag = combine([outletStateTag.inner, outletNameRef.tag]);
+    this.tag = combine([outletStateTag, outletNameRef.tag]);
+  }
+
+  get(): never {
+    throw new Error('unexpected get on OutletComponentReference');
   }
 
   value() {
     let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
 
     let outletName = outletNameRef.value();
-    let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
+    let outletStateRef = parentOutletStateRef.get('outlets').get(outletName) as PathReference<Option<OutletState>>;
     let newState = this.lastState = outletStateRef.value();
 
     this.outletStateTag.inner.update(outletStateRef.tag);
 
     definition = revalidate(definition, lastState, newState);
 
-    let hasTemplate = newState && newState.render.template;
-
     if (definition) {
       return definition;
-    } else if (hasTemplate) {
+    } else if (newState && newState.render && newState.render.template) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
       return this.definition = null;
@@ -51,7 +61,7 @@ class OutletComponentReference {
   }
 }
 
-function revalidate(definition: any, lastState: any, newState: any) {
+function revalidate(definition: Option<OutletComponentDefinition>, lastState: Option<OutletState>, newState: Option<OutletState>): Option<OutletComponentDefinition> {
   if (!lastState && !newState) {
     return definition;
   }
@@ -60,14 +70,20 @@ function revalidate(definition: any, lastState: any, newState: any) {
     return null;
   }
 
-  if (
-    newState.render.template === lastState.render.template &&
-    newState.render.controller === lastState.render.controller
-  ) {
+  if (outletStatesEqual(unwrap(lastState), unwrap(newState))) {
     return definition;
   }
 
   return null;
+}
+
+function outletStatesEqual(lastState: OutletState, newState: OutletState): boolean {
+  if (!lastState.render || !newState.render) { return false; }
+
+  return (
+    newState.render.template === lastState.render.template &&
+    newState.render.controller === lastState.render.controller
+  );
 }
 
 function outletComponentFor(vm: VM, args: Arguments) {
@@ -133,12 +149,13 @@ function outletComponentFor(vm: VM, args: Arguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function outletMacro(_name: string, params: any[], _hash: any[], builder: any) {
+export function outletMacro(_name: string, params: Option<WireFormat.Core.Params>, _hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilderDSL) {
   if (!params) {
     params = [];
   }
-  let definitionArgs = [params.slice(0, 1), null, null, null];
-  let emptyArgs = [[], null, null, null]; // FIXME
+
+  let definitionArgs: ComponentArgs = [params.slice(0,1), null, null, null];
+  let emptyArgs: ComponentArgs = [[], null, null, null]; // FIXME
   builder.component.dynamic(definitionArgs, outletComponentFor, emptyArgs);
   return true;
 }

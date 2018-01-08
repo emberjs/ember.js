@@ -3,19 +3,24 @@
 */
 import {
   Arguments,
-  VM
+  VM,
+  OpcodeBuilderDSL,
+  ComponentArgs
 } from '@glimmer/runtime';
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import Environment from '../environment';
 import { MountDefinition } from '../component-managers/mount';
 import { hashToArgs } from './utils';
+import { Option } from '@glimmer/util';
+import { Tag, PathReference } from '@glimmer/reference';
 
-function dynamicEngineFor(vm: VM, args: Arguments, meta: any) {
-  let env     = vm.env;
-  let nameRef = args.positional.at(0);
+function dynamicEngineFor(vm: VM, args: Arguments) {
+  let env     = vm.env as Environment;
+  let nameRef = args.positional.at(0) as PathReference<string>;
 
-  return new DynamicEngineReference({ nameRef, env, meta });
+  return new DynamicEngineReference({ nameRef, env });
 }
 
 /**
@@ -59,7 +64,7 @@ function dynamicEngineFor(vm: VM, args: Arguments, meta: any) {
   @category ember-application-engines
   @public
 */
-export function mountMacro(_name: string, params: any[], hash: any, builder: any) {
+export function mountMacro(_name: string, params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, builder: OpcodeBuilderDSL) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
@@ -72,30 +77,32 @@ export function mountMacro(_name: string, params: any[], hash: any, builder: any
     );
   }
 
-  let definitionArgs = [params.slice(0, 1), null, null, null];
-  let args = [null, hashToArgs(hash), null, null];
+  let definitionArgs: ComponentArgs = [params.slice(0, 1), null, null, null];
+  let args: ComponentArgs = [[], hashToArgs(hash), null, null];
   builder.component.dynamic(definitionArgs, dynamicEngineFor, args);
   return true;
 }
 
 class DynamicEngineReference {
-  public tag: any;
-  public nameRef: any;
+  public tag: Tag;
+  public nameRef: PathReference<string>;
   public env: Environment;
-  public meta: any;
-  private _lastName: any;
-  private _lastDef: any;
-  constructor({ nameRef, env, meta }: any) {
+  private _lastName: Option<string>;
+  private _lastDef: Option<MountDefinition>;
+  constructor({ nameRef, env }: { nameRef: PathReference<string>, env: Environment }) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
     this.env = env;
-    this.meta = meta;
-    this._lastName = undefined;
-    this._lastDef = undefined;
+    this._lastName = null;
+    this._lastDef = null;
+  }
+
+  get(): never {
+    throw new Error('unexpected get on DynamicEngineReference');
   }
 
   value() {
-    let { env, nameRef /*meta*/ } = this;
+    let { env, nameRef } = this;
     let nameOrDef = nameRef.value();
 
     if (typeof nameOrDef === 'string') {

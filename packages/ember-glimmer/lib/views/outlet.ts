@@ -62,7 +62,7 @@ class OrphanedOutletStateReference extends RootOutletStateReference {
     let state = Object.create(null);
     state[matched.render.outlet] = matched;
     matched.wasUsed = true;
-    return { outlets: state, render: undefined };
+    return { outlets: state, render: null };
   }
 }
 
@@ -100,7 +100,7 @@ export interface OutletState {
   outlets: {
     [name: string]: OutletState | undefined;
   };
-  render: RenderState | undefined;
+  render: Option<RenderState>;
 }
 
 export interface BootEnvironment {
