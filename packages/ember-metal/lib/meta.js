@@ -10,6 +10,7 @@ import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'embe
 import {
   removeChainWatcher
 } from './chains';
+import { ENV } from 'ember-environment';
 
 let counters;
 if (DEBUG) {
@@ -52,7 +53,9 @@ export class Meta {
 
     this._watching = undefined;
     this._mixins = undefined;
-    this._bindings = undefined;
+    if (ENV._ENABLE_BINDING_SUPPORT) {
+      this._bindings = undefined;
+    }
     this._values = undefined;
     this._deps = undefined;
     this._chainWatchers = undefined;
@@ -362,6 +365,7 @@ export class Meta {
   }
 
   writeBindings(subkey, value) {
+    assert('Cannot invoke `meta.writeBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
     assert(`Cannot add a binding for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_bindings');
@@ -369,10 +373,13 @@ export class Meta {
   }
 
   peekBindings(subkey) {
+    assert('Cannot invoke `meta.peekBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
     return this._findInherited('_bindings', subkey);
   }
 
   forEachBindings(fn) {
+    assert('Cannot invoke `meta.forEachBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
+
     let pointer = this;
     let seen;
     while (pointer !== undefined) {
@@ -391,6 +398,7 @@ export class Meta {
   }
 
   clearBindings() {
+    assert('Cannot invoke `meta.clearBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
     assert(`Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     this._bindings = undefined;
   }

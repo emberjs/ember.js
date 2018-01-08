@@ -22,7 +22,6 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
     rule on using capital letters for property paths.
   * Removed test passing context to addObserver.  context param is no longer
     supported.
-  * Changed calls to Ember.Binding.flushPendingChanges() -> run.sync()
   * removed test in observer around line 862 that expected key/value to be
     the last item in the chained path.  Should be root and chained path
 
@@ -152,24 +151,24 @@ moduleFor('Ember.get()', class extends AbstractTestCase {
 });
 
 moduleFor('Ember.get() with paths', class extends AbstractTestCase {
-  
+
   ['@test should return a property at a given path relative to the passed object'](assert) {
     var foo = ObservableObject.create({
       bar: ObservableObject.extend({
         baz: computed(function() { return 'blargh'; }).volatile()
       }).create()
     });
-  
+
     assert.equal(get(foo, 'bar.baz'), 'blargh');
   }
-  
+
   ['@test should return a property at a given path relative to the passed object - JavaScript hash'](assert) {
     var foo = {
       bar: {
         baz: 'blargh'
       }
     };
-  
+
     assert.equal(get(foo, 'bar.baz'), 'blargh');
   }
 });
@@ -508,45 +507,6 @@ moduleFor('Computed properties', class extends AbstractTestCase {
     assert.equal(depObj.get('menuPrice'), 6, 'cache is properly invalidated after nested property changes');
   }
 
-  ['@test nested dependent keys should propagate after they update'](assert) {
-    var bindObj;
-    run(function () {
-      lookup.DepObj = ObservableObject.extend({
-        price: computed(function() {
-          return this.get('restaurant.menu.price');
-        }).property('restaurant.menu.price')
-      }).create({
-        restaurant: ObservableObject.create({
-          menu: ObservableObject.create({
-            price: 5
-          })
-        })
-      });
-
-      expectDeprecation(() => {
-        bindObj = ObservableObject.extend({
-          priceBinding: 'DepObj.price'
-        }).create();
-      }, /`Ember.Binding` is deprecated/);
-    });
-
-    assert.equal(bindObj.get('price'), 5, 'precond - binding propagates');
-
-    run(function () {
-      lookup.DepObj.set('restaurant.menu.price', 10);
-    });
-
-    assert.equal(bindObj.get('price'), 10, 'binding propagates after a nested dependent keys updates');
-
-    run(function () {
-      lookup.DepObj.set('restaurant.menu', ObservableObject.create({
-        price: 15
-      }));
-    });
-
-    assert.equal(bindObj.get('price'), 15, 'binding propagates after a middle dependent keys updates');
-  }
-
   ['@test cacheable nested dependent keys should clear after their dependencies update'](assert) {
     assert.ok(true);
 
@@ -827,74 +787,5 @@ moduleFor('object.removeObserver()', class extends AbstractTestCase {
       encounteredError = true;
     }
     assert.equal(encounteredError, false);
-  }
-});
-
-
-moduleFor('Bind function', class extends AbstractTestCase {
-  beforeEach() {
-    objectA = ObservableObject.create({
-      name: 'Sproutcore',
-      location: 'Timbaktu'
-    });
-
-    objectB = ObservableObject.create({
-      normal: 'value',
-      computed() {
-        this.normal = 'newValue';
-      }
-    });
-
-    lookup = context.lookup = {
-      'Namespace': {
-        objectA: objectA,
-        objectB: objectB
-      }
-    };
-  }
-
-  afterEach() {
-    context.lookup = originalLookup;
-  }
-
-  ['@test should bind property with method parameter as undefined'](assert) {
-    // creating binding
-    run(function() {
-      expectDeprecation(() => {
-        objectA.bind('name', 'Namespace.objectB.normal', undefined);
-      }, /`Ember.Binding` is deprecated/);
-    });
-
-    // now make a change to see if the binding triggers.
-    run(function() {
-      objectB.set('normal', 'changedValue');
-    });
-
-    // support new-style bindings if available
-    assert.equal('changedValue', objectA.get('name'), 'objectA.name is bound');
-  }
-
-  // ..........................................................
-  // SPECIAL CASES
-  //
-
-  ['@test changing chained observer object to null should not raise exception'](assert) {
-    var obj = ObservableObject.create({
-      foo: ObservableObject.create({
-        bar: ObservableObject.create({ bat: 'BAT' })
-      })
-    });
-
-    var callCount = 0;
-    obj.foo.addObserver('bar.bat', obj, function() {
-      callCount++;
-    });
-
-    run(function() {
-      obj.foo.set('bar', null);
-    });
-
-    assert.equal(callCount, 1, 'changing bar should trigger observer');
-    assert.expect(1);
   }
 });

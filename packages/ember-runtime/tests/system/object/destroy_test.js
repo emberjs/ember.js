@@ -2,7 +2,6 @@ import {
   run,
   observer,
   set,
-  bind,
   beginPropertyChanges,
   endPropertyChanges,
   peekMeta
@@ -140,32 +139,4 @@ QUnit.test('destroyed objects should not see each others changes during teardown
 
   assert.equal(shouldNotChange, 0, 'destroyed graph objs should not see change in willDestroy');
   assert.equal(shouldChange, 1, 'long lived should see change in willDestroy');
-});
-
-QUnit.test('bindings should be synced when are updated in the willDestroy hook', function(assert) {
-  let bar = EmberObject.create({
-    value: false,
-    willDestroy() {
-      this.set('value', true);
-    }
-  });
-
-  let foo = EmberObject.create({
-    value: null,
-    bar: bar
-  });
-
-  run(() => {
-    let deprecationMessage = /`Ember.Binding` is deprecated/;
-
-    expectDeprecation(() => {
-      bind(foo, 'value', 'bar.value');
-    }, deprecationMessage);
-  });
-
-  assert.ok(bar.get('value') === false, 'the initial value has been bound');
-
-  run(() => bar.destroy());
-
-  assert.ok(foo.get('value'), 'foo is synced when the binding is updated in the willDestroy hook');
 });
