@@ -3,7 +3,7 @@
     "features-stripped-test": null,
     "ember-libraries-isregistered": null,
     "ember-improved-instrumentation": null,
-    "ember-glimmer-named-arguments": null,
+    "ember-glimmer-named-arguments": true,
     "ember-glimmer-remove-application-template-wrapper": null,
     "ember-glimmer-template-only-components": null,
     "ember-metal-es5-getters": null,
