@@ -212,7 +212,7 @@ class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
   }
 }
 
-class ColonClassNameBindingReference extends CachedReference<Option<string>> {
+export class ColonClassNameBindingReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
   constructor(private inner: Reference<Opaque>,

@@ -34,6 +34,7 @@ import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart, get,
 } from 'ember-metal';
+import { String as StringUtils } from 'ember-runtime';
 import {
   getOwner,
   guidFor,
@@ -59,7 +60,8 @@ import {
   AttributeBinding,
   ClassNameBinding,
   IsVisibleBinding,
-  referenceForKey
+  referenceForKey,
+  ColonClassNameBindingReference
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
@@ -382,7 +384,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return component[ROOT_REF];
   }
 
-  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: HTMLElement, operations: ElementOperations): void {
+  didCreateElement({ args, component, classRef, environment }: ComponentStateBucket, element: HTMLElement, operations: ElementOperations): void {
     setViewElement(component, element);
 
     let { attributeBindings, classNames, classNameBindings } = component;
@@ -399,7 +401,10 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     if (classRef && classRef.value()) {
-      operations.setAttribute('class', classRef as any, false, null);
+      const ref = classRef.value() === true ?
+                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(args!.tag.inner!.key), null) :
+                         classRef;
+      operations.setAttribute('class', ref, false, null);
     }
 
     if (classNames && classNames.length) {

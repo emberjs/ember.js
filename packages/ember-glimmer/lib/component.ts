@@ -1,4 +1,8 @@
 import { DirtyableTag } from '@glimmer/reference';
+import {
+  normalizeProperty,
+  SVG_NAMESPACE
+} from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import {
   get,
@@ -652,7 +656,17 @@ const Component = CoreView.extend(
     readDOMAttr(name: string) {
       // TODO revisit this
       let element = getViewElement(this) as HTMLElement;
-      return element && element.getAttribute(name);
+      let isSVG = element.namespaceURI === SVG_NAMESPACE;
+      let { type, normalized } = normalizeProperty(element, name);
+
+      if (isSVG) {
+        return element.getAttribute(normalized);
+      }
+
+      if (type === 'attr') {
+        return element.getAttribute(normalized);
+      }
+      return element[normalized];
     },
 
     /**
