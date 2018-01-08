@@ -698,11 +698,11 @@ export function collect(...dependentKeys) {
   ```javascript
   let ToDoList = Ember.Object.extend({
     // using standard ascending sort
-    todosSorting: ['name'],
+    todosSorting: Object.freeze(['name']),
     sortedTodos: Ember.computed.sort('todos', 'todosSorting'),
 
     // using descending sort
-    todosSortingDesc: ['name:desc'],
+    todosSortingDesc: Object.freeze(['name:desc']),
     sortedTodosDesc: Ember.computed.sort('todos', 'todosSortingDesc'),
 
     // using a custom sort function
