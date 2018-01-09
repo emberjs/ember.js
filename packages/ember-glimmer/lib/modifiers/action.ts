@@ -116,6 +116,7 @@ export class ActionState {
     let preventDefault = namedArgs.get('preventDefault');
     let allowedKeys = namedArgs.get('allowedKeys');
     let target = this.getTarget();
+    let shouldBubble = bubbles.value() !== false;
 
     if (!isAllowedEvent(event, allowedKeys.value())) {
       return true;
@@ -125,7 +126,7 @@ export class ActionState {
       event.preventDefault();
     }
 
-    if (bubbles.value() === false) {
+    if (!shouldBubble) {
       event.stopPropagation();
     }
 
@@ -163,7 +164,8 @@ export class ActionState {
         });
       }
     });
-    return false;
+
+    return shouldBubble;
   }
 
   destroy() {
