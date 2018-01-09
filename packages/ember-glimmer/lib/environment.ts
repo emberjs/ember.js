@@ -1,13 +1,11 @@
 import {
-  Simple,
-} from '@glimmer/interfaces';
-import {
   Reference,
 } from '@glimmer/reference';
 import {
   DynamicAttributeFactory,
   Environment as GlimmerEnvironment,
   PrimitiveReference,
+  SafeString
 } from '@glimmer/runtime';
 import {
   Destroyable, Opaque,
@@ -35,6 +33,10 @@ import {
   // GLIMMER_CUSTOM_COMPONENT_MANAGER,
 } from 'ember/features';
 import { OwnedTemplate } from './template';
+
+function isSafeString(value: Opaque): value is SafeString {
+  return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
+}
 
 export interface CompilerFactory {
   id: string;
@@ -217,7 +219,10 @@ export default class Environment extends GlimmerEnvironment {
 
 if (DEBUG) {
   class StyleAttributeManager implements DynamicAttributeFactory {
-    setAttribute(_dom: Environment, _element: Simple.Element, value: Opaque) {
+
+    constructor() { }
+
+    set(_dom: Environment, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
@@ -226,7 +231,7 @@ if (DEBUG) {
       })(), { id: 'ember-htmlbars.style-xss-warning' });
     }
 
-    updateAttribute(_dom: Environment, _element: Element, value: Opaque) {
+    update(_dom: Environment, value: Opaque) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
@@ -236,12 +241,11 @@ if (DEBUG) {
     }
   }
 
-  // let STYLE_ATTRIBUTE_MANANGER = new StyleAttributeManager();
 
   Environment.prototype.attributeFor = function (element, attribute, isTrusting) {
-    // if (attribute === 'style' && !isTrusting) {
-    //   return STYLE_ATTRIBUTE_MANANGER;
-    // }
+    if (attribute === 'style' && !isTrusting) {
+      return StyleAttributeManager;
+    }
 
     return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
   };
