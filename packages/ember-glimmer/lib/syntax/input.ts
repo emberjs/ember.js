@@ -7,12 +7,11 @@ import {
 } from '@glimmer/opcode-compiler';
 import { assert } from 'ember-debug';
 import { wrapComponentClassAttribute } from '../utils/bindings';
-import { dynamicComponentMacro } from './dynamic-component';
 import { hashToArgs } from './utils';
 
 function buildSyntax(type: string, params: any[], hash: any, builder: LazyOpcodeBuilder<TemplateMeta>) {
   let definition = builder.resolver.lookupComponentDefinition(type, builder.referrer);
-  builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+  builder.component.static(definition!, [params, hashToArgs(hash), null, null]);
   return true;
 }
 
@@ -170,7 +169,8 @@ export function inputMacro(_name: string, params: any[], hash: any[], builder: a
   if (typeIndex > -1) {
     let typeArg = values[typeIndex];
     if (Array.isArray(typeArg)) {
-      return dynamicComponentMacro(params, hash, null, null, builder);
+      throw new Error('TODO convert to component invoke');
+      // return dynamicComponentMacro(params, hash, null, null, builder);
     } else if (typeArg === 'checkbox') {
       assert(
         '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +

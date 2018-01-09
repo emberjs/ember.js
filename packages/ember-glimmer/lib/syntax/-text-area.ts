@@ -8,6 +8,6 @@ import { hashToArgs } from './utils';
 export function textAreaMacro(_name: string, params: any[], hash: any, builder: LazyOpcodeBuilder<TemplateMeta>) {
   let definition = builder.resolver.lookupComponentDefinition('-text-area', builder.referrer);
   wrapComponentClassAttribute(hash);
-  builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+  builder.component.static(definition!, [params, hashToArgs(hash), null, null]);
   return true;
 }
