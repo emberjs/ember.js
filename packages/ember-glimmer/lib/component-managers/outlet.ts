@@ -26,6 +26,7 @@ import RuntimeResolver from '../resolver';
 import {
   OwnedTemplate,
 } from '../template';
+import { RootReference } from '../utils/references';
 import { default as OutletView, OutletState } from '../views/outlet';
 import AbstractManager from './abstract';
 
@@ -96,7 +97,12 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
   }
 
   getSelf({ outletState }: OutletInstanceState) {
-    return outletState.get('render').get('controller');
+    // RootReference initializes the object dirtyable tag state
+    // basically the entry point from Ember to Glimmer.
+    // So even though outletState is a path reference, it is not
+    // the correct Tag to support self here.
+    const { render } = outletState.value();
+    return new RootReference(render!.controller);
   }
 
   getTag({ outletState }: OutletInstanceState): Tag {
