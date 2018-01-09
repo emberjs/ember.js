@@ -24,7 +24,6 @@ import {
   Mixin,
   REQUIRED,
   defineProperty,
-  Binding,
   ComputedProperty,
   computed,
   InjectedProperty,
@@ -493,12 +492,6 @@ CoreObject.PrototypeMixin = Mixin.create({
     if (m.isSourceDestroyed()) { return; }
     deleteMeta(this);
     m.setSourceDestroyed();
-  },
-
-  bind(to, from) {
-    if (!(from instanceof Binding)) { from = Binding.from(from); }
-    from.to(to).connect(this);
-    return from;
   },
 
   /**
