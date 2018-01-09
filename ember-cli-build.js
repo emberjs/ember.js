@@ -60,7 +60,9 @@ module.exports = function(_options) {
   } else {
     matrix = [
       ['amd', 'es5'],
-      ['commonjs', 'es5']
+      ['commonjs', 'es5'],
+      ['modules', 'es2017'],
+      ['types']
     ];
   }
 
