@@ -2,10 +2,11 @@ import {
   Reference,
 } from '@glimmer/reference';
 import {
-  DynamicAttributeFactory,
+  ElementBuilder,
   Environment as GlimmerEnvironment,
   PrimitiveReference,
-  SafeString
+  SafeString,
+  SimpleDynamicAttribute
 } from '@glimmer/runtime';
 import {
   Destroyable, Opaque,
@@ -218,29 +219,30 @@ export default class Environment extends GlimmerEnvironment {
 }
 
 if (DEBUG) {
-  class StyleAttributeManager implements DynamicAttributeFactory {
+  class StyleAttributeManager extends SimpleDynamicAttribute {
 
-    constructor() { }
-
-    set(_dom: Environment, value: Opaque) {
+    set(dom: ElementBuilder, value: Opaque, _env: GlimmerEnvironment) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
+
+      super.set(dom, value, _env);
     }
 
-    update(_dom: Environment, value: Opaque) {
+    update(value: Opaque, _env: GlimmerEnvironment) {
       warn(constructStyleDeprecationMessage(value), (() => {
         if (value === null || value === undefined || isSafeString(value)) {
           return true;
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
+
+      super.update(value, _env);
     }
   }
-
 
   Environment.prototype.attributeFor = function (element, attribute, isTrusting) {
     if (attribute === 'style' && !isTrusting) {
