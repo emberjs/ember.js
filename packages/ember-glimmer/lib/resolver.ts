@@ -15,6 +15,7 @@ import {
   PartialDefinition
 } from '@glimmer/runtime';
 import { privatize as P } from 'container';
+import { _instrumentStart } from 'ember-metal';
 import { LookupOptions } from 'ember-utils';
 import {
   lookupComponent,
@@ -48,6 +49,10 @@ import ActionModifierManager from './modifiers/action';
 import { populateMacros } from './syntax';
 import { OwnedTemplate } from './template';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
+
+function instrumentationPayload(name: string) {
+  return { object: `component:${name}` };
+}
 
 function makeOptions(moduleName: string) {
   return moduleName !== undefined ? { source: `template:${moduleName}`} : undefined;
@@ -232,8 +237,18 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       }
     }
 
+    let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let layoutHandle = this.handle(layout) as Option<VMHandle>;
+    let definition = (layout || component) ?
+      new CurlyComponentDefinition(
+        name,
+        customManager,
+        component || meta.owner.factoryFor(P`component:-default`),
+        layoutHandle,
+        layout
+      ) : null;
 
-    return (layout || component) ? new CurlyComponentDefinition(name, customManager, component || meta.owner.factoryFor(P`component:-default`), layoutHandle, layout) : null;
+    finalizer();
+    return definition;
   }
 }

@@ -59,9 +59,9 @@ import {
 import {
   AttributeBinding,
   ClassNameBinding,
+  ColonClassNameBindingReference,
   IsVisibleBinding,
-  referenceForKey,
-  ColonClassNameBindingReference
+  referenceForKey
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
