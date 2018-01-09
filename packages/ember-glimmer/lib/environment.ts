@@ -5,8 +5,7 @@ import {
   ElementBuilder,
   Environment as GlimmerEnvironment,
   PrimitiveReference,
-  SafeString,
-  SimpleDynamicAttribute
+  SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import {
   Destroyable, Opaque,
@@ -25,6 +24,7 @@ import {
   RootPropertyReference,
   UpdatableReference,
 } from './utils/references';
+import { isHTMLSafe } from './utils/string';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
@@ -34,10 +34,6 @@ import {
   // GLIMMER_CUSTOM_COMPONENT_MANAGER,
 } from 'ember/features';
 import { OwnedTemplate } from './template';
-
-function isSafeString(value: Opaque): value is SafeString {
-  return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
-}
 
 export interface CompilerFactory {
   id: string;
@@ -220,35 +216,31 @@ export default class Environment extends GlimmerEnvironment {
 
 if (DEBUG) {
   class StyleAttributeManager extends SimpleDynamicAttribute {
-
-    set(dom: ElementBuilder, value: Opaque, _env: GlimmerEnvironment) {
+    set(dom: ElementBuilder, value: Opaque, env: GlimmerEnvironment): void {
       warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isSafeString(value)) {
+        if (value === null || value === undefined || isHTMLSafe(value)) {
           return true;
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-
-      super.set(dom, value, _env);
+      super.set(dom, value, env);
     }
-
-    update(value: Opaque, _env: GlimmerEnvironment) {
+    update(value: Opaque, env: GlimmerEnvironment): void {
       warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isSafeString(value)) {
+        if (value === null || value === undefined || isHTMLSafe(value)) {
           return true;
         }
         return false;
       })(), { id: 'ember-htmlbars.style-xss-warning' });
-
-      super.update(value, _env);
+      super.update(value, env);
     }
   }
 
-  Environment.prototype.attributeFor = function (element, attribute, isTrusting) {
+  Environment.prototype.attributeFor = function (element, attribute: string, isTrusting: boolean, _namespace?) {
     if (attribute === 'style' && !isTrusting) {
       return StyleAttributeManager;
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting);
+    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting, _namespace);
   };
 }

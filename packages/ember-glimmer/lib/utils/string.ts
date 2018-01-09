@@ -101,6 +101,6 @@ export function htmlSafe(str: string) {
   @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
   @public
 */
-export function isHTMLSafe(str: string | SafeString): str is SafeString {
+export function isHTMLSafe(str: any | null | undefined): str is SafeString {
   return str !== null && typeof str === 'object' && typeof str.toHTML === 'function';
 }
