@@ -2,7 +2,6 @@ import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
-  ComponentDefinition,
   CurriedComponentDefinition,
   curry,
   DynamicScope as GlimmerDynamicScope,
@@ -30,7 +29,7 @@ import { RootComponentDefinition } from './component-managers/root';
 import Environment from './environment';
 import { OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
-import { RootReference } from './utils/references';
+import { UnboundReference } from './utils/references';
 import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
 
 const { backburner } = run;
@@ -70,7 +69,7 @@ export class DynamicScope implements GlimmerDynamicScope {
 class RootState {
   public id: string;
   public env: Environment;
-  public root: Opaque;
+  public root: Component | OutletView;
   public result: RenderResult | undefined;
   public shouldReflush: boolean;
   public destroyed: boolean;
@@ -80,7 +79,7 @@ class RootState {
   public render: () => void;
 
   constructor(
-    root: Opaque,
+    root: Component | OutletView,
     env: Environment,
     template: OwnedTemplate,
     self: VersionedPathReference<Opaque>,
@@ -129,7 +128,7 @@ class RootState {
     this.destroyed = true;
 
     this.env = undefined as any;
-    this.root = null;
+    this.root = null as any;
     this.result = undefined;
     this.render = undefined as any;
 
@@ -281,11 +280,11 @@ export abstract class Renderer {
   }
 
   _appendDefinition(
-    root: Opaque,
-    definition: ComponentDefinition<Opaque> | CurriedComponentDefinition,
+    root: OutletView | Component,
+    definition: CurriedComponentDefinition,
     target: Simple.Element,
     outletStateReference?: RootOutletStateReference) {
-    let self = new RootReference(definition);
+    let self = new UnboundReference(definition);
     let dynamicScope = new DynamicScope(null, outletStateReference || NULL_REFERENCE, outletStateReference);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
 
@@ -296,13 +295,13 @@ export abstract class Renderer {
     this._scheduleRevalidate();
   }
 
-  register(view: Opaque) {
+  register(view: any) {
     let id = getViewId(view);
     assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
     this._viewRegistry[id] = view;
   }
 
-  unregister(view: Opaque) {
+  unregister(view: any) {
     delete this._viewRegistry[getViewId(view)];
   }
 

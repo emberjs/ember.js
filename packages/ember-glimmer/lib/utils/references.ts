@@ -444,8 +444,8 @@ export class InternalHelperReference extends CachedReference {
 }
 
 // @implements PathReference
-export class UnboundReference extends ConstReference<any> {
-  static create(value: any) {
+export class UnboundReference<T> extends ConstReference<T> {
+  static create<T>(value: T) {
     if (typeof value === 'object' && value !== null) {
       return new UnboundReference(value);
     } else {
