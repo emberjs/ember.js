@@ -2,7 +2,7 @@ import { assert } from 'ember-debug';
 import { EMBER_GLIMMER_NAMED_ARGUMENTS } from 'ember/features';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
-const RESERVED = ['@arguments', '@args'];
+const RESERVED = ['@arguments', '@args', '@block', '@else'];
 
 let isReserved, assertMessage;
 

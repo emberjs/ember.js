@@ -23,6 +23,7 @@ import {
   getViewId,
   setViewElement,
 } from 'ember-views';
+import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
@@ -186,6 +187,39 @@ function loopBegin(): void {
 
 function K() { /* noop */ }
 
+let renderSettledDeferred: RSVP.Deferred<void> | null = null;
+/*
+  Returns a promise which will resolve when rendering has settled. Settled in
+  this context is defined as when all of the tags in use are "current" (e.g.
+  `renderers.every(r => r._isValid())`). When this is checked at the _end_ of
+  the run loop, this essentially guarantees that all rendering is completed.
+
+  @method renderSettled
+  @returns {Promise<void>} a promise which fulfills when rendering has settled
+*/
+export function renderSettled() {
+  if (renderSettledDeferred === null) {
+    renderSettledDeferred = RSVP.defer();
+    // if there is no current runloop, the promise created above will not have
+    // a chance to resolve (because its resolved in backburner's "end" event)
+    if (!run.currentRunLoop) {
+      // ensure a runloop has been kicked off
+      backburner.schedule('actions', null, K);
+    }
+  }
+
+  return renderSettledDeferred.promise;
+}
+
+function resolveRenderPromise() {
+  if (renderSettledDeferred !== null) {
+    let resolve = renderSettledDeferred.resolve;
+    renderSettledDeferred = null;
+
+    backburner.join(null, resolve);
+  }
+}
+
 let loops = 0;
 function loopEnd() {
   for (let i = 0; i < renderers.length; i++) {
@@ -201,6 +235,7 @@ function loopEnd() {
     }
   }
   loops = 0;
+  resolveRenderPromise();
 }
 
 backburner.on('begin', loopBegin);

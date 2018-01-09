@@ -70,6 +70,7 @@
     "@glimmer/reference": "^0.30.2",
     "@glimmer/runtime": "^0.30.2",
     "@glimmer/vm": "^0.30.2",
+    "@types/rsvp": "^4.0.1",
     "aws-sdk": "^2.46.0",
     "babel-plugin-check-es2015-constants": "^6.22.0",
     "babel-plugin-debug-macros": "^0.1.10",

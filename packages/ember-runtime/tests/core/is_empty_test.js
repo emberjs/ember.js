@@ -1,11 +1,13 @@
 import { isEmpty } from 'ember-metal';
 import ArrayProxy from '../../system/array_proxy';
 import { A as emberA } from '../../system/native_array';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('Ember.isEmpty');
-
-QUnit.test('Ember.isEmpty', function(assert) {
-  let arrayProxy = ArrayProxy.create({ content: emberA() });
-
-  assert.equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
+moduleFor('Ember.isEmpty', class extends AbstractTestCase {
+  ['@test Ember.isEmpty'](assert) {
+    let arrayProxy = ArrayProxy.create({ content: emberA() });
+  
+    assert.equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
+  }
 });
+
