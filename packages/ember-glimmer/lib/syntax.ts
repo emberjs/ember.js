@@ -3,15 +3,15 @@ import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
 import { ENV } from 'ember-environment';
 import { OwnedTemplateMeta } from 'ember-views';
+import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
 import { textAreaMacro } from './syntax/-text-area';
 import { inputMacro } from './syntax/input';
+import { blockLetMacro } from './syntax/let';
 import { mountMacro } from './syntax/mount';
 import { outletMacro } from './syntax/outlet';
 import { renderMacro } from './syntax/render';
 import { hashToArgs } from './syntax/utils';
-import { blockLetMacro } from './syntax/let';
 import { wrapComponentClassAttribute } from './utils/bindings';
-import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
 
 function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Option<Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>): boolean {
   // assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.resolver.resolver.builtInHelpers[name] && builder.resolver.resolver.owner.hasRegistration(`helper:${name}`)));
@@ -70,14 +70,9 @@ export function populateMacros(macros: Macros) {
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
-<<<<<<< HEAD
-  // blocks.add('component', blockComponentMacro);
-=======
-  blocks.add('component', blockComponentMacro);
   if (EMBER_TEMPLATE_BLOCK_LET_HELPER === true) {
     blocks.add('let', blockLetMacro);
   }
->>>>>>> origin/master
   blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
