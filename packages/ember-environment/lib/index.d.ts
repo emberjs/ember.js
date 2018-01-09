@@ -11,5 +11,3 @@ export const environment: {
 export const ENV: {
   _ENABLE_RENDER_SUPPORT: boolean;
 };
-
-export const ENV: any;
