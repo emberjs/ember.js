@@ -1,4 +1,5 @@
 import { set, computed } from 'ember-metal';
+import { jQueryDisabled } from 'ember-views/system/jquery';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
@@ -78,60 +79,6 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(element2, { content: 'hello' });
 
     this.assertSameNode(element2, element1);
-  }
-
-  ['@test it has a jQuery proxy to the element']() {
-    let instance;
-
-    let FooBarComponent = Component.extend({
-      init() {
-        this._super();
-        instance = this;
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
-
-    this.render('{{component "foo-bar"}}');
-
-    let element1 = instance.$()[0];
-
-    this.assertComponentElement(element1, { content: 'hello' });
-
-    this.runTask(() => this.rerender());
-
-    let element2 = instance.$()[0];
-
-    this.assertComponentElement(element2, { content: 'hello' });
-
-    this.assertSameNode(element2, element1);
-  }
-
-  ['@test it scopes the jQuery proxy to the component element'](assert) {
-    let instance;
-
-    let FooBarComponent = Component.extend({
-      init() {
-        this._super();
-        instance = this;
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
-
-    this.render('<span class="outer">outer</span>{{component "foo-bar"}}');
-
-    let $span = instance.$('span');
-
-    assert.equal($span.length, 1);
-    assert.equal($span.attr('class'), 'inner');
-
-    this.runTask(() => this.rerender());
-
-    $span = instance.$('span');
-
-    assert.equal($span.length, 1);
-    assert.equal($span.attr('class'), 'inner');
   }
 
   ['@test it has the right parentView and childViews'](assert) {
@@ -734,3 +681,82 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     }, expectedBacktrackingMessage);
   }
 });
+
+if (jQueryDisabled) {
+  moduleFor('Components test: dynamic components: jQuery disabled', class extends RenderingTest {
+    ['@test jQuery proxy is not available without jQuery']() {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+      this.render('{{component "foo-bar"}}');
+
+      expectAssertion(() => {
+        instance.$()[0];
+      }, 'You cannot access this.$() with `jQuery` disabled.');
+    }
+  });
+} else {
+  moduleFor('Components test: dynamic components : jQuery enabled', class extends RenderingTest {
+    ['@test it has a jQuery proxy to the element']() {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+      this.render('{{component "foo-bar"}}');
+
+      let element1 = instance.$()[0];
+
+      this.assertComponentElement(element1, { content: 'hello' });
+
+      this.runTask(() => this.rerender());
+
+      let element2 = instance.$()[0];
+
+      this.assertComponentElement(element2, { content: 'hello' });
+
+      this.assertSameNode(element2, element1);
+    }
+
+    ['@test it scopes the jQuery proxy to the component element'](assert) {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
+
+      this.render('<span class="outer">outer</span>{{component "foo-bar"}}');
+
+      let $span = instance.$('span');
+
+      assert.equal($span.length, 1);
+      assert.equal($span.attr('class'), 'inner');
+
+      this.runTask(() => this.rerender());
+
+      $span = instance.$('span');
+
+      assert.equal($span.length, 1);
+      assert.equal($span.attr('class'), 'inner');
+    }
+  });
+}
