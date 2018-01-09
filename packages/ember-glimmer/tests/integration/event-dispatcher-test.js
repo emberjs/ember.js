@@ -6,7 +6,7 @@ import {
   run
 } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
-import { EventDispatcher } from 'ember-views';
+import { EventDispatcher, jQueryDisabled } from 'ember-views';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -89,33 +89,7 @@ moduleFor('EventDispatcher', class extends RenderingTest {
     this.runTask(() => this.$('#is-done').trigger('change'));
     assert.notOk(hasReceivedEvent, 'change event has not been received');
   }
-
-  ['@test dispatches to the nearest event manager'](assert) {
-    let receivedEvent;
-
-    this.registerComponent('x-foo', {
-      ComponentClass: Component.extend({
-        click() {
-          assert.notOk(true, 'should not trigger `click` on component');
-        },
-
-        eventManager: {
-          click(event) {
-            receivedEvent = event;
-          }
-        }
-      }),
-
-      template: `<input id="is-done" type="checkbox">`
-    });
-
-
-    expectDeprecation(/`eventManager` has been deprecated/);
-    this.render(`{{x-foo}}`);
-
-    this.runTask(() => this.$('#is-done').trigger('click'));
-    assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
-  }
+  
 
   ['@test event handlers are wrapped in a run loop'](assert) {
     this.registerComponent('x-foo', {
@@ -237,6 +211,38 @@ moduleFor('custom EventDispatcher subclass with #setup', class extends Rendering
     this.owner.lookup('event_dispatcher:main');
   }
 });
+
+// native event dispatcher doesn't support multiple event managers
+// because `canDispatchToEventManager` is deprecated long time ago
+if (!jQueryDisabled) {
+  moduleFor('EventDispatcher - jQuery only', class extends RenderingTest {
+    ['@test dispatches to the nearest event manager'](assert) {
+      let receivedEvent;
+
+      this.registerComponent('x-foo', {
+        ComponentClass: Component.extend({
+          click() {
+            assert.notOk(true, 'should not trigger `click` on component');
+          },
+
+          eventManager: {
+            click(event) {
+              receivedEvent = event;
+            }
+          }
+        }),
+
+        template: `<input id="is-done" type="checkbox">`
+      });
+
+      expectDeprecation(/`eventManager` has been deprecated/);
+      this.render(`{{x-foo}}`);
+
+      this.runTask(() => this.$('#is-done').trigger('click'));
+      assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
+    }
+  });
+}
 
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('EventDispatcher - Instrumentation', class extends RenderingTest {
