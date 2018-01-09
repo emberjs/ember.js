@@ -36,12 +36,12 @@ const {
   rollupEmberMetal
 } = require('./broccoli/packages');
 const SHOULD_ROLLUP = true;
+const ENV = process.env.EMBER_ENV || 'development';
 
 module.exports = function() {
   let loader = internalLoader();
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
-  let ENV = process.env.EMBER_ENV || 'development';
   let debugFeatures = toES5(emberFeaturesES());
   let version = toES5(emberVersionES());
   let emberTesting = emberPkgES('ember-testing');
@@ -310,11 +310,23 @@ module.exports = function() {
 };
 
 function dependenciesES6() {
+  let glimmerEntries = ['@glimmer/node', '@glimmer/runtime'];
+  if (ENV === 'development') {
+    let hasGlimmerDebug = true;
+    try {
+      require('@glimmer/debug');
+    } catch (e) {
+      hasGlimmerDebug = false;
+    }
+    if (hasGlimmerDebug) {
+      glimmerEntries.push('@glimmer/debug', '@glimmer/local-debug-flags');
+    }
+  }
   return [
     dagES(),
     routerES(),
     routeRecognizerES(),
-    ...glimmerTrees(['@glimmer/node', '@glimmer/runtime']),
+    ...glimmerTrees(glimmerEntries),
   ];
 }
 
