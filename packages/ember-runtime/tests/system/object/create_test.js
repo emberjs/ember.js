@@ -48,7 +48,7 @@ if (MANDATORY_SETTER) {
   });
 }
 
-QUnit.test('calls setUnknownProperty if defined', function(assert) {
+QUnit.test('calls setUnknownProperty if defined', function() {
   let setUnknownPropertyCalled = false;
 
   let MyClass = EmberObject.extend({
