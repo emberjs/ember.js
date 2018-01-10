@@ -35,54 +35,6 @@ QUnit.test('should update length for null content when there is a computed prope
   assert.equal(proxy.get('length'), 0, 'length updates');
 });
 
-QUnit.test('The `arrangedContentWillChange` method is invoked before `content` is changed.', function(assert) {
-  let callCount = 0;
-  let expectedLength;
-
-  let proxy = ArrayProxy.extend({
-    arrangedContentWillChange() {
-      assert.equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked before array has changed');
-      callCount++;
-    }
-  }).create({ content: emberA([1, 2, 3]) });
-
-  proxy.pushObject(4);
-  assert.equal(callCount, 0, 'pushing content onto the array doesn\'t trigger it');
-
-  proxy.get('content').pushObject(5);
-  assert.equal(callCount, 0, 'pushing content onto the content array doesn\'t trigger it');
-
-  expectedLength = 5;
-  proxy.set('content', emberA(['a', 'b']));
-  assert.equal(callCount, 1, 'replacing the content array triggers the hook');
-});
-
-QUnit.test('The `arrangedContentDidChange` method is invoked after `content` is changed.', function(assert) {
-  let callCount = 0;
-  let expectedLength;
-
-  let proxy = ArrayProxy.extend({
-    arrangedContentDidChange() {
-      assert.equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked after array has changed');
-      callCount++;
-    }
-  }).create({
-    content: emberA([1, 2, 3])
-  });
-
-  assert.equal(callCount, 0, 'hook is not called after creating the object');
-
-  proxy.pushObject(4);
-  assert.equal(callCount, 0, 'pushing content onto the array doesn\'t trigger it');
-
-  proxy.get('content').pushObject(5);
-  assert.equal(callCount, 0, 'pushing content onto the content array doesn\'t trigger it');
-
-  expectedLength = 2;
-  proxy.set('content', emberA(['a', 'b']));
-  assert.equal(callCount, 1, 'replacing the content array triggers the hook');
-});
-
 QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', function(assert) {
   let proxy1 = ArrayProxy.create();
   let proxy2 = ArrayProxy.create();
