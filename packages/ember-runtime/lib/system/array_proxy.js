@@ -27,8 +27,6 @@ import { assert, Error as EmberError } from 'ember-debug';
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
 
-function K() { return this; }
-
 
 /**
   An ArrayProxy wraps any other object that implements `Ember.Array` and/or
@@ -130,7 +128,6 @@ export default EmberObject.extend(MutableArray, {
     let len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
     this.arrangedContentArrayWillChange(this, 0, len, undefined);
-    this.arrangedContentWillChange(this);
 
     this._teardownArrangedContent(arrangedContent);
   }),
@@ -141,7 +138,6 @@ export default EmberObject.extend(MutableArray, {
 
     this._setupArrangedContent();
 
-    this.arrangedContentDidChange(this);
     this.arrangedContentArrayDidChange(this, 0, undefined, len);
   }),
 
@@ -170,9 +166,6 @@ export default EmberObject.extend(MutableArray, {
       });
     }
   },
-
-  arrangedContentWillChange: K,
-  arrangedContentDidChange: K,
 
   objectAt(idx) {
     return get(this, 'content') && this.objectAtContent(idx);

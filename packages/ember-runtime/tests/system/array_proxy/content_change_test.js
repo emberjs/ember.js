@@ -35,54 +35,6 @@ QUnit.test('should update length for null content when there is a computed prope
   equal(proxy.get('length'), 0, 'length updates');
 });
 
-QUnit.test('The `arrangedContentWillChange` method is invoked before `content` is changed.', function() {
-  let callCount = 0;
-  let expectedLength;
-
-  let proxy = ArrayProxy.extend({
-    arrangedContentWillChange() {
-      equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked before array has changed');
-      callCount++;
-    }
-  }).create({ content: emberA([1, 2, 3]) });
-
-  proxy.pushObject(4);
-  equal(callCount, 0, 'pushing content onto the array doesn\'t trigger it');
-
-  proxy.get('content').pushObject(5);
-  equal(callCount, 0, 'pushing content onto the content array doesn\'t trigger it');
-
-  expectedLength = 5;
-  proxy.set('content', emberA(['a', 'b']));
-  equal(callCount, 1, 'replacing the content array triggers the hook');
-});
-
-QUnit.test('The `arrangedContentDidChange` method is invoked after `content` is changed.', function() {
-  let callCount = 0;
-  let expectedLength;
-
-  let proxy = ArrayProxy.extend({
-    arrangedContentDidChange() {
-      equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked after array has changed');
-      callCount++;
-    }
-  }).create({
-    content: emberA([1, 2, 3])
-  });
-
-  equal(callCount, 0, 'hook is not called after creating the object');
-
-  proxy.pushObject(4);
-  equal(callCount, 0, 'pushing content onto the array doesn\'t trigger it');
-
-  proxy.get('content').pushObject(5);
-  equal(callCount, 0, 'pushing content onto the content array doesn\'t trigger it');
-
-  expectedLength = 2;
-  proxy.set('content', emberA(['a', 'b']));
-  equal(callCount, 1, 'replacing the content array triggers the hook');
-});
-
 QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', function() {
   let proxy1 = ArrayProxy.create();
   let proxy2 = ArrayProxy.create();
