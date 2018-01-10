@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import { OpcodeBuilder, CompilableBlock } from '@glimmer/opcode-compiler';
+import { CompilableBlock, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import * as WireFormat from '@glimmer/wire-format';
 import { OwnedTemplateMeta } from 'ember-views';
 
@@ -41,7 +41,7 @@ import { OwnedTemplateMeta } from 'ember-views';
   @for Ember.Templates.helpers
   @public
 */
-export function blockLetMacro(_name: string, params: WireFormat.Core.Params, _hash: WireFormat.Core.Hash, template: Option<CompilableBlock>, _inverse: Option<CompilableBlock>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+export function blockLetMacro(params: WireFormat.Core.Params, _hash: WireFormat.Core.Hash, template: Option<CompilableBlock>, _inverse: Option<CompilableBlock>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
   if (template !== null) {
     if (params !== null) {
       builder.compileParams(params);
