@@ -115,7 +115,8 @@ if (EMBER_METAL_ES5_GETTERS) {
           } else if (
             property === 'prototype' ||
             property === 'constructor' ||
-            property === 'nodeType'
+            property === 'nodeType' ||
+            property === 'window'
           ) {
             return undefined;
           } else if (
