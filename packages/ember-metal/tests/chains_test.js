@@ -9,49 +9,49 @@ import {
   peekMeta,
   meta
 } from '..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('Chains');
+moduleFor('Chains', class extends AbstractTestCase {
+  ['@test finishChains should properly copy chains from prototypes to instances'](assert) {
+    function didChange() {}
 
-QUnit.test('finishChains should properly copy chains from prototypes to instances', function(assert) {
-  function didChange() {}
+    let obj = {};
+    addObserver(obj, 'foo.bar', null, didChange);
 
-  let obj = {};
-  addObserver(obj, 'foo.bar', null, didChange);
+    let childObj = Object.create(obj);
 
-  let childObj = Object.create(obj);
+    let parentMeta = meta(obj);
+    let childMeta = meta(childObj);
 
-  let parentMeta = meta(obj);
-  let childMeta = meta(childObj);
+    finishChains(childMeta);
 
-  finishChains(childMeta);
+    assert.ok(parentMeta.readableChains() !== childMeta.readableChains(), 'The chains object is copied');
+  }
 
-  assert.ok(parentMeta.readableChains() !== childMeta.readableChains(), 'The chains object is copied');
-});
+  ['@test does not observe primitive values'](assert) {
+    let obj = {
+      foo: { bar: 'STRING' }
+    };
 
-QUnit.test('does not observe primitive values', function(assert) {
-  let obj = {
-    foo: { bar: 'STRING' }
-  };
-
-  addObserver(obj, 'foo.bar.baz', null, function() {});
-  let meta = peekMeta(obj);
-  assert.notOk(meta._object);
-});
+    addObserver(obj, 'foo.bar.baz', null, function() {});
+    let meta = peekMeta(obj);
+    assert.notOk(meta._object);
+  }
 
 
-QUnit.test('observer and CP chains', function(assert) {
-  let obj = { };
+  ['@test observer and CP chains'](assert) {
+    let obj = { };
 
-  defineProperty(obj, 'foo', computed('qux.[]', function() { }));
-  defineProperty(obj, 'qux', computed(function() { }));
+    defineProperty(obj, 'foo', computed('qux.[]', function() { }));
+    defineProperty(obj, 'qux', computed(function() { }));
 
-  // create DK chains
-  get(obj, 'foo');
+    // create DK chains
+    get(obj, 'foo');
 
-  // create observer chain
-  addObserver(obj, 'qux.length', function() { });
+    // create observer chain
+    addObserver(obj, 'qux.length', function() { });
 
-  /*
+    /*
              +-----+
              | qux |   root CP
              +-----+
@@ -62,14 +62,14 @@ QUnit.test('observer and CP chains', function(assert) {
      | length |    | [] |  chainWatchers
      +--------+    +----+
       observer       CP(foo, 'qux.[]')
-  */
+    */
 
-  // invalidate qux
-  propertyDidChange(obj, 'qux');
+    // invalidate qux
+    propertyDidChange(obj, 'qux');
 
-  // CP chain is blown away
+    // CP chain is blown away
 
-  /*
+    /*
              +-----+
              | qux |   root CP
              +-----+
@@ -80,19 +80,20 @@ QUnit.test('observer and CP chains', function(assert) {
      | length |    x [] x  chainWatchers
      +--------+    xxxxxx
       observer       CP(foo, 'qux.[]')
-  */
+    */
 
-  get(obj, 'qux'); // CP chain re-recreated
-  assert.ok(true, 'no crash');
-});
+    get(obj, 'qux'); // CP chain re-recreated
+    assert.ok(true, 'no crash');
+  }
 
-QUnit.test('checks cache correctly', function(assert) {
-  let obj = {};
-  let parentChainNode = new ChainNode(null, null, obj);
-  let chainNode = new ChainNode(parentChainNode, 'foo');
+  ['@test checks cache correctly'](assert) {
+    let obj = {};
+    let parentChainNode = new ChainNode(null, null, obj);
+    let chainNode = new ChainNode(parentChainNode, 'foo');
 
-  defineProperty(obj, 'foo', computed(function() { return undefined; }));
-  get(obj, 'foo');
+    defineProperty(obj, 'foo', computed(function() { return undefined; }));
+    get(obj, 'foo');
 
-  assert.strictEqual(chainNode.value(), undefined);
+    assert.strictEqual(chainNode.value(), undefined);
+  }
 });
