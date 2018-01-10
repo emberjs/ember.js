@@ -5,6 +5,17 @@ import {
 } from '@glimmer/runtime';
 import { InternalHelperReference } from '../utils/references';
 
+const isEmpty = (value: any): boolean => {
+  return value === null || value === undefined || typeof value.toString !== 'function';
+};
+
+const normalizeTextValue = (value: any): string => {
+  if (isEmpty(value)) {
+    return '';
+  }
+  return String(value);
+};
+
 /**
 @module ember
 */
@@ -26,7 +37,7 @@ import { InternalHelperReference } from '../utils/references';
   @since 1.13.0
 */
 function concat({ positional }: CapturedArguments) {
-  return positional.value().join('');
+  return positional.value().map(normalizeTextValue).join('');
 }
 
 export default function(_vm: VM, args: Arguments) {
