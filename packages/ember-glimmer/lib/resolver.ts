@@ -95,7 +95,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     return new this().templateOptions;
   }
 
-  private handles: any[] = [];
+  private handles: any[] = [undefined];
   private objToHandle = new WeakMap<any, number>();
 
   private builtInHelpers: {
