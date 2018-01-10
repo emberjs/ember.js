@@ -6,7 +6,6 @@ import {
   run
 } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
-import { EventDispatcher } from 'ember-views';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -90,68 +89,6 @@ moduleFor('EventDispatcher', class extends RenderingTest {
     assert.notOk(hasReceivedEvent, 'change event has not been received');
   }
 
-  ['@test dispatches to the nearest event manager'](assert) {
-    let receivedEvent;
-
-    this.registerComponent('x-foo', {
-      ComponentClass: Component.extend({
-        click() {
-          assert.notOk(true, 'should not trigger `click` on component');
-        },
-
-        eventManager: {
-          click(event) {
-            receivedEvent = event;
-          }
-        }
-      }),
-
-      template: `<input id="is-done" type="checkbox">`
-    });
-
-
-    expectDeprecation(/`eventManager` has been deprecated/);
-    this.render(`{{x-foo}}`);
-
-    this.runTask(() => this.$('#is-done').trigger('click'));
-    assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
-  }
-
-  ['@test event manager can re-dispatch to the component'](assert) {
-    let handlers = [];
-
-    this.registerComponent('x-foo', {
-      ComponentClass: Component.extend({
-        click() {
-          handlers.push('component');
-        },
-
-        eventManager: {
-          click(event, component) {
-            handlers.push('eventManager');
-            // Re-dispatch event when you get it.
-            //
-            // The second parameter tells the dispatcher
-            // that this event has been handled. This
-            // API will clearly need to be reworked since
-            // multiple eventManagers in a single view
-            // hierarchy would break, but it shows that
-            // re-dispatching works
-            component.$().trigger('click', this);
-          }
-        }
-      }),
-
-      template: `<input id="is-done" type="checkbox">`
-    });
-
-    expectDeprecation(/`eventManager` has been deprecated/);
-    this.render(`{{x-foo}}`);
-
-    this.runTask(() => this.$('#is-done').trigger('click'));
-    assert.deepEqual(handlers, ['eventManager', 'component']);
-  }
-
   ['@test event handlers are wrapped in a run loop'](assert) {
     this.registerComponent('x-foo', {
       ComponentClass: Component.extend({
@@ -195,20 +132,6 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.$('div').trigger('myevent');
   }
 
-  ['@test eventManager is deprecated']() {
-    this.registerComponent('x-foo', {
-      ComponentClass: Component.extend({
-        eventManager: {
-          myEvent() {}
-        }
-      }),
-      template: `<p>Hello!</p>`
-    });
-
-    expectDeprecation(/`eventManager` has been deprecated/);
-    this.render(`{{x-foo}}`);
-  }
-
   ['@test a rootElement can be specified'](assert) {
     this.$().append('<div id="app"></div>');
     this.dispatcher.setup({ myevent: 'myEvent' }, '#app');
@@ -248,27 +171,6 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     assert.throws(() => {
       this.dispatcher.setup({ myevent: 'myEvent' }, '#app');
     });
-  }
-});
-
-moduleFor('custom EventDispatcher subclass with #setup', class extends RenderingTest {
-  constructor() {
-    super();
-
-    let dispatcher = this.owner.lookup('event_dispatcher:main');
-    run(dispatcher, 'destroy');
-    this.owner.__container__.reset('event_dispatcher:main');
-    this.owner.unregister('event_dispatcher:main');
-  }
-
-  ['@test canDispatchToEventManager is deprecated in EventDispatcher']() {
-    let MyDispatcher = EventDispatcher.extend({
-      canDispatchToEventManager: null
-    });
-    this.owner.register('event_dispatcher:main', MyDispatcher);
-
-    expectDeprecation(/`canDispatchToEventManager` has been deprecated/);
-    this.owner.lookup('event_dispatcher:main');
   }
 });
 
