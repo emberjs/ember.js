@@ -44,6 +44,46 @@ if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
       }, `'@args' is reserved. ('baz/foo-bar' @ L1:C17) `);
     }
 
+    [`@test '@block' is reserved`]() {
+      expectAssertion(() => {
+        compile(`{{@block}}`, {
+          moduleName: 'baz/foo-bar'
+        });
+      }, `'@block' is reserved. ('baz/foo-bar' @ L1:C2) `);
+
+      expectAssertion(() => {
+        compile(`{{#if @block}}Yup{{/if}}`, {
+          moduleName: 'baz/foo-bar'
+        });
+      }, `'@block' is reserved. ('baz/foo-bar' @ L1:C6) `);
+
+      expectAssertion(() => {
+        compile(`{{input type=(if @block "bar" "baz")}}`, {
+          moduleName: 'baz/foo-bar'
+        });
+      }, `'@block' is reserved. ('baz/foo-bar' @ L1:C17) `);
+    }
+
+    [`@test '@else' is reserved`]() {
+      expectAssertion(() => {
+        compile(`{{@else}}`, {
+          moduleName: 'baz/foo-bar'
+        });
+      }, `'@else' is reserved. ('baz/foo-bar' @ L1:C2) `);
+
+      expectAssertion(() => {
+        compile(`{{#if @else}}Yup{{/if}}`, {
+          moduleName: 'baz/foo-bar'
+        });
+      }, `'@else' is reserved. ('baz/foo-bar' @ L1:C6) `);
+
+      expectAssertion(() => {
+        compile(`{{input type=(if @else "bar" "baz")}}`, {
+          moduleName: 'baz/foo-bar'
+        });
+      }, `'@else' is reserved. ('baz/foo-bar' @ L1:C17) `);
+    }
+
     // anything else that doesn't start with a lower case letter
     [`@test '@Arguments' is reserved`]() {
       expectAssertion(() => {

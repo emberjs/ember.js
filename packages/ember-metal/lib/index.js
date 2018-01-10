@@ -118,12 +118,7 @@ export {
   REQUIRED,
   hasUnprocessedMixins,
   clearUnprocessedMixins,
-  detectBinding
 } from './mixin';
-export {
-  Binding,
-  bind
-} from './binding';
 export {
   isGlobalPath
 } from './path_cache';

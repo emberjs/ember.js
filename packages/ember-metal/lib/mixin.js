@@ -25,7 +25,6 @@ import {
   defineProperty
 } from './properties';
 import { ComputedProperty } from './computed';
-import { Binding } from './binding';
 import {
   addObserver,
   removeObserver,
@@ -258,39 +257,6 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
   }
 }
 
-export function detectBinding(key) {
-  let length = key.length;
-
-  return length > 7 && key.charCodeAt(length - 7) === 66 && key.indexOf('inding', length - 6) !== -1;
-}
-// warm both paths of above function
-detectBinding('notbound');
-detectBinding('fooBinding');
-
-function connectBindings(obj, meta) {
-  // TODO Mixin.apply(instance) should disconnect binding if exists
-  meta.forEachBindings((key, binding) => {
-    if (binding) {
-      let to = key.slice(0, -7); // strip Binding off end
-      if (binding instanceof Binding) {
-        binding = binding.copy(); // copy prototypes' instance
-        binding.to(to);
-      } else { // binding is string path
-        binding = new Binding(to, binding);
-      }
-      binding.connect(obj);
-      obj[key] = binding;
-    }
-  });
-  // mark as applied
-  meta.clearBindings();
-}
-
-function finishPartial(obj, meta) {
-  connectBindings(obj, meta === undefined ? metaFor(obj) : meta);
-  return obj;
-}
-
 function followAlias(obj, desc, descs, values) {
   let altKey = desc.methodName;
   let value;
@@ -372,15 +338,15 @@ function applyMixin(obj, mixins, partial) {
       replaceObserversAndListeners(obj, key, obj[key], value);
     }
 
-    if (detectBinding(key)) {
+    if (ENV._ENABLE_BINDING_SUPPORT && typeof Mixin.detectBinding === 'function' && Mixin.detectBinding(key)) {
       meta.writeBindings(key, value);
     }
 
     defineProperty(obj, key, desc, value, meta);
   }
 
-  if (!partial) { // don't apply to prototype
-    finishPartial(obj, meta);
+  if (ENV._ENABLE_BINDING_SUPPORT && !partial && typeof Mixin.finishProtype === 'function') {
+    Mixin.finishPartial(obj, meta);
   }
 
   return obj;
@@ -625,7 +591,12 @@ export default class Mixin {
 }
 
 Mixin._apply = applyMixin;
-Mixin.finishPartial = finishPartial;
+if (ENV._ENABLE_BINDING_SUPPORT) {
+  // slotting this so that the legacy addon can add the function here
+  // without triggering an error due to the Object.seal done below
+  Mixin.finishPartial = null;
+  Mixin.detectBinding = null;
+}
 
 let MixinPrototype = Mixin.prototype;
 MixinPrototype.toString = Object.toString;

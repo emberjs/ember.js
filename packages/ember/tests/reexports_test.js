@@ -113,8 +113,6 @@ let allExports =[
   ['observer', 'ember-metal'],
   ['mixin', 'ember-metal'],
   ['Mixin', 'ember-metal'],
-  ['bind', 'ember-metal'],
-  ['Binding', 'ember-metal'],
   ['isGlobalPath', 'ember-metal'],
 
   // ember-views

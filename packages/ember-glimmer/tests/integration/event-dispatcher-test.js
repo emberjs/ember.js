@@ -6,7 +6,7 @@ import {
   run
 } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
-import { EventDispatcher, jQueryDisabled } from 'ember-views';
+import { jQueryDisabled } from 'ember-views';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -89,7 +89,6 @@ moduleFor('EventDispatcher', class extends RenderingTest {
     this.runTask(() => this.$('#is-done').trigger('change'));
     assert.notOk(hasReceivedEvent, 'change event has not been received');
   }
-  
 
   ['@test event handlers are wrapped in a run loop'](assert) {
     this.registerComponent('x-foo', {
@@ -134,20 +133,6 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     this.$('div').trigger('myevent');
   }
 
-  ['@test eventManager is deprecated']() {
-    this.registerComponent('x-foo', {
-      ComponentClass: Component.extend({
-        eventManager: {
-          myEvent() {}
-        }
-      }),
-      template: `<p>Hello!</p>`
-    });
-
-    expectDeprecation(/`eventManager` has been deprecated/);
-    this.render(`{{x-foo}}`);
-  }
-
   ['@test a rootElement can be specified'](assert) {
     this.element.innerHTML = '<div id="app"></div>';
     // this.$().append('<div id="app"></div>');
@@ -190,59 +175,6 @@ moduleFor('EventDispatcher#setup', class extends RenderingTest {
     });
   }
 });
-
-moduleFor('custom EventDispatcher subclass with #setup', class extends RenderingTest {
-  constructor() {
-    super();
-
-    let dispatcher = this.owner.lookup('event_dispatcher:main');
-    run(dispatcher, 'destroy');
-    this.owner.__container__.reset('event_dispatcher:main');
-    this.owner.unregister('event_dispatcher:main');
-  }
-
-  ['@test canDispatchToEventManager is deprecated in EventDispatcher']() {
-    let MyDispatcher = EventDispatcher.extend({
-      canDispatchToEventManager: null
-    });
-    this.owner.register('event_dispatcher:main', MyDispatcher);
-
-    expectDeprecation(/`canDispatchToEventManager` has been deprecated/);
-    this.owner.lookup('event_dispatcher:main');
-  }
-});
-
-// native event dispatcher doesn't support multiple event managers
-// because `canDispatchToEventManager` is deprecated long time ago
-if (!jQueryDisabled) {
-  moduleFor('EventDispatcher - jQuery only', class extends RenderingTest {
-    ['@test dispatches to the nearest event manager'](assert) {
-      let receivedEvent;
-
-      this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
-          click() {
-            assert.notOk(true, 'should not trigger `click` on component');
-          },
-
-          eventManager: {
-            click(event) {
-              receivedEvent = event;
-            }
-          }
-        }),
-
-        template: `<input id="is-done" type="checkbox">`
-      });
-
-      expectDeprecation(/`eventManager` has been deprecated/);
-      this.render(`{{x-foo}}`);
-
-      this.runTask(() => this.$('#is-done').trigger('click'));
-      assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
-    }
-  });
-}
 
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('EventDispatcher - Instrumentation', class extends RenderingTest {

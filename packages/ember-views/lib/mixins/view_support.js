@@ -1,4 +1,4 @@
-import { guidFor, getOwner } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import { descriptor, descriptorFor, Mixin } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
 import { environment, ENV } from 'ember-environment';
@@ -414,27 +414,6 @@ export default Mixin.create({
 
     if (!this.elementId && this.tagName !== '') {
       this.elementId = guidFor(this);
-    }
-
-    // if we find an `eventManager` property, deopt the
-    // `EventDispatcher`'s `canDispatchToEventManager` property
-    // if `null`
-    if (this.eventManager) {
-      let owner = getOwner(this);
-      let dispatcher = owner && owner.lookup('event_dispatcher:main');
-
-      deprecate(
-        `\`eventManager\` has been deprecated in ${this}.`,
-        false,
-        {
-          id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-          until: '2.17.0'
-        }
-      );
-
-      if (dispatcher && !('canDispatchToEventManager' in dispatcher)) {
-        dispatcher.canDispatchToEventManager = true;
-      }
     }
 
     if (environment._ENABLE_DID_INIT_ATTRS_SUPPORT) {
