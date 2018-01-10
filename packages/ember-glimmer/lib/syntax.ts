@@ -15,7 +15,6 @@ import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 
 function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Option<Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>): boolean {
-  console.log('fail');
   assert(
     `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
     !(
@@ -54,7 +53,15 @@ function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, t
 
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
-    !builder.resolver.resolver.hasHelper(name, builder.referrer)
+    !(() => {
+      const { resolver } = builder.resolver;
+      const { owner, moduleName } = builder.referrer;
+      if (name === 'component' || resolver.builtInHelpers[name]) {
+        return true;
+      }
+      let options = { source: `template:${moduleName}` };
+      return owner.hasRegistration(`helper:${name}`, options) || owner.hasRegistration(`helper:${name}`);
+    })()
   );
 
   return false;

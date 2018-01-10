@@ -164,14 +164,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
   // end CompileTimeLookup
 
-  hasHelper(name: string, {owner, moduleName}: OwnedTemplateMeta): boolean {
-    if (name === 'component' || this.builtInHelpers[name]) {
-      return true;
-    }
-    let options = { source: `template:${moduleName}` };
-    return owner.hasRegistration(`helper:${name}`, options) || owner.hasRegistration(`helper:${name}`);
-  }
-
   // needed for latebound
   private handle(obj: any | null | undefined) {
     if (obj === undefined || obj === null) {
