@@ -74,7 +74,7 @@ export default EmberObject.extend(MutableArray, {
 
     @property content
     @type EmberArray
-    @private
+    @public
   */
   content: null,
 
@@ -84,7 +84,7 @@ export default EmberObject.extend(MutableArray, {
    can override this property to provide things like sorting and filtering.
 
    @property arrangedContent
-   @private
+   @public
   */
   arrangedContent: alias('content'),
 
