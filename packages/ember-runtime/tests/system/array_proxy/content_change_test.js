@@ -74,3 +74,21 @@ QUnit.test('arrayContent{Will,Did}Change are called when the content changes', f
   equal(willChangeCallCount, 2);
   equal(didChangeCallCount, 2);
 });
+
+QUnit.test('addArrayObserver works correctly', function(assert) {
+  let content = emberA([]);
+  let proxy = ArrayProxy.create({ content });
+
+  assert.expect(2);
+
+  proxy.addArrayObserver({
+    arrayWillChange(arr) {
+      assert.equal(arr.get('length'), 0);
+    },
+    arrayDidChange(arr) {
+      assert.equal(arr.get('length'), 3);
+    }
+  });
+
+  content.replace(0, 0, ['a', 'b', 'c']);
+});
