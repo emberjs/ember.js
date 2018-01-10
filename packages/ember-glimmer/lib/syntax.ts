@@ -1,6 +1,7 @@
 import { CompilableBlock, Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
+import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
@@ -14,7 +15,14 @@ import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 
 function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Option<Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>): boolean {
-  // assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.resolver.resolver.builtInHelpers[name] && builder.resolver.resolver.owner.hasRegistration(`helper:${name}`)));
+  console.log('fail');
+  assert(
+    `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
+    !(
+      builder.resolver.resolver.builtInHelpers[name] &&
+      builder.referrer.owner.hasRegistration(`helper:${name}`)
+    )
+  );
   if (name.indexOf('-') === -1) {
     return false;
   }
@@ -44,7 +52,10 @@ function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, t
 
   // assert(`A component or helper named "${name}" could not be found`, builder.resolver.hasHelper(name, builder.referrer));
 
-  // assert(`Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`, !builder.env.hasHelper(name, meta));
+  assert(
+    `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
+    !builder.resolver.resolver.hasHelper(name, builder.referrer)
+  );
 
   return false;
 }
