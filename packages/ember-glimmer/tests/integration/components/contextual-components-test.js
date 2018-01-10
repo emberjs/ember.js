@@ -369,6 +369,76 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       this.assertText('Hodi Sigmundur 33');
   }
 
+  ['@test nested components with positional params at middle layer are partially overwriten by hash parameters']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['greeting', 'name', 'age']
+      }),
+
+      template: '{{greeting}} {{name}} {{age}}'
+    });
+
+    this.render(strip`
+      {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
+        {{#with (component first "Hej" "Sigmundur") as |second|}}
+          {{component second greeting=model.greeting}}
+        {{/with}}
+      {{/with}}`, {
+      model: {
+        greeting: 'Hodi'
+      }
+    });
+
+    this.assertText('Hodi Sigmundur 33');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hodi Sigmundur 33');
+
+    this.runTask(() => this.context.set('model.greeting', 'Kaixo'));
+
+    this.assertText('Kaixo Sigmundur 33');
+
+    this.runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+
+    this.assertText('Hodi Sigmundur 33');
+  }
+
+  ['@test nested components with positional params at invocation override earlier hash parameters']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['greeting', 'name', 'age']
+      }),
+
+      template: '{{greeting}} {{name}} {{age}}'
+    });
+
+    this.render(strip`
+      {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
+        {{#with (component first greeting="Hej" name="Sigmundur") as |second|}}
+          {{component second model.greeting}}
+        {{/with}}
+      {{/with}}`, {
+      model: {
+        greeting: 'Hodi'
+      }
+    });
+
+    this.assertText('Hodi Sigmundur 33');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hodi Sigmundur 33');
+
+    this.runTask(() => this.context.set('model.greeting', 'Kaixo'));
+
+    this.assertText('Kaixo Sigmundur 33');
+
+    this.runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+
+    this.assertText('Hodi Sigmundur 33');
+  }
+
   ['@test nested components overwrite hash parameters']() {
     this.registerComponent('-looked-up', {
       template: '{{greeting}} {{name}} {{age}}'
@@ -502,7 +572,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
   }
 
-  ['@test conflicting positional and hash parameters raise and assertion if in the same component context with prior curried positional params']() {
+  ['@test conflicting positional and hash parameters raise an assertion if in the same component context with prior curried positional params']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
