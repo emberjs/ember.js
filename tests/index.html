@@ -167,6 +167,18 @@
           }
         });
 
+        // work around https://github.com/qunitjs/qunit/issues/1224
+        QUnit.testStart(function() {
+          var existingFixture = document.getElementById('qunit-fixture');
+
+          // create a new pristine fixture element
+          var newFixture = document.createElement('div');
+          newFixture.setAttribute('id', 'qunit-fixture');
+
+          // replace the old (possibly mutated fixture) with the new pristine one
+          existingFixture.parentNode.replaceChild(newFixture, existingFixture);
+        });
+
         QUnit.testDone(function(results) {
           testsTotal++;
 
