@@ -4,6 +4,7 @@ import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { getViewId, getViewElement } from 'ember-views';
+import { A as emberA } from 'ember-runtime';
 import { classes } from '../../utils/test-helpers';
 import { tryInvoke } from 'ember-utils';
 import { runAppend } from 'internal-test-helpers';
@@ -1566,3 +1567,632 @@ function hook(name, hook, { attrs, oldAttrs, newAttrs } = {}) {
 function json(serializable) {
   return JSON.parse(JSON.stringify(serializable));
 }
+
+const HOOKS = [
+  'init',
+  'didReceiveAttrs',
+  'didInitAttrs',
+  'didInsertElement',
+  'didRender',
+  'didUpdate',
+  'didDestroyElement',
+  'didUpdateAttrs',
+  'willClearRender',
+  'willDestroy',
+  'willDestroyElement',
+  'willInsertElement',
+  'willUpdate',
+  'willRender'
+];
+
+class HookCountTest extends RenderingTest {
+  constructor() {
+    super(...arguments);
+    this.initCounts();
+    this.expectedCounts = null;
+  }
+
+  initCounts() {
+    HOOKS.forEach((hook) => this[hook] = 0);
+  }
+
+  assertInvariantCounts(eventName) {
+    if (this[eventName] !== 0 && this.expectedCounts[eventName] !== 0) {
+      if (this[eventName] && !this.expectedCounts[eventName]) {
+        this.assert.ok(false, `Invariant: ${eventName} was set to ${this[eventName]} but not expected.`);
+      } else if (!this[eventName] && this.expectedCounts[eventName]) {
+        this.assert.ok(false, `Invariant: ${eventName} was expected to be ${this.expectedCounts[eventName]} but it was ${this[eventName]}.`);
+      }
+    }
+  }
+
+  // @abstract
+  expectInitialCounts() {
+    throw new Error('Must implement');
+  }
+
+  // @abstract
+  expectReplaceCounts() {
+    throw new Error('Must implement');
+  }
+
+  expectNoCounts() {
+    this.expectedCounts = {};
+  }
+
+  expectDestroyCounts() {
+    this.expectedCounts = {
+      didDestroyElement: 1,
+      willClearRender: 1,
+      willDestroy: 1,
+      willDestroyElement: 1
+    };
+  }
+
+  expectCreateCounts() {
+    this.expectedCounts = {
+      init: 1,
+      didReceiveAttrs: 1,
+      didInitAttrs: 1,
+      didInsertElement: 1,
+      didRender: 1,
+      willInsertElement: 1,
+      willRender: 1
+    };
+  }
+
+  expectInteriorCounts() {
+    this.expectedCounts = {
+      didRender: 1,
+      didUpdate: 1,
+      willUpdate: 1,
+      willRender: 1
+    };
+  }
+
+  assertCounts() {
+    HOOKS.forEach((eventName) => {
+      this.assertInvariantCounts(eventName);
+      if (this[eventName] === 0 && this.expectedCounts[eventName] === undefined) {
+        this.assert.ok(true, `${eventName} should be ${this[eventName]}`);
+      } else if (this.expectedCounts[eventName]) {
+        this.assert.equal(this[eventName], this.expectedCounts[eventName], `${eventName} should be ${this[eventName]}`);
+      }
+    });
+    this.initCounts();
+  }
+
+  runHooks(_renderType, ...args) {
+    let parts = _renderType.split(' -> ');
+    parts.forEach((renderType) => {
+      this.assert.ok(true, `${_renderType.toUpperCase()} for #${this.type}`);
+      this[`_${renderType}`](_renderType, ...args);
+      this.assertCounts();
+    });
+  }
+
+  setup() {
+    let assertions = this;
+    this.registerComponent('foo-bar', { ComponentClass: Component.extend({
+      init() {
+        expectDeprecation(() => { this._super(...arguments); }, /didInitAttrs called/);
+        assertions.init++;
+      },
+      didInitAttrs() {
+        assertions.didInitAttrs++;
+      },
+      didReceiveAttrs() {
+        assertions.didReceiveAttrs++;
+      },
+      didInsertElement() {
+        assertions.didInsertElement++;
+        assertions.assert.ok(this.element, 'Should have an element in `didInsertElement`');
+        assertions.assert.ok(this.$().next(), '`didInsertElement` can traverse to nextSibling');
+        assertions.assert.ok(this.$().prev(), '`didInsertElement` can travers to previousSibling');
+      },
+      didRender() {
+        assertions.didRender++;
+        assertions.assert.ok(this.element, 'Should have an element in `didRender`');
+        assertions.assert.ok(this.$().next(), '`didRender` can traverse to nextSibling');
+        assertions.assert.ok(this.$().prev(), '`didRender` can traverse to previousSibling');
+      },
+      didUpdate() {
+        assertions.didUpdate++;
+      },
+      didUpdateAttrs() {
+        assertions.didUpdateAttrs++;
+      },
+      didDestroyElement() {
+        assertions.didDestroyElement++;
+        assertions.assert.notOk(this.element, 'Should not have an element in `didDestroyElement`');
+      },
+      willClearRender() {
+        assertions.willClearRender++;
+      },
+      willDestroy() {
+        assertions.willDestroy++;
+        assertions.assert.notOk(this.element, 'Should not have an element in `willDestroy`');
+      },
+      willDestroyElement() {
+        assertions.willDestroyElement++;
+        assertions.assert.ok(this.element, 'Should have an element in `willDestroyElement`');
+        assertions.assert.ok(this.$().next(), '`willDestroyElement` can traverse to nextSibling');
+        assertions.assert.ok(this.$().prev(), '`willDestroyElement` can traverse to previousSibling');
+      },
+      willInsertElement() {
+        assertions.willInsertElement++;
+        assertions.assert.ok(this.element, 'Should have an element in `willInsertElement`');
+      },
+      willUpdate() {
+        assertions.willUpdate++;
+      },
+      willRender() {
+        assertions.willRender++;
+      }
+    }), template: '{{item.value}}' });
+  }
+}
+
+class ListHookCounts extends HookCountTest {
+  constructor(type) {
+    super();
+    this.type = type;
+    this.key = null;
+    this.data = null;
+  }
+
+  hookTemplate() {
+    let key = this.key ? `key=${key}` : '';
+    return strip`
+      {{#${this.type} model ${key} as |item|}}
+        <li>PREV</li>
+        {{foo-bar item=item}}
+        <li>NEXT</li>
+      {{else}}
+        INVERSE
+      {{/${this.type}}}
+    `;
+  }
+
+  expectInitialCounts() {
+    this.expectedCounts = {
+      init: 3,
+      didReceiveAttrs: 3,
+      didInitAttrs: 3,
+      didInsertElement: 3,
+      didRender: 3,
+      willInsertElement: 3,
+      willRender: 3
+    };
+  }
+
+  expectInverseCounts() {
+    this.expectedCounts = {
+      didDestroyElement: 3,
+      willClearRender: 3,
+      willDestroy: 3,
+      willDestroyElement: 3
+    };
+  }
+
+  expectToReplaceCounts() {
+    this.expectedCounts = {
+      init: 3,
+      didReceiveAttrs: 3,
+      didInitAttrs: 3,
+      didInsertElement: 3,
+      didRender: 3,
+      willInsertElement: 3,
+      willRender: 3
+    };
+  }
+
+  expectReplaceCounts() {
+    this.expectedCounts = {
+      init: 3,
+      didReceiveAttrs: 3,
+      didInitAttrs: 3,
+      didInsertElement: 3,
+      didRender: 3,
+      didDestroyElement: 5,
+      willClearRender: 5,
+      willDestroy: 5,
+      willDestroyElement: 5,
+      willInsertElement: 3,
+      willRender: 3
+    };
+  }
+
+  expectAppendCounts() {
+    this.expectedCounts = {
+      init: 1,
+      didInsertElement: 1,
+      didInitAttrs: 1,
+      didRender: 1,
+      willRender: 1,
+      didReceiveAttrs: 1,
+      willInsertElement: 1
+    };
+  }
+
+  expectConcatCounts() {
+    this.expectedCounts = {
+      init: 1,
+      didInsertElement: 1,
+      didInitAttrs: 1,
+      didRender: 1,
+      willRender: 1,
+      didReceiveAttrs: 1,
+      willInsertElement: 1
+    };
+  }
+
+  _initial(renderType, data, key) {
+    this.data = data;
+    this.render(this.hookTemplate(key), { model: data });
+    if (this.type === 'with') {
+      this.assertText('PREV1NEXT');
+    } else {
+      this.assertText('PREV1NEXTPREV2NEXTPREV3NEXT');
+    }
+
+    this.expectInitialCounts();
+  }
+
+  _rerender(renderType) {
+    this.runTask(() => this.rerender());
+    this.assertStableRerender();
+    this.expectNoCounts();
+  }
+
+  _interior(renderType, key, value) {
+    if (this.type === 'each') {
+      this.runTask(() => this.context.set(`model.0.${key}`, value));
+      this.expectInteriorCounts();
+      this.runTask(() => this.context.set(`model.0.${key}`, value)); // idempotent update
+    } else {
+      this.runTask(() => this.context.set(`model.${key}`, value));
+      this.expectInteriorCounts();
+      this.runTask(() => this.context.set(`model.${key}`, value)); // idempotent update
+    }
+
+    if (this.type === 'with') {
+      this.assertText('PREV10NEXT');
+    } else {
+      this.assertText('PREV10NEXTPREV2NEXTPREV3NEXT');
+    }
+
+    this.expectInteriorCounts();
+  }
+
+  _inverse(renderType) {
+    this.runTask(() => this.context.set(`model`, null));
+    this.assertText('INVERSE');
+
+    if (renderType === 'inverse -> replace') {
+      this.expectNoCounts();
+    } else {
+      this.expectInverseCounts();
+    }
+  }
+
+  _replace(renderType, data) {
+    let counts;
+    if (renderType === 'inverse -> replace') {
+      counts = this.expectToReplaceCounts.bind(this);
+    } else {
+      counts = this.expectReplaceCounts.bind(this);
+    }
+
+    this.runTask(() => this.context.set(`model`, data));
+    counts();
+    this.runTask(() => this.context.set(`model`, data)); // idempotent replace
+
+    if (this.type === 'with') {
+      this.assertText('PREV1NEXT');
+    } else {
+      this.assertText('PREV1NEXTPREV2NEXTPREV3NEXT');
+    }
+
+    counts();
+  }
+
+  _append(renderType, data) {
+    this.runTask(() => this.context.model.pushObject(data));
+    this.assertText('PREV10NEXTPREV2NEXTPREV3NEXTPREV4NEXT');
+    this.expectAppendCounts();
+  }
+
+  _concat(renderType, data) {
+    let array = this.context.model.concat(data);
+    this.runTask(() => this.context.set('model', array));
+    this.expectConcatCounts();
+    this.runTask(() => this.context.set('model', array)); // idempotent
+    this.assertText('PREV10NEXTPREV2NEXTPREV3NEXTPREV4NEXTPREV5NEXT');
+    this.expectConcatCounts();
+  }
+}
+
+moduleFor('Each hook counts and element access', class extends ListHookCounts {
+  constructor() {
+    super('each');
+  }
+
+  ['@test default each']() {
+    this.setup();
+    this.runHooks('initial', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+    this.runHooks('rerender');
+    this.runHooks('interior', 'value', 10);
+    this.runHooks('append', { value: 4 });
+    this.runHooks('concat', { value: 5 });
+    this.runHooks('replace', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+    this.runHooks('inverse');
+    this.runHooks('inverse -> replace', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+  }
+
+  ['@test each with explicit @identity key']() {
+    this.setup('@identity');
+    this.runHooks('initial', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+    this.runHooks('rerender');
+    this.runHooks('interior', 'value', '10');
+    this.runHooks('append', { value: 4 });
+    this.runHooks('concat', { value: 5 });
+    this.runHooks('replace', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+    this.runHooks('inverse');
+    this.runHooks('inverse -> replace', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+  }
+
+  ['@test each with explicit @index key']() {
+    this.setup('@index');
+    this.runHooks('initial', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+    this.runHooks('rerender');
+    this.runHooks('interior', 'value', '10');
+    this.runHooks('append', { value: 4 });
+    this.runHooks('concat', { value: 5 });
+    this.runHooks('replace', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+    this.runHooks('inverse');
+    this.runHooks('inverse -> replace', emberA([{ value: 1 }, { value: 2 }, { value: 3 }]));
+  }
+});
+
+moduleFor('Each-in hook counts and element access', class extends ListHookCounts {
+  constructor() {
+    super('each-in');
+  }
+
+  expectReplaceCounts() {
+    this.expectedCounts = {
+      didUpdateAttrs: 3,
+      didReceiveAttrs: 3,
+      didRender: 3,
+      didUpdate: 3,
+      willRender: 3,
+      willUpdate: 3
+    };
+  }
+
+  hookTemplate() {
+    return strip`
+      {{#${this.type} model as |item|}}
+        <li>PREV</li>
+        {{foo-bar item=(get model item)}}
+        <li>NEXT</li>
+      {{else}}
+        INVERSE
+      {{/${this.type}}}
+    `;
+  }
+
+  ['@test default each-in']() {
+    this.setup();
+    this.runHooks('initial', { item1: { value: 1 }, item2: { value: 2 }, item3: { value: 3 } });
+    this.runHooks('rerender');
+    this.runHooks('interior', 'item1.value', '10');
+    this.runHooks('replace', { item1: { value: 1 }, item2: { value: 2 }, item3: { value: 3 } });
+    this.runHooks('inverse');
+    this.runHooks('inverse -> replace', [{ value: 1 }, { value: 2 }, { value: 3 }]);
+  }
+});
+
+
+moduleFor('With hook counts and element access', class extends ListHookCounts {
+  constructor() {
+    super('with');
+  }
+
+  expectInitialCounts() {
+    this.expectedCounts = {
+      init: 1,
+      didReceiveAttrs: 1,
+      didInitAttrs: 1,
+      didInsertElement: 1,
+      didRender: 1,
+      willInsertElement: 1,
+      willRender: 1
+    };
+  }
+
+  expectInverseCounts() {
+    this.expectedCounts = {
+      didDestroyElement: 1,
+      willClearRender: 1,
+      willDestroy: 1,
+      willDestroyElement: 1
+    };
+  }
+
+  expectToReplaceCounts() {
+    this.expectedCounts = {
+      init: 1,
+      didReceiveAttrs: 1,
+      didInitAttrs: 1,
+      didInsertElement: 1,
+      didRender: 1,
+      willInsertElement: 1,
+      willRender: 1
+    };
+  }
+
+  expectReplaceCounts() {
+    this.expectedCounts = {
+      didReceiveAttrs: 1,
+      didRender: 1,
+      didUpdate: 1,
+      didUpdateAttrs: 1,
+      willUpdate: 1,
+      willRender: 1
+    };
+  }
+
+  ['@test default #with']() {
+    this.setup();
+    this.runHooks('initial', { value: 1 });
+    this.runHooks('rerender');
+    this.runHooks('interior', 'value', '10');
+    this.runHooks('replace', { value: 1 });
+    this.runHooks('inverse');
+    this.runHooks('inverse -> replace', { value: 1 });
+  }
+});
+
+class ConditionalBlock extends HookCountTest {
+  constructor(type) {
+    super();
+    this.type = type;
+    this.data = null;
+  }
+
+  expectReplaceCounts() {
+    this.expectedCounts = {
+      didReceiveAttrs: 1,
+      didUpdateAttrs: 1,
+      didUpdate: 1,
+      didRender: 1,
+      willRender: 1,
+      willUpdate: 1
+    };
+  }
+
+  hookTemplate() {
+    return strip`
+      {{#${this.type} model.value}}
+        <li>PREV</li>
+        {{foo-bar item=model}}
+        <li>NEXT</li>
+      {{else}}
+        INVERSE
+      {{/${this.type}}}
+    `;
+  }
+
+  _initial(renderType, data) {
+    this.data = data;
+    this.render(this.hookTemplate(), { model: data });
+    this.assertText('PREV1NEXT');
+    this.expectCreateCounts();
+  }
+
+  _rerender(renderType) {
+    this.runTask(() => this.rerender());
+    this.expectNoCounts();
+    this.assertStableRerender();
+  }
+
+  _interior(renderType, value) {
+    if (this.type === 'unless') {
+      this.runTask(() => this.context.set(`model.item.value`, value));
+      this.expectInteriorCounts();
+      this.runTask(() => this.context.set(`model.item.value`, value)); // idempotent update
+    } else {
+      this.runTask(() => this.context.set(`model.value`, value));
+      this.expectInteriorCounts();
+      this.runTask(() => this.context.set(`model.value`, value)); // idempotent update
+    }
+
+    this.assertText('PREV10NEXT');
+    this.expectInteriorCounts();
+  }
+
+  _inverse(renderType) {
+    this.runTask(() => this.context.set(`model`, null));
+
+    if (renderType === 'inverse -> replace') {
+      this.expectNoCounts();
+    } else {
+      this.expectDestroyCounts();
+    }
+
+    this.assertText('INVERSE');
+  }
+
+  _replace(renderType, data) {
+    this.runTask(() => this.context.set(`model`, data));
+    if (renderType === 'inverse -> replace') {
+      this.expectCreateCounts();
+      this.runTask(() => this.context.set(`model`, data)); // idempotent replace
+      this.expectCreateCounts();
+      this.assertText('PREV1NEXT');
+    } else {
+      this.expectReplaceCounts();
+      this.runTask(() => this.context.set(`model`, data)); // idempotent replace
+      this.expectReplaceCounts();
+      this.assertText('PREV2NEXT');
+    }
+  }
+}
+
+moduleFor('If hook counts and element access', class extends ConditionalBlock {
+  constructor() {
+    super('if');
+  }
+
+  hookTemplate() {
+    return strip`
+      {{#${this.type} model.value}}
+        <li>PREV</li>
+        {{foo-bar item=model}}
+        <li>NEXT</li>
+      {{else}}
+        INVERSE
+      {{/${this.type}}}
+    `;
+  }
+
+  ['@test default #if']() {
+    this.setup('if');
+    this.runHooks('initial', { value: 1 });
+    this.runHooks('rerender');
+    this.runHooks('interior', 10);
+    this.runHooks('replace', { value: 2 });
+    this.runHooks('inverse');
+    this.runHooks('inverse -> replace', { value: 1 });
+  }
+});
+
+moduleFor('Unless hook counts and element access', class extends ConditionalBlock {
+  constructor() {
+    super('unless');
+  }
+
+  hookTemplate() {
+    return strip`
+      {{#unless model.predicate}}
+        INVERSE
+      {{else}}
+        <li>PREV</li>
+          {{foo-bar item=model.item}}
+        <li>NEXT</li>
+      {{/unless}}
+    `;
+  }
+
+  ['@test default #unless']() {
+    this.setup();
+    this.runHooks('initial', { predicate: true, item: { value: 1 } });
+    this.runHooks('rerender');
+    this.runHooks('interior', 10);
+    this.runHooks('replace', { predicate: true, item: { value: 2 } });
+    this.runHooks('inverse');
+    this.runHooks('inverse -> replace', { predicate: true, item: { value: 1 } });
+  }
+});
