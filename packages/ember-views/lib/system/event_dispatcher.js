@@ -4,8 +4,7 @@
 
 import { assign, getOwner } from 'ember-utils';
 import { assert } from 'ember-debug';
-import { get, set, isNone, run } from 'ember-metal';
-import { deprecate } from 'ember-debug';
+import { get, set, isNone } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
@@ -103,36 +102,6 @@ export default EmberObject.extend({
   */
   rootElement: 'body',
 
-  /**
-    It enables events to be dispatched to the view's `eventManager.` When present,
-    this object takes precedence over handling of events on the view itself.
-
-    Note that most Ember applications do not use this feature. If your app also
-    does not use it, consider setting this property to false to gain some performance
-    improvement by allowing the EventDispatcher to skip the search for the
-    `eventManager` on the view tree.
-
-    ```javascript
-    let EventDispatcher = Em.EventDispatcher.extend({
-      events: {
-          click       : 'click',
-          focusin     : 'focusIn',
-          focusout    : 'focusOut',
-          change      : 'change'
-      },
-      canDispatchToEventManager: false
-    });
-    container.register('event_dispatcher:main', EventDispatcher);
-    ```
-
-    @property canDispatchToEventManager
-    @type boolean
-    @default false
-    @since 1.7.0
-    @deprecated
-    @private
-  */
-
   init() {
     this._super();
 
@@ -142,15 +111,6 @@ export default EmberObject.extend({
 
       return environment.isInteractive;
     })());
-
-    deprecate(
-      `\`canDispatchToEventManager\` has been deprecated in ${this}.`,
-      !('canDispatchToEventManager' in this),
-      {
-        id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-        until: '2.17.0'
-      }
-    );
 
     this._eventHandlers = Object.create(null);
   },
@@ -239,23 +199,17 @@ export default EmberObject.extend({
     @param {Object} viewRegistry
   */
   setupHandler(rootElement, event, eventName, viewRegistry) {
-    let self = this;
-
     if (eventName === null) {
       return;
     }
 
     if (HAS_JQUERY) {
-      rootElement.on(`${event}.ember`, '.ember-view', function(evt, triggeringManager) {
+      rootElement.on(`${event}.ember`, '.ember-view', function(evt) {
         let view = viewRegistry[this.id];
         let result = true;
 
-        let manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
-
-        if (manager && manager !== triggeringManager) {
-          result = self._dispatchEvent(manager, evt, eventName, view);
-        } else if (view) {
-          result = self._bubbleEvent(view, evt, eventName);
+        if (view) {
+          result = view.handleEvent(eventName, evt);
         }
 
         return result;
@@ -291,7 +245,7 @@ export default EmberObject.extend({
         let result = true;
 
         if (view) {
-          result = this._bubbleEvent(view, event, eventName);
+          result = view.handleEvent(eventName, event);
         }
 
         return result;
@@ -365,38 +319,6 @@ export default EmberObject.extend({
     let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
 
     return viewRegistry;
-  },
-
-  _findNearestEventManager(view, eventName) {
-    let manager = null;
-
-    while (view) {
-      manager = get(view, 'eventManager');
-      if (manager && manager[eventName]) { break; }
-
-      view = get(view, 'parentView');
-    }
-
-    return manager;
-  },
-
-  _dispatchEvent(object, evt, eventName, view) {
-    let result = true;
-
-    let handler = object[eventName];
-    if (typeof handler === 'function') {
-      result = run(object, handler, evt, view);
-      // Do not preventDefault in eventManagers.
-      evt.stopPropagation();
-    } else {
-      result = this._bubbleEvent(view, evt, eventName);
-    }
-
-    return result;
-  },
-
-  _bubbleEvent(view, evt, eventName) {
-    return view.handleEvent(eventName, evt);
   },
 
   destroy() {
