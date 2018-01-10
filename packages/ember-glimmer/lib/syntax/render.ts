@@ -4,12 +4,16 @@
 Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
 */
 
+import { Option } from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, isConst } from '@glimmer/reference';
 import {
   Arguments,
   VM,
 } from '@glimmer/runtime';
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
+import { OwnedTemplateMeta } from 'ember-views';
 import {
   NON_SINGLETON_RENDER_MANAGER,
   RenderDefinition,
@@ -17,9 +21,8 @@ import {
 } from '../component-managers/render';
 import Environment from '../environment';
 import { OwnedTemplate } from '../template';
-import { hashToArgs } from './utils';
 
-function makeComponentDefinition(vm: VM, args: Arguments) {
+export function makeComponentDefinition(vm: VM, args: Arguments) {
   let env     = vm.env as Environment;
   let nameRef = args.positional.at(0);
 
@@ -52,9 +55,9 @@ function makeComponentDefinition(vm: VM, args: Arguments) {
   }
 
   if (args.positional.length === 1) {
-    return new ConstReference(new RenderDefinition(controllerName, template, env, SINGLETON_RENDER_MANAGER));
+    return new ConstReference(new RenderDefinition(controllerName, template!, env, SINGLETON_RENDER_MANAGER));
   } else {
-    return new ConstReference(new RenderDefinition(controllerName, template, env, NON_SINGLETON_RENDER_MANAGER));
+    return new ConstReference(new RenderDefinition(controllerName, template!, env, NON_SINGLETON_RENDER_MANAGER));
   }
 }
 
@@ -130,12 +133,11 @@ function makeComponentDefinition(vm: VM, args: Arguments) {
   @public
   @deprecated Use a component instead
 */
-export function renderMacro(_name: string, params: any[], hash: any[], builder: any) {
-  if (!params) {
-    params = [];
-  }
-  let definitionArgs = [params.slice(0), hash, null, null];
-  let args = [params.slice(1), hashToArgs(hash), null, null];
-  builder.component.dynamic(definitionArgs, makeComponentDefinition, args);
+export function renderMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+  // TODO needs makeComponentDefinition a helper that returns a curried definition
+  // TODO not sure all args are for definition or component
+  // likely the controller name should be a arg to create?
+  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-render', params || [], hash];
+  builder.dynamicComponent(expr, null, null, false, null, null);
   return true;
 }

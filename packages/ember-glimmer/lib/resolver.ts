@@ -30,7 +30,6 @@ import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as action } from './helpers/action';
-import { default as componentHelper } from './helpers/component';
 import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
 import { default as get } from './helpers/get';
@@ -179,9 +178,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
 
   private _lookupHelper(name: string, meta: OwnedTemplateMeta): Option<Helper> {
-    if (name === 'component') {
-      return (vm, args) => componentHelper(vm, args, meta);
-    }
 
     const helper = this.builtInHelpers[name];
     if (helper !== undefined) {

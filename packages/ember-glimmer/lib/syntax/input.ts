@@ -1,15 +1,15 @@
 /**
 @module ember
 */
-import {
-  LazyOpcodeBuilder,
-  TemplateMeta
-} from '@glimmer/opcode-compiler';
+import { Option } from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
+import { OwnedTemplateMeta } from 'ember-views';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 import { hashToArgs } from './utils';
 
-function buildSyntax(type: string, params: any[], hash: any, builder: LazyOpcodeBuilder<TemplateMeta>) {
+function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuilder<OwnedTemplateMeta>) {
   let definition = builder.resolver.lookupComponentDefinition(type, builder.referrer);
   builder.component.static(definition!, [params, hashToArgs(hash), null, null]);
   return true;
@@ -151,9 +151,9 @@ function buildSyntax(type: string, params: any[], hash: any, builder: LazyOpcode
   @public
 */
 
-export function inputMacro(_name: string, params: any[], hash: any[], builder: any) {
-  let keys;
-  let values;
+export function inputMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+  let keys: WireFormat.Core.Expression[] | undefined;
+  let values: WireFormat.Core.Expression[] | undefined;
   let typeIndex = -1;
   let valueIndex = -1;
 
@@ -167,7 +167,7 @@ export function inputMacro(_name: string, params: any[], hash: any[], builder: a
   if (!params) { params = []; }
 
   if (typeIndex > -1) {
-    let typeArg = values[typeIndex];
+    let typeArg = values![typeIndex];
     if (Array.isArray(typeArg)) {
       throw new Error('TODO convert to component invoke');
       // return dynamicComponentMacro(params, hash, null, null, builder);

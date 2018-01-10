@@ -272,7 +272,7 @@ export const ACTION = symbol('ACTION');
   @for Ember.Templates.helpers
   @public
 */
-export default function(_vm: VM, args: Arguments): UnboundReference {
+export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();

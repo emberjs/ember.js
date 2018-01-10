@@ -13,9 +13,8 @@ import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import { MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
-import { hashToArgs } from './utils';
 
-function dynamicEngineFor(vm: VM, args: Arguments, meta: any) {
+export function mountHelper(vm: VM, args: Arguments, meta: any) {
   let env     = vm.env;
   let nameRef = args.positional.at(0);
 
@@ -76,7 +75,7 @@ export function mountMacro(_name: string, params: Option<WireFormat.Core.Params>
     );
   }
 
-  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, 'mount', params || [], hash];
+  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
   builder.dynamicComponent(expr, [], null, false, null, null);
   return true;
 }
