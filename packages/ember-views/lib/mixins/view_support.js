@@ -4,7 +4,7 @@ import { assert, deprecate } from 'ember-debug';
 import { environment, ENV } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
-import jQuery from '../system/jquery';
+import { default as jQuery, jQueryDisabled } from '../system/jquery';
 
 function K() { return this; }
 
@@ -175,6 +175,7 @@ export default Mixin.create({
   */
   $(sel) {
     assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
+    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
     if (this.element) {
       return sel ? jQuery(sel, this.element) : jQuery(this.element);
     }

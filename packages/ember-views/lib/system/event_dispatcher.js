@@ -302,8 +302,9 @@ export default EmberObject.extend({
               break;
             }
           } else if (target.hasAttribute('data-ember-action')) {
-            actionHandler(target, event);
-            break;
+            if (actionHandler(target, event) === false) {
+              break;
+            }
           }
 
           target = target.parentNode;
