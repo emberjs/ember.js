@@ -48,6 +48,7 @@ import ActionModifierManager from './modifiers/action';
 import { populateMacros } from './syntax';
 import { OwnedTemplate } from './template';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
+import { assert } from 'ember-debug';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -117,7 +118,10 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    */
   lookupComponent(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let handle = this.lookupComponentDefinition(name, meta);
-    if (handle === null) return null;
+    if (handle === null) {
+      assert(`Could not find component named "${name}" (no component or template with that name was found)`);
+      return null;
+    }
     return this.resolve(handle);
   }
 
