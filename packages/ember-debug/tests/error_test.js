@@ -5,7 +5,7 @@ import {
 } from 'internal-test-helpers';
 
 moduleFor('Ember Error Throwing', class extends TestCase {
-  ['@test new Ember.Error displays provided message'](assert) {
+  ['@test new EmberError displays provided message'](assert) {
     assert.throws(() => {
       throw new EmberError('A Message');
     }, e => e.message === 'A Message', 'the assigned message was displayed');
