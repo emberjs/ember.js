@@ -15,6 +15,7 @@ import {
   PartialDefinition
 } from '@glimmer/runtime';
 import { privatize as P } from 'container';
+import { assert } from 'ember-debug';
 import { _instrumentStart } from 'ember-metal';
 import { LookupOptions } from 'ember-utils';
 import {
@@ -48,7 +49,6 @@ import ActionModifierManager from './modifiers/action';
 import { populateMacros } from './syntax';
 import { OwnedTemplate } from './template';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
-import { assert } from 'ember-debug';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
