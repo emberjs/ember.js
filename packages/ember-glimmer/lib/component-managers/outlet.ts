@@ -26,32 +26,35 @@ import RuntimeResolver from '../resolver';
 import {
   OwnedTemplate,
 } from '../template';
+import { OutletState } from '../utils/outlet';
 import { RootReference } from '../utils/references';
-import { default as OutletView, OutletState } from '../views/outlet';
+import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
 
-function instrumentationPayload({ render: { name, outlet } }: {render: {name: string, outlet: string}}) {
-  return { object: `${name}:${outlet}` };
+function instrumentationPayload(def: OutletDefinitionState) {
+  return { object: `${def.name}:${def.outlet}` };
 }
 
-function NOOP() {/**/}
+interface OutletInstanceState {
+  tag: Tag;
+  controller: any | undefined;
+  finalize: () => void;
+}
 
-class OutletInstanceState {
-  public finalizer: () => void;
+function createInstanceState(definition: OutletDefinitionState): OutletInstanceState {
+  return {
+    tag: definition.ref.tag,
+    controller: definition.controller,
+    finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
+  };
+}
 
-  constructor(public outletState: VersionedPathReference<OutletState>) {
-    this.instrument();
-  }
-
-  instrument() {
-    this.finalizer = _instrumentStart('render.outlet', instrumentationPayload, this.outletState.value());
-  }
-
-  finalize() {
-    let { finalizer } = this;
-    finalizer();
-    this.finalizer = NOOP;
-  }
+export interface OutletDefinitionState {
+  ref: VersionedPathReference<OutletState | undefined>;
+  name: string;
+  outlet: string;
+  template: OwnedTemplate;
+  controller: any | undefined;
 }
 
 export const CAPABILITIES: ComponentCapabilities = {
@@ -63,27 +66,25 @@ export const CAPABILITIES: ComponentCapabilities = {
   elementHook: false
 };
 
-class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletComponentDefinitionState>
-  implements WithStaticLayout<OutletInstanceState, OutletComponentDefinitionState, OwnedTemplateMeta, RuntimeResolver> {
+class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
+  implements WithStaticLayout<OutletInstanceState, OutletDefinitionState, OwnedTemplateMeta, RuntimeResolver> {
 
   create(environment: Environment,
-         definition: OutletComponentDefinitionState,
+         definition: OutletDefinitionState,
          _args: Arguments,
          dynamicScope: DynamicScope) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
     }
-    // TODO revisit missing outletName
-    let outletStateReference = dynamicScope.outletState =
-      dynamicScope.outletState.get('outlets').get(definition.outletName!) as VersionedPathReference<OutletState>;
-    return new OutletInstanceState(outletStateReference);
+    dynamicScope.outletState = definition.ref;
+    return createInstanceState(definition);
   }
 
-  layoutFor(_state: OutletComponentDefinitionState, _component: OutletInstanceState, _env: Environment): Unique<'Handle'> {
+  layoutFor(_state: OutletDefinitionState, _component: OutletInstanceState, _env: Environment): Unique<'Handle'> {
     throw new Error('Method not implemented.');
   }
 
-  getLayout(state: OutletComponentDefinitionState, _resolver: RuntimeResolver): Invocation {
+  getLayout(state: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
     // The router has already resolved the template
     const layout = state.template.asLayout();
     return {
@@ -96,22 +97,20 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     return CAPABILITIES;
   }
 
-  getSelf({ outletState }: OutletInstanceState) {
+  getSelf({ controller }: OutletInstanceState) {
     // RootReference initializes the object dirtyable tag state
     // basically the entry point from Ember to Glimmer.
     // So even though outletState is a path reference, it is not
     // the correct Tag to support self here.
-    const { render } = outletState.value();
-    return new RootReference(render!.controller);
+    return new RootReference(controller);
   }
 
-  getTag({ outletState }: OutletInstanceState): Tag {
-    // TODO: is this the right tag?
-    return outletState.tag;
+  getTag(state: OutletInstanceState): Tag {
+    return state.tag;
   }
 
-  didRenderLayout(bucket: OutletInstanceState) {
-    bucket.finalize();
+  didRenderLayout(state: OutletInstanceState) {
+    state.finalize();
 
     if (DEBUG) {
       this.debugStack.pop();
@@ -135,7 +134,7 @@ class TopLevelOutletComponentManager extends OutletComponentManager
     return 'div';
   }
 
-  getLayout(state: OutletComponentDefinitionState, resolver: RuntimeResolver): Invocation {
+  getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
     // The router has already resolved the template
     const template = state.template;
     let layout: TopLevelSyntax;
@@ -159,14 +158,6 @@ class TopLevelOutletComponentManager extends OutletComponentManager
     };
   }
 
-  create(environment: Environment, definition: TopOutletComponentDefinitionState, _args: Arguments, dynamicScope: DynamicScope) {
-    if (DEBUG) {
-      this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
-    }
-    // TODO: top level outlet should always have outletState, assert
-    return new OutletInstanceState(dynamicScope.outletState as VersionedPathReference<OutletState>);
-  }
-
   getCapabilities(): ComponentCapabilities {
     if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
       return CAPABILITIES;
@@ -183,33 +174,20 @@ class TopLevelOutletComponentManager extends OutletComponentManager
 
 const TOP_MANAGER = new TopLevelOutletComponentManager();
 
-export interface TopOutletComponentDefinitionState {
-  template: OwnedTemplate;
-}
-
-export class TopLevelOutletComponentDefinition implements ComponentDefinition<TopOutletComponentDefinitionState, TopLevelOutletComponentManager> {
-  public state: TopOutletComponentDefinitionState;
+export class TopLevelOutletComponentDefinition implements ComponentDefinition<OutletDefinitionState, TopLevelOutletComponentManager> {
+  public state: OutletDefinitionState;
   public manager: TopLevelOutletComponentManager = TOP_MANAGER;
 
   constructor(instance: OutletView) {
-    this.state = {
-      template: instance.template as OwnedTemplate,
-    };
+    this.state = instance.state;
   }
 }
 
 const OUTLET_MANAGER = new OutletComponentManager();
 
-export interface OutletComponentDefinitionState {
-  outletName: string;
-  template: OwnedTemplate;
-}
-
-export class OutletComponentDefinition implements ComponentDefinition<OutletComponentDefinitionState, OutletComponentManager> {
-  public state: OutletComponentDefinitionState;
+export class OutletComponentDefinition implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
   public manager: OutletComponentManager = OUTLET_MANAGER;
 
-  constructor(outletName: string, template: OwnedTemplate) {
-    this.state = { outletName, template };
+  constructor(public state: OutletDefinitionState) {
   }
 }

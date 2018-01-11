@@ -1,4 +1,4 @@
-import { Option, Simple } from '@glimmer/interfaces';
+import { Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -6,8 +6,8 @@ import {
   curry,
   DynamicScope as GlimmerDynamicScope,
   IteratorResult,
-  NULL_REFERENCE,
   RenderResult,
+  UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
@@ -29,36 +29,30 @@ import { RootComponentDefinition } from './component-managers/root';
 import Environment from './environment';
 import { OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
+import { OutletState } from './utils/outlet';
 import { UnboundReference } from './utils/references';
-import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
+import OutletView from './views/outlet';
 
 const { backburner } = run;
 
 export class DynamicScope implements GlimmerDynamicScope {
-  outletState: VersionedPathReference<Option<OutletState>>;
-  rootOutletState: RootOutletStateReference | undefined;
-
   constructor(
     public view: Component | null,
-    outletState: VersionedPathReference<Option<OutletState>>,
-    rootOutletState?: RootOutletStateReference) {
-    this.outletState = outletState;
-    this.rootOutletState = rootOutletState;
+    public outletState: VersionedPathReference<OutletState | undefined>,
+    public rootOutletState: VersionedPathReference<OutletState | undefined>) {
   }
 
   child() {
-    return new DynamicScope(
-      this.view, this.outletState, this.rootOutletState,
-    );
+    return new DynamicScope(this.view, this.outletState, this.rootOutletState);
   }
 
-  get(key: 'outletState'): VersionedPathReference<Option<OutletState>> {
+  get(key: 'outletState'): VersionedPathReference<OutletState | undefined> {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     return this.outletState;
   }
 
-  set(key: 'outletState', value: VersionedPathReference<Option<OutletState>>) {
+  set(key: 'outletState', value: VersionedPathReference<OutletState | undefined>) {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     this.outletState = value;
@@ -269,25 +263,21 @@ export abstract class Renderer {
 
   appendOutletView(view: OutletView, target: Simple.Element) {
     let definition = new TopLevelOutletComponentDefinition(view);
-    let outletStateReference = view.toReference();
-
-    this._appendDefinition(view, curry(definition), target, outletStateReference);
+    this._appendDefinition(view, curry(definition), target);
   }
 
   appendTo(view: Component, target: Simple.Element) {
-    let def = new RootComponentDefinition(view);
-    this._appendDefinition(view, curry(def), target);
+    let definition = new RootComponentDefinition(view);
+    this._appendDefinition(view, curry(definition), target);
   }
 
   _appendDefinition(
     root: OutletView | Component,
     definition: CurriedComponentDefinition,
-    target: Simple.Element,
-    outletStateReference?: RootOutletStateReference) {
+    target: Simple.Element) {
     let self = new UnboundReference(definition);
-    let dynamicScope = new DynamicScope(null, outletStateReference || NULL_REFERENCE, outletStateReference);
+    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
-
     this._renderRoot(rootState);
   }
 

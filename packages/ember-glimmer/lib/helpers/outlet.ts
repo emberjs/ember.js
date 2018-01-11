@@ -1,4 +1,4 @@
-import { combine, ConstReference, Reference, RevisionTag, TagWrapper, UpdatableTag, VersionedPathReference } from '@glimmer/reference';
+import { ConstReference, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
   CurriedComponentDefinition,
@@ -6,51 +6,74 @@ import {
   UNDEFINED_REFERENCE,
   VM,
 } from '@glimmer/runtime';
-import { OutletComponentDefinition } from '../component-managers/outlet';
+import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
-import { OutletState } from '../views/outlet';
+import { OutletReference, OutletState } from '../utils/outlet';
 
 export default function outlet(vm: VM, args: Arguments) {
   let scope = vm.dynamicScope() as DynamicScope;
-  let outletNameRef: Reference<string>;
+  let nameRef: Reference<string>;
   if (args.positional.length === 0) {
-    outletNameRef = new ConstReference('main');
+    nameRef = new ConstReference('main');
   } else {
-    outletNameRef = args.positional.at<VersionedPathReference<string>>(0);
+    nameRef = args.positional.at<VersionedPathReference<string>>(0);
   }
-  return new OutletComponentReference(outletNameRef, scope.outletState);
+  return new OutletComponentReference(new OutletReference(scope.outletState, nameRef));
 }
 
 class OutletComponentReference implements VersionedPathReference<CurriedComponentDefinition | null> {
-  public tag: TagWrapper<RevisionTag | null>;
-  private outletStateTag: TagWrapper<UpdatableTag>;
-  private definition: any | null;
-  private lastState: any | null;
+  public tag: Tag;
+  private definition: CurriedComponentDefinition | null;
+  private lastState: OutletDefinitionState | null;
 
-  constructor(private outletNameRef: Reference<string>,
-              private parentOutletStateRef: VersionedPathReference<OutletState | null>) {
-    this.outletNameRef = outletNameRef;
-    this.parentOutletStateRef = parentOutletStateRef;
+  constructor(private outletRef: VersionedPathReference<OutletState | undefined>) {
     this.definition = null;
     this.lastState = null;
-    let outletStateTag = this.outletStateTag = UpdatableTag.create(parentOutletStateRef.tag);
-    this.tag = combine([outletStateTag, outletNameRef.tag]);
+    // The router always dirties the root state.
+    this.tag = outletRef.tag;
   }
 
   value(): CurriedComponentDefinition | null {
-    let outletName = this.outletNameRef.value();
-    let parentState = this.parentOutletStateRef.value();
-    if (!parentState) return null;
-    let outletState = parentState.outlets[outletName];
-    if (!outletState) return null;
-    let renderState = outletState.render;
-    if (!renderState) return null;
-    let template = renderState.template;
-    if (!template) return null;
-    return curry(new OutletComponentDefinition(outletName, template));
+    let state = stateFor(this.outletRef);
+    if (validate(state, this.lastState)) {
+      return this.definition;
+    }
+    this.lastState = state;
+    let definition = null;
+    if (state !== null) {
+      definition = curry(new OutletComponentDefinition(state));
+    }
+    return this.definition = definition;
   }
 
   get(_key: string) {
     return UNDEFINED_REFERENCE;
   }
+}
+
+function stateFor(ref: VersionedPathReference<OutletState | undefined>): OutletDefinitionState | null {
+  let outlet = ref.value();
+  if (outlet === undefined) return null;
+  let render = outlet.render;
+  if (render === undefined) return null;
+  let template = render.template;
+  if (template === undefined) return null;
+  return {
+    ref,
+    name: render.name,
+    outlet: render.outlet,
+    template,
+    controller: render.controller,
+  };
+}
+
+function validate(state: OutletDefinitionState | null, lastState: OutletDefinitionState | null) {
+  if (state === null) {
+    return lastState === null;
+  }
+  if (lastState === null) {
+    return false;
+  }
+  return state.template === lastState.template &&
+         state.controller === lastState.controller;
 }

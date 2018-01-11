@@ -107,7 +107,6 @@ function render(_template) {
     name: 'index',
     controller: this,
     template: this.owner.lookup(templateFullName),
-    outlets: { }
   };
 
   stateToRender.name = 'index';

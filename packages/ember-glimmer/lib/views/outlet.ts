@@ -1,107 +1,11 @@
 import { Simple } from '@glimmer/interfaces';
-import { DirtyableTag, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/util';
 import { environment } from 'ember-environment';
 import { run } from 'ember-metal';
 import { assign, OWNER, Owner } from 'ember-utils';
+import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
 import { OwnedTemplate } from '../template';
-
-export class RootOutletStateReference implements VersionedPathReference<Option<OutletState>> {
-  tag: Tag;
-
-  constructor(public outletView: OutletView) {
-    this.tag = outletView._tag;
-  }
-
-  get(key: string): VersionedPathReference<any> {
-    return new ChildOutletStateReference(this, key);
-  }
-
-  value(): Option<OutletState> {
-    return this.outletView.outletState;
-  }
-
-  getOrphan(name: string): VersionedPathReference<Option<OutletState>> {
-    return new OrphanedOutletStateReference(this, name);
-  }
-
-  update(state: OutletState) {
-    this.outletView.setOutletState(state);
-  }
-}
-
-// So this is a relic of the past that SHOULD go away
-// in 3.0. Preferably it is deprecated in the release that
-// follows the Glimmer release.
-class OrphanedOutletStateReference extends RootOutletStateReference {
-  public root: any;
-  public name: string;
-
-  constructor(root: RootOutletStateReference, name: string) {
-    super(root.outletView);
-    this.root = root;
-    this.name = name;
-  }
-
-  value(): Option<OutletState> {
-    let rootState = this.root.value();
-
-    let orphans = rootState.outlets.main.outlets.__ember_orphans__;
-
-    if (!orphans) {
-      return null;
-    }
-
-    let matched = orphans.outlets[this.name];
-
-    if (!matched) {
-      return null;
-    }
-
-    let state = Object.create(null);
-    state[matched.render.outlet] = matched;
-    matched.wasUsed = true;
-    return { outlets: state, render: undefined };
-  }
-}
-
-class ChildOutletStateReference implements VersionedPathReference<any> {
-  public parent: VersionedPathReference<any>;
-  public key: string;
-  public tag: Tag;
-
-  constructor(parent: VersionedPathReference<any>, key: string) {
-    this.parent = parent;
-    this.key = key;
-    this.tag = parent.tag;
-  }
-
-  get(key: string): VersionedPathReference<any> {
-    return new ChildOutletStateReference(this, key);
-  }
-
-  value(): any {
-    let parent = this.parent.value();
-    return parent && parent[this.key];
-  }
-}
-
-export interface RenderState {
-  owner: Owner | undefined;
-  into: string | undefined;
-  outlet: string;
-  name: string;
-  controller: Opaque;
-  template: OwnedTemplate | undefined;
-}
-
-export interface OutletState {
-  outlets: {
-    [name: string]: OutletState | undefined;
-  };
-  render: RenderState | undefined;
-}
+import { OutletState, RootOutletReference } from '../utils/outlet';
 
 export interface BootEnvironment {
   hasDOM: boolean;
@@ -109,14 +13,10 @@ export interface BootEnvironment {
   options: any;
 }
 
-export default class OutletView {
-  private _environment: BootEnvironment;
-  public renderer: Renderer;
-  public owner: Owner;
-  public template: OwnedTemplate;
-  public outletState: Option<OutletState>;
-  public _tag: TagWrapper<DirtyableTag>;
+const TOP_LEVEL_NAME = '-top-level';
+const TOP_LEVEL_OUTLET = 'main';
 
+export default class OutletView {
   static extend(injections: any) {
     return class extends OutletView {
       static create(options: any) {
@@ -139,13 +39,28 @@ export default class OutletView {
     return new OutletView(_environment, renderer, owner, template);
   }
 
-  constructor(_environment: BootEnvironment, renderer: Renderer, owner: Owner, template: OwnedTemplate) {
-    this._environment = _environment;
-    this.renderer = renderer;
-    this.owner = owner;
-    this.template = template;
-    this.outletState = null;
-    this._tag = DirtyableTag.create();
+  public ref: RootOutletReference;
+  public state: OutletDefinitionState;
+
+  constructor(private _environment: BootEnvironment, public renderer: Renderer, public owner: Owner, public template: OwnedTemplate) {
+    let ref = this.ref = new RootOutletReference({
+      outlets: { main: undefined },
+      render: {
+        owner: owner,
+        into: undefined,
+        outlet: TOP_LEVEL_OUTLET,
+        name: TOP_LEVEL_NAME,
+        controller: undefined,
+        template,
+      },
+    });
+    this.state = {
+      ref,
+      name: TOP_LEVEL_NAME,
+      outlet: TOP_LEVEL_OUTLET,
+      template,
+      controller: undefined
+    };
   }
 
   appendTo(selector: string | Simple.Element) {
@@ -164,24 +79,7 @@ export default class OutletView {
   rerender() { /**/ }
 
   setOutletState(state: OutletState) {
-    this.outletState = {
-      outlets: {
-        main: state,
-      },
-      render: {
-        owner: undefined,
-        into: undefined,
-        outlet: 'main',
-        name: '-top-level',
-        controller: undefined,
-        template: undefined,
-      },
-    };
-    this._tag.inner.dirty();
-  }
-
-  toReference() {
-    return new RootOutletStateReference(this);
+    this.ref.update(state);
   }
 
   destroy() { /**/ }
