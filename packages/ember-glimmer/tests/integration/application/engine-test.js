@@ -556,7 +556,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.assertText('ApplicationLoading');
         resolveLoading.resolve();
 
-        this.runTaskNext(() => {
+        return this.runTaskNext().then(() => {
           this.assertText('ApplicationEnginePost');
           done();
         });
@@ -597,7 +597,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.assertText('ApplicationEngineLoading');
         resolveLoading.resolve();
 
-        this.runTaskNext(() => {
+        return this.runTaskNext().then(() => {
           this.assertText('ApplicationEnginePost');
           done();
         });
@@ -631,14 +631,14 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('ApplicationEngineComments');
       let transition = this.transitionTo('blog.post.likes');
 
-      this.runTaskNext(() => {
+      this.runTaskNext().then(() => {
         this.assertText('ApplicationEngineLoading');
         resolveLoading();
       });
 
-      return transition.then(() => {
-        this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
-      });
+      return transition
+        .then(() => this.runTaskNext())
+        .then(() => this.assertText('ApplicationEngineLikes'));
     });
   }
 
@@ -675,7 +675,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
         this.assertText('ApplicationEngineLoading');
         resolveLoading.resolve();
 
-        this.runTaskNext(() => {
+        return this.runTaskNext().then(() => {
           this.assertText('ApplicationEngineLikes');
           done();
         });
