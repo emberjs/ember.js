@@ -9,7 +9,6 @@ import {
 import { ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   combine,
-  combineTagged,
   Tag,
   VersionedPathReference,
 } from '@glimmer/reference';
@@ -65,7 +64,6 @@ import {
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
-import { PropertyReference } from '../utils/references';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
 
@@ -121,24 +119,6 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: Arra
 // function ariaRole(vm: VM) {
 //   return vm.getSelf().get('ariaRole');
 // }
-
-export class PositionalArgumentReference {
-  public tag: any;
-  private _references: any;
-
-  constructor(references: any) {
-    this.tag = combineTagged(references);
-    this._references = references;
-  }
-
-  value() {
-    return this._references.map((reference: any) => reference.value());
-  }
-
-  get(key: string) {
-    return PropertyReference.create(this, key);
-  }
-}
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
@@ -253,38 +233,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     } else {
       return null;
     }
-
-    // let capturedArgs = args.capture();
-    // // grab raw positional references array
-    // let positional = capturedArgs.positional.references;
-
-    // // handle prep for closure component with positional params
-    // let curriedNamed;
-    // if (args) {
-    //   let remainingDefinitionPositionals = args.positional.references.slice(positional.length);
-    //   positional = positional.concat(remainingDefinitionPositionals);
-    //   curriedNamed = args.named;
-    // }
-
-    // // handle positionalParams
-    // let positionalParamsToNamed;
-    // if (componentHasRestStylePositionalParams) {
-    //   positionalParamsToNamed = {
-    //     [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional),
-    //   };
-    //   positional = [];
-    // } else if (componentHasPositionalParams) {
-    //   positionalParamsToNamed = {};
-    //   let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
-    //   for (let i = 0; i < length; i++) {
-    //     let name = componentPositionalParamsDefinition[i];
-    //     positionalParamsToNamed[name] = positional[i];
-    //   }
-    // }
-
-    // let named = assign({}, curriedNamed, positionalParamsToNamed, args.named.capture().map);
-
-    // return { positional, named };
   }
 
   create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
@@ -351,35 +299,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return bucket;
   }
 
-  // layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): VMHandle {
-  //   let template = definition.template;
-  //   if (!template) {
-  //     // move templateFor to resolver
-  //     template = this.templateFor(bucket.component, env);
-  //   }
-  //   throw Error('use resolver');
-  //   // needs to use resolver
-  //   // return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
-  // }
-
-  // templateFor(component: Component, _env: Environment): OwnedTemplate {
-  //   let Template = get(component, 'layout');
-  //   let owner = component[OWNER];
-  //   if (Template) {
-  //     throw new Error('TODO layout not looked up but direct import');
-  //     // we should move this to the resolver
-  //     // return env.getTemplate(Template, owner);
-  //   }
-  //   let layoutName = get(component, 'layoutName');
-  //   if (layoutName) {
-  //     let template = owner.lookup('template:' + layoutName);
-  //     if (template) {
-  //       return template;
-  //     }
-  //   }
-  //   return owner.lookup(DEFAULT_LAYOUT);
-  // }
-
   getSelf({ component }: ComponentStateBucket): VersionedPathReference<Opaque> {
     return component[ROOT_REF];
   }
@@ -402,7 +321,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     if (classRef && classRef.value()) {
       const ref = classRef.value() === true ?
-                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(args!.tag.inner!.key), null) :
+                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(args!.tag.inner!['key']), null) :
                          classRef;
       operations.setAttribute('class', ref, false, null);
     }

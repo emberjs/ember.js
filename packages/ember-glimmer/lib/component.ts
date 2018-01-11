@@ -576,7 +576,7 @@ const Component = CoreView.extend(
         // tslint:disable-next-line:max-line-length
         `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
         this.tagName !== '' || !this.renderer._destinedForDOM || !(() => {
-          let eventDispatcher = getOwner(this).lookup('event_dispatcher:main');
+          let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
           let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
 
           // tslint:disable-next-line:forin
