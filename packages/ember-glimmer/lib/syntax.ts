@@ -50,7 +50,7 @@ function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, t
     return true;
   }
 
-  // assert(`A component or helper named "${name}" could not be found`, builder.resolver.hasHelper(name, builder.referrer));
+  assert(`A component or helper named "${name}" could not be found`, builder.referrer.owner.hasRegistration(`helper:${name}`));
 
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
