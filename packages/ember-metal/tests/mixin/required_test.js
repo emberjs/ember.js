@@ -5,10 +5,12 @@ import {
   get
 } from '../..';
 import { ENV } from 'ember-environment';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let PartialMixin, FinalMixin, obj;
 let originalEnvVal;
-QUnit.module('Module.required', {
+
+moduleFor('Module.required', class extends AbstractTestCase {
   beforeEach() {
     originalEnvVal = ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT;
     ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT = true;
@@ -24,37 +26,37 @@ QUnit.module('Module.required', {
     });
 
     obj = {};
-  },
+  }
 
   afterEach() {
     PartialMixin = FinalMixin = obj = null;
     ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT = originalEnvVal;
   }
-});
 
-QUnit.test('applying a mixin to meet requirement', function(assert) {
-  FinalMixin.apply(obj);
-  PartialMixin.apply(obj);
-  assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
-});
+  ['@test applying a mixin to meet requirement'](assert) {
+    FinalMixin.apply(obj);
+    PartialMixin.apply(obj);
+    assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
+  }
 
-QUnit.test('combined mixins to meet requirement', function(assert) {
-  Mixin.create(PartialMixin, FinalMixin).apply(obj);
-  assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
-});
+  ['@test combined mixins to meet requirement'](assert) {
+    Mixin.create(PartialMixin, FinalMixin).apply(obj);
+    assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
+  }
 
-QUnit.test('merged mixin', function(assert) {
-  Mixin.create(PartialMixin, { foo: 'FOO' }).apply(obj);
-  assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
-});
+  ['@test merged mixin'](assert) {
+    Mixin.create(PartialMixin, { foo: 'FOO' }).apply(obj);
+    assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
+  }
 
-QUnit.test('define property on source object', function(assert) {
-  obj.foo = 'FOO';
-  PartialMixin.apply(obj);
-  assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
-});
+  ['@test define property on source object'](assert) {
+    obj.foo = 'FOO';
+    PartialMixin.apply(obj);
+    assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
+  }
 
-QUnit.test('using apply', function(assert) {
-  mixin(obj, PartialMixin, { foo: 'FOO' });
-  assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
+  ['@test using apply'](assert) {
+    mixin(obj, PartialMixin, { foo: 'FOO' });
+    assert.equal(get(obj, 'foo'), 'FOO', 'should now be defined');
+  }
 });
