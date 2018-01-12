@@ -43,6 +43,30 @@ moduleFor('Link-to component', class extends ApplicationTest {
     });
   }
 
+  ['@test re-computes active class when params change'](assert) {
+    let controller;
+
+    this.addTemplate('application', '{{link-to "foo" routeName}}');
+
+    this.add('controller:application', Controller.extend({
+      init() {
+        this._super(...arguments);
+        controller = this;
+      },
+      routeName: 'index'
+    }));
+
+    this.router.map(function() {
+      this.route('bar', { path: '/bar' });
+    });
+
+    return this.visit('/bar').then(() => {
+      assert.equal(this.firstChild.classList.contains('active'), false);
+      this.runTask(() => set(controller, 'routeName', 'bar'));
+      assert.equal(this.firstChild.classList.contains('active'), true);
+    });
+  }
+
   ['@test escaped inline form (double curlies) escapes link title']() {
     this.addTemplate('application', `{{link-to title 'index'}}`);
     this.add('controller:application', Controller.extend({
