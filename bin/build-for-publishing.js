@@ -47,10 +47,6 @@ execSync('yarn build');
 execSync('yarn docs');
 updateDocumentationVersion();
 
-// using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
-// property properly, and therefore the tarball generated is quite large (~7MB).
-execSync('npm pack');
-
 // generate build-metadata.json
 const metadata = {
   version: VERSION,
@@ -59,3 +55,7 @@ const metadata = {
   assetPath: `/${process.env.BUILD_TYPE}/shas/${process.env.TRAVIS_COMMIT}.tgz`,
 };
 fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), { encoding: 'utf-8' });
+
+// using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
+// property properly, and therefore the tarball generated is quite large (~7MB).
+execSync('npm pack');
