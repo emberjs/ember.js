@@ -58,10 +58,14 @@ export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<Cu
     controllerName = templateName;
   }
 
-  let manager = args.positional.length === 1 ? SINGLETON_RENDER_MANAGER : NON_SINGLETON_RENDER_MANAGER;
-
-  let def = new RenderDefinition(controllerName, template, env, manager);
-  return UnboundReference.create(curry(def));
+  if (args.positional.length === 1) {
+    let def = new RenderDefinition(controllerName, template, env, SINGLETON_RENDER_MANAGER);
+    return UnboundReference.create(curry(def));
+  } else {
+    let def = new RenderDefinition(controllerName, template, env, NON_SINGLETON_RENDER_MANAGER);
+    let captured = args.capture();
+    return UnboundReference.create(curry(def, captured));
+  }
 }
 
 /**
