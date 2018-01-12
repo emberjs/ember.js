@@ -28,6 +28,7 @@ import { Destroyable, EMPTY_ARRAY, Opaque } from '@glimmer/util';
 import { privatize as P } from 'container';
 import {
   assert,
+  deprecate,
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -223,7 +224,10 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       for (let i=0; i<count; i++) {
         const name = positionalParams[i];
         if (named[name]) {
-          assert(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`);
+          deprecate(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`, !named[name], {
+            id: 'ember-glimmer.positional-param-conflict',
+            until: '3.5.0',
+          });
         }
 
         named[name] = args.positional.at(i);
