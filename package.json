@@ -11,6 +11,7 @@
   },
   "license": "MIT",
   "files": [
+    "build-metadata.json",
     "blueprints",
     "dist",
     "!dist/ember-tests.prod.js",
