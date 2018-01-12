@@ -14,11 +14,7 @@ import {
   aliasMethod,
   computed,
   propertyWillChange,
-  propertyDidChange,
-  addListener,
-  removeListener,
-  sendEvent,
-  hasListeners
+  propertyDidChange
 } from 'ember-metal';
 import { assert } from 'ember-debug';
 import compare from '../compare';
@@ -843,76 +839,6 @@ const Enumerable = Mixin.create({
   //
 
   /**
-    Registers an enumerable observer. Must implement `Ember.EnumerableObserver`
-    mixin.
-
-    @method addEnumerableObserver
-    @param {Object} target
-    @param {Object} [opts]
-    @return this
-    @private
-  */
-  addEnumerableObserver(target, opts) {
-    let willChange = (opts && opts.willChange) || 'enumerableWillChange';
-    let didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-    let hasObservers = get(this, 'hasEnumerableObservers');
-
-    if (!hasObservers) {
-      propertyWillChange(this, 'hasEnumerableObservers');
-    }
-
-    addListener(this, '@enumerable:before', target, willChange);
-    addListener(this, '@enumerable:change', target, didChange);
-
-    if (!hasObservers) {
-      propertyDidChange(this, 'hasEnumerableObservers');
-    }
-
-    return this;
-  },
-
-  /**
-    Removes a registered enumerable observer.
-
-    @method removeEnumerableObserver
-    @param {Object} target
-    @param {Object} [opts]
-    @return this
-    @private
-  */
-  removeEnumerableObserver(target, opts) {
-    let willChange = (opts && opts.willChange) || 'enumerableWillChange';
-    let didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-    let hasObservers = get(this, 'hasEnumerableObservers');
-
-    if (hasObservers) {
-      propertyWillChange(this, 'hasEnumerableObservers');
-    }
-
-    removeListener(this, '@enumerable:before', target, willChange);
-    removeListener(this, '@enumerable:change', target, didChange);
-
-    if (hasObservers) {
-      propertyDidChange(this, 'hasEnumerableObservers');
-    }
-
-    return this;
-  },
-
-  /**
-    Becomes true whenever the array currently has observers watching changes
-    on the array.
-
-    @property hasEnumerableObservers
-    @type Boolean
-    @private
-  */
-  hasEnumerableObservers: computed(function() {
-    return hasListeners(this, '@enumerable:change') || hasListeners(this, '@enumerable:before');
-  }),
-
-
-  /**
     Invoke this method just before the contents of your enumerable will
     change. You can either omit the parameters completely or pass the objects
     to be removed or added if available or just a count.
@@ -960,8 +886,6 @@ const Enumerable = Mixin.create({
       propertyWillChange(this, 'length');
     }
 
-    sendEvent(this, '@enumerable:before', [this, removing, adding]);
-
     return this;
   },
 
@@ -1008,8 +932,6 @@ const Enumerable = Mixin.create({
     if (adding === -1) {
       adding = null;
     }
-
-    sendEvent(this, '@enumerable:change', [this, removing, adding]);
 
     if (hasDelta) {
       propertyDidChange(this, 'length');

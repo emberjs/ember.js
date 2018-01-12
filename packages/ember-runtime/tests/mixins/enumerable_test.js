@@ -184,7 +184,7 @@ let DummyEnum = EmberObject.extend(Enumerable, {
   length: 0
 });
 
-let obj, observer;
+let obj;
 
 // ..........................................................
 // NOTIFY ENUMERABLE PROPERTY
@@ -277,83 +277,4 @@ QUnit.test('should notify when passed old index API with delta', function(assert
 
   obj.enumerableContentDidChange(1, 2);
   assert.equal(obj._after, 1);
-});
-
-// ..........................................................
-// NOTIFY ENUMERABLE OBSERVER
-//
-
-QUnit.module('notify enumerable observers', {
-  beforeEach(assert) {
-    obj = DummyEnum.create();
-
-    observer = EmberObject.extend({
-      enumerableWillChange() {
-        assert.equal(this._before, null); // should only call once
-        this._before = Array.prototype.slice.call(arguments);
-      },
-
-      enumerableDidChange() {
-        assert.equal(this._after, null); // should only call once
-        this._after = Array.prototype.slice.call(arguments);
-      }
-    }).create({
-      _before: null,
-      _after: null
-    });
-
-    obj.addEnumerableObserver(observer);
-  },
-
-  afterEach() {
-    obj = observer = null;
-  }
-});
-
-QUnit.test('should notify enumerable observers when called with no params', function(assert) {
-  obj.enumerableContentWillChange();
-  assert.deepEqual(observer._before, [obj, null, null]);
-
-  obj.enumerableContentDidChange();
-  assert.deepEqual(observer._after, [obj, null, null]);
-});
-
-// API variation that included items only
-QUnit.test('should notify when called with same length items', function(assert) {
-  let added = ['foo'];
-  let removed = ['bar'];
-
-  obj.enumerableContentWillChange(removed, added);
-  assert.deepEqual(observer._before, [obj, removed, added]);
-
-  obj.enumerableContentDidChange(removed, added);
-  assert.deepEqual(observer._after, [obj, removed, added]);
-});
-
-QUnit.test('should notify when called with diff length items', function(assert) {
-  let added = ['foo', 'baz'];
-  let removed = ['bar'];
-
-  obj.enumerableContentWillChange(removed, added);
-  assert.deepEqual(observer._before, [obj, removed, added]);
-
-  obj.enumerableContentDidChange(removed, added);
-  assert.deepEqual(observer._after, [obj, removed, added]);
-});
-
-QUnit.test('should not notify when passed with indexes only', function(assert) {
-  obj.enumerableContentWillChange(1, 2);
-  assert.deepEqual(observer._before, [obj, 1, 2]);
-
-  obj.enumerableContentDidChange(1, 2);
-  assert.deepEqual(observer._after, [obj, 1, 2]);
-});
-
-QUnit.test('removing enumerable observer should disable', function(assert) {
-  obj.removeEnumerableObserver(observer);
-  obj.enumerableContentWillChange();
-  assert.deepEqual(observer._before, null);
-
-  obj.enumerableContentDidChange();
-  assert.deepEqual(observer._after, null);
 });
