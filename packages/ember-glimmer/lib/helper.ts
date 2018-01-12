@@ -39,8 +39,7 @@ export interface HelperInstance {
 export function isHelperFactory(helper: any | undefined | null): helper is HelperFactory {
   return typeof helper === 'object' &&
          helper !== null &&
-         typeof helper.class === 'function' &&
-         helper.class.isHelperFactory;
+         helper.class && helper.class.isHelperFactory;
 }
 
 export function isSimpleHelper(helper: HelperFactory): helper is SimpleHelperFactory {

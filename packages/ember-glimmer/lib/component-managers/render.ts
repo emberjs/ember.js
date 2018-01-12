@@ -63,7 +63,7 @@ const CAPABILITIES = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
-  createArgs: false,
+  createArgs: true,
   attributeHook: false,
   elementHook: false
 };
