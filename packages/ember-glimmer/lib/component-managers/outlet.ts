@@ -9,7 +9,6 @@ import {
   ElementOperations,
   Environment,
   Invocation,
-  TopLevelSyntax,
   UNDEFINED_REFERENCE,
   WithDynamicTagName,
   WithStaticLayout

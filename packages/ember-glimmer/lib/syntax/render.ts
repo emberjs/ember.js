@@ -6,10 +6,11 @@ Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
 
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { ConstReference, isConst, VersionedPathReference } from '@glimmer/reference';
+import { isConst, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
   CurriedComponentDefinition,
+  curry,
   VM,
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
@@ -23,6 +24,7 @@ import {
 } from '../component-managers/render';
 import Environment from '../environment';
 import { OwnedTemplate } from '../template';
+import { UnboundReference } from '../utils/references';
 
 export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<CurriedComponentDefinition | null>  {
   let env     = vm.env as Environment;
@@ -37,7 +39,7 @@ export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<Cu
   // tslint:disable-next-line:max-line-length
   assert(`You used \`{{render '${templateName}'}}\`, but '${templateName}' can not be found as a template.`, env.owner.hasRegistration(`template:${templateName}`));
 
-  let template = env.owner.lookup<OwnedTemplate | undefined>(`template:${templateName}`);
+  let template = env.owner.lookup<OwnedTemplate>(`template:${templateName}`);
 
   let controllerName: string;
 
@@ -56,11 +58,10 @@ export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<Cu
     controllerName = templateName;
   }
 
-  if (args.positional.length === 1) {
-    return new ConstReference(new RenderDefinition(controllerName, template!, env, SINGLETON_RENDER_MANAGER));
-  } else {
-    return new ConstReference(new RenderDefinition(controllerName, template!, env, NON_SINGLETON_RENDER_MANAGER));
-  }
+  let manager = args.positional.length === 1 ? SINGLETON_RENDER_MANAGER : NON_SINGLETON_RENDER_MANAGER;
+
+  let def = new RenderDefinition(controllerName, template, env, manager);
+  return UnboundReference.create(curry(def));
 }
 
 /**

@@ -15,7 +15,6 @@ import {
   CapturedArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
-  VM,
 } from '@glimmer/runtime';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -35,8 +34,9 @@ import {
   MANDATORY_SETTER,
 } from 'ember/features';
 import {
+  HelperFunction,
+  HelperInstance,
   RECOMPUTE_TAG,
-  SimpleHelper,
 } from '../helper';
 import emberToBool from './to-bool';
 
@@ -340,12 +340,10 @@ export class ConditionalReference extends GlimmerConditionalReference {
 }
 
 export class SimpleHelperReference extends CachedReference {
-  public helper: (positionalValue: any, namedValue: any) => any;
-  public args: any;
+  public helper: HelperFunction;
+  public args: CapturedArguments;
 
-  static create(Helper: SimpleHelper, _vm: VM, args: CapturedArguments) {
-    let helper = Helper.create();
-
+  static create(helper: HelperFunction, args: CapturedArguments) {
     if (isConst(args)) {
       let { positional, named } = args;
 
@@ -357,19 +355,14 @@ export class SimpleHelperReference extends CachedReference {
         maybeFreeze(namedValue);
       }
 
-      let result = helper.compute(positionalValue, namedValue);
-
-      if (typeof result === 'object' && result !== null || typeof result === 'function') {
-        return new RootReference(result);
-      } else {
-        return PrimitiveReference.create(result);
-      }
+      let result = helper(positionalValue, namedValue);
+      return valueToRef(result);
     } else {
-      return new SimpleHelperReference(helper.compute, args);
+      return new SimpleHelperReference(helper, args);
     }
   }
 
-  constructor(helper: (positionalValue: any, namedValue: any) => any, args: CapturedArguments) {
+  constructor(helper: HelperFunction, args: CapturedArguments) {
     super();
 
     this.tag = args.tag;
@@ -393,16 +386,14 @@ export class SimpleHelperReference extends CachedReference {
 }
 
 export class ClassBasedHelperReference extends CachedReference {
-  public instance: any;
-  public args: any;
+  public instance: HelperInstance;
+  public args: CapturedArguments;
 
-  static create(helperClass: any, vm: VM, args: CapturedArguments) {
-    let instance = helperClass.create();
-    vm.newDestroyable(instance);
+  static create(instance: HelperInstance, args: CapturedArguments) {
     return new ClassBasedHelperReference(instance, args);
   }
 
-  constructor(instance: any, args: CapturedArguments) {
+  constructor(instance: HelperInstance, args: CapturedArguments) {
     super();
 
     this.tag = combine([instance[RECOMPUTE_TAG], args.tag]);
@@ -445,16 +436,12 @@ export class InternalHelperReference extends CachedReference {
 
 // @implements PathReference
 export class UnboundReference<T> extends ConstReference<T> {
-  static create<T>(value: T) {
-    if (typeof value === 'object' && value !== null) {
-      return new UnboundReference(value);
-    } else {
-      return PrimitiveReference.create(value);
-    }
+  static create<T>(value: T): VersionedPathReference<T> {
+    return valueToRef(value, false);
   }
 
   get(key: string) {
-    return new UnboundReference(get(this.inner, key));
+    return valueToRef(get(this.inner, key), false);
   }
 }
 
@@ -466,4 +453,16 @@ export function referenceFromParts(root: VersionedPathReference<Opaque>, parts: 
   }
 
   return reference;
+}
+
+export function valueToRef(value: any | null | undefined, bound = true): VersionedPathReference<any | null | undefined> {
+  if (value !== null && typeof value === 'object') {
+    // root of interop with ember objects
+    return bound ? new RootReference(value) : new UnboundReference(value);
+  }
+  // ember doesn't do observing with functions
+  if (typeof value === 'function') {
+    return new UnboundReference(value);
+  }
+  return PrimitiveReference.create(value);
 }

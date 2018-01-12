@@ -1,7 +1,7 @@
 import { Opaque } from '@glimmer/interfaces';
 
-export interface Factory<T> {
-  class: any;
+export interface Factory<T, C> {
+  class: C;
   fullName: string;
   normalizedName: string;
   create(props?: { [prop: string]: any; }): T;
@@ -14,8 +14,8 @@ export interface LookupOptions {
 export interface Owner {
   lookup<T>(fullName: string, options?: LookupOptions): T;
   lookup(fullName: string, options?: LookupOptions): any;
-  factoryFor<T>(fullName: string, options?: LookupOptions): Factory<T>;
-  factoryFor(fullName: string, options?: LookupOptions): Factory<any>;
+  factoryFor<T, C>(fullName: string, options?: LookupOptions): Factory<T, C> | undefined;
+  factoryFor(fullName: string, options?: LookupOptions): Factory<any, any> | undefined;
   buildChildEngineInstance<T>(name: string): T;
   hasRegistration(name: string, options?: LookupOptions): boolean;
 

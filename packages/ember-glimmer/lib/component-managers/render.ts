@@ -6,30 +6,40 @@ import {
 } from '@glimmer/reference';
 import {
   Arguments,
-  ComponentDefinition
+  ComponentDefinition,
+  Invocation,
+  WithStaticLayout
 } from '@glimmer/runtime';
 
-import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
+import { OwnedTemplateMeta } from 'ember-views';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import { OwnedTemplate } from '../template';
+import { OrphanedOutletReference } from '../utils/outlet';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
 export interface RenderDefinitionState {
   name: string;
   template: OwnedTemplate | undefined;
+  env: Environment;
 }
 
-export abstract class AbstractRenderManager extends AbstractManager<RenderState, RenderDefinitionState> {
-  layoutFor(definition: RenderDefinition, _bucket: RenderState, _env: Environment): VMHandle {
-    // only curly components can have lazy layout
-    assert('definition is missing a template', !!definition.template);
+export abstract class AbstractRenderManager extends AbstractManager<RenderState, RenderDefinitionState>
+  implements WithStaticLayout<RenderState, RenderDefinitionState, OwnedTemplateMeta, any> {
 
-    throw Error('use resolver.lookupTemplate resolver.compileTemplate');
-    // return env.getCompiledBlock(OutletLayoutCompiler, definition.template!);
+  getLayout({ template }: RenderDefinitionState): Invocation {
+    const layout = template!.asLayout();
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable
+    };
+  }
+
+  layoutFor(_definition: RenderDefinition, _bucket: RenderState, _env: Environment): VMHandle {
+    throw new Error('not implemented');
   }
 
   getSelf({ controller }: RenderState) {
@@ -71,7 +81,7 @@ class SingletonRenderManager extends AbstractRenderManager {
     }
 
     if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
+      dynamicScope.outletState = new OrphanedOutletReference(dynamicScope.rootOutletState, name);
     }
 
     return { controller } as RenderState;
@@ -110,7 +120,7 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     }
 
     if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
+      dynamicScope.outletState = new OrphanedOutletReference(dynamicScope.rootOutletState, name);
     }
 
     return <RenderState>{ controller, model: modelRef };
@@ -136,16 +146,14 @@ class NonSingletonRenderManager extends AbstractRenderManager {
 export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 
 export class RenderDefinition implements ComponentDefinition {
-  public name: string;
-  public template: OwnedTemplate | undefined;
-  public env: Environment;
-  public state: RenderDefinitionState;
-  public manager: SingletonRenderManager | NonSingletonRenderManager;
 
-  constructor(name: string, template: OwnedTemplate, env: Environment, manager: SingletonRenderManager | NonSingletonRenderManager) {
-    this.name = name;
-    this.template = template;
-    this.env = env;
-    this.manager = manager;
+  public state: RenderDefinitionState;
+
+  constructor(name: string, template: OwnedTemplate, env: Environment, public manager: SingletonRenderManager | NonSingletonRenderManager) {
+    this.state = {
+      name,
+      template,
+      env,
+    };
   }
 }

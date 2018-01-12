@@ -33,7 +33,7 @@ export function hasPartial(name: string, owner: any): boolean;
 
 export function lookupComponent(owner: Owner, name: string, options?: { source?: string }): {
   layout: Template<OwnedTemplateMeta>;
-  component: Factory<Opaque>;
+  component: Factory<any, any>;
 };
 
 export function lookupPartial(templateName: string, owner: Owner): any;

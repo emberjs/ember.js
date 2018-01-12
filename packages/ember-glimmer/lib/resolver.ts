@@ -26,6 +26,7 @@ import {
 import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
+import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as classHelper } from './helpers/-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { default as inputTypeHelper } from './helpers/-input-type';
@@ -183,7 +184,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
 
   private _lookupHelper(name: string, meta: OwnedTemplateMeta): Option<Helper> {
-
     const helper = this.builtInHelpers[name];
     if (helper !== undefined) {
       return helper;
@@ -193,17 +193,24 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     const options: LookupOptions | undefined = makeOptions(moduleName);
 
-    const helperFactory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
+    const factory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
-    // TODO: try to unify this into a consistent protocol to avoid wasteful closure allocations
-    if (helperFactory && helperFactory.class.isHelperInstance) {
-      return (vm, args) => SimpleHelperReference.create(helperFactory, vm, args.capture());
-    } else if (helperFactory && helperFactory.class.isHelperFactory) {
-      return (vm, args) => ClassBasedHelperReference.create(helperFactory, vm, args.capture());
-    } else {
+    if (!isHelperFactory(factory)) {
       return null;
-      // throw new Error(`${name} is not a helper`);
     }
+
+    if (isSimpleHelper(factory)) {
+      const helper = factory.create().compute;
+      return (_vm, args) => {
+        return SimpleHelperReference.create(helper, args.capture());
+      };
+    }
+
+    return (vm, args) => {
+      const helper = factory.create();
+      vm.newDestroyable(helper);
+      return ClassBasedHelperReference.create(helper, args.capture());
+    };
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
@@ -228,12 +235,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   private _lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
 
-    let customManager;
+    let customManager: any | undefined;
     if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
       let managerId = layout && layout.referrer.managerId;
 
       if (managerId) {
-        customManager = meta.owner.factoryFor<any>(`component-manager:${managerId}`).class;
+        customManager = meta.owner.factoryFor(`component-manager:${managerId}`);
       }
     }
 
