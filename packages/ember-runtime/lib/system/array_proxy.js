@@ -37,8 +37,11 @@ const EMPTY = [];
   A simple example of usage:
 
   ```javascript
+  import { A } from '@ember/array';
+  import ArrayProxy from '@ember/array/proxy';
+
   let pets = ['dog', 'cat', 'fish'];
-  let ap = Ember.ArrayProxy.create({ content: Ember.A(pets) });
+  let ap = ArrayProxy.create({ content: A(pets) });
 
   ap.get('firstObject');                        // 'dog'
   ap.set('content', ['amoeba', 'paramecium']);
@@ -50,9 +53,12 @@ const EMPTY = [];
   `objectAtContent`:
 
   ```javascript
+  import { A } from '@ember/array';
+  import ArrayProxy from '@ember/array/proxy';
+
   let pets = ['dog', 'cat', 'fish'];
-  let ap = Ember.ArrayProxy.create({
-      content: Ember.A(pets),
+  let ap = ArrayProxy.create({
+      content: A(pets),
       objectAtContent: function(idx) {
           return this.get('content').objectAt(idx).toUpperCase();
       }

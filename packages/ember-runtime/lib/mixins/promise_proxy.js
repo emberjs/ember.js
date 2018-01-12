@@ -40,10 +40,14 @@ function tap(proxy, promise) {
   A low level mixin making ObjectProxy promise-aware.
 
   ```javascript
-  let ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
+  import { resolve } from 'rsvp';
+  import ObjectProxy from '@ember/object/proxy';
+  import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+
+  let ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
 
   let proxy = ObjectPromiseProxy.create({
-    promise: Ember.RSVP.resolve($.getJSON('/some/remote/data.json'))
+    promise: resolve($.getJSON('/some/remote/data.json'))
   });
 
   proxy.then(function(json){
@@ -150,7 +154,10 @@ export default Mixin.create({
     Example:
 
     ```javascript
-    Ember.ObjectProxy.extend(Ember.PromiseProxyMixin).create({
+    import ObjectProxy from '@ember/object/proxy';
+    import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+
+    ObjectProxy.extend(PromiseProxyMixin).create({
       promise: <thenable>
     });
     ```
