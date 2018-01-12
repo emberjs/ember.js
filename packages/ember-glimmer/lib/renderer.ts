@@ -24,7 +24,7 @@ import {
 } from 'ember-views';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
-import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
+import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import Environment from './environment';
 import { OwnedTemplate } from './template';
@@ -262,7 +262,7 @@ export abstract class Renderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: Simple.Element) {
-    let definition = new TopLevelOutletComponentDefinition(view);
+    let definition = createRootOutlet(view);
     this._appendDefinition(view, curry(definition), target);
   }
 

@@ -1,7 +1,7 @@
 import { ComponentCapabilities, Option, Unique } from '@glimmer/interfaces';
 import { ParsedLayout, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
-  Tag, VersionedPathReference
+  CONSTANT_TAG, Tag, VersionedPathReference
 } from '@glimmer/reference';
 import {
   Arguments,
@@ -10,6 +10,7 @@ import {
   Environment,
   Invocation,
   TopLevelSyntax,
+  UNDEFINED_REFERENCE,
   WithDynamicTagName,
   WithStaticLayout
 } from '@glimmer/runtime';
@@ -36,17 +37,8 @@ function instrumentationPayload(def: OutletDefinitionState) {
 }
 
 interface OutletInstanceState {
-  tag: Tag;
-  controller: any | undefined;
+  self: VersionedPathReference<any | undefined>;
   finalize: () => void;
-}
-
-function createInstanceState(definition: OutletDefinitionState): OutletInstanceState {
-  return {
-    tag: definition.ref.tag,
-    controller: definition.controller,
-    finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
-  };
 }
 
 export interface OutletDefinitionState {
@@ -57,7 +49,7 @@ export interface OutletDefinitionState {
   controller: any | undefined;
 }
 
-export const CAPABILITIES: ComponentCapabilities = {
+const CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
@@ -77,16 +69,21 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
       this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
     }
     dynamicScope.outletState = definition.ref;
-    return createInstanceState(definition);
+    let controller = definition.controller;
+    let self = controller === undefined ? UNDEFINED_REFERENCE : new RootReference(controller);
+    return {
+      self,
+      finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
+    };
   }
 
   layoutFor(_state: OutletDefinitionState, _component: OutletInstanceState, _env: Environment): Unique<'Handle'> {
     throw new Error('Method not implemented.');
   }
 
-  getLayout(state: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
+  getLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
     // The router has already resolved the template
-    const layout = state.template.asLayout();
+    const layout = template.asLayout();
     return {
       handle: layout.compile(),
       symbolTable: layout.symbolTable
@@ -97,16 +94,13 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     return CAPABILITIES;
   }
 
-  getSelf({ controller }: OutletInstanceState) {
-    // RootReference initializes the object dirtyable tag state
-    // basically the entry point from Ember to Glimmer.
-    // So even though outletState is a path reference, it is not
-    // the correct Tag to support self here.
-    return new RootReference(controller);
+  getSelf({ self }: OutletInstanceState) {
+    return self;
   }
 
-  getTag(state: OutletInstanceState): Tag {
-    return state.tag;
+  getTag(): Tag {
+    // an outlet has no hooks
+    return CONSTANT_TAG;
   }
 
   didRenderLayout(state: OutletInstanceState) {
@@ -122,72 +116,65 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
   }
 }
 
-export const TOP_CAPABILITIES = Object.assign({}, CAPABILITIES, {
-  dynamicTag: true,
-  elementHook: true,
-});
+const OUTLET_MANAGER = new OutletComponentManager();
 
-class TopLevelOutletComponentManager extends OutletComponentManager
-  implements WithDynamicTagName<OutletInstanceState> {
-
-  getTagName(_component: OutletInstanceState) {
-    return 'div';
+export class OutletComponentDefinition implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
+  constructor(public state: OutletDefinitionState, public manager: OutletComponentManager = OUTLET_MANAGER) {
   }
+}
 
-  getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
-    // The router has already resolved the template
-    const template = state.template;
-    let layout: TopLevelSyntax;
-    if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
-      layout = template.asLayout();
-    } else {
+let createRootOutlet: (outletView: OutletView) => OutletComponentDefinition;
+
+if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
+  createRootOutlet = (outletView: OutletView) => new OutletComponentDefinition(outletView.state);
+} else {
+  const WRAPPED_CAPABILITIES = Object.assign({}, CAPABILITIES, {
+    dynamicTag: true,
+    elementHook: true,
+  });
+
+  const WrappedOutletComponentManager = class extends OutletComponentManager
+    implements WithDynamicTagName<OutletInstanceState> {
+
+    getTagName(_component: OutletInstanceState) {
+      return 'div';
+    }
+
+    getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
+      // The router has already resolved the template
+      const template = state.template;
       const compileOptions = Object.assign({},
         resolver.templateOptions,
         { asPartial: false, referrer: template.referrer});
       // TODO fix this getting private
       const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
-      layout = new WrappedBuilder(
+      const layout = new WrappedBuilder(
         compileOptions,
         parsed,
-        TOP_CAPABILITIES,
+        WRAPPED_CAPABILITIES,
       );
+      return {
+        handle: layout.compile(),
+        symbolTable: layout.symbolTable
+      };
     }
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable
-    };
-  }
 
-  getCapabilities(): ComponentCapabilities {
-    if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
-      return CAPABILITIES;
+    getCapabilities(): ComponentCapabilities {
+      return WRAPPED_CAPABILITIES;
     }
-    return TOP_CAPABILITIES;
-  }
 
-  didCreateElement(_component: OutletInstanceState, _element: Element, _operations: ElementOperations): void {
-    // to add GUID id and class
-    _element.setAttribute('class', 'ember-view');
-    _element.setAttribute('id', guidFor(_component));
-  }
+    didCreateElement(component: OutletInstanceState, element: Element, _operations: ElementOperations): void {
+      // to add GUID id and class
+      element.setAttribute('class', 'ember-view');
+      element.setAttribute('id', guidFor(component));
+    }
+  };
+
+  const WRAPPED_OUTLET_MANAGER = new WrappedOutletComponentManager();
+
+  createRootOutlet = (outletView: OutletView) => {
+    return new OutletComponentDefinition(outletView.state, WRAPPED_OUTLET_MANAGER);
+  };
 }
 
-const TOP_MANAGER = new TopLevelOutletComponentManager();
-
-export class TopLevelOutletComponentDefinition implements ComponentDefinition<OutletDefinitionState, TopLevelOutletComponentManager> {
-  public state: OutletDefinitionState;
-  public manager: TopLevelOutletComponentManager = TOP_MANAGER;
-
-  constructor(instance: OutletView) {
-    this.state = instance.state;
-  }
-}
-
-const OUTLET_MANAGER = new OutletComponentManager();
-
-export class OutletComponentDefinition implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
-  public manager: OutletComponentManager = OUTLET_MANAGER;
-
-  constructor(public state: OutletDefinitionState) {
-  }
-}
+export { createRootOutlet };
