@@ -782,6 +782,17 @@ export const enum Op {
   PrepareArgs,
 
   /**
+   * Operation: ...
+   * Format:
+   *   (CaptureArgs)
+   *
+   * Operand Stack:
+   *   ..., Arguments  →
+   *   ..., CapturedArguments
+   */
+  CaptureArgs,
+
+  /**
    * Operation: Create the component and push it onto the stack.
    * Format:
    *   (CreateComponent flags:u32 state:register)
