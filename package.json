@@ -43,12 +43,12 @@
     "test:testem": "testem -f testem.dist.js"
   },
   "dependencies": {
-    "@glimmer/compiler": "^0.30.2",
-    "@glimmer/node": "^0.30.2",
-    "@glimmer/program": "^0.30.2",
-    "@glimmer/reference": "^0.30.2",
-    "@glimmer/runtime": "^0.30.2",
-    "@glimmer/vm": "^0.30.2",
+    "@glimmer/compiler": "^0.30.4",
+    "@glimmer/node": "^0.30.4",
+    "@glimmer/program": "^0.30.4",
+    "@glimmer/reference": "^0.30.4",
+    "@glimmer/runtime": "^0.30.4",
+    "@glimmer/vm": "^0.30.4",
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^2.0.0",
     "ember-cli-get-component-path-option": "^1.0.0",
