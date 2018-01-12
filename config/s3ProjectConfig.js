@@ -26,24 +26,37 @@ function fileMap(revision, tag, date) {
     contentType: 'application/x-gzip',
     destinations: {
       'alpha': [
-        `alpha.tgz`,
         `alpha/daily/${date}.tgz`,
         `alpha/shas/${revision}.tgz`,
       ],
       'canary': [
-        `canary.tgz`,
         `canary/daily/${date}.tgz`,
         `canary/shas/${revision}.tgz`,
       ],
       'beta': [
-        `beta.tgz`,
         `beta/daily/${date}.tgz`,
         `beta/shas/${revision}.tgz`,
       ],
       'release': [
-        `release.tgz`,
         `release/daily/${date}.tgz`,
         `release/shas/${revision}.tgz`,
+      ],
+    }
+  };
+  filesToPublish['../build-metadata.json'] = {
+    contentType: 'application/json',
+    destinations: {
+      'alpha': [
+        'alpha.json',
+      ],
+      'canary': [
+        'canary.json',
+      ],
+      'beta': [
+        'beta.json',
+      ],
+      'release': [
+        'release.json',
       ],
     }
   };
