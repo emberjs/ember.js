@@ -307,16 +307,14 @@ function buildInjections(container, injections) {
   let hash = {};
   let isDynamic = false;
 
-  if (injections.length > 0) {
+  if (injections.length) {
     if (DEBUG) {
       container.registry.validateInjections(injections);
     }
 
-    let injection;
-    for (let i = 0; i < injections.length; i++) {
-      injection = injections[i];
+    injections.forEach(injection => {
       hash[injection.property] = lookup(container, injection.fullName);
-      if (!isDynamic) {
+      if(!isDynamic) {
         isDynamic = !isSingleton(container, injection.fullName);
       }
     }
@@ -337,12 +335,9 @@ function destroyDestroyables(container) {
   let cache = container.cache;
   let keys = Object.keys(cache);
 
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
-    let value = cache[key];
-
-    if (value.destroy) {
-      value.destroy();
+  keys.forEach(key => {
+    if(cache[key].destroy){
+      cache[key].destroy();
     }
   }
 }
