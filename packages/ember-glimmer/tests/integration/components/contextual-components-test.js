@@ -167,15 +167,15 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
 
     this.runTask(() => this.context.set('model.greeting', 'Good morning '));
 
-    this.assertText('ZackGood morning ');
+    this.assertText('Good morning Zack Zack Good morning ');
 
-    this.runTask(() => this.context.set('model.name', 'Matthew'));
+    this.runTask(() => this.context.set('model.name', 'Matthew '));
 
-    this.assertText('MatthewGood morning ');
+    this.assertText('Good morning Matthew Matthew Good morning ');
 
-    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack' }));
+    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack ' }));
 
-    this.assertText('ZackGabon ');
+    this.assertText('Gabon Zack Zack Gabon ');
   }
 
   ['@test renders with component helper with curried params, hash']() {
@@ -355,7 +355,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
         });
 
       this.assertText('Hodi Sigmundur 33');
-      
+
       this.runTask(() => this.rerender());
 
       this.assertText('Hodi Sigmundur 33');
@@ -1234,13 +1234,13 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
   ['@test GH#14632 give useful warning when calling contextual components with input as a name']() {
     expectAssertion(() => {
       this.render('{{component (component "input" type="text")}}');
-    }, 'You cannot use the input helper as a contextual helper. Please extend TextField or Checkbox to use it as a contextual component.');
+    }, 'You cannot use \'input\' as a component name. Component names must contain a hyphen.');
   }
 
   ['@test GH#14632 give useful warning when calling contextual components with textarea as a name']() {
     expectAssertion(() => {
       this.render('{{component (component "textarea" type="text")}}');
-    }, 'You cannot use the textarea helper as a contextual helper. Please extend TextArea to use it as a contextual component.');
+    }, 'You cannot use \'textarea\' as a component name. Component names must contain a hyphen.');
   }
 });
 
