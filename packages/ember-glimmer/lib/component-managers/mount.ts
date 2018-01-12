@@ -1,5 +1,5 @@
 import {
-  ComponentCapabilities, Unique,
+  ComponentCapabilities,
 } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,

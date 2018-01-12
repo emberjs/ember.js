@@ -3,7 +3,6 @@ import {
   Option,
   ProgramSymbolTable,
   Simple,
-  Unique,
   VMHandle
 } from '@glimmer/interfaces';
 import { ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';

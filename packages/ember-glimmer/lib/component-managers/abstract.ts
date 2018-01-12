@@ -1,7 +1,6 @@
 import {
   ComponentCapabilities,
   Simple,
-  VMHandle
 } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
