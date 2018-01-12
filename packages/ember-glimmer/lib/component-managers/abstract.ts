@@ -49,10 +49,7 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     dynamicScope: DynamicScope,
     caller: VersionedPathReference<void | {}>,
     hasDefaultBlock: boolean): T;
-  abstract layoutFor(
-    definition: any,
-    component: T,
-    env: Environment): VMHandle;
+
   abstract getSelf(component: T): VersionedPathReference<Opaque>;
   abstract getCapabilities(state: U): ComponentCapabilities;
 

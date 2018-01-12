@@ -62,10 +62,6 @@ class MountManager extends AbstractManager<EngineBucket, EngineDefinitionState>
     };
   }
 
-  layoutFor(_definition: EngineDefinitionState, _component: EngineBucket, _env: Environment): Unique<'Handle'> {
-    throw new Error('Method not implemented.');
-  }
-
   getCapabilities(state: EngineDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }

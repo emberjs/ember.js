@@ -22,10 +22,6 @@ export default class TemplateOnlyComponentManager extends AbstractManager<null> 
     return null;
   }
 
-  layoutFor({ template }: TemplateOnlyComponentDefinition, _: null, env: Environment): CompiledDynamicProgram {
-    return env.getCompiledBlock(TemplateOnlyComponentLayoutCompiler, template);
-  }
-
   getSelf(): VersionedPathReference<Opaque> {
     return NULL_REFERENCE;
   }

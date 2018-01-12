@@ -128,10 +128,6 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
              WithDynamicTagName<ComponentStateBucket>,
              WithDynamicLayout<ComponentStateBucket, OwnedTemplateMeta, RuntimeResolver> {
 
-  layoutFor(_state: DefinitionState, _component: ComponentStateBucket, _env: Environment): Unique<'Handle'> {
-    throw new Error('Method not implemented.');
-  }
-
   getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
     return {
       // TODO fix

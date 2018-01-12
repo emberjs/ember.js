@@ -2,7 +2,7 @@ import {
   ComponentCapabilities, VMHandle,
 } from '@glimmer/interfaces';
 import {
-  CONSTANT_TAG, Tag
+  CONSTANT_TAG, Tag, VersionedPathReference
 } from '@glimmer/reference';
 import {
   Arguments,
@@ -38,10 +38,6 @@ export abstract class AbstractRenderManager extends AbstractManager<RenderState,
     };
   }
 
-  layoutFor(_definition: RenderDefinition, _bucket: RenderState, _env: Environment): VMHandle {
-    throw new Error('not implemented');
-  }
-
   getSelf({ controller }: RenderState) {
     return new RootReference(controller);
   }
@@ -54,9 +50,8 @@ if (DEBUG) {
 }
 
 export interface RenderState {
+  model: VersionedPathReference<any>;
   controller: any;
-  model: any;
-  component: any;
 }
 
 const CAPABILITIES = {
@@ -109,7 +104,7 @@ class NonSingletonRenderManager extends AbstractRenderManager {
          args: Arguments,
          dynamicScope: DynamicScope) {
     let { name, env } = definition;
-    let modelRef = args.positional.at(0);
+    let modelRef = args.positional.at(1);
     let controllerFactory = env.owner.factoryFor(`controller:${name}`);
 
     let factory: any = controllerFactory || generateControllerFactory(env.owner, name);
@@ -123,7 +118,7 @@ class NonSingletonRenderManager extends AbstractRenderManager {
       dynamicScope.outletState = new OrphanedOutletReference(dynamicScope.rootOutletState, name);
     }
 
-    return <RenderState>{ controller, model: modelRef };
+    return { controller, model: modelRef };
   }
 
   update({ controller, model }: RenderState) {
@@ -134,8 +129,8 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     return CAPABILITIES;
   }
 
-  getTag(): Tag {
-    return CONSTANT_TAG;
+  getTag({ model }: RenderState): Tag {
+    return model.tag;
   }
 
   getDestructor({ controller }: RenderState) {

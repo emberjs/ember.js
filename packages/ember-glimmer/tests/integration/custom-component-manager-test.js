@@ -35,10 +35,6 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
       return definition.ComponentClass.create();
     }
 
-    layoutFor(definition, bucket, env) {
-      return env.getCompiledBlock(TestLayoutCompiler, definition.template);
-    }
-
     getDestructor(component) {
       return component;
     }
