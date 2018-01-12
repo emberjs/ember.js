@@ -782,6 +782,24 @@ export const enum Op {
   PrepareArgs,
 
   /**
+   * Operation: Replaces Arguments on the stack with CapturedArguments
+   * Format:
+   *   (CaptureArgs)
+   *
+   * Operand Stack:
+   *   ..., Arguments  →
+   *   ..., CapturedArguments
+   *
+   * Description:
+   * The Arguments object is mutated in place because it is usually consumed immediately
+   * after being pushed on to the stack. In some situations, such as with curried components,
+   * information about more than one Argument may need to exist on the stack at once. In those
+   * cases, the CaptureArgs instruction pops an Arguments object off the stack and replaces it
+   * with the immutable CapturedArgs snapshot.
+   */
+  CaptureArgs,
+
+  /**
    * Operation: Create the component and push it onto the stack.
    * Format:
    *   (CreateComponent flags:u32 state:register)
