@@ -3,7 +3,7 @@
 */
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { VersionedPathReference } from '@glimmer/reference';
+import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
   CurriedComponentDefinition,
@@ -18,11 +18,10 @@ import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import { MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 
-export function mountHelper(vm: VM, args: Arguments, meta: any): VersionedPathReference<CurriedComponentDefinition | null> {
+export function mountHelper(vm: VM, args: Arguments): VersionedPathReference<CurriedComponentDefinition | null> {
   let env     = vm.env;
   let nameRef = args.positional.at(0);
-
-  return new DynamicEngineReference({ nameRef, env, meta });
+  return new DynamicEngineReference({ nameRef, env });
 }
 
 /**
@@ -85,50 +84,48 @@ export function mountMacro(_name: string, params: Option<WireFormat.Core.Params>
 }
 
 class DynamicEngineReference {
-  public tag: any;
-  public nameRef: any;
+  public tag: Tag;
+  public nameRef: VersionedPathReference<any | null | undefined>;
   public env: Environment;
-  public meta: any;
-  private _lastName: any;
-  private _lastDef: any;
-  constructor({ nameRef, env, meta }: any) {
+  private _lastName: string | null;
+  private _lastDef: CurriedComponentDefinition | null;
+  constructor({ nameRef, env }: any) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
     this.env = env;
-    this.meta = meta;
-    this._lastName = undefined;
-    this._lastDef = undefined;
+    this._lastName = null;
+    this._lastDef = null;
   }
 
   value() {
-    let { env, nameRef /*meta*/ } = this;
-    let nameOrDef = nameRef.value();
+    let { env, nameRef } = this;
+    let name = nameRef.value();
 
-    if (typeof nameOrDef === 'string') {
-      if (this._lastName === nameOrDef) {
+    if (typeof name === 'string') {
+      if (this._lastName === name) {
         return this._lastDef;
       }
 
       assert(
-        `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
-        env.owner.hasRegistration(`engine:${nameOrDef}`),
+        `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
+        env.owner.hasRegistration(`engine:${name}`),
       );
 
-      if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
+      if (!env.owner.hasRegistration(`engine:${name}`)) {
         return null;
       }
 
-      this._lastName = nameOrDef;
-      // TODO: maybe I've got the MountDefinition constructor wrong...
-      this._lastDef = curry(new MountDefinition(nameOrDef));
+      this._lastName = name;
+      this._lastDef = curry(new MountDefinition(name));
 
       return this._lastDef;
     } else {
       assert(
-        `Invalid engine name '${nameOrDef}' specified, engine name must be either a string, null or undefined.`,
-        nameOrDef === null || nameOrDef === undefined,
+        `Invalid engine name '${name}' specified, engine name must be either a string, null or undefined.`,
+        name === null || name === undefined,
       );
-
+      this._lastDef = null;
+      this._lastName = null;
       return null;
     }
   }
