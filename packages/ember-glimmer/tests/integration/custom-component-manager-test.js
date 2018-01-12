@@ -1,6 +1,3 @@
-import {
-  PrimitiveReference
-} from '@glimmer/runtime';
 import { moduleFor, RenderingTest } from '../utils/test-case';
 import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER
@@ -8,25 +5,6 @@ import {
 import { AbstractComponentManager } from 'ember-glimmer';
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
-  /*
-    Custom layout compiler. Exists mostly to inject
-    class and attributes for testing purposes.
-  */
-  class TestLayoutCompiler {
-    constructor(template) {
-      this.template = template;
-    }
-
-    compile(builder) {
-      builder.wrapLayout(this.template);
-      builder.tag.dynamic(() => {
-        return PrimitiveReference.create('p');
-      });
-      builder.attrs.static('class', 'hey-oh-lets-go');
-      builder.attrs.static('manager-id', 'test');
-    }
-  }
-
   /*
     Implementation of custom component manager, `ComponentManager` interface
   */
