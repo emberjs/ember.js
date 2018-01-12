@@ -2,7 +2,7 @@ import {
   ComponentCapabilities, VMHandle,
 } from '@glimmer/interfaces';
 import {
-  Tag
+  CONSTANT_TAG, Tag
 } from '@glimmer/reference';
 import {
   Arguments,
@@ -12,15 +12,18 @@ import {
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
-import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import { OwnedTemplate } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
-import DefinitionState from './definition-state';
 
-export abstract class AbstractRenderManager extends AbstractManager<RenderState, DefinitionState> {
+export interface RenderDefinitionState {
+  name: string;
+  template: OwnedTemplate | undefined;
+}
+
+export abstract class AbstractRenderManager extends AbstractManager<RenderState, RenderDefinitionState> {
   layoutFor(definition: RenderDefinition, _bucket: RenderState, _env: Environment): VMHandle {
     // only curly components can have lazy layout
     assert('definition is missing a template', !!definition.template);
@@ -46,9 +49,18 @@ export interface RenderState {
   component: any;
 }
 
+const CAPABILITIES = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: false,
+  elementHook: false
+};
+
 class SingletonRenderManager extends AbstractRenderManager {
   create(env: Environment,
-         definition: DefinitionState,
+         definition: RenderDefinitionState,
          _args: Arguments,
          dynamicScope: DynamicScope) {
     let { name } = definition;
@@ -65,13 +77,13 @@ class SingletonRenderManager extends AbstractRenderManager {
     return { controller } as RenderState;
   }
 
-  getCapabilities(state: DefinitionState): ComponentCapabilities {
-    return state.capabilities;
+  getCapabilities(_: RenderDefinitionState): ComponentCapabilities {
+    return CAPABILITIES;
   }
 
-  getTag({ component }: RenderState): Tag {
-    // TODO: is this the right tag?
-    return component[DIRTY_TAG];
+  getTag(): Tag {
+    // todo this should be the tag of the state args
+    return CONSTANT_TAG;
   }
 
   getDestructor() {
@@ -83,7 +95,7 @@ export const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
 
 class NonSingletonRenderManager extends AbstractRenderManager {
   create(environment: Environment,
-         definition: DefinitionState,
+         definition: RenderDefinitionState,
          args: Arguments,
          dynamicScope: DynamicScope) {
     let { name, env } = definition;
@@ -108,13 +120,12 @@ class NonSingletonRenderManager extends AbstractRenderManager {
     controller.set('model', model.value());
   }
 
-  getCapabilities(state: DefinitionState): ComponentCapabilities {
-    return state.capabilities;
+  getCapabilities(_: RenderDefinitionState): ComponentCapabilities {
+    return CAPABILITIES;
   }
 
-  getTag({ component }: RenderState): Tag {
-    // TODO: is this the right tag?
-    return component[DIRTY_TAG];
+  getTag(): Tag {
+    return CONSTANT_TAG;
   }
 
   getDestructor({ controller }: RenderState) {
@@ -128,11 +139,10 @@ export class RenderDefinition implements ComponentDefinition {
   public name: string;
   public template: OwnedTemplate | undefined;
   public env: Environment;
-  public state: DefinitionState;
+  public state: RenderDefinitionState;
   public manager: SingletonRenderManager | NonSingletonRenderManager;
 
   constructor(name: string, template: OwnedTemplate, env: Environment, manager: SingletonRenderManager | NonSingletonRenderManager) {
-
     this.name = name;
     this.template = template;
     this.env = env;

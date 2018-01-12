@@ -2,7 +2,6 @@ import { CompilableBlock, Macros, OpcodeBuilder } from '@glimmer/opcode-compiler
 import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
-import { ENV } from 'ember-environment';
 import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
@@ -80,11 +79,7 @@ export function registerMacros(macro: any) {
 export function populateMacros(macros: Macros) {
   let { inlines, blocks } = macros;
   inlines.add('outlet', outletMacro);
-
-  if (ENV._ENABLE_RENDER_SUPPORT === true) {
-    inlines.add('render', renderMacro);
-  }
-
+  inlines.add('render', renderMacro);
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);

@@ -3,8 +3,12 @@
 */
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+import { VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
+  CurriedComponentDefinition,
+  curry,
+  UNDEFINED_REFERENCE,
   VM
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
@@ -14,7 +18,7 @@ import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import { MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 
-export function mountHelper(vm: VM, args: Arguments, meta: any) {
+export function mountHelper(vm: VM, args: Arguments, meta: any): VersionedPathReference<CurriedComponentDefinition | null> {
   let env     = vm.env;
   let nameRef = args.positional.at(0);
 
@@ -116,7 +120,7 @@ class DynamicEngineReference {
 
       this._lastName = nameOrDef;
       // TODO: maybe I've got the MountDefinition constructor wrong...
-      this._lastDef = new MountDefinition(nameOrDef);
+      this._lastDef = curry(new MountDefinition(nameOrDef));
 
       return this._lastDef;
     } else {
@@ -127,5 +131,9 @@ class DynamicEngineReference {
 
       return null;
     }
+  }
+
+  get() {
+    return UNDEFINED_REFERENCE;
   }
 }

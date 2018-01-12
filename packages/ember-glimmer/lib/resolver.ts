@@ -35,18 +35,17 @@ import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
-import {
-  inlineIf,
-  inlineUnless,
-} from './helpers/if-unless';
+import { inlineIf, inlineUnless } from './helpers/if-unless';
 import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
-import { default as outlet } from './helpers/outlet';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
 import { populateMacros } from './syntax';
+import { mountHelper } from './syntax/mount';
+import { outletHelper } from './syntax/outlet';
+import { renderHelper } from './syntax/render';
 import { OwnedTemplate } from './template';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 
@@ -76,7 +75,9 @@ const BUILTINS_HELPERS = {
   '-normalize-class': normalizeClassHelper,
   '-html-safe': htmlSafeHelper,
   '-get-dynamic-var': getDynamicVar,
-  '-outlet': outlet,
+  '-mount': mountHelper,
+  '-outlet': outletHelper,
+  '-render': renderHelper,
 };
 
 const BUILTIN_MODIFIERS = {

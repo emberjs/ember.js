@@ -6,13 +6,15 @@ Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
 
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { ConstReference, isConst } from '@glimmer/reference';
+import { ConstReference, isConst, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
+  CurriedComponentDefinition,
   VM,
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
+import { ENV } from 'ember-environment';
 import { OwnedTemplateMeta } from 'ember-views';
 import {
   NON_SINGLETON_RENDER_MANAGER,
@@ -22,7 +24,7 @@ import {
 import Environment from '../environment';
 import { OwnedTemplate } from '../template';
 
-export function makeComponentDefinition(vm: VM, args: Arguments) {
+export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<CurriedComponentDefinition | null>  {
   let env     = vm.env as Environment;
   let nameRef = args.positional.at(0);
 
@@ -134,10 +136,13 @@ export function makeComponentDefinition(vm: VM, args: Arguments) {
   @deprecated Use a component instead
 */
 export function renderMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
-  // TODO needs makeComponentDefinition a helper that returns a curried definition
-  // TODO not sure all args are for definition or component
-  // likely the controller name should be a arg to create?
-  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-render', params || [], hash];
-  builder.dynamicComponent(expr, null, null, false, null, null);
-  return true;
+  if (ENV._ENABLE_RENDER_SUPPORT === true) {
+    // TODO needs makeComponentDefinition a helper that returns a curried definition
+    // TODO not sure all args are for definition or component
+    // likely the controller name should be a arg to create?
+    let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-render', params || [], hash];
+    builder.dynamicComponent(expr, null, null, false, null, null);
+    return true;
+  }
+  return false;
 }

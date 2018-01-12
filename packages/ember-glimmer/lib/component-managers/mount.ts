@@ -1,14 +1,16 @@
 import {
-  ComponentCapabilities,
-  VMHandle
+  ComponentCapabilities, Unique,
 } from '@glimmer/interfaces';
 import {
+  CONSTANT_TAG,
   Tag,
-  VersionedPathReference
+  VersionedPathReference,
 } from '@glimmer/reference';
 import {
   Arguments,
   ComponentDefinition,
+  Invocation,
+  WithDynamicLayout,
 } from '@glimmer/runtime';
 import {
   Destroyable,
@@ -18,16 +20,17 @@ import {
 import { DEBUG } from 'ember-env-flags';
 
 import { generateControllerFactory } from 'ember-routing';
+import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
-import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
+import RuntimeResolver from '../resolver';
+import { OwnedTemplate } from '../template';
 import { Component } from '../utils/curly-component-state-bucket';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
-import DefinitionState from './definition-state';
 
 // TODO: remove these stubbed interfaces when better typing is in place
-interface EngineType {
+interface Engine {
   boot(): void;
   destroy(): void;
   lookup(name: string): any;
@@ -35,24 +38,44 @@ interface EngineType {
 }
 
 interface EngineBucket {
-  engine: EngineType;
+  engine: Engine;
   component?: Component;
   controller?: any;
   modelReference?: any;
   modelRevision?: any;
 }
 
-class MountManager extends AbstractManager<EngineBucket, DefinitionState> {
-  getCapabilities(state: DefinitionState): ComponentCapabilities {
+interface EngineDefinitionState {
+  name: string;
+  capabilities: ComponentCapabilities;
+}
+
+class MountManager extends AbstractManager<EngineBucket, EngineDefinitionState>
+    implements WithDynamicLayout<EngineBucket, OwnedTemplateMeta, RuntimeResolver> {
+
+  getDynamicLayout(state: EngineBucket, _: RuntimeResolver): Invocation {
+    let template = state.engine.lookup('template:application') as OwnedTemplate;
+    let layout = template.asLayout();
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable
+    };
+  }
+
+  layoutFor(_definition: EngineDefinitionState, _component: EngineBucket, _env: Environment): Unique<'Handle'> {
+    throw new Error('Method not implemented.');
+  }
+
+  getCapabilities(state: EngineDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
 
-  create(environment: Environment, { name }: DefinitionState, args: Arguments) {
+  create(environment: Environment, { name }: EngineDefinitionState, args: Arguments) {
     if (DEBUG) {
       this._pushEngineToDebugStack(`engine:${name}`, environment);
     }
 
-    let engine = environment.owner.buildChildEngineInstance<EngineType>(name);
+    let engine = environment.owner.buildChildEngineInstance<Engine>(name);
 
     engine.boot();
 
@@ -63,13 +86,6 @@ class MountManager extends AbstractManager<EngineBucket, DefinitionState> {
     }
 
     return bucket;
-  }
-
-  layoutFor(_definition: ComponentDefinition<EngineBucket>, _bucket: EngineBucket, _env: Environment) {
-    // let template = engine.lookup(`template:application`);
-    throw Error('use resolver.lookupTemplate resolver.compileTemplate');
-    // needs to use resolver
-    // return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
   }
 
   getSelf(bucket: EngineBucket): VersionedPathReference<Opaque> {
@@ -88,9 +104,8 @@ class MountManager extends AbstractManager<EngineBucket, DefinitionState> {
     return new RootReference(controller);
   }
 
-  getTag({ component }: EngineBucket): Tag {
-    // TODO: is this the right tag?
-    return component![DIRTY_TAG];
+  getTag(): Tag {
+    return CONSTANT_TAG;
   }
 
   getDestructor({ engine }: EngineBucket): Option<Destroyable> {
@@ -116,21 +131,22 @@ class MountManager extends AbstractManager<EngineBucket, DefinitionState> {
   }
 }
 
-export class MountDefinition implements ComponentDefinition {
-  public state: DefinitionState;
+const MOUNT_MANAGER = new MountManager();
 
-  constructor(public name: string, public manager: MountManager, public ComponentClass: any, public handle: Option<VMHandle>) {
+export class MountDefinition implements ComponentDefinition {
+  public state: EngineDefinitionState;
+  public manager = MOUNT_MANAGER;
+
+  constructor(public name: string) {
     this.state = {
       name,
-      ComponentClass,
-      handle,
       capabilities: {
         dynamicLayout: true,
-        dynamicTag: true,
-        prepareArgs: true,
+        dynamicTag: false,
+        prepareArgs: false,
         createArgs: true,
-        attributeHook: true,
-        elementHook: true
+        attributeHook: false,
+        elementHook: false
       }
     };
   }
