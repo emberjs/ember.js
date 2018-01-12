@@ -322,6 +322,10 @@ OPCODE_METADATA(Op.PrepareArgs, {
   skipCheck: true
 });
 
+OPCODE_METADATA(Op.CaptureArgs, {
+  name: 'CaptureArgs'
+});
+
 OPCODE_METADATA(Op.CreateComponent, {
   name: 'CreateComponent',
   ops: [I32('flags'), Register('state')],

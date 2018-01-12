@@ -30,7 +30,7 @@ import Bounds from '../../bounds';
 import { DynamicScope, ScopeSlot } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM, VM } from '../../vm';
-import { Arguments, IArguments, ICapturedArguments } from '../../vm/arguments';
+import { Arguments, IArguments } from '../../vm/arguments';
 import { IsCurriedComponentDefinitionReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { ComponentManager, Component } from '../../internal-interfaces';
@@ -53,6 +53,7 @@ import ClassListReference from '../../references/class-list';
 import {
   CheckReference,
   CheckArguments,
+  CheckCapturedArguments,
   CheckPathReference,
   CheckComponentInstance,
   CheckFinishedComponentInstance
@@ -109,17 +110,12 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
   let definition = check(stack.pop(), CheckReference);
-  let args = check(stack.pop(), CheckArguments);
-  let captured: Option<ICapturedArguments> = null;
-
-  if (args.length) {
-    captured = args.capture();
-  }
+  let capturedArgs = check(stack.pop(), CheckCapturedArguments);
 
   let meta = vm.constants.getSerializable<TemplateMeta>(_meta);
   let resolver = vm.constants.resolver;
 
-  vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, captured));
+  vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, capturedArgs));
 
   // expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
 });
@@ -196,6 +192,14 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
 
   ARGS.setup(stack, names, blockNames, positionalCount, !!synthetic);
   stack.push(ARGS);
+});
+
+APPEND_OPCODES.add(Op.CaptureArgs, vm => {
+  let stack = vm.stack;
+
+  let args = check(stack.pop(), CheckInstanceof(Arguments));
+  let capturedArgs = args.capture();
+  stack.push(capturedArgs);
 });
 
 APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
