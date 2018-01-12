@@ -130,29 +130,6 @@ const ObserverClass = EmberObject.extend({
   */
   timesCalled(key) {
     return this._keys[key] || 0;
-  },
-
-  /*
-    begins acting as an enumerable observer.
-  */
-  observeEnumerable(obj) {
-    obj.addEnumerableObserver(this);
-    return this;
-  },
-
-  stopObserveEnumerable(obj) {
-    obj.removeEnumerableObserver(this);
-    return this;
-  },
-
-  enumerableWillChange() {
-    equal(this._before, null, 'should only call once');
-    this._before = Array.prototype.slice.call(arguments);
-  },
-
-  enumerableDidChange() {
-    equal(this._after, null, 'should only call once');
-    this._after = Array.prototype.slice.call(arguments);
   }
 });
 

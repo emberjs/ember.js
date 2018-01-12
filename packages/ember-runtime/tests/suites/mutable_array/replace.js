@@ -147,18 +147,6 @@ suite.test('[A,B,C,D].replace(-1,1) => [A,B,C] + notify', function() {
   equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
 });
 
-suite.test('Adding object should notify enumerable observer', function() {
-  let fixtures = this.newFixture(4);
-  let obj = this.newObject(fixtures);
-  let observer = this.newObserver(obj).observeEnumerable(obj);
-  let item = this.newFixture(1)[0];
-
-  obj.replace(2, 2, [item]);
-
-  deepEqual(observer._before, [obj, [fixtures[2], fixtures[3]], 1], 'before');
-  deepEqual(observer._after, [obj, 2, [item]], 'after');
-});
-
 suite.test('Adding object should notify array observer', function() {
   let fixtures = this.newFixture(4);
   let obj = this.newObject(fixtures);
