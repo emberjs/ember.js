@@ -59,8 +59,6 @@ export function objectAt(content, idx) {
 }
 
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
-  let removing, lim;
-
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
     startIdx = 0;
@@ -81,18 +79,7 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 
   sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
 
-  if (startIdx >= 0 && removeAmt >= 0 && get(array, 'hasEnumerableObservers')) {
-    removing = [];
-    lim = startIdx + removeAmt;
-
-    for (let idx = startIdx; idx < lim; idx++) {
-      removing.push(objectAt(array, idx));
-    }
-  } else {
-    removing = removeAmt;
-  }
-
-  array.enumerableContentWillChange(removing, addAmt);
+  array.enumerableContentWillChange(removeAmt, addAmt);
 
   return array;
 }
@@ -112,19 +99,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     }
   }
 
-  let adding;
-  if (startIdx >= 0 && addAmt >= 0 && get(array, 'hasEnumerableObservers')) {
-    adding = [];
-    let lim = startIdx + addAmt;
-
-    for (let idx = startIdx; idx < lim; idx++) {
-      adding.push(objectAt(array, idx));
-    }
-  } else {
-    adding = addAmt;
-  }
-
-  array.enumerableContentDidChange(removeAmt, adding);
+  array.enumerableContentDidChange(removeAmt, addAmt);
 
   if (array.__each) {
     array.__each.arrayDidChange(array, startIdx, removeAmt, addAmt);
