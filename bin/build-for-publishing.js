@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const execSync = require('child_process').execSync;
+const VERSION = require('../broccoli/version').VERSION;
 
 /*
   Updates the `package.json`'s `version` string to be the same value that
@@ -11,7 +12,6 @@ const execSync = require('child_process').execSync;
 */
 function updatePackageJSONVersion() {
   let packageJSONPath = path.join(__dirname, '..', 'package.json');
-  let VERSION = require('../broccoli/version').VERSION;
 
   let pkgContents = fs.readFileSync(packageJSONPath, { encoding: 'utf-8' });
   let pkg = JSON.parse(pkgContents);
@@ -31,7 +31,6 @@ function updatePackageJSONVersion() {
 */
 function updateDocumentationVersion() {
   let docsPath = path.join(__dirname, '..', 'docs', 'data.json');
-  let VERSION = require('../broccoli/version').VERSION;
 
   let contents = fs.readFileSync(docsPath, { encoding: 'utf-8' });
   let docs = JSON.parse(contents);
@@ -51,3 +50,12 @@ updateDocumentationVersion();
 // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
 // property properly, and therefore the tarball generated is quite large (~7MB).
 execSync('npm pack');
+
+// generate build-metadata.json
+const metadata = {
+  version: VERSION,
+  buildType: process.env.BUILD_TYPE,
+  SHA: process.env.TRAVIS_COMMIT,
+  assetPath: `/${process.env.BUILD_TYPE}/shas/${process.env.TRAVIS_COMMIT}.tgz`,
+};
+fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), { encoding: 'utf-8' });
