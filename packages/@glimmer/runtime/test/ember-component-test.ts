@@ -1062,6 +1062,44 @@ QUnit.test('component helper can curry arguments', () => {
   `);
 });
 
+QUnit.test('component helper: currying works inline', () => {
+  let FooBarComponent = EmberishCurlyComponent.extend();
+
+  FooBarComponent.reopenClass({
+    positionalParams: ["one", "two", "three", "four", "five", "six"]
+  });
+
+  env.registerEmberishCurlyComponent('foo-bar', FooBarComponent as any, stripTight`
+    1. [{{one}}]
+    2. [{{two}}]
+    3. [{{three}}]
+    4. [{{four}}]
+    5. [{{five}}]
+    6. [{{six}}]
+  `);
+
+  appendViewFor(
+    stripTight`
+      {{component (component (component 'foo-bar' foo.first foo.second) 'inner 1') 'invocation 1' 'invocation 2'}}
+    `,
+    {
+      foo: {
+        first: 'outer 1',
+        second: 'outer 2'
+      }
+    }
+  );
+
+  assertText(stripTight`
+    1. [outer 1]
+    2. [outer 2]
+    3. [inner 1]
+    4. [invocation 1]
+    5. [invocation 2]
+    6. []
+  `);
+});
+
 module("Emberish Component - ids");
 
 QUnit.test('emberish component should have unique IDs', assert => {

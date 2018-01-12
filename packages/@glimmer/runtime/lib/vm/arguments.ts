@@ -244,7 +244,7 @@ export class PositionalArguments implements IPositionalArguments {
   }
 }
 
-class CapturedPositionalArguments implements ICapturedPositionalArguments {
+export class CapturedPositionalArguments implements ICapturedPositionalArguments {
   static empty(): CapturedPositionalArguments {
     return new CapturedPositionalArguments(CONSTANT_TAG, EMPTY_ARRAY, 0);
   }
@@ -411,7 +411,7 @@ export class NamedArguments implements INamedArguments {
   }
 }
 
-class CapturedNamedArguments implements ICapturedNamedArguments {
+export class CapturedNamedArguments implements ICapturedNamedArguments {
   public length: number;
   private _map: Option<Dict<VersionedPathReference<Opaque>>>;
 

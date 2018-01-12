@@ -1039,6 +1039,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
     this.pushFrame();
     this.compileArgs(params, hash, null, synthetic);
+    this.push(Op.CaptureArgs);
     this.expr(definition);
     this.push(Op.CurryComponent, this.constants.serializable(referrer));
     this.popFrame();
