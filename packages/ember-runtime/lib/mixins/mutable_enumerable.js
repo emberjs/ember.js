@@ -47,7 +47,7 @@ import {
   @class MutableEnumerable
   @namespace Ember
   @uses Ember.Enumerable
-  @public
+  @private
 */
 export default Mixin.create(Enumerable, {
 
