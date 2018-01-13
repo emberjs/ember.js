@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Option } from '@glimmer/interfaces';
+import { Option, Opaque } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -19,9 +19,10 @@ import { MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 
 export function mountHelper(vm: VM, args: Arguments): VersionedPathReference<CurriedComponentDefinition | null> {
-  let env     = vm.env;
+  let env     = vm.env as Environment;
   let nameRef = args.positional.at(0);
-  return new DynamicEngineReference({ nameRef, env });
+  let modelRef = args.named.has('model') ? args.named.get('model') : undefined;
+  return new DynamicEngineReference(nameRef, env, modelRef);
 }
 
 /**
@@ -86,19 +87,21 @@ export function mountMacro(_name: string, params: Option<WireFormat.Core.Params>
 class DynamicEngineReference {
   public tag: Tag;
   public nameRef: VersionedPathReference<any | null | undefined>;
+  public modelRef: VersionedPathReference<Opaque> | undefined;
   public env: Environment;
   private _lastName: string | null;
   private _lastDef: CurriedComponentDefinition | null;
-  constructor({ nameRef, env }: any) {
+  constructor(nameRef: VersionedPathReference<any | undefined | null>, env: Environment, modelRef: VersionedPathReference<Opaque> | undefined) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
+    this.modelRef = modelRef;
     this.env = env;
     this._lastName = null;
     this._lastDef = null;
   }
 
   value() {
-    let { env, nameRef } = this;
+    let { env, nameRef, modelRef } = this;
     let name = nameRef.value();
 
     if (typeof name === 'string') {
@@ -116,7 +119,7 @@ class DynamicEngineReference {
       }
 
       this._lastName = name;
-      this._lastDef = curry(new MountDefinition(name));
+      this._lastDef = curry(new MountDefinition(name, modelRef));
 
       return this._lastDef;
     } else {
