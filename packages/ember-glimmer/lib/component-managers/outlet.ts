@@ -68,6 +68,12 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
       this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
     }
     dynamicScope.outletState = definition.ref;
+
+    // this is only used for render helper which is legacy
+    if (dynamicScope.rootOutletState === undefined) {
+      dynamicScope.rootOutletState = dynamicScope.outletState;
+    }
+
     let controller = definition.controller;
     let self = controller === undefined ? UNDEFINED_REFERENCE : new RootReference(controller);
     return {

@@ -39,7 +39,7 @@ export class DynamicScope implements GlimmerDynamicScope {
   constructor(
     public view: Component | null,
     public outletState: VersionedPathReference<OutletState | undefined>,
-    public rootOutletState: VersionedPathReference<OutletState | undefined>) {
+    public rootOutletState?: VersionedPathReference<OutletState | undefined>) {
   }
 
   child() {
@@ -276,7 +276,7 @@ export abstract class Renderer {
     definition: CurriedComponentDefinition,
     target: Simple.Element) {
     let self = new UnboundReference(definition);
-    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE);
+    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
     this._renderRoot(rootState);
   }
