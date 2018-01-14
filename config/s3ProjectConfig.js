@@ -12,11 +12,7 @@ function fileMap(revision, tag, date) {
     "ember.min.js":               fileObject("ember.min",               ".js",   "text/javascript",  revision, tag, date),
     "ember.prod.js":              fileObject("ember.prod",              ".js",   "text/javascript",  revision, tag, date),
     "../docs/data.json":          fileObject("ember-docs",              ".json", "application/json", revision, tag, date),
-    "tests/index.html":           fileObject("ember-tests-index",       ".json", "application/json", revision, tag, date),
-    "bower.json":                 fileObject("bower",                   ".json", "application/json", revision, tag, date),
-    "component.json":             fileObject("component",               ".json", "application/json", revision, tag, date),
-    "composer.json":              fileObject("composer",                ".json", "application/json", revision, tag, date),
-    "package.json":               fileObject("package",                 ".json", "application/json", revision, tag, date),
+    "tests/index.html":           fileObject("ember-tests-index",       ".json", "application/json", revision, tag, date)
   };
 
   let version = require('../package').version;
