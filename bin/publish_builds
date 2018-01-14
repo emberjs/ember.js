@@ -8,5 +8,18 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$PUBLISH" == "true" ]; then
   ./bin/build-for-publishing.js
 
   ./bin/publish_to_s3.js
-  ./bin/publish_npm_and_bower
+
+  #### NPM PUBLISHING
+  if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
+    echo -e "CURRENT_TAG: ${TRAVIS_TAG}\n"
+    echo $NPM_AUTH_TOKEN > ~/.npmrc
+
+    NPM_USER=`npm whoami`
+    echo -e "Publishing to npm as $NPM_USER...\n"
+
+    # auto-dist-tag is ran by bin/build-for-publishing.js
+    # this ensures that the `publishConfig` object in the `package.json`
+    # indicates the correct tag to be published
+    npm publish
+  fi
 fi

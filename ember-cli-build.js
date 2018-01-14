@@ -37,7 +37,6 @@ const {
   emberVersionES,
   emberLicense,
   emberFeaturesES,
-  packageManagerJSONs,
   nodeTests,
   rollupEmberMetal
 } = require('./broccoli/packages');
@@ -312,7 +311,6 @@ module.exports = function(options) {
     emberTestsBundle,
     emberDebugBundle,
     emberTestingBundle,
-    packageManagerJSONs(),
     nodeTests()
   ]);
 };

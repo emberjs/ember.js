@@ -39,6 +39,8 @@ function updateDocumentationVersion() {
 }
 
 updatePackageJSONVersion();
+// ensures that we tag this correctly
+execSync('auto-dist-tag -w');
 
 // do a production build
 execSync('yarn build');
