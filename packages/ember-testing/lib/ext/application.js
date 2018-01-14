@@ -15,7 +15,7 @@ import {
 EmberApplication.reopen({
   /**
    This property contains the testing helpers for the current application. These
-   are created once you call `injectTestHelpers` on your `Ember.Application`
+   are created once you call `injectTestHelpers` on your `Application`
    instance. The included helpers are also available on the `window` object by
    default, but can be used from this object on the individual application also.
 

@@ -76,7 +76,7 @@ export let GUID_KEY_PROPERTY = {
 /**
   Generates a new guid, optionally saving the guid to the object that you
   pass in. You will rarely need to use this method. Instead you should
-  call `Ember.guidFor(obj)`, which return an existing guid if available.
+  call `guidFor(obj)`, which return an existing guid if available.
 
   @private
   @method generateGuid
@@ -111,7 +111,7 @@ export function generateGuid(obj, prefix = GUID_PREFIX) {
 /**
   Returns a unique id for the object. If the object does not yet have a guid,
   one will be assigned to it. You can call this on any object,
-  `Ember.Object`-based or not, but be aware that it will add a `_guid`
+  `EmberObject`-based or not, but be aware that it will add a `_guid`
   property.
 
   You can also use this method on DOM Element objects.

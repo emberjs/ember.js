@@ -37,7 +37,7 @@ export function setSearchDisabled(flag) {
 
   @class Namespace
   @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @public
 */
 const Namespace = EmberObject.extend({

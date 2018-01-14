@@ -31,16 +31,19 @@ function K() { return this; }
 
 
 /**
-  An ArrayProxy wraps any other object that implements `Ember.Array` and/or
-  `Ember.MutableArray,` forwarding all requests. This makes it very useful for
+  An ArrayProxy wraps any other object that implements `Array` and/or
+  `MutableArray,` forwarding all requests. This makes it very useful for
   a number of binding use cases or other cases where being able to swap
   out the underlying array is useful.
 
   A simple example of usage:
 
   ```javascript
+  import { A } from '@ember/array';
+  import ArrayProxy from '@ember/array/proxy';
+
   let pets = ['dog', 'cat', 'fish'];
-  let ap = Ember.ArrayProxy.create({ content: Ember.A(pets) });
+  let ap = ArrayProxy.create({ content: A(pets) });
 
   ap.get('firstObject');                        // 'dog'
   ap.set('content', ['amoeba', 'paramecium']);
@@ -52,9 +55,12 @@ function K() { return this; }
   `objectAtContent`:
 
   ```javascript
+  import { A } from '@ember/array';
+  import ArrayProxy from '@ember/array/proxy';
+
   let pets = ['dog', 'cat', 'fish'];
-  let ap = Ember.ArrayProxy.create({
-      content: Ember.A(pets),
+  let ap = ArrayProxy.create({
+      content: A(pets),
       objectAtContent: function(idx) {
           return this.get('content').objectAt(idx).toUpperCase();
       }
@@ -71,8 +77,8 @@ function K() { return this; }
 export default EmberObject.extend(MutableArray, {
 
   /**
-    The content array. Must be an object that implements `Ember.Array` and/or
-    `Ember.MutableArray.`
+    The content array. Must be an object that implements `Array` and/or
+    `MutableArray.`
 
     @property content
     @type EmberArray
@@ -226,7 +232,7 @@ export default EmberObject.extend(MutableArray, {
     let arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
-      assert(`ArrayProxy expects an Array or Ember.ArrayProxy, but you passed ${typeof arrangedContent}`,
+      assert(`ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
         isArray(arrangedContent) || arrangedContent.isDestroyed);
 
       addArrayObserver(arrangedContent, this, {
@@ -335,7 +341,7 @@ export default EmberObject.extend(MutableArray, {
 
   pushObjects(objects) {
     if (!(Enumerable.detect(objects) || isArray(objects))) {
-      throw new TypeError('Must pass Ember.Enumerable to Ember.MutableArray#pushObjects');
+      throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
     }
     this._replace(get(this, 'length'), 0, objects);
     return this;

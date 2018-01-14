@@ -61,7 +61,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   /**
     __Required.__ You must implement this method to apply this mixin.
 
-    This is one of the primitives you must implement to support `Ember.Array`.
+    This is one of the primitives you must implement to support `Array`.
     You should replace amt objects started at idx with the objects in the
     passed array. You should also call `this.enumerableContentDidChange()`
 
@@ -89,7 +89,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method clear
-    @return {Ember.Array} An empty Array.
+    @return {Array} An empty Array.
     @public
   */
   clear() {
@@ -191,7 +191,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   */
   pushObjects(objects) {
     if (!(Enumerable.detect(objects) || Array.isArray(objects))) {
-      throw new TypeError('Must pass Ember.Enumerable to Ember.MutableArray#pushObjects');
+      throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
     }
     this.replace(get(this, 'length'), 0, objects);
     return this;
@@ -337,7 +337,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   // ..........................................................
-  // IMPLEMENT Ember.MutableEnumerable
+  // IMPLEMENT MutableEnumerable
   //
 
   /**
