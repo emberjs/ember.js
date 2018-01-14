@@ -42,11 +42,11 @@ import {
 
   If you are implementing an object and want to support this API, just include
   this mixin in your class and implement the required methods. In your unit
-  tests, be sure to apply the Ember.MutableEnumerableTests to your object.
+  tests, be sure to apply the MutableEnumerableTests to your object.
 
   @class MutableEnumerable
   @namespace Ember
-  @uses Ember.Enumerable
+  @uses Enumerable
   @private
 */
 export default Mixin.create(Enumerable, {
@@ -72,7 +72,7 @@ export default Mixin.create(Enumerable, {
     Adds each object in the passed enumerable to the receiver.
 
     @method addObjects
-    @param {Ember.Enumerable} objects the objects to add.
+    @param {Enumerable} objects the objects to add.
     @return {Object} receiver
     @public
   */
@@ -105,7 +105,7 @@ export default Mixin.create(Enumerable, {
     Removes each object in the passed enumerable from the receiver.
 
     @method removeObjects
-    @param {Ember.Enumerable} objects the objects to remove
+    @param {Enumerable} objects the objects to remove
     @return {Object} receiver
     @public
   */

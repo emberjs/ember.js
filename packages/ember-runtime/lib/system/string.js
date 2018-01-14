@@ -123,13 +123,15 @@ export default {
     localized strings.
 
     ```javascript
+    import { loc } from '@ember/string';
+
     Ember.STRINGS = {
       '_Hello World': 'Bonjour le monde',
       '_Hello %@ %@': 'Bonjour %@ %@'
     };
 
-    Ember.String.loc("_Hello World");  // 'Bonjour le monde';
-    Ember.String.loc("_Hello %@ %@", ["John", "Smith"]);  // "Bonjour John Smith";
+    loc("_Hello World");  // 'Bonjour le monde';
+    loc("_Hello %@ %@", ["John", "Smith"]);  // "Bonjour John Smith";
     ```
 
     @method loc
@@ -146,7 +148,9 @@ export default {
     is mostly useful when applied to the `String.prototype`.
 
     ```javascript
-    Ember.String.w("alpha beta gamma").forEach(function(key) {
+    import { w } from '@ember/string';
+
+    w("alpha beta gamma").forEach(function(key) {
       console.log(key);
     });
 

@@ -15,8 +15,11 @@ export const helpers = {};
   For example:
 
   ```javascript
-  Ember.Test.registerHelper('boot', function(app) {
-    Ember.run(app, app.advanceReadiness);
+  import { registerHelper } from '@ember/test';
+  import { run } from '@ember/runloop';
+
+  registerHelper('boot', function(app) {
+    run(app, app.advanceReadiness);
   });
   ```
 
@@ -24,7 +27,9 @@ export const helpers = {};
   called with `app` as the first parameter.
 
   ```javascript
-  App = Ember.Application.create();
+  import Application from '@ember/application';
+
+  App = Application.create();
   App.injectTestHelpers();
   boot();
   ```
@@ -54,8 +59,11 @@ export function registerHelper(name, helperMethod) {
   For example:
 
   ```javascript
-  Ember.Test.registerAsyncHelper('boot', function(app) {
-    Ember.run(app, app.advanceReadiness);
+  import { registerAsyncHelper } from '@ember/test';
+  import { run } from '@ember/runloop';
+
+  registerAsyncHelper('boot', function(app) {
+    run(app, app.advanceReadiness);
   });
   ```
 
@@ -67,7 +75,9 @@ export function registerHelper(name, helperMethod) {
   For example:
 
   ```javascript
-  Ember.Test.registerAsyncHelper('deletePost', function(app, postId) {
+  import { registerAsyncHelper } from '@ember/test';
+
+  registerAsyncHelper('deletePost', function(app, postId) {
     click('.delete-' + postId);
   });
 
@@ -98,7 +108,9 @@ export function registerAsyncHelper(name, helperMethod) {
   Example:
 
   ```javascript
-  Ember.Test.unregisterHelper('wait');
+  import { unregisterHelper } from '@ember/test';
+
+  unregisterHelper('wait');
   ```
 
   @public
