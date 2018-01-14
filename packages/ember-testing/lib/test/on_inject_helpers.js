@@ -9,12 +9,14 @@ export const callbacks = [];
   Example:
 
   ```javascript
+  import $ from 'jquery';
+
   Ember.Test.onInjectHelpers(function() {
-    Ember.$(document).ajaxSend(function() {
+    $(document).ajaxSend(function() {
       Test.pendingRequests++;
     });
 
-    Ember.$(document).ajaxComplete(function() {
+    $(document).ajaxComplete(function() {
       Test.pendingRequests--;
     });
   });

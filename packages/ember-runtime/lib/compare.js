@@ -49,9 +49,11 @@ function spaceship(a, b) {
   - 1 if the first is greater than the second.
 
   ```javascript
-  Ember.compare('hello', 'hello');  // 0
-  Ember.compare('abc', 'dfg');      // -1
-  Ember.compare(2, 1);              // 1
+  import { compare } from '@ember/utils';
+
+  compare('hello', 'hello');  // 0
+  compare('abc', 'dfg');      // -1
+  compare(2, 1);              // 1
   ```
 
  If the types of the two objects are different precedence occurs in the
@@ -71,8 +73,10 @@ function spaceship(a, b) {
   - date
 
   ```javascript
-  Ember.compare('hello', 50);       // 1
-  Ember.compare(50, 'hello');       // -1
+  import { compare } from '@ember/utils';
+
+  compare('hello', 50);       // 1
+  compare(50, 'hello');       // -1
   ```
 
  @method compare

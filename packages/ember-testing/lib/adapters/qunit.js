@@ -2,12 +2,12 @@ import { inspect } from 'ember-utils';
 import Adapter from './adapter';
 
 /**
-  This class implements the methods defined by Ember.Test.Adapter for the
+  This class implements the methods defined by TestAdapter for the
   QUnit testing framework.
 
   @class QUnitAdapter
   @namespace Ember.Test
-  @extends Ember.Test.Adapter
+  @extends TestAdapter
   @public
 */
 export default Adapter.extend({

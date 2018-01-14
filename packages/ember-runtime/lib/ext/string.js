@@ -18,7 +18,7 @@ const StringPrototype = String.prototype;
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   /**
-    See [Ember.String.w](/api/classes/Ember.String.html#method_w).
+    See [String.w](/api/ember/release/classes/String/methods/w?anchor=w).
 
     @method w
     @for @ember/string
@@ -30,7 +30,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See [Ember.String.loc](/api/classes/Ember.String.html#method_loc).
+    See [String.loc](/api/ember/release/classes/String/methods/loc?anchor=loc).
 
     @method loc
     @for @ember/string
@@ -42,7 +42,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See [Ember.String.camelize](/api/classes/Ember.String.html#method_camelize).
+    See [String.camelize](/api/ember/release/classes/String/methods/camelize?anchor=camelize).
 
     @method camelize
     @for @ember/string
@@ -54,7 +54,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See [Ember.String.decamelize](/api/classes/Ember.String.html#method_decamelize).
+    See [String.decamelize](/api/ember/release/classes/String/methods/decamelize?anchor=decamelize).
 
     @method decamelize
     @for @ember/string
@@ -66,7 +66,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See [Ember.String.dasherize](/api/classes/Ember.String.html#method_dasherize).
+    See [String.dasherize](/api/ember/release/classes/String/methods/dasherize?anchor=dasherize).
 
     @method dasherize
     @for @ember/string
@@ -78,7 +78,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See [Ember.String.underscore](/api/classes/Ember.String.html#method_underscore).
+    See [String.underscore](/api/ember/release/classes/String/methods/underscore?anchor=underscore).
 
     @method underscore
     @for @ember/string
@@ -90,7 +90,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See [Ember.String.classify](/api/classes/Ember.String.html#method_classify).
+    See [String.classify](/api/ember/release/classes/String/methods/classify?anchor=classify).
 
     @method classify
     @for @ember/string
@@ -102,7 +102,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See [Ember.String.capitalize](/api/classes/Ember.String.html#method_capitalize).
+    See [String.capitalize](/api/ember/release/classes/String/methods/capitalize?anchor=capitalize).
 
     @method capitalize
     @for @ember/string

@@ -5,10 +5,12 @@
   Copy properties from a source object to a target object.
 
   ```javascript
+  import { assign } from '@ember/polyfills';
+
   var a = { first: 'Yehuda' };
   var b = { last: 'Katz' };
   var c = { company: 'Tilde Inc.' };
-  Ember.assign(a, b, c); // a === { first: 'Yehuda', last: 'Katz', company: 'Tilde Inc.' }, b === { last: 'Katz' }, c === { company: 'Tilde Inc.' }
+  assign(a, b, c); // a === { first: 'Yehuda', last: 'Katz', company: 'Tilde Inc.' }, b === { last: 'Katz' }, c === { company: 'Tilde Inc.' }
   ```
 
   @method assign

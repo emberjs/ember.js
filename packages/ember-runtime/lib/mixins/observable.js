@@ -34,7 +34,7 @@ import { assert } from 'ember-debug';
   application.
 
   Any object that has this mixin applied can be used in observer
-  operations. That includes `Ember.Object` and most objects you will
+  operations. That includes `EmberObject` and most objects you will
   interact with as you write your Ember application.
 
   Note that you will not generally apply this mixin to classes yourself,
@@ -58,8 +58,11 @@ import { assert } from 'ember-debug';
   For example:
 
   ```javascript
-  Ember.Object.extend({
-    valueObserver: Ember.observer('value', function(sender, key, value, rev) {
+  import { observer } from '@ember/object';
+  import EmberObject from '@ember/object';
+
+  EmberObject.extend({
+    valueObserver: observer('value', function(sender, key, value, rev) {
       // Executes whenever the "value" property changes
       // See the addObserver method for more information about the callback arguments
     })
@@ -67,7 +70,7 @@ import { assert } from 'ember-debug';
   ```
 
   Although this is the most common way to add an observer, this capability
-  is actually built into the `Ember.Object` class on top of two methods
+  is actually built into the `EmberObject` class on top of two methods
   defined in this mixin: `addObserver` and `removeObserver`. You can use
   these two methods to add and remove observers yourself if you need to
   do so at runtime.
@@ -108,7 +111,9 @@ export default Mixin.create({
     declared at the end, such as:
 
     ```javascript
-    fullName: Ember.computed('firstName', 'lastName', function() {
+    import { computed } from '@ember/object';
+
+    fullName: computed('firstName', 'lastName', function() {
       return this.get('firstName') + ' ' + this.get('lastName');
     })
     ```
@@ -371,7 +376,7 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
-    @return {Ember.Observable}
+    @return {Observable}
     @public
   */
   addObserver(key, target, method) {
@@ -388,7 +393,7 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
-    @return {Ember.Observable}
+    @return {Observable}
     @public
   */
   removeObserver(key, target, method) {
