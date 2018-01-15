@@ -66,7 +66,7 @@ QUnit.test('throws if you try to define a computed property', function() {
     EmberObject.create({
       foo: computed(function() {})
     });
-  }, 'Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
+  }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
 });
 
 QUnit.test('throws if you try to call _super in a method', function() {
@@ -76,7 +76,7 @@ QUnit.test('throws if you try to call _super in a method', function() {
         this._super(...arguments);
       }
     });
-  }, 'Ember.Object.create no longer supports defining methods that call _super.');
+  }, 'EmberObject.create no longer supports defining methods that call _super.');
 });
 
 QUnit.test('throws if you try to \'mixin\' a definition', function() {
@@ -88,7 +88,7 @@ QUnit.test('throws if you try to \'mixin\' a definition', function() {
 
   expectAssertion(function() {
     EmberObject.create(myMixin);
-  }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
+  }, 'EmberObject.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
 });
 
 QUnit.test('inherits properties from passed in EmberObject', function(assert) {
@@ -99,7 +99,7 @@ QUnit.test('inherits properties from passed in EmberObject', function(assert) {
 });
 
 QUnit.test('throws if you try to pass anything a string as a parameter', function() {
-  let expected = 'Ember.Object.create only accepts objects.';
+  let expected = 'EmberObject.create only accepts objects.';
 
   expectAssertion(() => EmberObject.create('some-string'), expected);
 });

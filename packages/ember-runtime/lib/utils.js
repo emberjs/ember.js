@@ -29,13 +29,16 @@ const { toString } = Object.prototype;
     - the object has an objectAt property
     - the object is an Object, and has a length property
 
-  Unlike `Ember.typeOf` this method returns true even if the passed object is
-  not formally an array but appears to be array-like (i.e. implements `Ember.Array`)
+  Unlike `typeOf` this method returns true even if the passed object is
+  not formally an array but appears to be array-like (i.e. implements `Array`)
 
   ```javascript
-  Ember.isArray();                                          // false
-  Ember.isArray([]);                                        // true
-  Ember.isArray(Ember.ArrayProxy.create({ content: [] }));  // true
+  import { isArray } from '@ember/array';
+  import ArrayProxy from '@ember/array/proxy';
+
+  isArray();                                      // false
+  isArray([]);                                    // true
+  isArray(ArrayProxy.create({ content: [] }));    // true
   ```
 
   @method isArray
@@ -78,34 +81,38 @@ export function isArray(obj) {
       | 'regexp'      | An instance of RegExp                                |
       | 'date'        | An instance of Date                                  |
       | 'filelist'    | An instance of FileList                              |
-      | 'class'       | An Ember class (created using Ember.Object.extend()) |
+      | 'class'       | An Ember class (created using EmberObject.extend())  |
       | 'instance'    | An Ember object instance                             |
       | 'error'       | An instance of the Error object                      |
-      | 'object'      | A JavaScript object not inheriting from Ember.Object |
+      | 'object'      | A JavaScript object not inheriting from EmberObject  |
 
   Examples:
 
   ```javascript
-  Ember.typeOf();                       // 'undefined'
-  Ember.typeOf(null);                   // 'null'
-  Ember.typeOf(undefined);              // 'undefined'
-  Ember.typeOf('michael');              // 'string'
-  Ember.typeOf(new String('michael'));  // 'string'
-  Ember.typeOf(101);                    // 'number'
-  Ember.typeOf(new Number(101));        // 'number'
-  Ember.typeOf(true);                   // 'boolean'
-  Ember.typeOf(new Boolean(true));      // 'boolean'
-  Ember.typeOf(Ember.A);                // 'function'
-  Ember.typeOf([1, 2, 90]);             // 'array'
-  Ember.typeOf(/abc/);                  // 'regexp'
-  Ember.typeOf(new Date());             // 'date'
-  Ember.typeOf(event.target.files);     // 'filelist'
-  Ember.typeOf(Ember.Object.extend());  // 'class'
-  Ember.typeOf(Ember.Object.create());  // 'instance'
-  Ember.typeOf(new Error('teamocil'));  // 'error'
+  import { A } from '@ember/array';
+  import { typeOf } from '@ember/utils';
+  import EmberObject from '@ember/object';
+
+  typeOf();                       // 'undefined'
+  typeOf(null);                   // 'null'
+  typeOf(undefined);              // 'undefined'
+  typeOf('michael');              // 'string'
+  typeOf(new String('michael'));  // 'string'
+  typeOf(101);                    // 'number'
+  typeOf(new Number(101));        // 'number'
+  typeOf(true);                   // 'boolean'
+  typeOf(new Boolean(true));      // 'boolean'
+  typeOf(A);                      // 'function'
+  typeOf([1, 2, 90]);             // 'array'
+  typeOf(/abc/);                  // 'regexp'
+  typeOf(new Date());             // 'date'
+  typeOf(event.target.files);     // 'filelist'
+  typeOf(EmberObject.extend());   // 'class'
+  typeOf(EmberObject.create());   // 'instance'
+  typeOf(new Error('teamocil'));  // 'error'
 
   // 'normal' JavaScript object
-  Ember.typeOf({ a: 'b' });             // 'object'
+  typeOf({ a: 'b' });             // 'object'
   ```
 
   @method typeOf
