@@ -8,6 +8,7 @@ import {
   _instrumentStart,
   peekMeta,
 } from 'ember-metal';
+import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
@@ -70,8 +71,8 @@ class RootComponentManager extends CurlyComponentManager {
 export const ROOT_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
-  prepareArgs: true,
-  createArgs: true,
+  prepareArgs: false,
+  createArgs: false,
   attributeHook: true,
   elementHook: true
 };
@@ -90,5 +91,9 @@ export class RootComponentDefinition implements ComponentDefinition {
       ComponentClass: factory,
       handle: null,
     };
+  }
+
+  getTag({ component }: ComponentStateBucket) {
+    return component[DIRTY_TAG];
   }
 }
