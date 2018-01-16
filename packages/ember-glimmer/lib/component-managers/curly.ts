@@ -108,18 +108,6 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: Arra
   }
 }
 
-// TODO there is a hook for dynamic attributes
-// function tagName(vm: VM) {
-//   let dynamicScope: DynamicScope = vm.dynamicScope() as DynamicScope;
-//   // tslint:disable-next-line:no-shadowed-variable
-//   let { tagName } = dynamicScope.view!;
-//   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
-// }
-
-// function ariaRole(vm: VM) {
-//   return vm.getSelf().get('ariaRole');
-// }
-
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
 export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, DefinitionState>
