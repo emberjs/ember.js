@@ -62,6 +62,8 @@ export default function moduleFor(description, TestClass, ...mixins) {
   function generateTest(name) {
     if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), assert => context[name](assert));
+    } else if (name.indexOf('@only ') === 0) {
+      QUnit.only(name.slice(5), assert => context[name](assert));
     } else if (name.indexOf('@skip ') === 0) {
       QUnit.skip(name.slice(5), assert => context[name](assert));
     } else {

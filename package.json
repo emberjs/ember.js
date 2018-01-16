@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -11,6 +11,7 @@
   },
   "license": "MIT",
   "files": [
+    "build-metadata.json",
     "blueprints",
     "dist",
     "!dist/ember-tests.prod.js",
@@ -71,6 +72,7 @@
     "@glimmer/runtime": "^0.30.2",
     "@glimmer/vm": "^0.30.2",
     "@types/rsvp": "^4.0.1",
+    "auto-dist-tag": "^0.1.5",
     "aws-sdk": "^2.46.0",
     "babel-plugin-check-es2015-constants": "^6.22.0",
     "babel-plugin-debug-macros": "^0.1.10",
@@ -120,7 +122,7 @@
     "lodash.uniq": "^4.5.0",
     "mocha": "^4.0.1",
     "puppeteer": "^0.13.0",
-    "qunit": "^2.4.1",
+    "qunit": "^2.5.0",
     "route-recognizer": "^0.3.3",
     "router_js": "^2.0.0-beta.1",
     "rsvp": "^4.7.0",

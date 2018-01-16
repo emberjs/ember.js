@@ -48,8 +48,10 @@ export default class AbstractTestCase {
     return run(callback);
   }
 
-  runTaskNext(callback) {
-    return run.next(callback);
+  runTaskNext() {
+    return new Promise((resolve) => {
+      return run.next(resolve);
+    });
   }
 
   setupFixture(innerHTML) {

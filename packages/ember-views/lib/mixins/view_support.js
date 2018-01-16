@@ -1,10 +1,10 @@
-import { guidFor, getOwner } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import { descriptor, descriptorFor, Mixin } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
 import { environment, ENV } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
-import jQuery from '../system/jquery';
+import { default as jQuery, jQueryDisabled } from '../system/jquery';
 
 function K() { return this; }
 
@@ -175,6 +175,7 @@ export default Mixin.create({
   */
   $(sel) {
     assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
+    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
     if (this.element) {
       return sel ? jQuery(sel, this.element) : jQuery(this.element);
     }
@@ -413,27 +414,6 @@ export default Mixin.create({
 
     if (!this.elementId && this.tagName !== '') {
       this.elementId = guidFor(this);
-    }
-
-    // if we find an `eventManager` property, deopt the
-    // `EventDispatcher`'s `canDispatchToEventManager` property
-    // if `null`
-    if (this.eventManager) {
-      let owner = getOwner(this);
-      let dispatcher = owner && owner.lookup('event_dispatcher:main');
-
-      deprecate(
-        `\`eventManager\` has been deprecated in ${this}.`,
-        false,
-        {
-          id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-          until: '2.17.0'
-        }
-      );
-
-      if (dispatcher && !('canDispatchToEventManager' in dispatcher)) {
-        dispatcher.canDispatchToEventManager = true;
-      }
     }
 
     if (environment._ENABLE_DID_INIT_ATTRS_SUPPORT) {

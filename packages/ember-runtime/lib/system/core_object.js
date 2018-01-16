@@ -24,7 +24,6 @@ import {
   Mixin,
   REQUIRED,
   defineProperty,
-  Binding,
   ComputedProperty,
   computed,
   InjectedProperty,
@@ -87,12 +86,12 @@ function makeCtor() {
           let properties = props[i];
 
           assert(
-            'Ember.Object.create only accepts objects.',
+            'EmberObject.create only accepts objects.',
             typeof properties === 'object' || properties === undefined
           );
 
           assert(
-            'Ember.Object.create no longer supports mixing in other ' +
+            'EmberObject.create no longer supports mixing in other ' +
             'definitions, use .extend & .create separately instead.',
             !(properties instanceof Mixin)
           );
@@ -110,18 +109,18 @@ function makeCtor() {
             }
 
             assert(
-              'Ember.Object.create no longer supports defining computed ' +
+              'EmberObject.create no longer supports defining computed ' +
               'properties. Define computed properties using extend() or reopen() ' +
               'before calling create().',
               !(value instanceof ComputedProperty)
             );
             assert(
-              'Ember.Object.create no longer supports defining methods that call _super.',
+              'EmberObject.create no longer supports defining methods that call _super.',
               !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
             );
             assert(
               '`actions` must be provided at extend time, not at create time, ' +
-              'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+              'when ActionHandler is used (i.e. views, controllers & routes).',
               !((keyName === 'actions') && ActionHandler.detect(this))
             );
 
@@ -246,7 +245,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     Example:
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       init() {
         alert(`Name is ${this.get('name')}`);
       }
@@ -292,7 +293,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     property and a normal one:
 
     ```javascript
-    const Bar = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Bar = EmberObject.extend({
       // Configure which properties to concatenate
       concatenatedProperties: ['concatenatedProperty'],
 
@@ -334,7 +337,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     Using the `concatenatedProperties` property, we can tell Ember to mix the
     content of the properties.
 
-    In `Ember.Component` the `classNames`, `classNameBindings` and
+    In `Component` the `classNames`, `classNameBindings` and
     `attributeBindings` properties are concatenated.
 
     This feature is available for you to use throughout the Ember object model,
@@ -365,7 +368,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     property and a normal one:
 
     ```javascript
-    const Bar = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Bar = EmberObject.extend({
       // Configure which properties are to be merged
       mergedProperties: ['mergedProperty'],
 
@@ -409,7 +414,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     This behavior is not available during object `create` calls. It is only
     available at `extend` time.
 
-    In `Ember.Route` the `queryParams` property is merged.
+    In `Route` the `queryParams` property is merged.
 
     This feature is available for you to use throughout the Ember object model,
     although typical app developers are likely to use it infrequently. Since
@@ -495,30 +500,26 @@ CoreObject.PrototypeMixin = Mixin.create({
     m.setSourceDestroyed();
   },
 
-  bind(to, from) {
-    if (!(from instanceof Binding)) { from = Binding.from(from); }
-    from.to(to).connect(this);
-    return from;
-  },
-
   /**
     Returns a string representation which attempts to provide more information
     than Javascript's `toString` typically does, in a generic way for all Ember
     objects.
 
     ```javascript
-    const Person = Ember.Object.extend()
-    person = Person.create()
-    person.toString() //=> "<Person:ember1024>"
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend();
+    person = Person.create();
+    person.toString(); //=> "<Person:ember1024>"
     ```
 
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
     ```javascript
-    const Student = Person.extend()
-    let student = Student.create()
-    student.toString() //=> "<(subclass of Person):ember1025>"
+    const Student = Person.extend();
+    let student = Student.create();
+    student.toString(); //=> "<(subclass of Person):ember1025>"
     ```
 
     If the method `toStringExtension` is defined, its return value will be
@@ -530,7 +531,7 @@ CoreObject.PrototypeMixin = Mixin.create({
         return this.get('fullName');
       }
     });
-    teacher = Teacher.create()
+    teacher = Teacher.create();
     teacher.toString(); //=> "<Teacher:ember1026:Tom Dale>"
     ```
 
@@ -563,20 +564,24 @@ let ClassMixinProps = {
     Creates a new subclass.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       say(thing) {
         alert(thing);
        }
     });
     ```
 
-    This defines a new subclass of Ember.Object: `Person`. It contains one method: `say()`.
+    This defines a new subclass of EmberObject: `Person`. It contains one method: `say()`.
 
     You can also create a subclass from any existing class by calling its `extend()` method.
-    For example, you might want to create a subclass of Ember's built-in `Ember.Component` class:
+    For example, you might want to create a subclass of Ember's built-in `Component` class:
 
     ```javascript
-    const PersonComponent = Ember.Component.extend({
+    import Component from '@ember/component';
+
+    const PersonComponent = Component.extend({
       tagName: 'li',
       classNameBindings: ['isAdministrator']
     });
@@ -586,7 +591,9 @@ let ClassMixinProps = {
     implementation of your parent class by calling the special `_super()` method:
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       say(thing) {
         let name = this.get('name');
         alert(`${name} says: ${thing}`);
@@ -616,7 +623,10 @@ let ClassMixinProps = {
     You can also pass `Mixin` classes to add additional properties to the subclass.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+    import Mixin from '@ember/object/mixin';
+
+    const Person = EmberObject.extend({
       say(thing) {
         alert(`${this.get('name')} says: ${thing}`);
       }
@@ -672,7 +682,9 @@ let ClassMixinProps = {
     containing values to initialize the newly instantiated object with.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       helloWorld() {
         alert(`Hi, my name is ${this.get('name')}`);
       }
@@ -686,7 +698,7 @@ let ClassMixinProps = {
     ```
 
     `create` will call the `init` function if defined during
-    `Ember.AnyObject.extend`
+    `AnyObject.extend`
 
     If no arguments are passed to `create`, it will not set values to the new
     instance during initialization:
@@ -719,7 +731,9 @@ let ClassMixinProps = {
     properties and functions:
 
     ```javascript
-    const MyObject = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const MyObject = EmberObject.extend({
       name: 'an object'
     });
 
@@ -756,7 +770,9 @@ let ClassMixinProps = {
     Augments a constructor's own properties and functions:
 
     ```javascript
-    const MyObject = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const MyObject = EmberObject.extend({
       name: 'an object'
     });
 
@@ -772,7 +788,9 @@ let ClassMixinProps = {
     These are only available on the class and not on any instance of that class.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       name: '',
       sayHello() {
         alert(`Hello. My name is ${this.get('name')}`);
@@ -837,7 +855,9 @@ let ClassMixinProps = {
     You can pass a hash of these values to a computed property like this:
 
     ```javascript
-    person: Ember.computed(function() {
+    import { computed } from '@ember/object';
+
+    person: computed(function() {
       let personId = this.get('personId');
       return Person.create({ id: personId });
     }).meta({ type: Person })

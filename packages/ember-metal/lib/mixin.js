@@ -338,14 +338,14 @@ function applyMixin(obj, mixins, partial) {
       replaceObserversAndListeners(obj, key, obj[key], value);
     }
 
-    if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(key)) {
+    if (ENV._ENABLE_BINDING_SUPPORT && typeof Mixin.detectBinding === 'function' && Mixin.detectBinding(key)) {
       meta.writeBindings(key, value);
     }
 
     defineProperty(obj, key, desc, value, meta);
   }
 
-  if (ENV._ENABLE_BINDING_SUPPORT && !partial) { // don't apply to prototype
+  if (ENV._ENABLE_BINDING_SUPPORT && !partial && typeof Mixin.finishProtype === 'function') {
     Mixin.finishPartial(obj, meta);
   }
 

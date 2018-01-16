@@ -2,10 +2,6 @@ import { assert, isTesting } from 'ember-debug';
 import {
   onErrorTarget
 } from './error_handler';
-import {
-  beginPropertyChanges,
-  endPropertyChanges
-} from './property_events';
 import Backburner from 'backburner';
 
 function onBegin(current) {
@@ -16,11 +12,7 @@ function onEnd(current, next) {
   run.currentRunLoop = next;
 }
 
-const backburner = new Backburner(['sync', 'actions', 'destroy'], {
-  sync: {
-    before: beginPropertyChanges,
-    after: endPropertyChanges
-  },
+const backburner = new Backburner(['actions', 'destroy'], {
   defaultQueue: 'actions',
   onBegin,
   onEnd,
@@ -237,7 +229,7 @@ run.end = function() {
 
   @property queues
   @type Array
-  @default ['sync', 'actions', 'destroy']
+  @default ['actions', 'destroy']
   @private
 */
 
@@ -254,11 +246,6 @@ run.end = function() {
   ```javascript
   import { schedule } from '@ember/runloop';
 
-  schedule('sync', this, function() {
-    // this will be executed in the first RunLoop queue, when bindings are synced
-    console.log('scheduled on sync queue');
-  });
-
   schedule('actions', this, function() {
     // this will be executed in the 'actions' queue, after bindings have synced.
     console.log('scheduled on actions queue');
@@ -273,8 +260,7 @@ run.end = function() {
   @method schedule
   @static
   @for @ember/runloop
-  @param {String} queue The name of the queue to schedule against.
-    Default queues are 'sync' and 'actions'
+  @param {String} queue The name of the queue to schedule against. Default queues is 'actions'
   @param {Object} [target] target object to use as the context when invoking a method.
   @param {String|Function} method The method to invoke. If you pass a string it
     will be resolved on the target object at the time the scheduled item is
@@ -301,31 +287,6 @@ run.hasScheduledTimers = function() {
 // Used by global test teardown
 run.cancelTimers = function() {
   backburner.cancelTimers();
-};
-
-/**
-  Immediately flushes any events scheduled in the 'sync' queue. Bindings
-  use this queue so this method is a useful way to immediately force all
-  bindings in the application to sync.
-
-  You should call this method anytime you need any changed state to propagate
-  throughout the app immediately without repainting the UI (which happens
-  in the later 'render' queue added by the `ember-views` package).
-
-  ```javascript
-  run.sync();
-  ```
-
-  @method sync
-  @static
-  @for @ember/runloop
-  @return {void}
-  @private
-*/
-run.sync = function() {
-  if (backburner.currentInstance) {
-    backburner.currentInstance.queues.sync.flush();
-  }
 };
 
 /**
@@ -450,7 +411,7 @@ run.once = function(...args) {
   @method scheduleOnce
   @static
   @for @ember/runloop
-  @param {String} [queue] The name of the queue to schedule against. Default queues are 'sync' and 'actions'.
+  @param {String} [queue] The name of the queue to schedule against. Default queues is 'actions'.
   @param {Object} [target] The target of the method to invoke.
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the

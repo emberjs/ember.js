@@ -8,11 +8,13 @@ export function clearPendingRequests() {
   requests.length = 0;
 }
 
-export function incrementPendingRequests(_, xhr) {
+export function incrementPendingRequests({ detail } = { detail: { xhr: null }}) {
+  let xhr = detail.xhr;
   requests.push(xhr);
 }
 
-export function decrementPendingRequests(_, xhr) {
+export function decrementPendingRequests({ detail } = { detail: { xhr: null }}) {
+  let xhr = detail.xhr;
   for (let i = 0; i < requests.length; i++) {
     if (xhr === requests[i]) {
       requests.splice(i, 1);

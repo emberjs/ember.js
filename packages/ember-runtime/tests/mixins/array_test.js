@@ -213,7 +213,7 @@ QUnit.module('notify array observers', {
   }
 });
 
-QUnit.test('should notify enumerable observers when called with no params', function(assert) {
+QUnit.test('should notify array observers when called with no params', function(assert) {
   arrayContentWillChange(obj);
   assert.deepEqual(observer._before, [obj, 0, -1, -1]);
 
@@ -238,78 +238,13 @@ QUnit.test('should notify when called with diff length items', function(assert) 
   assert.deepEqual(observer._after, [obj, 0, 2, 1]);
 });
 
-QUnit.test('removing enumerable observer should disable', function(assert) {
+QUnit.test('removing array observer should disable', function(assert) {
   removeArrayObserver(obj, observer);
   arrayContentWillChange(obj);
   assert.deepEqual(observer._before, null);
 
   arrayContentDidChange(obj);
   assert.deepEqual(observer._after, null);
-});
-
-// ..........................................................
-// NOTIFY ENUMERABLE OBSERVER
-//
-
-QUnit.module('notify enumerable observers as well', {
-  beforeEach(assert) {
-    obj = DummyArray.create();
-
-    observer = EmberObject.extend({
-      enumerableWillChange() {
-        assert.equal(this._before, null); // should only call once
-        this._before = Array.prototype.slice.call(arguments);
-      },
-
-      enumerableDidChange() {
-        assert.equal(this._after, null); // should only call once
-        this._after = Array.prototype.slice.call(arguments);
-      }
-    }).create({
-      _before: null,
-      _after: null
-    });
-
-    obj.addEnumerableObserver(observer);
-  },
-
-  afterEach() {
-    obj = observer = null;
-  }
-});
-
-QUnit.test('should notify enumerable observers when called with no params', function(assert) {
-  arrayContentWillChange(obj);
-  assert.deepEqual(observer._before, [obj, null, null], 'before');
-
-  arrayContentDidChange(obj);
-  assert.deepEqual(observer._after, [obj, null, null], 'after');
-});
-
-// API variation that included items only
-QUnit.test('should notify when called with same length items', function(assert) {
-  arrayContentWillChange(obj, 0, 1, 1);
-  assert.deepEqual(observer._before, [obj, ['ITEM-0'], 1], 'before');
-
-  arrayContentDidChange(obj, 0, 1, 1);
-  assert.deepEqual(observer._after, [obj, 1, ['ITEM-0']], 'after');
-});
-
-QUnit.test('should notify when called with diff length items', function(assert) {
-  arrayContentWillChange(obj, 0, 2, 1);
-  assert.deepEqual(observer._before, [obj, ['ITEM-0', 'ITEM-1'], 1], 'before');
-
-  arrayContentDidChange(obj, 0, 2, 1);
-  assert.deepEqual(observer._after, [obj, 2, ['ITEM-0']], 'after');
-});
-
-QUnit.test('removing enumerable observer should disable', function(assert) {
-  obj.removeEnumerableObserver(observer);
-  arrayContentWillChange(obj);
-  assert.deepEqual(observer._before, null, 'before');
-
-  arrayContentDidChange(obj);
-  assert.deepEqual(observer._after, null, 'after');
 });
 
 // ..........................................................

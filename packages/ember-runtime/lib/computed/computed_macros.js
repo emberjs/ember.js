@@ -26,7 +26,7 @@ function expandPropertiesToArray(predicateName, properties) {
 
   for (let i = 0; i < properties.length; i++) {
     let property = properties[i];
-    assert(`Dependent keys passed to Ember.computed.${predicateName}() can\'t have spaces.`, property.indexOf(' ') < 0);
+    assert(`Dependent keys passed to computed.${predicateName}() can\'t have spaces.`, property.indexOf(' ') < 0);
 
     expandProperties(property, extractProperty);
   }
@@ -62,8 +62,11 @@ function generateComputedWithPredicate(name, predicate) {
   Example
 
   ```javascript
-  let ToDoList = Ember.Object.extend({
-    isDone: Ember.computed.empty('todos')
+  import { empty } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let ToDoList = EmberObject.extend({
+    isDone: empty('todos')
   });
 
   let todoList = ToDoList.create({
@@ -99,8 +102,11 @@ export function empty(dependentKey) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasStuff: Ember.computed.notEmpty('backpack')
+  import { notEmpty } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasStuff: notEmpty('backpack')
   });
 
   let hamster = Hamster.create({ backpack: ['Food', 'Sleeping Bag', 'Tent'] });
@@ -132,8 +138,11 @@ export function notEmpty(dependentKey) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    isHungry: Ember.computed.none('food')
+  import { none } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    isHungry: none('food')
   });
 
   let hamster = Hamster.create();
@@ -166,8 +175,11 @@ export function none(dependentKey) {
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
-    isAnonymous: Ember.computed.not('loggedIn')
+  import { not } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
+    isAnonymous: not('loggedIn')
   });
 
   let user = User.create({loggedIn: false});
@@ -196,8 +208,11 @@ export function not(dependentKey) {
   into a boolean value.
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasBananas: Ember.computed.bool('numBananas')
+  import { bool } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasBananas: bool('numBananas')
   });
 
   let hamster = Hamster.create();
@@ -233,8 +248,11 @@ export function bool(dependentKey) {
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
-    hasValidEmail: Ember.computed.match('email', /^.+@.+\..+$/)
+  import { match } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
+    hasValidEmail: match('email', /^.+@.+\..+$/)
   });
 
   let user = User.create({loggedIn: false});
@@ -269,8 +287,11 @@ export function match(dependentKey, regexp) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    satisfied: Ember.computed.equal('percentCarrotsEaten', 100)
+  import { equal } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    satisfied: equal('percentCarrotsEaten', 100)
   });
 
   let hamster = Hamster.create();
@@ -304,8 +325,11 @@ export function equal(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasTooManyBananas: Ember.computed.gt('numBananas', 10)
+  import { gt } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasTooManyBananas: gt('numBananas', 10)
   });
 
   let hamster = Hamster.create();
@@ -339,8 +363,11 @@ export function gt(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasTooManyBananas: Ember.computed.gte('numBananas', 10)
+  import { gte } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasTooManyBananas: gte('numBananas', 10)
   });
 
   let hamster = Hamster.create();
@@ -374,8 +401,11 @@ export function gte(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    needsMoreBananas: Ember.computed.lt('numBananas', 3)
+  import { lt } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    needsMoreBananas: lt('numBananas', 3)
   });
 
   let hamster = Hamster.create();
@@ -409,8 +439,11 @@ export function lt(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    needsMoreBananas: Ember.computed.lte('numBananas', 3)
+  import { lte } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    needsMoreBananas: lte('numBananas', 3)
   });
 
   let hamster = Hamster.create();
@@ -449,9 +482,12 @@ export function lte(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    readyForCamp: Ember.computed.and('hasTent', 'hasBackpack'),
-    readyForHike: Ember.computed.and('hasWalkingStick', 'hasBackpack')
+  import { and } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    readyForCamp: and('hasTent', 'hasBackpack'),
+    readyForHike: and('hasWalkingStick', 'hasBackpack')
   });
 
   let tomster = Hamster.create();
@@ -489,9 +525,12 @@ export const and = generateComputedWithPredicate('and', value => value);
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    readyForRain: Ember.computed.or('hasJacket', 'hasUmbrella'),
-    readyForBeach: Ember.computed.or('{hasSunscreen,hasUmbrella}')
+  import { or } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    readyForRain: or('hasJacket', 'hasUmbrella'),
+    readyForBeach: or('{hasSunscreen,hasUmbrella}')
   });
 
   let tomster = Hamster.create();
@@ -521,9 +560,12 @@ export const or = generateComputedWithPredicate('or', value => !value);
   though they were called on the original property.
 
   ```javascript
-  let Person = Ember.Object.extend({
+  import { alias } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Person = EmberObject.extend({
     name: 'Alex Matchneer',
-    nomen: Ember.computed.alias('name')
+    nomen: alias('name')
   });
 
   let alex = Person.create();
@@ -554,10 +596,13 @@ export const or = generateComputedWithPredicate('or', value => !value);
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
+  import { oneWay } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
     firstName: null,
     lastName: null,
-    nickName: Ember.computed.oneWay('firstName')
+    nickName: oneWay('firstName')
   });
 
   let teddy = User.create({
@@ -605,10 +650,13 @@ export function oneWay(dependentKey) {
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
+  import { readOnly } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
     firstName: null,
     lastName: null,
-    nickName: Ember.computed.readOnly('firstName')
+    nickName: readOnly('firstName')
   });
 
   let teddy = User.create({
@@ -618,7 +666,7 @@ export function oneWay(dependentKey) {
 
   teddy.get('nickName');              // 'Teddy'
   teddy.set('nickName', 'TeddyBear'); // throws Exception
-  // throw new Ember.Error('Cannot Set: nickName on: <User:ember27288>' );`
+  // throw new EmberError('Cannot Set: nickName on: <User:ember27288>' );`
   teddy.get('firstName');             // 'Teddy'
   ```
 
@@ -642,8 +690,11 @@ export function readOnly(dependentKey) {
   print a deprecation warning.
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    bananaCount: Ember.computed.deprecatingAlias('cavendishCount', {
+  import { deprecatingAlias } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    bananaCount: deprecatingAlias('cavendishCount', {
       id: 'hamster.deprecate-banana',
       until: '3.0.0'
     })
@@ -659,7 +710,7 @@ export function readOnly(dependentKey) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @param {Object} options Options for `Ember.deprecate`.
+  @param {Object} options Options for `deprecate`.
   @return {ComputedProperty} computed property which creates an
   alias with a deprecation to the original value for property.
   @since 1.7.0

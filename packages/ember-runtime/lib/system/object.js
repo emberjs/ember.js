@@ -12,8 +12,8 @@ import { DEBUG } from 'ember-env-flags';
 let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
 
 /**
-  `Ember.Object` is the main base class for all Ember objects. It is a subclass
-  of `Ember.CoreObject` with the `Ember.Observable` mixin applied. For details,
+  `EmberObject` is the main base class for all Ember objects. It is a subclass
+  of `CoreObject` with the `Observable` mixin applied. For details,
   see the documentation for each of these.
 
   @class EmberObject
