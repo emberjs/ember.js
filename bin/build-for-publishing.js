@@ -1,10 +1,19 @@
 #!/usr/bin/env node
 'use strict';
+/* eslint-env node, es6 */
 
 const fs = require('fs');
 const path = require('path');
-const execSync = require('child_process').execSync;
+const execa = require('execa');
 const VERSION = require('../broccoli/version').VERSION;
+
+function exec(command, args) {
+  // eslint-disable-next-line
+  console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
+  let stream = execa(command, args);
+  stream.stdout.pipe(process.stdout);
+  return stream;
+}
 
 /*
   Updates the `package.json`'s `version` string to be the same value that
@@ -38,26 +47,46 @@ function updateDocumentationVersion() {
   fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2), { encoding: 'utf-8' });
 }
 
-updatePackageJSONVersion();
-// ensures that we tag this correctly
-execSync('auto-dist-tag -w');
+Promise
+  .resolve()
+  .then(() => {
+    updatePackageJSONVersion();
+    // ensures that we tag this correctly
+    return exec('auto-dist-tag', ['-w']);
+  })
+  .then(() => {
+    // do a production build
+    return exec('yarn', ['build']);
+  })
+  .then(() => {
+    // generate docs
+    return exec('yarn', ['docs']).then(() => {
+      updateDocumentationVersion();
+    });
+  })
+  .then(() => {
+    // generate build-metadata.json
+    const metadata = {
+      version: VERSION,
+      buildType: process.env.BUILD_TYPE,
+      SHA: process.env.TRAVIS_COMMIT,
+      assetPath: `/${process.env.BUILD_TYPE}/shas/${process.env.TRAVIS_COMMIT}.tgz`,
+    };
+    fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), { encoding: 'utf-8' });
 
-// do a production build
-execSync('yarn build');
-
-// generate docs
-execSync('yarn docs');
-updateDocumentationVersion();
-
-// generate build-metadata.json
-const metadata = {
-  version: VERSION,
-  buildType: process.env.BUILD_TYPE,
-  SHA: process.env.TRAVIS_COMMIT,
-  assetPath: `/${process.env.BUILD_TYPE}/shas/${process.env.TRAVIS_COMMIT}.tgz`,
-};
-fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), { encoding: 'utf-8' });
-
-// using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
-// property properly, and therefore the tarball generated is quite large (~7MB).
-execSync('npm pack');
+    // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
+    // property properly, and therefore the tarball generated is quite large (~7MB).
+    return exec('npm', ['pack']);
+  })
+  .then(
+    // eslint-disable-next-line
+    () => console.log('build-for-publishing completed succesfully!'),
+    (error) => {
+      // eslint-disable-next-line
+      console.error(error);
+      // eslint-disable-next-line
+      console.log('build-for-publishing failed');
+      // failure, must manually exit non-zero
+      process.exit(1);
+    }
+  );
