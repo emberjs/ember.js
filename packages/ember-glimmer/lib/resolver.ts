@@ -141,10 +141,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
   // End IRuntimeResolver
 
-  compileTemplate(template: OwnedTemplate, create: (template: OwnedTemplate, templateOptions: TemplateOptions<OwnedTemplateMeta>) => Invocation): Invocation {
-    return create(template, this.templateOptions);
-  }
-
   /**
    * Called by CompileTimeLookup compiling Unknown or Helper OpCode
    */
