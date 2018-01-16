@@ -236,7 +236,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   private _lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
 
-    if (EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
+    if (layout && !component && EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
       return new TemplateOnlyComponentDefinition(layout);
     }
 
