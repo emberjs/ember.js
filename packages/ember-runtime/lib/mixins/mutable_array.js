@@ -8,7 +8,6 @@ import {
   beginPropertyChanges,
   endPropertyChanges
 } from 'ember-metal';
-import Enumerable from './enumerable';
 import MutableEnumerable from './mutable_enumerable';
 import EmberArray, { objectAt } from './array';
 import { Error as EmberError } from 'ember-debug';
@@ -187,7 +186,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   pushObjects(objects) {
-    if (!(Enumerable.detect(objects) || Array.isArray(objects))) {
+    if (!Array.isArray(objects)) {
       throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
     }
     this.replace(get(this, 'length'), 0, objects);
