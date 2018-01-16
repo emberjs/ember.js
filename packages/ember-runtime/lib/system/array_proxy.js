@@ -12,7 +12,6 @@ import {
 } from '../utils';
 import EmberObject from './object';
 import MutableArray from '../mixins/mutable_array';
-import Enumerable from '../mixins/enumerable';
 import {
   addArrayObserver,
   removeArrayObserver,
@@ -257,7 +256,7 @@ export default EmberObject.extend(MutableArray, {
   },
 
   pushObjects(objects) {
-    if (!(Enumerable.detect(objects) || isArray(objects))) {
+    if (!isArray(objects)) {
       throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
     }
     this._replace(get(this, 'length'), 0, objects);
