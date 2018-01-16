@@ -60,7 +60,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     This is one of the primitives you must implement to support `Array`.
     You should replace amt objects started at idx with the objects in the
-    passed array. You should also call `this.enumerableContentDidChange()`
+    passed array. You should also call `this.arrayContentDidChange()`
 
     @method replace
     @param {Number} idx Starting index in the array to replace. If
@@ -172,7 +172,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   /**
-    Add the objects in the passed numerable to the end of the array. Defers
+    Add the objects in the passed array to the end of the array. Defers
     notifying observers of the change until all objects are added.
 
     ```javascript
@@ -182,7 +182,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method pushObjects
-    @param {Enumerable} objects the objects to add
+    @param {EmberArray} objects the objects to add
     @return {EmberArray} receiver
     @public
   */
@@ -332,10 +332,6 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     this.replace(0, len, objects);
     return this;
   },
-
-  // ..........................................................
-  // IMPLEMENT MutableEnumerable
-  //
 
   /**
     Remove all occurrences of an object in the array.
