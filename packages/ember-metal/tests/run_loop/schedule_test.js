@@ -48,10 +48,12 @@ QUnit.test('prior queues should be flushed before moving on to next queue', func
     let runLoop = run.currentRunLoop;
     ok(runLoop, 'run loop present');
 
-      run.schedule('sync', () => {
-        order.push('sync');
-        equal(runLoop, run.currentRunLoop, 'same run loop used');
-      });
+      expectDeprecation(() => {
+        run.schedule('sync', () => {
+          order.push('sync');
+          equal(runLoop, run.currentRunLoop, 'same run loop used');
+        });
+      }, `Scheduling into the 'sync' run loop queue is deprecated.`);
 
       run.schedule('actions', () => {
         order.push('actions');
@@ -62,10 +64,12 @@ QUnit.test('prior queues should be flushed before moving on to next queue', func
           equal(runLoop, run.currentRunLoop, 'same run loop used');
         });
 
-        run.schedule('sync', () => {
-          order.push('sync');
-          equal(runLoop, run.currentRunLoop, 'same run loop used');
-        });
+        expectDeprecation(() => {
+          run.schedule('sync', () => {
+            order.push('sync');
+            equal(runLoop, run.currentRunLoop, 'same run loop used');
+          });
+        }, `Scheduling into the 'sync' run loop queue is deprecated.`);
       });
 
     run.schedule('destroy', () => {
