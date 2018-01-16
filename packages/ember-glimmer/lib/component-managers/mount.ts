@@ -7,7 +7,6 @@ import {
   VersionedPathReference,
 } from '@glimmer/reference';
 import {
-  Arguments,
   ComponentDefinition,
   Invocation,
   WithDynamicLayout,
