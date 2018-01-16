@@ -152,35 +152,33 @@ function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuil
 */
 
 export function inputMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
-  let keys: WireFormat.Core.Expression[] | undefined;
-  let values: WireFormat.Core.Expression[] | undefined;
-  let typeIndex = -1;
-  let valueIndex = -1;
-
-  if (hash) {
-    keys = hash[0];
-    values = hash[1];
-    typeIndex = keys.indexOf('type');
-    valueIndex = keys.indexOf('value');
+  if (params === null) {
+    params = [];
   }
+  if (hash !== null) {
+    let keys = hash[0];
+    let values = hash[1];
+    let typeIndex = keys.indexOf('type');
 
-  if (!params) { params = []; }
-
-  if (typeIndex > -1) {
-    let typeArg = values![typeIndex];
-    if (Array.isArray(typeArg)) {
-      throw new Error('TODO convert to component invoke');
-      // return dynamicComponentMacro(params, hash, null, null, builder);
-    } else if (typeArg === 'checkbox') {
-      assert(
-        '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
-          'you must use `checked=someBooleanValue` instead.',
-        valueIndex === -1,
-      );
-      wrapComponentClassAttribute(hash);
-      return buildSyntax('-checkbox', params, hash, builder);
+    if (typeIndex > -1) {
+      let typeArg = values[typeIndex];
+      if (Array.isArray(typeArg)) {
+        // there is an AST plugin that converts this to an expression
+        // it really should just compile in the component call too.
+        let inputTypeExpr = params.shift() as WireFormat.Expression;
+        builder.dynamicComponent(inputTypeExpr, params, hash, true, null, null);
+        return true;
+      }
+      if (typeArg === 'checkbox') {
+        assert(
+          '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
+            'you must use `checked=someBooleanValue` instead.',
+          keys.indexOf('value') === -1,
+        );
+        wrapComponentClassAttribute(hash);
+        return buildSyntax('-checkbox', params, hash, builder);
+      }
     }
   }
-
   return buildSyntax('-text-field', params, hash, builder);
 }
