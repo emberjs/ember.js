@@ -48,10 +48,12 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
       let runLoop = run.currentRunLoop;
       assert.ok(runLoop, 'run loop present');
 
-      run.schedule('sync', () => {
-        order.push('sync');
-        assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
-      });
+      expectDeprecation(() => {
+        run.schedule('sync', () => {
+          order.push('sync');
+          assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
+        });
+      }, `Scheduling into the 'sync' run loop queue is deprecated.`);
 
       run.schedule('actions', () => {
         order.push('actions');
@@ -62,10 +64,12 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
           assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
         });
 
-        run.schedule('sync', () => {
-          order.push('sync');
-          assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
-        });
+        expectDeprecation(() => {
+          run.schedule('sync', () => {
+            order.push('sync');
+            assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
+          });
+        }, `Scheduling into the 'sync' run loop queue is deprecated.`);
       });
 
       run.schedule('destroy', () => {
