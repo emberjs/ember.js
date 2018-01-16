@@ -192,11 +192,11 @@ function iter(key, value) {
   the Array Mixin by way of the MutableArray mixin, which allows observable
   changes to be made to the underlying array.
 
-  Unlike `Enumerable,` this mixin defines methods specifically for
-  collections that provide index-ordered access to their contents. When you
-  are designing code that needs to accept any kind of Array-like object, you
-  should use these methods instead of Array primitives because these will
-  properly notify observers of changes to the array.
+  This mixin defines methods specifically for collections that provide
+  index-ordered access to their contents. When you are designing code that
+  needs to accept any kind of Array-like object, you should use these methods
+  instead of Array primitives because these will properly notify observers of
+  changes to the array.
 
   Although these methods are efficient, they do add a layer of indirection to
   your application so it is a good idea to use them only when you need the
@@ -209,9 +209,6 @@ function iter(key, value) {
 
   To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
-
-  Note that the EmberArray mixin also incorporates the `Enumerable`
-  mixin. All `EmberArray`-like objects are also enumerable.
 
   @class EmberArray
   @uses Enumerable
@@ -301,8 +298,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     This is the handler for the special array content property. If you get
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
-
-    This property overrides the default property defined in `Enumerable`.
 
     @property []
     @return this
@@ -569,7 +564,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Iterates through the enumerable, calling the passed function on each
+    Iterates through the array, calling the passed function on each
     item. This method corresponds to the `forEach()` method defined in
     JavaScript 1.6.
 
@@ -577,12 +572,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(item, index, enumerable);
+    function(item, index, array);
     ```
 
     - `item` is the current item in the iteration.
     - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
+    - `array` is the array itself.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
@@ -595,7 +590,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   forEach(callback, target) {
-    assert('Enumerable#forEach expects a function as first argument.', typeof callback === 'function');
+    assert('forEach expects a function as first argument.', typeof callback === 'function');
 
     let context = popCtx();
     let len = get(this, 'length');
@@ -651,12 +646,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(item, index, enumerable);
+    function(item, index, array);
     ```
 
     - `item` is the current item in the iteration.
     - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
+    - `array` is the array itself.
 
     It should return the mapped value.
 
@@ -671,7 +666,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   map(callback, target) {
-    assert('Enumerable#map expects a function as first argument.', typeof callback === 'function');
+    assert('map expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
 
@@ -702,12 +697,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(item, index, enumerable);
+    function(item, index, array);
     ```
 
     - `item` is the current item in the iteration.
     - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
+    - `array` is the array itself.
 
     It should return `true` to include the item in the results, `false`
     otherwise.
@@ -723,7 +718,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   filter(callback, target) {
-    assert('Enumerable#filter expects a function as first argument.', typeof callback === 'function');
+    assert('filter expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
 
@@ -744,12 +739,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(item, index, enumerable);
+    function(item, index, array);
     ```
 
     - *item* is the current item in the iteration.
     - *index* is the current index in the iteration
-    - *enumerable* is the enumerable object itself.
+    - *array* is the array itself.
 
     It should return a falsey value to include the item in the results.
 
@@ -764,7 +759,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reject(callback, target) {
-    assert('Enumerable#reject expects a function as first argument.', typeof callback === 'function');
+    assert('reject expects a function as first argument.', typeof callback === 'function');
 
     return this.filter(function() {
       return !(callback.apply(target, arguments));
@@ -814,12 +809,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(item, index, enumerable);
+    function(item, index, array);
     ```
 
     - `item` is the current item in the iteration.
     - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
+    - `array` is the array itself.
 
     It should return the `true` to include the item in the results, `false`
     otherwise.
@@ -835,7 +830,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   find(callback, target) {
-    assert('Enumerable#find expects a function as first argument.', typeof callback === 'function');
+    assert('find expects a function as first argument.', typeof callback === 'function');
 
     let len = get(this, 'length');
 
@@ -890,12 +885,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(item, index, enumerable);
+    function(item, index, array);
     ```
 
     - `item` is the current item in the iteration.
     - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
+    - `array` is the array itself.
 
     It should return the `true` or `false`.
 
@@ -918,18 +913,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   every(callback, target) {
-    assert('Enumerable#every expects a function as first argument.', typeof callback === 'function');
+    assert('every expects a function as first argument.', typeof callback === 'function');
 
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
   },
 
   /**
     Returns `true` if the passed property resolves to the value of the second
-    argument for all items in the enumerable. This method is often simpler/faster
+    argument for all items in the array. This method is often simpler/faster
     than using a callback.
 
     Note that like the native `Array.every`, `isEvery` will return true when called
-    on any empty enumerable.
+    on any empty array.
 
     @method isEvery
     @param {String} key the property to test
@@ -950,12 +945,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(item, index, enumerable);
+    function(item, index, array);
     ```
 
     - `item` is the current item in the iteration.
     - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
+    - `array` is the array object itself.
 
     It must return a truthy value (i.e. `true`) to include an item in the
     results. Any non-truthy return value will discard the item from the
@@ -980,7 +975,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   any(callback, target) {
-    assert('Enumerable#any expects a function as first argument.', typeof callback === 'function');
+    assert('any expects a function as first argument.', typeof callback === 'function');
 
     let len = get(this, 'length');
     let context = popCtx();
@@ -1005,7 +1000,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   /**
     Returns `true` if the passed property resolves to the value of the second
-    argument for any item in the enumerable. This method is often simpler/faster
+    argument for any item in the array. This method is often simpler/faster
     than using a callback.
 
     @method isAny
@@ -1028,13 +1023,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
     parameters are optional):
 
     ```javascript
-    function(previousValue, item, index, enumerable);
+    function(previousValue, item, index, array);
     ```
 
     - `previousValue` is the value returned by the last call to the iterator.
     - `item` is the current item in the iteration.
     - `index` is the current index in the iteration.
-    - `enumerable` is the enumerable object itself.
+    - `array` is the array itself.
 
     Return the new cumulative value.
 
@@ -1054,7 +1049,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reduce(callback, initialValue, reducerProperty) {
-    assert('Enumerable#reduce expects a function as first argument.', typeof callback === 'function');
+    assert('reduce expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 
@@ -1091,11 +1086,11 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Simply converts the enumerable into a genuine array. The order is not
+    Simply converts the object into a genuine array. The order is not
     guaranteed. Corresponds to the method implemented by Prototype.
 
     @method toArray
-    @return {Array} the enumerable as an array.
+    @return {Array} the object as an array.
     @public
   */
   toArray() {
@@ -1170,7 +1165,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Converts the enumerable into an array and sorts by the keys
+    Converts the array into an array and sorts by the keys
     specified in the argument.
 
     You may provide multiple arguments to sort by multiple properties.
@@ -1201,7 +1196,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns a new enumerable that contains only unique values. The default
+    Returns a new array that contains only unique values. The default
     implementation returns an array regardless of the receiver type.
 
     ```javascript
@@ -1212,7 +1207,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     This only works on primitive data types, e.g. Strings, Numbers, etc.
 
     @method uniq
-    @return {Enumerable}
+    @return {EmberArray}
     @public
   */
   uniq() {
@@ -1230,7 +1225,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns a new enumerable that contains only items containing a unique property value.
+    Returns a new array that contains only items containing a unique property value.
     The default implementation returns an array regardless of the receiver type.
 
     ```javascript
@@ -1239,7 +1234,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```
 
     @method uniqBy
-    @return {Enumerable}
+    @return {EmberArray}
     @public
   */
 
@@ -1259,9 +1254,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns a new enumerable that excludes the passed value. The default
+    Returns a new array that excludes the passed value. The default
     implementation returns an array regardless of the receiver type.
-    If the receiver does not contain the value it returns the original enumerable.
+    If the receiver does not contain the value it returns the original array.
 
     ```javascript
     let arr = ['a', 'b', 'a', 'c'];
@@ -1270,7 +1265,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     @method without
     @param {Object} value
-    @return {Enumerable}
+    @return {EmberArray}
     @public
   */
   without(value) {
@@ -1293,7 +1288,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   /**
     Returns a special object that can be used to observe individual properties
     on the array. Just get an equivalent property on this object and it will
-    return an enumerable that maps automatically to the named key on the
+    return an array that maps automatically to the named key on the
     member objects.
 
     `@each` should only be used in a non-terminal context. Example:
