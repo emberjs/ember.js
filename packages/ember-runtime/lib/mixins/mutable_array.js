@@ -4,9 +4,10 @@
 
 import {
   get,
-  Mixin,
+  replace as emberReplace,
   beginPropertyChanges,
-  endPropertyChanges
+  endPropertyChanges,
+  Mixin
 } from 'ember-metal';
 import MutableEnumerable from './mutable_enumerable';
 import EmberArray, { objectAt } from './array';
@@ -18,10 +19,13 @@ const EMPTY = [];
 function replace(array, idx, amt, objects) {
   if (typeof array.replace === 'function') {
     array.replace(idx, amt, objects);
-    return array;
+  } else if (!objects || get(objects, 'length') === 0) {
+    array.splice(idx, amt);
+  } else {
+    emberReplace(this, idx, amt, objects);
   }
 
-  return array.splice(idx, amt, ...objects);
+  return array;
 }
 
 export function removeAt(array, start, len) {
