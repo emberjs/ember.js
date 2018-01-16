@@ -6,7 +6,6 @@ import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractManager from './abstract';
 
-
 const CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,

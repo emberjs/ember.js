@@ -10,7 +10,6 @@ import { LazyConstants, Program } from '@glimmer/program';
 import {
   getDynamicVar,
   Helper,
-  Invocation,
   ModifierManager,
   PartialDefinition
 } from '@glimmer/runtime';
@@ -48,7 +47,6 @@ import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { renderHelper } from './syntax/render';
-import { OwnedTemplate } from './template';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 
 function instrumentationPayload(name: string) {

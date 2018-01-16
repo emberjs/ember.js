@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Option, Opaque } from '@glimmer/interfaces';
+import { Opaque, Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {

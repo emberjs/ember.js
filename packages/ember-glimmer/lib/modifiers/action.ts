@@ -2,7 +2,7 @@ import {
   Simple
 } from '@glimmer/interfaces';
 import {
-  TagWrapper, RevisionTag
+  RevisionTag, TagWrapper
 } from '@glimmer/reference';
 import {
   Arguments,
