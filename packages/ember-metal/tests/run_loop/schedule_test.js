@@ -48,15 +48,25 @@ QUnit.test('prior queues should be flushed before moving on to next queue', func
     let runLoop = run.currentRunLoop;
     ok(runLoop, 'run loop present');
 
-    run.schedule('actions', () => {
-      order.push('actions');
-      equal(runLoop, run.currentRunLoop, 'same run loop used');
+      run.schedule('sync', () => {
+        order.push('sync');
+        equal(runLoop, run.currentRunLoop, 'same run loop used');
+      });
 
       run.schedule('actions', () => {
         order.push('actions');
         equal(runLoop, run.currentRunLoop, 'same run loop used');
+
+        run.schedule('actions', () => {
+          order.push('actions');
+          equal(runLoop, run.currentRunLoop, 'same run loop used');
+        });
+
+        run.schedule('sync', () => {
+          order.push('sync');
+          equal(runLoop, run.currentRunLoop, 'same run loop used');
+        });
       });
-    });
 
     run.schedule('destroy', () => {
       order.push('destroy');
@@ -64,7 +74,7 @@ QUnit.test('prior queues should be flushed before moving on to next queue', func
     });
   });
 
-  deepEqual(order, ['actions', 'actions', 'destroy']);
+    deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'destroy']);
 });
 
 QUnit.test('makes sure it does not trigger an autorun during testing', function() {
