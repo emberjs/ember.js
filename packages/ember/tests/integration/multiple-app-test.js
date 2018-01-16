@@ -8,11 +8,10 @@ import { assign, getOwner } from 'ember-utils';
 import { resolve } from 'rsvp';
 
 moduleFor('View Integration', class extends ApplicationTestCase {
-
+  get fixture() {
+    return `<div id="one"></div><div id="two"></div>`;
+  }
   constructor() {
-    document.getElementById('qunit-fixture').innerHTML = 
-      `<div id="one"></div>
-      <div id="two"></div>`;
     super();
     this.runTask(() => {
       this.createSecondApplication();
