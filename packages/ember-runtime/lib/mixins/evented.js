@@ -124,7 +124,7 @@ export default Mixin.create({
     @public
   */
   trigger(name, ...args) {
-    sendEvent(this, name, args);
+    return sendEvent(this, name, args);
   },
 
   /**
