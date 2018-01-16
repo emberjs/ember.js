@@ -160,17 +160,6 @@ export function isEmberArray(obj) {
   return obj && obj[EMBER_ARRAY];
 }
 
-const contexts = [];
-
-function popCtx() {
-  return contexts.length === 0 ? {} : contexts.pop();
-}
-
-function pushCtx(ctx) {
-  contexts.push(ctx);
-  return null;
-}
-
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
@@ -589,25 +578,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object} receiver
     @public
   */
-  forEach(callback, target) {
+  forEach(callback, target = null) {
     assert('forEach expects a function as first argument.', typeof callback === 'function');
 
-    let context = popCtx();
-    let len = get(this, 'length');
-    let last = null;
+    let length = get(this, 'length');
 
-    if (target === undefined) {
-      target = null;
+    for (let index = 0; index < length; index++) {
+      let item = this.objectAt(index);
+      callback.call(target, item, index, this);
     }
-
-    for (let idx = 0; idx < len; idx++) {
-      let next = this.nextObject(idx, last, context);
-      callback.call(target, next, idx, this);
-      last = next;
-    }
-
-    last = null;
-    context = pushCtx(context);
 
     return this;
   },
@@ -802,8 +781,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   /**
     Returns the first item in the array for which the callback returns true.
-    This method works similar to the `filter()` method defined in JavaScript 1.6
-    except that it will stop working on the array once a match is found.
+    This method is similar to the `find()` method defined in ECMAScript 2015.
 
     The callback method you provide should have the following signature (all
     parameters are optional):
@@ -829,35 +807,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object} Found item or `undefined`.
     @public
   */
-  find(callback, target) {
+  find(callback, target = null) {
     assert('find expects a function as first argument.', typeof callback === 'function');
 
-    let len = get(this, 'length');
+    let length = get(this, 'length');
 
-    if (target === undefined) {
-      target = null;
-    }
+    for (let index = 0; index < length; index++) {
+      let item = this.objectAt(index);
 
-    let context = popCtx();
-    let found = false;
-    let last = null;
-    let next, ret;
-
-    for (let idx = 0; idx < len && !found; idx++) {
-      next = this.nextObject(idx, last, context);
-
-      found = callback.call(target, next, idx, this);
-      if (found) {
-        ret = next;
+      if (callback.call(target, item, index, this)) {
+        return item;
       }
-
-      last = next;
     }
-
-    next = last = null;
-    context = pushCtx(context);
-
-    return ret;
   },
 
   /**
@@ -974,28 +935,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Boolean} `true` if the passed function returns `true` for any item
     @public
   */
-  any(callback, target) {
+  any(callback, target = null) {
     assert('any expects a function as first argument.', typeof callback === 'function');
 
-    let len = get(this, 'length');
-    let context = popCtx();
-    let found = false;
-    let last = null;
-    let next;
+    let length = get(this, 'length');
 
-    if (target === undefined) {
-      target = null;
+    for (let index = 0; index < length; index++) {
+      let item = this.objectAt(index);
+
+      if (callback.call(target, item, index, this)) {
+        return true;
+      }
     }
 
-    for (let idx = 0; idx < len && !found; idx++) {
-      next  = this.nextObject(idx, last, context);
-      found = callback.call(target, next, idx, this);
-      last  = next;
-    }
-
-    next = last = null;
-    context = pushCtx(context);
-    return found;
+    return false;
   },
 
   /**
