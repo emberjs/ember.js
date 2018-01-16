@@ -2,22 +2,18 @@
 @module @ember/array
 */
 
+import {
+  get,
+  Mixin,
+  beginPropertyChanges,
+  endPropertyChanges
+} from 'ember-metal';
+import MutableEnumerable from './mutable_enumerable';
+import EmberArray, { objectAt } from './array';
+import { Error as EmberError } from 'ember-debug';
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
-
-// ..........................................................
-// HELPERS
-//
-
-import {
-  get,
-  Mixin
-} from 'ember-metal';
-import EmberArray, { objectAt } from './array';
-import MutableEnumerable from './mutable_enumerable';
-import Enumerable from './enumerable';
-import { Error as EmberError } from 'ember-debug';
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
@@ -53,7 +49,7 @@ export function removeAt(array, start, len) {
 
   @class MutableArray
   @uses EmberArray
-  @uses Ember.MutableEnumerable
+  @uses MutableEnumerable
   @public
 */
 export default Mixin.create(EmberArray, MutableEnumerable, {
@@ -63,7 +59,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     This is one of the primitives you must implement to support `Array`.
     You should replace amt objects started at idx with the objects in the
-    passed array. You should also call `this.enumerableContentDidChange()`
+    passed array. You should also call `this.arrayContentDidChange()`
 
     @method replace
     @param {Number} idx Starting index in the array to replace. If
@@ -175,7 +171,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   /**
-    Add the objects in the passed numerable to the end of the array. Defers
+    Add the objects in the passed array to the end of the array. Defers
     notifying observers of the change until all objects are added.
 
     ```javascript
@@ -185,12 +181,12 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method pushObjects
-    @param {Enumerable} objects the objects to add
+    @param {EmberArray} objects the objects to add
     @return {EmberArray} receiver
     @public
   */
   pushObjects(objects) {
-    if (!(Enumerable.detect(objects) || Array.isArray(objects))) {
+    if (!Array.isArray(objects)) {
       throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
     }
     this.replace(get(this, 'length'), 0, objects);
@@ -336,10 +332,6 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     return this;
   },
 
-  // ..........................................................
-  // IMPLEMENT MutableEnumerable
-  //
-
   /**
     Remove all occurrences of an object in the array.
 
@@ -369,6 +361,23 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   /**
+    Removes each object in the passed array from the receiver.
+
+    @method removeObjects
+    @param {EmberArray} objects the objects to remove
+    @return {EmberArray} receiver
+    @public
+  */
+  removeObjects(objects) {
+    beginPropertyChanges(this);
+    for (let i = objects.length - 1; i >= 0; i--) {
+      this.removeObject(objects[i]);
+    }
+    endPropertyChanges(this);
+    return this;
+  },
+
+  /**
     Push the object onto the end of the array if it is not already
     present in the array.
 
@@ -391,6 +400,21 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
       this.pushObject(obj);
     }
 
+    return this;
+  },
+
+  /**
+    Adds each object in the passed array to the receiver.
+
+    @method addObjects
+    @param {EmberArray} objects the objects to add.
+    @return {EmberArray} receiver
+    @public
+  */
+  addObjects(objects) {
+    beginPropertyChanges(this);
+    objects.forEach(obj => this.addObject(obj));
+    endPropertyChanges(this);
     return this;
   }
 });
