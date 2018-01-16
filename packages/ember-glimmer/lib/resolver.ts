@@ -23,9 +23,10 @@ import {
   lookupPartial,
   OwnedTemplateMeta,
 } from 'ember-views';
-import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
+import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
+import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as classHelper } from './helpers/-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
@@ -234,6 +235,10 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private _lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
+
+    if (EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
+      return new TemplateOnlyComponentDefinition(layout);
+    }
 
     let customManager: any | undefined;
     if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
