@@ -738,17 +738,10 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     return this.visit('/about')
       .then(() => {
-<<<<<<< HEAD
-        assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-        assert.equal(normalizeUrl(this.$('#home-link').attr('href')), '/', 'The home link points back at /');
-
-        return this.click('#yehuda');
-=======
         assert.equal(document.querySelectorAll('h3.list').length, 1, 'The home template was rendered');
         assert.equal(normalizeUrl(document.getElementById('home-link').getAttribute('href')), '/', 'The home link points back at /');
 
         return this.click('#yehuda');
->>>>>>> 8ac704094... remove jquery from ember pkg
       })
       .then(() => {
         assert.equal(document.querySelectorAll('h3.item').length, 1, 'The item template was rendered');
