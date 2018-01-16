@@ -90,7 +90,11 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 
   sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
 
-  array.enumerableContentWillChange(removeAmt, addAmt);
+  propertyWillChange(array, '[]');
+
+  if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
+    propertyWillChange(array, 'length');
+  }
 
   return array;
 }
@@ -110,7 +114,11 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     }
   }
 
-  array.enumerableContentDidChange(removeAmt, addAmt);
+  if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
+    propertyDidChange(array, 'length');
+  }
+
+  propertyDidChange(array, '[]');
 
   if (array.__each) {
     array.__each.arrayDidChange(array, startIdx, removeAmt, addAmt);
@@ -546,111 +554,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
     return arrayContentDidChange(this, startIdx, removeAmt, addAmt);
   },
-
-  /**
-    Invoke this method just before the contents of your enumerable will
-    change. You can either omit the parameters completely or pass the objects
-    to be removed or added if available or just a count.
-
-    @method enumerableContentWillChange
-    @param {Enumerable|Number} removing An enumerable of the objects to
-      be removed or the number of items to be removed.
-    @param {Enumerable|Number} adding An enumerable of the objects to be
-      added or the number of items to be added.
-    @chainable
-    @private
-  */
-  enumerableContentWillChange(removing, adding) {
-    let removeCnt, addCnt, hasDelta;
-
-    if ('number' === typeof removing) {
-      removeCnt = removing;
-    } else if (removing) {
-      removeCnt = get(removing, 'length');
-    } else {
-      removeCnt = removing = -1;
-    }
-
-    if ('number' === typeof adding) {
-      addCnt = adding;
-    } else if (adding) {
-      addCnt = get(adding, 'length');
-    } else {
-      addCnt = adding = -1;
-    }
-
-    hasDelta = addCnt < 0 || removeCnt < 0 || addCnt - removeCnt !== 0;
-
-    if (removing === -1) {
-      removing = null;
-    }
-
-    if (adding === -1) {
-      adding = null;
-    }
-
-    propertyWillChange(this, '[]');
-
-    if (hasDelta) {
-      propertyWillChange(this, 'length');
-    }
-
-    return this;
-  },
-
-  /**
-    Invoke this method when the contents of your enumerable has changed.
-    This will notify any observers watching for content changes. If you are
-    implementing an ordered enumerable (such as an array), also pass the
-    start and end values where the content changed so that it can be used to
-    notify range observers.
-
-    @method enumerableContentDidChange
-    @param {Enumerable|Number} removing An enumerable of the objects to
-      be removed or the number of items to be removed.
-    @param {Enumerable|Number} adding  An enumerable of the objects to
-      be added or the number of items to be added.
-    @chainable
-    @private
-  */
-  enumerableContentDidChange(removing, adding) {
-    let removeCnt, addCnt, hasDelta;
-
-    if ('number' === typeof removing) {
-      removeCnt = removing;
-    } else if (removing) {
-      removeCnt = get(removing, 'length');
-    } else {
-      removeCnt = removing = -1;
-    }
-
-    if ('number' === typeof adding) {
-      addCnt = adding;
-    } else if (adding) {
-      addCnt = get(adding, 'length');
-    } else {
-      addCnt = adding = -1;
-    }
-
-    hasDelta = addCnt < 0 || removeCnt < 0 || addCnt - removeCnt !== 0;
-
-    if (removing === -1) {
-      removing = null;
-    }
-
-    if (adding === -1) {
-      adding = null;
-    }
-
-    if (hasDelta) {
-      propertyDidChange(this, 'length');
-    }
-
-    propertyDidChange(this, '[]');
-
-    return this;
-  },
-
 
   /**
     Iterates through the enumerable, calling the passed function on each
