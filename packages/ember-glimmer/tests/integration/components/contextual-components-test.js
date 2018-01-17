@@ -623,11 +623,84 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Hodi Hodari');
   }
 
-  ['@skip raises an asserton when component path is null']() {
-    // TODO: should we change this to be allowed? The test is currently failing because glimmer considers this to be fine...
-    expectAssertion(() => {
-      this.render('{{component (component lookupComponent)}}');
-    });
+  ['@test component with dynamic component name resolving to undefined, then an existing component']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: undefined, name: 'Alex' });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', undefined));
+
+    this.assertText('');
+  }
+
+  ['@test component with dynamic component name resolving to a component, then undefined']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: 'foo-bar', name: 'Alex' });
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', undefined));
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
+  }
+
+  ['@test component with dynamic component name resolving to null, then an existing component']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: null, name: 'Alex' });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', null));
+
+    this.assertText('');
+  }
+
+  ['@test component with dynamic component name resolving to a component, then null']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: 'foo-bar', name: 'Alex' });
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', null));
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
   }
 
   ['@test raises an assertion when component path is not a component name (static)']() {
@@ -636,13 +709,10 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     }, 'Could not find component named \"not-a-component\" (no component or template with that name was found)');
   }
 
-  ['@skip raises an assertion when component path is not a component name (dynamic)']() {
-    // TODO: should we change this to be allowed? The test is currently failing because glimmer considers this to be fine...
+  ['@test raises an assertion when component path is not a component name (dynamic)']() {
     expectAssertion(() => {
-      this.render('{{component (component compName)}}', {
-        compName: 'not-a-component'
-      });
-    }, /The component helper cannot be used without a valid component name. You used "not-a-component" via \(component .*\)/);
+      this.render('{{component (component compName)}}', { compName: "not-a-component" });
+    }, 'Could not find component named \"not-a-component\" (no component or template with that name was found)');
   }
 
   ['@test renders with dot path']() {
