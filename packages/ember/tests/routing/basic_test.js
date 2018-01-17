@@ -1478,8 +1478,8 @@ QUnit.test('Route should tear down multiple outlets', function(assert) {
 });
 
 
-QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function() {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function(assert) {
+  assert.expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -2630,9 +2630,9 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
 });
 
 QUnit.test('Can this.render({into:...}) the render helper', function(assert) {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+  assert.expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -2662,9 +2662,9 @@ QUnit.test('Can this.render({into:...}) the render helper', function(assert) {
 });
 
 QUnit.test('Can disconnect from the render helper', function(assert) {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+  assert.expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -2692,9 +2692,9 @@ QUnit.test('Can disconnect from the render helper', function(assert) {
 });
 
 QUnit.test('Can this.render({into:...}) the render helper\'s children', function(assert) {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+  assert.expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -2726,9 +2726,9 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
 });
 
 QUnit.test('Can disconnect from the render helper\'s children', function(assert) {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+  assert.expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -2758,13 +2758,13 @@ QUnit.test('Can disconnect from the render helper\'s children', function(assert)
 });
 
 QUnit.test('Can this.render({into:...}) nested render helpers', function(assert) {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+  assert.expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -2794,13 +2794,13 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function(assert)
 });
 
 QUnit.test('Can disconnect from nested render helpers', function(assert) {
-  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+  assert.expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('application', compile('{{render "sidebar"}}'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
   }, /Please refactor [\w\{\}"` ]+ to a component/);
 

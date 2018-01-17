@@ -225,7 +225,7 @@ if (DEBUG) {
 
     assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false);
 
-    expectDeprecation(function() {
+    assert.expectDeprecation(function() {
       Ember.MODEL_FACTORY_INJECTIONS = true;
     }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required');
     assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect');

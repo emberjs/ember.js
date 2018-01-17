@@ -291,7 +291,7 @@ QUnit.test('adding an object should notify (@each.isDone)', function(assert) {
 QUnit.test('getting @each is deprecated', function(assert) {
   assert.expect(1);
 
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     get(ary, '@each');
   }, /Getting the '@each' property on object .* is deprecated/);
 });
@@ -337,7 +337,7 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   // EachArray materialized but just want to know when the property has
   // changed.
   let each;
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     each = get(ary, '@each');
   });
   let count = 0;

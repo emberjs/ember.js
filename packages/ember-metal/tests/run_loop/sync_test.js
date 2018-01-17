@@ -10,7 +10,7 @@ moduleFor('system/run_loop/sync_test', class extends AbstractTestCase {
 
       function syncfunc() {
         if (++cnt < 5) {
-          expectDeprecation(() => {
+          assert.expectDeprecation(() => {
             run.schedule('sync', syncfunc);
           }, `Scheduling into the 'sync' run loop queue is deprecated.`);
         }

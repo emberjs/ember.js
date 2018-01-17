@@ -125,7 +125,7 @@ function testMap(nameAndFunc) {
   });
 
   QUnit.test('delete', function(assert) {
-    expectNoDeprecation();
+    assert.expectNoDeprecation();
 
     map.set(object, 'winning');
     map.set(number, 'winning');

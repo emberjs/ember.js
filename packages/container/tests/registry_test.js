@@ -487,7 +487,7 @@ moduleFor('Registry', class extends AbstractTestCase{
 
     let registry;
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       registry = new Registry({
         resolver(fullName) {
           return `${fullName}-resolved`;

@@ -5,16 +5,6 @@ import { LinkComponent } from '../../utils/helpers';
 import { classes as classMatcher } from '../../utils/test-helpers';
 
 moduleFor('Link-to component', class extends ApplicationTest {
-  visitWithDeprecation(path, deprecation) {
-    let p;
-
-    expectDeprecation(() => {
-      p = this.visit(path);
-    }, deprecation);
-
-    return p;
-  }
-
   ['@test should be able to be inserted in DOM when the router is not present']() {
     this.addTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
 

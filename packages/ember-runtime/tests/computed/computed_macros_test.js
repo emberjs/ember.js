@@ -465,31 +465,31 @@ testBoth('computed.deprecatingAlias', function(get, set, assert) {
   defineProperty(obj, 'quzAlias', deprecatingAlias('quz'));
   defineProperty(obj, 'bayAlias', deprecatingAlias('bay'));
 
-  expectDeprecation(function() {
+  assert.expectDeprecation(function() {
     assert.equal(get(obj, 'barAlias'), 'asdf');
   }, 'Usage of `barAlias` is deprecated, use `bar` instead.');
 
-  expectDeprecation(function() {
+  assert.expectDeprecation(function() {
     assert.equal(get(obj, 'bazAlias'), null);
   }, 'Usage of `bazAlias` is deprecated, use `baz` instead.');
 
-  expectDeprecation(function() {
+  assert.expectDeprecation(function() {
     assert.equal(get(obj, 'quzAlias'), false);
   }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
 
-  expectDeprecation(function() {
+  assert.expectDeprecation(function() {
     assert.equal(get(obj, 'bayAlias'), 'apple');
   }, 'Usage of `bayAlias` is deprecated, use `bay` instead.');
 
-  expectDeprecation(function() {
+  assert.expectDeprecation(function() {
     set(obj, 'barAlias', 'newBar');
   }, 'Usage of `barAlias` is deprecated, use `bar` instead.');
 
-  expectDeprecation(function() {
+  assert.expectDeprecation(function() {
     set(obj, 'bazAlias', 'newBaz');
   }, 'Usage of `bazAlias` is deprecated, use `baz` instead.');
 
-  expectDeprecation(function() {
+  assert.expectDeprecation(function() {
     set(obj, 'quzAlias', null);
   }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
 

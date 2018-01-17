@@ -69,7 +69,7 @@ moduleFor('Ember.deprecateProperty', class extends AbstractTestCase {
 
     deprecateProperty(obj, 'baz', 'foo');
 
-    expectDeprecation();
+    assert.expectDeprecation();
     assert.equal(obj.baz, obj.foo, 'baz and foo are equal');
 
     obj.foo = 'blammo';
@@ -95,7 +95,7 @@ moduleFor('Ember.deprecateProperty', class extends AbstractTestCase {
 
     deprecateProperty(obj, 'baz', 'foo');
 
-    expectDeprecation();
+    assert.expectDeprecation();
     obj.baz = 'bloop';
     assert.equal(obj.foo, 'bloop', 'updating baz updates foo');
     assert.equal(obj.baz, obj.foo, 'baz and foo are equal');

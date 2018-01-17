@@ -318,7 +318,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Hi Max 9');
   }
 
-  ['@test nested components positional parameters override named parameters [DEPRECATED]']() {
+  ['@test nested components positional parameters override named parameters [DEPRECATED]'](assert) {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name', 'age']
@@ -326,7 +326,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{name}} {{age}}'
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render('{{component (component (component "-looked-up" "Sergio" 29) name="Marvin" age=21)}}');
     }, 'You cannot specify both a positional param (at position 1) and the hash argument `age`.');
 
@@ -337,7 +337,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Sergio 29');
   }
 
-  ['@test nested components with positional params at outer layer are override hash parameters [DEPRECATED]']() {
+  ['@test nested components with positional params at outer layer are override hash parameters [DEPRECATED]'](assert) {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['greeting', 'name', 'age']
@@ -345,7 +345,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{greeting}} {{name}} {{age}}'
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render(
         strip`
         {{#with (component "-looked-up" "Hola" "Dolores" 33) as |first|}}
@@ -368,7 +368,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Hola Dolores 33');
   }
 
-  ['@test nested components with positional params at middle layer partially override hash parameters [DEPRECATED]']() {
+  ['@test nested components with positional params at middle layer partially override hash parameters [DEPRECATED]'](assert) {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['greeting', 'name', 'age']
@@ -377,7 +377,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{greeting}} {{name}} {{age}}'
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render(
         strip`
           {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
@@ -400,7 +400,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Hej Sigmundur 33');
   }
 
-  ['@test nested components with positional params at invocation override earlier hash parameters [DEPRECATED]']() {
+  ['@test nested components with positional params at invocation override earlier hash parameters [DEPRECATED]'](assert) {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['greeting', 'name', 'age']
@@ -409,7 +409,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{greeting}} {{name}} {{age}}'
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render(
         strip`
           {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
@@ -560,7 +560,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Inner 28');
   }
 
-  ['@test conflicting positional and hash parameters trigger a deprecation if in the same component context [DEPRECATED]']() {
+  ['@test conflicting positional and hash parameters trigger a deprecation if in the same component context [DEPRECATED]'](assert) {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
@@ -568,7 +568,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{greeting}} {{name}}'
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render('{{component (component "-looked-up" "Hodari" name="Sergio") "Hodari" greeting="Hodi"}}');
     }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
   }
@@ -604,7 +604,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Hodi Hodari');
   }
 
-  ['@test conflicting positional and hash parameters trigger a deprecation [DEPRECATED]']() {
+  ['@test conflicting positional and hash parameters trigger a deprecation [DEPRECATED]'](assert) {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
@@ -612,7 +612,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{greeting}} {{name}}'
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render('{{component (component "-looked-up" "Hodari") name="Sergio" greeting="Hodi"}}');
     }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
 

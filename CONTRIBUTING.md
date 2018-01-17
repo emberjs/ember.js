@@ -256,7 +256,7 @@ Within the Travis build, you can see that we (currently) run six different test 
 
 If your build is failing on the 'production' suite, you may be relying on a debug-only function that does not even exist in a production build (`Ember.warn`, `Ember.deprecate`, `Ember.assert`, etc.).  These will pass on the 'each-package-tests' suite (and locally) because those functions are present in development builds.
 
-There are helpers for many of these functions, which will resolve this for you: `expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
+There are helpers for many of these functions, which will resolve this for you: `assert.expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
 
 If your tests can't aren't covered a helper, one common solution is the use of `EmberDev.runningProdBuild`.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
 ```javascript

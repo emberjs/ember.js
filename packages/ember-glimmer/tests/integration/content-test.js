@@ -142,8 +142,8 @@ class DynamicContentTest extends RenderingTest {
     this.assertHTML('<p></p>');
   }
 
-  ['@test it can render a capitalized path with no deprecation']() {
-    expectNoDeprecation();
+  ['@test it can render a capitalized path with no deprecation'](assert) {
+    assert.expectNoDeprecation();
 
     this.renderPath('CaptializedPath', { CaptializedPath: 'no deprecation' });
 

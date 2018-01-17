@@ -93,7 +93,7 @@ QUnit.test('it should use an actionContext object specified as a property on the
 QUnit.test('it should raise a deprecation warning when targetObject is specified and used', function(assert) {
   assert.expect(4);
   let obj;
-  expectDeprecation(() => {
+  assert.expectDeprecation(() => {
     obj = EmberObject.extend(TargetActionSupport).create({
       action: 'anEvent',
       actionContext: {},
@@ -105,7 +105,7 @@ QUnit.test('it should raise a deprecation warning when targetObject is specified
     });
   }, /Usage of `targetObject` is deprecated. Please use `target` instead./);
   assert.ok(true === obj.triggerAction(), 'a valid targetObject and action were specified');
-  expectDeprecation(() => obj.get('targetObject'),
+  assert.expectDeprecation(() => obj.get('targetObject'),
     /Usage of `targetObject` is deprecated. Please use `target` instead./);
 });
 

@@ -48,7 +48,7 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
       let runLoop = run.currentRunLoop;
       assert.ok(runLoop, 'run loop present');
 
-      expectDeprecation(() => {
+      assert.expectDeprecation(() => {
         run.schedule('sync', () => {
           order.push('sync');
           assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
@@ -64,7 +64,7 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
           assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
         });
 
-        expectDeprecation(() => {
+        assert.expectDeprecation(() => {
           run.schedule('sync', () => {
             order.push('sync');
             assert.equal(runLoop, run.currentRunLoop, 'same run loop used');

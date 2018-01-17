@@ -137,7 +137,8 @@
           getDebugFunction: debugModule.getDebugFunction,
           setDebugFunction: debugModule.setDebugFunction
         });
-        setupQUnit(testHelpers);
+
+        setupQUnit(testHelpers, QUnit);
 
         // Tests should time out after 15 seconds
         QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;

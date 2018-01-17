@@ -213,8 +213,8 @@ moduleFor('Application Dependency Injection - Integration - default resolver', c
     }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
   }
 
-  [`@test no deprecation warning for component factories that extend from Component`]() {
-    expectNoDeprecation();
+  [`@test no deprecation warning for component factories that extend from Component`](assert) {
+    assert.expectNoDeprecation();
     this.application.FooView = Component.extend();
     this.privateRegistry.resolve('component:foo');
   }

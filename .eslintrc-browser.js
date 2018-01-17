@@ -13,8 +13,6 @@ module.exports = {
   },
   globals: {
     'expectAssertion': true,
-    'expectDeprecation': true,
-    'expectNoDeprecation': true,
     'expectWarning': true,
     'expectNoWarning': true,
     'ignoreAssertion': true,

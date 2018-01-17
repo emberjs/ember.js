@@ -1684,7 +1684,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Quint4');
   }
 
-  ['@test if a value is passed as a non-positional parameter, it raises an assertion']() {
+  ['@test if a value is passed as a non-positional parameter, it raises an assertion'](assert) {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
@@ -1692,7 +1692,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '{{name}}'
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render('{{sample-component notMyName name=myName}}', {
         myName: 'Quint',
         notMyName: 'Sergio'
@@ -2758,7 +2758,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       })
     });
 
-    expectDeprecation(() => {
+    assert.expectDeprecation(() => {
       this.render('{{foo-bar}}');
     }, /didInitAttrs called/);
   }
