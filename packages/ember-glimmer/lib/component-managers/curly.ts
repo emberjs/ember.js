@@ -5,7 +5,6 @@ import {
   Simple,
   VMHandle
 } from '@glimmer/interfaces';
-import { ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   combine,
   Tag,
@@ -37,7 +36,6 @@ import { String as StringUtils } from 'ember-runtime';
 import {
   getOwner,
   guidFor,
-  setOwner
 } from 'ember-utils';
 import { OwnedTemplateMeta, setViewElement } from 'ember-views';
 import {
@@ -52,7 +50,6 @@ import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import {
   Factory as TemplateFactory,
-  Injections,
   OwnedTemplate
 } from '../template';
 import {
@@ -123,17 +120,15 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     };
   }
 
-  templateFor(component: Component, options: TemplateOptions<OwnedTemplateMeta>): OwnedTemplate {
-    let Template = get(component, 'layout') as TemplateFactory | OwnedTemplate | undefined;
-    if (Template !== undefined) {
+  templateFor(component: Component, resolver: RuntimeResolver): OwnedTemplate {
+    let layout = get(component, 'layout') as TemplateFactory | OwnedTemplate | undefined;
+    if (layout !== undefined) {
       // This needs to be cached by template.id
-      if (isTemplateFactory(Template)) {
-        const injections: Injections = { options };
-        setOwner(injections, getOwner(component));
-        return Template.create(injections);
+      if (isTemplateFactory(layout)) {
+        return resolver.createTemplate(layout, getOwner(component));
       } else {
         // we were provided an instance already
-        return Template;
+        return layout;
       }
     }
     let owner = getOwner(component);
@@ -148,17 +143,8 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 
   compileDynamicLayout(component: Component, resolver: RuntimeResolver): Invocation {
-    const template = this.templateFor(component, resolver.templateOptions);
-    const compileOptions = Object.assign({},
-      resolver.templateOptions,
-      { asPartial: false, referrer: template.referrer});
-    // TODO fix this getting private
-    const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
-    const layout = new WrappedBuilder(
-      compileOptions,
-      parsed,
-      CURLY_CAPABILITIES,
-    );
+    const template = this.templateFor(component, resolver);
+    const layout = resolver.getWrappedLayout(template, CURLY_CAPABILITIES);
     // NEEDS TO BE CACHED
     return {
       handle: layout.compile(),

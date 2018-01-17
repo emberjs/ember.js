@@ -3,9 +3,10 @@ import {
   Opaque,
   Option,
   RuntimeResolver as IRuntimeResolver,
-  VMHandle
+  VMHandle,
+  ComponentCapabilities
 } from '@glimmer/interfaces';
-import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, TemplateOptions } from '@glimmer/opcode-compiler';
+import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
 import { LazyConstants, Program } from '@glimmer/program';
 import {
   getDynamicVar,
@@ -16,7 +17,7 @@ import {
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { _instrumentStart } from 'ember-metal';
-import { LookupOptions } from 'ember-utils';
+import { LookupOptions, Owner, setOwner } from 'ember-utils';
 import {
   lookupComponent,
   lookupPartial,
@@ -24,7 +25,7 @@ import {
 } from 'ember-views';
 import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
-import { CurlyComponentDefinition } from './component-managers/curly';
+import { CURLY_CAPABILITIES, CurlyComponentDefinition } from './component-managers/curly';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as classHelper } from './helpers/-class';
@@ -47,6 +48,7 @@ import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { renderHelper } from './syntax/render';
+import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 
 function instrumentationPayload(name: string) {
@@ -92,12 +94,9 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor,
   };
 
-  // creates compileOptions for DI
-  public static create() {
-    return new this().templateOptions;
-  }
-
-  private handles: any[] = [undefined];
+  private handles: any[] = [
+    undefined, // ensure no falsy handle
+  ];
   private objToHandle = new WeakMap<any, number>();
 
   private builtInHelpers: {
@@ -124,11 +123,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return null;
     }
     return this.resolve(handle);
-  }
-
-  lookupPartial(name: string, meta: OwnedTemplateMeta): Option<number> {
-    let partial = this._lookupPartial(name, meta);
-    return this.handle(partial);
   }
 
   /**
@@ -163,9 +157,45 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   lookupModifier(name: string, _meta: OwnedTemplateMeta): Option<number> {
     return this.handle(this._lookupModifier(name));
   }
+
+  /**
+   * Called by CompileTimeLookup to lookup partial
+   */
+  lookupPartial(name: string, meta: OwnedTemplateMeta): Option<number> {
+    let partial = this._lookupPartial(name, meta);
+    return this.handle(partial);
+  }
+
   // end CompileTimeLookup
 
-  // needed for latebound
+  // TODO implement caching for the follow hooks
+
+  /**
+   * Creates a directly imported template with injections.
+   * @param templateFactory the direct imported template factory
+   * @param owner the owner to set
+   */
+  createTemplate(factory: TemplateFactory, owner: Owner) {
+    const injections: Injections = { options: this.templateOptions };
+    setOwner(injections, owner);
+    // TODO cache by owner and template.id
+    return factory.create(injections);
+  }
+
+  /**
+   * Returns a wrapped layout for the specified layout.
+   * @param template the layout to wrap.
+   */
+  getWrappedLayout(template: OwnedTemplate, capabilities: ComponentCapabilities) {
+    const compileOptions = Object.assign({},
+      this.templateOptions, { asPartial: false, referrer: template.referrer});
+    // TODO fix this getting private
+    const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
+    // TODO cache by template instance and capabilities
+    return new WrappedBuilder(compileOptions, parsed, capabilities);
+  }
+
+  // needed for lazy compile time lookup
   private handle(obj: any | null | undefined) {
     if (obj === undefined || obj === null) {
       return null;
