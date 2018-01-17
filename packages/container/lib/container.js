@@ -216,7 +216,8 @@ function wrapManagerInDeprecationProxy(manager) {
       }
     };
 
-    return new Proxy(proxiedManager, validator);
+    let proxy = new Proxy(proxiedManager, validator);
+    FACTORY_FOR.set(proxy, manager);
   }
 
   return manager;
@@ -367,6 +368,7 @@ function resetMember(container, fullName) {
   }
 }
 
+export const FACTORY_FOR = new WeakMap();
 class FactoryManager {
   constructor(container, factory, fullName, normalizedName) {
     this.container = container;
@@ -376,6 +378,7 @@ class FactoryManager {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
+    FACTORY_FOR.set(this, this);
   }
 
   toString() {
@@ -431,6 +434,9 @@ class FactoryManager {
       setOwner(props, this.owner);
     }
 
-    return this.class.create(props);
+    let instance = this.class.create(props);
+    FACTORY_FOR.set(instance, this);
+
+    return instance;
   }
 }

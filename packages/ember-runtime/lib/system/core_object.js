@@ -4,6 +4,7 @@
 
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
+import { FACTORY_FOR } from 'container';
 import {
   assign,
   guidFor,
@@ -69,7 +70,7 @@ function makeCtor() {
       m.proto = this;
 
       if (initFactory) {
-        m.factory = initFactory;
+        FACTORY_FOR.set(this, initFactory);
         initFactory = null;
       }
       if (initProperties) {
@@ -543,7 +544,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${this[NAME_KEY] || peekMeta(this).factory || this.constructor.toString()}:${guidFor(this)}${extension}>`;
+    let ret = `<${this[NAME_KEY] || FACTORY_FOR.get(this) || this.constructor.toString()}:${guidFor(this)}${extension}>`;
 
     return ret;
   }
