@@ -192,11 +192,13 @@ export const Route: {
   teardownViews(): void;
   isRouteFactory: boolean;
 };
-export const QueryParams: {
+
+export class QueryParams {
+  constructor(values: object);
   isQueryParams: boolean;
   values: any;
-  create(obj: any): any;
-};
+}
+
 export const RoutingService: {
   router: any;
   targetState: any;

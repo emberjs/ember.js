@@ -990,12 +990,11 @@ const EmberRouter = EmberObject.extend(Evented, {
       // the transition that put us in a loading state.
       return;
     }
-
-    this.set('targetState', RouterState.create({
-      emberRouter: this,
-      routerJs: this._routerMicrolib,
-      routerJsState: this._routerMicrolib.activeTransition.state
-    }));
+    let targetState = new RouterState(
+      this, this._routerMicrolib,
+      this._routerMicrolib.activeTransition.state
+    );
+    this.set('targetState', targetState);
 
     transition.trigger(true, 'loading', transition, originRoute);
   },
@@ -1421,11 +1420,11 @@ EmberRouter.reopenClass({
 });
 
 function didBeginTransition(transition, router) {
-  let routerState = RouterState.create({
-    emberRouter: router,
-    routerJs: router._routerMicrolib,
-    routerJsState: transition.state
-  });
+  let routerState = new RouterState(
+    router,
+    router._routerMicrolib,
+    transition.state
+  );
 
   if (!router.currentState) {
     router.set('currentState', routerState);
@@ -1524,7 +1523,7 @@ function appendOrphan(liveRoutes, into, myState) {
   run.schedule('afterRender', () => {
     // `wasUsed` gets set by the render helper.
     assert(`You attempted to render into '${into}' but it was not found`,
-                 liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
+      liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
   });
 }
 
