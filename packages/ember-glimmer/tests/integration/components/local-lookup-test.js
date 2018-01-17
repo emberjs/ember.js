@@ -258,6 +258,10 @@ if (EMBER_MODULE_UNIFICATION) {
     get resolver() {
       return this.owner.__registry__.fallback.resolver;
     }
+    set resolver(resolver) {
+      // `resolver` needs a setter because RenderingTestCase sets `resolver` in
+      // its constructor
+    }
 
     getResolver() {
       return new LocalLookupTestResolver();
