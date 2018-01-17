@@ -6,6 +6,7 @@ import { Component } from '../utils/helpers';
 moduleFor('Template factory test', class extends RenderingTest {
   ['@test the template factory returned from precompile is the same as compile'](assert) {
     let { env } = this;
+    let { resolver } = this;
 
     let templateStr = 'Hello {{name}}';
     let options = { moduleName: 'some-module' };
@@ -25,18 +26,18 @@ moduleFor('Template factory test', class extends RenderingTest {
     assert.equal(typeof Compiled.create, 'function', 'compiled is a factory');
     assert.ok(Compiled.id, 'compiled has id');
 
-    assert.equal(env._templateCache.misses, 0, 'misses 0');
-    assert.equal(env._templateCache.hits, 0, 'hits 0');
+    assert.equal(resolver.templateCacheMisses, 0, 'misses 0');
+    assert.equal(resolver.templateCacheHits, 0, 'hits 0');
 
-    let precompiled = env.getTemplate(Precompiled, env.owner);
+    let precompiled = resolver.createTemplate(Precompiled, env.owner);
 
-    assert.equal(env._templateCache.misses, 1, 'misses 1');
-    assert.equal(env._templateCache.hits, 0, 'hits 0');
+    assert.equal(resolver.templateCacheMisses, 1, 'misses 1');
+    assert.equal(resolver.templateCacheHits, 0, 'hits 0');
 
-    let compiled = env.getTemplate(Compiled, env.owner);
+    let compiled = resolver.createTemplate(Compiled, env.owner);
 
-    assert.equal(env._templateCache.misses, 2, 'misses 2');
-    assert.equal(env._templateCache.hits, 0, 'hits 0');
+    assert.equal(resolver.templateCacheMisses, 2, 'misses 2');
+    assert.equal(resolver.templateCacheHits, 0, 'hits 0');
 
     assert.ok(typeof precompiled.spec !== 'string', 'Spec has been parsed');
     assert.ok(typeof compiled.spec !== 'string', 'Spec has been parsed');
@@ -55,8 +56,8 @@ moduleFor('Template factory test', class extends RenderingTest {
 
     this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');
 
-    assert.equal(env._templateCache.misses, 2, 'misses 2');
-    assert.equal(env._templateCache.hits, 2, 'hits 2');
+    assert.equal(resolver.templateCacheMisses, 2, 'misses 2');
+    assert.equal(resolver.templateCacheHits, 2, 'hits 2');
 
     this.assertText('Hello precompiled Hello compiled');
   }

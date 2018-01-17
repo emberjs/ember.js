@@ -107,6 +107,11 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     [name: string]: ModifierManager<Opaque>;
   } = BUILTIN_MODIFIERS;
 
+  // supports directly imported late bound layouts on component.prototype.layout
+  private templateCache: WeakMap<Owner, WeakMap<TemplateFactory, OwnedTemplate>> = new WeakMap();
+  private templateCacheHits = 0;
+  private templateCacheMisses = 0;
+
   constructor() {
     populateMacros(this.templateOptions.macros);
   }
@@ -175,11 +180,23 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    * @param templateFactory the direct imported template factory
    * @param owner the owner to set
    */
-  createTemplate(factory: TemplateFactory, owner: Owner) {
-    const injections: Injections = { options: this.templateOptions };
-    setOwner(injections, owner);
-    // TODO cache by owner and template.id
-    return factory.create(injections);
+  createTemplate(factory: TemplateFactory, owner: Owner): OwnedTemplate {
+    let cache = this.templateCache.get(owner);
+    if (cache === undefined) {
+      cache = new WeakMap();
+      this.templateCache.set(owner, cache);
+    }
+    let template = cache.get(factory);
+    if (template === undefined) {
+      const injections: Injections = { options: this.templateOptions };
+      setOwner(injections, owner);
+      template = factory.create(injections);
+      cache.set(factory, template);
+      this.templateCacheMisses++;
+    } else {
+      this.templateCacheHits++;
+    }
+    return template;
   }
 
   /**
@@ -267,13 +284,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     let customManager: any | undefined;
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
-    let layoutHandle = this.handle(layout) as Option<VMHandle>;
     let definition = (layout || component) ?
       new CurlyComponentDefinition(
         name,
         customManager,
         component || meta.owner.factoryFor(P`component:-default`),
-        layoutHandle,
+        null,
         layout
       ) : null;
 
