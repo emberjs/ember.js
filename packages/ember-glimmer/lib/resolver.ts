@@ -1,10 +1,10 @@
 import {
+  ComponentCapabilities,
   ComponentDefinition,
   Opaque,
   Option,
   RuntimeResolver as IRuntimeResolver,
-  VMHandle,
-  ComponentCapabilities
+  VMHandle
 } from '@glimmer/interfaces';
 import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
 import { LazyConstants, Program } from '@glimmer/program';
@@ -23,9 +23,9 @@ import {
   lookupPartial,
   OwnedTemplateMeta,
 } from 'ember-views';
-import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
+import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
-import { CURLY_CAPABILITIES, CurlyComponentDefinition } from './component-managers/curly';
+import { CurlyComponentDefinition } from './component-managers/curly';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as classHelper } from './helpers/-class';
@@ -265,13 +265,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     }
 
     let customManager: any | undefined;
-    if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
-      let managerId = layout && layout.referrer.managerId;
-
-      if (managerId) {
-        customManager = meta.owner.factoryFor(`component-manager:${managerId}`).class;
-      }
-    }
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let layoutHandle = this.handle(layout) as Option<VMHandle>;
