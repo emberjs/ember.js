@@ -269,7 +269,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       let managerId = layout && layout.referrer.managerId;
 
       if (managerId) {
-        customManager = meta.owner.factoryFor(`component-manager:${managerId}`);
+        customManager = meta.owner.factoryFor(`component-manager:${managerId}`).class;
       }
     }
 
