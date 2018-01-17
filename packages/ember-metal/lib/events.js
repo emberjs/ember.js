@@ -197,15 +197,23 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
     if (!target) { target = obj; }
     if ('string' === typeof method) {
       if (params) {
-        applyStr(target, method, params);
+        if (applyStr(target, method, params) === false) {
+          return false;
+        }
       } else {
-        target[method]();
+        if (target[method]() === false) {
+          return false;
+        }
       }
     } else {
       if (params) {
-        method.apply(target, params);
+        if (method.apply(target, params) === false) {
+          return false;
+        }
       } else {
-        method.call(target);
+        if (method.call(target) === false) {
+          return false;
+        }
       }
     }
   }

@@ -610,7 +610,7 @@ const LinkComponent = EmberComponent.extend({
     @param {Event} event
     @private
   */
-  _invoke(this: any, event: Event): boolean {
+  _invoke(this: any, event: Event): boolean|void {
     if (!isSimpleClick(event)) { return true; }
 
     let preventDefault = get(this, 'preventDefault');
@@ -622,18 +622,19 @@ const LinkComponent = EmberComponent.extend({
       }
     }
 
-    if (get(this, 'bubbles') === false) { event.stopPropagation(); }
+    let shouldBubble = get(this, 'bubbles') !== false;
+    if (!shouldBubble) { event.stopPropagation(); }
 
-    if (this._isDisabled) { return false; }
+    if (this._isDisabled) { return; }
 
     if (get(this, 'loading')) {
       // tslint:disable-next-line:max-line-length
       warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.', false);
-      return false;
+      return;
     }
 
     if (targetAttribute && targetAttribute !== '_self') {
-      return false;
+      return;
     }
 
     let qualifiedRouteName = get(this, 'qualifiedRouteName');
@@ -648,7 +649,7 @@ const LinkComponent = EmberComponent.extend({
 
     // tslint:disable-next-line:max-line-length
     flaggedInstrument('interaction.link-to', payload, this._generateTransition(payload, qualifiedRouteName, models, queryParams, shouldReplace));
-    return false;
+    return shouldBubble;
   },
 
   _generateTransition(payload: any, qualifiedRouteName: string, models: any[], queryParams: any[], shouldReplace: boolean) {

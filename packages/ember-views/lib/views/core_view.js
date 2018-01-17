@@ -66,11 +66,13 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     @private
   */
   trigger(name, ...args) {
-    this._super(...arguments);
+    let superResult = this._super(...arguments);
     let method = this[name];
     if (typeof method === 'function') {
       return method.apply(this, args);
     }
+
+    return superResult;
   },
 
   has(name) {
