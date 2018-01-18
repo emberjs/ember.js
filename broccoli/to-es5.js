@@ -36,6 +36,7 @@ module.exports = function toES5(tree, _options) {
       }
     }],
     ['transform-es2015-template-literals', {loose: true}],
+    ['transform-es2015-literals'],
     ['transform-es2015-arrow-functions'],
     ['transform-es2015-destructuring', {loose: true}],
     ['transform-es2015-spread', {loose: true}],
