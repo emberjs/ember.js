@@ -1,5 +1,4 @@
 import { ComponentCapabilities, Option, Unique } from '@glimmer/interfaces';
-import { ParsedLayout, WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   CONSTANT_TAG, Tag, VersionedPathReference
 } from '@glimmer/reference';
@@ -16,7 +15,7 @@ import {
 import { Destroyable } from '@glimmer/util/dist/types';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
-import { guidFor } from 'ember-utils';
+import { assign, guidFor } from 'ember-utils';
 import { OwnedTemplateMeta } from 'ember-views';
 import {
   EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER,
@@ -133,7 +132,7 @@ let createRootOutlet: (outletView: OutletView) => OutletComponentDefinition;
 if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
   createRootOutlet = (outletView: OutletView) => new OutletComponentDefinition(outletView.state);
 } else {
-  const WRAPPED_CAPABILITIES = Object.assign({}, CAPABILITIES, {
+  const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
     dynamicTag: true,
     elementHook: true,
   });
@@ -148,16 +147,7 @@ if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
     getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
       // The router has already resolved the template
       const template = state.template;
-      const compileOptions = Object.assign({},
-        resolver.templateOptions,
-        { asPartial: false, referrer: template.referrer});
-      // TODO fix this getting private
-      const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
-      const layout = new WrappedBuilder(
-        compileOptions,
-        parsed,
-        WRAPPED_CAPABILITIES,
-      );
+      const layout = resolver.getWrappedLayout(template, WRAPPED_CAPABILITIES);
       return {
         handle: layout.compile(),
         symbolTable: layout.symbolTable

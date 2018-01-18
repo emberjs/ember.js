@@ -5,10 +5,7 @@ import {
 } from '@glimmer/runtime';
 import { FACTORY_FOR } from 'container';
 import { DEBUG } from 'ember-env-flags';
-import {
-  _instrumentStart,
-  peekMeta,
-} from 'ember-metal';
+import { _instrumentStart } from 'ember-metal';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';

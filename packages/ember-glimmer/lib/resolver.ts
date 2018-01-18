@@ -17,7 +17,7 @@ import {
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { _instrumentStart } from 'ember-metal';
-import { LookupOptions, Owner, setOwner } from 'ember-utils';
+import { assign, LookupOptions, Owner, setOwner } from 'ember-utils';
 import {
   lookupComponent,
   lookupPartial,
@@ -220,8 +220,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     }
     let wrapper = cache.get(capabilities);
     if (wrapper === undefined) {
-      const compileOptions = Object.assign({},
-      this.templateOptions, { asPartial: false, referrer: template.referrer});
+      const compileOptions = assign({}, this.templateOptions, { asPartial: false, referrer: template.referrer});
       // TODO fix this getting private
       const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
       wrapper = new WrappedBuilder(compileOptions, parsed, capabilities);
