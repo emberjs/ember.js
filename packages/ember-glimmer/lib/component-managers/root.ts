@@ -28,7 +28,12 @@ class RootComponentManager extends CurlyComponentManager {
   }
 
   getLayout(_state: DefinitionState, resolver: RuntimeResolver) {
-    return this.compileDynamicLayout(this.component, resolver);
+    const template = this.templateFor(this.component, resolver);
+    const layout = resolver.getWrappedLayout(template, ROOT_CAPABILITIES);
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable,
+    };
   }
 
   create(environment: Environment,
@@ -69,7 +74,7 @@ class RootComponentManager extends CurlyComponentManager {
 // ROOT is the top-level template it has nothing but one yield.
 // it is supposed to have a dummy element
 export const ROOT_CAPABILITIES: ComponentCapabilities = {
-  dynamicLayout: true,
+  dynamicLayout: false,
   dynamicTag: true,
   prepareArgs: false,
   createArgs: false,

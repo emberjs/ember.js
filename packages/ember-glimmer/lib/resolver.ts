@@ -3,8 +3,7 @@ import {
   ComponentDefinition,
   Opaque,
   Option,
-  RuntimeResolver as IRuntimeResolver,
-  VMHandle
+  RuntimeResolver as IRuntimeResolver
 } from '@glimmer/interfaces';
 import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
 import { LazyConstants, Program } from '@glimmer/program';
@@ -12,7 +11,8 @@ import {
   getDynamicVar,
   Helper,
   ModifierManager,
-  PartialDefinition
+  PartialDefinition,
+  TopLevelSyntax,
 } from '@glimmer/runtime';
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
@@ -109,8 +109,13 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   // supports directly imported late bound layouts on component.prototype.layout
   private templateCache: WeakMap<Owner, WeakMap<TemplateFactory, OwnedTemplate>> = new WeakMap();
-  private templateCacheHits = 0;
-  private templateCacheMisses = 0;
+
+  public templateCacheHits = 0;
+  public templateCacheMisses = 0;
+
+  private wrapperCache: WeakMap<OwnedTemplate, Map<ComponentCapabilities, TopLevelSyntax>> = new WeakMap();
+  public wrapperCacheHits = 0;
+  public wrapperCacheMisses = 0;
 
   constructor() {
     populateMacros(this.templateOptions.macros);
@@ -173,12 +178,10 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   // end CompileTimeLookup
 
-  // TODO implement caching for the follow hooks
-
   /**
-   * Creates a directly imported template with injections.
-   * @param templateFactory the direct imported template factory
-   * @param owner the owner to set
+   * Creates a template with injections from a directly imported template factory.
+   * @param templateFactory the directly imported template factory.
+   * @param owner the owner the template instance would belong to if resolved
    */
   createTemplate(factory: TemplateFactory, owner: Owner): OwnedTemplate {
     let cache = this.templateCache.get(owner);
@@ -201,15 +204,33 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   /**
    * Returns a wrapped layout for the specified layout.
+   *
+   * The template singletons are cached by DI but we need to create a wrapped layout
+   * (a layout that has instructions for creating a wrapping element and calling hooks
+   * on the manager to set it up).
+   *
    * @param template the layout to wrap.
    */
   getWrappedLayout(template: OwnedTemplate, capabilities: ComponentCapabilities) {
-    const compileOptions = Object.assign({},
+    // TODO move wrapper compilation into glimmer
+    let cache = this.wrapperCache.get(template);
+    if (cache === undefined) {
+      cache = new Map();
+      this.wrapperCache.set(template, cache);
+    }
+    let wrapper = cache.get(capabilities);
+    if (wrapper === undefined) {
+      const compileOptions = Object.assign({},
       this.templateOptions, { asPartial: false, referrer: template.referrer});
-    // TODO fix this getting private
-    const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
-    // TODO cache by template instance and capabilities
-    return new WrappedBuilder(compileOptions, parsed, capabilities);
+      // TODO fix this getting private
+      const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
+      wrapper = new WrappedBuilder(compileOptions, parsed, capabilities);
+      cache.set(capabilities, wrapper);
+      this.wrapperCacheMisses++;
+    } else {
+      this.wrapperCacheHits++;
+    }
+    return wrapper;
   }
 
   // needed for lazy compile time lookup
@@ -281,13 +302,11 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return new TemplateOnlyComponentDefinition(layout);
     }
 
-    let customManager: any | undefined;
-
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let definition = (layout || component) ?
       new CurlyComponentDefinition(
         name,
-        customManager,
+        undefined,
         component || meta.owner.factoryFor(P`component:-default`),
         null,
         layout

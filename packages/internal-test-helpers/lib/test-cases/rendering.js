@@ -7,8 +7,8 @@ export default class RenderingTestCase extends AbstractRenderingTestCase {
     let { owner } = this;
 
     this.env = owner.lookup('service:-glimmer-environment');
-    let templateOptions = owner.lookup(P`template-options:main`);
-    // get the runtime/lazy resolver from the compiler resolver;
-    this.resolver = templateOptions.resolver.resolver;
+    this.templateOptions = owner.lookup(P`template-options:main`);
+    this.compileTimeLookup = this.templateOptions.resolver;
+    this.runtimeResolver = this.compileTimeLookup.resolver;
   }
 }
