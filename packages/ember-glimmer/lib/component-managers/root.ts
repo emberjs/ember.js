@@ -3,6 +3,7 @@ import {
   Arguments,
   ComponentDefinition
 } from '@glimmer/runtime';
+import { FACTORY_FOR } from 'container';
 import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart,
@@ -89,7 +90,7 @@ export class RootComponentDefinition implements ComponentDefinition {
   constructor(public component: Component) {
     let manager = new RootComponentManager(component);
     this.manager = manager;
-    let factory = peekMeta(component)._factory;
+    let factory = FACTORY_FOR.get(component);
     this.state = {
       name: factory.fullName.slice(10),
       capabilities: ROOT_CAPABILITIES,
