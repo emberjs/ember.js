@@ -360,7 +360,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     If we visit `/turing/maths?memberQp=member&interestQp=interest` the model for
-    the `member.interest` route is hash with:
+    the `member.interest` route is a hash with:
 
     * `name`: `turing`
     * `memberQp`: `member`

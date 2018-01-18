@@ -1,7 +1,11 @@
-import { assert, isTesting } from 'ember-debug';
+import { assert, deprecate, isTesting } from 'ember-debug';
 import {
   onErrorTarget
 } from './error_handler';
+import {
+  beginPropertyChanges,
+  endPropertyChanges
+} from './property_events';
 import Backburner from 'backburner';
 
 function onBegin(current) {
@@ -12,7 +16,11 @@ function onEnd(current, next) {
   run.currentRunLoop = next;
 }
 
-const backburner = new Backburner(['actions', 'destroy'], {
+const backburner = new Backburner(['sync', 'actions', 'destroy'], {
+  sync: {
+    before: beginPropertyChanges,
+    after: endPropertyChanges
+  },
   defaultQueue: 'actions',
   onBegin,
   onEnd,
@@ -269,11 +277,16 @@ run.end = function() {
   @return {*} Timer information for use in canceling, see `run.cancel`.
   @public
 */
-run.schedule = function(/* queue, target, method */) {
+run.schedule = function(queue /*, target, method */) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
     `You will need to wrap any code with asynchronous side-effects in a run`,
     run.currentRunLoop || !isTesting()
+  );
+  deprecate(
+   `Scheduling into the '${queue}' run loop queue is deprecated.`,
+   queue !== 'sync',
+   { id: 'ember-metal.run.sync', until: '3.5.0' }
   );
 
   return backburner.schedule(...arguments);
@@ -420,11 +433,16 @@ run.once = function(...args) {
   @return {Object} Timer information for use in canceling, see `run.cancel`.
   @public
 */
-run.scheduleOnce = function(/*queue, target, method*/) {
+run.scheduleOnce = function(queue /*, target, method*/) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
     `You will need to wrap any code with asynchronous side-effects in a run`,
     run.currentRunLoop || !isTesting()
+  );
+  deprecate(
+   `Scheduling into the '${queue}' run loop queue is deprecated.`,
+   queue !== 'sync',
+   { id: 'ember-metal.run.sync', until: '3.5.0' }
   );
   return backburner.scheduleOnce(...arguments);
 };

@@ -2,8 +2,9 @@
 @module @ember/object
 */
 
+import { FACTORY_FOR } from 'container';
 import { symbol, OWNER } from 'ember-utils';
-import { on, descriptor, peekMeta } from 'ember-metal';
+import { on, descriptor } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from 'ember-debug';
@@ -25,10 +26,9 @@ const EmberObject = CoreObject.extend(Observable, {
   _debugContainerKey: descriptor({
     enumerable: false,
     get() {
-      let meta = peekMeta(this);
-      let { factory } = meta;
+      let factory = FACTORY_FOR.get(this);
 
-      return factory && factory.fullName;
+      return factory !== undefined && factory.fullName;
     }
   }),
 
@@ -39,10 +39,9 @@ const EmberObject = CoreObject.extend(Observable, {
         return this[OVERRIDE_OWNER];
       }
 
-      let meta = peekMeta(this);
-      let { factory } = meta;
+      let factory = FACTORY_FOR.get(this);
 
-      return factory && factory.owner;
+      return factory !== undefined && factory.owner;
     },
 
     // we need a setter here largely to support

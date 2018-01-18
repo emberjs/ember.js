@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# ensure the first failure, stops the script
+set -e
+
 echo -e "CURRENT_BRANCH: ${TRAVIS_BRANCH}\n"
 echo -e "PULL_REQUEST: ${TRAVIS_PULL_REQUEST}\n"
 
