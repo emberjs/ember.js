@@ -318,17 +318,19 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
   }
 
   ['@test triggers `focus-in` when focused'](assert) {
-    assert.expect(1);
+    let wasFocused = false;
 
     this.render(`{{input focus-in='foo'}}`, {
       actions: {
         foo() {
-          assert.ok(true, 'action was triggered');
+          wasFocused = true;
         }
       }
     });
 
     this.runTask(() => { this.$input().focus(); });
+
+    assert.ok(wasFocused, 'action was triggered');
   }
 
   ['@test sends `insert-newline` when <enter> is pressed'](assert) {

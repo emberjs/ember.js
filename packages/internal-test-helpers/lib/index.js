@@ -35,3 +35,5 @@ export {
   default as TestResolver,
   ModuleBasedResolver as ModuleBasedTestResolver
 } from './test-resolver';
+
+export { isIE11 } from './browser-detect';

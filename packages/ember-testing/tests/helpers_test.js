@@ -1,6 +1,7 @@
 import {
   moduleFor,
-  AutobootApplicationTestCase
+  AutobootApplicationTestCase,
+  isIE11
 } from 'internal-test-helpers';
 
 import { Route } from 'ember-routing';
@@ -361,7 +362,20 @@ if (!jQueryDisabled) {
           wrapper.addEventListener('mousedown', e => events.push(e.type));
           wrapper.addEventListener('mouseup', e => events.push(e.type));
           wrapper.addEventListener('click', e => events.push(e.type));
-          wrapper.addEventListener('focusin', e => events.push(e.type));
+          wrapper.addEventListener('focusin', e => {
+            // IE11 _sometimes_ triggers focusin **twice** in a row
+            // (we believe this is when it is under higher load)
+            //
+            // the goal here is to only push a single focusin when running on
+            // IE11
+            if (isIE11) {
+              if (events[events.length - 1] !== 'focusin') {
+                events.push(e.type);
+              }
+            } else {
+              events.push(e.type);
+            }
+          });
         }
       }));
 
@@ -739,12 +753,12 @@ if (!jQueryDisabled) {
     }
 
     [`@test 'fillIn' focuses on the element`](assert) {
-      assert.expect(2);
+      let wasFocused = false;
 
       this.add('route:application', Route.extend({
         actions: {
           wasFocused() {
-            assert.ok(true, 'focusIn event was triggered');
+            wasFocused = true;
           }
         }
       }));
@@ -763,6 +777,8 @@ if (!jQueryDisabled) {
       visit('/');
       fillIn('#first', 'current value');
       andThen(() => {
+        assert.ok(wasFocused, 'focusIn event was triggered');
+
         assert.equal(
           find('#first')[0].value,'current value'
         );
