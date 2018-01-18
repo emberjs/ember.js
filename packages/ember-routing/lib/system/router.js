@@ -49,10 +49,10 @@ const { slice } = Array.prototype;
 
 
 /**
-  The `Ember.Router` class manages the application state and URLs. Refer to
+  The `EmberRouter` class manages the application state and URLs. Refer to
   the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
-  @class Router
+  @class EmberRouter
   @extends EmberObject
   @uses Evented
   @public
