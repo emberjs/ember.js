@@ -3120,6 +3120,24 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('3');
   }
+
+  ['@test has attrs by didReceiveAttrs with native classes'](assert) {
+    class FooBarComponent extends Component {
+      constructor(injections) {
+        super(injections);
+        // analagous to class field defaults
+        this.foo = 'bar';
+      }
+
+      didReceiveAttrs() {
+        assert.equal(this.foo, 'bar', 'received default attrs correctly');
+      }
+    }
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
+  }
 });
 
 if (jQueryDisabled) {
