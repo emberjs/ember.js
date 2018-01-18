@@ -60,10 +60,12 @@ export default Mixin.create({
   and target will be retrieved from properties of the object. For example:
 
   ```javascript
+  import { alias } from '@ember/object/computed';
+
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    target: Ember.computed.alias('controller'),
+    target: alias('controller'),
     action: 'save',
-    actionContext: Ember.computed.alias('context'),
+    actionContext: alias('context'),
     click() {
       this.triggerAction(); // Sends the `save` action, along with the current context
                             // to the current controller
@@ -92,8 +94,10 @@ export default Mixin.create({
   to `triggerAction`, or a combination:
 
   ```javascript
+  import { alias } from '@ember/object/computed';
+
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    target: Ember.computed.alias('controller'),
+    target: alias('controller'),
     click() {
       this.triggerAction({
         action: 'save'

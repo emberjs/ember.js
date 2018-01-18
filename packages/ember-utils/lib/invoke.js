@@ -31,11 +31,13 @@ export function canInvoke(obj, methodName) {
   and if it does, invokes it with the arguments passed.
 
   ```javascript
+  import { tryInvoke } from '@ember/utils';
+
   let d = new Date('03/15/2013');
 
-  Ember.tryInvoke(d, 'getTime');              // 1363320000000
-  Ember.tryInvoke(d, 'setFullYear', [2014]);  // 1394856000000
-  Ember.tryInvoke(d, 'noSuchMethod', [2014]); // undefined
+  tryInvoke(d, 'getTime');              // 1363320000000
+  tryInvoke(d, 'setFullYear', [2014]);  // 1394856000000
+  tryInvoke(d, 'noSuchMethod', [2014]); // undefined
   ```
 
   @method tryInvoke

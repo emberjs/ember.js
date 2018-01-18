@@ -11,14 +11,16 @@ const loaded = {};
 export let _loaded = loaded;
 
 /**
-  Detects when a specific package of Ember (e.g. 'Ember.Application')
+  Detects when a specific package of Ember (e.g. 'Application')
   has fully loaded and is available for extension.
 
   The provided `callback` will be called with the `name` passed
   resolved from a string into the object:
 
   ``` javascript
-  Ember.onLoad('Ember.Application' function(hbars) {
+  import { onLoad } from '@ember/application';
+
+  onLoad('Ember.Application' function(hbars) {
     hbars.registerHelper(...);
   });
   ```
@@ -42,7 +44,7 @@ export function onLoad(name, callback) {
 }
 
 /**
-  Called when an Ember.js package (e.g Ember.Application) has finished
+  Called when an Ember.js package (e.g Application) has finished
   loading. Triggers any callbacks registered for this event.
 
   @method runLoadHooks

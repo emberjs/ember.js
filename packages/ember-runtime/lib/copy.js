@@ -18,7 +18,7 @@ function _copy(obj, deep, seen, copies) {
   }
 
   assert(
-    'Cannot clone an Ember.Object that does not implement Ember.Copyable',
+    'Cannot clone an EmberObject that does not implement Copyable',
     !(obj instanceof EmberObject) || (Copyable && Copyable.detect(obj))
   );
 
@@ -69,9 +69,9 @@ function _copy(obj, deep, seen, copies) {
   Creates a shallow copy of the passed object. A deep copy of the object is
   returned if the optional `deep` argument is `true`.
 
-  If the passed object implements the `Ember.Copyable` interface, then this
+  If the passed object implements the `Copyable` interface, then this
   function will delegate to the object's `copy()` method and return the
-  result. See `Ember.Copyable` for further details.
+  result. See `Copyable` for further details.
 
   For primitive values (which are immutable in JavaScript), the passed object
   is simply returned.

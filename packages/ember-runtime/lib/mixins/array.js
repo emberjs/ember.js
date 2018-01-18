@@ -179,7 +179,7 @@ export function isEmberArray(obj) {
   the Array Mixin by way of the MutableArray mixin, which allows observable
   changes to be made to the underlying array.
 
-  Unlike `Ember.Enumerable,` this mixin defines methods specifically for
+  Unlike `Enumerable,` this mixin defines methods specifically for
   collections that provide index-ordered access to their contents. When you
   are designing code that needs to accept any kind of Array-like object, you
   should use these methods instead of Array primitives because these will
@@ -197,7 +197,7 @@ export function isEmberArray(obj) {
   To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
 
-  Note that the EmberArray mixin also incorporates the `Ember.Enumerable`
+  Note that the EmberArray mixin also incorporates the `Enumerable`
   mixin. All `EmberArray`-like objects are also enumerable.
 
   @class EmberArray
@@ -271,7 +271,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return indexes.map(idx => objectAt(this, idx));
   },
 
-  // overrides Ember.Enumerable version
+  // overrides Enumerable version
   nextObject(idx) {
     return objectAt(this, idx);
   },
@@ -281,7 +281,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
 
-    This property overrides the default property defined in `Ember.Enumerable`.
+    This property overrides the default property defined in `Enumerable`.
 
     @property []
     @return this

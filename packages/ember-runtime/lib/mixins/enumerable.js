@@ -68,12 +68,12 @@ function iter(key, value) {
 
   1. You must have a length property. This property should change whenever
      the number of items in your enumerable object changes. If you use this
-     with an `Ember.Object` subclass, you should be sure to change the length
+     with an `EmberObject` subclass, you should be sure to change the length
      property using `set().`
 
   2. You must implement `nextObject().` See documentation.
 
-  Once you have these two methods implemented, apply the `Ember.Enumerable` mixin
+  Once you have these two methods implemented, apply the `Enumerable` mixin
   to your class and you will be able to enumerate the contents of your object
   like any other collection.
 
@@ -268,7 +268,7 @@ const Enumerable = Mixin.create({
   /**
     Sets the value on the named property for each member. This is more
     ergonomic than using other methods defined on this helper. If the object
-    implements Ember.Observable, the value will be changed to `set(),` otherwise
+    implements Observable, the value will be changed to `set(),` otherwise
     it will be set directly. `null` objects are skipped.
 
     @method setEach
@@ -772,7 +772,7 @@ const Enumerable = Mixin.create({
 
     @method without
     @param {Object} value
-    @return {Ember.Enumerable}
+    @return {Enumerable}
     @public
   */
   without(value) {
@@ -804,7 +804,7 @@ const Enumerable = Mixin.create({
     This only works on primitive data types, e.g. Strings, Numbers, etc.
 
     @method uniq
-    @return {Ember.Enumerable}
+    @return {Enumerable}
     @public
   */
   uniq() {
@@ -918,9 +918,9 @@ const Enumerable = Mixin.create({
     to be removed or added if available or just a count.
 
     @method enumerableContentWillChange
-    @param {Ember.Enumerable|Number} removing An enumerable of the objects to
+    @param {Enumerable|Number} removing An enumerable of the objects to
       be removed or the number of items to be removed.
-    @param {Ember.Enumerable|Number} adding An enumerable of the objects to be
+    @param {Enumerable|Number} adding An enumerable of the objects to be
       added or the number of items to be added.
     @chainable
     @private
@@ -973,9 +973,9 @@ const Enumerable = Mixin.create({
     notify range observers.
 
     @method enumerableContentDidChange
-    @param {Ember.Enumerable|Number} removing An enumerable of the objects to
+    @param {Enumerable|Number} removing An enumerable of the objects to
       be removed or the number of items to be removed.
-    @param {Ember.Enumerable|Number} adding  An enumerable of the objects to
+    @param {Enumerable|Number} adding  An enumerable of the objects to
       be added or the number of items to be added.
     @chainable
     @private
@@ -1061,7 +1061,7 @@ const Enumerable = Mixin.create({
     ```
 
     @method uniqBy
-    @return {Ember.Enumerable}
+    @return {Enumerable}
     @public
   */
 

@@ -61,7 +61,7 @@ class ProxyTag extends CachedTag {
 
 /**
   `Ember.ProxyMixin` forwards all properties not defined by the proxy itself
-  to a proxied `content` object.  See Ember.ObjectProxy for more details.
+  to a proxied `content` object.  See ObjectProxy for more details.
 
   @class ProxyMixin
   @namespace Ember
@@ -72,7 +72,7 @@ export default Mixin.create({
     The object whose properties will be forwarded.
 
     @property content
-    @type Ember.Object
+    @type EmberObject
     @default null
     @private
   */

@@ -8,15 +8,18 @@ const { isArray } = Array;
  an array. If obj is `null` or `undefined`, it will return an empty array.
 
  ```javascript
- Ember.makeArray();            // []
- Ember.makeArray(null);        // []
- Ember.makeArray(undefined);   // []
- Ember.makeArray('lindsay');   // ['lindsay']
- Ember.makeArray([1, 2, 42]);  // [1, 2, 42]
+ import { makeArray } from '@ember/array';
+ import ArrayProxy from '@ember/array/proxy';
 
- let controller = Ember.ArrayProxy.create({ content: [] });
+ makeArray();            // []
+ makeArray(null);        // []
+ makeArray(undefined);   // []
+ makeArray('lindsay');   // ['lindsay']
+ makeArray([1, 2, 42]);  // [1, 2, 42]
 
- Ember.makeArray(controller) === controller;  // true
+ let controller = ArrayProxy.create({ content: [] });
+
+ makeArray(controller) === controller;  // true
  ```
 
  @method makeArray

@@ -147,14 +147,16 @@ if (DEBUG) {
     * In a production build, this method is defined as an empty function (NOP).
 
     ```javascript
-    Ember.oldMethod = Ember.deprecateFunc('Please use the new, updated method', Ember.newMethod);
+    import { deprecateFunc } from '@ember/application/deprecations';
+
+    Ember.oldMethod = deprecateFunc('Please use the new, updated method', options, Ember.newMethod);
     ```
 
     @method deprecateFunc
     @static
     @for @ember/application/deprecations
     @param {String} message A description of the deprecation.
-    @param {Object} [options] The options object for Ember.deprecate.
+    @param {Object} [options] The options object for `deprecate`.
     @param {Function} func The new function called to replace its deprecated counterpart.
     @return {Function} A new function that wraps the original function with a deprecation warning
     @private

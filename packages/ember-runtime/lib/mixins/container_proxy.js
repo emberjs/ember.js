@@ -29,7 +29,9 @@ let containerProxyMixin = {
    Example:
 
    ```
-   let owner = Ember.getOwner(this);
+   import { getOwner } from '@ember/application';
+
+   let owner = getOwner(this);
 
    User.create(
      owner.ownerInjection(),
@@ -134,7 +136,9 @@ let containerProxyMixin = {
   For example:
 
   ```javascript
-  let owner = Ember.getOwner(otherInstance);
+  import { getOwner } from '@ember/application';
+
+  let owner = getOwner(otherInstance);
   // the owner is commonly the `applicationInstance`, and can be accessed via
   // an instance initializer.
 

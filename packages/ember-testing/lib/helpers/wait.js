@@ -20,7 +20,9 @@ import { pendingRequests } from '../test/pending_requests';
   Example:
 
   ```javascript
-  Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
+  import { registerAsyncHelper } from '@ember/test';
+
+  registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
       .fillIn('#username', username)
       .fillIn('#password', password)

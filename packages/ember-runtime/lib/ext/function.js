@@ -72,7 +72,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     will instead clear the cache so that it is updated when the next `get`
     is called on the property.
 
-    See [Ember.ComputedProperty](/api/classes/Ember.ComputedProperty.html), [Ember.computed](/api/classes/Ember.computed.html).
+    See [ComputedProperty](/api/ember/release/classes/ComputedProperty), [@ember/object/computed](/api/ember/release/classes/@ember%2Fobject%2Fcomputed).
 
     @method property
     @for Function
@@ -150,7 +150,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     });
     ```
 
-    See `Ember.on`.
+    See `@ember/object/evented/on`.
 
     @method on
     @for Function
