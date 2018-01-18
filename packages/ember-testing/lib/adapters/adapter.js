@@ -10,7 +10,7 @@ function K() { return this; }
   The primary purpose of this class is to create hooks that can be implemented
   by an adapter for various test frameworks.
 
-  @class Adapter
+  @class TestAdapter
   @public
 */
 export default EmberObject.extend({
