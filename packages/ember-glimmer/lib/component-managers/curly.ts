@@ -34,6 +34,7 @@ import {
 } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
 import {
+  assign,
   getOwner,
   guidFor,
 } from 'ember-utils';
@@ -166,41 +167,34 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
     const { positionalParams } = state.ComponentClass.class;
 
-    if (typeof positionalParams === 'string') {
-      if (args.named.has(positionalParams)) {
-        if (args.positional.length === 0) {
-          return null;
-        } else {
-          assert(`You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`, false);
-        }
-      }
+    // early exits
+    if (positionalParams === undefined || positionalParams === null || args.positional.length === 0) {
+      return null;
+    }
 
-      const named = {
-        ...args.named.capture().map
-      };
-      named[positionalParams] = args.positional.capture();
-      return { positional: EMPTY_ARRAY, named };
-    } else if (Array.isArray(positionalParams)) {
-      const named = {
-        ...args.named.capture().map
-      };
+    let named: PreparedArguments['named'];
+
+    if (typeof positionalParams === 'string') {
+      assert(`You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`, !args.named.has(positionalParams));
+      named = { [positionalParams]: args.positional.capture() };
+      assign(named, args.named.capture().map);
+    } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
       const count = Math.min(positionalParams.length, args.positional.length);
+      named = {};
+      assign(named, args.named.capture().map);
       for (let i=0; i<count; i++) {
         const name = positionalParams[i];
-        if (named[name]) {
-          deprecate(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`, !named[name], {
-            id: 'ember-glimmer.positional-param-conflict',
-            until: '3.5.0',
-          });
-        }
-
+        deprecate(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`, !args.named.has(name), {
+          id: 'ember-glimmer.positional-param-conflict',
+          until: '3.5.0',
+        });
         named[name] = args.positional.at(i);
       }
-
-      return { positional: EMPTY_ARRAY, named };
     } else {
       return null;
     }
+
+    return { positional: EMPTY_ARRAY, named };
   }
 
   create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
