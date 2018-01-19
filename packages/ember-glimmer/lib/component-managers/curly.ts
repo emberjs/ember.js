@@ -265,7 +265,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return component[ROOT_REF];
   }
 
-  didCreateElement({ args, component, classRef, environment }: ComponentStateBucket, element: HTMLElement, operations: ElementOperations): void {
+  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: HTMLElement, operations: ElementOperations): void {
     setViewElement(component, element);
 
     let { attributeBindings, classNames, classNameBindings } = component;
