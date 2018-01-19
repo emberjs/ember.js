@@ -283,7 +283,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     if (classRef && classRef.value()) {
       const ref = classRef.value() === true ?
-                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(args!.tag.inner!['key']), null) :
+                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(classRef['_propertyKey']), null) :
                          classRef;
       operations.setAttribute('class', ref, false, null);
     }
