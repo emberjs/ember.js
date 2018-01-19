@@ -129,7 +129,7 @@ export class ActionState {
       event.stopPropagation();
     }
 
-    run(() => {
+    run.join(() => {
       let args = this.getActionArgs();
       let payload = {
         args,
