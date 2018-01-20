@@ -104,7 +104,6 @@ QUnit.test('slice supports negative index arguments', function(assert) {
 //
 
 const DummyArray = EmberObject.extend(EmberArray, {
-  nextObject() {},
   length: 0,
   objectAt(idx) { return 'ITEM-' + idx; }
 });
