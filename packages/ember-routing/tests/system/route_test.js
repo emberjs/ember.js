@@ -9,7 +9,7 @@ import EmberRoute from '../../system/route';
 
 let route, routeOne, routeTwo, lookupHash;
 
-moduleFor('Ember.Route', class extends AbstractTestCase {
+moduleFor('Route', class extends AbstractTestCase {
   constructor() {
     super();
     route = EmberRoute.create();
@@ -195,7 +195,7 @@ moduleFor('Ember.Route', class extends AbstractTestCase {
   }
 });
 
-moduleFor('Ember.Route serialize', class extends AbstractTestCase {
+moduleFor('Route serialize', class extends AbstractTestCase {
   constructor() {
     super();
     route = EmberRoute.create();
@@ -228,7 +228,7 @@ moduleFor('Ember.Route serialize', class extends AbstractTestCase {
   }
 });
 
-moduleFor('Ember.Route interaction', class extends AbstractTestCase {
+moduleFor('Route interaction', class extends AbstractTestCase {
   constructor() {
     super();
 
@@ -293,7 +293,7 @@ moduleFor('Route injected properties', class extends AbstractTestCase {
   }
 });
 
-moduleFor('Ember.Route with engines', class extends AbstractTestCase {
+moduleFor('Route with engines', class extends AbstractTestCase {
 
   ['@test paramsFor considers an engine\'s mountPoint'](assert) {
     let router = {

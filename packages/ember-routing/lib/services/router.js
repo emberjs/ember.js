@@ -90,7 +90,7 @@ const RouterService = Service.extend({
 
     @property location
     @default 'hash'
-    @see {Ember.Location}
+    @see {Location}
     @public
   */
   location: readOnly('_router.location'),
@@ -129,7 +129,7 @@ const RouterService = Service.extend({
      Transition the application into another route. The route may
      be either a single route or route path:
 
-     See [Route.transitionTo](https://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
+     See [transitionTo](/api/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
      @method transitionTo
      @category ember-routing-router-service
@@ -159,7 +159,7 @@ const RouterService = Service.extend({
      Transition into another route while replacing the current URL, if possible.
      The route may be either a single route or route path:
 
-     See [Route.replaceWith](https://emberjs.com/api/classes/Ember.Route.html#method_replaceWith) for more info.
+     See [replaceWith](/api/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
 
      @method replaceWith
      @category ember-routing-router-service

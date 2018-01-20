@@ -9,7 +9,7 @@ function createLocation(options) {
   location = NoneTestLocation.create(options);
 }
 
-moduleFor('Ember.NoneLocation', class extends AbstractTestCase {
+moduleFor('NoneLocation', class extends AbstractTestCase {
   constructor() {
     super();
     NoneTestLocation = NoneLocation.extend({});

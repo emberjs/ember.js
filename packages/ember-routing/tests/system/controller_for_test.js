@@ -5,7 +5,7 @@ import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-moduleFor('Ember.controllerFor', class extends ApplicationTestCase {
+moduleFor('controllerFor', class extends ApplicationTestCase {
   ['@test controllerFor should lookup for registered controllers'](assert) {
     this.add('controller:app', Controller.extend());
 
@@ -18,8 +18,8 @@ moduleFor('Ember.controllerFor', class extends ApplicationTestCase {
   }
 });
 
-moduleFor('Ember.generateController', class extends ApplicationTestCase {
-  ['@test generateController should return Ember.Controller'](assert) {
+moduleFor('generateController', class extends ApplicationTestCase {
+  ['@test generateController should return Controller'](assert) {
     return this.visit('/').then(() => {
       let controller = generateController(this.applicationInstance, 'home');
       assert.ok(controller instanceof Controller, 'should return controller');

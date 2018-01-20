@@ -33,7 +33,7 @@ function mockBrowserLocation(path) {
   };
 }
 
-moduleFor('Ember.HistoryLocation', class extends AbstractTestCase {
+moduleFor('HistoryLocation', class extends AbstractTestCase {
   constructor() {
     super();
 

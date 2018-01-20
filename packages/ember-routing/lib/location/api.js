@@ -7,7 +7,7 @@ import { getHash } from './util';
 */
 
 /**
-  Ember.Location returns an instance of the correct implementation of
+  Location returns an instance of the correct implementation of
   the `location` API.
 
   ## Implementations
@@ -15,10 +15,10 @@ import { getHash } from './util';
   You can pass an implementation name (`hash`, `history`, `none`, `auto`) to force a
   particular implementation to be used in your application.
 
-  See [Ember.Location.HashLocation](/api/classes/Ember.Location.HashLocation).
-  See [Ember.Location.HistoryLocation](/api/classes/Ember.Location.HistoryLocation).
-  See [Ember.Location.NoneLocation](/api/classes/Ember.Location.NoneLocation).
-  See [Ember.Location.AutoLocation](/api/classes/Ember.Location.AutoLocation).
+  See [HashLocation](/api/ember/release/classes/HashLocation).
+  See [HistoryLocation](/api/ember/release/classes/HistoryLocation).
+  See [NoneLocation](/api/ember/release/classes/NoneLocation).
+  See [AutoLocation](/api/ember/release/classes/AutoLocation).
 
 
   ## Location API
@@ -45,9 +45,7 @@ import { getHash } from './util';
   Example:
 
   ```javascript
-  import Ember from 'ember';
-
-  const { HistoryLocation } = Ember;
+  import HistoryLocation from '@ember/routing/history-location';
 
   export default class MyHistory {
     implementation: 'my-custom-history',
@@ -90,10 +88,10 @@ export default {
   */
   create(options) {
     let implementation = options && options.implementation;
-    assert('Ember.Location.create: you must specify a \'implementation\' option', !!implementation);
+    assert('Location.create: you must specify a \'implementation\' option', !!implementation);
 
     let implementationClass = this.implementations[implementation];
-    assert(`Ember.Location.create: ${implementation} is not a valid implementation`, !!implementationClass);
+    assert(`Location.create: ${implementation} is not a valid implementation`, !!implementationClass);
 
     return implementationClass.create(...arguments);
   },
