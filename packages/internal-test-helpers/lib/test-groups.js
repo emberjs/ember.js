@@ -12,7 +12,7 @@ export function testBoth(testname, callback) {
   function aget(x, y) { return x[y]; }
   function aset(x, y, z) { return (x[y] = z); }
 
-  QUnit.test(`${testname} using getFromEmberMetal()/Ember.set()`, function(assert) {
+  QUnit.test(`${testname} using getFromEmberMetal()/set()`, function(assert) {
     callback(emberget, emberset, assert);
   });
 
@@ -45,7 +45,7 @@ export function testWithDefault(testname, callback) {
     callback(emberget, emberset, assert);
   });
 
-  QUnit.test(`${testname} using Ember.getWithDefault()`, function(assert) {
+  QUnit.test(`${testname} using getWithDefault()`, function(assert) {
     callback(embergetwithdefault, emberset, assert);
   });
 

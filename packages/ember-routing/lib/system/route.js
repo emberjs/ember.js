@@ -61,12 +61,12 @@ export function hasDefaultSerialize(route) {
 */
 
 /**
-  The `Ember.Route` class is used to define individual routes. Refer to
+  The `Route` class is used to define individual routes. Refer to
   the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
   @class Route
   @extends EmberObject
-  @uses Ember.ActionHandler
+  @uses ActionHandler
   @uses Evented
   @since 1.0.0
   @public
@@ -670,11 +670,12 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     as well as any unhandled errors from child routes:
 
     ```app/routes/admin.js
+    import { reject } from 'rsvp';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
       beforeModel() {
-        return Ember.RSVP.reject('bad things!');
+        return reject('bad things!');
       },
 
       actions: {
@@ -723,10 +724,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     not executed when the model for the route changes.
 
     ```app/routes/application.js
+    import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
-      collectAnalytics: Ember.on('activate', function(){
+      collectAnalytics: on('activate', function(){
         collectAnalytics();
       })
     });
@@ -742,10 +744,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     route. It is not executed when the model for the route changes.
 
     ```app/routes/index.js
+    import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
-      trackPageLeaveAnalytics: Ember.on('deactivate', function(){
+      trackPageLeaveAnalytics: on('deactivate', function(){
         trackPageLeaveAnalytics();
       })
     });
@@ -1005,9 +1008,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/index.js
-    import Ember from 'ember':
+    import Route from '@ember/routing/route';
 
-    export Ember.Route.extend({
+    export Route.extend({
       actions: {
         moveToSecret(context) {
           if (authorized()) {
@@ -1509,7 +1512,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     This hook follows the asynchronous/promise semantics
     described in the documentation for `beforeModel`. In particular,
     if a promise returned from `model` fails, the error will be
-    handled by the `error` hook on `Ember.Route`.
+    handled by the `error` hook on `Route`.
 
     Example
 
@@ -1639,12 +1642,13 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/post.js
+    import $ from 'jquery';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
       model(params) {
         // the server returns `{ id: 12 }`
-        return Ember.$.getJSON('/posts/' + params.post_id);
+        return $.getJSON('/posts/' + params.post_id);
       },
 
       serialize(model) {
@@ -1657,7 +1661,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     The default `serialize` method will insert the model's `id` into the
     route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'.
     If the route has multiple dynamic segments or does not contain '_id', `serialize`
-    will return `Ember.getProperties(model, params)`
+    will return `getProperties(model, params)`
 
     This method is called when `transitionTo` is called with a context
     in order to populate the URL.
@@ -1721,7 +1725,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     For the `post` route, a controller named `App.PostController` would
-    be used if it is defined. If it is not defined, a basic `Ember.Controller`
+    be used if it is defined. If it is not defined, a basic `Controller`
     instance would be used.
 
     Example
@@ -1989,7 +1993,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     The string values provided for the template name, and controller
     will eventually pass through to the resolver for lookup. See
-    Ember.Resolver for how these are mapped to JavaScript objects in your
+    Resolver for how these are mapped to JavaScript objects in your
     application. The template to render into needs to be related to  either the
     current route or one of its ancestors.
 

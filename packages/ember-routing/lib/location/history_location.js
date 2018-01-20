@@ -23,7 +23,7 @@ function _uuid() {
 
 
 /**
-  Ember.HistoryLocation implements the location API using the browser's
+  HistoryLocation implements the location API using the browser's
   history.pushState API.
 
   Using `HistoryLocation` results in URLs that are indistinguishable from a

@@ -48,7 +48,7 @@ function triggerHashchange() {
   window.dispatchEvent(event);
 }
 
-moduleFor('Ember.HashLocation', class extends AbstractTestCase {
+moduleFor('HashLocation', class extends AbstractTestCase {
   teardown() {
     run(function() {
       if (location) { location.destroy(); }
