@@ -1,8 +1,8 @@
 import { run } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-moduleFor('Ember.run.debounce', class extends AbstractTestCase {
-  ['@test Ember.run.debounce - with target, with method, without args'](assert) {
+moduleFor('debounce', class extends AbstractTestCase {
+  ['@test debounce - with target, with method, without args'](assert) {
     let done = assert.async();
 
     let calledWith = [];
@@ -22,7 +22,7 @@ moduleFor('Ember.run.debounce', class extends AbstractTestCase {
     }, 20);
   }
 
-  ['@test Ember.run.debounce - with target, with method name, without args'](assert) {
+  ['@test debounce - with target, with method name, without args'](assert) {
     let done = assert.async();
 
     let calledWith = [];
@@ -42,7 +42,7 @@ moduleFor('Ember.run.debounce', class extends AbstractTestCase {
     }, 20);
   }
 
-  ['@test Ember.run.debounce - without target, without args'](assert) {
+  ['@test debounce - without target, without args'](assert) {
     let done = assert.async();
 
     let calledWith = [];
@@ -60,7 +60,7 @@ moduleFor('Ember.run.debounce', class extends AbstractTestCase {
     }, 20);
   }
 
-  ['@test Ember.run.debounce - without target, with args'](assert) {
+  ['@test debounce - without target, with args'](assert) {
     let done = assert.async();
 
     let calledWith = [];

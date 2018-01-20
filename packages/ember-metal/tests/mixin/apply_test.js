@@ -7,7 +7,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function K() {}
 
-moduleFor('Ember.Mixin.apply', class extends AbstractTestCase {
+moduleFor('Mixin.apply', class extends AbstractTestCase {
   ['@test using apply() should apply properties'](assert) {
     let MixinA = Mixin.create({ foo: 'FOO', baz: K });
     let obj = {};

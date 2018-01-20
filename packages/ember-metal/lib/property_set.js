@@ -26,7 +26,8 @@ import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'embe
   method then that will be invoked as well.
 
   ```javascript
-  Ember.set(obj, "name", value);
+  import { set } from '@ember/object';
+  set(obj, "name", value);
   ```
 
   @method set
@@ -126,7 +127,7 @@ function setPath(root, path, value, tolerant) {
 }
 
 /**
-  Error-tolerant form of `Ember.set`. Will not blow up if any part of the
+  Error-tolerant form of `set`. Will not blow up if any part of the
   chain is `undefined`, `null`, or destroyed.
 
   This is primarily used when syncing bindings, which may try to update after

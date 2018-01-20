@@ -6,7 +6,7 @@ import {
 } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-moduleFor('Ember.Mixin#reopen', class extends AbstractTestCase {
+moduleFor('Mixin#reopen', class extends AbstractTestCase {
   ['@test using reopen() to add more properties to a simple'](assert) {
     let MixinA = Mixin.create({ foo: 'FOO', baz: 'BAZ' });
     MixinA.reopen({ bar: 'BAR', foo: 'FOO2' });

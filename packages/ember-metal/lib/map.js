@@ -2,7 +2,7 @@ import { assert } from 'ember-debug';
 import { guidFor } from 'ember-utils';
 
 /**
-@module ember
+@module @ember/map
 */
 
 /*
@@ -217,7 +217,6 @@ class OrderedSet {
   we delete its entry in `keys` and `values`.
 
   @class Map
-  @namespace Ember
   @private
   @constructor
 */
@@ -262,7 +261,7 @@ class Map {
     @method set
     @param {*} key
     @param {*} value
-    @return {Ember.Map}
+    @return {Map}
     @private
   */
   set(key, value) {
@@ -363,7 +362,7 @@ class Map {
 
   /**
     @method copy
-    @return {Ember.Map}
+    @return {Map}
     @private
   */
   copy() {
@@ -373,8 +372,7 @@ class Map {
 
 /**
   @class MapWithDefault
-  @namespace Ember
-  @extends Ember.Map
+  @extends Map
   @private
   @constructor
   @param [options]
@@ -391,7 +389,7 @@ class MapWithDefault extends Map {
     @static
     @param [options]
       @param {*} [options.defaultValue]
-    @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
+    @return {MapWithDefault|Map} If options are passed, returns
       `MapWithDefault` otherwise returns `EmberMap`
     @private
   */
@@ -425,7 +423,7 @@ class MapWithDefault extends Map {
 
   /**
     @method copy
-    @return {Ember.MapWithDefault}
+    @return {MapWithDefault}
     @private
   */
   copy() {

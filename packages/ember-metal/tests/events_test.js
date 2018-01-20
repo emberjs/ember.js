@@ -165,7 +165,7 @@ QUnit.test('a listener can be added as part of a mixin', function(assert) {
   assert.equal(triggered, 2, 'should invoke listeners');
 });
 
-QUnit.test('Ember.on asserts for invalid arguments', function() {
+QUnit.test(`'on' asserts for invalid arguments`, function() {
   expectAssertion(()=> {
     Mixin.create({
       foo1: on('bar'),

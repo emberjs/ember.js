@@ -2,7 +2,7 @@ import { run } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('system/run_loop/run_test', class extends AbstractTestCase {
-  ['@test Ember.run invokes passed function, returning value'](assert) {
+  ['@test run invokes passed function, returning value'](assert) {
     let obj = {
       foo() { return [this.bar, 'FOO']; },
       bar: 'BAR',

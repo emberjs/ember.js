@@ -1,8 +1,8 @@
 import { isBlank } from '..';
 
-QUnit.module('Ember.isBlank');
+QUnit.module('isBlank');
 
-QUnit.test('Ember.isBlank', function(assert) {
+QUnit.test('isBlank', function(assert) {
   let string = 'string';
   let fn = function() {};
   let object = { length: 0 };

@@ -2,7 +2,7 @@ import { run } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('system/run_loop/run_bind_test', class extends AbstractTestCase {
-  ['@test Ember.run.bind builds a run-loop wrapped callback handler'](assert) {
+  ['@test bind builds a run-loop wrapped callback handler'](assert) {
     assert.expect(3);
 
     let obj = {
@@ -18,7 +18,7 @@ moduleFor('system/run_loop/run_bind_test', class extends AbstractTestCase {
     assert.equal(obj.value, 1);
   }
 
-  ['@test Ember.run.bind keeps the async callback arguments'](assert) {
+  ['@test bind keeps the async callback arguments'](assert) {
     assert.expect(4);
 
     function asyncCallback(increment, increment2, increment3) {
