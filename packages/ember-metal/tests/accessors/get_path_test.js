@@ -3,7 +3,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj;
 
-moduleFor('Ember.get with path', class extends AbstractTestCase {
+moduleFor('get with path', class extends AbstractTestCase {
   constructor() {
     super();
     obj = {

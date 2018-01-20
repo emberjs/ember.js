@@ -9,7 +9,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function aget(x, y) { return x[y]; }
 
-moduleFor('Ember.get', class extends AbstractTestCase {
+moduleFor('get', class extends AbstractTestCase {
   ['@test should get arbitrary properties on an object'](assert) {
     let obj = {
       string: 'string',
@@ -38,7 +38,7 @@ moduleFor('Ember.get', class extends AbstractTestCase {
     assert.equal(count, 1);
   }
 
-  ['@test should call unknownProperty on watched values if the value is undefined using getFromEmberMetal()/Ember.set()'](assert) {
+  ['@test should call unknownProperty on watched values if the value is undefined using getFromEmberMetal()/set()'](assert) {
     let obj = {
       unknownProperty(key) {
         assert.equal(key, 'foo', 'should pass key');
@@ -111,7 +111,7 @@ moduleFor('Ember.get', class extends AbstractTestCase {
     expectAssertion(() => get(obj, undefined), /The key provided to get must be a string, you passed undefined/);
     expectAssertion(() => get(obj, false),     /The key provided to get must be a string, you passed false/);
     expectAssertion(() => get(obj, 42),        /The key provided to get must be a string, you passed 42/);
-    expectAssertion(() => get(obj, ''), /Cannot call `Ember.get` with an empty string/);
+    expectAssertion(() => get(obj, ''), /Cannot call `get` with an empty string/);
   }
 
   // ..........................................................
@@ -131,7 +131,7 @@ moduleFor('Ember.get', class extends AbstractTestCase {
   }
 });
 
-moduleFor('Ember.getWithDefault', class extends AbstractTestCase {
+moduleFor('getWithDefault', class extends AbstractTestCase {
   ['@test should get arbitrary properties on an object'](assert) {
     let obj = {
       string: 'string',
@@ -170,7 +170,7 @@ moduleFor('Ember.getWithDefault', class extends AbstractTestCase {
     assert.equal(obj.count, 1, 'should have invoked');
   }
 
-  ['@test if unknownProperty is present, it is called using getFromEmberMetal()/Ember.set()'](assert) {
+  ['@test if unknownProperty is present, it is called using getFromEmberMetal()/set()'](assert) {
     let obj = {
       unknownProperty(key) {
         if (key === 'foo') {

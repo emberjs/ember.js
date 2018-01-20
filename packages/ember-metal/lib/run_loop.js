@@ -140,14 +140,14 @@ run.join = function() {
     initializeTinyMCE: on('didInsertElement', function() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
-        setup: Ember.run.bind(this, this.setupEditor)
+        setup: bind(this, this.setupEditor)
       });
     }),
 
     didInsertElement() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
-        setup: Ember.run.bind(this, this.setupEditor)
+        setup: bind(this, this.setupEditor)
       });
     }
 
@@ -161,7 +161,7 @@ run.join = function() {
   });
   ```
 
-  In this example, we use Ember.run.bind to bind the setupEditor method to the
+  In this example, we use `bind` to bind the setupEditor method to the
   context of the RichTextEditor component and to have the invocation of that
   method be safely handled and executed by the Ember run loop.
 
