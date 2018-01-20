@@ -27,24 +27,6 @@ QUnit.module('ArrayProxy - arrangedContent', {
   }
 });
 
-QUnit.test('addObject - adds to end of \'content\' if not present', function() {
-  run(() => array.addObject(3));
-
-  deepEqual(array.get('content'), [1, 2, 4, 5, 3], 'adds to end of content');
-  deepEqual(array.get('arrangedContent'), [5, 4, 3, 2, 1], 'arrangedContent stays sorted');
-
-  run(() => array.addObject(1));
-
-  deepEqual(array.get('content'), [1, 2, 4, 5, 3], 'does not add existing number to content');
-});
-
-QUnit.test('addObjects - adds to end of \'content\' if not present', function() {
-  run(() => array.addObjects([1, 3, 6]));
-
-  deepEqual(array.get('content'), [1, 2, 4, 5, 3, 6], 'adds to end of content');
-  deepEqual(array.get('arrangedContent'), [6, 5, 4, 3, 2, 1], 'arrangedContent stays sorted');
-});
-
 QUnit.test('compact - returns arrangedContent without nulls and undefined', function() {
   run(() => array.set('content', emberA([1, 3, null, 2, undefined])));
 
@@ -55,18 +37,9 @@ QUnit.test('indexOf - returns index of object in arrangedContent', function() {
   equal(array.indexOf(4), 1, 'returns arranged index');
 });
 
-QUnit.test('insertAt - raises, indeterminate behavior', function() {
-  throws(() => run(() =>  array.insertAt(2, 3)));
-});
-
 QUnit.test('lastIndexOf - returns last index of object in arrangedContent', function() {
-  run(() => array.pushObject(4));
-
+  array.get('content').pushObject(4);
   equal(array.lastIndexOf(4), 2, 'returns last arranged index');
-});
-
-QUnit.test('nextObject - returns object at index in arrangedContent', function() {
-  equal(array.nextObject(1), 4, 'returns object at index');
 });
 
 QUnit.test('objectAt - returns object at index in arrangedContent', function() {
@@ -82,61 +55,15 @@ QUnit.test('objectsAt - returns objects at indices in arrangedContent', function
   deepEqual(array.objectsAt([0, 2, 4]), [5, 2, undefined], 'returns objects at indices');
 });
 
-QUnit.test('popObject - removes last object in arrangedContent', function() {
-  let popped;
-  run(() => popped = array.popObject());
-  equal(popped, 1, 'returns last object');
-  deepEqual(array.get('content'), [2, 4, 5], 'removes from content');
-});
-
-QUnit.test('pushObject - adds to end of content even if it already exists', function() {
-  run(() => array.pushObject(1));
-  deepEqual(array.get('content'), [1, 2, 4, 5, 1], 'adds to end of content');
-});
-
-QUnit.test('pushObjects - adds multiple to end of content even if it already exists', function() {
-  run(() => array.pushObjects([1, 2, 4]));
-  deepEqual(array.get('content'), [1, 2, 4, 5, 1, 2, 4], 'adds to end of content');
-});
-
-QUnit.test('removeAt - removes from index in arrangedContent', function() {
-  run(() => array.removeAt(1, 2));
-  deepEqual(array.get('content'), [1, 5]);
-});
-
-QUnit.test('removeObject - removes object from content', function() {
-  run(() => array.removeObject(2));
-  deepEqual(array.get('content'), [1, 4, 5]);
-});
-
-QUnit.test('removeObjects - removes objects from content', function() {
-  run(() => array.removeObjects([2, 4, 6]));
-  deepEqual(array.get('content'), [1, 5]);
-});
-
-QUnit.test('replace - raises, indeterminate behavior', function() {
-  throws(() => run(() => array.replace(1, 2, [3])));
+QUnit.test('replace - mutating an arranged ArrayProxy is not allowed', function() {
+  expectAssertion(() => {
+    array.replace(0, 0, [3]);
+  }, /Mutating an arranged ArrayProxy is not allowed/);
 });
 
 QUnit.test('replaceContent - does a standard array replace on content', function() {
   run(() => array.replaceContent(1, 2, [3]));
   deepEqual(array.get('content'), [1, 3, 5]);
-});
-
-QUnit.test('reverseObjects - raises, use Sortable#sortAscending', function() {
-  throws(() => run(() => array.reverseObjects()));
-});
-
-QUnit.test('setObjects - replaces entire content', function() {
-  run(() => array.setObjects([6, 7, 8]));
-  deepEqual(array.get('content'), [6, 7, 8], 'replaces content');
-});
-
-QUnit.test('shiftObject - removes from start of arrangedContent', function() {
-  let shifted = run(() => array.shiftObject());
-
-  equal(shifted, 5, 'returns first object');
-  deepEqual(array.get('content'), [1, 2, 4], 'removes object from content');
 });
 
 QUnit.test('slice - returns a slice of the arrangedContent', function() {
@@ -145,16 +72,6 @@ QUnit.test('slice - returns a slice of the arrangedContent', function() {
 
 QUnit.test('toArray - returns copy of arrangedContent', function() {
   deepEqual(array.toArray(), [5, 4, 2, 1]);
-});
-
-QUnit.test('unshiftObject - adds to start of content', function() {
-  run(() => array.unshiftObject(6));
-  deepEqual(array.get('content'), [6, 1, 2, 4, 5], 'adds to start of content');
-});
-
-QUnit.test('unshiftObjects - adds to start of content', function() {
-  run(function() { array.unshiftObjects([6, 7]); });
-  deepEqual(array.get('content'), [6, 7, 1, 2, 4, 5], 'adds to start of content');
 });
 
 QUnit.test('without - returns arrangedContent without object', function() {
@@ -234,12 +151,8 @@ QUnit.test('indexOf - returns index of object in arrangedContent', function() {
 });
 
 QUnit.test('lastIndexOf - returns last index of object in arrangedContent', function() {
-  run(function() { array.pushObject(4); });
+  array.get('content').pushObject(4);
   equal(array.lastIndexOf('4'), 2, 'returns last arranged index');
-});
-
-QUnit.test('nextObject - returns object at index in arrangedContent', function() {
-  equal(array.nextObject(1), '4', 'returns object at index');
 });
 
 QUnit.test('objectAt - returns object at index in arrangedContent', function() {
@@ -253,30 +166,6 @@ QUnit.test('objectAtContent - returns object at index in arrangedContent', funct
 
 QUnit.test('objectsAt - returns objects at indices in arrangedContent', function() {
   deepEqual(array.objectsAt([0, 2, 4]), ['5', '2', undefined], 'returns objects at indices');
-});
-
-QUnit.test('popObject - removes last object in arrangedContent', function() {
-  let popped;
-  run(function() { popped = array.popObject(); });
-  equal(popped, '1', 'returns last object');
-  deepEqual(array.get('content'), [2, 4, 5], 'removes from content');
-});
-
-QUnit.test('removeObject - removes object from content', function() {
-  run(function() { array.removeObject('2'); });
-  deepEqual(array.get('content'), [1, 4, 5]);
-});
-
-QUnit.test('removeObjects - removes objects from content', function() {
-  run(function() { array.removeObjects(['2', '4', '6']); });
-  deepEqual(array.get('content'), [1, 5]);
-});
-
-QUnit.test('shiftObject - removes from start of arrangedContent', function() {
-  let shifted;
-  run(function() { shifted = array.shiftObject(); });
-  equal(shifted, '5', 'returns first object');
-  deepEqual(array.get('content'), [1, 2, 4], 'removes object from content');
 });
 
 QUnit.test('slice - returns a slice of the arrangedContent', function() {
@@ -299,7 +188,7 @@ QUnit.test('firstObject - returns first arranged object', function() {
   equal(array.get('firstObject'), '5', 'returns first arranged object');
 });
 
-QUnit.test('arrangedContentArray{Will,Did}Change are called when the arranged content changes', function() {
+QUnit.test('arrangedContentArray{Will,Did}Change are called when the arranged content changes', function(assert) {
   // The behavior covered by this test may change in the future if we decide
   // that built-in array methods are not overridable.
 

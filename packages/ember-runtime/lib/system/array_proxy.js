@@ -1,10 +1,12 @@
+/**
+@module @ember/array
+*/
+
 import {
   get,
   computed,
   _beforeObserver,
   observer,
-  beginPropertyChanges,
-  endPropertyChanges,
   alias
 } from 'ember-metal';
 import {
@@ -12,21 +14,12 @@ import {
 } from '../utils';
 import EmberObject from './object';
 import MutableArray from '../mixins/mutable_array';
-import Enumerable from '../mixins/enumerable';
 import {
   addArrayObserver,
   removeArrayObserver,
   objectAt
 } from '../mixins/array';
-import { assert, Error as EmberError } from 'ember-debug';
-
-/**
-@module @ember/array
-*/
-
-const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
-const EMPTY = [];
-
+import { assert } from 'ember-debug';
 
 /**
   An ArrayProxy wraps any other object that implements `Array` and/or
@@ -183,110 +176,9 @@ export default EmberObject.extend(MutableArray, {
     // No dependencies since Enumerable notifies length of change
   }),
 
-  _replace(idx, amt, objects) {
-    let content = get(this, 'content');
-    assert(`The content property of ${this.constructor} should be set before modifying it`, content);
-    if (content) {
-      this.replaceContent(idx, amt, objects);
-    }
-
-    return this;
-  },
-
-  replace() {
-    if (get(this, 'arrangedContent') === get(this, 'content')) {
-      this._replace(...arguments);
-    } else {
-      throw new EmberError('Using replace on an arranged ArrayProxy is not allowed.');
-    }
-  },
-
-  _insertAt(idx, object) {
-    if (idx > get(this, 'content.length')) {
-      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    this._replace(idx, 0, [object]);
-    return this;
-  },
-
-  insertAt(idx, object) {
-    if (get(this, 'arrangedContent') === get(this, 'content')) {
-      return this._insertAt(idx, object);
-    } else {
-      throw new EmberError('Using insertAt on an arranged ArrayProxy is not allowed.');
-    }
-  },
-
-  removeAt(start, len) {
-    if ('number' === typeof start) {
-      let content = get(this, 'content');
-      let arrangedContent = get(this, 'arrangedContent');
-      let indices = [];
-
-      if ((start < 0) || (start >= get(this, 'length'))) {
-        throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-      }
-
-      if (len === undefined) {
-        len = 1;
-      }
-
-      // Get a list of indices in original content to remove
-      for (let i = start; i < start + len; i++) {
-        // Use arrangedContent here so we avoid confusion with objects transformed by objectAtContent
-        indices.push(content.indexOf(objectAt(arrangedContent, i)));
-      }
-
-      // Replace in reverse order since indices will change
-      indices.sort((a, b) => b - a);
-
-      beginPropertyChanges();
-      for (let i = 0; i < indices.length; i++) {
-        this._replace(indices[i], 1, EMPTY);
-      }
-      endPropertyChanges();
-    }
-
-    return this;
-  },
-
-  pushObject(obj) {
-    this._insertAt(get(this, 'content.length'), obj);
-    return obj;
-  },
-
-  pushObjects(objects) {
-    if (!(Enumerable.detect(objects) || isArray(objects))) {
-      throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
-    }
-    this._replace(get(this, 'length'), 0, objects);
-    return this;
-  },
-
-  setObjects(objects) {
-    if (objects.length === 0) {
-      return this.clear();
-    }
-
-    let len = get(this, 'length');
-    this._replace(0, len, objects);
-    return this;
-  },
-
-  unshiftObject(obj) {
-    this._insertAt(0, obj);
-    return obj;
-  },
-
-  unshiftObjects(objects) {
-    this._replace(0, 0, objects);
-    return this;
-  },
-
-  slice() {
-    let arr = this.toArray();
-    return arr.slice(...arguments);
+  replace(idx, amt, objects) {
+    assert('Mutating an arranged ArrayProxy is not allowed', get(this, 'arrangedContent') === get(this, 'content') );
+    this.replaceContent(idx, amt, objects);
   },
 
   arrangedContentArrayWillChange(item, idx, removedCnt, addedCnt) {

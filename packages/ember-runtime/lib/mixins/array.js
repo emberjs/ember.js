@@ -246,11 +246,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return indexes.map(idx => objectAt(this, idx));
   },
 
-  // overrides Enumerable version
-  nextObject(idx) {
-    return objectAt(this, idx);
-  },
-
   /**
     This is the handler for the special array content property. If you get
     this property, it will return this. If you set this property to a new
