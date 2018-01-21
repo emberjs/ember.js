@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { setupComponentTest } from 'ember-mocha';
 
-describe('Unit | Component | x foo', function() {
+describe('Unit | Component | x-foo', function() {
   setupComponentTest('x-foo', {
     // Specify the other units that are required for this test
     // needs: ['component:foo', 'helper:bar'],
