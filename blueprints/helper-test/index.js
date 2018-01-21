@@ -1,6 +1,5 @@
 'use strict';
 
-const testInfo = require('ember-cli-test-info');
 const stringUtils = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 
@@ -34,7 +33,7 @@ module.exports = useTestFrameworkDetector({
   locals: function(options) {
     let testType = options.testType || 'integration';
     let testName = testType === 'integration' ? 'Integration' : 'Unit';
-    let friendlyTestName = testInfo.name(options.entity.name, testName, 'Helper');
+    let friendlyTestName = [testName, 'Helper', options.entity.name].join(' | ');
 
     return {
       friendlyTestName: friendlyTestName,

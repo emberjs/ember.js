@@ -138,7 +138,12 @@ let librariesRegistered = false;
   append views inside it!
 
   To learn more about the events Ember components use, see
+<<<<<<< HEAD
   [components/handling-events](https://guides.emberjs.com/v2.6.0/components/handling-events/#toc_event-names).
+=======
+
+  [components/handling-events](https://guides.emberjs.com/current/components/handling-events/#toc_event-names).
+>>>>>>> 5d5d92478... [DOC beat] RFC176 api doc update
 
   ### Initializers
 
