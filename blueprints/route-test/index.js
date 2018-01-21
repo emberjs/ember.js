@@ -1,6 +1,5 @@
 'use strict';
 
-const testInfo = require('ember-cli-test-info');
 const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
@@ -43,7 +42,7 @@ module.exports = useTestFrameworkDetector({
     }
 
     return {
-      friendlyTestDescription: testInfo.description(options.entity.name, 'Unit', 'Route'),
+      friendlyTestDescription: ['Unit', 'Route', options.entity.name].join(' | '),
       moduleName: stringUtil.dasherize(moduleName)
     };
   },
