@@ -271,19 +271,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    @method nextObject
-    @param {Number} index the current index of the iteration
-    @param {Object} previousObject the value returned by the last call to
-      `nextObject`.
-    @param {Object} context a context object you can use to maintain state.
-    @return {Object} the next object in the iteration or undefined
-    @private
-  */
-  nextObject(idx) {
-    return objectAt(this, idx);
-  },
-
-  /**
     This is the handler for the special array content property. If you get
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
