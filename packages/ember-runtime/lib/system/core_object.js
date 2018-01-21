@@ -50,13 +50,12 @@ function makeCtor() {
   // Note: avoid accessing any properties on the object since it makes the
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
-
-  let wasApplied = false;
   let initProperties, initFactory;
 
   class Class {
     constructor() {
-      if (!wasApplied) {
+      let m = meta(this);
+      if (!m.parent.wasApplied) {
         Class.proto(); // prepare prototype...
       }
 
@@ -65,7 +64,6 @@ function makeCtor() {
       }
 
       this.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      let m = meta(this);
       let proto = m.proto;
       m.proto = this;
 
@@ -173,11 +171,12 @@ function makeCtor() {
     }
 
     static willReopen() {
-      if (wasApplied) {
+      let m = meta(this.prototype);
+      if (m.wasApplied) {
         Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
       }
 
-      wasApplied = false;
+      m.wasApplied = false;
     }
 
     static _initProperties(args) { initProperties = args; }
@@ -187,8 +186,9 @@ function makeCtor() {
       let superclass = Class.superclass;
       if (superclass) { superclass.proto(); }
 
-      if (!wasApplied) {
-        wasApplied = true;
+      let m = meta(this.prototype);
+      if (!m.wasApplied) {
+        m.wasApplied = true;
         Class.PrototypeMixin.applyPartial(Class.prototype);
       }
 
@@ -979,6 +979,11 @@ let ClassMixin = Mixin.create(ClassMixinProps);
 ClassMixin.ownerConstructor = CoreObject;
 
 CoreObject.ClassMixin = ClassMixin;
+
+// ensure CoreObject itself has a proper class meta
+let proto = CoreObject.prototype;
+generateGuid(proto);
+meta(proto).proto = proto;
 
 ClassMixin.apply(CoreObject);
 export default CoreObject;
