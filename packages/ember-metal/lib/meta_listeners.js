@@ -80,42 +80,7 @@ export const protoMethods = {
       if (pointer._listenersFinalized) { break; }
       pointer = pointer.parent;
     }
-    let sus = this._suspendedListeners;
-    if (sus !== undefined && result !== undefined) {
-      for (let susIndex = 0; susIndex < sus.length; susIndex += 3) {
-        if (eventName === sus[susIndex]) {
-          for (let resultIndex = 0; resultIndex < result.length; resultIndex += 3) {
-            if (result[resultIndex] === sus[susIndex + 1] && result[resultIndex + 1] === sus[susIndex + 2]) {
-              result[resultIndex + 2] |= SUSPENDED;
-            }
-          }
-        }
-      }
-    }
     return result;
-  },
-
-  suspendListeners(eventNames, target, method, callback) {
-    let sus = this._suspendedListeners;
-    if (sus === undefined) {
-      sus = this._suspendedListeners = [];
-    }
-    for (let i = 0; i < eventNames.length; i++) {
-      sus.push(eventNames[i], target, method);
-    }
-    try {
-      return callback.call(target);
-    } finally {
-      if (sus.length === eventNames.length) {
-        this._suspendedListeners = undefined;
-      } else {
-        for (let i = sus.length - 3; i >= 0; i -= 3) {
-          if (sus[i + 1] === target && sus[i + 2] === method && eventNames.indexOf(sus[i]) !== -1) {
-            sus.splice(i, 3);
-          }
-        }
-      }
-    }
   },
 
   watchedEvents() {

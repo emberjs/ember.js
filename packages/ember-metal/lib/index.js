@@ -45,8 +45,6 @@ export {
   on,
   removeListener,
   sendEvent,
-  suspendListener,
-  suspendListeners,
   watchedEvents
 } from './events';
 
@@ -100,8 +98,6 @@ export { default as setProperties } from './set_properties';
 export { default as expandProperties } from './expand_properties';
 
 export {
-  _suspendObserver,
-  _suspendObservers,
   addObserver,
   observersFor,
   removeObserver,

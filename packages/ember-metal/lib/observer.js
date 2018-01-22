@@ -5,9 +5,7 @@ import {
 import {
   listenersFor,
   addListener,
-  removeListener,
-  suspendListeners,
-  suspendListener
+  removeListener
 } from './events';
 /**
 @module @ember/object
@@ -78,19 +76,6 @@ export function _addBeforeObserver(obj, path, target, method) {
   watch(obj, path);
 
   return this;
-}
-
-// Suspend observer during callback.
-//
-// This should only be used by the target of the observer
-// while it is setting the observed path.
-export function _suspendObserver(obj, path, target, method, callback) {
-  return suspendListener(obj, changeEvent(path), target, method, callback);
-}
-
-export function _suspendObservers(obj, paths, target, method, callback) {
-  let events = paths.map(changeEvent);
-  return suspendListeners(obj, events, target, method, callback);
 }
 
 /**
