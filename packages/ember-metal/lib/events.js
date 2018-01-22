@@ -228,12 +228,12 @@ export function hasListeners(obj, eventName) {
 }
 
 /**
-  @private
   @method listenersFor
   @static
   @for @ember/object/events
   @param obj
   @param {String} eventName
+  @public
 */
 export function listenersFor(obj, eventName) {
   let ret = [];
