@@ -9,267 +9,268 @@ import {
   sendEvent,
   hasListeners
 } from '..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('system/props/events_test');
+moduleFor('system/props/events_test', class extends AbstractTestCase {
+  ['@test listener should receive event - removing should remove'](assert) {
+    let obj = {};
+    let count = 0;
 
-QUnit.test('listener should receive event - removing should remove', function(assert) {
-  let obj = {};
-  let count = 0;
+    function F() { count++; }
 
-  function F() { count++; }
+    addListener(obj, 'event!', F);
+    assert.equal(count, 0, 'nothing yet');
 
-  addListener(obj, 'event!', F);
-  assert.equal(count, 0, 'nothing yet');
+    sendEvent(obj, 'event!');
+    assert.equal(count, 1, 'received event');
 
-  sendEvent(obj, 'event!');
-  assert.equal(count, 1, 'received event');
+    removeListener(obj, 'event!', F);
 
-  removeListener(obj, 'event!', F);
+    count = 0;
+    sendEvent(obj, 'event!');
+    assert.equal(count, 0, 'received event');
+  }
 
-  count = 0;
-  sendEvent(obj, 'event!');
-  assert.equal(count, 0, 'received event');
-});
+  ['@test listeners should be inherited'](assert) {
+    let obj = {};
+    let count = 0;
+    let F = function() { count++; };
 
-QUnit.test('listeners should be inherited', function(assert) {
-  let obj = {};
-  let count = 0;
-  let F = function() { count++; };
+    addListener(obj, 'event!', F);
 
-  addListener(obj, 'event!', F);
+    let obj2 = Object.create(obj);
 
-  let obj2 = Object.create(obj);
+    assert.equal(count, 0, 'nothing yet');
 
-  assert.equal(count, 0, 'nothing yet');
+    sendEvent(obj2, 'event!');
+    assert.equal(count, 1, 'received event');
 
-  sendEvent(obj2, 'event!');
-  assert.equal(count, 1, 'received event');
+    removeListener(obj2, 'event!', F);
 
-  removeListener(obj2, 'event!', F);
+    count = 0;
+    sendEvent(obj2, 'event!');
+    assert.equal(count, 0, 'did not receive event');
 
-  count = 0;
-  sendEvent(obj2, 'event!');
-  assert.equal(count, 0, 'did not receive event');
-
-  sendEvent(obj, 'event!');
-  assert.equal(count, 1, 'should still invoke on parent');
-});
+    sendEvent(obj, 'event!');
+    assert.equal(count, 1, 'should still invoke on parent');
+  }
 
 
-QUnit.test('adding a listener more than once should only invoke once', function(assert) {
-  let obj = {};
-  let count = 0;
-  function F() { count++; }
-  addListener(obj, 'event!', F);
-  addListener(obj, 'event!', F);
+  ['@test adding a listener more than once should only invoke once'](assert) {
+    let obj = {};
+    let count = 0;
+    function F() { count++; }
+    addListener(obj, 'event!', F);
+    addListener(obj, 'event!', F);
 
-  sendEvent(obj, 'event!');
-  assert.equal(count, 1, 'should only invoke once');
-});
+    sendEvent(obj, 'event!');
+    assert.equal(count, 1, 'should only invoke once');
+  }
 
-QUnit.test('adding a listener with a target should invoke with target', function(assert) {
-  let obj = {};
-  let target;
+  ['@test adding a listener with a target should invoke with target'](assert) {
+    let obj = {};
+    let target;
 
-  target = {
-    count: 0,
-    method() { this.count++; }
-  };
+    target = {
+      count: 0,
+      method() { this.count++; }
+    };
 
-  addListener(obj, 'event!', target, target.method);
-  sendEvent(obj, 'event!');
-  assert.equal(target.count, 1, 'should invoke');
-});
+    addListener(obj, 'event!', target, target.method);
+    sendEvent(obj, 'event!');
+    assert.equal(target.count, 1, 'should invoke');
+  }
 
-QUnit.test('suspending a listener should not invoke during callback', function(assert) {
-  let obj = {};
-  let target, otherTarget;
+  ['@test suspending a listener should not invoke during callback'](assert) {
+    let obj = {};
+    let target, otherTarget;
 
-  target = {
-    count: 0,
-    method() { this.count++; }
-  };
+    target = {
+      count: 0,
+      method() { this.count++; }
+    };
 
-  otherTarget = {
-    count: 0,
-    method() { this.count++; }
-  };
+    otherTarget = {
+      count: 0,
+      method() { this.count++; }
+    };
 
-  addListener(obj, 'event!', target, target.method);
-  addListener(obj, 'event!', otherTarget, otherTarget.method);
+    addListener(obj, 'event!', target, target.method);
+    addListener(obj, 'event!', otherTarget, otherTarget.method);
 
-  function callback() {
-    /*jshint validthis:true */
-    assert.equal(this, target);
+    function callback() {
+      /*jshint validthis:true */
+      assert.equal(this, target);
+
+      sendEvent(obj, 'event!');
+
+      return 'result';
+    }
 
     sendEvent(obj, 'event!');
 
-    return 'result';
+    assert.equal(suspendListener(obj, 'event!', target, target.method, callback), 'result');
+
+    sendEvent(obj, 'event!');
+
+    assert.equal(target.count, 2, 'should invoke');
+    assert.equal(otherTarget.count, 3, 'should invoke');
   }
 
-  sendEvent(obj, 'event!');
+  ['@test adding a listener with string method should lookup method on event delivery'](assert) {
+    let obj = {};
+    let target;
 
-  assert.equal(suspendListener(obj, 'event!', target, target.method, callback), 'result');
+    target = {
+      count: 0,
+      method() {}
+    };
 
-  sendEvent(obj, 'event!');
+    addListener(obj, 'event!', target, 'method');
+    sendEvent(obj, 'event!');
+    assert.equal(target.count, 0, 'should invoke but do nothing');
 
-  assert.equal(target.count, 2, 'should invoke');
-  assert.equal(otherTarget.count, 3, 'should invoke');
-});
+    target.method = function() { this.count++; };
+    sendEvent(obj, 'event!');
+    assert.equal(target.count, 1, 'should invoke now');
+  }
 
-QUnit.test('adding a listener with string method should lookup method on event delivery', function(assert) {
-  let obj = {};
-  let target;
+  ['@test calling sendEvent with extra params should be passed to listeners'](assert) {
+    let obj = {};
+    let params = null;
+    addListener(obj, 'event!', function() {
+      params = Array.prototype.slice.call(arguments);
+    });
 
-  target = {
-    count: 0,
-    method() {}
-  };
+    sendEvent(obj, 'event!', ['foo', 'bar']);
+    assert.deepEqual(params, ['foo', 'bar'], 'params should be saved');
+  }
 
-  addListener(obj, 'event!', target, 'method');
-  sendEvent(obj, 'event!');
-  assert.equal(target.count, 0, 'should invoke but do nothing');
+  ['@test hasListeners tells you if there are listeners for a given event'](assert) {
+    let obj = {};
 
-  target.method = function() { this.count++; };
-  sendEvent(obj, 'event!');
-  assert.equal(target.count, 1, 'should invoke now');
-});
+    function F() {}
+    function F2() {}
 
-QUnit.test('calling sendEvent with extra params should be passed to listeners', function(assert) {
-  let obj = {};
-  let params = null;
-  addListener(obj, 'event!', function() {
-    params = Array.prototype.slice.call(arguments);
-  });
+    assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
 
-  sendEvent(obj, 'event!', ['foo', 'bar']);
-  assert.deepEqual(params, ['foo', 'bar'], 'params should be saved');
-});
+    addListener(obj, 'event!', F);
+    addListener(obj, 'event!', F2);
 
-QUnit.test('hasListeners tells you if there are listeners for a given event', function(assert) {
-  let obj = {};
+    assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
 
-  function F() {}
-  function F2() {}
+    removeListener(obj, 'event!', F);
+    assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
 
-  assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
+    removeListener(obj, 'event!', F2);
+    assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
 
-  addListener(obj, 'event!', F);
-  addListener(obj, 'event!', F2);
+    addListener(obj, 'event!', F);
+    assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+  }
 
-  assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+  ['@test calling removeListener without method should remove all listeners'](assert) {
+    let obj = {};
+    function F() {}
+    function F2() {}
 
-  removeListener(obj, 'event!', F);
-  assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+    assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
 
-  removeListener(obj, 'event!', F2);
-  assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
+    addListener(obj, 'event!', F);
+    addListener(obj, 'event!', F2);
 
-  addListener(obj, 'event!', F);
-  assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
-});
+    assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+    removeListener(obj, 'event!');
 
-QUnit.test('calling removeListener without method should remove all listeners', function(assert) {
-  let obj = {};
-  function F() {}
-  function F2() {}
+    assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
+  }
 
-  assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
+  ['@test while suspended, it should not be possible to add a duplicate listener'](assert) {
+    let obj = {};
+    let target;
 
-  addListener(obj, 'event!', F);
-  addListener(obj, 'event!', F2);
+    target = {
+      count: 0,
+      method() { this.count++; }
+    };
 
-  assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
-  removeListener(obj, 'event!');
-
-  assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
-});
-
-QUnit.test('while suspended, it should not be possible to add a duplicate listener', function(assert) {
-  let obj = {};
-  let target;
-
-  target = {
-    count: 0,
-    method() { this.count++; }
-  };
-
-  addListener(obj, 'event!', target, target.method);
-
-  function callback() {
     addListener(obj, 'event!', target, target.method);
+
+    function callback() {
+      addListener(obj, 'event!', target, target.method);
+    }
+
+    sendEvent(obj, 'event!');
+
+    suspendListener(obj, 'event!', target, target.method, callback);
+
+    assert.equal(target.count, 1, 'should invoke');
+    assert.equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
+
+    // now test suspendListeners...
+
+    sendEvent(obj, 'event!');
+
+    suspendListeners(obj, ['event!'], target, target.method, callback);
+
+    assert.equal(target.count, 2, 'should have invoked again');
+    assert.equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
   }
 
-  sendEvent(obj, 'event!');
+  ['@test a listener can be added as part of a mixin'](assert) {
+    let triggered = 0;
+    let MyMixin = Mixin.create({
+      foo1: on('bar', function() {
+        triggered++;
+      }),
 
-  suspendListener(obj, 'event!', target, target.method, callback);
-
-  assert.equal(target.count, 1, 'should invoke');
-  assert.equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
-
-  // now test suspendListeners...
-
-  sendEvent(obj, 'event!');
-
-  suspendListeners(obj, ['event!'], target, target.method, callback);
-
-  assert.equal(target.count, 2, 'should have invoked again');
-  assert.equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
-});
-
-QUnit.test('a listener can be added as part of a mixin', function(assert) {
-  let triggered = 0;
-  let MyMixin = Mixin.create({
-    foo1: on('bar', function() {
-      triggered++;
-    }),
-
-    foo2: on('bar', function() {
-      triggered++;
-    })
-  });
-
-  let obj = {};
-  MyMixin.apply(obj);
-
-  sendEvent(obj, 'bar');
-  assert.equal(triggered, 2, 'should invoke listeners');
-});
-
-QUnit.test('Ember.on asserts for invalid arguments', function() {
-  expectAssertion(()=> {
-    Mixin.create({
-      foo1: on('bar'),
+      foo2: on('bar', function() {
+        triggered++;
+      })
     });
-  }, 'on expects function as last argument');
 
-  expectAssertion(()=> {
-    Mixin.create({
-      foo1: on(function(){}),
+    let obj = {};
+    MyMixin.apply(obj);
+
+    sendEvent(obj, 'bar');
+    assert.equal(triggered, 2, 'should invoke listeners');
+  }
+
+  ['@test Ember.on asserts for invalid arguments']() {
+    expectAssertion(()=> {
+      Mixin.create({
+        foo1: on('bar'),
+      });
+    }, 'on expects function as last argument');
+
+    expectAssertion(()=> {
+      Mixin.create({
+        foo1: on(function(){}),
+      });
+    }, 'on called without valid event names');
+  }
+
+  ['@test a listener added as part of a mixin may be overridden'](assert) {
+    let triggered = 0;
+    let FirstMixin = Mixin.create({
+      foo: on('bar', function() {
+        triggered++;
+      })
     });
-  }, 'on called without valid event names');
-});
+    let SecondMixin = Mixin.create({
+      foo: on('baz', function() {
+        triggered++;
+      })
+    });
 
-QUnit.test('a listener added as part of a mixin may be overridden', function(assert) {
-  let triggered = 0;
-  let FirstMixin = Mixin.create({
-    foo: on('bar', function() {
-      triggered++;
-    })
-  });
-  let SecondMixin = Mixin.create({
-    foo: on('baz', function() {
-      triggered++;
-    })
-  });
+    let obj = {};
+    FirstMixin.apply(obj);
+    SecondMixin.apply(obj);
 
-  let obj = {};
-  FirstMixin.apply(obj);
-  SecondMixin.apply(obj);
+    sendEvent(obj, 'bar');
+    assert.equal(triggered, 0, 'should not invoke from overridden property');
 
-  sendEvent(obj, 'bar');
-  assert.equal(triggered, 0, 'should not invoke from overridden property');
-
-  sendEvent(obj, 'baz');
-  assert.equal(triggered, 1, 'should invoke from subclass property');
+    sendEvent(obj, 'baz');
+    assert.equal(triggered, 1, 'should invoke from subclass property');
+  }
 });
