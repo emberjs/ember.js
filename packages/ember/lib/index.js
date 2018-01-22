@@ -136,7 +136,6 @@ Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;
 Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
-Ember.isGlobalPath = metal.isGlobalPath;
 
 
 Object.defineProperty(Ember, 'ENV', {
