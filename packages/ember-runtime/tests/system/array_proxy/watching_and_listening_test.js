@@ -33,11 +33,11 @@ QUnit.test(`setting 'content' adds listeners correctly`, function(assert) {
 
   assert.deepEqual(
     sortedListenersFor(content, '@array:before'),
-    ['arrangedContentArrayWillChange']
+    ['_arrangedContentArrayWillChange']
   );
   assert.deepEqual(
     sortedListenersFor(content, '@array:change'),
-    ['arrangedContentArrayDidChange']
+    ['_arrangedContentArrayDidChange']
   );
 });
 
@@ -48,11 +48,11 @@ QUnit.test(`changing 'content' adds and removes listeners correctly`, function(a
 
   assert.deepEqual(
     sortedListenersFor(content1, '@array:before'),
-    ['arrangedContentArrayWillChange']
+    ['_arrangedContentArrayWillChange']
   );
   assert.deepEqual(
     sortedListenersFor(content1, '@array:change'),
-    ['arrangedContentArrayDidChange']
+    ['_arrangedContentArrayDidChange']
   );
 
   proxy.set('content', content2);
@@ -61,11 +61,11 @@ QUnit.test(`changing 'content' adds and removes listeners correctly`, function(a
   assert.deepEqual(sortedListenersFor(content1, '@array:change'), []);
   assert.deepEqual(
     sortedListenersFor(content2, '@array:before'),
-    ['arrangedContentArrayWillChange']
+    ['_arrangedContentArrayWillChange']
   );
   assert.deepEqual(
     sortedListenersFor(content2, '@array:change'),
-    ['arrangedContentArrayDidChange']
+    ['_arrangedContentArrayDidChange']
   );
 });
 
