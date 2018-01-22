@@ -101,51 +101,6 @@ export function removeListener(obj, eventName, target, method) {
 }
 
 /**
-  Suspend listener during callback.
-
-  This should only be used by the target of the event listener
-  when it is taking an action that would cause the event, e.g.
-  an object might suspend its property change listener while it is
-  setting that property.
-
-  @method suspendListener
-  @static
-  @for @ember/object/events
-
-  @private
-  @param obj
-  @param {String} eventName
-  @param {Object|Function} target A target object or a function
-  @param {Function|String} method A function or the name of a function to be called on `target`
-  @param {Function} callback
-*/
-export function suspendListener(obj, eventName, target, method, callback) {
-  return suspendListeners(obj, [eventName], target, method, callback);
-}
-
-/**
-  Suspends multiple listeners during a callback.
-
-  @method suspendListeners
-  @static
-  @for @ember/object/events
-
-  @private
-  @param obj
-  @param {Array} eventNames Array of event names
-  @param {Object|Function} target A target object or a function
-  @param {Function|String} method A function or the name of a function to be called on `target`
-  @param {Function} callback
-*/
-export function suspendListeners(obj, eventNames, target, method, callback) {
-  if (!method && 'function' === typeof target) {
-    method = target;
-    target = null;
-  }
-  return metaFor(obj).suspendListeners(eventNames, target, method, callback);
-}
-
-/**
   Return a list of currently watched events
 
   @private
