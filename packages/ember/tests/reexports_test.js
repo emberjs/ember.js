@@ -66,7 +66,6 @@ let allExports =[
   ['removeListener', 'ember-metal'],
   ['sendEvent', 'ember-metal'],
   ['hasListeners', 'ember-metal'],
-  ['watchedEvents', 'ember-metal'],
   ['listenersFor', 'ember-metal'],
   ['isNone', 'ember-metal'],
   ['isEmpty', 'ember-metal'],

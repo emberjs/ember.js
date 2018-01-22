@@ -44,8 +44,7 @@ export {
   listenersFor,
   on,
   removeListener,
-  sendEvent,
-  watchedEvents
+  sendEvent
 } from './events';
 
 export { default as isNone } from './is_none';

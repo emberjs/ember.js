@@ -82,7 +82,6 @@ Ember.addListener = metal.addListener;
 Ember.removeListener = metal.removeListener;
 Ember.sendEvent = metal.sendEvent;
 Ember.hasListeners = metal.hasListeners;
-Ember.watchedEvents = metal.watchedEvents;
 Ember.listenersFor = metal.listenersFor;
 Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;

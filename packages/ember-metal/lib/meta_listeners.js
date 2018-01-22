@@ -81,22 +81,6 @@ export const protoMethods = {
       pointer = pointer.parent;
     }
     return result;
-  },
-
-  watchedEvents() {
-    let pointer = this;
-    let names = {};
-    while (pointer !== undefined) {
-      let listeners = pointer._listeners;
-      if (listeners !== undefined) {
-        for (let index = 0; index < listeners.length; index += 4) {
-          names[listeners[index]] = true;
-        }
-      }
-      if (pointer._listenersFinalized) { break; }
-      pointer = pointer.parent;
-    }
-    return Object.keys(names);
   }
 };
 
