@@ -61,7 +61,7 @@ test('when Ember.onerror (which does not rethrow) is registered - sync run', fun
 });
 
 if (DEBUG) {
-  test('when Ember.Test.adapter is registered and error is thrown - sync run', function(assert) {
+  test('when TestAdapter is registered and error is thrown - sync run', function(assert) {
     assert.expect(1);
 
     Ember.Test.adapter = {
@@ -73,7 +73,7 @@ if (DEBUG) {
     assert.throws(runThatThrowsSync, Error);
   });
 
-  test('when both Ember.onerror (which rethrows) and Ember.Test.adapter are registered - sync run', function(assert) {
+  test('when both Ember.onerror (which rethrows) and TestAdapter are registered - sync run', function(assert) {
     assert.expect(2);
 
     Ember.Test.adapter = {
@@ -83,14 +83,14 @@ if (DEBUG) {
     };
 
     Ember.onerror = function(error) {
-      assert.ok(true, 'onerror is called for sync errors even if Ember.Test.adapter is setup');
+      assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
       throw error;
     };
 
     assert.throws(runThatThrowsSync, Error, 'error is thrown');
   });
 
-  test('when both Ember.onerror (which does not rethrow) and Ember.Test.adapter are registered - sync run', function(assert) {
+  test('when both Ember.onerror (which does not rethrow) and TestAdapter are registered - sync run', function(assert) {
     assert.expect(2);
 
     Ember.Test.adapter = {
@@ -100,14 +100,14 @@ if (DEBUG) {
     };
 
     Ember.onerror = function() {
-      assert.ok(true, 'onerror is called for sync errors even if Ember.Test.adapter is setup');
+      assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
     };
 
     runThatThrowsSync();
     assert.ok(true, 'no error was thrown, Ember.onerror can intercept errors');
   });
 
-  QUnit.test('when Ember.Test.adapter is registered and error is thrown - async run', function(assert) {
+  QUnit.test('when TestAdapter is registered and error is thrown - async run', function(assert) {
     assert.expect(3);
     let done = assert.async();
 
@@ -145,7 +145,7 @@ if (DEBUG) {
     }, 20);
   });
 
-  test('when both Ember.onerror and Ember.Test.adapter are registered - async run', function(assert) {
+  QUnit.test('when both Ember.onerror and TestAdapter are registered - async run', function(assert) {
     assert.expect(1);
     let done = assert.async();
 
@@ -390,7 +390,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
   });
 
   if (DEBUG) {
-    test(`${message} when Ember.Test.adapter without \`exception\` method is present - rsvp`, function(assert) {
+    test(`${message} when TestAdapter without \`exception\` method is present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -417,7 +417,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when both Ember.onerror and Ember.Test.adapter without \`exception\` method are present - rsvp`, function(assert) {
+    test(`${message} when both Ember.onerror and TestAdapter without \`exception\` method are present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -441,7 +441,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when Ember.Test.adapter is present - rsvp`, function(assert) {
+    test(`${message} when TestAdapter is present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -458,7 +458,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
+    test(`${message} when both Ember.onerror and TestAdapter are present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -479,7 +479,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
       return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
+    test(`${message} when both Ember.onerror and TestAdapter are present - rsvp`, function(assert) {
       assert.expect(2);
 
       let thrown = new Error('the error');
