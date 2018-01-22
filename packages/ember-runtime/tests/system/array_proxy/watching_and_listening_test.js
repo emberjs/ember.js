@@ -1,19 +1,24 @@
 import {
   get,
-  listenersFor,
   addObserver,
   defineProperty,
   watcherCount,
-  computed
+  computed,
+  peekMeta
 } from 'ember-metal';
 import ArrayProxy from '../../../system/array_proxy';
 import { A } from '../../../system/native_array';
 
 function sortedListenersFor(obj, eventName) {
-  return listenersFor(obj, eventName).sort((listener1, listener2) => {
-    return (listener1[1] > listener2[1]) ? -1 : 1;
-  });
+  let listeners = peekMeta(obj).matchingListeners(eventName) || [];
+
+  let keys = [];
+  for (let i = 0; i < listeners.length; i += 3) {
+    keys.push(listeners[i+1]);
+  }
+  return keys.sort();
 }
+
 
 QUnit.module('ArrayProxy - watching and listening');
 
@@ -28,11 +33,11 @@ QUnit.test(`setting 'content' adds listeners correctly`, function() {
 
   deepEqual(
     sortedListenersFor(content, '@array:before'),
-    [[proxy, 'arrangedContentArrayWillChange']]
+    ['arrangedContentArrayWillChange']
   );
   deepEqual(
     sortedListenersFor(content, '@array:change'),
-    [[proxy, 'arrangedContentArrayDidChange']]
+    ['arrangedContentArrayDidChange']
   );
 });
 
@@ -43,11 +48,11 @@ QUnit.test(`changing 'content' adds and removes listeners correctly`, function()
 
   deepEqual(
     sortedListenersFor(content1, '@array:before'),
-    [[proxy, 'arrangedContentArrayWillChange']]
+    ['arrangedContentArrayWillChange']
   );
   deepEqual(
     sortedListenersFor(content1, '@array:change'),
-    [[proxy, 'arrangedContentArrayDidChange']]
+    ['arrangedContentArrayDidChange']
   );
 
   proxy.set('content', content2);
@@ -56,11 +61,11 @@ QUnit.test(`changing 'content' adds and removes listeners correctly`, function()
   deepEqual(sortedListenersFor(content1, '@array:change'), []);
   deepEqual(
     sortedListenersFor(content2, '@array:before'),
-    [[proxy, 'arrangedContentArrayWillChange']]
+    ['arrangedContentArrayWillChange']
   );
   deepEqual(
     sortedListenersFor(content2, '@array:change'),
-    [[proxy, 'arrangedContentArrayDidChange']]
+    ['arrangedContentArrayDidChange']
   );
 });
 

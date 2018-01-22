@@ -169,30 +169,6 @@ export function hasListeners(obj, eventName) {
 }
 
 /**
-  @private
-  @method listenersFor
-  @static
-  @for @ember/object/events
-  @param obj
-  @param {String} eventName
-*/
-export function listenersFor(obj, eventName) {
-  let ret = [];
-  let meta = peekMeta(obj);
-  let actions = meta !== undefined ? meta.matchingListeners(eventName) : undefined;
-
-  if (actions === undefined) { return ret; }
-
-  for (let i = 0; i < actions.length; i += 3) {
-    let target = actions[i];
-    let method = actions[i + 1];
-    ret.push([target, method]);
-  }
-
-  return ret;
-}
-
-/**
   Define a property as a function that should be executed when
   a specified event or events are triggered.
 

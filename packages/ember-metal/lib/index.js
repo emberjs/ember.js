@@ -41,7 +41,6 @@ export {
 export {
   addListener,
   hasListeners,
-  listenersFor,
   on,
   removeListener,
   sendEvent
@@ -98,7 +97,6 @@ export { default as expandProperties } from './expand_properties';
 
 export {
   addObserver,
-  observersFor,
   removeObserver,
   _addBeforeObserver,
   _removeBeforeObserver
