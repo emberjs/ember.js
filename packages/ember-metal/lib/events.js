@@ -101,20 +101,6 @@ export function removeListener(obj, eventName, target, method) {
 }
 
 /**
-  Return a list of currently watched events
-
-  @private
-  @method watchedEvents
-  @static
-  @for @ember/object/events
-  @param obj
-*/
-export function watchedEvents(obj) {
-  let meta = peekMeta(obj);
-  return meta !== undefined ? meta.watchedEvents() : [];
-}
-
-/**
   Send an event. The execution of suspended listeners
   is skipped, and once listeners are removed. A listener without
   a target is executed on the passed object. If an array of actions
