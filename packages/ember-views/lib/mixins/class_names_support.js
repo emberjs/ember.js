@@ -40,8 +40,9 @@ export default Mixin.create({
     name.
 
     ```javascript
+    import Component from '@ember/component';
     // Applies the 'high' class to the view element
-    Ember.Component.extend({
+    Component.extend({
       classNameBindings: ['priority'],
       priority: 'high'
     });
@@ -51,8 +52,9 @@ export default Mixin.create({
     added as a dasherized class name.
 
     ```javascript
+    import Component from '@ember/component';
     // Applies the 'is-urgent' class to the view element
-    Ember.Component.extend({
+    Component.extend({
       classNameBindings: ['isUrgent'],
       isUrgent: true
     });
@@ -62,8 +64,9 @@ export default Mixin.create({
     property name, you can pass a binding like this:
 
     ```javascript
+    import Component from '@ember/component';
     // Applies the 'urgent' class to the view element
-    Ember.Component.extend({
+    Component.extend({
       classNameBindings: ['isUrgent:urgent'],
       isUrgent: true
     });

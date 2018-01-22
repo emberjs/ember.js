@@ -30,6 +30,7 @@ export {
 } from './meta';
 export { default as Cache } from './cache';
 export {
+  PROXY_CONTENT,
   _getPath,
   get,
   getWithDefault

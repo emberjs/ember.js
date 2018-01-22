@@ -165,7 +165,7 @@ import layout from '../templates/empty';
   {{textarea focus-out="alertMessage"}}
   ```
 
-  See more about [Text Support Actions](/api/classes/Ember.TextArea.html)
+  See more about [Text Support Actions](/api/ember/release/classes/TextArea)
 
   ### Extension
 
@@ -190,7 +190,7 @@ import layout from '../templates/empty';
   itself extends `Component`. Expect isolated component semantics, not
   legacy 1.x view semantics (like `controller` being present).
 
-  See more about [Ember components](/api/classes/Ember.Component.html)
+  See more about [Ember components](/api/ember/release/classes/Component)
 
   @method textarea
   @for Ember.Templates.helpers
@@ -202,7 +202,7 @@ import layout from '../templates/empty';
   The internal class used to create textarea element when the `{{textarea}}`
   helper is used.
 
-  See [Ember.Templates.helpers.textarea](/api/classes/Ember.Templates.helpers.html#method_textarea)  for usage details.
+  See [Ember.Templates.helpers.textarea](/api/ember/release/classes/Ember.Templates.helpers/methods/textarea?anchor=textarea)  for usage details.
 
   ## Layout and LayoutName properties
 
