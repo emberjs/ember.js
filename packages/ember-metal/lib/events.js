@@ -101,65 +101,6 @@ export function removeListener(obj, eventName, target, method) {
 }
 
 /**
-  Suspend listener during callback.
-
-  This should only be used by the target of the event listener
-  when it is taking an action that would cause the event, e.g.
-  an object might suspend its property change listener while it is
-  setting that property.
-
-  @method suspendListener
-  @static
-  @for @ember/object/events
-
-  @private
-  @param obj
-  @param {String} eventName
-  @param {Object|Function} target A target object or a function
-  @param {Function|String} method A function or the name of a function to be called on `target`
-  @param {Function} callback
-*/
-export function suspendListener(obj, eventName, target, method, callback) {
-  return suspendListeners(obj, [eventName], target, method, callback);
-}
-
-/**
-  Suspends multiple listeners during a callback.
-
-  @method suspendListeners
-  @static
-  @for @ember/object/events
-
-  @private
-  @param obj
-  @param {Array} eventNames Array of event names
-  @param {Object|Function} target A target object or a function
-  @param {Function|String} method A function or the name of a function to be called on `target`
-  @param {Function} callback
-*/
-export function suspendListeners(obj, eventNames, target, method, callback) {
-  if (!method && 'function' === typeof target) {
-    method = target;
-    target = null;
-  }
-  return metaFor(obj).suspendListeners(eventNames, target, method, callback);
-}
-
-/**
-  Return a list of currently watched events
-
-  @private
-  @method watchedEvents
-  @static
-  @for @ember/object/events
-  @param obj
-*/
-export function watchedEvents(obj) {
-  let meta = peekMeta(obj);
-  return meta !== undefined ? meta.watchedEvents() : [];
-}
-
-/**
   Send an event. The execution of suspended listeners
   is skipped, and once listeners are removed. A listener without
   a target is executed on the passed object. If an array of actions
@@ -225,30 +166,6 @@ export function hasListeners(obj, eventName) {
   if (meta === undefined) { return false; }
   let matched = meta.matchingListeners(eventName);
   return matched !== undefined && matched.length > 0;
-}
-
-/**
-  @private
-  @method listenersFor
-  @static
-  @for @ember/object/events
-  @param obj
-  @param {String} eventName
-*/
-export function listenersFor(obj, eventName) {
-  let ret = [];
-  let meta = peekMeta(obj);
-  let actions = meta !== undefined ? meta.matchingListeners(eventName) : undefined;
-
-  if (actions === undefined) { return ret; }
-
-  for (let i = 0; i < actions.length; i += 3) {
-    let target = actions[i];
-    let method = actions[i + 1];
-    ret.push([target, method]);
-  }
-
-  return ret;
 }
 
 /**

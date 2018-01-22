@@ -80,12 +80,8 @@ Ember._Cache = metal.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
 Ember.removeListener = metal.removeListener;
-Ember._suspendListener = metal.suspendListener;
-Ember._suspendListeners = metal.suspendListeners;
 Ember.sendEvent = metal.sendEvent;
 Ember.hasListeners = metal.hasListeners;
-Ember.watchedEvents = metal.watchedEvents;
-Ember.listenersFor = metal.listenersFor;
 Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
@@ -123,10 +119,7 @@ Ember.setProperties = metal.setProperties;
 Ember.expandProperties = metal.expandProperties;
 Ember.NAME_KEY = utils.NAME_KEY;
 Ember.addObserver = metal.addObserver;
-Ember.observersFor = metal.observersFor;
 Ember.removeObserver = metal.removeObserver;
-Ember._suspendObserver = metal._suspendObserver;
-Ember._suspendObservers = metal._suspendObservers;
 if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
   Ember.required = metal.required;
 }
