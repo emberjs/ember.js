@@ -187,32 +187,3 @@ QUnit.test('lastObject - returns last arranged object', function() {
 QUnit.test('firstObject - returns first arranged object', function() {
   equal(array.get('firstObject'), '5', 'returns first arranged object');
 });
-
-QUnit.test('arrangedContentArray{Will,Did}Change are called when the arranged content changes', function(assert) {
-  // The behavior covered by this test may change in the future if we decide
-  // that built-in array methods are not overridable.
-
-  let willChangeCallCount = 0;
-  let didChangeCallCount = 0;
-
-  let content = emberA([1, 2, 3]);
-  ArrayProxy.extend({
-    arrangedContentArrayWillChange() {
-      willChangeCallCount++;
-      this._super(...arguments);
-    },
-    arrangedContentArrayDidChange() {
-      didChangeCallCount++;
-      this._super(...arguments);
-    }
-  }).create({ content });
-
-  equal(willChangeCallCount, 0);
-  equal(didChangeCallCount, 0);
-
-  content.pushObject(4);
-  content.pushObject(5);
-
-  equal(willChangeCallCount, 2);
-  equal(didChangeCallCount, 2);
-});
