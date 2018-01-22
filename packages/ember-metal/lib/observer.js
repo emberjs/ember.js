@@ -3,7 +3,6 @@ import {
   unwatch
 } from './watching';
 import {
-  listenersFor,
   addListener,
   removeListener
 } from './events';
@@ -37,10 +36,6 @@ export function addObserver(obj, _path, target, method) {
   watch(obj, _path);
 
   return this;
-}
-
-export function observersFor(obj, path) {
-  return listenersFor(obj, changeEvent(path));
 }
 
 /**

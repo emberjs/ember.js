@@ -16,7 +16,6 @@ import {
   endPropertyChanges,
   addObserver,
   removeObserver,
-  observersFor,
   cacheFor,
   isNone
 } from 'ember-metal';
@@ -505,9 +504,4 @@ export default Mixin.create({
   cacheFor(keyName) {
     return cacheFor(this, keyName);
   },
-
-  // intended for debugging purposes
-  observersForKey(keyName) {
-    return observersFor(this, keyName);
-  }
 });
