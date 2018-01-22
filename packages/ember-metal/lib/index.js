@@ -113,9 +113,6 @@ export {
   hasUnprocessedMixins,
   clearUnprocessedMixins,
 } from './mixin';
-export {
-  isGlobalPath
-} from './path_cache';
 export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,
