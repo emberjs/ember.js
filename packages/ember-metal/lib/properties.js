@@ -162,8 +162,12 @@ if (EMBER_METAL_ES5_GETTERS) {
   }
 
   DESCRIPTOR_GETTER_FUNCTION = function(name, descriptor) {
+    let trap;
     return function CPGETTER_FUNCTION() {
-      return trapFor(this, name, descriptor);
+      if (trap) { return trap; }
+
+      trap = trapFor(this, name, descriptor);
+      return trap;
     };
   };
 }
