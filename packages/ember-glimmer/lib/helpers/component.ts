@@ -18,7 +18,7 @@ import { CachedReference } from '../utils/references';
 
 /**
   The `{{component}}` helper lets you add instances of `Component` to a
-  template. See [Component](/api/classes/Ember.Component.html) for
+  template. See [Component](/api/ember/release/classes/Component) for
   additional information on how a `Component` functions.
   `{{component}}`'s primary use is for cases where you want to dynamically
   change which type of component is rendered as the state of your application

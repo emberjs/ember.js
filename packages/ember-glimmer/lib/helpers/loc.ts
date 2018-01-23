@@ -7,7 +7,7 @@ import { helper } from '../helper';
 import { String as StringUtils } from 'ember-runtime';
 
 /**
-  Calls [loc](/api/classes/Ember.String.html#method_loc) with the
+  Calls [loc](/api/ember/release/classes/String/methods/loc?anchor=loc) with the
   provided string. This is a convenient way to localize text within a template.
   For example:
 
@@ -29,7 +29,7 @@ import { String as StringUtils } from 'ember-runtime';
   </div>
   ```
 
-  See [Ember.String.loc](/api/classes/Ember.String.html#method_loc) for how to
+  See [Ember.String.loc](/api/ember/release/classes/String/methods/loc?anchor=loc) for how to
   set up localized string references.
 
   @method loc
