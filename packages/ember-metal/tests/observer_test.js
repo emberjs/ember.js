@@ -268,7 +268,7 @@ testBoth('removing an chain before observer on change should not fail', function
   equal(count4, 0, 'observer4 did not fire');
 });
 
-testBoth('deferring property change notifications', function(get, set, assert) {
+testBoth('deferring property change notifications', function(get, set) {
   let obj = { foo: 'foo' };
   let fooCount = 0;
 
