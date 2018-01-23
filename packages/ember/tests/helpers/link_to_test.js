@@ -61,7 +61,7 @@ moduleFor('The {{link-to}} helper - basic tests', class extends ApplicationTestC
         assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
         assert.equal(this.$('#self-link.active').length, 1, 'The self-link was rendered with active class');
         assert.equal(this.$('#about-link:not(.active)').length, 1, 'The other link was rendered without active class');
-    
+
         return this.click('#about-link');
       })
       .then(() => {
@@ -560,11 +560,21 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       this.route('item');
     });
 
-    this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-    this.addTemplate('index.about', `{{#link-to 'item' id='other-link' current-when=true}}ITEM{{/link-to}}`);
+    this.addTemplate('index.about', `
+      {{#link-to 'index' id='index-link' current-when=isCurrent}}index{{/link-to}}
+      {{#link-to 'item' id='about-link' current-when=true}}ITEM{{/link-to}}
+    `);
+
+    this.add('controller:index.about', Controller.extend({ isCurrent: false }));
 
     return this.visit('/about').then(() => {
-      assert.equal(this.$('#other-link').length, 1, 'The link is active since current-when is true');
+      assert.ok(this.$('#about-link').hasClass('active'), 'The link is active since current-when is true');
+      assert.notOk(this.$('#index-link').hasClass('active'), 'The link is not active since current-when is false');
+
+      let controller = this.applicationInstance.lookup('controller:index.about');
+      this.runTask(() => controller.set('isCurrent', true));
+
+      assert.ok(this.$('#index-link').hasClass('active'), 'The link is active since current-when is true');
     });
   }
 
@@ -730,13 +740,13 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
       .then(() => {
         assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
         assert.equal(normalizeUrl(this.$('#home-link').attr('href')), '/', 'The home link points back at /');
-    
-        return this.click('#yehuda');    
+
+        return this.click('#yehuda');
       })
       .then(() => {
         assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
         assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
-    
+
         return this.click('#home-link');
       })
       .then(() => {
@@ -746,7 +756,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
         assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
         assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
         assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
-    
+
         return this.click('#erik');
       })
       .then(() => {
