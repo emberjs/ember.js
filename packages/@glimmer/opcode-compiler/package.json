@@ -3,14 +3,12 @@
   "version": "0.30.4",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/opcode-compiler",
   "dependencies": {
-    "@glimmer/syntax": "^0.30.4",
     "@glimmer/util": "^0.30.4",
     "@glimmer/wire-format": "^0.30.4",
     "@glimmer/interfaces": "^0.30.4",
     "@glimmer/program": "^0.30.4",
     "@glimmer/vm": "^0.30.4",
-    "@glimmer/encoder": "^0.30.4",
-    "simple-html-tokenizer": "^0.4.1"
+    "@glimmer/encoder": "^0.30.4"
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.30.4",
