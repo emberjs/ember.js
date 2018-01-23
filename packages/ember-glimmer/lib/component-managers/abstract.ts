@@ -11,7 +11,7 @@ import {
   Environment,
   PreparedArguments,
 } from '@glimmer/runtime';
-import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
+import { Arguments } from '@glimmer/runtime';
 import {
   Destroyable,
   Opaque,
@@ -33,7 +33,7 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     this.debugStack = undefined;
   }
 
-  prepareArgs(_state: U, _args: IArguments): Option<PreparedArguments> {
+  prepareArgs(_state: U, _args: Arguments): Option<PreparedArguments> {
     return null;
   }
 
@@ -44,7 +44,7 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
   abstract create(
     env: Environment,
     definition: U,
-    args: IArguments,
+    args: Arguments,
     dynamicScope: DynamicScope,
     caller: VersionedPathReference<void | {}>,
     hasDefaultBlock: boolean): T;

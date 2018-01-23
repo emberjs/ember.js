@@ -4,7 +4,7 @@ import {
   templateFactory,
   TemplateFactory,
 } from '@glimmer/runtime';
-import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format/dist/types';
+import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 import { getOwner } from 'ember-utils';
 import { OwnedTemplateMeta, StaticTemplateMeta } from 'ember-views';
 

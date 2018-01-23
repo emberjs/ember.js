@@ -12,7 +12,7 @@ import {
   WithDynamicTagName,
   WithStaticLayout
 } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util/dist/types';
+import { Destroyable } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { assign, guidFor } from 'ember-utils';

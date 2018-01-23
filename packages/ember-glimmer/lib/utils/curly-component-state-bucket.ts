@@ -1,6 +1,6 @@
 import { Revision, VersionedReference } from '@glimmer/reference';
 import { CapturedNamedArguments } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util/dist/types';
+import { Opaque } from '@glimmer/util';
 import Environment from '../environment';
 
 export interface Component {
