@@ -78,9 +78,14 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @for Function
     @public
   */
-  FunctionPrototype.property = function () {
-    return computed(...arguments, this);
-  };
+  Object.defineProperty(FunctionPrototype, 'property', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      return computed(...arguments, this);
+    }
+  });
 
   /**
     The `observes` extension of Javascript's Function prototype is available
@@ -109,28 +114,37 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @for Function
     @public
   */
-  FunctionPrototype.observes = function() {
-    return observer(...arguments, this);
-  };
+  Object.defineProperty(FunctionPrototype, 'observes', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      return observer(...arguments, this);
+    }
+  });
 
-
-  FunctionPrototype._observesImmediately = function () {
-    assert(
-      'Immediate observers must observe internal properties only, ' +
-      'not properties on other objects.',
-      function checkIsInternalProperty() {
-        for (let i = 0; i < arguments.length; i++) {
-          if (arguments[i].indexOf('.') !== -1) {
-            return false;
+  Object.defineProperty(FunctionPrototype, '_observesImmediately', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      assert(
+        'Immediate observers must observe internal properties only, ' +
+        'not properties on other objects.',
+        function checkIsInternalProperty() {
+          for (let i = 0; i < arguments.length; i++) {
+            if (arguments[i].indexOf('.') !== -1) {
+              return false;
+            }
           }
+          return true;
         }
-        return true;
-      }
-    );
+      );
 
-    // observes handles property expansion
-    return this.observes(...arguments);
-  };
+      // observes handles property expansion
+      return this.observes(...arguments);
+    }
+  });
 
   /**
     The `on` extension of Javascript's Function prototype is available
@@ -156,7 +170,13 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     @for Function
     @public
   */
-  FunctionPrototype.on = function () {
-    return on(...arguments, this);
-  };
+
+  Object.defineProperty(FunctionPrototype, 'on', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      return on(...arguments, this);
+    }
+  });
 }

@@ -162,8 +162,12 @@ if (EMBER_METAL_ES5_GETTERS) {
   }
 
   DESCRIPTOR_GETTER_FUNCTION = function(name, descriptor) {
+    let trap;
     return function CPGETTER_FUNCTION() {
-      return trapFor(this, name, descriptor);
+      if (trap) { return trap; }
+
+      trap = trapFor(this, name, descriptor);
+      return trap;
     };
   };
 }
@@ -231,6 +235,18 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     }
   }
 
+  // used to track if the the property being defined be enumerable
+  let enumerable = true;
+
+  // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
+  // mutating a native object prototype like this should _not_ result in enumerable properties being added (or we have significant
+  // issues with things like deep equality checks from test frameworks, or things like jQuery.extend(true, [], [])).
+  //
+  // this is a hack, and we should stop mutating the array prototype by default 😫
+  if (obj === Array.prototype) {
+    enumerable = false;
+  }
+
   let value;
   if (desc instanceof Descriptor) {
     value = desc;
@@ -238,14 +254,21 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     if (EMBER_METAL_ES5_GETTERS || DESCRIPTOR_TRAP) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
-        enumerable: true,
+        enumerable,
         get: DESCRIPTOR_GETTER_FUNCTION(keyName, value)
       });
     } else if (MANDATORY_SETTER && watching) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
-        enumerable: true,
+        enumerable,
         writable: true,
+        value
+      });
+    } else if (enumerable === false) {
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        writable: true,
+        enumerable,
         value
       });
     } else {
@@ -267,7 +290,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
       let defaultDescriptor = {
         configurable: true,
-        enumerable: true,
+        enumerable,
         set: MANDATORY_SETTER_FUNCTION(keyName),
         get: DEFAULT_GETTER_FUNCTION(keyName)
       };
@@ -276,7 +299,14 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     } else if ((EMBER_METAL_ES5_GETTERS || DESCRIPTOR_TRAP) && wasDescriptor) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
-        enumerable: true,
+        enumerable,
+        writable: true,
+        value
+      });
+    } else if (enumerable === false) {
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable,
         writable: true,
         value
       });
