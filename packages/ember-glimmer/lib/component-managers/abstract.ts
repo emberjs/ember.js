@@ -4,6 +4,7 @@ import {
 } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
+  Arguments,
   Bounds,
   ComponentManager,
   DynamicScope,
@@ -11,7 +12,6 @@ import {
   Environment,
   PreparedArguments,
 } from '@glimmer/runtime';
-import { Arguments } from '@glimmer/runtime';
 import {
   Destroyable,
   Opaque,

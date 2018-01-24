@@ -60,6 +60,14 @@ function makeCtor() {
     constructor() {
       let self = this;
 
+      if (!wasApplied) {
+        Class.proto(); // prepare prototype...
+      }
+
+      if (arguments.length > 0) {
+        initProperties = [arguments[0]];
+      }
+
       if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
         let messageFor = (obj, property) => {
           return `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
@@ -76,7 +84,7 @@ function makeCtor() {
         /* globals Proxy Reflect */
         self = new Proxy(this, {
           get(target, property, receiver) {
-            if (property === PROXY_CONTENT) {
+            if (property === PROXY_CONTENT || property === 'didDefineProperty') {
               return target;
             } else if (typeof property === 'symbol' || property in target) {
               return Reflect.get(target, property, receiver);
@@ -87,14 +95,6 @@ function makeCtor() {
             assert(messageFor(receiver, property), value === undefined);
           }
         });
-      }
-
-      if (!wasApplied) {
-        Class.proto(); // prepare prototype...
-      }
-
-      if (arguments.length > 0) {
-        initProperties = [arguments[0]];
       }
 
       self.__defineNonEnumerable(GUID_KEY_PROPERTY);
