@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 import { setupComponentTest } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 
-describe('Integration | Component | x foo', function() {
+describe('Integration | Component | x-foo', function() {
   setupComponentTest('x-foo', {
     integration: true
   });

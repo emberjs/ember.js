@@ -101,7 +101,7 @@ function propertyDidChange(obj, keyName, _meta) {
     notifyObservers(obj, keyName, meta);
   }
 
-  if (obj[PROPERTY_DID_CHANGE]) {
+  if (PROPERTY_DID_CHANGE in obj) {
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 

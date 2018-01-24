@@ -30,6 +30,7 @@ export {
 } from './meta';
 export { default as Cache } from './cache';
 export {
+  PROXY_CONTENT,
   _getPath,
   get,
   getWithDefault
@@ -41,13 +42,9 @@ export {
 export {
   addListener,
   hasListeners,
-  listenersFor,
   on,
   removeListener,
-  sendEvent,
-  suspendListener,
-  suspendListeners,
-  watchedEvents
+  sendEvent
 } from './events';
 
 export { default as isNone } from './is_none';
@@ -100,10 +97,7 @@ export { default as setProperties } from './set_properties';
 export { default as expandProperties } from './expand_properties';
 
 export {
-  _suspendObserver,
-  _suspendObservers,
   addObserver,
-  observersFor,
   removeObserver,
   _addBeforeObserver,
   _removeBeforeObserver
@@ -119,9 +113,6 @@ export {
   hasUnprocessedMixins,
   clearUnprocessedMixins,
 } from './mixin';
-export {
-  isGlobalPath
-} from './path_cache';
 export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,

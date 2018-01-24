@@ -1,11 +1,8 @@
 import {
   Mixin,
-  meta,
   on,
   addListener,
   removeListener,
-  suspendListener,
-  suspendListeners,
   sendEvent,
   hasListeners
 } from '..';
@@ -81,42 +78,6 @@ QUnit.test('adding a listener with a target should invoke with target', function
   assert.equal(target.count, 1, 'should invoke');
 });
 
-QUnit.test('suspending a listener should not invoke during callback', function(assert) {
-  let obj = {};
-  let target, otherTarget;
-
-  target = {
-    count: 0,
-    method() { this.count++; }
-  };
-
-  otherTarget = {
-    count: 0,
-    method() { this.count++; }
-  };
-
-  addListener(obj, 'event!', target, target.method);
-  addListener(obj, 'event!', otherTarget, otherTarget.method);
-
-  function callback() {
-    /*jshint validthis:true */
-    assert.equal(this, target);
-
-    sendEvent(obj, 'event!');
-
-    return 'result';
-  }
-
-  sendEvent(obj, 'event!');
-
-  assert.equal(suspendListener(obj, 'event!', target, target.method, callback), 'result');
-
-  sendEvent(obj, 'event!');
-
-  assert.equal(target.count, 2, 'should invoke');
-  assert.equal(otherTarget.count, 3, 'should invoke');
-});
-
 QUnit.test('adding a listener with string method should lookup method on event delivery', function(assert) {
   let obj = {};
   let target;
@@ -183,38 +144,6 @@ QUnit.test('calling removeListener without method should remove all listeners', 
   removeListener(obj, 'event!');
 
   assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
-});
-
-QUnit.test('while suspended, it should not be possible to add a duplicate listener', function(assert) {
-  let obj = {};
-  let target;
-
-  target = {
-    count: 0,
-    method() { this.count++; }
-  };
-
-  addListener(obj, 'event!', target, target.method);
-
-  function callback() {
-    addListener(obj, 'event!', target, target.method);
-  }
-
-  sendEvent(obj, 'event!');
-
-  suspendListener(obj, 'event!', target, target.method, callback);
-
-  assert.equal(target.count, 1, 'should invoke');
-  assert.equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
-
-  // now test suspendListeners...
-
-  sendEvent(obj, 'event!');
-
-  suspendListeners(obj, ['event!'], target, target.method, callback);
-
-  assert.equal(target.count, 2, 'should have invoked again');
-  assert.equal(meta(obj).matchingListeners('event!').length, 3, 'a duplicate listener wasn\'t added');
 });
 
 QUnit.test('a listener can be added as part of a mixin', function(assert) {

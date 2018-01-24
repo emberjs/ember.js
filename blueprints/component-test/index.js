@@ -1,7 +1,6 @@
 'use strict';
 
 const path = require('path');
-const testInfo = require('ember-cli-test-info');
 const stringUtil = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 const getPathOption = require('ember-cli-get-component-path-option');
@@ -42,14 +41,15 @@ module.exports = useTestFrameworkDetector({
     let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
     let componentPathName = dasherizedModuleName;
     let testType = options.testType || 'integration';
-    let friendlyTestDescription = testInfo.description(options.entity.name, 'Integration', 'Component');
+
+    let friendlyTestDescription = [
+      testType === 'unit' ? 'Unit' : 'Integration',
+      'Component',
+      dasherizedModuleName,
+    ].join(' | ');
 
     if (options.pod && options.path !== 'components' && options.path !== '') {
       componentPathName = [options.path, dasherizedModuleName].filter(Boolean).join('/');
-    }
-
-    if (options.testType === 'unit') {
-      friendlyTestDescription = testInfo.description(options.entity.name, 'Unit', 'Component');
     }
 
     return {

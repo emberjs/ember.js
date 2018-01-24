@@ -1,10 +1,11 @@
+/**
+@module @ember/array
+*/
+
 import {
   get,
   computed,
-  _beforeObserver,
   observer,
-  beginPropertyChanges,
-  endPropertyChanges,
   alias
 } from 'ember-metal';
 import {
@@ -17,15 +18,7 @@ import {
   removeArrayObserver,
   objectAt
 } from '../mixins/array';
-import { assert, Error as EmberError } from 'ember-debug';
-
-/**
-@module @ember/array
-*/
-
-const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
-const EMPTY = [];
-
+import { assert } from 'ember-debug';
 
 /**
   An ArrayProxy wraps any other object that implements `Array` and/or
@@ -72,6 +65,17 @@ const EMPTY = [];
   @public
 */
 export default EmberObject.extend(MutableArray, {
+  init() {
+    this._super(...arguments);
+    this._cache = null;
+    this._dirtyStart = 0;
+    this._arrangedContent = null;
+    this._addArrangedContentArrayObsever();
+  },
+
+  willDestroy() {
+    this._removeArrangedContentArrayObsever();
+  },
 
   /**
     The content array. Must be an object that implements `Array` and/or
@@ -109,6 +113,11 @@ export default EmberObject.extend(MutableArray, {
     return objectAt(get(this, 'arrangedContent'), idx);
   },
 
+  replace(idx, amt, objects) {
+    assert('Mutating an arranged ArrayProxy is not allowed', get(this, 'arrangedContent') === get(this, 'content') );
+    this.replaceContent(idx, amt, objects);
+  },
+
   /**
     Should actually replace the specified objects on the content array.
     You can override this method in subclasses to transform the content item
@@ -122,31 +131,37 @@ export default EmberObject.extend(MutableArray, {
     @param {EmberArray} objects Optional array of objects to insert or null if no
       objects.
     @return {void}
-    @private
+    @public
   */
   replaceContent(idx, amt, objects) {
     get(this, 'content').replace(idx, amt, objects);
   },
 
-  _arrangedContentWillChange: _beforeObserver('arrangedContent', function() {
-    let arrangedContent = get(this, 'arrangedContent');
-    let len = arrangedContent ? get(arrangedContent, 'length') : 0;
+  // Overriding objectAt is not supported.
+  objectAt(idx) {
+    this._sync();
+    return this._cache[idx];
+  },
 
-    this.arrangedContentArrayWillChange(this, 0, len, undefined);
-
-    this._teardownArrangedContent(arrangedContent);
+  // Overriding length is not supported.
+  length: computed(function() {
+    this._sync();
+    return this._cache.length;
   }),
 
   _arrangedContentDidChange: observer('arrangedContent', function() {
+    let oldLength = this._cache === null ? 0 : this._cache.length;
     let arrangedContent = get(this, 'arrangedContent');
-    let len = arrangedContent ? get(arrangedContent, 'length') : 0;
+    let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
 
-    this._setupArrangedContent();
-
-    this.arrangedContentArrayDidChange(this, 0, undefined, len);
+    this._removeArrangedContentArrayObsever();
+    this.arrayContentWillChange(0, oldLength, newLength);
+    this._dirtyStart = 0;
+    this.arrayContentDidChange(0, oldLength, newLength);
+    this._addArrangedContentArrayObsever();
   }),
 
-  _setupArrangedContent() {
+  _addArrangedContentArrayObsever() {
     let arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
@@ -155,153 +170,60 @@ export default EmberObject.extend(MutableArray, {
         isArray(arrangedContent) || arrangedContent.isDestroyed);
 
       addArrayObserver(arrangedContent, this, {
-        willChange: 'arrangedContentArrayWillChange',
-        didChange: 'arrangedContentArrayDidChange'
+        willChange: '_arrangedContentArrayWillChange',
+        didChange: '_arrangedContentArrayDidChange'
+      });
+
+      this._arrangedContent = arrangedContent;
+    }
+  },
+
+  _removeArrangedContentArrayObsever() {
+    if (this._arrangedContent) {
+      removeArrayObserver(this._arrangedContent, this, {
+        willChange: '_arrangedContentArrayWillChange',
+        didChange: '_arrangedContentArrayDidChange'
       });
     }
   },
 
-  _teardownArrangedContent() {
-    let arrangedContent = get(this, 'arrangedContent');
+  _arrangedContentArrayWillChange() {},
 
-    if (arrangedContent) {
-      removeArrayObserver(arrangedContent, this, {
-        willChange: 'arrangedContentArrayWillChange',
-        didChange: 'arrangedContentArrayDidChange'
-      });
-    }
-  },
-
-  objectAt(idx) {
-    return get(this, 'content') && this.objectAtContent(idx);
-  },
-
-  length: computed(function() {
-    let arrangedContent = get(this, 'arrangedContent');
-    return arrangedContent ? get(arrangedContent, 'length') : 0;
-    // No dependencies since Enumerable notifies length of change
-  }),
-
-  _replace(idx, amt, objects) {
-    let content = get(this, 'content');
-    assert(`The content property of ${this.constructor} should be set before modifying it`, content);
-    if (content) {
-      this.replaceContent(idx, amt, objects);
-    }
-
-    return this;
-  },
-
-  replace() {
-    if (get(this, 'arrangedContent') === get(this, 'content')) {
-      this._replace(...arguments);
-    } else {
-      throw new EmberError('Using replace on an arranged ArrayProxy is not allowed.');
-    }
-  },
-
-  _insertAt(idx, object) {
-    if (idx > get(this, 'content.length')) {
-      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    this._replace(idx, 0, [object]);
-    return this;
-  },
-
-  insertAt(idx, object) {
-    if (get(this, 'arrangedContent') === get(this, 'content')) {
-      return this._insertAt(idx, object);
-    } else {
-      throw new EmberError('Using insertAt on an arranged ArrayProxy is not allowed.');
-    }
-  },
-
-  removeAt(start, len) {
-    if ('number' === typeof start) {
-      let content = get(this, 'content');
-      let arrangedContent = get(this, 'arrangedContent');
-      let indices = [];
-
-      if ((start < 0) || (start >= get(this, 'length'))) {
-        throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-      }
-
-      if (len === undefined) {
-        len = 1;
-      }
-
-      // Get a list of indices in original content to remove
-      for (let i = start; i < start + len; i++) {
-        // Use arrangedContent here so we avoid confusion with objects transformed by objectAtContent
-        indices.push(content.indexOf(objectAt(arrangedContent, i)));
-      }
-
-      // Replace in reverse order since indices will change
-      indices.sort((a, b) => b - a);
-
-      beginPropertyChanges();
-      for (let i = 0; i < indices.length; i++) {
-        this._replace(indices[i], 1, EMPTY);
-      }
-      endPropertyChanges();
-    }
-
-    return this;
-  },
-
-  pushObject(obj) {
-    this._insertAt(get(this, 'content.length'), obj);
-    return obj;
-  },
-
-  pushObjects(objects) {
-    if (!isArray(objects)) {
-      throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
-    }
-    this._replace(get(this, 'length'), 0, objects);
-    return this;
-  },
-
-  setObjects(objects) {
-    if (objects.length === 0) {
-      return this.clear();
-    }
-
-    let len = get(this, 'length');
-    this._replace(0, len, objects);
-    return this;
-  },
-
-  unshiftObject(obj) {
-    this._insertAt(0, obj);
-    return obj;
-  },
-
-  unshiftObjects(objects) {
-    this._replace(0, 0, objects);
-    return this;
-  },
-
-  slice() {
-    let arr = this.toArray();
-    return arr.slice(...arguments);
-  },
-
-  arrangedContentArrayWillChange(item, idx, removedCnt, addedCnt) {
+  _arrangedContentArrayDidChange(proxy, idx, removedCnt, addedCnt) {
     this.arrayContentWillChange(idx, removedCnt, addedCnt);
-  },
 
-  arrangedContentArrayDidChange(item, idx, removedCnt, addedCnt) {
+    if (this._dirtyStart === undefined) {
+      this._dirtyStart = idx;
+    } else {
+      if (this._dirtyStart > idx) {
+        this._dirtyStart = idx;
+      }
+    }
+
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
   },
 
-  init() {
-    this._super(...arguments);
-    this._setupArrangedContent();
-  },
+  _sync() {
+    if (this._cache === null) {
+      this._cache = [];
+    }
 
-  willDestroy() {
-    this._teardownArrangedContent();
+    if (this._dirtyStart !== undefined) {
+      let arrangedContent = get(this, 'arrangedContent');
+
+      if (arrangedContent) {
+        let length = get(arrangedContent, 'length');
+
+        this._cache.length = length;
+
+        for (let i = this._dirtyStart; i < length; i++) {
+          this._cache[i] = this.objectAtContent(i);
+        }
+      } else {
+        this._cache.length = 0;
+      }
+
+      this._dirtyStart = undefined;
+    }
   }
 });
