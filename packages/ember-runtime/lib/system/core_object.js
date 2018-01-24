@@ -84,9 +84,14 @@ function makeCtor() {
         /* globals Proxy Reflect */
         self = new Proxy(this, {
           get(target, property, receiver) {
-            if (property === PROXY_CONTENT || property === 'didDefineProperty') {
+            if (property === PROXY_CONTENT) {
               return target;
-            } else if (typeof property === 'symbol' || property in target) {
+            } else if (typeof property === 'symbol' ||
+                      property === NAME_KEY ||
+                      property === GUID_KEY_PROPERTY ||
+                      property === 'toString' ||
+                      property === 'toJSON' ||
+                      property === 'toStringExtension' || property in target) {
               return Reflect.get(target, property, receiver);
             }
 
