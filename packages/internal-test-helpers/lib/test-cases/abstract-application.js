@@ -1,5 +1,5 @@
 import { compile } from 'ember-template-compiler';
-import { EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER } from 'ember/features';
+import { ENV } from 'ember-environment';
 import AbstractTestCase from './abstract';
 import { runDestroy } from '../run';
 
@@ -30,10 +30,10 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
   get element() {
     if (this._element) {
       return this._element;
-    } else if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
-      return this._element = document.querySelector('#qunit-fixture');
-    } else {
+    } else if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
       return this._element = document.querySelector('#qunit-fixture > div.ember-view');
+    } else {
+      return this._element = document.querySelector('#qunit-fixture');
     }
   }
 

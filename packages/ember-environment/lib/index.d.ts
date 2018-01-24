@@ -9,5 +9,7 @@ export const environment: {
 }
 
 export const ENV: {
+  _APPLICATION_TEMPLATE_WRAPPER: boolean;
   _ENABLE_RENDER_SUPPORT: boolean;
+  _TEMPLATE_ONLY_GLIMMER_COMPONENTS: boolean;
 };

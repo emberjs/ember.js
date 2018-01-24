@@ -6,10 +6,10 @@ import {
   Environment,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util/dist/types';
+import { ENV } from 'ember-environment';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
 import { generateGuid, guidFor } from 'ember-utils';
-import { EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER } from 'ember/features';
 import EmberEnvironment from '../environment';
 import {
   OwnedTemplate,
@@ -86,6 +86,20 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
 
 const MANAGER = new OutletComponentManager();
 
+class WrappedTopLevelOutletLayoutCompiler {
+  static id = 'wrapped-top-level-outlet';
+
+  constructor(public template: WrappedTemplateFactory) {
+  }
+
+  compile(builder: any) {
+    builder.wrapLayout(this.template);
+    builder.tag.static('div');
+    builder.attrs.static('id', guidFor(this));
+    builder.attrs.static('class', 'ember-view');
+  }
+}
+
 class TopLevelOutletComponentManager extends OutletComponentManager {
   create(environment: Environment, definition: OutletComponentDefinition, _args: Arguments, dynamicScope: OutletDynamicScope) {
     if (DEBUG) {
@@ -93,35 +107,17 @@ class TopLevelOutletComponentManager extends OutletComponentManager {
     }
     return new StateBucket(dynamicScope.outletState.value());
   }
+
+  layoutFor(definition: OutletComponentDefinition, bucket: StateBucket, env: Environment) {
+    if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
+      return (env as EmberEnvironment).getCompiledBlock(WrappedTopLevelOutletLayoutCompiler, definition.template);
+    } else {
+      return super.layoutFor(definition, bucket, env);
+    }
+  }
 }
 
-const TOP_LEVEL_MANAGER = (() => {
-  if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
-    return new TopLevelOutletComponentManager();
-  } else {
-    class WrappedTopLevelOutletLayoutCompiler {
-      static id = 'wrapped-top-level-outlet';
-
-      constructor(public template: WrappedTemplateFactory) {
-      }
-
-      compile(builder: any) {
-        builder.wrapLayout(this.template);
-        builder.tag.static('div');
-        builder.attrs.static('id', guidFor(this));
-        builder.attrs.static('class', 'ember-view');
-      }
-    }
-
-    class WrappedTopLevelOutletComponentManager extends TopLevelOutletComponentManager {
-      layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
-        return (env as EmberEnvironment).getCompiledBlock(WrappedTopLevelOutletLayoutCompiler, definition.template);
-      }
-    }
-
-    return new WrappedTopLevelOutletComponentManager();
-  }
-})();
+const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
 
 export class TopLevelOutletComponentDefinition extends ComponentDefinition<StateBucket> {
   public template: WrappedTemplateFactory;
