@@ -5,11 +5,11 @@ import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
   QUnit.module(description, {
-    beforeEach: function(...args) {
-      let instance = new TestClass(...args);
+    beforeEach: function(assert) {
+      let instance = new TestClass(assert);
       this.instance = instance;
       if (instance.beforeEach) {
-        return instance.beforeEach(...args);
+        return instance.beforeEach(assert);
       }
     },
 

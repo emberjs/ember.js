@@ -4,7 +4,6 @@ const path = require('path');
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const Rollup = require('broccoli-rollup');
-const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
 const concatBundle = require('./broccoli/concat-bundle');
 const concat = require('broccoli-concat');
@@ -332,6 +331,7 @@ function rollupPackage(packagesES, name) {
         return true;
       },
       output: {
+        sourcemap: 'inline',
         file: `${name}.js`,
         format: 'es',
         exports: 'named',
