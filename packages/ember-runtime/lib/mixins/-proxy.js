@@ -37,7 +37,9 @@ function contentPropertyDidChange(content, contentKey) {
 export function contentFor(proxy, m) {
   let content = get(proxy, 'content');
   let tag = (m === undefined ? meta(proxy) : m).readableTag();
-  tag.inner.second.inner.update(tagFor(content));
+  if (tag !== undefined) {
+    tag.inner.second.inner.update(tagFor(content));
+  }
   return content;
 }
 
