@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
-import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS } from 'ember/features';
+import { ENV } from 'ember-environment';
 
 class TemplateOnlyComponentsTest extends RenderingTest {
   registerComponent(name, template) {
@@ -8,189 +8,209 @@ class TemplateOnlyComponentsTest extends RenderingTest {
   }
 }
 
-if (EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
-  moduleFor('Components test: template-only components (glimmer components)', class extends TemplateOnlyComponentsTest {
-    ['@test it can render a template-only component']() {
-      this.registerComponent('foo-bar', 'hello');
+moduleFor('Components test: template-only components (glimmer components)', class extends TemplateOnlyComponentsTest {
+  constructor() {
+    super();
+    this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+    ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+  }
 
-      this.render('{{foo-bar}}');
+  teardown() {
+    super.teardown();
+    ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+  }
 
-      this.assertInnerHTML('hello');
+  ['@test it can render a template-only component']() {
+    this.registerComponent('foo-bar', 'hello');
 
-      this.assertStableRerender();
-    }
+    this.render('{{foo-bar}}');
 
-    ['@feature(ember-glimmer-named-arguments) it can render named arguments']() {
-      this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
+    this.assertInnerHTML('hello');
 
-      this.render('{{foo-bar foo=foo bar=bar}}', {
-        foo: 'foo', bar: 'bar'
-      });
+    this.assertStableRerender();
+  }
 
-      this.assertInnerHTML('|foo|bar|');
+  ['@feature(ember-glimmer-named-arguments) it can render named arguments']() {
+    this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
-      this.assertStableRerender();
+    this.render('{{foo-bar foo=foo bar=bar}}', {
+      foo: 'foo', bar: 'bar'
+    });
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+    this.assertInnerHTML('|foo|bar|');
 
-      this.assertInnerHTML('|FOO|bar|');
+    this.assertStableRerender();
 
-      this.runTask(() => this.context.set('bar', 'BAR'));
+    this.runTask(() => this.context.set('foo', 'FOO'));
 
-      this.assertInnerHTML('|FOO|BAR|');
+    this.assertInnerHTML('|FOO|bar|');
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+    this.runTask(() => this.context.set('bar', 'BAR'));
 
-      this.assertInnerHTML('|foo|bar|');
-    }
+    this.assertInnerHTML('|FOO|BAR|');
 
-    ['@test it does not reflected arguments as properties']() {
-      this.registerComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
+    this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
-      this.render('{{foo-bar foo=foo bar=bar}}', {
-        foo: 'foo', bar: 'bar'
-      });
+    this.assertInnerHTML('|foo|bar|');
+  }
 
-      this.assertInnerHTML('|||');
+  ['@test it does not reflected arguments as properties']() {
+    this.registerComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
 
-      this.assertStableRerender();
+    this.render('{{foo-bar foo=foo bar=bar}}', {
+      foo: 'foo', bar: 'bar'
+    });
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+    this.assertInnerHTML('|||');
 
-      this.assertInnerHTML('|||');
+    this.assertStableRerender();
 
-      this.runTask(() => this.context.set('bar', null));
+    this.runTask(() => this.context.set('foo', 'FOO'));
 
-      this.assertInnerHTML('|||');
+    this.assertInnerHTML('|||');
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+    this.runTask(() => this.context.set('bar', null));
 
-      this.assertInnerHTML('|||');
-    }
+    this.assertInnerHTML('|||');
 
-    ['@test it does not have curly component features']() {
-      this.registerComponent('foo-bar', 'hello');
+    this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
-      this.render('{{foo-bar tagName="p" class=class}}', {
-        class: 'foo bar'
-      });
+    this.assertInnerHTML('|||');
+  }
 
-      this.assertInnerHTML('hello');
+  ['@test it does not have curly component features']() {
+    this.registerComponent('foo-bar', 'hello');
 
+    this.render('{{foo-bar tagName="p" class=class}}', {
+      class: 'foo bar'
+    });
 
-      this.assertStableRerender();
+    this.assertInnerHTML('hello');
 
-      this.runTask(() => this.context.set('class', 'foo'));
 
-      this.assertInnerHTML('hello');
+    this.assertStableRerender();
 
-      this.runTask(() => this.context.set('class', null));
+    this.runTask(() => this.context.set('class', 'foo'));
 
-      this.assertInnerHTML('hello');
+    this.assertInnerHTML('hello');
 
-      this.runTask(() => this.context.set('class', 'foo bar'));
+    this.runTask(() => this.context.set('class', null));
 
-      this.assertInnerHTML('hello');
-    }
-  });
-} else {
-  moduleFor('Components test: template-only components (curly components)', class extends TemplateOnlyComponentsTest {
-    ['@test it can render a template-only component']() {
-      this.registerComponent('foo-bar', 'hello');
+    this.assertInnerHTML('hello');
 
-      this.render('{{foo-bar}}');
+    this.runTask(() => this.context.set('class', 'foo bar'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+    this.assertInnerHTML('hello');
+  }
+});
 
-      this.assertStableRerender();
-    }
+moduleFor('Components test: template-only components (curly components)', class extends TemplateOnlyComponentsTest {
+  constructor() {
+    super();
+    this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+    ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = false;
+  }
 
-    ['@feature(ember-glimmer-named-arguments) it can render named arguments']() {
-      this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
+  teardown() {
+    super.teardown();
+    ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+  }
 
-      this.render('{{foo-bar foo=foo bar=bar}}', {
-        foo: 'foo', bar: 'bar'
-      });
+  ['@test it can render a template-only component']() {
+    this.registerComponent('foo-bar', 'hello');
 
-      this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
+    this.render('{{foo-bar}}');
 
-      this.assertStableRerender();
+    this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+    this.assertStableRerender();
+  }
 
-      this.assertComponentElement(this.firstChild, { content: '|FOO|bar|' });
+  ['@feature(ember-glimmer-named-arguments) it can render named arguments']() {
+    this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
-      this.runTask(() => this.context.set('bar', 'BAR'));
+    this.render('{{foo-bar foo=foo bar=bar}}', {
+      foo: 'foo', bar: 'bar'
+    });
 
-      this.assertComponentElement(this.firstChild, { content: '|FOO|BAR|' });
+    this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+    this.assertStableRerender();
 
-      this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
-    }
+    this.runTask(() => this.context.set('foo', 'FOO'));
 
-    ['@test it renders named arguments as reflected properties']() {
-      this.registerComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
+    this.assertComponentElement(this.firstChild, { content: '|FOO|bar|' });
 
-      this.render('{{foo-bar foo=foo bar=bar}}', {
-        foo: 'foo', bar: 'bar'
-      });
+    this.runTask(() => this.context.set('bar', 'BAR'));
 
-      this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
+    this.assertComponentElement(this.firstChild, { content: '|FOO|BAR|' });
 
-      this.assertStableRerender();
+    this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+    this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
+  }
 
-      this.assertComponentElement(this.firstChild, { content: '|FOO|bar|' });
+  ['@test it renders named arguments as reflected properties']() {
+    this.registerComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
 
-      this.runTask(() => this.context.set('bar', null));
+    this.render('{{foo-bar foo=foo bar=bar}}', {
+      foo: 'foo', bar: 'bar'
+    });
 
-      this.assertComponentElement(this.firstChild, { content: '|FOO||' });
+    this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+    this.assertStableRerender();
 
-      this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
-    }
+    this.runTask(() => this.context.set('foo', 'FOO'));
 
-    ['@test it has curly component features']() {
-      this.registerComponent('foo-bar', 'hello');
+    this.assertComponentElement(this.firstChild, { content: '|FOO|bar|' });
 
-      this.render('{{foo-bar tagName="p" class=class}}', {
-        class: 'foo bar'
-      });
+    this.runTask(() => this.context.set('bar', null));
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'p',
-        attrs: { class: classes('foo bar ember-view') },
-        content: 'hello'
-      });
+    this.assertComponentElement(this.firstChild, { content: '|FOO||' });
 
-      this.assertStableRerender();
+    this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
-      this.runTask(() => this.context.set('class', 'foo'));
+    this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
+  }
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'p',
-        attrs: { class: classes('foo ember-view') },
-        content: 'hello'
-      });
+  ['@test it has curly component features']() {
+    this.registerComponent('foo-bar', 'hello');
 
-      this.runTask(() => this.context.set('class', null));
+    this.render('{{foo-bar tagName="p" class=class}}', {
+      class: 'foo bar'
+    });
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'p',
-        attrs: { class: classes('ember-view') },
-        content: 'hello'
-      });
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'p',
+      attrs: { class: classes('foo bar ember-view') },
+      content: 'hello'
+    });
 
-      this.runTask(() => this.context.set('class', 'foo bar'));
+    this.assertStableRerender();
 
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'p',
-        attrs: { class: classes('foo bar ember-view') },
-        content: 'hello'
-      });
-    }
-  });
-}
+    this.runTask(() => this.context.set('class', 'foo'));
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'p',
+      attrs: { class: classes('foo ember-view') },
+      content: 'hello'
+    });
+
+    this.runTask(() => this.context.set('class', null));
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'p',
+      attrs: { class: classes('ember-view') },
+      content: 'hello'
+    });
+
+    this.runTask(() => this.context.set('class', 'foo bar'));
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'p',
+      attrs: { class: classes('foo bar ember-view') },
+      content: 'hello'
+    });
+  }
+});
