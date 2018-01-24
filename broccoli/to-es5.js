@@ -19,10 +19,10 @@ module.exports = function toES5(tree, _options) {
   let isDebug = options.environment !== 'production';
 
   options.moduleIds = true;
-  options.resolveModuleSource = resolveModuleSource;
   options.sourceMap = true;
   options.plugins = [
     injectBabelHelpers,
+    ['module-resolver', { resolvePath: resolveModuleSource }],
     [
       'debug-macros',
       {
@@ -53,20 +53,18 @@ module.exports = function toES5(tree, _options) {
         ],
       },
     ],
-    ['transform-es2015-template-literals', { loose: true }],
-    ['transform-es2015-literals'],
-    ['transform-es2015-arrow-functions'],
-    ['transform-es2015-destructuring', { loose: true }],
-    ['transform-es2015-spread', { loose: true }],
-    ['transform-es2015-parameters'],
-    ['transform-es2015-computed-properties', { loose: true }],
-    ['transform-es2015-shorthand-properties'],
-    ['transform-es2015-block-scoping', { throwIfClosureRequired: true }],
-    ['check-es2015-constants'],
-    ['transform-es2015-classes', { loose: true }],
-    ['transform-object-assign'],
+    ['@babel/transform-template-literals', { loose: true }],
+    ['@babel/transform-arrow-functions'],
+    ['@babel/transform-destructuring', { loose: true }],
+    ['@babel/transform-spread', { loose: true }],
+    ['@babel/transform-parameters'],
+    ['@babel/transform-computed-properties', { loose: true }],
+    ['@babel/transform-shorthand-properties'],
+    ['@babel/transform-block-scoping', { throwIfClosureRequired: true }],
+    ['@babel/transform-classes', { loose: true }],
+    ['@babel/transform-proto-to-assign'],
     injectNodeGlobals,
-    ['transform-es2015-modules-amd', { noInterop: true, strict: true }],
+    ['@babel/transform-modules-amd', { noInterop: true, strict: true }],
     enifed,
   ];
 
