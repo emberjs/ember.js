@@ -1,4 +1,4 @@
-import DebugStack from 'ember-glimmer/utils/debug-stack';
+import { DebugStack } from 'ember-glimmer';
 import { DEBUG } from 'ember-env-flags';
 
 if (DEBUG) {

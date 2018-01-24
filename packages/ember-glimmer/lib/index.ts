@@ -293,3 +293,14 @@ export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry'
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
 export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
 export { default as AbstractComponentManager } from './component-managers/abstract';
+
+// needed for test
+// TODO just test these through public API
+// a lot of these are testing how a problem was solved
+// rather than the problem was solved
+// DebugStack should just test the assert message
+// it supports for example
+export { UpdatableReference } from './utils/references';
+export { default as iterableFor } from './utils/iterable';
+export { default as DebugStack } from './utils/debug-stack';
+export { default as OutletView } from './views/outlet';

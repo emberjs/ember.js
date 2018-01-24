@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { equalTokens } from '../../utils/test-helpers';
 import { strip } from '../../utils/abstract-test-case';
-import Component from '../../../component';
+import { Component } from 'ember-glimmer';
 import { set } from 'ember-metal';
 
 moduleFor('{{in-element}}', class extends RenderingTest {
