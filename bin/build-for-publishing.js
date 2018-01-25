@@ -52,7 +52,7 @@ Promise
   .then(() => {
     updatePackageJSONVersion();
     // ensures that we tag this correctly
-    return exec('auto-dist-tag', ['-w']);
+    return exec('auto-dist-tag', ['--write']);
   })
   .then(() => {
     // do a production build
