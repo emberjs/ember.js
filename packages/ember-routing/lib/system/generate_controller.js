@@ -31,7 +31,7 @@ export function generateControllerFactory(owner, controllerName) {
 
 /**
   Generates and instantiates a controller extending from `controller:basic`
-  if present, or `Ember.Controller` if not.
+  if present, or `Controller` if not.
 
   @for Ember
   @method generateController

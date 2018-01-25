@@ -112,7 +112,7 @@ moduleFor('Ember Router', class extends AbstractTestCase {
     });
   }
 
-  ['@test Ember.Router._routePath should consume identical prefixes'](assert) {
+  ['@test Router._routePath should consume identical prefixes'](assert) {
     createRouter();
 
   function routePath() {

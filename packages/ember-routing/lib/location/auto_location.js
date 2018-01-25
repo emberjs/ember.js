@@ -20,7 +20,7 @@ import {
 
 
 /**
-  Ember.AutoLocation will select the best location option based off browser
+  AutoLocation will select the best location option based off browser
   support with the priority order: history, hash, none.
 
   Clean pushState paths accessed by hashchange-only browsers will be redirected

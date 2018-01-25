@@ -53,7 +53,7 @@ function createLocation(location, history) {
 
 let location;
 
-moduleFor('Ember.AutoLocation', class extends AbstractTestCase {
+moduleFor('AutoLocation', class extends AbstractTestCase {
   teardown() {
     if (location) {
       run(location, 'destroy');

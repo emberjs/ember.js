@@ -228,7 +228,10 @@ const EmberRouter = EmberObject.extend(Evented, {
     you could use this hook.  (Note: requires also including GA scripts, etc.)
 
     ```javascript
-    let Router = Ember.Router.extend({
+    import config from './config/environment';
+    import EmberRouter from '@ember/routing/router';
+
+    let Router = EmberRouter.extend({
       location: config.locationType,
 
       didTransition: function() {
@@ -266,7 +269,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _setOutlets() {
-    // This is triggered async during Ember.Route#willDestroy.
+    // This is triggered async during Route#willDestroy.
     // If the router is also being destroyed we do not want to
     // to create another this._toplevelView (and leak the renderer)
     if (this.isDestroying || this.isDestroyed) { return; }
@@ -355,7 +358,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     Transition the application into another route. The route may
     be either a single route or route path:
 
-    See [Route.transitionTo](https://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
+    See [transitionTo](/api/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
     @method transitionTo
     @param {String} name the name of the route or a URL
