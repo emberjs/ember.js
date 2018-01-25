@@ -1,3 +1,4 @@
+import { ENV } from 'ember-environment';
 import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
@@ -5,8 +6,19 @@ import { Route } from 'ember-routing';
 import { Component } from 'ember-glimmer';
 
 moduleFor('Application test: rendering', class extends ApplicationTest {
+  constructor() {
+    super();
+    this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;
+  }
 
-  ['@feature(!ember-glimmer-remove-application-template-wrapper) it can render the application template']() {
+  teardown() {
+    super.teardown();
+    ENV._APPLICATION_TEMPLATE_WRAPPER = this._APPLICATION_TEMPLATE_WRAPPER;
+  }
+
+  ['@test it can render the application template with a wrapper']() {
+    ENV._APPLICATION_TEMPLATE_WRAPPER = true;
+
     this.addTemplate('application', 'Hello world!');
 
     return this.visit('/').then(() => {
@@ -14,7 +26,9 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     });
   }
 
-  ['@feature(ember-glimmer-remove-application-template-wrapper) it can render the application template']() {
+  ['@test it can render the application template without a wrapper']() {
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+
     this.addTemplate('application', 'Hello world!');
 
     return this.visit('/').then(() => {

@@ -16,6 +16,7 @@ import {
 } from '@glimmer/runtime';
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
+import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
 import { assign, LookupOptions, Owner, setOwner } from 'ember-utils';
 import {
@@ -23,7 +24,6 @@ import {
   lookupPartial,
   OwnedTemplateMeta,
 } from 'ember-views';
-import { EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
@@ -297,7 +297,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   private _lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
 
-    if (layout && !component && EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS) {
+    if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       return new TemplateOnlyComponentDefinition(layout);
     }
 

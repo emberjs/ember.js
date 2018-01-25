@@ -30,7 +30,6 @@ import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
 import {
   EMBER_MODULE_UNIFICATION,
-  // EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS,
   // GLIMMER_CUSTOM_COMPONENT_MANAGER,
 } from 'ember/features';
 import { OwnedTemplate } from './template';
@@ -75,7 +74,7 @@ export default class Environment extends GlimmerEnvironment {
     // this._definitionCache = new Cache(2000, ({ name, source, owner }) => {
     //   let { component: componentFactory, layout } = lookupComponent(owner, name, { source });
     //   let customManager: any;
-    //   if (EMBER_GLIMMER_TEMPLATE_ONLY_COMPONENTS && layout && !componentFactory) {
+    //   if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS && layout && !componentFactory) {
     //     return new TemplateOnlyComponentDefinition(name, layout);
     //   } else if (componentFactory || layout) {
     //     if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {

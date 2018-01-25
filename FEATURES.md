@@ -32,16 +32,6 @@ for a detailed explanation.
   Add `{{@foo}}` syntax to access named arguments in component templates per
   [RFC](https://github.com/emberjs/rfcs/pull/276).
 
-* `ember-glimmer-remove-application-template-wrapper`
-
-  Remove the `<div>` wrapper around the application template per
-  [RFC](https://github.com/emberjs/rfcs/pull/280).
-
-* `ember-glimmer-template-only-components`
-
-  Use Glimmer Components semantics for template-only components per
-  [RFC](https://github.com/emberjs/rfcs/pull/278).
-
 * `ember-metal-es5-getters`
 
   Define ES5 getters for computed properties, eliminating the need to access them

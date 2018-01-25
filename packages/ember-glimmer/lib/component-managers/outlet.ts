@@ -14,12 +14,10 @@ import {
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
 import { assign, guidFor } from 'ember-utils';
 import { OwnedTemplateMeta } from 'ember-views';
-import {
-  EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER,
-} from 'ember/features';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import {
@@ -127,49 +125,45 @@ export class OutletComponentDefinition implements ComponentDefinition<OutletDefi
   }
 }
 
-let createRootOutlet: (outletView: OutletView) => OutletComponentDefinition;
+export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
+  if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
+    const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
+      dynamicTag: true,
+      elementHook: true,
+    });
 
-if (EMBER_GLIMMER_REMOVE_APPLICATION_TEMPLATE_WRAPPER) {
-  createRootOutlet = (outletView: OutletView) => new OutletComponentDefinition(outletView.state);
-} else {
-  const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
-    dynamicTag: true,
-    elementHook: true,
-  });
-
-  const WrappedOutletComponentManager = class extends OutletComponentManager
+    const WrappedOutletComponentManager = class extends OutletComponentManager
     implements WithDynamicTagName<OutletInstanceState> {
 
-    getTagName(_component: OutletInstanceState) {
-      return 'div';
-    }
+      getTagName(_component: OutletInstanceState) {
+        return 'div';
+      }
 
-    getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
-      // The router has already resolved the template
-      const template = state.template;
-      const layout = resolver.getWrappedLayout(template, WRAPPED_CAPABILITIES);
-      return {
-        handle: layout.compile(),
-        symbolTable: layout.symbolTable
-      };
-    }
+      getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
+        // The router has already resolved the template
+        const template = state.template;
+        const layout = resolver.getWrappedLayout(template, WRAPPED_CAPABILITIES);
+        return {
+          handle: layout.compile(),
+          symbolTable: layout.symbolTable
+        };
+      }
 
-    getCapabilities(): ComponentCapabilities {
-      return WRAPPED_CAPABILITIES;
-    }
+      getCapabilities(): ComponentCapabilities {
+        return WRAPPED_CAPABILITIES;
+      }
 
-    didCreateElement(component: OutletInstanceState, element: Element, _operations: ElementOperations): void {
-      // to add GUID id and class
-      element.setAttribute('class', 'ember-view');
-      element.setAttribute('id', guidFor(component));
-    }
-  };
+      didCreateElement(component: OutletInstanceState, element: Element, _operations: ElementOperations): void {
+        // to add GUID id and class
+        element.setAttribute('class', 'ember-view');
+        element.setAttribute('id', guidFor(component));
+      }
+    };
 
-  const WRAPPED_OUTLET_MANAGER = new WrappedOutletComponentManager();
+    const WRAPPED_OUTLET_MANAGER = new WrappedOutletComponentManager();
 
-  createRootOutlet = (outletView: OutletView) => {
     return new OutletComponentDefinition(outletView.state, WRAPPED_OUTLET_MANAGER);
-  };
+  } else {
+    return new OutletComponentDefinition(outletView.state);
+  }
 }
-
-export { createRootOutlet };
