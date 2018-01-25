@@ -104,24 +104,24 @@ QUnit.test(`regression test for https://github.com/emberjs/ember.js/issues/12475
 
   // For each item, the two each proxy observers and one manual added observer
   // are watching.
-  assert.equal(watcherCount(item1a, 'id'), 3);
-  assert.equal(watcherCount(item1b, 'id'), 3);
-  assert.equal(watcherCount(item1c, 'id'), 3);
+  assert.equal(watcherCount(item1a, 'id'), 2);
+  assert.equal(watcherCount(item1b, 'id'), 2);
+  assert.equal(watcherCount(item1c, 'id'), 2);
 
   // This should be a no-op because observers do not fire if the value
   // 1. is an object and 2. is the same as the old value.
   proxy.set('content', content1);
 
-  assert.equal(watcherCount(item1a, 'id'), 3);
-  assert.equal(watcherCount(item1b, 'id'), 3);
-  assert.equal(watcherCount(item1c, 'id'), 3);
+  assert.equal(watcherCount(item1a, 'id'), 2);
+  assert.equal(watcherCount(item1b, 'id'), 2);
+  assert.equal(watcherCount(item1c, 'id'), 2);
 
   // This is repeated to catch the regression. It should still be a no-op.
   proxy.set('content', content1);
 
-  assert.equal(watcherCount(item1a, 'id'), 3);
-  assert.equal(watcherCount(item1b, 'id'), 3);
-  assert.equal(watcherCount(item1c, 'id'), 3);
+  assert.equal(watcherCount(item1a, 'id'), 2);
+  assert.equal(watcherCount(item1b, 'id'), 2);
+  assert.equal(watcherCount(item1c, 'id'), 2);
 
   // Set the content to a new array with completely different items and
   // repeat the process.
@@ -138,9 +138,9 @@ QUnit.test(`regression test for https://github.com/emberjs/ember.js/issues/12475
 
   assert.deepEqual(get(obj, 'ids'), [4, 5, 6]);
 
-  assert.equal(watcherCount(item2a, 'id'), 3);
-  assert.equal(watcherCount(item2b, 'id'), 3);
-  assert.equal(watcherCount(item2c, 'id'), 3);
+  assert.equal(watcherCount(item2a, 'id'), 2);
+  assert.equal(watcherCount(item2b, 'id'), 2);
+  assert.equal(watcherCount(item2c, 'id'), 2);
 
   // Ensure that the observers added by the EachProxy on all items in the
   // first content array have been torn down.
@@ -150,13 +150,13 @@ QUnit.test(`regression test for https://github.com/emberjs/ember.js/issues/12475
 
   proxy.set('content', content2);
 
-  assert.equal(watcherCount(item2a, 'id'), 3);
-  assert.equal(watcherCount(item2b, 'id'), 3);
-  assert.equal(watcherCount(item2c, 'id'), 3);
+  assert.equal(watcherCount(item2a, 'id'), 2);
+  assert.equal(watcherCount(item2b, 'id'), 2);
+  assert.equal(watcherCount(item2c, 'id'), 2);
 
   proxy.set('content', content2);
 
-  assert.equal(watcherCount(item2a, 'id'), 3);
-  assert.equal(watcherCount(item2b, 'id'), 3);
-  assert.equal(watcherCount(item2c, 'id'), 3);
+  assert.equal(watcherCount(item2a, 'id'), 2);
+  assert.equal(watcherCount(item2b, 'id'), 2);
+  assert.equal(watcherCount(item2c, 'id'), 2);
 });

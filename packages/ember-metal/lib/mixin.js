@@ -27,9 +27,7 @@ import {
 import { ComputedProperty } from './computed';
 import {
   addObserver,
-  removeObserver,
-  _addBeforeObserver,
-  _removeBeforeObserver
+  removeObserver
 } from './observer';
 import {
   addListener,
@@ -285,13 +283,11 @@ function updateObserversAndListeners(obj, key, paths, updateMethod) {
 
 function replaceObserversAndListeners(obj, key, prev, next) {
   if (typeof prev === 'function') {
-    updateObserversAndListeners(obj, key, prev.__ember_observesBefore__, _removeBeforeObserver);
     updateObserversAndListeners(obj, key, prev.__ember_observes__, removeObserver);
     updateObserversAndListeners(obj, key, prev.__ember_listens__, removeListener);
   }
 
   if (typeof next === 'function') {
-    updateObserversAndListeners(obj, key, next.__ember_observesBefore__, _addBeforeObserver);
     updateObserversAndListeners(obj, key, next.__ember_observes__, addObserver);
     updateObserversAndListeners(obj, key, next.__ember_listens__, addListener);
   }
@@ -746,39 +742,6 @@ export function observer(...args) {
   }
 
   func.__ember_observes__ = paths;
-  return func;
-}
-
-/**
-  When observers fire, they are called with the arguments `obj`, `keyName`.
-
-  Note, `@each.property` observer is called per each add or replace of an element
-  and it's not called with a specific enumeration item.
-
-  A `_beforeObserver` fires before a property changes.
-
-  @method beforeObserver
-  @for Ember
-  @param {String} propertyNames*
-  @param {Function} func
-  @return func
-  @deprecated
-  @private
-*/
-export function _beforeObserver(...args) {
-  let func  = args.pop();
-  let _paths = args;
-
-  assert('_beforeObserver called without a function', typeof func === 'function');
-
-  let paths = [];
-  let addWatchedProperty = path => { paths.push(path); };
-
-  for (let i = 0; i < _paths.length; ++i) {
-    expandProperties(_paths[i], addWatchedProperty);
-  }
-
-  func.__ember_observesBefore__ = paths;
   return func;
 }
 

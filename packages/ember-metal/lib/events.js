@@ -17,7 +17,7 @@ import { ONCE, SUSPENDED } from './meta_listeners';
       // Object's meta hash
       {
         listeners: {       // variable name: `listenerSet`
-          "foo:changed": [ // variable name: `actions`
+          "foo": [ // variable name: `actions`
             target, method, flags
           ]
         }

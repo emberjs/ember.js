@@ -9,10 +9,7 @@ import {
   meta,
   addObserver,
   removeObserver,
-  _addBeforeObserver,
-  _removeBeforeObserver,
-  propertyWillChange,
-  propertyDidChange,
+  notifyPropertyChange,
   defineProperty,
   Mixin,
   tagFor,
@@ -22,16 +19,10 @@ import {
 } from 'ember-debug';
 import { bool } from '../computed/computed_macros';
 
-function contentPropertyWillChange(content, contentKey) {
-  let key = contentKey.slice(8); // remove "content."
-  if (key in this) { return; }  // if shadowed in proxy
-  propertyWillChange(this, key);
-}
-
 function contentPropertyDidChange(content, contentKey) {
   let key = contentKey.slice(8); // remove "content."
   if (key in this) { return; } // if shadowed in proxy
-  propertyDidChange(this, key);
+  notifyPropertyChange(this, key);
 }
 
 class ProxyTag extends CachedTag {
@@ -89,13 +80,11 @@ export default Mixin.create({
 
   willWatchProperty(key) {
     let contentKey = `content.${key}`;
-    _addBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     addObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
   didUnwatchProperty(key) {
     let contentKey = `content.${key}`;
-    _removeBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     removeObserver(this, contentKey, null, contentPropertyDidChange);
   },
 
