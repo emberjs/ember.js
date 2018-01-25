@@ -1,66 +1,44 @@
-import { guidFor } from 'ember-utils';
-import { sendEvent } from './events';
-
 /*
-  this.observerSet = {
-    [senderGuid]: { // variable name: `keySet`
-      [keyName]: listIndex
+  observerMap = {
+    [sender] : {
+      [keyMap] : [ target, method, flags ] // listeners
     }
-  },
-  this.observers = [
-    {
-      sender: obj,
-      keyName: keyName,
-      eventName: eventName,
-      listeners: [
-        [target, method, flags]
-      ]
-    },
-    ...
-  ]
+  }
 */
+
 export default class ObserverSet {
   constructor() {
-    this.clear();
+    this.observerMap = new Map();
   }
 
-  add(sender, keyName, eventName) {
-    let observerSet = this.observerSet;
-    let observers = this.observers;
-    let senderGuid = guidFor(sender);
-    let keySet = observerSet[senderGuid];
+  add(sender, keyName) {
+    let keyMap = this.observerMap.get(sender);
 
-    if (keySet === undefined) {
-      observerSet[senderGuid] = keySet = {};
+    let listeners;
+    if (keyMap === undefined) {
+      keyMap = new Map();
+      this.observerMap.set(sender, keyMap);
+    } else {
+      listeners = keyMap.get(keyName);
     }
 
-    let index = keySet[keyName];
-    if (index === undefined) {
-      index = observers.push({
-        sender,
-        keyName,
-        eventName,
-        listeners: []
-      }) - 1;
-      keySet[keyName] = index;
+    if (listeners === undefined) {
+      listeners = [];
+      keyMap.set(keyName, listeners);
     }
-    return observers[index].listeners;
+
+    return listeners;
   }
 
-  flush() {
-    let observers = this.observers;
-    let observer, sender;
-    this.clear();
-    for (let i = 0; i < observers.length; ++i) {
-      observer = observers[i];
-      sender = observer.sender;
-      if (sender.isDestroying || sender.isDestroyed) { continue; }
-      sendEvent(sender, observer.eventName, [sender, observer.keyName], observer.listeners);
-    }
+  forEach(cb) {
+    this.observerMap.forEach(function(keyMap, sender) {
+      keyMap.forEach(function(listeners, keyName) {
+        cb(sender, keyName, listeners);
+      });
+    });
   }
 
   clear() {
-    this.observerSet = {};
-    this.observers = [];
+    this.observerMap.clear();
   }
 }

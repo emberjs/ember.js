@@ -216,7 +216,12 @@ function endPropertyChanges() {
   deferred--;
   if (deferred <= 0) {
     beforeObserverSet.clear();
-    observerSet.flush();
+    observerSet.forEach(function(sender, keyName, listeners) {
+      if (sender.isDestroying || sender.isDestroyed) { return; }
+      let eventName = changeEvent(keyName);
+      sendEvent(sender, eventName, [sender, keyName], listeners);
+    });
+    observerSet.clear();
   }
 }
 
@@ -284,7 +289,7 @@ function notifyBeforeObservers(obj, keyName, meta) {
   let eventName = beforeEvent(keyName);
   let added;
   if (deferred > 0) {
-    let listeners = beforeObserverSet.add(obj, keyName, eventName);
+    let listeners = beforeObserverSet.add(obj, keyName);
     added = accumulateListeners(obj, eventName, listeners, meta);
   }
   sendEvent(obj, eventName, [obj, keyName], added);
@@ -295,7 +300,7 @@ function notifyObservers(obj, keyName, meta) {
 
   let eventName = changeEvent(keyName);
   if (deferred > 0) {
-    let listeners = observerSet.add(obj, keyName, eventName);
+    let listeners = observerSet.add(obj, keyName);
     accumulateListeners(obj, eventName, listeners, meta);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
