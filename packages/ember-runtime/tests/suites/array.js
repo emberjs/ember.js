@@ -1,6 +1,6 @@
 import { guidFor, generateGuid } from 'ember-utils';
 import { Suite } from './suite';
-import { computed, get, _addBeforeObserver } from 'ember-metal';
+import { computed, get } from 'ember-metal';
 import {
   addArrayObserver,
   removeArrayObserver
@@ -15,21 +15,10 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   reset() {
-    this._keysBefore = {};
     this._keys = {};
     this._values = {};
     this._before = null;
     this._after = null;
-    return this;
-  },
-
-  observeBefore(obj) {
-    let keys = Array.prototype.slice.call(arguments, 1);
-    let loc  = keys.length;
-    while (--loc >= 0) {
-      _addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
-    }
-
     return this;
   },
 
@@ -55,11 +44,6 @@ const ArrayTestsObserverClass = EmberObject.extend({
   stopObserveArray(obj) {
     removeArrayObserver(obj, this);
     return this;
-  },
-
-  propertyWillChange(target, key) {
-    if (this._keysBefore[key] === undefined) { this._keysBefore[key] = 0; }
-    this._keysBefore[key]++;
   },
 
   propertyDidChange(target, key, value) {
@@ -92,10 +76,6 @@ const ArrayTestsObserverClass = EmberObject.extend({
     } else {
       return true;
     }
-  },
-
-  timesCalledBefore(key) {
-    return this._keysBefore[key] || 0;
   },
 
   timesCalled(key) {
@@ -210,9 +190,6 @@ const ArrayTests = Suite.extend({
   */
   newObserver(/* obj */) {
     let ret = get(this, 'observerClass').create();
-    if (arguments.length > 0) {
-      ret.observeBefore.apply(ret, arguments);
-    }
 
     if (arguments.length > 0) {
       ret.observe.apply(ret, arguments);

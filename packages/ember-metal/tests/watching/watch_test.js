@@ -15,13 +15,9 @@ import {
   AbstractTestCase
 } from 'internal-test-helpers';
 
-let willCount, didCount, willKeys, didKeys, originalLookup;
+let didCount, didKeys, originalLookup;
 
 function addListeners(obj, keyPath) {
-  addListener(obj, keyPath + ':before', function() {
-    willCount++;
-    willKeys.push(keyPath);
-  });
   addListener(obj, keyPath + ':change', function() {
     didCount++;
     didKeys.push(keyPath);
@@ -30,8 +26,7 @@ function addListeners(obj, keyPath) {
 
 moduleFor('watch', class extends AbstractTestCase {
   beforeEach() {
-    willCount = didCount = 0;
-    willKeys = [];
+    didCount = 0;
     didKeys = [];
 
     originalLookup = context.lookup;
@@ -59,7 +54,6 @@ moduleFor('watch', class extends AbstractTestCase {
 
     watch(obj, 'foo');
     set(obj, 'foo', 'bar');
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
   }
 
@@ -71,7 +65,6 @@ moduleFor('watch', class extends AbstractTestCase {
     assert.equal(get(obj, 'foo'), 'baz', 'should have original prop');
 
     set(obj, 'foo', 'bar');
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     assert.equal(get(obj, 'foo'), 'bar', 'should get new value');
@@ -88,7 +81,6 @@ moduleFor('watch', class extends AbstractTestCase {
 
     set(obj, 'foo', 'bar');
 
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     assert.equal(get(obj, 'foo'), 'bar', 'should get new value');
@@ -105,7 +97,6 @@ moduleFor('watch', class extends AbstractTestCase {
 
     set(obj, 'foo', 'bar');
     set(objB, 'foo', 'baz');
-    assert.equal(willCount, 2, 'should have invoked willCount once only');
     assert.equal(didCount, 2, 'should have invoked didCount once only');
   }
 
@@ -119,7 +110,6 @@ moduleFor('watch', class extends AbstractTestCase {
     set(obj, 'foo', 'bar');
 
     assert.equal(get(obj, 'foo'), 'bar', 'should have set');
-    assert.equal(willCount, 1, 'should have invoked willChange once');
     assert.equal(didCount, 1, 'should have invoked didChange once');
   }
 
@@ -134,9 +124,7 @@ moduleFor('watch', class extends AbstractTestCase {
     defineProperty(obj, 'foo', undefined, foo);
     set(foo, 'bar', 'baz');
 
-    assert.deepEqual(willKeys, ['foo.bar', 'bar'], 'should have invoked willChange with bar, foo.bar');
     assert.deepEqual(didKeys, ['foo.bar', 'bar'], 'should have invoked didChange with bar, foo.bar');
-    assert.equal(willCount, 2, 'should have invoked willChange twice');
     assert.equal(didCount, 2, 'should have invoked didChange twice');
   }
 
@@ -152,9 +140,7 @@ moduleFor('watch', class extends AbstractTestCase {
     defineProperty(bar, 'bar', undefined, baz);
     set(baz, 'baz', 'BOO');
 
-    assert.deepEqual(willKeys, ['foo.bar.baz', 'baz'], 'should have invoked willChange with bar, foo.bar');
     assert.deepEqual(didKeys, ['foo.bar.baz', 'baz'], 'should have invoked didChange with bar, foo.bar');
-    assert.equal(willCount, 2, 'should have invoked willChange twice');
     assert.equal(didCount, 2, 'should have invoked didChange twice');
   }
 
@@ -201,7 +187,6 @@ moduleFor('watch', class extends AbstractTestCase {
     assert.equal(get(obj, 'length'), '26.2 miles', 'should have original prop');
 
     set(obj, 'length', '10k');
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     assert.equal(get(obj, 'length'), '10k', 'should get new value');
@@ -216,7 +201,6 @@ moduleFor('watch', class extends AbstractTestCase {
     assert.equal(get(arr, 'length'), 0, 'should have original prop');
 
     set(arr, 'length', '10');
-    assert.equal(willCount, 1, 'should NOT have invoked willCount');
     assert.equal(didCount, 1, 'should NOT have invoked didCount');
 
     assert.equal(get(arr, 'length'), 10, 'should get new value');

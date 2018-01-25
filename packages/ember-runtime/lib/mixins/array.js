@@ -10,14 +10,11 @@ import {
   isNone,
   aliasMethod,
   Mixin,
-  propertyWillChange,
   propertyDidChange,
   addListener,
   removeListener,
   sendEvent,
   hasListeners,
-  _addBeforeObserver,
-  _removeBeforeObserver,
   addObserver,
   removeObserver,
   meta,
@@ -42,10 +39,6 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
   let didChange  = (opts && opts.didChange) || 'arrayDidChange';
   let hasObservers = get(obj, 'hasArrayObservers');
-
-  if (hasObservers === notify) {
-    propertyWillChange(obj, 'hasArrayObservers');
-  }
 
   operation(obj, '@array:before', target, willChange);
   operation(obj, '@array:change', target, didChange);
@@ -90,12 +83,6 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 
   sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
 
-  propertyWillChange(array, '[]');
-
-  if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
-    propertyWillChange(array, 'length');
-  }
-
   return array;
 }
 
@@ -137,7 +124,6 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
     let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
     if (cache.firstObject !== undefined && normalStartIdx === 0) {
-      propertyWillChange(array, 'firstObject', meta);
       propertyDidChange(array, 'firstObject', meta);
     }
 
@@ -145,7 +131,6 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
       let previousLastIndex = previousLength - 1;
       let lastAffectedIndex = normalStartIdx + removedAmount;
       if (previousLastIndex < lastAffectedIndex) {
-        propertyWillChange(array, 'lastObject', meta);
         propertyDidChange(array, 'lastObject', meta);
       }
    }
@@ -1286,12 +1271,10 @@ EachProxy.prototype = {
   arrayWillChange(content, idx, removedCnt, addedCnt) {   // eslint-disable-line no-unused-vars
     let keys = this._keys;
     let lim = removedCnt > 0 ? idx + removedCnt : -1;
-    let meta = peekMeta(this);
     for (let key in keys) {
       if (lim > 0) {
         removeObserverForContentKey(content, key, this, idx, lim);
       }
-      propertyWillChange(this, key, meta);
     }
   },
 
@@ -1350,10 +1333,6 @@ EachProxy.prototype = {
     }
   },
 
-  contentKeyWillChange(obj, keyName) {
-    propertyWillChange(this, keyName);
-  },
-
   contentKeyDidChange(obj, keyName) {
     propertyDidChange(this, keyName);
   }
@@ -1364,7 +1343,6 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
     let item = objectAt(content, loc);
     if (item) {
       assert(`When using @each to observe the array \`${toString(content)}\`, the array must return an object`, typeof item === 'object');
-      _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       addObserver(item, keyName, proxy, 'contentKeyDidChange');
     }
   }
@@ -1374,7 +1352,6 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
     let item = objectAt(content, loc);
     if (item) {
-      _removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       removeObserver(item, keyName, proxy, 'contentKeyDidChange');
     }
   }

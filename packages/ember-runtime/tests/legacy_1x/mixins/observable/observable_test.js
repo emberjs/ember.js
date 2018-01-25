@@ -414,8 +414,7 @@ moduleFor('Computed properties', class extends AbstractTestCase {
     object.get('computedCached'); // should run func
     object.get('computedCached'); // should not run func
 
-    object.propertyWillChange('computedCached')
-      .propertyDidChange('computedCached');
+    object.propertyDidChange('computedCached');
 
     object.get('computedCached'); // should run again
     assert.equal(object.computedCachedCalls.length, 2, 'should have invoked method 2x');

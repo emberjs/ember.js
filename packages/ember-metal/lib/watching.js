@@ -18,10 +18,9 @@ import {
 
 /**
   Starts watching a property on an object. Whenever the property changes,
-  invokes `Ember.propertyWillChange` and `Ember.propertyDidChange`. This is the
-  primitive used by observers and dependent keys; usually you will never call
-  this method directly but instead use higher level methods like
-  `Ember.addObserver()`
+  invokes `Ember.notifyPropertyChange`. This is the primitive used by observers
+  and dependent keys; usually you will never call this method directly but instead
+  use higher level methods like `Ember.addObserver()`.
 
   @private
   @method watch

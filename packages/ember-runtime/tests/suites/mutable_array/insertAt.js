@@ -17,13 +17,6 @@ suite.test('[].insertAt(0, X) => [X] + notify', function(assert) {
   assert.deepEqual(this.toArray(obj), after, 'post item results');
   assert.equal(get(obj, 'length'), after.length, 'length');
 
-
-  assert.equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
-  assert.equal(observer.timesCalledBefore('@each'), 0, 'should not have notified @each will change once');
-  assert.equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
-  assert.equal(observer.timesCalledBefore('firstObject'), 1, 'should have notified firstObject will change once');
-  assert.equal(observer.timesCalledBefore('lastObject'), 1, 'should have notified lastObject will change once');
-
   assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] did change once');
   assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each did change once');
   assert.equal(observer.timesCalled('length'), 1, 'should have notified length did change once');
@@ -52,12 +45,6 @@ suite.test('[A].insertAt(0, X) => [X,A] + notify', function(assert) {
   assert.deepEqual(this.toArray(obj), after, 'post item results');
   assert.equal(get(obj, 'length'), after.length, 'length');
 
-  assert.equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
-  assert.equal(observer.timesCalledBefore('@each'), 0, 'should not have notified @each will change once');
-  assert.equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
-  assert.equal(observer.timesCalledBefore('firstObject'), 1, 'should have notified firstObject will change once');
-  assert.equal(observer.timesCalledBefore('lastObject'), 0, 'should NOT have notified lastObject will change once');
-
   assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
@@ -79,12 +66,6 @@ suite.test('[A].insertAt(1, X) => [A,X] + notify', function(assert) {
 
   assert.deepEqual(this.toArray(obj), after, 'post item results');
   assert.equal(get(obj, 'length'), after.length, 'length');
-
-  assert.equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
-  assert.equal(observer.timesCalledBefore('@each'), 0, 'should not have notified @each will change once');
-  assert.equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
-  assert.equal(observer.timesCalledBefore('firstObject'), 0, 'should NOT have notified firstObject will change once');
-  assert.equal(observer.timesCalledBefore('lastObject'), 1, 'should have notified lastObject will change once');
 
   assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
@@ -114,12 +95,6 @@ suite.test('[A,B,C].insertAt(0,X) => [X,A,B,C] + notify', function(assert) {
 
   assert.deepEqual(this.toArray(obj), after, 'post item results');
   assert.equal(get(obj, 'length'), after.length, 'length');
-
-  assert.equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
-  assert.equal(observer.timesCalledBefore('@each'), 0, 'should not have notified @each will change once');
-  assert.equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
-  assert.equal(observer.timesCalledBefore('firstObject'), 1, 'should have notified firstObject will change once');
-  assert.equal(observer.timesCalledBefore('lastObject'), 0, 'should NOT have notified lastObject will change once');
 
   assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
@@ -153,12 +128,6 @@ suite.test('[A,B,C].insertAt(1,X) => [A,X,B,C] + notify', function(assert) {
   assert.deepEqual(this.toArray(obj), after, 'post item results');
   assert.equal(get(obj, 'length'), after.length, 'length');
 
-  assert.equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
-  assert.equal(observer.timesCalledBefore('@each'), 0, 'should not have notified @each will change once');
-  assert.equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
-  assert.equal(observer.timesCalledBefore('firstObject'), 0, 'should NOT have notified firstObject will change once');
-  assert.equal(observer.timesCalledBefore('lastObject'), 0, 'should NOT have notified lastObject will change once');
-
   assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
@@ -180,12 +149,6 @@ suite.test('[A,B,C].insertAt(3,X) => [A,B,C,X] + notify', function(assert) {
 
   assert.deepEqual(this.toArray(obj), after, 'post item results');
   assert.equal(get(obj, 'length'), after.length, 'length');
-
-  assert.equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
-  assert.equal(observer.timesCalledBefore('@each'), 0, 'should not have notified @each will change once');
-  assert.equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
-  assert.equal(observer.timesCalledBefore('firstObject'), 0, 'should NOT have notified firstObject will change once');
-  assert.equal(observer.timesCalledBefore('lastObject'), 1, 'should have notified lastObject will change once');
 
   assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');

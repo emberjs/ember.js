@@ -87,12 +87,6 @@ moduleFor('object.propertyChanges', class extends AbstractTestCase {
   }
 
   ['@test should indicate that the property of an object has just changed'](assert) {
-    // indicate that property of foo will change to its subscribers
-    ObjectA.propertyWillChange('foo');
-
-    //Value of the prop is unchanged yet as this will be changed when foo changes
-    assert.equal(ObjectA.prop, 'propValue');
-
     //change the value of foo.
     ObjectA.set('foo', 'changeFooValue');
 

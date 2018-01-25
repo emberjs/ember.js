@@ -96,3 +96,11 @@ QUnit.test('incrementProperty should work even if value is number in string', fu
   obj.incrementProperty('age');
   assert.equal(25, obj.get('age'));
 });
+
+QUnit.test('propertyWillChange triggers a deprecation warning', function () {
+  let obj = EmberObject.create();
+
+  expectDeprecation(() => {
+    obj.propertyWillChange('foo');
+  }, /'propertyWillChange' is deprecated and has no effect. It is safe to remove this call./);
+});

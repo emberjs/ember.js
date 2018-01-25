@@ -8,7 +8,6 @@ import {
   defineProperty
 } from './properties';
 import {
-  propertyWillChange,
   propertyDidChange
 } from './property_events';
 import {
@@ -412,8 +411,6 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
   if (hadCachedValue && cachedValue === ret) {
     return ret;
   }
-
-  propertyWillChange(obj, keyName, meta);
 
   if (!hadCachedValue) {
     addDependentKeys(this, obj, keyName, meta);

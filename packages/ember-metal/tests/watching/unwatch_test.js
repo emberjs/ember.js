@@ -11,16 +11,15 @@ import {
   AbstractTestCase
 } from 'internal-test-helpers';
 
-let willCount, didCount;
+let didCount;
 
 function addListeners(obj, keyPath) {
-  addListener(obj, keyPath + ':before', () => willCount++);
   addListener(obj, keyPath + ':change', () => didCount++);
 }
 
 moduleFor('unwatch', class extends AbstractTestCase {
   beforeEach() {
-    willCount = didCount = 0;
+    didCount = 0;
   }
 
   ['@test unwatching a computed property - regular get/set'](assert) {
@@ -39,13 +38,11 @@ moduleFor('unwatch', class extends AbstractTestCase {
 
     watch(obj, 'foo');
     set(obj, 'foo', 'bar');
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     unwatch(obj, 'foo');
-    willCount = didCount = 0;
+    didCount = 0;
     set(obj, 'foo', 'BAZ');
-    assert.equal(willCount, 0, 'should NOT have invoked willCount');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
   }
 
@@ -55,13 +52,11 @@ moduleFor('unwatch', class extends AbstractTestCase {
 
     watch(obj, 'foo');
     set(obj, 'foo', 'bar');
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     unwatch(obj, 'foo');
-    willCount = didCount = 0;
+    didCount = 0;
     set(obj, 'foo', 'BAZ');
-    assert.equal(willCount, 0, 'should NOT have invoked willCount');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
   }
 
@@ -72,19 +67,16 @@ moduleFor('unwatch', class extends AbstractTestCase {
     watch(obj, 'foo');
     watch(obj, 'foo');
     set(obj, 'foo', 'bar');
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     unwatch(obj, 'foo');
-    willCount = didCount = 0;
+    didCount = 0;
     set(obj, 'foo', 'BAZ');
-    assert.equal(willCount, 1, 'should NOT have invoked willCount');
     assert.equal(didCount, 1, 'should NOT have invoked didCount');
 
     unwatch(obj, 'foo');
-    willCount = didCount = 0;
+    didCount = 0;
     set(obj, 'foo', 'BAZ');
-    assert.equal(willCount, 0, 'should NOT have invoked willCount');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
   }
 
@@ -95,14 +87,12 @@ moduleFor('unwatch', class extends AbstractTestCase {
     // Can watch length when it is undefined
     watch(obj, 'length');
     set(obj, 'length', '10k');
-    assert.equal(willCount, 1, 'should have invoked willCount');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     // Should stop watching despite length now being defined (making object 'array-like')
     unwatch(obj, 'length');
-    willCount = didCount = 0;
+    didCount = 0;
     set(obj, 'length', '5k');
-    assert.equal(willCount, 0, 'should NOT have invoked willCount');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
   }
 

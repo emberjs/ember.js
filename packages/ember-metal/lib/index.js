@@ -98,14 +98,11 @@ export { default as expandProperties } from './expand_properties';
 
 export {
   addObserver,
-  removeObserver,
-  _addBeforeObserver,
-  _removeBeforeObserver
+  removeObserver
 } from './observer';
 export {
   Mixin,
   aliasMethod,
-  _beforeObserver,
   mixin,
   observer,
   required,

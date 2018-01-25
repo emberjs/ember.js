@@ -11,7 +11,6 @@ import {
   set,
   isWatching,
   addObserver,
-  _addBeforeObserver,
   meta as metaFor
 } from '..';
 
@@ -729,26 +728,14 @@ testBoth('setting a watched computed property', function(get, set, assert) {
     }
   }).property('firstName', 'lastName'));
 
-  let fullNameWillChange = 0;
   let fullNameDidChange = 0;
-  let firstNameWillChange = 0;
   let firstNameDidChange = 0;
-  let lastNameWillChange = 0;
   let lastNameDidChange = 0;
-  _addBeforeObserver(obj, 'fullName', function () {
-    fullNameWillChange++;
-  });
   addObserver(obj, 'fullName', function () {
     fullNameDidChange++;
   });
-  _addBeforeObserver(obj, 'firstName', function () {
-    firstNameWillChange++;
-  });
   addObserver(obj, 'firstName', function () {
     firstNameDidChange++;
-  });
-  _addBeforeObserver(obj, 'lastName', function () {
-    lastNameWillChange++;
   });
   addObserver(obj, 'lastName', function () {
     lastNameDidChange++;
@@ -764,11 +751,8 @@ testBoth('setting a watched computed property', function(get, set, assert) {
   assert.equal(get(obj, 'firstName'), 'Kris');
   assert.equal(get(obj, 'lastName'), 'Selden');
 
-  assert.equal(fullNameWillChange, 1);
   assert.equal(fullNameDidChange, 1);
-  assert.equal(firstNameWillChange, 1);
   assert.equal(firstNameDidChange, 1);
-  assert.equal(lastNameWillChange, 1);
   assert.equal(lastNameDidChange, 1);
 });
 
@@ -785,11 +769,7 @@ testBoth('setting a cached computed property that modifies the value you give it
     }
   }).property('foo'));
 
-  let plusOneWillChange = 0;
   let plusOneDidChange = 0;
-  _addBeforeObserver(obj, 'plusOne', function () {
-    plusOneWillChange++;
-  });
   addObserver(obj, 'plusOne', function () {
     plusOneDidChange++;
   });
@@ -800,13 +780,11 @@ testBoth('setting a cached computed property that modifies the value you give it
   set(obj, 'plusOne', 1);
   assert.equal(get(obj, 'plusOne'), 2);
 
-  assert.equal(plusOneWillChange, 1);
   assert.equal(plusOneDidChange, 1);
 
   set(obj, 'foo', 5);
   assert.equal(get(obj, 'plusOne'), 6);
 
-  assert.equal(plusOneWillChange, 2);
   assert.equal(plusOneDidChange, 2);
 });
 

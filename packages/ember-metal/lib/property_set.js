@@ -2,7 +2,6 @@ import { toString } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
 import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 import {
-  propertyWillChange,
   propertyDidChange
 } from './property_events';
 
@@ -76,7 +75,6 @@ export function set(obj, keyName, value, tolerant) {
   } else if (currentValue === value) { /* no change */
   } else {
     let meta = peekMeta(obj);
-    propertyWillChange(obj, keyName, meta);
 
     if (MANDATORY_SETTER) {
       setWithMandatorySetter(meta, obj, keyName, value);

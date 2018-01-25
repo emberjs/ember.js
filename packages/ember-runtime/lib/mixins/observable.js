@@ -270,22 +270,7 @@ export default Mixin.create({
   },
 
   /**
-    Notify the observer system that a property is about to change.
-
-    Sometimes you need to change a value directly or indirectly without
-    actually calling `get()` or `set()` on it. In this case, you can use this
-    method and `propertyDidChange()` instead. Calling these two methods
-    together will notify all observers that the property has potentially
-    changed value.
-
-    Note that you must always call `propertyWillChange` and `propertyDidChange`
-    as a pair. If you do not, it may get the property change groups out of
-    order and cause notifications to be delivered more often than you would
-    like.
-
     @method propertyWillChange
-    @param {String} keyName The property key that is about to change.
-    @return {Observable}
     @private
   */
   propertyWillChange(keyName) {
@@ -298,14 +283,8 @@ export default Mixin.create({
 
     Sometimes you need to change a value directly or indirectly without
     actually calling `get()` or `set()` on it. In this case, you can use this
-    method and `propertyWillChange()` instead. Calling these two methods
-    together will notify all observers that the property has potentially
-    changed value.
-
-    Note that you must always call `propertyWillChange` and `propertyDidChange`
-    as a pair. If you do not, it may get the property change groups out of
-    order and cause notifications to be delivered more often than you would
-    like.
+    method instead. Calling this method will notify all observers that the
+    property has potentially changed value.
 
     @method propertyDidChange
     @param {String} keyName The property key that has just changed.
@@ -318,8 +297,7 @@ export default Mixin.create({
   },
 
   /**
-    Convenience method to call `propertyWillChange` and `propertyDidChange` in
-    succession.
+    Convenience method to call `propertyDidChange`.
 
     @method notifyPropertyChange
     @param {String} keyName The property key to be notified about.
@@ -327,7 +305,6 @@ export default Mixin.create({
     @public
   */
   notifyPropertyChange(keyName) {
-    this.propertyWillChange(keyName);
     this.propertyDidChange(keyName);
     return this;
   },
