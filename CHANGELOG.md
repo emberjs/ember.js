@@ -1,5 +1,20 @@
 # Ember Changelog
 
+### 3.0.0-beta.4 (January 25, 2018)
+
+- [#16160](https://github.com/emberjs/ember.js/pull/16160) [BUGFIX] Remove humanize() call from generated test descriptions
+- [#16101](https://github.com/emberjs/ember.js/pull/16101) [CLEANUP] Remove legacy ArrayProxy features
+- [#16116](https://github.com/emberjs/ember.js/pull/16116) [CLEANUP] Remove private enumerable observers
+- [#16117](https://github.com/emberjs/ember.js/pull/16117) [BUGFIX] link-to active class applied when params change
+- [#16132](https://github.com/emberjs/ember.js/pull/16132) [BUGFIX] Bring back `sync` queue with deprecation (until: 3.5.0).
+- [#16156](https://github.com/emberjs/ember.js/pull/16156) [BUGFIX] Update to backburner.js@2.1.0.
+- [#16157](https://github.com/emberjs/ember.js/pull/16157) [BUGFIX] Mutating an arranged ArrayProxy is not allowed
+- [#16162](https://github.com/emberjs/ember.js/pull/16162) [CLEANUP] Remove unused private listener methods
+- [#16163](https://github.com/emberjs/ember.js/pull/16163) [CLEANUP] Remove unused path caches
+- [#16169](https://github.com/emberjs/ember.js/pull/16169) [BUGFIX] Fix various issues with descriptor trap.
+- [#16174](https://github.com/emberjs/ember.js/pull/16174) [BUGFIX] Enable _some_ recovery of errors thrown during render.
+
+
 ### 3.0.0-beta.3 (January 15, 2018)
 
 - [#16095](https://github.com/emberjs/ember.js/pull/16095) [CLEANUP] Fix ember-2-legacy support for Ember.Binding.
