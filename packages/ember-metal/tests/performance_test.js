@@ -3,7 +3,7 @@ import {
   get,
   computed,
   defineProperty,
-  propertyDidChange,
+  notifyPropertyChange,
   beginPropertyChanges,
   endPropertyChanges,
   addObserver
@@ -59,7 +59,7 @@ moduleFor('Computed Properties - Number of times evaluated', class extends Abstr
 
     addObserver(foo, 'bar.baz.bam', function() {});
 
-    propertyDidChange(get(foo, 'bar.baz'), 'bam');
+    notifyPropertyChange(get(foo, 'bar.baz'), 'bam');
 
     assert.equal(count, 0, 'should not have recomputed property');
   }

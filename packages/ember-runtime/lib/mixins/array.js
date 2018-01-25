@@ -10,7 +10,7 @@ import {
   isNone,
   aliasMethod,
   Mixin,
-  propertyDidChange,
+  notifyPropertyChange,
   addListener,
   removeListener,
   sendEvent,
@@ -44,7 +44,7 @@ function arrayObserversHelper(obj, target, opts, operation, notify) {
   operation(obj, '@array:change', target, didChange);
 
   if (hasObservers === notify) {
-    propertyDidChange(obj, 'hasArrayObservers');
+    notifyPropertyChange(obj, 'hasArrayObservers');
   }
 
   return obj;
@@ -102,10 +102,10 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   }
 
   if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
-    propertyDidChange(array, 'length');
+    notifyPropertyChange(array, 'length');
   }
 
-  propertyDidChange(array, '[]');
+  notifyPropertyChange(array, '[]');
 
   if (array.__each) {
     array.__each.arrayDidChange(array, startIdx, removeAmt, addAmt);
@@ -124,14 +124,14 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
     let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
     if (cache.firstObject !== undefined && normalStartIdx === 0) {
-      propertyDidChange(array, 'firstObject', meta);
+      notifyPropertyChange(array, 'firstObject', meta);
     }
 
     if (cache.lastObject !== undefined) {
       let previousLastIndex = previousLength - 1;
       let lastAffectedIndex = normalStartIdx + removedAmount;
       if (previousLastIndex < lastAffectedIndex) {
-        propertyDidChange(array, 'lastObject', meta);
+        notifyPropertyChange(array, 'lastObject', meta);
       }
    }
   }
@@ -1286,7 +1286,7 @@ EachProxy.prototype = {
       if (lim > 0) {
         addObserverForContentKey(content, key, this, idx, lim);
       }
-      propertyDidChange(this, key, meta);
+      notifyPropertyChange(this, key, meta);
     }
   },
 
@@ -1334,7 +1334,7 @@ EachProxy.prototype = {
   },
 
   contentKeyDidChange(obj, keyName) {
-    propertyDidChange(this, keyName);
+    notifyPropertyChange(this, keyName);
   }
 };
 

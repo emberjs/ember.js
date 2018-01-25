@@ -104,3 +104,11 @@ QUnit.test('propertyWillChange triggers a deprecation warning', function () {
     obj.propertyWillChange('foo');
   }, /'propertyWillChange' is deprecated and has no effect. It is safe to remove this call./);
 });
+
+QUnit.test('propertyDidChange triggers a deprecation warning', function () {
+  let obj = EmberObject.create();
+
+  expectDeprecation(() => {
+    obj.propertyDidChange('foo');
+  }, /'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'./);
+});

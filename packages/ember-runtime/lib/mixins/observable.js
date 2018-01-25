@@ -13,6 +13,7 @@ import {
   beginPropertyChanges,
   propertyWillChange,
   propertyDidChange,
+  notifyPropertyChange,
   endPropertyChanges,
   addObserver,
   removeObserver,
@@ -279,16 +280,7 @@ export default Mixin.create({
   },
 
   /**
-    Notify the observer system that a property has just changed.
-
-    Sometimes you need to change a value directly or indirectly without
-    actually calling `get()` or `set()` on it. In this case, you can use this
-    method instead. Calling this method will notify all observers that the
-    property has potentially changed value.
-
     @method propertyDidChange
-    @param {String} keyName The property key that has just changed.
-    @return {Observable}
     @private
   */
   propertyDidChange(keyName) {
@@ -297,7 +289,12 @@ export default Mixin.create({
   },
 
   /**
-    Convenience method to call `propertyDidChange`.
+    Notify the observer system that a property has just changed.
+
+    Sometimes you need to change a value directly or indirectly without
+    actually calling `get()` or `set()` on it. In this case, you can use this
+    method instead. Calling this method will notify all observers that the
+    property has potentially changed value.
 
     @method notifyPropertyChange
     @param {String} keyName The property key to be notified about.
@@ -305,7 +302,7 @@ export default Mixin.create({
     @public
   */
   notifyPropertyChange(keyName) {
-    this.propertyDidChange(keyName);
+    notifyPropertyChange(this, keyName);
     return this;
   },
 

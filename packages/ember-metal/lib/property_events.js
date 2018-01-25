@@ -49,6 +49,25 @@ function propertyWillChange() {
 }
 
 /**
+  @method propertyDidChange
+  @for Ember
+  @private
+*/
+function propertyDidChange(obj, keyName, _meta) {
+  deprecate(
+    `'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'.`,
+    false,
+    {
+      id: 'ember-metal.deprecate-propertyDidChange',
+      until: '3.5.0',
+      url: 'https://emberjs.com/deprecations/v3.x/#toc_ember-metal-deprecate-propertyWillChange-and-propertyDidChange'
+    }
+  );
+
+  notifyPropertyChange(obj, keyName, _meta);
+}
+
+/**
   This function is called just after an object property has changed.
   It will notify any observers and clear caches among other things.
 
@@ -56,7 +75,7 @@ function propertyWillChange() {
   reason you can't directly watch a property you can invoke this method
   manually.
 
-  @method propertyDidChange
+  @method notifyPropertyChange
   @for Ember
   @param {Object} obj The object with the property that will change
   @param {String} keyName The property key (or path) that will change.
@@ -64,7 +83,7 @@ function propertyWillChange() {
   @return {void}
   @private
 */
-function propertyDidChange(obj, keyName, _meta) {
+function notifyPropertyChange(obj, keyName, _meta) {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
   let hasMeta = meta !== undefined;
 
@@ -109,7 +128,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
     seen = DID_SEEN = {};
   }
 
-  iterDeps(propertyDidChange, obj, depKey, seen, meta);
+  iterDeps(notifyPropertyChange, obj, depKey, seen, meta);
 
   if (top) {
     DID_SEEN = null;
@@ -147,7 +166,7 @@ function iterDeps(method, obj, depKey, seen, meta) {
 function chainsDidChange(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
-    chainWatchers.notify(keyName, true, propertyDidChange);
+    chainWatchers.notify(keyName, true, notifyPropertyChange);
   }
 }
 
@@ -251,6 +270,7 @@ function notifyObservers(obj, keyName, meta) {
 export {
   propertyWillChange,
   propertyDidChange,
+  notifyPropertyChange,
   overrideChains,
   beginPropertyChanges,
   endPropertyChanges,

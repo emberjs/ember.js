@@ -57,6 +57,7 @@ export {
   beginPropertyChanges,
   changeProperties,
   endPropertyChanges,
+  notifyPropertyChange,
   overrideChains,
   propertyDidChange,
   propertyWillChange,

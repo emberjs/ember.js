@@ -3,7 +3,7 @@ import { testBoth } from 'internal-test-helpers';
 import {
   addObserver,
   removeObserver,
-  propertyDidChange,
+  notifyPropertyChange,
   defineProperty,
   computed,
   cacheFor,
@@ -76,7 +76,7 @@ testBoth('observer should continue to fire after dependent properties are access
   get(obj, 'anotherProp');
 
   for (let i = 0; i < 10; i++) {
-    propertyDidChange(obj, 'prop');
+    notifyPropertyChange(obj, 'prop');
   }
 
   assert.equal(observerCount, 10, 'should continue to fire indefinitely');

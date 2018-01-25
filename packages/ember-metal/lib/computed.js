@@ -8,7 +8,7 @@ import {
   defineProperty
 } from './properties';
 import {
-  propertyDidChange
+  notifyPropertyChange
 } from './property_events';
 import {
   addDependentKeys,
@@ -418,7 +418,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
 
   cache[keyName] = ret === undefined ? UNDEFINED : ret;
 
-  propertyDidChange(obj, keyName, meta);
+  notifyPropertyChange(obj, keyName, meta);
 
   return ret;
 };

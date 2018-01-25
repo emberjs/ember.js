@@ -9,7 +9,7 @@ import {
   meta,
   addObserver,
   removeObserver,
-  propertyDidChange,
+  notifyPropertyChange,
   defineProperty,
   Mixin,
   tagFor,
@@ -22,7 +22,7 @@ import { bool } from '../computed/computed_macros';
 function contentPropertyDidChange(content, contentKey) {
   let key = contentKey.slice(8); // remove "content."
   if (key in this) { return; } // if shadowed in proxy
-  propertyDidChange(this, key);
+  notifyPropertyChange(this, key);
 }
 
 class ProxyTag extends CachedTag {

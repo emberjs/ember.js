@@ -2,7 +2,7 @@ import { toString } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
 import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 import {
-  propertyDidChange
+  notifyPropertyChange
 } from './property_events';
 
 import {
@@ -82,7 +82,7 @@ export function set(obj, keyName, value, tolerant) {
       obj[keyName] = value;
     }
 
-    propertyDidChange(obj, keyName, meta);
+    notifyPropertyChange(obj, keyName, meta);
   }
 
   return value;

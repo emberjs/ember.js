@@ -90,6 +90,7 @@ Ember.run = metal.run;
 Ember._ObserverSet = metal.ObserverSet;
 Ember.propertyWillChange = metal.propertyWillChange;
 Ember.propertyDidChange = metal.propertyDidChange;
+Ember.notifyPropertyChange = metal.notifyPropertyChange;
 Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;

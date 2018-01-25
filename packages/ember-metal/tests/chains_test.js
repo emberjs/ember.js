@@ -5,7 +5,7 @@ import {
   finishChains,
   defineProperty,
   computed,
-  propertyDidChange,
+  notifyPropertyChange,
   peekMeta,
   meta
 } from '..';
@@ -65,7 +65,7 @@ QUnit.test('observer and CP chains', function(assert) {
   */
 
   // invalidate qux
-  propertyDidChange(obj, 'qux');
+  notifyPropertyChange(obj, 'qux');
 
   // CP chain is blown away
 
