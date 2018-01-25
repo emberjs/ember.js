@@ -15,7 +15,6 @@ import {
 } from 'ember/features';
 import { deprecate } from 'ember-debug';
 import { assertNotRendered } from './transaction';
-import { changeEvent } from './observer';
 
 /**
  @module ember
@@ -258,12 +257,11 @@ function accumulateListeners(obj, eventName, otherActions, meta) {
 function notifyObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
-  let eventName = changeEvent(keyName);
   if (deferred > 0) {
-    let listeners = observerSet.add(obj, keyName, eventName);
-    accumulateListeners(obj, eventName, listeners, meta);
+    let listeners = observerSet.add(obj, keyName, keyName);
+    accumulateListeners(obj, keyName, listeners, meta);
   } else {
-    sendEvent(obj, eventName, [obj, keyName]);
+    sendEvent(obj, keyName, [obj, keyName]);
   }
 }
 
