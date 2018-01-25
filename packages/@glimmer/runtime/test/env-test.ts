@@ -5,7 +5,7 @@ QUnit.module('env');
 QUnit.test('assert against nested transactions', assert => {
   let env = new TestEnvironment();
   env.begin();
-  assert.throws(() => env.begin(), 'a glimmer transaction was begun, but one already exists. You may have a nested transaction');
+  assert.throws(() => env.begin(), 'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.');
 });
 
 QUnit.test('ensure commit cleans up when it can', assert => {
