@@ -417,6 +417,9 @@ export abstract class Renderer {
     } finally {
       if (!completedWithoutError) {
         this._lastRevision = CURRENT_TAG.value();
+        if (this._env.inTransaction === true) {
+          this._env.commit();
+        }
       }
       this._isRenderingRoots = false;
     }
