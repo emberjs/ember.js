@@ -1,8 +1,13 @@
-import { Option, Simple } from '@glimmer/interfaces';
+import { Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
+  clientBuilder,
+  CurriedComponentDefinition,
+  curry,
   DynamicScope as GlimmerDynamicScope,
   IteratorResult,
+  RenderResult,
+  UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
@@ -17,50 +22,37 @@ import {
   getViewId,
   setViewElement,
 } from 'ember-views';
+import RSVP from 'rsvp';
 import { BOUNDS } from './component';
-import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
+import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import Environment from './environment';
 import { OwnedTemplate } from './template';
-import ComponentStateBucket, { Component } from './utils/curly-component-state-bucket';
-import { RootReference } from './utils/references';
-import OutletView, { OutletState, RootOutletStateReference } from './views/outlet';
-
-import { ComponentDefinition, NULL_REFERENCE, RenderResult } from '@glimmer/runtime';
-import RSVP from 'rsvp';
+import { Component } from './utils/curly-component-state-bucket';
+import { OutletState } from './utils/outlet';
+import { UnboundReference } from './utils/references';
+import OutletView from './views/outlet';
 
 const { backburner } = run;
 
-export interface View {
-  tagName: string | null;
-  appendChild(child: View): void;
-}
-
 export class DynamicScope implements GlimmerDynamicScope {
-  outletState: VersionedPathReference<Option<OutletState>>;
-  rootOutletState: RootOutletStateReference | undefined;
-
   constructor(
-    public view: View | null,
-    outletState: VersionedPathReference<Option<OutletState>>,
-    rootOutletState?: RootOutletStateReference) {
-    this.outletState = outletState;
-    this.rootOutletState = rootOutletState;
+    public view: Component | null,
+    public outletState: VersionedPathReference<OutletState | undefined>,
+    public rootOutletState?: VersionedPathReference<OutletState | undefined>) {
   }
 
   child() {
-    return new DynamicScope(
-      this.view, this.outletState, this.rootOutletState,
-    );
+    return new DynamicScope(this.view, this.outletState, this.rootOutletState);
   }
 
-  get(key: 'outletState'): VersionedPathReference<Option<OutletState>> {
+  get(key: 'outletState'): VersionedPathReference<OutletState | undefined> {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     return this.outletState;
   }
 
-  set(key: 'outletState', value: VersionedPathReference<Option<OutletState>>) {
+  set(key: 'outletState', value: VersionedPathReference<OutletState | undefined>) {
     // tslint:disable-next-line:max-line-length
     assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
     this.outletState = value;
@@ -71,7 +63,7 @@ export class DynamicScope implements GlimmerDynamicScope {
 class RootState {
   public id: string;
   public env: Environment;
-  public root: Opaque;
+  public root: Component | OutletView;
   public result: RenderResult | undefined;
   public shouldReflush: boolean;
   public destroyed: boolean;
@@ -81,7 +73,7 @@ class RootState {
   public render: () => void;
 
   constructor(
-    root: Opaque,
+    root: Component | OutletView,
     env: Environment,
     template: OwnedTemplate,
     self: VersionedPathReference<Opaque>,
@@ -101,7 +93,12 @@ class RootState {
     };
 
     this.render = () => {
-      let iterator = template.render(self, parentElement, dynamicScope);
+      let iterator = template.renderLayout({
+        self,
+        env,
+        builder: clientBuilder(env, { element: parentElement, nextSibling: null}),
+        dynamicScope
+      });
       let iteratorResult: IteratorResult<RenderResult>;
 
       do {
@@ -125,7 +122,7 @@ class RootState {
     this.destroyed = true;
 
     this.env = undefined as any;
-    this.root = null;
+    this.root = null as any;
     this.result = undefined;
     this.render = undefined as any;
 
@@ -145,11 +142,12 @@ class RootState {
       if (needsTransaction) {
         env.begin();
       }
-
-      result.destroy();
-
-      if (needsTransaction) {
-        env.commit();
+      try {
+        result.destroy();
+      } finally {
+        if (needsTransaction) {
+          env.commit();
+        }
       }
     }
   }
@@ -264,27 +262,22 @@ export abstract class Renderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: Simple.Element) {
-    let definition = new TopLevelOutletComponentDefinition(view);
-    let outletStateReference = view.toReference();
-
-    this._appendDefinition(view, definition, target, outletStateReference);
+    let definition = createRootOutlet(view);
+    this._appendDefinition(view, curry(definition), target);
   }
 
-  appendTo(view: ComponentStateBucket, target: Simple.Element) {
-    let rootDef = new RootComponentDefinition(view);
-
-    this._appendDefinition(view, rootDef, target);
+  appendTo(view: Component, target: Simple.Element) {
+    let definition = new RootComponentDefinition(view);
+    this._appendDefinition(view, curry(definition), target);
   }
 
   _appendDefinition(
-    root: Opaque,
-    definition: ComponentDefinition<Opaque>,
-    target: Simple.Element,
-    outletStateReference?: RootOutletStateReference) {
-    let self = new RootReference(definition);
-    let dynamicScope = new DynamicScope(null, outletStateReference || NULL_REFERENCE, outletStateReference);
+    root: OutletView | Component,
+    definition: CurriedComponentDefinition,
+    target: Simple.Element) {
+    let self = new UnboundReference(definition);
+    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
-
     this._renderRoot(rootState);
   }
 
@@ -292,13 +285,13 @@ export abstract class Renderer {
     this._scheduleRevalidate();
   }
 
-  register(view: Opaque) {
+  register(view: any) {
     let id = getViewId(view);
     assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
     this._viewRegistry[id] = view;
   }
 
-  unregister(view: Opaque) {
+  unregister(view: any) {
     delete this._viewRegistry[getViewId(view)];
   }
 
@@ -379,44 +372,45 @@ export abstract class Renderer {
 
     do {
       env.begin();
+      try {
+        // ensure that for the first iteration of the loop
+        // each root is processed
+        initialRootsLength = roots.length;
+        globalShouldReflush = false;
 
-      // ensure that for the first iteration of the loop
-      // each root is processed
-      initialRootsLength = roots.length;
-      globalShouldReflush = false;
+        for (let i = 0; i < roots.length; i++) {
+          let root = roots[i];
 
-      for (let i = 0; i < roots.length; i++) {
-        let root = roots[i];
+          if (root.destroyed) {
+            // add to the list of roots to be removed
+            // they will be removed from `this._roots` later
+            removedRoots.push(root);
 
-        if (root.destroyed) {
-          // add to the list of roots to be removed
-          // they will be removed from `this._roots` later
-          removedRoots.push(root);
+            // skip over roots that have been marked as destroyed
+            continue;
+          }
 
-          // skip over roots that have been marked as destroyed
-          continue;
+          let { shouldReflush } = root;
+
+          // when processing non-initial reflush loops,
+          // do not process more roots than needed
+          if (i >= initialRootsLength && !shouldReflush) {
+            continue;
+          }
+
+          root.options.alwaysRevalidate = shouldReflush;
+          // track shouldReflush based on this roots render result
+          shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
+
+          // globalShouldReflush should be `true` if *any* of
+          // the roots need to reflush
+          globalShouldReflush = globalShouldReflush || shouldReflush;
         }
 
-        let { shouldReflush } = root;
-
-        // when processing non-initial reflush loops,
-        // do not process more roots than needed
-        if (i >= initialRootsLength && !shouldReflush) {
-          continue;
-        }
-
-        root.options.alwaysRevalidate = shouldReflush;
-        // track shouldReflush based on this roots render result
-        shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
-
-        // globalShouldReflush should be `true` if *any* of
-        // the roots need to reflush
-        globalShouldReflush = globalShouldReflush || shouldReflush;
+        this._lastRevision = CURRENT_TAG.value();
+      } finally {
+        env.commit();
       }
-
-      this._lastRevision = CURRENT_TAG.value();
-
-      env.commit();
     } while (globalShouldReflush || roots.length > initialRootsLength);
 
     // remove any roots that were destroyed during this transaction

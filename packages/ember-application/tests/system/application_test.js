@@ -164,7 +164,7 @@ moduleFor('Ember.Application', class extends ApplicationTestCase {
     verifyRegistration(assert, application, P`template:components/-default`);
     verifyRegistration(assert, application, 'template:-outlet');
     verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(assert, application, 'template', 'env', 'service:-glimmer-environment');
+    verifyInjection(assert, application, 'template', 'options', P`template-options:main`);
 
     assert.deepEqual(application.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
   }

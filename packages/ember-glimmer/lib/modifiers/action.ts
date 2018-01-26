@@ -1,11 +1,19 @@
 import {
+  Simple
+} from '@glimmer/interfaces';
+import {
+  RevisionTag, TagWrapper
+} from '@glimmer/reference';
+import {
   Arguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
   DynamicScope,
-  Simple
+  ModifierManager,
 } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+import {
+  Destroyable
+} from '@glimmer/util';
 import { assert } from 'ember-debug';
 import { flaggedInstrument, run } from 'ember-metal';
 import { uuid } from 'ember-utils';
@@ -70,8 +78,9 @@ export class ActionState {
   public implicitTarget: any;
   public dom: any;
   public eventName: any;
+  public tag: TagWrapper<RevisionTag | null>;
 
-  constructor(element: Simple.Element, actionId: number, actionName: any, actionArgs: any[], namedArgs: CapturedNamedArguments, positionalArgs: CapturedPositionalArguments, implicitTarget: any, dom: any) {
+  constructor(element: Simple.Element, actionId: number, actionName: any, actionArgs: any[], namedArgs: CapturedNamedArguments, positionalArgs: CapturedPositionalArguments, implicitTarget: any, dom: any, tag: TagWrapper<RevisionTag | null>) {
     this.element = element;
     this.actionId = actionId;
     this.actionName = actionName;
@@ -81,6 +90,7 @@ export class ActionState {
     this.implicitTarget = implicitTarget;
     this.dom = dom;
     this.eventName = this.getEventName();
+    this.tag = tag;
   }
 
   getEventName() {
@@ -174,9 +184,9 @@ export class ActionState {
 }
 
 // implements ModifierManager<Action>
-export default class ActionModifierManager {
+export default class ActionModifierManager implements ModifierManager<ActionState> {
   create(element: Simple.Element, args: Arguments, _dynamicScope: DynamicScope, dom: any) {
-    let { named, positional } = args.capture();
+    let { named, positional, tag } = args.capture();
     let implicitTarget;
     let actionName;
     let actionNameRef: any;
@@ -217,6 +227,7 @@ export default class ActionModifierManager {
       positional,
       implicitTarget,
       dom,
+      tag,
     );
   }
 
@@ -238,6 +249,10 @@ export default class ActionModifierManager {
     }
 
     actionState.eventName = actionState.getEventName();
+  }
+
+  getTag(actionState: ActionState) {
+    return actionState.tag;
   }
 
   getDestructor(modifier: Destroyable) {

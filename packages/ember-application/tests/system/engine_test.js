@@ -77,7 +77,7 @@ moduleFor('Ember.Engine', class extends TestCase {
     verifyRegistration(assert, engine, P`template:components/-default`);
     verifyRegistration(assert, engine, 'template:-outlet');
     verifyInjection(assert, engine, 'view:-outlet', 'template', 'template:-outlet');
-    verifyInjection(assert, engine, 'template', 'env', 'service:-glimmer-environment');
+    verifyInjection(assert, engine, 'template', 'options', P`template-options:main`);
     assert.deepEqual(engine.registeredOptionsForType('helper'), { instantiate: false }, `optionsForType 'helper'`);
   }
 });

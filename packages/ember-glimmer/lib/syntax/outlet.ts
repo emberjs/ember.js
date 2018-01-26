@@ -1,87 +1,18 @@
-import {
-  combine,
-  ConstReference,
-  TagWrapper,
-  UpdatableTag,
-} from '@glimmer/reference';
+import { Option } from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+import { ConstReference, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
+  CurriedComponentDefinition,
+  curry,
+  UNDEFINED_REFERENCE,
   VM,
 } from '@glimmer/runtime';
-import { OutletComponentDefinition } from '../component-managers/outlet';
+import * as WireFormat from '@glimmer/wire-format';
+import { OwnedTemplateMeta } from 'ember-views';
+import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
-
-class OutletComponentReference {
-  public outletNameRef: any;
-  public parentOutletStateRef: any;
-  public definition: any;
-  public lastState: any;
-  public outletStateTag: TagWrapper<UpdatableTag>;
-  public tag: any;
-
-  constructor(outletNameRef: any, parentOutletStateRef: any) {
-    this.outletNameRef = outletNameRef;
-    this.parentOutletStateRef = parentOutletStateRef;
-    this.definition = null;
-    this.lastState = null;
-    let outletStateTag = this.outletStateTag = UpdatableTag.create(parentOutletStateRef.tag);
-    this.tag = combine([outletStateTag.inner, outletNameRef.tag]);
-  }
-
-  value() {
-    let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
-
-    let outletName = outletNameRef.value();
-    let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
-    let newState = this.lastState = outletStateRef.value();
-
-    this.outletStateTag.inner.update(outletStateRef.tag);
-
-    definition = revalidate(definition, lastState, newState);
-
-    let hasTemplate = newState && newState.render.template;
-
-    if (definition) {
-      return definition;
-    } else if (hasTemplate) {
-      return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
-    } else {
-      return this.definition = null;
-    }
-  }
-}
-
-function revalidate(definition: any, lastState: any, newState: any) {
-  if (!lastState && !newState) {
-    return definition;
-  }
-
-  if (!lastState && newState || lastState && !newState) {
-    return null;
-  }
-
-  if (
-    newState.render.template === lastState.render.template &&
-    newState.render.controller === lastState.render.controller
-  ) {
-    return definition;
-  }
-
-  return null;
-}
-
-function outletComponentFor(vm: VM, args: Arguments) {
-  let { outletState } = vm.dynamicScope() as DynamicScope;
-
-  let outletNameRef;
-  if (args.positional.length === 0) {
-    outletNameRef = new ConstReference('main');
-  } else {
-    outletNameRef = args.positional.at(0);
-  }
-
-  return new OutletComponentReference(outletNameRef, outletState);
-}
+import { OutletReference, OutletState } from '../utils/outlet';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -133,12 +64,76 @@ function outletComponentFor(vm: VM, args: Arguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function outletMacro(_name: string, params: any[], _hash: any[], builder: any) {
-  if (!params) {
-    params = [];
+export function outletHelper(vm: VM, args: Arguments) {
+  let scope = vm.dynamicScope() as DynamicScope;
+  let nameRef: Reference<string>;
+  if (args.positional.length === 0) {
+    nameRef = new ConstReference('main');
+  } else {
+    nameRef = args.positional.at<VersionedPathReference<string>>(0);
   }
-  let definitionArgs = [params.slice(0, 1), null, null, null];
-  let emptyArgs = [[], null, null, null]; // FIXME
-  builder.component.dynamic(definitionArgs, outletComponentFor, emptyArgs);
+  return new OutletComponentReference(new OutletReference(scope.outletState, nameRef));
+}
+
+export function outletMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
+  builder.dynamicComponent(expr, [], null, false, null, null);
   return true;
+}
+
+class OutletComponentReference implements VersionedPathReference<CurriedComponentDefinition | null> {
+  public tag: Tag;
+  private definition: CurriedComponentDefinition | null;
+  private lastState: OutletDefinitionState | null;
+
+  constructor(private outletRef: VersionedPathReference<OutletState | undefined>) {
+    this.definition = null;
+    this.lastState = null;
+    // The router always dirties the root state.
+    this.tag = outletRef.tag;
+  }
+
+  value(): CurriedComponentDefinition | null {
+    let state = stateFor(this.outletRef);
+    if (validate(state, this.lastState)) {
+      return this.definition;
+    }
+    this.lastState = state;
+    let definition = null;
+    if (state !== null) {
+      definition = curry(new OutletComponentDefinition(state));
+    }
+    return this.definition = definition;
+  }
+
+  get(_key: string) {
+    return UNDEFINED_REFERENCE;
+  }
+}
+
+function stateFor(ref: VersionedPathReference<OutletState | undefined>): OutletDefinitionState | null {
+  let outlet = ref.value();
+  if (outlet === undefined) return null;
+  let render = outlet.render;
+  if (render === undefined) return null;
+  let template = render.template;
+  if (template === undefined) return null;
+  return {
+    ref,
+    name: render.name,
+    outlet: render.outlet,
+    template,
+    controller: render.controller,
+  };
+}
+
+function validate(state: OutletDefinitionState | null, lastState: OutletDefinitionState | null) {
+  if (state === null) {
+    return lastState === null;
+  }
+  if (lastState === null) {
+    return false;
+  }
+  return state.template === lastState.template &&
+         state.controller === lastState.controller;
 }

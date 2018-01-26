@@ -2,12 +2,49 @@
 @module @ember/component
 */
 
-import { Dict, Opaque } from '@glimmer/util';
+import { Dict, Opaque } from '@glimmer/interfaces';
 import { DirtyableTag } from '@glimmer/reference';
 import { FrameworkObject } from 'ember-runtime';
-import { symbol } from 'ember-utils';
+import { Factory, symbol } from 'ember-utils';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
+
+export type HelperFunction = (positional: Opaque[], named: Dict<Opaque>) => Opaque;
+
+export type SimpleHelperFactory = Factory<SimpleHelper, SimpleHelper>;
+export type ClassHelperFactory = Factory<HelperInstance, HelperStatic>;
+
+export type HelperFactory = SimpleHelperFactory | ClassHelperFactory;
+
+export interface SimpleHelper {
+  isHelperFactory: true;
+  isSimpleHelper: true;
+
+  create(): SimpleHelper;
+  compute: HelperFunction;
+}
+
+export interface HelperStatic {
+  isHelperFactory: true;
+  isSimpleHelper: false;
+
+  create(): HelperInstance;
+}
+
+export interface HelperInstance {
+  compute: HelperFunction;
+  destroy(): void;
+}
+
+export function isHelperFactory(helper: any | undefined | null): helper is HelperFactory {
+  return typeof helper === 'object' &&
+         helper !== null &&
+         helper.class && helper.class.isHelperFactory;
+}
+
+export function isSimpleHelper(helper: HelperFactory): helper is SimpleHelperFactory {
+  return helper.class.isSimpleHelper;
+}
 
 /**
   Ember Helpers are functions that can compute values, and are used in templates.
@@ -52,11 +89,9 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
   @since 1.13.0
 */
 let Helper = FrameworkObject.extend({
-  isHelperInstance: true,
-
   init() {
     this._super(...arguments);
-    this[RECOMPUTE_TAG] = new DirtyableTag();
+    this[RECOMPUTE_TAG] = DirtyableTag.create();
   },
 
   /**
@@ -87,7 +122,7 @@ let Helper = FrameworkObject.extend({
     @since 1.13.0
   */
   recompute() {
-    this[RECOMPUTE_TAG].dirty();
+    this[RECOMPUTE_TAG].inner.dirty();
   },
 
   /**
@@ -103,14 +138,14 @@ let Helper = FrameworkObject.extend({
 
 Helper.reopenClass({
   isHelperFactory: true,
+  isSimpleHelper: false,
 });
 
-export class SimpleHelper {
-  isHelperFactory = true;
-  isHelperInstance = true;
-  isSimpleHelperFactory = true;
+class Wrapper implements SimpleHelper {
+  isHelperFactory: true = true;
+  isSimpleHelper: true = true;
 
-  constructor(public compute: (positional: any[], named: Dict<Opaque>) => any) { }
+  constructor(public compute: HelperFunction) {}
 
   create() {
     return this;
@@ -139,8 +174,8 @@ export class SimpleHelper {
   @public
   @since 1.13.0
 */
-export function helper(helperFn: (params: any[], hash?: any) => string) {
-  return new SimpleHelper(helperFn);
+export function helper(helperFn: HelperFunction): SimpleHelper {
+  return new Wrapper(helperFn);
 }
 
-export default Helper;
+export default Helper as HelperStatic;

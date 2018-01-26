@@ -1,8 +1,12 @@
+import { Option } from '@glimmer/interfaces';
+import { CompilableBlock, OpcodeBuilder } from '@glimmer/opcode-compiler';
+import * as WireFormat from '@glimmer/wire-format';
+import { OwnedTemplateMeta } from 'ember-views';
+
 /**
 @module ember
 */
 
-import { compileList } from "@glimmer/runtime";
   /**
     The `let` helper receives one or more positional arguments and yields
     them out as block params.
@@ -38,7 +42,14 @@ import { compileList } from "@glimmer/runtime";
   @for Ember.Templates.helpers
   @public
 */
-export function blockLetMacro(params: any, _hash: any, _default: any, _inverse: any, builder: any) {
-  compileList(params, builder);
-  builder.invokeStatic(_default, params.length);
+export function blockLetMacro(params: WireFormat.Core.Params, _hash: WireFormat.Core.Hash, template: Option<CompilableBlock>, _inverse: Option<CompilableBlock>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+  if (template !== null) {
+    if (params !== null) {
+      builder.compileParams(params);
+      builder.invokeStaticBlock(template, params.length);
+    } else {
+      builder.invokeStatic(template);
+    }
+  }
+  return true;
 }

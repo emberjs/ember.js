@@ -1,37 +1,44 @@
-import { Option } from '@glimmer/interfaces';
 import {
-  combineTagged,
+  ComponentCapabilities,
+  Option,
+  ProgramSymbolTable,
+  Simple,
+  VMHandle
+} from '@glimmer/interfaces';
+import {
+  combine,
   Tag,
   VersionedPathReference,
 } from '@glimmer/reference';
 import {
   Arguments,
   Bounds,
-  CompiledDynamicProgram,
-  ComponentClass,
   ComponentDefinition,
-  ComponentManager,
   ElementOperations,
+  Invocation,
   PreparedArguments,
   PrimitiveReference,
-  Simple,
-  VM,
+  WithDynamicLayout,
+  WithDynamicTagName,
+  WithStaticLayout,
 } from '@glimmer/runtime';
-import { Destroyable, Opaque } from '@glimmer/util';
+import { Destroyable, EMPTY_ARRAY, Opaque } from '@glimmer/util';
 import { privatize as P } from 'container';
 import {
   assert,
+  deprecate,
 } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
-  _instrumentStart,
-  get,
+  _instrumentStart, get,
 } from 'ember-metal';
+import { String as StringUtils } from 'ember-runtime';
 import {
   assign,
-  OWNER,
+  getOwner,
+  guidFor,
 } from 'ember-utils';
-import { setViewElement } from 'ember-views';
+import { OwnedTemplateMeta, setViewElement } from 'ember-views';
 import {
   BOUNDS,
   DIRTY_TAG,
@@ -41,18 +48,22 @@ import {
 } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
-import { OwnedTemplate, WrappedTemplateFactory } from '../template';
+import RuntimeResolver from '../resolver';
+import {
+  Factory as TemplateFactory,
+  OwnedTemplate
+} from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
+  ColonClassNameBindingReference,
   IsVisibleBinding,
+  referenceForKey
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
-import { PropertyReference } from '../utils/references';
 import AbstractManager from './abstract';
-
-const DEFAULT_LAYOUT = P`template:components/-default`;
+import DefinitionState from './definition-state';
 
 function aliasIdToElementId(args: Arguments, props: any) {
   if (args.named.has('id')) {
@@ -62,10 +73,14 @@ function aliasIdToElementId(args: Arguments, props: any) {
   }
 }
 
+function isTemplateFactory(template: OwnedTemplate | TemplateFactory): template is TemplateFactory {
+  return typeof (template as TemplateFactory).create === 'function';
+}
+
 // We must traverse the attributeBindings in reverse keeping track of
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
-function applyAttributeBindings(element: Simple.Element, attributeBindings: any, component: Component, operations: ElementOperations) {
+function applyAttributeBindings(element: Simple.Element, attributeBindings: Array<string>, component: Component, operations: ElementOperations) {
   let seen: string[] = [];
   let i = attributeBindings.length - 1;
 
@@ -83,7 +98,7 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
   }
 
   if (seen.indexOf('id') === -1) {
-    operations.addStaticAttribute(element, 'id', component.elementId);
+    operations.setAttribute('id', PrimitiveReference.create(component.elementId), true, null);
   }
 
   if (seen.indexOf('style') === -1) {
@@ -91,112 +106,105 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
   }
 }
 
-function tagName(vm: VM) {
-  let dynamicScope: DynamicScope = vm.dynamicScope() as DynamicScope;
-  // tslint:disable-next-line:no-shadowed-variable
-  let { tagName } = dynamicScope.view!;
-  return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
-}
+const DEFAULT_LAYOUT = P`template:components/-default`;
 
-function ariaRole(vm: VM) {
-  return vm.getSelf().get('ariaRole');
-}
+export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, DefinitionState>
+  implements WithStaticLayout<ComponentStateBucket, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
+             WithDynamicTagName<ComponentStateBucket>,
+             WithDynamicLayout<ComponentStateBucket, OwnedTemplateMeta, RuntimeResolver> {
 
-class CurlyComponentLayoutCompiler {
-  static id: string;
-  public template: WrappedTemplateFactory;
-
-  constructor(template: WrappedTemplateFactory) {
-    this.template = template;
+  getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
+    return {
+      // TODO fix
+      handle: state.handle as any as number,
+      symbolTable: state.symbolTable!
+    };
   }
 
-  compile(builder: any) {
-    builder.wrapLayout(this.template);
-    builder.tag.dynamic(tagName);
-    builder.attrs.dynamic('role', ariaRole);
-    builder.attrs.static('class', 'ember-view');
-  }
-}
-
-CurlyComponentLayoutCompiler.id = 'curly';
-
-export class PositionalArgumentReference {
-  public tag: any;
-  private _references: any;
-
-  constructor(references: any) {
-    this.tag = combineTagged(references);
-    this._references = references;
-  }
-
-  value() {
-    return this._references.map((reference: any) => reference.value());
-  }
-
-  get(key: string) {
-    return PropertyReference.create(this, key);
-  }
-}
-
-export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket> {
-  prepareArgs(definition: CurlyComponentDefinition, args: Arguments): Option<PreparedArguments> {
-    let componentPositionalParamsDefinition = definition.ComponentClass.class.positionalParams;
-
-    if (DEBUG && componentPositionalParamsDefinition) {
-      validatePositionalParameters(args.named, args.positional, componentPositionalParamsDefinition);
+  templateFor(component: Component, resolver: RuntimeResolver): OwnedTemplate {
+    let layout = get(component, 'layout') as TemplateFactory | OwnedTemplate | undefined;
+    if (layout !== undefined) {
+      // This needs to be cached by template.id
+      if (isTemplateFactory(layout)) {
+        return resolver.createTemplate(layout, getOwner(component));
+      } else {
+        // we were provided an instance already
+        return layout;
+      }
     }
+    let owner = getOwner(component);
+    let layoutName = get(component, 'layoutName');
+    if (layoutName) {
+      let template = owner.lookup<OwnedTemplate>('template:' + layoutName);
+      if (template) {
+        return template;
+      }
+    }
+    return owner.lookup<OwnedTemplate>(DEFAULT_LAYOUT);
+  }
 
-    let componentHasRestStylePositionalParams = typeof componentPositionalParamsDefinition === 'string';
-    let componentHasPositionalParams = componentHasRestStylePositionalParams ||
-                                       componentPositionalParamsDefinition.length > 0;
-    let needsPositionalParamMunging = componentHasPositionalParams && args.positional.length !== 0;
-    let isClosureComponent = definition.args;
+  getDynamicLayout({ component }: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
+    const template = this.templateFor(component, resolver);
+    const layout = resolver.getWrappedLayout(template, CURLY_CAPABILITIES);
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable,
+    };
+  }
 
-    if (!needsPositionalParamMunging && !isClosureComponent) {
+  getTagName(state: ComponentStateBucket): Option<string> {
+    const { component } = state;
+    if (component.tagName === '') {
+      return null;
+    }
+    return (component && component.tagName) || 'div';
+  }
+
+  getCapabilities(state: DefinitionState) {
+    return state.capabilities;
+  }
+
+  prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
+    const { positionalParams } = state.ComponentClass.class;
+
+    // early exits
+    if (positionalParams === undefined || positionalParams === null || args.positional.length === 0) {
       return null;
     }
 
-    let capturedArgs = args.capture();
-    // grab raw positional references array
-    let positional = capturedArgs.positional.references;
+    let named: PreparedArguments['named'];
 
-    // handle prep for closure component with positional params
-    let curriedNamed;
-    if (definition.args) {
-      let remainingDefinitionPositionals = definition.args.positional.slice(positional.length);
-      positional = positional.concat(remainingDefinitionPositionals);
-      curriedNamed = definition.args.named;
-    }
-
-    // handle positionalParams
-    let positionalParamsToNamed;
-    if (componentHasRestStylePositionalParams) {
-      positionalParamsToNamed = {
-        [componentPositionalParamsDefinition]: new PositionalArgumentReference(positional),
-      };
-      positional = [];
-    } else if (componentHasPositionalParams) {
-      positionalParamsToNamed = {};
-      let length = Math.min(positional.length, componentPositionalParamsDefinition.length);
-      for (let i = 0; i < length; i++) {
-        let name = componentPositionalParamsDefinition[i];
-        positionalParamsToNamed[name] = positional[i];
+    if (typeof positionalParams === 'string') {
+      assert(`You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`, !args.named.has(positionalParams));
+      named = { [positionalParams]: args.positional.capture() };
+      assign(named, args.named.capture().map);
+    } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
+      const count = Math.min(positionalParams.length, args.positional.length);
+      named = {};
+      assign(named, args.named.capture().map);
+      for (let i=0; i<count; i++) {
+        const name = positionalParams[i];
+        deprecate(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`, !args.named.has(name), {
+          id: 'ember-glimmer.positional-param-conflict',
+          until: '3.5.0',
+        });
+        named[name] = args.positional.at(i);
       }
+    } else {
+      return null;
     }
 
-    let named = assign({}, curriedNamed, positionalParamsToNamed, capturedArgs.named.map);
-
-    return { positional, named };
+    return { positional: EMPTY_ARRAY, named };
   }
 
-  create(environment: Environment, definition: CurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
+  create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
     if (DEBUG) {
-      this._pushToDebugStack(`component:${definition.name}`, environment);
+      this._pushToDebugStack(`component:${state.name}`, environment);
     }
 
     let parentView = dynamicScope.view;
 
-    let factory = definition.ComponentClass;
+    let factory = state.ComponentClass;
 
     let capturedArgs = args.named.capture();
     let props = processComponentArgs(capturedArgs);
@@ -207,6 +215,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     props[HAS_BLOCK] = hasBlock;
 
     props._targetObject = callerSelfRef.value();
+
+    // static layout asserts CurriedDefinition
+    if (state.template) {
+      props.layout = state.template;
+    }
 
     let component = factory.create(props);
 
@@ -248,61 +261,49 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return bucket;
   }
 
-  layoutFor(definition: CurlyComponentDefinition, bucket: ComponentStateBucket, env: Environment): CompiledDynamicProgram {
-    let template = definition.template;
-    if (!template) {
-      template = this.templateFor(bucket.component, env);
-    }
-    return env.getCompiledBlock(CurlyComponentLayoutCompiler, template);
-  }
-
-  templateFor(component: Component, env: Environment): OwnedTemplate {
-    let Template = get(component, 'layout');
-    let owner = component[OWNER];
-    if (Template) {
-      return env.getTemplate(Template, owner);
-    }
-    let layoutName = get(component, 'layoutName');
-    if (layoutName) {
-      let template = owner.lookup('template:' + layoutName);
-      if (template) {
-        return template;
-      }
-    }
-    return owner.lookup(DEFAULT_LAYOUT);
-  }
-
   getSelf({ component }: ComponentStateBucket): VersionedPathReference<Opaque> {
     return component[ROOT_REF];
   }
 
-  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: Element, operations: ElementOperations): void {
+  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: HTMLElement, operations: ElementOperations): void {
     setViewElement(component, element);
 
     let { attributeBindings, classNames, classNameBindings } = component;
 
+    operations.setAttribute('id', PrimitiveReference.create(guidFor(component)), false, null);
+
     if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(element, attributeBindings, component, operations);
     } else {
-      operations.addStaticAttribute(element, 'id', component.elementId);
+      if (component.elementId) {
+        operations.setAttribute('id', PrimitiveReference.create(component.elementId), false, null);
+      }
       IsVisibleBinding.install(element, component, operations);
     }
 
-    if (classRef) {
-      // TODO should make addDynamicAttribute accept an opaque
-      operations.addDynamicAttribute(element, 'class', classRef as any, false);
+    if (classRef && classRef.value()) {
+      const ref = classRef.value() === true ?
+                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(classRef['_propertyKey']), null) :
+                         classRef;
+      operations.setAttribute('class', ref, false, null);
     }
 
     if (classNames && classNames.length) {
       classNames.forEach((name: string) => {
-        operations.addStaticAttribute(element, 'class', name);
+        operations.setAttribute('class', PrimitiveReference.create(name), false, null);
       });
     }
 
     if (classNameBindings && classNameBindings.length) {
-      classNameBindings.forEach((binding: any) => {
+      classNameBindings.forEach((binding: string) => {
         ClassNameBinding.install(element, component, binding, operations);
       });
+    }
+    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
+
+    const ariaRole = get(component, 'ariaRole');
+    if (ariaRole) {
+      operations.setAttribute('role', referenceForKey(component, 'ariaRole'), false, null);
     }
 
     component._transitionTo('hasElement');
@@ -321,8 +322,9 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
   }
 
-  getTag({ component }: ComponentStateBucket): Option<Tag> {
-    return component[DIRTY_TAG];
+  getTag({ args, component }: ComponentStateBucket): Tag {
+    return args ? combine([args.tag, component[DIRTY_TAG]]) :
+                  component[DIRTY_TAG];
   }
 
   didCreate({ component, environment }: ComponentStateBucket): void {
@@ -342,10 +344,10 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
-    if (!args.tag.validate(argsRevision)) {
-      let props = processComponentArgs(args);
+    if (args && !args.tag.validate(argsRevision)) {
+      let props = processComponentArgs(args!);
 
-      bucket.argsRevision = args.tag.value();
+      bucket.argsRevision = args!.tag.value();
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
@@ -452,8 +454,6 @@ export function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
 
-const MANAGER = new CurlyComponentManager();
-
 // This is not any of glimmer-vm's proper Argument types because we
 // don't have sufficient public constructors to conveniently
 // reassemble one after we mangle the various arguments.
@@ -462,14 +462,36 @@ interface CurriedArgs {
   named: any;
 }
 
-export class CurlyComponentDefinition extends ComponentDefinition<ComponentStateBucket> {
+export const CURLY_CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: true,
+  dynamicTag: true,
+  prepareArgs: true,
+  createArgs: true,
+  attributeHook: true,
+  elementHook: true
+};
+
+const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
+export class CurlyComponentDefinition implements ComponentDefinition {
   public template: OwnedTemplate;
   public args: CurriedArgs | undefined;
+  public state: DefinitionState;
+  public symbolTable: ProgramSymbolTable | undefined;
 
   // tslint:disable-next-line:no-shadowed-variable
-  constructor(name: string, ComponentClass: ComponentClass, template: OwnedTemplate, args: CurriedArgs | undefined, customManager?: ComponentManager<ComponentStateBucket>) {
-    super(name, customManager || MANAGER, ComponentClass);
+  constructor(public name: string, public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: CurriedArgs) {
+    const layout = template && template.asLayout();
+    const symbolTable = layout ? layout.symbolTable : undefined;
+    this.symbolTable = symbolTable;
     this.template = template;
     this.args = args;
+    this.state = {
+      name,
+      ComponentClass,
+      handle,
+      template,
+      capabilities: CURLY_CAPABILITIES,
+      symbolTable
+    };
   }
 }

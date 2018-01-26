@@ -1,14 +1,17 @@
 /**
 @module ember
 */
+import { Option } from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
+import { OwnedTemplateMeta } from 'ember-views';
 import { wrapComponentClassAttribute } from '../utils/bindings';
-import { dynamicComponentMacro } from './dynamic-component';
 import { hashToArgs } from './utils';
 
-function buildSyntax(type: string, params: any[], hash: any, builder: any) {
-  let definition = builder.env.getComponentDefinition(type, builder.meta.templateMeta);
-  builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+  let definition = builder.resolver.lookupComponentDefinition(type, builder.referrer);
+  builder.component.static(definition!, [params, hashToArgs(hash), null, null]);
   return true;
 }
 
@@ -148,35 +151,34 @@ function buildSyntax(type: string, params: any[], hash: any, builder: any) {
   @public
 */
 
-export function inputMacro(_name: string, params: any[], hash: any[], builder: any) {
-  let keys;
-  let values;
-  let typeIndex = -1;
-  let valueIndex = -1;
-
-  if (hash) {
-    keys = hash[0];
-    values = hash[1];
-    typeIndex = keys.indexOf('type');
-    valueIndex = keys.indexOf('value');
+export function inputMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+  if (params === null) {
+    params = [];
   }
+  if (hash !== null) {
+    let keys = hash[0];
+    let values = hash[1];
+    let typeIndex = keys.indexOf('type');
 
-  if (!params) { params = []; }
-
-  if (typeIndex > -1) {
-    let typeArg = values[typeIndex];
-    if (Array.isArray(typeArg)) {
-      return dynamicComponentMacro(params, hash, null, null, builder);
-    } else if (typeArg === 'checkbox') {
-      assert(
-        '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
-          'you must use `checked=someBooleanValue` instead.',
-        valueIndex === -1,
-      );
-      wrapComponentClassAttribute(hash);
-      return buildSyntax('-checkbox', params, hash, builder);
+    if (typeIndex > -1) {
+      let typeArg = values[typeIndex];
+      if (Array.isArray(typeArg)) {
+        // there is an AST plugin that converts this to an expression
+        // it really should just compile in the component call too.
+        let inputTypeExpr = params.shift() as WireFormat.Expression;
+        builder.dynamicComponent(inputTypeExpr, params, hash, true, null, null);
+        return true;
+      }
+      if (typeArg === 'checkbox') {
+        assert(
+          '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
+            'you must use `checked=someBooleanValue` instead.',
+          keys.indexOf('value') === -1,
+        );
+        wrapComponentClassAttribute(hash);
+        return buildSyntax('-checkbox', params, hash, builder);
+      }
     }
   }
-
   return buildSyntax('-text-field', params, hash, builder);
 }

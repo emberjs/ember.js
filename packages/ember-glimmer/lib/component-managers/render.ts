@@ -1,27 +1,63 @@
 import {
+  ComponentCapabilities,
+} from '@glimmer/interfaces';
+import {
+  CONSTANT_TAG, Tag, VersionedPathReference
+} from '@glimmer/reference';
+import {
+  Arguments,
   ComponentDefinition,
-  ComponentManager,
+  Invocation,
+  WithStaticLayout
 } from '@glimmer/runtime';
-import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
 
-import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
+import { Owner } from 'ember-utils';
+import { OwnedTemplateMeta } from 'ember-views';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import { OwnedTemplate } from '../template';
+import { OrphanedOutletReference } from '../utils/outlet';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
-import { OutletLayoutCompiler } from './outlet';
 
-export abstract class AbstractRenderManager extends AbstractManager<RenderState> {
-  layoutFor(definition: RenderDefinition, _bucket: RenderState, env: Environment) {
-    // only curly components can have lazy layout
-    assert('definition is missing a template', !!definition.template);
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template!);
+export interface RenderDefinitionState {
+  name: string;
+  template: OwnedTemplate;
+}
+
+export abstract class AbstractRenderManager<T extends RenderState> extends AbstractManager<T, RenderDefinitionState>
+  implements WithStaticLayout<T, RenderDefinitionState, OwnedTemplateMeta, any> {
+
+  create(env: Environment,
+      definition: RenderDefinitionState,
+      args: Arguments,
+      dynamicScope: DynamicScope): T {
+    let { name } = definition;
+
+    if (DEBUG) {
+      this._pushToDebugStack(`controller:${name} (with the render helper)`, env);
+    }
+
+    if (dynamicScope.rootOutletState) {
+      dynamicScope.outletState = new OrphanedOutletReference(dynamicScope.rootOutletState, name);
+    }
+
+    return this.createRenderState(args, env.owner, name);
   }
 
-  getSelf({ controller }: RenderState) {
+  abstract createRenderState(args: Arguments, owner: Owner, name: string): T;
+
+  getLayout({ template }: RenderDefinitionState): Invocation {
+    const layout = template!.asLayout();
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable
+    };
+  }
+
+  getSelf({ controller }: T) {
     return new RootReference(controller);
   }
 }
@@ -34,26 +70,34 @@ if (DEBUG) {
 
 export interface RenderState {
   controller: any;
-  model: any;
 }
 
-class SingletonRenderManager extends AbstractRenderManager {
-  create(env: Environment,
-         definition: ComponentDefinition<RenderState>,
-         _args: IArguments,
-         dynamicScope: DynamicScope) {
-    let { name } = definition;
-    let controller = env.owner.lookup<any>(`controller:${name}`) || generateController(env.owner, name);
+export interface RenderStateWithModel extends RenderState {
+  model: VersionedPathReference<any>;
+}
 
-    if (DEBUG) {
-      this._pushToDebugStack(`controller:${name} (with the render helper)`, env);
-    }
+const CAPABILITIES = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: false,
+  elementHook: false
+};
 
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
+class SingletonRenderManager extends AbstractRenderManager<RenderState> {
+  createRenderState(_args: Arguments, owner: Owner, name: string) {
+    let controller = owner.lookup<any>(`controller:${name}`) || generateController(owner, name);
+    return { controller };
+  }
 
-    return { controller } as RenderState;
+  getCapabilities(_: RenderDefinitionState): ComponentCapabilities {
+    return CAPABILITIES;
+  }
+
+  getTag(): Tag {
+    // todo this should be the tag of the state args
+    return CONSTANT_TAG;
   }
 
   getDestructor() {
@@ -63,47 +107,50 @@ class SingletonRenderManager extends AbstractRenderManager {
 
 export const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
 
-class NonSingletonRenderManager extends AbstractRenderManager {
-  create(environment: Environment, definition: RenderDefinition, args: IArguments, dynamicScope: DynamicScope) {
-    let { name, env } = definition;
-    let modelRef = args.positional.at(0);
-    let controllerFactory = env.owner.factoryFor(`controller:${name}`);
+const NONSINGLETON_CAPABILITIES = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: true,
+  attributeHook: false,
+  elementHook: false
+};
 
-    let factory: any = controllerFactory || generateControllerFactory(env.owner, name);
-    let controller = factory.create({ model: modelRef.value() });
-
-    if (DEBUG) {
-      this._pushToDebugStack(`controller:${name} (with the render helper)`, environment);
-    }
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
-    return { controller, model: modelRef };
+class NonSingletonRenderManager extends AbstractRenderManager<RenderStateWithModel> {
+  createRenderState(args: Arguments, owner: Owner, name: string) {
+    let model = args.positional.at(1);
+    let factory = owner.factoryFor(`controller:${name}`) || generateControllerFactory(owner, `controller:${name}`);
+    let controller = factory.create({ model: model.value() });
+    return { controller, model };
   }
 
-  update({ controller, model }: RenderState) {
+  update({ controller, model }: RenderStateWithModel) {
     controller.set('model', model.value());
   }
 
-  getDestructor({ controller }: RenderState) {
+  getCapabilities(_: RenderDefinitionState): ComponentCapabilities {
+    return NONSINGLETON_CAPABILITIES;
+  }
+
+  getTag({ model }: RenderStateWithModel): Tag {
+    return model.tag;
+  }
+
+  getDestructor({ controller }: RenderStateWithModel) {
     return controller;
   }
 }
 
 export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 
-export class RenderDefinition extends ComponentDefinition<RenderState> {
-  public name: string;
-  public template: OwnedTemplate | undefined;
-  public env: Environment;
+export class RenderDefinition implements ComponentDefinition {
 
-  constructor(name: string, template: OwnedTemplate | undefined, env: Environment, manager: ComponentManager<RenderState>) {
-    super('render', manager, null);
+  public state: RenderDefinitionState;
 
-    this.name = name;
-    this.template = template;
-    this.env = env;
+  constructor(name: string, template: OwnedTemplate, public manager: SingletonRenderManager | NonSingletonRenderManager) {
+    this.state = {
+      name,
+      template,
+    };
   }
 }

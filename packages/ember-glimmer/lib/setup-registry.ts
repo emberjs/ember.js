@@ -11,12 +11,13 @@ import {
   NodeDOMTreeConstruction,
 } from './dom';
 import Environment from './environment';
+import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
+import TemplateOptions from './template-options';
 import ComponentTemplate from './templates/component';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
-import loc from './helpers/loc';
 
 interface Registry {
   injection(name: string, name2: string, name3: string): void;
@@ -63,7 +64,10 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register(P`template:components/-default`, ComponentTemplate);
 
   registry.register('service:-glimmer-environment', Environment);
-  registry.injection('template', 'env', 'service:-glimmer-environment');
+
+  registry.register(P`template-options:main`, TemplateOptions);
+
+  registry.injection('template', 'options', P`template-options:main`);
 
   registry.optionsForType('helper', { instantiate: false });
 

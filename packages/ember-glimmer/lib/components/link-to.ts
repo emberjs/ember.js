@@ -296,8 +296,8 @@
   @public
 */
 
-import { DEBUG } from 'ember-env-flags';
 import { assert, warn } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
 import {
   computed,
   flaggedInstrument,

@@ -16,6 +16,11 @@
     "semicolon": [true, "always"],
     "triple-equals": true,
     "class-name": true,
-    "no-require-imports": true
+    "no-require-imports": true,
+    "no-duplicate-imports": true,
+    "ordered-imports": true,
+    "quotemark": {
+      "options": ["single", "avoid-escape"]
+    }
   }
 }

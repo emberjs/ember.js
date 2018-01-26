@@ -3,8 +3,8 @@
 @module ember
 */
 
-import { helper } from '../helper';
 import { String as StringUtils } from 'ember-runtime';
+import { helper } from '../helper';
 
 /**
   Calls [loc](/api/classes/Ember.String.html#method_loc) with the

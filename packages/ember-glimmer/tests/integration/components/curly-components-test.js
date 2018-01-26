@@ -1691,7 +1691,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '{{name}}'
     });
 
-    expectAssertion(() => {
+    expectDeprecation(() => {
       this.render('{{sample-component notMyName name=myName}}', {
         myName: 'Quint',
         notMyName: 'Sergio'

@@ -1,57 +1,68 @@
+import { CompilableBlock, Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
+import { Option } from '@glimmer/util';
+import { Core } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
-import { ENV } from 'ember-environment';
+import { OwnedTemplateMeta } from 'ember-views';
+import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
+import CompileTimeLookup from './compile-time-lookup';
 import { textAreaMacro } from './syntax/-text-area';
-import {
-  blockComponentMacro,
-  inlineComponentMacro,
-} from './syntax/dynamic-component';
 import { inputMacro } from './syntax/input';
+import { blockLetMacro } from './syntax/let';
 import { mountMacro } from './syntax/mount';
 import { outletMacro } from './syntax/outlet';
 import { renderMacro } from './syntax/render';
 import { hashToArgs } from './syntax/utils';
-import { blockLetMacro } from './syntax/let';
 import { wrapComponentClassAttribute } from './utils/bindings';
-import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
 
-function refineInlineSyntax(name: string, params: any[], hash: any, builder: any) {
-  assert(`You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`, !(builder.env.builtInHelpers[name] && builder.env.owner.hasRegistration(`helper:${name}`)));
-
-  let definition;
-  if (name.indexOf('-') > -1) {
-    definition = builder.env.getComponentDefinition(name, builder.meta.templateMeta);
+function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Option<Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>): boolean {
+  assert(
+    `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
+    !(
+      (builder.resolver as CompileTimeLookup)['resolver']['builtInHelpers'][name] &&
+      builder.referrer.owner.hasRegistration(`helper:${name}`)
+    )
+  );
+  if (name.indexOf('-') === -1) {
+    return false;
   }
 
-  if (definition) {
-    wrapComponentClassAttribute(hash);
-    builder.component.static(definition, [params, hashToArgs(hash), null, null]);
+  let handle = builder.resolver.lookupComponentDefinition(name, builder.referrer);
+
+  if (handle !== null) {
+    builder.component.static(handle, [params === null ? [] : params, hashToArgs(hash), null, null]);
     return true;
   }
 
   return false;
 }
 
-function refineBlockSyntax(name: string, params: any[], hash: any, _default: any, inverse: any, builder: any) {
+function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
   if (name.indexOf('-') === -1) {
     return false;
   }
 
-  let meta = builder.meta.templateMeta;
+  let handle = builder.resolver.lookupComponentDefinition(name, builder.referrer);
 
-  let definition;
-  if (name.indexOf('-') > -1) {
-    definition = builder.env.getComponentDefinition(name, meta);
-  }
-
-  if (definition) {
+  if (handle !== null) {
     wrapComponentClassAttribute(hash);
-    builder.component.static(definition, [params, hashToArgs(hash), _default, inverse]);
+    builder.component.static(handle, [params, hashToArgs(hash), template, inverse]);
     return true;
   }
 
-  assert(`A component or helper named "${name}" could not be found`, builder.env.hasHelper(name, meta));
+  assert(`A component or helper named "${name}" could not be found`, builder.referrer.owner.hasRegistration(`helper:${name}`));
 
-  assert(`Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`, !builder.env.hasHelper(name, meta));
+  assert(
+    `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
+    !(() => {
+      const resolver = (builder.resolver as CompileTimeLookup)['resolver'];
+      const { owner, moduleName } = builder.referrer;
+      if (name === 'component' || resolver['builtInHelpers'][name]) {
+        return true;
+      }
+      let options = { source: `template:${moduleName}` };
+      return owner.hasRegistration(`helper:${name}`, options) || owner.hasRegistration(`helper:${name}`);
+    })()
+  );
 
   return false;
 }
@@ -65,19 +76,14 @@ export function registerMacros(macro: any) {
   experimentalMacros.push(macro);
 }
 
-export function populateMacros(blocks: any, inlines: any) {
+export function populateMacros(macros: Macros) {
+  let { inlines, blocks } = macros;
   inlines.add('outlet', outletMacro);
-  inlines.add('component', inlineComponentMacro);
-
-  if (ENV._ENABLE_RENDER_SUPPORT === true) {
-    inlines.add('render', renderMacro);
-  }
-
+  inlines.add('render', renderMacro);
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
-  blocks.add('component', blockComponentMacro);
   if (EMBER_TEMPLATE_BLOCK_LET_HELPER === true) {
     blocks.add('let', blockLetMacro);
   }

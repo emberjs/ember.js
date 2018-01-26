@@ -149,7 +149,7 @@
   ```app/templates/application.hbs
   {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
     {{#if validationError}}
-      <p class="error">{{ValidationError}}</p>
+      <p class="error">{{validationError}}</p>
     {{/if}}
     First name:
   {{/labeled-textfield}}
@@ -266,7 +266,7 @@ export { default as Checkbox } from './components/checkbox';
 export { default as TextField } from './components/text_field';
 export { default as TextArea } from './components/text_area';
 export { default as LinkComponent } from './components/link-to';
-export { default as Component } from './component';
+export { default as Component, ROOT_REF } from './component';
 export { default as Helper, helper } from './helper';
 export { default as Environment } from './environment';
 export {
@@ -293,3 +293,14 @@ export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry'
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
 export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
 export { default as AbstractComponentManager } from './component-managers/abstract';
+
+// needed for test
+// TODO just test these through public API
+// a lot of these are testing how a problem was solved
+// rather than the problem was solved
+// DebugStack should just test the assert message
+// it supports for example
+export { UpdatableReference } from './utils/references';
+export { default as iterableFor } from './utils/iterable';
+export { default as DebugStack } from './utils/debug-stack';
+export { default as OutletView } from './views/outlet';

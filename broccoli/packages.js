@@ -86,7 +86,41 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
     }
   });
 
-  return debugTree(funneled, 'ember-glimmer:output');
+  let rollup = new Rollup(funneled, {
+    annotation: 'ember-glimmer',
+    rollup: {
+      external: [
+        '@glimmer/reference',
+        '@glimmer/runtime',
+        '@glimmer/node',
+        '@glimmer/opcode-compiler',
+        '@glimmer/program',
+        '@glimmer/wire-format',
+        '@glimmer/util',
+        'ember-console',
+        'ember-debug',
+        'ember-env-flags',
+        'ember/features',
+        'ember-environment',
+        'ember-utils',
+        'ember-metal',
+        'ember-runtime',
+        'ember-views',
+        'ember-routing',
+        'node-module',
+        'rsvp',
+        'container'
+      ],
+      input: 'ember-glimmer/index.js',
+      output: {
+        file: 'ember-glimmer.js',
+        format: 'es',
+        exports: 'named'
+      },
+    },
+  });
+
+  return debugTree(rollup, 'ember-glimmer:output');
 };
 
 module.exports.handlebarsES = function _handlebars() {

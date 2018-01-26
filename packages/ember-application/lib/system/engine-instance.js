@@ -179,6 +179,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       '-view-registry:main',
       `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
       'service:-document',
+      P`template-options:main`,
     ];
 
     if (env.isInteractive) {

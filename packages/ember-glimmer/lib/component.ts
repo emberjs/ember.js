@@ -1,5 +1,8 @@
 import { DirtyableTag } from '@glimmer/reference';
-import { readDOMAttr } from '@glimmer/runtime';
+import {
+  normalizeProperty,
+  SVG_NAMESPACE
+} from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import {
   get,
@@ -564,7 +567,7 @@ const Component = CoreView.extend(
     init() {
       this._super(...arguments);
       this[IS_DISPATCHING_ATTRS] = false;
-      this[DIRTY_TAG] = new DirtyableTag();
+      this[DIRTY_TAG] = DirtyableTag.create();
       this[ROOT_REF] = new RootReference(this);
       this[BOUNDS] = null;
 
@@ -573,7 +576,7 @@ const Component = CoreView.extend(
         // tslint:disable-next-line:max-line-length
         `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
         this.tagName !== '' || !this.renderer._destinedForDOM || !(() => {
-          let eventDispatcher = getOwner(this).lookup('event_dispatcher:main');
+          let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
           let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
 
           // tslint:disable-next-line:forin
@@ -590,7 +593,7 @@ const Component = CoreView.extend(
     },
 
     rerender() {
-      this[DIRTY_TAG].dirty();
+      this[DIRTY_TAG].inner.dirty();
       this._super();
     },
 
@@ -651,8 +654,19 @@ const Component = CoreView.extend(
       @public
      */
     readDOMAttr(name: string) {
-      let element = getViewElement(this);
-      return readDOMAttr(element, name);
+      // TODO revisit this
+      let element = getViewElement(this) as HTMLElement;
+      let isSVG = element.namespaceURI === SVG_NAMESPACE;
+      let { type, normalized } = normalizeProperty(element, name);
+
+      if (isSVG) {
+        return element.getAttribute(normalized);
+      }
+
+      if (type === 'attr') {
+        return element.getAttribute(normalized);
+      }
+      return element[normalized];
     },
 
     /**

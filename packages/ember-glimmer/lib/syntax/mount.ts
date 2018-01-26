@@ -1,21 +1,28 @@
 /**
 @module ember
 */
+import { Opaque, Option } from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
+  CurriedComponentDefinition,
+  curry,
+  UNDEFINED_REFERENCE,
   VM
 } from '@glimmer/runtime';
+import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
+import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
-import Environment from '../environment';
 import { MountDefinition } from '../component-managers/mount';
-import { hashToArgs } from './utils';
+import Environment from '../environment';
 
-function dynamicEngineFor(vm: VM, args: Arguments, meta: any) {
-  let env     = vm.env;
+export function mountHelper(vm: VM, args: Arguments): VersionedPathReference<CurriedComponentDefinition | null> {
+  let env     = vm.env as Environment;
   let nameRef = args.positional.at(0);
-
-  return new DynamicEngineReference({ nameRef, env, meta });
+  let modelRef = args.named.has('model') ? args.named.get('model') : undefined;
+  return new DynamicEngineReference(nameRef, env, modelRef);
 }
 
 /**
@@ -59,70 +66,74 @@ function dynamicEngineFor(vm: VM, args: Arguments, meta: any) {
   @category ember-application-engines
   @public
 */
-export function mountMacro(_name: string, params: any[], hash: any, builder: any) {
+export function mountMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params.length === 1,
+      params!.length === 1,
     );
   } else {
     assert(
       'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params.length === 1 && hash === null,
+      params!.length === 1 && hash === null,
     );
   }
 
-  let definitionArgs = [params.slice(0, 1), null, null, null];
-  let args = [null, hashToArgs(hash), null, null];
-  builder.component.dynamic(definitionArgs, dynamicEngineFor, args);
+  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
+  builder.dynamicComponent(expr, [], null, false, null, null);
   return true;
 }
 
 class DynamicEngineReference {
-  public tag: any;
-  public nameRef: any;
+  public tag: Tag;
+  public nameRef: VersionedPathReference<any | null | undefined>;
+  public modelRef: VersionedPathReference<Opaque> | undefined;
   public env: Environment;
-  public meta: any;
-  private _lastName: any;
-  private _lastDef: any;
-  constructor({ nameRef, env, meta }: any) {
+  private _lastName: string | null;
+  private _lastDef: CurriedComponentDefinition | null;
+  constructor(nameRef: VersionedPathReference<any | undefined | null>, env: Environment, modelRef: VersionedPathReference<Opaque> | undefined) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
+    this.modelRef = modelRef;
     this.env = env;
-    this.meta = meta;
-    this._lastName = undefined;
-    this._lastDef = undefined;
+    this._lastName = null;
+    this._lastDef = null;
   }
 
   value() {
-    let { env, nameRef /*meta*/ } = this;
-    let nameOrDef = nameRef.value();
+    let { env, nameRef, modelRef } = this;
+    let name = nameRef.value();
 
-    if (typeof nameOrDef === 'string') {
-      if (this._lastName === nameOrDef) {
+    if (typeof name === 'string') {
+      if (this._lastName === name) {
         return this._lastDef;
       }
 
       assert(
-        `You used \`{{mount '${nameOrDef}'}}\`, but the engine '${nameOrDef}' can not be found.`,
-        env.owner.hasRegistration(`engine:${nameOrDef}`),
+        `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
+        env.owner.hasRegistration(`engine:${name}`),
       );
 
-      if (!env.owner.hasRegistration(`engine:${nameOrDef}`)) {
+      if (!env.owner.hasRegistration(`engine:${name}`)) {
         return null;
       }
 
-      this._lastName = nameOrDef;
-      this._lastDef = new MountDefinition(nameOrDef);
+      this._lastName = name;
+      this._lastDef = curry(new MountDefinition(name, modelRef));
 
       return this._lastDef;
     } else {
       assert(
-        `Invalid engine name '${nameOrDef}' specified, engine name must be either a string, null or undefined.`,
-        nameOrDef === null || nameOrDef === undefined,
+        `Invalid engine name '${name}' specified, engine name must be either a string, null or undefined.`,
+        name === null || name === undefined,
       );
-
+      this._lastDef = null;
+      this._lastName = null;
       return null;
     }
+  }
+
+  get() {
+    return UNDEFINED_REFERENCE;
   }
 }

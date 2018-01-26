@@ -1,78 +1,112 @@
-import { Option } from '@glimmer/interfaces';
+import { ComponentCapabilities, Option, Unique } from '@glimmer/interfaces';
+import {
+  CONSTANT_TAG, Tag, VersionedPathReference
+} from '@glimmer/reference';
 import {
   Arguments,
   ComponentDefinition,
-  DynamicScope,
+  ElementOperations,
   Environment,
+  Invocation,
+  UNDEFINED_REFERENCE,
+  WithDynamicTagName,
+  WithStaticLayout
 } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util/dist/types';
-import { ENV } from 'ember-environment';
+import { Destroyable } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
-import { generateGuid, guidFor } from 'ember-utils';
-import EmberEnvironment from '../environment';
+import { assign, guidFor } from 'ember-utils';
+import { OwnedTemplateMeta } from 'ember-views';
+import { DynamicScope } from '../renderer';
+import RuntimeResolver from '../resolver';
 import {
   OwnedTemplate,
-  WrappedTemplateFactory,
 } from '../template';
+import { OutletState } from '../utils/outlet';
 import { RootReference } from '../utils/references';
+import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
 
-function instrumentationPayload({ render: { name, outlet } }: {render: {name: string, outlet: string}}) {
-  return { object: `${name}:${outlet}` };
+function instrumentationPayload(def: OutletDefinitionState) {
+  return { object: `${def.name}:${def.outlet}` };
 }
 
-function NOOP() {/**/}
-
-interface OutletDynamicScope extends DynamicScope {
-  outletState: any;
+interface OutletInstanceState {
+  self: VersionedPathReference<any | undefined>;
+  finalize: () => void;
 }
 
-class StateBucket {
-  public outletState: any;
-  public finalizer: any;
-
-  constructor(outletState: any) {
-    this.outletState = outletState;
-    this.instrument();
-  }
-
-  instrument() {
-    this.finalizer = _instrumentStart('render.outlet', instrumentationPayload, this.outletState);
-  }
-
-  finalize() {
-    let { finalizer } = this;
-    finalizer();
-    this.finalizer = NOOP;
-  }
+export interface OutletDefinitionState {
+  ref: VersionedPathReference<OutletState | undefined>;
+  name: string;
+  outlet: string;
+  template: OwnedTemplate;
+  controller: any | undefined;
 }
 
-class OutletComponentManager extends AbstractManager<StateBucket> {
+const CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: false,
+  elementHook: false
+};
+
+class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
+  implements WithStaticLayout<OutletInstanceState, OutletDefinitionState, OwnedTemplateMeta, RuntimeResolver> {
+
   create(environment: Environment,
-         definition: OutletComponentDefinition,
+         definition: OutletDefinitionState,
          _args: Arguments,
-         dynamicScope: OutletDynamicScope) {
+         dynamicScope: DynamicScope) {
     if (DEBUG) {
-      this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
+      this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
+    }
+    dynamicScope.outletState = definition.ref;
+
+    // this is only used for render helper which is legacy
+    if (dynamicScope.rootOutletState === undefined) {
+      dynamicScope.rootOutletState = dynamicScope.outletState;
     }
 
-    let outletStateReference = dynamicScope.outletState =
-      dynamicScope.outletState.get('outlets').get(definition.outletName);
-    let outletState = outletStateReference.value();
-    return new StateBucket(outletState);
+    let controller = definition.controller;
+    let self = controller === undefined ? UNDEFINED_REFERENCE : new RootReference(controller);
+    return {
+      self,
+      finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
+    };
   }
 
-  layoutFor(definition: OutletComponentDefinition, _bucket: StateBucket, env: Environment) {
-    return (env as EmberEnvironment).getCompiledBlock(OutletLayoutCompiler, definition.template);
+  layoutFor(_state: OutletDefinitionState, _component: OutletInstanceState, _env: Environment): Unique<'Handle'> {
+    throw new Error('Method not implemented.');
   }
 
-  getSelf({ outletState }: StateBucket) {
-    return new RootReference(outletState.render.controller);
+  getLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
+    // The router has already resolved the template
+    const layout = template.asLayout();
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable
+    };
   }
 
-  didRenderLayout(bucket: StateBucket) {
-    bucket.finalize();
+  getCapabilities(): ComponentCapabilities {
+    return CAPABILITIES;
+  }
+
+  getSelf({ self }: OutletInstanceState) {
+    return self;
+  }
+
+  getTag(): Tag {
+    // an outlet has no hooks
+    return CONSTANT_TAG;
+  }
+
+  didRenderLayout(state: OutletInstanceState) {
+    state.finalize();
 
     if (DEBUG) {
       this.debugStack.pop();
@@ -84,72 +118,52 @@ class OutletComponentManager extends AbstractManager<StateBucket> {
   }
 }
 
-const MANAGER = new OutletComponentManager();
+const OUTLET_MANAGER = new OutletComponentManager();
 
-class WrappedTopLevelOutletLayoutCompiler {
-  static id = 'wrapped-top-level-outlet';
-
-  constructor(public template: WrappedTemplateFactory) {
-  }
-
-  compile(builder: any) {
-    builder.wrapLayout(this.template);
-    builder.tag.static('div');
-    builder.attrs.static('id', guidFor(this));
-    builder.attrs.static('class', 'ember-view');
+export class OutletComponentDefinition implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
+  constructor(public state: OutletDefinitionState, public manager: OutletComponentManager = OUTLET_MANAGER) {
   }
 }
 
-class TopLevelOutletComponentManager extends OutletComponentManager {
-  create(environment: Environment, definition: OutletComponentDefinition, _args: Arguments, dynamicScope: OutletDynamicScope) {
-    if (DEBUG) {
-      this._pushToDebugStack(`template:${definition.template.meta.moduleName}`, environment);
-    }
-    return new StateBucket(dynamicScope.outletState.value());
-  }
+export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
+  if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
+    const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
+      dynamicTag: true,
+      elementHook: true,
+    });
 
-  layoutFor(definition: OutletComponentDefinition, bucket: StateBucket, env: Environment) {
-    if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
-      return (env as EmberEnvironment).getCompiledBlock(WrappedTopLevelOutletLayoutCompiler, definition.template);
-    } else {
-      return super.layoutFor(definition, bucket, env);
-    }
-  }
-}
+    const WrappedOutletComponentManager = class extends OutletComponentManager
+    implements WithDynamicTagName<OutletInstanceState> {
 
-const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
+      getTagName(_component: OutletInstanceState) {
+        return 'div';
+      }
 
-export class TopLevelOutletComponentDefinition extends ComponentDefinition<StateBucket> {
-  public template: WrappedTemplateFactory;
-  constructor(instance: any) {
-    super('outlet', TOP_LEVEL_MANAGER, instance);
-    this.template = instance.template;
-    generateGuid(this);
-  }
-}
+      getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
+        // The router has already resolved the template
+        const template = state.template;
+        const layout = resolver.getWrappedLayout(template, WRAPPED_CAPABILITIES);
+        return {
+          handle: layout.compile(),
+          symbolTable: layout.symbolTable
+        };
+      }
 
-export class OutletComponentDefinition extends ComponentDefinition<StateBucket> {
-  public outletName: string;
-  public template: OwnedTemplate;
+      getCapabilities(): ComponentCapabilities {
+        return WRAPPED_CAPABILITIES;
+      }
 
-  constructor(outletName: string, template: OwnedTemplate) {
-    super('outlet', MANAGER, null);
-    this.outletName = outletName;
-    this.template = template;
-    generateGuid(this);
-  }
-}
+      didCreateElement(component: OutletInstanceState, element: Element, _operations: ElementOperations): void {
+        // to add GUID id and class
+        element.setAttribute('class', 'ember-view');
+        element.setAttribute('id', guidFor(component));
+      }
+    };
 
-export class OutletLayoutCompiler {
-  static id: string;
-  public template: WrappedTemplateFactory;
-  constructor(template: WrappedTemplateFactory) {
-    this.template = template;
-  }
+    const WRAPPED_OUTLET_MANAGER = new WrappedOutletComponentManager();
 
-  compile(builder: any) {
-    builder.wrapLayout(this.template);
+    return new OutletComponentDefinition(outletView.state, WRAPPED_OUTLET_MANAGER);
+  } else {
+    return new OutletComponentDefinition(outletView.state);
   }
 }
-
-OutletLayoutCompiler.id = 'outlet';

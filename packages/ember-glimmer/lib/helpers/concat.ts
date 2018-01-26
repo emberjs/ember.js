@@ -1,10 +1,20 @@
 import {
   Arguments,
   CapturedArguments,
-  normalizeTextValue,
   VM
 } from '@glimmer/runtime';
 import { InternalHelperReference } from '../utils/references';
+
+const isEmpty = (value: any): boolean => {
+  return value === null || value === undefined || typeof value.toString !== 'function';
+};
+
+const normalizeTextValue = (value: any): string => {
+  if (isEmpty(value)) {
+    return '';
+  }
+  return String(value);
+};
 
 /**
 @module ember

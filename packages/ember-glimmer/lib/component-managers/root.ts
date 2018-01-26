@@ -1,26 +1,47 @@
+import { ComponentCapabilities } from '@glimmer/interfaces';
 import {
   Arguments,
   ComponentDefinition
 } from '@glimmer/runtime';
+import { FACTORY_FOR } from 'container';
 import { DEBUG } from 'ember-env-flags';
-import {
-  _instrumentStart,
-} from 'ember-metal';
-import ComponentStateBucket from '../utils/curly-component-state-bucket';
+import { _instrumentStart } from 'ember-metal';
+import { DIRTY_TAG } from '../component';
+import Environment from '../environment';
+import { DynamicScope } from '../renderer';
+import RuntimeResolver from '../resolver';
+import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
-  CurlyComponentDefinition
 } from './curly';
-import { DynamicScope } from '../renderer';
-import Environment from '../environment';
+import DefinitionState from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
-  create(environment: Environment, definition: CurlyComponentDefinition, args: Arguments, dynamicScope: DynamicScope) {
-    let component = definition.ComponentClass.create();
+  component: Component;
+
+  constructor(component: Component) {
+    super();
+    this.component = component;
+  }
+
+  getLayout(_state: DefinitionState, resolver: RuntimeResolver) {
+    const template = this.templateFor(this.component, resolver);
+    const layout = resolver.getWrappedLayout(template, ROOT_CAPABILITIES);
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable,
+    };
+  }
+
+  create(environment: Environment,
+         _state: DefinitionState,
+         _args: Arguments | null,
+         dynamicScope: DynamicScope) {
+    let component = this.component;
 
     if (DEBUG) {
-      this._pushToDebugStack(component._debugContainerKey, environment);
+      this._pushToDebugStack((component as any)._debugContainerKey, environment);
     }
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
@@ -44,23 +65,38 @@ class RootComponentManager extends CurlyComponentManager {
       processComponentInitializationAssertions(component, {});
     }
 
-    return new ComponentStateBucket(environment, component, args.named.capture(), finalizer);
+    return new ComponentStateBucket(environment, component, null, finalizer);
   }
 }
 
-const ROOT_MANAGER = new RootComponentManager();
+// ROOT is the top-level template it has nothing but one yield.
+// it is supposed to have a dummy element
+export const ROOT_CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: false,
+  dynamicTag: true,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: true,
+  elementHook: true
+};
 
-export class RootComponentDefinition extends ComponentDefinition<ComponentStateBucket> {
-  public template: any;
-  public args: any;
-  constructor(instance: ComponentStateBucket) {
-    super('-root', ROOT_MANAGER, {
-      class: instance.constructor,
-      create() {
-        return instance;
-      },
-    });
-    this.template = undefined;
-    this.args = undefined;
+export class RootComponentDefinition implements ComponentDefinition {
+  state: DefinitionState;
+  manager: RootComponentManager;
+
+  constructor(public component: Component) {
+    let manager = new RootComponentManager(component);
+    this.manager = manager;
+    let factory = FACTORY_FOR.get(component);
+    this.state = {
+      name: factory.fullName.slice(10),
+      capabilities: ROOT_CAPABILITIES,
+      ComponentClass: factory,
+      handle: null,
+    };
+  }
+
+  getTag({ component }: ComponentStateBucket) {
+    return component[DIRTY_TAG];
   }
 }

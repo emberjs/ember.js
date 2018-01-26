@@ -35,12 +35,12 @@ const {
   rollupEmberMetal
 } = require('./broccoli/packages');
 const SHOULD_ROLLUP = true;
+const ENV = process.env.EMBER_ENV || 'development';
 
 module.exports = function() {
   let loader = internalLoader();
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
-  let ENV = process.env.EMBER_ENV || 'development';
   let debugFeatures = toES5(emberFeaturesES());
   let version = toES5(emberVersionES());
   let emberTesting = emberPkgES('ember-testing');
@@ -49,7 +49,6 @@ module.exports = function() {
   let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
   let emberTemplateCompiler = emberPkgES('ember-template-compiler');
   let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
-
   let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
   let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
@@ -309,11 +308,23 @@ module.exports = function() {
 };
 
 function dependenciesES6() {
+  let glimmerEntries = ['@glimmer/node', '@glimmer/runtime'];
+  if (ENV === 'development') {
+    let hasGlimmerDebug = true;
+    try {
+      require('@glimmer/debug');
+    } catch (e) {
+      hasGlimmerDebug = false;
+    }
+    if (hasGlimmerDebug) {
+      glimmerEntries.push('@glimmer/debug', '@glimmer/local-debug-flags');
+    }
+  }
   return [
     dagES(),
     routerES(),
     routeRecognizerES(),
-    ...glimmerTrees(['@glimmer/node', '@glimmer/runtime']),
+    ...glimmerTrees(glimmerEntries),
   ];
 }
 

@@ -201,11 +201,15 @@ moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
   }
 
   [`@test while a transition is underway with nested link-to's`](assert) {
-    let $index = this.$('#index-link');
+    // TODO undo changes to this test but currently this test navigates away if navigation
+    // outlet is not stable and the second $about.click() is triggered.
     let $about = this.$('#about-link');
-    let $other = this.$('#other-link');
 
     $about.click();
+
+    let $index = this.$('#index-link');
+    $about = this.$('#about-link');
+    let $other = this.$('#other-link');
 
     assertHasClass(assert, $index, 'active');
     assertHasNoClass(assert, $about, 'active');
@@ -221,6 +225,10 @@ moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
 
     this.resolveAbout();
 
+    $index = this.$('#index-link');
+    $about = this.$('#about-link');
+    $other = this.$('#other-link');
+
     assertHasNoClass(assert, $index, 'active');
     assertHasClass(assert, $about, 'active');
     assertHasNoClass(assert, $other, 'active');
@@ -234,6 +242,10 @@ moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
     assertHasNoClass(assert, $other, 'ember-transitioning-out');
 
     $other.click();
+
+    $index = this.$('#index-link');
+    $about = this.$('#about-link');
+    $other = this.$('#other-link');
 
     assertHasNoClass(assert, $index, 'active');
     assertHasClass(assert, $about, 'active');
@@ -249,6 +261,10 @@ moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
 
     this.resolveOther();
 
+    $index = this.$('#index-link');
+    $about = this.$('#about-link');
+    $other = this.$('#other-link');
+
     assertHasNoClass(assert, $index, 'active');
     assertHasNoClass(assert, $about, 'active');
     assertHasClass(assert, $other, 'active');
@@ -263,6 +279,9 @@ moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
 
     $about.click();
 
+    $index = this.$('#index-link');
+    $about = this.$('#about-link');
+    $other = this.$('#other-link');
 
     assertHasNoClass(assert, $index, 'active');
     assertHasNoClass(assert, $about, 'active');
@@ -277,6 +296,10 @@ moduleFor(`The {{link-to}} helper: .transitioning-in .transitioning-out CSS clas
     assertHasClass(assert, $other, 'ember-transitioning-out');
 
     this.resolveAbout();
+
+    $index = this.$('#index-link');
+    $about = this.$('#about-link');
+    $other = this.$('#other-link');
 
     assertHasNoClass(assert, $index, 'active');
     assertHasClass(assert, $about, 'active');

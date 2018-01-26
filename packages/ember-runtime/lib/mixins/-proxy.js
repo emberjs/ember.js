@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { CachedTag, DirtyableTag, UpdatableTag } from '@glimmer/reference';
+import { combine, CONSTANT_TAG, DirtyableTag, UpdatableTag } from '@glimmer/reference';
 import {
   get,
   set,
@@ -12,7 +12,7 @@ import {
   notifyPropertyChange,
   defineProperty,
   Mixin,
-  tagFor,
+  tagFor
 } from 'ember-metal';
 import {
   assert,
@@ -25,29 +25,13 @@ function contentPropertyDidChange(content, contentKey) {
   notifyPropertyChange(this, key);
 }
 
-class ProxyTag extends CachedTag {
-  constructor(proxy) {
-    super();
-
-    let content = get(proxy, 'content');
-
-    this.proxy = proxy;
-    this.proxyWrapperTag = new DirtyableTag();
-    this.proxyContentTag = new UpdatableTag(tagFor(content));
+export function contentFor(proxy, m) {
+  let content = get(proxy, 'content');
+  let tag = (m === undefined ? meta(proxy) : m).readableTag();
+  if (tag !== undefined) {
+    tag.inner.second.inner.update(tagFor(content));
   }
-
-  compute() {
-    return Math.max(this.proxyWrapperTag.value(), this.proxyContentTag.value());
-  }
-
-  dirty() {
-    this.proxyWrapperTag.dirty();
-  }
-
-  contentDidChange() {
-    let content = get(this.proxy, 'content');
-    this.proxyContentTag.update(tagFor(content));
-  }
+  return content;
 }
 
 /**
@@ -73,7 +57,7 @@ export default Mixin.create({
     this._super(...arguments);
     let m = meta(this);
     m.setProxy();
-    m.writableTag((source)=> new ProxyTag(source));
+    m.writableTag(() => combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)]));
   },
 
   isTruthy: bool('content'),
@@ -89,7 +73,7 @@ export default Mixin.create({
   },
 
   unknownProperty(key) {
-    let content = get(this, 'content');
+    let content = contentFor(this);
     if (content) {
       return get(content, key);
     }
@@ -105,7 +89,8 @@ export default Mixin.create({
       return value;
     }
 
-    let content = get(this, 'content');
+    let content = contentFor(this, m);
+
     assert(`Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`, content);
 
     return set(content, key, value);

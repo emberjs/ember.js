@@ -12,7 +12,7 @@ function lookupModuleUnificationComponentPair(componentLookup, owner, name, opti
   let globalLayout = componentLookup.layoutFor(name, owner);
 
   let localAndUniqueComponent = !!localComponent && (!globalComponent || localComponent.class !== globalComponent.class);
-  let localAndUniqueLayout = !!localLayout && (!globalLayout || localLayout.meta.moduleName !== globalLayout.meta.moduleName);
+  let localAndUniqueLayout = !!localLayout && (!globalLayout || localLayout.referrer.moduleName !== globalLayout.referrer.moduleName);
 
   if (localAndUniqueComponent && localAndUniqueLayout) {
     return { layout: localLayout, component: localComponent };

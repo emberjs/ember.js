@@ -1,16 +1,17 @@
-import { ProgramSymbolTable } from '@glimmer/interfaces';
+import {
+  ComponentCapabilities,
+  Simple,
+} from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
+  Arguments,
   Bounds,
-  CompiledDynamicTemplate,
-  ComponentDefinition,
   ComponentManager,
   DynamicScope,
   ElementOperations,
   Environment,
   PreparedArguments,
 } from '@glimmer/runtime';
-import { IArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
 import {
   Destroyable,
   Opaque,
@@ -23,7 +24,7 @@ import DebugStack from '../utils/debug-stack';
 // tslint:disable-next-line:max-line-length
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
 
-export default abstract class AbstractManager<T> implements ComponentManager<T> {
+export default abstract class AbstractManager<T, U> implements ComponentManager<T, U> {
   public debugStack: typeof DebugStack;
   public _pushToDebugStack: (name: string, environment: any) => void;
   public _pushEngineToDebugStack: (name: string, environment: any) => void;
@@ -32,7 +33,7 @@ export default abstract class AbstractManager<T> implements ComponentManager<T> 
     this.debugStack = undefined;
   }
 
-  prepareArgs(_definition: ComponentDefinition<T>, _args: IArguments): Option<PreparedArguments> {
+  prepareArgs(_state: U, _args: Arguments): Option<PreparedArguments> {
     return null;
   }
 
@@ -42,18 +43,16 @@ export default abstract class AbstractManager<T> implements ComponentManager<T> 
 
   abstract create(
     env: Environment,
-    definition: ComponentDefinition<T>,
-    args: IArguments,
+    definition: U,
+    args: Arguments,
     dynamicScope: DynamicScope,
     caller: VersionedPathReference<void | {}>,
     hasDefaultBlock: boolean): T;
-  abstract layoutFor(
-    definition: ComponentDefinition<T>,
-    component: T,
-    env: Environment): CompiledDynamicTemplate<ProgramSymbolTable>;
-  abstract getSelf(component: T): VersionedPathReference<Opaque>;
 
-  didCreateElement(_component: T, _element: Element, _operations: ElementOperations): void {
+  abstract getSelf(component: T): VersionedPathReference<Opaque>;
+  abstract getCapabilities(state: U): ComponentCapabilities;
+
+  didCreateElement(_component: T, _element: Simple.Element, _operations: ElementOperations): void {
     // noop
   }
 
@@ -68,7 +67,7 @@ export default abstract class AbstractManager<T> implements ComponentManager<T> 
     // noop
   }
 
-  getTag(_bucket: T): Option<Tag> { return null; }
+  abstract getTag(_bucket: T): Tag;
 
   // inheritors should also call `this._pushToDebugStack`
   // to ensure the rerendering assertion messages are

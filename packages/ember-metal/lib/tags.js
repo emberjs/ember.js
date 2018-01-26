@@ -9,7 +9,7 @@ export function setHasViews(fn) {
 }
 
 function makeTag() {
-  return new DirtyableTag();
+  return DirtyableTag.create();
 }
 
 export function tagForProperty(object, propertyKey, _meta) {
@@ -40,18 +40,18 @@ export function markObjectAsDirty(meta, propertyKey) {
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {
-    objectTag.dirty();
+    if (meta.isProxy()) {
+      objectTag.inner.first.inner.dirty();
+    } else {
+      objectTag.inner.dirty();
+    }
   }
 
   let tags = meta.readableTags();
   let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
 
   if (propertyTag !== undefined) {
-    propertyTag.dirty();
-  }
-
-  if (propertyKey === 'content' && meta.isProxy()) {
-    objectTag.contentDidChange();
+    propertyTag.inner.dirty();
   }
 
   if (objectTag !== undefined || propertyTag !== undefined) {
@@ -62,6 +62,7 @@ export function markObjectAsDirty(meta, propertyKey) {
 let backburner;
 function ensureRunloop() {
   if (backburner === undefined) {
+    // TODO why does this need to be lazy
     backburner = require('ember-metal').run.backburner;
   }
 

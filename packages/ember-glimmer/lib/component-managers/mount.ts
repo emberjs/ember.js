@@ -1,80 +1,135 @@
 import {
-  Arguments,
+  ComponentCapabilities,
+} from '@glimmer/interfaces';
+import {
+  CONSTANT_TAG,
+  Tag,
+  VersionedPathReference,
+} from '@glimmer/reference';
+import {
   ComponentDefinition,
+  Invocation,
+  WithDynamicLayout,
 } from '@glimmer/runtime';
 import {
   Destroyable,
   Opaque,
   Option
 } from '@glimmer/util';
-import {
-  VersionedPathReference
-} from '@glimmer/reference';
 import { DEBUG } from 'ember-env-flags';
 
 import { generateControllerFactory } from 'ember-routing';
+import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
-import { RootReference } from '../utils/references';
 import Environment from '../environment';
+import RuntimeResolver from '../resolver';
+import { OwnedTemplate } from '../template';
+import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
-import { OutletLayoutCompiler } from './outlet';
 
 // TODO: remove these stubbed interfaces when better typing is in place
-interface EngineType {
+interface Engine {
   boot(): void;
   destroy(): void;
   lookup(name: string): any;
   factoryFor(name: string): any;
 }
 
-interface EngineBucket {
-  engine: EngineType;
-  controller?: any;
-  modelReference?: any;
-  modelRevision?: any;
+interface EngineState {
+  engine: Engine;
+  controller: any;
+  self: RootReference<any>;
+  tag: Tag;
 }
 
-class MountManager extends AbstractManager<EngineBucket> {
-  create(environment: Environment, { name }: ComponentDefinition<EngineBucket>, args: Arguments) {
+interface EngineWithModelState extends EngineState {
+  modelRef: VersionedPathReference<Opaque>;
+  modelRev: number;
+}
+
+interface EngineDefinitionState {
+  name: string;
+  modelRef: VersionedPathReference<Opaque> | undefined;
+}
+
+const CAPABILITIES =  {
+  dynamicLayout: true,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: false,
+  elementHook: false
+};
+
+class MountManager extends AbstractManager<EngineState | EngineWithModelState, EngineDefinitionState>
+    implements WithDynamicLayout<EngineState | EngineWithModelState, OwnedTemplateMeta, RuntimeResolver> {
+
+  getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
+    let template = state.engine.lookup('template:application') as OwnedTemplate;
+    let layout = template.asLayout();
+    return {
+      handle: layout.compile(),
+      symbolTable: layout.symbolTable
+    };
+  }
+
+  getCapabilities(): ComponentCapabilities {
+    return CAPABILITIES;
+  }
+
+  create(environment: Environment, state: EngineDefinitionState) {
     if (DEBUG) {
-      this._pushEngineToDebugStack(`engine:${name}`, environment);
+      this._pushEngineToDebugStack(`engine:${state.name}`, environment);
     }
 
-    let engine = environment.owner.buildChildEngineInstance<EngineType>(name);
+    // TODO
+    // mount is a runtime helper, this shouldn't use dynamic layout
+    // we should resolve the engine app template in the helper
+    // it also should use the owner that looked up the mount helper.
+
+    let engine = environment.owner.buildChildEngineInstance<Engine>(state.name);
 
     engine.boot();
 
-    let bucket: EngineBucket = { engine };
-
+    let applicationFactory = engine.factoryFor(`controller:application`);
+    let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
+    let controller: any;
+    let self: RootReference<any>;
+    let bucket: EngineState | EngineWithModelState;
+    let tag: Tag;
     if (EMBER_ENGINES_MOUNT_PARAMS) {
-      bucket.modelReference = args.named.get('model');
+      let modelRef = state.modelRef;
+      if (modelRef === undefined) {
+        controller = controllerFactory.create();
+        self = new RootReference(controller);
+        tag = CONSTANT_TAG;
+        bucket = { engine, controller, self, tag };
+      } else {
+        let model = modelRef.value();
+        let modelRev = modelRef.tag.value();
+        controller = controllerFactory.create({ model });
+        self = new RootReference(controller);
+        tag = modelRef.tag;
+        bucket = { engine, controller, self, tag, modelRef, modelRev };
+      }
+    } else {
+      controller = controllerFactory.create();
+      self = new RootReference(controller);
+      tag = CONSTANT_TAG;
+      bucket = { engine, controller, self, tag };
     }
-
     return bucket;
   }
 
-  layoutFor(_definition: ComponentDefinition<EngineBucket>, { engine }: EngineBucket, env: Environment) {
-    let template = engine.lookup(`template:application`);
-    return env.getCompiledBlock(OutletLayoutCompiler, template);
+  getSelf({ self }: EngineState): VersionedPathReference<Opaque> {
+    return self;
   }
 
-  getSelf(bucket: EngineBucket): VersionedPathReference<Opaque> {
-    let { engine, modelReference } = bucket;
-
-    let applicationFactory = engine.factoryFor(`controller:application`);
-    let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
-    let controller = bucket.controller = controllerFactory.create();
-
-    if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let model = modelReference.value();
-      bucket.modelRevision = modelReference.tag.value();
-      controller.set('model', model);
-    }
-
-    return new RootReference(controller);
+  getTag(state: EngineState | EngineWithModelState): Tag {
+    return state.tag;
   }
 
-  getDestructor({ engine }: EngineBucket): Option<Destroyable> {
+  getDestructor({ engine }: EngineState): Option<Destroyable> {
     return engine;
   }
 
@@ -84,13 +139,12 @@ class MountManager extends AbstractManager<EngineBucket> {
     }
   }
 
-  update(bucket: EngineBucket): void {
+  update(bucket: EngineWithModelState): void {
     if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let { controller, modelReference, modelRevision } = bucket;
-
-      if (!modelReference.tag.validate(modelRevision)) {
-        let model = modelReference.value();
-        bucket.modelRevision = modelReference.tag.value();
+      let { controller, modelRef, modelRev } = bucket;
+      if (!modelRef.tag.validate(modelRev!)) {
+        let model = modelRef.value();
+        bucket.modelRev = modelRef.tag.value();
         controller.set('model', model);
       }
     }
@@ -99,8 +153,11 @@ class MountManager extends AbstractManager<EngineBucket> {
 
 const MOUNT_MANAGER = new MountManager();
 
-export class MountDefinition extends ComponentDefinition<Opaque> {
-  constructor(name: string) {
-    super(name, MOUNT_MANAGER, null);
+export class MountDefinition implements ComponentDefinition {
+  public state: EngineDefinitionState;
+  public manager = MOUNT_MANAGER;
+
+  constructor(name: string, modelRef: VersionedPathReference<Opaque> | undefined) {
+    this.state = { name, modelRef };
   }
 }

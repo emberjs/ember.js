@@ -1,48 +1,42 @@
+import { TemplateOptions } from '@glimmer/opcode-compiler';
 import {
   Template,
   templateFactory,
   TemplateFactory,
 } from '@glimmer/runtime';
-import { OWNER } from 'ember-utils';
+import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
+import { getOwner } from 'ember-utils';
+import { OwnedTemplateMeta, StaticTemplateMeta } from 'ember-views';
 
-export interface Container {
-  lookup<T>(name: string): T;
-  factoryFor<T>(name: string): T;
-  buildChildEngineInstance<T>(name: string): T;
-  hasRegistration(name: string, options?: any): boolean;
+export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
+export type OwnedTemplate = Template<OwnedTemplateMeta>;
+
+export default function template(json: StaticTemplate): Factory {
+  return new FactoryWrapper(templateFactory(json));
 }
 
-export type OwnedTemplate = Template<{
-  moduleName: string;
-  owner: Container;
-}>;
+export interface Injections {
+  options: TemplateOptions<OwnedTemplateMeta>;
+  [key: string]: any;
+}
 
-export class WrappedTemplateFactory {
+export interface Factory {
   id: string;
-  meta: {
-    moduleName: string;
-  };
+  meta: StaticTemplateMeta;
+  create(injections: Injections): OwnedTemplate;
+}
 
-  constructor(public factory: TemplateFactory<{
-    moduleName: string;
-  }, {
-    owner: Container;
-  }>) {
+class FactoryWrapper implements Factory {
+  public id: string;
+  public meta: StaticTemplateMeta;
+
+  constructor(public factory: TemplateFactory<StaticTemplateMeta>) {
     this.id = factory.id;
     this.meta = factory.meta;
   }
 
-  create(props: any): OwnedTemplate {
-    let owner = props[OWNER];
-    return this.factory.create(props.env, { owner });
+  create(injections: Injections): OwnedTemplate {
+    const owner = getOwner(injections);
+    return this.factory.create(injections.options, { owner });
   }
-}
-
-export default function template(json: any) {
-  const factory = templateFactory<{
-    moduleName: string;
-  }, {
-    owner: Container;
-  }>(json);
-  return new WrappedTemplateFactory(factory);
 }

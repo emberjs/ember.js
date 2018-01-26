@@ -1,17 +1,20 @@
+import { Opaque } from '@glimmer/interfaces';
 import {
   combine,
   CONSTANT_TAG,
   ConstReference,
   DirtyableTag,
   isConst,
+  RevisionTag,
+  Tag,
   TagWrapper,
   UpdatableTag,
+  VersionedPathReference,
 } from '@glimmer/reference';
 import {
   CapturedArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
-  VM,
 } from '@glimmer/runtime';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -31,8 +34,9 @@ import {
   MANDATORY_SETTER,
 } from 'ember/features';
 import {
+  HelperFunction,
+  HelperInstance,
   RECOMPUTE_TAG,
-  SimpleHelper,
 } from '../helper';
 import emberToBool from './to-bool';
 
@@ -56,20 +60,23 @@ if (DEBUG) {
 
 // @abstract
 // @implements PathReference
-class EmberPathReference {
+abstract class EmberPathReference implements VersionedPathReference<Opaque> {
   // @abstract get tag()
   // @abstract value()
+  public tag: Tag;
 
   get(key: string): any {
     return PropertyReference.create(this, key);
   }
+
+  abstract value(): Opaque;
 }
 
 // @abstract
 export class CachedReference extends EmberPathReference {
   private _lastRevision: any;
   private _lastValue: any;
-  public tag: any;
+  public tag: Tag;
 
   constructor() {
     super();
@@ -113,16 +120,27 @@ export class RootReference<T> extends ConstReference<T> {
   }
 }
 
-let TwoWayFlushDetectionTag: any;
+interface TwoWayFlushDetectionTag extends RevisionTag {
+  didCompute(parent: Opaque): void;
+}
+
+let TwoWayFlushDetectionTag: {
+  new (tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TwoWayFlushDetectionTag;
+  create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TagWrapper<TwoWayFlushDetectionTag>;
+};
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
   TwoWayFlushDetectionTag = class {
-    public tag: any;
-    public parent: any;
+    public tag: Tag;
+    public parent: Opaque;
     public key: string;
     public ref: any;
 
-    constructor(tag: TagWrapper<UpdatableTag>, key: string, ref: any) {
+    static create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TagWrapper<TwoWayFlushDetectionTag> {
+      return new TagWrapper((tag as any).type, new TwoWayFlushDetectionTag(tag, key, ref));
+    }
+
+    constructor(tag: Tag, key: string, ref: any) {
       this.tag = tag;
       this.parent = null;
       this.key = key;
@@ -153,7 +171,7 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
 }
 
 export class PropertyReference extends CachedReference {
-  static create(parentReference: any, propertyKey: string) {
+  static create(parentReference: VersionedPathReference<Opaque>, propertyKey: string) {
     if (isConst(parentReference)) {
       return new RootPropertyReference(parentReference.value(), propertyKey);
     } else {
@@ -161,12 +179,12 @@ export class PropertyReference extends CachedReference {
     }
   }
 
-  get(key: string) {
+  get(key: string): VersionedPathReference<Opaque> {
     return new NestedPropertyReference(this, key);
   }
 }
 
-export class RootPropertyReference extends PropertyReference {
+export class RootPropertyReference extends PropertyReference implements VersionedPathReference<Opaque> {
   private _parentValue: any;
   private _propertyKey: string;
 
@@ -177,7 +195,7 @@ export class RootPropertyReference extends PropertyReference {
     this._propertyKey = propertyKey;
 
     if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-      this.tag = new TwoWayFlushDetectionTag(tagForProperty(parentValue, propertyKey), propertyKey, this);
+      this.tag = TwoWayFlushDetectionTag.create(tagForProperty(parentValue, propertyKey), propertyKey, this);
     } else {
       this.tag = tagForProperty(parentValue, propertyKey);
     }
@@ -191,7 +209,7 @@ export class RootPropertyReference extends PropertyReference {
     let { _parentValue, _propertyKey } = this;
 
     if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-      this.tag.didCompute(_parentValue);
+      (this.tag.inner as TwoWayFlushDetectionTag).didCompute(_parentValue);
     }
 
     return get(_parentValue, _propertyKey);
@@ -207,7 +225,7 @@ export class NestedPropertyReference extends PropertyReference {
   private _parentObjectTag: TagWrapper<UpdatableTag>;
   private _propertyKey: string;
 
-  constructor(parentReference: any, propertyKey: string) {
+  constructor(parentReference: VersionedPathReference<Opaque>, propertyKey: string) {
     super();
 
     let parentReferenceTag = parentReference.tag;
@@ -219,7 +237,7 @@ export class NestedPropertyReference extends PropertyReference {
 
     if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
-      this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
+      this.tag = TwoWayFlushDetectionTag.create(tag, propertyKey, this);
     } else {
       this.tag = combine([parentReferenceTag, parentObjectTag]);
     }
@@ -244,7 +262,7 @@ export class NestedPropertyReference extends PropertyReference {
       }
 
       if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-        this.tag.didCompute(parentValue);
+        (this.tag.inner as TwoWayFlushDetectionTag).didCompute(parentValue);
       }
 
       return get(parentValue, _propertyKey);
@@ -322,12 +340,10 @@ export class ConditionalReference extends GlimmerConditionalReference {
 }
 
 export class SimpleHelperReference extends CachedReference {
-  public helper: (positionalValue: any, namedValue: any) => any;
-  public args: any;
+  public helper: HelperFunction;
+  public args: CapturedArguments;
 
-  static create(Helper: SimpleHelper, _vm: VM, args: CapturedArguments) {
-    let helper = Helper.create();
-
+  static create(helper: HelperFunction, args: CapturedArguments) {
     if (isConst(args)) {
       let { positional, named } = args;
 
@@ -339,19 +355,14 @@ export class SimpleHelperReference extends CachedReference {
         maybeFreeze(namedValue);
       }
 
-      let result = helper.compute(positionalValue, namedValue);
-
-      if (typeof result === 'object' && result !== null || typeof result === 'function') {
-        return new RootReference(result);
-      } else {
-        return PrimitiveReference.create(result);
-      }
+      let result = helper(positionalValue, namedValue);
+      return valueToRef(result);
     } else {
-      return new SimpleHelperReference(helper.compute, args);
+      return new SimpleHelperReference(helper, args);
     }
   }
 
-  constructor(helper: (positionalValue: any, namedValue: any) => any, args: CapturedArguments) {
+  constructor(helper: HelperFunction, args: CapturedArguments) {
     super();
 
     this.tag = args.tag;
@@ -375,16 +386,14 @@ export class SimpleHelperReference extends CachedReference {
 }
 
 export class ClassBasedHelperReference extends CachedReference {
-  public instance: any;
-  public args: any;
+  public instance: HelperInstance;
+  public args: CapturedArguments;
 
-  static create(helperClass: any, vm: VM, args: CapturedArguments) {
-    let instance = helperClass.create();
-    vm.newDestroyable(instance);
+  static create(instance: HelperInstance, args: CapturedArguments) {
     return new ClassBasedHelperReference(instance, args);
   }
 
-  constructor(instance: any, args: CapturedArguments) {
+  constructor(instance: HelperInstance, args: CapturedArguments) {
     super();
 
     this.tag = combine([instance[RECOMPUTE_TAG], args.tag]);
@@ -426,16 +435,34 @@ export class InternalHelperReference extends CachedReference {
 }
 
 // @implements PathReference
-export class UnboundReference extends ConstReference<any> {
-  static create(value: any) {
-    if (typeof value === 'object' && value !== null) {
-      return new UnboundReference(value);
-    } else {
-      return PrimitiveReference.create(value);
-    }
+export class UnboundReference<T> extends ConstReference<T> {
+  static create<T>(value: T): VersionedPathReference<T> {
+    return valueToRef(value, false);
   }
 
   get(key: string) {
-    return new UnboundReference(get(this.inner, key));
+    return valueToRef(get(this.inner, key), false);
   }
+}
+
+export function referenceFromParts(root: VersionedPathReference<Opaque>, parts: string[]): VersionedPathReference<Opaque> {
+  let reference = root;
+
+  for (let i=0; i<parts.length; i++) {
+    reference = reference.get(parts[i]);
+  }
+
+  return reference;
+}
+
+export function valueToRef(value: any | null | undefined, bound = true): VersionedPathReference<any | null | undefined> {
+  if (value !== null && typeof value === 'object') {
+    // root of interop with ember objects
+    return bound ? new RootReference(value) : new UnboundReference(value);
+  }
+  // ember doesn't do observing with functions
+  if (typeof value === 'function') {
+    return new UnboundReference(value);
+  }
+  return PrimitiveReference.create(value);
 }

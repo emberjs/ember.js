@@ -1,17 +1,19 @@
 import { Revision, VersionedReference } from '@glimmer/reference';
 import { CapturedNamedArguments } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util/dist/types';
+import { Opaque } from '@glimmer/util';
 import Environment from '../environment';
 
 export interface Component {
   _debugContainerKey: string;
   _transitionTo(name: string): void;
-  attributeBindings: any;
-  classNames: any;
-  classNameBindings: any;
+  layoutName?: string;
+  attributeBindings: Array<string>;
+  classNames: Array<string>;
+  classNameBindings: Array<string>;
   elementId: string;
   tagName: string;
   isDestroying: boolean;
+  appendChild(view: Component): void;
   trigger(event: string): void;
   destroy(): void;
   setProperties(props: {
@@ -37,9 +39,9 @@ export default class ComponentStateBucket {
   public classRef: VersionedReference<Opaque> | null = null;
   public argsRevision: Revision;
 
-  constructor(public environment: Environment, public component: Component, public args: CapturedNamedArguments, public finalizer: Finalizer) {
+  constructor(public environment: Environment, public component: Component, public args: CapturedNamedArguments | null, public finalizer: Finalizer) {
     this.classRef = null;
-    this.argsRevision = args.tag.value();
+    this.argsRevision = args === null ? 0 : args.tag.value();
   }
 
   destroy() {

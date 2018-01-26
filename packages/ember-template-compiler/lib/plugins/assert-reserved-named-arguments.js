@@ -12,7 +12,7 @@ export default function assertReservedNamedArguments(env) {
   return {
     name: 'assert-reserved-named-arguments',
 
-    visitors: {
+    visitor: {
       PathExpression({ original, loc }) {
         if (isReserved(original)) {
           assert(`${assertMessage(original)} ${calculateLocationDisplay(moduleName, loc)}`);

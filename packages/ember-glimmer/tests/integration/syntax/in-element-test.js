@@ -1,17 +1,17 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { equalTokens } from '../../utils/test-helpers';
 import { strip } from '../../utils/abstract-test-case';
-import Component from '../../../component';
+import { Component } from 'ember-glimmer';
 import { set } from 'ember-metal';
 
-moduleFor('{{-in-element}}', class extends RenderingTest {
+moduleFor('{{in-element}}', class extends RenderingTest {
   ['@test allows rendering into an external element']() {
     let someElement = document.createElement('div');
 
     this.render(strip`
-      {{#-in-element someElement}}
+      {{#in-element someElement}}
         {{text}}
-      {{/-in-element}}
+      {{/in-element}}
     `, {
       someElement,
       text: 'Whoop!'
@@ -54,9 +54,9 @@ moduleFor('{{-in-element}}', class extends RenderingTest {
 
     this.render(strip`
       {{#if showModal}}
-        {{#-in-element someElement}}
+        {{#in-element someElement}}
           {{modal-display text=text}}
-        {{/-in-element}}
+        {{/in-element}}
       {{/if}}
     `, {
       someElement,
