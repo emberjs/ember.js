@@ -1,4 +1,4 @@
-import { get, set } from 'ember-metal';
+import { set } from 'ember-metal';
 import ArrayProxy from '../../../system/array_proxy';
 import { A } from '../../../system/native_array';
 
@@ -21,7 +21,7 @@ QUnit.test('mutating content', assert => {
     }
   });
 
-  get(proxy, 'length');
+  proxy.toArray();
   content.replace(1, 1, ['a', 'b', 'c']);
 });
 
@@ -42,6 +42,6 @@ QUnit.test('assigning content', assert => {
     }
   });
 
-  get(proxy, 'length');
+  proxy.toArray();
   set(proxy, 'content', A(['a', 'b', 'c', 'd', 'e']));
 });
