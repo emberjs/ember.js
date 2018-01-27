@@ -45,14 +45,14 @@ function makeCtor() {
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
 
-  let wasApplied = false;
   let initFactory;
 
   class Class {
     constructor(properties) {
       let self = this;
+      let m = meta(self);
 
-      if (!wasApplied) {
+      if (!m.parent.wasApplied) {
         Class.proto(); // prepare prototype...
       }
 
@@ -105,7 +105,6 @@ function makeCtor() {
         });
       }
 
-      let m = meta(self);
       let proto = m.proto;
       m.proto = self;
 
@@ -208,11 +207,12 @@ function makeCtor() {
     }
 
     static willReopen() {
-      if (wasApplied) {
+      let m = meta(this.prototype);
+      if (m.wasApplied) {
         Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
       }
 
-      wasApplied = false;
+      m.asApplied = false;
     }
 
     static _initFactory(factory) { initFactory = factory; }
@@ -221,8 +221,9 @@ function makeCtor() {
       let superclass = Class.superclass;
       if (superclass) { superclass.proto(); }
 
-      if (!wasApplied) {
-        wasApplied = true;
+      let m = meta(this.prototype);
+      if (!m.wasApplied) {
+        m.wasApplied = true;
         Class.PrototypeMixin.applyPartial(Class.prototype);
       }
 
@@ -1037,6 +1038,11 @@ let ClassMixin = Mixin.create(ClassMixinProps);
 ClassMixin.ownerConstructor = CoreObject;
 
 CoreObject.ClassMixin = ClassMixin;
+
+// ensure CoreObject itself has a proper class meta
+let proto = CoreObject.prototype;
+generateGuid(proto);
+meta(proto).proto = proto;
 
 ClassMixin.apply(CoreObject);
 export default CoreObject;
