@@ -5,8 +5,8 @@
 import {
   get,
   computed,
-  observer,
-  alias
+  alias,
+  PROPERTY_DID_CHANGE
 } from 'ember-metal';
 import {
   isArray
@@ -19,6 +19,11 @@ import {
   objectAt
 } from '../mixins/array';
 import { assert } from 'ember-debug';
+
+const ARRAY_OBSERVER_MAPPING = {
+  willChange: '_arrangedContentArrayWillChange',
+  didChange: '_arrangedContentArrayDidChange'
+};
 
 /**
   An ArrayProxy wraps any other object that implements `Array` and/or
@@ -67,8 +72,23 @@ import { assert } from 'ember-debug';
 export default EmberObject.extend(MutableArray, {
   init() {
     this._super(...arguments);
-    this._cache = null;
-    this._dirtyStart = 0;
+
+    /*
+      `this._objectsDirtyIndex` determines which indexes in the `this._objects`
+      cache are dirty.
+
+      If `this._objectsDirtyIndex === -1` then no indexes are dirty.
+      Otherwise, an index `i` is dirty if `i >= this._objectsDirtyIndex`.
+
+      Calling `objectAt` with a dirty index will cause the `this._objects`
+      cache to be recomputed.
+    */
+    this._objectsDirtyIndex = 0;
+    this._objects = null;
+
+    this._lengthDirty = true;
+    this._length = 0;
+
     this._arrangedContent = null;
     this._addArrangedContentArrayObsever();
   },
@@ -139,40 +159,63 @@ export default EmberObject.extend(MutableArray, {
 
   // Overriding objectAt is not supported.
   objectAt(idx) {
-    this._sync();
-    return this._cache[idx];
+    if (this._objects === null) {
+      this._objects = [];
+    }
+
+    if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
+      let arrangedContent = get(this, 'arrangedContent');
+      if (arrangedContent) {
+        let length = this._objects.length = get(arrangedContent, 'length');
+
+        for (let i = this._objectsDirtyIndex; i < length; i++) {
+          this._objects[i] = this.objectAtContent(i);
+        }
+      } else {
+        this._objects.length = 0;
+      }
+      this._objectsDirtyIndex = -1;
+    }
+
+    return this._objects[idx];
   },
 
   // Overriding length is not supported.
   length: computed(function() {
-    this._sync();
-    return this._cache.length;
-  }),
+    if (this._lengthDirty) {
+      let arrangedContent = get(this, 'arrangedContent');
+      this._length = arrangedContent ? get(arrangedContent, 'length') : 0;
+      this._lengthDirty = false;
+    }
 
-  _arrangedContentDidChange: observer('arrangedContent', function() {
-    let oldLength = this._cache === null ? 0 : this._cache.length;
-    let arrangedContent = get(this, 'arrangedContent');
-    let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
+    return this._length;
+  }).volatile(),
 
-    this._removeArrangedContentArrayObsever();
-    this.arrayContentWillChange(0, oldLength, newLength);
-    this._dirtyStart = 0;
-    this.arrayContentDidChange(0, oldLength, newLength);
-    this._addArrangedContentArrayObsever();
-  }),
+  [PROPERTY_DID_CHANGE](key) {
+    if (key === 'arrangedContent') {
+      let oldLength = this._objects === null ? 0 : this._objects.length;
+      let arrangedContent = get(this, 'arrangedContent');
+      let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
+
+      this._removeArrangedContentArrayObsever();
+      this.arrayContentWillChange(0, oldLength, newLength);
+
+      this._objectsDirtyIndex = 0;
+      this._lengthDirty = true;
+
+      this.arrayContentDidChange(0, oldLength, newLength);
+      this._addArrangedContentArrayObsever();
+    }
+  },
 
   _addArrangedContentArrayObsever() {
     let arrangedContent = get(this, 'arrangedContent');
-
     if (arrangedContent) {
       assert('Can\'t set ArrayProxy\'s content to itself', arrangedContent !== this);
       assert(`ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
         isArray(arrangedContent) || arrangedContent.isDestroyed);
 
-      addArrayObserver(arrangedContent, this, {
-        willChange: '_arrangedContentArrayWillChange',
-        didChange: '_arrangedContentArrayDidChange'
-      });
+      addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING);
 
       this._arrangedContent = arrangedContent;
     }
@@ -180,10 +223,7 @@ export default EmberObject.extend(MutableArray, {
 
   _removeArrangedContentArrayObsever() {
     if (this._arrangedContent) {
-      removeArrayObserver(this._arrangedContent, this, {
-        willChange: '_arrangedContentArrayWillChange',
-        didChange: '_arrangedContentArrayDidChange'
-      });
+      removeArrayObserver(this._arrangedContent, this, ARRAY_OBSERVER_MAPPING);
     }
   },
 
@@ -192,38 +232,22 @@ export default EmberObject.extend(MutableArray, {
   _arrangedContentArrayDidChange(proxy, idx, removedCnt, addedCnt) {
     this.arrayContentWillChange(idx, removedCnt, addedCnt);
 
-    if (this._dirtyStart === undefined) {
-      this._dirtyStart = idx;
+    let dirtyIndex = idx;
+    if (dirtyIndex < 0) {
+      let length = get(this._arrangedContent, 'length');
+      dirtyIndex += length + removedCnt - addedCnt;
+    }
+
+    if (this._objectsDirtyIndex === -1) {
+      this._objectsDirtyIndex = dirtyIndex;
     } else {
-      if (this._dirtyStart > idx) {
-        this._dirtyStart = idx;
+      if (this._objectsDirtyIndex > dirtyIndex) {
+        this._objectsDirtyIndex = dirtyIndex;
       }
     }
+
+    this._lengthDirty = true;
 
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
-  },
-
-  _sync() {
-    if (this._cache === null) {
-      this._cache = [];
-    }
-
-    if (this._dirtyStart !== undefined) {
-      let arrangedContent = get(this, 'arrangedContent');
-
-      if (arrangedContent) {
-        let length = get(arrangedContent, 'length');
-
-        this._cache.length = length;
-
-        for (let i = this._dirtyStart; i < length; i++) {
-          this._cache[i] = this.objectAtContent(i);
-        }
-      } else {
-        this._cache.length = 0;
-      }
-
-      this._dirtyStart = undefined;
-    }
   }
 });
