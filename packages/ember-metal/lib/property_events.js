@@ -1,4 +1,4 @@
-import { guidFor, symbol } from 'ember-utils';
+import { symbol } from 'ember-utils';
 import {
   descriptorFor,
   peekMeta
@@ -115,16 +115,16 @@ function notifyPropertyChange(obj, keyName, _meta) {
   }
 }
 
-let DID_SEEN;
+let DID_SEEN = null;
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
   if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
   let seen = DID_SEEN;
-  let top = !seen;
+  let top = seen === null;
 
   if (top) {
-    seen = DID_SEEN = {};
+    seen = DID_SEEN = new Map();
   }
 
   iterDeps(notifyPropertyChange, obj, depKey, seen, meta);
@@ -135,20 +135,16 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
+  let current = seen.get(obj);
+
+  if (current === undefined) {
+    current = new Set();
+    seen.set(obj, current);
+  }
+
+  if (current.has(depKey)) { return; }
+
   let possibleDesc;
-  let guid = guidFor(obj);
-  let current = seen[guid];
-
-  if (!current) {
-    current = seen[guid] = {};
-  }
-
-  if (current[depKey]) {
-    return;
-  }
-
-  current[depKey] = true;
-
   meta.forEachInDeps(depKey, (key, value) => {
     if (!value) { return; }
 
