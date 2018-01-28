@@ -68,7 +68,12 @@ function makeCtor() {
         initProperties = [arguments[0]];
       }
 
-      let beforeInitCalled = true;
+      let beforeInitCalled; // only used in debug builds to enable the proxy trap
+
+      // using DEBUG here to avoid the extraneous variable when not needed
+      if (DEBUG) {
+        beforeInitCalled = true;
+      }
 
       if (DEBUG && MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
         let messageFor = (obj, property) => {
@@ -211,7 +216,11 @@ function makeCtor() {
       if (ENV._ENABLE_BINDING_SUPPORT) {
         Mixin.finishPartial(self, m);
       }
-      beforeInitCalled = false;
+
+      // using DEBUG here to avoid the extraneous variable when not needed
+      if (DEBUG) {
+        beforeInitCalled = false;
+      }
       self.init(...arguments);
 
       self[POST_INIT]();
