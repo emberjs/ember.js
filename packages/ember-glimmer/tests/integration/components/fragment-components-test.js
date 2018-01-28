@@ -139,6 +139,57 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     this.assertText('baz');
   }
 
+  ['@test [GH#16177] does not throw an error if `tagName` is set to empty after calling super in an ES6 class']() {
+    let template = 'hola';
+    let FooBarComponent = class extends Component {
+      constructor() {
+        super(...arguments);
+        this.tagName = '';
+      }
+    };
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    this.render(`{{foo-bar}}`);
+    this.assertText('hola');
+  }
+
+  ['@test [GH#16177] tagName can be changed after calling `super` in ES6 classes']() {
+    let template = 'hola';
+    let tagName = 'span';
+    let FooBarComponent = class extends Component {
+      constructor() {
+        super(...arguments);
+        this.tagName = tagName;
+      }
+    };
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    this.render('{{foo-bar}}');
+    this.assertComponentElement(this.firstChild, {
+      tagName
+    });
+  }
+
+  ['@test [GH#16177] tagless components written with ES6 classes have a null elementId']() {
+    this.assert.expect(1);
+    let assert = this.assert;
+    let template = 'hola';
+    let FooBarComponent = class extends Component {
+      constructor() {
+        super(...arguments);
+        this.tagName = '';
+      }
+
+      didInsertElement() {
+        super.didInsertElement();
+        assert.equal(this.elementId, '');
+      }
+    };
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    this.render(`{{foo-bar}}`);
+  }
+
   ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template']() {
     let template = `{{id}}`;
     let FooBarComponent = Component.extend({
