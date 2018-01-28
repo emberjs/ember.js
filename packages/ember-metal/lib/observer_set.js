@@ -1,5 +1,3 @@
-import { sendEvent } from './events';
-
 /**
   ObserverSet is a data structure used to keep track of observers
   that have been deferred.
@@ -34,7 +32,7 @@ export default class ObserverSet {
     }
   }
 
-  flush() {
+  forEach(cb) {
     for (let i = 0; i < this.queue.length; i++) {
       let { object, key } = this.queue[i];
 
@@ -42,10 +40,8 @@ export default class ObserverSet {
         continue;
       }
 
-      sendEvent(object, key, [object, key]);
+      cb(object, key);
     }
-
-    this.clear();
   }
 
   clear() {
