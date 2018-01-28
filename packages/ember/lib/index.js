@@ -87,7 +87,6 @@ Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
 Ember.run = metal.run;
-Ember._ObserverSet = metal.ObserverSet;
 Ember.propertyWillChange = metal.propertyWillChange;
 Ember.propertyDidChange = metal.propertyDidChange;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;

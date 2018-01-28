@@ -52,7 +52,6 @@ export { default as isEmpty } from './is_empty';
 export { default as isBlank } from './is_blank';
 export { default as isPresent } from './is_present';
 export { default as run } from './run_loop';
-export { default as ObserverSet } from './observer_set';
 export {
   beginPropertyChanges,
   changeProperties,

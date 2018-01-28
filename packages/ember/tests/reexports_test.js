@@ -72,7 +72,6 @@ let allExports =[
   ['isPresent', 'ember-metal'],
   ['_Backburner', 'backburner', 'default'],
   ['run', 'ember-metal'],
-  ['_ObserverSet', 'ember-metal', 'ObserverSet'],
   ['propertyWillChange', 'ember-metal'],
   ['propertyDidChange', 'ember-metal'],
   ['notifyPropertyChange', 'ember-metal'],
