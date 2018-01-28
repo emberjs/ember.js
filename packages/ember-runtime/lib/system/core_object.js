@@ -68,9 +68,9 @@ function makeCtor() {
         initProperties = [arguments[0]];
       }
 
-      let before = true;
+      let beforeInitCalled = true;
 
-      if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
+      if (DEBUG && MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
         let messageFor = (obj, property) => {
           return `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
             `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
@@ -88,13 +88,21 @@ function makeCtor() {
           get(target, property, receiver) {
             if (property === PROXY_CONTENT) {
               return target;
-            } else if (before ||
-                      typeof property === 'symbol' ||
-                      property === NAME_KEY ||
-                      property === GUID_KEY_PROPERTY ||
-                      property === 'toJSON' ||
-                      property === 'toString' ||
-                      property === 'toStringExtension' || property in target) {
+            } else if (
+              beforeInitCalled ||
+              typeof property === 'symbol' ||
+              property === NAME_KEY ||
+              property === GUID_KEY_PROPERTY ||
+              property === 'toJSON' ||
+              property === 'toString' ||
+              property === 'toStringExtension' ||
+              property === 'didDefineProperty' ||
+              property === 'willWatchProperty' ||
+              property === 'didUnwatchProperty' ||
+              property === 'didAddListener' ||
+              property === '__each' ||
+              property in target
+            ) {
               return Reflect.get(target, property, receiver);
             }
 
@@ -203,7 +211,7 @@ function makeCtor() {
       if (ENV._ENABLE_BINDING_SUPPORT) {
         Mixin.finishPartial(self, m);
       }
-      before = false;
+      beforeInitCalled = false;
       self.init(...arguments);
 
       self[POST_INIT]();
@@ -212,7 +220,10 @@ function makeCtor() {
       finishChains(m);
       sendEvent(self, 'init', undefined, undefined, undefined, m);
 
-      return self;
+      // only return when in debug builds and `self` is the proxy created above
+      if (DEBUG && self !== this) {
+        return self;
+      }
     }
 
     static willReopen() {
