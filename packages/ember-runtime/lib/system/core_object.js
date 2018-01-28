@@ -11,7 +11,6 @@ import {
   generateGuid,
   makeArray,
   GUID_KEY_PROPERTY,
-  symbol,
   NAME_KEY,
   GUID_KEY,
   HAS_NATIVE_PROXY
@@ -45,8 +44,6 @@ import { MANDATORY_GETTER, MANDATORY_SETTER, EMBER_METAL_ES5_GETTERS } from 'emb
 const schedule = run.schedule;
 const applyMixin = Mixin._apply;
 const reopen = Mixin.prototype.reopen;
-
-export const POST_INIT = symbol('POST_INIT');
 
 function makeCtor() {
   // Note: avoid accessing any properties on the object since it makes the
@@ -206,8 +203,6 @@ function makeCtor() {
       before = false;
       self.init(...arguments);
 
-      self[POST_INIT]();
-
       m.proto = proto;
       finishChains(m);
       sendEvent(self, 'init', undefined, undefined, undefined, m);
@@ -314,8 +309,6 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   init() {},
-
-  [POST_INIT]() { }, // Private, and only for didReceiveAttrs
 
   __defineNonEnumerable(property) {
     Object.defineProperty(this, property.name, property.descriptor);

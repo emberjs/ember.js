@@ -28,6 +28,7 @@ import {
   assert,
   deprecate,
 } from 'ember-debug';
+import { ENV } from 'ember-environment';
 import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart, get,
@@ -230,6 +231,12 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     if (parentView !== null && parentView !== undefined) {
       parentView.appendChild(component);
     }
+
+    if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
+      component.trigger('didInitAttrs');
+    }
+
+    component.trigger('didReceiveAttrs');
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (component.tagName === '') {

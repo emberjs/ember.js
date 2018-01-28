@@ -1,9 +1,8 @@
 import { guidFor } from 'ember-utils';
 import { descriptor, descriptorFor, Mixin } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
-import { environment, ENV } from 'ember-environment';
+import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
-import { POST_INIT } from 'ember-runtime/system/core_object';
 import { default as jQuery, jQueryDisabled } from '../system/jquery';
 
 function K() { return this; }
@@ -67,13 +66,6 @@ export default Mixin.create({
     @public
    */
   concatenatedProperties: ['attributeBindings'],
-
-  [POST_INIT]() {
-    if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
-      this.trigger('didInitAttrs');
-    }
-    this.trigger('didReceiveAttrs');
-  },
 
   // ..........................................................
   // TEMPLATE SUPPORT
