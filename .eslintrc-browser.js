@@ -29,6 +29,7 @@ module.exports = {
     'clearInterval': true,
     'console': true,
 
+    'Map': true,
     'Set': true,
     'Symbol': true,
     'WeakMap': true,

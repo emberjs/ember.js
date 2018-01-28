@@ -668,9 +668,9 @@ testBoth('observers added/removed during changeProperties should do the right th
   assert.equal(removedBeforeFirstChangeObserver.didChangeCount, 0, 'removeObserver called before the first change sees none');
   assert.equal(addedBeforeFirstChangeObserver.didChangeCount, 1, 'addObserver called before the first change sees only 1');
   assert.equal(addedAfterFirstChangeObserver.didChangeCount, 1, 'addObserver called after the first change sees 1');
-  assert.equal(addedAfterLastChangeObserver.didChangeCount, 0, 'addObserver called after the last change sees none');
-  assert.equal(removedBeforeLastChangeObserver.didChangeCount, 1, 'removeObserver called before the last change still sees 1');
-  assert.equal(removedAfterLastChangeObserver.didChangeCount, 1, 'removeObserver called after the last change still sees 1');
+  assert.equal(addedAfterLastChangeObserver.didChangeCount, 1, 'addObserver called after the last change sees 1');
+  assert.equal(removedBeforeLastChangeObserver.didChangeCount, 0, 'removeObserver called before the last change sees none');
+  assert.equal(removedAfterLastChangeObserver.didChangeCount, 0, 'removeObserver called after the last change sees none');
 });
 
 
