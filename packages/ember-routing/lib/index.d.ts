@@ -221,9 +221,9 @@ export const RouterService: {
   isActive(...args: any[]): boolean;
   _extractArguments(routeName: string, ...models: any[]): {routeName: string, models: any[], queryParams: any};
 };
-export const BucketCache: {
-  init(): void;
+export class BucketCache {
+  constructor();
   has(bucketKey: string): boolean;
   stash(bucketKey: string, key: string, value: any): void;
   lookup(bucketKey: string, prop: any, defaultValue: any): any;
-};
+}
