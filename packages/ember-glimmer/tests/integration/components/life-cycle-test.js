@@ -295,20 +295,20 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'didReceiveAttrs'],
         ['the-top', 'on(init)'],
+        ['the-top', 'didReceiveAttrs'],
         ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'on(init)'],
+        ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didReceiveAttrs'],
         ['the-bottom', 'on(init)'],
+        ['the-bottom', 'didReceiveAttrs'],
         ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
 
@@ -328,16 +328,16 @@ class LifeCycleHooksTest extends RenderingTest {
       nonInteractive: [
         // Sync hooks
         ['the-top', 'init'],
-        ['the-top', 'didReceiveAttrs'],
         ['the-top', 'on(init)'],
+        ['the-top', 'didReceiveAttrs'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'on(init)'],
+        ['the-middle', 'didReceiveAttrs'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didReceiveAttrs'],
-        ['the-bottom', 'on(init)']
+        ['the-bottom', 'on(init)'],
+        ['the-bottom', 'didReceiveAttrs']
       ]
     });
 
@@ -526,27 +526,27 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-parent', 'init'],
-        ['the-parent', 'didReceiveAttrs'],
         ['the-parent', 'on(init)'],
+        ['the-parent', 'didReceiveAttrs'],
         ['the-parent', 'willRender'],
         ['the-parent', 'willInsertElement'],
 
 
         ['the-first-child', 'init'],
-        ['the-first-child', 'didReceiveAttrs'],
         ['the-first-child', 'on(init)'],
+        ['the-first-child', 'didReceiveAttrs'],
         ['the-first-child', 'willRender'],
         ['the-first-child', 'willInsertElement'],
 
         ['the-second-child', 'init'],
-        ['the-second-child', 'didReceiveAttrs'],
         ['the-second-child', 'on(init)'],
+        ['the-second-child', 'didReceiveAttrs'],
         ['the-second-child', 'willRender'],
         ['the-second-child', 'willInsertElement'],
 
         ['the-last-child', 'init'],
-        ['the-last-child', 'didReceiveAttrs'],
         ['the-last-child', 'on(init)'],
+        ['the-last-child', 'didReceiveAttrs'],
         ['the-last-child', 'willRender'],
         ['the-last-child', 'willInsertElement'],
 
@@ -569,20 +569,20 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-parent', 'init'],
-        ['the-parent', 'didReceiveAttrs'],
         ['the-parent', 'on(init)'],
+        ['the-parent', 'didReceiveAttrs'],
 
         ['the-first-child', 'init'],
-        ['the-first-child', 'didReceiveAttrs'],
         ['the-first-child', 'on(init)'],
+        ['the-first-child', 'didReceiveAttrs'],
 
         ['the-second-child', 'init'],
-        ['the-second-child', 'didReceiveAttrs'],
         ['the-second-child', 'on(init)'],
+        ['the-second-child', 'didReceiveAttrs'],
 
         ['the-last-child', 'init'],
-        ['the-last-child', 'didReceiveAttrs'],
-        ['the-last-child', 'on(init)']
+        ['the-last-child', 'on(init)'],
+        ['the-last-child', 'didReceiveAttrs']
       ]
     });
 
@@ -832,20 +832,20 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'didReceiveAttrs'],
         ['the-top', 'on(init)'],
+        ['the-top', 'didReceiveAttrs'],
         ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'on(init)'],
+        ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didReceiveAttrs'],
         ['the-bottom', 'on(init)'],
+        ['the-bottom', 'didReceiveAttrs'],
         ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
 
@@ -865,16 +865,16 @@ class LifeCycleHooksTest extends RenderingTest {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'didReceiveAttrs'],
         ['the-top', 'on(init)'],
+        ['the-top', 'didReceiveAttrs'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'on(init)'],
+        ['the-middle', 'didReceiveAttrs'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'didReceiveAttrs'],
-        ['the-bottom', 'on(init)']
+        ['the-bottom', 'on(init)'],
+        ['the-bottom', 'didReceiveAttrs']
       ]
     });
 
@@ -1006,8 +1006,8 @@ class LifeCycleHooksTest extends RenderingTest {
     let initialHooks = () => {
       let ret = [
         ['an-item', 'init'],
-        ['an-item', 'didReceiveAttrs'],
-        ['an-item', 'on(init)']
+        ['an-item', 'on(init)'],
+        ['an-item', 'didReceiveAttrs']
       ];
       if (this.isInteractive) {
         ret.push(
@@ -1017,8 +1017,8 @@ class LifeCycleHooksTest extends RenderingTest {
       }
       ret.push(
         ['nested-item', 'init'],
-        ['nested-item', 'didReceiveAttrs'],
-        ['nested-item', 'on(init)']
+        ['nested-item', 'on(init)'],
+        ['nested-item', 'didReceiveAttrs']
       );
       if (this.isInteractive) {
         ret.push(
@@ -1118,15 +1118,15 @@ class LifeCycleHooksTest extends RenderingTest {
         ['nested-item', 'willClearRender'],
 
         ['no-items', 'init'],
-        ['no-items', 'didReceiveAttrs'],
         ['no-items', 'on(init)'],
+        ['no-items', 'didReceiveAttrs'],
         ['no-items', 'willRender'],
         ['no-items', 'willInsertElement'],
 
 
         ['nested-item', 'init'],
-        ['nested-item', 'didReceiveAttrs'],
         ['nested-item', 'on(init)'],
+        ['nested-item', 'didReceiveAttrs'],
         ['nested-item', 'willRender'],
         ['nested-item', 'willInsertElement'],
 
@@ -1160,12 +1160,12 @@ class LifeCycleHooksTest extends RenderingTest {
 
       nonInteractive: [
         ['no-items', 'init'],
-        ['no-items', 'didReceiveAttrs'],
         ['no-items', 'on(init)'],
+        ['no-items', 'didReceiveAttrs'],
 
         ['nested-item', 'init'],
-        ['nested-item', 'didReceiveAttrs'],
         ['nested-item', 'on(init)'],
+        ['nested-item', 'didReceiveAttrs'],
 
         ['an-item', 'willDestroy'],
         ['nested-item', 'willDestroy'],
