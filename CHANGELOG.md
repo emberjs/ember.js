@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 3.0.0-beta.5 (January 29, 2018)
+
+- [#16179](https://github.com/emberjs/ember.js/pull/16179) [BUGFIX] Fix a few bugs in the caching ArrayProxy implementation
+
 ### 3.0.0-beta.4 (January 25, 2018)
 
 - [#16160](https://github.com/emberjs/ember.js/pull/16160) [BUGFIX] Remove humanize() call from generated test descriptions
