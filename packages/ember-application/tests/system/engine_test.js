@@ -17,7 +17,7 @@ let engine;
 let originalLookup = context.lookup;
 let lookup;
 
-moduleFor('Ember.Engine', class extends TestCase {
+moduleFor('Engine', class extends TestCase {
   constructor() {
     super();
 

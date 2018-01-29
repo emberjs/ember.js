@@ -289,7 +289,7 @@ ApplicationInstance.reopenClass({
 
 /**
   A list of boot-time configuration options for customizing the behavior of
-  an `Ember.ApplicationInstance`.
+  an `ApplicationInstance`.
 
   This is an interface class that exists purely to document the available
   options; you do not need to construct it manually. Simply pass a regular
@@ -301,7 +301,7 @@ ApplicationInstance.reopenClass({
   ```
 
   Not all combinations of the supported options are valid. See the documentation
-  on `Ember.Application#visit` for the supported configurations.
+  on `Application#visit` for the supported configurations.
 
   Internal, experimental or otherwise unstable flags are marked as private.
 
@@ -430,7 +430,7 @@ function BootOptions(options = {}) {
     this options must be specified as a DOM `Element` object instead of
     a selector string.
 
-    See the documentation on `Ember.Applications`'s `rootElement` for
+    See the documentation on `Application`'s `rootElement` for
     details.
 
     @property rootElement

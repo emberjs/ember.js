@@ -18,7 +18,7 @@ function buildEngineInstance(EngineClass) {
   return engineInstance;
 }
 
-moduleFor('Ember.Engine instance initializers', class extends TestCase {
+moduleFor('Engine instance initializers', class extends TestCase {
   teardown() {
     run(() => {
       if (myEngineInstance) {

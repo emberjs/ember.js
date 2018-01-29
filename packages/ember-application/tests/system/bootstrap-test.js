@@ -4,7 +4,7 @@ import {
   DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
 
-moduleFor('Ember.Application with default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application with default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
   get fixture() {
     return `
       <div id="app"></div>

@@ -37,7 +37,7 @@ class LoggingApplicationTestCase extends ApplicationTestCase {
   }
 }
 
-moduleFor('Ember.Application with LOG_ACTIVE_GENERATION=true', class extends LoggingApplicationTestCase {
+moduleFor('Application with LOG_ACTIVE_GENERATION=true', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
@@ -86,7 +86,7 @@ moduleFor('Ember.Application with LOG_ACTIVE_GENERATION=true', class extends Log
 
 });
 
-moduleFor('Ember.Application when LOG_ACTIVE_GENERATION=false', class extends LoggingApplicationTestCase {
+moduleFor('Application when LOG_ACTIVE_GENERATION=false', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
@@ -101,7 +101,7 @@ moduleFor('Ember.Application when LOG_ACTIVE_GENERATION=false', class extends Lo
 
 });
 
-moduleFor('Ember.Application with LOG_VIEW_LOOKUPS=true', class extends LoggingApplicationTestCase {
+moduleFor('Application with LOG_VIEW_LOOKUPS=true', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
@@ -127,7 +127,7 @@ moduleFor('Ember.Application with LOG_VIEW_LOOKUPS=true', class extends LoggingA
 
 });
 
-moduleFor('Ember.Application with LOG_VIEW_LOOKUPS=false', class extends LoggingApplicationTestCase {
+moduleFor('Application with LOG_VIEW_LOOKUPS=false', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {

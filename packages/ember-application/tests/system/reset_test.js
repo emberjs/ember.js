@@ -3,7 +3,7 @@ import { Controller } from 'ember-runtime';
 import { Router } from 'ember-routing';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
-moduleFor('Ember.Application - resetting', class extends AutobootApplicationTestCase {
+moduleFor('Application - resetting', class extends AutobootApplicationTestCase {
 
   ['@test Brings its own run-loop if not provided'](assert) {
     assert.expect(0);

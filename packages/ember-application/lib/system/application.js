@@ -37,41 +37,45 @@ import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 let librariesRegistered = false;
 
 /**
-  An instance of `Ember.Application` is the starting point for every Ember
+  An instance of `Application` is the starting point for every Ember
   application. It helps to instantiate, initialize and coordinate the many
   objects that make up your app.
 
-  Each Ember app has one and only one `Ember.Application` object. In fact, the
+  Each Ember app has one and only one `Application` object. In fact, the
   very first thing you should do in your application is create the instance:
 
   ```javascript
-  window.App = Ember.Application.create();
+  import Application from '@ember/application';
+
+  window.App = Application.create();
   ```
 
   Typically, the application object is the only global variable. All other
-  classes in your app should be properties on the `Ember.Application` instance,
+  classes in your app should be properties on the `Application` instance,
   which highlights its first role: a global namespace.
 
   For example, if you define a view class, it might look like this:
 
   ```javascript
+  import Application from '@ember/application';
+
   App.MyView = Ember.View.extend();
   ```
 
-  By default, calling `Ember.Application.create()` will automatically initialize
-  your application by calling the `Ember.Application.initialize()` method. If
+  By default, calling `Application.create()` will automatically initialize
+  your application by calling the `Application.initialize()` method. If
   you need to delay initialization, you can call your app's `deferReadiness()`
   method. When you are ready for your app to be initialized, call its
   `advanceReadiness()` method.
 
-  You can define a `ready` method on the `Ember.Application` instance, which
+  You can define a `ready` method on the `Application` instance, which
   will be run by Ember when the application is initialized.
 
-  Because `Ember.Application` inherits from `Ember.Namespace`, any classes
+  Because `Application` inherits from `Ember.Namespace`, any classes
   you create will have useful string representations when calling `toString()`.
   See the `Ember.Namespace` documentation for more information.
 
-  While you can think of your `Ember.Application` as a container that holds the
+  While you can think of your `Application` as a container that holds the
   other classes in your application, there are several other responsibilities
   going on under-the-hood that you may want to understand.
 
@@ -87,7 +91,7 @@ let librariesRegistered = false;
   start walking up the DOM node tree, finding corresponding views and invoking
   their `mouseDown` method as it goes.
 
-  `Ember.Application` has a number of default events that it listens for, as
+  `Application` has a number of default events that it listens for, as
   well as a mapping from lowercase events to camel-cased view method names. For
   example, the `keypress` event causes the `keyPress` method on the view to be
   called, the `dblclick` event causes `doubleClick` to be called, and so on.
@@ -97,7 +101,9 @@ let librariesRegistered = false;
   names by setting the application's `customEvents` property:
 
   ```javascript
-  let App = Ember.Application.create({
+  import Application from '@ember/application';
+
+  let App = Application.create({
     customEvents: {
       // add support for the paste event
       paste: 'paste'
@@ -110,7 +116,9 @@ let librariesRegistered = false;
   property:
 
   ```javascript
-  let App = Ember.Application.create({
+  import Application from '@ember/application';
+
+  let App = Application.create({
     customEvents: {
       // prevent listeners for mouseenter/mouseleave events
       mouseenter: null,
@@ -128,7 +136,9 @@ let librariesRegistered = false;
   should be delegated, set your application's `rootElement` property:
 
   ```javascript
-  let App = Ember.Application.create({
+  import Application from '@ember/application';
+
+  let App = Application.create({
     rootElement: '#ember-app'
   });
   ```
@@ -139,14 +149,17 @@ let librariesRegistered = false;
   append views inside it!
 
   To learn more about the events Ember components use, see
-  [components/handling-events](https://guides.emberjs.com/v2.6.0/components/handling-events/#toc_event-names).
+
+  [components/handling-events](https://guides.emberjs.com/current/components/handling-events/#toc_event-names).
 
   ### Initializers
 
   Libraries on top of Ember can add initializers, like so:
 
   ```javascript
-  Ember.Application.initializer({
+  import Application from '@ember/application';
+
+  Application.initializer({
     name: 'api-adapter',
 
     initialize: function(application) {
@@ -163,14 +176,16 @@ let librariesRegistered = false;
 
   ### Routing
 
-  In addition to creating your application's router, `Ember.Application` is
+  In addition to creating your application's router, `Application` is
   also responsible for telling the router when to start routing. Transitions
   between routes can be logged with the `LOG_TRANSITIONS` flag, and more
   detailed intra-transition logging can be logged with
   the `LOG_TRANSITIONS_INTERNAL` flag:
 
   ```javascript
-  let App = Ember.Application.create({
+  import Application from '@ember/application';
+
+  let App = Application.create({
     LOG_TRANSITIONS: true, // basic logging of successful transitions
     LOG_TRANSITIONS_INTERNAL: true // detailed logging of all routing steps
   });
@@ -234,7 +249,7 @@ const Application = Engine.extend({
     instances.
 
     If you would like additional bubbling events to be delegated to your
-    views, set your `Ember.Application`'s `customEvents` property
+    views, set your `Application`'s `customEvents` property
     to a hash containing the DOM event name as the key and the
     corresponding view method name as the value. Setting an event to
     a value of `null` will prevent a default event listener from being
@@ -243,7 +258,9 @@ const Application = Engine.extend({
     To add new events to be listened to:
 
     ```javascript
-    let App = Ember.Application.create({
+    import Application from '@ember/application';
+
+    let App = Application.create({
       customEvents: {
         // add support for the paste event
         paste: 'paste'
@@ -254,7 +271,9 @@ const Application = Engine.extend({
     To prevent default events from being listened to:
 
     ```javascript
-    let App = Ember.Application.create({
+    import Application from '@ember/application';
+
+    let App = Application.create({
       customEvents: {
         // remove support for mouseenter / mouseleave events
         mouseenter: null,
@@ -289,7 +308,10 @@ const Application = Engine.extend({
     classes.
 
     ```javascript
-    let App = Ember.Application.create({
+    import Application from '@ember/application';
+    import Component from '@ember/component';
+
+    let App = Application.create({
       ...
     });
 
@@ -301,7 +323,7 @@ const Application = Engine.extend({
       ...
     });
 
-    App.MyComponent = Ember.Component.extend({
+    App.MyComponent = Component.extend({
       ...
     });
     ```
@@ -383,9 +405,9 @@ const Application = Engine.extend({
     @method _prepareForGlobalsMode
   */
   _prepareForGlobalsMode() {
-    // Create subclass of Ember.Router for this Application instance.
+    // Create subclass of Router for this Application instance.
     // This is to ensure that someone reopening `App.Router` does not
-    // tamper with the default `Ember.Router`.
+    // tamper with the default `Router`.
     this.Router = (this.Router || Router).extend();
 
     this._buildDeprecatedInstance();
@@ -488,12 +510,16 @@ const Application = Engine.extend({
     Example:
 
     ```javascript
-    let App = Ember.Application.create();
+    import Application from '@ember/application';
+
+    let App = Application.create();
 
     App.deferReadiness();
 
-    // Ember.$ is a reference to the jQuery object/function
-    Ember.$.getJSON('/auth-token', function(token) {
+    // $ is a reference to the jQuery object/function
+    import $ from 'jquery;
+
+    $.getJSON('/auth-token', function(token) {
       App.token = token;
       App.advanceReadiness();
     });
@@ -509,7 +535,7 @@ const Application = Engine.extend({
     @public
   */
   deferReadiness() {
-    assert('You must call deferReadiness on an instance of Ember.Application', this instanceof Application);
+    assert('You must call deferReadiness on an instance of Application', this instanceof Application);
     assert('You cannot defer readiness since the `ready()` hook has already been called.', this._readinessDeferrals > 0);
     this._readinessDeferrals++;
   },
@@ -524,7 +550,7 @@ const Application = Engine.extend({
     @public
   */
   advanceReadiness() {
-    assert('You must call advanceReadiness on an instance of Ember.Application', this instanceof Application);
+    assert('You must call advanceReadiness on an instance of Application', this instanceof Application);
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
@@ -533,7 +559,7 @@ const Application = Engine.extend({
   },
 
   /**
-    Initialize the application and return a promise that resolves with the `Ember.Application`
+    Initialize the application and return a promise that resolves with the `Application`
     object when the boot process is complete.
 
     Run any application initializers and run the application load hook. These hooks may
@@ -610,10 +636,11 @@ const Application = Engine.extend({
     Typical Example:
 
     ```javascript
+    import Application from '@ember/application';
     let App;
 
     run(function() {
-      App = Ember.Application.create();
+      App = Application.create();
     });
 
     module('acceptance test', {
@@ -638,10 +665,11 @@ const Application = Engine.extend({
     to the app becoming ready.
 
     ```javascript
+    import Application from '@ember/application';
     let App;
 
     run(function() {
-      App = Ember.Application.create();
+      App = Application.create();
     });
 
     module('acceptance test', {
@@ -668,9 +696,9 @@ const Application = Engine.extend({
     @public
   */
   reset() {
-    assert(`Calling reset() on instances of \`Ember.Application\` is not
+    assert(`Calling reset() on instances of \`Application\` is not
             supported when globals mode is disabled; call \`visit()\` to
-            create new \`Ember.ApplicationInstance\`s and dispose them
+            create new \`ApplicationInstance\`s and dispose them
             via their \`destroy()\` method instead.`, this._globalsMode && this.autoboot);
 
     let instance = this.__deprecatedInstance__;
@@ -767,7 +795,7 @@ const Application = Engine.extend({
   },
 
   /**
-    Boot a new instance of `Ember.ApplicationInstance` for the current
+    Boot a new instance of `ApplicationInstance` for the current
     application and navigate it to the given `url`. Returns a `Promise` that
     resolves with the instance when the initial routing and rendering is
     complete, or rejects with any error that occurred during the boot process.
@@ -777,9 +805,9 @@ const Application = Engine.extend({
 
     This method also takes a hash of boot-time configuration options for
     customizing the instance's behavior. See the documentation on
-    `Ember.ApplicationInstance.BootOptions` for details.
+    `ApplicationInstance.BootOptions` for details.
 
-    `Ember.ApplicationInstance.BootOptions` is an interface class that exists
+    `ApplicationInstance.BootOptions` is an interface class that exists
     purely to document the available options; you do not need to construct it
     manually. Simply pass a regular JavaScript object containing of the
     desired options:
@@ -892,7 +920,7 @@ const Application = Engine.extend({
     (as opposed to a selector string like `"body"`).
 
     See the documentation on the `isBrowser`, `document` and `rootElement` properties
-    on `Ember.ApplicationInstance.BootOptions` for details.
+    on `ApplicationInstance.BootOptions` for details.
 
     #### Server-Side Resource Discovery
 
