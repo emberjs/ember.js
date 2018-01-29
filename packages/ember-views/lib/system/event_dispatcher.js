@@ -30,12 +30,14 @@ export default EmberObject.extend({
   /**
     The set of events names (and associated handler function names) to be setup
     and dispatched by the `EventDispatcher`. Modifications to this list can be done
-    at setup time, generally via the `Ember.Application.customEvents` hash.
+    at setup time, generally via the `Application.customEvents` hash.
 
     To add new events to be listened to:
 
     ```javascript
-    let App = Ember.Application.create({
+    import Application from '@ember/application';
+
+    let App = Application.create({
       customEvents: {
         paste: 'paste'
       }
@@ -45,7 +47,9 @@ export default EmberObject.extend({
     To prevent default events from being listened to:
 
     ```javascript
-    let App = Ember.Application.create({
+    import Application from '@ember/application';
+
+    let App = Application.create({
       customEvents: {
         mouseenter: null,
         mouseleave: null

@@ -307,7 +307,7 @@ export const BOUNDS = symbol('BOUNDS');
   representation. If the value becomes `false` or `undefined` the class name
   will be removed.
   Both `classNames` and `classNameBindings` are concatenated properties. See
-  [EmberObject](/api/classes/Ember.Object.html) documentation for more
+  [EmberObject](/api/ember/release/classes/EmberObject) documentation for more
   information about concatenated properties.
 
   ## HTML Attributes
@@ -429,12 +429,12 @@ export const BOUNDS = symbol('BOUNDS');
 
   Updates to the property of an attribute binding will result in automatic
   update of the  HTML attribute in the component's rendered HTML representation.
-  `attributeBindings` is a concatenated property. See [EmberObject](/api/classes/Ember.Object.html)
+  `attributeBindings` is a concatenated property. See [EmberObject](/api/ember/release/classes/EmberObject)
   documentation for more information about concatenated properties.
 
   ## Layouts
 
-  See [Ember.Templates.helpers.yield](/api/classes/Ember.Templates.helpers.html#method_yield)
+  See [Ember.Templates.helpers.yield](/api/ember/release/classes/Ember.Templates.helpers/methods/yield?anchor=yield)
   for more information.
 
   Layout can be used to wrap content in a component. In addition
@@ -490,14 +490,14 @@ export const BOUNDS = symbol('BOUNDS');
 
   ### `{{action}}` Helper
 
-  See [Ember.Templates.helpers.action](/api/classes/Ember.Templates.helpers.html#method_action).
+  See [Ember.Templates.helpers.action](/api/ember/release/classes/Ember.Templates.helpers/methods/yield?anchor=yield).
 
   ### Event Names
 
   All of the event handling approaches described above respond to the same set
   of events. The names of the built-in events are listed below. (The hash of
   built-in events exists in `Ember.EventDispatcher`.) Additional, custom events
-  can be registered by using `Ember.Application.customEvents`.
+  can be registered by using `Application.customEvents`.
 
   Touch events:
 

@@ -41,7 +41,8 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'high' class to the view element
-    Ember.Component.extend({
+    import Component from '@ember/component';
+    Component.extend({
       classNameBindings: ['priority'],
       priority: 'high'
     });
@@ -52,7 +53,8 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'is-urgent' class to the view element
-    Ember.Component.extend({
+    import Component from '@ember/component';
+    Component.extend({
       classNameBindings: ['isUrgent'],
       isUrgent: true
     });
@@ -63,7 +65,8 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'urgent' class to the view element
-    Ember.Component.extend({
+    import Component from '@ember/component';
+    Component.extend({
       classNameBindings: ['isUrgent:urgent'],
       isUrgent: true
     });
