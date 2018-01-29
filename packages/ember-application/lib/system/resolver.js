@@ -255,7 +255,7 @@ const DefaultResolver = EmberObject.extend({
 
   /**
     Given a parseName object (output from `parseName`), apply
-    the conventions expected by `Ember.Router`
+    the conventions expected by `Router`
 
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string

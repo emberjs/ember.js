@@ -11,7 +11,7 @@ import {
 
 let engine, engineInstance;
 
-moduleFor('Ember.EngineInstance', class extends TestCase {
+moduleFor('EngineInstance', class extends TestCase {
   constructor() {
     super();
 

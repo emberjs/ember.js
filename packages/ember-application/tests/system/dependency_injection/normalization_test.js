@@ -8,7 +8,7 @@ import {
 
 let application, registry;
 
-moduleFor('Ember.Application Dependency Injection - normalize', class extends TestCase {
+moduleFor('Application Dependency Injection - normalize', class extends TestCase {
   constructor() {
     super();
 

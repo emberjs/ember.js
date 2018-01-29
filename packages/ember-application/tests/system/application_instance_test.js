@@ -13,7 +13,7 @@ import {
 
 let application, appInstance;
 
-moduleFor('Ember.ApplicationInstance', class extends TestCase {
+moduleFor('ApplicationInstance', class extends TestCase {
   constructor() {
     super();
 
@@ -172,7 +172,7 @@ moduleFor('Ember.ApplicationInstance', class extends TestCase {
       });
   }
 
-  ['can build a registry via Ember.ApplicationInstance.setupRegistry() -- simulates ember-test-helpers'](assert) {
+  ['can build a registry via ApplicationInstance.setupRegistry() -- simulates ember-test-helpers'](assert) {
     let namespace = EmberObject.create({
       Resolver: { create: function() { } }
     });
