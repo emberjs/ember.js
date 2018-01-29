@@ -256,7 +256,7 @@
   {{/link-to}}
   ```
 
-  See [LinkComponent](/api/classes/Ember.LinkComponent.html) for a
+  See [LinkComponent](/api/ember/release/classes/LinkComponent) for a
   complete list of overrideable properties. Be sure to also
   check out inherited properties of `LinkComponent`.
 

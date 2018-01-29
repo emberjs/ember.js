@@ -8,10 +8,10 @@ import { cloneStates, states } from './states';
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
-  to both Ember's main view class `Ember.Component` and other classes that don't need
-  the full functionality of `Ember.Component`.
+  to both Ember's main view class `Component` and other classes that don't need
+  the full functionality of `Component`.
 
-  Unless you have specific needs for `CoreView`, you will use `Ember.Component`
+  Unless you have specific needs for `CoreView`, you will use `Component`
   in your applications.
 
   @class CoreView
@@ -58,7 +58,7 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
   },
 
   /**
-    Override the default event firing from `Ember.Evented` to
+    Override the default event firing from `Evented` to
     also call methods with the given name.
 
     @method trigger

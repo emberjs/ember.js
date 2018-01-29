@@ -18,7 +18,7 @@ function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuil
 /**
   The `{{input}}` helper lets you create an HTML `<input />` component.
   It causes an `TextField` component to be rendered.  For more info,
-  see the [TextField](/api/classes/Ember.TextField.html) docs and
+  see the [TextField](/api/ember/release/classes/TextField) docs and
   the [templates guide](https://emberjs.com/guides/templates/input-helpers/).
 
   ```handlebars
@@ -86,7 +86,7 @@ function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuil
   ```handlebars
   {{input focus-out="alertMessage"}}
   ```
-  See more about [Text Support Actions](/api/classes/Ember.TextField.html)
+  See more about [Text Support Actions](/api/ember/release/classes/TextField)
 
   ### Extending `TextField`
 
@@ -106,7 +106,7 @@ function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuil
   Keep in mind when writing `TextField` subclasses that `TextField`
   itself extends `Component`. Expect isolated component semantics, not
   legacy 1.x view semantics (like `controller` being present).
-  See more about [Ember components](/api/classes/Ember.Component.html)
+  See more about [Ember components](/api/ember/release/classes/Component)
 
   ### Checkbox
 

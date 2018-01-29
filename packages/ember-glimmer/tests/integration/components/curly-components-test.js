@@ -889,9 +889,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     // This is testing the scenario where you import a template and
     // set it to the layout property:
     //
+    // import Component from '@ember/component';
     // import layout from './template';
     //
-    // export default Ember.Component.extend({
+    // export default Component.extend({
     //   layout
     // });
     let hello = compile('Hello');

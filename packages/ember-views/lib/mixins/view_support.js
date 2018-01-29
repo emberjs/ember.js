@@ -85,7 +85,7 @@ export default Mixin.create({
 
     @method nearestOfType
     @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
-           or an instance of Ember.Mixin.
+           or an instance of Mixin.
     @return Ember.View
     @deprecated use `yield` and contextual components for composition instead.
     @private
@@ -190,7 +190,7 @@ export default Mixin.create({
 
     This is not typically a function that you will need to call directly when
     building your application. If you do need to use `appendTo`, be sure that
-    the target element you are providing is associated with an `Ember.Application`
+    the target element you are providing is associated with an `Application`
     and does not have an ancestor element that is associated with an Ember view.
 
     @method appendTo

@@ -37,7 +37,7 @@ function canSetTypeOfInput(type: string) {
   The internal class used to create text inputs when the `{{input}}`
   helper is used with `type` of `text`.
 
-  See [Ember.Templates.helpers.input](/api/classes/Ember.Templates.helpers.html#method_input)  for usage details.
+  See [Ember.Templates.helpers.input](/api/ember/release/classes/Ember.Templates.helpers/methods/input?anchor=input)  for usage details.
 
   ## Layout and LayoutName properties
 

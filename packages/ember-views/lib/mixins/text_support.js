@@ -15,8 +15,8 @@ const KEY_EVENTS = {
 };
 
 /**
-  `TextSupport` is a shared mixin used by both `Ember.TextField` and
-  `Ember.TextArea`. `TextSupport` adds a number of methods that allow you to
+  `TextSupport` is a shared mixin used by both `TextField` and
+  `TextArea`. `TextSupport` adds a number of methods that allow you to
   specify a controller action to invoke when a certain event is fired on your
   text field or textarea. The specified controller action would get the current
   value of the field passed in as the only argument unless the value of
@@ -34,9 +34,11 @@ const KEY_EVENTS = {
   ```
 
   ```javascript
-      App = Ember.Application.create();
+      import Application from '@ember/application';
+      import Controller from '@ember/controller';
+      App = Application.create();
 
-      App.ApplicationController = Ember.Controller.extend({
+      App.ApplicationController = Controller.extend({
         actions: {
           alertUser: function ( currentValue ) {
             alert( 'escape pressed, current value: ' + currentValue );
