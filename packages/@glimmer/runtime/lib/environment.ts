@@ -255,7 +255,7 @@ export abstract class Environment {
   }
 
   begin() {
-    assert(!this._transaction, 'a glimmer transaction was begun, but one already exists. You may have a nested transaction');
+    assert(!this._transaction, 'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.');
     this._transaction = new Transaction();
   }
 
