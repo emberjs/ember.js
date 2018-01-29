@@ -5,7 +5,7 @@ import { applyStr } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { deprecate, assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
-import { ONCE, SUSPENDED } from './meta_listeners';
+import { ONCE } from './meta_listeners';
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -121,8 +121,8 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
     actions = typeof meta === 'object' &&
-                     meta !== null &&
-                     meta.matchingListeners(eventName);
+      meta !== null &&
+      meta.matchingListeners(eventName);
   }
 
   if (actions === undefined || actions.length === 0) { return false; }
@@ -133,7 +133,6 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
     let flags = actions[i + 2];
 
     if (!method) { continue; }
-    if (flags & SUSPENDED) { continue; }
     if (flags & ONCE) { removeListener(obj, eventName, target, method); }
     if (!target) { target = obj; }
     if ('string' === typeof method) {

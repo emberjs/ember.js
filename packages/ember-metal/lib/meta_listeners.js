@@ -12,7 +12,6 @@
 
 /* listener flags */
 export const ONCE = 1;
-export const SUSPENDED = 2;
 
 export const protoMethods = {
 
