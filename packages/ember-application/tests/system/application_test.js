@@ -35,7 +35,7 @@ import {
 } from 'internal-test-helpers';
 import { run } from 'ember-metal';
 
-moduleFor('Ember.Application, autobooting multiple apps', class extends ApplicationTestCase {
+moduleFor('Application, autobooting multiple apps', class extends ApplicationTestCase {
   get fixture() {
     return `
       <div id="one">
@@ -106,7 +106,7 @@ moduleFor('Ember.Application, autobooting multiple apps', class extends Applicat
   }
 });
 
-moduleFor('Ember.Application', class extends ApplicationTestCase {
+moduleFor('Application', class extends ApplicationTestCase {
 
   [`@test builds a registry`](assert) {
     let {application} = this;
@@ -171,7 +171,7 @@ moduleFor('Ember.Application', class extends ApplicationTestCase {
 
 });
 
-moduleFor('Ember.Application, default resolver with autoboot', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application, default resolver with autoboot', class extends DefaultResolverApplicationTestCase {
 
   constructor() {
     super();
@@ -221,7 +221,7 @@ moduleFor('Ember.Application, default resolver with autoboot', class extends Def
 
 });
 
-moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTestCase {
+moduleFor('Application, autobooting', class extends AutobootApplicationTestCase {
 
   constructor() {
     super();
@@ -366,7 +366,7 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
     assert.equal(_loaded.application, undefined);
   }
 
-  [`@test can build a registry via Ember.Application.buildRegistry() --- simulates ember-test-helpers`](assert) {
+  [`@test can build a registry via Application.buildRegistry() --- simulates ember-test-helpers`](assert) {
     let namespace = EmberObject.create({
       Resolver: { create: function() { } }
     });
@@ -378,9 +378,9 @@ moduleFor('Ember.Application, autobooting', class extends AutobootApplicationTes
 
 });
 
-moduleFor('Ember.Application#buildRegistry', class extends AbstractTestCase {
+moduleFor('Application#buildRegistry', class extends AbstractTestCase {
 
-  [`@test can build a registry via Ember.Application.buildRegistry() --- simulates ember-test-helpers`](assert) {
+  [`@test can build a registry via Application.buildRegistry() --- simulates ember-test-helpers`](assert) {
     let namespace = EmberObject.create({
       Resolver: { create() { } }
     });
@@ -392,7 +392,7 @@ moduleFor('Ember.Application#buildRegistry', class extends AbstractTestCase {
 
 });
 
-moduleFor('Ember.Application - instance tracking', class extends ApplicationTestCase {
+moduleFor('Application - instance tracking', class extends ApplicationTestCase {
 
   ['@test tracks built instance'](assert) {
     let instance = this.application.buildInstance();

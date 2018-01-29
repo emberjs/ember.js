@@ -19,7 +19,7 @@ import {
 } from 'ember-glimmer';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
-moduleFor('Ember.Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
 
   beforeEach() {
     this.runTask(() => this.createApplication());
@@ -187,7 +187,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     }, /to resolve to an Ember.Route/, 'Should assert');
   }
 
-  [`@test no assertion for routes that extend from Ember.Route`](assert) {
+  [`@test no assertion for routes that extend from Route`](assert) {
     assert.expect(0);
     this.application.FooRoute = Route.extend();
     this.privateRegistry.resolve(`route:foo`);
@@ -200,7 +200,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     }, /Expected service:foo to resolve to an Ember.Service but instead it was \.FooService\./);
   }
 
-  [`@test no deprecation warning for service factories that extend from Ember.Service`](assert) {
+  [`@test no deprecation warning for service factories that extend from Service`](assert) {
     assert.expect(0);
     this.application.FooService = Service.extend();
     this.privateRegistry.resolve('service:foo');
@@ -213,7 +213,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
   }
 
-  [`@test no deprecation warning for component factories that extend from Ember.Component`]() {
+  [`@test no deprecation warning for component factories that extend from Component`]() {
     expectNoDeprecation();
     this.application.FooView = Component.extend();
     this.privateRegistry.resolve('component:foo');
@@ -241,7 +241,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
 
 });
 
-moduleFor('Ember.Application Dependency Injection - Integration - default resolver w/ other namespace', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application Dependency Injection - Integration - default resolver w/ other namespace', class extends DefaultResolverApplicationTestCase {
 
   beforeEach() {
     this.UserInterface = context.lookup.UserInterface = Namespace.create();
@@ -271,7 +271,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
   }
 });
 
-moduleFor('Ember.Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
 
   constructor() {
     super();
