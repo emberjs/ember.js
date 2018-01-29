@@ -594,7 +594,7 @@ const Application = Engine.extend({
     try {
       this._bootSync();
     } catch (_) {
-      // Ignore th error: in the asynchronous boot path, the error is already reflected
+      // Ignore the error: in the asynchronous boot path, the error is already reflected
       // in the promise rejection
     }
 
