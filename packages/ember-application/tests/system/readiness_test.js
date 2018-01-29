@@ -61,7 +61,7 @@ moduleFor('Application readiness', class extends ApplicationTestCase {
   // synchronously during the application's initialization, we get the same behavior as if
   // it was triggered after initialization.
 
-  ['@test Ember.Application\'s ready event is called right away if jQuery is already ready'](assert) {
+  ['@test Application\'s ready event is called right away if jQuery is already ready'](assert) {
     jQuery.isReady = true;
 
     run(() => {
@@ -77,7 +77,7 @@ moduleFor('Application readiness', class extends ApplicationTestCase {
     assert.equal(readyWasCalled, 1, 'application\'s ready was not called again');
   }
 
-  ['@test Ember.Application\'s ready event is called after the document becomes ready'](assert) {
+  ['@test Application\'s ready event is called after the document becomes ready'](assert) {
     run(() => {
       application = Application.create({ router: false });
     });
@@ -89,7 +89,7 @@ moduleFor('Application readiness', class extends ApplicationTestCase {
     assert.equal(readyWasCalled, 1, 'ready was called now that DOM is ready');
   }
 
-  ['@test Ember.Application\'s ready event can be deferred by other components'](assert) {
+  ['@test Application\'s ready event can be deferred by other components'](assert) {
     run(() => {
       application = Application.create({ router: false });
       application.deferReadiness();
@@ -109,7 +109,7 @@ moduleFor('Application readiness', class extends ApplicationTestCase {
     assert.equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
   }
 
-  ['@test Ember.Application\'s ready event can be deferred by other components'](assert) {
+  ['@test Application\'s ready event can be deferred by other components'](assert) {
     jQuery.isReady = false;
 
     run(() => {

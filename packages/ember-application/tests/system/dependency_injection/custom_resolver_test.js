@@ -5,7 +5,7 @@ import {
   DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
 
-moduleFor('Ember.Application with extended default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application with extended default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
 
   get applicationOptions() {
     let applicationTemplate = this.compile(`<h1>Fallback</h1>`);
