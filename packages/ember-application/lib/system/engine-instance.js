@@ -28,7 +28,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   /**
     The base `Engine` for which this is an instance.
 
-    @property {Ember.Engine} engine
+    @property {Engine} engine
     @private
   */
   base: null,
@@ -58,7 +58,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   },
 
   /**
-    Initialize the `Ember.EngineInstance` and return a promise that resolves
+    Initialize the `EngineInstance` and return a promise that resolves
     with the instance itself when the boot process is complete.
 
     The primary task here is to run any registered instance initializers.
@@ -68,7 +68,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @private
     @method boot
     @param options {Object}
-    @return {Promise<Ember.EngineInstance,Error>}
+    @return {Promise<EngineInstance,Error>}
   */
   boot(options) {
     if (this._bootPromise) { return this._bootPromise; }
@@ -128,7 +128,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   },
 
   /**
-    Build a new `Ember.EngineInstance` that's a child of this instance.
+    Build a new `EngineInstance` that's a child of this instance.
 
     Engines must be registered by name with their parent engine
     (or application).
