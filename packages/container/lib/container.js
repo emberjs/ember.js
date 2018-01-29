@@ -1,5 +1,5 @@
 /* globals Proxy */
-import { assert } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
@@ -10,6 +10,10 @@ import {
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 
+import {
+  CREATE,
+  INIT_FACTORY
+} from './symbols';
 
 /**
  A container used to instantiate and cache objects.
@@ -415,16 +419,28 @@ class FactoryManager {
       validationCache[this.fullName] = true;
     }
 
-    if (!this.class.create) {
-      throw new Error(`Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or` + ` an invalid module export.`);
+    if (!this.class[CREATE]) {
+      if (this.class.create) {
+        deprecate(
+          `You are trying to use a simple object with a create() method on it as an Ember factory. This usage is deprecated.`,
+          false,
+          {
+            id: 'container.deprecate-bare-create',
+            until: '4.0.0',
+            url: 'https://emberjs.com/deprecations/v3.x/#toc_container-bare-create'
+          }                    
+        );
+      } else {
+        throw new Error(`Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or` + ` an invalid module export.`);
+      }
     }
 
     // required to allow access to things like
     // the customized toString, _debugContainerKey,
     // owner, etc. without a double extend and without
     // modifying the objects properties
-    if (typeof this.class._initFactory === 'function') {
-      this.class._initFactory(this);
+    if (typeof this.class[INIT_FACTORY] === 'function') {
+      this.class[INIT_FACTORY](this);
     } else {
       // in the non-EmberObject case we need to still setOwner
       // this is required for supporting glimmer environment and
@@ -434,7 +450,13 @@ class FactoryManager {
       setOwner(props, this.owner);
     }
 
-    let instance = this.class.create(props);
+    let instance;
+    if (!this.class[CREATE]) {
+      instance = this.class.create(props);
+    } else {
+      instance = this.class[CREATE]({ properties: props, owner: this.owner });
+    }
+
     FACTORY_FOR.set(instance, this);
 
     return instance;

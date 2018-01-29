@@ -2,6 +2,9 @@ import {
   Reference,
 } from '@glimmer/reference';
 import {
+  CREATE
+} from 'container';
+import {
   ElementBuilder,
   Environment as GlimmerEnvironment,
   PrimitiveReference,
@@ -40,8 +43,8 @@ export interface CompilerFactory {
 }
 
 export default class Environment extends GlimmerEnvironment {
-  static create(options: any) {
-    return new this(options);
+  static [CREATE]({ properties }: any) {
+    return new this(properties);
   }
 
   public owner: Owner;

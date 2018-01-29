@@ -1,3 +1,6 @@
+import { CREATE } from 'container';
+import { setOwner } from 'ember-utils';
+
 function setProperties(object, properties) {
   for (let key in properties) {
     if (properties.hasOwnProperty(key)) {
@@ -26,6 +29,11 @@ export default function factory() {
     return '<Factory:' + this._guid + '>';
   };
 
+  Klass[CREATE] = function({ properties }) {
+    let instance = this.create(properties);
+    setOwner(instance, properties);
+    return instance;
+  };
   Klass.create = create;
   Klass.extend = extend;
   Klass.reopen = extend;

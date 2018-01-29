@@ -1,4 +1,4 @@
-import { privatize as P } from 'container';
+import { CREATE, privatize as P } from 'container';
 import { ENV, environment } from 'ember-environment';
 import Component from './component';
 import Checkbox from './components/checkbox';
@@ -40,13 +40,13 @@ export function setupApplicationRegistry(registry: Registry) {
   }
 
   registry.register('service:-dom-changes', {
-    create({ document }: { document: HTMLDocument }) {
+    [CREATE]({ properties: { document } }: { properties: { document: HTMLDocument } }) {
       return new DOMChanges(document);
     },
   });
 
   registry.register('service:-dom-tree-construction', {
-    create({ document }: { document: HTMLDocument }) {
+    [CREATE]({ properties: { document } }: { properties: { document: HTMLDocument } }) {
       let Implementation = environment.hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
       return new Implementation(document);
     },

@@ -5,8 +5,9 @@ import {
   TemplateFactory,
 } from '@glimmer/runtime';
 import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
-import { getOwner } from 'ember-utils';
+import { Owner } from 'ember-utils';
 import { OwnedTemplateMeta, StaticTemplateMeta } from 'ember-views';
+import { CREATE } from 'container';
 
 export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
 export type OwnedTemplate = Template<OwnedTemplateMeta>;
@@ -23,7 +24,7 @@ export interface Injections {
 export interface Factory {
   id: string;
   meta: StaticTemplateMeta;
-  create(injections: Injections): OwnedTemplate;
+  [CREATE]({ properties, owner }: { properties: Injections, owner: Owner }): OwnedTemplate;
 }
 
 class FactoryWrapper implements Factory {
@@ -35,8 +36,7 @@ class FactoryWrapper implements Factory {
     this.meta = factory.meta;
   }
 
-  create(injections: Injections): OwnedTemplate {
-    const owner = getOwner(injections);
-    return this.factory.create(injections.options, { owner });
+  [CREATE]({ properties, owner }: { properties: Injections, owner: Owner }): OwnedTemplate {
+    return this.factory.create(properties.options, { owner });
   }
 }

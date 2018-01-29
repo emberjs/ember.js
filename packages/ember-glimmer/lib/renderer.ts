@@ -22,6 +22,7 @@ import {
   getViewId,
   setViewElement,
 } from 'ember-views';
+import { CREATE } from 'container';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
@@ -486,7 +487,7 @@ export abstract class Renderer {
 }
 
 export class InertRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any}) {
+  static [CREATE]({ properties: { env, rootTemplate, _viewRegistry } }: { properties: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any} }) {
     return new this(env, rootTemplate, _viewRegistry, false);
   }
 
@@ -496,7 +497,7 @@ export class InertRenderer extends Renderer {
 }
 
 export class InteractiveRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any}) {
+  static [CREATE]({ properties: { env, rootTemplate, _viewRegistry } }: { properties: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any} }) {
     return new this(env, rootTemplate, _viewRegistry, true);
   }
 

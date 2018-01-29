@@ -8,5 +8,10 @@ The public API, specified on the application namespace should be considered the 
 export { default as Registry, privatize } from './registry';
 export {
   default as Container,
-  FACTORY_FOR,
+  FACTORY_FOR
 } from './container';
+
+export {
+  CREATE,
+  INIT_FACTORY
+} from './symbols';

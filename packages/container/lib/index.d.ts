@@ -17,3 +17,5 @@ export const privatize: any;
 export const Registry: any;
 export const Container: (registry: any, options?: any) => Container;
 export const FACTORY_FOR: WeakMap<any, any>;
+export const CREATE: symbol;
+export const INIT_FACTORY: symbol;

@@ -1,6 +1,7 @@
 import { run, get } from 'ember-metal';
 import { Controller } from 'ember-runtime';
 import { Router } from 'ember-routing';
+import { CREATE } from 'container';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor('Ember.Application - resetting', class extends AutobootApplicationTestCase {
@@ -69,7 +70,7 @@ moduleFor('Ember.Application - resetting', class extends AutobootApplicationTest
 
     run(() => {
       this.createApplication();
-      this.add('event_dispatcher:main', {create: () => mockEventDispatcher});
+      this.add('event_dispatcher:main', {[CREATE]: () => mockEventDispatcher});
 
       assert.equal(eventDispatcherWasSetup, 0);
       assert.equal(eventDispatcherWasDestroyed, 0);

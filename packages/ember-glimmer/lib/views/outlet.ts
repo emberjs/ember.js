@@ -1,7 +1,8 @@
 import { Simple } from '@glimmer/interfaces';
 import { environment } from 'ember-environment';
 import { run } from 'ember-metal';
-import { assign, OWNER, Owner } from 'ember-utils';
+import { assign, Owner } from 'ember-utils';
+import { CREATE } from 'container';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
 import { OwnedTemplate } from '../template';
@@ -19,11 +20,11 @@ const TOP_LEVEL_OUTLET = 'main';
 export default class OutletView {
   static extend(injections: any) {
     return class extends OutletView {
-      static create(options: any) {
-        if (options) {
-          return super.create(assign({}, injections, options));
+      static [CREATE]({ properties, owner }: any) {
+        if (properties) {
+          return super[CREATE]({ properties: assign({}, injections, properties), owner });
         } else {
-          return super.create(injections);
+          return super[CREATE]({ properties: injections, owner });
         }
       }
     };
@@ -33,9 +34,8 @@ export default class OutletView {
     assign(this, injections);
   }
 
-  static create(options: any) {
-    let { _environment, renderer, template } = options;
-    let owner = options[OWNER];
+  static [CREATE]({ properties, owner }: any) {
+    let { _environment, renderer, template } = properties;
     return new OutletView(_environment, renderer, owner, template);
   }
 

@@ -4,12 +4,13 @@
 
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
-import { FACTORY_FOR } from 'container';
+import { CREATE, FACTORY_FOR, INIT_FACTORY } from 'container';
 import {
   assign,
   guidFor,
   generateGuid,
   makeArray,
+  setOwner,
   GUID_KEY_PROPERTY,
   NAME_KEY,
   GUID_KEY,
@@ -219,7 +220,7 @@ function makeCtor() {
     }
 
     static _initProperties(args) { initProperties = args; }
-    static _initFactory(factory) { initFactory = factory; }
+    static [INIT_FACTORY](factory) { initFactory = factory; }
 
     static proto() {
       let superclass = Class.superclass;
@@ -760,6 +761,18 @@ let ClassMixinProps = {
     if (args.length > 0) {
       this._initProperties(args);
     }
+
+    return new C();
+  },
+
+  [CREATE]({ properties, owner }) {
+    let C = this;
+
+    if (properties) {
+      this._initProperties([properties]);
+    }
+
+    setOwner(this, owner);
 
     return new C();
   },

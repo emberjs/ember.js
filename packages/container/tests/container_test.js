@@ -2,6 +2,7 @@ import { OWNER, assign } from 'ember-utils';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { INIT_FACTORY, CREATE } from 'container';
 
 moduleFor('Container', class extends AbstractTestCase {
   ['@test A registered factory returns the same instance each time'](assert) {
@@ -590,15 +591,15 @@ moduleFor('Container', class extends AbstractTestCase {
     assert.equal(instrance.ajax, 'fetch');
   }
 
-  ['@test #factoryFor does not add properties to the object being instantiated when _initFactory is present'](assert) {
+  ['@test #factoryFor does not add properties to the object being instantiated when INIT_FACTORY is present'](assert) {
     let registry = new Registry();
     let container = registry.container();
 
     class Component {
-      static _initFactory() {}
-      static create(options) {
+      static [INIT_FACTORY]() {}
+      static [CREATE]({ properties }) {
         let instance = new this();
-        assign(instance, options);
+        assign(instance, properties);
         return instance;
       }
     }

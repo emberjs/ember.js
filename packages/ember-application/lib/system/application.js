@@ -27,7 +27,7 @@ import {
   BucketCache
 } from 'ember-routing';
 import ApplicationInstance from './application-instance';
-import { privatize as P } from 'container';
+import { CREATE, privatize as P } from 'container';
 import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';
@@ -1057,7 +1057,7 @@ Application.reopenClass({
 
 function commonSetupRegistry(registry) {
   registry.register('router:main', Router.extend());
-  registry.register('-view-registry:main', { create() { return dictionary(null); } });
+  registry.register('-view-registry:main', { [CREATE]() { return dictionary(null); } });
 
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);

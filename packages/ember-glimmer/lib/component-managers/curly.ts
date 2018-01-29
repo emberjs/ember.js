@@ -23,7 +23,7 @@ import {
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY, Opaque } from '@glimmer/util';
-import { privatize as P } from 'container';
+import { CREATE, privatize as P } from 'container';
 import {
   assert,
   deprecate,
@@ -75,7 +75,7 @@ function aliasIdToElementId(args: Arguments, props: any) {
 }
 
 function isTemplateFactory(template: OwnedTemplate | TemplateFactory): template is TemplateFactory {
-  return typeof (template as TemplateFactory).create === 'function';
+  return typeof (template as TemplateFactory)[CREATE] === 'function';
 }
 
 // We must traverse the attributeBindings in reverse keeping track of

@@ -14,7 +14,7 @@ import {
   PartialDefinition,
   TopLevelSyntax,
 } from '@glimmer/runtime';
-import { privatize as P } from 'container';
+import { CREATE, privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
@@ -193,13 +193,13 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     if (template === undefined) {
       const injections: Injections = { options: this.templateOptions };
       setOwner(injections, owner);
-      template = factory.create(injections);
-      cache.set(factory, template);
+      template = factory[CREATE]({ properties: injections, owner });
+      cache.set(factory, template!);
       this.templateCacheMisses++;
     } else {
       this.templateCacheHits++;
     }
-    return template;
+    return template!;
   }
 
   /**

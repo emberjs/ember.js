@@ -1,4 +1,5 @@
 import { setOwner } from 'ember-utils';
+import { CREATE } from 'container';
 import HashLocation from '../../location/hash_location';
 import HistoryLocation from '../../location/history_location';
 import AutoLocation from '../../location/auto_location';
@@ -143,7 +144,7 @@ moduleFor('Ember Router', class extends AbstractTestCase {
     let router;
     let FakeLocation = {
       cancelRouterSetup: true,
-      create() { return this; }
+      [CREATE]() { return this; }
     };
 
     owner.register('location:fake', FakeLocation);

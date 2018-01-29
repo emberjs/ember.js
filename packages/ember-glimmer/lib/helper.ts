@@ -6,6 +6,7 @@ import { Dict, Opaque } from '@glimmer/interfaces';
 import { DirtyableTag } from '@glimmer/reference';
 import { FrameworkObject } from 'ember-runtime';
 import { Factory, symbol } from 'ember-utils';
+import { CREATE } from 'container';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -20,7 +21,7 @@ export interface SimpleHelper {
   isHelperFactory: true;
   isSimpleHelper: true;
 
-  create(): SimpleHelper;
+  [CREATE](): SimpleHelper;
   compute: HelperFunction;
 }
 
@@ -28,7 +29,7 @@ export interface HelperStatic {
   isHelperFactory: true;
   isSimpleHelper: false;
 
-  create(): HelperInstance;
+  [CREATE](): HelperInstance;
 }
 
 export interface HelperInstance {
@@ -147,7 +148,7 @@ class Wrapper implements SimpleHelper {
 
   constructor(public compute: HelperFunction) {}
 
-  create() {
+  [CREATE]() {
     return this;
   }
 }

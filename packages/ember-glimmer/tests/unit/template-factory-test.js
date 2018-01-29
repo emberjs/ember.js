@@ -1,5 +1,6 @@
 import { precompile, compile } from 'ember-template-compiler';
 import { template } from 'ember-glimmer';
+import { CREATE } from 'container';
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
 
@@ -20,10 +21,10 @@ moduleFor('Template factory test', class extends RenderingTest {
 
     let Compiled = compile(templateStr, options);
 
-    assert.equal(typeof Precompiled.create, 'function', 'precompiled is a factory');
+    assert.equal(typeof Precompiled[CREATE], 'function', 'precompiled is a factory');
     assert.ok(Precompiled.id, 'precompiled has id');
 
-    assert.equal(typeof Compiled.create, 'function', 'compiled is a factory');
+    assert.equal(typeof Compiled[CREATE], 'function', 'compiled is a factory');
     assert.ok(Compiled.id, 'compiled has id');
 
     assert.equal(runtimeResolver.templateCacheMisses, 0, 'misses 0');
