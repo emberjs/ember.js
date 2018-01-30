@@ -7,7 +7,7 @@ import {
 
 let MyEngine, myEngine, myEngineInstance;
 
-moduleFor('Ember.Engine initializers', class extends TestCase {
+moduleFor('Engine initializers', class extends TestCase {
   teardown() {
     run(() => {
       if (myEngineInstance) {

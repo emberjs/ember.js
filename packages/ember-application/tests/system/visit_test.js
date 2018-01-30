@@ -17,7 +17,7 @@ function expectAsyncError() {
   RSVP.off('error');
 }
 
-moduleFor('Ember.Application - visit()', class extends ApplicationTestCase {
+moduleFor('Application - visit()', class extends ApplicationTestCase {
 
   teardown() {
     RSVP.on('error', onerrorDefault);
