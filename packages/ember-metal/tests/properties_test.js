@@ -6,7 +6,7 @@ import {
 
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-moduleFor('Ember.defineProperty', class extends AbstractTestCase {
+moduleFor('defineProperty', class extends AbstractTestCase {
   ['@test toString'](assert) {
     let obj = {};
     defineProperty(obj, 'toString', undefined, function() { return 'FOO'; });

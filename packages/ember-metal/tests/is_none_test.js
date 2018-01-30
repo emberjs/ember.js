@@ -1,8 +1,8 @@
 import { isNone } from '..';
 
-QUnit.module('Ember.isNone');
+QUnit.module('isNone');
 
-QUnit.test('Ember.isNone', function(assert) {
+QUnit.test('isNone', function(assert) {
   let string = 'string';
   let fn = function() {};
 

@@ -217,27 +217,27 @@ moduleFor('watch', class extends AbstractTestCase {
 
     assert.equal(parent.b,  1, 'parent.b should be 1');
     assert.equal(child.b, 1, 'child.b should be 1');
-    assert.equal(get(child, 'b'), 1, 'Ember.get(child, "b") should be 1');
+    assert.equal(get(child, 'b'), 1, 'get(child, "b") should be 1');
 
     watch(child, 'b');
 
     assert.equal(parent.b,  1, 'parent.b should be 1 (after watch)');
     assert.equal(child.b, 1, 'child.b should be 1  (after watch)');
 
-    assert.equal(get(child, 'b'), 1, 'Ember.get(child, "b") should be 1 (after watch)');
+    assert.equal(get(child, 'b'), 1, 'get(child, "b") should be 1 (after watch)');
   }
 
-  ['@test watch + Ember.set + no-descriptor'](assert) {
+  ['@test watch + set + no-descriptor'](assert) {
     let child = { };
 
     assert.equal(child.b, undefined, 'child.b ');
-    assert.equal(get(child, 'b'), undefined, 'Ember.get(child, "b")');
+    assert.equal(get(child, 'b'), undefined, 'get(child, "b")');
 
     watch(child, 'b');
     set(child, 'b', 1);
 
     assert.equal(child.b, 1, 'child.b (after watch)');
-    assert.equal(get(child, 'b'), 1, 'Ember.get(child, "b") (after watch)');
+    assert.equal(get(child, 'b'), 1, 'get(child, "b") (after watch)');
   }
 });
 

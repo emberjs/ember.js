@@ -1,8 +1,8 @@
 import { isPresent } from '..';
 
-QUnit.module('Ember.isPresent');
+QUnit.module('isPresent');
 
-QUnit.test('Ember.isPresent', function(assert) {
+QUnit.test('isPresent', function(assert) {
   let string = 'string';
   let fn = function() {};
   let object = { length: 0 };

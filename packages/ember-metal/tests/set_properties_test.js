@@ -1,7 +1,7 @@
 import { setProperties } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-moduleFor('Ember.setProperties', class extends AbstractTestCase {
+moduleFor('setProperties', class extends AbstractTestCase {
   ['@test supports setting multiple attributes at once'](assert) {
     assert.deepEqual(setProperties(null, null), null, 'noop for null properties and null object');
     assert.deepEqual(setProperties(undefined, undefined), undefined, 'noop for undefined properties and undefined object');

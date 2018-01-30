@@ -4,9 +4,9 @@ import {
   OrderedSet
 } from '..';
 
-QUnit.module('Ember.isEmpty');
+QUnit.module('isEmpty');
 
-QUnit.test('Ember.isEmpty', function(assert) {
+QUnit.test('isEmpty', function(assert) {
   let string = 'string';
   let fn = function() {};
   let object = { length: 0 };
@@ -26,14 +26,14 @@ QUnit.test('Ember.isEmpty', function(assert) {
   assert.equal(true, isEmpty(object), 'for an Object that has zero \'length\'');
 });
 
-QUnit.test('Ember.isEmpty Ember.Map', function(assert) {
+QUnit.test('isEmpty Map', function(assert) {
   let map = new Map();
   assert.equal(true, isEmpty(map), 'Empty map is empty');
   map.set('foo', 'bar');
   assert.equal(false, isEmpty(map), 'Map is not empty');
 });
 
-QUnit.test('Ember.isEmpty Ember.OrderedSet', function(assert) {
+QUnit.test('isEmpty Ember.OrderedSet', function(assert) {
   let orderedSet = new OrderedSet();
   assert.equal(true, isEmpty(orderedSet), 'Empty ordered set is empty');
   orderedSet.add('foo');

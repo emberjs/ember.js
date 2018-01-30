@@ -44,7 +44,8 @@ export function getPossibleMandatoryProxyValue(obj, keyName) {
   object implements the `unknownProperty` method then that will be invoked.
 
   ```javascript
-  Ember.get(obj, "name");
+  import { get } from '@ember/object';
+  get(obj, "name");
   ```
 
   If you plan to run on IE8 and older browsers then you should use this
@@ -73,7 +74,7 @@ export function get(obj, keyName) {
   assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
   assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
   assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
-  assert('Cannot call `Ember.get` with an empty string', keyName !== '');
+  assert('Cannot call `get` with an empty string', keyName !== '');
 
   let type = typeof obj;
 
@@ -144,7 +145,8 @@ function isGettable(obj) {
   case that the property returns `undefined`.
 
   ```javascript
-  Ember.getWithDefault(person, 'lastName', 'Doe');
+  import { getWithDefault } from '@ember/object';
+  getWithDefault(person, 'lastName', 'Doe');
   ```
 
   @method getWithDefault

@@ -9,7 +9,7 @@ import { isTesting, setTesting } from 'ember-debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('system/run_loop/onerror_test', class extends AbstractTestCase {
-  ['@test With Ember.onerror undefined, errors in Ember.run are thrown'](assert) {
+  ['@test With Ember.onerror undefined, errors in run are thrown'](assert) {
     let thrown = new Error('Boom!');
     let original = getOnerror();
 
@@ -26,7 +26,7 @@ moduleFor('system/run_loop/onerror_test', class extends AbstractTestCase {
     assert.deepEqual(caught, thrown);
   }
 
-  ['@test With Ember.onerror set, errors in Ember.run are caught'](assert) {
+  ['@test With Ember.onerror set, errors in run are caught'](assert) {
     let thrown = new Error('Boom!');
     let original = getOnerror();
     let originalDispatchOverride = getDispatchOverride();
