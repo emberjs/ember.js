@@ -63,14 +63,14 @@
   )}}></span>
   ```
 
-  Ember's built-in helpers are described under the [Ember.Templates.helpers](/api/classes/Ember.Templates.helpers.html)
+  Ember's built-in helpers are described under the [Ember.Templates.helpers](/api/ember/release/classes/Ember.Templates.helpers)
   namespace. Documentation on creating custom helpers can be found under
   [Helper](/api/classes/Ember.Helper.html).
 
   ### Invoking a Component
 
   Ember components represent state to the UI of an application. Further
-  reading on components can be found under [Component](/api/classes/Ember.Component.html).
+  reading on components can be found under [Component](/api/ember/release/classes/Component).
 
   @module @ember/component
   @main @ember/component
