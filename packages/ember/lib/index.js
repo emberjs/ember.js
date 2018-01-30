@@ -192,8 +192,10 @@ Object.defineProperty(Ember, 'LOG_BINDINGS', {
   and reporting code.
 
   ```javascript
+  import $ from 'jquery';
+
   Ember.onerror = function(error) {
-    Em.$.ajax('/report-error', 'POST', {
+    $.ajax('/report-error', 'POST', {
       stack: error.stack,
       otherInformation: 'whatever app state you want to provide'
     });
@@ -377,7 +379,7 @@ computed.collect = collect;
 
 /**
   Defines the hash of localized strings for the current language. Used by
-  the `Ember.String.loc()` helper. To localize, add string values to this
+  the `String.loc` helper. To localize, add string values to this
   hash.
 
   @property STRINGS

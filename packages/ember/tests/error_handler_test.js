@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import { run } from 'ember-metal';
 import { DEBUG } from 'ember-env-flags';
+import RSVP from 'rsvp';
 
 const ONERROR = Ember.onerror;
 const ADAPTER = Ember.Test && Ember.Test.adapter;
@@ -61,7 +62,7 @@ QUnit.test('when Ember.onerror (which does not rethrow) is registered - sync run
 });
 
 if (DEBUG) {
-  QUnit.test('when Ember.Test.adapter is registered and error is thrown - sync run', function(assert) {
+  QUnit.test('when TestAdapter is registered and error is thrown - sync run', function(assert) {
     assert.expect(1);
 
     Ember.Test.adapter = {
@@ -73,7 +74,7 @@ if (DEBUG) {
     assert.throws(runThatThrowsSync, Error);
   });
 
-  QUnit.test('when both Ember.onerror (which rethrows) and Ember.Test.adapter are registered - sync run', function(assert) {
+  QUnit.test('when both Ember.onerror (which rethrows) and TestAdapter are registered - sync run', function(assert) {
     assert.expect(2);
 
     Ember.Test.adapter = {
@@ -83,14 +84,14 @@ if (DEBUG) {
     };
 
     Ember.onerror = function(error) {
-      assert.ok(true, 'onerror is called for sync errors even if Ember.Test.adapter is setup');
+      assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
       throw error;
     };
 
     assert.throws(runThatThrowsSync, Error, 'error is thrown');
   });
 
-  QUnit.test('when both Ember.onerror (which does not rethrow) and Ember.Test.adapter are registered - sync run', function(assert) {
+  QUnit.test('when both Ember.onerror (which does not rethrow) and TestAdapter are registered - sync run', function(assert) {
     assert.expect(2);
 
     Ember.Test.adapter = {
@@ -100,14 +101,14 @@ if (DEBUG) {
     };
 
     Ember.onerror = function() {
-      assert.ok(true, 'onerror is called for sync errors even if Ember.Test.adapter is setup');
+      assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
     };
 
     runThatThrowsSync();
     assert.ok(true, 'no error was thrown, Ember.onerror can intercept errors');
   });
 
-  QUnit.test('when Ember.Test.adapter is registered and error is thrown - async run', function(assert) {
+  QUnit.test('when TestAdapter is registered and error is thrown - async run', function(assert) {
     assert.expect(3);
     let done = assert.async();
 
@@ -145,7 +146,7 @@ if (DEBUG) {
     }, 20);
   });
 
-  QUnit.test('when both Ember.onerror and Ember.Test.adapter are registered - async run', function(assert) {
+  QUnit.test('when both Ember.onerror and TestAdapter are registered - async run', function(assert) {
     assert.expect(1);
     let done = assert.async();
 
@@ -313,7 +314,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
     // RSVP.Promise's are configured to settle within the run loop, this
     // ensures that run loop has completed
-    return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+    return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
 
   QUnit.test(`${message} when Ember.onerror which does rethrow is present - rsvp`, function(assert) {
@@ -341,7 +342,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
     // RSVP.Promise's are configured to settle within the run loop, this
     // ensures that run loop has completed
-    return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+    return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
 
   QUnit.test(`${message} when Ember.onerror which does not rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
@@ -357,7 +358,7 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
     // RSVP.Promise's are configured to settle within the run loop, this
     // ensures that run loop has completed
-    return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+    return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
 
   QUnit.test(`${message} when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
@@ -386,11 +387,11 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
     // RSVP.Promise's are configured to settle within the run loop, this
     // ensures that run loop has completed
-    return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+    return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
 
   if (DEBUG) {
-    QUnit.test(`${message} when Ember.Test.adapter without \`exception\` method is present - rsvp`, function(assert) {
+    QUnit.test(`${message} when TestAdapter without \`exception\` method is present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -414,10 +415,10 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    QUnit.test(`${message} when both Ember.onerror and Ember.Test.adapter without \`exception\` method are present - rsvp`, function(assert) {
+    QUnit.test(`${message} when both Ember.onerror and TestAdapter without \`exception\` method are present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -438,10 +439,10 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    QUnit.test(`${message} when Ember.Test.adapter is present - rsvp`, function(assert) {
+    QUnit.test(`${message} when TestAdapter is present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -455,10 +456,10 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    QUnit.test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
+    QUnit.test(`${message} when both Ember.onerror and TestAdapter are present - rsvp`, function(assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -476,10 +477,10 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
 
-    QUnit.test(`${message} when both Ember.onerror and Ember.Test.adapter are present - rsvp`, function(assert) {
+    QUnit.test(`${message} when both Ember.onerror and TestAdapter are present - rsvp`, function(assert) {
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -498,25 +499,25 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new Ember.RSVP.Promise((resolve) => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     });
   }
 }
 
 generateRSVPErrorHandlingTests('errors in promise constructor', (error) => {
-  new Ember.RSVP.Promise(() => {
+  new RSVP.Promise(() => {
     throw error;
   });
 });
 
 generateRSVPErrorHandlingTests('errors in promise .then callback', (error) => {
-  Ember.RSVP.resolve().then(() => {
+  RSVP.resolve().then(() => {
     throw error;
   });
 });
 
 generateRSVPErrorHandlingTests('errors in async promise .then callback', (error) => {
-  new Ember.RSVP.Promise((resolve) => setTimeout(resolve, 10)).then(() => {
+  new RSVP.Promise((resolve) => setTimeout(resolve, 10)).then(() => {
     throw error;
   });
 }, 20);
