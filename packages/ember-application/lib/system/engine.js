@@ -337,7 +337,7 @@ Engine.reopenClass({
     or after the one identified by the value. This value can be a single string
     or an array of strings, referencing the `name` of other initializers.
 
-    * See Ember.Application.initializer for discussion on the usage of before
+    * See Application.initializer for discussion on the usage of before
     and after.
 
     Example instanceInitializer to preload data into the store.
@@ -421,7 +421,7 @@ Engine.reopenClass({
   },
 
   /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
+    Set this to provide an alternate class to `DefaultResolver`
 
     @deprecated Use 'Resolver' instead
     @property resolver
@@ -430,7 +430,7 @@ Engine.reopenClass({
   resolver: null,
 
   /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
+    Set this to provide an alternate class to `DefaultResolver`
 
     @property resolver
     @public

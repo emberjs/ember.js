@@ -2,7 +2,7 @@ import { assign } from 'ember-utils';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import { Application } from 'ember-application';
 
-moduleFor('Ember.Application initializers', class extends AutobootApplicationTestCase {
+moduleFor('Application initializers', class extends AutobootApplicationTestCase {
   get fixture() {
     return `<div id="one">ONE</div>
       <div id="two">TWO</div>

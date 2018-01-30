@@ -13,7 +13,7 @@ let EmberApplication = Application;
 let originalLookup = context.lookup;
 let registry, locator, application;
 
-moduleFor('Ember.Application Dependency Injection', class extends TestCase {
+moduleFor('Application Dependency Injection', class extends TestCase {
   constructor() {
     super();
 
