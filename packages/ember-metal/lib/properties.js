@@ -82,22 +82,22 @@ if (EMBER_METAL_ES5_GETTERS) {
   // development to aid in development asertions. Production builds of
   // ember strip this entire branch out.
   let messageFor = function(obj, keyName, property, value) {
-    return `You attempted to access the \`${keyName}.${String(property)}\` property ` +
-      `(of ${obj}). Due to certain internal implementation details of Ember, ` +
-      `the \`${keyName}\` property previously contained an internal "descriptor" ` +
-      `object (a private API), therefore \`${keyName}.${String(property)}\` would have ` +
-      `been \`${String(value).replace(/\n/g, ' ')}\`. This internal implementation ` +
-      `detail was never intended to be a public (or even intimate) API.\n\n` +
-      `This internal implementation detail has now changed and the (still private) ` +
-      `"descriptor" object has been relocated to the object's "meta" (also a ` +
-      `private API). Soon, accessing \`${keyName}\` on this object will ` +
-      `return the computed value (see RFC #281 for more details).\n\n` +
+    return `You attempted to access \`${keyName}.${String(property)}\` ` +
+      `(on \`${obj}\`), but \`${keyName}\` is a computed property.\n\n` +
+      `Due to certain internal implementation details of Ember, the ` +
+      `\`${keyName}\` property previously contained a private "descriptor" ` +
+      `object, therefore \`${keyName}.${String(property)}\` would have been ` +
+      `\`${String(value).replace(/\n/g, ' ')}\`.\n\n` +
+      `This implementation detail has now changed and the "descriptor" ` +
+      `object is no longer present at this location. Soon, accessing ` +
+      `\`${keyName}\` on this object will return the computed property's ` +
+      `current value (see RFC #281 for more details).\n\n` +
       `If you are seeing this error, you are likely using an addon that ` +
-      `relies on this now-defunct private implementation detail. If you can, ` +
-      `find out which addon is doing this from the stack trace below and ` +
-      `report this bug to the addon authors. If you feel stuck, the Ember ` +
-      `Community Slack (https://ember-community-slackin.herokuapp.com/) ` +
-      `may be able to offer some help.\n\n` +
+      `relies on this now-defunct private implementation detail. If you ` +
+      `can, identify the addon from the stack trace below and report this ` +
+      `bug to the addon authors. If you feel stuck, the Ember Community ` +
+      `Slack (https://ember-community-slackin.herokuapp.com/) may be able ` +
+      `to offer some help.\n\n` +
       `If you are an addon author and need help transitioning your code, ` +
       `please get in touch in the #dev-ember channel in the Ember Community ` +
       `Slack.`;

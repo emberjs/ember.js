@@ -66,8 +66,8 @@ if (EMBER_METAL_ES5_GETTERS) {
       return 'computed ' + key;
     }));
 
-    expectAssertion(() => obj.foo.isDescriptor, /You attempted to access the `foo\.isDescriptor` property \(of obj\)\./);
-    expectAssertion(() => obj.foo.get(), /You attempted to access the `foo\.get` property \(of obj\)\./);
+    expectAssertion(() => obj.foo.isDescriptor, /You attempted to access `foo\.isDescriptor` \(on `obj`\)\./);
+    expectAssertion(() => obj.foo.get(), /You attempted to access `foo\.get` \(on obj\)\./);
     assert.strictEqual(count, 0, 'should not have invoked computed property');
   });
 }
