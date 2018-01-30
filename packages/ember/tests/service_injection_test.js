@@ -52,8 +52,8 @@ if (EMBER_MODULE_UNIFICATION) {
       }));
       let MyService = Service.extend();
       this.add({
-        specifier: 'service',
-        rawString: 'my-namespace::my-service'
+        specifier: 'service:my-service',
+        targetNamespace: 'my-namespace'
       }, MyService);
 
       this.visit('/').then(() => {

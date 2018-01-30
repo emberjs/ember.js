@@ -7,13 +7,13 @@ if (EMBER_MODULE_UNIFICATION) {
   moduleFor('Namespaced lookup', class extends RenderingTest {
     ['@test it can render a namespaced component']() {
       this.addTemplate({
-        specifier: 'template:components/',
-        rawString: 'my-addon::my-component'
+        specifier: 'template:components/my-component',
+        targetNamespace: 'my-addon'
       }, 'namespaced template {{myProp}}');
 
       this.add({
-        specifier: 'component',
-        rawString: 'my-addon::my-component'
+        specifier: 'component:my-component',
+        targetNamespace: 'my-addon'
       }, Component.extend({
         myProp: 'My property'
       }));
@@ -31,13 +31,13 @@ if (EMBER_MODULE_UNIFICATION) {
 
     ['@test it can render a nested namespaced component']() {
       this.addTemplate({
-        specifier: 'template:components/',
-        rawString: 'second-addon::my-component'
+        specifier: 'template:components/my-component',
+        targetNamespace: 'second-addon'
       }, 'second namespaced template');
 
       this.addTemplate({
-        specifier: 'template:components/',
-        rawString: 'first-addon::my-component'
+        specifier: 'template:components/my-component',
+        targetNamespace: 'first-addon'
       }, '{{second-addon::my-component}}');
 
       this.addComponent('x-outer', { template: '{{first-addon::my-component}}' });
@@ -58,10 +58,10 @@ if (EMBER_MODULE_UNIFICATION) {
       }, 'un-namespaced addon template');
 
       this.addTemplate({
-        specifier: 'template:components/',
+        specifier: 'template:components/my-component',
         // TODO: moduleNames really should have type, be specifiers.
         moduleName: '/first-addon/src/ui/components/my-component',
-        rawString: 'first-addon::my-component'
+        targetNamespace: 'first-addon'
       }, '{{addon-component}}');
 
       this.addComponent('x-outer', { template: '{{first-addon::my-component}}' });

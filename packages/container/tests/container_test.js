@@ -689,15 +689,16 @@ if (EMBER_MODULE_UNIFICATION) {
     ['@test The container can pass a namespaced path to factoryFor']() {
       let PrivateComponent = factory();
       let type = 'component';
-      let namespace = 'my-addon';
+      let targetNamespace = 'my-addon';
       let name = 'my-component';
-      let rawString = `${namespace}::${name}`;
+      let rawString = `${targetNamespace}::${name}`;
+      let specifier = `${type}:${name}`;
       let resolver = new ModuleBasedTestResolver();
       let registry = new Registry({resolver});
 
       resolver.add({
-        specifier: type,
-        rawString: rawString
+        specifier,
+        targetNamespace
       }, PrivateComponent);
 
       let container = registry.container();
@@ -724,15 +725,16 @@ if (EMBER_MODULE_UNIFICATION) {
     ['@test The container can pass a namespace to lookup']() {
       let PrivateComponent = factory();
       let type = 'component';
-      let namespace = 'my-addon';
+      let targetNamespace = 'my-addon';
       let name = 'my-component';
-      let rawString = `${namespace}::${name}`;
+      let rawString = `${targetNamespace}::${name}`;
+      let specifier = `${type}:${name}`;
       let resolver = new ModuleBasedTestResolver();
       let registry = new Registry({resolver});
 
       resolver.add({
-        specifier: type,
-        rawString: rawString
+        specifier,
+        targetNamespace
       }, PrivateComponent);
 
       let container = registry.container();
@@ -748,7 +750,7 @@ if (EMBER_MODULE_UNIFICATION) {
       let result = lookupWithRawString(container, 'component', rawString);
       this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
       this.assert.ok(
-        container.cache[`${type}\0\0${rawString}`] instanceof PrivateComponent,
+        container.cache[`${specifier}\0\0${targetNamespace}`] instanceof PrivateComponent,
         'The correct factory was stored in the cache with the correct key which includes the raw string.'
       );
     }

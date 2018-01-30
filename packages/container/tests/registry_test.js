@@ -767,17 +767,17 @@ if (EMBER_MODULE_UNIFICATION) {
       let type = 'component';
       let namespace = 'my-addon';
       let name = 'my-component';
-      let rawString = `${namespace}::${name}`;
+      let specifier = `${type}:${name}`;
       let resolver = new ModuleBasedTestResolver();
       let registry = new Registry({ resolver });
 
       resolver.add({
-        specifier: type,
-        rawString
+        specifier,
+        targetNamespace: namespace
       }, PrivateComponent);
 
-      assert.strictEqual(registry.resolve(type, { [_RAW_STRING_OPTION_KEY]: rawString }), PrivateComponent, 'The correct factory was provided');
-      assert.strictEqual(registry.resolve(type, { [_RAW_STRING_OPTION_KEY]: rawString }), PrivateComponent, 'The correct factory was provided again');
+      assert.strictEqual(registry.resolve(specifier, { [_RAW_STRING_OPTION_KEY]: namespace }), PrivateComponent, 'The correct factory was provided');
+      assert.strictEqual(registry.resolve(specifier, { [_RAW_STRING_OPTION_KEY]: namespace }), PrivateComponent, 'The correct factory was provided again');
     }
   });
 
