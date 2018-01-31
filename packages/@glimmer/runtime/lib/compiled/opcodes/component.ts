@@ -172,7 +172,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
 
 APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
   let { stack } = vm;
-  const definition = stack.pop<ComponentDefinition>();
+  let definition = stack.pop<ComponentDefinition>();
 
   let capabilities, manager;
 
@@ -443,8 +443,8 @@ APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
   let definition = vm.stack.pop<ComponentDefinition>();
   let invocation = vm.stack.pop<Invocation>();
 
-  const { manager } = definition;
-  const capabilities = capabilityFlagsFrom(manager.getCapabilities(definition.state));
+  let { manager } = definition;
+  let capabilities = capabilityFlagsFrom(manager.getCapabilities(definition.state));
 
   let state: PopulatedComponentInstance = {
     definition,
