@@ -10,15 +10,11 @@
  save that for dispatch time, if an event actually happens.
  */
 
-/* listener flags */
-export const ONCE = 1;
-export const SUSPENDED = 2;
-
 export const protoMethods = {
 
-  addToListeners(eventName, target, method, flags) {
+  addToListeners(eventName, target, method, once) {
     if (this._listeners === undefined) { this._listeners = []; }
-    this._listeners.push(eventName, target, method, flags);
+    this._listeners.push(eventName, target, method, once);
   },
 
   _finalizeListeners() {

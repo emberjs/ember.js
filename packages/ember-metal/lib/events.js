@@ -5,7 +5,6 @@ import { applyStr } from 'ember-utils';
 import { ENV } from 'ember-environment';
 import { deprecate, assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
-import { ONCE, SUSPENDED } from './meta_listeners';
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -18,7 +17,7 @@ import { ONCE, SUSPENDED } from './meta_listeners';
       {
         listeners: {       // variable name: `listenerSet`
           "foo": [ // variable name: `actions`
-            target, method, flags
+            target, method, once
           ]
         }
       }
@@ -61,12 +60,7 @@ export function addListener(obj, eventName, target, method, once) {
     target = null;
   }
 
-  let flags = 0;
-  if (once) {
-    flags |= ONCE;
-  }
-
-  metaFor(obj).addToListeners(eventName, target, method, flags);
+  metaFor(obj).addToListeners(eventName, target, method, once);
 
   if ('function' === typeof obj.didAddListener) {
     obj.didAddListener(eventName, target, method);
@@ -121,8 +115,8 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
     actions = typeof meta === 'object' &&
-                     meta !== null &&
-                     meta.matchingListeners(eventName);
+      meta !== null &&
+      meta.matchingListeners(eventName);
   }
 
   if (actions === undefined || actions.length === 0) { return false; }
@@ -130,11 +124,10 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
   for (let i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
     let target = actions[i];
     let method = actions[i + 1];
-    let flags = actions[i + 2];
+    let once = actions[i + 2];
 
     if (!method) { continue; }
-    if (flags & SUSPENDED) { continue; }
-    if (flags & ONCE) { removeListener(obj, eventName, target, method); }
+    if (once) { removeListener(obj, eventName, target, method); }
     if (!target) { target = obj; }
     if ('string' === typeof method) {
       if (params) {
