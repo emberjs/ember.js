@@ -25,9 +25,11 @@ module.exports.VERSION = (() => {
   // * current "build type" or branch name (in CI this is generally not
   //   present, but it is very useful for local / testing builds)
   // * the sha for the commit
-  let packageVersion  = pkg.version;
+  let packageVersion = pkg.version;
   let sha = info.sha || '';
   let suffix = process.env.BUILD_TYPE || info.branch;
+  // * remove illegal non-alphanumeric characters from branch name.
+  suffix = suffix && suffix.replace(/[^a-zA-Z\d\s-]/, '-');
   let metadata = sha.slice(0, 8);
 
   return `${packageVersion}${suffix ? '-' + suffix : ''}+${metadata}`;
