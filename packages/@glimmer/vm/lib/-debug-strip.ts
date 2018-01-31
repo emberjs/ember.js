@@ -306,7 +306,7 @@ OPCODE_METADATA(Op.PushComponentDefinition, {
 });
 
 OPCODE_METADATA(Op.PushCurriedComponent, {
-  name: 'PushDynamicComponentManager'
+  name: 'PushCurriedComponent'
 });
 
 OPCODE_METADATA(Op.PushArgs, {
@@ -432,13 +432,13 @@ OPCODE_METADATA(Op.DynamicContent, {
 });
 
 OPCODE_METADATA(Op.ResolveDynamicComponent, {
-  name: 'ResolveDynamicComponentManager',
+  name: 'ResolveDynamicComponent',
   ops: [Serializable('meta')],
   operands: 1
 });
 
 OPCODE_METADATA(Op.PushDynamicComponentInstance, {
-  name: 'PushDynamicComponentManager'
+  name: 'PushDynamicComponentInstance'
 });
 
 OPCODE_METADATA(Op.OpenElement, {
