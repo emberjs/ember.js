@@ -1,6 +1,6 @@
 import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import { meta as metaFor } from './meta';
-import require from 'require';
+import run from './run_loop';
 
 let hasViews = () => false;
 
@@ -62,8 +62,7 @@ export function markObjectAsDirty(meta, propertyKey) {
 let backburner;
 function ensureRunloop() {
   if (backburner === undefined) {
-    // TODO why does this need to be lazy
-    backburner = require('ember-metal').run.backburner;
+    backburner = run.backburner;
   }
 
   if (hasViews()) {
