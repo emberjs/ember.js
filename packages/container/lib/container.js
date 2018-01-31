@@ -319,10 +319,10 @@ function buildInjections(container, injections) {
     let injection;
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
-      let {name, rawString, type} = parseInjectionString(injection.fullName);
-      hash[injection.property] = lookupWithRawString(container, type, rawString || name);
+      let {name, namespace, type} = parseInjectionString(injection.fullName);
+      hash[injection.property] = lookupWithRawString(container, type, namespace || name);
       if (!isDynamic) {
-        isDynamic = !isSingleton(container, injection.fullName, {[RAW_STRING_OPTION_KEY]: rawString});
+        isDynamic = !isSingleton(container, injection.fullName, {[RAW_STRING_OPTION_KEY]: namespace});
       }
     }
   }
@@ -462,7 +462,7 @@ export function parseInjectionString(injectionString) {
     let fullName = type.indexOf(':') === -1 ? `${type}:${name}` : `${type}${name}`;
     return {
       fullName,
-      rawString: namespace,
+      namespace,
       type
     };
   }
@@ -485,7 +485,7 @@ export function factoryForWithRawString(container, type, rawString) {
     return container.factoryFor(`${type}:${rawString}`);
   } else {
     let [ namespace, name ] = rawString.split('::');
-    // type might already contain : eg. "template:components/"
+    // type might already contain ":" eg. "template:components/"
     let fullName = type.indexOf(':') === -1 ? `${type}:${name}` : `${type}${name}`;
     return container.factoryFor(fullName, {
       [RAW_STRING_OPTION_KEY]: namespace

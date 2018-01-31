@@ -9,8 +9,7 @@ import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
-
-let missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
+const missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
 
 /**
  A registry used to store factory and option information keyed
@@ -188,7 +187,6 @@ export default class Registry {
 
     this._localLookupCache = Object.create(null);
 
-
     delete this.registrations[normalizedName];
     delete this._resolveCache[cacheKey];
     delete this._options[cacheKey];
@@ -329,9 +327,9 @@ export default class Registry {
     }
 
     let source = options && options.source && this.normalize(options.source);
-    let rawString = options && options[RAW_STRING_OPTION_KEY];
+    let namespace = options && options[RAW_STRING_OPTION_KEY];
 
-    return has(this, this.normalize(fullName), source, rawString);
+    return has(this, this.normalize(fullName), source, namespace);
   }
 
   /**
@@ -554,14 +552,7 @@ export default class Registry {
     return assign({}, fallbackKnown, localKnown, resolverKnown);
   }
 
-  isValidFullName(fullName, options) {
-    if(EMBER_MODULE_UNIFICATION) {
-      /* With a rawString, the fullName doesn't need to contain a : */
-      if (options && options[RAW_STRING_OPTION_KEY] && fullName) {
-        return true;
-      }
-    }
-
+  isValidFullName(fullName) {
     return VALID_FULL_NAME_REGEXP.test(fullName);
   }
 
@@ -642,9 +633,9 @@ if (DEBUG) {
       if (hash.hasOwnProperty(key)) {
         let {
           fullName,
-          rawString
+          namespace
         } = parseInjectionString(hash[key]);
-        assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName, {[RAW_STRING_OPTION_KEY]: rawString}));
+        assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName, {[RAW_STRING_OPTION_KEY]: namespace}));
 
         injections.push({
           property: key,
@@ -662,10 +653,10 @@ if (DEBUG) {
     for (let i = 0; i < injections.length; i++) {
       let {
         fullName,
-        rawString
+        namespace
       } = parseInjectionString(injections[i].fullName);
 
-      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName, {[RAW_STRING_OPTION_KEY]: rawString}));
+      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName, {[RAW_STRING_OPTION_KEY]: namespace}));
     }
   };
 }
@@ -732,10 +723,10 @@ function resolve(registry, normalizedName, options) {
   return resolved;
 }
 
-function has(registry, fullName, source, rawString) {
+function has(registry, fullName, source, namespace) {
   return registry.resolve(fullName, {
     source,
-    [RAW_STRING_OPTION_KEY]: rawString
+    [RAW_STRING_OPTION_KEY]: namespace
   }) !== undefined;
 }
 
