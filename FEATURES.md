@@ -55,4 +55,4 @@ for a detailed explanation.
 
 * `ember-template-block-let-helper`
 
-  Introduce the block form of the `let` helper per [RFC](https://github.com/locks/rfcs/blob/block-let-helper/text/0000-block-let-template-helper.md).
+  Introduce the block form of the `let` helper per [RFC](https://github.com/emberjs/rfcs/blob/78211b11387e7f477264e322687f1ec5ab131361/text/0286-block-let-template-helper.md).
