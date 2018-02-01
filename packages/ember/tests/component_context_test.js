@@ -79,14 +79,14 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     this.addComponent('my-component', {
       ComponentClass: Component.extend({
         didInsertElement() {
-          this.$().html('Some text inserted by jQuery');
+          this.element.innerHTML = 'Some text inserted';
         }
       })
     });
 
     return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
-      assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
+      assert.equal(text, 'Some text inserted', 'The component is composed correctly');
     });
   }
 
@@ -97,19 +97,19 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
 
     this.add('controller:application', Controller.extend({
       'text': 'outer',
-      'foo': 'Some text inserted by jQuery'
+      'foo': 'Some text inserted'
     }));
     this.addComponent('my-component', {
       ComponentClass: Component.extend({
         didInsertElement() {
-          this.$().html(this.get('data'));
+          this.element.innerHTML = this.get('data');
         }
       })
     });
 
     return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
-      assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
+      assert.equal(text, 'Some text inserted', 'The component is composed correctly');
     });
   }
 
@@ -120,20 +120,20 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
 
     this.add('controller:application', Controller.extend({
       'text': 'outer',
-      'foo': 'Some text inserted by jQuery'
+      'foo': 'Some text inserted'
     }));
     this.addComponent('my-component', {
       ComponentClass: Component.extend({
         didInsertElement() {
           // FIXME: I'm unsure if this is even the right way to access attrs
-          this.$().html(this.get('attrs.attrs').value);
+          this.element.innerHTML = this.get('attrs.attrs').value;
         }
       })
     });
 
     return this.visit('/').then(() => {
       let text = this.$('#wrapper').text().trim();
-      assert.equal(text, 'Some text inserted by jQuery', 'The component is composed correctly');
+      assert.equal(text, 'Some text inserted', 'The component is composed correctly');
     });
   }
 
