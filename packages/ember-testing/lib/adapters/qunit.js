@@ -1,6 +1,8 @@
 import { inspect } from 'ember-utils';
 import Adapter from './adapter';
-
+/**
+   @module ember
+*/
 /**
   This class implements the methods defined by TestAdapter for the
   QUnit testing framework.
