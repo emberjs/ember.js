@@ -156,7 +156,6 @@ let containerProxyMixin = {
   ```
 
   @public
-  @class ContainerProxyMixin
   @method factoryFor
   @param {String} fullName
   @param {Object} options
