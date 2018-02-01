@@ -108,8 +108,3 @@ QUnit.test('EmberObject.create can take undefined as a parameter', function(asse
   let o = EmberObject.create(undefined);
   assert.deepEqual(EmberObject.create(), o);
 });
-
-QUnit.test('EmberObject.create can take null as a parameter', function(assert) {
-  let o = EmberObject.create(null);
-  assert.deepEqual(EmberObject.create(), o);
-});
