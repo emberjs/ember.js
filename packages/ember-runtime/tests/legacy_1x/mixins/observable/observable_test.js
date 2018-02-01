@@ -3,7 +3,7 @@ import { get, computed, run, observer } from 'ember-metal';
 import { w } from '../../../../system/string';
 import EmberObject from '../../../../system/object';
 import Observable from '../../../../mixins/observable';
-import { A as emberA } from '../../../../system/native_array';
+import { A as emberA } from '../../../../mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*

@@ -1,6 +1,6 @@
 import { SuiteModuleBuilder } from '../suite';
 import { get } from 'ember-metal';
-import { A as emberA } from '../../../system/native_array';
+import { A as emberA } from '../../../mixins/array';
 
 const suite = SuiteModuleBuilder.create();
 

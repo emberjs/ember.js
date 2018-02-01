@@ -1,4 +1,4 @@
-import { A as emberA } from '../../../system/native_array';
+import { A as emberA } from '../../../mixins/array';
 import MutableArrayTests from '../../suites/mutable_array';
 
 MutableArrayTests.extend({

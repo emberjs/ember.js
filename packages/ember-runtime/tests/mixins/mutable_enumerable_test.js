@@ -1,6 +1,6 @@
 import MutableEnumerable from '../../mixins/mutable_enumerable';
 import ArrayProxy from '../../system/array_proxy';
-import { A } from '../../system/native_array';
+import { A } from '../../mixins/array';
 
 QUnit.module('MutableEnumerable');
 

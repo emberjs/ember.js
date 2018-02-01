@@ -15,7 +15,7 @@ import EmberArray, {
   arrayContentWillChange,
   objectAt
 } from '../../mixins/array';
-import { A as emberA } from '../../system/native_array';
+import { A as emberA } from '../../mixins/array';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native

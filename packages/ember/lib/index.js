@@ -265,6 +265,7 @@ import {
   ActionHandler,
   CoreObject,
   NativeArray,
+  A,
   isNamespaceSearchDisabled,
   setNamespaceSearchDisabled,
   getStrings,
@@ -306,6 +307,7 @@ import {
   collect
 } from 'ember-runtime';
 
+Ember.A = A;
 Ember.String = EmberString;
 Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;

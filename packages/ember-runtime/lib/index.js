@@ -15,7 +15,11 @@ export {
   objectAt,
   isEmberArray,
   addArrayObserver,
-  removeArrayObserver
+  removeArrayObserver,
+  NativeArray,
+  A,
+  MutableArray,
+  removeAt
 } from './mixins/array';
 export { default as Comparable } from './mixins/comparable';
 export {
@@ -26,7 +30,6 @@ export {
 export { default as ArrayProxy } from './system/array_proxy';
 export { default as ObjectProxy } from './system/object_proxy';
 export { default as CoreObject } from './system/core_object';
-export { default as NativeArray, A } from './system/native_array';
 export {
   default as ActionHandler
 } from './mixins/action_handler';
@@ -42,10 +45,6 @@ export {
 } from './system/lazy_load';
 export { default as Observable } from './mixins/observable';
 export { default as MutableEnumerable } from './mixins/mutable_enumerable';
-export {
-  default as MutableArray,
-  removeAt
-} from './mixins/mutable_array';
 export { default as TargetActionSupport } from './mixins/target_action_support';
 export { default as Evented } from './mixins/evented';
 export { default as PromiseProxyMixin } from './mixins/promise_proxy';

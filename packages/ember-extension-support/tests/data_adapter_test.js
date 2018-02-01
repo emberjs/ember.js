@@ -9,7 +9,6 @@ import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import EmberDataAdapter from '../data_adapter';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-
 let adapter;
 const Model = EmberObject.extend();
 

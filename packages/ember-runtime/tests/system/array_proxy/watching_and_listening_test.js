@@ -7,7 +7,7 @@ import {
   peekMeta
 } from 'ember-metal';
 import ArrayProxy from '../../../system/array_proxy';
-import { A } from '../../../system/native_array';
+import { A } from '../../../mixins/array';
 
 function sortedListenersFor(obj, eventName) {
   let listeners = peekMeta(obj).matchingListeners(eventName) || [];

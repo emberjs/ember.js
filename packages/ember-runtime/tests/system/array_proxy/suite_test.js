@@ -1,7 +1,7 @@
 import MutableArrayTests from '../../suites/mutable_array';
 import ArrayProxy from '../../../system/array_proxy';
 import { get } from 'ember-metal';
-import { A as emberA } from '../../../system/native_array';
+import { A as emberA } from '../../../mixins/array';
 
 MutableArrayTests.extend({
   name: 'Ember.ArrayProxy',

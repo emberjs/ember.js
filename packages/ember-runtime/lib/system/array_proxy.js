@@ -12,7 +12,7 @@ import {
   isArray
 } from '../utils';
 import EmberObject from './object';
-import MutableArray from '../mixins/mutable_array';
+import { MutableArray } from '../mixins/array';
 import {
   addArrayObserver,
   removeArrayObserver,

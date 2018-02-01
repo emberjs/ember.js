@@ -18,22 +18,22 @@ import {
   addObserver,
   removeObserver,
   meta,
-  peekMeta
+  peekMeta,
+  beginPropertyChanges,
+  endPropertyChanges
 } from 'ember-metal';
 import { assert } from 'ember-debug';
 import Enumerable from './enumerable';
 import compare from '../compare';
-import require from 'require';
-
-
-// Required to break a module cycle
-let _A;
-function A() {
-  if (_A === undefined) {
-    _A = require('ember-runtime/system/native_array').A;
-  }
-  return _A();
-}
+import {
+  replace
+} from 'ember-metal';
+import { ENV } from 'ember-environment';
+import Observable from '../mixins/observable';
+import Copyable from '../mixins/copyable';
+import copy from '../copy';
+import { Error as EmberError } from 'ember-debug';
+import MutableEnumerable from './mutable_enumerable';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -1356,5 +1356,558 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
     }
   }
 }
+
+
+const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
+const EMPTY = [];
+
+export function removeAt(array, start, len) {
+  if ('number' === typeof start) {
+    if ((start < 0) || (start >= get(array, 'length'))) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    }
+
+    // fast case
+    if (len === undefined) {
+      len = 1;
+    }
+
+    array.replace(start, len, EMPTY);
+  }
+
+  return array;
+}
+
+/**
+  This mixin defines the API for modifying array-like objects. These methods
+  can be applied only to a collection that keeps its items in an ordered set.
+  It builds upon the Array mixin and adds methods to modify the array.
+  One concrete implementations of this class include ArrayProxy.
+
+  It is important to use the methods in this class to modify arrays so that
+  changes are observable. This allows the binding system in Ember to function
+  correctly.
+
+
+  Note that an Array can change even if it does not implement this mixin.
+  For example, one might implement a SparseArray that cannot be directly
+  modified, but if its underlying enumerable changes, it will change also.
+
+  @class MutableArray
+  @uses EmberArray
+  @uses MutableEnumerable
+  @public
+*/
+
+const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
+
+  /**
+    __Required.__ You must implement this method to apply this mixin.
+
+    This is one of the primitives you must implement to support `Array`.
+    You should replace amt objects started at idx with the objects in the
+    passed array. You should also call `this.arrayContentDidChange()`
+
+    @method replace
+    @param {Number} idx Starting index in the array to replace. If
+      idx >= length, then append to the end of the array.
+    @param {Number} amt Number of elements that should be removed from
+      the array, starting at *idx*.
+    @param {EmberArray} objects An array of zero or more objects that should be
+      inserted into the array at *idx*
+    @public
+  */
+  replace: null,
+
+  /**
+    Remove all elements from the array. This is useful if you
+    want to reuse an existing array without having to recreate it.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.length;  // 3
+    colors.clear(); // []
+    colors.length;  // 0
+    ```
+
+    @method clear
+    @return {Array} An empty Array.
+    @public
+  */
+  clear() {
+    let len = get(this, 'length');
+    if (len === 0) {
+      return this;
+    }
+
+    this.replace(0, len, EMPTY);
+    return this;
+  },
+
+  /**
+    This will use the primitive `replace()` method to insert an object at the
+    specified index.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.insertAt(2, 'yellow');  // ['red', 'green', 'yellow', 'blue']
+    colors.insertAt(5, 'orange');  // Error: Index out of range
+    ```
+
+    @method insertAt
+    @param {Number} idx index of insert the object at.
+    @param {Object} object object to insert
+    @return {EmberArray} receiver
+    @public
+  */
+  insertAt(idx, object) {
+    if (idx > get(this, 'length')) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    }
+
+    this.replace(idx, 0, [object]);
+    return this;
+  },
+
+  /**
+    Remove an object at the specified index using the `replace()` primitive
+    method. You can pass either a single index, or a start and a length.
+
+    If you pass a start and length that is beyond the
+    length this method will throw an `OUT_OF_RANGE_EXCEPTION`.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue', 'yellow', 'orange'];
+
+    colors.removeAt(0);     // ['green', 'blue', 'yellow', 'orange']
+    colors.removeAt(2, 2);  // ['green', 'blue']
+    colors.removeAt(4, 2);  // Error: Index out of range
+    ```
+
+    @method removeAt
+    @param {Number} start index, start of range
+    @param {Number} len length of passing range
+    @return {EmberArray} receiver
+    @public
+  */
+  removeAt(start, len) {
+    return removeAt(this, start, len);
+  },
+
+  /**
+    Push the object onto the end of the array. Works just like `push()` but it
+    is KVO-compliant.
+
+    ```javascript
+    let colors = ['red', 'green'];
+
+    colors.pushObject('black');     // ['red', 'green', 'black']
+    colors.pushObject(['yellow']);  // ['red', 'green', ['yellow']]
+    ```
+
+    @method pushObject
+    @param {*} obj object to push
+    @return object same object passed as a param
+    @public
+  */
+  pushObject(obj) {
+    this.insertAt(get(this, 'length'), obj);
+    return obj;
+  },
+
+  /**
+    Add the objects in the passed array to the end of the array. Defers
+    notifying observers of the change until all objects are added.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.pushObjects(['yellow', 'orange']);  // ['red', 'yellow', 'orange']
+    ```
+
+    @method pushObjects
+    @param {EmberArray} objects the objects to add
+    @return {EmberArray} receiver
+    @public
+  */
+  pushObjects(objects) {
+    if (!Array.isArray(objects)) {
+      throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
+    }
+    this.replace(get(this, 'length'), 0, objects);
+    return this;
+  },
+
+  /**
+    Pop object from array or nil if none are left. Works just like `pop()` but
+    it is KVO-compliant.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.popObject();   // 'blue'
+    console.log(colors);  // ['red', 'green']
+    ```
+
+    @method popObject
+    @return object
+    @public
+  */
+  popObject() {
+    let len = get(this, 'length');
+    if (len === 0) {
+      return null;
+    }
+
+    let ret = objectAt(this, len - 1);
+    this.removeAt(len - 1, 1);
+    return ret;
+  },
+
+  /**
+    Shift an object from start of array or nil if none are left. Works just
+    like `shift()` but it is KVO-compliant.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.shiftObject();  // 'red'
+    console.log(colors);   // ['green', 'blue']
+    ```
+
+    @method shiftObject
+    @return object
+    @public
+  */
+  shiftObject() {
+    if (get(this, 'length') === 0) {
+      return null;
+    }
+
+    let ret = objectAt(this, 0);
+    this.removeAt(0);
+    return ret;
+  },
+
+  /**
+    Unshift an object to start of array. Works just like `unshift()` but it is
+    KVO-compliant.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.unshiftObject('yellow');    // ['yellow', 'red']
+    colors.unshiftObject(['black']);   // [['black'], 'yellow', 'red']
+    ```
+
+    @method unshiftObject
+    @param {*} obj object to unshift
+    @return object same object passed as a param
+    @public
+  */
+  unshiftObject(obj) {
+    this.insertAt(0, obj);
+    return obj;
+  },
+
+  /**
+    Adds the named objects to the beginning of the array. Defers notifying
+    observers until all objects have been added.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.unshiftObjects(['black', 'white']);   // ['black', 'white', 'red']
+    colors.unshiftObjects('yellow'); // Type Error: 'undefined' is not a function
+    ```
+
+    @method unshiftObjects
+    @param {Enumberable} objects the objects to add
+    @return {EmberArray} receiver
+    @public
+  */
+  unshiftObjects(objects) {
+    this.replace(0, 0, objects);
+    return this;
+  },
+
+  /**
+    Reverse objects in the array. Works just like `reverse()` but it is
+    KVO-compliant.
+
+    @method reverseObjects
+    @return {EmberArray} receiver
+     @public
+  */
+  reverseObjects() {
+    let len = get(this, 'length');
+    if (len === 0) {
+      return this;
+    }
+
+    let objects = this.toArray().reverse();
+    this.replace(0, len, objects);
+    return this;
+  },
+
+  /**
+    Replace all the receiver's content with content of the argument.
+    If argument is an empty array receiver will be cleared.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.setObjects(['black', 'white']);  // ['black', 'white']
+    colors.setObjects([]);                  // []
+    ```
+
+    @method setObjects
+    @param {EmberArray} objects array whose content will be used for replacing
+        the content of the receiver
+    @return {EmberArray} receiver with the new content
+    @public
+  */
+  setObjects(objects) {
+    if (objects.length === 0) {
+      return this.clear();
+    }
+
+    let len = get(this, 'length');
+    this.replace(0, len, objects);
+    return this;
+  },
+
+  /**
+    Remove all occurrences of an object in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin', 'Lima', 'Chicago'];
+
+    cities.removeObject('Chicago');  // ['Berlin', 'Lima']
+    cities.removeObject('Lima');     // ['Berlin']
+    cities.removeObject('Tokyo')     // ['Berlin']
+    ```
+
+    @method removeObject
+    @param {*} obj object to remove
+    @return {EmberArray} receiver
+    @public
+  */
+  removeObject(obj) {
+    let loc = get(this, 'length') || 0;
+    while (--loc >= 0) {
+      let curObject = objectAt(this, loc);
+
+      if (curObject === obj) {
+        this.removeAt(loc);
+      }
+    }
+    return this;
+  },
+
+  /**
+    Removes each object in the passed array from the receiver.
+
+    @method removeObjects
+    @param {EmberArray} objects the objects to remove
+    @return {EmberArray} receiver
+    @public
+  */
+  removeObjects(objects) {
+    beginPropertyChanges(this);
+    for (let i = objects.length - 1; i >= 0; i--) {
+      this.removeObject(objects[i]);
+    }
+    endPropertyChanges(this);
+    return this;
+  },
+
+  /**
+    Push the object onto the end of the array if it is not already
+    present in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin'];
+
+    cities.addObject('Lima');    // ['Chicago', 'Berlin', 'Lima']
+    cities.addObject('Berlin');  // ['Chicago', 'Berlin', 'Lima']
+    ```
+
+    @method addObject
+    @param {*} obj object to add, if not already present
+    @return {EmberArray} receiver
+    @public
+  */
+  addObject(obj) {
+    let included = this.includes(obj);
+
+    if (!included) {
+      this.pushObject(obj);
+    }
+
+    return this;
+  },
+
+  /**
+    Adds each object in the passed array to the receiver.
+
+    @method addObjects
+    @param {EmberArray} objects the objects to add.
+    @return {EmberArray} receiver
+    @public
+  */
+  addObjects(objects) {
+    beginPropertyChanges(this);
+    objects.forEach(obj => this.addObject(obj));
+    endPropertyChanges(this);
+    return this;
+  }
+});
+
+
+// Add Ember.Array to Array.prototype. Remove methods with native
+// implementations and supply some more optimized versions of generic methods
+// because they are so common.
+
+/**
+  The NativeArray mixin contains the properties needed to make the native
+  Array support MutableArray and all of its dependent APIs. Unless you
+  have `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Array` set to
+  false, this will be applied automatically. Otherwise you can apply the mixin
+  at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
+
+  @class Ember.NativeArray
+  @uses MutableArray
+  @uses Observable
+  @uses Ember.Copyable
+  @public
+*/
+let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
+
+  // because length is a built-in property we need to know to just get the
+  // original property.
+  get(key) {
+    if ('number' === typeof key) {
+      return this[key];
+    } else {
+      return this._super(key);
+    }
+  },
+
+  objectAt(idx) {
+    return this[idx];
+  },
+
+  // primitive for array support.
+  replace(idx, amt, objects) {
+    assert('The third argument to replace needs to be an array.', objects === null || objects === undefined || Array.isArray(objects));
+
+    // if we replaced exactly the same number of items, then pass only the
+    // replaced range. Otherwise, pass the full remaining array length
+    // since everything has shifted
+    let len = objects ? get(objects, 'length') : 0;
+    arrayContentWillChange(this, idx, amt, len);
+
+    if (len === 0) {
+      this.splice(idx, amt);
+    } else {
+      replace(this, idx, amt, objects);
+    }
+
+    arrayContentDidChange(this, idx, amt, len);
+    return this;
+  },
+
+  // If you ask for an unknown property, then try to collect the value
+  // from member items.
+  unknownProperty(key, value) {
+    let ret;// = this.reducedProperty(key, value);
+    if (value !== undefined && ret === undefined) {
+      ret = this[key] = value;
+    }
+    return ret;
+  },
+
+  indexOf: Array.prototype.indexOf,
+  lastIndexOf: Array.prototype.lastIndexOf,
+
+  copy(deep) {
+    if (deep) {
+      return this.map((item) => copy(item, true));
+    }
+
+    return this.slice();
+  }
+});
+
+// Remove any methods implemented natively so we don't override them
+const ignore = ['length'];
+NativeArray.keys().forEach((methodName) => {
+  if (Array.prototype[methodName]) {
+    ignore.push(methodName);
+  }
+});
+
+NativeArray = NativeArray.without(...ignore);
+
+
+/**
+  @module @ember/array
+*/
+/**
+  Creates an `Ember.NativeArray` from an Array-like object.
+  Does not modify the original object's contents. `A()` is not needed if
+  `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
+  it is recommended that you use `A()` when creating addons for
+  ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
+  will be `true`.
+
+  Example
+
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+  import { A } from '@ember/array';
+
+  export default Component.extend({
+    tagName: 'ul',
+    classNames: ['pagination'],
+
+    init() {
+      this._super(...arguments);
+
+      if (!this.get('content')) {
+        this.set('content', A());
+        this.set('otherContent', A([1,2,3]));
+      }
+    }
+  });
+  ```
+
+  @method A
+  @static
+  @for @ember/array
+  @return {Ember.NativeArray}
+  @public
+*/
+
+let A;
+
+if (ENV.EXTEND_PROTOTYPES.Array) {
+  NativeArray.apply(Array.prototype);
+  A = arr => arr || [];
+} else {
+  A = arr => {
+    if (!arr) { arr = []; }
+    return ArrayMixin.detect(arr) ? arr : NativeArray.apply(arr);
+  };
+}
+
+export {
+  A,
+  NativeArray,
+  MutableArray
+};
 
 export default ArrayMixin;

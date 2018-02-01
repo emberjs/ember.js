@@ -1,7 +1,7 @@
 import { get, set, run, changeProperties } from 'ember-metal';
 import { not } from '../../../computed/computed_macros';
 import ArrayProxy from '../../../system/array_proxy';
-import { A as emberA } from '../../../system/native_array';
+import { A as emberA } from '../../../mixins/array';
 
 QUnit.module('ArrayProxy - content change');
 

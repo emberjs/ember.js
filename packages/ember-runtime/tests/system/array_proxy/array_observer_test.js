@@ -1,6 +1,6 @@
 import { set } from 'ember-metal';
 import ArrayProxy from '../../../system/array_proxy';
-import { A } from '../../../system/native_array';
+import { A } from '../../../mixins/array';
 
 QUnit.module('ArrayProxy - array observers');
 
