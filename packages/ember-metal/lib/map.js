@@ -3,6 +3,7 @@ import { guidFor } from 'ember-utils';
 
 /**
 @module @ember/map
+@private
 */
 
 /*
