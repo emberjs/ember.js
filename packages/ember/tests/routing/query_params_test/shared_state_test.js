@@ -1,8 +1,8 @@
 import {
   Controller,
-  Service
+  Service,
+  inject
 } from 'ember-runtime';
-import Ember from 'ember';
 import { run } from 'ember-metal';
 import { jQuery } from 'ember-views';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
@@ -25,11 +25,11 @@ moduleFor('Query Params - shared service state', class extends QueryParamTestCas
     }));
 
     this.add('controller:home', Controller.extend({
-      filters: Ember.inject.service()
+      filters: inject.service()
     }));
 
     this.add('controller:dashboard', Controller.extend({
-      filters: Ember.inject.service(),
+      filters: inject.service(),
       queryParams: [
         { 'filters.shared': 'shared' }
       ]
