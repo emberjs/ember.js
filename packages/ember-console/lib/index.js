@@ -1,4 +1,7 @@
 /**
+   @module ember
+*/
+/**
   Inside Ember-Metal, simply uses the methods from `imports.console`.
   Override this to provide more robust logging functionality.
 
