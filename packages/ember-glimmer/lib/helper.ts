@@ -68,9 +68,7 @@ export function isSimpleHelper(helper: HelperFactory): helper is SimpleHelperFac
   import Helper from '@ember/component/helper';
 
   export default Helper.extend({
-    compute(params, hash) {
-      let cents = params[0];
-      let currency = hash.currency;
+    compute([cents], { currency }) {
       return `${currency}${cents * 0.01}`;
     }
   });
