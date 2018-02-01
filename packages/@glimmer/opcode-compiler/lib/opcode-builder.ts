@@ -36,7 +36,7 @@ import CompilableTemplate, { ICompilableTemplate, PLACEHOLDER_HANDLE } from './c
 import {
   ComponentBuilder
 } from './wrapped-component';
-import { InstructionEncoder, Operand, MACHINE_MASK } from "@glimmer/encoder";
+import { InstructionEncoder, Operand, OpcodeSize } from "@glimmer/encoder";
 
 export interface STDLib {
   main: number;
@@ -123,10 +123,10 @@ export class SimpleOpcodeBuilder {
   pushMachine(name: Op, arg1: Operand, arg2: Operand, arg3: Operand): void;
   pushMachine(name: Op) {
     switch (arguments.length) {
-      case 1:  return this.encoder.encode(name, MACHINE_MASK);
-      case 2:  return this.encoder.encode(name, MACHINE_MASK, arguments[1]);
-      case 3:  return this.encoder.encode(name, MACHINE_MASK, arguments[1], arguments[2]);
-      default: return this.encoder.encode(name, MACHINE_MASK, arguments[1], arguments[2], arguments[3]);
+      case 1:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK);
+      case 2:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1]);
+      case 3:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1], arguments[2]);
+      default: return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1], arguments[2], arguments[3]);
     }
   }
 
@@ -155,7 +155,7 @@ export class SimpleOpcodeBuilder {
   }
 
   reserveMachine(name: Op) {
-    this.encoder.encode(name, MACHINE_MASK, -1);
+    this.encoder.encode(name, OpcodeSize.MACHINE_MASK, -1);
   }
 
   ///

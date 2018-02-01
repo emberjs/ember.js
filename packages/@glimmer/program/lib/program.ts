@@ -5,19 +5,21 @@ import { Constants, WriteOnlyConstants, RuntimeConstants, ConstantPool } from '.
 import { Opcode } from './opcode';
 import { assert } from "@glimmer/util";
 
-enum TableSlotState {
+const enum TableSlotState {
   Allocated,
   Freed,
   Purged,
   Pointer
 }
 
-const ENTRY_SIZE = 2;
-const INFO_OFFSET = 1;
-const MAX_SIZE = 0b1111111111111111;
-const SIZE_MASK =  0b00000000000000001111111111111111;
-const SCOPE_MASK = 0b00111111111111110000000000000000;
-const STATE_MASK = 0b11000000000000000000000000000000;
+const enum Size {
+  ENTRY_SIZE = 2,
+  INFO_OFFSET = 1,
+  MAX_SIZE   = 0b1111111111111111,
+  SIZE_MASK  = 0b00000000000000001111111111111111,
+  SCOPE_MASK = 0b00111111111111110000000000000000,
+  STATE_MASK = 0b11000000000000000000000000000000,
+}
 
 function encodeTableInfo(size: number, scopeSize: number, state: number) {
   return size | (scopeSize << 16) | state << 30;
@@ -90,7 +92,7 @@ export class Heap implements CompileTimeHeap {
   malloc(): number {
     this.table.push(this.offset, 0);
     let handle = this.handle;
-    this.handle += ENTRY_SIZE;
+    this.handle += Size.ENTRY_SIZE;
     return handle;
   }
 
@@ -99,7 +101,7 @@ export class Heap implements CompileTimeHeap {
     let finish = this.offset;
     let instructionSize = finish - start;
     let info = encodeTableInfo(instructionSize, scopeSize, TableSlotState.Allocated);
-    this.table[handle + INFO_OFFSET] = info;
+    this.table[handle + Size.INFO_OFFSET] = info;
   }
 
   size(): number {
@@ -116,26 +118,26 @@ export class Heap implements CompileTimeHeap {
   gethandle(address: number): number {
     this.table.push(address, encodeTableInfo(0, 0, TableSlotState.Pointer));
     let handle = this.handle;
-    this.handle += ENTRY_SIZE;
+    this.handle += Size.ENTRY_SIZE;
     return handle;
   }
 
   sizeof(handle: number): number {
     if (DEBUG) {
-      let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
-      return info & SIZE_MASK;
+      let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
+      return info & Size.SIZE_MASK;
     }
     return -1;
   }
 
   scopesizeof(handle: number): number {
-    let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
-    return (info & SCOPE_MASK) >> 16;
+    let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
+    return (info & Size.SCOPE_MASK) >> 16;
   }
 
   free(handle: VMHandle): void {
-    let info = this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET];
-    this.table[(handle as Recast<VMHandle, number>) + INFO_OFFSET] = changeState(info, TableSlotState.Freed);
+    let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
+    this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET] = changeState(info, TableSlotState.Freed);
   }
 
   /**
@@ -149,11 +151,11 @@ export class Heap implements CompileTimeHeap {
     let compactedSize = 0;
     let { table, table: { length }, heap } = this;
 
-    for (let i=0; i<length; i+=ENTRY_SIZE) {
+    for (let i=0; i<length; i+=Size.ENTRY_SIZE) {
       let offset = table[i];
-      let info = table[i + INFO_OFFSET];
-      let size = info & SIZE_MASK;
-      let state = info & STATE_MASK >> 30;
+      let info = table[i + Size.INFO_OFFSET];
+      let size = info & Size.SIZE_MASK;
+      let state = info & Size.STATE_MASK >> 30;
 
       if (state === TableSlotState.Purged) {
         continue;
@@ -161,7 +163,7 @@ export class Heap implements CompileTimeHeap {
         // transition to "already freed" aka "purged"
         // a good improvement would be to reuse
         // these slots
-        table[i + INFO_OFFSET] = changeState(info, TableSlotState.Purged);
+        table[i + Size.INFO_OFFSET] = changeState(info, TableSlotState.Purged);
         compactedSize += size;
       } else if (state === TableSlotState.Allocated) {
         for (let j=offset; j<=i+size; j++) {
@@ -179,7 +181,7 @@ export class Heap implements CompileTimeHeap {
 
   pushPlaceholder(valueFunc: () => number): void {
     let address = this.offset++;
-    this.heap[address] = MAX_SIZE;
+    this.heap[address] = Size.MAX_SIZE;
     this.placeholders.push([address, valueFunc]);
   }
 
@@ -189,7 +191,7 @@ export class Heap implements CompileTimeHeap {
     for (let i = 0; i < placeholders.length; i++) {
       let [address, getValue] = placeholders[i];
 
-      assert(this.getbyaddr(address) === MAX_SIZE, `expected to find a placeholder value at ${address}`);
+      assert(this.getbyaddr(address) === Size.MAX_SIZE, `expected to find a placeholder value at ${address}`);
       this.setbyaddr(address, getValue());
     }
   }
