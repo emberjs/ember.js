@@ -23,7 +23,7 @@ import {
 import { testBoth } from 'internal-test-helpers';
 
 import EmberObject from '../../system/object';
-import { A as emberA } from '../../system/native_array';
+import { A as emberA } from '../../mixins/array';
 
 QUnit.module('CP macros');
 

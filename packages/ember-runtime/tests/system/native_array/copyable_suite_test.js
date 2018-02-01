@@ -1,5 +1,5 @@
 import { generateGuid } from 'ember-utils';
-import { A as emberA } from '../../../system/native_array';
+import { A as emberA } from '../../../mixins/array';
 import CopyableTests from '../../suites/copyable';
 
 CopyableTests.extend({

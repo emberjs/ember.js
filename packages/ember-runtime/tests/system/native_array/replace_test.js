@@ -1,4 +1,4 @@
-import { A } from '../../../system/native_array';
+import { A } from '../../../mixins/array';
 
 QUnit.module('NativeArray.replace');
 

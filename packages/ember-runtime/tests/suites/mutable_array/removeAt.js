@@ -1,6 +1,6 @@
 import { SuiteModuleBuilder } from '../suite';
 import { get } from 'ember-metal';
-import { removeAt } from '../../../mixins/mutable_array';
+import { removeAt } from '../../../mixins/array';
 
 const suite = SuiteModuleBuilder.create();
 

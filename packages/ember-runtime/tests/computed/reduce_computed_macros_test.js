@@ -28,8 +28,7 @@ import {
   collect
 } from '../../computed/reduce_computed_macros';
 import { isArray } from '../../utils';
-import { A as emberA } from '../../system/native_array';
-import { removeAt } from '../../mixins/mutable_array';
+import { A as emberA, removeAt } from '../../mixins/array';
 
 let obj;
 QUnit.module('map', {

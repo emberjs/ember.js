@@ -1,5 +1,5 @@
 import { isArray } from '../../utils';
-import { A as emberA } from '../../system/native_array';
+import { A as emberA } from '../../mixins/array';
 import ArrayProxy from '../../system/array_proxy';
 import { environment } from 'ember-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -39,7 +39,7 @@ moduleFor('Ember Type Checking', class extends AbstractTestCase {
       let fileList = fileListElement.files;
       assert.equal(isArray(fileList), false, 'fileList');
     } else {
-      assert.ok(true, 'FileList is not present on window'); 
+      assert.ok(true, 'FileList is not present on window');
     }
   }
 });

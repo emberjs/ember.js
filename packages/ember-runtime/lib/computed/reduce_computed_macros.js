@@ -11,7 +11,7 @@ import {
 } from 'ember-metal';
 import compare from '../compare';
 import { isArray } from '../utils';
-import { A as emberA } from '../system/native_array';
+import { A as emberA } from '../mixins/array';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
   assert(

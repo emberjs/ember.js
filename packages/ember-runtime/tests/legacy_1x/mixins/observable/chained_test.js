@@ -1,6 +1,6 @@
 import { get, set, run, addObserver } from 'ember-metal';
 import EmberObject from '../../../../system/object';
-import { A as emberA } from '../../../../system/native_array';
+import { A as emberA } from '../../../../mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*
@@ -15,38 +15,38 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 */
 
 moduleFor('Ember.Observable - Observing with @each', class extends AbstractTestCase{
- 
+
   ['@test chained observers on enumerable properties are triggered when the observed property of any item changes'](assert) {
     let family = EmberObject.create({ momma: null });
     let momma = EmberObject.create({ children: [] });
-  
+
     let child1 = EmberObject.create({ name: 'Bartholomew' });
     let child2 = EmberObject.create({ name: 'Agnes' });
     let child3 = EmberObject.create({ name: 'Dan' });
     let child4 = EmberObject.create({ name: 'Nancy' });
-  
+
     set(family, 'momma', momma);
     set(momma, 'children', emberA([child1, child2, child3]));
-  
+
     let observerFiredCount = 0;
     addObserver(family, 'momma.children.@each.name', this, function() {
       observerFiredCount++;
     });
-  
+
     observerFiredCount = 0;
     run(() => get(momma, 'children').setEach('name', 'Juan'));
     assert.equal(observerFiredCount, 3, 'observer fired after changing child names');
-  
+
     observerFiredCount = 0;
     run(() => get(momma, 'children').pushObject(child4));
     assert.equal(observerFiredCount, 1, 'observer fired after adding a new item');
-  
+
     observerFiredCount = 0;
     run(() => set(child4, 'name', 'Herbert'));
     assert.equal(observerFiredCount, 1, 'observer fired after changing property on new object');
-  
+
     set(momma, 'children', []);
-  
+
     observerFiredCount = 0;
     run(() => set(child1, 'name', 'Hanna'));
     assert.equal(observerFiredCount, 0, 'observer did not fire after removing changing property on a removed object');

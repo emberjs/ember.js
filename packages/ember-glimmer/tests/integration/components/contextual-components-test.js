@@ -3,7 +3,7 @@ import { Component } from '../../utils/helpers';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { isEmpty } from 'ember-metal';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { A as emberA } from 'ember-runtime/mixins/array';
 
 moduleFor('Components test: contextual components', class extends RenderingTest {
   ['@test renders with component helper']() {
