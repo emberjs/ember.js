@@ -44,7 +44,8 @@ export { default as Observable } from './mixins/observable';
 export { default as MutableEnumerable } from './mixins/mutable_enumerable';
 export {
   default as MutableArray,
-  removeAt
+  removeAt,
+  insertAt
 } from './mixins/mutable_array';
 export { default as TargetActionSupport } from './mixins/target_action_support';
 export { default as Evented } from './mixins/evented';

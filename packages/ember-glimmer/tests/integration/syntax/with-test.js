@@ -1,5 +1,5 @@
 import { get, set } from 'ember-metal';
-import { A as emberA, ObjectProxy, removeAt } from 'ember-runtime';
+import { A as emberA, ObjectProxy, removeAt, insertAt } from 'ember-runtime';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 import { strip } from '../../utils/abstract-test-case';
@@ -197,7 +197,7 @@ moduleFor('Syntax test: {{#with as}}', class extends IfUnlessWithSyntaxTest {
       let array = get(this.context, 'arrayThing');
       array.replace(0, 1, ['Goodbye']);
       removeAt(array, 1);
-      array.insertAt(1, ', ');
+      insertAt(array, 1, ', ');
       array.pushObject('!');
     });
 

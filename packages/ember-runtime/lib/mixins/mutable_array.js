@@ -4,9 +4,10 @@
 
 import {
   get,
-  Mixin,
+  replace as emberReplace,
   beginPropertyChanges,
-  endPropertyChanges
+  endPropertyChanges,
+  Mixin
 } from 'ember-metal';
 import MutableEnumerable from './mutable_enumerable';
 import EmberArray, { objectAt } from './array';
@@ -14,6 +15,18 @@ import { Error as EmberError } from 'ember-debug';
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
+
+function replace(array, idx, amt, objects) {
+  if (typeof array.replace === 'function') {
+    array.replace(idx, amt, objects);
+  } else if (!objects || get(objects, 'length') === 0) {
+    array.splice(idx, amt);
+  } else {
+    emberReplace(this, idx, amt, objects);
+  }
+
+  return array;
+}
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
@@ -26,9 +39,18 @@ export function removeAt(array, start, len) {
       len = 1;
     }
 
-    array.replace(start, len, EMPTY);
+    array = replace(array, start, len, EMPTY);
   }
 
+  return array;
+}
+
+export function insertAt(array, idx, object) {
+  if (idx > get(array, 'length')) {
+    throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+  }
+
+  array = replace(array, idx, 0, [object]);
   return array;
 }
 
@@ -116,12 +138,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   insertAt(idx, object) {
-    if (idx > get(this, 'length')) {
-      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    this.replace(idx, 0, [object]);
-    return this;
+    return insertAt(this, idx, object);
   },
 
   /**
@@ -166,7 +183,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   pushObject(obj) {
-    this.insertAt(get(this, 'length'), obj);
+    insertAt(this, get(this, 'length'), obj);
     return obj;
   },
 
@@ -261,7 +278,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @public
   */
   unshiftObject(obj) {
-    this.insertAt(0, obj);
+    insertAt(this, 0, obj);
     return obj;
   },
 
