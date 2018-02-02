@@ -86,7 +86,7 @@ class Rehydration extends AbstractRehydrationTests {
     // Just repairs the value of the text node
     this.assertRehydrationStats({ nodesRemoved: 0 });
 
-    // TODO: handle %empty% in the testing DSL
+    // TODO: handle % % in the testing DSL
     // this.assertStableNodes();
     this.assertStableRerender();
   }
@@ -566,7 +566,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
     });
     let b = blockStack();
     let id = this.testType === 'Dynamic' ? 3 : 2;
-    this.assertServerComponent(`Hello ${b(id)}<!--%empty%-->${b(id)}`);
+    this.assertServerComponent(`Hello ${b(id)}<!--% %-->${b(id)}`);
 
     this.renderClientSide({
       layout
