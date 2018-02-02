@@ -76,7 +76,7 @@ class SerializedDOMHelperTests extends DOMHelperTests {
 
   @test 'Null literals do not have representation in DOM'() {
     this.render('{{null}}');
-    this.assertHTML('<!--%empty%-->');
+    this.assertHTML('<!--% %-->');
   }
 
   @test "Elements inside a yielded block"() {

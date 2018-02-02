@@ -23,7 +23,7 @@ import { debugRehydration } from "./environment/modes/rehydration/debug-builder"
 export const OPEN: { marker: "open-block" } = { marker: "open-block" };
 export const CLOSE: { marker: "close-block" } = { marker: "close-block" };
 export const SEP: { marker: "sep" } = { marker: "sep" };
-export const EMPTY: { marker: "empty" } = { marker: "empty" };
+export const EMPTY: { marker: " " } = { marker: " " };
 export const GLIMMER_TEST_COMPONENT = "TestComponent";
 const CURLY_TEST_COMPONENT = "test-component";
 

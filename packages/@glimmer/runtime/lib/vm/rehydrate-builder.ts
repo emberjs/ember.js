@@ -412,7 +412,7 @@ function isSeparator(node: Simple.Node): boolean {
 }
 
 function isEmpty(node: Simple.Node): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%empty%';
+  return node.nodeType === 8 && node.nodeValue === '% %';
 }
 function isSameNodeType(candidate: Simple.Element, tag: string) {
   if (candidate.namespaceURI === SVG_NAMESPACE) {
