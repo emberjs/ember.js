@@ -36,7 +36,7 @@ import CompilableTemplate, { ICompilableTemplate, PLACEHOLDER_HANDLE } from './c
 import {
   ComponentBuilder
 } from './wrapped-component';
-import { InstructionEncoder, Operand, MACHINE_MASK } from "@glimmer/encoder";
+import { InstructionEncoder, Operand, OpcodeSize } from "@glimmer/encoder";
 
 export interface STDLib {
   main: number;
@@ -104,12 +104,30 @@ export interface OpcodeBuilderConstructor {
 export class SimpleOpcodeBuilder {
   protected encoder = new InstructionEncoder([]);
 
-  push(name: Op, ...ops: Operand[]) {
-    this.encoder.encode(name, 0, ...ops);
+  push(name: Op): void;
+  push(name: Op, arg1: Operand): void;
+  push(name: Op, arg1: Operand, arg2: Operand): void;
+  push(name: Op, arg1: Operand, arg2: Operand, arg3: Operand): void;
+  push(name: Op) {
+    switch (arguments.length) {
+      case 1:  return this.encoder.encode(name, 0);
+      case 2:  return this.encoder.encode(name, 0, arguments[1]);
+      case 3:  return this.encoder.encode(name, 0, arguments[1], arguments[2]);
+      default: return this.encoder.encode(name, 0, arguments[1], arguments[2], arguments[3]);
+    }
   }
 
-  pushMachine(name: Op, ...ops: Operand[]) {
-    this.encoder.encode(name, MACHINE_MASK, ...ops);
+  pushMachine(name: Op): void;
+  pushMachine(name: Op, arg1: Operand): void;
+  pushMachine(name: Op, arg1: Operand, arg2: Operand): void;
+  pushMachine(name: Op, arg1: Operand, arg2: Operand, arg3: Operand): void;
+  pushMachine(name: Op) {
+    switch (arguments.length) {
+      case 1:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK);
+      case 2:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1]);
+      case 3:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1], arguments[2]);
+      default: return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1], arguments[2], arguments[3]);
+    }
   }
 
   commit(heap: CompileTimeHeap, scopeSize: number): number {
@@ -132,22 +150,12 @@ export class SimpleOpcodeBuilder {
     return handle;
   }
 
-  reserve(name: Op, size = 1) {
-    let reservedOperands = [];
-    for (let i = 0; i < size; i++) {
-      reservedOperands[i] = -1;
-    }
-
-    this.push(name, ...reservedOperands);
+  reserve(name: Op) {
+    this.encoder.encode(name, 0, -1);
   }
 
-  reserveMachine(name: Op, size = 1) {
-    let reservedOperands = [];
-    for (let i = 0; i < size; i++) {
-      reservedOperands[i] = -1;
-    }
-
-    this.pushMachine(name, ...reservedOperands);
+  reserveMachine(name: Op) {
+    this.encoder.encode(name, OpcodeSize.MACHINE_MASK, -1);
   }
 
   ///
