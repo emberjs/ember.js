@@ -32,7 +32,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
 
   __appendHTML(html: string): Bounds {
     // Do we need to run the html tokenizer here?
-    let first = this.__appendComment('%glimmer%');
+    let first = this.__appendComment('%glmr%');
     if (this.element.tagName === 'TABLE') {
       let openIndex = html.indexOf('<');
       if (openIndex > -1) {
@@ -43,7 +43,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
       }
     }
     super.__appendHTML(html);
-    let last = this.__appendComment('%glimmer%');
+    let last = this.__appendComment('%glmr%');
     return new ConcreteBounds(this.element, first, last);
   }
 

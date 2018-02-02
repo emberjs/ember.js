@@ -404,7 +404,7 @@ function isElement(node: Simple.Node): node is Simple.Element {
 }
 
 function isMarker(node: Simple.Node): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%glimmer%';
+  return node.nodeType === 8 && node.nodeValue === '%glmr%';
 }
 
 function isSeparator(node: Simple.Node): boolean {
