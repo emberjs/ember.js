@@ -20,14 +20,14 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
 
   __openBlock(): void {
     let depth = this.serializeBlockDepth++;
-    this.__appendComment(`%+block:${depth}%`);
+    this.__appendComment(`%+b:${depth}%`);
 
     super.__openBlock();
   }
 
   __closeBlock(): void {
     super.__closeBlock();
-    this.__appendComment(`%-block:${--this.serializeBlockDepth}%`);
+    this.__appendComment(`%-b:${--this.serializeBlockDepth}%`);
   }
 
   __appendHTML(html: string): Bounds {
@@ -69,7 +69,6 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 
   openElement(tag: string) {
-
     if (tag === 'tr') {
       if (this.element.tagName !== 'TBODY') {
         this.openElement('tbody');

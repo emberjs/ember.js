@@ -53,9 +53,9 @@ class SerializedDOMHelperTests extends DOMHelperTests {
     this.assertHTML(strip`
       <div>
         ${b(1)}
-        <!--%glimmer%-->
+        <!--%glmr%-->
         <strong>hello</strong>
-        <!--%glimmer%-->
+        <!--%glmr%-->
         ${b(1)}
       </div>
     `);
@@ -67,9 +67,9 @@ class SerializedDOMHelperTests extends DOMHelperTests {
     let b = blockStack();
     this.assertHTML(strip`
       ${b(1)}
-      <!--%glimmer%-->
+      <!--%glmr%-->
       <span>hi</span>
-      <!--%glimmer%-->
+      <!--%glmr%-->
       ${b(1)}
     `);
   }

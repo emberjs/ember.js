@@ -928,9 +928,9 @@ export function content(list: Content[]): string {
     if (typeof item === 'string') {
       out.push(item);
     } else if (item.marker === 'open-block') {
-      out.push(`<!--%+block:${depth++}%-->`);
+      out.push(`<!--%+b:${depth++}%-->`);
     } else if (item.marker === 'close-block') {
-      out.push(`<!--%-block:${--depth}%-->`);
+      out.push(`<!--%-b:${--depth}%-->`);
     } else {
       out.push(`<!--%${item.marker}%-->`);
     }
