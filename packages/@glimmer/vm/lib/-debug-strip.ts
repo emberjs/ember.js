@@ -447,12 +447,6 @@ OPCODE_METADATA(Op.OpenElement, {
   operands: 1
 });
 
-OPCODE_METADATA(Op.OpenElementWithOperations, {
-  name: 'OpenElementWithOperations',
-  ops: [Str('tag')],
-  operands: 1
-});
-
 OPCODE_METADATA(Op.OpenDynamicElement, {
   name: 'OpenDynamicElement',
   stackChange: -1

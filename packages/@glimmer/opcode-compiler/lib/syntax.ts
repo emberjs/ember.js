@@ -94,7 +94,7 @@ export function statementCompiler() {
   STATEMENTS.add(Ops.OpenSplattedElement, (sexp: S.SplatElement, builder) => {
     builder.setComponentAttrs(true);
     builder.putComponentOperations();
-    builder.openElementWithOperations(sexp[1]);
+    builder.openPrimitiveElement(sexp[1]);
   });
 
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
@@ -225,7 +225,7 @@ export function statementCompiler() {
 
   CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
     builder.putComponentOperations();
-    builder.openElementWithOperations(sexp[2]);
+    builder.openPrimitiveElement(sexp[2]);
   });
 
   CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder) => {
