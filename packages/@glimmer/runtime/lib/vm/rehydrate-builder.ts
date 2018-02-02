@@ -28,7 +28,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error("Rehydration with nextSibling not supported");
     this.candidate = this.currentCursor!.element.firstChild;
-    assert(this.candidate && isComment(this.candidate) && this.candidate.nodeValue === '%+block:0%', 'Must have opening comment <!--%+block:0%--> for rehydration.');
+    assert(this.candidate && isComment(this.candidate) && this.candidate.nodeValue === '%+b:0%', 'Must have opening comment <!--%+b:0%--> for rehydration.');
   }
 
   get currentCursor(): Option<RehydratingCursor> {
@@ -55,13 +55,13 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       if (currentCursor.candidate) {
         /**
          * <div>   <---------------  currentCursor.element
-         *   <!--%+block:1%-->
+         *   <!--%+b:1%-->
          *   <div> <---------------  currentCursor.candidate -> cursor.element
-         *     <!--%+block:2%--> <-  currentCursor.candidate.firstChild -> cursor.candidate
+         *     <!--%+b:2%--> <-  currentCursor.candidate.firstChild -> cursor.candidate
          *     Foo
-         *     <!--%-block:2%-->
+         *     <!--%-b:2%-->
          *   </div>
-         *   <!--%-block:1%-->  <--  becomes currentCursor.candidate
+         *   <!--%-b:1%-->  <--  becomes currentCursor.candidate
          */
 
         // where to rehydrate from if we are in rehydration mode
@@ -380,7 +380,7 @@ function isComment(node: Simple.Node): node is Simple.Comment {
 }
 
 function getOpenBlockDepth(node: Simple.Comment): Option<number> {
-  let boundsDepth = node.nodeValue!.match(/^%\+block:(\d+)%$/);
+  let boundsDepth = node.nodeValue!.match(/^%\+b:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
     return Number(boundsDepth[1] as string);
@@ -390,7 +390,7 @@ function getOpenBlockDepth(node: Simple.Comment): Option<number> {
 }
 
 function getCloseBlockDepth(node: Simple.Comment): Option<number> {
-  let boundsDepth = node.nodeValue!.match(/^%\-block:(\d+)%$/);
+  let boundsDepth = node.nodeValue!.match(/^%\-b:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
     return Number(boundsDepth[1] as string);
@@ -404,15 +404,15 @@ function isElement(node: Simple.Node): node is Simple.Element {
 }
 
 function isMarker(node: Simple.Node): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%glimmer%';
+  return node.nodeType === 8 && node.nodeValue === '%glmr%';
 }
 
 function isSeparator(node: Simple.Node): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%sep%';
+  return node.nodeType === 8 && node.nodeValue === '%|%';
 }
 
 function isEmpty(node: Simple.Node): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%empty%';
+  return node.nodeType === 8 && node.nodeValue === '% %';
 }
 function isSameNodeType(candidate: Simple.Element, tag: string) {
   if (candidate.namespaceURI === SVG_NAMESPACE) {

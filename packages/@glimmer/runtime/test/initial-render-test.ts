@@ -86,7 +86,7 @@ class Rehydration extends AbstractRehydrationTests {
     // Just repairs the value of the text node
     this.assertRehydrationStats({ nodesRemoved: 0 });
 
-    // TODO: handle %empty% in the testing DSL
+    // TODO: handle % % in the testing DSL
     // this.assertStableNodes();
     this.assertStableRerender();
   }
@@ -105,7 +105,7 @@ class Rehydration extends AbstractRehydrationTests {
   @test "extra nodes at the end"() {
     let template = "{{#if admin}}<div>hi admin</div>{{else}}<div>HAXOR{{stopHaxing}}</div>{{/if}}";
     this.renderServerSide(template, { admin: false, stopHaxing: 'stahp' });
-    this.assertServerOutput(OPEN, "<div>HAXOR<!--%sep%-->stahp</div>", CLOSE);
+    this.assertServerOutput(OPEN, "<div>HAXOR<!--%|%-->stahp</div>", CLOSE);
 
     this.renderClientSide(template, { admin: true });
     this.assertRehydrationStats({ nodesRemoved: 1 });
@@ -528,7 +528,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       layout,
       template
     }, { name: 'Filewatcher' });
-    this.assertServerComponent(`Hello <!--%sep%-->Filewatcher`);
+    this.assertServerComponent(`Hello <!--%|%-->Filewatcher`);
 
     this.renderClientSide({
       layout,
@@ -547,7 +547,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       layout,
       template
     });
-    this.assertServerComponent(`Hello <!--%sep%-->Filewatcher`);
+    this.assertServerComponent(`Hello <!--%|%-->Filewatcher`);
 
     this.renderClientSide({
       layout,
@@ -566,7 +566,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
     });
     let b = blockStack();
     let id = this.testType === 'Dynamic' ? 3 : 2;
-    this.assertServerComponent(`Hello ${b(id)}<!--%empty%-->${b(id)}`);
+    this.assertServerComponent(`Hello ${b(id)}<!--% %-->${b(id)}`);
 
     this.renderClientSide({
       layout
@@ -604,7 +604,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       this.assert.ok(this.element.querySelector('.ember-view'));
       this.assert.equal(this.element.textContent, 'Hello World');
     } else {
-      this.assertServerComponent(`${b(2)}Hello <!--%sep%-->World${b(2)}`);
+      this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
 
     this.renderClientSide({
@@ -644,7 +644,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       this.assert.ok(this.element.querySelector('.ember-view'));
       this.assert.equal(this.element.textContent, 'Hello World');
     } else {
-      this.assertServerComponent(`${b(2)}Hello <!--%sep%-->World${b(2)}`);
+      this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
 
     if (this.testType === 'Dynamic' || this.testType === 'Curly') {
