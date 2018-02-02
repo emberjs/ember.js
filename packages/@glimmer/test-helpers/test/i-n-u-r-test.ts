@@ -46,9 +46,9 @@ QUnit.test("Can take nested snapshots", assert => {
 
 QUnit.test("Can take nested snapshots of serialized blocks", assert => {
   let div = document.createElement("div");
-  let open = document.createComment("<!--%+block:0%-->");
+  let open = document.createComment("<!--%+b:0%-->");
   let text = document.createTextNode("Foo");
-  let close = document.createComment("<!--%-block:0%-->");
+  let close = document.createComment("<!--%-b:0%-->");
   div.appendChild(open);
   div.appendChild(text);
   div.appendChild(close);

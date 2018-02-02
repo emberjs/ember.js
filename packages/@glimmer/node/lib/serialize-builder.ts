@@ -20,19 +20,19 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
 
   __openBlock(): void {
     let depth = this.serializeBlockDepth++;
-    this.__appendComment(`%+block:${depth}%`);
+    this.__appendComment(`%+b:${depth}%`);
 
     super.__openBlock();
   }
 
   __closeBlock(): void {
     super.__closeBlock();
-    this.__appendComment(`%-block:${--this.serializeBlockDepth}%`);
+    this.__appendComment(`%-b:${--this.serializeBlockDepth}%`);
   }
 
   __appendHTML(html: string): Bounds {
     // Do we need to run the html tokenizer here?
-    let first = this.__appendComment('%glimmer%');
+    let first = this.__appendComment('%glmr%');
     if (this.element.tagName === 'TABLE') {
       let openIndex = html.indexOf('<');
       if (openIndex > -1) {
@@ -43,7 +43,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
       }
     }
     super.__appendHTML(html);
-    let last = this.__appendComment('%glimmer%');
+    let last = this.__appendComment('%glmr%');
     return new ConcreteBounds(this.element, first, last);
   }
 
@@ -51,9 +51,9 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     let current = currentNode(this);
 
     if (string === '') {
-      return this.__appendComment('%empty%') as any as Simple.Text;
+      return this.__appendComment('% %') as any as Simple.Text;
     } else if (current && current.nodeType === TEXT_NODE) {
-      this.__appendComment('%sep%');
+      this.__appendComment('%|%');
     }
 
     return super.__appendText(string);
@@ -69,7 +69,6 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 
   openElement(tag: string) {
-
     if (tag === 'tr') {
       if (this.element.tagName !== 'TBODY') {
         this.openElement('tbody');
