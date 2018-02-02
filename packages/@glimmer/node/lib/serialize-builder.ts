@@ -53,7 +53,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     if (string === '') {
       return this.__appendComment('%empty%') as any as Simple.Text;
     } else if (current && current.nodeType === TEXT_NODE) {
-      this.__appendComment('%sep%');
+      this.__appendComment('%|%');
     }
 
     return super.__appendText(string);

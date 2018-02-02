@@ -408,7 +408,7 @@ function isMarker(node: Simple.Node): boolean {
 }
 
 function isSeparator(node: Simple.Node): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%sep%';
+  return node.nodeType === 8 && node.nodeValue === '%|%';
 }
 
 function isEmpty(node: Simple.Node): boolean {
