@@ -288,12 +288,12 @@ export function blockStack() {
 
   return (id: number) => {
     if (stack.indexOf(id) > -1) {
-      let close = `<!--%-block:${id}%-->`;
+      let close = `<!--%-b:${id}%-->`;
       stack.pop();
       return close;
     } else {
       stack.push(id);
-      return `<!--%+block:${id}%-->`;
+      return `<!--%+b:${id}%-->`;
     }
   };
 }
