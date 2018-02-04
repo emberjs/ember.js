@@ -1,22 +1,23 @@
-import Ember from 'ember-metal'; // ES6TODO Ember.STRINGS
 import { ENV } from 'ember-environment';
 import { loc } from '../../../system/string';
+import { setStrings, getStrings } from '../../../string_registry';
+
 
 let oldString;
 
 QUnit.module('EmberStringUtils.loc', {
   beforeEach() {
-    oldString = Ember.STRINGS;
-    Ember.STRINGS = {
+    oldString = getStrings();
+    setStrings({
       '_Hello World': 'Bonjour le monde',
       '_Hello %@': 'Bonjour %@',
       '_Hello %@ %@': 'Bonjour %@ %@',
       '_Hello %@# %@#': 'Bonjour %@2 %@1'
-    };
+    });
   },
 
   afterEach() {
-    Ember.STRINGS = oldString;
+    setStrings(oldString);
   }
 });
 
