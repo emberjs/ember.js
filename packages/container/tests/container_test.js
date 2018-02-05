@@ -400,7 +400,8 @@ moduleFor('Container', class extends AbstractTestCase {
 
     Apple.reopenClass({
       _lazyInjections() {
-        return ['orange:main', 'banana:main'];
+        return [{ fullName: 'orange:main' },
+                { fullName: 'banana:main' }];
       }
     });
 
@@ -423,7 +424,7 @@ moduleFor('Container', class extends AbstractTestCase {
     Apple.reopenClass({
       _lazyInjections: () => {
         assert.ok(true, 'should call lazy injection method');
-        return ['orange:main'];
+        return [{ fullName: 'orange:main' }];
       }
     });
 

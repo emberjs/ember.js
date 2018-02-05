@@ -630,12 +630,15 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
-        let { fullName } = parseInjectionString(hash[key]);
+        let injection = hash[key];
+        let injectionString = (typeof injection === 'string') ? injection : injection.fullName;
+        let { fullName } = parseInjectionString(injectionString);
         assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName));
 
         injections.push({
           property: key,
-          fullName: hash[key]
+          fullName: hash[key].fullName,
+          namespace: hash[key].namespace
         });
       }
     }
@@ -647,10 +650,14 @@ if (DEBUG) {
     if (!injections) { return; }
 
     for (let i = 0; i < injections.length; i++) {
+      let injection = injections[i];
+      let injectionString = (typeof injection === 'string') ? injection : injection.fullName;
       let {
         fullName,
         namespace
-      } = parseInjectionString(injections[i].fullName);
+      } = parseInjectionString(injectionString);
+
+      namespace = namespace || injection.namespace;
 
       assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName, {namespace}));
     }
