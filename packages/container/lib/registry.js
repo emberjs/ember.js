@@ -149,7 +149,7 @@ export default class Registry {
    @param {Object} options
    */
   register(fullName, factory, options = {}) {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName, options));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
@@ -228,7 +228,7 @@ export default class Registry {
    @return {Function} fullName's factory
    */
   resolve(fullName, options) {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName, options));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     let factory = resolve(this, this.normalize(fullName), options);
     if (factory === undefined && this.fallback !== null) {
       factory = this.fallback.resolve(...arguments);
@@ -321,7 +321,7 @@ export default class Registry {
    @return {Boolean}
    */
   has(fullName, options) {
-    if (!this.isValidFullName(fullName, options)) {
+    if (!this.isValidFullName(fullName)) {
       return false;
     }
 
@@ -504,8 +504,8 @@ export default class Registry {
    @param {String} property
    @param {String} injectionName
    */
-  injection(fullName, property, injectionName, options) {
-    assert(`Invalid injectionName, expected: 'type:name' got: ${injectionName}`, this.isValidFullName(injectionName, options));
+  injection(fullName, property, injectionName) {
+    assert(`Invalid injectionName, expected: 'type:name' got: ${injectionName}`, this.isValidFullName(injectionName));
 
     let normalizedInjectionName = this.normalize(injectionName);
 
@@ -630,11 +630,8 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
-        let {
-          fullName,
-          namespace
-        } = parseInjectionString(hash[key]);
-        assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName, { namespace }));
+        let { fullName } = parseInjectionString(hash[key]);
+        assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName));
 
         injections.push({
           property: key,
