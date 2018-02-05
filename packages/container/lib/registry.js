@@ -2,8 +2,7 @@ import { dictionary, assign, intern } from 'ember-utils';
 import { assert, deprecate } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import Container, {
-  parseInjectionString,
-  RAW_STRING_OPTION_KEY
+  parseInjectionString
 } from './container';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
@@ -327,7 +326,7 @@ export default class Registry {
     }
 
     let source = options && options.source && this.normalize(options.source);
-    let namespace = options && options[RAW_STRING_OPTION_KEY];
+    let namespace = options && options.namespace;
 
     return has(this, this.normalize(fullName), source, namespace);
   }
@@ -576,7 +575,7 @@ export default class Registry {
     return [
       name,
       options.source,
-      options[RAW_STRING_OPTION_KEY]
+      options.namespace
     ].join('\0');
   }
 
@@ -635,7 +634,7 @@ if (DEBUG) {
           fullName,
           namespace
         } = parseInjectionString(hash[key]);
-        assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName, {[RAW_STRING_OPTION_KEY]: namespace}));
+        assert(`Expected a proper full name, given '${fullName}'`, this.isValidFullName(fullName, { namespace }));
 
         injections.push({
           property: key,
@@ -656,7 +655,7 @@ if (DEBUG) {
         namespace
       } = parseInjectionString(injections[i].fullName);
 
-      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName, {[RAW_STRING_OPTION_KEY]: namespace}));
+      assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName, {namespace}));
     }
   };
 }
@@ -707,7 +706,7 @@ function resolve(registry, normalizedName, options) {
   let resolved;
 
   if (registry.resolver) {
-    resolved = registry.resolver.resolve(normalizedName, options && options.source, options && options[RAW_STRING_OPTION_KEY]);
+    resolved = registry.resolver.resolve(normalizedName, options && options.source, options && options.namespace);
   }
 
   if (resolved === undefined) {
@@ -726,7 +725,7 @@ function resolve(registry, normalizedName, options) {
 function has(registry, fullName, source, namespace) {
   return registry.resolve(fullName, {
     source,
-    [RAW_STRING_OPTION_KEY]: namespace
+    namespace
   }) !== undefined;
 }
 

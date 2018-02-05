@@ -10,6 +10,5 @@ export {
   default as Container,
   FACTORY_FOR,
   factoryForWithRawString,
-  lookupWithRawString,
-  RAW_STRING_OPTION_KEY as _RAW_STRING_OPTION_KEY
+  lookupWithRawString
 } from './container';

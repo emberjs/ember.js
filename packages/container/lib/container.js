@@ -9,9 +9,6 @@ import {
   assign,
   HAS_NATIVE_PROXY
 } from 'ember-utils';
-import { symbol } from 'ember-utils';
-
-export const RAW_STRING_OPTION_KEY = symbol('RAW_STRING_OPTION_KEY');
 
 /**
  A container used to instantiate and cache objects.
@@ -322,7 +319,7 @@ function buildInjections(container, injections) {
       let {name, namespace, type} = parseInjectionString(injection.fullName);
       hash[injection.property] = lookupWithRawString(container, type, namespace || name);
       if (!isDynamic) {
-        isDynamic = !isSingleton(container, injection.fullName, {[RAW_STRING_OPTION_KEY]: namespace});
+        isDynamic = !isSingleton(container, injection.fullName, { namespace });
       }
     }
   }
@@ -474,9 +471,7 @@ export function lookupWithRawString(container, type, rawString) {
   } else {
     let [ namespace, name ] = rawString.split('::');
     let fullName = type.indexOf(':') === -1 ? `${type}:${name}` : `${type}${name}`;
-    return container.lookup(fullName, {
-      [RAW_STRING_OPTION_KEY]: namespace
-    });
+    return container.lookup(fullName, { namespace });
   }
 }
 
@@ -487,8 +482,6 @@ export function factoryForWithRawString(container, type, rawString) {
     let [ namespace, name ] = rawString.split('::');
     // type might already contain ":" eg. "template:components/"
     let fullName = type.indexOf(':') === -1 ? `${type}:${name}` : `${type}${name}`;
-    return container.factoryFor(fullName, {
-      [RAW_STRING_OPTION_KEY]: namespace
-    });
+    return container.factoryFor(fullName, { namespace });
   }
 }

@@ -1,4 +1,4 @@
-import { Registry, privatize, _RAW_STRING_OPTION_KEY } from '..';
+import { Registry, privatize } from '..';
 import { factory, moduleFor, AbstractTestCase, ModuleBasedTestResolver } from 'internal-test-helpers';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { ENV } from 'ember-environment';
@@ -776,8 +776,8 @@ if (EMBER_MODULE_UNIFICATION) {
         targetNamespace: namespace
       }, PrivateComponent);
 
-      assert.strictEqual(registry.resolve(specifier, { [_RAW_STRING_OPTION_KEY]: namespace }), PrivateComponent, 'The correct factory was provided');
-      assert.strictEqual(registry.resolve(specifier, { [_RAW_STRING_OPTION_KEY]: namespace }), PrivateComponent, 'The correct factory was provided again');
+      assert.strictEqual(registry.resolve(specifier, { namespace }), PrivateComponent, 'The correct factory was provided');
+      assert.strictEqual(registry.resolve(specifier, { namespace }), PrivateComponent, 'The correct factory was provided again');
     }
   });
 
