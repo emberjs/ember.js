@@ -2,8 +2,8 @@ import { compile } from 'ember-template-compiler';
 
 const DELIMITER = '\0';
 
-function serializeKey(specifier, referrer, targetNamespace) {
-  return [specifier, referrer, targetNamespace].join(DELIMITER);
+function serializeKey(specifier, referrer, namespace) {
+  return [specifier, referrer, namespace].join(DELIMITER);
 }
 
 class Resolver {
@@ -11,8 +11,8 @@ class Resolver {
     this._registered = {};
     this.constructor.lastInstance = this;
   }
-  resolve(specifier, referrer, targetNamespace) {
-    return this._registered[serializeKey(specifier, referrer, targetNamespace)];
+  resolve(specifier, referrer, namespace) {
+    return this._registered[serializeKey(specifier, referrer, namespace)];
   }
   add(specifier, factory) {
     let key;
@@ -24,7 +24,7 @@ class Resolver {
         key = serializeKey(specifier);
         break;
       case 'object':
-        key = serializeKey(specifier.specifier, specifier.referrer, specifier.targetNamespace);
+        key = serializeKey(specifier.specifier, specifier.referrer, specifier.namespace);
         break;
       default:
         throw new Error('Specifier string has an unknown type');

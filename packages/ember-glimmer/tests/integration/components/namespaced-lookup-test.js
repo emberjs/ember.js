@@ -8,12 +8,12 @@ if (EMBER_MODULE_UNIFICATION) {
     ['@test it can render a namespaced component']() {
       this.addTemplate({
         specifier: 'template:components/my-component',
-        targetNamespace: 'my-addon'
+        namespace: 'my-addon'
       }, 'namespaced template {{myProp}}');
 
       this.add({
         specifier: 'component:my-component',
-        targetNamespace: 'my-addon'
+        namespace: 'my-addon'
       }, Component.extend({
         myProp: 'My property'
       }));
@@ -32,12 +32,12 @@ if (EMBER_MODULE_UNIFICATION) {
     ['@test it can render a nested namespaced component']() {
       this.addTemplate({
         specifier: 'template:components/my-component',
-        targetNamespace: 'second-addon'
+        namespace: 'second-addon'
       }, 'second namespaced template');
 
       this.addTemplate({
         specifier: 'template:components/my-component',
-        targetNamespace: 'first-addon'
+        namespace: 'first-addon'
       }, '{{second-addon::my-component}}');
 
       this.addComponent('x-outer', { template: '{{first-addon::my-component}}' });
@@ -61,7 +61,7 @@ if (EMBER_MODULE_UNIFICATION) {
         specifier: 'template:components/my-component',
         // TODO: moduleNames really should have type, be specifiers.
         moduleName: '/first-addon/src/ui/components/my-component',
-        targetNamespace: 'first-addon'
+        namespace: 'first-addon'
       }, '{{addon-component}}');
 
       this.addComponent('x-outer', { template: '{{first-addon::my-component}}' });

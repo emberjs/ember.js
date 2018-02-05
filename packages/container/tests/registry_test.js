@@ -773,7 +773,7 @@ if (EMBER_MODULE_UNIFICATION) {
 
       resolver.add({
         specifier,
-        targetNamespace: namespace
+        namespace
       }, PrivateComponent);
 
       assert.strictEqual(registry.resolve(specifier, { namespace }), PrivateComponent, 'The correct factory was provided');
