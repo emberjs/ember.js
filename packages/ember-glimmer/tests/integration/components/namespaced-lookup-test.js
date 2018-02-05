@@ -97,6 +97,34 @@ if (EMBER_MODULE_UNIFICATION) {
       this.assertText('Nested namespaced component');
     }
 
+    ['@test it does not render a main component when using a namespace']() {
+      this.addTemplate({
+        specifier: 'template:components/main',
+        namespace: 'my-addon'
+      }, 'namespaced template {{myProp}}');
+
+      this.add({
+        specifier: 'component:main',
+        namespace: 'my-addon'
+      }, Component.extend({
+        myProp: 'My property'
+      }));
+
+      this.add({
+        specifier: 'helper:my-addon',
+        namespace: 'empty-namespace'
+
+      }, helper(() => 'my helper'));
+
+      this.render('{{empty-namespace::my-addon}}');
+
+      this.assertText('my helper'); // component should be not found
+
+      this.runTask(() => this.rerender());
+
+      this.assertText('my helper');
+    }
+
     ['@test it renders a namespaced helper']() {
       this.add({
         specifier: 'helper:my-helper',
