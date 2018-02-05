@@ -6,7 +6,6 @@ import {
 import { assert } from 'ember-debug';
 
 const backburner = run.backburner;
-run._addQueue('rsvpAfter', 'destroy');
 
 RSVP.configure('async', (callback, promise) => {
   backburner.schedule('actions', null, callback, promise);

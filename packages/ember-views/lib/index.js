@@ -31,5 +31,3 @@ export {
 export { default as lookupComponent } from './utils/lookup-component';
 export { default as ActionManager } from './system/action_manager';
 export { default as fallbackViewRegistry } from './compat/fallback-view-registry';
-
-import './system/ext';  // for the side effect of extending Ember.run.queues
