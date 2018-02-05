@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
-import { Component } from 'ember-glimmer';
+import { Component, helper } from 'ember-glimmer';
 
 if (EMBER_MODULE_UNIFICATION) {
 
@@ -97,5 +97,19 @@ if (EMBER_MODULE_UNIFICATION) {
       this.assertText('Nested namespaced component');
     }
 
+    ['@test it renders a namespaced helper']() {
+      this.add({
+        specifier: 'helper:my-helper',
+        namespace: 'my-namespace'
+      }, helper(() => 'my helper'));
+
+      this.render('{{my-namespace::my-helper}}');
+
+      this.assertText('my helper');
+
+      this.runTask(() => this.rerender());
+
+      this.assertText('my helper');
+    }
   });
 }
