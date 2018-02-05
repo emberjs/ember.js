@@ -1,6 +1,7 @@
 import {
   get,
   set,
+  objectAt,
   addObserver,
   observer as emberObserver,
   computed
@@ -12,8 +13,7 @@ import EmberArray, {
   addArrayObserver,
   removeArrayObserver,
   arrayContentDidChange,
-  arrayContentWillChange,
-  objectAt
+  arrayContentWillChange
 } from '../../mixins/array';
 import { A as emberA } from '../../mixins/array';
 

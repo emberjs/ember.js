@@ -39,6 +39,7 @@ export {
   set,
   trySet
 } from './property_set';
+export { objectAt } from './array';
 export {
   addListener,
   hasListeners,

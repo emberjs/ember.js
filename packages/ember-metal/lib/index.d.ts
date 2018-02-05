@@ -33,6 +33,8 @@ export function get(obj: any, keyName: string): any;
 
 export function set(obj: any, keyName: string, value: any, tolerant?: boolean): void;
 
+export function objectAt(arr: any, i: number): any;
+
 export function computed(...args: Array<any>): any;
 
 export function didRender(object: any, key: string, reference: any): boolean;

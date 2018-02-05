@@ -6,6 +6,8 @@ import { symbol, toString } from 'ember-utils';
 import {
   get,
   set,
+  objectAt,
+  replace,
   computed,
   isNone,
   aliasMethod,
@@ -25,9 +27,6 @@ import {
 import { assert } from 'ember-debug';
 import Enumerable from './enumerable';
 import compare from '../compare';
-import {
-  replace
-} from 'ember-metal';
 import { ENV } from 'ember-environment';
 import Observable from '../mixins/observable';
 import Copyable from '../mixins/copyable';
@@ -56,10 +55,6 @@ export function addArrayObserver(array, target, opts) {
 
 export function removeArrayObserver(array, target, opts) {
   return arrayObserversHelper(array, target, opts, removeListener, true);
-}
-
-export function objectAt(content, idx) {
-  return typeof content.objectAt === 'function' ? content.objectAt(idx) : content[idx];
 }
 
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {

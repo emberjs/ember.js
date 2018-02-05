@@ -1,7 +1,6 @@
-import { run, computed } from 'ember-metal';
+import { run, computed, objectAt } from 'ember-metal';
 import ArrayProxy from '../../../system/array_proxy';
 import { A as emberA } from '../../../mixins/array';
-import { objectAt } from '../../../mixins/array';
 
 let array;
 

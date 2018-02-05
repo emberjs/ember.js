@@ -12,7 +12,6 @@ export { default as compare } from './compare';
 export { default as isEqual } from './is-equal';
 export {
   default as Array,
-  objectAt,
   isEmberArray,
   addArrayObserver,
   removeArrayObserver,
