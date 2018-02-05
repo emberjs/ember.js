@@ -1,3 +1,4 @@
+import { privatize as P } from 'container';
 import { assert, deprecate, isTesting } from 'ember-debug';
 import {
   onErrorTarget
@@ -31,7 +32,7 @@ const backburner = new Backburner(
 
     // used to re-throw unhandled RSVP rejection errors specifically in this
     // position to avoid breaking anything rendered in the other sections
-    'rsvpAfter'
+    P`rsvpAfter`
   ],
   {
     sync: {

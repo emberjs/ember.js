@@ -4,6 +4,7 @@ import {
   getDispatchOverride
 } from 'ember-metal';
 import { assert } from 'ember-debug';
+import { privatize as P } from 'container';
 
 const backburner = run.backburner;
 
@@ -12,7 +13,7 @@ RSVP.configure('async', (callback, promise) => {
 });
 
 RSVP.configure('after', cb => {
-  backburner.schedule('rsvpAfter', null, cb);
+  backburner.schedule(P`rsvpAfter`, null, cb);
 });
 
 RSVP.on('error', onerrorDefault);
