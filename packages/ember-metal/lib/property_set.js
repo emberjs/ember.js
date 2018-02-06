@@ -45,8 +45,8 @@ export function set(obj, keyName, value, tolerant) {
     arguments.length === 3 || arguments.length === 4
   );
   assert(`Cannot call set with '${keyName}' on an undefined object.`, obj && typeof obj === 'object' || typeof obj === 'function');
-  assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
+  assert(`The key provided to set must be a string or number, you passed ${keyName}`, typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName)));
+  assert(`'this' in paths is not supported`, typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0);
   assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, !obj.isDestroyed);
 
   if (isPath(keyName)) {

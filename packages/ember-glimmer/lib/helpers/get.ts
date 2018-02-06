@@ -79,8 +79,12 @@ class GetHelperReference extends CachedReference {
 
   static create(sourceReference: VersionedPathReference<Opaque>, pathReference: PathReference<string>) {
     if (isConst(pathReference)) {
-      let parts = pathReference.value().split('.');
-      return referenceFromParts(sourceReference, parts);
+      let value = pathReference.value();
+      if (typeof value === 'string' && value.indexOf('.') > -1) {
+        return referenceFromParts(sourceReference, value.split('.'));
+      } else {
+        return sourceReference.get(value);
+      }
     } else {
       return new GetHelperReference(sourceReference, pathReference);
     }
@@ -108,10 +112,10 @@ class GetHelperReference extends CachedReference {
       if (path !== undefined && path !== null && path !== '') {
         let pathType = typeof path;
 
-        if (pathType === 'string') {
+        if (pathType === 'string' && path.indexOf('.') > -1) {
           innerReference = referenceFromParts(this.sourceReference, path.split('.'));
-        } else if (pathType === 'number') {
-          innerReference = this.sourceReference.get('' + path);
+        } else {
+          innerReference = this.sourceReference.get(path);
         }
 
         innerTag.inner.update(innerReference.tag);
