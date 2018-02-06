@@ -6,8 +6,8 @@ import { METADATA } from "@glimmer/vm";
 import { Opcode, Opaque } from "@glimmer/interfaces";
 import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
-
-declare const requirejs: any;
+// these import bindings will be stripped from build
+import { debug, logOpcode } from '@glimmer/opcode-compiler';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -40,7 +40,6 @@ export class AppendOpcodes {
 
   debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): DebugState {
     if (DEBUG) {
-      let { debug, logOpcode } = requirejs("@glimmer/opcode-compiler");
       /* tslint:disable */
       let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
       // console.log(`${typePos(vm['pc'])}.`);
@@ -90,7 +89,6 @@ export class AppendOpcodes {
 
     if (DEBUG) {
       let actualChange = vm.stack.sp - sp!;
-      let { debug, logOpcode } = requirejs('@glimmer/opcode-compiler');
       if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
         let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
 
