@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### 3.0.0-beta.6 (February 5, 2018)
+
+- [#16199](https://github.com/emberjs/ember.js/pull/16199) [BUGFIX] Mention "computed properties" in the assertion message
+- [#16200](https://github.com/emberjs/ember.js/pull/16200) [BUGFIX] Prevent test error by converting illegal characters
+
 ### 3.0.0-beta.5 (January 29, 2018)
 
 - [#16179](https://github.com/emberjs/ember.js/pull/16179) [BUGFIX] Fix a few bugs in the caching ArrayProxy implementation
