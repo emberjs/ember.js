@@ -288,6 +288,14 @@ QUnit.test('adding an object should notify (@each.isDone)', function(assert) {
   assert.equal(called, 1, 'calls observer when object is pushed');
 });
 
+QUnit.test('getting @each is deprecated', function(assert) {
+  assert.expect(1);
+
+  expectDeprecation(() => {
+    get(ary, '@each');
+  }, /Getting the '@each' property on object .* is deprecated/);
+});
+
 QUnit.test('@each is readOnly', function(assert) {
   assert.expect(1);
 
@@ -328,8 +336,10 @@ QUnit.test('modifying the array should also indicate the isDone prop itself has 
   // important because it tests the case where we don't have an isDone
   // EachArray materialized but just want to know when the property has
   // changed.
-
-  let each = get(ary, '@each');
+  let each;
+  expectDeprecation(() => {
+    each = get(ary, '@each');
+  });
   let count = 0;
 
   addObserver(each, 'isDone', () => count++);

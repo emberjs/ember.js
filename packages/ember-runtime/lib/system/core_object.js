@@ -101,7 +101,6 @@ function makeCtor() {
               property === 'willWatchProperty' ||
               property === 'didUnwatchProperty' ||
               property === 'didAddListener' ||
-              property === '__each' ||
               property in target
             ) {
               return Reflect.get(target, property, receiver);

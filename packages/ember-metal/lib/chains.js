@@ -2,6 +2,7 @@ import { get } from './property_get';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
 import { cacheFor } from './computed';
+import { eachProxyFor } from './each_proxy';
 
 const FIRST_KEY = /^([^\.]+)/;
 
@@ -326,7 +327,9 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj, key, meta)) {
+  if (key === '@each') {
+    return eachProxyFor(obj);
+  } else if (isVolatile(obj, key, meta)) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {

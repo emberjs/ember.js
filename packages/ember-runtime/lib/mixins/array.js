@@ -17,14 +17,14 @@ import {
   removeListener,
   sendEvent,
   hasListeners,
-  addObserver,
-  removeObserver,
-  meta,
   peekMeta,
+  eachProxyFor,
+  eachProxyArrayWillChange,
+  eachProxyArrayDidChange,
   beginPropertyChanges,
   endPropertyChanges
 } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 import Enumerable from './enumerable';
 import compare from '../compare';
 import { ENV } from 'ember-environment';
@@ -72,9 +72,7 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
     }
   }
 
-  if (array.__each) {
-    array.__each.arrayWillChange(array, startIdx, removeAmt, addAmt);
-  }
+  eachProxyArrayWillChange(array, startIdx, removeAmt, addAmt);
 
   sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
 
@@ -102,9 +100,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
   notifyPropertyChange(array, '[]');
 
-  if (array.__each) {
-    array.__each.arrayDidChange(array, startIdx, removeAmt, addAmt);
-  }
+  eachProxyArrayDidChange(array, startIdx, removeAmt, addAmt);
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
@@ -1232,125 +1228,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '@each': computed(function() {
-    // TODO use Symbol or add to meta
-    if (!this.__each) {
-      this.__each = new EachProxy(this);
-    }
+    deprecate(
+      `Getting the '@each' property on object ${toString(this)} is deprecated`,
+      false,
+      {
+        id: 'ember-metal.getting-each',
+        until: '3.5.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property'
+      }
+    );
 
-    return this.__each;
-  }).volatile().readOnly()
+    return eachProxyFor(this);
+  }).readOnly()
 });
-
-/**
-  This is the object instance returned when you get the `@each` property on an
-  array. It uses the unknownProperty handler to automatically create
-  EachArray instances for property names.
-  @class EachProxy
-  @private
-*/
-function EachProxy(content) {
-  this._content = content;
-  this._keys = undefined;
-  meta(this);
-}
-
-EachProxy.prototype = {
-  __defineNonEnumerable(property) {
-    this[property.name] = property.descriptor.value;
-  },
-
-  // ..........................................................
-  // ARRAY CHANGES
-  // Invokes whenever the content array itself changes.
-
-  arrayWillChange(content, idx, removedCnt, addedCnt) {   // eslint-disable-line no-unused-vars
-    let keys = this._keys;
-    let lim = removedCnt > 0 ? idx + removedCnt : -1;
-    for (let key in keys) {
-      if (lim > 0) {
-        removeObserverForContentKey(content, key, this, idx, lim);
-      }
-    }
-  },
-
-  arrayDidChange(content, idx, removedCnt, addedCnt) {
-    let keys = this._keys;
-    let lim = addedCnt > 0 ? idx + addedCnt : -1;
-    let meta = peekMeta(this);
-    for (let key in keys) {
-      if (lim > 0) {
-        addObserverForContentKey(content, key, this, idx, lim);
-      }
-      notifyPropertyChange(this, key, meta);
-    }
-  },
-
-  // ..........................................................
-  // LISTEN FOR NEW OBSERVERS AND OTHER EVENT LISTENERS
-  // Start monitoring keys based on who is listening...
-
-  willWatchProperty(property) {
-    this.beginObservingContentKey(property);
-  },
-
-  didUnwatchProperty(property) {
-    this.stopObservingContentKey(property);
-  },
-
-  // ..........................................................
-  // CONTENT KEY OBSERVING
-  // Actual watch keys on the source content.
-
-  beginObservingContentKey(keyName) {
-    let keys = this._keys;
-    if (!keys) {
-      keys = this._keys = Object.create(null);
-    }
-
-    if (!keys[keyName]) {
-      keys[keyName] = 1;
-      let content = this._content;
-      let len = get(content, 'length');
-
-      addObserverForContentKey(content, keyName, this, 0, len);
-    } else {
-      keys[keyName]++;
-    }
-  },
-
-  stopObservingContentKey(keyName) {
-    let keys = this._keys;
-    if (keys && (keys[keyName] > 0) && (--keys[keyName] <= 0)) {
-      let content = this._content;
-      let len     = get(content, 'length');
-
-      removeObserverForContentKey(content, keyName, this, 0, len);
-    }
-  },
-
-  contentKeyDidChange(obj, keyName) {
-    notifyPropertyChange(this, keyName);
-  }
-};
-
-function addObserverForContentKey(content, keyName, proxy, idx, loc) {
-  while (--loc >= idx) {
-    let item = objectAt(content, loc);
-    if (item) {
-      assert(`When using @each to observe the array \`${toString(content)}\`, the array must return an object`, typeof item === 'object');
-      addObserver(item, keyName, proxy, 'contentKeyDidChange');
-    }
-  }
-}
-
-function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
-  while (--loc >= idx) {
-    let item = objectAt(content, loc);
-    if (item) {
-      removeObserver(item, keyName, proxy, 'contentKeyDidChange');
-    }
-  }
-}
 
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
