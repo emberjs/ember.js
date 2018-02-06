@@ -84,3 +84,4 @@ export { normalizeProperty } from './lib/dom/props';
 export { ElementBuilder, NewElementBuilder, ElementOperations, clientBuilder } from './lib/vm/element-builder';
 export { rehydrationBuilder, RehydrateBuilder } from './lib/vm/rehydrate-builder';
 export { default as Bounds, ConcreteBounds, Cursor } from './lib/bounds';
+export { capabilityFlagsFrom, hasCapability, Capability } from './lib/capabilities';
