@@ -27,6 +27,19 @@ moduleFor('get', class extends AbstractTestCase {
     }
   }
 
+  ['@test should retrieve a number key on an object'](assert) {
+    let obj = { 1: 'first' };
+
+    assert.equal(get(obj, 1), 'first');
+  }
+
+  ['@test should retrieve an array index'](assert) {
+    let arr = ['first', 'second'];
+
+    assert.equal(get(arr, 0), 'first');
+    assert.equal(get(arr, 1), 'second');
+  }
+
   ['@test should not access a property more than once'](assert) {
     let count = 0;
     let obj = {
@@ -106,11 +119,10 @@ moduleFor('get', class extends AbstractTestCase {
 
   ['@test warn on attempts to use get with an unsupported property path']() {
     let obj = {};
-    expectAssertion(() => get(obj, null),      /The key provided to get must be a string, you passed null/);
-    expectAssertion(() => get(obj, NaN),       /The key provided to get must be a string, you passed NaN/);
-    expectAssertion(() => get(obj, undefined), /The key provided to get must be a string, you passed undefined/);
-    expectAssertion(() => get(obj, false),     /The key provided to get must be a string, you passed false/);
-    expectAssertion(() => get(obj, 42),        /The key provided to get must be a string, you passed 42/);
+    expectAssertion(() => get(obj, null),      /The key provided to get must be a string or number, you passed null/);
+    expectAssertion(() => get(obj, NaN),       /The key provided to get must be a string or number, you passed NaN/);
+    expectAssertion(() => get(obj, undefined), /The key provided to get must be a string or number, you passed undefined/);
+    expectAssertion(() => get(obj, false),     /The key provided to get must be a string or number, you passed false/);
     expectAssertion(() => get(obj, ''), /Cannot call `get` with an empty string/);
   }
 
