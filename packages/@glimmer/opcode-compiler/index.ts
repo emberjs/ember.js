@@ -8,7 +8,6 @@ export {
 } from './lib/syntax';
 
 export {
-  AbstractTemplate,
   CompileTimeLookup,
   LazyOpcodeBuilder,
   EagerOpcodeBuilder,

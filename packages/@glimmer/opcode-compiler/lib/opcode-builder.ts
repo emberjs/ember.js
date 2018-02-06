@@ -67,10 +67,6 @@ class Labels {
   }
 }
 
-export interface AbstractTemplate<S extends SymbolTable = SymbolTable> {
-  symbolTable: S;
-}
-
 export interface CompileTimeLookup<TemplateMeta> {
   getCapabilities(handle: number): ComponentCapabilities;
   getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>>;
