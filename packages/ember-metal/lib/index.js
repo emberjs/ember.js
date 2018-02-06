@@ -39,6 +39,12 @@ export {
   set,
   trySet
 } from './property_set';
+export { objectAt } from './array';
+export {
+  eachProxyFor,
+  eachProxyArrayWillChange,
+  eachProxyArrayDidChange
+} from './each_proxy';
 export {
   addListener,
   hasListeners,

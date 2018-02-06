@@ -6,11 +6,16 @@ import {
   UpdatableTag,
 } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
-import { get, isProxy, tagFor, tagForProperty } from 'ember-metal';
+import {
+  get,
+  isProxy,
+  objectAt,
+  tagFor,
+  tagForProperty
+} from 'ember-metal';
 import {
   _contentFor,
-  isEmberArray,
-  objectAt,
+  isEmberArray
 } from 'ember-runtime';
 import { guidFor } from 'ember-utils';
 import { isEachIn } from '../helpers/each-in';

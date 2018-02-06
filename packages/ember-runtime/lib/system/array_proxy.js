@@ -4,6 +4,7 @@
 
 import {
   get,
+  objectAt,
   computed,
   alias,
   PROPERTY_DID_CHANGE
@@ -15,8 +16,7 @@ import EmberObject from './object';
 import { MutableArray } from '../mixins/array';
 import {
   addArrayObserver,
-  removeArrayObserver,
-  objectAt
+  removeArrayObserver
 } from '../mixins/array';
 import { assert } from 'ember-debug';
 
