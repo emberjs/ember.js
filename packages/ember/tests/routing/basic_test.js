@@ -31,7 +31,7 @@ import { compile } from 'ember-template-compiler';
 import { Application, Engine } from 'ember-application';
 import { Transition } from 'router';
 
-let Router, App, router, registry, container, originalLoggerError, originalRenderSupport;
+let Router, App, router, registry, container, originalLoggerError, originalRenderSupport, originalEnabledOrphanedOutletSupport;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -89,6 +89,7 @@ QUnit.module('Basic Routing', {
 
       originalLoggerError = Logger.error;
       originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
+      originalEnabledOrphanedOutletSupport = ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT;
 
       ENV._ENABLE_RENDER_SUPPORT = true;
     });
@@ -102,6 +103,7 @@ QUnit.module('Basic Routing', {
       setTemplates({});
       Logger.error = originalLoggerError;
       ENV._ENABLE_RENDER_SUPPORT = originalRenderSupport;
+      ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT = originalEnabledOrphanedOutletSupport;
     });
   }
 });
@@ -1489,7 +1491,7 @@ QUnit.test('Route will assert if you try to explicitly render {into: ...} a {{re
     }
   });
 
-  expectAssertion(() => bootApplication(), 'Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.');
+  expectAssertion(() => bootApplication(), 'Rendering into a {{render}} helper that resolves to an {{outlet}} is no longer supported.');
 });
 
 

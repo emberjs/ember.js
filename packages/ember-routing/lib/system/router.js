@@ -1488,12 +1488,11 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
     set(target.outlets, renderOptions.outlet, myState);
   } else {
     if (renderOptions.into) {
-      let orphanedOutletsDeprecation = `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`;
       if (ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT !== true) {
-        assert(orphanedOutletsDeprecation);
+        assert(`Rendering into a {{render}} helper that resolves to an {{outlet}} is no longer supported.`);
       } else {
         deprecate(
-          orphanedOutletsDeprecation,
+          `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
           false,
           {
             id: 'ember-routing.top-level-render-helper',
