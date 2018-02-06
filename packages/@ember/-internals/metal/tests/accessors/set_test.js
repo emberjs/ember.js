@@ -36,6 +36,19 @@ moduleFor(
       assert.equal(obj[1], 'first');
     }
 
+    ['@test should set a symbol key on an object'](assert) {
+      if (typeof Symbol === 'undefined') {
+        assert.expect(0);
+        return;
+      }
+
+      let symbol = Symbol();
+      let obj = {};
+
+      set(obj, symbol, 'first');
+      assert.equal(obj[symbol], 'first');
+    }
+
     ['@test should set an array index'](assert) {
       let arr = ['first', 'second'];
 
@@ -81,19 +94,19 @@ moduleFor(
       let obj = {};
       expectAssertion(
         () => set(obj, null, 42),
-        /The key provided to set must be a string or number, you passed null/
+        /The key provided to set must be a string, number, or symbol; you passed null/
       );
       expectAssertion(
         () => set(obj, NaN, 42),
-        /The key provided to set must be a string or number, you passed NaN/
+        /The key provided to set must be a string, number, or symbol; you passed NaN/
       );
       expectAssertion(
         () => set(obj, undefined, 42),
-        /The key provided to set must be a string or number, you passed undefined/
+        /The key provided to set must be a string, number, or symbol; you passed undefined/
       );
       expectAssertion(
         () => set(obj, false, 42),
-        /The key provided to set must be a string or number, you passed false/
+        /The key provided to set must be a string, number, or symbol; you passed false/
       );
     }
 
@@ -102,7 +115,7 @@ moduleFor(
 
       expectAssertion(
         () => set(obj, 'favoriteFood', 'hot dogs'),
-        'calling set on destroyed object: [object Object].favoriteFood = hot dogs'
+        "calling set on destroyed object: [object Object]['favoriteFood'] = hot dogs"
       );
     }
 

@@ -141,6 +141,42 @@ moduleFor(
       this.assertText('[3][2][1]');
     }
 
+    ['@test should be able to get an object value with a path evaluating to a symbol'](assert) {
+      if (typeof Symbol === 'undefined') {
+        assert.expect(0);
+        return;
+      }
+
+      let first = Symbol();
+      let second = Symbol();
+      let third = Symbol();
+
+      this.render(`{{#each indexes as |index|}}[{{get items index}}]{{/each}}`, {
+        indexes: [first, second, third],
+        items: {
+          [first]: 'First',
+          [second]: 'Second',
+          [third]: 'Third',
+        },
+      });
+
+      this.assertText('[First][Second][Third]');
+
+      runTask(() => this.rerender());
+
+      this.assertText('[First][Second][Third]');
+
+      runTask(() => set(this.context.items, first, 'Qux'));
+
+      this.assertText('[Qux][Second][Third]');
+
+      runTask(() =>
+        set(this.context, 'items', { [first]: 'First', [second]: 'Second', [third]: 'Third' })
+      );
+
+      this.assertText('[First][Second][Third]');
+    }
+
     ['@test should be able to get an object value with a bound/dynamic key']() {
       this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
         colors: { apple: 'red', banana: 'yellow' },

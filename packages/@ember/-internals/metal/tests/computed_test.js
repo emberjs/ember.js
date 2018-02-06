@@ -217,6 +217,49 @@ moduleFor(
         get(obj, 'someProp');
       }, expected);
     }
+
+    '@test computed property can be defined on a number'(assert) {
+      assert.expect(3);
+
+      let obj = {};
+      let count = 0;
+      defineProperty(
+        obj,
+        42,
+        computed(function(key) {
+          assert.equal(key, 42, 'the first argument is correct');
+          count++;
+          return 'yippie!';
+        })
+      );
+
+      assert.equal(get(obj, 42), 'yippie!', 'should return value');
+      assert.equal(count, 1, 'should have invoked computed property');
+    }
+
+    '@test computed property can be defined on a symbol'(assert) {
+      if (typeof Symbol === 'undefined') {
+        assert.expect(0);
+        return;
+      }
+      assert.expect(3);
+
+      let sym = Symbol();
+      let obj = {};
+      let count = 0;
+      defineProperty(
+        obj,
+        sym,
+        computed(function(key) {
+          assert.equal(key, sym, 'the first argument is the symbol');
+          count++;
+          return 'yippie!';
+        })
+      );
+
+      assert.equal(get(obj, sym), 'yippie!', 'should return value');
+      assert.equal(count, 1, 'should have invoked computed property');
+    }
   }
 );
 
@@ -526,6 +569,56 @@ moduleFor(
 
     afterEach() {
       obj = count = null;
+    }
+
+    '@test local number dependent key should invalidate cache'(assert) {
+      let count = 0;
+      defineProperty(
+        obj,
+        'foo',
+        computed(42, function() {
+          count++;
+          get(this, 42);
+          return `bar ${count}`;
+        })
+      );
+      assert.equal(isWatching(obj, 42), false, 'precond not watching dependent key');
+      assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
+      assert.equal(isWatching(obj, 42), true, 'lazily setup watching dependent key');
+      assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
+
+      set(obj, 42, 'BIFF'); // should invalidate foo
+
+      assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
+      assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
+    }
+
+    '@test local symbol dependent key should invalidate cache'(assert) {
+      if (typeof Symbol === 'undefined') {
+        assert.expect(0);
+        return;
+      }
+
+      let bar = Symbol('bar');
+      let count = 0;
+      defineProperty(
+        obj,
+        'foo',
+        computed(bar, function() {
+          count++;
+          get(this, bar);
+          return `bar ${count}`;
+        })
+      );
+      assert.equal(isWatching(obj, bar), false, 'precond not watching dependent key');
+      assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
+      assert.equal(isWatching(obj, bar), true, 'lazily setup watching dependent key');
+      assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
+
+      set(obj, bar, 'BIFF'); // should invalidate foo
+
+      assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
+      assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
     }
 
     ['@test circular keys should not blow up'](assert) {

@@ -40,25 +40,31 @@ export default function expandProperties(
   pattern: string,
   callback: (expansion: string) => void
 ): void {
+  let patternType = typeof pattern;
   assert(
-    `A computed property key must be a string, you passed ${typeof pattern} ${pattern}`,
-    typeof pattern === 'string'
+    `A computed property key must be a string, number, or symbol; you passed ${patternType} ${pattern}`,
+    patternType === 'string' || patternType === 'number' || patternType === 'symbol'
   );
   assert(
     'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
-    pattern.indexOf(' ') === -1
+    patternType !== 'string' || pattern.indexOf(' ') === -1
   );
   // regex to look for double open, double close, or unclosed braces
   assert(
     `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`,
-    pattern.match(/\{[^}{]*\{|\}[^}{]*\}|\{[^}]*$/g) === null
+    patternType !== 'string' || pattern.match(/\{[^}{]*\{|\}[^}{]*\}|\{[^}]*$/g) === null
   );
 
-  let start = pattern.indexOf('{');
-  if (start < 0) {
-    callback(pattern.replace(END_WITH_EACH_REGEX, '.[]'));
+  // support numbers or symbols
+  if (patternType !== 'string') {
+    callback(pattern);
   } else {
-    dive('', pattern, start, callback);
+    let start = pattern.indexOf('{');
+    if (start < 0) {
+      callback(pattern.replace(END_WITH_EACH_REGEX, '.[]'));
+    } else {
+      dive('', pattern, start, callback);
+    }
   }
 }
 

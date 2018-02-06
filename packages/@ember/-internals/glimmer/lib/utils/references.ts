@@ -182,10 +182,14 @@ export class RootPropertyReference extends PropertyReference
 
 if (DEBUG) {
   RootPropertyReference.prototype['debug'] = function debug(subPath?: string): string {
-    let path = `this.${this['propertyKey']}`;
+    let propertyKey = this['propertyKey'];
+
+    let path = `this${
+      typeof propertyKey === 'string' ? `.${propertyKey}` : `[${String(propertyKey)}]`
+    }`;
 
     if (subPath) {
-      path += `.${subPath}`;
+      path += typeof subPath === 'string' ? `.${subPath}` : `[${String(subPath)}]`;
     }
 
     return `${this['debugStackLog']}${path}`;

@@ -459,9 +459,9 @@ export class ComputedProperty extends ComputedDescriptor {
     function addArg(property: string): void {
       warn(
         `Dependent keys containing @each only work one level deep. ` +
-          `You used the key "${property}" which is invalid. ` +
+          `You used the key "${String(property)}" which is invalid. ` +
           `Please create an intermediary computed property.`,
-        DEEP_EACH_REGEX.test(property) === false,
+        typeof property !== 'string' || DEEP_EACH_REGEX.test(property) === false,
         { id: 'ember-metal.computed-deep-each' }
       );
       args.push(property);

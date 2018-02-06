@@ -495,6 +495,34 @@ class EachTest extends AbstractEachTest {
     this.assertText('123');
   }
 
+  ['@test it can iterate over symbols'](assert) {
+    if (typeof Symbol === 'undefined') {
+      assert.expect(0);
+      return;
+    }
+
+    let one = Symbol('one');
+    let two = Symbol('two');
+    let three = Symbol('three');
+    let four = Symbol('four');
+
+    this.makeList([one, two, three]);
+
+    this.render(`{{#each list as |item|}}{{item}}{{/each}}`);
+
+    this.assertText(`${one.toString()}${two.toString()}${three.toString()}`);
+
+    this.assertStableRerender();
+
+    runTask(() => this.pushObject(four));
+
+    this.assertText(`${one.toString()}${two.toString()}${three.toString()}${four.toString()}`);
+
+    this.replaceList([one, two, three]);
+
+    this.assertText(`${one.toString()}${two.toString()}${three.toString()}`);
+  }
+
   ['@test it can render duplicate primitive items']() {
     this.makeList(['a', 'a', 'a']);
 

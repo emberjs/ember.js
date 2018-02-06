@@ -34,6 +34,20 @@ moduleFor(
       assert.equal(get(obj, 1), 'first');
     }
 
+    ['@test should retrieve a symbol from an object'](assert) {
+      if (typeof Symbol === 'undefined') {
+        assert.expect(0);
+        return;
+      }
+
+      let symbol = Symbol();
+      let obj = {
+        [symbol]: 'wheeeee',
+      };
+
+      assert.equal(get(obj, symbol), 'wheeeee');
+    }
+
     ['@test should retrieve an array index'](assert) {
       let arr = ['first', 'second'];
 
@@ -159,19 +173,19 @@ moduleFor(
       let obj = {};
       expectAssertion(
         () => get(obj, null),
-        /The key provided to get must be a string or number, you passed null/
+        /The key provided to get must be a string, number, or symbol; you passed null/
       );
       expectAssertion(
         () => get(obj, NaN),
-        /The key provided to get must be a string or number, you passed NaN/
+        /The key provided to get must be a string, number, or symbol; you passed NaN/
       );
       expectAssertion(
         () => get(obj, undefined),
-        /The key provided to get must be a string or number, you passed undefined/
+        /The key provided to get must be a string, number, or symbol; you passed undefined/
       );
       expectAssertion(
         () => get(obj, false),
-        /The key provided to get must be a string or number, you passed false/
+        /The key provided to get must be a string, number, or symbol; you passed false/
       );
     }
 
