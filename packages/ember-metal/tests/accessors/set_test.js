@@ -34,6 +34,20 @@ moduleFor('set', class extends AbstractTestCase {
     }
   }
 
+  ['@test should set a number key on an object'](assert) {
+    let obj = { };
+
+    set(obj, 1, 'first');
+    assert.equal(obj[1], 'first');
+  }
+
+  ['@test should set an array index'](assert) {
+    let arr = ['first', 'second'];
+
+    set(arr, 1, 'lol');
+    assert.deepEqual(arr, ['first', 'lol']);
+  }
+
   ['@test should call setUnknownProperty if defined and value is undefined'](assert) {
     let obj = {
       count: 0,
@@ -64,11 +78,10 @@ moduleFor('set', class extends AbstractTestCase {
 
   ['@test warn on attempts to use set with an unsupported property path']() {
     let obj = {};
-    expectAssertion(() => set(obj, null, 42),      /The key provided to set must be a string, you passed null/);
-    expectAssertion(() => set(obj, NaN, 42),       /The key provided to set must be a string, you passed NaN/);
-    expectAssertion(() => set(obj, undefined, 42), /The key provided to set must be a string, you passed undefined/);
-    expectAssertion(() => set(obj, false, 42),     /The key provided to set must be a string, you passed false/);
-    expectAssertion(() => set(obj, 42, 42),        /The key provided to set must be a string, you passed 42/);
+    expectAssertion(() => set(obj, null, 42),      /The key provided to set must be a string or number, you passed null/);
+    expectAssertion(() => set(obj, NaN, 42),       /The key provided to set must be a string or number, you passed NaN/);
+    expectAssertion(() => set(obj, undefined, 42), /The key provided to set must be a string or number, you passed undefined/);
+    expectAssertion(() => set(obj, false, 42),     /The key provided to set must be a string or number, you passed false/);
   }
 
   ['@test warn on attempts of calling set on a destroyed object']() {

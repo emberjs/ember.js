@@ -7,5 +7,5 @@ export const caches = {
 };
 
 export function isPath(path) {
-  return firstDotIndexCache.get(path) !== -1;
+  return typeof path === 'string' && firstDotIndexCache.get(path) !== -1;
 }
