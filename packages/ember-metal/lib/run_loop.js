@@ -1,3 +1,4 @@
+import { privatize as P } from 'container';
 import { assert, deprecate, isTesting } from 'ember-debug';
 import {
   onErrorTarget
@@ -16,16 +17,33 @@ function onEnd(current, next) {
   run.currentRunLoop = next;
 }
 
-const backburner = new Backburner(['sync', 'actions', 'destroy'], {
-  sync: {
-    before: beginPropertyChanges,
-    after: endPropertyChanges
-  },
-  defaultQueue: 'actions',
-  onBegin,
-  onEnd,
-  onErrorTarget,
-  onErrorMethod: 'onerror'
+const backburner = new Backburner(
+  [
+    'sync',
+    'actions',
+
+    // used in router transitions to prevent unnecessary loading state entry
+    // if all context promises resolve on the 'actions' queue first
+    'routerTransitions',
+
+    'render',
+    'afterRender',
+    'destroy',
+
+    // used to re-throw unhandled RSVP rejection errors specifically in this
+    // position to avoid breaking anything rendered in the other sections
+    P`rsvpAfter`
+  ],
+  {
+    sync: {
+      before: beginPropertyChanges,
+      after: endPropertyChanges
+    },
+    defaultQueue: 'actions',
+    onBegin,
+    onEnd,
+    onErrorTarget,
+    onErrorMethod: 'onerror'
 });
 
 /**
@@ -716,20 +734,4 @@ run.debounce = function() {
 */
 run.throttle = function() {
   return backburner.throttle(...arguments);
-};
-
-/**
-  Add a new named queue after the specified queue.
-
-  The queue to add will only be added once.
-
-  @method _addQueue
-  @param {String} name the name of the queue to add.
-  @param {String} after the name of the queue to add after.
-  @private
-*/
-run._addQueue = function(name, after) {
-  if (run.queues.indexOf(name) === -1) {
-    run.queues.splice(run.queues.indexOf(after) + 1, 0, name);
-  }
 };
