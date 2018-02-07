@@ -1,5 +1,5 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, ComponentCapabilities, CompilableProgram, CompilableBlock } from '@glimmer/interfaces';
+import { ProgramSymbolTable, CompilableProgram, CompilableBlock } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
@@ -20,7 +20,7 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private referrer: TemplateMeta;
 
-  constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>, private capabilities: ComponentCapabilities) {
+  constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>) {
     let { block } = layout;
 
     this.symbolTable = {
@@ -66,38 +66,34 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
 
     b.startLabels();
 
-    if (this.capabilities.dynamicTag) {
-      b.fetch(Register.s1);
+    b.fetch(Register.s1);
 
-      b.getComponentTagName(Register.s0);
-      b.primitiveReference();
+    b.getComponentTagName(Register.s0);
+    b.primitiveReference();
 
-      b.dup();
-      b.load(Register.s1);
+    b.dup();
+    b.load(Register.s1);
 
-      b.jumpUnless('BODY');
+    b.jumpUnless('BODY');
 
-      b.fetch(Register.s1);
-      b.putComponentOperations();
-      b.openDynamicElement();
-      b.didCreateElement(Register.s0);
-      b.flushElement();
+    b.fetch(Register.s1);
+    b.putComponentOperations();
+    b.openDynamicElement();
+    b.didCreateElement(Register.s0);
+    b.flushElement();
 
-      b.label('BODY');
-    }
+    b.label('BODY');
 
     b.invokeStaticBlock(blockFor(layout, this.options));
 
-    if (this.capabilities.dynamicTag) {
-      b.fetch(Register.s1);
-      b.jumpUnless('END');
-      b.closeElement();
+    b.fetch(Register.s1);
+    b.jumpUnless('END');
+    b.closeElement();
 
-      b.label('END');
-      b.load(Register.s1);
+    b.label('END');
+    b.load(Register.s1);
 
-      b.stopLabels();
-    }
+    b.stopLabels();
 
     let handle = b.commit(options.program.heap, layout.block.symbols.length);
 

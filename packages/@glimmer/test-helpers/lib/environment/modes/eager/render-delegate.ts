@@ -160,7 +160,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
         let block = compiler.preprocess(locator.meta, state.template!);
         let options = compiler.compileOptions(locator);
         let parsedLayout = { block, referrer: locator.meta };
-        let wrapped = new WrappedBuilder(options, parsedLayout, EMBERISH_CURLY_CAPABILITIES);
+        let wrapped = new WrappedBuilder(options, parsedLayout);
         compiler.addCompilableTemplate(locator, wrapped);
 
         compileTimeModules.register(key, 'other', {

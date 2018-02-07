@@ -103,7 +103,7 @@ export class EmberishCurlyComponentManager implements
 
     return resolver.compileTemplate(handle, layout.name, (source, options) => {
       let template = createTemplate(source);
-      let builder = new WrappedBuilder(assign({}, options, { asPartial: false, referrer: null }), template, CURLY_CAPABILITIES);
+      let builder = new WrappedBuilder(assign({}, options, { asPartial: false, referrer: null }), template);
       return {
         handle: builder.compile(),
         symbolTable: builder.symbolTable
