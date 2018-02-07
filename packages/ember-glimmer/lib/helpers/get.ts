@@ -69,6 +69,18 @@ export default function(_vm: VM, args: Arguments) {
   return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
 }
 
+function referenceFromPath(source: VersionedPathReference<Opaque>, path: string): VersionedPathReference<Opaque> {
+  let innerReference;
+  if (path === undefined || path === null || path === '') {
+    innerReference = NULL_REFERENCE;
+  } else if (typeof path === 'string' && path.indexOf('.') > -1) {
+    innerReference = referenceFromParts(source, path.split('.'));
+  } else {
+    innerReference = source.get(path);
+  }
+  return innerReference;
+}
+
 class GetHelperReference extends CachedReference {
   public sourceReference: VersionedPathReference<Opaque>;
   public pathReference: PathReference<string>;
@@ -80,13 +92,7 @@ class GetHelperReference extends CachedReference {
   static create(sourceReference: VersionedPathReference<Opaque>, pathReference: PathReference<string>) {
     if (isConst(pathReference)) {
       let path = pathReference.value();
-      if (path === undefined || path === null || path === '') {
-        return NULL_REFERENCE;
-      } else if (typeof path === 'string' && path.indexOf('.') > -1) {
-        return referenceFromParts(sourceReference, path.split('.'));
-      } else {
-        return sourceReference.get(path);
-      }
+      return referenceFromPath(sourceReference, path);
     } else {
       return new GetHelperReference(sourceReference, pathReference);
     }
@@ -107,20 +113,13 @@ class GetHelperReference extends CachedReference {
 
   compute() {
     let { lastPath, innerReference, innerTag } = this;
-
-    let path = this.lastPath = this.pathReference.value();
+    let path = this.pathReference.value();
 
     if (path !== lastPath) {
-      if (path === undefined || path === null || path === '') {
-        innerReference = NULL_REFERENCE;
-      } else if (typeof path === 'string' && path.indexOf('.') > -1) {
-        innerReference = referenceFromParts(this.sourceReference, path.split('.'));
-      } else {
-        innerReference = this.sourceReference.get(path);
-      }
-
+      innerReference = referenceFromPath(this.sourceReference, path);
       innerTag.inner.update(innerReference.tag);
       this.innerReference = innerReference;
+      this.lastPath = path;
     }
 
     return innerReference.value();
