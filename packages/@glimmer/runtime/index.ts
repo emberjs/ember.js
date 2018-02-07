@@ -14,12 +14,6 @@ export {
   default as getDynamicVar
 } from './lib/helpers/get-dynamic-var';
 
-export {
-  CompilableTemplate,
-  BlockSyntax,
-  TopLevelSyntax
-} from './lib/syntax/interfaces';
-
 export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
 export {
