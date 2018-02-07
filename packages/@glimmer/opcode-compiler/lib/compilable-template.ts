@@ -1,21 +1,21 @@
 import {
+  CompilableTemplate as ICompilableTemplate,
   Option,
+  STDLib,
   SymbolTable,
-  ProgramSymbolTable
+  ProgramSymbolTable,
+  CompilableProgram
 } from '@glimmer/interfaces';
 import { Statement, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { debugSlice } from './debug';
-import { CompilableTemplate as ICompilableTemplate, ParsedLayout } from './interfaces';
+import { ParsedLayout } from './interfaces';
 import { CompileOptions, statementCompiler, Compilers } from './syntax';
-import { STDLib } from './opcode-builder';
-
-export { ICompilableTemplate };
 
 export const PLACEHOLDER_HANDLE = -1;
 
 export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> implements ICompilableTemplate<S> {
-  static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): ICompilableTemplate<ProgramSymbolTable> {
+  static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): CompilableProgram {
     return new CompilableTemplate<ProgramSymbolTable, TemplateMeta>(
       block.statements,
       { block, referrer: options.referrer },

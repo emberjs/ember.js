@@ -1,5 +1,5 @@
-import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from "@glimmer/interfaces";
-import { ICompilableTemplate, CompileOptions } from "@glimmer/opcode-compiler";
+import { CompilableTemplate, ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from "@glimmer/interfaces";
+import { CompileOptions } from "@glimmer/opcode-compiler";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
 
 /**
@@ -71,7 +71,7 @@ export default interface CompilerDelegate<TemplateMeta> {
     locator: TemplateMeta,
     block: SerializedTemplateBlock,
     options: CompileOptions<TemplateMeta>
-  ): ICompilableTemplate<ProgramSymbolTable>;
+  ): CompilableTemplate<ProgramSymbolTable>;
 
   /**
    * During compilation, the compiler will ask the delegate about each possible

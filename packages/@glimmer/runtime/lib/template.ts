@@ -1,4 +1,4 @@
-import { Opaque, Option } from '@glimmer/interfaces';
+import { CompilableProgram, Opaque, Option } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
 import {
@@ -8,7 +8,6 @@ import {
 } from '@glimmer/wire-format';
 import { ElementBuilder } from './vm/element-builder';
 import { DynamicScope, Environment } from './environment';
-import { TopLevelSyntax } from './syntax/interfaces';
 import { IteratorResult, RenderResult, VM } from './vm';
 import { EMPTY_ARGS, ICapturedArguments } from './vm/arguments';
 import {
@@ -51,8 +50,8 @@ export interface Template<TemplateMeta = Opaque> {
   renderLayout(options: RenderLayoutOptions): TemplateIterator;
 
   // internal casts, these are lazily created and cached
-  asLayout(): TopLevelSyntax;
-  asPartial(): TopLevelSyntax;
+  asLayout(): CompilableProgram;
+  asPartial(): CompilableProgram;
 }
 
 export interface TemplateFactory<TemplateMeta> {
@@ -114,8 +113,8 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
 }
 
 export class ScannableTemplate<TemplateMeta = Opaque> implements Template<TemplateMeta> {
-  private layout: Option<TopLevelSyntax> = null;
-  private partial: Option<TopLevelSyntax> = null;
+  private layout: Option<CompilableProgram> = null;
+  private partial: Option<CompilableProgram> = null;
   public symbols: string[];
   public hasEval: boolean;
   public id: string;
@@ -141,12 +140,12 @@ export class ScannableTemplate<TemplateMeta = Opaque> implements Template<Templa
     return new TemplateIterator(vm);
   }
 
-  asLayout(): TopLevelSyntax {
+  asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
     return this.layout = compilable(this.parsedLayout, this.options, false);
   }
 
-  asPartial(): TopLevelSyntax {
+  asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
     return this.partial = compilable(this.parsedLayout, this.options, true);
   }

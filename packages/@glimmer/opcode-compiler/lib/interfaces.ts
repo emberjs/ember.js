@@ -1,14 +1,12 @@
 import {
   Opaque,
-  SymbolTable,
   Option,
-  BlockSymbolTable,
+  CompilableBlock,
   ComponentCapabilities,
-  CompileTimeProgram
+  CompileTimeProgram,
 } from '@glimmer/interfaces';
 import { Core, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { Macros } from './syntax';
-import { STDLib } from './opcode-builder';
 
 export interface EagerResolver<Locator> {
   getCapabilities(locator: Locator): ComponentCapabilities;
@@ -20,14 +18,7 @@ export interface EagerCompilationOptions<TemplateMeta, R extends EagerResolver<T
   macros: Macros;
 }
 
-export interface CompilableTemplate<S extends SymbolTable> {
-  symbolTable: S;
-  compile(stdLib?: STDLib): number;
-}
-
 export const PLACEHOLDER_HANDLE = -1;
-
-export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
 export type Primitive = undefined | null | boolean | number | string;
 

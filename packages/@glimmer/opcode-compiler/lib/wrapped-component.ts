@@ -1,5 +1,5 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, BlockSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import { ProgramSymbolTable, ComponentCapabilities, CompilableProgram, CompilableBlock } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
@@ -8,7 +8,7 @@ import {
 } from './interfaces';
 
 import { CompileOptions } from './syntax';
-import CompilableTemplate, { ICompilableTemplate } from './compilable-template';
+import CompilableTemplate from './compilable-template';
 import { debugSlice } from './debug';
 import { OpcodeBuilder } from './opcode-builder';
 import { ATTRS_BLOCK } from './syntax';
@@ -16,7 +16,7 @@ import { ATTRS_BLOCK } from './syntax';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { EMPTY_ARRAY } from "@glimmer/util";
 
-export class WrappedBuilder<TemplateMeta> implements ICompilableTemplate<ProgramSymbolTable> {
+export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private referrer: TemplateMeta;
 
@@ -114,7 +114,7 @@ export class WrappedBuilder<TemplateMeta> implements ICompilableTemplate<Program
   }
 }
 
-function blockFor<TemplateMeta>(layout: ParsedLayout, options: CompileOptions<TemplateMeta>): CompilableTemplate<BlockSymbolTable, TemplateMeta> {
+function blockFor<TemplateMeta>(layout: ParsedLayout, options: CompileOptions<TemplateMeta>): CompilableBlock {
   let { block, referrer } = layout;
 
   return new CompilableTemplate(block.statements, layout, options, { referrer, parameters: EMPTY_ARRAY });
