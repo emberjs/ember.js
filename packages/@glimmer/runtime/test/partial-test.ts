@@ -1,4 +1,4 @@
-import { Template, RenderResult, IteratorResult, clientBuilder, renderMain } from "@glimmer/runtime";
+import { RenderResult, IteratorResult, clientBuilder, renderMain } from "@glimmer/runtime";
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -9,6 +9,7 @@ import {
   generateSnapshot,
   strip
 } from "@glimmer/test-helpers";
+import { Template } from "@glimmer/interfaces";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from '@glimmer/util';
 

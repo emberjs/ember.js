@@ -17,6 +17,11 @@ export {
 } from './lib/opcode-builder';
 
 export {
+  default as templateFactory,
+  TemplateFactory
+} from './lib/template';
+
+export {
   default as CompilableTemplate,
 } from './lib/compilable-template';
 

@@ -1,5 +1,4 @@
-import { ProgramSymbolTable } from '@glimmer/interfaces';
-import { Template } from './template';
+import { ProgramSymbolTable, Template } from '@glimmer/interfaces';
 
 export class PartialDefinition {
   constructor(

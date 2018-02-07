@@ -6,8 +6,6 @@ import {
   PartialDefinition,
   ComponentDefinition,
   CompilationOptions,
-  templateFactory,
-  Template,
   IDOMChanges,
   DOMChanges,
   VM,
@@ -21,7 +19,8 @@ import {
   ElementBuilder,
   TemplateIterator
 } from "@glimmer/runtime";
-import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
+import { Template } from "@glimmer/interfaces";
+import { templateFactory, TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
 import { LazyConstants, Program } from "@glimmer/program";
 import { TestDynamicScope } from "../../../environment";

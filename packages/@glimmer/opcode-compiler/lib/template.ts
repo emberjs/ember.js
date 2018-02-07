@@ -1,45 +1,14 @@
-import { CompilableProgram, Opaque, Option } from '@glimmer/interfaces';
+import { CompilableProgram, Template, Opaque, Option } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   Statement
 } from '@glimmer/wire-format';
-import {
-  CompilableTemplate,
-  ParsedLayout,
-  TemplateOptions,
-  CompileOptions,
-  WrappedBuilder
-} from "@glimmer/opcode-compiler";
-
-/**
- * Environment specific template.
- */
-export interface Template<TemplateMeta = Opaque> {
-  /**
-   * Template identifier, if precompiled will be the id of the
-   * precompiled template.
-   */
-  id: string;
-
-  /**
-   * Template meta (both compile time and environment specific).
-   */
-  referrer: TemplateMeta;
-
-  hasEval: boolean;
-
-  /**
-   * Symbols computed at compile time.
-   */
-  symbols: string[];
-
-  // internal casts, these are lazily created and cached
-  asLayout(): CompilableProgram;
-  asPartial(): CompilableProgram;
-  asWrappedLayout(): CompilableProgram;
-}
+import CompilableTemplate from './compilable-template';
+import { ParsedLayout } from './interfaces';
+import { WrappedBuilder } from "./wrapped-component";
+import { CompileOptions, TemplateOptions } from "./syntax";
 
 export interface TemplateFactory<TemplateMeta> {
   /**
@@ -87,12 +56,12 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new ScannableTemplate(options, { id, block: parsedBlock, referrer: newMeta });
+    return new TemplateImpl(options, { id, block: parsedBlock, referrer: newMeta });
   };
   return { id, meta, create };
 }
 
-export class ScannableTemplate<TemplateMeta = Opaque> implements Template<TemplateMeta> {
+class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
   private layout: Option<CompilableProgram> = null;
   private partial: Option<CompilableProgram> = null;
   private wrappedLayout: Option<CompilableProgram> = null;

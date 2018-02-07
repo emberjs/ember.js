@@ -32,9 +32,9 @@ import EagerRuntimeResolver from './runtime-resolver';
 
 import { Modules } from './modules';
 import { TestDynamicScope } from '../../../environment';
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { NodeEnv } from '../ssr/environment';
 import { TestComponentDefinitionState, locatorFor } from '../../component-definition';
+import { WrappedBuilder } from "@glimmer/opcode-compiler";
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
