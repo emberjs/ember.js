@@ -77,11 +77,13 @@ class GetHelperReference extends CachedReference {
 
   static create(sourceReference: any, pathReference: PathReference<any>) {
     if (isConst(pathReference)) {
-      let value = pathReference.value();
-      if (typeof value === 'string' && value.indexOf('.') > -1) {
-        return referenceFromParts(sourceReference, value.split('.'));
+      let path = pathReference.value();
+      if (path === undefined || path === null || path === '') {
+        return NULL_REFERENCE;
+      } else if (typeof path === 'string' && path.indexOf('.') > -1) {
+        return referenceFromParts(sourceReference, path.split('.'));
       } else {
-        return sourceReference.get(value);
+        return sourceReference.get(path);
       }
     } else {
       return new GetHelperReference(sourceReference, pathReference);
@@ -107,21 +109,15 @@ class GetHelperReference extends CachedReference {
     let path = this.lastPath = this.pathReference.value();
 
     if (path !== lastPath) {
-      if (path !== undefined && path !== null && path !== '') {
-        let pathType = typeof path;
-
-        if (pathType === 'string' && path.indexOf('.') > -1) {
-          innerReference = referenceFromParts(this.sourceReference, path.split('.'));
-        } else {
-          innerReference = this.sourceReference.get(path);
-        }
-
-        innerTag.inner.update(innerReference.tag);
-      } else {
+      if (path === undefined || path === null || path === '') {
         innerReference = NULL_REFERENCE;
-        innerTag.inner.update(CONSTANT_TAG);
+      } else if (typeof path === 'string' && path.indexOf('.') > -1) {
+        innerReference = referenceFromParts(this.sourceReference, path.split('.'));
+      } else {
+        innerReference = this.sourceReference.get(path);
       }
 
+      innerTag.inner.update(innerReference.tag);
       this.innerReference = innerReference;
     }
 
