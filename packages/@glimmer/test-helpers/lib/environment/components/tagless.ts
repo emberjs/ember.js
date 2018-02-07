@@ -1,5 +1,5 @@
 import { ComponentCapabilities } from "@glimmer/interfaces";
-import { Invocation, ScannableTemplate } from '@glimmer/runtime';
+import { Invocation } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
 
 import { createTemplate } from '../shared';
@@ -27,12 +27,12 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
     let handle = resolver.lookup('template-source', name)!;
 
     return resolver.compileTemplate(handle, name, (source, options) => {
-      let layout = createTemplate(source, {});
-      let template = new ScannableTemplate(options, layout).asLayout();
+      let template = createTemplate(source, {});
+      let layout = template.create(options).asLayout();
 
       return {
-        handle: template.compile(),
-        symbolTable: template.symbolTable
+        handle: layout.compile(),
+        symbolTable: layout.symbolTable
       };
     });
   }

@@ -137,7 +137,7 @@ export abstract class UpdatingOpcode extends AbstractOpcode {
   next: Option<UpdatingOpcode> = null;
   prev: Option<UpdatingOpcode> = null;
 
-  abstract evaluate(vm: UpdatingVM<Opaque>): void;
+  abstract evaluate(vm: UpdatingVM): void;
 }
 
 export type UpdatingOpSeq = ListSlice<UpdatingOpcode>;

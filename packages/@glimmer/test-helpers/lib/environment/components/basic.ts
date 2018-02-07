@@ -1,6 +1,6 @@
 import { createTemplate } from '../shared';
 
-import { WithStaticLayout, Environment, ScannableTemplate, Bounds, Invocation } from '@glimmer/runtime';
+import { WithStaticLayout, Environment, Bounds, Invocation } from '@glimmer/runtime';
 import { unreachable, expect } from '@glimmer/util';
 import { TemplateOptions } from '@glimmer/opcode-compiler';
 import { PathReference, Tag, CONSTANT_TAG } from '@glimmer/reference';
@@ -48,12 +48,11 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
 
     if (resolver instanceof LazyRuntimeResolver) {
       let compile = (source: string, options: TemplateOptions<TemplateMeta>) => {
-        let layout = createTemplate(source);
-        let template = new ScannableTemplate(options, layout).asLayout();
-
+        let template = createTemplate(source);
+        let layout = template.create(options).asLayout();
         return {
-          handle: template.compile(),
-          symbolTable: template.symbolTable
+          handle: layout.compile(),
+          symbolTable: layout.symbolTable
         };
       };
 

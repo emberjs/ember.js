@@ -1,5 +1,5 @@
 import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
-import { RenderResult, RenderLayoutOptions, TemplateIterator, Environment, Cursor, ElementBuilder } from "@glimmer/runtime";
+import { RenderResult, TemplateIterator, Environment, Cursor, ElementBuilder } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction, serializeBuilder } from "@glimmer/node";
 import { Option, Simple } from "@glimmer/interfaces";
@@ -10,7 +10,6 @@ import { assign, equalTokens, normalizeInnerHTML } from "./helpers";
 import LazyTestEnvironment from './environment/modes/lazy/environment';
 import LazyRenderDelegate from "./environment/modes/lazy/render-delegate";
 import {
-  TestDynamicScope,
   equalsElement,
   classes,
   regex
@@ -557,12 +556,9 @@ export class RehydrationDelegate implements RenderDelegate {
     let element = env.getAppendOperations().createElement("div") as HTMLDivElement;
     let cursor = { element, nextSibling: null };
     // Emulate server-side render
-    renderTemplate(template, {
-      env,
-      self: this.getSelf(context),
-      dynamicScope: new TestDynamicScope(),
-      builder: this.getElementBuilder(env, cursor)
-    });
+    renderTemplate(template,
+      env, this.getSelf(context),
+      this.getElementBuilder(env, cursor));
 
     takeSnapshot();
     return this.serialize(element);
@@ -583,12 +579,11 @@ export class RehydrationDelegate implements RenderDelegate {
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
-    let result = renderTemplate(template, {
+    let result = renderTemplate(template,
       env,
-      self: this.getSelf(context),
-      dynamicScope: new TestDynamicScope(),
+      this.getSelf(context),
       builder
-    });
+    );
 
     this.rehydrationStats = {
       clearedNodes: builder['clearedNodes']
@@ -897,10 +892,9 @@ function isTestFunction(
   return typeof value === 'function' && value.isTest;
 }
 
-export function renderTemplate(template: string, options: RenderLayoutOptions & { env: LazyTestEnvironment }) {
-  let { env } = options;
-
-  let iterator = env.compile(template).renderLayout(options);
+export function renderTemplate(src: string, env: LazyTestEnvironment, self: PathReference<Opaque>, builder: ElementBuilder) {
+  let template = env.compile(src);
+  let iterator = env.renderMain(template, self, builder);
   return renderSync(env, iterator);
 }
 

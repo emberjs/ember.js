@@ -1,4 +1,3 @@
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { Option, Opaque, ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
@@ -102,8 +101,9 @@ export class EmberishCurlyComponentManager implements
     }
 
     return resolver.compileTemplate(handle, layout.name, (source, options) => {
-      let template = createTemplate(source);
-      let builder = new WrappedBuilder(assign({}, options, { asPartial: false, referrer: null }), template);
+      let factory = createTemplate(source);
+      let template = factory.create(options);
+      let builder = template.asWrappedLayout();
       return {
         handle: builder.compile(),
         symbolTable: builder.symbolTable

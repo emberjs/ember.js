@@ -1,4 +1,4 @@
-import { TestEnvironment, equalTokens, TestDynamicScope } from "@glimmer/test-helpers";
+import { TestEnvironment, equalTokens } from "@glimmer/test-helpers";
 import { test, module } from "@glimmer/runtime/test/support";
 import { Template, RenderResult, DynamicAttributeFactory, SimpleDynamicAttribute, ElementBuilder, clientBuilder } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -21,12 +21,7 @@ function render(template: Template, self: any) {
   let result: RenderResult;
   env.begin();
   let cursor = { element: root, nextSibling: null };
-  let templateIterator = template.renderLayout({
-    env,
-    self: new UpdatableReference(self),
-    builder: clientBuilder(env, cursor),
-    dynamicScope: new TestDynamicScope()
-  });
+  let templateIterator = env.renderMain(template, new UpdatableReference(self), clientBuilder(env, cursor));
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next() as IteratorResult<RenderResult>;

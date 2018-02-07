@@ -5,12 +5,11 @@ import {
   getDynamicVar,
   Helper as GlimmerHelper,
   RenderResult,
-  LowLevelVM,
-  TemplateIterator,
   ComponentManager,
   clientBuilder,
   ElementBuilder,
-  Cursor
+  Cursor,
+  renderMain
 } from '@glimmer/runtime';
 import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
@@ -212,8 +211,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let runtimeHeap = new Heap(heap);
     let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
 
-    let vm = LowLevelVM.initial(runtimeProgram, env, self, null, dynamicScope, builder, handle);
-    let iterator = new TemplateIterator(vm);
+    let iterator = renderMain(runtimeProgram, env, self, dynamicScope, builder, handle);
 
     return renderSync(env, iterator);
   }
