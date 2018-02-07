@@ -1,7 +1,6 @@
 import {
   Opaque,
   Option,
-  ProgramSymbolTable,
   SymbolTable,
   Recast,
   VMHandle,
@@ -1092,7 +1091,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
     this.push(Op.CompileBlock);
   }
 
-  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, TemplateMeta>>) {
+  pushLayout(layout: Option<CompilableProgram>) {
     if (layout) {
       this.pushOther(layout);
     } else {
@@ -1129,7 +1128,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
     return;
   }
 
-  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, TemplateMeta>>): void {
+  pushLayout(layout: Option<CompilableProgram>): void {
     if (layout) {
       this.primitive(layout.compile(this.stdLib) as Recast<VMHandle, number>);
     } else {
