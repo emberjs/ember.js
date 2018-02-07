@@ -40,7 +40,7 @@ export interface STDLib {
   guardedAppend: number;
 }
 
-export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
+export interface CompilableTemplate<S = SymbolTable> {
   symbolTable: S;
   compile(stdlib?: STDLib): number;
 }

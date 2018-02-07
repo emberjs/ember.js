@@ -22,10 +22,8 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
 
   constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>, private capabilities: ComponentCapabilities) {
     let { block } = layout;
-    let referrer = this.referrer = layout.referrer;
 
     this.symbolTable = {
-      referrer,
       hasEval: block.hasEval,
       symbols: block.symbols.concat([ATTRS_BLOCK])
     };

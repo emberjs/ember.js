@@ -1,18 +1,18 @@
 import {
   Opaque,
   Option,
-  SymbolTable,
   Recast,
   VMHandle,
   ComponentCapabilities,
-  CompilableTemplate as ICompilableTemplate,
+  CompilableTemplate,
   CompilableBlock,
   CompilableProgram,
   CompileTimeConstants,
   CompileTimeProgram,
   CompileTimeLazyConstants,
   CompileTimeHeap,
-  STDLib
+  STDLib,
+  SymbolTable,
 } from "@glimmer/interfaces";
 import { dict, EMPTY_ARRAY, expect, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
@@ -32,7 +32,7 @@ import {
   expressionCompiler
 } from './syntax';
 
-import CompilableTemplate, { PLACEHOLDER_HANDLE } from './compilable-template';
+import CompilableTemplateImpl, { PLACEHOLDER_HANDLE } from './compilable-template';
 
 import {
   ComponentBuilder
@@ -680,7 +680,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
       referrer: this.referrer
     };
 
-    return new CompilableTemplate(statements, this.containingLayout, options, symbolTable);
+    return new CompilableTemplateImpl(statements, this.containingLayout, options, symbolTable);
   }
 
   evalSymbols(): Option<string[]> {
@@ -1045,7 +1045,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   abstract pushBlock(block: Option<CompilableBlock>): void;
   abstract resolveBlock(): void;
   abstract pushLayout(layout: Option<CompilableProgram>): void;
-  abstract invokeStatic(block: ICompilableTemplate<SymbolTable>): void;
+  abstract invokeStatic(block: CompilableTemplate): void;
   abstract resolveLayout(): void;
 
   pushSymbolTable(table: Option<SymbolTable>): void {
@@ -1103,7 +1103,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
     this.push(Op.CompileBlock);
   }
 
-  invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
+  invokeStatic(compilable: CompilableTemplate): void {
     this.pushOther(compilable);
     this.push(Op.CompileBlock);
     this.pushMachine(Op.InvokeVirtual);
@@ -1138,7 +1138,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
 
   resolveLayout() {}
 
-  invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
+  invokeStatic(compilable: CompilableTemplate): void {
     let handle = compilable.compile();
 
     // If the handle for the invoked component is not yet known (for example,

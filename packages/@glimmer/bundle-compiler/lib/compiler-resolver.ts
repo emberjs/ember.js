@@ -3,7 +3,7 @@ import { CompileTimeLookup } from "@glimmer/opcode-compiler";
 import CompilerDelegate from './compiler-delegate';
 import ExternalModuleTable from './external-module-table';
 import BundleCompiler from './bundle-compiler';
-import { CompilableTemplate, ComponentCapabilities, ProgramSymbolTable, CompilableProgram } from "@glimmer/interfaces";
+import { ComponentCapabilities, CompilableProgram } from "@glimmer/interfaces";
 import { expect, Option } from "@glimmer/util";
 
 /**

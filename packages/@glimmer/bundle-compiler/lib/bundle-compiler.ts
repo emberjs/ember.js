@@ -11,7 +11,7 @@ import {
   ModuleLocator,
   TemplateLocator,
   CompilableProgram,
-  CompilableTemplate as ICompilableTemplate
+  CompilableTemplate
 } from "@glimmer/interfaces";
 import {
   CompilableTemplate as CompilableTemplateImpl,
@@ -83,6 +83,9 @@ export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
   kind?: 'template';
 }
 
+// to make --declaration happy
+export { CompilableTemplate };
+
 /**
  * The BundleCompiler is used to compile all of the component templates in a
  * Glimmer program into binary bytecode.
@@ -97,7 +100,7 @@ export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
  * can be loaded and run in the browser.
  */
 export default class BundleCompiler<TemplateMeta> {
-  public compilableTemplates = new ModuleLocatorMap<ICompilableTemplate<ProgramSymbolTable>>();
+  public compilableTemplates = new ModuleLocatorMap<CompilableProgram>();
   public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<TemplateMeta>>();
   public meta = new ModuleLocatorMap<TemplateMeta>();
 
