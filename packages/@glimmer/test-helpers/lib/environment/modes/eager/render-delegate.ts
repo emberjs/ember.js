@@ -173,7 +173,6 @@ export default class EagerRenderDelegate implements RenderDelegate {
         symbolTable = {
           hasEval: block.hasEval,
           symbols: block.symbols,
-          referrer: key,
         };
 
         this.symbolTables.set(locator, symbolTable);
