@@ -1,29 +1,17 @@
 import { CompilableProgram, Opaque, Option } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   Statement
 } from '@glimmer/wire-format';
-import { ElementBuilder } from './vm/element-builder';
-import { DynamicScope, Environment } from './environment';
-import { IteratorResult, RenderResult, VM } from './vm';
-import { EMPTY_ARGS, ICapturedArguments } from './vm/arguments';
 import {
   CompilableTemplate,
   ParsedLayout,
-  TemplateOptions
+  TemplateOptions,
+  CompileOptions,
+  WrappedBuilder
 } from "@glimmer/opcode-compiler";
-import { RuntimeProgram } from "@glimmer/program";
-
-export interface RenderLayoutOptions {
-  env: Environment;
-  self: PathReference<Opaque>;
-  args?: ICapturedArguments;
-  dynamicScope: DynamicScope;
-  builder: ElementBuilder;
-}
 
 /**
  * Environment specific template.
@@ -47,11 +35,10 @@ export interface Template<TemplateMeta = Opaque> {
    */
   symbols: string[];
 
-  renderLayout(options: RenderLayoutOptions): TemplateIterator;
-
   // internal casts, these are lazily created and cached
   asLayout(): CompilableProgram;
   asPartial(): CompilableProgram;
+  asWrappedLayout(): CompilableProgram;
 }
 
 export interface TemplateFactory<TemplateMeta> {
@@ -83,13 +70,6 @@ export interface TemplateFactory<TemplateMeta> {
   create<U>(env: TemplateOptions<Opaque>, meta: U): Template<TemplateMeta & U>;
 }
 
-export class TemplateIterator {
-  constructor(private vm: VM<Opaque>) {}
-  next(): IteratorResult<RenderResult> {
-    return this.vm.next();
-  }
-}
-
 let clientId = 0;
 
 /**
@@ -115,6 +95,7 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
 export class ScannableTemplate<TemplateMeta = Opaque> implements Template<TemplateMeta> {
   private layout: Option<CompilableProgram> = null;
   private partial: Option<CompilableProgram> = null;
+  private wrappedLayout: Option<CompilableProgram> = null;
   public symbols: string[];
   public hasEval: boolean;
   public id: string;
@@ -130,16 +111,6 @@ export class ScannableTemplate<TemplateMeta = Opaque> implements Template<Templa
     this.id = parsedLayout.id || `client-${clientId++}`;
   }
 
-  renderLayout(options: RenderLayoutOptions): TemplateIterator {
-    let { env, self, dynamicScope, args = EMPTY_ARGS, builder } = options;
-
-    let layout = this.asLayout();
-    let handle = layout.compile();
-
-    let vm = VM.initial(this.options.program as any as RuntimeProgram<Opaque>, env, self, args, dynamicScope, builder, handle);
-    return new TemplateIterator(vm);
-  }
-
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
     return this.layout = compilable(this.parsedLayout, this.options, false);
@@ -148,6 +119,15 @@ export class ScannableTemplate<TemplateMeta = Opaque> implements Template<Templa
   asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
     return this.partial = compilable(this.parsedLayout, this.options, true);
+  }
+
+  asWrappedLayout(): CompilableProgram {
+    if (this.wrappedLayout) return this.wrappedLayout;
+    let compileOptions: CompileOptions<TemplateMeta> = assign({}, this.options, {
+      asPartial: false,
+      referrer: this.referrer
+    });
+    return this.wrappedLayout = new WrappedBuilder(compileOptions, this.parsedLayout);
   }
 }
 

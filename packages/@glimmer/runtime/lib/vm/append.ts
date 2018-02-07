@@ -1,11 +1,10 @@
-import { ICapturedArguments } from './arguments';
 import { Register } from '@glimmer/vm';
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementBuilder } from './element-builder';
 import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, assert } from '@glimmer/util';
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
-import LowLevelVM from './low-level';
+import LowLevelVM, { Program } from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
 import RenderResult from './render-result';
 import EvaluationStack from './stack';
@@ -20,7 +19,8 @@ import {
   UNDEFINED_REFERENCE
 } from '../references';
 
-import { Heap, RuntimeProgram as Program, RuntimeConstants, RuntimeProgram, Opcode } from "@glimmer/program";
+import { Heap, Opcode } from "@glimmer/program";
+import { RuntimeResolver } from "@glimmer/interfaces";
 
 export interface PublicVM {
   env: Environment;
@@ -37,14 +37,30 @@ export type IteratorResult<T> = {
   value: T;
 };
 
-export default class VM<TemplateMeta> implements PublicVM {
+export interface Constants<T> {
+  resolver: RuntimeResolver<T>;
+  getFloat(value: number): number;
+  getNegative(value: number): number;
+  getString(handle: number): string;
+  getStringArray(value: number): string[];
+  getArray(value: number): number[];
+  resolveHandle<T>(index: number): T;
+  getSerializable<T>(s: number): T;
+}
+
+export interface RuntimeProgram<T> extends Program {
+  heap: Heap;
+  constants: Constants<T>;
+}
+
+export default class VM<T> implements PublicVM {
   private dynamicScopeStack = new Stack<DynamicScope>();
   private scopeStack = new Stack<Scope>();
   public inner: LowLevelVM;
   public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
   public cacheGroups = new Stack<Option<UpdatingOpcode>>();
   public listBlockStack = new Stack<ListBlockOpcode>();
-  public constants: RuntimeConstants<TemplateMeta>;
+  public constants: Constants<T>;
   public heap: Heap;
 
   get stack(): EvaluationStack {
@@ -162,30 +178,24 @@ export default class VM<TemplateMeta> implements PublicVM {
    * End of migrated.
    */
 
-  static initial<TemplateMeta>(
-    program: RuntimeProgram<TemplateMeta>,
+  static initial<T>(
+    program: RuntimeProgram<T>,
     env: Environment,
     self: PathReference<Opaque>,
-    args: Option<ICapturedArguments>,
     dynamicScope: DynamicScope,
     elementStack: ElementBuilder,
     handle: number
   ) {
     let scopeSize = program.heap.scopesizeof(handle);
     let scope = Scope.root(self, scopeSize);
-
-    if (args) {
-
-    }
-
     let vm = new VM(program, env, scope, dynamicScope, elementStack);
     vm.pc = vm.heap.getaddr(handle);
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     return vm;
   }
 
-  static empty<TemplateMeta>(
-    program: RuntimeProgram<TemplateMeta>,
+  static empty<T>(
+    program: RuntimeProgram<T>,
     env: Environment,
     elementStack: ElementBuilder
   ) {
@@ -205,7 +215,7 @@ export default class VM<TemplateMeta> implements PublicVM {
   }
 
   constructor(
-    private program: Program<TemplateMeta>,
+    private program: RuntimeProgram<T>,
     public env: Environment,
     scope: Scope,
     dynamicScope: DynamicScope,
@@ -231,7 +241,7 @@ export default class VM<TemplateMeta> implements PublicVM {
   capture(args: number): VMState {
     return {
       env: this.env,
-      program: this.program,
+      program: this.program as any,
       dynamicScope: this.dynamicScope(),
       scope: this.scope(),
       stack: this.stack.capture(args)
@@ -401,7 +411,7 @@ export default class VM<TemplateMeta> implements PublicVM {
 
   /// EXECUTION
 
-  execute(start: number, initialize?: (vm: VM<TemplateMeta>) => void): RenderResult {
+  execute(start: number, initialize?: (vm: VM<T>) => void): RenderResult {
     this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);
@@ -413,7 +423,7 @@ export default class VM<TemplateMeta> implements PublicVM {
       if (result.done) break;
     }
 
-    return result.value as RenderResult;
+    return result.value;
   }
 
   next(): IteratorResult<RenderResult> {

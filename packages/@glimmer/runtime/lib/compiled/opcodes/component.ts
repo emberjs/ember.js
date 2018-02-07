@@ -557,7 +557,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(_vm: UpdatingVM<Opaque>) {
+  evaluate(_vm: UpdatingVM) {
     let { component, manager, dynamicScope } = this;
 
     manager.update(component, dynamicScope);
@@ -576,7 +576,7 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(vm: UpdatingVM<Opaque>) {
+  evaluate(vm: UpdatingVM) {
     let { manager, component, bounds } = this;
 
     manager.didUpdateLayout(component, bounds);

@@ -1,6 +1,5 @@
 import { Op } from "./opcodes";
 import { Option, Opaque, Opcode } from "@glimmer/interfaces";
-import { RuntimeConstants } from "@glimmer/program";
 import { fillNulls } from "@glimmer/util";
 
 export interface VM {
@@ -13,7 +12,8 @@ export interface VM {
 
 export type OperandSize = 0 | 1 | 2 | 3;
 
-export type DebugStackChangeFunction<State> = (({ opcode, constants, state }: { opcode: Opcode, constants: RuntimeConstants<Opaque>, state: State }) => number);
+// TODO fix any for constants
+export type DebugStackChangeFunction<State> = (({ opcode, constants, state }: { opcode: Opcode, constants: any, state: State }) => number);
 export type DebugBeforeFunction = (opcode: Opcode, vm: VM) => Opaque;
 
 export type OperandType =

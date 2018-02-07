@@ -1,4 +1,4 @@
-import { Template, RenderResult, IteratorResult, clientBuilder } from "@glimmer/runtime";
+import { Template, RenderResult, IteratorResult, clientBuilder, renderMain } from "@glimmer/runtime";
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -30,12 +30,13 @@ function render(template: Template, context={}) {
   self = new UpdatableReference(context);
   env.begin();
   let cursor = { element: root, nextSibling: null };
-  let templateIterator = template.renderLayout({
-    env,
-    self,
-    builder: clientBuilder(env, cursor),
-    dynamicScope: new TestDynamicScope()
-  });
+
+  let compilable = template.asLayout();
+  let handle = compilable.compile();
+
+  // TODO figure out what Heap and CompileTimeHeap not working
+  let templateIterator = renderMain(env.compileOptions.program as any, env, self, new TestDynamicScope(), clientBuilder(env, cursor), handle);
+
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();

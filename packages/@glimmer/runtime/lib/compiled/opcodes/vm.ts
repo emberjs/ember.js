@@ -207,7 +207,7 @@ export class Assert extends UpdatingOpcode {
     this.cache = cache;
   }
 
-  evaluate(vm: UpdatingVM<Opaque>) {
+  evaluate(vm: UpdatingVM) {
     let { cache } = this;
 
     if (isModified(cache.revalidate())) {

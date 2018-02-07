@@ -1,14 +1,13 @@
 import { Dict, Opaque } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
 import { RenderResult, clientBuilder, Environment, Cursor, ElementBuilder } from '@glimmer/runtime';
-import { UpdatableReference, RootReference } from '@glimmer/object-reference';
+import { UpdatableReference } from '@glimmer/object-reference';
 
 import LazyTestEnvironment from './environment';
 import { UserHelper } from '../../helper';
 import RenderDelegate from '../../../render-delegate';
-import { TestDynamicScope } from '../../../environment';
 import { ComponentTypes, ComponentKind, registerComponent, renderTemplate } from '../../../render-test';
-import { BasicReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 
 declare const module: any;
 
@@ -39,18 +38,17 @@ export default class LazyRenderDelegate implements RenderDelegate {
     return clientBuilder(env, cursor);
   }
 
-  getSelf(context: Opaque): BasicReference<Opaque> {
+  getSelf(context: Opaque): PathReference<Opaque> {
     return new UpdatableReference(context);
   }
 
   renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
     let { env } = this;
     let cursor = { element, nextSibling: null };
-    return renderTemplate(template, {
+    return renderTemplate(template,
       env,
-      self: this.getSelf(context) as RootReference<Opaque>,
-      builder: this.getElementBuilder(env, cursor),
-      dynamicScope: new TestDynamicScope()
-    });
+      this.getSelf(context),
+      this.getElementBuilder(env, cursor)
+    );
   }
 }

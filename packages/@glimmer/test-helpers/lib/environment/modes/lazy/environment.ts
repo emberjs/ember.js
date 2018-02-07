@@ -15,12 +15,16 @@ import {
   getDynamicVar,
   CurriedComponentDefinition,
   curry,
-  ComponentManager
+  ComponentManager,
+  renderMain,
+  DynamicScope,
+  ElementBuilder,
+  TemplateIterator
 } from "@glimmer/runtime";
 import { TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
 import { LazyConstants, Program } from "@glimmer/program";
-
+import { TestDynamicScope } from "../../../environment";
 import TestEnvironment from '../../environment';
 import { ComponentKind } from '../../../render-test';
 
@@ -42,7 +46,6 @@ import {
   StaticTaglessComponentManager,
   STATIC_TAGLESS_CAPABILITIES,
   TestComponentDefinitionState,
-  TemplateMeta,
   locatorFor
 } from '../../components';
 
@@ -50,6 +53,7 @@ import { UserHelper, HelperReference } from '../../helper';
 import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
 import { Opaque } from "@glimmer/util";
+import { PathReference } from "@glimmer/reference";
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
@@ -69,7 +73,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
   public resolver = new LazyRuntimeResolver();
   protected program = new Program(new LazyConstants(this.resolver));
 
-  public compileOptions: TemplateOptions<TemplateMeta> = {
+  public compileOptions: TemplateOptions<any> = {
     resolver: new LazyCompilerResolver(this.resolver),
     program: this.program,
     macros: new TestMacros(),
@@ -86,6 +90,13 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
     this.registerModifier("action", new InertModifierManager());
 
     this.registerInternalHelper("hash", (_vm: VM, args: Arguments) => args.capture().named);
+  }
+
+  renderMain<T>(template: Template<T>, self: PathReference<Opaque>, builder: ElementBuilder, dynamicScope: DynamicScope = new TestDynamicScope()): TemplateIterator {
+    let layout = template.asLayout();
+    let handle = layout.compile();
+    // TODO, figure out runtime program stuff
+    return renderMain(this.program, this, self, dynamicScope, builder, handle);
   }
 
   registerTemplate(name: string, source: string): { name: string, handle: number } {

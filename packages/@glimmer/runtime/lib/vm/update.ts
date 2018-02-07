@@ -23,18 +23,17 @@ import { DOMChanges } from '../dom/helper';
 import { Simple } from '@glimmer/interfaces';
 
 import EvaluationStack from './stack';
-import VM from './append';
-import { RuntimeConstants as Constants, RuntimeProgram as Program } from "@glimmer/program";
+import VM, { RuntimeProgram, Constants } from './append';
 
-export default class UpdatingVM<TemplateMeta = Opaque> {
+export default class UpdatingVM<T = Opaque> {
   public env: Environment;
   public dom: DOMChanges;
   public alwaysRevalidate: boolean;
-  public constants: Constants<TemplateMeta>;
+  public constants: Constants<T>;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
-  constructor(env: Environment, program: Program<TemplateMeta>, { alwaysRevalidate = false }) {
+  constructor(env: Environment, program: RuntimeProgram<T>, { alwaysRevalidate = false }) {
     this.env = env;
     this.constants = program.constants;
     this.dom = env.getDOM();
@@ -82,9 +81,9 @@ export interface ExceptionHandler {
   handleException(): void;
 }
 
-export interface VMState {
+export interface VMState<T = Opaque> {
   env: Environment;
-  program: Program<Opaque>;
+  program: RuntimeProgram<T>;
   scope: Scope;
   dynamicScope: DynamicScope;
   stack: Opaque[];
@@ -119,7 +118,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
     return this.bounds.lastNode();
   }
 
-  evaluate(vm: UpdatingVM<Opaque>) {
+  evaluate(vm: UpdatingVM) {
     vm.try(this.children, null);
   }
 
@@ -150,7 +149,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     this._tag.inner.update(combineSlice(this.children));
   }
 
-  evaluate(vm: UpdatingVM<Opaque>) {
+  evaluate(vm: UpdatingVM) {
     vm.try(this.children, this);
   }
 
@@ -281,7 +280,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
   }
 
-  evaluate(vm: UpdatingVM<Opaque>) {
+  evaluate(vm: UpdatingVM) {
     let { artifacts, lastIterated } = this;
 
     if (!artifacts.tag.validate(lastIterated)) {
