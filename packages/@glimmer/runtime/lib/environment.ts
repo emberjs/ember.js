@@ -7,9 +7,7 @@ import {
   Option,
   Destroyable,
   Opaque,
-  HasGuid,
   assert,
-  ensureGuid,
   expect
 } from '@glimmer/util';
 
@@ -249,10 +247,6 @@ export abstract class Environment {
 
   getAppendOperations(): DOMTreeConstruction { return this.appendOperations; }
   getDOM(): DOMChanges { return this.updateOperations; }
-
-  getIdentity(object: HasGuid): string {
-    return ensureGuid(object) + '';
-  }
 
   begin() {
     assert(!this._transaction, 'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.');
