@@ -1,5 +1,5 @@
 
-import { TemplateOptions, TemplateMeta } from "@glimmer/opcode-compiler";
+import { TemplateOptions } from "@glimmer/opcode-compiler";
 import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate, Invocation } from "@glimmer/runtime";
 import { Opaque, Option, ComponentCapabilities } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
@@ -28,7 +28,7 @@ export interface EmberishGlimmerComponentState {
 
 export class EmberishGlimmerComponentManager
   implements ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
-             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, TemplateMeta, LazyRuntimeResolver> {
+             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {
 
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
