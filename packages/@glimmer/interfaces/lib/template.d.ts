@@ -33,6 +33,7 @@ export interface Template<TemplateMeta = Opaque> {
   // internal casts, these are lazily created and cached
   asLayout(): CompilableProgram;
   asPartial(): CompilableProgram;
+  asWrappedLayout(): CompilableProgram;
 }
 
 export interface STDLib {

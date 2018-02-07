@@ -14,7 +14,8 @@ import {
   TestModifierManager
 } from "@glimmer/test-helpers";
 import { assign } from "@glimmer/util";
-import { RenderResult, Template, clientBuilder } from '@glimmer/runtime';
+import { Template } from "@glimmer/interfaces";
+import { RenderResult, clientBuilder } from '@glimmer/runtime';
 import { assert } from './support';
 
 export class EmberishRootView extends EmberObject {
