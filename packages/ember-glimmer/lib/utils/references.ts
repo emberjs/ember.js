@@ -448,7 +448,7 @@ export class UnboundReference<T> extends ConstReference<T> {
 export function referenceFromParts(root: VersionedPathReference<Opaque>, parts: string[]): VersionedPathReference<Opaque> {
   let reference = root;
 
-  for (let i=0; i<parts.length; i++) {
+  for (let i = 0; i< parts.length; i++) {
     reference = reference.get(parts[i]);
   }
 
