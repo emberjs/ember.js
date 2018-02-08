@@ -1,4 +1,4 @@
-import { Option, Maybe, Simple, ComponentCapabilities } from "@glimmer/interfaces";
+import { Option, Maybe, Simple, ComponentCapabilities, AnnotatedModuleLocator } from "@glimmer/interfaces";
 import {
   Helper as GlimmerHelper,
   DOMTreeConstruction,
@@ -51,7 +51,6 @@ import { UserHelper, HelperReference } from '../../helper';
 import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
 import { Opaque } from "@glimmer/util";
-import { AnnotatedModuleLocator } from "@glimmer/bundle-compiler";
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();

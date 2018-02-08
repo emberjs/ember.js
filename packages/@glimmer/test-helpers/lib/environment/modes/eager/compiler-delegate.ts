@@ -1,7 +1,7 @@
 import { ICompilableTemplate, CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
-import { CompilerDelegate, ModuleLocator }  from '@glimmer/bundle-compiler';
+import { CompilerDelegate }  from '@glimmer/bundle-compiler';
 import { Dict } from '@glimmer/util';
-import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 
 import { Modules } from './modules';
 import { ComponentDefinition } from '@glimmer/runtime';

@@ -1,8 +1,6 @@
-import { ProgramSymbolTable, ComponentCapabilities } from "@glimmer/interfaces";
+import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from "@glimmer/interfaces";
 import { ICompilableTemplate, CompileOptions } from "@glimmer/opcode-compiler";
 import { SerializedTemplateBlock } from "@glimmer/wire-format";
-
-import { ModuleLocator } from "./module-locators";
 
 /**
  * A CompilerDelegate helps the BundleCompiler map external references it finds
