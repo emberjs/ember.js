@@ -1,24 +1,21 @@
 import {
-  ComponentCapabilities,
   ComponentDefinition,
   Opaque,
   Option,
   RuntimeResolver as IRuntimeResolver
 } from '@glimmer/interfaces';
-import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, ParsedLayout, TemplateOptions, WrappedBuilder } from '@glimmer/opcode-compiler';
+import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, PartialDefinition, TemplateOptions } from '@glimmer/opcode-compiler';
 import { LazyConstants, Program } from '@glimmer/program';
 import {
   getDynamicVar,
   Helper,
   ModifierManager,
-  PartialDefinition,
-  TopLevelSyntax,
 } from '@glimmer/runtime';
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
-import { assign, LookupOptions, Owner, setOwner } from 'ember-utils';
+import { LookupOptions, Owner, setOwner } from 'ember-utils';
 import {
   lookupComponent,
   lookupPartial,
@@ -113,10 +110,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   public templateCacheHits = 0;
   public templateCacheMisses = 0;
 
-  private wrapperCache: WeakMap<OwnedTemplate, Map<ComponentCapabilities, TopLevelSyntax>> = new WeakMap();
-  public wrapperCacheHits = 0;
-  public wrapperCacheMisses = 0;
-
   constructor() {
     populateMacros(this.templateOptions.macros);
   }
@@ -200,36 +193,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       this.templateCacheHits++;
     }
     return template;
-  }
-
-  /**
-   * Returns a wrapped layout for the specified layout.
-   *
-   * The template singletons are cached by DI but we need to create a wrapped layout
-   * (a layout that has instructions for creating a wrapping element and calling hooks
-   * on the manager to set it up).
-   *
-   * @param template the layout to wrap.
-   */
-  getWrappedLayout(template: OwnedTemplate, capabilities: ComponentCapabilities) {
-    // TODO move wrapper compilation into glimmer
-    let cache = this.wrapperCache.get(template);
-    if (cache === undefined) {
-      cache = new Map();
-      this.wrapperCache.set(template, cache);
-    }
-    let wrapper = cache.get(capabilities);
-    if (wrapper === undefined) {
-      const compileOptions = assign({}, this.templateOptions, { asPartial: false, referrer: template.referrer});
-      // TODO fix this getting private
-      const parsed: ParsedLayout<OwnedTemplateMeta> = (template as any).parsedLayout;
-      wrapper = new WrappedBuilder(compileOptions, parsed, capabilities);
-      cache.set(capabilities, wrapper);
-      this.wrapperCacheMisses++;
-    } else {
-      this.wrapperCacheHits++;
-    }
-    return wrapper;
   }
 
   // needed for lazy compile time lookup

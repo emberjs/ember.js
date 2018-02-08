@@ -27,7 +27,7 @@ class RootComponentManager extends CurlyComponentManager {
 
   getLayout(_state: DefinitionState, resolver: RuntimeResolver) {
     const template = this.templateFor(this.component, resolver);
-    const layout = resolver.getWrappedLayout(template, ROOT_CAPABILITIES);
+    const layout = template.asWrappedLayout();
     return {
       handle: layout.compile(),
       symbolTable: layout.symbolTable,

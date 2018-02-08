@@ -145,7 +145,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
   getDynamicLayout({ component }: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
     const template = this.templateFor(component, resolver);
-    const layout = resolver.getWrappedLayout(template, CURLY_CAPABILITIES);
+    const layout = template.asWrappedLayout();
     return {
       handle: layout.compile(),
       symbolTable: layout.symbolTable,

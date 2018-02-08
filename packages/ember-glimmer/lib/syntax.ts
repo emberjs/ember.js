@@ -1,4 +1,5 @@
-import { CompilableBlock, Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
+import { CompilableBlock } from '@glimmer/interfaces';
+import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
