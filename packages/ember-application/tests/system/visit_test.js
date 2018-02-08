@@ -12,6 +12,7 @@ import Engine from '../../system/engine';
 import { Route } from 'ember-routing';
 import { Component, helper } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
+import { ENV } from 'ember-environment';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -21,6 +22,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
 
   teardown() {
     RSVP.on('error', onerrorDefault);
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
     super.teardown();
   }
 
@@ -35,6 +37,62 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
     );
   }
 
+  [`@test does not add serialize-mode markers by default`](assert) {
+    let templateContent = '<div class="foo">Hi, Mom!</div>';
+    this.addTemplate('index', templateContent);
+    let rootElement = document.createElement('div');
+
+    let bootOptions = {
+      isBrowser: false,
+      rootElement
+    };
+
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+    return this.visit('/', bootOptions).then(()=> {
+      assert.equal(rootElement.innerHTML, templateContent, 'without serialize flag renders as expected');
+    });
+  }
+
+  [`@test renderMode: rehydrate`](assert) {
+
+    let initialHTML = `<!--%+block:0%--><!--%+block:1%--><!--%+block:2%--><!--%+block:3%--><!--%+block:4%--><!--%+block:5%--><!--%+block:6%--><div class=\"foo\">Hi, Mom!</div><!--%-block:6%--><!--%-block:5%--><!--%-block:4%--><!--%-block:3%--><!--%-block:2%--><!--%-block:1%--><!--%-block:0%-->`;
+
+    this.addTemplate('index', '<div class="foo">Hi, Mom!</div>');
+    let rootElement = document.createElement('div');
+    rootElement.innerHTML = initialHTML;
+
+    let bootOptions = {
+      isBrowser: false,
+      rootElement,
+      renderMode: 'rehydrate'
+    };
+
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+    return this.visit('/', bootOptions).then(()=> {
+      // The exact contents of this may change when the underlying
+      // implementation changes in the glimmer vm
+      assert.equal(rootElement.innerHTML, '<div class="foo">Hi, Mom!</div>', 'precond - without serialize flag renders as expected');
+    });
+  }
+
+  [`@test renderMode: serialize`](assert) {
+    this.addTemplate('index', '<div class="foo">Hi, Mom!</div>');
+    let rootElement = document.createElement('div');
+
+    let bootOptions = {
+      isBrowser: false,
+      rootElement,
+      renderMode: 'serialize'
+    };
+
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+    return this.visit('/', bootOptions).then(()=> {
+      // The exact contents of this may change when the underlying
+      // implementation changes in the glimmer vm
+      let expectedTemplate = `<!--%+block:0%--><!--%+block:1%--><!--%+block:2%--><!--%+block:3%--><!--%+block:4%--><!--%+block:5%--><!--%+block:6%--><div class=\"foo\">Hi, Mom!</div><!--%-block:6%--><!--%-block:5%--><!--%-block:4%--><!--%-block:3%--><!--%-block:2%--><!--%-block:1%--><!--%-block:0%-->`;
+      assert.equal(rootElement.innerHTML, expectedTemplate, 'precond - without serialize flag renders as expected');
+    });
+  }
   // This tests whether the application is "autobooted" by registering an
   // instance initializer and asserting it never gets run. Since this is
   // inherently testing that async behavior *doesn't* happen, we set a

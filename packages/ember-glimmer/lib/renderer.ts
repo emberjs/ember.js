@@ -4,7 +4,9 @@ import {
   clientBuilder,
   CurriedComponentDefinition,
   curry,
+  Cursor,
   DynamicScope as GlimmerDynamicScope,
+  ElementBuilder,
   IteratorResult,
   renderMain,
   RenderResult,
@@ -35,6 +37,7 @@ import { UnboundReference } from './utils/references';
 import OutletView from './views/outlet';
 
 const { backburner } = run;
+export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
@@ -79,7 +82,9 @@ class RootState {
     template: OwnedTemplate,
     self: VersionedPathReference<Opaque>,
     parentElement: Simple.Element,
-    dynamicScope: DynamicScope) {
+    dynamicScope: DynamicScope,
+    builder: IBuilder
+  ) {
     assert(`You cannot render \`${self.value()}\` without a template.`, template !== undefined);
 
     this.id = getViewId(root);
@@ -100,7 +105,7 @@ class RootState {
         env,
         self,
         dynamicScope,
-        clientBuilder(env, { element: parentElement, nextSibling: null}),
+        builder: builder(env, { element: parentElement, nextSibling: null}),
         handle
       );
       let iteratorResult: IteratorResult<RenderResult>;
@@ -249,8 +254,9 @@ export abstract class Renderer {
   private _lastRevision: number;
   private _isRenderingRoots: boolean;
   private _removedRoots: RootState[];
+  private _builder: IBuilder;
 
-  constructor(env: Environment, rootTemplate: OwnedTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
+  constructor(env: Environment, rootTemplate: OwnedTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false, builder = clientBuilder) {
     this._env = env;
     this._rootTemplate = rootTemplate;
     this._viewRegistry = _viewRegistry;
@@ -260,6 +266,7 @@ export abstract class Renderer {
     this._lastRevision = -1;
     this._isRenderingRoots = false;
     this._removedRoots = [];
+    this._builder = builder;
   }
 
   // renderer HOOKS
@@ -280,7 +287,7 @@ export abstract class Renderer {
     target: Simple.Element) {
     let self = new UnboundReference(definition);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
-    let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
+    let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope, this._builder);
     this._renderRoot(rootState);
   }
 
@@ -489,8 +496,8 @@ export abstract class Renderer {
 }
 
 export class InertRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any}) {
-    return new this(env, rootTemplate, _viewRegistry, false);
+  static create({ env, rootTemplate, _viewRegistry, builder }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any, builder: any}) {
+    return new this(env, rootTemplate, _viewRegistry, false, builder);
   }
 
   getElement(_view: Opaque): Simple.Element | undefined {
@@ -499,8 +506,8 @@ export class InertRenderer extends Renderer {
 }
 
 export class InteractiveRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any}) {
-    return new this(env, rootTemplate, _viewRegistry, true);
+  static create({ env, rootTemplate, _viewRegistry, builder}: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any, builder: any}) {
+    return new this(env, rootTemplate, _viewRegistry, true, builder);
   }
 
   getElement(view: Opaque): Simple.Element | undefined {

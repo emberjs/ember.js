@@ -6,9 +6,12 @@ import LinkToComponent from './components/link-to';
 import TextArea from './components/text_area';
 import TextField from './components/text_field';
 import {
+  clientBuilder,
   DOMChanges,
   DOMTreeConstruction,
   NodeDOMTreeConstruction,
+  rehydrationBuilder,
+  serializeBuilder,
 } from './dom';
 import Environment from './environment';
 import loc from './helpers/loc';
@@ -28,6 +31,20 @@ interface Registry {
 export function setupApplicationRegistry(registry: Registry) {
   registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
+
+  registry.register('service:-dom-builder', {
+    create({ bootOptions }: { bootOptions: { renderMode: string } }) {
+      let { renderMode } = bootOptions;
+
+      switch(renderMode) {
+        case 'serialize': return serializeBuilder;
+        case 'rehydrate': return rehydrationBuilder;
+        default: return clientBuilder;
+      }
+    }
+  });
+  registry.injection('service:-dom-builder', 'bootOptions', '-environment:main');
+  registry.injection('renderer', 'builder', 'service:-dom-builder');
 
   registry.register(P`template:-root`, RootTemplate);
   registry.injection('renderer', 'rootTemplate', P`template:-root`);
