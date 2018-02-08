@@ -1,7 +1,7 @@
 import { BundleCompiler } from '@glimmer/bundle-compiler';
-import { ComponentCapabilities, ProgramSymbolTable, ModuleLocator } from '@glimmer/interfaces';
+import { ComponentCapabilities, ModuleLocator, CompilableProgram } from '@glimmer/interfaces';
 import { BASIC_CAPABILITIES } from '@glimmer/test-helpers';
-import { CompilableTemplate, CompileOptions, ICompilableTemplate } from '@glimmer/opcode-compiler';
+import { CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
 import { SerializedTemplateBlock } from '@glimmer/wire-format';
 
 const { test } = QUnit;
@@ -44,7 +44,7 @@ test("correct referrer is passed during component lookup", function(assert) {
       return BASIC_CAPABILITIES;
     }
 
-    getComponentLayout(_locator: ModuleLocator, block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): ICompilableTemplate<ProgramSymbolTable> {
+    getComponentLayout(_locator: ModuleLocator, block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): CompilableProgram {
       return CompilableTemplate.topLevel(block, options);
     }
   }

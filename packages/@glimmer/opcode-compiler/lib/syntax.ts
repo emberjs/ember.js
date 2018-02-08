@@ -1,10 +1,9 @@
-import { CompileTimeProgram, Option, Opaque } from '@glimmer/interfaces';
+import { CompilableBlock, CompileTimeProgram, Option, Opaque } from '@glimmer/interfaces';
 import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
 import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./opcode-builder";
-import { CompilableBlock } from './interfaces';
 
 import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;

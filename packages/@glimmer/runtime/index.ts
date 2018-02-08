@@ -1,6 +1,6 @@
 import './lib/bootstrap';
 
-export { default as templateFactory, ScannableTemplate, TemplateFactory, Template, TemplateIterator, RenderLayoutOptions } from './lib/template';
+export { default as renderMain, TemplateIterator } from './lib/render';
 
 export { NULL_REFERENCE, UNDEFINED_REFERENCE, PrimitiveReference, ConditionalReference } from './lib/references';
 
@@ -13,12 +13,6 @@ export {
 export {
   default as getDynamicVar
 } from './lib/helpers/get-dynamic-var';
-
-export {
-  CompilableTemplate,
-  BlockSyntax,
-  TopLevelSyntax
-} from './lib/syntax/interfaces';
 
 export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult, IteratorResult } from './lib/vm';
 
@@ -35,6 +29,7 @@ export {
   ICapturedPositionalArguments as CapturedPositionalArguments,
   INamedArguments as NamedArguments,
   ICapturedNamedArguments as CapturedNamedArguments,
+  EMPTY_ARGS
 } from './lib/vm/arguments';
 
 export { SafeString } from './lib/upsert';
@@ -47,10 +42,6 @@ export {
   DynamicScope,
   CompilationOptions
 } from './lib/environment';
-
-export {
-  PartialDefinition
-} from './lib/partial';
 
 export {
   DEFAULT_CAPABILITIES,

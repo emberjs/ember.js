@@ -1,5 +1,5 @@
-import { ICompilableTemplate, CompileTimeLookup } from '@glimmer/opcode-compiler';
-import { ProgramSymbolTable, Option, ComponentCapabilities } from '@glimmer/interfaces';
+import { CompileTimeLookup } from '@glimmer/opcode-compiler';
+import { CompilableProgram, Option, ComponentCapabilities } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 import { ComponentDefinition, WithStaticLayout } from '@glimmer/runtime';
 
@@ -24,7 +24,7 @@ export default class LazyCompilerResolver implements CompileTimeLookup<TemplateM
     return manager.getCapabilities(state);
   }
 
-  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
+  getLayout(handle: number): Option<CompilableProgram> {
     let { manager, state } = this.getComponentDefinition(handle);
     let capabilities = manager.getCapabilities(state);
 

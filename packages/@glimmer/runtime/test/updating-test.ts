@@ -1,5 +1,6 @@
-import { UNDEFINED_REFERENCE, Template, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, clientBuilder } from "@glimmer/runtime";
-import { assertNodeTagName, BasicComponent, TestEnvironment, TestDynamicScope, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
+import { Template } from "@glimmer/interfaces";
+import { UNDEFINED_REFERENCE, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, clientBuilder } from "@glimmer/runtime";
+import { assertNodeTagName, BasicComponent, TestEnvironment, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
 import { ConstReference } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from "@glimmer/util";
@@ -34,12 +35,9 @@ function render(template: Template, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
   let cursor = { element: root, nextSibling: null };
-  let templateIterator = template.renderLayout({
-    env,
-    self,
-    builder: clientBuilder(env, cursor),
-    dynamicScope: new TestDynamicScope()
-  });
+
+  let templateIterator = env.renderMain(template, self, clientBuilder(env, cursor));
+
   let iteratorResult: IteratorResult<RenderResult>;
   do {
     iteratorResult = templateIterator.next();

@@ -10,12 +10,12 @@ import {
   inspectHooks,
   regex,
   stripTight,
-  TestDynamicScope,
   TestEnvironment,
   TestModifierManager
 } from "@glimmer/test-helpers";
 import { assign } from "@glimmer/util";
-import { RenderResult, Template, clientBuilder } from '@glimmer/runtime';
+import { Template } from "@glimmer/interfaces";
+import { RenderResult, clientBuilder } from '@glimmer/runtime';
 import { assert } from './support';
 
 export class EmberishRootView extends EmberObject {
@@ -39,13 +39,8 @@ export class EmberishRootView extends EmberObject {
     let element = this.parent = document.querySelector(selector)!;
     let self = new UpdatableReference(this);
     let cursor =  { element, nextSibling: null };
-    let templateIterator = this.template.renderLayout({
-      env: this.env,
-      self,
-      builder: clientBuilder(this.env, cursor),
-      dynamicScope: new TestDynamicScope()
-    });
 
+    let templateIterator = this.env.renderMain(this.template, self, clientBuilder(this.env, cursor));
     let result;
     do {
       result = templateIterator.next();

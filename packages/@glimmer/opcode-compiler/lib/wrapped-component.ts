@@ -1,5 +1,5 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, BlockSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import { ProgramSymbolTable, CompilableProgram, CompilableBlock } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
@@ -8,7 +8,7 @@ import {
 } from './interfaces';
 
 import { CompileOptions } from './syntax';
-import CompilableTemplate, { ICompilableTemplate } from './compilable-template';
+import CompilableTemplate from './compilable-template';
 import { debugSlice } from './debug';
 import { OpcodeBuilder } from './opcode-builder';
 import { ATTRS_BLOCK } from './syntax';
@@ -16,16 +16,14 @@ import { ATTRS_BLOCK } from './syntax';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { EMPTY_ARRAY } from "@glimmer/util";
 
-export class WrappedBuilder<TemplateMeta> implements ICompilableTemplate<ProgramSymbolTable> {
+export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private referrer: TemplateMeta;
 
-  constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>, private capabilities: ComponentCapabilities) {
+  constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>) {
     let { block } = layout;
-    let referrer = this.referrer = layout.referrer;
 
     this.symbolTable = {
-      referrer,
       hasEval: block.hasEval,
       symbols: block.symbols.concat([ATTRS_BLOCK])
     };
@@ -68,38 +66,34 @@ export class WrappedBuilder<TemplateMeta> implements ICompilableTemplate<Program
 
     b.startLabels();
 
-    if (this.capabilities.dynamicTag) {
-      b.fetch(Register.s1);
+    b.fetch(Register.s1);
 
-      b.getComponentTagName(Register.s0);
-      b.primitiveReference();
+    b.getComponentTagName(Register.s0);
+    b.primitiveReference();
 
-      b.dup();
-      b.load(Register.s1);
+    b.dup();
+    b.load(Register.s1);
 
-      b.jumpUnless('BODY');
+    b.jumpUnless('BODY');
 
-      b.fetch(Register.s1);
-      b.putComponentOperations();
-      b.openDynamicElement();
-      b.didCreateElement(Register.s0);
-      b.flushElement();
+    b.fetch(Register.s1);
+    b.putComponentOperations();
+    b.openDynamicElement();
+    b.didCreateElement(Register.s0);
+    b.flushElement();
 
-      b.label('BODY');
-    }
+    b.label('BODY');
 
     b.invokeStaticBlock(blockFor(layout, this.options));
 
-    if (this.capabilities.dynamicTag) {
-      b.fetch(Register.s1);
-      b.jumpUnless('END');
-      b.closeElement();
+    b.fetch(Register.s1);
+    b.jumpUnless('END');
+    b.closeElement();
 
-      b.label('END');
-      b.load(Register.s1);
+    b.label('END');
+    b.load(Register.s1);
 
-      b.stopLabels();
-    }
+    b.stopLabels();
 
     let handle = b.commit(options.program.heap, layout.block.symbols.length);
 
@@ -114,7 +108,7 @@ export class WrappedBuilder<TemplateMeta> implements ICompilableTemplate<Program
   }
 }
 
-function blockFor<TemplateMeta>(layout: ParsedLayout, options: CompileOptions<TemplateMeta>): CompilableTemplate<BlockSymbolTable, TemplateMeta> {
+function blockFor<TemplateMeta>(layout: ParsedLayout, options: CompileOptions<TemplateMeta>): CompilableBlock {
   let { block, referrer } = layout;
 
   return new CompilableTemplate(block.statements, layout, options, { referrer, parameters: EMPTY_ARRAY });

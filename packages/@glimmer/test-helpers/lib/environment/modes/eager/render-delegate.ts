@@ -5,12 +5,11 @@ import {
   getDynamicVar,
   Helper as GlimmerHelper,
   RenderResult,
-  LowLevelVM,
-  TemplateIterator,
   ComponentManager,
   clientBuilder,
   ElementBuilder,
-  Cursor
+  Cursor,
+  renderMain
 } from '@glimmer/runtime';
 import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
@@ -33,9 +32,9 @@ import EagerRuntimeResolver from './runtime-resolver';
 
 import { Modules } from './modules';
 import { TestDynamicScope } from '../../../environment';
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { NodeEnv } from '../ssr/environment';
 import { TestComponentDefinitionState, locatorFor } from '../../component-definition';
+import { WrappedBuilder } from "@glimmer/opcode-compiler";
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -160,7 +159,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
         let block = compiler.preprocess(locator.meta, state.template!);
         let options = compiler.compileOptions(locator);
         let parsedLayout = { block, referrer: locator.meta };
-        let wrapped = new WrappedBuilder(options, parsedLayout, EMBERISH_CURLY_CAPABILITIES);
+        let wrapped = new WrappedBuilder(options, parsedLayout);
         compiler.addCompilableTemplate(locator, wrapped);
 
         compileTimeModules.register(key, 'other', {
@@ -173,7 +172,6 @@ export default class EagerRenderDelegate implements RenderDelegate {
         symbolTable = {
           hasEval: block.hasEval,
           symbols: block.symbols,
-          referrer: key,
         };
 
         this.symbolTables.set(locator, symbolTable);
@@ -213,8 +211,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let runtimeHeap = new Heap(heap);
     let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
 
-    let vm = LowLevelVM.initial(runtimeProgram, env, self, null, dynamicScope, builder, handle);
-    let iterator = new TemplateIterator(vm);
+    let iterator = renderMain(runtimeProgram, env, self, dynamicScope, builder, handle);
 
     return renderSync(env, iterator);
   }

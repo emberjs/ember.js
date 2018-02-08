@@ -1,6 +1,5 @@
 import { Op, Register } from '@glimmer/vm';
 import { TemplateMeta } from '@glimmer/wire-format';
-import { ATTRS_BLOCK } from '@glimmer/opcode-compiler';
 import { Opaque, Option, Dict, dict, assert, unreachable, expect } from '@glimmer/util';
 import {
   VMHandle,
@@ -514,7 +513,7 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, (vm, { op1: _state }) => {
     };
 
     let blocks = args.blocks;
-    bindBlock(ATTRS_BLOCK, 'attrs');
+    bindBlock('&attrs', 'attrs');
     bindBlock('&inverse', 'else');
     bindBlock('&default', 'main');
 
@@ -557,7 +556,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(_vm: UpdatingVM<Opaque>) {
+  evaluate(_vm: UpdatingVM) {
     let { component, manager, dynamicScope } = this;
 
     manager.update(component, dynamicScope);
@@ -576,7 +575,7 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
     super();
   }
 
-  evaluate(vm: UpdatingVM<Opaque>) {
+  evaluate(vm: UpdatingVM) {
     let { manager, component, bounds } = this;
 
     manager.didUpdateLayout(component, bounds);

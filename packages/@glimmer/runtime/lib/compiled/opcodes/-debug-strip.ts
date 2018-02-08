@@ -5,8 +5,7 @@ import { Arguments, ICapturedArguments, CapturedPositionalArguments, CapturedNam
 import { ComponentInstance } from './component';
 import { ComponentManager } from '../../internal-interfaces';
 import { Scope } from '../../environment';
-import { BlockSymbolTable } from "@glimmer/interfaces";
-import { ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { CompilableBlock } from "@glimmer/interfaces";
 
 export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
 
@@ -36,5 +35,5 @@ export const CheckComponentInstance: Checker<ComponentInstance> =
 export const CheckFinishedComponentInstance: Checker<ComponentInstance> =
   CheckInterface({ definition: CheckOpaque, state: CheckOpaque, handle: CheckHandle, table: CheckProgramSymbolTable });
 
-export const CheckCompilableBlock: Checker<ICompilableTemplate<BlockSymbolTable>> =
+export const CheckCompilableBlock: Checker<CompilableBlock> =
   CheckInterface({ compile: CheckFunction, symbolTable: CheckBlockSymbolTable });

@@ -1,9 +1,9 @@
-import { CompileTimeLookup, ICompilableTemplate } from "@glimmer/opcode-compiler";
+import { CompileTimeLookup } from "@glimmer/opcode-compiler";
 
 import CompilerDelegate from './compiler-delegate';
 import ExternalModuleTable from './external-module-table';
 import BundleCompiler from './bundle-compiler';
-import { ComponentCapabilities, ProgramSymbolTable } from "@glimmer/interfaces";
+import { ComponentCapabilities, CompilableProgram } from "@glimmer/interfaces";
 import { expect, Option } from "@glimmer/util";
 
 /**
@@ -28,7 +28,7 @@ export default class CompilerResolver<TemplateMeta> implements CompileTimeLookup
     return this.delegate.getComponentCapabilities(meta);
   }
 
-  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>> {
+  getLayout(handle: number): Option<CompilableProgram> {
     let locator = expect(this.table.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated locator`);
     return this.compiler.compilableTemplates.get(locator) || null;
   }

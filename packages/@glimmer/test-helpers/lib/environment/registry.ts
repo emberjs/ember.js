@@ -2,10 +2,10 @@ import {
   ComponentDefinition,
   Invocation,
   Helper as GlimmerHelper,
-  ModifierManager,
-  PartialDefinition
+  ModifierManager
 } from '@glimmer/runtime';
 import { Option, dict } from '@glimmer/util';
+import { PartialDefinition } from '@glimmer/opcode-compiler';
 
 export interface Lookup {
   helper: GlimmerHelper;
