@@ -1,4 +1,3 @@
-import Ember from 'ember-metal'; // Ember as namespace
 import {
   A as emberA,
   typeOf,
@@ -88,7 +87,7 @@ export default EmberObject.extend({
     let typeSuffixRegex = new RegExp(`${StringUtils.classify(type)}$`);
 
     namespaces.forEach(namespace => {
-      if (namespace !== Ember) {
+      if (namespace.toString() !== 'Ember') {
         for (let key in namespace) {
           if (!namespace.hasOwnProperty(key)) { continue; }
           if (typeSuffixRegex.test(key)) {
