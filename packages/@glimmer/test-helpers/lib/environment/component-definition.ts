@@ -1,6 +1,5 @@
 import { Option } from '@glimmer/util';
-import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
-import { ModuleLocator, TemplateLocator } from '@glimmer/bundle-compiler';
+import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator, TemplateLocator } from '@glimmer/interfaces';
 
 export interface TemplateMeta {
   locator: ModuleLocator;

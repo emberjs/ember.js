@@ -1,7 +1,7 @@
-import { RuntimeResolver, ComponentDefinition, ProgramSymbolTable } from '@glimmer/interfaces';
+import { RuntimeResolver, ComponentDefinition, ProgramSymbolTable, ModuleLocator } from '@glimmer/interfaces';
 import { Opaque, Option, expect } from '@glimmer/util';
 import { Invocation } from "@glimmer/runtime";
-import { ExternalModuleTable, ModuleLocatorMap, ModuleLocator } from '@glimmer/bundle-compiler';
+import { ExternalModuleTable, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 
 import { TemplateMeta } from '../../component-definition';
 import { Modules } from './modules';

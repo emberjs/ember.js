@@ -3,6 +3,7 @@ export * from './lib/components';
 export * from './lib/di';
 export * from './lib/dom/tree-construction';
 export * from './lib/program';
+export * from './lib/module-locators';
 export * from './lib/tier1/symbol-table';
 export { default as ComponentCapabilities } from './lib/component-capabilities';
 
