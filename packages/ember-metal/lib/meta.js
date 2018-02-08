@@ -563,6 +563,10 @@ export function meta(obj) {
   return newMeta;
 }
 
+if (DEBUG) {
+  meta._counters = counters;
+}
+
 // Using `symbol()` here causes some node test to fail, presumably
 // because we define the CP with one copy of Ember and boot the app
 // with a different copy, so the random key we generate do not line
