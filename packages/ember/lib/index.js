@@ -40,7 +40,7 @@ const computed = metal.computed;
 computed.alias = metal.alias;
 Ember.computed = computed;
 Ember.ComputedProperty = metal.ComputedProperty;
-Ember.cacheFor = metal.cacheFor;
+Ember.cacheFor = metal.getCachedValueFor;
 
 Ember.assert = EmberDebug.assert;
 Ember.warn = EmberDebug.warn;

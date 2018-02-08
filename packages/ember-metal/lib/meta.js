@@ -45,8 +45,6 @@ export class Meta {
       counters.metaInstantiated++;
     }
 
-    this._cache = undefined;
-
     if (EMBER_METAL_ES5_GETTERS) {
       this._descriptors = undefined;
     }
@@ -265,9 +263,6 @@ export class Meta {
       }
     }
   }
-
-  writableCache() { return this._getOrCreateOwnMap('_cache'); }
-  readableCache() { return this._cache; }
 
   writableTags() { return this._getOrCreateOwnMap('_tags'); }
   readableTags() { return this._tags; }
