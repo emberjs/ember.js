@@ -1,11 +1,11 @@
 {
   "name": "@glimmer/program",
-  "version": "0.30.5",
+  "version": "0.31.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
   "dependencies": {
-    "@glimmer/util": "^0.30.5",
-    "@glimmer/interfaces": "^0.30.5",
-    "@glimmer/encoder": "^0.30.5"
+    "@glimmer/util": "^0.31.0",
+    "@glimmer/interfaces": "^0.31.0",
+    "@glimmer/encoder": "^0.31.0"
   },
   "devDependencies": {
     "typescript": "^2.2.0"
