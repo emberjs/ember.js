@@ -40,7 +40,7 @@ let allExports =[
   ['computed', 'ember-metal'],
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
-  ['cacheFor', 'ember-metal'],
+  ['cacheFor', 'ember-metal', 'getCachedValueFor'],
   ['merge', 'ember-metal'],
   ['instrument', 'ember-metal'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],

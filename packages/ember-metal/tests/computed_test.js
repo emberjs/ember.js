@@ -4,7 +4,7 @@ import { testBoth } from 'internal-test-helpers';
 import {
   ComputedProperty,
   computed,
-  cacheFor,
+  getCachedValueFor,
   Descriptor,
   defineProperty,
   get,
@@ -316,24 +316,24 @@ testBoth('inherited property should not pick up cache', function(get, set, asser
   assert.equal(get(objB, 'foo'), 'bar 2', 'objB third get');
 });
 
-testBoth('cacheFor should return the cached value', function(get, set, assert) {
-  assert.equal(cacheFor(obj, 'foo'), undefined, 'should not yet be a cached value');
+testBoth('getCachedValueFor should return the cached value', function(get, set, assert) {
+  assert.equal(getCachedValueFor(obj, 'foo'), undefined, 'should not yet be a cached value');
 
   get(obj, 'foo');
 
-  assert.equal(cacheFor(obj, 'foo'), 'bar 1', 'should retrieve cached value');
+  assert.equal(getCachedValueFor(obj, 'foo'), 'bar 1', 'should retrieve cached value');
 });
 
-testBoth('cacheFor should return falsy cached values', function(get, set, assert) {
+testBoth('getCachedValueFor should return falsy cached values', function(get, set, assert) {
   defineProperty(obj, 'falsy', computed(function() {
     return false;
   }));
 
-  assert.equal(cacheFor(obj, 'falsy'), undefined, 'should not yet be a cached value');
+  assert.equal(getCachedValueFor(obj, 'falsy'), undefined, 'should not yet be a cached value');
 
   get(obj, 'falsy');
 
-  assert.equal(cacheFor(obj, 'falsy'), false, 'should retrieve cached value');
+  assert.equal(getCachedValueFor(obj, 'falsy'), false, 'should retrieve cached value');
 });
 
 testBoth('setting a cached computed property passes the old value as the third argument', function(get, set, assert) {

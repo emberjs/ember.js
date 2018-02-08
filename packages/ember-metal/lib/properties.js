@@ -7,6 +7,7 @@ import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { descriptorFor, meta as metaFor, peekMeta, DESCRIPTOR, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
+import { peekCacheFor } from './computed';
 // ..........................................................
 // DESCRIPTOR
 //
@@ -338,9 +339,9 @@ export function _hasCachedComputedProperties() {
 
 function didDefineComputedProperty(constructor) {
   if (hasCachedComputedProperties === false) { return; }
-  let cache = metaFor(constructor).readableCache();
 
-  if (cache && cache._computedProperties !== undefined) {
-    cache._computedProperties = undefined;
+  let cache = peekCacheFor(constructor);
+  if (cache !== undefined) {
+    cache.delete('_computedProperties');
   }
 }

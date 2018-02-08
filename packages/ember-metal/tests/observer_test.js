@@ -6,7 +6,7 @@ import {
   notifyPropertyChange,
   defineProperty,
   computed,
-  cacheFor,
+  getCachedValueFor,
   Mixin,
   mixin,
   observer,
@@ -484,7 +484,7 @@ testBoth('depending on a chain with a computed property', function(get, set, ass
     changed++;
   });
 
-  assert.equal(cacheFor(obj, 'computed'), undefined, 'addObserver should not compute CP');
+  assert.equal(getCachedValueFor(obj, 'computed'), undefined, 'addObserver should not compute CP');
 
   set(obj, 'computed.foo', 'baz');
 

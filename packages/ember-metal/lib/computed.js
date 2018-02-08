@@ -1,7 +1,7 @@
 import { inspect } from 'ember-utils';
 import { assert, warn, Error as EmberError } from 'ember-debug';
 import { set } from './property_set';
-import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
+import { meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
 import {
   Descriptor,
@@ -317,9 +317,8 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
     return;
   }
 
-  let cache = meta.readableCache();
-  if (cache !== undefined && cache[keyName] !== undefined) {
-    cache[keyName] = undefined;
+  let cache = peekCacheFor(obj);
+  if (cache !== undefined && cache.delete(keyName)) {
     removeDependentKeys(this, obj, keyName, meta);
   }
 };
@@ -329,20 +328,17 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     return this._getter.call(obj, keyName);
   }
 
-  let meta = metaFor(obj);
-  let cache = meta.writableCache();
+  let cache = getCacheFor(obj);
 
-  let result = cache[keyName];
-  if (result === UNDEFINED) {
-    return undefined;
-  } else if (result !== undefined) {
-    return result;
+  if (cache.has(keyName)) {
+    return cache.get(keyName);
   }
 
   let ret = this._getter.call(obj, keyName);
 
-  cache[keyName] = ret === undefined ? UNDEFINED : ret;
+  cache.set(keyName, ret);
 
+  let meta = metaFor(obj);
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
     chainWatchers.revalidate(keyName);
@@ -373,7 +369,7 @@ ComputedPropertyPrototype._throwReadOnlyError = function computedPropertyThrowRe
 };
 
 ComputedPropertyPrototype.clobberSet = function computedPropertyClobberSet(obj, keyName, value) {
-  let cachedValue = cacheFor(obj, keyName);
+  let cachedValue = getCachedValueFor(obj, keyName);
   defineProperty(obj, keyName, null, cachedValue);
   set(obj, keyName, value);
   return value;
@@ -395,15 +391,9 @@ ComputedPropertyPrototype.setWithSuspend = function computedPropertySetWithSuspe
 
 ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, value) {
   let meta = metaFor(obj);
-  let cache = meta.writableCache();
-
-  let val = cache[keyName];
-  let hadCachedValue = val !== undefined;
-
-  let cachedValue;
-  if (hadCachedValue && val !== UNDEFINED) {
-    cachedValue = val;
-  }
+  let cache = getCacheFor(obj);
+  let hadCachedValue = cache.has(keyName);
+  let cachedValue = cache.get(keyName);
 
   let ret = this._setter.call(obj, keyName, value, cachedValue);
 
@@ -416,7 +406,7 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     addDependentKeys(this, obj, keyName, meta);
   }
 
-  cache[keyName] = ret === undefined ? UNDEFINED : ret;
+  cache.set(keyName, ret);
 
   notifyPropertyChange(obj, keyName, meta);
 
@@ -428,10 +418,9 @@ ComputedPropertyPrototype.teardown = function(obj, keyName, meta) {
   if (this._volatile) {
     return;
   }
-  let cache = meta.readableCache();
-  if (cache !== undefined && cache[keyName] !== undefined) {
+  let cache = peekCacheFor(obj);
+  if (cache !== undefined && cache.delete(keyName)) {
     removeDependentKeys(this, obj, keyName, meta);
-    cache[keyName] = undefined;
   }
 };
 
@@ -535,6 +524,8 @@ export default function computed(...args) {
   return cp;
 }
 
+const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap();
+
 /**
   Returns the cached value for a property, if one exists.
   This can be useful for peeking at the value of a computed
@@ -550,39 +541,27 @@ export default function computed(...args) {
   @return {Object} the cached value
   @public
 */
-function cacheFor(obj, key) {
-  let meta = peekMeta(obj);
-  let cache = meta !== undefined ? meta.source === obj && meta.readableCache() : undefined;
-  let ret = cache !== undefined ? cache[key] : undefined;
-
-  if (ret === UNDEFINED) {
-    return undefined;
+export function getCacheFor(obj) {
+  let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
+  if (cache === undefined) {
+    cache = new Map();
+    COMPUTED_PROPERTY_CACHED_VALUES.set(obj, cache);
   }
-  return ret;
+  return cache;
 }
 
-cacheFor.set = function(cache, key, value) {
-  if (value === undefined) {
-    cache[key] = UNDEFINED;
-  } else {
-    cache[key] = value;
+export function getCachedValueFor(obj, key) {
+  let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
+  if (cache !== undefined) {
+    return cache.get(key);
   }
-};
+}
 
-cacheFor.get = function(cache, key) {
-  let ret = cache[key];
-  if (ret === UNDEFINED) {
-    return undefined;
-  }
-  return ret;
-};
-
-cacheFor.remove = function(cache, key) {
-  cache[key] = undefined;
-};
+export function peekCacheFor(obj) {
+  return COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
+}
 
 export {
   ComputedProperty,
-  computed,
-  cacheFor
+  computed
 };

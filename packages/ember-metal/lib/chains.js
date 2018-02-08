@@ -1,7 +1,7 @@
 import { get } from './property_get';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
-import { cacheFor } from './computed';
+import { getCachedValueFor } from './computed';
 import { eachProxyFor } from './each_proxy';
 
 const FIRST_KEY = /^([^\.]+)/;
@@ -333,10 +333,7 @@ function lazyGet(obj, key) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
-    let cache = meta.readableCache();
-    if (cache !== undefined) {
-      return cacheFor.get(cache, key);
-    }
+    return getCachedValueFor(obj, key);
   }
 }
 

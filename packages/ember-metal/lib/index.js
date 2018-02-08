@@ -2,7 +2,9 @@
 export { default } from './core'; // reexports
 export {
   default as computed,
-  cacheFor,
+  getCacheFor,
+  getCachedValueFor,
+  peekCacheFor,
   ComputedProperty
 } from './computed';
 export { default as alias } from './alias';

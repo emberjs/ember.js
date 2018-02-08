@@ -17,7 +17,7 @@ import {
   endPropertyChanges,
   addObserver,
   removeObserver,
-  cacheFor,
+  getCachedValueFor,
   isNone
 } from 'ember-metal';
 import { assert } from 'ember-debug';
@@ -476,6 +476,6 @@ export default Mixin.create({
     @public
   */
   cacheFor(keyName) {
-    return cacheFor(this, keyName);
+    return getCachedValueFor(this, keyName);
   },
 });
