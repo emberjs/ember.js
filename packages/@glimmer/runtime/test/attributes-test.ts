@@ -3,7 +3,7 @@ import { SVG_NAMESPACE, normalizeProperty } from '@glimmer/runtime';
 import { ConstReference, PathReference } from "@glimmer/reference";
 import { Opaque } from '@glimmer/util';
 
-class AttributesTests extends RenderTest {
+export class AttributesTests extends RenderTest {
 
   protected readDOMAttr(attr : string, element = this.element.firstChild as Element) {
     let isSVG = element.namespaceURI === SVG_NAMESPACE;

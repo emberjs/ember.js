@@ -1,7 +1,7 @@
 import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
 import { Stack } from "@glimmer/util";
-import { assert, expect } from "@glimmer/util";
+import { assert, expect, Option } from "@glimmer/util";
 import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
 import { getAttrNamespace } from './utils';
 import { Opaque } from "@glimmer/interfaces";
@@ -95,8 +95,18 @@ export default class TemplateCompiler {
       this.opcode('openElement', action, action);
     }
 
-    for (let i = 0; i < action.attributes.length; i++) {
-      this.attribute([action.attributes[i]]);
+    let typeAttr : Option<AST.AttrNode> = null;
+    let attrs = action.attributes;
+    for (let i = 0; i < attrs.length; i++) {
+      if (attrs[i].name === 'type') {
+        typeAttr = attrs[i];
+        continue;
+      }
+      this.attribute([attrs[i]]);
+    }
+
+    if (typeAttr) {
+      this.attribute([typeAttr]);
     }
 
     for (let i = 0; i < action.modifiers.length; i++) {
