@@ -1,12 +1,158 @@
 # Changelog
 
-## Unreleased (2017-10-22)
+## v031.0 (2018-02-08)
+
+#### :boom: Breaking Change
+* `@glimmer/bundle-compiler`, `@glimmer/interfaces`, `@glimmer/test-helpers`
+  * [#778](https://github.com/glimmerjs/glimmer-vm/pull/778) Move ModuleLocator and related interfaces to @glimmer/interfaces. ([@tomdale](https://github.com/tomdale))
 
 #### :rocket: Enhancement
+* `@glimmer/node`, `@glimmer/runtime`, `@glimmer/test-helpers`
+  * [#775](https://github.com/glimmerjs/glimmer-vm/pull/775) Serialized format renaming. ([@chadhietala](https://github.com/chadhietala))
+* `@glimmer/encoder`, `@glimmer/opcode-compiler`, `@glimmer/program`
+  * [#774](https://github.com/glimmerjs/glimmer-vm/pull/774) Fix args alloc. ([@krisselden](https://github.com/krisselden))
+* `@glimmer/runtime`
+  * [#771](https://github.com/glimmerjs/glimmer-vm/pull/771) improve nested transaction error message. ([@GavinJoyce](https://github.com/GavinJoyce))
+
+#### :memo: Documentation
+* [#768](https://github.com/glimmerjs/glimmer-vm/pull/768) Start fleshing out the precompiler docs. ([@smfoote](https://github.com/smfoote))
+
+#### :house: Internal
+* `@glimmer/runtime`, `@glimmer/vm`
+  * [#773](https://github.com/glimmerjs/glimmer-vm/pull/773) Encode component capabilities using bitmasks. ([@tomdale](https://github.com/tomdale))
+
+#### Committers: 5
+- Chad Hietala ([chadhietala](https://github.com/chadhietala))
+- Gavin Joyce ([GavinJoyce](https://github.com/GavinJoyce))
+- Kris Selden ([krisselden](https://github.com/krisselden))
+- Steven ([smfoote](https://github.com/smfoote))
+- Tom Dale ([tomdale](https://github.com/tomdale))
+
+
+## v0.30.4 (2018-01-12)
+
+#### :bug: Bug Fix
+* `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#767](https://github.com/glimmerjs/glimmer-vm/pull/767) Fix nested currying.. ([@rwjblue](https://github.com/rwjblue))
+* `@glimmer/runtime`
+  * [#762](https://github.com/glimmerjs/glimmer-vm/pull/762) Allow null for iterable keys. ([@smfoote](https://github.com/smfoote))
+  * [#761](https://github.com/glimmerjs/glimmer-vm/pull/761) Fix has-block-params in prod mode. ([@wycats](https://github.com/wycats))
+
+#### Committers: 5
+- Chad Hietala ([chadhietala](https://github.com/chadhietala))
+- Kris Selden ([krisselden](https://github.com/krisselden))
+- Robert Jackson ([rwjblue](https://github.com/rwjblue))
+- Steven ([smfoote](https://github.com/smfoote))
+- Yehuda Katz ([wycats](https://github.com/wycats))
+
+
+## v0.30.3 (2017-11-27)
+
+#### :house: Internal
+* [#742](https://github.com/glimmerjs/glimmer-vm/pull/742) Upgrade broccoli-rollup. ([@t-sauer](https://github.com/t-sauer))
+
+#### Committers: 2
+- Chad Hietala ([chadhietala](https://github.com/chadhietala))
+- Thomas Sauer ([t-sauer](https://github.com/t-sauer))
+
+
+## v0.30.2 (2017-11-14)
+
+#### :bug: Bug Fix
+* `@glimmer/encoder`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/test-helpers`
+  * [#741](https://github.com/glimmerjs/glimmer-vm/pull/741) Fix bytecode recursive component invocation. ([@tomdale](https://github.com/tomdale))
+
+#### :house: Internal
+* `@glimmer/test-helpers`
+  * [#740](https://github.com/glimmerjs/glimmer-vm/pull/740) Mark @glimmer/test-helpers as private. ([@chadhietala](https://github.com/chadhietala))
+
+#### Committers: 2
+- Chad Hietala ([chadhietala](https://github.com/chadhietala))
+- Tom Dale ([tomdale](https://github.com/tomdale))
+
+
+## v0.30.0 (2017-11-08)
+
+#### :rocket: Enhancement
+* `@glimmer/bundle-compiler`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/test-helpers`
+  * [#735](https://github.com/glimmerjs/glimmer-vm/pull/735) Allow passing additional template metadata to BundleCompiler. ([@tomdale](https://github.com/tomdale))
+* `@glimmer/bundle-compiler`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/test-helpers`, `@glimmer/vm`
+  * [#701](https://github.com/glimmerjs/glimmer-vm/pull/701) Initial work towards the renderComponent API. ([@chadhietala](https://github.com/chadhietala))
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#727](https://github.com/glimmerjs/glimmer-vm/pull/727) [CLEANUP] Use correct environment. ([@Serabe](https://github.com/Serabe))
+  * [#730](https://github.com/glimmerjs/glimmer-vm/pull/730) Fix nested partials within a `{{#with}}` block (#728). ([@GavinJoyce](https://github.com/GavinJoyce))
+* `@glimmer/interfaces`, `@glimmer/runtime`
+  * [#733](https://github.com/glimmerjs/glimmer-vm/pull/733) Fix Bounds and ElementBuilder interfaces.. ([@krisselden](https://github.com/krisselden))
+
+#### :memo: Documentation
+* [#724](https://github.com/glimmerjs/glimmer-vm/pull/724) guides: Fix several issues in TS codeblocks. ([@Turbo87](https://github.com/Turbo87))
+
+#### :house: Internal
+* `@glimmer/bundle-compiler`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/test-helpers`, `@glimmer/wire-format`
+  * [#738](https://github.com/glimmerjs/glimmer-vm/pull/738) Unify eager and lazy compilation metadata semantics. ([@tomdale](https://github.com/tomdale))
+* `@glimmer/bundle-compiler`, `@glimmer/runtime`, `@glimmer/test-helpers`
+  * [#737](https://github.com/glimmerjs/glimmer-vm/pull/737) Add tests for basic #each use cases. ([@chadhietala](https://github.com/chadhietala))
+* Other
+  * [#725](https://github.com/glimmerjs/glimmer-vm/pull/725) Remove obsolete "lerna.json" file. ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 6
+- Chad Hietala ([chadhietala](https://github.com/chadhietala))
+- Gavin Joyce ([GavinJoyce](https://github.com/GavinJoyce))
+- Kris Selden ([krisselden](https://github.com/krisselden))
+- Sergio Arbeo ([Serabe](https://github.com/Serabe))
+- Tobias Bieniek ([Turbo87](https://github.com/Turbo87))
+- Tom Dale ([tomdale](https://github.com/tomdale))
+
+
+## v0.29.1 (2017-10-27)
+
+#### :rocket: Enhancement
+* `@glimmer/program`
+  * [#721](https://github.com/glimmerjs/glimmer-vm/pull/721) Compact Heap Table. ([@chadhietala](https://github.com/chadhietala))
+
+#### :memo: Documentation
+* [#717](https://github.com/glimmerjs/glimmer-vm/pull/717) Add Changelog file. ([@Turbo87](https://github.com/Turbo87))
+
+#### :house: Internal
+* `@glimmer/node`, `@glimmer/runtime`
+  * [#723](https://github.com/glimmerjs/glimmer-vm/pull/723) Don't infer the return type of the builder factories. ([@chadhietala](https://github.com/chadhietala))
+
+#### Committers: 2
+- Chad Hietala ([chadhietala](https://github.com/chadhietala))
+- Tobias Bieniek ([Turbo87](https://github.com/Turbo87))
+
+
+## v0.29.10 (2017-10-27)
+
+#### :rocket: Enhancement
+* `@glimmer/program`
+  * [#721](https://github.com/glimmerjs/glimmer-vm/pull/721) Compact Heap Table. ([@chadhietala](https://github.com/chadhietala))
+
+#### :memo: Documentation
+* [#717](https://github.com/glimmerjs/glimmer-vm/pull/717) Add Changelog file. ([@Turbo87](https://github.com/Turbo87))
+
+#### :house: Internal
+* `@glimmer/node`, `@glimmer/runtime`
+  * [#723](https://github.com/glimmerjs/glimmer-vm/pull/723) Don't infer the return type of the builder factories. ([@chadhietala](https://github.com/chadhietala))
+
+#### Committers: 2
+- Chad Hietala ([chadhietala](https://github.com/chadhietala))
+- Tobias Bieniek ([Turbo87](https://github.com/Turbo87))
+
+
+## v0.29.9 (2017-10-25)
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/opcode-compiler`, `@glimmer/wire-format`
+  * [#720](https://github.com/glimmerjs/glimmer-vm/pull/720) [Cleanup] Remove top-level invocations. ([@chadhietala](https://github.com/chadhietala))
 * `@glimmer/bundle-compiler`, `@glimmer/program`
   * [#712](https://github.com/glimmerjs/glimmer-vm/pull/712) Special case an empty array constant. ([@chadhietala](https://github.com/chadhietala))
 
 #### :bug: Bug Fix
+* `@glimmer/runtime`, `@glimmer/test-helpers`
+  * [#718](https://github.com/glimmerjs/glimmer-vm/pull/718) [BUGFIX] Fix Frozen Args When Currying. ([@chadhietala](https://github.com/chadhietala))
 * `@glimmer/bundle-compiler`
   * [#714](https://github.com/glimmerjs/glimmer-vm/pull/714) Don't continuously recompile the layout. ([@chadhietala](https://github.com/chadhietala))
 
