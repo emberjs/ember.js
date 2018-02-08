@@ -8,19 +8,23 @@ export {
 } from './lib/syntax';
 
 export {
-  AbstractTemplate,
   CompileTimeLookup,
   LazyOpcodeBuilder,
   EagerOpcodeBuilder,
   OpcodeBuilder,
   OpcodeBuilderConstructor,
   SimpleOpcodeBuilder,
-  STDLib
 } from './lib/opcode-builder';
+
+export { PartialDefinition } from './lib/partial-template';
+
+export {
+  default as templateFactory,
+  TemplateFactory
+} from './lib/template';
 
 export {
   default as CompilableTemplate,
-  ICompilableTemplate
 } from './lib/compilable-template';
 
 export {

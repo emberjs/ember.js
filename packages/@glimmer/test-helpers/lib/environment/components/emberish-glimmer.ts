@@ -1,6 +1,5 @@
-
-import { TemplateOptions, TemplateMeta } from "@glimmer/opcode-compiler";
-import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, ScannableTemplate, Invocation } from "@glimmer/runtime";
+import { TemplateOptions } from "@glimmer/opcode-compiler";
+import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, Invocation } from "@glimmer/runtime";
 import { Opaque, Option, ComponentCapabilities } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
@@ -28,7 +27,7 @@ export interface EmberishGlimmerComponentState {
 
 export class EmberishGlimmerComponentManager
   implements ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
-             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, TemplateMeta, LazyRuntimeResolver> {
+             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {
 
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
@@ -60,12 +59,12 @@ export class EmberishGlimmerComponentManager
     let { name, locator } = state;
     if (resolver instanceof LazyRuntimeResolver) {
       let compile = (source: string, options: TemplateOptions<{}>) => {
-        let layout = createTemplate(source);
-        let template = new ScannableTemplate(options, layout).asLayout();
+        let template = createTemplate(source);
+        let layout = template.create(options).asLayout();
 
         return {
-          handle: template.compile(),
-          symbolTable: template.symbolTable
+          handle: layout.compile(),
+          symbolTable: layout.symbolTable
         };
       };
 

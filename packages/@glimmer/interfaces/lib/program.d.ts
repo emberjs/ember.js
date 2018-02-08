@@ -1,5 +1,4 @@
 import { Opaque, Unique } from './core';
-import { SymbolTable } from './tier1/symbol-table';
 
 export interface Opcode {
   offset: number;

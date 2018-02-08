@@ -1,16 +1,18 @@
 import {
   Opaque,
   Option,
-  ProgramSymbolTable,
-  SymbolTable,
   Recast,
   VMHandle,
-  BlockSymbolTable,
   ComponentCapabilities,
+  CompilableTemplate,
+  CompilableBlock,
+  CompilableProgram,
   CompileTimeConstants,
   CompileTimeProgram,
   CompileTimeLazyConstants,
-  CompileTimeHeap
+  CompileTimeHeap,
+  STDLib,
+  SymbolTable,
 } from "@glimmer/interfaces";
 import { dict, EMPTY_ARRAY, expect, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
@@ -20,7 +22,6 @@ import { PrimitiveType } from "@glimmer/program";
 
 import {
   Primitive,
-  CompilableBlock,
   ParsedLayout
 } from './interfaces';
 
@@ -31,17 +32,12 @@ import {
   expressionCompiler
 } from './syntax';
 
-import CompilableTemplate, { ICompilableTemplate, PLACEHOLDER_HANDLE } from './compilable-template';
+import CompilableTemplateImpl, { PLACEHOLDER_HANDLE } from './compilable-template';
 
 import {
   ComponentBuilder
 } from './wrapped-component';
 import { InstructionEncoder, Operand, OpcodeSize } from "@glimmer/encoder";
-
-export interface STDLib {
-  main: number;
-  guardedAppend: number;
-}
 
 export type Label = string;
 
@@ -67,13 +63,9 @@ class Labels {
   }
 }
 
-export interface AbstractTemplate<S extends SymbolTable = SymbolTable> {
-  symbolTable: S;
-}
-
 export interface CompileTimeLookup<TemplateMeta> {
   getCapabilities(handle: number): ComponentCapabilities;
-  getLayout(handle: number): Option<ICompilableTemplate<ProgramSymbolTable>>;
+  getLayout(handle: number): Option<CompilableProgram>;
 
   // This interface produces module locators (and indicates if a name is present), but does not
   // produce any actual objects. The main use-case for producing objects is handled above,
@@ -688,7 +680,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
       referrer: this.referrer
     };
 
-    return new CompilableTemplate(statements, this.containingLayout, options, symbolTable);
+    return new CompilableTemplateImpl(statements, this.containingLayout, options, symbolTable);
   }
 
   evalSymbols(): Option<string[]> {
@@ -863,7 +855,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.push(Op.PopulateLayout, state);
   }
 
-  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: ICompilableTemplate<ProgramSymbolTable>) {
+  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: CompilableProgram) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
@@ -890,7 +882,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.load(Register.s0);
   }
 
-  invokeStaticComponent(capabilities: ComponentCapabilities, layout: ICompilableTemplate<ProgramSymbolTable>, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
+  invokeStaticComponent(capabilities: ComponentCapabilities, layout: CompilableProgram, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
     let { symbolTable } = layout;
 
     let bailOut =
@@ -1052,8 +1044,8 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   abstract pushBlock(block: Option<CompilableBlock>): void;
   abstract resolveBlock(): void;
-  abstract pushLayout(layout: Option<ICompilableTemplate<ProgramSymbolTable>>): void;
-  abstract invokeStatic(block: ICompilableTemplate<SymbolTable>): void;
+  abstract pushLayout(layout: Option<CompilableProgram>): void;
+  abstract invokeStatic(block: CompilableTemplate): void;
   abstract resolveLayout(): void;
 
   pushSymbolTable(table: Option<SymbolTable>): void {
@@ -1099,7 +1091,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
     this.push(Op.CompileBlock);
   }
 
-  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, TemplateMeta>>) {
+  pushLayout(layout: Option<CompilableProgram>) {
     if (layout) {
       this.pushOther(layout);
     } else {
@@ -1111,7 +1103,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
     this.push(Op.CompileBlock);
   }
 
-  invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
+  invokeStatic(compilable: CompilableTemplate): void {
     this.pushOther(compilable);
     this.push(Op.CompileBlock);
     this.pushMachine(Op.InvokeVirtual);
@@ -1127,7 +1119,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
 }
 
 export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta> {
-  pushBlock(block: Option<ICompilableTemplate<BlockSymbolTable>>): void {
+  pushBlock(block: Option<CompilableBlock>): void {
     let handle = block ? block.compile(this.stdLib) as Recast<VMHandle, number> : null;
     this.primitive(handle);
   }
@@ -1136,7 +1128,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
     return;
   }
 
-  pushLayout(layout: Option<CompilableTemplate<ProgramSymbolTable, TemplateMeta>>): void {
+  pushLayout(layout: Option<CompilableProgram>): void {
     if (layout) {
       this.primitive(layout.compile(this.stdLib) as Recast<VMHandle, number>);
     } else {
@@ -1146,7 +1138,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
 
   resolveLayout() {}
 
-  invokeStatic(compilable: ICompilableTemplate<SymbolTable>): void {
+  invokeStatic(compilable: CompilableTemplate): void {
     let handle = compilable.compile();
 
     // If the handle for the invoked component is not yet known (for example,

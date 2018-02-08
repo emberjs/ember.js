@@ -2,11 +2,12 @@ import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachabl
 import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
-import { debug, logOpcode } from "@glimmer/opcode-compiler";
 import { METADATA } from "@glimmer/vm";
 import { Opcode, Opaque } from "@glimmer/interfaces";
 import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
+// these import bindings will be stripped from build
+import { debug, logOpcode } from '@glimmer/opcode-compiler';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -86,14 +87,14 @@ export class AppendOpcodes {
       }
     }
 
-    let actualChange = vm.stack.sp - sp!;
-    if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
-      let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
-
-      throw new Error(`Error in ${name}:\n\n${(vm['pc'] + (opcode.size))}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
-    }
-
     if (DEBUG) {
+      let actualChange = vm.stack.sp - sp!;
+      if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
+        let [name, params] = debug(vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
+
+        throw new Error(`Error in ${name}:\n\n${(vm['pc'] + (opcode.size))}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
+      }
+
       /* tslint:disable */
       console.log('%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O', 'color: orange', vm['pc'], vm['ra'], vm['fp'], vm['sp'], vm['s0'], vm['s1'], vm['t0'], vm['t1'], vm['v0']);
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
@@ -137,7 +138,7 @@ export abstract class UpdatingOpcode extends AbstractOpcode {
   next: Option<UpdatingOpcode> = null;
   prev: Option<UpdatingOpcode> = null;
 
-  abstract evaluate(vm: UpdatingVM<Opaque>): void;
+  abstract evaluate(vm: UpdatingVM): void;
 }
 
 export type UpdatingOpSeq = ListSlice<UpdatingOpcode>;

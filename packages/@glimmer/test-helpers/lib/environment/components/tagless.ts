@@ -1,7 +1,6 @@
 import { ComponentCapabilities } from "@glimmer/interfaces";
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { Invocation } from '@glimmer/runtime';
-import { assign, Option } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 
 import { createTemplate } from '../shared';
 import { BasicComponentManager } from './basic';
@@ -23,18 +22,17 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
   }
 
   getLayout(state: TestComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
-    let { name, capabilities } = state;
+    let { name } = state;
 
     let handle = resolver.lookup('template-source', name)!;
 
     return resolver.compileTemplate(handle, name, (source, options) => {
       let template = createTemplate(source, {});
-      let compileOptions = assign({}, options, { asPartial: false, referrer: null });
-      let builder = new WrappedBuilder(compileOptions, template, capabilities);
+      let layout = template.create(options).asLayout();
 
       return {
-        handle: builder.compile(),
-        symbolTable: builder.symbolTable
+        handle: layout.compile(),
+        symbolTable: layout.symbolTable
       };
     });
   }

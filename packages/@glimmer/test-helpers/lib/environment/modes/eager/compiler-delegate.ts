@@ -1,7 +1,7 @@
-import { ICompilableTemplate, CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
+import { CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
 import { CompilerDelegate }  from '@glimmer/bundle-compiler';
 import { Dict } from '@glimmer/util';
-import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
+import { CompilableProgram, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 
 import { Modules } from './modules';
 import { ComponentDefinition } from '@glimmer/runtime';
@@ -31,7 +31,7 @@ export default class EagerCompilerDelegate implements CompilerDelegate<TemplateM
     return this.components[meta.locator.module].state.capabilities;
   }
 
-  getComponentLayout(_: TemplateMeta, block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): ICompilableTemplate<ProgramSymbolTable> {
+  getComponentLayout(_: TemplateMeta, block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): CompilableProgram {
     return CompilableTemplate.topLevel(block, options);
   }
 

@@ -1,59 +1,14 @@
-import { Opaque, Option } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
+import { CompilableProgram, Template, Opaque, Option } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   Statement
 } from '@glimmer/wire-format';
-import { ElementBuilder } from './vm/element-builder';
-import { DynamicScope, Environment } from './environment';
-import { TopLevelSyntax } from './syntax/interfaces';
-import { IteratorResult, RenderResult, VM } from './vm';
-import { EMPTY_ARGS, ICapturedArguments } from './vm/arguments';
-import {
-  CompilableTemplate,
-  ParsedLayout,
-  TemplateOptions
-} from "@glimmer/opcode-compiler";
-import { RuntimeProgram } from "@glimmer/program";
-
-export interface RenderLayoutOptions {
-  env: Environment;
-  self: PathReference<Opaque>;
-  args?: ICapturedArguments;
-  dynamicScope: DynamicScope;
-  builder: ElementBuilder;
-}
-
-/**
- * Environment specific template.
- */
-export interface Template<TemplateMeta = Opaque> {
-  /**
-   * Template identifier, if precompiled will be the id of the
-   * precompiled template.
-   */
-  id: string;
-
-  /**
-   * Template meta (both compile time and environment specific).
-   */
-  referrer: TemplateMeta;
-
-  hasEval: boolean;
-
-  /**
-   * Symbols computed at compile time.
-   */
-  symbols: string[];
-
-  renderLayout(options: RenderLayoutOptions): TemplateIterator;
-
-  // internal casts, these are lazily created and cached
-  asLayout(): TopLevelSyntax;
-  asPartial(): TopLevelSyntax;
-}
+import CompilableTemplate from './compilable-template';
+import { ParsedLayout } from './interfaces';
+import { WrappedBuilder } from "./wrapped-component";
+import { CompileOptions, TemplateOptions } from "./syntax";
 
 export interface TemplateFactory<TemplateMeta> {
   /**
@@ -84,13 +39,6 @@ export interface TemplateFactory<TemplateMeta> {
   create<U>(env: TemplateOptions<Opaque>, meta: U): Template<TemplateMeta & U>;
 }
 
-export class TemplateIterator {
-  constructor(private vm: VM<Opaque>) {}
-  next(): IteratorResult<RenderResult> {
-    return this.vm.next();
-  }
-}
-
 let clientId = 0;
 
 /**
@@ -108,14 +56,15 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new ScannableTemplate(options, { id, block: parsedBlock, referrer: newMeta });
+    return new TemplateImpl(options, { id, block: parsedBlock, referrer: newMeta });
   };
   return { id, meta, create };
 }
 
-export class ScannableTemplate<TemplateMeta = Opaque> implements Template<TemplateMeta> {
-  private layout: Option<TopLevelSyntax> = null;
-  private partial: Option<TopLevelSyntax> = null;
+class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
+  private layout: Option<CompilableProgram> = null;
+  private partial: Option<CompilableProgram> = null;
+  private wrappedLayout: Option<CompilableProgram> = null;
   public symbols: string[];
   public hasEval: boolean;
   public id: string;
@@ -131,24 +80,23 @@ export class ScannableTemplate<TemplateMeta = Opaque> implements Template<Templa
     this.id = parsedLayout.id || `client-${clientId++}`;
   }
 
-  renderLayout(options: RenderLayoutOptions): TemplateIterator {
-    let { env, self, dynamicScope, args = EMPTY_ARGS, builder } = options;
-
-    let layout = this.asLayout();
-    let handle = layout.compile();
-
-    let vm = VM.initial(this.options.program as any as RuntimeProgram<Opaque>, env, self, args, dynamicScope, builder, handle);
-    return new TemplateIterator(vm);
-  }
-
-  asLayout(): TopLevelSyntax {
+  asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
     return this.layout = compilable(this.parsedLayout, this.options, false);
   }
 
-  asPartial(): TopLevelSyntax {
+  asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
     return this.partial = compilable(this.parsedLayout, this.options, true);
+  }
+
+  asWrappedLayout(): CompilableProgram {
+    if (this.wrappedLayout) return this.wrappedLayout;
+    let compileOptions: CompileOptions<TemplateMeta> = assign({}, this.options, {
+      asPartial: false,
+      referrer: this.referrer
+    });
+    return this.wrappedLayout = new WrappedBuilder(compileOptions, this.parsedLayout);
   }
 }
 

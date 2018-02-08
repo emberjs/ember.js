@@ -2,7 +2,7 @@ import { VersionedPathReference } from '@glimmer/reference';
 import { TemplateMeta } from '@glimmer/wire-format';
 import { Op } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
-import { PartialDefinition } from '../../partial';
+import { PartialDefinition } from '@glimmer/opcode-compiler';
 import { assert, Dict } from "@glimmer/util";
 import { check, expectStackChange } from '@glimmer/debug';
 import { Opaque } from "@glimmer/interfaces";

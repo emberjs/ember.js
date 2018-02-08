@@ -1,26 +1,25 @@
 import {
-  Option,
-  SymbolTable,
-  ProgramSymbolTable
+  CompilableTemplate,
+  STDLib,
+  ProgramSymbolTable,
+  CompilableProgram,
+  Option
 } from '@glimmer/interfaces';
 import { Statement, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { debugSlice } from './debug';
-import { CompilableTemplate as ICompilableTemplate, ParsedLayout } from './interfaces';
+import { ParsedLayout } from './interfaces';
 import { CompileOptions, statementCompiler, Compilers } from './syntax';
-import { STDLib } from './opcode-builder';
-
-export { ICompilableTemplate };
 
 export const PLACEHOLDER_HANDLE = -1;
 
-export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> implements ICompilableTemplate<S> {
-  static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): ICompilableTemplate<ProgramSymbolTable> {
-    return new CompilableTemplate<ProgramSymbolTable, TemplateMeta>(
+export default class CompilableTemplateImpl<SymbolTable, TemplateMeta> implements CompilableTemplate<SymbolTable> {
+  static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): CompilableProgram {
+    return new CompilableTemplateImpl<ProgramSymbolTable, TemplateMeta>(
       block.statements,
       { block, referrer: options.referrer },
       options,
-      { referrer: options.referrer, hasEval: block.hasEval, symbols: block.symbols }
+      { hasEval: block.hasEval, symbols: block.symbols }
     );
   }
 
@@ -28,7 +27,7 @@ export default class CompilableTemplate<S extends SymbolTable, TemplateMeta> imp
 
   private statementCompiler: Compilers<Statement>;
 
-  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<TemplateMeta>, public symbolTable: S) {
+  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<TemplateMeta>, public symbolTable: SymbolTable) {
     this.statementCompiler = statementCompiler();
   }
 

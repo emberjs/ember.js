@@ -1,15 +1,13 @@
 import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
-import { Macros, OpcodeBuilderConstructor, ICompilableTemplate } from '@glimmer/opcode-compiler';
-import { Simple, RuntimeResolver, BlockSymbolTable } from '@glimmer/interfaces';
+import { Macros, OpcodeBuilderConstructor } from '@glimmer/opcode-compiler';
+import { Simple, RuntimeResolver, CompilableBlock, BlockSymbolTable } from '@glimmer/interfaces';
 import { Program } from "@glimmer/program";
 import {
   Dict,
   Option,
   Destroyable,
   Opaque,
-  HasGuid,
   assert,
-  ensureGuid,
   expect
 } from '@glimmer/util';
 
@@ -23,7 +21,7 @@ import {
 } from './modifier/interfaces';
 import { Component, ComponentManager } from "./internal-interfaces";
 
-export type ScopeBlock = [number | ICompilableTemplate<BlockSymbolTable>, Scope, BlockSymbolTable];
+export type ScopeBlock = [number | CompilableBlock, Scope, BlockSymbolTable];
 export type BlockValue = ScopeBlock[0 | 1 | 2];
 export type ScopeSlot = Option<PathReference<Opaque>> | Option<ScopeBlock>;
 
@@ -249,10 +247,6 @@ export abstract class Environment {
 
   getAppendOperations(): DOMTreeConstruction { return this.appendOperations; }
   getDOM(): DOMChanges { return this.updateOperations; }
-
-  getIdentity(object: HasGuid): string {
-    return ensureGuid(object) + '';
-  }
 
   begin() {
     assert(!this._transaction, 'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.');
