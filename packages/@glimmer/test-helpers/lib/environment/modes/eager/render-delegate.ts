@@ -12,10 +12,10 @@ import {
   ElementBuilder,
   Cursor
 } from '@glimmer/runtime';
-import { DebugConstants, BundleCompiler, ModuleLocatorMap, ModuleLocator } from '@glimmer/bundle-compiler';
+import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
-import { ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import RenderDelegate from '../../../render-delegate';

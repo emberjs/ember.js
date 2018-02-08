@@ -1,5 +1,5 @@
-import { BundleCompiler, ModuleLocator } from '@glimmer/bundle-compiler';
-import { ComponentCapabilities, ProgramSymbolTable } from '@glimmer/interfaces';
+import { BundleCompiler } from '@glimmer/bundle-compiler';
+import { ComponentCapabilities, ProgramSymbolTable, ModuleLocator } from '@glimmer/interfaces';
 import { BASIC_CAPABILITIES } from '@glimmer/test-helpers';
 import { CompilableTemplate, CompileOptions, ICompilableTemplate } from '@glimmer/opcode-compiler';
 import { SerializedTemplateBlock } from '@glimmer/wire-format';

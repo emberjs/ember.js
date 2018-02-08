@@ -1,4 +1,5 @@
-import { ModuleLocator, ModuleLocatorMap } from './module-locators';
+import ModuleLocatorMap from './module-locator-map';
+import { ModuleLocator } from '@glimmer/interfaces';
 
 /**
  * Maps ModuleLocators to their associated handles, and vice versa. The table
