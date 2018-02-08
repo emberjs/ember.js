@@ -26,10 +26,10 @@ export default function setupQUnit(assertion, _QUnit) {
     delete options.setup;
     delete options.teardown;
 
-    options.beforeEach = function() {
+    options.beforeEach = function(assert) {
       state = resetState();
 
-      setupExpectDeprecations(_QUnit, state);
+      setupExpectDeprecations(assert, state);
 
       assertion.reset();
       assertion.inject();

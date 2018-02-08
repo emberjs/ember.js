@@ -6,10 +6,10 @@ export default function moduleFor(description, TestClass, ...mixins) {
   let context;
 
   QUnit.module(description, {
-    beforeEach() {
-      context = new TestClass();
+    beforeEach(assert) {
+      context = new TestClass(assert);
       if (context.beforeEach) {
-        return context.beforeEach();
+        return context.beforeEach(assert);
       }
     },
 

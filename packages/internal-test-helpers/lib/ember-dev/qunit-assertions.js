@@ -14,8 +14,8 @@ export function restoreMethod(methodName, func) {
   setDebugFunction(methodName, func);
 }
 
-export function setupExpectDeprecations(_QUnit, state) {
-  _QUnit.assert.expectDeprecation = function(cb, matcher) {
+export function setupExpectDeprecations(assert, state) {
+  assert.expectDeprecation = function(cb, matcher) {
     if (typeof cb !== 'function') {
       matcher = cb;
       cb = null;
@@ -36,7 +36,7 @@ export function setupExpectDeprecations(_QUnit, state) {
     }
   };
 
-  _QUnit.assert.expectNoDeprecation = function(cb) {
+  assert.expectNoDeprecation = function(cb) {
     stubMethod('deprecate', state.deprecations);
 
     if (typeof cb === 'function') {
@@ -45,9 +45,13 @@ export function setupExpectDeprecations(_QUnit, state) {
 
     restoreMethod('deprecate', state.original.deprecate);
     assertNoDeprecations(this, state.deprecations);
+
+    if (typeof cb === 'function') {
+      state.deprecations = [];
+    }
   };
 
-  _QUnit.assert.ignoreDeprecation = function(cb) {
+  assert.ignoreDeprecation = function(cb) {
     stubMethod('deprecate', () => {});
 
     if (typeof cb === 'function') {
