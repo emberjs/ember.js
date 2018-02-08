@@ -6,7 +6,9 @@ import {
   ProgramSymbolTable,
   Recast,
   VMHandle,
-  Unique
+  Unique,
+  ModuleLocator,
+  TemplateLocator
 } from "@glimmer/interfaces";
 import {
   CompilableTemplate,
@@ -25,11 +27,7 @@ import {
   SerializedHeap
 } from "@glimmer/program";
 
-import {
-  ModuleLocator,
-  ModuleLocatorMap,
-  TemplateLocator
-} from "./module-locators";
+import ModuleLocatorMap from "./module-locator-map";
 import DebugConstants from "./debug-constants";
 import ExternalModuleTable from "./external-module-table";
 import CompilerDelegate from "./compiler-delegate";
