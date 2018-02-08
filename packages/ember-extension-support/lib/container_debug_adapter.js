@@ -87,14 +87,12 @@ export default EmberObject.extend({
     let typeSuffixRegex = new RegExp(`${StringUtils.classify(type)}$`);
 
     namespaces.forEach(namespace => {
-      if (namespace.toString() !== 'Ember') {
-        for (let key in namespace) {
-          if (!namespace.hasOwnProperty(key)) { continue; }
-          if (typeSuffixRegex.test(key)) {
-            let klass = namespace[key];
-            if (typeOf(klass) === 'class') {
-              types.push(StringUtils.dasherize(key.replace(typeSuffixRegex, '')));
-            }
+      for (let key in namespace) {
+        if (!namespace.hasOwnProperty(key)) { continue; }
+        if (typeSuffixRegex.test(key)) {
+          let klass = namespace[key];
+          if (typeOf(klass) === 'class') {
+            types.push(StringUtils.dasherize(key.replace(typeSuffixRegex, '')));
           }
         }
       }
