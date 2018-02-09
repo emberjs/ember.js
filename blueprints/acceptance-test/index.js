@@ -25,7 +25,7 @@ module.exports = useTestFrameworkDetector({
     return {
       testFolderRoot: testFolderRoot,
       friendlyTestName,
-      destroyAppExists: destroyAppExists
+      destroyAppExists
     };
   }
 });
