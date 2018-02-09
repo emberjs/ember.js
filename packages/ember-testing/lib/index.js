@@ -1,6 +1,5 @@
 export { default as Test } from './test';
 export { default as Adapter } from './adapters/adapter';
-export { setAdapter, getAdapter } from './test/adapter';
 export { default as setupForTesting } from './setup_for_testing';
 export { default as QUnitAdapter } from './adapters/qunit';
 
