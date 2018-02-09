@@ -53,7 +53,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
     });
   }
 
-  [`@test renderMode: rehydrate`](assert) {
+  [`@test _renderMode: rehydrate`](assert) {
 
     let initialHTML = `<!--%+block:0%--><!--%+block:1%--><!--%+block:2%--><!--%+block:3%--><!--%+block:4%--><!--%+block:5%--><!--%+block:6%--><div class=\"foo\">Hi, Mom!</div><!--%-block:6%--><!--%-block:5%--><!--%-block:4%--><!--%-block:3%--><!--%-block:2%--><!--%-block:1%--><!--%-block:0%-->`;
 
@@ -64,7 +64,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
     let bootOptions = {
       isBrowser: false,
       rootElement,
-      renderMode: 'rehydrate'
+      _renderMode: 'rehydrate'
     };
 
     ENV._APPLICATION_TEMPLATE_WRAPPER = false;
@@ -75,14 +75,14 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
     });
   }
 
-  [`@test renderMode: serialize`](assert) {
+  [`@test _renderMode: serialize`](assert) {
     this.addTemplate('index', '<div class="foo">Hi, Mom!</div>');
     let rootElement = document.createElement('div');
 
     let bootOptions = {
       isBrowser: false,
       rootElement,
-      renderMode: 'serialize'
+      _renderMode: 'serialize'
     };
 
     ENV._APPLICATION_TEMPLATE_WRAPPER = false;

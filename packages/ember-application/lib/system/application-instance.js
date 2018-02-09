@@ -340,7 +340,7 @@ class BootOptions {
       @type boolean
       @default auto-detected
       @private
-      */
+    */
     this.isInteractive = environment.hasDOM; // This default is overridable below
 
 

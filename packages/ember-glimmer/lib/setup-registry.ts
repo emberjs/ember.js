@@ -33,10 +33,10 @@ export function setupApplicationRegistry(registry: Registry) {
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
   registry.register('service:-dom-builder', {
-    create({ bootOptions }: { bootOptions: { renderMode: string } }) {
-      let { renderMode } = bootOptions;
+    create({ bootOptions }: { bootOptions: { _renderMode: string } }) {
+      let { _renderMode } = bootOptions;
 
-      switch(renderMode) {
+      switch(_renderMode) {
         case 'serialize': return serializeBuilder;
         case 'rehydrate': return rehydrationBuilder;
         default: return clientBuilder;
