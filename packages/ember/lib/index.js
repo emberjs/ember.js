@@ -554,6 +554,15 @@ if (has('ember-testing')) {
   Ember.setupForTesting = testing.setupForTesting;
 }
 
+if (has('ember-template-compiler')) {
+  let { precompile, compile, registerPlugin } = require('ember-template-compiler');
+  let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
+  let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
+  EmberHTMLBars.precompile = EmberHandlebars.precompile = precompile;
+  EmberHTMLBars.compile = EmberHandlebars.compile = compile;
+  EmberHTMLBars.registerPlugin = registerPlugin;
+}
+
 runLoadHooks('Ember');
 
 /**
