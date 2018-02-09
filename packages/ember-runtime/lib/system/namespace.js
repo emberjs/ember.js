@@ -2,7 +2,7 @@
 @module ember
 */
 import { guidFor } from 'ember-utils';
-import Ember, {
+import {
   get,
   Mixin,
   hasUnprocessedMixins,
@@ -74,10 +74,8 @@ const Namespace = EmberObject.extend({
 });
 
 Namespace.reopenClass({
-  NAMESPACES: [Ember],
-  NAMESPACES_BY_ID: {
-    Ember
-  },
+  NAMESPACES: [],
+  NAMESPACES_BY_ID: {},
   PROCESSED: false,
   processAll: processAllNamespaces,
   byName(name) {
