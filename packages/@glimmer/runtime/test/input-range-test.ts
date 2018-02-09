@@ -59,14 +59,8 @@ class TemplateRangeTests extends RangeTests {
   }
 }
 
-// These are the permutations/:s/.&&&& of the set
-// ['type="range"', 'min="-5" max="50"', 'value="%x"']
-permutations(['type="range"', 'min={{min}} max={{max}}', 'value={{value}}'])
-  .map(x => x.join(' '))
-  .forEach(attrs => {
-    module(`[emberjs/ember.js#15675] Template <input ${attrs} />`, class extends TemplateRangeTests {
-      attrs = attrs;
-    });
+module(`[emberjs/ember.js#15675] Template <input type="range" value={{value}} min={{min}} max={{max}} />`, class extends TemplateRangeTests {
+  attrs = 'type="range" value={{value}} min={{min}} max={{max}}';
 });
 
 // Ember Components attributeBindings
@@ -108,16 +102,15 @@ abstract class EmberComponentRangeTests extends RangeTests {
   }
 }
 
-permutations(['type', 'min', 'max', 'value']).forEach(attrs => {
-  module(`Components - [emberjs/ember.js#15675] - ${attrs.join(', ')}`,
+module(`Components - [emberjs/ember.js#15675] - type value min max`,
   class extends EmberComponentRangeTests {
     component(): EmberishCurlyComponentFactory {
       return class extends EmberInputRangeComponent {
-        attributeBindings = attrs;
+        attributeBindings = ['type', 'value', 'min', 'max'];
       };
     }
-  });
-});
+  }
+);
 
 class BasicComponentImplicitAttributesRangeTest extends RangeTests {
   attrs: string;
@@ -133,43 +126,6 @@ class BasicComponentImplicitAttributesRangeTest extends RangeTests {
   }
 }
 
-permutations(['type="range"', 'min="-5" max="50"', 'value="%x"'])
-  .map(x => x.join(' '))
-  .forEach(attrs => {
-    module(`GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input ${attrs} />`, class extends BasicComponentImplicitAttributesRangeTest {
-      attrs = attrs;
-    });
-  });
-
-function permutations<T>(coll : T[]) : T[][] {
-  if (coll.length <= 1) {
-    return [coll];
-  }
-
-  let result : T[][] = [];
-
-  for (let i = 0; i < coll.length; i++) {
-    let element = coll[i];
-    let subpermutations = permutations(arrayWithout(coll, i));
-
-    result.push(...subpermutations.map(x => [element].concat(x)));
-  }
-
-  return result;
-}
-
-function arrayWithout<T>(coll : T[], i : number) : T[] {
-  if (i < 0 || i >= coll.length) {
-    return coll;
-  }
-
-  if (i === 0) {
-    return coll.slice(1);
-  }
-
-  if (i === coll.length - 1) {
-    return coll.slice(0, i);
-  }
-
-  return coll.slice(0, i).concat(...coll.slice(i+1));
-}
+module(`GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type="range" value="%x" min="-5" max="50" />`, class extends BasicComponentImplicitAttributesRangeTest {
+  attrs = 'type="range" value="%x" min="-5" max="50"';
+});
