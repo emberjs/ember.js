@@ -1,13 +1,9 @@
-import Ember from 'ember';
-import { run } from 'ember-metal';
-import { DEBUG } from 'ember-env-flags';
+import { isTesting, setTesting } from 'ember-debug';
+import { run, getOnerror, setOnerror } from 'ember-metal';
 import RSVP from 'rsvp';
 
-const ONERROR = Ember.onerror;
-const ADAPTER = Ember.Test && Ember.Test.adapter;
-const TESTING = Ember.testing;
-
 let WINDOW_ONERROR;
+
 
 QUnit.module('error_handler', {
   beforeEach() {
@@ -17,12 +13,10 @@ QUnit.module('error_handler', {
   },
 
   afterEach() {
-    Ember.onerror = ONERROR;
-    Ember.testing = TESTING;
+    setTesting(isTesting);
     window.onerror = WINDOW_ONERROR;
-    if (Ember.Test) {
-      Ember.Test.adapter = ADAPTER;
-    }
+
+    setOnerror(undefined);
   }
 });
 
@@ -32,155 +26,45 @@ function runThatThrowsSync(message = 'Error for testing error handling') {
   });
 }
 
-function runThatThrowsAsync(message = 'Error for testing error handling') {
-  return run.next(() => {
-    throw new Error(message);
-  });
-}
-
 QUnit.test('by default there is no onerror - sync run', function(assert) {
-  assert.strictEqual(Ember.onerror, undefined, 'precond - there should be no Ember.onerror set by default');
+  assert.strictEqual(getOnerror(), undefined, 'precond - there should be no Ember.onerror set by default');
   assert.throws(runThatThrowsSync, Error, 'errors thrown sync are catchable');
 });
 
 QUnit.test('when Ember.onerror (which rethrows) is registered - sync run', function(assert) {
   assert.expect(2);
-  Ember.onerror = function(error) {
+  setOnerror(function(error) {
     assert.ok(true, 'onerror called');
     throw error;
-  };
+  });
   assert.throws(runThatThrowsSync, Error, 'error is thrown');
 });
 
 QUnit.test('when Ember.onerror (which does not rethrow) is registered - sync run', function(assert) {
   assert.expect(2);
-  Ember.onerror = function() {
+  setOnerror(function() {
     assert.ok(true, 'onerror called');
-  };
+  });
   runThatThrowsSync();
   assert.ok(true, 'no error was thrown, Ember.onerror can intercept errors');
 });
 
-if (DEBUG) {
-  QUnit.test('when TestAdapter is registered and error is thrown - sync run', function(assert) {
-    assert.expect(1);
-
-    Ember.Test.adapter = {
-      exception() {
-        assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
-      }
-    };
-
-    assert.throws(runThatThrowsSync, Error);
-  });
-
-  QUnit.test('when both Ember.onerror (which rethrows) and TestAdapter are registered - sync run', function(assert) {
-    assert.expect(2);
-
-    Ember.Test.adapter = {
-      exception() {
-        assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
-      }
-    };
-
-    Ember.onerror = function(error) {
-      assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
-      throw error;
-    };
-
-    assert.throws(runThatThrowsSync, Error, 'error is thrown');
-  });
-
-  QUnit.test('when both Ember.onerror (which does not rethrow) and TestAdapter are registered - sync run', function(assert) {
-    assert.expect(2);
-
-    Ember.Test.adapter = {
-      exception() {
-        assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
-      }
-    };
-
-    Ember.onerror = function() {
-      assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
-    };
-
-    runThatThrowsSync();
-    assert.ok(true, 'no error was thrown, Ember.onerror can intercept errors');
-  });
-
-  QUnit.test('when TestAdapter is registered and error is thrown - async run', function(assert) {
-    assert.expect(3);
-    let done = assert.async();
-
-    let caughtInAdapter, caughtInCatch, caughtByWindowOnerror;
-    Ember.Test.adapter = {
-      exception(error) {
-        caughtInAdapter = error;
-      }
-    };
-
-    window.onerror = function(message) {
-      caughtByWindowOnerror = message;
-      // prevent "bubbling" and therefore failing the test
-      return true;
-    };
-
-    try {
-      runThatThrowsAsync();
-    } catch(e) {
-      caughtInCatch = e;
-    }
-
-    setTimeout(() => {
-      assert.equal(caughtInAdapter, undefined, 'test adapter should never catch errors in run loops');
-      assert.equal(caughtInCatch, undefined, 'a "normal" try/catch should never catch errors in an async run');
-
-      assert.pushResult({
-        result: /Error for testing error handling/.test(caughtByWindowOnerror),
-        actual: caughtByWindowOnerror,
-        expected: 'to include `Error for testing error handling`',
-        message: 'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
-      });
-
-      done();
-    }, 20);
-  });
-
-  QUnit.test('when both Ember.onerror and TestAdapter are registered - async run', function(assert) {
-    assert.expect(1);
-    let done = assert.async();
-
-    Ember.Test.adapter = {
-      exception() {
-        assert.notOk(true, 'Adapter.exception is not called for errors thrown in run.next');
-      }
-    };
-
-    Ember.onerror = function() {
-      assert.ok(true, 'onerror is invoked for errors thrown in run.next/run.later');
-    };
-
-    runThatThrowsAsync();
-    setTimeout(done, 10);
-  });
-}
-
 QUnit.test('does not swallow exceptions by default (Ember.testing = true, no Ember.onerror) - sync run', function(assert) {
-  Ember.testing = true;
+  setTesting(true);
 
   let error = new Error('the error');
   assert.throws(() => {
-    Ember.run(() => {
+    run(() => {
       throw error;
     });
   }, error);
 });
 
 QUnit.test('does not swallow exceptions by default (Ember.testing = false, no Ember.onerror) - sync run', function(assert) {
-  Ember.testing = false;
+  setTesting(false);
   let error = new Error('the error');
   assert.throws(() => {
-    Ember.run(() => {
+    run(() => {
       throw error;
     });
   }, error);
@@ -188,16 +72,16 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = false, no Em
 
 QUnit.test('does not swallow exceptions (Ember.testing = false, Ember.onerror which rethrows) - sync run', function(assert) {
   assert.expect(2);
-  Ember.testing = false;
+  setTesting(false);
 
-  Ember.onerror = function(error) {
+  setOnerror(function(error) {
     assert.ok(true, 'Ember.onerror was called');
     throw error;
-  };
+  });
 
   let error = new Error('the error');
   assert.throws(() => {
-    Ember.run(() => {
+    run(() => {
       throw error;
     });
   }, error);
@@ -205,15 +89,15 @@ QUnit.test('does not swallow exceptions (Ember.testing = false, Ember.onerror wh
 
 QUnit.test('Ember.onerror can intercept errors (aka swallow) by not rethrowing (Ember.testing = false) - sync run', function(assert) {
   assert.expect(1);
-  Ember.testing = false;
+  setTesting(false);
 
-  Ember.onerror = function() {
+  setOnerror(function() {
     assert.ok(true, 'Ember.onerror was called');
-  };
+  });
 
   let error = new Error('the error');
   try {
-    Ember.run(() => {
+    run(() => {
       throw error;
     });
   } catch(e) {
@@ -226,7 +110,7 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = true, no Emb
   let done = assert.async();
   let caughtByWindowOnerror;
 
-  Ember.testing = true;
+  setTesting(true);
 
   window.onerror = function(message) {
     caughtByWindowOnerror = message;
@@ -234,7 +118,7 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = true, no Emb
     return true;
   };
 
-  Ember.run.later(() => {
+  run.later(() => {
     throw new Error('the error');
   }, 10);
 
@@ -254,7 +138,7 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = false, no Em
   let done = assert.async();
   let caughtByWindowOnerror;
 
-  Ember.testing = false;
+  setTesting(false);
 
   window.onerror = function(message) {
     caughtByWindowOnerror = message;
@@ -262,7 +146,7 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = false, no Em
     return true;
   };
 
-  Ember.run.later(() => {
+  run.later(() => {
     throw new Error('the error');
   }, 10);
 
@@ -281,7 +165,7 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = false, no Em
 QUnit.test('Ember.onerror can intercept errors (aka swallow) by not rethrowing (Ember.testing = false) - async run', function(assert) {
   let done = assert.async();
 
-  Ember.testing = false;
+  setTesting(false);
 
   window.onerror = function() {
     assert.notOk(true, 'window.onerror is never invoked when Ember.onerror intentionally swallows errors');
@@ -290,11 +174,11 @@ QUnit.test('Ember.onerror can intercept errors (aka swallow) by not rethrowing (
   };
 
   let thrown = new Error('the error');
-  Ember.onerror = function(error) {
+  setOnerror(function(error) {
     assert.strictEqual(error, thrown, 'Ember.onerror is called with the error');
-  };
+  });
 
-  Ember.run.later(() => {
+  run.later(() => {
     throw thrown;
   }, 10);
 
@@ -306,9 +190,9 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
     assert.expect(1);
 
     let thrown = new Error('the error');
-    Ember.onerror = function(error) {
+    setOnerror(function(error) {
       assert.strictEqual(error, thrown, 'Ember.onerror is called for errors thrown in RSVP promises');
-    };
+    });
 
     generatePromise(thrown);
 
@@ -321,10 +205,10 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
     assert.expect(2);
 
     let thrown = new Error('the error');
-    Ember.onerror = function(error) {
+    setOnerror(function(error) {
       assert.strictEqual(error, thrown, 'Ember.onerror is called for errors thrown in RSVP promises');
       throw error;
-    };
+    });
 
     window.onerror = function(message) {
       assert.pushResult({
@@ -348,11 +232,11 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
   QUnit.test(`${message} when Ember.onerror which does not rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
     assert.expect(1);
 
-    Ember.testing = false;
+    setTesting(false);
     let thrown = new Error('the error');
-    Ember.onerror = function(error) {
+    setOnerror(function(error) {
       assert.strictEqual(error, thrown, 'Ember.onerror is called for errors thrown in RSVP promises');
-    };
+    });
 
     generatePromise(thrown);
 
@@ -364,12 +248,12 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
   QUnit.test(`${message} when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`, function(assert) {
     assert.expect(2);
 
-    Ember.testing = false;
+    setTesting(false);
     let thrown = new Error('the error');
-    Ember.onerror = function(error) {
+    setOnerror(function(error) {
       assert.strictEqual(error, thrown, 'Ember.onerror is called for errors thrown in RSVP promises');
       throw error;
-    };
+    });
 
     window.onerror = function(message) {
       assert.pushResult({
@@ -389,119 +273,6 @@ function generateRSVPErrorHandlingTests(message, generatePromise, timeout = 10) 
     // ensures that run loop has completed
     return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
   });
-
-  if (DEBUG) {
-    QUnit.test(`${message} when TestAdapter without \`exception\` method is present - rsvp`, function(assert) {
-      assert.expect(1);
-
-      let thrown = new Error('the error');
-      Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
-        exception: undefined
-      });
-
-      window.onerror = function(message) {
-        assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
-          expected: 'to include `the error`',
-          message: 'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
-        });
-
-        // prevent "bubbling" and therefore failing the test
-        return true;
-      };
-
-      generatePromise(thrown);
-
-      // RSVP.Promise's are configured to settle within the run loop, this
-      // ensures that run loop has completed
-      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
-    });
-
-    QUnit.test(`${message} when both Ember.onerror and TestAdapter without \`exception\` method are present - rsvp`, function(assert) {
-      assert.expect(1);
-
-      let thrown = new Error('the error');
-      Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
-        exception: undefined
-      });
-
-      Ember.onerror = function(error) {
-        assert.pushResult({
-          result: /the error/.test(error.message),
-          actual: error.message,
-          expected: 'to include `the error`',
-          message: 'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
-        });
-      };
-
-      generatePromise(thrown);
-
-      // RSVP.Promise's are configured to settle within the run loop, this
-      // ensures that run loop has completed
-      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
-    });
-
-    QUnit.test(`${message} when TestAdapter is present - rsvp`, function(assert) {
-      assert.expect(1);
-
-      let thrown = new Error('the error');
-      Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
-        exception(error) {
-          assert.strictEqual(error, thrown, 'Adapter.exception is called for errors thrown in RSVP promises');
-        }
-      });
-
-      generatePromise(thrown);
-
-      // RSVP.Promise's are configured to settle within the run loop, this
-      // ensures that run loop has completed
-      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
-    });
-
-    QUnit.test(`${message} when both Ember.onerror and TestAdapter are present - rsvp`, function(assert) {
-      assert.expect(1);
-
-      let thrown = new Error('the error');
-      Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
-        exception(error) {
-          assert.strictEqual(error, thrown, 'Adapter.exception is called for errors thrown in RSVP promises');
-        }
-      });
-
-      Ember.onerror = function() {
-        assert.notOk(true, 'Ember.onerror is not called if Test.adapter does not rethrow');
-      };
-
-      generatePromise(thrown);
-
-      // RSVP.Promise's are configured to settle within the run loop, this
-      // ensures that run loop has completed
-      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
-    });
-
-    QUnit.test(`${message} when both Ember.onerror and TestAdapter are present - rsvp`, function(assert) {
-      assert.expect(2);
-
-      let thrown = new Error('the error');
-      Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
-        exception(error) {
-          assert.strictEqual(error, thrown, 'Adapter.exception is called for errors thrown in RSVP promises');
-          throw error;
-        }
-      });
-
-      Ember.onerror = function(error) {
-        assert.strictEqual(error, thrown, 'Ember.onerror is called for errors thrown in RSVP promises if Test.adapter rethrows');
-      };
-
-      generatePromise(thrown);
-
-      // RSVP.Promise's are configured to settle within the run loop, this
-      // ensures that run loop has completed
-      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
-    });
-  }
 }
 
 generateRSVPErrorHandlingTests('errors in promise constructor', (error) => {
