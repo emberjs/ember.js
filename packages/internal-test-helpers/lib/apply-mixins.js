@@ -15,11 +15,17 @@ export default function applyMixins(TestClass, ...mixins) {
       generator.cases.forEach((value, idx) => {
         assign(mixin, generator.generate(value, idx));
       });
+
+      assign(TestClass.prototype, mixin);
+    } else if (typeof mixinOrGenerator === 'function') {
+      mixin = new mixinOrGenerator();
+      assign(TestClass.prototype, mixin.__proto__);
     } else {
       mixin = mixinOrGenerator;
+      assign(TestClass.prototype, mixin);
     }
 
-    assign(TestClass.prototype, mixin);
+
   });
 
   return TestClass;

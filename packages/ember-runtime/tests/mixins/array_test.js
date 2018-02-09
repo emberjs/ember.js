@@ -56,7 +56,7 @@ const TestArray = EmberObject.extend(EmberArray, {
 
 ArrayTests.extend({
 
-  name: 'Basic Mutable Array',
+  name: 'Basic Ember Array',
 
   newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
