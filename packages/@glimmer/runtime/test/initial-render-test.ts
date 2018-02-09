@@ -31,8 +31,8 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   protected delegate: RehydrationDelegate;
   protected serverOutput: Option<string>;
 
-  renderServerSide(template: string | ComponentBlueprint, context: Dict<Opaque>): void {
-    this.serverOutput = this.delegate.renderServerSide(template as string, context, () => this.takeSnapshot());
+  renderServerSide(template: string | ComponentBlueprint, context: Dict<Opaque>, element: Element | undefined = undefined): void {
+    this.serverOutput = this.delegate.renderServerSide(template as string, context, () => this.takeSnapshot(), element);
     this.element.innerHTML = this.serverOutput;
   }
 
@@ -53,6 +53,20 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 }
 
 class Rehydration extends AbstractRehydrationTests {
+
+  @test "rehydrates into element with pre-existing content"() {
+    let rootElement = this.delegate.clientEnv.getAppendOperations().createElement('div') as HTMLDivElement;
+    let extraContent = this.delegate.clientEnv.getAppendOperations().createElement('noscript') as HTMLElement;
+    rootElement.appendChild(extraContent);
+
+    let template = '<div>Hi!</div>';
+    this.renderServerSide(template, {}, rootElement);
+    this.assertServerOutput('<noscript></noscript><div>Hi!</div>');
+    this.renderClientSide(template, {});
+    this.assertHTML('<noscript></noscript><div>Hi!</div>');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertStableNodes();
+  }
 
   @test "table with omitted tbody"() {
     let template = '<table><tr><td>standards</td></tr></table>';

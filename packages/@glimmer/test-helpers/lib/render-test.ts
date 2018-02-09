@@ -551,9 +551,9 @@ export class RehydrationDelegate implements RenderDelegate {
     return serializeBuilder(env, cursor);
   }
 
-  renderServerSide(template: string, context: Dict<Opaque>, takeSnapshot: () => void): string {
+  renderServerSide(template: string, context: Dict<Opaque>, takeSnapshot: () => void, element: Element | undefined = undefined): string {
     let env = this.serverEnv;
-    let element = env.getAppendOperations().createElement("div") as HTMLDivElement;
+    element = element || env.getAppendOperations().createElement("div") as HTMLDivElement;
     let cursor = { element, nextSibling: null };
     // Emulate server-side render
     renderTemplate(template,
