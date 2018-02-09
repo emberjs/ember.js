@@ -1,7 +1,7 @@
 ### Table of Contents
 
 1. [Introduction](./01-introduction.md)
-2. [~~Precompiler Overview~~](./02-precompiler-overview.md)
+2. [Precompiler Overview](./02-precompiler-overview.md)
 3. [~~Runtime Overview~~](./03-runtime-overview.md)
 4. [References](./04-references.md)
 5. [Validators](./05-validators.md)
