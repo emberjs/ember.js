@@ -33,6 +33,7 @@ module.exports = {
     'Set': true,
     'Symbol': true,
     'WeakMap': true,
+    'WeakSet': true,
   },
   rules: {
     'ember-internal/require-yuidoc-access': 'error',

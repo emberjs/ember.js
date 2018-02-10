@@ -1,3 +1,4 @@
+import { isProxy } from 'ember-metal';
 import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import { meta as metaFor } from './meta';
 import run from './run_loop';
@@ -16,7 +17,7 @@ export function tagForProperty(object, propertyKey, _meta) {
   if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
 
   let meta = _meta === undefined ? metaFor(object) : _meta;
-  if (meta.isProxy()) {
+  if (isProxy(object)) {
     return tagFor(object, meta);
   }
 
@@ -40,7 +41,7 @@ export function markObjectAsDirty(meta, propertyKey) {
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {
-    if (meta.isProxy()) {
+    if (isProxy(meta.source)) {
       objectTag.inner.first.inner.dirty();
     } else {
       objectTag.inner.dirty();
