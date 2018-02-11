@@ -1652,11 +1652,48 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
   }
 });
 
+/**
+  Creates an `Ember.NativeArray` from an Array-like object.
+  Does not modify the original object's contents. `A()` is not needed if
+  `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
+  it is recommended that you use `A()` when creating addons for
+  ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
+  will be `true`.
+
+  Example
+
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+  import { A } from '@ember/array';
+
+  export default Component.extend({
+    tagName: 'ul',
+    classNames: ['pagination'],
+
+    init() {
+      this._super(...arguments);
+
+      if (!this.get('content')) {
+        this.set('content', A());
+        this.set('otherContent', A([1,2,3]));
+      }
+    }
+  });
+  ```
+
+  @method A
+  @static
+  @for @ember/array
+  @return {Ember.NativeArray}
+  @public
+*/
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
 // because they are so common.
-
+/**
+@module ember
+*/
 /**
   The NativeArray mixin contains the properties needed to make the native
   Array support MutableArray and all of its dependent APIs. Unless you
@@ -1737,46 +1774,6 @@ NativeArray.keys().forEach((methodName) => {
 });
 
 NativeArray = NativeArray.without(...ignore);
-
-
-/**
-  @module @ember/array
-*/
-/**
-  Creates an `Ember.NativeArray` from an Array-like object.
-  Does not modify the original object's contents. `A()` is not needed if
-  `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
-  it is recommended that you use `A()` when creating addons for
-  ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
-  will be `true`.
-
-  Example
-
-  ```app/components/my-component.js
-  import Component from '@ember/component';
-  import { A } from '@ember/array';
-
-  export default Component.extend({
-    tagName: 'ul',
-    classNames: ['pagination'],
-
-    init() {
-      this._super(...arguments);
-
-      if (!this.get('content')) {
-        this.set('content', A());
-        this.set('otherContent', A([1,2,3]));
-      }
-    }
-  });
-  ```
-
-  @method A
-  @static
-  @for @ember/array
-  @return {Ember.NativeArray}
-  @public
-*/
 
 let A;
 
