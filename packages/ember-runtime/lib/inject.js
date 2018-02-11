@@ -1,6 +1,8 @@
 import { InjectedProperty, descriptorFor } from 'ember-metal';
 import { assert } from 'ember-debug';
-
+/**
+@module ember
+*/
 /**
   Namespace for injection helper methods.
 

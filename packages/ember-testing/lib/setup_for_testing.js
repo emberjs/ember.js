@@ -12,7 +12,9 @@ import {
 } from './test/pending_requests';
 import Adapter from './adapters/adapter';
 import QUnitAdapter from './adapters/qunit';
-
+/**
+@module ember
+*/
 /**
   Sets Ember up for testing. This is useful to perform
   basic setup steps in order to unit test.
