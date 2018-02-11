@@ -4,17 +4,16 @@ import {
 } from 'internal-test-helpers';
 import { Application } from 'ember-application';
 import { Component } from 'ember-glimmer';
-import { jQuery } from 'ember-views';
 import { assign, getOwner } from 'ember-utils';
 import { resolve } from 'rsvp';
 
 moduleFor('View Integration', class extends ApplicationTestCase {
 
   constructor() {
-    jQuery('#qunit-fixture').html(`
+    document.getElementById('qunit-fixture').innerHTML = `
       <div id="one"></div>
       <div id="two"></div>
-    `);
+    `;
     super();
     this.runTask(() => {
       this.createSecondApplication();
@@ -85,8 +84,8 @@ moduleFor('View Integration', class extends ApplicationTestCase {
       .then(() => this.application.visit('/'))
       .then(() => this.secondApp.visit('/'))
       .then(() => {
-        jQuery('#two .do-stuff').click();
-        jQuery('#one .do-stuff').click();
+        document.querySelector('#two .do-stuff').click();
+        document.querySelector('#one .do-stuff').click();
 
         assert.deepEqual(actions, ['#two', '#one']);
       });
