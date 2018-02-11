@@ -25,13 +25,13 @@ import {
   setTemplates,
   setTemplate
 } from 'ember-glimmer';
-import { jQuery } from 'ember-views';
 import { ENV } from 'ember-environment';
 import { compile } from 'ember-template-compiler';
 import { Application, Engine } from 'ember-application';
 import { Transition } from 'router';
+import { getTextOf } from 'internal-test-helpers';
 
-let Router, App, router, registry, container, originalLoggerError, originalRenderSupport;
+let Router, App, router, registry, container, originalLoggerError, originalRenderSupport, rootElement;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -67,6 +67,8 @@ QUnit.module('Basic Routing', {
         name: 'App',
         rootElement: '#qunit-fixture'
       });
+
+      rootElement = document.getElementById('qunit-fixture');
 
       App.deferReadiness();
 
@@ -187,7 +189,7 @@ QUnit.test('Nested callbacks are not exited when moving to siblings', function(a
 
   registry.register('controller:special', Controller.extend());
 
-  assert.equal(jQuery('h3', '#qunit-fixture').text(), 'Home', 'The app is now in the initial state');
+  assert.equal(getTextOf(rootElement.querySelector('h3')), 'Home', 'The app is now in the initial state');
   assert.equal(rootSetup, 1, 'The root setup was triggered');
   assert.equal(rootRender, 1, 'The root render was triggered');
   assert.equal(rootSerialize, 0, 'The root serialize was not called');
@@ -255,7 +257,7 @@ QUnit.test('Events are triggered on the controller if a matching action name is 
 
   bootApplication();
 
-  jQuery('#qunit-fixture a').click();
+  rootElement.querySelector('a').click();
 });
 
 QUnit.test('Events are triggered on the current state when defined in `actions` object', function(assert) {
@@ -287,7 +289,7 @@ QUnit.test('Events are triggered on the current state when defined in `actions` 
 
   bootApplication();
 
-  jQuery('#qunit-fixture a').click();
+  rootElement.querySelector('a').click();
 });
 
 QUnit.test('Events defined in `actions` object are triggered on the current state when routes are nested', function(assert) {
@@ -324,7 +326,7 @@ QUnit.test('Events defined in `actions` object are triggered on the current stat
 
   bootApplication();
 
-  jQuery('#qunit-fixture a').click();
+  rootElement.querySelector('a').click();
 });
 
 QUnit.test('Events can be handled by inherited event handlers', function(assert) {
@@ -404,7 +406,7 @@ QUnit.test('Actions are not triggered on the controller if a matching action nam
 
   bootApplication();
 
-  jQuery('#qunit-fixture a').click();
+  rootElement.querySelector('a').click();
 });
 
 QUnit.test('actions can be triggered with multiple arguments', function(assert) {
@@ -441,7 +443,7 @@ QUnit.test('actions can be triggered with multiple arguments', function(assert) 
 
   bootApplication();
 
-  jQuery('#qunit-fixture a').click();
+  rootElement.querySelector('a').click();
 });
 
 QUnit.test('transitioning multiple times in a single run loop only sets the URL once', function(assert) {
@@ -737,7 +739,7 @@ QUnit.test('A redirection hook is provided', function(assert) {
   bootApplication();
 
   assert.equal(chooseFollowed, 0, 'The choose route wasn\'t entered since a transition occurred');
-  assert.equal(jQuery('h3.hours', '#qunit-fixture').length, 1, 'The home template was rendered');
+  assert.equal(rootElement.querySelectorAll('h3.hours').length, 1, 'The home template was rendered');
   assert.equal(getOwner(router).lookup('controller:application').get('currentPath'), 'home');
 });
 
@@ -930,7 +932,7 @@ QUnit.test('Generated names can be customized when providing routes with dot not
 
   handleURL(assert, '/top/middle/bottom');
 
-  assert.equal(jQuery('.main .middle .bottom p', '#qunit-fixture').text(), 'BarBazBottom!', 'The templates were rendered into their appropriate parents');
+  assert.equal(getTextOf(rootElement.querySelector('.main .middle .bottom p')), 'BarBazBottom!', 'The templates were rendered into their appropriate parents');
 });
 
 QUnit.test('Child routes render into their parent route\'s template by default', function(assert) {
@@ -952,7 +954,7 @@ QUnit.test('Child routes render into their parent route\'s template by default',
 
   handleURL(assert, '/top/middle/bottom');
 
-  assert.equal(jQuery('.main .middle .bottom p', '#qunit-fixture').text(), 'Bottom!', 'The templates were rendered into their appropriate parents');
+  assert.equal(getTextOf(rootElement.querySelector('.main .middle .bottom p')), 'Bottom!', 'The templates were rendered into their appropriate parents');
 });
 
 QUnit.test('Child routes render into specified template', function(assert) {
@@ -980,8 +982,8 @@ QUnit.test('Child routes render into specified template', function(assert) {
 
   handleURL(assert, '/top/middle/bottom');
 
-  assert.equal(jQuery('.main .middle .bottom p', '#qunit-fixture').length, 0, 'should not render into the middle template');
-  assert.equal(jQuery('.main .middle > p', '#qunit-fixture').text(), 'Bottom!', 'The template was rendered into the top template');
+  assert.equal(rootElement.querySelectorAll('.main .middle .bottom p').length, 0, 'should not render into the middle template');
+  assert.equal(getTextOf(rootElement.querySelector('.main .middle > p')), 'Bottom!', 'The template was rendered into the top template');
 });
 
 QUnit.test('Rendering into specified template with slash notation', function(assert) {
@@ -1001,7 +1003,7 @@ QUnit.test('Rendering into specified template with slash notation', function(ass
 
   bootApplication();
 
-  assert.equal(jQuery('#qunit-fixture:contains(profile details!)').length, 1, 'The templates were rendered');
+  assert.equal(rootElement.textContent.trim(), 'profile details!', 'The templates were rendered');
 });
 
 QUnit.test('Parent route context change', function(assert) {
@@ -1175,8 +1177,8 @@ QUnit.test('Only use route rendered into main outlet for default into property o
 
   handleURL(assert, '/posts');
 
-  assert.equal(jQuery('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, 'The posts/menu template was rendered');
-  assert.equal(jQuery('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, 'The posts/index template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-menu')), 'postsMenu', 'The posts/menu template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('p.posts-index')), 'postsIndex', 'The posts/index template was rendered');
 });
 
 QUnit.test('Generating a URL should not affect currentModel', function(assert) {
@@ -1259,7 +1261,7 @@ QUnit.test('Application template does not duplicate when re-rendered', function(
   // should cause application template to re-render
   handleURL(assert, '/posts');
 
-  assert.equal(jQuery('h3.render-once').text(), "I render once");
+  assert.equal(getTextOf(rootElement.querySelector('h3.render-once')), "I render once");
 });
 
 QUnit.test('Child routes should render inside the application template if the application template causes a redirect', function(assert) {
@@ -1279,7 +1281,7 @@ QUnit.test('Child routes should render inside the application template if the ap
 
   bootApplication();
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'App posts');
+  assert.equal(rootElement.textContent.trim(), 'App posts');
 });
 
 QUnit.test('The template is not re-rendered when the route\'s context changes', function(assert) {
@@ -1308,17 +1310,17 @@ QUnit.test('The template is not re-rendered when the route\'s context changes', 
 
   handleURL(assert, '/page/first');
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'first');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'first');
   assert.equal(insertionCount, 1);
 
   handleURL(assert, '/page/second');
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'second');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'second');
   assert.equal(insertionCount, 1, 'view should have inserted only once');
 
   run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'third');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
   assert.equal(insertionCount, 1, 'view should still have inserted only once');
 });
 
@@ -1364,13 +1366,13 @@ QUnit.test('The template is not re-rendered when two routes present the exact sa
 
   handleURL(assert, '/first');
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'This is the first message');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the first message');
   assert.equal(insertionCount, 1, 'expected one assertion');
 
   // Transition by URL
   handleURL(assert, '/second');
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'This is the second message');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the second message');
   assert.equal(insertionCount, 1, 'expected one assertion');
 
   // Then transition directly by route name
@@ -1382,14 +1384,14 @@ QUnit.test('The template is not re-rendered when two routes present the exact sa
     });
   });
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'This is the third message');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the third message');
   assert.equal(insertionCount, 1, 'expected one assertion');
 
   // Lastly transition to a different view, with the same controller and template
   handleURL(assert, '/fourth');
   assert.equal(insertionCount, 1, 'expected one assertion');
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'This is the fourth message');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the fourth message');
 });
 
 QUnit.test('ApplicationRoute with model does not proxy the currentPath', function(assert) {
@@ -1428,9 +1430,9 @@ QUnit.test('Promises encountered on app load put app into loading state until re
 
   bootApplication();
 
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'LOADING', 'The loading state is displaying.');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'LOADING', 'The loading state is displaying.');
   run(deferred.resolve);
-  assert.equal(jQuery('p', '#qunit-fixture').text(), 'INDEX', 'The index route is display.');
+  assert.equal(getTextOf(rootElement.querySelector('p')), 'INDEX', 'The index route is display.');
 });
 
 QUnit.test('Route should tear down multiple outlets', function(assert) {
@@ -1466,15 +1468,15 @@ QUnit.test('Route should tear down multiple outlets', function(assert) {
 
   handleURL(assert, '/posts');
 
-  assert.equal(jQuery('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, 'The posts/menu template was rendered');
-  assert.equal(jQuery('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, 'The posts/index template was rendered');
-  assert.equal(jQuery('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 1, 'The posts/footer template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-menu')), 'postsMenu', 'The posts/menu template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('p.posts-index')), 'postsIndex', 'The posts/index template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-footer')), 'postsFooter', 'The posts/footer template was rendered');
 
   handleURL(assert, '/users');
 
-  assert.equal(jQuery('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 0, 'The posts/menu template was removed');
-  assert.equal(jQuery('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, 'The posts/index template was removed');
-  assert.equal(jQuery('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 0, 'The posts/footer template was removed');
+  assert.equal(rootElement.querySelector('div.posts-menu'), null, 'The posts/menu template was removed');
+  assert.equal(rootElement.querySelector('p.posts-index'), null, 'The posts/index template was removed');
+  assert.equal(rootElement.querySelector('div.posts-footer'), null, 'The posts/footer template was removed');
 });
 
 
@@ -1538,37 +1540,37 @@ QUnit.test('Route supports clearing outlet explicitly', function(assert) {
 
   handleURL(assert, '/posts');
 
-  assert.equal(jQuery('div.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, 'The posts/index template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-index')), 'postsIndex', 'The posts/index template was rendered');
 
   run(() => router.send('showModal'));
 
-  assert.equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 1, 'The posts/modal template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-modal')), 'postsModal', 'The posts/modal template was rendered');
 
   run(() => router.send('showExtra'));
 
-  assert.equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 1, 'The posts/extra template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-extra')), 'postsExtra', 'The posts/extra template was rendered');
 
   run(() => router.send('hideModal'));
 
-  assert.equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, 'The posts/modal template was removed');
+  assert.equal(rootElement.querySelector('div.posts-modal'), null, 'The posts/modal template was removed');
 
   run(() => router.send('hideExtra'));
 
-  assert.equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, 'The posts/extra template was removed');
+  assert.equal(rootElement.querySelector('div.posts-extra'), null, 'The posts/extra template was removed');
   run(function() {
     router.send('showModal');
   });
-  assert.equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 1, 'The posts/modal template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-modal')), 'postsModal', 'The posts/modal template was rendered');
   run(function() {
     router.send('showExtra');
   });
-  assert.equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 1, 'The posts/extra template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-extra')), 'postsExtra', 'The posts/extra template was rendered');
 
   handleURL(assert, '/users');
 
-  assert.equal(jQuery('div.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, 'The posts/index template was removed');
-  assert.equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, 'The posts/modal template was removed');
-  assert.equal(jQuery('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, 'The posts/extra template was removed');
+  assert.equal(rootElement.querySelector('div.posts-index'), null, 'The posts/index template was removed');
+  assert.equal(rootElement.querySelector('div.posts-modal'), null, 'The posts/modal template was removed');
+  assert.equal(rootElement.querySelector('div.posts-extra'), null, 'The posts/extra template was removed');
 });
 
 QUnit.test('Route supports clearing outlet using string parameter', function(assert) {
@@ -1601,20 +1603,20 @@ QUnit.test('Route supports clearing outlet using string parameter', function(ass
 
   handleURL(assert, '/posts');
 
-  assert.equal(jQuery('div.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, 'The posts/index template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-index')), 'postsIndex', 'The posts/index template was rendered');
 
   run(() => router.send('showModal'));
 
-  assert.equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 1, 'The posts/modal template was rendered');
+  assert.equal(getTextOf(rootElement.querySelector('div.posts-modal')), 'postsModal', 'The posts/modal template was rendered');
 
   run(() => router.send('hideModal'));
 
-  assert.equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, 'The posts/modal template was removed');
+  assert.equal(rootElement.querySelector('div.posts-modal'), null, 'The posts/modal template was removed');
 
   handleURL(assert, '/users');
 
-  assert.equal(jQuery('div.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, 'The posts/index template was removed');
-  assert.equal(jQuery('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, 'The posts/modal template was removed');
+  assert.equal(rootElement.querySelector('div.posts-index'), null, 'The posts/index template was removed');
+  assert.equal(rootElement.querySelector('div.posts-modal'), null, 'The posts/modal template was removed');
 });
 
 QUnit.test('Route silently fails when cleaning an outlet from an inactive view', function(assert) {
@@ -2262,7 +2264,7 @@ QUnit.test('Errors in transition show error template if available', function(ass
 
   bootApplication();
 
-  assert.equal(jQuery('#error').length, 1, 'Error template was rendered.');
+  assert.equal(rootElement.querySelectorAll('#error').length, 1, 'Error template was rendered.');
 });
 
 QUnit.test('Route#resetController gets fired when changing models and exiting routes', function(assert) {
@@ -2386,15 +2388,15 @@ QUnit.test('{{outlet}} works when created after initial render', function(assert
 
   bootApplication();
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'HiBye', 'initial render');
+  assert.equal(rootElement.textContent.trim(), 'HiBye', 'initial render');
 
   run(() => container.lookup('controller:sample').set('showTheThing', true));
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'HiYayBye', 'second render');
+  assert.equal(rootElement.textContent.trim(), 'HiYayBye', 'second render');
 
   handleURL(assert, '/2');
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'HiBooBye', 'third render');
+  assert.equal(rootElement.textContent.trim(), 'HiBooBye', 'third render');
 });
 
 QUnit.test('Can render into a named outlet at the top level', function(assert) {
@@ -2414,7 +2416,7 @@ QUnit.test('Can render into a named outlet at the top level', function(assert) {
 
   bootApplication();
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'A-The index-B-Hello world-C', 'initial render');
+  assert.equal(rootElement.textContent.trim(), 'A-The index-B-Hello world-C', 'initial render');
 });
 
 QUnit.test('Can disconnect a named outlet at the top level', function(assert) {
@@ -2442,11 +2444,11 @@ QUnit.test('Can disconnect a named outlet at the top level', function(assert) {
 
   bootApplication();
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'A-The index-B-Hello world-C', 'initial render');
+  assert.equal(rootElement.textContent.trim(), 'A-The index-B-Hello world-C', 'initial render');
 
   run(router, 'send', 'banish');
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'A-The index-B--C', 'second render');
+  assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'second render');
 });
 
 QUnit.test('Can render into a named outlet at the top level, with empty main outlet', function(assert) {
@@ -2469,7 +2471,7 @@ QUnit.test('Can render into a named outlet at the top level, with empty main out
 
   bootApplication();
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'A--B-Hello world-C', 'initial render');
+  assert.equal(rootElement.textContent.trim(), 'A--B-Hello world-C', 'initial render');
 });
 
 
@@ -2491,11 +2493,11 @@ QUnit.test('Can render into a named outlet at the top level, later', function(as
 
   bootApplication();
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'A-The index-B--C', 'initial render');
+  assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'initial render');
 
   run(router, 'send', 'launch');
 
-  assert.equal(jQuery('#qunit-fixture').text(), 'A-The index-B-Hello world-C', 'second render');
+  assert.equal(rootElement.textContent.trim(), 'A-The index-B-Hello world-C', 'second render');
 });
 
 QUnit.test('Can render routes with no \'main\' outlet and their children', function(assert) {
@@ -2534,10 +2536,10 @@ QUnit.test('Can render routes with no \'main\' outlet and their children', funct
 
   bootApplication();
   handleURL(assert, '/app');
-  assert.equal(jQuery('#app-common #common').length, 1, 'Finds common while viewing /app');
+  assert.equal(rootElement.querySelectorAll('#app-common #common').length, 1, 'Finds common while viewing /app');
   handleURL(assert, '/app/sub');
-  assert.equal(jQuery('#app-common #common').length, 1, 'Finds common while viewing /app/sub');
-  assert.equal(jQuery('#app-sub #sub').length, 1, 'Finds sub while viewing /app/sub');
+  assert.equal(rootElement.querySelectorAll('#app-common #common').length, 1, 'Finds common while viewing /app/sub');
+  assert.equal(rootElement.querySelectorAll('#app-sub #sub').length, 1, 'Finds sub while viewing /app/sub');
 });
 
 QUnit.test('Tolerates stacked renders', function(assert) {
@@ -2561,13 +2563,13 @@ QUnit.test('Tolerates stacked renders', function(assert) {
     }
   });
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture').text().trim(), 'hi');
+  assert.equal(rootElement.textContent.trim(), 'hi');
   run(router, 'send', 'openLayer');
-  assert.equal(jQuery('#qunit-fixture').text().trim(), 'hilayer');
+  assert.equal(rootElement.textContent.trim(), 'hilayer');
   run(router, 'send', 'openLayer');
-  assert.equal(jQuery('#qunit-fixture').text().trim(), 'hilayer');
+  assert.equal(rootElement.textContent.trim(), 'hilayer');
   run(router, 'send', 'close');
-  assert.equal(jQuery('#qunit-fixture').text().trim(), 'hi');
+  assert.equal(rootElement.textContent.trim(), 'hi');
 });
 
 QUnit.test('Renders child into parent with non-default template name', function(assert) {
@@ -2594,7 +2596,7 @@ QUnit.test('Renders child into parent with non-default template name', function(
 
   bootApplication();
   handleURL(assert, '/root');
-  assert.equal(jQuery('#qunit-fixture .a .b .c').length, 1);
+  assert.equal(rootElement.querySelectorAll('.a .b .c').length, 1);
 });
 
 QUnit.test('Allows any route to disconnectOutlet another route\'s templates', function(assert) {
@@ -2622,11 +2624,11 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
     }
   });
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture').text().trim(), 'hi');
+  assert.equal(rootElement.textContent.trim(), 'hi');
   run(router, 'send', 'openLayer');
-  assert.equal(jQuery('#qunit-fixture').text().trim(), 'hilayer');
+  assert.equal(rootElement.textContent.trim(), 'hilayer');
   run(router, 'send', 'close');
-  assert.equal(jQuery('#qunit-fixture').text().trim(), 'hi');
+  assert.equal(rootElement.textContent.trim(), 'hi');
 });
 
 QUnit.test('Can this.render({into:...}) the render helper', function(assert) {
@@ -2656,9 +2658,9 @@ QUnit.test('Can this.render({into:...}) the render helper', function(assert) {
   });
 
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture .sidebar').text(), 'other');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
   run(router, 'send', 'changeToBar');
-  assert.equal(jQuery('#qunit-fixture .sidebar').text(), 'bar');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'bar');
 });
 
 QUnit.test('Can disconnect from the render helper', function(assert) {
@@ -2686,9 +2688,9 @@ QUnit.test('Can disconnect from the render helper', function(assert) {
   });
 
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture .sidebar').text(), 'other');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
   run(router, 'send', 'disconnect');
-  assert.equal(jQuery('#qunit-fixture .sidebar').text(), '');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar')), '');
 });
 
 QUnit.test('Can this.render({into:...}) the render helper\'s children', function(assert) {
@@ -2720,9 +2722,9 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
   });
 
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture .sidebar .index').text(), 'other');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
   run(router, 'send', 'changeToBar');
-  assert.equal(jQuery('#qunit-fixture .sidebar .index').text(), 'bar');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'bar');
 });
 
 QUnit.test('Can disconnect from the render helper\'s children', function(assert) {
@@ -2752,9 +2754,9 @@ QUnit.test('Can disconnect from the render helper\'s children', function(assert)
   });
 
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture .sidebar .index').text(), 'other');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
   run(router, 'send', 'disconnect');
-  assert.equal(jQuery('#qunit-fixture .sidebar .index').text(), '');
+  assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), '');
 });
 
 QUnit.test('Can this.render({into:...}) nested render helpers', function(assert) {
@@ -2788,9 +2790,9 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function(assert)
   });
 
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture .cart').text(), 'other');
+  assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
   run(router, 'send', 'changeToBaz');
-  assert.equal(jQuery('#qunit-fixture .cart').text(), 'baz');
+  assert.equal(getTextOf(rootElement.querySelector('.cart')), 'baz');
 });
 
 QUnit.test('Can disconnect from nested render helpers', function(assert) {
@@ -2822,9 +2824,9 @@ QUnit.test('Can disconnect from nested render helpers', function(assert) {
   });
 
   bootApplication();
-  assert.equal(jQuery('#qunit-fixture .cart').text(), 'other');
+  assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
   run(router, 'send', 'disconnect');
-  assert.equal(jQuery('#qunit-fixture .cart').text(), '');
+  assert.equal(getTextOf(rootElement.querySelector('.cart')), '');
 });
 
 QUnit.test('Components inside an outlet have their didInsertElement hook invoked when the route is displayed', function(assert) {
