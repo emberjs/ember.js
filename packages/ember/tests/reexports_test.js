@@ -19,7 +19,6 @@ let allExports =[
   ['canInvoke', 'ember-utils'],
   ['tryInvoke', 'ember-utils'],
   ['wrap', 'ember-utils'],
-  ['applyStr', 'ember-utils'],
 
   // ember-environment
   // ['ENV', 'ember-environment', 'ENV'], TODO: fix this, its failing because we are hitting the getter
