@@ -9,8 +9,10 @@ import replaceTests from './mutable_array/replace';
 import shiftObjectTests from './mutable_array/shiftObject';
 import unshiftObjectTests from './mutable_array/unshiftObject';
 import reverseObjectsTests from './mutable_array/reverseObjects';
+import addObject from './mutable_array/addObject';
 
 const MutableArrayTests = ArrayTests.extend();
+MutableArrayTests.importModuleTests(addObject);
 MutableArrayTests.importModuleTests(insertAtTests);
 MutableArrayTests.importModuleTests(popObjectTests);
 MutableArrayTests.importModuleTests(pushObjectTests);

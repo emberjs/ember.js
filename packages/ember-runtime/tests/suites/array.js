@@ -201,8 +201,6 @@ const ArrayTests = Suite.extend({
   observerClass: ArrayTestsObserverClass
 });
 
-// import './array/any';
-import compactTests from './array/compact';
 import everyTests from './array/every';
 import filterTests from './array/filter';
 import findTests from './array/find';
@@ -225,8 +223,6 @@ import uniqByTests from './array/uniqBy';
 import uniqTests from './array/uniq';
 import withoutTests from './array/without';
 
-// ArrayTests.importModuleTests(anyTests);
-ArrayTests.importModuleTests(compactTests);
 ArrayTests.importModuleTests(everyTests);
 ArrayTests.importModuleTests(filterTests);
 ArrayTests.importModuleTests(findTests);
