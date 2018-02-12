@@ -19,7 +19,9 @@ export default function applyMixins(TestClass, ...mixins) {
       assign(TestClass.prototype, mixin);
     } else if (typeof mixinOrGenerator === 'function') {
       mixin = new mixinOrGenerator();
-      assign(TestClass.prototype, mixin.__proto__);
+      for (let key in mixin) {
+        TestClass.prototype[key] = mixin[key];
+      }
     } else {
       mixin = mixinOrGenerator;
       assign(TestClass.prototype, mixin);

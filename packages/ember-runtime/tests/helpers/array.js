@@ -3,7 +3,9 @@ import EmberArray, {
   A as emberA,
   MutableArray,
   arrayContentDidChange,
-  arrayContentWillChange
+  arrayContentWillChange,
+  addArrayObserver,
+  removeArrayObserver,
 } from '../../mixins/array';
 import { generateGuid } from 'ember-utils';
 import { get, set } from 'ember-metal';
@@ -21,6 +23,82 @@ export function newFixture(cnt) {
   return ret;
 }
 
+const ArrayTestsObserverClass = EmberObject.extend({
+  init() {
+    this._super(...arguments);
+    this.isEnabled = true;
+    this.reset();
+  },
+
+  reset() {
+    this._keys = {};
+    this._values = {};
+    this._before = null;
+    this._after = null;
+    return this;
+  },
+
+  observe(obj) {
+    if (obj.addObserver) {
+      let keys = Array.prototype.slice.call(arguments, 1);
+      let loc  = keys.length;
+
+      while (--loc >= 0) {
+        obj.addObserver(keys[loc], this, 'propertyDidChange');
+      }
+    } else {
+      this.isEnabled = false;
+    }
+    return this;
+  },
+
+  observeArray(obj) {
+    addArrayObserver(obj, this);
+    return this;
+  },
+
+  stopObserveArray(obj) {
+    removeArrayObserver(obj, this);
+    return this;
+  },
+
+  propertyDidChange(target, key, value) {
+    if (this._keys[key] === undefined) { this._keys[key] = 0; }
+    this._keys[key]++;
+    this._values[key] = value;
+  },
+
+  arrayWillChange() {
+    QUnit.config.current.assert.equal(this._before, null, 'should only call once');
+    this._before = Array.prototype.slice.call(arguments);
+  },
+
+  arrayDidChange() {
+    QUnit.config.current.assert.equal(this._after, null, 'should only call once');
+    this._after = Array.prototype.slice.call(arguments);
+  },
+
+  validate(key, value) {
+    if (!this.isEnabled) {
+      return true;
+    }
+
+    if (!this._keys[key]) {
+      return false;
+    }
+
+    if (arguments.length > 1) {
+      return this._values[key] === value;
+    } else {
+      return true;
+    }
+  },
+
+  timesCalled(key) {
+    return this._keys[key] || 0;
+  }
+});
+
 class AbstractArrayHelper {
   newObject(ary) {
     return ary ? ary.slice() : newFixture(3);
@@ -28,6 +106,16 @@ class AbstractArrayHelper {
 
   toArray(obj) {
     return obj.slice();
+  }
+
+  newObserver() {
+    let ret = ArrayTestsObserverClass.create();
+
+    if (arguments.length > 0) {
+      ret.observe.apply(ret, arguments);
+    }
+
+    return ret;
   }
 }
 
@@ -209,7 +297,7 @@ export function runArrayTests(name, Tests, ...types) {
           moduleFor(`EmberArray: ${name}`, Tests, EmberArrayHelpers);
           break;
         case 'MutableArray':
-          moduleFor(`EmberArray: ${name}`, Tests, EmberArrayHelpers);
+          moduleFor(`MutableArray: ${name}`, Tests, EmberArrayHelpers);
           break;
         case 'CopyableArray':
           moduleFor(`CopyableArray: ${name}`, Tests, CopyableArray);
@@ -218,7 +306,7 @@ export function runArrayTests(name, Tests, ...types) {
           moduleFor(`CopyableNativeArray: ${name}`, Tests, CopyableNativeArray);
           break;
         case 'NativeArray':
-          moduleFor(`EmberArray: ${name}`, Tests, EmberArrayHelpers);
+          moduleFor(`NativeArray: ${name}`, Tests, EmberArrayHelpers);
           break;
       }
     });
