@@ -12,8 +12,6 @@ import {
   peekMeta
 } from 'ember-metal';
 import { Route } from 'ember-routing';
-import { jQuery } from 'ember-views';
-
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor('Query Params - main', class extends QueryParamTestCase {
@@ -592,14 +590,14 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     }));
 
     return this.visitAndAssert('/').then(() => {
-      assert.equal(jQuery('#test-value').text().trim(), '1');
+      assert.equal(document.getElementById('test-value').textContent.trim(), '1');
 
-      run(jQuery('#test-button'), 'click');
-      assert.equal(jQuery('#test-value').text().trim(), '2');
+      run(document.getElementById('test-button'), 'click');
+      assert.equal(document.getElementById('test-value').textContent.trim(), '2');
       this.assertCurrentPath('/?foo=2');
 
-      run(jQuery('#test-button'), 'click');
-      assert.equal(jQuery('#test-value').text().trim(), '3');
+      run(document.getElementById('test-button'), 'click');
+      assert.equal(document.getElementById('test-value').textContent.trim(), '3');
       this.assertCurrentPath('/?foo=3');
     });
   }
@@ -783,7 +781,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     return this.visit('/parent/child?foo=lol').then(() => {
       assert.equal(parentModelCount, 1);
 
-      run(jQuery('#parent-link'), 'click');
+      run(document.getElementById('parent-link'), 'click');
       assert.equal(parentModelCount, 2);
     });
   }
@@ -892,13 +890,13 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('abc.def.zoo', 'bar', 'haha');
 
     return this.visitAndAssert('/').then(() => {
-      assert.equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
-      assert.equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+      assert.equal(document.getElementById('one').getAttribute('href'), '/abcdef?foo=123');
+      assert.equal(document.getElementById('two').getAttribute('href'), '/abcdef/zoo?bar=456&foo=123');
 
-      run(jQuery('#one'), 'click');
+      run(document.getElementById('one'), 'click');
       this.assertCurrentPath('/abcdef?foo=123');
 
-      run(jQuery('#two'), 'click');
+      run(document.getElementById('two'), 'click');
       this.assertCurrentPath('/abcdef/zoo?bar=456&foo=123');
     });
   }
@@ -1253,19 +1251,19 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       let controller = this.getController('bar');
 
       this.expectedPushURL = '/foo';
-      run(jQuery('#foo-link'), 'click');
+      run(document.getElementById('foo-link'), 'click');
 
       this.expectedPushURL = '/bar';
-      run(jQuery('#bar-no-qp-link'), 'click');
+      run(document.getElementById('bar-no-qp-link'), 'click');
 
       this.expectedReplaceURL = '/bar?raytiley=woot';
       this.setAndFlush(controller, 'raytiley', 'woot');
 
       this.expectedPushURL = '/foo';
-      run(jQuery('#foo-link'), 'click');
+      run(document.getElementById('foo-link'), 'click');
 
       this.expectedPushURL = '/bar?raytiley=isthebest';
-      run(jQuery('#bar-link'), 'click');
+      run(document.getElementById('bar-link'), 'click');
     });
   }
 
@@ -1289,7 +1287,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     }));
 
     return this.visitAndAssert('/').then(() => {
-      assert.equal(this.$('#the-link').attr('href'), '/example', 'renders without undefined qp serialized');
+      assert.equal(document.getElementById('the-link').getAttribute('href'), '/example', 'renders without undefined qp serialized');
 
       return this.transitionTo('example', { queryParams: { foo: undefined } }).then(() => {
         this.assertCurrentPath('/example');

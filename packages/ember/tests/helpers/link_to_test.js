@@ -455,7 +455,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.addTemplate('about.item', `<div id='item'>{{#link-to 'about'}}About{{/link-to}}</div>`);
 
     return this.visit('/about/item').then(() => {
-      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+      assert.equal(normalizeUrl(document.querySelector('#item a').getAttribute('href')), '/about');
     });
   }
 
@@ -474,7 +474,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     `);
 
     return this.visit('/about').then(() => {
-      assert.equal(this.$('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
+      assert.equal(document.querySelectorAll('#other-link.active').length, 1, 'The link is active since current-when is a parent route');
     });
   }
 
@@ -495,7 +495,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     `);
 
     return this.visit('/about').then(() => {
-      assert.equal(this.$('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
+      assert.equal(document.querySelectorAll('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
     });
   }
 
@@ -518,7 +518,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.addTemplate('index.about', `{{#link-to 'items' id='other-link' current-when=currentWhen}}ITEM{{/link-to}}`);
 
     return this.visit('/about').then(() => {
-      assert.equal(this.$('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
+      assert.equal(document.querySelectorAll('#other-link.active').length, 1, 'The link is active when current-when is given for explicitly for a route');
     });
   }
 
@@ -538,17 +538,17 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     return this.visit('/about')
       .then(() => {
-        assert.equal(this.$('#link1.active').length, 1, 'The link is active since current-when contains the parent route');
+        assert.equal(document.querySelectorAll('#link1.active').length, 1, 'The link is active since current-when contains the parent route');
 
         return this.visit('/item');
       })
       .then(() => {
-        assert.equal(this.$('#link2.active').length, 1, 'The link is active since you are on the active route');
+        assert.equal(document.querySelectorAll('#link2.active').length, 1, 'The link is active since you are on the active route');
 
         return this.visit('/foo');
       })
       .then(() => {
-        assert.equal(this.$('#link3.active').length, 0, 'The link is not active since current-when does not contain the active route');
+        assert.equal(document.querySelectorAll('#link3.active').length, 0, 'The link is not active since current-when does not contain the active route');
       });
   }
 
@@ -568,13 +568,13 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
     this.add('controller:index.about', Controller.extend({ isCurrent: false }));
 
     return this.visit('/about').then(() => {
-      assert.ok(this.$('#about-link').hasClass('active'), 'The link is active since current-when is true');
-      assert.notOk(this.$('#index-link').hasClass('active'), 'The link is not active since current-when is false');
+      assert.ok(this.element.querySelector('#about-link').classList.contains('active'), 'The link is active since current-when is true');
+      assert.notOk(this.element.querySelector('#index-link').classList.contains('active'), 'The link is not active since current-when is false');
 
       let controller = this.applicationInstance.lookup('controller:index.about');
       this.runTask(() => controller.set('isCurrent', true));
 
-      assert.ok(this.$('#index-link').hasClass('active'), 'The link is active since current-when is true');
+      assert.ok(this.element.querySelector('#index-link').classList.contains('active'), 'The link is active since current-when is true');
     });
   }
 
@@ -610,7 +610,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
         return this.click('#about-contact');
       })
       .then(() => {
-        assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+        assert.equal(document.getElementById('contact').textContent, 'Contact', 'precond - the link worked');
 
         assert.equal(hidden, 1, 'The link bubbles');
       });
@@ -648,7 +648,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
         return this.click('#about-contact');
       })
       .then(() => {
-        assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+        assert.equal(document.getElementById('contact').textContent, 'Contact', 'precond - the link worked');
 
         assert.equal(hidden, 0, "The link didn't bubble");
       });
@@ -690,7 +690,7 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
         return this.click('#about-contact');
       })
       .then(() => {
-        assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+        assert.equal(document.getElementById('contact').textContent, 'Contact', 'precond - the link worked');
         assert.equal(hidden, 0, "The link didn't bubble");
       });
   }
@@ -738,13 +738,13 @@ moduleFor('The {{link-to}} helper - nested routes and link-to arguments', class 
 
     return this.visit('/about')
       .then(() => {
-        assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-        assert.equal(normalizeUrl(this.$('#home-link').attr('href')), '/', 'The home link points back at /');
+        assert.equal(document.querySelectorAll('h3.list').length, 1, 'The home template was rendered');
+        assert.equal(normalizeUrl(document.getElementById('home-link').getAttribute('href')), '/', 'The home link points back at /');
 
         return this.click('#yehuda');
       })
       .then(() => {
-        assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+        assert.equal(document.querySelectorAll('h3.item').length, 1, 'The item template was rendered');
         assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
 
         return this.click('#home-link');
