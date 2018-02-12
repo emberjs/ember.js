@@ -70,7 +70,7 @@ class UnshiftObjectsTests extends AbstractTestCase {
     this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
     this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
-    this.assert.equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
+    this.assert.equal(observer.validate('firstObject'), true, 'should NOT have notified firstObject');
     this.assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
   }
 }

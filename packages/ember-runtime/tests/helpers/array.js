@@ -49,9 +49,8 @@ const ArrayTestsObserverClass = EmberObject.extend({
     return this;
   },
 
-  observe(obj) {
+  observe(obj, ...keys) {
     if (obj.addObserver) {
-      let keys = Array.prototype.slice.call(arguments, 1);
       let loc  = keys.length;
 
       while (--loc >= 0) {
