@@ -7,7 +7,6 @@ import {
   computed
 } from 'ember-metal';
 import { testBoth } from 'internal-test-helpers';
-import { ArrayTests } from '../suites/array';
 import EmberObject from '../../system/object';
 import EmberArray, {
   addArrayObserver,
@@ -53,26 +52,7 @@ const TestArray = EmberObject.extend(EmberArray, {
   })
 });
 
-
-ArrayTests.extend({
-
-  name: 'Basic Mutable Array',
-
-  newObject(ary) {
-    ary = ary ? ary.slice() : this.newFixture(3);
-    return new TestArray({ _content: ary });
-  },
-
-  // allows for testing of the basic enumerable after an internal mutation
-  mutate(obj) {
-    obj.addObject(this.getFixture(1)[0]);
-  },
-
-  toArray(obj) {
-    return obj.slice();
-  }
-
-}).run();
+QUnit.module('Ember.Array');
 
 QUnit.test('the return value of slice has Ember.Array applied', function(assert) {
   let x = EmberObject.extend(EmberArray).create({

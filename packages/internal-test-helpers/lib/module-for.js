@@ -38,7 +38,9 @@ export default function moduleFor(description, TestClass, ...mixins) {
     }
   });
 
-  applyMixins(TestClass, mixins);
+  if (mixins.length > 0) {
+    applyMixins(TestClass, ...mixins);
+  }
 
   let proto = TestClass.prototype;
 
