@@ -7,7 +7,7 @@ import EmberArray, {
   addArrayObserver,
   removeArrayObserver,
 } from '../../mixins/array';
-import { generateGuid } from 'ember-utils';
+import { generateGuid, guidFor } from 'ember-utils';
 import { get, set } from 'ember-metal';
 import { computed } from 'ember-metal';
 import EmberObject from '../../system/object';
@@ -20,6 +20,17 @@ export function newFixture(cnt) {
     ret.push(generateGuid());
   }
 
+  return ret;
+}
+
+export function newObjectsFixture(cnt) {
+  let ret = [];
+  let item;
+  while (--cnt >= 0) {
+    item = {};
+    guidFor(item);
+    ret.push(item);
+  }
   return ret;
 }
 

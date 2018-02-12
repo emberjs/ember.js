@@ -1,6 +1,6 @@
 import { get } from 'ember-metal';
 import { AbstractTestCase } from 'internal-test-helpers';
-import { runArrayTests, newFixture } from '../helpers/array';
+import { runArrayTests, newFixture, newObjectsFixture } from '../helpers/array';
 import { A as emberA } from '../../mixins/array';
 
 class RemoveObjectsTests extends AbstractTestCase {
@@ -34,7 +34,7 @@ class RemoveObjectsTests extends AbstractTestCase {
   }
 
   '@test [{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify'() {
-    let before = emberA(this.newObjectsFixture(3));
+    let before = emberA(newObjectsFixture(3));
     let after = [before[0], before[2]];
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
@@ -78,7 +78,7 @@ class RemoveObjectsTests extends AbstractTestCase {
   }
 
   '@test [{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify'() {
-    let before = emberA(this.newObjectsFixture(3));
+    let before = emberA(newObjectsFixture(3));
     let after = [before[2]];
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
@@ -122,7 +122,7 @@ class RemoveObjectsTests extends AbstractTestCase {
   }
 
   '@test [{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify'() {
-    let before = emberA(this.newObjectsFixture(3));
+    let before = emberA(newObjectsFixture(3));
     let after = [];
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');

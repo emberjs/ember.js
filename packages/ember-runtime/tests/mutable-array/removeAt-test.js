@@ -1,11 +1,11 @@
 import { AbstractTestCase } from 'internal-test-helpers';
-import { runArrayTests } from '../helpers/array';
+import { runArrayTests, newFixture } from '../helpers/array';
 import { removeAt } from '../../mixins/array';
 import { get } from 'ember-metal';
 
 class RemoveAtTests extends AbstractTestCase {
   '@test removeAt([X], 0) => [] + notify'() {
-    let before = this.newFixture(1);
+    let before = newFixture(1);
     let after  = [];
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
@@ -30,7 +30,7 @@ class RemoveAtTests extends AbstractTestCase {
   }
 
   '@test removeAt([A,B], 0) => [B] + notify'() {
-    let before = this.newFixture(2);
+    let before = newFixture(2);
     let after  = [before[1]];
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
@@ -51,7 +51,7 @@ class RemoveAtTests extends AbstractTestCase {
   }
 
   '@test removeAt([A,B], 1) => [A] + notify'() {
-    let before = this.newFixture(2);
+    let before = newFixture(2);
     let after  = [before[0]];
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
@@ -72,7 +72,7 @@ class RemoveAtTests extends AbstractTestCase {
   }
 
   '@test removeAt([A,B,C], 1) => [A,C] + notify'() {
-    let before = this.newFixture(3);
+    let before = newFixture(3);
     let after  = [before[0], before[2]];
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
@@ -93,7 +93,7 @@ class RemoveAtTests extends AbstractTestCase {
   }
 
   '@test removeAt([A,B,C,D], 1,2) => [A,D] + notify'() {
-    let before = this.newFixture(4);
+    let before = newFixture(4);
     let after  = [before[0], before[3]];
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
@@ -116,7 +116,7 @@ class RemoveAtTests extends AbstractTestCase {
   '@test [A,B,C,D].removeAt(1,2) => [A,D] + notify'() {
     var obj, before, after, observer;
 
-    before = this.newFixture(4);
+    before = newFixture(4);
     after  = [before[0], before[3]];
     obj = this.newObject(before);
     observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');

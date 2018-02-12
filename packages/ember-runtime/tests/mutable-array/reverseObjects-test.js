@@ -1,11 +1,11 @@
 import { AbstractTestCase } from 'internal-test-helpers';
-import { runArrayTests } from '../helpers/array';
+import { runArrayTests, newFixture } from '../helpers/array';
 import { get } from 'ember-metal';
 
 class ReverseObjectsTests extends AbstractTestCase {
 
   '@test [A,B,C].reverseObjects() => [] + notify'() {
-    let before = this.newFixture(3);
+    let before = newFixture(3);
     let after  = [before[2], before[1], before[0]];
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
