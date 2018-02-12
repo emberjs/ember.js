@@ -138,10 +138,10 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return 'div';
       }
 
-      getLayout(state: OutletDefinitionState, resolver: RuntimeResolver): Invocation {
+      getLayout(state: OutletDefinitionState): Invocation {
         // The router has already resolved the template
         const template = state.template;
-        const layout = resolver.getWrappedLayout(template, WRAPPED_CAPABILITIES);
+        const layout = template.asWrappedLayout();
         return {
           handle: layout.compile(),
           symbolTable: layout.symbolTable

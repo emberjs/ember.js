@@ -6,6 +6,7 @@ import {
   curry,
   DynamicScope as GlimmerDynamicScope,
   IteratorResult,
+  renderMain,
   RenderResult,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
@@ -93,14 +94,16 @@ class RootState {
     };
 
     this.render = () => {
-      let iterator = template.renderLayout({
-        self,
+      let layout = template.asLayout();
+      let handle = layout.compile();
+      let iterator = renderMain(layout['options'].program,
         env,
-        builder: clientBuilder(env, { element: parentElement, nextSibling: null}),
-        dynamicScope
-      });
+        self,
+        dynamicScope,
+        clientBuilder(env, { element: parentElement, nextSibling: null}),
+        handle
+      );
       let iteratorResult: IteratorResult<RenderResult>;
-
       do {
         iteratorResult = iterator.next();
       } while (!iteratorResult.done);

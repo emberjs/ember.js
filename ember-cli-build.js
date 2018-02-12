@@ -308,7 +308,7 @@ module.exports = function() {
 };
 
 function dependenciesES6() {
-  let glimmerEntries = ['@glimmer/node', '@glimmer/runtime'];
+  let glimmerEntries = ['@glimmer/node', '@glimmer/opcode-compiler', '@glimmer/runtime'];
   if (ENV === 'development') {
     let hasGlimmerDebug = true;
     try {

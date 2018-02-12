@@ -1,6 +1,6 @@
-import { ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
+import { CompilableTemplate, ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
 import { CompileTimeLookup as ICompileTimeLookup } from '@glimmer/opcode-compiler';
-import { CompilableTemplate, ComponentDefinition, ComponentManager, WithStaticLayout } from '@glimmer/runtime';
+import { ComponentDefinition, ComponentManager, WithStaticLayout } from '@glimmer/runtime';
 import { OwnedTemplateMeta } from 'ember-views';
 import RuntimeResolver from './resolver';
 

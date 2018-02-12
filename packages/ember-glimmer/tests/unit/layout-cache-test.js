@@ -20,14 +20,11 @@ moduleFor('Layout cache test', class extends RenderingTest {
     this.owner.inject('component:root-component', 'layout', 'template:components/component-one');
 
     // template instance shared between to template managers
-    // Root components doesn't have creation arguments
     let rootFactory = this.owner.factoryFor('component:root-component');
 
     // assert precondition
     let state = this.getCacheCounters();
     assert.deepEqual(state, {
-      wrapperCacheHits: 0,
-      wrapperCacheMisses: 0,
       templateCacheHits: 0,
       templateCacheMisses: 0,
     }, 'precondition');
@@ -43,9 +40,7 @@ moduleFor('Layout cache test', class extends RenderingTest {
     });
 
     this.assertText('One');
-    state = this.expectCacheChanges({
-      wrapperCacheMisses: 2,
-    }, state, 'test case component and component-one miss wrapper cache');
+    state = this.expectCacheChanges({}, state, 'test case component and component-one no change');
 
     // show component-two for the first time
     this.runTask(() => set(this.context, 'cond', false));
@@ -53,25 +48,21 @@ moduleFor('Layout cache test', class extends RenderingTest {
     this.assertText('Two');
     state = this.expectCacheChanges({
       templateCacheMisses: 1,
-      wrapperCacheMisses: 1,
-    }, state, 'component-two first render misses both template cache and wrapper cache');
+    }, state, 'component-two first render misses template cache');
 
     // show component-one again
     this.runTask(() => set(this.context, 'cond', true));
 
     this.assertText('One');
-    state = this.expectCacheChanges({
-      wrapperCacheHits: 1,
-    }, state, 'toggle back to component-one hits wrapper cache');
+    state = this.expectCacheChanges({}, state, 'toggle back to component-one no change');
 
     // show component-two again
     this.runTask(() => set(this.context, 'cond', false));
 
     this.assertText('Two');
     state = this.expectCacheChanges({
-      wrapperCacheHits: 1,
       templateCacheHits: 1,
-    }, state, 'toggle back to component-two hits wrapper cache and template cache');
+    }, state, 'toggle back to component-two hits template cache');
 
     // render new root append
     let root = rootFactory.create();
@@ -79,18 +70,14 @@ moduleFor('Layout cache test', class extends RenderingTest {
       runAppend(root);
       this.assertText('TwoOne');
       // roots have different capabilities so this will hit
-      state = this.expectCacheChanges({
-        wrapperCacheMisses: 1,
-      }, state, 'append root with component-one template misses because different capabilities');
+      state = this.expectCacheChanges({}, state, 'append root with component-one no change');
 
       // render new root append
       let root2 = rootFactory.create();
       try {
         runAppend(root2);
         this.assertText('TwoOneOne');
-        state = this.expectCacheChanges({
-          wrapperCacheHits: 1,
-        }, state, 'append another root hits');
+        state = this.expectCacheChanges({}, state, 'append another root no change');
       } finally {
         runDestroy(root2);
       }
@@ -101,14 +88,10 @@ moduleFor('Layout cache test', class extends RenderingTest {
 
   getCacheCounters() {
     let { runtimeResolver: {
-      wrapperCacheHits,
-      wrapperCacheMisses,
       templateCacheHits,
       templateCacheMisses,
     } } = this;
     return {
-      wrapperCacheHits,
-      wrapperCacheMisses,
       templateCacheHits,
       templateCacheMisses,
     };

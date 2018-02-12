@@ -1,9 +1,5 @@
-import { TemplateOptions } from '@glimmer/opcode-compiler';
-import {
-  Template,
-  templateFactory,
-  TemplateFactory,
-} from '@glimmer/runtime';
+import { Template } from '@glimmer/interfaces';
+import { templateFactory, TemplateFactory, TemplateOptions } from '@glimmer/opcode-compiler';
 import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 import { getOwner } from 'ember-utils';
 import { OwnedTemplateMeta, StaticTemplateMeta } from 'ember-views';
