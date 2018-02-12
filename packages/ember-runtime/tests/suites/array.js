@@ -201,16 +201,12 @@ const ArrayTests = Suite.extend({
   observerClass: ArrayTestsObserverClass
 });
 
-import reduceTests from './array/reduce';
-import rejectTests from './array/reject';
 import sortByTests from './array/sortBy';
 import toArrayTests from './array/toArray';
 import uniqByTests from './array/uniqBy';
 import uniqTests from './array/uniq';
 import withoutTests from './array/without';
 
-ArrayTests.importModuleTests(reduceTests);
-ArrayTests.importModuleTests(rejectTests);
 ArrayTests.importModuleTests(sortByTests);
 ArrayTests.importModuleTests(toArrayTests);
 ArrayTests.importModuleTests(uniqByTests);
