@@ -1,31 +1,4 @@
-import { generateGuid } from 'ember-utils';
 import { A as emberA } from '../../../mixins/array';
-import CopyableTests from '../../suites/copyable';
-
-CopyableTests.extend({
-  name: 'NativeArray Copyable',
-
-  newObject() {
-    return emberA([generateGuid()]);
-  },
-
-  isEqual(a, b) {
-    if (!(a instanceof Array)) {
-      return false;
-    }
-
-    if (!(b instanceof Array)) {
-      return false;
-    }
-
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    return a[0] === b[0];
-  }
-
-}).run();
 
 QUnit.module('NativeArray Copyable');
 
