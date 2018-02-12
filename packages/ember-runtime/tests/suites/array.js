@@ -201,9 +201,6 @@ const ArrayTests = Suite.extend({
   observerClass: ArrayTestsObserverClass
 });
 
-import mapByTests from './array/mapBy';
-import mapTests from './array/map';
-import objectAtTests from './array/objectAt';
 import reduceTests from './array/reduce';
 import rejectTests from './array/reject';
 import sortByTests from './array/sortBy';
@@ -212,9 +209,6 @@ import uniqByTests from './array/uniqBy';
 import uniqTests from './array/uniq';
 import withoutTests from './array/without';
 
-ArrayTests.importModuleTests(mapByTests);
-ArrayTests.importModuleTests(mapTests);
-ArrayTests.importModuleTests(objectAtTests);
 ArrayTests.importModuleTests(reduceTests);
 ArrayTests.importModuleTests(rejectTests);
 ArrayTests.importModuleTests(sortByTests);
