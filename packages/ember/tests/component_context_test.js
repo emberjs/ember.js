@@ -1,6 +1,6 @@
 import { Controller } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 
 moduleFor('Application Lifecycle - Component Context', class extends ApplicationTestCase {
   ['@test Components with a block should have the proper content when a template is provided'](assert) {
@@ -21,7 +21,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
 
     return this.visit('/').then(() => {
-      let text = this.$('#wrapper').text().trim();
+      let text = getTextOf(this.element.querySelector('#wrapper'));
       assert.equal(text, 'inner-outer', 'The component is composed correctly');
     });
   }
@@ -43,7 +43,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
 
     return this.visit('/').then(() => {
-      let text = this.$('#wrapper').text().trim();
+      let text = getTextOf(this.element.querySelector('#wrapper'));
       assert.equal(text, 'outer', 'The component is composed correctly');
     });
   }
@@ -63,7 +63,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
 
     return this.visit('/').then(() => {
-      let text = this.$('#wrapper').text().trim();
+      let text = getTextOf(this.element.querySelector('#wrapper'));
       assert.equal(text, 'inner', 'The component is composed correctly');
     });
   }
@@ -85,7 +85,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
 
     return this.visit('/').then(() => {
-      let text = this.$('#wrapper').text().trim();
+      let text = getTextOf(this.element.querySelector('#wrapper'));
       assert.equal(text, 'Some text inserted', 'The component is composed correctly');
     });
   }
@@ -108,7 +108,7 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     });
 
     return this.visit('/').then(() => {
-      let text = this.$('#wrapper').text().trim();
+      let text = getTextOf(this.element.querySelector('#wrapper'));
       assert.equal(text, 'Some text inserted', 'The component is composed correctly');
     });
   }
@@ -125,14 +125,13 @@ moduleFor('Application Lifecycle - Component Context', class extends Application
     this.addComponent('my-component', {
       ComponentClass: Component.extend({
         didInsertElement() {
-          // FIXME: I'm unsure if this is even the right way to access attrs
-          this.element.innerHTML = this.get('attrs.attrs').value;
+          this.element.innerHTML = this.get('attrs.attrs.value');
         }
       })
     });
 
     return this.visit('/').then(() => {
-      let text = this.$('#wrapper').text().trim();
+      let text = getTextOf(this.element.querySelector('#wrapper'));
       assert.equal(text, 'Some text inserted', 'The component is composed correctly');
     });
   }
