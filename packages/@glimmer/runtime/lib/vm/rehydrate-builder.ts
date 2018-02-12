@@ -27,8 +27,16 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error("Rehydration with nextSibling not supported");
-    this.candidate = this.currentCursor!.element.firstChild;
-    assert(this.candidate && isComment(this.candidate) && this.candidate.nodeValue === '%+b:0%', 'Must have opening comment <!--%+b:0%--> for rehydration.');
+
+    let node = this.currentCursor!.element.firstChild;
+
+    while (node) {
+      if (node && isComment(node) && node.nodeValue === '%+b:0%') { break; }
+      node = node.nextSibling;
+    }
+
+    this.candidate = node;
+    assert(node, 'Must have opening comment <!--%+b:0%--> for rehydration.');
   }
 
   get currentCursor(): Option<RehydratingCursor> {
