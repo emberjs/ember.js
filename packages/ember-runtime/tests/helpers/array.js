@@ -11,7 +11,7 @@ import { computed } from 'ember-metal';
 import EmberObject from '../../system/object';
 import { moduleFor } from 'internal-test-helpers';
 
-function newFixture(cnt) {
+export function newFixture(cnt) {
   let ret = [];
   while (--cnt >= 0) {
     ret.push(generateGuid());

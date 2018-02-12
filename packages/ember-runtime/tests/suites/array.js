@@ -201,9 +201,6 @@ const ArrayTests = Suite.extend({
   observerClass: ArrayTestsObserverClass
 });
 
-import includesTests from './array/includes';
-import indexOfTests from './array/indexOf';
-import invokeTests from './array/invoke';
 import isAnyTests from './array/isAny';
 import lastIndexOfTests from './array/lastIndexOf';
 import lastObjectTests from './array/lastObject';
@@ -218,9 +215,6 @@ import uniqByTests from './array/uniqBy';
 import uniqTests from './array/uniq';
 import withoutTests from './array/without';
 
-ArrayTests.importModuleTests(includesTests);
-ArrayTests.importModuleTests(indexOfTests);
-ArrayTests.importModuleTests(invokeTests);
 ArrayTests.importModuleTests(isAnyTests);
 ArrayTests.importModuleTests(lastIndexOfTests);
 ArrayTests.importModuleTests(lastObjectTests);
