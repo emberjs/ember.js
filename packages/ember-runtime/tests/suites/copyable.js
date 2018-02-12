@@ -29,8 +29,4 @@ const CopyableTests = Suite.extend({
 
 });
 
-import copyTests from './copyable/copy';
-
-CopyableTests.importModuleTests(copyTests);
-
 export default CopyableTests;
