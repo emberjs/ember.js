@@ -1,14 +1,14 @@
 {
   "name": "@glimmer/vm",
-  "version": "0.31.0",
+  "version": "0.32.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/vm",
   "dependencies": {
-    "@glimmer/util": "^0.31.0",
-    "@glimmer/interfaces": "^0.31.0",
-    "@glimmer/program": "^0.31.0"
+    "@glimmer/util": "^0.32.0",
+    "@glimmer/interfaces": "^0.32.0",
+    "@glimmer/program": "^0.32.0"
   },
   "devDependencies": {
-    "@glimmer/debug": "^0.31.0",
+    "@glimmer/debug": "^0.32.0",
     "@types/qunit": "^2.0.31",
     "typescript": "^2.2.0"
   }
