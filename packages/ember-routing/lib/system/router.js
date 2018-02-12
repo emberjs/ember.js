@@ -36,6 +36,7 @@ import {
 } from '../utils';
 import RouterState from './router_state';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 
 /**
 @module @ember/routing
@@ -1487,23 +1488,27 @@ function appendLiveRoute(liveRoutes, defaultParentState, renderOptions) {
     set(target.outlets, renderOptions.outlet, myState);
   } else {
     if (renderOptions.into) {
-      deprecate(
-        `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
-        false,
-        {
-          id: 'ember-routing.top-level-render-helper',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
-        }
-      );
+      if (ENV._ENABLE_ORPHANED_OUTLETS_SUPPORT !== true) {
+        assert(`Rendering into a {{render}} helper that resolves to an {{outlet}} is no longer supported.`);
+      } else {
+        deprecate(
+          `Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated.`,
+          false,
+          {
+            id: 'ember-routing.top-level-render-helper',
+            until: '3.0.0',
+            url: 'https://emberjs.com/deprecations/v2.x/#toc_rendering-into-a-render-helper-that-resolves-to-an-outlet'
+          }
+        );
 
-      // Megahax time. Post-3.0-breaking-changes, we will just assert
-      // right here that the user tried to target a nonexistent
-      // thing. But for now we still need to support the `render`
-      // helper, and people are allowed to target templates rendered
-      // by the render helper. So instead we defer doing anyting with
-      // these orphan renders until afterRender.
-      appendOrphan(liveRoutes, renderOptions.into, myState);
+        // Megahax time. Post-3.0-breaking-changes, we will just assert
+        // right here that the user tried to target a nonexistent
+        // thing. But for now we still need to support the `render`
+        // helper, and people are allowed to target templates rendered
+        // by the render helper. So instead we defer doing anyting with
+        // these orphan renders until afterRender.
+        appendOrphan(liveRoutes, renderOptions.into, myState);
+      }
     } else {
       liveRoutes = myState;
     }
