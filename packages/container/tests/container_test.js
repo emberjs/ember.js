@@ -5,7 +5,12 @@ import {
   lookupWithRawString,
   Registry
 } from '..';
-import { factory, moduleFor, AbstractTestCase, ModuleBasedTestResolver } from 'internal-test-helpers';
+import {
+  factory,
+  moduleFor,
+  AbstractTestCase,
+  ModuleBasedTestResolver
+} from 'internal-test-helpers';
 
 moduleFor('Container', class extends AbstractTestCase {
   ['@test A registered factory returns the same instance each time'](assert) {

@@ -10,6 +10,7 @@ import {
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 
+
 /**
  A container used to instantiate and cache objects.
 
@@ -223,8 +224,7 @@ function wrapManagerInDeprecationProxy(manager) {
 }
 
 function isSingleton(container, fullName, options) {
-  let res = container.registry.getOption(fullName, 'singleton', options) !== false;
-  return res;
+  return container.registry.getOption(fullName, 'singleton', options) !== false;
 }
 
 function isInstantiatable(container, fullName) {
