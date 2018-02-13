@@ -1,5 +1,10 @@
 import { Registry, privatize } from '..';
-import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  factory,
+  moduleFor,
+  AbstractTestCase,
+  ModuleBasedTestResolver
+} from 'internal-test-helpers';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { ENV } from 'ember-environment';
 
@@ -746,25 +751,25 @@ if (EMBER_MODULE_UNIFICATION) {
   moduleFor('Registry module unification', class extends AbstractTestCase {
     ['@test The registry can pass a source to the resolver'](assert) {
       let PrivateComponent = factory();
-      let lookup = 'component:my-input';
+      let type = 'component';
+      let name = 'my-input';
+      let specifier = `${type}:${name}`;
       let source = 'template:routes/application';
-      let resolveCount = 0;
-      let resolver = {
-        resolve(fullName, src) {
-          resolveCount++;
-          if (fullName === lookup && src === source) {
-            return PrivateComponent;
-          }
-        }
-      };
-      let registry = new Registry({ resolver });
-      registry.normalize = function(name) {
-        return name;
-      };
 
-      assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided');
-      assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided again');
-      assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+      let resolver = new ModuleBasedTestResolver();
+      resolver.add({specifier, source}, PrivateComponent);
+      let registry = new Registry({ resolver });
+
+      assert.strictEqual(
+        registry.resolve(specifier, { source }),
+        PrivateComponent,
+        'The correct factory was provided'
+      );
+      assert.strictEqual(
+        registry.resolve(specifier, { source }),
+        PrivateComponent,
+        'The correct factory was provided again'
+      );
     }
   });
 }
