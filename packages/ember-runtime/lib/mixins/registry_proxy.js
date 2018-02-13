@@ -2,6 +2,7 @@
 @module ember
 */
 
+import { assert } from 'ember-debug';
 import {
   Mixin
 } from 'ember-metal';
@@ -24,7 +25,10 @@ export default Mixin.create({
    @param {String} fullName
    @return {Function} fullName's factory
    */
-  resolveRegistration: registryAlias('resolve'),
+  resolveRegistration(fullName, options) {
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+    return this.__registry__.resolve(fullName, options);
+  },
 
   /**
     Registers a factory that can be used for dependency injection (with

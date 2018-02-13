@@ -20,11 +20,12 @@ import { descriptorFor } from './meta';
   @private
 */
 export default class InjectedProperty extends ComputedProperty {
-  constructor(type, name) {
+  constructor(type, name, options) {
     super(injectedPropertyGet);
 
     this.type = type;
     this.name = name;
+    this.source = options ? options.source : undefined;
   }
 }
 
@@ -35,5 +36,6 @@ function injectedPropertyGet(keyName) {
   assert(`InjectedProperties should be defined with the inject computed property macros.`, desc && desc.type);
   assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, owner);
 
-  return owner.lookup(`${desc.type}:${desc.name || keyName}`);
+  let specifier = `${desc.type}:${desc.name || keyName}`;
+  return owner.lookup(specifier, {source: desc.source});
 }

@@ -1,5 +1,7 @@
 import { InjectedProperty, descriptorFor } from 'ember-metal';
 import { assert } from 'ember-debug';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+
 /**
 @module ember
 */
@@ -35,7 +37,11 @@ const typeValidators = {};
 export function createInjectionHelper(type, validator) {
   typeValidators[type] = validator;
 
-  inject[type] = name => new InjectedProperty(type, name);
+  if (EMBER_MODULE_UNIFICATION) {
+    inject[type] = (name, options) => new InjectedProperty(type, name, options);
+  } else {
+    inject[type] = name => new InjectedProperty(type, name);
+  }
 }
 
 /**

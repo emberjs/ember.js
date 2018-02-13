@@ -121,6 +121,29 @@ moduleFor('ApplicationInstance', class extends TestCase {
     assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because the previous one was reset');
   }
 
+  ['@skip unregistering a factory clears caches with source of that factory'](assert) {
+    assert.expect(1);
+
+    appInstance = run(() => ApplicationInstance.create({ application }));
+
+    let PostController1 = factory();
+    let PostController2 = factory();
+
+    appInstance.register('controller:post', PostController1);
+
+    appInstance.lookup('controller:post');
+    let postControllerLookupWithSource = appInstance.lookup('controller:post', {source: 'doesnt-even-matter'});
+
+    appInstance.unregister('controller:post');
+    appInstance.register('controller:post', PostController2);
+
+    // The cache that is source-specific is not cleared
+    assert.ok(
+      postControllerLookupWithSource !== appInstance.lookup('controller:post', {source: 'doesnt-even-matter'}),
+      'lookup with source creates a new instance'
+    );
+  }
+
   ['@test can build and boot a registered engine'](assert) {
     assert.expect(11);
 

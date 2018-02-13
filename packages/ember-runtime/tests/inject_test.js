@@ -61,6 +61,11 @@ if (DEBUG) {
       bar: new InjectedProperty('quux')
     });
 
-    assert.deepEqual(AnObject._lazyInjections(), { 'foo': 'foo:bar', 'bar': 'quux:bar' }, 'should return injected container keys');
+    assert.deepEqual(
+      AnObject._lazyInjections(),
+      {
+        'foo': { specifier: 'foo:bar', source: undefined },
+        'bar': { specifier: 'quux:bar', source: undefined }
+      }, 'should return injected container keys');
   });
 }

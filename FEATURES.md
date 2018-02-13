@@ -43,9 +43,8 @@ for a detailed explanation.
   ([RFC](https://github.com/dgeb/rfcs/blob/module-unification/text/0000-module-unification.md))
   to Ember. This includes:
 
-  - Passing the `source` of a `lookup`/`factoryFor` call as the second argument
-    to an Ember resolver's `resolve` method (as a positional arg we will call
-    `referrer`).
+  - Passing the `source` of a `lookup`/`factoryFor` call as an argument to
+    `expandLocalLookup` on the resolver.
   - Making `lookupComponentPair` friendly to local/private resolutions. The
     new code ensures a local resolution is not paired with a global resolution.
 
