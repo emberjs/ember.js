@@ -18,7 +18,7 @@ export function verifyInjection(assert, owner, fullName, property, injectionName
 
   for (let i = 0, l = injections.length; i < l; i++) {
     injection = injections[i];
-    if (injection.property === property && injection.fullName === normalizedName) {
+    if (injection.property === property && injection.specifier === normalizedName) {
       hasInjection = true;
       break;
     }

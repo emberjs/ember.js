@@ -1,6 +1,6 @@
 import { compile } from 'ember-template-compiler';
 
-const DELIMITER = '\0';
+const DELIMITER = '%';
 
 function serializeKey(specifier, source) {
   return [specifier, source].join(DELIMITER);
@@ -11,8 +11,19 @@ class Resolver {
     this._registered = {};
     this.constructor.lastInstance = this;
   }
-  resolve(specifier, source) {
-    return this._registered[serializeKey(specifier, source)];
+  resolve(specifier) {
+    return this._registered[specifier] || this._registered[serializeKey(specifier)];
+  }
+  expandLocalLookup(specifier, source) {
+    let key = serializeKey(specifier, source);
+    if (this._registered[key]) {
+      return key;
+    }
+
+    /*
+     * For a top-level resolution or no resolution, return null
+     */
+    return null;
   }
   add(lookup, factory) {
     let key;

@@ -130,8 +130,8 @@ export default class Container {
     return { [OWNER]: this.owner };
   }
 
-  _resolverCacheKey(name, options) {
-    return this.registry.resolverCacheKey(name, options);
+  _resolverCacheKey(name) {
+    return this.registry.resolverCacheKey(name);
   }
 
   /**
@@ -168,29 +168,7 @@ export default class Container {
       }
     }
 
-    let cacheKey = this._resolverCacheKey(normalizedName, options);
-    let cached = this.factoryManagerCache[cacheKey];
-
-    if (cached !== undefined) { return cached; }
-
-    let factory = EMBER_MODULE_UNIFICATION ? this.registry.resolve(normalizedName, options) : this.registry.resolve(normalizedName);
-
-    if (factory === undefined) {
-      return;
-    }
-
-    if (DEBUG && factory && typeof factory._onLookup === 'function') {
-      factory._onLookup(fullName);
-    }
-
-    let manager = new FactoryManager(this, factory, fullName, normalizedName);
-
-    if (DEBUG) {
-      manager = wrapManagerInDeprecationProxy(manager);
-    }
-
-    this.factoryManagerCache[cacheKey] = manager;
-    return manager;
+    return factoryFor(this, normalizedName, fullName);
   }
 }
 /*
@@ -232,6 +210,7 @@ function isInstantiatable(container, fullName) {
 }
 
 function lookup(container, fullName, options = {}) {
+  let normalizedName = fullName;
   if (options.source) {
     let expandedFullName = container.registry.expandLocalLookup(fullName, options);
 
@@ -241,24 +220,51 @@ function lookup(container, fullName, options = {}) {
         return;
       }
 
-      fullName = expandedFullName;
+      normalizedName = expandedFullName;
     } else if (expandedFullName) {
       // with ember-module-unification, if expandLocalLookup returns something,
       // pass it to the resolve without the source
-      fullName = expandedFullName;
+      normalizedName = expandedFullName;
       options = {};
     }
   }
 
   if (options.singleton !== false) {
-    let cacheKey = container._resolverCacheKey(fullName, options);
+    let cacheKey = container._resolverCacheKey(normalizedName);
     let cached = container.cache[cacheKey];
     if (cached !== undefined) {
       return cached;
     }
   }
 
-  return instantiateFactory(container, fullName, options);
+  return instantiateFactory(container, normalizedName, fullName, options);
+}
+
+
+function factoryFor(container, normalizedName, fullName) {
+  let cacheKey = container._resolverCacheKey(normalizedName);
+  let cached = container.factoryManagerCache[cacheKey];
+
+  if (cached !== undefined) { return cached; }
+
+  let factory = container.registry.resolve(normalizedName);
+
+  if (factory === undefined) {
+    return;
+  }
+
+  if (DEBUG && factory && typeof factory._onLookup === 'function') {
+    factory._onLookup(fullName); // What should this pass? fullname or the normalized key?
+  }
+
+  let manager = new FactoryManager(container, factory, fullName, normalizedName);
+
+  if (DEBUG) {
+    manager = wrapManagerInDeprecationProxy(manager);
+  }
+
+  container.factoryManagerCache[cacheKey] = manager;
+  return manager;
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
@@ -277,8 +283,8 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
   return instantiate !== false && (singleton !== false || isSingleton(container, fullName)) && isInstantiatable(container, fullName);
 }
 
-function instantiateFactory(container, fullName, options) {
-  let factoryManager = EMBER_MODULE_UNIFICATION && options && options.source ? container.factoryFor(fullName, options) : container.factoryFor(fullName);
+function instantiateFactory(container, normalizedName, fullName, options) {
+  let factoryManager = factoryFor(container, normalizedName, fullName);
 
   if (factoryManager === undefined) {
     return;
@@ -287,7 +293,7 @@ function instantiateFactory(container, fullName, options) {
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    let cacheKey = container._resolverCacheKey(fullName, options);
+    let cacheKey = container._resolverCacheKey(normalizedName);
     return container.cache[cacheKey] = factoryManager.create();
   }
 
@@ -313,12 +319,15 @@ function buildInjections(container, injections) {
       container.registry.validateInjections(injections);
     }
 
-    let injection;
     for (let i = 0; i < injections.length; i++) {
-      injection = injections[i];
-      hash[injection.property] = lookup(container, injection.fullName);
+      let {property, specifier, source} = injections[i];
+      if (source) {
+        hash[property] = lookup(container, specifier, {source});
+      } else {
+        hash[property] = lookup(container, specifier);
+      }
       if (!isDynamic) {
-        isDynamic = !isSingleton(container, injection.fullName);
+        isDynamic = !isSingleton(container, specifier);
       }
     }
   }
@@ -355,12 +364,13 @@ function resetCache(container) {
 }
 
 function resetMember(container, fullName) {
-  let member = container.cache[fullName];
+  let cacheKey = container._resolverCacheKey(fullName);
+  let member = container.cache[cacheKey];
 
-  delete container.factoryManagerCache[fullName];
+  delete container.factoryManagerCache[cacheKey];
 
   if (member) {
-    delete container.cache[fullName];
+    delete container.cache[cacheKey];
 
     if (member.destroy) {
       member.destroy();

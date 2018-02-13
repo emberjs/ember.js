@@ -388,7 +388,7 @@ moduleFor('Container', class extends AbstractTestCase {
     assert.deepEqual(resolveWasCalled, ['foo:post']);
   }
 
-  ['@test A factory\'s lazy injections are validated when first instantiated'](assert) {
+  [`@test A factory's lazy injections are validated when first instantiated`](assert) {
     let registry = new Registry();
     let container = registry.container();
     let Apple = factory();
@@ -396,7 +396,10 @@ moduleFor('Container', class extends AbstractTestCase {
 
     Apple.reopenClass({
       _lazyInjections() {
-        return ['orange:main', 'banana:main'];
+        return [
+          {specifier: 'orange:main'},
+          {specifier: 'banana:main'}
+        ];
       }
     });
 
@@ -419,7 +422,9 @@ moduleFor('Container', class extends AbstractTestCase {
     Apple.reopenClass({
       _lazyInjections: () => {
         assert.ok(true, 'should call lazy injection method');
-        return ['orange:main'];
+        return [
+          {specifier: 'orange:main'}
+        ];
       }
     });
 
@@ -637,18 +642,20 @@ moduleFor('Container', class extends AbstractTestCase {
 });
 
 if (EMBER_MODULE_UNIFICATION) {
-  QUnit.module('Container module unification');
-
   moduleFor('Container module unification', class extends AbstractTestCase {
-    ['@test The container can pass a source to factoryFor'](assert) {
+    ['@test The container can expand and resolve a source to factoryFor'](assert) {
       let PrivateComponent = factory();
       let lookup = 'component:my-input';
       let expectedSource = 'template:routes/application';
       let registry = new Registry();
       let resolveCount = 0;
-      registry.resolve = function(fullName, { source }) {
+      let expandedKey = 'boom, special expanded key';
+      registry.expandLocalLookup = function() {
+        return expandedKey;
+      };
+      registry.resolve = function(fullName) {
         resolveCount++;
-        if (fullName === lookup && source === expectedSource) {
+        if (fullName === expandedKey) {
           return PrivateComponent;
         }
       };
@@ -660,13 +667,17 @@ if (EMBER_MODULE_UNIFICATION) {
       assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
     }
 
-    ['@test The container can pass a source to lookup']() {
+    ['@test The container can expand and resolve a source to lookup']() {
       let PrivateComponent = factory();
       let lookup = 'component:my-input';
       let expectedSource = 'template:routes/application';
       let registry = new Registry();
-      registry.resolve = function(fullName, { source }) {
-        if (fullName === lookup && source === expectedSource) {
+      let expandedKey = 'boom, special expanded key';
+      registry.expandLocalLookup = function() {
+        return expandedKey;
+      };
+      registry.resolve = function(fullName) {
+        if (fullName === expandedKey) {
           return PrivateComponent;
         }
       };
@@ -676,7 +687,7 @@ if (EMBER_MODULE_UNIFICATION) {
       let result = container.lookup(lookup, { source: expectedSource });
       this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
 
-      this.assert.ok(container.cache[`template:routes/application:component:my-input`] instanceof PrivateComponent,
+      this.assert.ok(container.cache[expandedKey] instanceof PrivateComponent,
         'The correct factory was stored in the cache with the correct key which includes the source.');
     }
   });
