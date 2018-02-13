@@ -223,8 +223,8 @@ function wrapManagerInDeprecationProxy(manager) {
   return manager;
 }
 
-function isSingleton(container, fullName) {
-  return container.registry.getOption(fullName, 'singleton') !== false;
+function isSingleton(container, fullName, options) {
+  return container.registry.getOption(fullName, 'singleton', options) !== false;
 }
 
 function isInstantiatable(container, fullName) {
@@ -278,7 +278,7 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
 }
 
 function instantiateFactory(container, fullName, options) {
-  let factoryManager = EMBER_MODULE_UNIFICATION && options && options.source ? container.factoryFor(fullName, options) : container.factoryFor(fullName);
+  let factoryManager = EMBER_MODULE_UNIFICATION && options ? container.factoryFor(fullName, options) : container.factoryFor(fullName);
 
   if (factoryManager === undefined) {
     return;
@@ -316,9 +316,10 @@ function buildInjections(container, injections) {
     let injection;
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
-      hash[injection.property] = lookup(container, injection.fullName);
+      let {name, namespace, type} = parseInjectionString(injection.fullName);
+      hash[injection.property] = lookupWithRawString(container, type, namespace || name);
       if (!isDynamic) {
-        isDynamic = !isSingleton(container, injection.fullName);
+        isDynamic = !isSingleton(container, injection.fullName, { namespace });
       }
     }
   }
@@ -354,13 +355,15 @@ function resetCache(container) {
   container.factoryManagerCache = dictionary(null);
 }
 
-function resetMember(container, fullName) {
-  let member = container.cache[fullName];
+function resetMember(container, fullName, options={}) {
+  let cacheKey = container._resolverCacheKey(fullName, options);
 
-  delete container.factoryManagerCache[fullName];
+  let member = container.cache[cacheKey];
+
+  delete container.factoryManagerCache[cacheKey];
 
   if (member) {
-    delete container.cache[fullName];
+    delete container.cache[cacheKey];
 
     if (member.destroy) {
       member.destroy();
@@ -438,5 +441,47 @@ class FactoryManager {
     FACTORY_FOR.set(instance, this);
 
     return instance;
+  }
+}
+
+export function parseInjectionString(injectionString) {
+  let typeDelimiterOffset = injectionString.indexOf(':');
+  let type = injectionString.slice(0, typeDelimiterOffset);
+  let rawString = injectionString.slice(typeDelimiterOffset+1);
+  if (rawString.indexOf('::') === -1) {
+    return {
+      fullName: injectionString,
+      name: rawString,
+      type
+    };
+  } else {
+    let [ namespace, name ] = rawString.split('::');
+    let fullName = type.indexOf(':') === -1 ? `${type}:${name}` : `${type}${name}`;
+    return {
+      fullName,
+      namespace,
+      type
+    };
+  }
+}
+
+export function lookupWithRawString(container, type, rawString) {
+  if (rawString.indexOf('::') === -1) {
+    return container.lookup(`${type}:${rawString}`);
+  } else {
+    let [ namespace, name ] = rawString.split('::');
+    let fullName = type.indexOf(':') === -1 ? `${type}:${name}` : `${type}${name}`;
+    return container.lookup(fullName, { namespace });
+  }
+}
+
+export function factoryForWithRawString(container, type, rawString) {
+  if (rawString.indexOf('::') === -1) {
+    return container.factoryFor(`${type}:${rawString}`);
+  } else {
+    let [ namespace, name ] = rawString.split('::');
+    // type might already contain ":" eg. "template:components/"
+    let fullName = type.indexOf(':') === -1 ? `${type}:${name}` : `${type}${name}`;
+    return container.factoryFor(fullName, { namespace });
   }
 }

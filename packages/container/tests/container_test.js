@@ -1,7 +1,16 @@
 import { OWNER, assign } from 'ember-utils';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
-import { Registry } from '..';
-import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  factoryForWithRawString,
+  lookupWithRawString,
+  Registry
+} from '..';
+import {
+  factory,
+  moduleFor,
+  AbstractTestCase,
+  ModuleBasedTestResolver
+} from 'internal-test-helpers';
 
 moduleFor('Container', class extends AbstractTestCase {
   ['@test A registered factory returns the same instance each time'](assert) {
@@ -396,7 +405,8 @@ moduleFor('Container', class extends AbstractTestCase {
 
     Apple.reopenClass({
       _lazyInjections() {
-        return ['orange:main', 'banana:main'];
+        return [{ fullName: 'orange:main' },
+                { fullName: 'banana:main' }];
       }
     });
 
@@ -419,7 +429,7 @@ moduleFor('Container', class extends AbstractTestCase {
     Apple.reopenClass({
       _lazyInjections: () => {
         assert.ok(true, 'should call lazy injection method');
-        return ['orange:main'];
+        return [{ fullName: 'orange:main' }];
       }
     });
 
@@ -676,8 +686,133 @@ if (EMBER_MODULE_UNIFICATION) {
       let result = container.lookup(lookup, { source: expectedSource });
       this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
 
-      this.assert.ok(container.cache[`template:routes/application:component:my-input`] instanceof PrivateComponent,
-        'The correct factory was stored in the cache with the correct key which includes the source.');
+      this.assert.ok(
+        container.cache[`component:my-input\0template:routes/application\0`] instanceof PrivateComponent,
+        'The correct factory was stored in the cache with the correct key which includes the source.'
+      );
+    }
+
+    ['@test The container can pass a namespaced path to factoryFor']() {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let namespace = 'my-addon';
+      let name = 'my-component';
+      let rawString = `${namespace}::${name}`;
+      let specifier = `${type}:${name}`;
+      let resolver = new ModuleBasedTestResolver();
+      let registry = new Registry({resolver});
+
+      resolver.add({
+        specifier,
+        namespace
+      }, PrivateComponent);
+
+      let container = registry.container();
+
+      this.assert.equal(
+        container.factoryFor(specifier), undefined,
+        'Cannot find factoryFor by name'
+      );
+      expectAssertion(() => {
+        container.factoryFor(`${type}:${rawString}`);
+      }, /must be a proper full name/, 'Cannot find factoryFor by rawString');
+
+      // test internal API of factoryForWithRawString
+      let result = factoryForWithRawString(container, 'component', rawString);
+      this.assert.strictEqual(
+        result.class, PrivateComponent,
+        'The correct factory was provided by internal method factoryForWithRawString'
+      );
+      this.assert.strictEqual(
+        result.class, PrivateComponent,
+        'The correct factory was provided again by internal method factoryForWithRawString'
+      );
+
+      // test public API of passing namespace to factoryFor
+      result = container.factoryFor(specifier, { namespace });
+      this.assert.strictEqual(
+        result.class, PrivateComponent,
+        'The correct factory was provided'
+      );
+      this.assert.strictEqual(
+        result.class, PrivateComponent,
+        'The correct factory was provided again'
+      );
+    }
+
+    ['@test The container will not lookup a namespaced factory without namespace']() {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let namespace = 'my-addon';
+      let name = 'my-component';
+      let rawString = `${namespace}::${name}`;
+      let specifier = `${type}:${name}`;
+      let resolver = new ModuleBasedTestResolver();
+      let registry = new Registry({resolver});
+
+      resolver.add({
+        specifier,
+        namespace
+      }, PrivateComponent);
+
+      let container = registry.container();
+
+      this.assert.equal(
+        container.lookup(specifier), undefined,
+        'Cannot lookup by type:name'
+      );
+      expectAssertion(() => {
+        container.lookup(`${type}:${rawString}`);
+      }, /must be a proper full name/, 'Cannot lookup by type:rawString');
+    }
+
+    ['@test The container will lookup a namespaced factory with namespace via lookupWithRawString']() {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let namespace = 'my-addon';
+      let name = 'my-component';
+      let rawString = `${namespace}::${name}`;
+      let specifier = `${type}:${name}`;
+      let resolver = new ModuleBasedTestResolver();
+      let registry = new Registry({resolver});
+
+      resolver.add({
+        specifier,
+        namespace
+      }, PrivateComponent);
+
+      let container = registry.container();
+
+      let result = lookupWithRawString(container, 'component', rawString);
+      this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided by private API');
+      this.assert.ok(
+        container.cache[`${specifier}\0\0${namespace}`] instanceof PrivateComponent,
+        'The correct factory was stored in the cache with the correct key which includes the raw string.'
+      );
+    }
+
+    ['@test The container will lookup a namespaced factory with namespace via lookup']() {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let namespace = 'my-addon';
+      let name = 'my-component';
+      let specifier = `${type}:${name}`;
+      let resolver = new ModuleBasedTestResolver();
+      let registry = new Registry({resolver});
+
+      resolver.add({
+        specifier,
+        namespace
+      }, PrivateComponent);
+
+      let container = registry.container();
+
+      let result = container.lookup(specifier, { namespace });
+      this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
+      this.assert.ok(
+        container.cache[`${specifier}\0\0${namespace}`] instanceof PrivateComponent,
+        'The correct factory was stored in the cache with the correct key which includes the raw string.'
+      );
     }
   });
 }

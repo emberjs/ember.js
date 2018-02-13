@@ -4,6 +4,7 @@ import { ComputedProperty } from './computed';
 import { AliasedProperty } from './alias';
 import { Descriptor } from './properties';
 import { descriptorFor } from './meta';
+import { lookupWithRawString } from 'container';
 
 /**
  @module ember
@@ -21,9 +22,10 @@ import { descriptorFor } from './meta';
          to the property's name
   @private
 */
-export default function InjectedProperty(type, name) {
+export default function InjectedProperty(type, name, options) {
   this.type = type;
   this.name = name;
+  this.options = options;
 
   this._super$Constructor(injectedPropertyGet);
   AliasedPropertyPrototype.oneWay.call(this);
@@ -36,7 +38,10 @@ function injectedPropertyGet(keyName) {
   assert(`InjectedProperties should be defined with the inject computed property macros.`, desc && desc.type);
   assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, owner);
 
-  return owner.lookup(`${desc.type}:${desc.name || keyName}`);
+  if (desc.options && desc.options.namespace) { // && (!desc.name || desc.name.indexOf('::') === -1)
+    return lookupWithRawString(owner, desc.type, `${desc.options.namespace}::${desc.name || keyName}`);
+  }
+  return lookupWithRawString(owner, desc.type, desc.name || keyName);
 }
 
 InjectedProperty.prototype = Object.create(Descriptor.prototype);

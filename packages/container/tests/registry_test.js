@@ -1,5 +1,5 @@
 import { Registry, privatize } from '..';
-import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { factory, moduleFor, AbstractTestCase, ModuleBasedTestResolver } from 'internal-test-helpers';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { ENV } from 'ember-environment';
 
@@ -746,25 +746,39 @@ if (EMBER_MODULE_UNIFICATION) {
   moduleFor('Registry module unification', class extends AbstractTestCase {
     ['@test The registry can pass a source to the resolver'](assert) {
       let PrivateComponent = factory();
-      let lookup = 'component:my-input';
+      let type = 'component';
+      let name = 'my-component';
+      let fullName = `${type}:${name}`;
       let source = 'template:routes/application';
-      let resolveCount = 0;
-      let resolver = {
-        resolve(fullName, src) {
-          resolveCount++;
-          if (fullName === lookup && src === source) {
-            return PrivateComponent;
-          }
-        }
-      };
+      let resolver = new ModuleBasedTestResolver();
       let registry = new Registry({ resolver });
-      registry.normalize = function(name) {
-        return name;
-      };
 
-      assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided');
-      assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided again');
-      assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+      resolver.add({
+        specifier: fullName,
+        referrer: source
+      }, PrivateComponent);
+
+      assert.strictEqual(registry.resolve(fullName, { source }), PrivateComponent, 'The correct factory was provided');
+      assert.strictEqual(registry.resolve(fullName, { source }), PrivateComponent, 'The correct factory was provided again');
+    }
+
+    ['@test The registry can pass a namespaced lookup to the resolver'](assert) {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let namespace = 'my-addon';
+      let name = 'my-component';
+      let specifier = `${type}:${name}`;
+      let resolver = new ModuleBasedTestResolver();
+      let registry = new Registry({ resolver });
+
+      resolver.add({
+        specifier,
+        namespace
+      }, PrivateComponent);
+
+      assert.strictEqual(registry.resolve(specifier, { namespace }), PrivateComponent, 'The correct factory was provided');
+      assert.strictEqual(registry.resolve(specifier, { namespace }), PrivateComponent, 'The correct factory was provided again');
     }
   });
+
 }

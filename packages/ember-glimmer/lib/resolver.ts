@@ -11,7 +11,7 @@ import {
   Helper,
   ModifierManager,
 } from '@glimmer/runtime';
-import { privatize as P } from 'container';
+import { privatize as P, factoryForWithRawString } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
@@ -218,7 +218,10 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     const options: LookupOptions | undefined = makeOptions(moduleName);
 
-    const factory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
+    const specifier = `helper:${name}`;
+    const factory = name.indexOf('::') === -1 ?
+          (owner.factoryFor(specifier, options) || owner.factoryFor(specifier)) :
+          factoryForWithRawString(owner, 'helper', name);
 
     if (!isHelperFactory(factory)) {
       return null;

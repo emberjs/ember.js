@@ -9,4 +9,6 @@ export { default as Registry, privatize } from './registry';
 export {
   default as Container,
   FACTORY_FOR,
+  factoryForWithRawString,
+  lookupWithRawString
 } from './container';
