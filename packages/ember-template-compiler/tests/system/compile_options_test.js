@@ -18,8 +18,10 @@ moduleFor('ember-template-compiler: default compile options', class extends Abst
   }
 });
 
+let customTransformCounter = 0;
 class CustomTransform {
   constructor(options) {
+    customTransformCounter++;
     this.options = options;
     this.syntax = null;
   }
@@ -45,13 +47,10 @@ class CustomTransform {
   }
 }
 
-moduleFor('ember-template-compiler: registerPlugin with a custom plugins', class extends RenderingTestCase {
-  beforeEach() {
-    registerPlugin('ast', CustomTransform);
-  }
-
+class CustomPluginsTests extends RenderingTestCase {
   afterEach() {
-    unregisterPlugin('ast', CustomTransform);
+    customTransformCounter = 0;
+    return super.afterEach();
   }
 
   ['@test custom plugins can be used']() {
@@ -61,6 +60,28 @@ moduleFor('ember-template-compiler: registerPlugin with a custom plugins', class
       attrs: { class: 'hahaha', 'data-blah': 'derp' },
       content: ''
     });
+  }
+
+  ['@test wrapped plugins are only invoked once per template'](assert) {
+    this.render('<div>{{#if falsey}}nope{{/if}}</div>');
+    assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
+  }
+}
+
+moduleFor('ember-template-compiler: registerPlugin with a custom plugins', class extends CustomPluginsTests {
+  beforeEach() {
+    registerPlugin('ast', CustomTransform);
+  }
+
+  afterEach() {
+    unregisterPlugin('ast', CustomTransform);
+    return super.afterEach();
+  }
+
+  ['@test custom registered plugins are deduplicated'](assert) {
+    registerPlugin('ast', CustomTransform);
+    this.registerTemplate('application', '<div data-test="foo" data-blah="derp" class="hahaha"></div>');
+    assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
   }
 });
 
@@ -71,15 +92,6 @@ moduleFor('ember-template-compiler: custom plugins passed to compile', class ext
       plugins: {
         ast: [CustomTransform]
       }
-    });
-  }
-
-  ['@test custom plugins can be used']() {
-    this.render('<div data-test="foo" data-blah="derp" class="hahaha"></div>');
-    this.assertElement(this.firstChild, {
-      tagName: 'div',
-      attrs: { class: 'hahaha', 'data-blah': 'derp' },
-      content: ''
     });
   }
 });

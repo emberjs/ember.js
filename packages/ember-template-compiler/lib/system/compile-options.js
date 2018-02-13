@@ -30,20 +30,28 @@ function wrapLegacyPluginIfNeeded(_plugin) {
   let plugin = _plugin;
   if (_plugin.prototype && _plugin.prototype.transform) {
     plugin = (env) => {
+      let pluginInstantiated = false;
+
       return {
         name: _plugin.constructor && _plugin.constructor.name,
 
         visitor: {
           Program(node) {
-            let plugin = new _plugin(env);
+            if (!pluginInstantiated) {
 
-            plugin.syntax = env.syntax;
+              pluginInstantiated = true;
+              let plugin = new _plugin(env);
 
-            return plugin.transform(node);
+              plugin.syntax = env.syntax;
+
+              return plugin.transform(node);
+            }
           }
         }
       };
     };
+
+    plugin.__raw = _plugin;
   }
 
   return plugin;
@@ -52,6 +60,13 @@ function wrapLegacyPluginIfNeeded(_plugin) {
 export function registerPlugin(type, _plugin) {
   if (type !== 'ast') {
     throw new Error(`Attempting to register ${_plugin} as "${type}" which is not a valid Glimmer plugin type.`);
+  }
+
+  for (let i = 0; i < USER_PLUGINS.length; i++) {
+    let PLUGIN = USER_PLUGINS[i];
+    if (PLUGIN === _plugin || PLUGIN.__raw === _plugin) {
+      return;
+    }
   }
 
   let plugin = wrapLegacyPluginIfNeeded(_plugin);
@@ -64,5 +79,5 @@ export function unregisterPlugin(type, PluginClass) {
     throw new Error(`Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`);
   }
 
-  USER_PLUGINS = USER_PLUGINS.filter((plugin) => plugin !== PluginClass);
+  USER_PLUGINS = USER_PLUGINS.filter((plugin) => plugin !== PluginClass && plugin.__raw !== PluginClass);
 }
