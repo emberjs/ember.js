@@ -1,9 +1,8 @@
 /**
  @module ember
 */
-/*
- Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
-*/
+
+// Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
 
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
