@@ -16,7 +16,7 @@ let self: UpdatableReference<any>;
 let result: RenderResult;
 
 function compile(template: string) {
-  return env.compile(template);
+  return env.preprocess(template);
 }
 
 function commonSetup() {

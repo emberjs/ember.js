@@ -32,7 +32,7 @@ export class EmberishRootView extends EmberObject {
     context?: Object
   ) {
     super(context);
-    this.template = env.compile(template, null);
+    this.template = env.preprocess(template, null);
   }
 
   appendTo(selector: string) {

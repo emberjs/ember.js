@@ -19,7 +19,7 @@ let result: RenderResult;
 let self: UpdatableReference<Opaque>;
 
 function compile(template: string) {
-  return env.compile(template);
+  return env.preprocess(template);
 }
 
 function commonSetup() {
