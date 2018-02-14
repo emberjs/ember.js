@@ -48,9 +48,9 @@ class CustomTransform {
 }
 
 class CustomPluginsTests extends RenderingTestCase {
-  afterEach() {
+  teardown() {
     customTransformCounter = 0;
-    return super.afterEach();
+    return super.teardown();
   }
 
   ['@test custom plugins can be used']() {
@@ -73,9 +73,9 @@ moduleFor('ember-template-compiler: registerPlugin with a custom plugins', class
     registerPlugin('ast', CustomTransform);
   }
 
-  afterEach() {
+  teardown() {
     unregisterPlugin('ast', CustomTransform);
-    return super.afterEach();
+    return super.teardown();
   }
 
   ['@test custom registered plugins are deduplicated'](assert) {
