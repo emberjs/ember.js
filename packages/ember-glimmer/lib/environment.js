@@ -294,9 +294,11 @@ export default class Environment extends GlimmerEnvironment {
       destroyedComponents[i].destroy();
     }
 
-    super.commit();
-
-    this.inTransaction = false;
+    try {
+      super.commit();
+    } finally {
+      this.inTransaction = false;
+    }
   }
 }
 
