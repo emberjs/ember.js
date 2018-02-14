@@ -124,5 +124,8 @@
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
+  },
+  "publishConfig": {
+    "tag": "old"
   }
 }
