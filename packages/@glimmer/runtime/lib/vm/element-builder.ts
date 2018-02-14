@@ -70,7 +70,7 @@ export interface DOMStack {
   appendComment(string: string): Simple.Comment;
 
   appendDynamicHTML(value: string): void;
-  appendDynamicText(value: string): void;
+  appendDynamicText(value: string): Simple.Text;
   appendDynamicFragment(value: Simple.DocumentFragment): void;
   appendDynamicNode(value: Simple.Node): void;
 
@@ -319,9 +319,10 @@ export class NewElementBuilder implements ElementBuilder {
     this.didAppendBounds(bounds);
   }
 
-  appendDynamicText(value: string): void {
-    let bounds = this.untrustedContent(value);
-    this.didAppendBounds(bounds);
+  appendDynamicText(value: string): Simple.Text {
+    let node = this.untrustedContent(value);
+    this.didAppendNode(node);
+    return node;
   }
 
   appendDynamicFragment(value: Simple.DocumentFragment): void {
@@ -339,9 +340,8 @@ export class NewElementBuilder implements ElementBuilder {
     return this.__appendHTML(value);
   }
 
-  private untrustedContent(value: string): Bounds {
-    let textNode = this.__appendText(value);
-    return single(this.element, textNode);
+  private untrustedContent(value: string): Simple.Text {
+    return this.__appendText(value);
   }
 
   appendComment(string: string): Simple.Comment {

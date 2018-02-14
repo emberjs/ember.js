@@ -162,22 +162,6 @@ export class SimpleOpcodeBuilder {
     this.invokePreparedComponent(false);
   }
 
-  protected dynamicContent(trusting: boolean) {
-    if (trusting) {
-      this.trustingDynamicContent();
-    } else {
-      this.cautiousDynamicContent();
-    }
-  }
-
-  trustingDynamicContent() {
-    this.push(Op.TrustingDynamicContent);
-  }
-
-  cautiousDynamicContent() {
-    this.push(Op.CautiousDynamicContent);
-  }
-
   appendHTML() {
     this.push(Op.AppendHTML);
   }
@@ -868,7 +852,6 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
       this.appendHTML();
     } else {
       this.pop(2);
-      this.assertSame();
       this.appendText();
     }
 
