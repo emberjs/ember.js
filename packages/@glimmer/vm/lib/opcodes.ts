@@ -169,6 +169,17 @@ export const enum Op {
   PrimitiveReference,
 
   /**
+   * Operation: Convert the top of the stack into a number.
+   *
+   * Format:
+   *   (ReifyU32)
+   * Operand Stack:
+   *   ..., VersionedPathReference<u32> →
+   *   ..., VersionedPathReference<u32>, u32
+   */
+  ReifyU32,
+
+  /**
    * Operation: Duplicate and push item from an offset in the stack.
    * Format:
    *   (Dup register:u32, offset:u32)
@@ -518,6 +529,33 @@ export const enum Op {
   JumpUnless,
 
   /**
+   * Operation:
+   *   Jump to the specified offset if the value at
+   *   the top of the stack is the same as the
+   *   comparison.
+   *
+   * Format:
+   *   (JumpEq to:i32 comparison:i32)
+   * Operand Stack:
+   *   ..., u32 →
+   *   ..., u32
+   */
+  JumpEq,
+
+  /**
+   * Operation:
+   *   Validate that the value at the top of the stack
+   *   hasn't changed.
+   *
+   * Format:
+   *   (AssertSame)
+   * Operand Stack:
+   *   ..., VersionedPathReference<u32> →
+   *   ..., VersionedPathReference<u32>
+   */
+  AssertSame,
+
+  /**
    * Operation: Push a stack frame
    *
    * Format:
@@ -551,9 +589,9 @@ export const enum Op {
    *   ...
    * Description:
    *   Soon after this opcode, one of Jump, JumpIf,
-   *   or JumpUnless will produce an updating assertion.
-   *   If that assertion fails, the appending VM will
-   *   be re-entered, and the instructions from `from`
+   *   JumpUnless, or JumpEq will produce an updating
+   *   assertion. If that assertion fails, the appending
+   *   VM will be re-entered, and the instructions from `from`
    *   to `to` will be executed.
    *
    *   TODO: Save and restore.
@@ -671,6 +709,17 @@ export const enum Op {
    *   ..., VersionedPathReference<boolean>
    */
   IsComponent,
+
+  /**
+   * Operation: Push the content type onto the stack.
+   *
+   * Format:
+   *   (ContentType)
+   * Operand Stack:
+   *   ..., VersionedPathReference<Opaque> →
+   *   ..., VersionedPathReference<Opaque>, VersionedPathReference<ContentType>
+   */
+  ContentType,
 
   /**
    * Operation: Curry a component definition for a later invocation.
