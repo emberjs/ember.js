@@ -30,13 +30,13 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     let node = this.currentCursor!.element.firstChild;
 
-    while (node) {
-      if (node && isComment(node) && node.nodeValue === '%+b:0%') { break; }
+    while (node !== null) {
+      if (isComment(node) && node.nodeValue === '%+b:0%') { break; }
       node = node.nextSibling;
     }
 
-    this.candidate = node;
     assert(node, 'Must have opening comment <!--%+b:0%--> for rehydration.');
+    this.candidate = node;
   }
 
   get currentCursor(): Option<RehydratingCursor> {
