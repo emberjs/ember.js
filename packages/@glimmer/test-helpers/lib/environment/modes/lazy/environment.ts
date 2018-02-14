@@ -159,7 +159,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
   }
 
   registerPartial(name: string, source: string): PartialDefinition {
-    let definition = new PartialDefinition(name, this.compile(source, null));
+    let definition = new PartialDefinition(name, this.preprocess(source, null));
     this.resolver.register('partial', name, definition);
     return definition;
   }
@@ -188,7 +188,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
     return handle === null ? null : this.resolver.resolve<ModifierManager>(handle);
   }
 
-  compile<TemplateMeta>(template: string, meta?: TemplateMeta): Template<TemplateMeta> {
+  preprocess<TemplateMeta>(template: string, meta?: TemplateMeta): Template<TemplateMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
     return factory.create(this.compileOptions, (meta || {}) as any as TemplateMeta);
