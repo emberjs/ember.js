@@ -105,7 +105,7 @@ class RootState {
         env,
         self,
         dynamicScope,
-        builder: builder(env, { element: parentElement, nextSibling: null}),
+        builder(env, { element: parentElement, nextSibling: null }),
         handle
       );
       let iteratorResult: IteratorResult<RenderResult>;
