@@ -91,6 +91,11 @@
 - [#14590](https://github.com/emberjs/ember.js/pull/14590) [DEPRECATION] Deprecate using `targetObject`.
 - [#15754](https://github.com/emberjs/ember.js/pull/15754) [CLEANUP] Remove `router.router` deprecation.
 
+### 2.17.1 (February 13, 2018)
+
+- [#16174](https://github.com/emberjs/ember.js/pull/16174) [BUGFIX] Enable _some_ recovery of errors thrown during render.
+- [#16241](https://github.com/emberjs/ember.js/pull/16241) [BUGFIX] Avoid excessively calling Glimmer AST transforms.
+
 ### 2.17.0 (November 29, 2017)
 
 - [#15855](https://github.com/emberjs/ember.js/pull/15855) [BUGFIX] fix regression with computed `filter/map/sort`
