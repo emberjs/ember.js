@@ -2,9 +2,8 @@ import { NewElementBuilder, ElementBuilder, RemoteBlockTracker } from "./element
 
 import { Environment } from '../environment';
 import Bounds, { bounds, Cursor } from '../bounds';
-import { Simple, Option, Opaque } from "@glimmer/interfaces";
-import { DynamicContentWrapper } from './content/dynamic';
-import { expect, assert, Stack, isSerializationFirstNode, SERIALIZATION_FIRST_NODE_STRING} from "@glimmer/util";
+import { Simple, Option } from "@glimmer/interfaces";
+import { expect, assert, Stack, isSerializationFirstNode, SERIALIZATION_FIRST_NODE_STRING } from "@glimmer/util";
 import { SVG_NAMESPACE } from '../dom/helper';
 
 export class RehydratingCursor extends Cursor {
@@ -321,12 +320,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     } else {
       super.__flushElement(parent, constructing);
     }
-  }
-
-  appendCautiousDynamicContent(value: Opaque): DynamicContentWrapper {
-    let content = super.appendCautiousDynamicContent(value);
-    content.update(this.env, value);
-    return content;
   }
 
   willCloseElement() {

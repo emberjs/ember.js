@@ -172,6 +172,22 @@ class OpaqueChecker implements Checker<Opaque> {
   }
 }
 
+export interface SafeString {
+  toHTML(): string;
+}
+
+class SafeStringChecker implements Checker<SafeString> {
+  type: SafeString;
+
+  validate(value: Opaque): value is SafeString {
+    return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
+  }
+
+  expected(): string {
+    return `SafeString`;
+  }
+}
+
 export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
   return new InstanceofChecker<T>(Class);
 }
@@ -217,6 +233,7 @@ export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolea
 export const CheckHandle: Checker<number> = CheckNumber;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckOpaque: Checker<Opaque> = new OpaqueChecker();
+export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
 
 export function CheckOr<T, U>(left: Checker<T>, right: Checker<U>): Checker<T | U> {
   return new OrChecker(left, right);
@@ -234,6 +251,9 @@ export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> =
 
 export const CheckElement: Checker<Simple.Element> =
   CheckInterface({ nodeType: CheckValue(1), tagName: CheckString, nextSibling: CheckOpaque });
+
+export const CheckDocumentFragment: Checker<Simple.DocumentFragment> =
+  CheckInterface({ nodeType: CheckValue(11), nextSibling: CheckOpaque });
 
 export const CheckNode: Checker<Simple.Node> =
   CheckInterface({ nodeType: CheckNumber, nextSibling: CheckOpaque });
