@@ -322,6 +322,66 @@ export const enum Op {
   CautiousDynamicContent,
 
   /**
+   * Operation: Append content as HTML.
+   * Format:
+   *   (AppendHTML)
+   * Operand Stack:
+   *   ..., VersionedPathReference<string> →
+   *   ...
+   */
+  AppendHTML,
+
+  /**
+   * Operation: Append SafeHTML as HTML.
+   * Format:
+   *   (AppendSafeHTML)
+   * Operand Stack:
+   *   ..., VersionedPathReference<SafeHTML> →
+   *   ...
+   */
+  AppendSafeHTML,
+
+  /**
+   * Operation: Append DocumentFragment.
+   * Format:
+   *   (AppendFragment)
+   * Operand Stack:
+   *   ..., VersionedPathReference<DocumentFragment> →
+   *   ...
+   */
+  AppendDocumentFragment,
+
+  /**
+   * Operation: Append Node.
+   * Format:
+   *   (AppendFragment)
+   * Operand Stack:
+   *   ..., VersionedPathReference<Node> →
+   *   ...
+   */
+  AppendNode,
+
+  /**
+   * Operation: Append an unknown value.
+   * Format:
+   *   (AppendOther)
+   * Operand Stack:
+   *   ..., VersionedPathReference<Opaque> →
+   *   ...
+   */
+  AppendOther,
+
+  /**
+   * Operation: Append content as text.
+   * Format:
+   *   (AppendText)
+   * Operand Stack:
+   *   ..., VersionedPathReference<string> →
+   *   ...
+   */
+  AppendText,
+
+  /**
    * Operation: Open a new Element named `tag`.
    * Format:
    *   (OpenElement tag:#string)

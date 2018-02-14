@@ -19,6 +19,7 @@ export type DebugBeforeFunction = (opcode: Opcode, vm: VM) => Opaque;
 export type OperandType =
     'handle'
   | 'i32'
+  | 'to'
   | 'str'
   | 'option-str'
   | 'str-array'
@@ -44,6 +45,10 @@ function Handle(name: string): Operand {
 
 function I32(name: string): Operand {
   return { type: 'i32', name };
+}
+
+function TO(name: string): Operand {
+  return { type: 'to', name };
 }
 
 function Bool(name: string): Operand {
@@ -212,27 +217,27 @@ OPCODE_METADATA(Op.InvokeYield, {
 
 OPCODE_METADATA(Op.Jump, {
   name: 'Jump',
-  ops: [I32('to')],
+  ops: [TO('to')],
   operands: 1
 });
 
 OPCODE_METADATA(Op.JumpIf, {
   name: 'JumpIf',
-  ops: [I32('to')],
+  ops: [TO('to')],
   operands: 1,
   stackChange: -1
 });
 
 OPCODE_METADATA(Op.JumpUnless, {
   name: 'JumpUnless',
-  ops: [I32('to')],
+  ops: [TO('to')],
   operands: 1,
   stackChange: -1
 });
 
 OPCODE_METADATA(Op.JumpEq, {
   name: 'JumpEq',
-  ops: [I32('to'), I32('comparison')],
+  ops: [TO('to'), I32('comparison')],
   operands: 2
 });
 
@@ -293,7 +298,7 @@ OPCODE_METADATA(Op.Return, {
 
 OPCODE_METADATA(Op.ReturnTo, {
   name: 'ReturnTo',
-  ops: [I32('offset')],
+  ops: [TO('offset')],
   operands: 1
 });
 
@@ -446,6 +451,36 @@ OPCODE_METADATA(Op.TrustingDynamicContent, {
 
 OPCODE_METADATA(Op.CautiousDynamicContent, {
   name: 'CautiousDynamicContent',
+  stackChange: -1
+});
+
+OPCODE_METADATA(Op.AppendHTML, {
+  name: 'AppendHTML',
+  stackChange: -1
+});
+
+OPCODE_METADATA(Op.AppendSafeHTML, {
+  name: 'AppendSafeHTML',
+  stackChange: -1
+});
+
+OPCODE_METADATA(Op.AppendDocumentFragment, {
+  name: 'AppendDocumentFragment',
+  stackChange: -1
+});
+
+OPCODE_METADATA(Op.AppendNode, {
+  name: 'AppendNode',
+  stackChange: -1
+});
+
+OPCODE_METADATA(Op.AppendOther, {
+  name: 'AppendNode',
+  stackChange: -1
+});
+
+OPCODE_METADATA(Op.AppendText, {
+  name: 'AppendText',
   stackChange: -1
 });
 

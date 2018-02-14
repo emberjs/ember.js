@@ -178,6 +178,30 @@ export class SimpleOpcodeBuilder {
     this.push(Op.CautiousDynamicContent);
   }
 
+  appendHTML() {
+    this.push(Op.AppendHTML);
+  }
+
+  appendSafeHTML() {
+    this.push(Op.AppendSafeHTML);
+  }
+
+  appendDocumentFragment() {
+    this.push(Op.AppendDocumentFragment);
+  }
+
+  appendNode() {
+    this.push(Op.AppendNode);
+  }
+
+  appendOther() {
+    this.push(Op.AppendOther);
+  }
+
+  appendText() {
+    this.push(Op.AppendText);
+  }
+
   beginComponentTransaction() {
     this.push(Op.BeginComponentTransaction);
   }
@@ -793,18 +817,65 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.enter(2);
     this.assertSame();
     this.reifyU32();
+
+    this.jumpEq(ContentType.String, 'STRING');
     this.jumpEq(ContentType.Component, 'COMPONENT');
+    this.jumpEq(ContentType.SafeString, 'SAFESTRING');
+    this.jumpEq(ContentType.Fragment, 'FRAGMENT');
+    this.jumpEq(ContentType.Node, 'NODE');
+
     this.pop(2);
-    this.dynamicContent(trusting);
+    this.assertSame();
+    this.appendOther();
     this.jump('END');
+
     this.label('COMPONENT');
     this.pop(2);
     this.pushCurriedComponent();
     this.pushDynamicComponentInstance();
     this.invokeComponent(null, null, null, false, null, null);
+    this.jump('END');
+
+    this.label('SAFESTRING');
+    this.pop(2);
+    this.assertSame();
+    this.appendSafeHTML();
+    this.jump('END');
+
+    this.label('FRAGMENT');
+    this.pop(2);
+    this.assertSame();
+    this.appendDocumentFragment();
+    this.jump('END');
+
+    this.label('NODE');
+    this.pop(2);
+    this.assertSame();
+    this.appendNode();
+    this.jump('END');
+
+    this.label('OTHER');
+    this.pop(2);
+    this.assertSame();
+    this.appendOther();
+    this.jump('END');
+
+    this.label('STRING');
+
+    if (trusting) {
+      this.pop(2);
+      this.assertSame();
+      this.appendHTML();
+    } else {
+      this.pop(2);
+      this.assertSame();
+      this.appendText();
+    }
+
     this.label('END');
     this.exit();
     this.return();
+
     this.stopLabels();
   }
 
