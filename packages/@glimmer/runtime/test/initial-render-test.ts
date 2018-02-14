@@ -46,6 +46,11 @@ class AbstractRehydrationTests extends InitialRenderSuite {
     this.assert.equal(clearedNodes.length, nodes, 'cleared nodes');
   }
 
+  assertExactServerOutput(..._expected: Content[]) {
+    let output = expect(this.serverOutput, 'must renderServerSide before calling assertServerOutput');
+    equalTokens(output, content([..._expected]));
+  }
+
   assertServerOutput(..._expected: Content[]) {
     let output = expect(this.serverOutput, 'must renderServerSide before calling assertServerOutput');
     equalTokens(output, content([OPEN, ..._expected, CLOSE]));
@@ -62,8 +67,7 @@ class Rehydration extends AbstractRehydrationTests {
     let noScriptString = '<noscript></noscript>';
     let template = '<div>Hi!</div>';
     this.renderServerSide(template, {}, rootElement);
-    let output = expect(this.serverOutput, 'must renderServerSide before calling assertServerOutput');
-    equalTokens(output, content([noScriptString, OPEN, ...template, CLOSE]));
+    this.assertExactServerOutput(content([noScriptString, OPEN, ...template, CLOSE]));
     this.renderClientSide(template, {});
     this.assertHTML('<noscript></noscript><div>Hi!</div>');
     this.assertRehydrationStats({ nodesRemoved: 0 });
