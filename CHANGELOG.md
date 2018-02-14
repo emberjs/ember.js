@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.16.4 (February 14, 2018)
+
+- [#16245](https://github.com/emberjs/ember.js/pull/16245) [BUGFIX] Ensure errors in deferred component hooks can be recovered.
+
 ### 2.16.3 (February 13, 2018)
 
 - [#15927](https://github.com/emberjs/ember.js/pull/15927) blueprints: Extend test framework detection to `ember-qunit` and `ember-mocha`
