@@ -807,6 +807,8 @@ function componentModule<D extends RenderDelegate, T extends RenderTest>(name: s
       if (test['kind'] === undefined) {
         let skip = test['skip'];
         switch (skip) {
+          case 'all':
+            break;
           case 'glimmer':
             tests.curly.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test));

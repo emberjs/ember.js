@@ -38,7 +38,8 @@ export interface Template<TemplateMeta = Opaque> {
 
 export interface STDLib {
   main: number;
-  guardedAppend: number;
+  trustingGuardedAppend: number;
+  cautiousGuardedAppend: number;
 }
 
 export interface CompilableTemplate<S = SymbolTable> {
