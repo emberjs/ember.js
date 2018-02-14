@@ -53,30 +53,11 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
     });
   }
 
-  [`@test _renderMode: rehydrate`](assert) {
+  [`@test _renderMode: rehydration`](assert) {
+    assert.expect(2);
 
-    let initialHTML = `<!--%+b:0%--><!--%+b:1%--><!--%+b:2%--><!--%+b:3%--><!--%+b:4%--><!--%+b:5%--><!--%+b:6%--><div class=\"foo\">Hi, Mom!</div><!--%-b:6%--><!--%-b:5%--><!--%-b:4%--><!--%-b:3%--><!--%-b:2%--><!--%-b:1%--><!--%-b:0%-->`;
-
-    this.addTemplate('index', '<div class="foo">Hi, Mom!</div>');
-    let rootElement = document.createElement('div');
-    rootElement.innerHTML = initialHTML;
-
-    let bootOptions = {
-      isBrowser: false,
-      rootElement,
-      _renderMode: 'rehydrate'
-    };
-
-    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
-    return this.visit('/', bootOptions).then(()=> {
-      // The exact contents of this may change when the underlying
-      // implementation changes in the glimmer vm
-      assert.equal(rootElement.innerHTML, '<div class="foo">Hi, Mom!</div>', 'precond - without serialize flag renders as expected');
-    });
-  }
-
-  [`@test _renderMode: serialize`](assert) {
-    this.addTemplate('index', '<div class="foo">Hi, Mom!</div>');
+    let indexTemplate = '<div class="foo">Hi, Mom!</div>';
+    this.addTemplate('index', indexTemplate);
     let rootElement = document.createElement('div');
 
     let bootOptions = {
@@ -86,13 +67,37 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
     };
 
     ENV._APPLICATION_TEMPLATE_WRAPPER = false;
-    return this.visit('/', bootOptions).then(()=> {
-      // The exact contents of this may change when the underlying
-      // implementation changes in the glimmer vm
-      let expectedTemplate = `<!--%+b:0%--><!--%+b:1%--><!--%+b:2%--><!--%+b:3%--><!--%+b:4%--><!--%+b:5%--><!--%+b:6%--><div class=\"foo\">Hi, Mom!</div><!--%-b:6%--><!--%-b:5%--><!--%-b:4%--><!--%-b:3%--><!--%-b:2%--><!--%-b:1%--><!--%-b:0%-->`;
-      assert.equal(rootElement.innerHTML, expectedTemplate, 'precond - without serialize flag renders as expected');
+
+    return this.runTask(() => {
+      return this.visit('/', bootOptions)
+        .then((instance) => {
+          assert.equal(
+            instance.rootElement.firstChild.nodeValue,
+            '%+b:0%',
+            'glimmer-vm comment node was not found'
+          );
+        });
+    }).then(() =>{
+      return this.runTask(()=>{
+        this.applicationInstance.destroy();
+        this.applicationInstance = null;
+      });
+    }).then(() => {
+      bootOptions = {
+        isBrowser: false,
+        rootElement,
+        _renderMode: 'rehydrate'
+      };
+      this.application.visit('/', bootOptions).then(instance => {
+        assert.equal(
+          instance.rootElement.innerHTML,
+          indexTemplate,
+          'was not properly rehydrated'
+        );
+      });
     });
   }
+
   // This tests whether the application is "autobooted" by registering an
   // instance initializer and asserting it never gets run. Since this is
   // inherently testing that async behavior *doesn't* happen, we set a
