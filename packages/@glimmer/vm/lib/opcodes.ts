@@ -302,26 +302,6 @@ export const enum Op {
   Comment,
 
   /**
-   * Operation: Append a Dynamic node, trusting the content.
-   * Format:
-   *   (TrustingDynamicContent)
-   * Operand Stack:
-   *   ..., VersionedPathReference →
-   *   ...
-   */
-  TrustingDynamicContent,
-
-  /**
-   * Operation: Append a Dynamic node, not trusting the content.
-   * Format:
-   *   (CautiousDynamicContent)
-   * Operand Stack:
-   *   ..., VersionedPathReference →
-   *   ...
-   */
-  CautiousDynamicContent,
-
-  /**
    * Operation: Append content as HTML.
    * Format:
    *   (AppendHTML)

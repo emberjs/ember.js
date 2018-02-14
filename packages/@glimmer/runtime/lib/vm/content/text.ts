@@ -1,8 +1,27 @@
 import { isEmpty, isString } from '../../dom/normalize';
 import { Opaque, Simple } from "@glimmer/interfaces";
+import { UpdatingOpcode } from '../../opcodes';
+import { Tag, VersionedReference } from '@glimmer/reference';
 
-export default class DynamicTextContent {
-  constructor(public node: Simple.Text, private lastValue: string) {
+export default class DynamicTextContent extends UpdatingOpcode {
+  public type = 'dynamic-text';
+
+  public tag: Tag;
+  public lastRevision: number;
+
+  constructor(public node: Simple.Text, private reference: VersionedReference<Opaque>, private lastValue: string) {
+    super();
+    this.tag = reference.tag;
+    this.lastRevision = this.tag.value();
+  }
+
+  evaluate() {
+    let { reference, tag } = this;
+
+    if (!tag.validate(this.lastRevision)) {
+      this.lastRevision = tag.value();
+      this.update(reference.value());
+    }
   }
 
   update(value: Opaque): void {

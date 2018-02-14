@@ -1,4 +1,4 @@
-import { Reference, Tag } from '@glimmer/reference';
+import { Reference, Tag, isConst } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
 import { check, CheckString, CheckSafeString, CheckNode, CheckDocumentFragment } from '@glimmer/debug';
 import { Opaque } from '@glimmer/util';
@@ -8,6 +8,7 @@ import { ConditionalReference } from '../../references';
 import { isCurriedComponentDefinition, isComponentDefinition } from '../../component/curried-component';
 import { CheckPathReference } from './-debug-strip';
 import { isString, isEmpty, isSafeString, isFragment, isNode } from '../../dom/normalize';
+import DynamicTextContent from '../../vm/content/text';
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {
   static create(inner: Reference<Opaque>): IsCurriedComponentDefinitionReference {
@@ -52,24 +53,6 @@ export class ContentTypeReference implements Reference<ContentType> {
     } else {
       return ContentType.Other;
     }
-
-    /*
-    if (isString(value)) {
-      return ContentType.String;
-    } else if (isEmpty(value)) {
-      return ContentType.Empty;
-    } else if (isSafeString(value)) {
-      return ContentType.SafeString;
-    } else if (isCurriedComponentDefinition(value)) {
-      return ContentType.Component;
-    } else if (isFragment(value)) {
-      return ContentType.Fragment;
-    } else if (isNode(value)) {
-      return ContentType.Node;
-    } else {
-      return ContentType.Other;
-    }
-    */
   }
 }
 
@@ -97,7 +80,11 @@ APPEND_OPCODES.add(Op.AppendText, vm => {
   let rawValue = reference.value();
   let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
 
-  vm.elements().appendDynamicText(value);
+  let node = vm.elements().appendDynamicText(value);
+
+  if (!isConst(reference)) {
+    vm.updateWith(new DynamicTextContent(node, reference, value));
+  }
 });
 
 APPEND_OPCODES.add(Op.AppendDocumentFragment, vm => {
