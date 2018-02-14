@@ -34,7 +34,7 @@ export function debugSlice(program: CompileTimeProgram, start: number, end: numb
     let _size = 0;
     for (let i=start; i<end; i = i + _size) {
       let { type, op1, op2, op3, size } = program.opcode(i);
-      let [name, params] = debug(constants as Recast<CompileTimeConstants, DebugConstants>, type, op1, op2, op3);
+      let [name, params] = debug(i, constants as Recast<CompileTimeConstants, DebugConstants>, type, op1, op2, op3);
       console.log(`${i}. ${logOpcode(name, params)}`);
       _size = size;
     }
@@ -80,7 +80,7 @@ function json(param: Opaque) {
   }
 }
 
-export function debug(c: DebugConstants, op: Op, ...operands: number[]): [string, object] {
+export function debug(pos: number, c: DebugConstants, op: Op, ...operands: number[]): [string, object] {
   let metadata = METADATA[op];
 
   if (!metadata) {
@@ -93,6 +93,9 @@ export function debug(c: DebugConstants, op: Op, ...operands: number[]): [string
     let op = operands[index];
 
     switch (operand.type) {
+      case 'to':
+        out[operand.name] = pos + op;
+        break;
       case 'i32':
       case 'symbol':
       case 'block':
