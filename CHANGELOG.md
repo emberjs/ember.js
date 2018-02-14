@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### 2.17.2 (February 14, 2018)
+
+- [#16245](https://github.com/emberjs/ember.js/pull/16245) [BUGFIX] Ensure errors in deferred component hooks can be recovered.
+
 ### 2.17.1 (February 13, 2018)
 
 - [#16174](https://github.com/emberjs/ember.js/pull/16174) [BUGFIX] Enable _some_ recovery of errors thrown during render.
