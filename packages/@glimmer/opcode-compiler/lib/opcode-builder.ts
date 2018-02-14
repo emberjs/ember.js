@@ -157,8 +157,20 @@ export class SimpleOpcodeBuilder {
     this.invokePreparedComponent(false);
   }
 
-  dynamicContent() {
-    this.push(Op.DynamicContent);
+  protected dynamicContent(trusting: boolean) {
+    if (trusting) {
+      this.trustingDynamicContent();
+    } else {
+      this.cautiousDynamicContent();
+    }
+  }
+
+  trustingDynamicContent() {
+    this.push(Op.TrustingDynamicContent);
+  }
+
+  cautiousDynamicContent() {
+    this.push(Op.CautiousDynamicContent);
   }
 
   beginComponentTransaction() {
@@ -757,90 +769,43 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.popFrame();
   }
 
-  builtInGuardedAppend() {
-    this.dup();
-
+  stdAppend(trusting: boolean) {
     this.startLabels();
-
+    this.dup();
     this.isComponent();
-
     this.enter(2);
-
     this.jumpUnless('ELSE');
-
     this.pushCurriedComponent();
-
     this.pushDynamicComponentInstance();
-
     this.invokeComponent(null, null, null, false, null, null);
-
     this.exit();
-
     this.return();
-
     this.label('ELSE');
-
-    this.dynamicContent();
-
+    this.dynamicContent(trusting);
     this.exit();
-
     this.return();
     this.stopLabels();
   }
 
   guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
-    this.startLabels();
-
     this.pushFrame();
 
+    this.startLabels();
     this.returnTo('END');
 
+    this.expr(expression);
+
     if (this.stdLib) {
-      this.primitive(!!trusting);
-      this.load(Register.t0);
-      this.expr(expression);
-      this.primitive(this.stdLib.guardedAppend as Recast<VMHandle, number>);
+      this.primitive(trusting ? this.stdLib.trustingGuardedAppend : this.stdLib.cautiousGuardedAppend as Recast<VMHandle, number>);
       this.invokeVirtual();
     } else {
-
-      this.expr(expression);
-
-      this.dup();
-
-      this.isComponent();
-
-      this.enter(2);
-
-      this.jumpUnless('ELSE');
-
-      this.pushCurriedComponent();
-
-      this.pushDynamicComponentInstance();
-
-      this.invokeComponent(null, null, null, false, null, null);
-
-      this.exit();
-
-      this.return();
-
-      this.label('ELSE');
-
-      this.primitive(!!trusting);
-      this.load(Register.t0);
-
-      this.dynamicContent();
-
-      this.exit();
-
-      this.return();
+      this.stdAppend(trusting);
     }
 
     this.label('END');
 
-    this.popFrame();
-
     this.stopLabels();
-
+    this.popFrame();
   }
 
   yield(to: number, params: Option<WireFormat.Core.Params>) {

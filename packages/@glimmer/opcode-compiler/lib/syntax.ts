@@ -191,21 +191,7 @@ export function statementCompiler() {
 
     if (returned === true) return;
 
-    let isGet = WireFormat.isGet(value);
-    let isMaybeLocal = WireFormat.isMaybeLocal(value);
-
-    if (trusting) {
-      builder.guardedAppend(value, true);
-    } else {
-      if (isGet || isMaybeLocal) {
-        builder.guardedAppend(value, false);
-      } else {
-        builder.expr(value);
-        builder.primitive(false);
-        builder.load(Register.t0);
-        builder.dynamicContent();
-      }
-    }
+    builder.guardedAppend(value, trusting);
   });
 
   STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {

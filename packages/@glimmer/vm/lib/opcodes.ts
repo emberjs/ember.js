@@ -291,14 +291,24 @@ export const enum Op {
   Comment,
 
   /**
-   * Operation: Append a Dynamic node based on .
+   * Operation: Append a Dynamic node, trusting the content.
    * Format:
-   *   (DynamicContent isTrusting:boolean)
+   *   (TrustingDynamicContent)
    * Operand Stack:
    *   ..., VersionedPathReference →
    *   ...
    */
-  DynamicContent,
+  TrustingDynamicContent,
+
+  /**
+   * Operation: Append a Dynamic node, not trusting the content.
+   * Format:
+   *   (CautiousDynamicContent)
+   * Operand Stack:
+   *   ..., VersionedPathReference →
+   *   ...
+   */
+  CautiousDynamicContent,
 
   /**
    * Operation: Open a new Element named `tag`.
