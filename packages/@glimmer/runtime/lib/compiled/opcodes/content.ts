@@ -1,6 +1,6 @@
 import { isConst, Reference, Tag, VersionedReference } from '@glimmer/reference';
 import { Op, Register } from '@glimmer/vm';
-import { check, expectStackChange } from '@glimmer/debug';
+import { check } from '@glimmer/debug';
 import { Opaque } from '@glimmer/util';
 
 import { DynamicContentWrapper } from '../../vm/content/dynamic';
@@ -20,25 +20,32 @@ export class IsCurriedComponentDefinitionReference extends ConditionalReference 
   }
 }
 
-APPEND_OPCODES.add(Op.DynamicContent, (vm) => {
+APPEND_OPCODES.add(Op.CautiousDynamicContent, (vm) => {
   let reference = check(vm.stack.pop(), CheckPathReference);
-  let isTrusting = vm.fetchValue(Register.t0);
 
   let value = reference.value();
   let content: DynamicContentWrapper;
 
-  if (isTrusting) {
-    content = vm.elements().appendTrustingDynamicContent(value);
-  } else {
-    content = vm.elements().appendCautiousDynamicContent(value);
+  content = vm.elements().appendCautiousDynamicContent(value);
+
+  if (!isConst(reference)) {
+    vm.updateWith(new UpdateDynamicContentOpcode(reference, content));
   }
+});
+
+APPEND_OPCODES.add(Op.TrustingDynamicContent, (vm) => {
+  let reference = check(vm.stack.pop(), CheckPathReference);
+
+  let value = reference.value();
+  let content: DynamicContentWrapper;
+
+  content = vm.elements().appendTrustingDynamicContent(value);
 
   if (!isConst(reference)) {
     vm.updateWith(new UpdateDynamicContentOpcode(reference, content));
   }
 
   vm.loadValue(Register.t0, null);
-  expectStackChange(vm.stack, -1, 'DynamicContent');
 });
 
 class UpdateDynamicContentOpcode extends UpdatingOpcode {
