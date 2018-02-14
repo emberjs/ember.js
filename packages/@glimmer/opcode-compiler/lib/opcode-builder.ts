@@ -38,6 +38,7 @@ import {
   ComponentBuilder
 } from './wrapped-component';
 import { InstructionEncoder, Operand, OpcodeSize } from "@glimmer/encoder";
+import { ContentType } from "../../runtime/lib/compiled/opcodes/content";
 
 export type Label = string;
 
@@ -144,6 +145,10 @@ export class SimpleOpcodeBuilder {
 
   reserve(name: Op) {
     this.encoder.encode(name, 0, -1);
+  }
+
+  reserveWithOperand(name: Op, operand: number) {
+    this.encoder.encode(name, 0, -1, operand);
   }
 
   reserveMachine(name: Op) {
@@ -619,6 +624,10 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.push(Op.PrimitiveReference);
   }
 
+  reifyU32() {
+    this.push(Op.ReifyU32);
+  }
+
   helper(helper: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
     this.pushFrame();
     this.compileArgs(params, hash, null, true);
@@ -656,6 +665,15 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   jumpUnless(target: string) {
     this.reserve(Op.JumpUnless);
     this.labels.target(this.pos, target);
+  }
+
+  jumpEq(value: number, target: string) {
+    this.reserveWithOperand(Op.JumpEq, value);
+    this.labels.target(this.pos, target);
+  }
+
+  assertSame() {
+    this.push(Op.AssertSame);
   }
 
   // internal helpers
@@ -771,17 +789,20 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   stdAppend(trusting: boolean) {
     this.startLabels();
-    this.dup();
-    this.isComponent();
+    this.contentType();
     this.enter(2);
-    this.jumpUnless('ELSE');
+    this.assertSame();
+    this.reifyU32();
+    this.jumpEq(ContentType.Component, 'COMPONENT');
+    this.pop(2);
+    this.dynamicContent(trusting);
+    this.jump('END');
+    this.label('COMPONENT');
+    this.pop(2);
     this.pushCurriedComponent();
     this.pushDynamicComponentInstance();
     this.invokeComponent(null, null, null, false, null, null);
-    this.exit();
-    this.return();
-    this.label('ELSE');
-    this.dynamicContent(trusting);
+    this.label('END');
     this.exit();
     this.return();
     this.stopLabels();
@@ -994,6 +1015,10 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   isComponent() {
     this.push(Op.IsComponent);
+  }
+
+  contentType() {
+    this.push(Op.ContentType);
   }
 
   curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {

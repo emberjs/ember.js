@@ -37,9 +37,18 @@ export class InstructionEncoder {
     this.size = this.buffer.length;
   }
 
-  patch(position: number, operand: number) {
+  patch(position: number, target: number) {
     if (this.buffer[position + 1] === -1) {
-      this.buffer[position + 1] = operand;
+      this.buffer[position + 1] = target;
+    } else {
+      throw new Error('Trying to patch operand in populated slot instead of a reserved slot.');
+    }
+  }
+
+  patchWith(position: number, target: number, operand: number) {
+    if (this.buffer[position + 1] === -1) {
+      this.buffer[position + 1] = target;
+      this.buffer[position + 2] = operand;
     } else {
       throw new Error('Trying to patch operand in populated slot instead of a reserved slot.');
     }
