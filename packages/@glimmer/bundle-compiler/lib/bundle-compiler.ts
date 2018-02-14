@@ -160,10 +160,16 @@ export default class BundleCompiler<TemplateMeta> {
     let locator = normalizeLocator(_locator);
     let { program, resolver, referrer, macros } = this.compileOptions(locator);
     let block = this.preprocess(null, '');
-    let eagerBuilder = new EagerOpcodeBuilder(program, resolver, referrer, macros, {block, referrer: null}, false);
-    eagerBuilder.builtInGuardedAppend();
-    let guardedAppend = eagerBuilder.commit(program.heap, 0);
-    return { main, guardedAppend };
+
+    let eagerBuilder1 = new EagerOpcodeBuilder(program, resolver, referrer, macros, {block, referrer: null}, false);
+    eagerBuilder1.stdAppend(true);
+    let trustingGuardedAppend = eagerBuilder1.commit(program.heap, 0);
+
+    let eagerBuilder2 = new EagerOpcodeBuilder(program, resolver, referrer, macros, {block, referrer: null}, false);
+    eagerBuilder2.stdAppend(false);
+    let cautiousGuardedAppend = eagerBuilder2.commit(program.heap, 0);
+
+    return { main, trustingGuardedAppend, cautiousGuardedAppend };
   }
 
   /**

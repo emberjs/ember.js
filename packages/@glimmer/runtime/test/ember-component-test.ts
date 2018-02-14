@@ -1781,11 +1781,11 @@ QUnit.test('it does not work on optimized appends', () => {
 
   appendViewFor('{{foo}}', { foo: definition });
 
-  assertAppended('[object Object]');
+  assertEmberishElement('div', {}, 'foo bar');
 
   rerender();
 
-  assertAppended('[object Object]');
+  assertEmberishElement('div', {}, 'foo bar');
 
   view.rerender({ foo: 'foo' });
 
@@ -1793,7 +1793,7 @@ QUnit.test('it does not work on optimized appends', () => {
 
   view.rerender({ foo: definition });
 
-  assertAppended('[object Object]');
+  assertEmberishElement('div', {}, 'foo bar');
 });
 
 QUnit.test('it works on unoptimized appends (dot paths)', () => {
