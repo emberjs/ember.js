@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v3.1.0-beta.1 (February 14, 2018)
+
+- [emberjs/rfcs#276](https://github.com/emberjs/rfcs/blob/master/text/0276-named-args.md) [FEATURE named-args] enabled by default.
+- [emberjs/rfcs#278](https://github.com/emberjs/rfcs/blob/master/text/0278-template-only-components.md) [FEATURE template-only-glimmer-components] Enable-able via `@ember/optional-features` addon.
+- [emberjs/rfcs#280](https://github.com/emberjs/rfcs/blob/master/text/0280-remove-application-wrapper.md) [FEATURE application-template-wrapper] Enable-able via `@ember/optional-features` addon.
+- [emberjs/rfcs#281](https://github.com/emberjs/rfcs/blob/master/text/0281-es5-getters.md) [FEATURE native-es5-getters] Enabled by default.
+- [#15828](https://github.com/emberjs/ember.js/pull/15828) Upgrade glimmer-vm to latest version.
+- [#16212](https://github.com/emberjs/ember.js/pull/16212) Update to backburner.js@2.2.0.
+
 ### v3.0.0 (February 13, 2018)
 
 - [#16218](https://github.com/emberjs/ember.js/pull/16218) [BUGFIX beta] Prevent errors when using const `(get arr 1)`.
