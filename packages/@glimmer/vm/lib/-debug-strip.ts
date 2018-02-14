@@ -230,6 +230,16 @@ OPCODE_METADATA(Op.JumpUnless, {
   stackChange: -1
 });
 
+OPCODE_METADATA(Op.JumpEq, {
+  name: 'JumpEq',
+  ops: [I32('to'), I32('comparison')],
+  operands: 2
+});
+
+OPCODE_METADATA(Op.AssertSame, {
+  name: 'AssertSame'
+});
+
 OPCODE_METADATA(Op.PushFrame, {
   name: 'PushFrame',
   stackChange: 2
@@ -291,6 +301,11 @@ OPCODE_METADATA(Op.ReturnTo, {
 
 OPCODE_METADATA(Op.IsComponent, {
   name: 'IsComponent'
+});
+
+OPCODE_METADATA(Op.ContentType, {
+  name: 'ContentType',
+  stackChange: 1
 });
 
 OPCODE_METADATA(Op.CurryComponent, {
@@ -521,6 +536,11 @@ OPCODE_METADATA(Op.Primitive, {
 
 OPCODE_METADATA(Op.PrimitiveReference, {
   name: 'PrimitiveReference'
+});
+
+OPCODE_METADATA(Op.ReifyU32, {
+  name: 'ReifyU32',
+  stackChange: 1
 });
 
 OPCODE_METADATA(Op.Dup, {

@@ -7,8 +7,9 @@ import { DynamicContentWrapper } from '../../vm/content/dynamic';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { ConditionalReference } from '../../references';
-import { isCurriedComponentDefinition } from '../../component/curried-component';
+import { isCurriedComponentDefinition, isComponentDefinition } from '../../component/curried-component';
 import { CheckPathReference } from './-debug-strip';
+import { isString, isEmpty, isSafeString, isFragment, isNode } from '../../dom/normalize';
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {
   static create(inner: Reference<Opaque>): IsCurriedComponentDefinitionReference {
@@ -17,6 +18,52 @@ export class IsCurriedComponentDefinitionReference extends ConditionalReference 
 
   toBool(value: Opaque): boolean {
     return isCurriedComponentDefinition(value);
+  }
+}
+
+export const enum ContentType {
+  Component,
+  String,
+  Empty,
+  SafeString,
+  Fragment,
+  Node,
+  Other
+}
+
+export class ContentTypeReference implements Reference<ContentType> {
+  public tag: Tag;
+
+  constructor(private inner: Reference<Opaque>) {
+    this.tag = inner.tag;
+  }
+
+  value(): ContentType {
+    let value = this.inner.value();
+
+    if (isComponentDefinition(value)) {
+      return ContentType.Component;
+    } else {
+      return ContentType.Other;
+    }
+
+    /*
+    if (isString(value)) {
+      return ContentType.String;
+    } else if (isEmpty(value)) {
+      return ContentType.Empty;
+    } else if (isSafeString(value)) {
+      return ContentType.SafeString;
+    } else if (isCurriedComponentDefinition(value)) {
+      return ContentType.Component;
+    } else if (isFragment(value)) {
+      return ContentType.Fragment;
+    } else if (isNode(value)) {
+      return ContentType.Node;
+    } else {
+      return ContentType.Other;
+    }
+    */
   }
 }
 
