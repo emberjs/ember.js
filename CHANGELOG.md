@@ -86,6 +86,10 @@
 - [#16036](https://github.com/emberjs/ember.js/pull/16036) [CLEANUP] Convert ember-metal accessors tests to new style
 - [#16023](https://github.com/emberjs/ember.js/pull/16023) Make event dispatcher work without jQuery
 
+### 2.18.2 (February 14, 2018)
+
+- [#16245](https://github.com/emberjs/ember.js/pull/16245) [BUGFIX] Ensure errors in deferred component hooks can be recovered.
+
 ### 2.18.1 (February 13, 2018)
 
 - [#16174](https://github.com/emberjs/ember.js/pull/16174) [BUGFIX] Enable _some_ recovery of errors thrown during render.
