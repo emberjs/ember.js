@@ -1,16 +1,12 @@
 # Ember Changelog
 
-### 3.0.0-beta.6 (February 5, 2018)
+### v3.0.0 (February 13, 2018)
 
+- [#16218](https://github.com/emberjs/ember.js/pull/16218) [BUGFIX beta] Prevent errors when using const `(get arr 1)`.
+- [#16241](https://github.com/emberjs/ember.js/pull/16241) [BUGFIX lts] Avoid excessively calling Glimmer AST transforms.
 - [#16199](https://github.com/emberjs/ember.js/pull/16199) [BUGFIX] Mention "computed properties" in the assertion message
 - [#16200](https://github.com/emberjs/ember.js/pull/16200) [BUGFIX] Prevent test error by converting illegal characters
-
-### 3.0.0-beta.5 (January 29, 2018)
-
 - [#16179](https://github.com/emberjs/ember.js/pull/16179) [BUGFIX] Fix a few bugs in the caching ArrayProxy implementation
-
-### 3.0.0-beta.4 (January 25, 2018)
-
 - [#16160](https://github.com/emberjs/ember.js/pull/16160) [BUGFIX] Remove humanize() call from generated test descriptions
 - [#16101](https://github.com/emberjs/ember.js/pull/16101) [CLEANUP] Remove legacy ArrayProxy features
 - [#16116](https://github.com/emberjs/ember.js/pull/16116) [CLEANUP] Remove private enumerable observers
@@ -22,17 +18,10 @@
 - [#16163](https://github.com/emberjs/ember.js/pull/16163) [CLEANUP] Remove unused path caches
 - [#16169](https://github.com/emberjs/ember.js/pull/16169) [BUGFIX] Fix various issues with descriptor trap.
 - [#16174](https://github.com/emberjs/ember.js/pull/16174) [BUGFIX] Enable _some_ recovery of errors thrown during render.
-
-
-### 3.0.0-beta.3 (January 15, 2018)
-
 - [#16095](https://github.com/emberjs/ember.js/pull/16095) [CLEANUP] Fix ember-2-legacy support for Ember.Binding.
 - [#16117](https://github.com/emberjs/ember.js/pull/16117) [BUGFIX] link-to active class applied when params change
 - [#16097](https://github.com/emberjs/ember.js/pull/16097) / [#16110](https://github.com/emberjs/ember.js/pull/16110) [CLEANUP] Remove `sync` runloop queue.
 - [#16099](https://github.com/emberjs/ember.js/pull/16099) [CLEANUP] Remove custom eventManager support.
-
-### 3.0.0-beta.2 (January 8, 2018)
-
 - [#16067](https://github.com/emberjs/ember.js/pull/16067) [BUGFIX] Fix issues with `run.debounce` with only method and wait.
 - [#16045](https://github.com/emberjs/ember.js/pull/16045) [BUGFIX] Fix double debug output
 - [#16050](https://github.com/emberjs/ember.js/pull/16050) [BUGFIX] Add inspect and constructor to list of descriptor exceptions
@@ -40,10 +29,6 @@
 - [#16084](https://github.com/emberjs/ember.js/pull/16084) [BUGFIX] Update `computed.sort` docs to avoid state leakage
 - [#16087](https://github.com/emberjs/ember.js/pull/16087) [BUGFIX] Ensure `App.visit` resolves when rendering completed. 
 - [#16090](https://github.com/emberjs/ember.js/pull/16090) [CLEANUP] Remove Ember.Binding support
-
-
-### 3.0.0-beta.1 (January 1, 2018)
-
 - [#15901](https://github.com/emberjs/ember.js/pull/15901) [CLEANUP] Remove Ember.Handlebars.SafeString
 - [#15894](https://github.com/emberjs/ember.js/pull/15894) [CLEANUP] removed `immediateObserver`
 - [#15897](https://github.com/emberjs/ember.js/pull/15897) [CLEANUP] Remove controller wrapped param deprecation
