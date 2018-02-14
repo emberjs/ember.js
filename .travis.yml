@@ -69,5 +69,4 @@ env:
     - TEST_SUITE=node
     - TEST_SUITE=blueprints
     - TEST_SUITE=travis-browsers
-    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha PUBLISH=true
     - TEST_SUITE=code-quality
