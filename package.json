@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "2.16.3",
+  "version": "2.16.4",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -124,5 +124,8 @@
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
+  },
+  "publishConfig": {
+    "tag": "old"
   }
 }
