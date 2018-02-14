@@ -55,7 +55,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
 
   [`@test _renderMode: rehydrate`](assert) {
 
-    let initialHTML = `<!--%+block:0%--><!--%+block:1%--><!--%+block:2%--><!--%+block:3%--><!--%+block:4%--><!--%+block:5%--><!--%+block:6%--><div class=\"foo\">Hi, Mom!</div><!--%-block:6%--><!--%-block:5%--><!--%-block:4%--><!--%-block:3%--><!--%-block:2%--><!--%-block:1%--><!--%-block:0%-->`;
+    let initialHTML = `<!--%+b:0%--><!--%+b:1%--><!--%+b:2%--><!--%+b:3%--><!--%+b:4%--><!--%+b:5%--><!--%+b:6%--><div class=\"foo\">Hi, Mom!</div><!--%-b:6%--><!--%-b:5%--><!--%-b:4%--><!--%-b:3%--><!--%-b:2%--><!--%-b:1%--><!--%-b:0%-->`;
 
     this.addTemplate('index', '<div class="foo">Hi, Mom!</div>');
     let rootElement = document.createElement('div');
@@ -89,7 +89,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
     return this.visit('/', bootOptions).then(()=> {
       // The exact contents of this may change when the underlying
       // implementation changes in the glimmer vm
-      let expectedTemplate = `<!--%+block:0%--><!--%+block:1%--><!--%+block:2%--><!--%+block:3%--><!--%+block:4%--><!--%+block:5%--><!--%+block:6%--><div class=\"foo\">Hi, Mom!</div><!--%-block:6%--><!--%-block:5%--><!--%-block:4%--><!--%-block:3%--><!--%-block:2%--><!--%-block:1%--><!--%-block:0%-->`;
+      let expectedTemplate = `<!--%+b:0%--><!--%+b:1%--><!--%+b:2%--><!--%+b:3%--><!--%+b:4%--><!--%+b:5%--><!--%+b:6%--><div class=\"foo\">Hi, Mom!</div><!--%-b:6%--><!--%-b:5%--><!--%-b:4%--><!--%-b:3%--><!--%-b:2%--><!--%-b:1%--><!--%-b:0%-->`;
       assert.equal(rootElement.innerHTML, expectedTemplate, 'precond - without serialize flag renders as expected');
     });
   }
