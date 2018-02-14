@@ -22,9 +22,14 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKI
     if (DEBUG) {
       debugStack = context.env.debugStack;
     }
-    context[methodName]();
-    inTransaction = false;
-    counter++;
+
+    try {
+      context[methodName]();
+    } finally {
+      inTransaction = false;
+      counter++;
+    }
+
     return shouldReflush;
   };
 
