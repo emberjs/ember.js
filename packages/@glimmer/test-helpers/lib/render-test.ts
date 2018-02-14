@@ -895,7 +895,7 @@ function isTestFunction(
 }
 
 export function renderTemplate(src: string, env: LazyTestEnvironment, self: PathReference<Opaque>, builder: ElementBuilder) {
-  let template = env.compile(src);
+  let template = env.preprocess(src);
   let iterator = env.renderMain(template, self, builder);
   return renderSync(env, iterator);
 }
