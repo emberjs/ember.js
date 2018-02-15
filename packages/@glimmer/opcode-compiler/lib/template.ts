@@ -1,4 +1,4 @@
-import { CompilableProgram, Template, Opaque, Option } from '@glimmer/interfaces';
+import { CompilableProgram, Template, Opaque, Option, ParsedLayout } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
@@ -6,9 +6,9 @@ import {
   Statement
 } from '@glimmer/wire-format';
 import CompilableTemplate from './compilable-template';
-import { ParsedLayout } from './interfaces';
 import { WrappedBuilder } from "./wrapped-component";
 import { CompileOptions, TemplateOptions } from "./syntax";
+import { LazyCompiler } from "@glimmer/opcode-compiler";
 
 export interface TemplateFactory<TemplateMeta> {
   /**
@@ -28,7 +28,7 @@ export interface TemplateFactory<TemplateMeta> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: TemplateOptions<Opaque>): Template<TemplateMeta>;
+  create(env: LazyCompiler): Template<TemplateMeta>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -36,7 +36,7 @@ export interface TemplateFactory<TemplateMeta> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create<U>(env: TemplateOptions<Opaque>, meta: U): Template<TemplateMeta & U>;
+  create<U>(env: LazyCompiler, meta: U): Template<TemplateMeta & U>;
 }
 
 let clientId = 0;
@@ -51,12 +51,12 @@ export default function templateFactory<TemplateMeta, U>(serializedTemplate: Ser
 export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
-  let create = (options: TemplateOptions<Opaque>, envMeta?: {}) => {
+  let create = (compiler: LazyCompiler, envMeta?: {}) => {
     let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new TemplateImpl(options, { id, block: parsedBlock, referrer: newMeta });
+    return new TemplateImpl(compiler, { id, block: parsedBlock, referrer: newMeta });
   };
   return { id, meta, create };
 }
@@ -71,7 +71,7 @@ class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
   public referrer: TemplateMeta;
   private statements: Statement[];
 
-  constructor(private options: TemplateOptions<TemplateMeta>, private parsedLayout: ParsedLayout<TemplateMeta>) {
+  constructor(private compiler: LazyCompiler, private parsedLayout: ParsedLayout<TemplateMeta>) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
@@ -82,28 +82,29 @@ class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
 
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
-    return this.layout = compilable(this.parsedLayout, this.options, false);
+    return this.layout = compilable(this.parsedLayout, this.compiler, false);
   }
 
   asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
-    return this.partial = compilable(this.parsedLayout, this.options, true);
+    return this.partial = compilable(this.parsedLayout, this.compiler, true);
   }
 
   asWrappedLayout(): CompilableProgram {
     if (this.wrappedLayout) return this.wrappedLayout;
-    let compileOptions: CompileOptions<TemplateMeta> = assign({}, this.options, {
+    let compileOptions: CompileOptions<TemplateMeta> = {
+      compiler: this.compiler,
       asPartial: false,
       referrer: this.referrer
-    });
+    };
     return this.wrappedLayout = new WrappedBuilder(compileOptions, this.parsedLayout);
   }
 }
 
-export function compilable<TemplateMeta>(layout: ParsedLayout<TemplateMeta>, options: TemplateOptions<Opaque>, asPartial: boolean) {
+export function compilable<TemplateMeta>(layout: ParsedLayout<TemplateMeta>, compiler: LazyCompiler, asPartial: boolean) {
   let { block, referrer } = layout;
   let { hasEval, symbols } = block;
-  let compileOptions = assign({}, options, { asPartial, referrer });
+  let compileOptions = { compiler, asPartial, referrer };
 
   return new CompilableTemplate(block.statements, layout, compileOptions, { referrer, hasEval, symbols });
 }

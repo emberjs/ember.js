@@ -195,7 +195,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
   preprocess<TemplateMeta>(template: string, meta?: TemplateMeta): Template<TemplateMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
-    return factory.create(this.compiler.templateOptions(), (meta || {}) as any as TemplateMeta);
+    return factory.create(this.compiler, (meta || {}) as any as TemplateMeta);
   }
 
   private registerComponent(name: string, type: ComponentKind, manager: ComponentManager<Opaque, Opaque>, layout: Option<number>, ComponentClass: Opaque, capabilities: ComponentCapabilities) {
