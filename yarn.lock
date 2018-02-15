@@ -763,9 +763,9 @@ babel-plugin-member-expression-literals@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/babel-plugin-member-expression-literals/-/babel-plugin-member-expression-literals-1.0.1.tgz#cc5edb0faa8dc927170e74d6d1c02440021624d3"
 
-babel-plugin-nukable-import@^0.4.0:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/babel-plugin-nukable-import/-/babel-plugin-nukable-import-0.4.1.tgz#0b0400f28e729d89a9760ac6adf1ee99b994ebc7"
+babel-plugin-nukable-import@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/babel-plugin-nukable-import/-/babel-plugin-nukable-import-0.4.2.tgz#337995751e729e3a3a89c6ce710372e8421a1897"
   dependencies:
     amd-name-resolver "^1.0.0"
 
