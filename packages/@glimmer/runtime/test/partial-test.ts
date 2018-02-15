@@ -36,7 +36,7 @@ function render(template: Template, context={}) {
   let handle = compilable.compile();
 
   // TODO figure out what Heap and CompileTimeHeap not working
-  let templateIterator = renderMain(env.compileOptions.program as any, env, self, new TestDynamicScope(), clientBuilder(env, cursor), handle);
+  let templateIterator = renderMain(env.compiler.program as any, env, self, new TestDynamicScope(), clientBuilder(env, cursor), handle);
 
   let iteratorResult: IteratorResult<RenderResult>;
   do {

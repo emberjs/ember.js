@@ -19,9 +19,9 @@ import {
   TemplateIterator
 } from "@glimmer/runtime";
 import { Template } from "@glimmer/interfaces";
-import { templateFactory, TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor, PartialDefinition } from "@glimmer/opcode-compiler";
+import { templateFactory, PartialDefinition, LazyCompiler } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
-import { LazyConstants, Program } from "@glimmer/program";
+import { Program } from "@glimmer/program";
 import { TestDynamicScope } from "../../../environment";
 import TestEnvironment from '../../environment';
 import { ComponentKind } from '../../../render-test';
@@ -69,19 +69,23 @@ export type TestCompilationOptions = CompilationOptions<AnnotatedModuleLocator, 
 
 export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModuleLocator> {
   public resolver = new LazyRuntimeResolver();
-  protected program = new Program(new LazyConstants(this.resolver));
+  protected program: Program<AnnotatedModuleLocator>;
 
-  public compileOptions: TemplateOptions<any> = {
-    resolver: new LazyCompilerResolver(this.resolver),
-    program: this.program,
-    macros: new TestMacros(),
-    Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor
-  };
+  public compiler: LazyCompiler;
 
   constructor(options?: TestEnvironmentOptions) {
     super(testOptions(options));
+
+    this.compiler = LazyCompiler.default({
+      lookup: new LazyCompilerResolver(this.resolver),
+      resolver: this.resolver,
+      macros: new TestMacros()
+    });
+
+    this.program = this.compiler.program;
+
     // recursive field, so "unsafely" set one half late (but before the resolver is actually used)
-    this.resolver['options'] = this.compileOptions;
+    this.resolver['compiler'] = this.compiler;
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
@@ -191,7 +195,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
   preprocess<TemplateMeta>(template: string, meta?: TemplateMeta): Template<TemplateMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
-    return factory.create(this.compileOptions, (meta || {}) as any as TemplateMeta);
+    return factory.create(this.compiler.templateOptions(), (meta || {}) as any as TemplateMeta);
   }
 
   private registerComponent(name: string, type: ComponentKind, manager: ComponentManager<Opaque, Opaque>, layout: Option<number>, ComponentClass: Opaque, capabilities: ComponentCapabilities) {
