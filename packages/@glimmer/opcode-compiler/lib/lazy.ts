@@ -1,10 +1,9 @@
-import { LazyOpcodeBuilder } from './opcode-builder';
-import { Macros, statementCompiler } from './syntax';
-import { Opaque, RuntimeResolver, Maybe, STDLib, Compiler, CompileTimeLookup, Option, ParsedLayout, CompileTimeConstants } from "@glimmer/interfaces";
+import { LazyOpcodeBuilder, EagerOpcodeBuilder, OpcodeBuilderConstructor } from './opcode-builder';
+import { Macros } from './syntax';
+import { compile } from './compile';
+import { Opaque, RuntimeResolver, Compiler, CompileTimeLookup, Option, ParsedLayout, CompileTimeConstants, CompilableBlock } from "@glimmer/interfaces";
 import { Program, LazyConstants } from "@glimmer/program";
-import { Statement } from "@glimmer/wire-format";
-import { DEBUG } from "@glimmer/local-debug-flags";
-import { debugSlice } from "@glimmer/opcode-compiler";
+import { Statement, Statements, Core, Expression } from "@glimmer/wire-format";
 
 export interface LazyCompilerOptions {
   lookup: CompileTimeLookup<Opaque>;
@@ -14,7 +13,7 @@ export interface LazyCompilerOptions {
   builder: typeof LazyOpcodeBuilder;
 }
 
-export class LazyCompiler implements Compiler {
+export class LazyCompiler implements Compiler<LazyOpcodeBuilder<Opaque>> {
   static default({ lookup, resolver, macros }: Pick<LazyCompilerOptions, 'lookup' | 'resolver' | 'macros'>) {
     let constants = new LazyConstants(resolver);
     let program = new Program(constants);
@@ -32,8 +31,6 @@ export class LazyCompiler implements Compiler {
 
     return compiler;
   }
-
-  private statementCompiler = statementCompiler();
 
   private constructor(private options: LazyCompilerOptions) {}
 
@@ -56,27 +53,23 @@ export class LazyCompiler implements Compiler {
     return null;
   }
 
-  add(statements: Statement[], containingLayout: ParsedLayout, asPartial: boolean): number {
-    let { referrer } = containingLayout;
-    let { builder: Builder, program } = this.options;
-    // let { program, resolver, macros, asPartial, Builder } = compiler;
-
-    let builder = new Builder(this, referrer, containingLayout, asPartial);
-
-    for (let i = 0; i < statements.length; i++) {
-      this.statementCompiler.compile(statements[i], builder);
-    }
-
-    let handle = builder.commit(program.heap, containingLayout.block.symbols.length);
-
-    if (DEBUG) {
-      let { heap } = program;
-      let start = heap.getaddr(handle);
-      let end = start + heap.sizeof(handle);
-
-      debugSlice(program, start, end);
-    }
-
-    return handle;
+  builderFor(referrer: Opaque, containingLayout: ParsedLayout, asPartial: boolean): LazyOpcodeBuilder<Opaque> {
+    return new LazyOpcodeBuilder(this, referrer, containingLayout, asPartial);
   }
+
+  add(statements: Statement[], containingLayout: ParsedLayout, asPartial: boolean): number {
+    return compile(statements, containingLayout, asPartial, this.options.builder as OpcodeBuilderConstructor, this);
+  }
+
+  // FIXME: Don't Copy Pasta
+  compileInline(sexp: Statements.Append, builder: EagerOpcodeBuilder<Opaque>): ['expr', Expression] | true {
+    let { inlines } = this.options.macros;
+    return inlines.compile(sexp, builder);
+  }
+
+  compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: EagerOpcodeBuilder<Opaque>): void {
+    let { blocks } = this.options.macros;
+    blocks.compile(name, params, hash, template, inverse, builder);
+  }
+
 }

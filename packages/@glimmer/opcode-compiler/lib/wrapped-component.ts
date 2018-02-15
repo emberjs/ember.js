@@ -1,10 +1,9 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, CompilableProgram, CompilableBlock } from '@glimmer/interfaces';
+import { ProgramSymbolTable, CompilableProgram, CompilableBlock, ParsedLayout } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
-  ComponentBuilder as IComponentBuilder,
-  ParsedLayout
+  ComponentBuilder as IComponentBuilder
 } from './interfaces';
 
 import { CompileOptions } from './syntax';
@@ -20,7 +19,7 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private referrer: TemplateMeta;
 
-  constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>) {
+  constructor(public options: CompileOptions<TemplateMeta, OpcodeBuilder<TemplateMeta>>, private layout: ParsedLayout<TemplateMeta>) {
     let { block } = layout;
 
     this.symbolTable = {
@@ -59,10 +58,8 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
     //        Exit
 
     let { options, layout, referrer } = this;
-    let { program, resolver, macros, asPartial } = options;
-    let { Builder } = options;
-
-    let b = new Builder(program, resolver, referrer, macros, layout, asPartial);
+    let { compiler, asPartial } = options;
+    let b = compiler.builderFor(referrer, layout, asPartial);
 
     b.startLabels();
 
@@ -95,10 +92,10 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
 
     b.stopLabels();
 
-    let handle = b.commit(options.program.heap, layout.block.symbols.length);
+    let handle = b.commit();
 
     if (DEBUG) {
-      let { program, program: { heap } } = options;
+      let { program, program: { heap } } = compiler;
       let start = heap.getaddr(handle);
       let end = start + heap.sizeof(handle);
       debugSlice(program, start, end);

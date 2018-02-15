@@ -7,7 +7,7 @@ export default class TestMacros extends Macros {
   constructor() {
     super();
 
-    let { blocks, inlines} = this;
+    let { blocks, inlines } = this;
 
     blocks.add('identity', (_params, _hash, template, _inverse, builder) => {
       builder.invokeStaticBlock(template!);

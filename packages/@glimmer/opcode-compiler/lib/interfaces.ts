@@ -1,11 +1,10 @@
 import {
-  Opaque,
   Option,
   CompilableBlock,
   ComponentCapabilities,
   CompileTimeProgram,
 } from '@glimmer/interfaces';
-import { Core, SerializedTemplateBlock } from '@glimmer/wire-format';
+import { Core } from '@glimmer/wire-format';
 import { Macros } from './syntax';
 
 export interface EagerResolver<Locator> {

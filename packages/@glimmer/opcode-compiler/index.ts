@@ -8,6 +8,7 @@ export {
 } from './lib/syntax';
 
 export * from './lib/lazy';
+export * from './lib/compile';
 
 export {
   LazyOpcodeBuilder,
