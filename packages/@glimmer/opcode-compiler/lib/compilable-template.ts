@@ -1,10 +1,10 @@
 import {
   CompilableTemplate,
-  STDLib,
   ProgramSymbolTable,
   CompilableProgram,
   Option,
-  ParsedLayout
+  ParsedLayout,
+  Opaque
 } from '@glimmer/interfaces';
 import { Statement, SerializedTemplateBlock } from '@glimmer/wire-format';
 import { CompileOptions, statementCompiler, Compilers } from './syntax';
@@ -12,7 +12,7 @@ import { CompileOptions, statementCompiler, Compilers } from './syntax';
 export const PLACEHOLDER_HANDLE = -1;
 
 export default class CompilableTemplateImpl<SymbolTable, TemplateMeta> implements CompilableTemplate<SymbolTable> {
-  static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): CompilableProgram {
+  static topLevel<TemplateMeta>(block: SerializedTemplateBlock, options: CompileOptions<Opaque, TemplateMeta>): CompilableProgram {
     return new CompilableTemplateImpl<ProgramSymbolTable, TemplateMeta>(
       block.statements,
       { block, referrer: options.referrer },
@@ -25,7 +25,7 @@ export default class CompilableTemplateImpl<SymbolTable, TemplateMeta> implement
 
   private statementCompiler: Compilers<Statement>;
 
-  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<TemplateMeta>, public symbolTable: SymbolTable) {
+  constructor(private statements: Statement[], private containingLayout: ParsedLayout, private options: CompileOptions<Opaque, TemplateMeta>, public symbolTable: SymbolTable) {
     this.statementCompiler = statementCompiler();
   }
 

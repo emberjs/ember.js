@@ -37,7 +37,7 @@ export class Compilers<T extends TupleSyntax> {
 
 let _statementCompiler: Compilers<WireFormat.Statement>;
 
-export function statementCompiler() {
+export function statementCompiler(): Compilers<WireFormat.Statement> {
   if (_statementCompiler) {
     return _statementCompiler;
   }
@@ -186,8 +186,7 @@ export function statementCompiler() {
   STATEMENTS.add(Ops.Append, (sexp: S.Append, builder) => {
     let [, value, trusting] = sexp;
 
-    let { inlines } = builder.compiler.macros;
-    let returned = inlines.compile(sexp, builder) || value;
+    let returned = builder.compileInline(sexp) || value;
 
     if (returned === true) return;
 
@@ -202,8 +201,7 @@ export function statementCompiler() {
     let templateBlock = template && template;
     let inverseBlock = inverse && inverse;
 
-    let { blocks } = builder.macros;
-    blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
+    builder.compileBlock(name, params, hash, templateBlock, inverseBlock);
   });
 
   const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
@@ -790,8 +788,8 @@ export interface TemplateOptions<TemplateMeta> {
   resolver: CompileTimeLookup<TemplateMeta>;
 }
 
-export interface CompileOptions<TemplateMeta> {
-  compiler: Compiler;
+export interface CompileOptions<TemplateMeta, Builder = Opaque> {
+  compiler: Compiler<Builder>;
   asPartial: boolean;
   referrer: TemplateMeta;
 }
