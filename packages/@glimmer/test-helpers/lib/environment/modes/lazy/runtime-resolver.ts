@@ -27,7 +27,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
     }
   }
 
-  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<{}>) => Invocation): Invocation {
+  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: LazyCompiler) => Invocation): Invocation {
     let invocationHandle = this.lookup('template', templateName);
 
     if (invocationHandle) {
@@ -36,7 +36,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
 
     let source = this.resolve<string>(sourceHandle);
 
-    let invocation = create(source, this.compiler.templateOptions());
+    let invocation = create(source, this.compiler);
     this.register('template', templateName, invocation);
     return invocation;
   }

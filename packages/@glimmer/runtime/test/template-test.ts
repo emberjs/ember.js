@@ -52,7 +52,7 @@ QUnit.test("generates id if no id is on the serialized template", assert => {
 
 QUnit.test("id of template matches factory", assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create(env.compiler.templateOptions());
+  let template = factory.create(env.compiler);
   assert.ok(template.id, 'is present');
   assert.equal(template.id, factory.id, 'template id matches factory id');
 });
@@ -68,7 +68,7 @@ QUnit.test("meta is accessible from factory", assert => {
 
 QUnit.test("meta is accessible from template", assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create(env.compiler.templateOptions());
+  let template = factory.create(env.compiler);
   assert.deepEqual(template.referrer, {
     version: 12,
     lang: 'es',
@@ -80,7 +80,7 @@ QUnit.test("can inject per environment things into meta", assert => {
   let owner = {};
   let factory = templateFactory<TestMeta, OwnerMeta>(serializedTemplate);
 
-  let template = factory.create(env.compiler.templateOptions(), { owner });
+  let template = factory.create(env.compiler, { owner });
   assert.strictEqual(template.referrer.owner, owner, 'is owner');
   assert.deepEqual(template.referrer, {
     version: 12,

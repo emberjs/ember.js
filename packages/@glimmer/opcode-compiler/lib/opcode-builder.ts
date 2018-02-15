@@ -13,6 +13,10 @@ import {
   CompileTimeHeap,
   STDLib,
   SymbolTable,
+  Maybe,
+  Compiler,
+  ParsedLayout,
+  CompileTimeLookup,
 } from "@glimmer/interfaces";
 import { dict, EMPTY_ARRAY, expect, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
@@ -21,8 +25,7 @@ import { SerializedInlineBlock } from "@glimmer/wire-format";
 import { PrimitiveType } from "@glimmer/program";
 
 import {
-  Primitive,
-  ParsedLayout
+  Primitive
 } from './interfaces';
 
 import {
@@ -64,20 +67,6 @@ class Labels {
   }
 }
 
-export interface CompileTimeLookup<TemplateMeta> {
-  getCapabilities(handle: number): ComponentCapabilities;
-  getLayout(handle: number): Option<CompilableProgram>;
-
-  // This interface produces module locators (and indicates if a name is present), but does not
-  // produce any actual objects. The main use-case for producing objects is handled above,
-  // with getCapabilities and getLayout, which drastically shrinks the size of the object
-  // that the core interface is forced to reify.
-  lookupHelper(name: string, referrer: TemplateMeta): Option<number>;
-  lookupModifier(name: string, referrer: TemplateMeta): Option<number>;
-  lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number>;
-  lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
-}
-
 export interface Blocks {
   main: Option<CompilableBlock>;
   else: Option<CompilableBlock>;
@@ -85,13 +74,12 @@ export interface Blocks {
 }
 
 export interface OpcodeBuilderConstructor {
-  new<TemplateMeta>(program: CompileTimeProgram,
-      lookup: CompileTimeLookup<TemplateMeta>,
-      meta: Opaque,
-      macros: Macros,
-      containingLayout: ParsedLayout,
-      asPartial: boolean,
-      stdLib?: STDLib): OpcodeBuilder<TemplateMeta>;
+  new<TemplateMeta>(
+    compiler: Compiler,
+    referrer: Opaque,
+    containingLayout: ParsedLayout,
+    asPartial: boolean
+  ): OpcodeBuilder<TemplateMeta>;
 }
 
 export class SimpleOpcodeBuilder {
@@ -321,6 +309,8 @@ export type VMHandlePlaceholder = [number, () => VMHandle];
 
 export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   public constants: CompileTimeConstants;
+  public resolver: CompileTimeLookup<Opaque>;
+  public stdLib: Option<STDLib>;
   public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
 
   private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
@@ -328,16 +318,15 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   private isComponentAttrs = false;
 
   constructor(
-    public program: CompileTimeProgram,
-    public resolver: CompileTimeLookup<Locator>,
+    public compiler: Compiler,
     public referrer: Locator,
-    public macros: Macros,
     public containingLayout: ParsedLayout,
-    public asPartial: boolean,
-    protected stdLib?: STDLib
+    public asPartial: boolean
   ) {
     super();
-    this.constants = program.constants;
+    this.constants = compiler.constants;
+    this.resolver = compiler.resolver;
+    this.stdLib = compiler.stdLib;
   }
 
   label(name: string) {
@@ -711,10 +700,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     let { parameters, statements } = block;
     let symbolTable = { parameters, referrer: this.containingLayout.referrer };
     let options = {
-      program: this.program,
-      macros: this.macros,
-      Builder: this.constructor as OpcodeBuilderConstructor,
-      resolver: this.resolver,
+      compiler: this.compiler,
       asPartial: this.asPartial,
       referrer: this.referrer
     };
@@ -1165,7 +1151,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
 
 export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta> {
   pushBlock(block: Option<CompilableBlock>): void {
-    let handle = block ? block.compile(this.stdLib) as Recast<VMHandle, number> : null;
+    let handle = block ? block.compile() as Recast<VMHandle, number> : null;
     this.primitive(handle);
   }
 
@@ -1175,7 +1161,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
 
   pushLayout(layout: Option<CompilableProgram>): void {
     if (layout) {
-      this.primitive(layout.compile(this.stdLib) as Recast<VMHandle, number>);
+      this.primitive(layout.compile() as Recast<VMHandle, number>);
     } else {
       this.primitive(null);
     }
@@ -1191,7 +1177,7 @@ export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta
     // function that will produce the correct handle when the heap is
     // serialized.
     if (handle === PLACEHOLDER_HANDLE) {
-      this.pushMachine(Op.InvokeStatic, () => compilable.compile(this.stdLib) as Recast<VMHandle, number>);
+      this.pushMachine(Op.InvokeStatic, () => compilable.compile() as Recast<VMHandle, number>);
     } else {
       this.pushMachine(Op.InvokeStatic, handle as Recast<VMHandle, number>);
     }

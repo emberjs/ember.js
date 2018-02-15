@@ -1,9 +1,9 @@
-import { CompilableBlock, CompileTimeProgram, Option, Opaque } from '@glimmer/interfaces';
+import { CompilableBlock, CompileTimeProgram, Option, Opaque, Compiler, CompileTimeLookup } from '@glimmer/interfaces';
 import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
-import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./opcode-builder";
+import OpcodeBuilder, { OpcodeBuilderConstructor } from "./opcode-builder";
 
 import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;
@@ -186,7 +186,7 @@ export function statementCompiler() {
   STATEMENTS.add(Ops.Append, (sexp: S.Append, builder) => {
     let [, value, trusting] = sexp;
 
-    let { inlines } = builder.macros;
+    let { inlines } = builder.compiler.macros;
     let returned = inlines.compile(sexp, builder) || value;
 
     if (returned === true) return;
@@ -790,7 +790,8 @@ export interface TemplateOptions<TemplateMeta> {
   resolver: CompileTimeLookup<TemplateMeta>;
 }
 
-export interface CompileOptions<TemplateMeta> extends TemplateOptions<TemplateMeta> {
+export interface CompileOptions<TemplateMeta> {
+  compiler: Compiler;
   asPartial: boolean;
   referrer: TemplateMeta;
 }
