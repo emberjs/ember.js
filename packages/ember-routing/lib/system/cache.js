@@ -1,5 +1,3 @@
-import { Object as EmberObject } from 'ember-runtime';
-
 /**
   A two-tiered cache with support for fallback values when doing lookups.
   Uses "buckets" and then "keys" to cache values.
@@ -7,36 +5,36 @@ import { Object as EmberObject } from 'ember-runtime';
   @private
   @class BucketCache
 */
-export default EmberObject.extend({
-  init() {
-    this.cache = Object.create(null);
-  },
+export default class BucketCache {
+  constructor() {
+    this.cache = new Map();
+  }
 
   has(bucketKey) {
-    return !!this.cache[bucketKey];
-  },
+    return this.cache.has(bucketKey);
+  }
 
   stash(bucketKey, key, value) {
-    let bucket = this.cache[bucketKey];
+    let bucket = this.cache.get(bucketKey);
 
-    if (!bucket) {
-      bucket = this.cache[bucketKey] = Object.create(null);
+    if (bucket === undefined) {
+      bucket = new Map();
+      this.cache.set(bucketKey, bucket);
     }
 
-    bucket[key] = value;
-  },
+    bucket.set(key, value);
+  }
 
   lookup(bucketKey, prop, defaultValue) {
-    let cache = this.cache;
     if (!this.has(bucketKey)) {
       return defaultValue;
     }
 
-    let bucket = cache[bucketKey];
-    if (prop in bucket && bucket[prop] !== undefined) {
-      return bucket[prop];
+    let bucket = this.cache.get(bucketKey);
+    if (bucket.has(prop)) {
+      return bucket.get(prop);
     } else {
       return defaultValue;
     }
   }
-});
+}

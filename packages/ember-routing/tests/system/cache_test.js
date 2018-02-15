@@ -5,7 +5,7 @@ moduleFor('BucketCache', class extends AbstractTestCase {
   constructor() {
     super();
 
-    this.cache = BucketCache.create();
+    this.cache = new BucketCache();
   }
 
   ['@test has - returns false when bucket is not in cache'](assert) {
