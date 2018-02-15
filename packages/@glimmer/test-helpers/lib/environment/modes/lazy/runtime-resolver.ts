@@ -1,5 +1,5 @@
 import { RuntimeResolver, ComponentDefinition } from '@glimmer/interfaces';
-import { TemplateOptions, LazyCompiler } from '@glimmer/opcode-compiler';
+import { LazyCompiler } from '@glimmer/opcode-compiler';
 import { Option, Opaque } from '@glimmer/util';
 import { Invocation } from '@glimmer/runtime';
 
@@ -9,7 +9,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
   private handleLookup: TypedRegistry<Opaque>[] = [];
   private registry = new Registry();
 
-  private compiler: LazyCompiler;
+  public compiler: LazyCompiler;
 
   register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
     let registry = this.registry[type];

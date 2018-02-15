@@ -1,5 +1,4 @@
-import { CompileTimeLookup } from '@glimmer/opcode-compiler';
-import { CompilableProgram, Option, ComponentCapabilities } from '@glimmer/interfaces';
+import { CompilableProgram, Option, ComponentCapabilities, CompileTimeLookup } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 import { ComponentDefinition, WithStaticLayout } from '@glimmer/runtime';
 

@@ -6,7 +6,8 @@ import {
 } from './tier1/symbol-table';
 import ComponentCapabilities from './component-capabilities';
 import { CompileTimeConstants } from './program';
-import { Statement, SerializedTemplateBlock } from "@glimmer/wire-format";
+import { Statement, SerializedTemplateBlock, Statements, Expression, Core } from "@glimmer/wire-format";
+import { CompileTimeProgram } from "@glimmer/interfaces";
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
@@ -64,12 +65,18 @@ export interface CompileTimeLookup<TemplateMeta> {
   lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number>;
   lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
 }
-export interface Compiler {
+
+export interface Compiler<Builder = Opaque> {
   stdLib: Option<STDLib>;
   constants: CompileTimeConstants;
   resolver: CompileTimeLookup<Opaque>;
+  program: CompileTimeProgram;
 
   add(statements: Statement[], containingLayout: ParsedLayout, asPartial: boolean, stdLib: Option<STDLib>): number;
+
+  compileInline(sexp: Statements.Append, builder: Builder): ['expr', Expression] | true;
+  compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: Builder): void;
+  builderFor(referrer: Opaque, containingLayout: ParsedLayout, asPartial: boolean): Builder;
 }
 
 export interface CompilableTemplate<S = SymbolTable> {
