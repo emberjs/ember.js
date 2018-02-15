@@ -10,7 +10,6 @@ export {
 export * from './lib/lazy';
 
 export {
-  CompileTimeLookup,
   LazyOpcodeBuilder,
   EagerOpcodeBuilder,
   OpcodeBuilder,

@@ -3,12 +3,10 @@ import {
   STDLib,
   ProgramSymbolTable,
   CompilableProgram,
-  Option
+  Option,
+  ParsedLayout
 } from '@glimmer/interfaces';
 import { Statement, SerializedTemplateBlock } from '@glimmer/wire-format';
-import { DEBUG } from '@glimmer/local-debug-flags';
-import { debugSlice } from './debug';
-import { ParsedLayout } from './interfaces';
 import { CompileOptions, statementCompiler, Compilers } from './syntax';
 
 export const PLACEHOLDER_HANDLE = -1;
@@ -31,7 +29,7 @@ export default class CompilableTemplateImpl<SymbolTable, TemplateMeta> implement
     this.statementCompiler = statementCompiler();
   }
 
-  compile(stdLib?: STDLib): number {
+  compile(): number {
     let { compiled } = this;
     if (compiled !== null) return compiled;
 
@@ -41,26 +39,7 @@ export default class CompilableTemplateImpl<SymbolTable, TemplateMeta> implement
     // be known synchronously and must be linked lazily.
     this.compiled = PLACEHOLDER_HANDLE;
 
-    let { options, statements, containingLayout } = this;
-    let { referrer } = containingLayout;
-    let { program, resolver, macros, asPartial, Builder } = options;
-
-    let builder = new Builder(program, resolver, referrer, macros, containingLayout, asPartial, stdLib);
-
-    for (let i = 0; i < statements.length; i++) {
-      this.statementCompiler.compile(statements[i], builder);
-    }
-
-    let handle = builder.commit(program.heap, containingLayout.block.symbols.length);
-
-    if (DEBUG) {
-      let { heap } = program;
-      let start = heap.getaddr(handle);
-      let end = start + heap.sizeof(handle);
-
-      debugSlice(program, start, end);
-    }
-
-    return (this.compiled = handle);
+    let { statements, containingLayout, options: { compiler, asPartial } } = this;
+    return (this.compiled = compiler.add(statements, containingLayout, asPartial, compiler.stdLib));
   }
 }
