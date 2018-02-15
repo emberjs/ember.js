@@ -1116,6 +1116,20 @@ QUnit.test('updating an item\'s sort properties does not error when binary searc
   ], 'array is sorted correctly');
 });
 
+QUnit.test('array should not be sorted if sort properties array is empty', function(assert) {
+  var o = EmberObject.extend({
+    sortedItems: sort('items', 'itemSorting')
+  }).create({
+    itemSorting: emberA([]),
+    // This bug only manifests when array.sort(() => 0) is not equal to array.
+    // In order for this to happen, the browser must use an unstable sort and the
+    // array must be sufficient large. On Chrome, 12 items is currently sufficient.
+    items: emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5])
+  });
+
+  assert.deepEqual(o.get('sortedItems'), [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5], 'array is not changed');
+});
+
 QUnit.test('array observers do not leak', function(assert) {
   let daria = { name: 'Daria' };
   let jane  = { name: 'Jane' };
