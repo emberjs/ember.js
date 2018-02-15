@@ -7,6 +7,8 @@ export {
   TemplateOptions
 } from './lib/syntax';
 
+export * from './lib/lazy';
+
 export {
   CompileTimeLookup,
   LazyOpcodeBuilder,
