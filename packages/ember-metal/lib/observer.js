@@ -23,8 +23,6 @@ import {
 export function addObserver(obj, _path, target, method) {
   addListener(obj, _path, target, method);
   watch(obj, _path);
-
-  return this;
 }
 
 /**
@@ -40,6 +38,4 @@ export function addObserver(obj, _path, target, method) {
 export function removeObserver(obj, path, target, method) {
   unwatch(obj, path);
   removeListener(obj, path, target, method);
-
-  return this;
 }
