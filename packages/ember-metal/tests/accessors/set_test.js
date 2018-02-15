@@ -1,6 +1,7 @@
 import {
   get,
   set,
+  trySet,
   setHasViews
 } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -97,6 +98,13 @@ moduleFor('set', class extends AbstractTestCase {
     set(obj, 'foo', 'bar');
 
     assert.equal(obj.foo, 'bar');
+  }
+
+  ['@test does not warn on attempts of calling set on a destroyed object with `trySet`'](assert) {
+    let obj = { isDestroyed: true };
+
+    trySet(obj, 'favoriteFood', 'hot dogs');
+    assert.equal(obj.favoriteFood, undefined, 'does not set and does not error');
   }
 });
 
