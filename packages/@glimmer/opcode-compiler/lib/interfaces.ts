@@ -27,9 +27,3 @@ export type ComponentArgs = [Core.Params, Core.Hash, Option<CompilableBlock>, Op
 export interface ComponentBuilder {
   static(definition: number, args: ComponentArgs): void;
 }
-
-export interface ParsedLayout<TemplateMeta = Opaque> {
-  id?: Option<string>;
-  block: SerializedTemplateBlock;
-  referrer: TemplateMeta;
-}
