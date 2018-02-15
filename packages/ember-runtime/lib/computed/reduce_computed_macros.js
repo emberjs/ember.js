@@ -837,7 +837,11 @@ function propertySort(itemsKey, sortPropertiesKey) {
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
     if (!isArray(items)) { return emberA(); }
 
-    return sortByNormalizedSortProperties(items, normalizedSortProperties);
+    if (normalizedSortProperties.length === 0) {
+      return emberA(items.slice());
+    } else {
+      return sortByNormalizedSortProperties(items, normalizedSortProperties);
+    }
   }, { dependentKeys: [`${sortPropertiesKey}.[]`], readOnly: true });
 
   cp._activeObserverMap = undefined;
