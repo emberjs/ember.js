@@ -1,4 +1,4 @@
-import { CompilableProgram, Template, Opaque, Option, ParsedLayout } from '@glimmer/interfaces';
+import { CompilableProgram, Template, Opaque, Option, ParsedLayout, CompilableTemplate as ICompilableTemplate, ProgramSymbolTable } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
@@ -7,7 +7,8 @@ import {
 } from '@glimmer/wire-format';
 import CompilableTemplate from './compilable-template';
 import { WrappedBuilder } from "./wrapped-component";
-import { CompileOptions, TemplateOptions } from "./syntax";
+import { CompileOptions } from "./syntax";
+import { OpcodeBuilder } from './opcode-builder';
 import { LazyCompiler } from "@glimmer/opcode-compiler";
 
 export interface TemplateFactory<TemplateMeta> {
@@ -92,7 +93,7 @@ class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
 
   asWrappedLayout(): CompilableProgram {
     if (this.wrappedLayout) return this.wrappedLayout;
-    let compileOptions: CompileOptions<TemplateMeta> = {
+    let compileOptions: CompileOptions<TemplateMeta, OpcodeBuilder<Opaque>> = {
       compiler: this.compiler,
       asPartial: false,
       referrer: this.referrer
@@ -101,7 +102,7 @@ class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
   }
 }
 
-export function compilable<TemplateMeta>(layout: ParsedLayout<TemplateMeta>, compiler: LazyCompiler, asPartial: boolean) {
+export function compilable<TemplateMeta>(layout: ParsedLayout<TemplateMeta>, compiler: LazyCompiler, asPartial: boolean): ICompilableTemplate<ProgramSymbolTable> {
   let { block, referrer } = layout;
   let { hasEval, symbols } = block;
   let compileOptions = { compiler, asPartial, referrer };

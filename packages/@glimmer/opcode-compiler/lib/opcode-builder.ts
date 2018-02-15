@@ -8,12 +8,9 @@ import {
   CompilableBlock,
   CompilableProgram,
   CompileTimeConstants,
-  CompileTimeProgram,
   CompileTimeLazyConstants,
-  CompileTimeHeap,
   STDLib,
   SymbolTable,
-  Maybe,
   Compiler,
   ParsedLayout,
   CompileTimeLookup,
@@ -30,7 +27,6 @@ import {
 
 import {
   ATTRS_BLOCK,
-  Macros,
   Compilers,
   expressionCompiler
 } from './syntax';
@@ -85,6 +81,12 @@ export interface OpcodeBuilderConstructor {
 export class SimpleOpcodeBuilder {
   protected encoder = new InstructionEncoder([]);
 
+  public compiler: Compiler<this>;
+
+  constructor(compiler: Compiler, protected size: number) {
+    this.compiler = compiler as Compiler<this>;
+  }
+
   push(name: Op): void;
   push(name: Op, arg1: Operand): void;
   push(name: Op, arg1: Operand, arg2: Operand): void;
@@ -111,7 +113,10 @@ export class SimpleOpcodeBuilder {
     }
   }
 
-  commit(heap: CompileTimeHeap, scopeSize: number): number {
+  commit(): number {
+    let heap = this.compiler.program.heap;
+    let scopeSize = this.size;
+
     this.pushMachine(Op.Return);
 
     let { buffer } = this.encoder;
@@ -318,15 +323,23 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   private isComponentAttrs = false;
 
   constructor(
-    public compiler: Compiler,
+    compiler: Compiler,
     public referrer: Locator,
     public containingLayout: ParsedLayout,
     public asPartial: boolean
   ) {
-    super();
+    super(compiler, containingLayout.block.symbols.length);
     this.constants = compiler.constants;
     this.resolver = compiler.resolver;
     this.stdLib = compiler.stdLib;
+  }
+
+  compileInline(sexp: WireFormat.Statements.Append) {
+    return this.compiler.compileInline(sexp, this);
+  }
+
+  compileBlock(name: string, params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>): void {
+    this.compiler.compileBlock(name, params, hash, template, inverse, this);
   }
 
   label(name: string) {
