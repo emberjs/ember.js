@@ -1,7 +1,7 @@
 import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
 import { TemplateCompiler } from "@glimmer/compiler";
 import { expect } from "@glimmer/util";
-import { SerializedTemplateBlock, Statement, Statements, Expression, Core } from "@glimmer/wire-format";
+import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import {
   ProgramSymbolTable,
   Recast,
@@ -12,25 +12,20 @@ import {
   TemplateLocator,
   CompilableProgram,
   CompilableTemplate,
-  Compiler,
   Opaque,
   CompileTimeConstants,
   CompileTimeLookup,
-  ParsedLayout,
-  CompilableBlock,
-  Option,
+  LayoutWithContext,
   CompileTimeProgram
 } from "@glimmer/interfaces";
 import {
-  CompilableTemplate as CompilableTemplateImpl,
+  CompilableProgram as CompilableProgramInstance,
   Macros,
   OpcodeBuilderConstructor,
-  CompileOptions,
   EagerOpcodeBuilder,
   TemplateOptions,
   SimpleOpcodeBuilder,
-  compile,
-  OpcodeBuilder
+  AbstractCompiler
 } from "@glimmer/opcode-compiler";
 import {
   WriteOnlyProgram,
@@ -50,7 +45,6 @@ export interface BundleCompileOptions {
 
 export interface BundleCompilerOptions {
   macros?: Macros;
-  Builder?: OpcodeBuilderConstructor;
   plugins?: ASTPluginBuilder[];
   program?: WriteOnlyProgram;
 }
@@ -96,13 +90,14 @@ export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
 // to make --declaration happy
 export { CompilableTemplate };
 
-export class EagerCompiler<TemplateMeta> implements Compiler<EagerOpcodeBuilder<TemplateMeta>> {
+export class EagerCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, EagerOpcodeBuilder<TemplateMeta>> {
   public stdLib: STDLib;
 
   constructor(
     private options: TemplateOptions<TemplateMeta>,
     private plugins: ASTPluginBuilder[]
   ) {
+    super();
     this.initialize();
   }
 
@@ -113,15 +108,19 @@ export class EagerCompiler<TemplateMeta> implements Compiler<EagerOpcodeBuilder<
     let locator = normalizeLocator({ module: '__std__', name: '<unreachable>' });
     let block = this.preprocess(null, '');
 
-    let eagerBuilder1 = new EagerOpcodeBuilder(this, locator.meta, { block, referrer: null }, false);
+    let eagerBuilder1 = new EagerOpcodeBuilder(this, { block, referrer: locator.meta, asPartial: false });
     eagerBuilder1.stdAppend(true);
     let trustingGuardedAppend = eagerBuilder1.commit();
 
-    let eagerBuilder2 = new EagerOpcodeBuilder(this, locator.meta, { block, referrer: null }, false);
+    let eagerBuilder2 = new EagerOpcodeBuilder(this, { block, referrer: locator.meta, asPartial: false });
     eagerBuilder2.stdAppend(false);
     let cautiousGuardedAppend = eagerBuilder2.commit();
 
     this.stdLib = { main, trustingGuardedAppend, cautiousGuardedAppend };
+  }
+
+  protected get macros(): Macros {
+    return this.options.macros;
   }
 
   get constants(): CompileTimeConstants {
@@ -136,26 +135,12 @@ export class EagerCompiler<TemplateMeta> implements Compiler<EagerOpcodeBuilder<
     return this.options.program;
   }
 
-  add(statements: Statement[], containingLayout: ParsedLayout, asPartial: boolean): number {
-    return compile(statements, containingLayout, asPartial, this.options.Builder, this);
-  }
-
-  builderFor(referrer: TemplateMeta, containingLayout: ParsedLayout, asPartial: boolean): EagerOpcodeBuilder<TemplateMeta> {
-    return new EagerOpcodeBuilder(this, referrer, containingLayout, asPartial);
-  }
-
-  compileInline(sexp: Statements.Append, builder: EagerOpcodeBuilder<Opaque>): ['expr', Expression] | true {
-    let { inlines } = this.options.macros;
-    return inlines.compile(sexp, builder);
-  }
-
-  compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: EagerOpcodeBuilder<Opaque>): void {
-    let { blocks } = this.options.macros;
-    blocks.compile(name, params, hash, template, inverse, builder);
+  builderFor(containingLayout: LayoutWithContext<TemplateMeta>): EagerOpcodeBuilder<TemplateMeta> {
+    return new EagerOpcodeBuilder(this, containingLayout);
   }
 
   private preprocess(
-    meta: Opaque | null,
+    meta: Opaque,
     input: string
   ): SerializedTemplateBlock {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
@@ -181,8 +166,8 @@ export default class BundleCompiler<TemplateMeta> {
   public compilableTemplates = new ModuleLocatorMap<CompilableProgram>();
   public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<TemplateMeta>>();
   public meta = new ModuleLocatorMap<TemplateMeta>();
+  public compiler: EagerCompiler<TemplateMeta>;
 
-  protected compiler: EagerCompiler<TemplateMeta>;
   protected delegate: CompilerDelegate<TemplateMeta>;
   protected macros: Macros;
   protected Builder: OpcodeBuilderConstructor;
@@ -196,10 +181,7 @@ export default class BundleCompiler<TemplateMeta> {
     this.delegate = delegate;
     let macros = this.macros = options.macros || new Macros();
 
-    let Builder = this.Builder =
-      options.Builder || (EagerOpcodeBuilder as OpcodeBuilderConstructor);
-
-      let program = this.program =
+    let program = this.program =
       options.program || new WriteOnlyProgram(new DebugConstants());
 
       let plugins = this.plugins = options.plugins || [];
@@ -207,7 +189,6 @@ export default class BundleCompiler<TemplateMeta> {
     this.compiler = new EagerCompiler({
       program,
       macros,
-      Builder,
       resolver: this.compilerResolver()
     }, plugins);
   }
@@ -222,10 +203,13 @@ export default class BundleCompiler<TemplateMeta> {
     let block = this.preprocess(meta || null, templateSource);
     this.compiledBlocks.set(locator, block);
 
-    let compileOptions = this.compileOptions(locator);
-    let compilableTemplate = CompilableTemplateImpl.topLevel(block, compileOptions);
+    let template = new CompilableProgramInstance(this.compiler, {
+      block,
+      referrer: locator.meta,
+      asPartial: false
+    });
 
-    this.addCompilableTemplate(locator, compilableTemplate);
+    this.addCompilableTemplate(locator, template);
 
     return block;
   }
@@ -284,13 +268,6 @@ export default class BundleCompiler<TemplateMeta> {
     }
 
     return resolver;
-  }
-
-  compileOptions(
-    locator: TemplateLocator<TemplateMeta>,
-    asPartial = false
-  ): CompileOptions<TemplateMeta, OpcodeBuilder<TemplateMeta>> {
-    return { compiler: this.compiler, asPartial, referrer: locator.meta };
   }
 
   /**
