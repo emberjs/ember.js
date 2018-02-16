@@ -5,7 +5,7 @@ import { Statement } from "@glimmer/wire-format";
 import { Compiler, Recast } from "@glimmer/interfaces";
 import { DEBUG } from "@glimmer/local-debug-flags";
 
-export function compile<TemplateMeta>(statements: Statement[], builder: OpcodeBuilder<TemplateMeta>, compiler: Compiler<OpcodeBuilder<TemplateMeta>>): number {
+export function compile<Locator>(statements: Statement[], builder: OpcodeBuilder<Locator>, compiler: Compiler<OpcodeBuilder<Locator>>): number {
   let sCompiler = statementCompiler();
 
   for (let i = 0; i < statements.length; i++) {
@@ -15,7 +15,7 @@ export function compile<TemplateMeta>(statements: Statement[], builder: OpcodeBu
   let handle = builder.commit();
 
   if (DEBUG) {
-    debug(compiler as Recast<Compiler<OpcodeBuilder<TemplateMeta>>, AnyAbstractCompiler>, handle);
+    debug(compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>, handle);
   }
 
   return handle;

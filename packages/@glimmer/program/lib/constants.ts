@@ -106,14 +106,14 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 }
 
-export class RuntimeConstants<TemplateMeta> {
+export class RuntimeConstants<Locator> {
   protected strings: string[];
   protected arrays: number[][] | EMPTY_ARRAY;
   protected handles: number[];
   protected resolved: Opaque[];
   protected numbers: number[];
 
-  constructor(public resolver: RuntimeResolver<TemplateMeta>, pool: ConstantPool) {
+  constructor(public resolver: RuntimeResolver<Locator>, pool: ConstantPool) {
     this.strings = pool.strings;
     this.arrays = pool.arrays;
     this.handles = pool.handles;
@@ -162,8 +162,8 @@ export class RuntimeConstants<TemplateMeta> {
   }
 }
 
-export class Constants<TemplateMeta> extends WriteOnlyConstants {
-  constructor(public resolver: RuntimeResolver<TemplateMeta>, pool?: ConstantPool) {
+export class Constants<Locator> extends WriteOnlyConstants {
+  constructor(public resolver: RuntimeResolver<Locator>, pool?: ConstantPool) {
     super();
 
     if (pool) {

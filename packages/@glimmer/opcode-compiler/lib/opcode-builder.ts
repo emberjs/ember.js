@@ -69,10 +69,10 @@ export interface Blocks {
 }
 
 export interface OpcodeBuilderConstructor {
-  new<TemplateMeta>(
+  new<Locator>(
     compiler: Compiler,
     containingLayout: LayoutWithContext
-  ): OpcodeBuilder<TemplateMeta>;
+  ): OpcodeBuilder<Locator>;
 }
 
 export class SimpleOpcodeBuilder {
@@ -1094,7 +1094,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
 export default OpcodeBuilder;
 
-export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta> {
+export class LazyOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
   public constants: CompileTimeLazyConstants;
 
   pushBlock(block: Option<CompilableBlock>): void {
@@ -1136,7 +1136,7 @@ export class LazyOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta>
   }
 }
 
-export class EagerOpcodeBuilder<TemplateMeta> extends OpcodeBuilder<TemplateMeta> {
+export class EagerOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
   pushBlock(block: Option<CompilableBlock>): void {
     let handle = block ? block.compile() as Recast<VMHandle, number> : null;
     this.primitive(handle);

@@ -9,7 +9,7 @@ import { CompilableProgram as CompilableProgramInstance } from './compilable-tem
 import { WrappedBuilder } from "./wrapped-component";
 import { LazyCompiler } from "@glimmer/opcode-compiler";
 
-export interface TemplateFactory<TemplateMeta> {
+export interface TemplateFactory<Locator> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -19,7 +19,7 @@ export interface TemplateFactory<TemplateMeta> {
   /**
    * Compile time meta.
    */
-  meta: TemplateMeta;
+  meta: Locator;
 
   /**
    * Used to create an environment specific singleton instance
@@ -27,7 +27,7 @@ export interface TemplateFactory<TemplateMeta> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: LazyCompiler<TemplateMeta>): Template<TemplateMeta>;
+  create(env: LazyCompiler<Locator>): Template<Locator>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -35,7 +35,7 @@ export interface TemplateFactory<TemplateMeta> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create<U>(env: LazyCompiler<TemplateMeta>, meta: U): Template<TemplateMeta & U>;
+  create<U>(env: LazyCompiler<Locator>, meta: U): Template<Locator & U>;
 }
 
 let clientId = 0;
@@ -45,8 +45,8 @@ let clientId = 0;
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
-export default function templateFactory<TemplateMeta>(serializedTemplate: SerializedTemplateWithLazyBlock<TemplateMeta>): TemplateFactory<TemplateMeta>;
-export default function templateFactory<TemplateMeta, U>(serializedTemplate: SerializedTemplateWithLazyBlock<TemplateMeta>): TemplateFactory<TemplateMeta & U>;
+export default function templateFactory<Locator>(serializedTemplate: SerializedTemplateWithLazyBlock<Locator>): TemplateFactory<Locator>;
+export default function templateFactory<Locator, U>(serializedTemplate: SerializedTemplateWithLazyBlock<Locator>): TemplateFactory<Locator & U>;
 export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
@@ -60,17 +60,17 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
   return { id, meta, create };
 }
 
-class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
+class TemplateImpl<Locator = Opaque> implements Template<Locator> {
   private layout: Option<CompilableProgram> = null;
   private partial: Option<CompilableProgram> = null;
   private wrappedLayout: Option<CompilableProgram> = null;
   public symbols: string[];
   public hasEval: boolean;
   public id: string;
-  public referrer: TemplateMeta;
+  public referrer: Locator;
   private statements: Statement[];
 
-  constructor(private compiler: LazyCompiler<TemplateMeta>, private parsedLayout: Pick<LayoutWithContext<TemplateMeta>, 'id' | 'block' | 'referrer'>) {
+  constructor(private compiler: LazyCompiler<Locator>, private parsedLayout: Pick<LayoutWithContext<Locator>, 'id' | 'block' | 'referrer'>) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;

@@ -1,5 +1,4 @@
 import { Op, Register } from '@glimmer/vm';
-import { TemplateMeta } from '@glimmer/wire-format';
 import { Opaque, Option, Dict, dict, assert, unreachable, expect } from '@glimmer/util';
 import {
   VMHandle,
@@ -123,7 +122,7 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let definition = check(stack.pop(), CheckReference);
   let capturedArgs = check(stack.pop(), CheckCapturedArguments);
 
-  let meta = vm.constants.getSerializable<TemplateMeta>(_meta);
+  let meta = vm.constants.getSerializable(_meta);
   let resolver = vm.constants.resolver;
 
   vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, capturedArgs));

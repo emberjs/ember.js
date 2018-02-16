@@ -11,7 +11,7 @@ export interface EagerResolver<Locator> {
   getCapabilities(locator: Locator): ComponentCapabilities;
 }
 
-export interface EagerCompilationOptions<TemplateMeta, R extends EagerResolver<TemplateMeta>> {
+export interface EagerCompilationOptions<Locator, R extends EagerResolver<Locator>> {
   resolver: R;
   program: CompileTimeProgram;
   macros: Macros;
