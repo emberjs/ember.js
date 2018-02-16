@@ -1,19 +1,9 @@
-import { TestEnvironment } from "@glimmer/test-helpers";
+import { TestEnvironment, TestMeta, DEFAULT_TEST_META } from "@glimmer/test-helpers";
 import { templateFactory } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
-import { SerializedTemplateWithLazyBlock, TemplateMeta } from "@glimmer/wire-format";
+import { SerializedTemplateWithLazyBlock } from "@glimmer/wire-format";
 
 let env: TestEnvironment;
-
-interface TestMeta extends TemplateMeta {
-  version: number;
-  lang: string;
-  moduleName: string;
-}
-
-interface OwnerMeta {
-  owner: {};
-}
 
 let serializedTemplate: SerializedTemplateWithLazyBlock<TestMeta>;
 let serializedTemplateNoId: SerializedTemplateWithLazyBlock<TestMeta>;
@@ -78,9 +68,9 @@ QUnit.test("meta is accessible from template", assert => {
 
 QUnit.test("can inject per environment things into meta", assert => {
   let owner = {};
-  let factory = templateFactory<TestMeta, OwnerMeta>(serializedTemplate);
+  let factory = templateFactory<TestMeta>(serializedTemplate);
 
-  let template = factory.create(env.compiler, { owner });
+  let template = factory.create(env.compiler, { ...DEFAULT_TEST_META, owner });
   assert.strictEqual(template.referrer.owner, owner, 'is owner');
   assert.deepEqual(template.referrer, {
     version: 12,

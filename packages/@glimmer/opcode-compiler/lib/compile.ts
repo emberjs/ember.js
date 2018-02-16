@@ -1,14 +1,11 @@
 import { statementCompiler } from './syntax';
+import { debug, AnyAbstractCompiler } from './compiler';
+import { OpcodeBuilder } from './opcode-builder';
 import { Statement } from "@glimmer/wire-format";
-import { ParsedLayout, Compiler } from "@glimmer/interfaces";
-import { OpcodeBuilderConstructor, debugSlice } from "@glimmer/opcode-compiler";
+import { Compiler, Recast } from "@glimmer/interfaces";
 import { DEBUG } from "@glimmer/local-debug-flags";
 
-export function compile(statements: Statement[], containingLayout: ParsedLayout, asPartial: boolean, Builder: OpcodeBuilderConstructor, compiler: Compiler): number {
-  let { referrer } = containingLayout;
-  let { program } = compiler;
-
-  let builder = new Builder(compiler, referrer, containingLayout, asPartial);
+export function compile<TemplateMeta>(statements: Statement[], builder: OpcodeBuilder<TemplateMeta>, compiler: Compiler<OpcodeBuilder<TemplateMeta>>): number {
   let sCompiler = statementCompiler();
 
   for (let i = 0; i < statements.length; i++) {
@@ -18,11 +15,7 @@ export function compile(statements: Statement[], containingLayout: ParsedLayout,
   let handle = builder.commit();
 
   if (DEBUG) {
-    let { heap } = program;
-    let start = heap.getaddr(handle);
-    let end = start + heap.sizeof(handle);
-
-    debugSlice(program, start, end);
+    debug(compiler as Recast<Compiler<OpcodeBuilder<TemplateMeta>>, AnyAbstractCompiler>, handle);
   }
 
   return handle;

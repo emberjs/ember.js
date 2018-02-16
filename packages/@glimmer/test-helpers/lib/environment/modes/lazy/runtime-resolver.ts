@@ -3,13 +3,14 @@ import { LazyCompiler } from '@glimmer/opcode-compiler';
 import { Option, Opaque } from '@glimmer/util';
 import { Invocation } from '@glimmer/runtime';
 
+import { TestMeta } from './environment';
 import Registry, { TypedRegistry, Lookup, LookupType } from '../../registry';
 
-export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
+export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
   private handleLookup: TypedRegistry<Opaque>[] = [];
   private registry = new Registry();
 
-  public compiler: LazyCompiler;
+  public compiler: LazyCompiler<TestMeta>;
 
   register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
     let registry = this.registry[type];
@@ -27,7 +28,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
     }
   }
 
-  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: LazyCompiler) => Invocation): Invocation {
+  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: LazyCompiler<TestMeta>) => Invocation): Invocation {
     let invocationHandle = this.lookup('template', templateName);
 
     if (invocationHandle) {

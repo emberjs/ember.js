@@ -3,7 +3,7 @@ import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
-import OpcodeBuilder, { OpcodeBuilderConstructor } from "./opcode-builder";
+import OpcodeBuilder from "./opcode-builder";
 
 import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;
@@ -61,12 +61,12 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   });
 
   STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
-    let { resolver, referrer } = builder;
+    let { referrer } = builder;
     let [, name, params, hash] = sexp;
 
-    let handle = resolver.lookupModifier(name, referrer);
+    let handle = builder.compiler.resolveModifier(name, referrer);
 
-    if (handle) {
+    if (handle !== null) {
       builder.modifier(handle, params, hash);
     } else {
       throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
@@ -98,11 +98,11 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
     let [, tag, _attrs, args, block] = sexp;
-    let { resolver, referrer } = builder;
-    let handle = resolver.lookupComponentDefinition(tag, referrer);
+    let { referrer } = builder;
 
-    if (handle !== null) {
-      let capabilities = resolver.getCapabilities(handle);
+    let { handle, capabilities, compilable } = builder.compiler.resolveLayoutForTag(tag, referrer);
+
+    if (handle !== null && capabilities !== null) {
 
       let attrs: WireFormat.Statement[] = [
         [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
@@ -112,11 +112,9 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
       let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
       let child = builder.template(block);
 
-      if (capabilities.dynamicLayout === false) {
-        let layout = resolver.getLayout(handle)!;
-
+      if (compilable) {
         builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child);
+        builder.invokeStaticComponent(capabilities, compilable, attrsBlock, null, args, false, child && child);
       } else {
         builder.pushComponentDefinition(handle);
         builder.invokeComponent(attrsBlock, null, args, false, child && child);
@@ -253,10 +251,10 @@ export function expressionCompiler() {
   const EXPRESSIONS = _expressionCompiler = new Compilers<WireFormat.TupleExpression>();
 
   EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-    let { resolver, asPartial, referrer } = builder;
+    let { compiler, referrer, containingLayout: { asPartial } } = builder;
     let name = sexp[1];
 
-    let handle = resolver.lookupHelper(name, referrer);
+    let handle = compiler.resolveHelper(name, referrer);
 
     if (handle !== null) {
       builder.helper(handle, null, null);
@@ -277,7 +275,7 @@ export function expressionCompiler() {
   });
 
   EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
-    let { resolver, referrer } = builder;
+    let { compiler, referrer } = builder;
     let [, name, params, hash] = sexp;
 
     // TODO: triage this in the WF compiler
@@ -289,7 +287,7 @@ export function expressionCompiler() {
       return;
     }
 
-    let handle = resolver.lookupHelper(name, referrer);
+    let handle = compiler.resolveHelper(name, referrer);
 
     if (handle !== null) {
       builder.helper(handle, params, hash);
@@ -309,7 +307,7 @@ export function expressionCompiler() {
   EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder) => {
     let [, path] = sexp;
 
-    if (builder.asPartial) {
+    if (builder.containingLayout.asPartial) {
       let head = path[0];
       path = path.slice(1);
 
@@ -782,7 +780,6 @@ export interface TemplateOptions<TemplateMeta> {
   // already in compilation options
   program: CompileTimeProgram;
   macros: Macros;
-  Builder: OpcodeBuilderConstructor;
 
   // a subset of the resolver w/ a couple of small tweaks
   resolver: CompileTimeLookup<TemplateMeta>;
