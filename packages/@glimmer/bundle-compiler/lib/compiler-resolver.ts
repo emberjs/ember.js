@@ -17,8 +17,8 @@ import { expect, Option } from "@glimmer/util";
  * helper and ensuring that any future calls to `lookupHelper` that refer to the
  * same helper return the same handle.
  */
-export default class CompilerResolver<TemplateMeta> implements CompileTimeLookup<TemplateMeta> {
-  constructor(private delegate: CompilerDelegate<TemplateMeta>, private table: ExternalModuleTable, private compiler: BundleCompiler<TemplateMeta>) { }
+export default class CompilerResolver<Locator> implements CompileTimeLookup<Locator> {
+  constructor(private delegate: CompilerDelegate<Locator>, private table: ExternalModuleTable, private compiler: BundleCompiler<Locator>) { }
 
   getCapabilities(handle: number): ComponentCapabilities {
     let locator = expect(this.table.byHandle.get(handle), `BUG: Shouldn't call getCapabilities if a handle has no associated locator`);
@@ -31,7 +31,7 @@ export default class CompilerResolver<TemplateMeta> implements CompileTimeLookup
     return this.compiler.compilableTemplates.get(locator) || null;
   }
 
-  lookupHelper(name: string, referrer: TemplateMeta): Option<number> {
+  lookupHelper(name: string, referrer: Locator): Option<number> {
     if (this.delegate.hasHelperInScope(name, referrer)) {
       let locator = this.delegate.resolveHelper(name, referrer);
       return this.table.handleForModuleLocator(locator);
@@ -40,7 +40,7 @@ export default class CompilerResolver<TemplateMeta> implements CompileTimeLookup
     }
   }
 
-  lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number> {
+  lookupComponentDefinition(name: string, referrer: Locator): Option<number> {
     if (this.delegate.hasComponentInScope(name, referrer)) {
       let locator = this.delegate.resolveComponent(name, referrer);
       return this.table.handleForModuleLocator(locator);
@@ -49,7 +49,7 @@ export default class CompilerResolver<TemplateMeta> implements CompileTimeLookup
     }
   }
 
-  lookupModifier(name: string, referrer: TemplateMeta): Option<number> {
+  lookupModifier(name: string, referrer: Locator): Option<number> {
     if (this.delegate.hasModifierInScope(name, referrer)) {
       let locator = this.delegate.resolveModifier(name, referrer);
       return this.table.handleForModuleLocator(locator);
@@ -58,11 +58,11 @@ export default class CompilerResolver<TemplateMeta> implements CompileTimeLookup
     }
   }
 
-  lookupComponent(_name: string, _meta: TemplateMeta): Option<number> {
+  lookupComponent(_name: string, _meta: Locator): Option<number> {
     throw new Error("Method not implemented.");
   }
 
-  lookupPartial(_name: string, _meta: TemplateMeta): Option<number> {
+  lookupPartial(_name: string, _meta: Locator): Option<number> {
     throw new Error("Method not implemented.");
   }
 }

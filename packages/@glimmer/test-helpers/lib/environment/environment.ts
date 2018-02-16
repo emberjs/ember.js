@@ -11,11 +11,11 @@ export interface TestEnvironmentOptions {
   updateOperations: IDOMChanges;
 }
 
-export default abstract class TestEnvironment<TemplateMeta> extends Environment {
+export default abstract class TestEnvironment<Locator> extends Environment {
   public compiledLayouts: Dict<VMHandle> = dict();
 
-  protected abstract program: Program<TemplateMeta>;
-  protected abstract resolver: RuntimeResolver<TemplateMeta>;
+  protected abstract program: Program<Locator>;
+  protected abstract resolver: RuntimeResolver<Locator>;
 
   protocolForURL(url: string): string {
     if (typeof window === 'undefined') {

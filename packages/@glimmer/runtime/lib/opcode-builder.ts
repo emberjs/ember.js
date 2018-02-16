@@ -11,11 +11,11 @@ import * as WireFormat from '@glimmer/wire-format';
 import { PublicVM } from './vm/append';
 import { RuntimeResolver } from "@glimmer/interfaces";
 
-export interface DynamicComponentDefinition<TemplateMeta> {
+export interface DynamicComponentDefinition<Locator> {
   (
     vm: PublicVM,
     args: IArguments,
     meta: WireFormat.TemplateMeta,
-    resolver: RuntimeResolver<TemplateMeta>
+    resolver: RuntimeResolver<Locator>
   ): VersionedPathReference<Option<BrandedComponentDefinition>>;
 }

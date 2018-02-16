@@ -3,10 +3,10 @@ import { Opaque, Option, expect } from '@glimmer/util';
 import { Invocation } from "@glimmer/runtime";
 import { ExternalModuleTable, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 
-import { TemplateMeta } from '../../component-definition';
+import { Locator } from '../../component-definition';
 import { Modules } from './modules';
 
-export default class EagerRuntimeResolver implements RuntimeResolver<TemplateMeta> {
+export default class EagerRuntimeResolver implements RuntimeResolver<Locator> {
   constructor(
     private table: ExternalModuleTable,
     private modules: Modules,
@@ -21,7 +21,7 @@ export default class EagerRuntimeResolver implements RuntimeResolver<TemplateMet
     throw new Error("Method not implemented.");
   }
 
-  lookupComponent(name: string, referrer: TemplateMeta): Option<ComponentDefinition> {
+  lookupComponent(name: string, referrer: Locator): Option<ComponentDefinition> {
     let moduleName = this.modules.resolve(name, referrer, 'ui/components');
 
     if (!moduleName) return null;
@@ -39,7 +39,7 @@ export default class EagerRuntimeResolver implements RuntimeResolver<TemplateMet
     return this.modules.get(module.module).get('default') as U;
   }
 
-  getInvocation({ locator }: TemplateMeta): Invocation {
+  getInvocation({ locator }: Locator): Invocation {
     let handle = this.getVMHandle(locator);
     let symbolTable = expect(this.symbolTables.get(locator), `expected symbol table for module ${locator}`);
 
