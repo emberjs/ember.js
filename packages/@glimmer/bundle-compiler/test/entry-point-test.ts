@@ -19,10 +19,6 @@ class TestCompilerDelegate implements CompilerDelegate<{}> {
     throw new Error("Method not implemented.");
   }
 
-  getComponentLayout(): never {
-    throw new Error("Method not implemented.");
-  }
-
   hasHelperInScope(): boolean {
     return false;
   }

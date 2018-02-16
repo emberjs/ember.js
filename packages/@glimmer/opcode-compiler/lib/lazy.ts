@@ -1,40 +1,37 @@
-import { LazyOpcodeBuilder, EagerOpcodeBuilder, OpcodeBuilderConstructor } from './opcode-builder';
+import { LazyOpcodeBuilder } from './opcode-builder';
 import { Macros } from './syntax';
-import { compile } from './compile';
-import { Opaque, RuntimeResolver, Compiler, CompileTimeLookup, Option, ParsedLayout, CompileTimeConstants, CompilableBlock } from "@glimmer/interfaces";
+import { AbstractCompiler } from './compiler';
+import { Opaque, RuntimeResolver, Compiler, CompileTimeLookup, LayoutWithContext, CompileTimeConstants } from "@glimmer/interfaces";
 import { Program, LazyConstants } from "@glimmer/program";
-import { Statement, Statements, Core, Expression } from "@glimmer/wire-format";
 
-export interface LazyCompilerOptions {
-  lookup: CompileTimeLookup<Opaque>;
-  resolver: RuntimeResolver<Opaque>;
-  program: Program<Opaque>;
+export interface LazyCompilerOptions<TemplateMeta> {
+  lookup: CompileTimeLookup<TemplateMeta>;
+  resolver: RuntimeResolver<TemplateMeta>;
+  program: Program<TemplateMeta>;
   macros: Macros;
-  builder: typeof LazyOpcodeBuilder;
 }
 
-export class LazyCompiler implements Compiler<LazyOpcodeBuilder<Opaque>> {
-  static default({ lookup, resolver, macros }: Pick<LazyCompilerOptions, 'lookup' | 'resolver' | 'macros'>) {
+export class LazyCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, LazyOpcodeBuilder<TemplateMeta>> implements Compiler<LazyOpcodeBuilder<TemplateMeta>> {
+  static default<TemplateMeta>({ lookup, resolver, macros }: Pick<LazyCompilerOptions<TemplateMeta>, 'lookup' | 'resolver' | 'macros'>): LazyCompiler<TemplateMeta> {
     let constants = new LazyConstants(resolver);
     let program = new Program(constants);
-    let builder = LazyOpcodeBuilder;
 
-    let compiler = new LazyCompiler({
+    let compiler = new LazyCompiler<TemplateMeta>({
       lookup,
       resolver,
       program,
-      macros,
-      builder
+      macros
     });
-
-    compiler.initialize();
 
     return compiler;
   }
 
-  private constructor(private options: LazyCompilerOptions) {}
+  private constructor(private options: LazyCompilerOptions<TemplateMeta>) {
+    super();
+  }
 
-  private initialize() {
+  protected get macros(): Macros {
+    return this.options.macros;
   }
 
   get program(): Program<Opaque> {
@@ -42,7 +39,7 @@ export class LazyCompiler implements Compiler<LazyOpcodeBuilder<Opaque>> {
   }
 
   get constants(): CompileTimeConstants {
-    return this.program.constants;
+    return this.options.program.constants;
   }
 
   get resolver(): CompileTimeLookup<Opaque> {
@@ -53,23 +50,7 @@ export class LazyCompiler implements Compiler<LazyOpcodeBuilder<Opaque>> {
     return null;
   }
 
-  builderFor(referrer: Opaque, containingLayout: ParsedLayout, asPartial: boolean): LazyOpcodeBuilder<Opaque> {
-    return new LazyOpcodeBuilder(this, referrer, containingLayout, asPartial);
+  builderFor(containingLayout: LayoutWithContext<TemplateMeta>): LazyOpcodeBuilder<TemplateMeta> {
+    return new LazyOpcodeBuilder(this, containingLayout);
   }
-
-  add(statements: Statement[], containingLayout: ParsedLayout, asPartial: boolean): number {
-    return compile(statements, containingLayout, asPartial, this.options.builder as OpcodeBuilderConstructor, this);
-  }
-
-  // FIXME: Don't Copy Pasta
-  compileInline(sexp: Statements.Append, builder: EagerOpcodeBuilder<Opaque>): ['expr', Expression] | true {
-    let { inlines } = this.options.macros;
-    return inlines.compile(sexp, builder);
-  }
-
-  compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: EagerOpcodeBuilder<Opaque>): void {
-    let { blocks } = this.options.macros;
-    blocks.compile(name, params, hash, template, inverse, builder);
-  }
-
 }

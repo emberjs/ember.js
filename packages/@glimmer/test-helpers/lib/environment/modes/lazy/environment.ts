@@ -52,6 +52,7 @@ import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
 import { Opaque } from "@glimmer/util";
 import { PathReference } from "@glimmer/reference";
+import { TemplateMeta } from "@glimmer/wire-format";
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
@@ -65,18 +66,31 @@ export interface TestEnvironmentOptions {
   program?: CompilableProgram;
 }
 
+export interface TestMeta extends TemplateMeta {
+  version: number;
+  lang: string;
+  moduleName: string;
+  owner?: {};
+}
+
+export const DEFAULT_TEST_META = Object.freeze({
+  version: 1,
+  lang: 'en',
+  moduleName: 'index'
+});
+
 export type TestCompilationOptions = CompilationOptions<AnnotatedModuleLocator, LazyRuntimeResolver>;
 
-export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModuleLocator> {
+export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
   public resolver = new LazyRuntimeResolver();
-  protected program: Program<AnnotatedModuleLocator>;
+  protected program: Program<TestMeta>;
 
-  public compiler: LazyCompiler;
+  public compiler: LazyCompiler<TestMeta>;
 
   constructor(options?: TestEnvironmentOptions) {
     super(testOptions(options));
 
-    this.compiler = LazyCompiler.default({
+    this.compiler = LazyCompiler.default<TestMeta>({
       lookup: new LazyCompilerResolver(this.resolver),
       resolver: this.resolver,
       macros: new TestMacros()
@@ -163,7 +177,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
   }
 
   registerPartial(name: string, source: string): PartialDefinition {
-    let definition = new PartialDefinition(name, this.preprocess(source, null));
+    let definition = new PartialDefinition(name, this.preprocess(source));
     this.resolver.register('partial', name, definition);
     return definition;
   }
@@ -192,7 +206,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
     return handle === null ? null : this.resolver.resolve<ModifierManager>(handle);
   }
 
-  preprocess<TemplateMeta>(template: string, meta?: TemplateMeta): Template<TemplateMeta> {
+  preprocess(template: string, meta?: TestMeta): Template<TemplateMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
     return factory.create(this.compiler, (meta || {}) as any as TemplateMeta);
