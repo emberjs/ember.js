@@ -66,7 +66,7 @@ export abstract class AbstractCompiler<TemplateMeta, Builder extends OpcodeBuild
     let capabilities = resolver.getCapabilities(handle);
     let compilable: Option<CompilableProgram> = null;
 
-    if (capabilities.dynamicLayout) {
+    if (!capabilities.dynamicLayout) {
       compilable = resolver.getLayout(handle)!;
     }
 

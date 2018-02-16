@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple } from "@glimmer/interfaces";
+import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple, Maybe } from "@glimmer/interfaces";
 
 export interface Checker<T> {
   type: T;
@@ -76,10 +76,10 @@ class InstanceofChecker<T> implements Checker<T> {
 class OptionChecker<T> implements Checker<Option<T>> {
   type: Option<T>;
 
-  constructor(private checker: Checker<T>) {}
+  constructor(private checker: Checker<T>, private emptyValue: null | undefined) {}
 
   validate(value: Opaque): value is Option<T> {
-    if (value === null) return true;
+    if (value === this.emptyValue) return true;
     return this.checker.validate(value);
   }
 
@@ -193,7 +193,11 @@ export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
 }
 
 export function CheckOption<T>(checker: Checker<T>): Checker<Option<T>> {
-  return new OptionChecker(checker);
+  return new OptionChecker(checker, null);
+}
+
+export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
+  return new OptionChecker(checker, undefined);
 }
 
 export function CheckInterface<I extends { [P in keyof O]: O[P]['type'] }, O extends Dict<Checker<Opaque>>>(obj: O): Checker<I> {
@@ -246,8 +250,8 @@ export function CheckValue<T>(value: T, desc = String(value)): Checker<T> {
 export const CheckBlockSymbolTable: Checker<BlockSymbolTable> =
   CheckInterface({ parameters: CheckArray(CheckNumber) });
 
-export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> =
-  CheckInterface({ hasEval: CheckBoolean, symbols: CheckArray(CheckString) });
+export const CheckProgramSymbolTable: Checker<Maybe<ProgramSymbolTable>> =
+  CheckMaybe(CheckInterface({ hasEval: CheckBoolean, symbols: CheckArray(CheckString) }));
 
 export const CheckElement: Checker<Simple.Element> =
   CheckInterface({ nodeType: CheckValue(1), tagName: CheckString, nextSibling: CheckOpaque });
