@@ -12,22 +12,22 @@ import { CompileTimeProgram } from "@glimmer/interfaces";
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
 
-export interface LayoutWithContext<TemplateMeta = Opaque> {
+export interface LayoutWithContext<Locator = Opaque> {
   id?: Option<string>;
   block: SerializedTemplateBlock;
-  referrer: TemplateMeta;
+  referrer: Locator;
   asPartial: boolean;
 }
 
-export interface BlockWithContext<TemplateMeta = Opaque> {
+export interface BlockWithContext<Locator = Opaque> {
   block: SerializedInlineBlock;
-  containingLayout: LayoutWithContext<TemplateMeta>;
+  containingLayout: LayoutWithContext<Locator>;
 }
 
 /**
  * Environment specific template.
  */
-export interface Template<TemplateMeta = Opaque> {
+export interface Template<Locator = Opaque> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -37,7 +37,7 @@ export interface Template<TemplateMeta = Opaque> {
   /**
    * Template meta (both compile time and environment specific).
    */
-  referrer: TemplateMeta;
+  referrer: Locator;
 
   hasEval: boolean;
 
@@ -58,7 +58,7 @@ export interface STDLib {
   cautiousGuardedAppend: number;
 }
 
-export interface CompileTimeLookup<TemplateMeta> {
+export interface CompileTimeLookup<Locator> {
   getCapabilities(handle: number): ComponentCapabilities;
   getLayout(handle: number): Option<CompilableProgram>;
 
@@ -66,10 +66,10 @@ export interface CompileTimeLookup<TemplateMeta> {
   // produce any actual objects. The main use-case for producing objects is handled above,
   // with getCapabilities and getLayout, which drastically shrinks the size of the object
   // that the core interface is forced to reify.
-  lookupHelper(name: string, referrer: TemplateMeta): Option<number>;
-  lookupModifier(name: string, referrer: TemplateMeta): Option<number>;
-  lookupComponentDefinition(name: string, referrer: TemplateMeta): Option<number>;
-  lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
+  lookupHelper(name: string, referrer: Locator): Option<number>;
+  lookupModifier(name: string, referrer: Locator): Option<number>;
+  lookupComponentDefinition(name: string, referrer: Locator): Option<number>;
+  lookupPartial(name: string, referrer: Locator): Option<number>;
 }
 
 export type CompilerBuffer = Array<number | (() => number)>;

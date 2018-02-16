@@ -1,5 +1,4 @@
 import { VersionedPathReference } from '@glimmer/reference';
-import { TemplateMeta } from '@glimmer/wire-format';
 import { Op } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { PartialDefinition } from '@glimmer/opcode-compiler';
@@ -14,7 +13,7 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
   let name = check(stack.pop(), CheckReference).value();
   assert(typeof name === 'string', `Could not find a partial named "${String(name)}"`);
 
-  let meta = constants.getSerializable<TemplateMeta>(_meta);
+  let meta = constants.getSerializable(_meta);
   let outerSymbols = constants.getStringArray(_symbols);
   let evalInfo = constants.getArray(_evalInfo);
 

@@ -14,10 +14,10 @@ import { ATTRS_BLOCK } from './syntax';
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { EMPTY_ARRAY } from "@glimmer/util";
 
-export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
+export class WrappedBuilder<Locator> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
 
-  constructor(private compiler: Compiler<OpcodeBuilder<TemplateMeta>>, private layout: LayoutWithContext<TemplateMeta>) {
+  constructor(private compiler: Compiler<OpcodeBuilder<Locator>>, private layout: LayoutWithContext<Locator>) {
     let { block } = layout;
 
     this.symbolTable = {
@@ -92,14 +92,14 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
     let handle = b.commit();
 
     if (DEBUG) {
-      debug(compiler as Recast<Compiler<OpcodeBuilder<TemplateMeta>>, AnyAbstractCompiler>, handle);
+      debug(compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>, handle);
     }
 
     return handle;
   }
 }
 
-function blockFor<TemplateMeta>(layout: LayoutWithContext, compiler: Compiler<OpcodeBuilder<TemplateMeta>>): CompilableBlock {
+function blockFor<Locator>(layout: LayoutWithContext, compiler: Compiler<OpcodeBuilder<Locator>>): CompilableBlock {
   return new CompilableBlockInstance(compiler, {
     block: {
       statements: layout.block.statements,
@@ -109,8 +109,8 @@ function blockFor<TemplateMeta>(layout: LayoutWithContext, compiler: Compiler<Op
   });
 }
 
-export class ComponentBuilder<TemplateMeta> implements IComponentBuilder {
-  constructor(private builder: OpcodeBuilder<TemplateMeta>) {}
+export class ComponentBuilder<Locator> implements IComponentBuilder {
+  constructor(private builder: OpcodeBuilder<Locator>) {}
 
   static(handle: number, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;

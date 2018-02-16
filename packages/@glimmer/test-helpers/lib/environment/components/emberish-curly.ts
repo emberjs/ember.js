@@ -8,7 +8,7 @@ import { UpdatableReference } from '@glimmer/object-reference';
 import { Attrs, createTemplate, AttrsDiff } from '../shared';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import { TestComponentDefinitionState, TemplateMeta } from '../components';
+import { TestComponentDefinitionState, Locator } from '../components';
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
@@ -75,7 +75,7 @@ export interface EmberishCurlyComponentDefinitionState {
 
 export class EmberishCurlyComponentManager implements
   WithDynamicTagName<EmberishCurlyComponent>,
-  WithDynamicLayout<EmberishCurlyComponent, TemplateMeta, LazyRuntimeResolver> {
+  WithDynamicLayout<EmberishCurlyComponent, Locator, LazyRuntimeResolver> {
 
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;

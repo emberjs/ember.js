@@ -82,19 +82,19 @@ export interface BundleCompilationResult {
   symbolTables: ModuleLocatorMap<ProgramSymbolTable>;
 }
 
-export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
-  meta?: TemplateMeta;
+export interface PartialTemplateLocator<Locator> extends ModuleLocator {
+  meta?: Locator;
   kind?: 'template';
 }
 
 // to make --declaration happy
 export { CompilableTemplate };
 
-export class EagerCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, EagerOpcodeBuilder<TemplateMeta>> {
+export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcodeBuilder<Locator>> {
   public stdLib: STDLib;
 
   constructor(
-    private options: TemplateOptions<TemplateMeta>,
+    private options: TemplateOptions<Locator>,
     private plugins: ASTPluginBuilder[]
   ) {
     super();
@@ -135,7 +135,7 @@ export class EagerCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, 
     return this.options.program;
   }
 
-  builderFor(containingLayout: LayoutWithContext<TemplateMeta>): EagerOpcodeBuilder<TemplateMeta> {
+  builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
     return new EagerOpcodeBuilder(this, containingLayout);
   }
 
@@ -162,22 +162,22 @@ export class EagerCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, 
  * which is suitable for serialization into bytecode and JavaScript assets that
  * can be loaded and run in the browser.
  */
-export default class BundleCompiler<TemplateMeta> {
+export default class BundleCompiler<Locator> {
   public compilableTemplates = new ModuleLocatorMap<CompilableProgram>();
-  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<TemplateMeta>>();
-  public meta = new ModuleLocatorMap<TemplateMeta>();
-  public compiler: EagerCompiler<TemplateMeta>;
+  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<Locator>>();
+  public meta = new ModuleLocatorMap<Locator>();
+  public compiler: EagerCompiler<Locator>;
 
-  protected delegate: CompilerDelegate<TemplateMeta>;
+  protected delegate: CompilerDelegate<Locator>;
   protected macros: Macros;
   protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
   protected program: WriteOnlyProgram;
-  protected templateOptions: TemplateOptions<TemplateMeta>;
+  protected templateOptions: TemplateOptions<Locator>;
   protected resolver: CompileTimeLookup<Opaque>;
   protected table = new ExternalModuleTable();
 
-  constructor(delegate: CompilerDelegate<TemplateMeta>, options: BundleCompilerOptions = {}) {
+  constructor(delegate: CompilerDelegate<Locator>, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
     let macros = this.macros = options.macros || new Macros();
 
@@ -196,7 +196,7 @@ export default class BundleCompiler<TemplateMeta> {
   /**
    * Adds the template source code for a component to the bundle.
    */
-  add(_locator: PartialTemplateLocator<TemplateMeta>, templateSource: string): SerializedTemplateBlock {
+  add(_locator: PartialTemplateLocator<Locator>, templateSource: string): SerializedTemplateBlock {
     let locator = normalizeLocator(_locator);
     let { meta } = locator;
 
@@ -218,7 +218,7 @@ export default class BundleCompiler<TemplateMeta> {
    * Adds a custom CompilableTemplate instance to the bundle.
    */
   addCompilableTemplate(
-    _locator: PartialTemplateLocator<TemplateMeta>,
+    _locator: PartialTemplateLocator<Locator>,
     template: CompilableProgram
   ): void {
     let locator = normalizeLocator(_locator);
@@ -253,7 +253,7 @@ export default class BundleCompiler<TemplateMeta> {
   }
 
   preprocess(
-    meta: TemplateMeta | null,
+    meta: Locator | null,
     input: string
   ): SerializedTemplateBlock {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
@@ -261,10 +261,10 @@ export default class BundleCompiler<TemplateMeta> {
     return template.toJSON();
   }
 
-  compilerResolver(): CompileTimeLookup<TemplateMeta> {
+  compilerResolver(): CompileTimeLookup<Locator> {
     let resolver = this.resolver;
     if (!resolver) {
-      resolver = this.resolver = new CompilerResolver<TemplateMeta>(this.delegate, this.table, this);
+      resolver = this.resolver = new CompilerResolver<Locator>(this.delegate, this.table, this);
     }
 
     return resolver;

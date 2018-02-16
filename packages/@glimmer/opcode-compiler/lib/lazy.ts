@@ -4,19 +4,19 @@ import { AbstractCompiler } from './compiler';
 import { Opaque, RuntimeResolver, Compiler, CompileTimeLookup, LayoutWithContext, CompileTimeConstants } from "@glimmer/interfaces";
 import { Program, LazyConstants } from "@glimmer/program";
 
-export interface LazyCompilerOptions<TemplateMeta> {
-  lookup: CompileTimeLookup<TemplateMeta>;
-  resolver: RuntimeResolver<TemplateMeta>;
-  program: Program<TemplateMeta>;
+export interface LazyCompilerOptions<Locator> {
+  lookup: CompileTimeLookup<Locator>;
+  resolver: RuntimeResolver<Locator>;
+  program: Program<Locator>;
   macros: Macros;
 }
 
-export class LazyCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, LazyOpcodeBuilder<TemplateMeta>> implements Compiler<LazyOpcodeBuilder<TemplateMeta>> {
-  static default<TemplateMeta>({ lookup, resolver, macros }: Pick<LazyCompilerOptions<TemplateMeta>, 'lookup' | 'resolver' | 'macros'>): LazyCompiler<TemplateMeta> {
+export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeBuilder<Locator>> implements Compiler<LazyOpcodeBuilder<Locator>> {
+  static default<Locator>({ lookup, resolver, macros }: Pick<LazyCompilerOptions<Locator>, 'lookup' | 'resolver' | 'macros'>): LazyCompiler<Locator> {
     let constants = new LazyConstants(resolver);
     let program = new Program(constants);
 
-    let compiler = new LazyCompiler<TemplateMeta>({
+    let compiler = new LazyCompiler<Locator>({
       lookup,
       resolver,
       program,
@@ -26,7 +26,7 @@ export class LazyCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, L
     return compiler;
   }
 
-  private constructor(private options: LazyCompilerOptions<TemplateMeta>) {
+  private constructor(private options: LazyCompilerOptions<Locator>) {
     super();
   }
 
@@ -50,7 +50,7 @@ export class LazyCompiler<TemplateMeta> extends AbstractCompiler<TemplateMeta, L
     return null;
   }
 
-  builderFor(containingLayout: LayoutWithContext<TemplateMeta>): LazyOpcodeBuilder<TemplateMeta> {
+  builderFor(containingLayout: LayoutWithContext<Locator>): LazyOpcodeBuilder<Locator> {
     return new LazyOpcodeBuilder(this, containingLayout);
   }
 }
