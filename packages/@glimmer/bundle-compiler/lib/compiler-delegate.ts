@@ -1,6 +1,4 @@
-import { ComponentCapabilities, CompilableProgram, ModuleLocator } from "@glimmer/interfaces";
-import { CompileOptions } from "@glimmer/opcode-compiler";
-import { SerializedTemplateBlock } from "@glimmer/wire-format";
+import { ComponentCapabilities, ModuleLocator } from "@glimmer/interfaces";
 
 /**
  * A CompilerDelegate helps the BundleCompiler map external references it finds
@@ -61,17 +59,6 @@ export default interface CompilerDelegate<TemplateMeta> {
   getComponentCapabilities(
     locator: TemplateMeta
   ): ComponentCapabilities;
-
-  /**
-   * This hook is called with the return value of `resolveComponent`,
-   * and it should return a compilable template that the compiler adds to the
-   * set of templates to compile for the bundle.
-   */
-  getComponentLayout(
-    locator: TemplateMeta,
-    block: SerializedTemplateBlock,
-    options: CompileOptions<TemplateMeta>
-  ): CompilableProgram;
 
   /**
    * During compilation, the compiler will ask the delegate about each possible

@@ -9,6 +9,12 @@ export {
 
 export * from './lib/lazy';
 export * from './lib/compile';
+export * from './lib/compiler';
+
+export {
+  CompilableBlock,
+  CompilableProgram
+} from './lib/compilable-template';
 
 export {
   LazyOpcodeBuilder,
@@ -24,10 +30,6 @@ export {
   default as templateFactory,
   TemplateFactory
 } from './lib/template';
-
-export {
-  default as CompilableTemplate,
-} from './lib/compilable-template';
 
 export {
   debug,

@@ -12,8 +12,7 @@ import {
   STDLib,
   SymbolTable,
   Compiler,
-  ParsedLayout,
-  CompileTimeLookup,
+  LayoutWithContext
 } from "@glimmer/interfaces";
 import { dict, EMPTY_ARRAY, expect, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
@@ -31,7 +30,7 @@ import {
   expressionCompiler
 } from './syntax';
 
-import CompilableTemplateImpl, { PLACEHOLDER_HANDLE } from './compilable-template';
+import { PLACEHOLDER_HANDLE, CompilableBlock as CompilableBlockInstance } from './compilable-template';
 
 import {
   ComponentBuilder
@@ -72,9 +71,7 @@ export interface Blocks {
 export interface OpcodeBuilderConstructor {
   new<TemplateMeta>(
     compiler: Compiler,
-    referrer: Opaque,
-    containingLayout: ParsedLayout,
-    asPartial: boolean
+    containingLayout: LayoutWithContext
   ): OpcodeBuilder<TemplateMeta>;
 }
 
@@ -114,26 +111,8 @@ export class SimpleOpcodeBuilder {
   }
 
   commit(): number {
-    let heap = this.compiler.program.heap;
-    let scopeSize = this.size;
-
     this.pushMachine(Op.Return);
-
-    let { buffer } = this.encoder;
-
-    // TODO: change the whole malloc API and do something more efficient
-    let handle = heap.malloc();
-
-    for (let i = 0; i < buffer.length; i++) {
-      let value = buffer[i];
-      typeof value === 'function' ?
-        heap.pushPlaceholder(value) :
-        heap.push(value);
-    }
-
-    heap.finishMalloc(handle, scopeSize);
-
-    return handle;
+    return this.compiler.commit(this.size, this.encoder.buffer);
   }
 
   reserve(name: Op) {
@@ -314,7 +293,6 @@ export type VMHandlePlaceholder = [number, () => VMHandle];
 
 export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   public constants: CompileTimeConstants;
-  public resolver: CompileTimeLookup<Opaque>;
   public stdLib: Option<STDLib>;
   public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
 
@@ -324,14 +302,15 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   constructor(
     compiler: Compiler,
-    public referrer: Locator,
-    public containingLayout: ParsedLayout,
-    public asPartial: boolean
+    public containingLayout: LayoutWithContext<Locator>
   ) {
     super(compiler, containingLayout.block.symbols.length);
     this.constants = compiler.constants;
-    this.resolver = compiler.resolver;
     this.stdLib = compiler.stdLib;
+  }
+
+  get referrer(): Locator {
+    return this.containingLayout.referrer;
   }
 
   compileInline(sexp: WireFormat.Statements.Append) {
@@ -399,18 +378,18 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   }
 
   staticComponentHelper(tag: string, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>) {
-    let handle = this.resolver.lookupComponentDefinition(tag, this.referrer);
-    if (handle) {
-      let capabilities = this.resolver.getCapabilities(handle);
-      if (capabilities.dynamicLayout === false) {
+    let { handle, capabilities, compilable } = this.compiler.resolveLayoutForTag(tag, this.containingLayout.referrer);
+
+    if (handle !== null && capabilities !== null) {
+      if (compilable) {
         if (hash) {
           for (let i = 0; i < hash.length; i = i + 2) {
             hash[i][0] = `@${hash[i][0]}`;
           }
         }
-        let layout = this.resolver.getLayout(handle)!;
+
         this.pushComponentDefinition(handle);
-        this.invokeStaticComponent(capabilities, layout, null, null, hash, false, template && template);
+        this.invokeStaticComponent(capabilities, compilable, null, null, hash, false, template && template);
         return true;
       }
     }
@@ -710,15 +689,10 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   // convenience methods
 
   inlineBlock(block: SerializedInlineBlock): CompilableBlock {
-    let { parameters, statements } = block;
-    let symbolTable = { parameters, referrer: this.containingLayout.referrer };
-    let options = {
-      compiler: this.compiler,
-      asPartial: this.asPartial,
-      referrer: this.referrer
-    };
-
-    return new CompilableTemplateImpl(statements, this.containingLayout, options, symbolTable);
+    return new CompilableBlockInstance(this.compiler, {
+      block,
+      containingLayout: this.containingLayout
+    });
   }
 
   evalSymbols(): Option<string[]> {
@@ -1050,7 +1024,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
     this.jumpUnless('ELSE');
 
-    this.resolveDynamicComponent(this.referrer);
+    this.resolveDynamicComponent(this.containingLayout.referrer);
 
     this.pushDynamicComponentInstance();
 
@@ -1075,7 +1049,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
   }
 
   curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
-    let referrer = this.referrer;
+    let referrer = this.containingLayout.referrer;
 
     this.pushFrame();
     this.compileArgs(params, hash, null, synthetic);

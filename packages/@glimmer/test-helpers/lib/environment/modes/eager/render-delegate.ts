@@ -139,10 +139,10 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
     this.constants = new DebugConstants();
     let program = new WriteOnlyProgram(this.constants);
-    let compiler = new BundleCompiler(delegate, { macros, program });
+    let bundleCompiler = new BundleCompiler(delegate, { macros, program });
 
     let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
-    compiler.add(locator, template);
+    bundleCompiler.add(locator, template);
 
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
@@ -156,11 +156,10 @@ export default class EagerRenderDelegate implements RenderDelegate {
       let symbolTable;
 
       if (state.type === "Curly" || state.type === "Dynamic") {
-        let block = compiler.preprocess(locator.meta, state.template!);
-        let options = compiler.compileOptions(locator);
-        let parsedLayout = { block, referrer: locator.meta };
-        let wrapped = new WrappedBuilder(options, parsedLayout);
-        compiler.addCompilableTemplate(locator, wrapped);
+        let block = bundleCompiler.preprocess(locator.meta, state.template!);
+        let parsedLayout = { block, referrer: locator.meta, asPartial: false };
+        let wrapped = new WrappedBuilder(bundleCompiler.compiler, parsedLayout);
+        bundleCompiler.addCompilableTemplate(locator, wrapped);
 
         compileTimeModules.register(key, 'other', {
           default: wrapped.symbolTable
@@ -168,7 +167,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
         symbolTable = wrapped.symbolTable;
       } else {
-        block = compiler.add(locator, expect(state.template, 'expected component definition state to have template'));
+        block = bundleCompiler.add(locator, expect(state.template, 'expected component definition state to have template'));
         symbolTable = {
           hasEval: block.hasEval,
           symbols: block.symbols,
@@ -198,7 +197,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
       }
     });
 
-    let { heap, pool, table } = compiler.compile();
+    let { heap, pool, table } = bundleCompiler.compile();
 
     let handle = table.vmHandleByModuleLocator.get(locator)!;
     let { env } = this;

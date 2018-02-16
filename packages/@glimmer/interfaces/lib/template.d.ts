@@ -6,16 +6,22 @@ import {
 } from './tier1/symbol-table';
 import ComponentCapabilities from './component-capabilities';
 import { CompileTimeConstants } from './program';
-import { Statement, SerializedTemplateBlock, Statements, Expression, Core } from "@glimmer/wire-format";
+import { Statement, SerializedTemplateBlock, Statements, Expression, Core, SerializedInlineBlock } from "@glimmer/wire-format";
 import { CompileTimeProgram } from "@glimmer/interfaces";
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
 
-export interface ParsedLayout<TemplateMeta = Opaque> {
+export interface LayoutWithContext<TemplateMeta = Opaque> {
   id?: Option<string>;
   block: SerializedTemplateBlock;
   referrer: TemplateMeta;
+  asPartial: boolean;
+}
+
+export interface BlockWithContext<TemplateMeta = Opaque> {
+  block: SerializedInlineBlock;
+  containingLayout: LayoutWithContext<TemplateMeta>;
 }
 
 /**
@@ -66,17 +72,35 @@ export interface CompileTimeLookup<TemplateMeta> {
   lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
 }
 
+export type CompilerBuffer = Array<number | (() => number)>;
+
+export interface ResolvedLayout {
+  handle: number;
+  capabilities: ComponentCapabilities;
+  compilable: Option<CompilableProgram>;
+}
+
+export type MaybeResolvedLayout = {
+  handle: null;
+  capabilities: null;
+  compilable: null;
+} | ResolvedLayout;
+
 export interface Compiler<Builder = Opaque> {
   stdLib: Option<STDLib>;
   constants: CompileTimeConstants;
-  resolver: CompileTimeLookup<Opaque>;
-  program: CompileTimeProgram;
 
-  add(statements: Statement[], containingLayout: ParsedLayout, asPartial: boolean, stdLib: Option<STDLib>): number;
+  add(statements: Statement[], containingLayout: LayoutWithContext): number;
+  commit(size: number, encoder: CompilerBuffer): number;
+
+  resolveLayoutForTag(tag: string, referrer: Opaque): MaybeResolvedLayout;
+  resolveLayoutForHandle(handle: number): ResolvedLayout;
+  resolveHelper(name: string, referrer: Opaque): Option<number>;
+  resolveModifier(name: string, referrer: Opaque): Option<number>;
 
   compileInline(sexp: Statements.Append, builder: Builder): ['expr', Expression] | true;
   compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: Builder): void;
-  builderFor(referrer: Opaque, containingLayout: ParsedLayout, asPartial: boolean): Builder;
+  builderFor(containingLayout: LayoutWithContext): Builder;
 }
 
 export interface CompilableTemplate<S = SymbolTable> {

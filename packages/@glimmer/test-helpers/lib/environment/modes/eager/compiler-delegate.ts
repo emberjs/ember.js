@@ -1,12 +1,10 @@
-import { CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
 import { CompilerDelegate }  from '@glimmer/bundle-compiler';
 import { Dict } from '@glimmer/util';
-import { CompilableProgram, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
+import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 
 import { Modules } from './modules';
 import { ComponentDefinition } from '@glimmer/runtime';
 import { TestComponentDefinitionState } from "@glimmer/test-helpers";
-import { SerializedTemplateBlock } from '@glimmer/wire-format';
 
 import { TemplateMeta } from '../../components';
 
@@ -29,10 +27,6 @@ export default class EagerCompilerDelegate implements CompilerDelegate<TemplateM
 
   getComponentCapabilities(meta: TemplateMeta): ComponentCapabilities {
     return this.components[meta.locator.module].state.capabilities;
-  }
-
-  getComponentLayout(_: TemplateMeta, block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): CompilableProgram {
-    return CompilableTemplate.topLevel(block, options);
   }
 
   hasHelperInScope(helperName: string, referrer: TemplateMeta): boolean {

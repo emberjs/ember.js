@@ -1,14 +1,12 @@
-import { CompilableProgram, Template, Opaque, Option, ParsedLayout, CompilableTemplate as ICompilableTemplate, ProgramSymbolTable } from '@glimmer/interfaces';
+import { CompilableProgram, Template, Opaque, Option, LayoutWithContext } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   Statement
 } from '@glimmer/wire-format';
-import CompilableTemplate from './compilable-template';
+import { CompilableProgram as CompilableProgramInstance } from './compilable-template';
 import { WrappedBuilder } from "./wrapped-component";
-import { CompileOptions } from "./syntax";
-import { OpcodeBuilder } from './opcode-builder';
 import { LazyCompiler } from "@glimmer/opcode-compiler";
 
 export interface TemplateFactory<TemplateMeta> {
@@ -29,7 +27,7 @@ export interface TemplateFactory<TemplateMeta> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(env: LazyCompiler): Template<TemplateMeta>;
+  create(env: LazyCompiler<TemplateMeta>): Template<TemplateMeta>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -37,7 +35,7 @@ export interface TemplateFactory<TemplateMeta> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create<U>(env: LazyCompiler, meta: U): Template<TemplateMeta & U>;
+  create<U>(env: LazyCompiler<TemplateMeta>, meta: U): Template<TemplateMeta & U>;
 }
 
 let clientId = 0;
@@ -52,12 +50,12 @@ export default function templateFactory<TemplateMeta, U>(serializedTemplate: Ser
 export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
-  let create = (compiler: LazyCompiler, envMeta?: {}) => {
+  let create = (compiler: LazyCompiler<Opaque>, envMeta?: {}) => {
     let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new TemplateImpl(compiler, { id, block: parsedBlock, referrer: newMeta });
+    return new TemplateImpl(compiler, { id, block: parsedBlock, referrer: newMeta, });
   };
   return { id, meta, create };
 }
@@ -72,7 +70,7 @@ class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
   public referrer: TemplateMeta;
   private statements: Statement[];
 
-  constructor(private compiler: LazyCompiler, private parsedLayout: ParsedLayout<TemplateMeta>) {
+  constructor(private compiler: LazyCompiler<TemplateMeta>, private parsedLayout: Pick<LayoutWithContext<TemplateMeta>, 'id' | 'block' | 'referrer'>) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
@@ -83,29 +81,16 @@ class TemplateImpl<TemplateMeta = Opaque> implements Template<TemplateMeta> {
 
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
-    return this.layout = compilable(this.parsedLayout, this.compiler, false);
+    return this.layout = new CompilableProgramInstance(this.compiler, { ...this.parsedLayout, asPartial: false });
   }
 
   asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
-    return this.partial = compilable(this.parsedLayout, this.compiler, true);
+    return this.layout = new CompilableProgramInstance(this.compiler, { ...this.parsedLayout, asPartial: true });
   }
 
   asWrappedLayout(): CompilableProgram {
     if (this.wrappedLayout) return this.wrappedLayout;
-    let compileOptions: CompileOptions<TemplateMeta, OpcodeBuilder<Opaque>> = {
-      compiler: this.compiler,
-      asPartial: false,
-      referrer: this.referrer
-    };
-    return this.wrappedLayout = new WrappedBuilder(compileOptions, this.parsedLayout);
+    return this.wrappedLayout = new WrappedBuilder(this.compiler, { ...this.parsedLayout, asPartial: false });
   }
-}
-
-export function compilable<TemplateMeta>(layout: ParsedLayout<TemplateMeta>, compiler: LazyCompiler, asPartial: boolean): ICompilableTemplate<ProgramSymbolTable> {
-  let { block, referrer } = layout;
-  let { hasEval, symbols } = block;
-  let compileOptions = { compiler, asPartial, referrer };
-
-  return new CompilableTemplate(block.statements, layout, compileOptions, { referrer, hasEval, symbols });
 }
