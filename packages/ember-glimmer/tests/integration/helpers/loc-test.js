@@ -1,21 +1,20 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal';
-import Ember from 'ember';
+import { setStrings } from 'ember-runtime';
 
 moduleFor('Helpers test: {{loc}}', class extends RenderingTest {
 
   constructor() {
     super();
-    this.oldString = Ember.STRINGS;
-    Ember.STRINGS = {
+    setStrings({
       'Hello Friend': 'Hallo Freund',
       'Hello': 'Hallo, %@'
-    };
+    });
   }
 
   teardown() {
     super.teardown();
-    Ember.STRINGS = this.oldString;
+    setStrings({});
   }
 
   ['@test it lets the original value through by default']() {
@@ -91,6 +90,6 @@ moduleFor('Helpers test: {{loc}}', class extends RenderingTest {
     this.render(`{{loc greeting}}`, {
       greeting: 'Hello Friend'
     });
-    this.assertText('Yup', 'the localized string is correct');      
+    this.assertText('Yup', 'the localized string is correct');
   }
 });
