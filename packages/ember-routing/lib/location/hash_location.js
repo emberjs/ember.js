@@ -8,12 +8,11 @@ import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 /**
-  `Ember.HashLocation` implements the location API using the browser's
+  `HashLocation` implements the location API using the browser's
   hash. At present, it relies on a `hashchange` event existing in the
   browser.
 
@@ -22,14 +21,14 @@ import EmberLocation from './api';
 
   Example:
 
-  ```javascript
-  App.Router.map(function() {
+  ```app/router.js
+  Router.map(function() {
     this.route('posts', function() {
       this.route('new');
     });
   });
 
-  App.Router.reopen({
+  Router.reopen({
     location: 'hash'
   });
   ```
@@ -37,8 +36,7 @@ import EmberLocation from './api';
   This will result in a posts.new url of `/#/posts/new`.
 
   @class HashLocation
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @protected
 */
 export default EmberObject.extend({

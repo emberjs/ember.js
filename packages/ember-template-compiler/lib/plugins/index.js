@@ -1,6 +1,5 @@
 import TransformOldBindingSyntax from './transform-old-binding-syntax';
 import TransformAngleBracketComponents from './transform-angle-bracket-components';
-import TransformInputOnToOnEvent from './transform-input-on-to-onEvent';
 import TransformTopLevelComponents from './transform-top-level-components';
 import TransformInlineLinkTo from './transform-inline-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
@@ -16,6 +15,7 @@ import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformDotComponentInvocation from './transform-dot-component-invocation';
 import ExtractPragmaTag from './extract-pragma-tag';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
+import TransformInElement from './transform-in-element';
 import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER
 } from 'ember/features';
@@ -24,7 +24,6 @@ const transforms = [
   TransformDotComponentInvocation,
   TransformOldBindingSyntax,
   TransformAngleBracketComponents,
-  TransformInputOnToOnEvent,
   TransformTopLevelComponents,
   TransformInlineLinkTo,
   TransformOldClassBindingSyntax,
@@ -37,7 +36,8 @@ const transforms = [
   TransformAttrsIntoArgs,
   TransformEachInIntoEach,
   TransformHasBlockSyntax,
-  AssertInputHelperWithoutBlock
+  AssertInputHelperWithoutBlock,
+  TransformInElement,
 ];
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {

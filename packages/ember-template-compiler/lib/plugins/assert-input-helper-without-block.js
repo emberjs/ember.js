@@ -7,7 +7,7 @@ export default function errorOnInputWithContent(env) {
   return {
     name: 'assert-input-helper-without-block',
 
-    visitors: {
+    visitor: {
       BlockStatement(node) {
         if (node.path.original !== 'input') { return; }
 

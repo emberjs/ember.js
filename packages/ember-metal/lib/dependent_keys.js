@@ -3,11 +3,6 @@ import {
   unwatch
 } from './watching';
 
-/**
-@module ember
-@submodule ember-metal
-*/
-
 // ..........................................................
 // DEPENDENT KEYS
 //

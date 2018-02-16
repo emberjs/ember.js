@@ -86,8 +86,13 @@ export function styles(expected) {
   };
 }
 
-export function equalsElement(element, tagName, attributes, content) {
-  QUnit.push(element.tagName === tagName.toUpperCase(), element.tagName.toLowerCase(), tagName, `expect tagName to be ${tagName}`);
+export function equalsElement(assert, element, tagName, attributes, content) {
+  assert.pushResult({
+    result: element.tagName === tagName.toUpperCase(),
+    actual: element.tagName.toLowerCase(),
+    expected: tagName,
+    message: `expect tagName to be ${tagName}`
+  });
 
   let expectedAttrs = {};
   let expectedCount = 0;
@@ -102,12 +107,12 @@ export function equalsElement(element, tagName, attributes, content) {
 
     expectedAttrs[name] = matcher;
 
-    QUnit.push(
-      expectedAttrs[name].match(element.getAttribute(name)),
-      element.getAttribute(name),
-      matcher.expected(),
-      `Element's ${name} attribute ${matcher.message()}`
-    );
+    assert.pushResult({
+      result: expectedAttrs[name].match(element.getAttribute(name)),
+      actual: element.getAttribute(name),
+      expected: matcher.expected(),
+      message: `Element's ${name} attribute ${matcher.message()}`
+    });
   }
 
   let actualAttributes = {};
@@ -117,17 +122,25 @@ export function equalsElement(element, tagName, attributes, content) {
   }
 
   if (!(element instanceof HTMLElement)) {
-    QUnit.push(element instanceof HTMLElement, null, null, 'Element must be an HTML Element, not an SVG Element');
+    assert.pushResult({
+      result: element instanceof HTMLElement,
+      message: 'Element must be an HTML Element, not an SVG Element'
+    });
   } else {
-    QUnit.push(
-      element.attributes.length === expectedCount || !attributes,
-      element.attributes.length,
-      expectedCount,
-      `Expected ${expectedCount} attributes; got ${element.outerHTML}`
-    );
+    assert.pushResult({
+      result: element.attributes.length === expectedCount || !attributes,
+      actual: element.attributes.length,
+      expected: expectedCount,
+      message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`
+    });
 
     if (content !== null) {
-      QUnit.push(element.innerHTML === content, element.innerHTML, content, `The element had '${content}' as its content`);
+      assert.pushResult({
+        result: element.innerHTML === content,
+        actual: element.innerHTML,
+        expected: content,
+        message: `The element had '${content}' as its content`
+      });
     }
   }
 }

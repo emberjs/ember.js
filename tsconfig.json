@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es2015",
+    "module": "es2015",
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "outDir": "dist",
+    "baseUrl" : "packages",
+    "rootDir": "packages",
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "strict": true,
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "newLine": "LF",
+    "noEmit": true,
+    "allowJs": false,
+
+    "paths": {
+      "*": ["*/lib"]
+    }
+  },
+
+  "files": [
+    "packages/ember-glimmer/externs.d.ts",
+    "packages/ember-glimmer/lib/index.ts"
+  ]
+}

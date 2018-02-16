@@ -1,6 +1,5 @@
 /**
  @module ember
- @submodule ember-glimmer
 */
 
 /**
@@ -31,13 +30,13 @@ export default function transformAttrsIntoArgs(env) {
   return {
     name: 'transform-attrs-into-args',
 
-    visitors: {
+    visitor: {
       Program: {
         enter(node) {
           let parent = stack[stack.length - 1];
           stack.push(parent.concat(node.blockParams));
         },
-        exit(node) {
+        exit() {
           stack.pop();
         }
       },

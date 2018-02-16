@@ -3,7 +3,6 @@ import { guidFor, symbol, getOwner } from 'ember-utils';
 
 /**
 @module ember
-@submodule ember-views
 */
 
 export function isSimpleClick(event) {

@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-views
 */
 
 import {
@@ -16,8 +15,8 @@ const KEY_EVENTS = {
 };
 
 /**
-  `TextSupport` is a shared mixin used by both `Ember.TextField` and
-  `Ember.TextArea`. `TextSupport` adds a number of methods that allow you to
+  `TextSupport` is a shared mixin used by both `TextField` and
+  `TextArea`. `TextSupport` adds a number of methods that allow you to
   specify a controller action to invoke when a certain event is fired on your
   text field or textarea. The specified controller action would get the current
   value of the field passed in as the only argument unless the value of
@@ -35,9 +34,11 @@ const KEY_EVENTS = {
   ```
 
   ```javascript
-      App = Ember.Application.create();
+      import Application from '@ember/application';
+      import Controller from '@ember/controller';
+      App = Application.create();
 
-      App.ApplicationController = Ember.Controller.extend({
+      App.ApplicationController = Controller.extend({
         actions: {
           alertUser: function ( currentValue ) {
             alert( 'escape pressed, current value: ' + currentValue );
@@ -110,7 +111,7 @@ const KEY_EVENTS = {
   @class TextSupport
   @namespace Ember
   @uses Ember.TargetActionSupport
-  @extends Ember.Mixin
+  @extends Mixin
   @private
 */
 export default Mixin.create(TargetActionSupport, {
@@ -142,35 +143,6 @@ export default Mixin.create(TargetActionSupport, {
     this.on('cut', this, this._elementValueDidChange);
     this.on('input', this, this._elementValueDidChange);
   },
-
-  /**
-    The action to be sent when the user presses the return key.
-
-    This is similar to the `{{action}}` helper, but is fired when
-    the user presses the return key when editing a text field, and sends
-    the value of the field as the context.
-
-    @property action
-    @type String
-    @default null
-    @private
-  */
-  action: null,
-
-  /**
-    The event that should send the action.
-
-    Options are:
-
-    * `enter`: the user pressed enter
-    * `keyPress`: the user pressed a key
-
-    @property onEvent
-    @type String
-    @default enter
-    @private
-  */
-  onEvent: 'enter',
 
   /**
     Whether the `keyUp` event that triggers an `action` to be sent continues
@@ -336,21 +308,11 @@ export default Mixin.create(TargetActionSupport, {
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
   let action = get(view, `attrs.${eventName}`) || get(view, eventName);
-  let on = get(view, 'onEvent');
   let value = get(view, 'value');
-
-  // back-compat support for keyPress as an event name even though
-  // it's also a method name that consumes the event (and therefore
-  // incompatible with sendAction semantics).
-  if (on === eventName || (on === 'keyPress' && eventName === 'key-press')) {
-    view.sendAction('action', value);
-  }
 
   view.sendAction(eventName, value);
 
-  if (action || on === eventName) {
-    if (!get(view, 'bubbles')) {
-      event.stopPropagation();
-    }
+  if (action && !get(view, 'bubbles')) {
+    event.stopPropagation();
   }
 }

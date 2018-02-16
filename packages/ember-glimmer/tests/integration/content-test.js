@@ -71,7 +71,7 @@ moduleFor('Static content tests', class extends RenderingTest {
 
 class DynamicContentTest extends RenderingTest {
   /* abstract */
-  renderPath(path, context = {}) {
+  renderPath(/* path, context = {} */) {
     throw new Error('Not implemented: `renderValues`');
   }
 
@@ -80,7 +80,7 @@ class DynamicContentTest extends RenderingTest {
   }
 
   /* abstract */
-  assertContent(content) {
+  assertContent(/* content */) {
     throw new Error('Not implemented: `assertContent`');
   }
 
@@ -483,6 +483,29 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertContent('hello');
     this.assertInvariants();
+  }
+
+  ['@test it can render a property on a function']() {
+    let func = () => {};
+    func.aProp = 'this is a property on a function';
+
+    this.renderPath('func.aProp', { func });
+
+    this.assertContent('this is a property on a function');
+
+    this.assertStableRerender();
+
+    // this.runTask(() => set(func, 'aProp', 'still a property on a function'));
+    // this.assertContent('still a property on a function');
+    // this.assertInvariants();
+
+    // func = () => {};
+    // func.aProp = 'a prop on a new function';
+
+    // this.runTask(() => set(this.context, 'func', func));
+
+    // this.assertContent('a prop on a new function');
+    // this.assertInvariants();
   }
 }
 
@@ -1224,7 +1247,7 @@ moduleFor('Inline style tests', class extends StyleTest {
 
 if (!EmberDev.runningProdBuild) {
   moduleFor('Inline style tests - warnings', class extends StyleTest {
-    ['@test specifying <div style={{userValue}}></div> generates a warning'](assert) {
+    ['@test specifying <div style={{userValue}}></div> generates a warning']() {
       let userValue = 'width: 42px';
       this.render('<div style={{userValue}}></div>', {
         userValue
@@ -1233,7 +1256,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertStyleWarning(userValue);
     }
 
-    ['@test specifying `attributeBindings: ["style"]` generates a warning'](assert) {
+    ['@test specifying `attributeBindings: ["style"]` generates a warning']() {
       let FooBarComponent = Component.extend({
         attributeBindings: ['style']
       });
@@ -1247,7 +1270,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertStyleWarning(userValue);
     }
 
-    ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning'](assert) {
+    ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning']() {
       this.render('<div style={{{userValue}}}></div>', {
         userValue: 'width: 42px'
       });
@@ -1255,7 +1278,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertNoWarning();
     }
 
-    ['@test specifying `<div style={{userValue}}></div>` works properly with a SafeString'](assert) {
+    ['@test specifying `<div style={{userValue}}></div>` works properly with a SafeString']() {
       this.render('<div style={{userValue}}></div>', {
         userValue: new SafeString('width: 42px')
       });
@@ -1263,7 +1286,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertNoWarning();
     }
 
-    ['@test null value do not generate htmlsafe warning'](assert) {
+    ['@test null value do not generate htmlsafe warning']() {
       this.render('<div style={{userValue}}></div>', {
         userValue: null
       });
@@ -1271,13 +1294,13 @@ if (!EmberDev.runningProdBuild) {
       this.assertNoWarning();
     }
 
-    ['@test undefined value do not generate htmlsafe warning'](assert) {
+    ['@test undefined value do not generate htmlsafe warning']() {
       this.render('<div style={{userValue}}></div>');
 
       this.assertNoWarning();
     }
 
-    ['@test no warnings are triggered when using `-html-safe`'](assert) {
+    ['@test no warnings are triggered when using `-html-safe`']() {
       this.render('<div style={{-html-safe userValue}}></div>', {
         userValue: 'width: 42px'
       });
@@ -1285,7 +1308,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertNoWarning();
     }
 
-    ['@test no warnings are triggered when a safe string is quoted'](assert) {
+    ['@test no warnings are triggered when a safe string is quoted']() {
       this.render('<div style="{{userValue}}"></div>', {
         userValue: new SafeString('width: 42px')
       });
@@ -1293,7 +1316,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertNoWarning();
     }
 
-    ['@test binding warning is triggered when an unsafe string is quoted'](assert) {
+    ['@test binding warning is triggered when an unsafe string is quoted']() {
       let userValue = 'width: 42px';
       this.render('<div style="{{userValue}}"></div>', {
         userValue
@@ -1302,7 +1325,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertStyleWarning(userValue);
     }
 
-    ['@test binding warning is triggered when a safe string for a complete property is concatenated in place'](assert) {
+    ['@test binding warning is triggered when a safe string for a complete property is concatenated in place']() {
       let userValue = 'width: 42px';
       this.render('<div style="color: green; {{userValue}}"></div>', {
         userValue: new SafeString('width: 42px')
@@ -1311,7 +1334,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertStyleWarning(`color: green; ${userValue}`);
     }
 
-    ['@test binding warning is triggered when a safe string for a value is concatenated in place'](assert) {
+    ['@test binding warning is triggered when a safe string for a value is concatenated in place']() {
       let userValue = '42px';
       this.render('<div style="color: green; width: {{userValue}}"></div>', {
         userValue: new SafeString(userValue)
@@ -1320,7 +1343,7 @@ if (!EmberDev.runningProdBuild) {
       this.assertStyleWarning(`color: green; width: ${userValue}`);
     }
 
-    ['@test binding warning is triggered when a safe string for a property name is concatenated in place'](assert) {
+    ['@test binding warning is triggered when a safe string for a property name is concatenated in place']() {
       let userValue = 'width';
       this.render('<div style="color: green; {{userProperty}}: 42px"></div>', {
         userProperty: new SafeString(userValue)

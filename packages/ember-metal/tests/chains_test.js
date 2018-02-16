@@ -5,14 +5,14 @@ import {
   finishChains,
   defineProperty,
   computed,
-  propertyDidChange,
+  notifyPropertyChange,
   peekMeta,
   meta
 } from '..';
 
 QUnit.module('Chains');
 
-QUnit.test('finishChains should properly copy chains from prototypes to instances', function() {
+QUnit.test('finishChains should properly copy chains from prototypes to instances', function(assert) {
   function didChange() {}
 
   let obj = {};
@@ -25,7 +25,7 @@ QUnit.test('finishChains should properly copy chains from prototypes to instance
 
   finishChains(childMeta);
 
-  ok(parentMeta.readableChains() !== childMeta.readableChains(), 'The chains object is copied');
+  assert.ok(parentMeta.readableChains() !== childMeta.readableChains(), 'The chains object is copied');
 });
 
 QUnit.test('does not observe primitive values', function(assert) {
@@ -39,7 +39,7 @@ QUnit.test('does not observe primitive values', function(assert) {
 });
 
 
-QUnit.test('observer and CP chains', function() {
+QUnit.test('observer and CP chains', function(assert) {
   let obj = { };
 
   defineProperty(obj, 'foo', computed('qux.[]', function() { }));
@@ -65,7 +65,7 @@ QUnit.test('observer and CP chains', function() {
   */
 
   // invalidate qux
-  propertyDidChange(obj, 'qux');
+  notifyPropertyChange(obj, 'qux');
 
   // CP chain is blown away
 
@@ -83,7 +83,7 @@ QUnit.test('observer and CP chains', function() {
   */
 
   get(obj, 'qux'); // CP chain re-recreated
-  ok(true, 'no crash');
+  assert.ok(true, 'no crash');
 });
 
 QUnit.test('checks cache correctly', function(assert) {

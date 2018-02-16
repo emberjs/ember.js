@@ -1,5 +1,6 @@
-import { deprecate } from 'ember-debug';
-
+/**
+ @module @ember/test
+*/
 const contexts = [];
 const callbacks = [];
 
@@ -14,7 +15,9 @@ const callbacks = [];
    For example:
 
    ```javascript
-   Ember.Test.registerWaiter(function() {
+   import { registerWaiter } from '@ember/test';
+
+   registerWaiter(function() {
      return myPendingTransactions() == 0;
    });
    ```
@@ -24,11 +27,14 @@ const callbacks = [];
    For example:
 
    ```javascript
-   Ember.Test.registerWaiter(MyDB, MyDB.hasPendingTransactions);
+   import { registerWaiter } from '@ember/test';
+
+   registerWaiter(MyDB, MyDB.hasPendingTransactions);
    ```
 
    @public
-   @for Ember.Test
+   @for @ember/test
+   @static
    @method registerWaiter
    @param {Object} context (optional)
    @param {Function} callback
@@ -51,7 +57,8 @@ export function registerWaiter(context, callback) {
    registered with `registerWaiter`.
 
    @public
-   @for Ember.Test
+   @for @ember/test
+   @static
    @method unregisterWaiter
    @param {Object} context (optional)
    @param {Function} callback
@@ -82,7 +89,7 @@ export function unregisterWaiter(context, callback) {
   infrastructure.
 
   @public
-  @for Ember.Test
+  @for @ember/test
   @static
   @method checkWaiters
 */

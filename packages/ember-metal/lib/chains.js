@@ -1,20 +1,16 @@
 import { get } from './property_get';
-import { meta as metaFor, peekMeta } from './meta';
+import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
-import { cacheFor } from './computed';
-
-const FIRST_KEY = /^([^\.]+)/;
-
-function firstKey(path) {
-  return path.match(FIRST_KEY)[0];
-}
+import { getCachedValueFor } from './computed';
+import { eachProxyFor } from './each_proxy';
 
 function isObject(obj) {
   return typeof obj === 'object' && obj !== null;
 }
 
-function isVolatile(obj) {
-  return !(isObject(obj) && obj.isDescriptor && obj._volatile === false);
+function isVolatile(obj, keyName, meta) {
+  let desc = descriptorFor(obj, keyName, meta);
+  return !(desc !== undefined && desc._volatile === false);
 }
 
 class ChainWatchers {
@@ -106,6 +102,10 @@ function makeChainWatcher() {
   return new ChainWatchers();
 }
 
+function makeChainNode(obj) {
+  return new ChainNode(null, null, obj);
+}
+
 function addChainWatcher(obj, keyName, node) {
   let m = metaFor(obj);
   m.writableChainWatchers(makeChainWatcher).add(keyName, node);
@@ -113,13 +113,11 @@ function addChainWatcher(obj, keyName, node) {
 }
 
 function removeChainWatcher(obj, keyName, node, _meta) {
-  if (!isObject(obj)) {
-    return;
-  }
+  if (!isObject(obj)) { return; }
 
-  let meta = _meta || peekMeta(obj);
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (!meta || !meta.readableChainWatchers()) {
+  if (meta === undefined || meta.readableChainWatchers() === undefined) {
     return;
   }
 
@@ -183,18 +181,14 @@ class ChainNode {
 
   // copies a top level object only
   copy(obj) {
-    let ret = new ChainNode(null, null, obj);
+    let ret = makeChainNode(obj);
     let paths = this._paths;
-    let path;
     if (paths !== undefined) {
+      let path;
       for (path in paths) {
-        // this check will also catch non-number vals.
-        if (paths[path] <= 0) {
-          continue;
-        }
-        ret.add(path);
+        if (paths[path] > 0) { ret.add(path); }
       }
-  }
+    }
     return ret;
   }
 
@@ -204,10 +198,8 @@ class ChainNode {
     let paths = this._paths || (this._paths = {});
     paths[path] = (paths[path] || 0) + 1;
 
-    let key = firstKey(path);
-    let tail = path.slice(key.length + 1);
-
-    this.chain(key, tail);
+    let tails = path.split('.');
+    this.chain(tails.shift(), tails);
   }
 
   // called on the root node of a chain to teardown watcher on the specified
@@ -219,13 +211,11 @@ class ChainNode {
       paths[path]--;
     }
 
-    let key = firstKey(path);
-    let tail = path.slice(key.length + 1);
-
-    this.unchain(key, tail);
+    let tails = path.split('.');
+    this.unchain(tails.shift(), tails);
   }
 
-  chain(key, path) {
+  chain(key, tails) {
     let chains = this._chains;
     let node;
     if (chains === undefined) {
@@ -241,22 +231,18 @@ class ChainNode {
     node.count++; // count chains...
 
     // chain rest of path if there is one
-    if (path) {
-      key = firstKey(path);
-      path = path.slice(key.length + 1);
-      node.chain(key, path);
+    if (tails.length > 0) {
+      node.chain(tails.shift(), tails);
     }
   }
 
-  unchain(key, path) {
+  unchain(key, tails) {
     let chains = this._chains;
     let node = chains[key];
 
     // unchain rest of path first...
-    if (path && path.length > 1) {
-      let nextKey  = firstKey(path);
-      let nextPath = path.slice(nextKey.length + 1);
-      node.unchain(nextKey, nextPath);
+    if (tails.length > 1) {
+      node.unchain(tails.shift(), tails);
     }
 
     // delete node if needed.
@@ -281,13 +267,13 @@ class ChainNode {
           this._object = undefined;
         }
       }
-      this._value  = undefined;
+      this._value = undefined;
     }
 
     // then notify chains...
     let chains = this._chains;
-    let node;
     if (chains !== undefined) {
+      let node;
       for (let key in chains) {
         node = chains[key];
         if (node !== undefined) {
@@ -308,10 +294,8 @@ class ChainNode {
 
     if (this._parent) {
       this._parent.populateAffected(path, depth + 1, affected);
-    } else {
-      if (depth > 1) {
-        affected.push(this.value(), path);
-      }
+    } else if (depth > 1) {
+      affected.push(this.value(), path);
     }
   }
 }
@@ -329,20 +313,17 @@ function lazyGet(obj, key) {
   }
 
   // Use `get` if the return value is an EachProxy or an uncacheable value.
-  if (isVolatile(obj[key])) {
+  if (key === '@each') {
+    return eachProxyFor(obj);
+  } else if (isVolatile(obj, key, meta)) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
   } else {
-    let cache = meta.readableCache();
-    if (cache !== undefined) {
-      return cacheFor.get(cache, key);
-    }
+    return getCachedValueFor(obj, key);
   }
 }
 
-import { makeChainNode } from './watch_path';
-
-export function finishChains(meta) {
+function finishChains(meta) {
   // finish any current chains node watchers that reference obj
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
@@ -356,6 +337,8 @@ export function finishChains(meta) {
 }
 
 export {
+  finishChains,
+  makeChainNode,
   removeChainWatcher,
   ChainNode
 };

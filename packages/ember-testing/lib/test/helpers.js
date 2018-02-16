@@ -1,6 +1,9 @@
 import TestPromise from './promise';
 
 export const helpers = {};
+/**
+ @module @ember/test
+*/
 
 /**
   `registerHelper` is used to register a test helper that will be injected
@@ -12,8 +15,11 @@ export const helpers = {};
   For example:
 
   ```javascript
-  Ember.Test.registerHelper('boot', function(app) {
-    Ember.run(app, app.advanceReadiness);
+  import { registerHelper } from '@ember/test';
+  import { run } from '@ember/runloop';
+
+  registerHelper('boot', function(app) {
+    run(app, app.advanceReadiness);
   });
   ```
 
@@ -21,13 +27,16 @@ export const helpers = {};
   called with `app` as the first parameter.
 
   ```javascript
-  App = Ember.Application.create();
+  import Application from '@ember/application';
+
+  App = Application.create();
   App.injectTestHelpers();
   boot();
   ```
 
   @public
-  @for Ember.Test
+  @for @ember/test
+  @static
   @method registerHelper
   @param {String} name The name of the helper method to add.
   @param {Function} helperMethod
@@ -50,8 +59,11 @@ export function registerHelper(name, helperMethod) {
   For example:
 
   ```javascript
-  Ember.Test.registerAsyncHelper('boot', function(app) {
-    Ember.run(app, app.advanceReadiness);
+  import { registerAsyncHelper } from '@ember/test';
+  import { run } from '@ember/runloop';
+
+  registerAsyncHelper('boot', function(app) {
+    run(app, app.advanceReadiness);
   });
   ```
 
@@ -63,7 +75,9 @@ export function registerHelper(name, helperMethod) {
   For example:
 
   ```javascript
-  Ember.Test.registerAsyncHelper('deletePost', function(app, postId) {
+  import { registerAsyncHelper } from '@ember/test';
+
+  registerAsyncHelper('deletePost', function(app, postId) {
     click('.delete-' + postId);
   });
 
@@ -75,7 +89,7 @@ export function registerHelper(name, helperMethod) {
   ```
 
   @public
-  @for Ember.Test
+  @for @ember/test
   @method registerAsyncHelper
   @param {String} name The name of the helper method to add.
   @param {Function} helperMethod
@@ -94,11 +108,15 @@ export function registerAsyncHelper(name, helperMethod) {
   Example:
 
   ```javascript
-  Ember.Test.unregisterHelper('wait');
+  import { unregisterHelper } from '@ember/test';
+
+  unregisterHelper('wait');
   ```
 
   @public
   @method unregisterHelper
+  @static
+  @for @ember/test
   @param {String} name The helper to remove.
 */
 export function unregisterHelper(name) {

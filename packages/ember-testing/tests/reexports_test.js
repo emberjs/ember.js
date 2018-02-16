@@ -1,7 +1,8 @@
 import Ember from 'ember';
 import { confirmExport } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('ember-testing reexports');
+class ReexportsTestCase extends AbstractTestCase {}
 
 [
   // ember-testing
@@ -17,7 +18,9 @@ QUnit.module('ember-testing reexports');
     exportName = path;
   }
 
-  QUnit.test(`Ember.${path} exports correctly`, assert => {
+  ReexportsTestCase.prototype[`@test Ember.${path} exports correctly`] = function(assert) {
     confirmExport(Ember, assert, path, moduleId, exportName);
-  });
+  };
 });
+
+moduleFor('ember-testing reexports', ReexportsTestCase);

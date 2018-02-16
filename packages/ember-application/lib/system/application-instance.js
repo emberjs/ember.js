@@ -1,20 +1,13 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/application
 */
 
 import { assign } from 'ember-utils';
-import { deprecate } from 'ember-debug';
-import { get, set, run, computed } from 'ember-metal';
-import {
-  buildFakeRegistryWithDeprecations,
-  RSVP
-} from 'ember-runtime';
+import { get, set, computed } from 'ember-metal';
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
-
-let BootOptions;
+import { renderSettled } from 'ember-glimmer';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -37,15 +30,15 @@ let BootOptions;
   it once the particular test run or FastBoot request has finished.
 
   @public
-  @class Ember.ApplicationInstance
-  @extends Ember.EngineInstance
+  @class ApplicationInstance
+  @extends EngineInstance
 */
 
 const ApplicationInstance = EngineInstance.extend({
   /**
     The `Application` for which this is an instance.
 
-    @property {Ember.Application} application
+    @property {Application} application
     @private
   */
   application: null,
@@ -75,6 +68,8 @@ const ApplicationInstance = EngineInstance.extend({
 
   init() {
     this._super(...arguments);
+
+    this.application._watchInstance(this);
 
     // Register this instance in the per-instance registry.
     //
@@ -220,8 +215,7 @@ const ApplicationInstance = EngineInstance.extend({
     @return {String} the current URL
   */
   getURL() {
-    let router = get(this, 'router');
-    return get(router, 'url');
+    return get(this, 'router.url');
   },
 
   // `instance.visit(url)` should eventually replace `instance.handleURL()`;
@@ -235,7 +229,7 @@ const ApplicationInstance = EngineInstance.extend({
 
     @public
     @param url {String} the destination URL
-    @return {Promise<Ember.ApplicationInstance>}
+    @return {Promise<ApplicationInstance>}
   */
   visit(url) {
     this.setupRouter();
@@ -249,14 +243,8 @@ const ApplicationInstance = EngineInstance.extend({
         // No rendering is needed, and routing has completed, simply return.
         return this;
       } else {
-        return new RSVP.Promise((resolve) => {
-          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thennable)
-          // which resolves once the transition is completed, but the transition completion only queues up
-          // a scheduled revalidation (into the `render` queue) in the Renderer.
-          //
-          // This uses `run.schedule('afterRender', ....)` to resolve after that rendering has completed.
-          run.schedule('afterRender', null, resolve, this);
-        });
+        // Ensure that the visit promise resolves when all rendering has completed
+        return renderSettled().then(() => this);
       }
     };
 
@@ -279,6 +267,11 @@ const ApplicationInstance = EngineInstance.extend({
 
     // getURL returns the set url with the rootURL stripped off
     return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
+  },
+
+  willDestroy() {
+    this._super(...arguments);
+    this.application._unwatchInstance(this);
   }
 });
 
@@ -303,7 +296,7 @@ ApplicationInstance.reopenClass({
 
 /**
   A list of boot-time configuration options for customizing the behavior of
-  an `Ember.ApplicationInstance`.
+  an `ApplicationInstance`.
 
   This is an interface class that exists purely to document the available
   options; you do not need to construct it manually. Simply pass a regular
@@ -315,15 +308,15 @@ ApplicationInstance.reopenClass({
   ```
 
   Not all combinations of the supported options are valid. See the documentation
-  on `Ember.Application#visit` for the supported configurations.
+  on `Application#visit` for the supported configurations.
 
   Internal, experimental or otherwise unstable flags are marked as private.
 
   @class BootOptions
-  @namespace Ember.ApplicationInstance
+  @namespace ApplicationInstance
   @public
 */
-BootOptions = function BootOptions(options = {}) {
+function BootOptions(options = {}) {
   /**
     Provide a specific instance of jQuery. This is useful in conjunction with
     the `document` option, as it allows you to use a copy of `jQuery` that is
@@ -444,7 +437,7 @@ BootOptions = function BootOptions(options = {}) {
     this options must be specified as a DOM `Element` object instead of
     a selector string.
 
-    See the documentation on `Ember.Applications`'s `rootElement` for
+    See the documentation on `Application`'s `rootElement` for
     details.
 
     @property rootElement
@@ -481,7 +474,7 @@ BootOptions = function BootOptions(options = {}) {
   if (options.isInteractive !== undefined) {
     this.isInteractive = !!options.isInteractive;
   }
-};
+}
 
 BootOptions.prototype.toEnvironment = function() {
   let env = assign({}, environment);
@@ -491,13 +484,5 @@ BootOptions.prototype.toEnvironment = function() {
   env.options = this;
   return env;
 };
-
-Object.defineProperty(ApplicationInstance.prototype, 'registry', {
-  configurable: true,
-  enumerable: false,
-  get() {
-    return buildFakeRegistryWithDeprecations(this, 'ApplicationInstance');
-  }
-});
 
 export default ApplicationInstance;

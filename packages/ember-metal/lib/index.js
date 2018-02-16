@@ -1,12 +1,10 @@
-/**
-@module ember
-@submodule ember-metal
-*/
 
 export { default } from './core'; // reexports
 export {
   default as computed,
-  cacheFor,
+  getCacheFor,
+  getCachedValueFor,
+  peekCacheFor,
   ComputedProperty
 } from './computed';
 export { default as alias } from './alias';
@@ -23,17 +21,18 @@ export {
 export {
   getOnerror,
   setOnerror,
-  dispatchError,
   setDispatchOverride,
   getDispatchOverride
 } from './error_handler';
 export {
-  META_DESC,
+  descriptorFor,
   meta,
-  peekMeta
+  peekMeta,
+  deleteMeta
 } from './meta';
 export { default as Cache } from './cache';
 export {
+  PROXY_CONTENT,
   _getPath,
   get,
   getWithDefault
@@ -42,17 +41,18 @@ export {
   set,
   trySet
 } from './property_set';
-export { default as WeakMap } from './weak_map';
+export { objectAt } from './array';
+export {
+  eachProxyFor,
+  eachProxyArrayWillChange,
+  eachProxyArrayDidChange
+} from './each_proxy';
 export {
   addListener,
   hasListeners,
-  listenersFor,
   on,
   removeListener,
-  sendEvent,
-  suspendListener,
-  suspendListeners,
-  watchedEvents
+  sendEvent
 } from './events';
 
 export { default as isNone } from './is_none';
@@ -60,11 +60,11 @@ export { default as isEmpty } from './is_empty';
 export { default as isBlank } from './is_blank';
 export { default as isPresent } from './is_present';
 export { default as run } from './run_loop';
-export { default as ObserverSet } from './observer_set';
 export {
   beginPropertyChanges,
   changeProperties,
   endPropertyChanges,
+  notifyPropertyChange,
   overrideChains,
   propertyDidChange,
   propertyWillChange,
@@ -89,7 +89,6 @@ export {
   unwatchPath
 } from './watch_path';
 export {
-  destroy,
   isWatching,
   unwatch,
   watch,
@@ -106,34 +105,19 @@ export { default as setProperties } from './set_properties';
 export { default as expandProperties } from './expand_properties';
 
 export {
-  _suspendObserver,
-  _suspendObservers,
   addObserver,
-  observersFor,
-  removeObserver,
-  _addBeforeObserver,
-  _removeBeforeObserver
+  removeObserver
 } from './observer';
 export {
   Mixin,
   aliasMethod,
-  _immediateObserver,
-  _beforeObserver,
   mixin,
   observer,
   required,
   REQUIRED,
   hasUnprocessedMixins,
   clearUnprocessedMixins,
-  detectBinding
 } from './mixin';
-export {
-  Binding,
-  bind
-} from './binding';
-export {
-  isGlobalPath
-} from './path_cache';
 export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,

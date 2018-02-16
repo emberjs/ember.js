@@ -1,25 +1,25 @@
 import { isBlank } from '..';
 
-QUnit.module('Ember.isBlank');
+QUnit.module('isBlank');
 
-QUnit.test('Ember.isBlank', function() {
+QUnit.test('isBlank', function(assert) {
   let string = 'string';
   let fn = function() {};
   let object = { length: 0 };
 
-  equal(true, isBlank(null), 'for null');
-  equal(true, isBlank(undefined), 'for undefined');
-  equal(true, isBlank(''), 'for an empty String');
-  equal(true, isBlank('  '), 'for a whitespace String');
-  equal(true, isBlank('\n\t'), 'for another whitespace String');
-  equal(false, isBlank('\n\t Hi'), 'for a String with whitespaces');
-  equal(false, isBlank(true), 'for true');
-  equal(false, isBlank(false), 'for false');
-  equal(false, isBlank(string), 'for a String');
-  equal(false, isBlank(fn), 'for a Function');
-  equal(false, isBlank(0), 'for 0');
-  equal(true, isBlank([]), 'for an empty Array');
-  equal(false, isBlank({}), 'for an empty Object');
-  equal(true, isBlank(object), 'for an Object that has zero \'length\'');
-  equal(false, isBlank([1, 2, 3]), 'for a non-empty array');
+  assert.equal(true, isBlank(null), 'for null');
+  assert.equal(true, isBlank(undefined), 'for undefined');
+  assert.equal(true, isBlank(''), 'for an empty String');
+  assert.equal(true, isBlank('  '), 'for a whitespace String');
+  assert.equal(true, isBlank('\n\t'), 'for another whitespace String');
+  assert.equal(false, isBlank('\n\t Hi'), 'for a String with whitespaces');
+  assert.equal(false, isBlank(true), 'for true');
+  assert.equal(false, isBlank(false), 'for false');
+  assert.equal(false, isBlank(string), 'for a String');
+  assert.equal(false, isBlank(fn), 'for a Function');
+  assert.equal(false, isBlank(0), 'for 0');
+  assert.equal(true, isBlank([]), 'for an empty Array');
+  assert.equal(false, isBlank({}), 'for an empty Object');
+  assert.equal(true, isBlank(object), 'for an Object that has zero \'length\'');
+  assert.equal(false, isBlank([1, 2, 3]), 'for a non-empty array');
 });

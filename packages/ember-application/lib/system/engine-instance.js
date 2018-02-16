@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/engine
 */
 
 import { guidFor } from 'ember-utils';
@@ -11,7 +10,6 @@ import {
   RSVP
 } from 'ember-runtime';
 import { assert, Error as EmberError } from 'ember-debug';
-import { run } from 'ember-metal';
 import { Registry, privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 
@@ -20,8 +18,8 @@ import { getEngineParent, setEngineParent } from './engine-parent';
   running `Engine`.
 
   @public
-  @class Ember.EngineInstance
-  @extends Ember.Object
+  @class EngineInstance
+  @extends EmberObject
   @uses RegistryProxyMixin
   @uses ContainerProxyMixin
 */
@@ -30,7 +28,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   /**
     The base `Engine` for which this is an instance.
 
-    @property {Ember.Engine} engine
+    @property {Engine} engine
     @private
   */
   base: null,
@@ -60,7 +58,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   },
 
   /**
-    Initialize the `Ember.EngineInstance` and return a promise that resolves
+    Initialize the `EngineInstance` and return a promise that resolves
     with the instance itself when the boot process is complete.
 
     The primary task here is to run any registered instance initializers.
@@ -70,7 +68,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @private
     @method boot
     @param options {Object}
-    @return {Promise<Ember.EngineInstance,Error>}
+    @return {Promise<EngineInstance,Error>}
   */
   boot(options) {
     if (this._bootPromise) { return this._bootPromise; }
@@ -130,7 +128,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   },
 
   /**
-    Build a new `Ember.EngineInstance` that's a child of this instance.
+    Build a new `EngineInstance` that's a child of this instance.
 
     Engines must be registered by name with their parent engine
     (or application).
@@ -139,7 +137,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @method buildChildEngineInstance
     @param name {String} the registered name of the engine.
     @param options {Object} options provided to the engine instance.
-    @return {Ember.EngineInstance,Error}
+    @return {EngineInstance,Error}
   */
   buildChildEngineInstance(name, options = {}) {
     let Engine = this.lookup(`engine:${name}`);
@@ -181,8 +179,12 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       '-view-registry:main',
       `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
       'service:-document',
-      'event_dispatcher:main'
+      P`template-options:main`,
     ];
+
+    if (env.isInteractive) {
+      singletons.push('event_dispatcher:main');
+    }
 
     singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
 

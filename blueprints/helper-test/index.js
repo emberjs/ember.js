@@ -1,9 +1,9 @@
-/* eslint-env node */
+'use strict';
 
-var testInfo                 = require('ember-cli-test-info');
-var stringUtils              = require('ember-cli-string-utils');
-var isPackageMissing         = require('ember-cli-is-package-missing');
-var useTestFrameworkDetector = require('../test-framework-detector');
+const stringUtils = require('ember-cli-string-utils');
+const isPackageMissing = require('ember-cli-is-package-missing');
+
+const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a helper integration test or a unit test.',
@@ -31,9 +31,9 @@ module.exports = useTestFrameworkDetector({
   },
 
   locals: function(options) {
-    var testType = options.testType || 'integration';
-    var testName = testType === 'integration' ? 'Integration' : 'Unit';
-    var friendlyTestName = testInfo.name(options.entity.name, testName, 'Helper');
+    let testType = options.testType || 'integration';
+    let testName = testType === 'integration' ? 'Integration' : 'Unit';
+    let friendlyTestName = [testName, 'Helper', options.entity.name].join(' | ');
 
     return {
       friendlyTestName: friendlyTestName,

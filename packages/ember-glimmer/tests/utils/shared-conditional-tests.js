@@ -26,13 +26,13 @@ class AbstractConditionalsTest extends RenderingTest {
   }
 
   /* abstract */
-  templateFor({ cond, truthy, falsy }) {
+  templateFor( /* { cond, truthy, falsy } */) {
     // e.g. `{{#if ${cond}}}${truthy}{{else}}${falsy}{{/if}}`
     throw new Error('Not implemented: `templateFor`');
   }
 
   /* abstract */
-  renderValues(...values) {
+  renderValues(/* ...values */) {
     throw new Error('Not implemented: `renderValues`');
   }
 
@@ -45,7 +45,7 @@ class AbstractGenerator {
   }
 
   /* abstract */
-  generate(value, idx) {
+  generate(/* value, idx */) {
     throw new Error('Not implemented: `generate`');
   }
 

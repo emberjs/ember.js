@@ -10,8 +10,7 @@ import { Registry, Container } from 'container';
 
 // ****ember-metal****
 import Ember, * as metal from 'ember-metal';
-import { EMBER_METAL_WEAKMAP } from 'ember/features';
-import * as FLAGS from 'ember/features'
+import * as FLAGS from 'ember/features';
 
 // ember-utils exports
 Ember.getOwner = utils.getOwner;
@@ -24,7 +23,6 @@ Ember.makeArray = utils.makeArray;
 Ember.canInvoke = utils.canInvoke;
 Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
-Ember.applyStr = utils.applyStr;
 Ember.uuid = utils.uuid;
 Ember.assign = utils.assign;
 
@@ -35,13 +33,13 @@ Ember.Registry = Registry;
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
 import * as EmberDebug from 'ember-debug';
-import { deprecate, deprecateFunc } from 'ember-debug';
+import { deprecate } from 'ember-debug';
 
 const computed = metal.computed;
 computed.alias = metal.alias;
 Ember.computed = computed;
 Ember.ComputedProperty = metal.ComputedProperty;
-Ember.cacheFor = metal.cacheFor;
+Ember.cacheFor = metal.getCachedValueFor;
 
 Ember.assert = EmberDebug.assert;
 Ember.warn = EmberDebug.warn;
@@ -69,7 +67,6 @@ Ember.Instrumentation = {
 };
 
 Ember.Error = EmberDebug.Error;
-Ember.META_DESC = metal.META_DESC;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;
@@ -82,20 +79,16 @@ Ember._Cache = metal.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
 Ember.removeListener = metal.removeListener;
-Ember._suspendListener = metal.suspendListener;
-Ember._suspendListeners = metal.suspendListeners;
 Ember.sendEvent = metal.sendEvent;
 Ember.hasListeners = metal.hasListeners;
-Ember.watchedEvents = metal.watchedEvents;
-Ember.listenersFor = metal.listenersFor;
 Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
 Ember.run = metal.run;
-Ember._ObserverSet = metal.ObserverSet;
 Ember.propertyWillChange = metal.propertyWillChange;
 Ember.propertyDidChange = metal.propertyDidChange;
+Ember.notifyPropertyChange = metal.notifyPropertyChange;
 Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;
@@ -115,7 +108,7 @@ Ember.unwatchPath = metal.unwatchPath;
 Ember.watch = metal.watch;
 Ember.isWatching = metal.isWatching;
 Ember.unwatch = metal.unwatch;
-Ember.destroy = metal.destroy;
+Ember.destroy = metal.deleteMeta;
 Ember.libraries = metal.libraries;
 Ember.OrderedSet = metal.OrderedSet;
 Ember.Map = metal.Map;
@@ -125,23 +118,17 @@ Ember.setProperties = metal.setProperties;
 Ember.expandProperties = metal.expandProperties;
 Ember.NAME_KEY = utils.NAME_KEY;
 Ember.addObserver = metal.addObserver;
-Ember.observersFor = metal.observersFor;
 Ember.removeObserver = metal.removeObserver;
-Ember._suspendObserver = metal._suspendObserver;
-Ember._suspendObservers = metal._suspendObservers;
-Ember.required = metal.required;
+if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
+  Ember.required = metal.required;
+}
 Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
-Ember.immediateObserver = metal._immediateObserver;
 Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;
 Ember.bind = metal.bind;
 Ember.Binding = metal.Binding;
-Ember.isGlobalPath = metal.isGlobalPath;
 
-if (EMBER_METAL_WEAKMAP) {
-  Ember.WeakMap = metal.WeakMap;
-}
 
 Object.defineProperty(Ember, 'ENV', {
   get() { return ENV; },
@@ -177,7 +164,7 @@ Object.defineProperty(Ember, 'LOG_VERSION', {
 if (DEBUG) {
   Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
     get()      { return false; },
-    set(value) {
+    set() {
       deprecate(
         'Ember.MODEL_FACTORY_INJECTIONS is no longer required',
         false,
@@ -204,8 +191,10 @@ Object.defineProperty(Ember, 'LOG_BINDINGS', {
   and reporting code.
 
   ```javascript
+  import $ from 'jquery';
+
   Ember.onerror = function(error) {
-    Em.$.ajax('/report-error', 'POST', {
+    $.ajax('/report-error', 'POST', {
       stack: error.stack,
       otherInformation: 'whatever app state you want to provide'
     });
@@ -223,32 +212,6 @@ Object.defineProperty(Ember, 'onerror', {
   get: metal.getOnerror,
   set: metal.setOnerror,
   enumerable: false
-});
-
-/**
-  An empty function useful for some operations. Always returns `this`.
-
-  @method K
-  @return {Object}
-  @public
-  @deprecated
-*/
-function deprecatedEmberK() { return this; }
-
-Object.defineProperty(Ember, 'K', {
-  get() {
-    deprecate(
-      'Ember.K is deprecated in favor of defining a function inline.',
-      false,
-      {
-        id: 'ember-metal.ember-k',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_code-ember-k-code'
-      }
-    );
-
-    return deprecatedEmberK;
-  }
 });
 
 Object.defineProperty(Ember, 'testing', {
@@ -278,8 +241,6 @@ import {
   inject,
   Array as EmberArray,
   Copyable,
-  Freezable,
-  FROZEN_ERROR,
   MutableEnumerable,
   MutableArray,
   TargetActionSupport,
@@ -303,6 +264,7 @@ import {
   ActionHandler,
   CoreObject,
   NativeArray,
+  A,
   isNamespaceSearchDisabled,
   setNamespaceSearchDisabled,
   getStrings,
@@ -344,6 +306,7 @@ import {
   collect
 } from 'ember-runtime';
 
+Ember.A = A;
 Ember.String = EmberString;
 Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
@@ -361,8 +324,6 @@ Ember.ActionHandler = ActionHandler;
 Ember.CoreObject = CoreObject;
 Ember.NativeArray = NativeArray;
 Ember.Copyable = Copyable;
-Ember.Freezable = Freezable;
-Ember.FROZEN_ERROR = FROZEN_ERROR;
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
 Ember.TargetActionSupport = TargetActionSupport;
@@ -418,15 +379,15 @@ computed.intersect = intersect;
 computed.collect = collect;
 
 /**
- Defines the hash of localized strings for the current language. Used by
- the `Ember.String.loc()` helper. To localize, add string values to this
- hash.
+  Defines the hash of localized strings for the current language. Used by
+  the `String.loc` helper. To localize, add string values to this
+  hash.
 
- @property STRINGS
- @for Ember
- @type Object
- @private
- */
+  @property STRINGS
+  @for Ember
+  @type Object
+  @private
+*/
 Object.defineProperty(Ember, 'STRINGS', {
   configurable: false,
   get: getStrings,
@@ -434,19 +395,19 @@ Object.defineProperty(Ember, 'STRINGS', {
 });
 
 /**
- Whether searching on the global for new Namespace instances is enabled.
+  Whether searching on the global for new Namespace instances is enabled.
 
- This is only exported here as to not break any addons.  Given the new
- visit API, you will have issues if you treat this as a indicator of
- booted.
+  This is only exported here as to not break any addons.  Given the new
+  visit API, you will have issues if you treat this as a indicator of
+  booted.
 
- Internally this is only exposing a flag in Namespace.
+  Internally this is only exposing a flag in Namespace.
 
- @property BOOTED
- @for Ember
- @type Boolean
- @private
- */
+  @property BOOTED
+  @for Ember
+  @type Boolean
+  @private
+*/
 Object.defineProperty(Ember, 'BOOTED', {
   configurable: false,
   enumerable: false,
@@ -467,8 +428,7 @@ import {
   escapeExpression,
   isHTMLSafe,
   getTemplates,
-  setTemplates,
-  _getSafeString
+  setTemplates
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -489,10 +449,6 @@ let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
 let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
 let EmberHandleBarsUtils = EmberHandlebars.Utils = EmberHandlebars.Utils || {};
 
-Object.defineProperty(EmberHandlebars, 'SafeString', {
-  get: _getSafeString
-});
-
 EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberString.htmlSafe = htmlSafe;
@@ -500,15 +456,15 @@ EmberString.htmlSafe = htmlSafe;
 EmberString.isHTMLSafe = isHTMLSafe;
 
 /**
- Global hash of shared templates. This will automatically be populated
- by the build tools so that you can store your Handlebars templates in
- separate files that get loaded into JavaScript at buildtime.
+  Global hash of shared templates. This will automatically be populated
+  by the build tools so that you can store your Handlebars templates in
+  separate files that get loaded into JavaScript at buildtime.
 
- @property TEMPLATES
- @for Ember
- @type Object
- @private
- */
+  @property TEMPLATES
+  @for Ember
+  @type Object
+  @private
+*/
 Object.defineProperty(Ember, 'TEMPLATES', {
   get: getTemplates,
   set: setTemplates,
@@ -520,11 +476,12 @@ import VERSION from './version';
 export { VERSION };
 
 /**
- The semantic version
- @property VERSION
- @type String
- @public
- */
+  The semantic version
+
+  @property VERSION
+  @type String
+  @public
+*/
 Ember.VERSION = VERSION;
 
 metal.libraries.registerCoreLibrary('Ember', VERSION);
@@ -532,13 +489,7 @@ metal.libraries.registerCoreLibrary('Ember', VERSION);
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
 import * as views from 'ember-views';
-/**
- Alias for jQuery
 
- @method $
- @for Ember
- @public
- */
 Ember.$ = views.jQuery;
 
 Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
@@ -605,7 +556,8 @@ if (has('ember-testing')) {
 runLoadHooks('Ember');
 
 /**
-@module ember
+  @module ember
+  @private
 */
 export default Ember;
 
@@ -616,3 +568,23 @@ if (IS_NODE) {
 } else {
   context.exports.Ember = context.exports.Em = Ember;
 }
+
+/**
+ @module jquery
+ @public
+ */
+
+/**
+ @class jquery
+ @public
+ @static
+ */
+
+/**
+  Alias for jQuery
+
+  @for jquery
+  @method $
+  @static
+  @public
+*/

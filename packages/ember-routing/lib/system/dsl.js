@@ -1,10 +1,5 @@
 import { assign } from 'ember-utils';
-import { assert, deprecate } from 'ember-debug';
-
-/**
-@module ember
-@submodule ember-routing
-*/
+import { assert } from 'ember-debug';
 
 let uuid = 0;
 
@@ -69,17 +64,6 @@ class DSL {
     if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
 
     this.matches.push(url, name, callback);
-  }
-
-  resource(name, options = {}, callback) {
-    if (arguments.length === 2 && typeof options === 'function') {
-      callback = options;
-      options = {};
-    }
-
-    options.resetNamespace = true;
-    deprecate('this.resource() is deprecated. Use this.route(\'name\', { resetNamespace: true }, function () {}) instead.', false, { id: 'ember-routing.router-resource', until: '3.0.0' });
-    this.route(name, options, callback);
   }
 
   generate() {

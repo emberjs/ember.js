@@ -1,4 +1,7 @@
 import intern from './intern';
+/**
+ @module @ember/object
+*/
 
 /**
  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
@@ -73,11 +76,12 @@ export let GUID_KEY_PROPERTY = {
 /**
   Generates a new guid, optionally saving the guid to the object that you
   pass in. You will rarely need to use this method. Instead you should
-  call `Ember.guidFor(obj)`, which return an existing guid if available.
+  call `guidFor(obj)`, which return an existing guid if available.
 
   @private
   @method generateGuid
-  @for Ember
+  @static
+  @for @ember/object/internals
   @param {Object} [obj] Object the guid will be used for. If passed in, the guid will
     be saved on the object and reused whenever you pass the same object
     again.
@@ -87,13 +91,9 @@ export let GUID_KEY_PROPERTY = {
     separate the guid into separate namespaces.
   @return {String} the guid
 */
-export function generateGuid(obj, prefix) {
-  if (!prefix) {
-    prefix = GUID_PREFIX;
-  }
-
-  let ret = (prefix + uuid());
-  if (obj) {
+export function generateGuid(obj, prefix = GUID_PREFIX) {
+  let ret = prefix + uuid();
+  if (obj !== undefined && obj !== null) {
     if (obj[GUID_KEY] === null) {
       obj[GUID_KEY] = ret;
     } else {
@@ -111,26 +111,19 @@ export function generateGuid(obj, prefix) {
 /**
   Returns a unique id for the object. If the object does not yet have a guid,
   one will be assigned to it. You can call this on any object,
-  `Ember.Object`-based or not, but be aware that it will add a `_guid`
+  `EmberObject`-based or not, but be aware that it will add a `_guid`
   property.
 
   You can also use this method on DOM Element objects.
 
   @public
+  @static
   @method guidFor
-  @for Ember
+  @for @ember/object/internals
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
 export function guidFor(obj) {
-  let type = typeof obj;
-  let isObject = type === 'object' && obj !== null;
-  let isFunction = type === 'function';
-
-  if ((isObject || isFunction) && obj[GUID_KEY]) {
-    return obj[GUID_KEY];
-  }
-
   // special cases where we don't want to add a key to object
   if (obj === undefined) {
     return '(undefined)';
@@ -140,8 +133,12 @@ export function guidFor(obj) {
     return '(null)';
   }
 
-  let ret;
+  let type = typeof obj;
+  if ((type === 'object' || type === 'function') && obj[GUID_KEY]) {
+    return obj[GUID_KEY];
+  }
 
+  let ret;
   // Don't allow prototype changes to String etc. to change the guidFor
   switch (type) {
     case 'number':
@@ -174,19 +171,6 @@ export function guidFor(obj) {
         return '(Array)';
       }
 
-      ret = GUID_PREFIX + uuid();
-
-      if (obj[GUID_KEY] === null) {
-        obj[GUID_KEY] = ret;
-      } else {
-        GUID_DESC.value = ret;
-
-        if (obj.__defineNonEnumerable) {
-          obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-        } else {
-          Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-        }
-      }
-      return ret;
+      return generateGuid(obj);
   }
 }

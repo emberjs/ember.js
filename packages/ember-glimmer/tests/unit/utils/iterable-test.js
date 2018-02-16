@@ -1,9 +1,6 @@
-import Ember from 'ember';
 import { moduleFor, TestCase } from 'ember-glimmer/tests/utils/test-case';
-import iterableFor from 'ember-glimmer/utils/iterable';
-import { UpdatableReference } from 'ember-glimmer/utils/references';
-import eachIn from 'ember-glimmer/helpers/each-in';
-import { EvaluatedPositionalArgs } from '@glimmer/runtime';
+import { iterableFor, UpdatableReference } from 'ember-glimmer';
+import { A } from 'ember-runtime';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
@@ -16,7 +13,7 @@ moduleFor('Iterable', class extends TestCase {
   }
 
   ['@test iterates over an `Ember.A`']() {
-    let iterator = iteratorForArray(Ember.A(['foo', 'bar']));
+    let iterator = iteratorForArray(A(['foo', 'bar']));
 
     this.assert.deepEqual(iterator.next(), { key: 'foo', memo: 0, value: 'foo' });
     this.assert.deepEqual(iterator.next(), { key: 'bar', memo: 1, value: 'bar' });

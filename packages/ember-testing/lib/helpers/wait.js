@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-testing
 */
 import { checkWaiters } from '../test/waiters';
 import { RSVP } from 'ember-runtime';
@@ -21,12 +20,15 @@ import { pendingRequests } from '../test/pending_requests';
   Example:
 
   ```javascript
-  Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
+  import { registerAsyncHelper } from '@ember/test';
+
+  registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
       .fillIn('#username', username)
       .fillIn('#password', password)
       .click('.submit');
   });
+  ```
 
   @method wait
   @param {Object} value The value to be returned.

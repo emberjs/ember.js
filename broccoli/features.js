@@ -1,5 +1,4 @@
 'use strict';
-/* eslint-env node */
 
 function getFeatures(isDebug) {
   let features = Object.assign({}, require('../features').features);
@@ -22,13 +21,8 @@ function getFeatures(isDebug) {
     }
   }
 
-  features['ember-glimmer-allow-backtracking-rerender'] = false;
-
-  if (process.env.ALLOW_BACKTRACKING) {
-    features['ember-glimmer-allow-backtracking-rerender'] = true;
-    features['ember-glimmer-detect-backtracking-rerender'] = false;
-  }
-
+  features['descriptor-trap'] = isDebug;
+  features['mandatory-getter'] = isDebug;
   features['mandatory-setter'] = isDebug;
   features['ember-glimmer-detect-backtracking-rerender'] = isDebug;
 
@@ -38,7 +32,7 @@ function getFeatures(isDebug) {
 function toConst(features) {
   let consted = {};
   Object.keys(features).forEach((feature) => {
-    consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature]
+    consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature];
   });
 
   return consted;

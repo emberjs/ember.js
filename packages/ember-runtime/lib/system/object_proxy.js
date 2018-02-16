@@ -2,15 +2,18 @@ import FrameworkObject from './object';
 import _ProxyMixin from '../mixins/-proxy';
 
 /**
-  `Ember.ObjectProxy` forwards all properties not defined by the proxy itself
+  `ObjectProxy` forwards all properties not defined by the proxy itself
   to a proxied `content` object.
 
   ```javascript
-  object = Ember.Object.create({
+  import EmberObject from '@ember/object';
+  import ObjectProxy from '@ember/object/proxy';
+
+  object = EmberObject.create({
     name: 'Foo'
   });
 
-  proxy = Ember.ObjectProxy.create({
+  proxy = ObjectProxy.create({
     content: object
   });
 
@@ -28,7 +31,9 @@ import _ProxyMixin from '../mixins/-proxy';
   Error.
 
   ```javascript
-  proxy = Ember.ObjectProxy.create({
+  import ObjectProxy from '@ember/object/proxy';
+
+  proxy = ObjectProxy.create({
     content: null,
     flag: null
   });
@@ -43,8 +48,11 @@ import _ProxyMixin from '../mixins/-proxy';
   Computed properties on the proxy itself can depend on delegated properties.
 
   ```javascript
-  ProxyWithComputedProperty = Ember.ObjectProxy.extend({
-    fullName: Ember.computed('firstName', 'lastName', function() {
+  import { computed } from '@ember/object';
+  import ObjectProxy from '@ember/object/proxy';
+
+  ProxyWithComputedProperty = ObjectProxy.extend({
+    fullName: computed('firstName', 'lastName', function() {
       var firstName = this.get('firstName'),
           lastName = this.get('lastName');
       if (firstName && lastName) {
@@ -65,8 +73,7 @@ import _ProxyMixin from '../mixins/-proxy';
   ```
 
   @class ObjectProxy
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @uses Ember.ProxyMixin
   @public
 */

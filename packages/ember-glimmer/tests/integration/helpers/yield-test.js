@@ -182,7 +182,7 @@ moduleFor('Helpers test: {{yield}} helper', class extends RenderingTest {
   }
 
   // INUR not need with no data update
-  ['@test yield should not introduce a view']() {
+  ['@test yield should not introduce a view'](assert) {
     let ParentCompComponent = Component.extend({ isParentComponent: true });
 
     let ChildCompComponent = Component.extend({
@@ -190,7 +190,7 @@ moduleFor('Helpers test: {{yield}} helper', class extends RenderingTest {
         this._super();
         let parentView = this.get('parentView');
 
-        ok(parentView.get('isParentComponent'));
+        assert.ok(parentView.get('isParentComponent'));
       }
     });
 

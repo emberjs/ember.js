@@ -1,26 +1,26 @@
 import { isPresent } from '..';
 
-QUnit.module('Ember.isPresent');
+QUnit.module('isPresent');
 
-QUnit.test('Ember.isPresent', function() {
+QUnit.test('isPresent', function(assert) {
   let string = 'string';
   let fn = function() {};
   let object = { length: 0 };
 
-  equal(false, isPresent(), 'for no params');
-  equal(false, isPresent(null), 'for null');
-  equal(false, isPresent(undefined), 'for undefined');
-  equal(false, isPresent(''), 'for an empty String');
-  equal(false, isPresent('  '), 'for a whitespace String');
-  equal(false, isPresent('\n\t'), 'for another whitespace String');
-  equal(true, isPresent('\n\t Hi'), 'for a String with whitespaces');
-  equal(true, isPresent(true), 'for true');
-  equal(true, isPresent(false), 'for false');
-  equal(true, isPresent(string), 'for a String');
-  equal(true, isPresent(fn), 'for a Function');
-  equal(true, isPresent(0), 'for 0');
-  equal(false, isPresent([]), 'for an empty Array');
-  equal(true, isPresent({}), 'for an empty Object');
-  equal(false, isPresent(object), 'for an Object that has zero \'length\'');
-  equal(true, isPresent([1, 2, 3]), 'for a non-empty array');
+  assert.equal(false, isPresent(), 'for no params');
+  assert.equal(false, isPresent(null), 'for null');
+  assert.equal(false, isPresent(undefined), 'for undefined');
+  assert.equal(false, isPresent(''), 'for an empty String');
+  assert.equal(false, isPresent('  '), 'for a whitespace String');
+  assert.equal(false, isPresent('\n\t'), 'for another whitespace String');
+  assert.equal(true, isPresent('\n\t Hi'), 'for a String with whitespaces');
+  assert.equal(true, isPresent(true), 'for true');
+  assert.equal(true, isPresent(false), 'for false');
+  assert.equal(true, isPresent(string), 'for a String');
+  assert.equal(true, isPresent(fn), 'for a Function');
+  assert.equal(true, isPresent(0), 'for 0');
+  assert.equal(false, isPresent([]), 'for an empty Array');
+  assert.equal(true, isPresent({}), 'for an empty Object');
+  assert.equal(false, isPresent(object), 'for an Object that has zero \'length\'');
+  assert.equal(true, isPresent([1, 2, 3]), 'for a non-empty array');
 });

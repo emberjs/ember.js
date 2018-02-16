@@ -1,5 +1,4 @@
 import { Controller } from 'ember-runtime';
-import { jQuery } from 'ember-views';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor('Query Params - paramless link-to', class extends QueryParamTestCase {
@@ -14,7 +13,7 @@ moduleFor('Query Params - paramless link-to', class extends QueryParamTestCase {
     }));
 
     return this.visit('/?foo=YEAH').then(() => {
-      assert.equal(jQuery('#index-link').attr('href'), '/?foo=YEAH');
+      assert.equal(document.getElementById('index-link').getAttribute('href'), '/?foo=YEAH');
     });
   }
 

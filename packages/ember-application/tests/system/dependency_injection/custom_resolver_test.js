@@ -5,7 +5,7 @@ import {
   DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
 
-moduleFor('Ember.Application with extended default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application with extended default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
 
   get applicationOptions() {
     let applicationTemplate = this.compile(`<h1>Fallback</h1>`);
@@ -26,9 +26,8 @@ moduleFor('Ember.Application with extended default resolver and autoboot', class
     });
   }
 
-  [`@test a resolver can be supplied to application`](assert) {
+  [`@test a resolver can be supplied to application`]() {
     this.runTask(() => this.createApplication());
-    assert.equal(this.$('h1').text(), 'Fallback');
+    this.assertText('Fallback');
   }
-
 });

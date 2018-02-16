@@ -1,18 +1,16 @@
 import { getOwner } from 'ember-utils';
-import { get, run } from 'ember-metal';
+import { get, run, objectAt } from 'ember-metal';
 import {
   String as StringUtils,
   Namespace,
   Object as EmberObject,
   A as emberA,
   addArrayObserver,
-  removeArrayObserver,
-  objectAt
+  removeArrayObserver
 } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-extension-support
+@module @ember/debug
 */
 
 /**
@@ -53,7 +51,6 @@ import {
   ```
 
   @class DataAdapter
-  @namespace Ember
   @extends EmberObject
   @public
 */
@@ -254,10 +251,9 @@ export default EmberObject.extend({
 
     @private
     @method detect
-    @param {Class} klass The class to test.
     @return boolean Whether the class is a model class or not.
   */
-  detect(klass) {
+  detect() {
     return false;
   },
 
@@ -266,12 +262,11 @@ export default EmberObject.extend({
 
     @private
     @method columnsForType
-    @param {Class} type The model type.
     @return {Array} An array of columns of the following format:
      name: {String} The name of the column.
      desc: {String} Humanized description (what would show in a table column name).
   */
-  columnsForType(type) {
+  columnsForType() {
     return emberA();
   },
 
@@ -294,8 +289,12 @@ export default EmberObject.extend({
     }
 
     let observer = {
-      didChange() {
-        run.scheduleOnce('actions', this, onChange);
+      didChange(array, idx, removedCount, addedCount) {
+        // Only re-fetch records if the record count changed
+        // (which is all we care about as far as model types are concerned).
+        if (removedCount > 0 || addedCount > 0) {
+          run.scheduleOnce('actions', this, onChange);
+        }
       },
       willChange() { return this; }
     };
@@ -403,7 +402,7 @@ export default EmberObject.extend({
      This array will be observed for changes,
      so it should update when new records are added/removed.
   */
-  getRecords(type) {
+  getRecords() {
     return emberA();
   },
 
@@ -436,7 +435,7 @@ export default EmberObject.extend({
     @return {Object} Keys should match column names defined
     by the model type.
   */
-  getRecordColumnValues(record) {
+  getRecordColumnValues() {
     return {};
   },
 
@@ -447,7 +446,7 @@ export default EmberObject.extend({
     @method getRecordKeywords
     @return {Array} Relevant keywords for search.
   */
-  getRecordKeywords(record) {
+  getRecordKeywords() {
     return emberA();
   },
 
@@ -459,7 +458,7 @@ export default EmberObject.extend({
     @param {Object} record The record instance.
     @return {Object} The filter values.
   */
-  getRecordFilterValues(record) {
+  getRecordFilterValues() {
     return {};
   },
 
@@ -472,7 +471,7 @@ export default EmberObject.extend({
     @return {String} The records color.
       Possible options: black, red, blue, green.
   */
-  getRecordColor(record) {
+  getRecordColor() {
     return null;
   },
 
@@ -482,11 +481,9 @@ export default EmberObject.extend({
 
     @private
     @method observerRecord
-    @param {Object} record The record instance.
-    @param {Function} recordUpdated The callback to call when a record is updated.
     @return {Function} The function to call to remove all observers.
   */
-  observeRecord(record, recordUpdated) {
+  observeRecord() {
     return function() {};
   }
 });

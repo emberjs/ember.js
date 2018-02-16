@@ -58,7 +58,7 @@ export default function transformDotComponentInvocation(env) {
   return {
     name: 'transform-dot-component-invocation',
 
-    visitors: {
+    visitor: {
       MustacheStatement: (node) => {
         if (isInlineInvocation(node.path, node.params, node.hash)) {
           wrapInComponent(node, b);
@@ -66,15 +66,15 @@ export default function transformDotComponentInvocation(env) {
       },
       BlockStatement: (node) => {
         if (isMultipartPath(node.path)) {
-          wrapInComponent(node, b)
+          wrapInComponent(node, b);
         }
       }
     }
-  }
+  };
 }
 
 function isMultipartPath(path)  {
-  return path.parts.length > 1;
+  return path.parts && path.parts.length > 1;
 }
 
 function isInlineInvocation(path, params, hash) {

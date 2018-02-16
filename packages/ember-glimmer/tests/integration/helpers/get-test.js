@@ -50,7 +50,52 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.assertText('[red and yellow] [red and yellow]');
   }
 
-  ['@test should be able to get an object value with numeric keys']() {
+  ['@test should be able to get an object value with a number']() {
+    this.render(`[{{get items 1}}][{{get items 2}}][{{get items 3}}]`, {
+      indexes: [1, 2, 3],
+      items: {
+        1: 'First',
+        2: 'Second',
+        3: 'Third'
+      }
+    });
+
+    this.assertText('[First][Second][Third]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[First][Second][Third]');
+
+    this.runTask(() => set(this.context, 'items.1', 'Qux'));
+
+    this.assertText('[Qux][Second][Third]');
+
+    this.runTask(() => set(this.context, 'items', { 1: 'First', 2: 'Second', 3: 'Third' }));
+
+    this.assertText('[First][Second][Third]');
+  }
+
+  ['@test should be able to get an array value with a number']() {
+    this.render(`[{{get numbers 0}}][{{get numbers 1}}][{{get numbers 2}}]`, {
+      numbers: [1, 2, 3],
+    });
+
+    this.assertText('[1][2][3]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[1][2][3]');
+
+    this.runTask(() => set(this.context, 'numbers', [3, 2, 1]));
+
+    this.assertText('[3][2][1]');
+
+    this.runTask(() => set(this.context, 'numbers', [1, 2, 3]));
+
+    this.assertText('[1][2][3]');
+  }
+
+  ['@test should be able to get an object value with a path evaluating to a number']() {
     this.render(`{{#each indexes as |index|}}[{{get items index}}]{{/each}}`, {
       indexes: [1, 2, 3],
       items: {
@@ -73,6 +118,22 @@ moduleFor('Helpers test: {{get}}', class extends RenderingTest {
     this.runTask(() => set(this.context, 'items', { 1: 'First', 2: 'Second', 3: 'Third' }));
 
     this.assertText('[First][Second][Third]');
+  }
+
+  ['@test should be able to get an array value with a path evaluating to a number']() {
+    this.render(`{{#each numbers as |num index|}}[{{get numbers index}}]{{/each}}`, {
+      numbers: [1, 2, 3],
+    });
+
+    this.assertText('[1][2][3]');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('[1][2][3]');
+
+    this.runTask(() => set(this.context, 'numbers', [3, 2, 1]));
+
+    this.assertText('[3][2][1]');
   }
 
   ['@test should be able to get an object value with a bound/dynamic key']() {

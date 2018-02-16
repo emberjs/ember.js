@@ -2,10 +2,6 @@ import {
   EmberError
 } from 'ember-debug';
 
-/**
-@module ember
-@submodule ember-views
-*/
 export default {
   // appendChild is only legal while rendering the buffer.
   appendChild() {

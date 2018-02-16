@@ -1,6 +1,9 @@
+import { assert } from 'ember-debug';
+import { guidFor } from 'ember-utils';
+
 /**
-@module ember
-@submodule ember-metal
+@module @ember/map
+@private
 */
 
 /*
@@ -8,7 +11,7 @@
   which are often used as dictionaries, may only have Strings as keys.
 
   Because Ember has a way to get a unique identifier for every object
-  via `Ember.guidFor`, we can implement a performant Map with arbitrary
+  via `guidFor`, we can implement a performant Map with arbitrary
   keys. Because it is commonly used in low-level bookkeeping, Map is
   implemented as a pure JavaScript object for performance.
 
@@ -18,17 +21,8 @@
   forEach method for iteration.
 
   Map is mocked out to look like an Ember object, so you can do
-  `Ember.Map.create()` for symmetry with other Ember classes.
+  `EmberMap.create()` for symmetry with other Ember classes.
 */
-import { guidFor } from 'ember-utils';
-
-function missingFunction(fn) {
-  throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
-}
-
-function missingNew(name) {
-  throw new TypeError(`Constructor ${name} requires 'new'`);
-}
 
 function copyNull(obj) {
   let output = Object.create(null);
@@ -62,28 +56,22 @@ function copyMap(original, newObject) {
   @constructor
   @private
 */
-function OrderedSet() {
-  if (this instanceof OrderedSet) {
+class OrderedSet {
+  constructor() {
     this.clear();
-  } else {
-    missingNew('OrderedSet');
   }
-}
 
-/**
-  @method create
-  @static
-  @return {Ember.OrderedSet}
-  @private
-*/
-OrderedSet.create = function() {
-  let Constructor = this;
+  /**
+    @method create
+    @static
+    @return {Ember.OrderedSet}
+    @private
+  */
+  static create() {
+    let Constructor = this;
+    return new Constructor();
+  }
 
-  return new Constructor();
-};
-
-OrderedSet.prototype = {
-  constructor: OrderedSet,
   /**
     @method clear
     @private
@@ -92,7 +80,7 @@ OrderedSet.prototype = {
     this.presenceSet = Object.create(null);
     this.list = [];
     this.size = 0;
-  },
+  }
 
   /**
     @method add
@@ -112,7 +100,7 @@ OrderedSet.prototype = {
     }
 
     return this;
-  },
+  }
 
   /**
     @since 1.8.0
@@ -138,7 +126,7 @@ OrderedSet.prototype = {
     } else {
       return false;
     }
-  },
+  }
 
   /**
     @method isEmpty
@@ -147,7 +135,7 @@ OrderedSet.prototype = {
   */
   isEmpty() {
     return this.size === 0;
-  },
+  }
 
   /**
     @method has
@@ -162,7 +150,7 @@ OrderedSet.prototype = {
     let presenceSet = this.presenceSet;
 
     return presenceSet[guid] === true;
-  },
+  }
 
   /**
     @method forEach
@@ -171,9 +159,7 @@ OrderedSet.prototype = {
     @private
   */
   forEach(fn /*, ...thisArg*/) {
-    if (typeof fn !== 'function') {
-      missingFunction(fn);
-    }
+    assert(`${Object.prototype.toString.call(fn)} is not a function`, typeof fn === 'function');
 
     if (this.size === 0) { return; }
 
@@ -188,7 +174,7 @@ OrderedSet.prototype = {
         fn(list[i]);
       }
     }
-  },
+  }
 
   /**
     @method toArray
@@ -197,7 +183,7 @@ OrderedSet.prototype = {
   */
   toArray() {
     return this.list.slice();
-  },
+  }
 
   /**
     @method copy
@@ -214,7 +200,7 @@ OrderedSet.prototype = {
 
     return set;
   }
-};
+}
 
 /**
   A Map stores values indexed by keys. Unlike JavaScript's
@@ -224,7 +210,7 @@ OrderedSet.prototype = {
   Internally, a Map has two data structures:
 
   1. `keys`: an OrderedSet of all of the existing keys
-  2. `values`: a JavaScript Object indexed by the `Ember.guidFor(key)`
+  2. `values`: a JavaScript Object indexed by the `guidFor(key)`
 
   When a key/value pair is added for the first time, we
   add the key to the `keys` OrderedSet, and create or
@@ -232,43 +218,25 @@ OrderedSet.prototype = {
   we delete its entry in `keys` and `values`.
 
   @class Map
-  @namespace Ember
   @private
   @constructor
 */
-function Map() {
-  if (this instanceof Map) {
-    this._keys = OrderedSet.create();
+class Map {
+  constructor() {
+    this._keys = new OrderedSet();
     this._values = Object.create(null);
     this.size = 0;
-  } else {
-    missingNew('Map');
   }
-}
-
-/**
-  @method create
-  @static
-  @private
-*/
-Map.create = function() {
-  let Constructor = this;
-  return new Constructor();
-};
-
-Map.prototype = {
-  constructor: Map,
 
   /**
-    This property will change as the number of objects in the map changes.
-
-    @since 1.8.0
-    @property size
-    @type number
-    @default 0
+    @method create
+    @static
     @private
   */
-  size: 0,
+  static create() {
+    let Constructor = this;
+    return new Constructor();
+  }
 
   /**
     Retrieve the value associated with a given key.
@@ -285,7 +253,7 @@ Map.prototype = {
     let guid = guidFor(key);
 
     return values[guid];
-  },
+  }
 
   /**
     Adds a value to the map. If a value for the given key has already been
@@ -294,7 +262,7 @@ Map.prototype = {
     @method set
     @param {*} key
     @param {*} value
-    @return {Ember.Map}
+    @return {Map}
     @private
   */
   set(key, value) {
@@ -312,7 +280,7 @@ Map.prototype = {
     this.size = keys.size;
 
     return this;
-  },
+  }
 
   /**
     Removes a value from the map for an associated key.
@@ -338,7 +306,7 @@ Map.prototype = {
     } else {
       return false;
     }
-  },
+  }
 
   /**
     Check whether a key is present.
@@ -350,7 +318,7 @@ Map.prototype = {
   */
   has(key) {
     return this._keys.has(key);
-  },
+  }
 
   /**
     Iterate over all the keys and values. Calls the function once
@@ -366,9 +334,7 @@ Map.prototype = {
     @private
   */
   forEach(callback/*, ...thisArg*/) {
-    if (typeof callback !== 'function') {
-      missingFunction(callback);
-    }
+    assert(`${Object.prototype.toString.call(callback)} is not a function`, typeof callback === 'function');
 
     if (this.size === 0) { return; }
 
@@ -383,7 +349,7 @@ Map.prototype = {
     }
 
     this._keys.forEach(cb);
-  },
+  }
 
   /**
     @method clear
@@ -393,85 +359,82 @@ Map.prototype = {
     this._keys.clear();
     this._values = Object.create(null);
     this.size = 0;
-  },
+  }
 
   /**
     @method copy
-    @return {Ember.Map}
+    @return {Map}
     @private
   */
   copy() {
     return copyMap(this, new Map());
   }
-};
+}
 
 /**
   @class MapWithDefault
-  @namespace Ember
-  @extends Ember.Map
+  @extends Map
   @private
   @constructor
   @param [options]
     @param {*} [options.defaultValue]
 */
-function MapWithDefault(options) {
-  this._super$constructor();
-  this.defaultValue = options.defaultValue;
+class MapWithDefault extends Map {
+  constructor(options) {
+    super();
+    this.defaultValue = options.defaultValue;
+  }
+
+  /**
+    @method create
+    @static
+    @param [options]
+      @param {*} [options.defaultValue]
+    @return {MapWithDefault|Map} If options are passed, returns
+      `MapWithDefault` otherwise returns `EmberMap`
+    @private
+  */
+  static create(options) {
+    if (options) {
+      return new MapWithDefault(options);
+    } else {
+      return new Map();
+    }
+  }
+
+  /**
+    Retrieve the value associated with a given key.
+
+    @method get
+    @param {*} key
+    @return {*} the value associated with the key, or the default value
+    @private
+  */
+  get(key) {
+    let hasValue = this.has(key);
+
+    if (hasValue) {
+      return super.get(key);
+    } else {
+      let defaultValue = this.defaultValue(key);
+      this.set(key, defaultValue);
+      return defaultValue;
+    }
+  }
+
+  /**
+    @method copy
+    @return {MapWithDefault}
+    @private
+  */
+  copy() {
+    let Constructor = this.constructor;
+    return copyMap(this, new Constructor({
+      defaultValue: this.defaultValue
+    }));
+  }
 }
 
-/**
-  @method create
-  @static
-  @param [options]
-    @param {*} [options.defaultValue]
-  @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
-    `Ember.MapWithDefault` otherwise returns `Ember.Map`
-  @private
-*/
-MapWithDefault.create = function(options) {
-  if (options) {
-    return new MapWithDefault(options);
-  } else {
-    return new Map();
-  }
-};
-
-MapWithDefault.prototype = Object.create(Map.prototype);
-MapWithDefault.prototype.constructor = MapWithDefault;
-MapWithDefault.prototype._super$constructor = Map;
-MapWithDefault.prototype._super$get = Map.prototype.get;
-
-/**
-  Retrieve the value associated with a given key.
-
-  @method get
-  @param {*} key
-  @return {*} the value associated with the key, or the default value
-  @private
-*/
-MapWithDefault.prototype.get = function(key) {
-  let hasValue = this.has(key);
-
-  if (hasValue) {
-    return this._super$get(key);
-  } else {
-    let defaultValue = this.defaultValue(key);
-    this.set(key, defaultValue);
-    return defaultValue;
-  }
-};
-
-/**
-  @method copy
-  @return {Ember.MapWithDefault}
-  @private
-*/
-MapWithDefault.prototype.copy = function() {
-  let Constructor = this.constructor;
-  return copyMap(this, new Constructor({
-    defaultValue: this.defaultValue
-  }));
-};
 
 export default Map;
 

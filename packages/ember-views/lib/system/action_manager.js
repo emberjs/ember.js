@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-views
 */
 
 export default function ActionManager() {}

@@ -1,11 +1,10 @@
-import { guidFor, getOwner } from 'ember-utils';
-import { descriptor, Mixin } from 'ember-metal';
+import { guidFor } from 'ember-utils';
+import { descriptor, descriptorFor, Mixin } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
-import { environment } from 'ember-environment';
+import { environment, ENV } from 'ember-environment';
 import { matches } from '../system/utils';
 import { POST_INIT } from 'ember-runtime/system/core_object';
-import jQuery from '../system/jquery';
-import { DEBUG } from 'ember-env-flags';
+import { default as jQuery, jQueryDisabled } from '../system/jquery';
 
 function K() { return this; }
 
@@ -22,8 +21,10 @@ export default Mixin.create({
 
     The following example creates a tag like `<div priority="high" />`.
 
-    ```javascript
-    Ember.Component.extend({
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       attributeBindings: ['priority'],
       priority: 'high'
     });
@@ -35,8 +36,10 @@ export default Mixin.create({
 
     The following example creates markup like `<div visible />`.
 
-    ```javascript
-    Ember.Component.extend({
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       attributeBindings: ['visible'],
       visible: true
     });
@@ -46,8 +49,10 @@ export default Mixin.create({
     you can create the same markup as the last example with a binding like
     this:
 
-    ```javascript
-    Ember.Component.extend({
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       attributeBindings: ['isVisible:visible'],
       isVisible: true
     });
@@ -64,7 +69,9 @@ export default Mixin.create({
   concatenatedProperties: ['attributeBindings'],
 
   [POST_INIT]() {
-    this.trigger('didInitAttrs');
+    if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
+      this.trigger('didInitAttrs');
+    }
     this.trigger('didReceiveAttrs');
   },
 
@@ -78,7 +85,7 @@ export default Mixin.create({
 
     @method nearestOfType
     @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
-           or an instance of Ember.Mixin.
+           or an instance of Mixin.
     @return Ember.View
     @deprecated use `yield` and contextual components for composition instead.
     @private
@@ -168,6 +175,7 @@ export default Mixin.create({
   */
   $(sel) {
     assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
+    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
     if (this.element) {
       return sel ? jQuery(sel, this.element) : jQuery(this.element);
     }
@@ -182,7 +190,7 @@ export default Mixin.create({
 
     This is not typically a function that you will need to call directly when
     building your application. If you do need to use `appendTo`, be sure that
-    the target element you are providing is associated with an `Ember.Application`
+    the target element you are providing is associated with an `Application`
     and does not have an ancestor element that is associated with an Ember view.
 
     @method appendTo
@@ -259,14 +267,16 @@ export default Mixin.create({
     `elementId`, you should do this when the component or element is being
     instantiated:
 
-    ```javascript
-      export default Ember.Component.extend({
-        init() {
-          this._super(...arguments);
-          let index = this.get('index');
-          this.set('elementId', 'component-id' + index);
-        }
-      });
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
+      init() {
+        this._super(...arguments);
+        let index = this.get('index');
+        this.set('elementId', 'component-id' + index);
+      }
+    });
     ```
 
     @property elementId
@@ -396,40 +406,29 @@ export default Mixin.create({
   init() {
     this._super(...arguments);
 
+    // tslint:disable-next-line:max-line-length
+    assert(`You cannot use a computed property for the component's \`elementId\` (${this}).`, descriptorFor(this, 'elementId') === undefined);
+
+    // tslint:disable-next-line:max-line-length
+    assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, descriptorFor(this, 'tagName') === undefined);
+
     if (!this.elementId && this.tagName !== '') {
       this.elementId = guidFor(this);
     }
 
-    // if we find an `eventManager` property, deopt the
-    // `EventDispatcher`'s `canDispatchToEventManager` property
-    // if `null`
-    if (this.eventManager) {
-      let owner = getOwner(this);
-      let dispatcher = owner && owner.lookup('event_dispatcher:main');
-
+    if (environment._ENABLE_DID_INIT_ATTRS_SUPPORT) {
       deprecate(
-        `\`eventManager\` has been deprecated in ${this}.`,
-        false,
+        `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
+        typeof(this.didInitAttrs) !== 'function',
         {
-          id: 'ember-views.event-dispatcher.canDispatchToEventManager',
-          until: '2.17.0'
+          id: 'ember-views.did-init-attrs',
+          until: '3.0.0',
+          url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
         }
       );
-
-      if (dispatcher && !('canDispatchToEventManager' in dispatcher)) {
-        dispatcher.canDispatchToEventManager = true;
-      }
+    } else {
+      assert(`didInitAttrs called in ${this.toString()} is no longer supported.`, typeof(this.didInitAttrs) !== 'function');
     }
-
-    deprecate(
-      `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
-      typeof(this.didInitAttrs) !== 'function',
-      {
-        id: 'ember-views.did-init-attrs',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
-      }
-    );
 
     assert(
       'Using a custom `.render` function is no longer supported.',
@@ -446,7 +445,7 @@ export default Mixin.create({
   //
 
   /**
-    Handle events from `Ember.EventDispatcher`
+    Handle events from `EventDispatcher`
 
     @method handleEvent
     @param eventName {String}

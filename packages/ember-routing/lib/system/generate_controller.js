@@ -3,7 +3,6 @@ import { info } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 /**
 @module ember
-@submodule ember-routing
 */
 
 /**
@@ -14,7 +13,7 @@ import { DEBUG } from 'ember-env-flags';
   @private
 */
 
-export function generateControllerFactory(owner, controllerName, context) {
+export function generateControllerFactory(owner, controllerName) {
   let Factory = owner.factoryFor('controller:basic').class;
 
   Factory = Factory.extend({
@@ -32,7 +31,7 @@ export function generateControllerFactory(owner, controllerName, context) {
 
 /**
   Generates and instantiates a controller extending from `controller:basic`
-  if present, or `Ember.Controller` if not.
+  if present, or `Controller` if not.
 
   @for Ember
   @method generateController

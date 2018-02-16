@@ -14,7 +14,8 @@ export { default as precompile } from './system/precompile';
 export { default as compile } from './system/compile';
 export {
   default as compileOptions,
-  registerPlugin
+  registerPlugin,
+  unregisterPlugin
 } from './system/compile-options';
 export { default as defaultPlugins } from './plugins';
 

@@ -1,8 +1,8 @@
 /**
 @module ember
-@submodule ember-testing
 */
 import { focus, fireEvent } from '../events';
+import isFormControl from './-is-form-control';
 
 /**
   Fills in an input element with some text.
@@ -33,7 +33,12 @@ export default function fillIn(app, selector, contextOrText, text) {
   el = $el[0];
   focus(el);
 
-  $el.eq(0).val(text);
+  if (isFormControl(el)) {
+    el.value = text;
+  } else {
+    el.innerHTML = text;
+  }
+
   fireEvent(el, 'input');
   fireEvent(el, 'change');
 

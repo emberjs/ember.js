@@ -1,5 +1,6 @@
-import { guidFor, symbol } from 'ember-utils';
+import { symbol } from 'ember-utils';
 import {
+  descriptorFor,
   peekMeta
 } from './meta';
 import {
@@ -11,13 +12,17 @@ import {
 import ObserverSet from './observer_set';
 import {
   EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER
 } from 'ember/features';
+import { deprecate } from 'ember-debug';
 import { assertNotRendered } from './transaction';
+
+/**
+ @module ember
+ @private
+ */
 
 export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
-const beforeObserverSet = new ObserverSet();
 const observerSet = new ObserverSet();
 let deferred = 0;
 
@@ -26,38 +31,39 @@ let deferred = 0;
 //
 
 /**
-  This function is called just before an object property is about to change.
-  It will notify any before observers and prepare caches among other things.
-
-  Normally you will not need to call this method directly but if for some
-  reason you can't directly watch a property you can invoke this method
-  manually along with `Ember.propertyDidChange()` which you should call just
-  after the property value changes.
-
   @method propertyWillChange
   @for Ember
-  @param {Object} obj The object with the property that will change
-  @param {String} keyName The property key (or path) that will change.
-  @return {void}
   @private
 */
-function propertyWillChange(obj, keyName, _meta) {
-  let meta = _meta || peekMeta(obj);
-  if (meta && !meta.isInitialized(obj)) { return; }
+function propertyWillChange() {
+  deprecate(
+    `'propertyWillChange' is deprecated and has no effect. It is safe to remove this call.`,
+    false,
+    {
+      id: 'ember-metal.deprecate-propertyWillChange',
+      until: '3.5.0',
+      url: 'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange'
+    }
+  );
+}
 
-  let watching = meta && meta.peekWatching(keyName) > 0;
-  let possibleDesc = obj[keyName];
-  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+/**
+  @method propertyDidChange
+  @for Ember
+  @private
+*/
+function propertyDidChange(obj, keyName, _meta) {
+  deprecate(
+    `'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'.`,
+    false,
+    {
+      id: 'ember-metal.deprecate-propertyDidChange',
+      until: '3.5.0',
+      url: 'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange'
+    }
+  );
 
-  if (isDescriptor && possibleDesc.willChange) {
-    possibleDesc.willChange(obj, keyName);
-  }
-
-  if (watching) {
-    dependentKeysWillChange(obj, keyName, meta);
-    chainsWillChange(obj, keyName, meta);
-    notifyBeforeObservers(obj, keyName, meta);
-  }
+  notifyPropertyChange(obj, keyName, _meta);
 }
 
 /**
@@ -66,10 +72,9 @@ function propertyWillChange(obj, keyName, _meta) {
 
   Normally you will not need to call this method directly but if for some
   reason you can't directly watch a property you can invoke this method
-  manually along with `Ember.propertyWillChange()` which you should call just
-  before the property value changes.
+  manually.
 
-  @method propertyDidChange
+  @method notifyPropertyChange
   @for Ember
   @param {Object} obj The object with the property that will change
   @param {String} keyName The property key (or path) that will change.
@@ -77,17 +82,16 @@ function propertyWillChange(obj, keyName, _meta) {
   @return {void}
   @private
 */
-function propertyDidChange(obj, keyName, _meta) {
-  let meta = _meta || peekMeta(obj);
-  let hasMeta = !!meta;
+function notifyPropertyChange(obj, keyName, _meta) {
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
+  let hasMeta = meta !== undefined;
 
   if (hasMeta && !meta.isInitialized(obj)) { return; }
 
-  let possibleDesc = obj[keyName];
-  let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+  let possibleDesc = descriptorFor(obj, keyName, meta);
 
   // shouldn't this mean that we're watching this key?
-  if (isDescriptor && possibleDesc.didChange) {
+  if (possibleDesc !== undefined && possibleDesc.didChange) {
     possibleDesc.didChange(obj, keyName);
   }
 
@@ -97,7 +101,7 @@ function propertyDidChange(obj, keyName, _meta) {
     notifyObservers(obj, keyName, meta);
   }
 
-  if (obj[PROPERTY_DID_CHANGE]) {
+  if (PROPERTY_DID_CHANGE in obj) {
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 
@@ -106,40 +110,24 @@ function propertyDidChange(obj, keyName, _meta) {
     markObjectAsDirty(meta, keyName);
   }
 
-  if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+  if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     assertNotRendered(obj, keyName, meta);
   }
 }
 
-let WILL_SEEN, DID_SEEN;
-// called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
-function dependentKeysWillChange(obj, depKey, meta) {
-  if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
-  let seen = WILL_SEEN;
-  let top = !seen;
-
-  if (top) {
-    seen = WILL_SEEN = {};
-  }
-
-  iterDeps(propertyWillChange, obj, depKey, seen, meta);
-
-  if (top) {
-    WILL_SEEN = null;
-  }
-}
+let DID_SEEN = null;
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
   if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
   let seen = DID_SEEN;
-  let top = !seen;
+  let top = seen === null;
 
   if (top) {
-    seen = DID_SEEN = {};
+    seen = DID_SEEN = new Map();
   }
 
-  iterDeps(propertyDidChange, obj, depKey, seen, meta);
+  iterDeps(notifyPropertyChange, obj, depKey, seen, meta);
 
   if (top) {
     DID_SEEN = null;
@@ -147,27 +135,22 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  let possibleDesc, isDescriptor;
-  let guid = guidFor(obj);
-  let current = seen[guid];
+  let current = seen.get(obj);
 
-  if (!current) {
-    current = seen[guid] = {};
+  if (current === undefined) {
+    current = new Set();
+    seen.set(obj, current);
   }
 
-  if (current[depKey]) {
-    return;
-  }
+  if (current.has(depKey)) { return; }
 
-  current[depKey] = true;
-
+  let possibleDesc;
   meta.forEachInDeps(depKey, (key, value) => {
     if (!value) { return; }
 
-    possibleDesc = obj[key];
-    isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    possibleDesc = descriptorFor(obj, key, meta);
 
-    if (isDescriptor && possibleDesc._suspended === obj) {
+    if (possibleDesc !== undefined && possibleDesc._suspended === obj) {
       return;
     }
 
@@ -175,17 +158,10 @@ function iterDeps(method, obj, depKey, seen, meta) {
   });
 }
 
-function chainsWillChange(obj, keyName, meta) {
-  let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers !== undefined) {
-    chainWatchers.notify(keyName, false, propertyWillChange);
-  }
-}
-
 function chainsDidChange(obj, keyName, meta) {
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
-    chainWatchers.notify(keyName, true, propertyDidChange);
+    chainWatchers.notify(keyName, true, notifyPropertyChange);
   }
 }
 
@@ -212,8 +188,8 @@ function beginPropertyChanges() {
 function endPropertyChanges() {
   deferred--;
   if (deferred <= 0) {
-    beforeObserverSet.clear();
-    observerSet.flush();
+    observerSet.forEach((object, key)=> sendEvent(object, key, [object, key]));
+    observerSet.clear();
   }
 }
 
@@ -230,80 +206,31 @@ function endPropertyChanges() {
 
   @method changeProperties
   @param {Function} callback
-  @param [binding]
   @private
 */
-function changeProperties(callback, binding) {
+function changeProperties(callback) {
   beginPropertyChanges();
   try {
-    callback.call(binding);
+    callback();
   } finally {
     endPropertyChanges();
   }
 }
 
-function indexOf(array, target, method) {
-  let index = -1;
-  // hashes are added to the end of the event array
-  // so it makes sense to start searching at the end
-  // of the array and search in reverse
-  for (let i = array.length - 3; i >= 0; i -= 3) {
-    if (target === array[i] && method === array[i + 1]) {
-      index = i;
-      break;
-    }
-  }
-  return index;
-}
-
-function accumulateListeners(obj, eventName, otherActions, meta) {
-  let actions = meta.matchingListeners(eventName);
-  if (actions === undefined) { return; }
-  let newActions = [];
-
-  for (let i = actions.length - 3; i >= 0; i -= 3) {
-    let target = actions[i];
-    let method = actions[i + 1];
-    let flags = actions[i + 2];
-    let actionIndex = indexOf(otherActions, target, method);
-
-    if (actionIndex === -1) {
-      otherActions.push(target, method, flags);
-      newActions.push(target, method, flags);
-    }
-  }
-
-  return newActions;
-}
-
-function notifyBeforeObservers(obj, keyName, meta) {
-  if (meta.isSourceDestroying()) { return; }
-
-  let eventName = `${keyName}:before`;
-  let listeners, added;
-  if (deferred > 0) {
-    listeners = beforeObserverSet.add(obj, keyName, eventName);
-    added = accumulateListeners(obj, eventName, listeners, meta);
-  }
-  sendEvent(obj, eventName, [obj, keyName], added);
-}
-
 function notifyObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
-  let eventName = `${keyName}:change`;
-  let listeners;
   if (deferred > 0) {
-    listeners = observerSet.add(obj, keyName, eventName);
-    accumulateListeners(obj, eventName, listeners, meta);
+    observerSet.add(obj, keyName);
   } else {
-    sendEvent(obj, eventName, [obj, keyName]);
+    sendEvent(obj, keyName, [obj, keyName]);
   }
 }
 
 export {
   propertyWillChange,
   propertyDidChange,
+  notifyPropertyChange,
   overrideChains,
   beginPropertyChanges,
   endPropertyChanges,

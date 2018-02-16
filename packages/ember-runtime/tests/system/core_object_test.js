@@ -3,17 +3,17 @@ import { set, observer } from 'ember-metal';
 
 QUnit.module('Ember.CoreObject');
 
-QUnit.test('works with new (one arg)', function() {
+QUnit.test('works with new (one arg)', function(assert) {
   let obj = new CoreObject({
     firstName: 'Stef',
     lastName: 'Penner'
   });
 
-  equal(obj.firstName, 'Stef');
-  equal(obj.lastName, 'Penner');
+  assert.equal(obj.firstName, 'Stef');
+  assert.equal(obj.lastName, 'Penner');
 });
 
-QUnit.test('works with new (> 1 arg)', function() {
+QUnit.test('works with new (> 1 arg)', function(assert) {
   let obj = new CoreObject({
     firstName: 'Stef',
     lastName: 'Penner'
@@ -21,13 +21,13 @@ QUnit.test('works with new (> 1 arg)', function() {
     other: 'name'
   });
 
-  equal(obj.firstName, 'Stef');
-  equal(obj.lastName, 'Penner');
+  assert.equal(obj.firstName, 'Stef');
+  assert.equal(obj.lastName, 'Penner');
 
-  equal(obj.other, undefined); // doesn't support multiple pojo' to the constructor
+  assert.equal(obj.other, undefined); // doesn't support multiple pojo' to the constructor
 });
 
-QUnit.test('toString should be not be added as a property when calling toString()', function() {
+QUnit.test('toString should be not be added as a property when calling toString()', function(assert) {
   let obj = new CoreObject({
     firstName: 'Foo',
     lastName: 'Bar'
@@ -35,7 +35,7 @@ QUnit.test('toString should be not be added as a property when calling toString(
 
   obj.toString();
 
-  notOk(obj.hasOwnProperty('toString'), 'Calling toString() should not create a toString class property');
+  assert.notOk(obj.hasOwnProperty('toString'), 'Calling toString() should not create a toString class property');
 });
 
 QUnit.test('[POST_INIT] invoked during construction', function(assert) {
@@ -46,11 +46,11 @@ QUnit.test('[POST_INIT] invoked during construction', function(assert) {
     }
   });
 
-  equal(callCount, 0);
+  assert.equal(callCount, 0);
 
   Obj.create();
 
-  equal(callCount, 1);
+  assert.equal(callCount, 1);
 });
 
 QUnit.test('[POST_INIT] invoked before finishChains', function(assert) {
@@ -66,13 +66,13 @@ QUnit.test('[POST_INIT] invoked before finishChains', function(assert) {
     })
   });
 
-  equal(callCount, 0);
+  assert.equal(callCount, 0);
 
   let obj = Obj.create();
 
-  equal(callCount, 0);
+  assert.equal(callCount, 0);
 
   set(obj, 'hi', 2);
 
-  equal(callCount, 1);
+  assert.equal(callCount, 1);
 });

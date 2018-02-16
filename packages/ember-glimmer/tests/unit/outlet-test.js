@@ -1,4 +1,4 @@
-import OutletView from 'ember-glimmer/views/outlet';
+import { OutletView } from 'ember-glimmer';
 import { run } from 'ember-metal';
 
 QUnit.module('Glimmer OutletView');

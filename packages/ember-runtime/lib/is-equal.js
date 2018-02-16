@@ -1,9 +1,14 @@
 /**
+ @module @ember/utils
+*/
+/**
   Compares two objects, returning true if they are equal.
 
   ```javascript
-  Ember.isEqual('hello', 'hello');                   // true
-  Ember.isEqual(1, 2);                               // false
+  import { isEqual } from '@ember/utils';
+
+  isEqual('hello', 'hello');                   // true
+  isEqual(1, 2);                               // false
   ```
 
   `isEqual` is a more specific comparison than a triple equal comparison.
@@ -12,25 +17,31 @@
   equal to each other.
 
   ```javascript
-  let Person = Ember.Object.extend({
+  import { isEqual } from '@ember/utils';
+  import EmberObject from '@ember/object';
+
+  let Person = EmberObject.extend({
     isEqual(other) { return this.ssn == other.ssn; }
   });
 
   let personA = Person.create({name: 'Muhammad Ali', ssn: '123-45-6789'});
   let personB = Person.create({name: 'Cassius Clay', ssn: '123-45-6789'});
 
-  Ember.isEqual(personA, personB); // true
+  isEqual(personA, personB); // true
   ```
 
   Due to the expense of array comparisons, collections will never be equal to
   each other even if each of their items are equal to each other.
 
   ```javascript
-  Ember.isEqual([4, 2], [4, 2]);                     // false
+  import { isEqual } from '@ember/utils';
+
+  isEqual([4, 2], [4, 2]);                     // false
   ```
 
   @method isEqual
-  @for Ember
+  @for @ember/utils
+  @static
   @param {Object} a first object to compare
   @param {Object} b second object to compare
   @return {Boolean}

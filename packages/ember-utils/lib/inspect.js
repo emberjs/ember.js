@@ -1,5 +1,7 @@
 const objectToString = Object.prototype.toString;
-
+/**
+ @module @ember/debug
+*/
 /**
   Convenience method to inspect an object. This method will attempt to
   convert the object into a useful string description.
@@ -8,7 +10,7 @@ const objectToString = Object.prototype.toString;
   use something like JSDump: https://github.com/NV/jsDump
 
   @method inspect
-  @for Ember
+  @static
   @param {Object} obj The object you want to inspect.
   @return {String} A description of the object
   @since 1.4.0

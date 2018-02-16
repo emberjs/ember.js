@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 
 import { ENV } from 'ember-environment';
@@ -9,7 +8,7 @@ import {
   computed,
   observer
 } from 'ember-metal';
-import { assert, deprecateFunc } from 'ember-debug';
+import { assert } from 'ember-debug';
 
 const FunctionPrototype = Function.prototype;
 
@@ -21,8 +20,10 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 
     Computed properties allow you to treat a function like a property:
 
-    ```javascript
-    MyApp.President = Ember.Object.extend({
+    ```app/utils/president.js
+    import EmberObject from '@ember/object';
+
+    export default EmberObject.extend({
       firstName: '',
       lastName:  '',
 
@@ -30,8 +31,10 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
         return this.get('firstName') + ' ' + this.get('lastName');
       }.property() // Call this flag to mark the function as a property
     });
+    ```
 
-    let president = MyApp.President.create({
+    ```javascript
+    let president = President.create({
       firstName: 'Barack',
       lastName: 'Obama'
     });
@@ -47,8 +50,10 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     `firstName` and `lastName` to determine its value. You can tell Ember
     about these dependencies like this:
 
-    ```javascript
-    MyApp.President = Ember.Object.extend({
+    ```app/utils/president.js
+    import EmberObject from '@ember/object';
+
+    export default EmberObject.extend({
       firstName: '',
       lastName:  '',
 
@@ -67,15 +72,20 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     will instead clear the cache so that it is updated when the next `get`
     is called on the property.
 
-    See [Ember.ComputedProperty](/api/classes/Ember.ComputedProperty.html), [Ember.computed](/api/classes/Ember.computed.html).
+    See [ComputedProperty](/api/ember/release/classes/ComputedProperty), [@ember/object/computed](/api/ember/release/classes/@ember%2Fobject%2Fcomputed).
 
     @method property
     @for Function
     @public
   */
-  FunctionPrototype.property = function () {
-    return computed(...arguments, this);
-  };
+  Object.defineProperty(FunctionPrototype, 'property', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      return computed(...arguments, this);
+    }
+  });
 
   /**
     The `observes` extension of Javascript's Function prototype is available
@@ -87,7 +97,9 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     For example:
 
     ```javascript
-    Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    EmberObject.extend({
       valueObserver: function() {
         // Executes whenever the "value" property changes
       }.observes('value')
@@ -96,66 +108,43 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 
     In the future this method may become asynchronous.
 
-    See `Ember.observer`.
+    See `observer`.
 
     @method observes
     @for Function
     @public
   */
-  FunctionPrototype.observes = function() {
-    return observer(...arguments, this);
-  };
+  Object.defineProperty(FunctionPrototype, 'observes', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      return observer(...arguments, this);
+    }
+  });
 
-
-  FunctionPrototype._observesImmediately = function () {
-    assert(
-      'Immediate observers must observe internal properties only, ' +
-      'not properties on other objects.',
-      function checkIsInternalProperty() {
-        for (let i = 0; i < arguments.length; i++) {
-          if (arguments[i].indexOf('.') !== -1) {
-            return false;
+  Object.defineProperty(FunctionPrototype, '_observesImmediately', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      assert(
+        'Immediate observers must observe internal properties only, ' +
+        'not properties on other objects.',
+        function checkIsInternalProperty() {
+          for (let i = 0; i < arguments.length; i++) {
+            if (arguments[i].indexOf('.') !== -1) {
+              return false;
+            }
           }
+          return true;
         }
-        return true;
-      }
-    );
+      );
 
-    // observes handles property expansion
-    return this.observes(...arguments);
-  };
-  /**
-    The `observesImmediately` extension of Javascript's Function prototype is
-    available when `EmberENV.EXTEND_PROTOTYPES` or
-    `EmberENV.EXTEND_PROTOTYPES.Function` is true, which is the default.
-
-    You can observe property changes simply by adding the `observesImmediately`
-    call to the end of your method declarations in classes that you write.
-    For example:
-
-    ```javascript
-    Ember.Object.extend({
-      valueObserver: function() {
-        // Executes immediately after the "value" property changes
-      }.observesImmediately('value')
-    });
-    ```
-
-    In the future, `observes` may become asynchronous. In this event,
-    `observesImmediately` will maintain the synchronous behavior.
-
-    See `Ember.immediateObserver`.
-
-    @method observesImmediately
-    @for Function
-    @deprecated
-    @private
-  */
-  FunctionPrototype.observesImmediately = deprecateFunc(
-    'Function#observesImmediately is deprecated. Use Function#observes instead',
-    { id: 'ember-runtime.ext-function', until: '3.0.0' },
-    FunctionPrototype._observesImmediately
-  );
+      // observes handles property expansion
+      return this.observes(...arguments);
+    }
+  });
 
   /**
     The `on` extension of Javascript's Function prototype is available
@@ -166,20 +155,28 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     your method declarations in classes or mixins that you write. For example:
 
     ```javascript
-    Ember.Mixin.create({
+    import Mixin from '@ember/mixin';
+
+    Mixin.create({
       doSomethingWithElement: function() {
         // Executes whenever the "didInsertElement" event fires
       }.on('didInsertElement')
     });
     ```
 
-    See `Ember.on`.
+    See `@ember/object/evented/on`.
 
     @method on
     @for Function
     @public
   */
-  FunctionPrototype.on = function () {
-    return on(...arguments, this);
-  };
+
+  Object.defineProperty(FunctionPrototype, 'on', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function () {
+      return on(...arguments, this);
+    }
+  });
 }

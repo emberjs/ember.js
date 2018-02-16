@@ -1,33 +1,28 @@
 import { run } from '../..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('system/run_loop/sync_test');
+moduleFor('system/run_loop/sync_test', class extends AbstractTestCase {
+  ['@test sync() will immediately flush the sync queue only'](assert) {
+    let cnt = 0;
 
-QUnit.test('sync() will immediately flush the sync queue only', function() {
-  let cnt = 0;
+    run(() => {
+      function cntup() { cnt++; }
 
-  run(() => {
-    function cntup() { cnt++; }
-
-    function syncfunc() {
-      if (++cnt < 5) {
-        run.schedule('sync', syncfunc);
+      function syncfunc() {
+        if (++cnt < 5) {
+          expectDeprecation(() => {
+            run.schedule('sync', syncfunc);
+          }, `Scheduling into the 'sync' run loop queue is deprecated.`);
+        }
+        run.schedule('actions', cntup);
       }
-      run.schedule('actions', cntup);
-    }
 
-    syncfunc();
+      syncfunc();
 
-    equal(cnt, 1, 'should not run action yet');
-    run.sync();
+      assert.equal(cnt, 1, 'should not run action yet');
+    });
 
-    equal(cnt, 5, 'should have run sync queue continuously');
-  });
-
-  equal(cnt, 10, 'should flush actions now too');
+    assert.equal(cnt, 10, 'should flush actions now too');
+  }
 });
 
-QUnit.test('calling sync() outside a run loop does not cause an error', function() {
-  expect(0);
-
-  run.sync();
-});

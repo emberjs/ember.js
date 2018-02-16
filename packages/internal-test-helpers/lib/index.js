@@ -6,6 +6,7 @@ export { default as equalTokens } from './equal-tokens';
 export { default as moduleFor } from './module-for';
 export { default as strip } from './strip';
 export { default as applyMixins } from './apply-mixins';
+export { default as getTextOf } from './get-text-of';
 export {
   equalsElement,
   classes,
@@ -35,3 +36,5 @@ export {
   default as TestResolver,
   ModuleBasedResolver as ModuleBasedTestResolver
 } from './test-resolver';
+
+export { isIE11 } from './browser-detect';

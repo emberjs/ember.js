@@ -3,8 +3,10 @@ import { assert, deprecate } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import Container from './container';
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
+const missingResolverFunctionsDeprecation = 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
 
 /**
  A registry used to store factory and option information keyed
@@ -19,31 +21,36 @@ const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
  @class Registry
  @since 1.11.0
 */
-export default function Registry(options = {}) {
-  this.fallback = options.fallback || null;
+export default class Registry {
+  constructor(options = {}) {
+    this.fallback = options.fallback || null;
+    this.resolver = options.resolver || null;
 
-  if (options.resolver) {
-    this.resolver = options.resolver;
-    if (typeof this.resolver === 'function') {
+    if (ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT !== true) {
+      assert(
+        missingResolverFunctionsDeprecation,
+        typeof this.resolver !== 'function'
+      );
+    }
+
+    if (typeof this.resolver === 'function' && ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT === true) {
       deprecateResolverFunction(this);
     }
+
+    this.registrations = dictionary(options.registrations || null);
+
+    this._typeInjections        = dictionary(null);
+    this._injections            = dictionary(null);
+
+    this._localLookupCache      = Object.create(null);
+    this._normalizeCache        = dictionary(null);
+    this._resolveCache          = dictionary(null);
+    this._failSet               = new Set();
+
+    this._options               = dictionary(null);
+    this._typeOptions           = dictionary(null);
   }
 
-  this.registrations = dictionary(options.registrations || null);
-
-  this._typeInjections        = dictionary(null);
-  this._injections            = dictionary(null);
-
-  this._localLookupCache      = Object.create(null);
-  this._normalizeCache        = dictionary(null);
-  this._resolveCache          = dictionary(null);
-  this._failCache             = dictionary(null);
-
-  this._options               = dictionary(null);
-  this._typeOptions           = dictionary(null);
-}
-
-Registry.prototype = {
   /**
    A backup registry for resolving registrations when no matches can be found.
 
@@ -51,7 +58,6 @@ Registry.prototype = {
    @property fallback
    @type Registry
    */
-  fallback: null,
 
   /**
    An object that has a `resolve` method that resolves a name.
@@ -60,14 +66,12 @@ Registry.prototype = {
    @property resolver
    @type Resolver
    */
-  resolver: null,
 
   /**
    @private
    @property registrations
    @type InheritingDict
    */
-  registrations: null,
 
   /**
    @private
@@ -75,7 +79,6 @@ Registry.prototype = {
    @property _typeInjections
    @type InheritingDict
    */
-  _typeInjections: null,
 
   /**
    @private
@@ -83,7 +86,6 @@ Registry.prototype = {
    @property _injections
    @type InheritingDict
    */
-  _injections: null,
 
   /**
    @private
@@ -91,7 +93,6 @@ Registry.prototype = {
    @property _normalizeCache
    @type InheritingDict
    */
-  _normalizeCache: null,
 
   /**
    @private
@@ -99,7 +100,6 @@ Registry.prototype = {
    @property _resolveCache
    @type InheritingDict
    */
-  _resolveCache: null,
 
   /**
    @private
@@ -107,7 +107,6 @@ Registry.prototype = {
    @property _options
    @type InheritingDict
    */
-  _options: null,
 
   /**
    @private
@@ -115,7 +114,6 @@ Registry.prototype = {
    @property _typeOptions
    @type InheritingDict
    */
-  _typeOptions: null,
 
   /**
    Creates a container based on this registry.
@@ -127,7 +125,7 @@ Registry.prototype = {
    */
   container(options) {
     return new Container(this, options);
-  },
+  }
 
   /**
    Registers a factory for later injection.
@@ -149,22 +147,16 @@ Registry.prototype = {
    @param {Object} options
    */
   register(fullName, factory, options = {}) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
-
-    if (factory === undefined) {
-      throw new TypeError(`Attempting to register an unknown factory: '${fullName}'`);
-    }
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
+    assert(`Cannot re-register: '${fullName}', as it has already been resolved.`, !this._resolveCache[normalizedName]);
 
-    if (this._resolveCache[normalizedName]) {
-      throw new Error(`Cannot re-register: '${fullName}', as it has already been resolved.`);
-    }
-
-    delete this._failCache[normalizedName];
+    this._failSet.delete(normalizedName);
     this.registrations[normalizedName] = factory;
     this._options[normalizedName] = options;
-  },
+  }
 
   /**
    Unregister a fullName
@@ -184,7 +176,7 @@ Registry.prototype = {
    @param {String} fullName
    */
   unregister(fullName) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
 
@@ -192,9 +184,9 @@ Registry.prototype = {
 
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
-    delete this._failCache[normalizedName];
     delete this._options[normalizedName];
-  },
+    this._failSet.delete(normalizedName);
+  }
 
   /**
    Given a fullName return the corresponding factory.
@@ -232,13 +224,13 @@ Registry.prototype = {
    @return {Function} fullName's factory
    */
   resolve(fullName, options) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     let factory = resolve(this, this.normalize(fullName), options);
-    if (factory === undefined && this.fallback) {
+    if (factory === undefined && this.fallback !== null) {
       factory = this.fallback.resolve(...arguments);
     }
     return factory;
-  },
+  }
 
   /**
    A hook that can be used to describe how the resolver will
@@ -254,14 +246,14 @@ Registry.prototype = {
    @return {string} described fullName
    */
   describe(fullName) {
-    if (this.resolver && this.resolver.lookupDescription) {
+    if (this.resolver !== null && this.resolver.lookupDescription) {
       return this.resolver.lookupDescription(fullName);
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.describe(fullName);
     } else {
       return fullName;
     }
-  },
+  }
 
   /**
    A hook to enable custom fullName normalization behavior
@@ -272,14 +264,14 @@ Registry.prototype = {
    @return {string} normalized fullName
    */
   normalizeFullName(fullName) {
-    if (this.resolver && this.resolver.normalize) {
+    if (this.resolver !== null && this.resolver.normalize) {
       return this.resolver.normalize(fullName);
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.normalizeFullName(fullName);
     } else {
       return fullName;
     }
-  },
+  }
 
   /**
    Normalize a fullName based on the application's conventions
@@ -293,7 +285,7 @@ Registry.prototype = {
     return this._normalizeCache[fullName] || (
         (this._normalizeCache[fullName] = this.normalizeFullName(fullName))
       );
-  },
+  }
 
   /**
    @method makeToString
@@ -304,14 +296,14 @@ Registry.prototype = {
    @return {function} toString function
    */
   makeToString(factory, fullName) {
-    if (this.resolver && this.resolver.makeToString) {
+    if (this.resolver !== null && this.resolver.makeToString) {
       return this.resolver.makeToString(factory, fullName);
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.makeToString(factory, fullName);
     } else {
       return factory.toString();
     }
-  },
+  }
 
   /**
    Given a fullName check if the container is aware of its factory
@@ -332,7 +324,7 @@ Registry.prototype = {
     let source = options && options.source && this.normalize(options.source);
 
     return has(this, this.normalize(fullName), source);
-  },
+  }
 
   /**
    Allow registering options for all factories of a type.
@@ -365,15 +357,15 @@ Registry.prototype = {
    */
   optionsForType(type, options) {
     this._typeOptions[type] = options;
-  },
+  }
 
   getOptionsForType(type) {
     let optionsForType = this._typeOptions[type];
-    if (optionsForType === undefined && this.fallback) {
+    if (optionsForType === undefined && this.fallback !== null) {
       optionsForType = this.fallback.getOptionsForType(type);
     }
     return optionsForType;
-  },
+  }
 
   /**
    @private
@@ -384,17 +376,17 @@ Registry.prototype = {
   options(fullName, options = {}) {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
-  },
+  }
 
   getOptions(fullName) {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
-    if (options === undefined && this.fallback) {
+    if (options === undefined && this.fallback !== null) {
       options = this.fallback.getOptions(fullName);
     }
     return options;
-  },
+  }
 
   getOption(fullName, optionName) {
     let options = this._options[fullName];
@@ -408,10 +400,10 @@ Registry.prototype = {
 
     if (options && options[optionName] !== undefined) {
       return options[optionName];
-    } else if (this.fallback) {
+    } else if (this.fallback !== null) {
       return this.fallback.getOption(fullName, optionName);
     }
-  },
+  }
 
   /**
    Used only via `injection`.
@@ -450,21 +442,16 @@ Registry.prototype = {
    @param {String} fullName
    */
   typeInjection(type, property, fullName) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let fullNameType = fullName.split(':')[0];
-    if (fullNameType === type) {
-      throw new Error(`Cannot inject a '${fullName}' on other ${type}(s).`);
-    }
+    assert(`Cannot inject a '${fullName}' on other ${type}(s).`, fullNameType !== type);
 
     let injections = this._typeInjections[type] ||
                      (this._typeInjections[type] = []);
 
-    injections.push({
-      property: property,
-      fullName: fullName
-    });
-  },
+    injections.push({ property, fullName });
+  }
 
   /**
    Defines injection rules.
@@ -513,24 +500,22 @@ Registry.prototype = {
    @param {String} injectionName
    */
   injection(fullName, property, injectionName) {
-    this.validateFullName(injectionName);
+    assert(`Invalid injectionName, expected: 'type:name' got: ${injectionName}`, this.isValidFullName(injectionName));
+
     let normalizedInjectionName = this.normalize(injectionName);
 
     if (fullName.indexOf(':') === -1) {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     let normalizedName = this.normalize(fullName);
 
     let injections = this._injections[normalizedName] ||
                      (this._injections[normalizedName] = []);
 
-    injections.push({
-      property: property,
-      fullName: normalizedInjectionName
-    });
-  },
+    injections.push({ property, fullName: normalizedInjectionName });
+  }
 
   /**
    @private
@@ -538,8 +523,6 @@ Registry.prototype = {
    @param {String} type the type to iterate over
   */
   knownForType(type) {
-    let fallbackKnown, resolverKnown;
-
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
     for (let index = 0; index < registeredNames.length; index++) {
@@ -551,35 +534,98 @@ Registry.prototype = {
       }
     }
 
-    if (this.fallback) {
+    let fallbackKnown, resolverKnown;
+    if (this.fallback !== null) {
       fallbackKnown = this.fallback.knownForType(type);
     }
 
-    if (this.resolver && this.resolver.knownForType) {
+    if (this.resolver !== null && this.resolver.knownForType) {
       resolverKnown = this.resolver.knownForType(type);
     }
 
     return assign({}, fallbackKnown, localKnown, resolverKnown);
-  },
-
-  validateFullName(fullName) {
-    if (!this.isValidFullName(fullName)) {
-      throw new TypeError(`Invalid Fullname, expected: 'type:name' got: ${fullName}`);
-    }
-
-    return true;
-  },
+  }
 
   isValidFullName(fullName) {
     return VALID_FULL_NAME_REGEXP.test(fullName);
-  },
+  }
 
-  normalizeInjectionsHash(hash) {
+  getInjections(fullName) {
+    let injections = this._injections[fullName] || [];
+    if (this.fallback !== null) {
+      injections = injections.concat(this.fallback.getInjections(fullName));
+    }
+    return injections;
+  }
+
+  getTypeInjections(type) {
+    let injections = this._typeInjections[type] || [];
+    if (this.fallback !== null) {
+      injections = injections.concat(this.fallback.getTypeInjections(type));
+    }
+    return injections;
+  }
+
+  resolverCacheKey(name, options) {
+    if (!EMBER_MODULE_UNIFICATION) {
+      return name;
+    }
+
+    return (options && options.source) ? `${options.source}:${name}` : name;
+  }
+
+  /**
+   Given a fullName and a source fullName returns the fully resolved
+   fullName. Used to allow for local lookup.
+
+   ```javascript
+   let registry = new Registry();
+
+   // the twitter factory is added to the module system
+   registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
+   ```
+
+   @private
+   @method expandLocalLookup
+   @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] the fullname of the request source (used for local lookups)
+   @return {String} fullName
+   */
+  expandLocalLookup(fullName, options) {
+    if (this.resolver !== null && this.resolver.expandLocalLookup) {
+      assert('fullName must be a proper full name', this.isValidFullName(fullName));
+      assert('options.source must be provided to expandLocalLookup', options && options.source);
+      assert('options.source must be a proper full name', this.isValidFullName(options.source));
+
+      let normalizedFullName = this.normalize(fullName);
+      let normalizedSource = this.normalize(options.source);
+
+      return expandLocalLookup(this, normalizedFullName, normalizedSource);
+    } else if (this.fallback !== null) {
+      return this.fallback.expandLocalLookup(fullName, options);
+    } else {
+      return null;
+    }
+  }
+}
+
+function deprecateResolverFunction(registry) {
+  deprecate(
+    missingResolverFunctionsDeprecation,
+    false,
+    { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' }
+  );
+  registry.resolver = { resolve: registry.resolver };
+}
+
+if (DEBUG) {
+  Registry.prototype.normalizeInjectionsHash = function(hash) {
     let injections = [];
 
     for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
-        assert(`Expected a proper full name, given '${hash[key]}'`, this.validateFullName(hash[key]));
+        assert(`Expected a proper full name, given '${hash[key]}'`, this.isValidFullName(hash[key]));
 
         injections.push({
           property: key,
@@ -589,43 +635,8 @@ Registry.prototype = {
     }
 
     return injections;
-  },
-
-  getInjections(fullName) {
-    let injections = this._injections[fullName] || [];
-    if (this.fallback) {
-      injections = injections.concat(this.fallback.getInjections(fullName));
-    }
-    return injections;
-  },
-
-  getTypeInjections(type) {
-    let injections = this._typeInjections[type] || [];
-    if (this.fallback) {
-      injections = injections.concat(this.fallback.getTypeInjections(type));
-    }
-    return injections;
-  },
-
-  resolverCacheKey(name, options) {
-    if (!EMBER_MODULE_UNIFICATION) {
-      return name;
-    }
-
-    return (options && options.source) ? `${options.source}:${name}` : name;
-  }
-};
-
-function deprecateResolverFunction(registry) {
-  deprecate('Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.',
-            false,
-            { id: 'ember-application.registry-resolver-as-function', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function' });
-  registry.resolver = {
-    resolve: registry.resolver
   };
-}
 
-if (DEBUG) {
   Registry.prototype.validateInjections = function(injections) {
     if (!injections) { return; }
 
@@ -636,43 +647,8 @@ if (DEBUG) {
 
       assert(`Attempting to inject an unknown injection: '${fullName}'`, this.has(fullName));
     }
-  }
+  };
 }
-
-/**
- Given a fullName and a source fullName returns the fully resolved
- fullName. Used to allow for local lookup.
-
- ```javascript
- let registry = new Registry();
-
- // the twitter factory is added to the module system
- registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
- ```
-
- @private
- @method expandLocalLookup
- @param {String} fullName
- @param {Object} [options]
- @param {String} [options.source] the fullname of the request source (used for local lookups)
- @return {String} fullName
- */
-Registry.prototype.expandLocalLookup = function Registry_expandLocalLookup(fullName, options) {
-  if (this.resolver && this.resolver.expandLocalLookup) {
-    assert('fullName must be a proper full name', this.validateFullName(fullName));
-    assert('options.source must be provided to expandLocalLookup', options && options.source);
-    assert('options.source must be a proper full name', this.validateFullName(options.source));
-
-    let normalizedFullName = this.normalize(fullName);
-    let normalizedSource = this.normalize(options.source);
-
-    return expandLocalLookup(this, normalizedFullName, normalizedSource);
-  } else if (this.fallback) {
-    return this.fallback.expandLocalLookup(fullName, options);
-  } else {
-    return null;
-  }
-};
 
 function expandLocalLookup(registry, normalizedName, normalizedSource) {
   let cache = registry._localLookupCache;
@@ -715,7 +691,7 @@ function resolve(registry, normalizedName, options) {
   let cacheKey = registry.resolverCacheKey(normalizedName, options);
   let cached = registry._resolveCache[cacheKey];
   if (cached !== undefined) { return cached; }
-  if (registry._failCache[cacheKey]) { return; }
+  if (registry._failSet.has(cacheKey)) { return; }
 
   let resolved;
 
@@ -728,7 +704,7 @@ function resolve(registry, normalizedName, options) {
   }
 
   if (resolved === undefined) {
-    registry._failCache[cacheKey] = true;
+    registry._failSet.add(cacheKey);
   } else {
     registry._resolveCache[cacheKey] = resolved;
   }

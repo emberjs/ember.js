@@ -1,23 +1,26 @@
 'use strict';
 
-var blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
-var setupTestHooks = blueprintHelpers.setupTestHooks;
-var emberNew = blueprintHelpers.emberNew;
-var emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
+const setupTestHooks = blueprintHelpers.setupTestHooks;
+const emberNew = blueprintHelpers.emberNew;
+const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 
-var chai = require('ember-cli-blueprint-test-helpers/chai');
-var expect = chai.expect;
+const chai = require('ember-cli-blueprint-test-helpers/chai');
+const expect = chai.expect;
 
-describe('Acceptance: ember generate and destroy instance-initializer-addon', function() {
+describe('Blueprint: instance-initializer-addon', function() {
   setupTestHooks(this);
 
-  it('instance-initializer-addon foo', function() {
-    var args = ['instance-initializer-addon', 'foo'];
+  describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' });
+    });
 
-    return emberNew({ target: 'addon' })
-      .then(() => emberGenerateDestroy(args, _file => {
+    it('instance-initializer-addon foo', function() {
+      return emberGenerateDestroy(['instance-initializer-addon', 'foo'], _file => {
         expect(_file('app/instance-initializers/foo.js'))
           .to.contain("export { default, initialize } from 'my-addon/instance-initializers/foo';");
-      }));
+      });
+    });
   });
 });

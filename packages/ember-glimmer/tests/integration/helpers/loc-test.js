@@ -85,4 +85,12 @@ moduleFor('Helpers test: {{loc}}', class extends RenderingTest {
     this.assertText('Hallo Freund - Hallo, Mr. Pitkin',
                     'the bound value is correct after replacement');
   }
+
+  ['@test it can be overriden']() {
+    this.registerHelper('loc', () => 'Yup');
+    this.render(`{{loc greeting}}`, {
+      greeting: 'Hello Friend'
+    });
+    this.assertText('Yup', 'the localized string is correct');      
+  }
 });

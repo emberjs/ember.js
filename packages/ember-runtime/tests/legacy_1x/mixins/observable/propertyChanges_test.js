@@ -20,13 +20,14 @@
 import EmberObject from '../../../../system/object';
 import Observable from '../../../../mixins/observable';
 import { computed, observer } from 'ember-metal';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const ObservableObject = EmberObject.extend(Observable);
 
 let ObjectA;
 
-QUnit.module('object.propertyChanges', {
-  setup() {
+moduleFor('object.propertyChanges', class extends AbstractTestCase {
+  beforeEach() {
     ObjectA = ObservableObject.extend({
       action: observer('foo', function() {
         this.set('prop', 'changedPropValue');
@@ -39,7 +40,7 @@ QUnit.module('object.propertyChanges', {
         this.set('newFoo', 'changedNewFooValue');
       }),
 
-      starObserver(target, key, value, rev) {
+      starObserver(target, key) {
         this.starProp = key;
       }
     }).create({
@@ -52,85 +53,79 @@ QUnit.module('object.propertyChanges', {
       newProp: 'newPropValue'
     });
   }
-});
 
-QUnit.test('should observe the changes within the nested begin / end property changes', function() {
-  //start the outer nest
-  ObjectA.beginPropertyChanges();
+  ['@test should observe the changes within the nested begin / end property changes'](assert) {
+    //start the outer nest
+    ObjectA.beginPropertyChanges();
 
-  // Inner nest
-  ObjectA.beginPropertyChanges();
-  ObjectA.set('foo', 'changeFooValue');
+    // Inner nest
+    ObjectA.beginPropertyChanges();
+    ObjectA.set('foo', 'changeFooValue');
 
-  equal(ObjectA.prop, 'propValue');
-  ObjectA.endPropertyChanges();
+    assert.equal(ObjectA.prop, 'propValue');
+    ObjectA.endPropertyChanges();
 
-  //end inner nest
-  ObjectA.set('prop', 'changePropValue');
-  equal(ObjectA.newFoo, 'newFooValue');
+    //end inner nest
+    ObjectA.set('prop', 'changePropValue');
+    assert.equal(ObjectA.newFoo, 'newFooValue');
 
-  //close the outer nest
-  ObjectA.endPropertyChanges();
+    //close the outer nest
+    ObjectA.endPropertyChanges();
 
-  equal(ObjectA.prop, 'changedPropValue');
-  equal(ObjectA.newFoo, 'changedNewFooValue');
-});
+    assert.equal(ObjectA.prop, 'changedPropValue');
+    assert.equal(ObjectA.newFoo, 'changedNewFooValue');
+  }
 
-QUnit.test('should observe the changes within the begin and end property changes', function() {
-  ObjectA.beginPropertyChanges();
-  ObjectA.set('foo', 'changeFooValue');
+  ['@test should observe the changes within the begin and end property changes'](assert) {
+    ObjectA.beginPropertyChanges();
+    ObjectA.set('foo', 'changeFooValue');
 
-  equal(ObjectA.prop, 'propValue');
-  ObjectA.endPropertyChanges();
+    assert.equal(ObjectA.prop, 'propValue');
+    ObjectA.endPropertyChanges();
 
-  equal(ObjectA.prop, 'changedPropValue');
-});
+    assert.equal(ObjectA.prop, 'changedPropValue');
+  }
 
-QUnit.test('should indicate that the property of an object has just changed', function() {
-  // indicate that property of foo will change to its subscribers
-  ObjectA.propertyWillChange('foo');
+  ['@test should indicate that the property of an object has just changed'](assert) {
+    //change the value of foo.
+    ObjectA.set('foo', 'changeFooValue');
 
-  //Value of the prop is unchanged yet as this will be changed when foo changes
-  equal(ObjectA.prop, 'propValue');
+    // Indicate the subscribers of foo that the value has just changed
+    ObjectA.notifyPropertyChange('foo', null);
 
-  //change the value of foo.
-  ObjectA.set('foo', 'changeFooValue');
+    // Values of prop has just changed
+    assert.equal(ObjectA.prop, 'changedPropValue');
+  }
 
-  // Indicate the subscribers of foo that the value has just changed
-  ObjectA.propertyDidChange('foo', null);
+  ['@test should notify that the property of an object has changed'](assert) {
+    // Notify to its subscriber that the values of 'newFoo' will be changed. In this
+    // case the observer is "newProp". Therefore this will call the notifyAction function
+    // and value of "newProp" will be changed.
+    ObjectA.notifyPropertyChange('newFoo', 'fooValue');
 
-  // Values of prop has just changed
-  equal(ObjectA.prop, 'changedPropValue');
-});
+    //value of newProp changed.
+    assert.equal(ObjectA.newProp, 'changedNewPropValue');
+  }
 
-QUnit.test('should notify that the property of an object has changed', function() {
-  // Notify to its subscriber that the values of 'newFoo' will be changed. In this
-  // case the observer is "newProp". Therefore this will call the notifyAction function
-  // and value of "newProp" will be changed.
-  ObjectA.notifyPropertyChange('newFoo', 'fooValue');
+  ['@test should invalidate function property cache when notifyPropertyChange is called'](assert) {
+    let a = ObservableObject.extend({
+      b: computed({
+        get() { return this._b; },
+        set(key, value) {
+          this._b = value;
+          return this;
+        }
+      }).volatile()
+    }).create({
+      _b: null
+    });
 
-  //value of newProp changed.
-  equal(ObjectA.newProp, 'changedNewPropValue');
-});
+    a.set('b', 'foo');
+    assert.equal(a.get('b'), 'foo', 'should have set the correct value for property b');
 
-QUnit.test('should invalidate function property cache when notifyPropertyChange is called', function() {
-  let a = ObservableObject.extend({
-    b: computed({
-      get() { return this._b; },
-      set(key, value) {
-        this._b = value;
-        return this;
-      }
-    }).volatile()
-  }).create({
-    _b: null
-  });
-
-  a.set('b', 'foo');
-  equal(a.get('b'), 'foo', 'should have set the correct value for property b');
-
-  a._b = 'bar';
-  a.notifyPropertyChange('b');
-  a.set('b', 'foo');
-  equal(a.get('b'), 'foo', 'should have invalidated the cache so that the newly set value is actually set');
+    a._b = 'bar';
+    a.notifyPropertyChange('b');
+    a.set('b', 'foo');
+    assert.equal(a.get('b'), 'foo', 'should have invalidated the cache so that the newly set value is actually set');
+  }
 });

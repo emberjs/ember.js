@@ -5,14 +5,21 @@ import { ENV } from 'ember-environment';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
 /**
+@module @ember/instrumentation
+@private
+*/
+
+/**
   The purpose of the Ember Instrumentation module is
   to provide efficient, general-purpose instrumentation
   for Ember.
 
-  Subscribe to a listener by using `Ember.subscribe`:
+  Subscribe to a listener by using `subscribe`:
 
   ```javascript
-  Ember.subscribe("render", {
+  import { subscribe } from '@ember/instrumentation';
+
+  subscribe("render", {
     before(name, timestamp, payload) {
 
     },
@@ -27,15 +34,17 @@ import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
   value will be passed as a fourth parameter to the `after`
   callback.
 
-  Instrument a block of code by using `Ember.instrument`:
+  Instrument a block of code by using `instrument`:
 
   ```javascript
-  Ember.instrument("render.handlebars", payload, function() {
+  import { instrument } from '@ember/instrumentation';
+
+  instrument("render.handlebars", payload, function() {
     // rendering logic
   }, binding);
   ```
 
-  Event names passed to `Ember.instrument` are namespaced
+  Event names passed to `instrument` are namespaced
   by periods, from more general to more specific. Subscribers
   can listen for events by whatever level of granularity they
   are interested in.
@@ -47,7 +56,6 @@ import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
   even `render.handlebars.layout`.
 
   @class Instrumentation
-  @namespace Ember
   @static
   @private
 */
@@ -82,8 +90,8 @@ const time = (() => {
   Notifies event's subscribers, calls `before` and `after` hooks.
 
   @method instrument
-  @namespace Ember.Instrumentation
-
+  @for @ember/instrumentation
+  @static
   @param {String} [name] Namespaced event name.
   @param {Object} _payload
   @param {Function} callback Function that you're instrumenting.
@@ -185,7 +193,8 @@ export function _instrumentStart(name, _payload, _payloadParam) {
   Subscribes to a particular event or instrumented block of code.
 
   @method subscribe
-  @namespace Ember.Instrumentation
+  @for @ember/instrumentation
+  @static
 
   @param {String} [pattern] Namespaced event name.
   @param {Object} [object] Before and After hooks.
@@ -226,7 +235,8 @@ export function subscribe(pattern, object) {
   Unsubscribes from a particular event or instrumented block of code.
 
   @method unsubscribe
-  @namespace Ember.Instrumentation
+  @for @ember/instrumentation
+  @static
 
   @param {Object} [subscriber]
   @private
@@ -245,10 +255,11 @@ export function unsubscribe(subscriber) {
 }
 
 /**
-  Resets `Ember.Instrumentation` by flushing list of subscribers.
+  Resets `Instrumentation` by flushing list of subscribers.
 
   @method reset
-  @namespace Ember.Instrumentation
+  @for @ember/instrumentation
+  @static
   @private
 */
 export function reset() {

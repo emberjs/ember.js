@@ -148,9 +148,9 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
       });
 
       this.subscribe('interaction.ember-action', {
-        before(name, timestamp, payload) {
+        before() {
         },
-        after(name, timestamp, payload) {
+        after() {
         }
       });
 
@@ -352,7 +352,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
 
     let OuterComponent = Component.extend({
       third,
-      outerSubmit(actualFirst, actualSecond, actualThird, actualFourth) {
+      outerSubmit(actualFirst, actualSecond, actualThird, actualFourth) { // eslint-disable-line no-unused-vars
         actualArgs = [...arguments];
       }
     });

@@ -4,7 +4,7 @@ import ContainerProxy from '../../mixins/container_proxy';
 import EmberObject from '../../system/object';
 
 QUnit.module('ember-runtime/mixins/container_proxy', {
-  setup() {
+  beforeEach() {
     this.Owner = EmberObject.extend(ContainerProxy);
     this.instance = this.Owner.create();
 
