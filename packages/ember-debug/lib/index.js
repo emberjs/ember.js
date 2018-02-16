@@ -1,6 +1,5 @@
 import { DEBUG } from 'ember-env-flags';
 import { ENV, environment } from 'ember-environment';
-import Logger from 'ember-console';
 import { isTesting } from './testing';
 import EmberError from './error';
 import { default as isFeatureEnabled } from './features';
@@ -117,8 +116,15 @@ if (DEBUG) {
     @public
   */
   setDebugFunction('debug', function debug(message) {
-    Logger.debug(`DEBUG: ${message}`);
+    /* eslint-disable no-console */
+    if (console.debug) {
+      console.debug(`DEBUG: ${message}`);
+    } else {
+      console.log(`DEBUG: ${message}`);
+    }
+    /* eslint-ensable no-console */  
   });
+
 
   /**
     Display an info notice.
@@ -129,8 +135,8 @@ if (DEBUG) {
     @method info
     @private
   */
-  setDebugFunction('info', function info() {
-    Logger.info.apply(undefined, arguments);
+  setDebugFunction('info', function info() {    
+    console.info(...arguments); /* eslint-disable-line no-console */
   });
 
   /**

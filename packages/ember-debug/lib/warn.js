@@ -1,7 +1,6 @@
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 
-import Logger from 'ember-console';
 import deprecate from './deprecate';
 import { assert } from './index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
@@ -51,10 +50,12 @@ if (DEBUG) {
   };
 
   registerHandler(function logWarning(message) {
-    Logger.warn(`WARNING: ${message}`);
-    if ('trace' in Logger) {
-      Logger.trace();
-    }
+    /* eslint-disable no-console */
+    console.warn(`WARNING: ${message}`); 
+    if (console.trace) {
+      console.trace();
+    } 
+    /* eslint-enable no-console */
   });
 
   missingOptionsDeprecation = 'When calling `warn` you ' +

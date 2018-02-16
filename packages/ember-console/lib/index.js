@@ -1,3 +1,10 @@
+import { deprecate } from 'ember-debug';
+
+// Deliver message that the function is deprecated
+
+const DEPRECATION_MESSAGE = 'Use of Ember.Logger is deprecated. Please use `console` for logging.';
+const DEPRECATION_ID = 'ember-console.deprecate-logger';
+const DEPRECATION_URL = 'https://emberjs.com/deprecations/v3.x#toc_use-console-rather-than-ember-logger';
 /**
    @module ember
 */
@@ -6,6 +13,8 @@
   Override this to provide more robust logging functionality.
 
   @class Logger
+  @deprecated Use 'console' instead
+
   @namespace Ember
   @public
 */
@@ -25,7 +34,10 @@ export default {
    @param {*} arguments
    @public
   */
-  log() { return console.log(...arguments);}, // eslint-disable-line no-console
+  log() { 
+    deprecate( DEPRECATION_MESSAGE, false, { id: DEPRECATION_ID, until: '4.0.0', url: DEPRECATION_URL } );
+    return console.log(...arguments); // eslint-disable-line no-console
+  },
 
   /**
    Prints the arguments to the console with a warning icon.
@@ -41,7 +53,10 @@ export default {
    @param {*} arguments
    @public
   */
-  warn() { return console.warn(...arguments);}, // eslint-disable-line no-console
+  warn() { 
+    deprecate( DEPRECATION_MESSAGE, false, { id: DEPRECATION_ID, until: '4.0.0', url: DEPRECATION_URL } );
+    return console.warn(...arguments); // eslint-disable-line no-console
+  },
 
   /**
    Prints the arguments to the console with an error icon, red text and a stack trace.
@@ -57,7 +72,10 @@ export default {
    @param {*} arguments
    @public
   */
-  error() { return console.error(...arguments);}, // eslint-disable-line no-console
+  error() { 
+    deprecate( DEPRECATION_MESSAGE, false, { id: DEPRECATION_ID, until: '4.0.0', url: DEPRECATION_URL } );
+    return console.error(...arguments); // eslint-disable-line no-console
+  },
 
   /**
    Logs the arguments to the console.
@@ -74,7 +92,10 @@ export default {
    @param {*} arguments
    @public
   */
-  info() { return console.info(...arguments);}, // eslint-disable-line no-console
+  info() { 
+    deprecate( DEPRECATION_MESSAGE, false, { id: DEPRECATION_ID, until: '4.0.0', url: DEPRECATION_URL } );
+    return console.info(...arguments); // eslint-disable-line no-console
+  },
 
   /**
    Logs the arguments to the console in blue text.
@@ -92,11 +113,11 @@ export default {
    @public
   */
   debug() {
+    deprecate( DEPRECATION_MESSAGE, false, { id: DEPRECATION_ID, until: '4.0.0', url: DEPRECATION_URL } );
     /* eslint-disable no-console */
     if (console.debug) {
       return console.debug(...arguments);
     }
-
     return console.info(...arguments);
     /* eslint-enable no-console */
   },
@@ -116,5 +137,8 @@ export default {
    @param {String} message Assertion message on failed
    @public
   */
-  assert() { return console.assert(...arguments);} // eslint-disable-line no-console
+  assert() { 
+    deprecate( DEPRECATION_MESSAGE, false, { id: DEPRECATION_ID, until: '4.0.0', url: DEPRECATION_URL } );
+    return console.assert(...arguments); // eslint-disable-line no-console
+  }
 };

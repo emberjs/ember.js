@@ -1,22 +1,24 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import Logger from 'ember-console';
 
 
 moduleFor('Helpers test: {{log}}', class extends RenderingTest {
 
   constructor() {
     super();
-
-    this.originalLog = Logger.log;
+    /* eslint-disable no-console */
+    this.originalLog = console.log;
     this.logCalls = [];
-    Logger.log = (...args) => {
+    console.log = (...args) => {
       this.logCalls.push(...args);
-    };
+    /* eslint-enable no-console */
+  };
   }
 
   teardown() {
     super.teardown();
-    Logger.log = this.originalLog;
+    /* eslint-disable no-console */
+    console.log = this.originalLog;
+    /* eslint-enable no-console */
   }
 
   assertLog(values) {

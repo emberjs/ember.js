@@ -8,8 +8,6 @@ import { InternalHelperReference } from '../utils/references';
 @module ember
 */
 
-import Logger from 'ember-console';
-
 /**
   `log` allows you to output the value of variables in the current rendering
   context. `log` also accepts primitive types such as strings or numbers.
@@ -24,8 +22,10 @@ import Logger from 'ember-console';
   @public
 */
 function log({ positional }: CapturedArguments) {
-  Logger.log.apply(null, positional.value());
-}
+    /* eslint-disable no-console */
+    console.log(...positional.value());
+    /* eslint-enable no-console */
+  }
 
 export default function(_vm: VM, args: Arguments) {
   return new InternalHelperReference(log, args.capture());

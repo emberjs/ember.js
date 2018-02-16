@@ -1,6 +1,6 @@
+/* eslint-disable no-console */
 import { getOwner } from 'ember-utils';
 import RSVP from 'rsvp';
-import Logger from 'ember-console';
 import { compile } from 'ember-template-compiler';
 import { ENV } from 'ember-environment';
 import {
@@ -29,6 +29,7 @@ import { Engine } from 'ember-application';
 import { Transition } from 'router';
 
 let originalRenderSupport;
+let originalConsoleError;
 
 moduleFor('Basic Routing - Decoupled from global resolver', class extends ApplicationTestCase {
   constructor() {
@@ -42,11 +43,13 @@ moduleFor('Basic Routing - Decoupled from global resolver', class extends Applic
     });
     originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
     ENV._ENABLE_RENDER_SUPPORT = true;
+    originalConsoleError = console.error;
   }
 
   teardown() {
     super.teardown();
     ENV._ENABLE_RENDER_SUPPORT = originalRenderSupport;
+    console.error = originalConsoleError;
   }
 
   getController(name) {
@@ -2696,7 +2699,7 @@ moduleFor('Basic Routing - Decoupled from global resolver', class extends Applic
       this.route('yippie', { path: '/' });
     });
 
-    Logger.error = function (initialMessage, errorMessage, errorStack) {
+    console.error = function (initialMessage, errorMessage, errorStack) {
       assert.equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
       assert.equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
       assert.equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
@@ -2725,7 +2728,7 @@ moduleFor('Basic Routing - Decoupled from global resolver', class extends Applic
       this.route('yippie', { path: '/' });
     });
 
-    Logger.error = function (initialMessage, errorMessage, errorStack) {
+    console.error = function (initialMessage, errorMessage, errorStack) {
       assert.equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
       assert.equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
       assert.equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
@@ -2751,7 +2754,7 @@ moduleFor('Basic Routing - Decoupled from global resolver', class extends Applic
       this.route('wowzers', { path: '/' });
     });
 
-    Logger.error = function(initialMessage) {
+    console.error = function(initialMessage) {
       assert.equal(initialMessage, 'Error while processing route: wowzers', 'a message with the current route name is printed');
     };
 
@@ -2766,14 +2769,13 @@ moduleFor('Basic Routing - Decoupled from global resolver', class extends Applic
 
   ['@test rejecting the model hooks promise with a string shows a good error'](assert) {
     assert.expect(3);
-    let originalLoggerError = Logger.error;
     let rejectedMessage = 'Supercalifragilisticexpialidocious';
 
     this.router.map(function() {
       this.route('yondo', { path: '/' });
     });
 
-    Logger.error = function(initialMessage, errorMessage) {
+    console.error = function(initialMessage, errorMessage) {
       assert.equal(initialMessage, 'Error while processing route: yondo', 'a message with the current route name is printed');
       assert.equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
     };
@@ -2785,8 +2787,6 @@ moduleFor('Basic Routing - Decoupled from global resolver', class extends Applic
     }));
 
     assert.throws(() => this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
-
-    Logger.error = originalLoggerError;
   }
 
   ['@test willLeave, willChangeContext, willChangeModel actions don\'t fire unless feature flag enabled'](assert) {
@@ -2832,7 +2832,7 @@ moduleFor('Basic Routing - Decoupled from global resolver', class extends Applic
       }
     }));
 
-    Logger.error = function() {
+    console.error = function() {
       // push the arguments onto an array so we can detect if the error gets logged twice
       actual.push(arguments);
     };

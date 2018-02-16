@@ -2,7 +2,6 @@ import {
   assign,
   getOwner
 } from 'ember-utils';
-import Logger from 'ember-console';
 import {
   get,
   set,
@@ -106,7 +105,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (DEBUG) {
       if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-        routerMicrolib.log = Logger.debug;
+        routerMicrolib.log = console.log.bind(console); // eslint-disable-line no-console
       }
     }
 
@@ -263,7 +262,8 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
-        Logger.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
+        // eslint-disable-next-line no-console 
+        console.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
       }
     }
   },
@@ -336,7 +336,8 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
-        Logger.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
+        // eslint-disable-next-line no-console 
+        console.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
       }
     }
   },
@@ -386,7 +387,8 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (DEBUG) {
       let infos = this._routerMicrolib.currentHandlerInfos;
       if (get(this, 'namespace').LOG_TRANSITIONS) {
-        Logger.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
+        // eslint-disable-next-line no-console 
+        console.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
       }
     }
   },
@@ -1180,7 +1182,7 @@ function logError(_error, initialMessage) {
     if (typeof error === 'string') { errorArgs.push(error); }
   }
 
-  Logger.error.apply(this, errorArgs);
+  console.error(...errorArgs); //eslint-disable-line no-console
 }
 
 /**

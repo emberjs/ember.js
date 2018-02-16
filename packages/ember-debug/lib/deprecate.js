@@ -2,7 +2,6 @@
 import { DEBUG } from 'ember-env-flags';
 
 import EmberError from './error';
-import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
 
@@ -74,8 +73,7 @@ if (DEBUG) {
 
   registerHandler(function logDeprecationToConsole(message, options) {
     let updatedMessage = formatMessage(message, options);
-
-    Logger.warn(`DEPRECATION: ${updatedMessage}`);
+    console.warn(`DEPRECATION: ${updatedMessage}`); // eslint-disable-line no-console
   });
 
   let captureErrorForStack;
@@ -112,8 +110,8 @@ if (DEBUG) {
 
       let updatedMessage = formatMessage(message, options);
 
-      Logger.warn(`DEPRECATION: ${updatedMessage}${stackStr}`);
-    } else {
+    console.warn(`DEPRECATION: ${updatedMessage}${stackStr}`); // eslint-disable-line no-console 
+  } else {
       next(...arguments);
     }
   });
