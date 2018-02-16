@@ -6,52 +6,52 @@ import { Modules } from './modules';
 import { ComponentDefinition } from '@glimmer/runtime';
 import { TestComponentDefinitionState } from "@glimmer/test-helpers";
 
-import { TemplateMeta } from '../../components';
+import { Locator } from '../../components';
 
 export type ComponentDefinitionWithCapabilities = ComponentDefinition<TestComponentDefinitionState>;
 
-export default class EagerCompilerDelegate implements CompilerDelegate<TemplateMeta> {
+export default class EagerCompilerDelegate implements CompilerDelegate<Locator> {
   constructor(
     private components: Dict<ComponentDefinitionWithCapabilities>,
     private modules: Modules,
   ) {}
 
-  hasComponentInScope(componentName: string, referrer: TemplateMeta): boolean {
+  hasComponentInScope(componentName: string, referrer: Locator): boolean {
     let name = this.modules.resolve(componentName, referrer, 'ui/components');
     return name ? this.modules.type(name) === 'component' : false;
   }
 
-  resolveComponent(componentName: string, referrer: TemplateMeta): ModuleLocator {
+  resolveComponent(componentName: string, referrer: Locator): ModuleLocator {
     return { module: this.modules.resolve(componentName, referrer, 'ui/components')!, name: 'default' };
   }
 
-  getComponentCapabilities(meta: TemplateMeta): ComponentCapabilities {
+  getComponentCapabilities(meta: Locator): ComponentCapabilities {
     return this.components[meta.locator.module].state.capabilities;
   }
 
-  hasHelperInScope(helperName: string, referrer: TemplateMeta): boolean {
+  hasHelperInScope(helperName: string, referrer: Locator): boolean {
     let name = this.modules.resolve(helperName, referrer);
     return name ? this.modules.type(name) === 'helper' : false;
   }
 
-  resolveHelper(helperName: string, referrer: TemplateMeta): ModuleLocator {
+  resolveHelper(helperName: string, referrer: Locator): ModuleLocator {
     let path = this.modules.resolve(helperName, referrer);
     return { module: path!, name: 'default' };
   }
 
-  hasModifierInScope(_modifierName: string, _referrer: TemplateMeta): boolean {
+  hasModifierInScope(_modifierName: string, _referrer: Locator): boolean {
     return false;
   }
 
-  resolveModifier(_modifierName: string, _referrer: TemplateMeta): ModuleLocator {
+  resolveModifier(_modifierName: string, _referrer: Locator): ModuleLocator {
     throw new Error("Method not implemented.");
   }
 
-  hasPartialInScope(_partialName: string, _referrer: TemplateMeta): boolean {
+  hasPartialInScope(_partialName: string, _referrer: Locator): boolean {
     return false;
   }
 
-  resolvePartial(_partialName: string, _referrer: TemplateMeta): ModuleLocator {
+  resolvePartial(_partialName: string, _referrer: Locator): ModuleLocator {
     throw new Error("Method not implemented.");
   }
 }

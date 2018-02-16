@@ -765,10 +765,10 @@ export const enum Op {
    * Operation: Curry a component definition for a later invocation.
    *
    * Format:
-   *   (CurryComponent templateMeta:#TemplateMeta)
+   *   (CurryComponent templateMeta:#Locator)
    * Operand Stack:
    *   ..., VersionedPathReference, [VersionedPathReference ...], Arguments →
-   *   ..., { VersionedPathReference, TemplateMeta, CapturedArguments }
+   *   ..., { VersionedPathReference, Locator, CapturedArguments }
    */
   CurryComponent,
 
@@ -814,7 +814,7 @@ export const enum Op {
    *   Push a resolved component definition onto the stack
    *
    * Format:
-   *   (ResolveDynamicComponent templateMeta:#TemplateMeta)
+   *   (ResolveDynamicComponent templateMeta:#Locator)
    * Operand Stack:
    *   ..., VersionedPathReference<Opaque> →
    *   ..., ComponentDefinition
@@ -1030,7 +1030,7 @@ export const enum Op {
    * Operation: Lookup and invoke a partial template.
    *
    * Format:
-   *   (InvokePartial templateMeta:#TemplateMeta symbols:#Array<#string> evalInfo:#Array<number>)
+   *   (InvokePartial templateMeta:#Locator symbols:#Array<#string> evalInfo:#Array<number>)
    * Operand Stack:
    *   ..., VersionedPathReference<string> →
    *   ...

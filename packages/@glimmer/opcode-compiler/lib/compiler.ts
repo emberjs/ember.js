@@ -3,13 +3,13 @@ import { Macros } from './syntax';
 import { compile } from './compile';
 import { debugSlice } from './debug';
 import { Compiler, Option, CompilableBlock, STDLib, CompileTimeConstants, CompileTimeLookup, CompileTimeProgram, LayoutWithContext, Opaque, CompilerBuffer, ResolvedLayout, MaybeResolvedLayout, CompilableProgram } from "@glimmer/interfaces";
-import { Statements, Core, Expression, Statement, TemplateMeta } from "@glimmer/wire-format";
+import { Statements, Core, Expression, Statement } from "@glimmer/wire-format";
 import { DEBUG } from "@glimmer/local-debug-flags";
 
-export abstract class AbstractCompiler<TemplateMeta, Builder extends OpcodeBuilder<TemplateMeta>> implements Compiler<Builder> {
+export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Locator>> implements Compiler<Builder> {
   protected abstract macros: Macros;
 
-  abstract resolver: CompileTimeLookup<TemplateMeta>;
+  abstract resolver: CompileTimeLookup<Locator>;
   protected abstract program: CompileTimeProgram;
   abstract constants: CompileTimeConstants;
   abstract stdLib: Option<STDLib>;
@@ -21,10 +21,10 @@ export abstract class AbstractCompiler<TemplateMeta, Builder extends OpcodeBuild
 
   compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: Builder): void {
     let { blocks } = this.macros;
-    blocks.compile<TemplateMeta>(name, params, hash, template, inverse, builder);
+    blocks.compile<Locator>(name, params, hash, template, inverse, builder);
   }
 
-  add(statements: Statement[], containingLayout: LayoutWithContext<TemplateMeta>): number {
+  add(statements: Statement[], containingLayout: LayoutWithContext<Locator>): number {
     return compile(statements, this.builderFor(containingLayout), this);
   }
 
@@ -49,7 +49,7 @@ export abstract class AbstractCompiler<TemplateMeta, Builder extends OpcodeBuild
     return handle;
   }
 
-  resolveLayoutForTag(tag: string, referrer: TemplateMeta): MaybeResolvedLayout {
+  resolveLayoutForTag(tag: string, referrer: Locator): MaybeResolvedLayout {
     let { resolver } = this;
 
     let handle = resolver.lookupComponentDefinition(tag, referrer);
@@ -77,11 +77,11 @@ export abstract class AbstractCompiler<TemplateMeta, Builder extends OpcodeBuild
     };
   }
 
-  resolveModifier(name: string, referrer: TemplateMeta): Option<number> {
+  resolveModifier(name: string, referrer: Locator): Option<number> {
     return this.resolver.lookupModifier(name, referrer);
   }
 
-  resolveHelper(name: string, referrer: TemplateMeta): Option<number> {
+  resolveHelper(name: string, referrer: Locator): Option<number> {
     return this.resolver.lookupHelper(name, referrer);
   }
 
@@ -100,4 +100,4 @@ if (DEBUG) {
   };
 }
 
-export type AnyAbstractCompiler = AbstractCompiler<TemplateMeta, OpcodeBuilder<TemplateMeta>>;
+export type AnyAbstractCompiler = AbstractCompiler<Opaque, OpcodeBuilder<Opaque>>;

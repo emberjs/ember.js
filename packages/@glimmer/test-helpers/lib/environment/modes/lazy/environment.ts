@@ -206,10 +206,10 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
     return handle === null ? null : this.resolver.resolve<ModifierManager>(handle);
   }
 
-  preprocess(template: string, meta?: TestMeta): Template<TemplateMeta> {
+  preprocess(template: string, meta?: TestMeta): Template<TestMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
-    return factory.create(this.compiler, (meta || {}) as any as TemplateMeta);
+    return factory.create(this.compiler, (meta || DEFAULT_TEST_META));
   }
 
   private registerComponent(name: string, type: ComponentKind, manager: ComponentManager<Opaque, Opaque>, layout: Option<number>, ComponentClass: Opaque, capabilities: ComponentCapabilities) {

@@ -11,7 +11,7 @@ import E = WireFormat.Expressions;
 import C = WireFormat.Core;
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
-export type CompilerFunction<T extends TupleSyntax, TemplateMeta> = ((sexp: T, builder: OpcodeBuilder<TemplateMeta>) => void);
+export type CompilerFunction<T extends TupleSyntax, Locator> = ((sexp: T, builder: OpcodeBuilder<Locator>) => void);
 
 export const ATTRS_BLOCK = '&attrs';
 
@@ -21,12 +21,12 @@ export class Compilers<T extends TupleSyntax> {
 
   constructor(private offset = 0) {}
 
-  add<TemplateMeta>(name: number, func: CompilerFunction<T, TemplateMeta>): void {
+  add<Locator>(name: number, func: CompilerFunction<T, Locator>): void {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  compile<TemplateMeta>(sexp: T, builder: OpcodeBuilder<TemplateMeta>): void {
+  compile<Locator>(sexp: T, builder: OpcodeBuilder<Locator>): void {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
@@ -229,7 +229,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   return STATEMENTS;
 }
 
-function dynamicAttr<TemplateMeta>(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder<TemplateMeta>) {
+function dynamicAttr<Locator>(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder<Locator>) {
   let [, name, value, namespace] = sexp;
 
   builder.expr(value);
@@ -347,24 +347,24 @@ export class Macros {
   }
 }
 
-export type BlockMacro<TemplateMeta> = (params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<TemplateMeta>) => void;
-export type MissingBlockMacro<TemplateMeta> = (name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<TemplateMeta>) => void;
+export type BlockMacro<Locator> = (params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>) => void;
+export type MissingBlockMacro<Locator> = (name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>) => void;
 
 export class Blocks {
   private names = dict<number>();
   private funcs: BlockMacro<Opaque>[] = [];
   private missing: MissingBlockMacro<Opaque>;
 
-  add<TemplateMeta>(name: string, func: BlockMacro<TemplateMeta>) {
+  add<Locator>(name: string, func: BlockMacro<Locator>) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing<TemplateMeta>(func: MissingBlockMacro<TemplateMeta>) {
+  addMissing<Locator>(func: MissingBlockMacro<Locator>) {
     this.missing = func;
   }
 
-  compile<TemplateMeta>(name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<TemplateMeta>): void {
+  compile<Locator>(name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>): void {
     let index = this.names[name];
 
     if (index === undefined) {
@@ -380,23 +380,23 @@ export class Blocks {
 }
 
 export type AppendSyntax = S.Append;
-export type AppendMacro<TemplateMeta> = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder<TemplateMeta>) => ['expr', WireFormat.Expression] | true | false;
+export type AppendMacro<Locator> = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder<Locator>) => ['expr', WireFormat.Expression] | true | false;
 
 export class Inlines {
   private names = dict<number>();
   private funcs: AppendMacro<Opaque>[] = [];
   private missing: AppendMacro<Opaque>;
 
-  add<TemplateMeta>(name: string, func: AppendMacro<TemplateMeta>) {
+  add<Locator>(name: string, func: AppendMacro<Locator>) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing<TemplateMeta>(func: AppendMacro<TemplateMeta>) {
+  addMissing<Locator>(func: AppendMacro<Locator>) {
     this.missing = func;
   }
 
-  compile<TemplateMeta>(sexp: AppendSyntax, builder: OpcodeBuilder<TemplateMeta>): ['expr', WireFormat.Expression] | true {
+  compile<Locator>(sexp: AppendSyntax, builder: OpcodeBuilder<Locator>): ['expr', WireFormat.Expression] | true {
     let value = sexp[1];
 
     // TODO: Fix this so that expression macros can return
@@ -776,17 +776,17 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
   return { blocks, inlines };
 }
 
-export interface TemplateOptions<TemplateMeta> {
+export interface TemplateOptions<Locator> {
   // already in compilation options
   program: CompileTimeProgram;
   macros: Macros;
 
   // a subset of the resolver w/ a couple of small tweaks
-  resolver: CompileTimeLookup<TemplateMeta>;
+  resolver: CompileTimeLookup<Locator>;
 }
 
-export interface CompileOptions<TemplateMeta, Builder = Opaque> {
+export interface CompileOptions<Locator, Builder = Opaque> {
   compiler: Compiler<Builder>;
   asPartial: boolean;
-  referrer: TemplateMeta;
+  referrer: Locator;
 }
