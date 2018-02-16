@@ -24,3 +24,7 @@ import './compat';
 
 // used to bootstrap templates
 import './system/bootstrap';
+
+// add domTemplates initializer (only does something if `ember-template-compiler`
+// is loaded already)
+import './system/initializer';
