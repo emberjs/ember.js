@@ -1,7 +1,7 @@
-import CompilerDelegate from './compiler-delegate';
+import CompilerDelegate from './delegate';
 import ExternalModuleTable from './external-module-table';
 import BundleCompiler from './bundle-compiler';
-import { ComponentCapabilities, CompilableProgram, CompileTimeLookup } from "@glimmer/interfaces";
+import { ComponentCapabilities, CompilableProgram, CompileTimeLookup, ModuleLocator } from "@glimmer/interfaces";
 import { expect, Option } from "@glimmer/util";
 
 /**
@@ -24,6 +24,20 @@ export default class BundleCompilerLookup<Locator> implements CompileTimeLookup<
 
   getTable(): ExternalModuleTable {
     return this.table;
+  }
+
+  getHandleByLocator(locator: ModuleLocator): number | undefined {
+    return this.table.vmHandleByModuleLocator.get(locator);
+  }
+
+  setHandleByLocator(locator: ModuleLocator, handle: number): void {
+    this.table.byVMHandle.set(handle, locator);
+    this.table.vmHandleByModuleLocator.set(locator, handle);
+
+    // We also make sure to assign a non-VM application handle to every
+    // top-level component as well, so any associated component classes appear
+    // in the module map.
+    this.table.handleForModuleLocator(locator);
   }
 
   getCapabilities(handle: number): ComponentCapabilities {

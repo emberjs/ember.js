@@ -5,7 +5,6 @@ import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import {
   ProgramSymbolTable,
   Recast,
-  VMHandle,
   Unique,
   ModuleLocator,
   TemplateLocator,
@@ -211,8 +210,8 @@ export default class BundleCompiler<Locator> {
     // If this locator already has an assigned VM handle, it means we've already
     // compiled it. We need to skip compiling it again and just return the same
     // VM handle.
-    let vmHandle = this.resolver.getTable().vmHandleByModuleLocator.get(locator);
-    if (vmHandle) return vmHandle;
+    let vmHandle = this.resolver.getHandleByLocator(locator);
+    if (vmHandle !== undefined) return vmHandle;
 
     // It's an error to try to compile a template that wasn't first added to the
     // bundle via the add() or addCompilableTemplate() methods.
@@ -226,16 +225,7 @@ export default class BundleCompiler<Locator> {
     vmHandle = compilableTemplate.compile();
 
     // Index the locator by VM handle and vice versa for easy lookups.
-    this.resolver.getTable().byVMHandle.set(vmHandle as Recast<VMHandle, number>, locator);
-    this.resolver.getTable().vmHandleByModuleLocator.set(locator, vmHandle as Recast<
-      VMHandle,
-      number
-    >);
-
-    // We also make sure to assign a non-VM application handle to every
-    // top-level component as well, so any associated component classes appear
-    // in the module map.
-    this.resolver.getTable().handleForModuleLocator(locator);
+    this.resolver.setHandleByLocator(locator, vmHandle);
 
     return vmHandle;
   }

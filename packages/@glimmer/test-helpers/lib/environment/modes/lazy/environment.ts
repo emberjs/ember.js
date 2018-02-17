@@ -26,7 +26,7 @@ import { TestDynamicScope } from "../../../environment";
 import TestEnvironment from '../../environment';
 import { ComponentKind } from '../../../render-test';
 
-import LazyCompileTimeLookup from './compiler-resolver';
+import LazyCompileTimeLookup from './lookup';
 import LazyRuntimeResolver from './runtime-resolver';
 
 import {
