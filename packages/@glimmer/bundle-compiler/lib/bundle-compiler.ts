@@ -5,25 +5,20 @@ import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import {
   ProgramSymbolTable,
   Recast,
-  STDLib,
   VMHandle,
   Unique,
   ModuleLocator,
   TemplateLocator,
   CompilableProgram,
   CompilableTemplate,
-  Opaque,
-  CompileTimeConstants,
   CompileTimeLookup,
-  LayoutWithContext,
-  CompileTimeProgram
+  LayoutWithContext
 } from "@glimmer/interfaces";
 import {
   CompilableProgram as CompilableProgramInstance,
   Macros,
   OpcodeBuilderConstructor,
   EagerOpcodeBuilder,
-  TemplateOptions,
   AbstractCompiler
 } from "@glimmer/opcode-compiler";
 import {
@@ -35,8 +30,8 @@ import {
 import ModuleLocatorMap from "./module-locator-map";
 import DebugConstants from "./debug-constants";
 import ExternalModuleTable from "./external-module-table";
-import CompilerDelegate from "./compiler-delegate";
-import CompilerResolver from "./compiler-resolver";
+import BundleCompilerDelegate from "./delegate";
+import BundleCompilerLookup from "./lookup";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -90,29 +85,15 @@ export interface PartialTemplateLocator<Locator> extends ModuleLocator {
 export { CompilableTemplate };
 
 export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcodeBuilder<Locator>> {
-  public stdLib: STDLib;
+  program: WriteOnlyProgram;
 
+  // FIXME
   constructor(
-    private options: TemplateOptions<Locator>
+    macros: Macros,
+    program: WriteOnlyProgram,
+    resolver: CompileTimeLookup<Locator>
   ) {
-    super();
-    this.initialize();
-  }
-
-  protected get macros(): Macros {
-    return this.options.macros;
-  }
-
-  get constants(): CompileTimeConstants {
-    return this.options.program.constants;
-  }
-
-  get resolver(): CompileTimeLookup<Opaque> {
-    return this.options.resolver;
-  }
-
-  get program(): CompileTimeProgram {
-    return this.options.program;
+    super(macros, program, resolver);
   }
 
   builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
@@ -139,29 +120,20 @@ export default class BundleCompiler<Locator> {
   public meta = new ModuleLocatorMap<Locator>();
   public compiler: EagerCompiler<Locator>;
 
-  protected delegate: CompilerDelegate<Locator>;
+  protected delegate: BundleCompilerDelegate<Locator>;
   protected macros: Macros;
   protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
-  protected program: WriteOnlyProgram;
-  protected templateOptions: TemplateOptions<Locator>;
-  protected resolver: CompileTimeLookup<Opaque>;
-  protected table = new ExternalModuleTable();
+  protected resolver: BundleCompilerLookup<Locator>;
 
-  constructor(delegate: CompilerDelegate<Locator>, options: BundleCompilerOptions = {}) {
+  constructor(delegate: BundleCompilerDelegate<Locator>, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
     let macros = this.macros = options.macros || new Macros();
 
-    let program = this.program =
-      options.program || new WriteOnlyProgram(new DebugConstants());
-
+    let program = options.program || new WriteOnlyProgram(new DebugConstants());
     this.plugins = options.plugins || [];
 
-    this.compiler = new EagerCompiler({
-      program,
-      macros,
-      resolver: this.compilerResolver()
-    });
+    this.compiler = new EagerCompiler(macros, program, this.compilerResolver());
   }
 
   /**
@@ -213,12 +185,13 @@ export default class BundleCompiler<Locator> {
       symbolTables.set(locator, template.symbolTable);
     });
 
-    let { heap, constants } = this.program;
+    let { heap, constants } = this.compiler.program;
+
     return {
       main: main as Recast<Unique<"Handle">, number>,
       heap: heap.capture() as SerializedHeap,
       pool: constants.toPool(),
-      table: this.table,
+      table: this.resolver.getTable(),
       symbolTables
     };
   }
@@ -235,7 +208,7 @@ export default class BundleCompiler<Locator> {
   compilerResolver(): CompileTimeLookup<Locator> {
     let resolver = this.resolver;
     if (!resolver) {
-      resolver = this.resolver = new CompilerResolver<Locator>(this.delegate, this.table, this);
+      resolver = this.resolver = new BundleCompilerLookup<Locator>(this.delegate, this);
     }
 
     return resolver;
@@ -249,7 +222,7 @@ export default class BundleCompiler<Locator> {
     // If this locator already has an assigned VM handle, it means we've already
     // compiled it. We need to skip compiling it again and just return the same
     // VM handle.
-    let vmHandle = this.table.vmHandleByModuleLocator.get(locator);
+    let vmHandle = this.resolver.getTable().vmHandleByModuleLocator.get(locator);
     if (vmHandle) return vmHandle;
 
     // It's an error to try to compile a template that wasn't first added to the
@@ -264,8 +237,8 @@ export default class BundleCompiler<Locator> {
     vmHandle = compilableTemplate.compile();
 
     // Index the locator by VM handle and vice versa for easy lookups.
-    this.table.byVMHandle.set(vmHandle as Recast<VMHandle, number>, locator);
-    this.table.vmHandleByModuleLocator.set(locator, vmHandle as Recast<
+    this.resolver.getTable().byVMHandle.set(vmHandle as Recast<VMHandle, number>, locator);
+    this.resolver.getTable().vmHandleByModuleLocator.set(locator, vmHandle as Recast<
       VMHandle,
       number
     >);
@@ -273,7 +246,7 @@ export default class BundleCompiler<Locator> {
     // We also make sure to assign a non-VM application handle to every
     // top-level component as well, so any associated component classes appear
     // in the module map.
-    this.table.handleForModuleLocator(locator);
+    this.resolver.getTable().handleForModuleLocator(locator);
 
     return vmHandle;
   }

@@ -26,7 +26,7 @@ import { ComponentCapabilities, ModuleLocator } from "@glimmer/interfaces";
  * uses this information to perform additional optimizations during the
  * compilation phase.
  */
-export default interface CompilerDelegate<Locator> {
+export default interface BundleCompilerDelegate<Locator> {
   /**
    * During compilation, the compiler will ask the delegate about each component
    * invocation found in the passed template. If the component exists in scope,
