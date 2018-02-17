@@ -841,6 +841,18 @@ export const enum Op {
   PushArgs,
 
   /**
+   * Operation: Push empty args onto the stack
+   *
+   * Format:
+   *   (EmptyArgs)
+   *
+   * OperandStack:
+   *   ... →
+   *   ..., Arguments
+   */
+  PushEmptyArgs,
+
+  /**
    * Operation: Pops Arguments from the stack and clears the next N args.
    *
    * Format:
