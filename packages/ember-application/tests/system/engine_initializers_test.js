@@ -20,7 +20,7 @@ moduleFor('Engine initializers', class extends TestCase {
     });
   }
 
-  ['initializers require proper \'name\' and \'initialize\' properties']() {
+  ['@test initializers require proper \'name\' and \'initialize\' properties']() {
     MyEngine = Engine.extend();
 
     expectAssertion(() => {
@@ -36,7 +36,7 @@ moduleFor('Engine initializers', class extends TestCase {
     });
   }
 
-  ['initializers are passed an Engine'](assert) {
+  ['@test initializers are passed an Engine'](assert) {
     MyEngine = Engine.extend();
 
     MyEngine.initializer({
@@ -50,7 +50,7 @@ moduleFor('Engine initializers', class extends TestCase {
     myEngineInstance = myEngine.buildInstance();
   }
 
-  ['initializers can be registered in a specified order'](assert) {
+  ['@test initializers can be registered in a specified order'](assert) {
     let order = [];
 
     MyEngine = Engine.extend();
@@ -108,7 +108,7 @@ moduleFor('Engine initializers', class extends TestCase {
     assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
   }
 
-  ['initializers can be registered in a specified order as an array'](assert) {
+  ['@test initializers can be registered in a specified order as an array'](assert) {
     let order = [];
 
     MyEngine = Engine.extend();
@@ -167,7 +167,7 @@ moduleFor('Engine initializers', class extends TestCase {
     assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
   }
 
-  ['initializers can have multiple dependencies'](assert) {
+  ['@test initializers can have multiple dependencies'](assert) {
     let order = [];
 
     MyEngine = Engine.extend();
@@ -222,7 +222,7 @@ moduleFor('Engine initializers', class extends TestCase {
     assert.ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
   }
 
-  ['initializers set on Engine subclasses are not shared between engines'](assert) {
+  ['@test initializers set on Engine subclasses are not shared between engines'](assert) {
     let firstInitializerRunCount = 0;
     let secondInitializerRunCount = 0;
     let FirstEngine = Engine.extend();
@@ -264,7 +264,7 @@ moduleFor('Engine initializers', class extends TestCase {
     });
   }
 
-  ['initializers are concatenated'](assert) {
+  ['@test initializers are concatenated'](assert) {
     let firstInitializerRunCount = 0;
     let secondInitializerRunCount = 0;
     let FirstEngine = Engine.extend();
@@ -307,7 +307,7 @@ moduleFor('Engine initializers', class extends TestCase {
     });
   }
 
-  ['initializers are per-engine'](assert) {
+  ['@test initializers are per-engine'](assert) {
     assert.expect(2);
 
     let FirstEngine = Engine.extend();
@@ -333,7 +333,7 @@ moduleFor('Engine initializers', class extends TestCase {
     assert.ok(true, 'Two engines can have initializers named the same.');
   }
 
-  ['initializers are executed in their own context'](assert) {
+  ['@test initializers are executed in their own context'](assert) {
     assert.expect(1);
 
     MyEngine = Engine.extend();

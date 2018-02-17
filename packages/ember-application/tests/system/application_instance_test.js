@@ -2,7 +2,6 @@ import Engine from '../../system/engine';
 import Application from '../../system/application';
 import ApplicationInstance from '../../system/application-instance';
 import { run } from 'ember-metal';
-import { jQuery } from 'ember-views';
 import { privatize as P } from 'container';
 import { factory } from 'internal-test-helpers';
 import { Object as EmberObject } from 'ember-runtime';
@@ -17,13 +16,13 @@ moduleFor('ApplicationInstance', class extends TestCase {
   constructor() {
     super();
 
-    jQuery('#qunit-fixture').html('<div id=\'one\'><div id=\'one-child\'>HI</div></div><div id=\'two\'>HI</div>');
+    document.getElementById('qunit-fixture').innerHTML = `
+      <div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>
+    `;
     application = run(() => Application.create({ rootElement: '#one', router: null }));
   }
 
   teardown() {
-    jQuery('#qunit-fixture').empty();
-
     if (appInstance) {
       run(appInstance, 'destroy');
     }
@@ -31,16 +30,18 @@ moduleFor('ApplicationInstance', class extends TestCase {
     if (application) {
       run(application, 'destroy');
     }
+
+    document.getElementById('qunit-fixture').innerHTML = '';
   }
 
-  ['an application instance can be created based upon an application'](assert) {
-    appInstance = run(() => appInstance = ApplicationInstance.create({ application }));
+  ['@test an application instance can be created based upon an application'](assert) {
+    appInstance = run(() => ApplicationInstance.create({ application }));
 
     assert.ok(appInstance, 'instance should be created');
     assert.equal(appInstance.application, application, 'application should be set to parent');
   }
 
-  ['customEvents added to the application before setupEventDispatcher'](assert) {
+  ['@test customEvents added to the application before setupEventDispatcher'](assert) {
     assert.expect(1);
 
     appInstance = run(() => ApplicationInstance.create({ application }));
@@ -58,10 +59,10 @@ moduleFor('ApplicationInstance', class extends TestCase {
     appInstance.setupEventDispatcher();
   }
 
-  ['customEvents added to the application before setupEventDispatcher'](assert) {
+  ['@test customEvents added to the application before setupEventDispatcher'](assert) {
     assert.expect(1);
 
-    run(() => appInstance = ApplicationInstance.create({ application }));
+    appInstance = run(() => ApplicationInstance.create({ application }));
     appInstance.setupRegistry();
 
     application.customEvents = {
@@ -76,7 +77,7 @@ moduleFor('ApplicationInstance', class extends TestCase {
     appInstance.setupEventDispatcher();
   }
 
-  ['customEvents added to the application instance before setupEventDispatcher'](assert) {
+  ['@test customEvents added to the application instance before setupEventDispatcher'](assert) {
     assert.expect(1);
 
     appInstance = run(() => ApplicationInstance.create({ application }));
@@ -94,7 +95,7 @@ moduleFor('ApplicationInstance', class extends TestCase {
     appInstance.setupEventDispatcher();
   }
 
-  ['unregistering a factory clears all cached instances of that factory'](assert) {
+  ['@test unregistering a factory clears all cached instances of that factory'](assert) {
     assert.expect(5);
 
     appInstance = run(() => ApplicationInstance.create({ application }));
@@ -120,7 +121,7 @@ moduleFor('ApplicationInstance', class extends TestCase {
     assert.notStrictEqual(postController1, postController2, 'lookup creates a brand new instance, because the previous one was reset');
   }
 
-  ['can build and boot a registered engine'](assert) {
+  ['@test can build and boot a registered engine'](assert) {
     assert.expect(11);
 
     let ChatEngine = Engine.extend();
@@ -172,7 +173,7 @@ moduleFor('ApplicationInstance', class extends TestCase {
       });
   }
 
-  ['can build a registry via ApplicationInstance.setupRegistry() -- simulates ember-test-helpers'](assert) {
+  ['@test can build a registry via ApplicationInstance.setupRegistry() -- simulates ember-test-helpers'](assert) {
     let namespace = EmberObject.create({
       Resolver: { create: function() { } }
     });
