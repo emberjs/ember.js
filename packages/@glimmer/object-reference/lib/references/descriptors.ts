@@ -28,15 +28,13 @@ export function ComputedReferenceBlueprint<T>(_property: any, dependencies: any)
     private object: any;
     private property: string;
     private dependencies: string[][];
-    private outer: NotifiableReference<T>;
     private installed = false;
     public tag: Tag = VOLATILE_TAG;
 
-    constructor(object: any, property: string, outer: NotifiableReference<T>) {
+    constructor(object: any, property: string) {
       this.object = object;
       this.property = property;
       this.dependencies = dependencies;
-      this.outer = outer;
     }
 
     value(): T {
