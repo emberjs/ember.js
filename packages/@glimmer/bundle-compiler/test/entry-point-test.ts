@@ -45,7 +45,7 @@ class TestCompilerDelegate implements CompilerDelegate<{}> {
 }
 
 class SimpleResolver implements RuntimeResolver<{}> {
-  lookupComponent(): never {
+  lookupComponentDefinition(): never {
     throw new Error("Method not implemented.");
   }
 

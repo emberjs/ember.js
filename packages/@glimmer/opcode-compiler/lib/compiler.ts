@@ -6,24 +6,44 @@ import { Compiler, Option, CompilableBlock, STDLib, CompileTimeConstants, Compil
 import { Statements, Core, Expression, Statement } from "@glimmer/wire-format";
 import { DEBUG } from "@glimmer/local-debug-flags";
 
-export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Locator>> implements Compiler<Builder> {
-  protected abstract macros: Macros;
+class StdLib {
+  static compile(compiler: Compiler): StdLib {
+    let main = this.std(compiler, b => b.main());
+    let trustingGuardedAppend = this.std(compiler, b => b.stdAppend(true));
+    let cautiousGuardedAppend = this.std(compiler, b => b.stdAppend(false));
 
-  abstract resolver: CompileTimeLookup<Locator>;
-  protected abstract program: CompileTimeProgram;
-  abstract constants: CompileTimeConstants;
-  abstract stdLib: Option<STDLib>;
-
-  initialize() {
-    let main = this.std(b => b.main());
-    let trustingGuardedAppend = this.std(b => b.stdAppend(true));
-    let cautiousGuardedAppend = this.std(b => b.stdAppend(false));
-
-    this.stdLib = { main, trustingGuardedAppend, cautiousGuardedAppend };
+    return new StdLib(main, trustingGuardedAppend, cautiousGuardedAppend);
   }
 
-  private std(callback: (builder: StdOpcodeBuilder) => void): number {
-    return StdOpcodeBuilder.build(this, callback);
+  private static std(compiler: Compiler, callback: (builder: StdOpcodeBuilder) => void): number {
+    return StdOpcodeBuilder.build(compiler, callback);
+  }
+
+  constructor(public main: number, private trustingGuardedAppend: number, private cautiousGuardedAppend: number) {}
+
+  getAppend(trusting: boolean) {
+    return trusting ? this.trustingGuardedAppend : this.cautiousGuardedAppend;
+  }
+
+}
+
+export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Locator>> implements Compiler<Builder> {
+  stdLib: STDLib;
+
+  constructor(
+    public readonly macros: Macros,
+    public readonly program: CompileTimeProgram,
+    public readonly resolver: CompileTimeLookup<Locator>
+  ) {
+    this.initialize();
+  }
+
+  initialize() {
+    this.stdLib = StdLib.compile(this);
+  }
+
+  get constants(): CompileTimeConstants {
+    return this.program.constants;
   }
 
   compileInline(sexp: Statements.Append, builder: Builder): ['expr', Expression] | true {

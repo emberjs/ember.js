@@ -571,7 +571,7 @@ export type VMHandlePlaceholder = [number, () => VMHandle];
 
 export abstract class OpcodeBuilder<Locator> extends StdOpcodeBuilder {
   public constants: CompileTimeConstants;
-  public stdLib: Option<STDLib>;
+  public stdLib: STDLib;
   public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
 
   private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
@@ -834,12 +834,8 @@ export abstract class OpcodeBuilder<Locator> extends StdOpcodeBuilder {
 
     this.expr(expression);
 
-    if (this.stdLib) {
-      this.primitive(trusting ? this.stdLib.trustingGuardedAppend : this.stdLib.cautiousGuardedAppend as Recast<VMHandle, number>);
-      this.invokeVirtual();
-    } else {
-      this.stdAppend(trusting);
-    }
+    this.primitive(this.stdLib.getAppend(trusting));
+    this.invokeVirtual();
 
     this.label('END');
 

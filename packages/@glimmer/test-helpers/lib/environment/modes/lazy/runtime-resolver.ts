@@ -50,7 +50,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
     return this.lookup('modifier', name, referrer);
   }
 
-  lookupComponent(name: string, referrer?: {}): Option<ComponentDefinition> {
+  lookupComponentDefinition(name: string, referrer?: {}): Option<ComponentDefinition> {
     let handle = this.lookupComponentHandle(name, referrer);
     if (handle === null) return null;
     return this.resolve(handle) as ComponentDefinition;

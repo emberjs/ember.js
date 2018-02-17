@@ -21,7 +21,7 @@ export default class EagerRuntimeResolver implements RuntimeResolver<Locator> {
     throw new Error("Method not implemented.");
   }
 
-  lookupComponent(name: string, referrer: Locator): Option<ComponentDefinition> {
+  lookupComponentDefinition(name: string, referrer: Locator): Option<ComponentDefinition> {
     let moduleName = this.modules.resolve(name, referrer, 'ui/components');
 
     if (!moduleName) return null;

@@ -26,7 +26,7 @@ import { TestDynamicScope } from "../../../environment";
 import TestEnvironment from '../../environment';
 import { ComponentKind } from '../../../render-test';
 
-import LazyCompilerResolver from './compiler-resolver';
+import LazyCompileTimeLookup from './compiler-resolver';
 import LazyRuntimeResolver from './runtime-resolver';
 
 import {
@@ -90,11 +90,11 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
   constructor(options?: TestEnvironmentOptions) {
     super(testOptions(options));
 
-    this.compiler = LazyCompiler.default<TestMeta>({
-      lookup: new LazyCompilerResolver(this.resolver),
-      resolver: this.resolver,
-      macros: new TestMacros()
-    });
+    this.compiler = new LazyCompiler<TestMeta>(
+      new LazyCompileTimeLookup(this.resolver),
+      this.resolver,
+      new TestMacros()
+    );
 
     this.program = this.compiler.program;
 

@@ -1,7 +1,7 @@
 import { LazyOpcodeBuilder } from './opcode-builder';
 import { Macros } from './syntax';
 import { AbstractCompiler } from './compiler';
-import { Opaque, RuntimeResolver, Compiler, CompileTimeLookup, LayoutWithContext, CompileTimeConstants, STDLib } from "@glimmer/interfaces";
+import { RuntimeResolver, Compiler, CompileTimeLookup, LayoutWithContext } from "@glimmer/interfaces";
 import { Program, LazyConstants } from "@glimmer/program";
 
 export interface LazyCompilerOptions<Locator> {
@@ -12,41 +12,13 @@ export interface LazyCompilerOptions<Locator> {
 }
 
 export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeBuilder<Locator>> implements Compiler<LazyOpcodeBuilder<Locator>> {
-  static default<Locator>({ lookup, resolver, macros }: Pick<LazyCompilerOptions<Locator>, 'lookup' | 'resolver' | 'macros'>): LazyCompiler<Locator> {
+  program: Program<Locator>;
+
+  constructor(lookup: CompileTimeLookup<Locator>, resolver: RuntimeResolver<Locator>, macros: Macros) {
     let constants = new LazyConstants(resolver);
-    let program = new Program(constants);
+    let program = new Program<Locator>(constants);
 
-    let compiler = new LazyCompiler<Locator>({
-      lookup,
-      resolver,
-      program,
-      macros
-    });
-
-    return compiler;
-  }
-
-  public stdLib: STDLib;
-
-  private constructor(private options: LazyCompilerOptions<Locator>) {
-    super();
-    this.initialize();
-  }
-
-  protected get macros(): Macros {
-    return this.options.macros;
-  }
-
-  get program(): Program<Opaque> {
-    return this.options.program;
-  }
-
-  get constants(): CompileTimeConstants {
-    return this.options.program.constants;
-  }
-
-  get resolver(): CompileTimeLookup<Opaque> {
-    return this.options.lookup;
+    super(macros, program, lookup);
   }
 
   builderFor(containingLayout: LayoutWithContext<Locator>): LazyOpcodeBuilder<Locator> {
