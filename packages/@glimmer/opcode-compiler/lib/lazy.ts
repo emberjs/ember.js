@@ -14,6 +14,7 @@ export interface LazyCompilerOptions<Locator> {
 export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeBuilder<Locator>> implements Compiler<LazyOpcodeBuilder<Locator>> {
   program: Program<Locator>;
 
+  // FIXME: turn to static method
   constructor(lookup: CompileTimeLookup<Locator>, resolver: RuntimeResolver<Locator>, macros: Macros) {
     let constants = new LazyConstants(resolver);
     let program = new Program<Locator>(constants);
