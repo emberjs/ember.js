@@ -2,7 +2,7 @@ import { Opaque, SymbolTable, RuntimeResolver, CompileTimeConstants } from "@gli
 
 const UNRESOLVED = {};
 
-const WELL_KNOWN_EMPTY_ARRAY_POSITION = 0;
+export const WELL_KNOWN_EMPTY_ARRAY_POSITION = 0;
 const WELL_KNOW_EMPTY_ARRAY = Object.freeze([]);
 export type EMPTY_ARRAY = Array<ReadonlyArray<never>>;
 

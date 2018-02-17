@@ -21,7 +21,7 @@ export {
   EagerOpcodeBuilder,
   OpcodeBuilder,
   OpcodeBuilderConstructor,
-  SimpleOpcodeBuilder,
+  StdOpcodeBuilder,
 } from './lib/opcode-builder';
 
 export { PartialDefinition } from './lib/partial-template';

@@ -24,7 +24,6 @@ import {
   OpcodeBuilderConstructor,
   EagerOpcodeBuilder,
   TemplateOptions,
-  SimpleOpcodeBuilder,
   AbstractCompiler
 } from "@glimmer/opcode-compiler";
 import {
@@ -94,29 +93,10 @@ export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcod
   public stdLib: STDLib;
 
   constructor(
-    private options: TemplateOptions<Locator>,
-    private plugins: ASTPluginBuilder[]
+    private options: TemplateOptions<Locator>
   ) {
     super();
     this.initialize();
-  }
-
-  private initialize() {
-    let builder = new SimpleOpcodeBuilder(this, 0);
-    builder.main();
-    let main = builder.commit();
-    let locator = normalizeLocator({ module: '__std__', name: '<unreachable>' });
-    let block = this.preprocess(null, '');
-
-    let eagerBuilder1 = new EagerOpcodeBuilder(this, { block, referrer: locator.meta, asPartial: false });
-    eagerBuilder1.stdAppend(true);
-    let trustingGuardedAppend = eagerBuilder1.commit();
-
-    let eagerBuilder2 = new EagerOpcodeBuilder(this, { block, referrer: locator.meta, asPartial: false });
-    eagerBuilder2.stdAppend(false);
-    let cautiousGuardedAppend = eagerBuilder2.commit();
-
-    this.stdLib = { main, trustingGuardedAppend, cautiousGuardedAppend };
   }
 
   protected get macros(): Macros {
@@ -137,15 +117,6 @@ export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcod
 
   builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
     return new EagerOpcodeBuilder(this, containingLayout);
-  }
-
-  private preprocess(
-    meta: Opaque,
-    input: string
-  ): SerializedTemplateBlock {
-    let ast = preprocess(input, { plugins: { ast: this.plugins } });
-    let template = TemplateCompiler.compile({ meta }, ast);
-    return template.toJSON();
   }
 }
 
@@ -184,13 +155,13 @@ export default class BundleCompiler<Locator> {
     let program = this.program =
       options.program || new WriteOnlyProgram(new DebugConstants());
 
-      let plugins = this.plugins = options.plugins || [];
+    this.plugins = options.plugins || [];
 
     this.compiler = new EagerCompiler({
       program,
       macros,
       resolver: this.compilerResolver()
-    }, plugins);
+    });
   }
 
   /**

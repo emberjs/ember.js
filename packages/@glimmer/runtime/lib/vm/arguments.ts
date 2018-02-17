@@ -89,6 +89,16 @@ export class Arguments implements IArguments {
   public named = new NamedArguments();
   public blocks = new BlockArguments();
 
+  empty(stack: EvaluationStack): this {
+    let base  = stack.sp + 1;
+
+    this.named.empty(stack, base);
+    this.positional.empty(stack, base);
+    this.blocks.empty(stack, base);
+
+    return this;
+  }
+
   setup(stack: EvaluationStack, names: string[], blockNames: string[], positionalCount: number, synthetic: boolean) {
     this.stack = stack;
 
@@ -175,6 +185,15 @@ export class PositionalArguments implements IPositionalArguments {
 
   private _tag: Option<Tag> = null;
   private _references: Option<VersionedPathReference<Opaque>[]> = null;
+
+  empty(stack: EvaluationStack, base: number) {
+    this.stack = stack;
+    this.base = base;
+    this.length = 0;
+
+    this._tag = CONSTANT_TAG;
+    this._references = EMPTY_ARRAY;
+  }
 
   setup(stack: EvaluationStack, base: number, length: number) {
     this.stack = stack;
@@ -294,6 +313,16 @@ export class NamedArguments implements INamedArguments {
 
   private _names: Option<string[]> = EMPTY_ARRAY;
   private _atNames: Option<string[]> = EMPTY_ARRAY;
+
+  empty(stack: EvaluationStack, base: number) {
+    this.stack = stack;
+    this.base = base;
+    this.length = 0;
+
+    this._references = EMPTY_ARRAY;
+    this._names = EMPTY_ARRAY;
+    this._atNames = EMPTY_ARRAY;
+  }
 
   setup(stack: EvaluationStack, base: number, length: number, names: string[], synthetic: boolean) {
     this.stack = stack;
@@ -478,6 +507,16 @@ export class BlockArguments implements IBlockArguments {
 
   public length = 0;
   public base = 0;
+
+  empty(stack: EvaluationStack, base: number) {
+    this.stack = stack;
+    this.names = EMPTY_ARRAY;
+    this.base = base;
+    this.length = 0;
+
+    this.internalTag = CONSTANT_TAG;
+    this.internalValues = EMPTY_ARRAY;
+  }
 
   setup(stack: EvaluationStack, base: number, length: number, names: string[]) {
     this.stack = stack;

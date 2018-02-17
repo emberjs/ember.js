@@ -225,6 +225,12 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
   stack.push(ARGS);
 });
 
+APPEND_OPCODES.add(Op.PushEmptyArgs, vm => {
+  let { stack } = vm;
+
+  stack.push(ARGS.empty(stack));
+});
+
 APPEND_OPCODES.add(Op.CaptureArgs, vm => {
   let stack = vm.stack;
 
