@@ -27,12 +27,12 @@ class StdLib {
 
 }
 
-export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Locator>> implements Compiler<Builder> {
+export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Locator>, Program extends CompileTimeProgram = CompileTimeProgram> implements Compiler<Builder> {
   stdLib: STDLib;
 
   constructor(
     public readonly macros: Macros,
-    public readonly program: CompileTimeProgram,
+    public readonly program: Program,
     public readonly resolver: CompileTimeLookup<Locator>
   ) {
     this.initialize();
