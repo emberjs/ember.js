@@ -84,18 +84,7 @@ export interface PartialTemplateLocator<Locator> extends ModuleLocator {
 // to make --declaration happy
 export { CompilableTemplate };
 
-export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcodeBuilder<Locator>> {
-  program: WriteOnlyProgram;
-
-  // FIXME
-  constructor(
-    macros: Macros,
-    program: WriteOnlyProgram,
-    resolver: CompileTimeLookup<Locator>
-  ) {
-    super(macros, program, resolver);
-  }
-
+export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcodeBuilder<Locator>, WriteOnlyProgram> {
   builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
     return new EagerOpcodeBuilder(this, containingLayout);
   }
