@@ -17,8 +17,14 @@ import { expect, Option } from "@glimmer/util";
  * helper and ensuring that any future calls to `lookupHelper` that refer to the
  * same helper return the same handle.
  */
-export default class CompilerResolver<Locator> implements CompileTimeLookup<Locator> {
-  constructor(private delegate: CompilerDelegate<Locator>, private table: ExternalModuleTable, private compiler: BundleCompiler<Locator>) { }
+export default class BundleCompilerLookup<Locator> implements CompileTimeLookup<Locator> {
+  private table = new ExternalModuleTable();
+
+  constructor(private delegate: CompilerDelegate<Locator>, private compiler: BundleCompiler<Locator>) { }
+
+  getTable(): ExternalModuleTable {
+    return this.table;
+  }
 
   getCapabilities(handle: number): ComponentCapabilities {
     let locator = expect(this.table.byHandle.get(handle), `BUG: Shouldn't call getCapabilities if a handle has no associated locator`);

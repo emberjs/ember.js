@@ -5,7 +5,7 @@ import { ComponentDefinition, WithStaticLayout } from '@glimmer/runtime';
 import { TestMeta} from './environment';
 import RuntimeResolver from './runtime-resolver';
 
-export default class LazyCompilerResolver implements CompileTimeLookup<TestMeta> {
+export default class LazyCompileTimeLookup implements CompileTimeLookup<TestMeta> {
   constructor(private resolver: RuntimeResolver) {
   }
 

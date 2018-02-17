@@ -3,8 +3,7 @@ export * from './lib/interfaces';
 export {
   ATTRS_BLOCK,
   CompileOptions,
-  Macros,
-  TemplateOptions
+  Macros
 } from './lib/syntax';
 
 export * from './lib/lazy';
