@@ -336,6 +336,11 @@ OPCODE_METADATA(Op.PushArgs, {
   stackChange: 1
 });
 
+OPCODE_METADATA(Op.PushEmptyArgs, {
+  name: 'PushEmptyArgs',
+  stackChange: 1
+});
+
 OPCODE_METADATA(Op.PrepareArgs, {
   name: 'PrepareArgs',
   ops: [Register('state')],

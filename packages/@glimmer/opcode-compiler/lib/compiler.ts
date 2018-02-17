@@ -1,4 +1,4 @@
-import { OpcodeBuilder } from './opcode-builder';
+import { OpcodeBuilder, StdOpcodeBuilder } from './opcode-builder';
 import { Macros } from './syntax';
 import { compile } from './compile';
 import { debugSlice } from './debug';
@@ -13,6 +13,18 @@ export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Lo
   protected abstract program: CompileTimeProgram;
   abstract constants: CompileTimeConstants;
   abstract stdLib: Option<STDLib>;
+
+  initialize() {
+    let main = this.std(b => b.main());
+    let trustingGuardedAppend = this.std(b => b.stdAppend(true));
+    let cautiousGuardedAppend = this.std(b => b.stdAppend(false));
+
+    this.stdLib = { main, trustingGuardedAppend, cautiousGuardedAppend };
+  }
+
+  private std(callback: (builder: StdOpcodeBuilder) => void): number {
+    return StdOpcodeBuilder.build(this, callback);
+  }
 
   compileInline(sexp: Statements.Append, builder: Builder): ['expr', Expression] | true {
     let { inlines } = this.macros;
