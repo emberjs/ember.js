@@ -2777,39 +2777,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /didInitAttrs called/);
   }
 
-  // This test is a replication of the "component unit tests" scenario. When we deprecate
-  // and remove them, this test could be removed as well. This is not fully/intentionally
-  // supported, and it is unclear that this particular behavior is actually relied on.
-  // Since there is no real "invocation" here, it has other issues and inconsistencies,
-  // like there is no real "attrs" here, and there is no "update" pass.
-  ['@test didReceiveAttrs fires even if component is not rendered'](assert) {
-    let didReceiveAttrsCount = 0;
-
-    this.registerComponent('foo-bar', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          this.didInit = true;
-        },
-
-        didReceiveAttrs() {
-          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-          didReceiveAttrsCount++;
-        },
-
-        willRender() {
-          throw new Error('Unexpected render!');
-        }
-      })
-    });
-
-    assert.strictEqual(didReceiveAttrsCount, 0, 'precond: didReceiveAttrs is not fired');
-
-    this.runTask(() => this.component = this.owner.lookup('component:foo-bar'));
-
-    assert.strictEqual(didReceiveAttrsCount, 1, 'precond: didReceiveAttrs is fired');
-  }
-
   ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
     let barCopyDidChangeCount = 0;
 
@@ -2835,13 +2802,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('3-4');
 
-    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
+    assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
 
     this.runTask(() => set(this.context, 'bar', 7));
 
     this.assertText('7-8');
 
-    assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
+    assert.strictEqual(barCopyDidChangeCount, 2, 'expected observer firing for: barCopy');
   }
 
   ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
@@ -3119,6 +3086,24 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.render('{{foo-bar "foo" "bar" "baz"}}');
 
     this.assertText('3');
+  }
+
+  ['@test has attrs by didReceiveAttrs with native classes'](assert) {
+    class FooBarComponent extends Component {
+      constructor(injections) {
+        super(injections);
+        // analagous to class field defaults
+        this.foo = 'bar';
+      }
+
+      didReceiveAttrs() {
+        assert.equal(this.foo, 'bar', 'received default attrs correctly');
+      }
+    }
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
   }
 });
 
