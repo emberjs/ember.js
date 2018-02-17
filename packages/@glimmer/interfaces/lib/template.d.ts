@@ -6,11 +6,12 @@ import {
 } from './tier1/symbol-table';
 import ComponentCapabilities from './component-capabilities';
 import { CompileTimeConstants } from './program';
+import { ComponentDefinition } from './components';
+import { CompilableProgram } from './serialize';
 import { Statement, SerializedTemplateBlock, Statements, Expression, Core, SerializedInlineBlock } from "@glimmer/wire-format";
 import { CompileTimeProgram } from "@glimmer/interfaces";
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
-export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
 
 export interface LayoutWithContext<Locator = Opaque> {
   id?: Option<string>;
@@ -54,22 +55,7 @@ export interface Template<Locator = Opaque> {
 
 export interface STDLib {
   main: number;
-  trustingGuardedAppend: number;
-  cautiousGuardedAppend: number;
-}
-
-export interface CompileTimeLookup<Locator> {
-  getCapabilities(handle: number): ComponentCapabilities;
-  getLayout(handle: number): Option<CompilableProgram>;
-
-  // This interface produces module locators (and indicates if a name is present), but does not
-  // produce any actual objects. The main use-case for producing objects is handled above,
-  // with getCapabilities and getLayout, which drastically shrinks the size of the object
-  // that the core interface is forced to reify.
-  lookupHelper(name: string, referrer: Locator): Option<number>;
-  lookupModifier(name: string, referrer: Locator): Option<number>;
-  lookupComponentDefinition(name: string, referrer: Locator): Option<number>;
-  lookupPartial(name: string, referrer: Locator): Option<number>;
+  getAppend(trusting: boolean): number;
 }
 
 export type CompilerBuffer = Array<number | (() => number)>;
@@ -87,7 +73,7 @@ export type MaybeResolvedLayout = {
 } | ResolvedLayout;
 
 export interface Compiler<Builder = Opaque> {
-  stdLib: Option<STDLib>;
+  stdLib: STDLib;
   constants: CompileTimeConstants;
 
   add(statements: Statement[], containingLayout: LayoutWithContext): number;

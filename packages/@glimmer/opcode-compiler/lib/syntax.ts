@@ -1,4 +1,4 @@
-import { CompilableBlock, CompileTimeProgram, Option, Opaque, Compiler, CompileTimeLookup } from '@glimmer/interfaces';
+import { CompilableBlock, Option, Opaque, Compiler } from '@glimmer/interfaces';
 import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
@@ -774,15 +774,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
   });
 
   return { blocks, inlines };
-}
-
-export interface TemplateOptions<Locator> {
-  // already in compilation options
-  program: CompileTimeProgram;
-  macros: Macros;
-
-  // a subset of the resolver w/ a couple of small tweaks
-  resolver: CompileTimeLookup<Locator>;
 }
 
 export interface CompileOptions<Locator, Builder = Opaque> {
