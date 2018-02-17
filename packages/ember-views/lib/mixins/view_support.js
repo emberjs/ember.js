@@ -428,10 +428,6 @@ export default Mixin.create({
     );
   },
 
-  __defineNonEnumerable(property) {
-    this[property.name] = property.descriptor.value;
-  },
-
   // .......................................................
   // EVENT HANDLING
   //

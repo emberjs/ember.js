@@ -597,13 +597,6 @@ const Component = CoreView.extend(
       this._super();
     },
 
-    __defineNonEnumerable(property: {
-      name: string;
-      descriptor: { value: any }
-    }) {
-      this[property.name] = property.descriptor.value;
-    },
-
     [PROPERTY_DID_CHANGE](key: string) {
       if (this[IS_DISPATCHING_ATTRS]) { return; }
 

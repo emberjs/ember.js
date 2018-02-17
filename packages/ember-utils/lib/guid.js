@@ -98,11 +98,7 @@ export function generateGuid(obj, prefix = GUID_PREFIX) {
       obj[GUID_KEY] = ret;
     } else {
       GUID_DESC.value = ret;
-      if (obj.__defineNonEnumerable) {
-        obj.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      } else {
-        Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-      }
+      Object.defineProperty(obj, GUID_KEY, GUID_DESC);
     }
   }
   return ret;
