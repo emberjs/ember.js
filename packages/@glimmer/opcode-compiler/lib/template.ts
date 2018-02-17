@@ -2,8 +2,7 @@ import { CompilableProgram, Template, Opaque, Option, LayoutWithContext } from '
 import { assign } from '@glimmer/util';
 import {
   SerializedTemplateBlock,
-  SerializedTemplateWithLazyBlock,
-  Statement
+  SerializedTemplateWithLazyBlock
 } from '@glimmer/wire-format';
 import { CompilableProgram as CompilableProgramInstance } from './compilable-template';
 import { WrappedBuilder } from "./wrapped-component";
@@ -68,13 +67,11 @@ class TemplateImpl<Locator = Opaque> implements Template<Locator> {
   public hasEval: boolean;
   public id: string;
   public referrer: Locator;
-  private statements: Statement[];
 
   constructor(private compiler: LazyCompiler<Locator>, private parsedLayout: Pick<LayoutWithContext<Locator>, 'id' | 'block' | 'referrer'>) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
-    this.statements = block.statements;
     this.referrer = parsedLayout.referrer;
     this.id = parsedLayout.id || `client-${clientId++}`;
   }

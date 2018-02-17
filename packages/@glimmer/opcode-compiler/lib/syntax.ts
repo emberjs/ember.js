@@ -11,22 +11,22 @@ import E = WireFormat.Expressions;
 import C = WireFormat.Core;
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
-export type CompilerFunction<T extends TupleSyntax, Locator> = ((sexp: T, builder: OpcodeBuilder<Locator>) => void);
+export type CompilerFunction<T extends TupleSyntax> = ((sexp: T, builder: OpcodeBuilder<Opaque>) => void);
 
 export const ATTRS_BLOCK = '&attrs';
 
-export class Compilers<T extends TupleSyntax> {
+export class Compilers<Syntax extends TupleSyntax> {
   private names = dict<number>();
-  private funcs: CompilerFunction<T, Opaque>[] = [];
+  private funcs: CompilerFunction<Syntax>[] = [];
 
   constructor(private offset = 0) {}
 
-  add<Locator>(name: number, func: CompilerFunction<T, Locator>): void {
+  add<T extends Syntax>(name: number, func: (sexp: T, builder: OpcodeBuilder<Opaque>) => void): void {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  compile<Locator>(sexp: T, builder: OpcodeBuilder<Locator>): void {
+  compile(sexp: Syntax, builder: OpcodeBuilder<Opaque>): void {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
@@ -204,16 +204,16 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
   const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
 
-  CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
     builder.putComponentOperations();
     builder.openPrimitiveElement(sexp[2]);
   });
 
-  CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
     builder.didCreateElement(Register.s0);
   });
 
-  CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder: OpcodeBuilder) => {
     builder.setComponentAttrs(sexp[2]);
   });
 
@@ -222,7 +222,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     debugger;
   });
 
-  CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder: OpcodeBuilder) => {
     builder.didRenderLayout(Register.s0);
   });
 
