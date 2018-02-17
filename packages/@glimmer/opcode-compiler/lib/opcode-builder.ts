@@ -75,12 +75,19 @@ export interface OpcodeBuilderConstructor {
   ): OpcodeBuilder<Locator>;
 }
 
-export class SimpleOpcodeBuilder {
+export class StdOpcodeBuilder {
+  static build(compiler: Compiler, callback: (builder: StdOpcodeBuilder) => void): number {
+    let builder = new StdOpcodeBuilder(compiler);
+    callback(builder);
+    return builder.commit();
+  }
+
   protected encoder = new InstructionEncoder([]);
 
   public compiler: Compiler<this>;
+  private labelsStack = new Stack<Labels>();
 
-  constructor(compiler: Compiler, protected size: number) {
+  constructor(compiler: Compiler, protected size = 0) {
     this.compiler = compiler as Compiler<this>;
   }
 
@@ -287,31 +294,8 @@ export class SimpleOpcodeBuilder {
   protected get nextPos(): number {
     return this.encoder.size;
   }
-}
 
-export type VMHandlePlaceholder = [number, () => VMHandle];
-
-export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
-  public constants: CompileTimeConstants;
-  public stdLib: Option<STDLib>;
-  public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
-
-  private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
-  private labelsStack = new Stack<Labels>();
-  private isComponentAttrs = false;
-
-  constructor(
-    compiler: Compiler,
-    public containingLayout: LayoutWithContext<Locator>
-  ) {
-    super(compiler, containingLayout.block.symbols.length);
-    this.constants = compiler.constants;
-    this.stdLib = compiler.stdLib;
-  }
-
-  get referrer(): Locator {
-    return this.containingLayout.referrer;
-  }
+  ///
 
   compileInline(sexp: WireFormat.Statements.Append) {
     return this.compiler.compileInline(sexp, this);
@@ -323,25 +307,6 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   label(name: string) {
     this.labels.label(name, this.nextPos);
-  }
-
-  setComponentAttrs(enabled: boolean): void {
-    this.isComponentAttrs = enabled;
-  }
-
-  expr(expression: WireFormat.Expression) {
-    if (Array.isArray(expression)) {
-      this.expressionCompiler.compile(expression, this);
-    } else {
-      this.pushPrimitiveReference(expression);
-    }
-  }
-
-  // args
-
-  pushArgs(names: string[], flags: number) {
-    let serialized = this.constants.stringArray(names);
-    this.push(Op.PushArgs, serialized, flags);
   }
 
   // helpers
@@ -361,10 +326,6 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   // components
 
-  pushComponentDefinition(handle: number) {
-    this.push(Op.PushComponentDefinition, this.constants.handle(handle));
-  }
-
   pushCurriedComponent() {
     this.push(Op.PushCurriedComponent);
   }
@@ -373,59 +334,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.push(Op.PushDynamicComponentInstance);
   }
 
-  resolveDynamicComponent(referrer: Locator) {
-    this.push(Op.ResolveDynamicComponent, this.constants.serializable(referrer));
-  }
-
-  staticComponentHelper(tag: string, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>) {
-    let { handle, capabilities, compilable } = this.compiler.resolveLayoutForTag(tag, this.containingLayout.referrer);
-
-    if (handle !== null && capabilities !== null) {
-      if (compilable) {
-        if (hash) {
-          for (let i = 0; i < hash.length; i = i + 2) {
-            hash[i][0] = `@${hash[i][0]}`;
-          }
-        }
-
-        this.pushComponentDefinition(handle);
-        this.invokeStaticComponent(capabilities, compilable, null, null, hash, false, template && template);
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  // partial
-
-  invokePartial(referrer: Locator, symbols: string[], evalInfo: number[]) {
-    let _meta = this.constants.serializable(referrer);
-    let _symbols = this.constants.stringArray(symbols);
-    let _evalInfo = this.constants.array(evalInfo);
-
-    this.push(Op.InvokePartial, _meta, _symbols, _evalInfo);
-  }
-
-  resolveMaybeLocal(name: string) {
-    this.push(Op.ResolveMaybeLocal, this.string(name));
-  }
-
-  // debugger
-
-  debugger(symbols: string[], evalInfo: number[]) {
-    this.push(Op.Debugger, this.constants.stringArray(symbols), this.constants.array(evalInfo));
-  }
-
   // dom
-
-  text(text: string) {
-    this.push(Op.Text, this.constants.string(text));
-  }
-
-  openPrimitiveElement(tag: string) {
-    this.push(Op.OpenElement, this.constants.string(tag));
-  }
 
   openDynamicElement() {
     this.push(Op.OpenDynamicElement);
@@ -437,42 +346,6 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
 
   closeElement() {
     this.push(Op.CloseElement);
-  }
-
-  staticAttr(_name: string, _namespace: Option<string>, _value: string) {
-    let name = this.constants.string(_name);
-    let namespace = _namespace ? this.constants.string(_namespace) : 0;
-
-    if (this.isComponentAttrs) {
-      this.pushPrimitiveReference(_value);
-      this.push(Op.ComponentAttr, name, 1, namespace);
-    } else {
-      let value = this.constants.string(_value);
-      this.push(Op.StaticAttr, name, value, namespace);
-    }
-  }
-
-  dynamicAttr(_name: string, _namespace: Option<string>, trusting: boolean) {
-    let name = this.constants.string(_name);
-    let namespace = _namespace ? this.constants.string(_namespace) : 0;
-
-    if (this.isComponentAttrs) {
-      this.push(Op.ComponentAttr, name, (trusting === true ? 1 : 0), namespace);
-    } else {
-      this.push(Op.DynamicAttr, name, (trusting === true ? 1 : 0), namespace);
-    }
-  }
-
-  comment(_comment: string) {
-    let comment = this.constants.string(_comment);
-    this.push(Op.Comment, comment);
-  }
-
-  modifier(locator: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
-    this.pushFrame();
-    this.compileArgs(params, hash, null, true);
-    this.push(Op.Modifier, this.constants.handle(locator));
-    this.popFrame();
   }
 
   // lists
@@ -509,22 +382,12 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.push(Op.GetVariable, symbol);
   }
 
-  getProperty(key: string) {
-    this.push(Op.GetProperty, this.string(key));
-  }
-
   getBlock(symbol: number) {
     this.push(Op.GetBlock, symbol);
   }
 
   hasBlock(symbol: number) {
     this.push(Op.HasBlock, symbol);
-  }
-
-  hasBlockParams(to: number) {
-    this.getBlock(to);
-    this.resolveBlock();
-    this.push(Op.HasBlockParams);
   }
 
   concat(size: number) {
@@ -554,79 +417,12 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.labels.target(this.pos, label);
   }
 
-  primitive(_primitive: Primitive) {
-    let type: PrimitiveType = PrimitiveType.NUMBER;
-    let primitive: number;
-    switch (typeof _primitive) {
-      case 'number':
-        if (_primitive as number % 1 === 0) {
-          if (_primitive as number > -1) {
-            primitive = _primitive as number;
-          } else {
-            primitive = this.constants.number(_primitive as number);
-            type = PrimitiveType.NEGATIVE;
-          }
-        } else {
-          primitive = this.constants.number(_primitive as number);
-          type = PrimitiveType.FLOAT;
-        }
-        break;
-      case 'string':
-        primitive = this.string(_primitive as string);
-        type = PrimitiveType.STRING;
-        break;
-      case 'boolean':
-        primitive = (_primitive as any) | 0;
-        type = PrimitiveType.BOOLEAN_OR_VOID;
-        break;
-      case 'object':
-        // assume null
-        primitive = 2;
-        type = PrimitiveType.BOOLEAN_OR_VOID;
-        break;
-      case 'undefined':
-        primitive = 3;
-        type = PrimitiveType.BOOLEAN_OR_VOID;
-        break;
-      default:
-        throw new Error('Invalid primitive passed to pushPrimitive');
-    }
-
-    let immediate = this.sizeImmediate(primitive << 3 | type, primitive);
-    this.push(Op.Primitive, immediate);
-  }
-
-  sizeImmediate(shifted: number, primitive: number) {
-    if (shifted >= OpcodeSize.MAX_SIZE || shifted < 0) {
-      return this.constants.number(primitive) << 3 | PrimitiveType.BIG_NUM;
-    }
-
-    return shifted;
-  }
-
-  pushPrimitiveReference(primitive: Primitive) {
-    this.primitive(primitive);
-    this.primitiveReference();
-  }
-
   primitiveReference() {
     this.push(Op.PrimitiveReference);
   }
 
   reifyU32() {
     this.push(Op.ReifyU32);
-  }
-
-  helper(helper: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
-    this.pushFrame();
-    this.compileArgs(params, hash, null, true);
-    this.push(Op.Helper, this.constants.handle(helper));
-    this.popFrame();
-    this.fetch(Register.v0);
-  }
-
-  bindDynamicScope(_names: string[]) {
-    this.push(Op.BindDynamicScope, this.names(_names));
   }
 
   enter(args: number) {
@@ -665,107 +461,8 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.push(Op.AssertSame);
   }
 
-  // internal helpers
-
-  string(_string: string): number {
-    return this.constants.string(_string);
-  }
-
-  protected names(_names: string[]): number {
-    let names: number[] = [];
-
-    for (let i = 0; i < _names.length; i++) {
-      let n = _names[i];
-      names[i]= this.constants.string(n);
-    }
-
-    return this.constants.array(names);
-  }
-
-  protected symbols(symbols: number[]): number {
-    return this.constants.array(symbols);
-  }
-
-  // convenience methods
-
-  inlineBlock(block: SerializedInlineBlock): CompilableBlock {
-    return new CompilableBlockInstance(this.compiler, {
-      block,
-      containingLayout: this.containingLayout
-    });
-  }
-
-  evalSymbols(): Option<string[]> {
-    let { containingLayout: { block } } = this;
-
-    return block.hasEval ? block.symbols : null;
-  }
-
-  compileParams(params: Option<WireFormat.Core.Params>) {
-    if (!params) return 0;
-
-    for (let i = 0; i < params.length; i++) {
-      this.expr(params[i]);
-    }
-
-    return params.length;
-  }
-
-  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, blocks: Option<Blocks>, synthetic: boolean) {
-    if (blocks) {
-      this.pushYieldableBlock(blocks.main);
-      this.pushYieldableBlock(blocks.else);
-      this.pushYieldableBlock(blocks.attrs);
-    }
-
-    let count = this.compileParams(params);
-
-    let flags = count << 4;
-
-    if (synthetic) flags |= 0b1000;
-
-    if (blocks) {
-      flags |= 0b111;
-    }
-
-    let names: string[] = EMPTY_ARRAY;
-
-    if (hash) {
-      names = hash[0];
-      let val = hash[1];
-      for (let i = 0; i < val.length; i++) {
-        this.expr(val[i]);
-      }
-    }
-
-    this.pushArgs(names, flags);
-  }
-
-  invokeStaticBlock(block: CompilableBlock, callerCount = 0): void {
-    let { parameters } = block.symbolTable;
-    let calleeCount = parameters.length;
-    let count = Math.min(callerCount, calleeCount);
-
-    this.pushFrame();
-
-    if (count) {
-      this.pushChildScope();
-
-      for (let i = 0; i < count; i++) {
-        this.dup(Register.fp, callerCount - i);
-        this.setVariable(parameters[i]);
-      }
-    }
-
-    this.pushBlock(block);
-    this.resolveBlock();
-    this.invokeVirtual();
-
-    if (count) {
-      this.popScope();
-    }
-
-    this.popFrame();
+  pushEmptyArgs() {
+    this.push(Op.PushEmptyArgs);
   }
 
   stdAppend(trusting: boolean) {
@@ -790,7 +487,7 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.pop(2);
     this.pushCurriedComponent();
     this.pushDynamicComponentInstance();
-    this.invokeComponent(null, null, null, false, null, null);
+    this.invokeBareComponent();
     this.jump('END');
 
     this.label('SAFESTRING');
@@ -835,38 +532,118 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.stopLabels();
   }
 
-  guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
-    this.pushFrame();
-
-    this.startLabels();
-    this.returnTo('END');
-
-    this.expr(expression);
-
-    if (this.stdLib) {
-      this.primitive(trusting ? this.stdLib.trustingGuardedAppend : this.stdLib.cautiousGuardedAppend as Recast<VMHandle, number>);
-      this.invokeVirtual();
-    } else {
-      this.stdAppend(trusting);
-    }
-
-    this.label('END');
-
-    this.stopLabels();
-    this.popFrame();
-  }
-
-  yield(to: number, params: Option<WireFormat.Core.Params>) {
-    this.compileArgs(params, null, null, false);
-    this.getBlock(to);
-    this.resolveBlock();
-    this.invokeYield();
-    this.popScope();
-    this.popFrame();
-  }
-
   populateLayout(state: number) {
     this.push(Op.PopulateLayout, state);
+  }
+
+  invokeBareComponent() {
+    this.fetch(Register.s0);
+    this.dup(Register.sp, 1);
+    this.load(Register.s0);
+
+    this.pushFrame();
+    this.pushEmptyArgs();
+    this.prepareArgs(Register.s0);
+
+    this.invokePreparedComponent(false, () => {
+      this.getComponentLayout(Register.s0);
+      this.populateLayout(Register.s0);
+    });
+
+    this.load(Register.s0);
+  }
+
+  isComponent() {
+    this.push(Op.IsComponent);
+  }
+
+  contentType() {
+    this.push(Op.ContentType);
+  }
+
+  pushBlockScope(): void {
+    this.push(Op.PushBlockScope);
+  }
+
+}
+
+export type VMHandlePlaceholder = [number, () => VMHandle];
+
+export abstract class OpcodeBuilder<Locator> extends StdOpcodeBuilder {
+  public constants: CompileTimeConstants;
+  public stdLib: Option<STDLib>;
+  public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
+
+  private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
+  private isComponentAttrs = false;
+
+  constructor(
+    compiler: Compiler,
+    public containingLayout: LayoutWithContext<Locator>
+  ) {
+    super(compiler, containingLayout ? containingLayout.block.symbols.length : 0);
+    this.constants = compiler.constants;
+    this.stdLib = compiler.stdLib;
+  }
+
+  abstract pushBlock(block: Option<CompilableBlock>): void;
+  abstract resolveBlock(): void;
+  abstract pushLayout(layout: Option<CompilableProgram>): void;
+  abstract invokeStatic(block: CompilableTemplate): void;
+  abstract resolveLayout(): void;
+
+  /// MECHANICS
+
+  get referrer(): Locator {
+    return this.containingLayout && this.containingLayout.referrer;
+  }
+
+  setComponentAttrs(enabled: boolean): void {
+    this.isComponentAttrs = enabled;
+  }
+
+  expr(expression: WireFormat.Expression) {
+    if (Array.isArray(expression)) {
+      this.expressionCompiler.compile(expression, this);
+    } else {
+      this.pushPrimitiveReference(expression);
+    }
+  }
+
+  ///
+
+  // args
+
+  pushArgs(names: string[], flags: number) {
+    let serialized = this.constants.stringArray(names);
+    this.push(Op.PushArgs, serialized, flags);
+  }
+
+  pushYieldableBlock(block: Option<CompilableBlock>): void {
+    this.pushSymbolTable(block && block.symbolTable);
+    this.pushBlockScope();
+    this.pushBlock(block);
+  }
+
+  curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
+    let referrer = this.containingLayout.referrer;
+
+    this.pushFrame();
+    this.compileArgs(params, hash, null, synthetic);
+    this.push(Op.CaptureArgs);
+    this.expr(definition);
+    this.push(Op.CurryComponent, this.constants.serializable(referrer));
+    this.popFrame();
+    this.fetch(Register.v0);
+  }
+
+  pushSymbolTable(table: Option<SymbolTable>): void {
+    if (table) {
+      let constant = this.constants.serializable(table);
+      this.push(Op.PushSymbolTable, constant);
+    } else {
+      this.primitive(null);
+    }
   }
 
   invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: CompilableProgram) {
@@ -1040,49 +817,318 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
     this.stopLabels();
   }
 
-  isComponent() {
-    this.push(Op.IsComponent);
+  yield(to: number, params: Option<WireFormat.Core.Params>) {
+    this.compileArgs(params, null, null, false);
+    this.getBlock(to);
+    this.resolveBlock();
+    this.invokeYield();
+    this.popScope();
+    this.popFrame();
   }
 
-  contentType() {
-    this.push(Op.ContentType);
+  guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
+    this.pushFrame();
+
+    this.startLabels();
+    this.returnTo('END');
+
+    this.expr(expression);
+
+    if (this.stdLib) {
+      this.primitive(trusting ? this.stdLib.trustingGuardedAppend : this.stdLib.cautiousGuardedAppend as Recast<VMHandle, number>);
+      this.invokeVirtual();
+    } else {
+      this.stdAppend(trusting);
+    }
+
+    this.label('END');
+
+    this.stopLabels();
+    this.popFrame();
   }
 
-  curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
-    let referrer = this.containingLayout.referrer;
+  invokeStaticBlock(block: CompilableBlock, callerCount = 0): void {
+    let { parameters } = block.symbolTable;
+    let calleeCount = parameters.length;
+    let count = Math.min(callerCount, calleeCount);
 
     this.pushFrame();
-    this.compileArgs(params, hash, null, synthetic);
-    this.push(Op.CaptureArgs);
-    this.expr(definition);
-    this.push(Op.CurryComponent, this.constants.serializable(referrer));
+
+    if (count) {
+      this.pushChildScope();
+
+      for (let i = 0; i < count; i++) {
+        this.dup(Register.fp, callerCount - i);
+        this.setVariable(parameters[i]);
+      }
+    }
+
+    this.pushBlock(block);
+    this.resolveBlock();
+    this.invokeVirtual();
+
+    if (count) {
+      this.popScope();
+    }
+
+    this.popFrame();
+  }
+
+  /// CONVENIENCE
+
+  // internal helpers
+
+  string(_string: string): number {
+    return this.constants.string(_string);
+  }
+
+  protected names(_names: string[]): number {
+    let names: number[] = [];
+
+    for (let i = 0; i < _names.length; i++) {
+      let n = _names[i];
+      names[i]= this.constants.string(n);
+    }
+
+    return this.constants.array(names);
+  }
+
+  protected symbols(symbols: number[]): number {
+    return this.constants.array(symbols);
+  }
+
+  // vm
+
+  primitive(_primitive: Primitive) {
+    let type: PrimitiveType = PrimitiveType.NUMBER;
+    let primitive: number;
+    switch (typeof _primitive) {
+      case 'number':
+        if (_primitive as number % 1 === 0) {
+          if (_primitive as number > -1) {
+            primitive = _primitive as number;
+          } else {
+            primitive = this.constants.number(_primitive as number);
+            type = PrimitiveType.NEGATIVE;
+          }
+        } else {
+          primitive = this.constants.number(_primitive as number);
+          type = PrimitiveType.FLOAT;
+        }
+        break;
+      case 'string':
+        primitive = this.string(_primitive as string);
+        type = PrimitiveType.STRING;
+        break;
+      case 'boolean':
+        primitive = (_primitive as any) | 0;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
+        break;
+      case 'object':
+        // assume null
+        primitive = 2;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
+        break;
+      case 'undefined':
+        primitive = 3;
+        type = PrimitiveType.BOOLEAN_OR_VOID;
+        break;
+      default:
+        throw new Error('Invalid primitive passed to pushPrimitive');
+    }
+
+    let immediate = this.sizeImmediate(primitive << 3 | type, primitive);
+    this.push(Op.Primitive, immediate);
+  }
+
+  sizeImmediate(shifted: number, primitive: number) {
+    if (shifted >= OpcodeSize.MAX_SIZE || shifted < 0) {
+      return this.constants.number(primitive) << 3 | PrimitiveType.BIG_NUM;
+    }
+
+    return shifted;
+  }
+
+  pushPrimitiveReference(primitive: Primitive) {
+    this.primitive(primitive);
+    this.primitiveReference();
+  }
+
+  // components
+
+  pushComponentDefinition(handle: number) {
+    this.push(Op.PushComponentDefinition, this.constants.handle(handle));
+  }
+
+  resolveDynamicComponent(referrer: Locator) {
+    this.push(Op.ResolveDynamicComponent, this.constants.serializable(referrer));
+  }
+
+  staticComponentHelper(tag: string, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>) {
+    let { handle, capabilities, compilable } = this.compiler.resolveLayoutForTag(tag, this.referrer);
+
+    if (handle !== null && capabilities !== null) {
+      if (compilable) {
+        if (hash) {
+          for (let i = 0; i < hash.length; i = i + 2) {
+            hash[i][0] = `@${hash[i][0]}`;
+          }
+        }
+
+        this.pushComponentDefinition(handle);
+        this.invokeStaticComponent(capabilities, compilable, null, null, hash, false, template && template);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // partial
+
+  invokePartial(referrer: Locator, symbols: string[], evalInfo: number[]) {
+    let _meta = this.constants.serializable(referrer);
+    let _symbols = this.constants.stringArray(symbols);
+    let _evalInfo = this.constants.array(evalInfo);
+
+    this.push(Op.InvokePartial, _meta, _symbols, _evalInfo);
+  }
+
+  resolveMaybeLocal(name: string) {
+    this.push(Op.ResolveMaybeLocal, this.string(name));
+  }
+
+  // debugger
+
+  debugger(symbols: string[], evalInfo: number[]) {
+    this.push(Op.Debugger, this.constants.stringArray(symbols), this.constants.array(evalInfo));
+  }
+
+  // dom
+
+  text(text: string) {
+    this.push(Op.Text, this.constants.string(text));
+  }
+
+  openPrimitiveElement(tag: string) {
+    this.push(Op.OpenElement, this.constants.string(tag));
+  }
+
+  modifier(locator: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+    this.pushFrame();
+    this.compileArgs(params, hash, null, true);
+    this.push(Op.Modifier, this.constants.handle(locator));
+    this.popFrame();
+  }
+
+  comment(_comment: string) {
+    let comment = this.constants.string(_comment);
+    this.push(Op.Comment, comment);
+  }
+
+  dynamicAttr(_name: string, _namespace: Option<string>, trusting: boolean) {
+    let name = this.constants.string(_name);
+    let namespace = _namespace ? this.constants.string(_namespace) : 0;
+
+    if (this.isComponentAttrs) {
+      this.push(Op.ComponentAttr, name, (trusting === true ? 1 : 0), namespace);
+    } else {
+      this.push(Op.DynamicAttr, name, (trusting === true ? 1 : 0), namespace);
+    }
+  }
+
+  staticAttr(_name: string, _namespace: Option<string>, _value: string) {
+    let name = this.constants.string(_name);
+    let namespace = _namespace ? this.constants.string(_namespace) : 0;
+
+    if (this.isComponentAttrs) {
+      this.pushPrimitiveReference(_value);
+      this.push(Op.ComponentAttr, name, 1, namespace);
+    } else {
+      let value = this.constants.string(_value);
+      this.push(Op.StaticAttr, name, value, namespace);
+    }
+  }
+
+  // expressions
+
+  hasBlockParams(to: number) {
+    this.getBlock(to);
+    this.resolveBlock();
+    this.push(Op.HasBlockParams);
+  }
+
+  getProperty(key: string) {
+    this.push(Op.GetProperty, this.string(key));
+  }
+
+  ///
+
+  helper(helper: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+    this.pushFrame();
+    this.compileArgs(params, hash, null, true);
+    this.push(Op.Helper, this.constants.handle(helper));
     this.popFrame();
     this.fetch(Register.v0);
   }
 
-  abstract pushBlock(block: Option<CompilableBlock>): void;
-  abstract resolveBlock(): void;
-  abstract pushLayout(layout: Option<CompilableProgram>): void;
-  abstract invokeStatic(block: CompilableTemplate): void;
-  abstract resolveLayout(): void;
+  bindDynamicScope(_names: string[]) {
+    this.push(Op.BindDynamicScope, this.names(_names));
+  }
 
-  pushSymbolTable(table: Option<SymbolTable>): void {
-    if (table) {
-      let constant = this.constants.serializable(table);
-      this.push(Op.PushSymbolTable, constant);
-    } else {
-      this.primitive(null);
+  // convenience methods
+
+  inlineBlock(block: SerializedInlineBlock): CompilableBlock {
+    return new CompilableBlockInstance(this.compiler, {
+      block,
+      containingLayout: this.containingLayout
+    });
+  }
+
+  evalSymbols(): Option<string[]> {
+    let { containingLayout: { block } } = this;
+
+    return block.hasEval ? block.symbols : null;
+  }
+
+  compileParams(params: Option<WireFormat.Core.Params>) {
+    if (!params) return 0;
+
+    for (let i = 0; i < params.length; i++) {
+      this.expr(params[i]);
     }
+
+    return params.length;
   }
 
-  pushBlockScope(): void {
-    this.push(Op.PushBlockScope);
-  }
+  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, blocks: Option<Blocks>, synthetic: boolean) {
+    if (blocks) {
+      this.pushYieldableBlock(blocks.main);
+      this.pushYieldableBlock(blocks.else);
+      this.pushYieldableBlock(blocks.attrs);
+    }
 
-  pushYieldableBlock(block: Option<CompilableBlock>): void {
-    this.pushSymbolTable(block && block.symbolTable);
-    this.pushBlockScope();
-    this.pushBlock(block);
+    let count = this.compileParams(params);
+
+    let flags = count << 4;
+
+    if (synthetic) flags |= 0b1000;
+
+    if (blocks) {
+      flags |= 0b111;
+    }
+
+    let names: string[] = EMPTY_ARRAY;
+
+    if (hash) {
+      names = hash[0];
+      let val = hash[1];
+      for (let i = 0; i < val.length; i++) {
+        this.expr(val[i]);
+      }
+    }
+
+    this.pushArgs(names, flags);
   }
 
   template(block: Option<WireFormat.SerializedInlineBlock>): Option<CompilableBlock> {

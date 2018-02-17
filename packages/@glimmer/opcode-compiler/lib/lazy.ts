@@ -1,7 +1,7 @@
 import { LazyOpcodeBuilder } from './opcode-builder';
 import { Macros } from './syntax';
 import { AbstractCompiler } from './compiler';
-import { Opaque, RuntimeResolver, Compiler, CompileTimeLookup, LayoutWithContext, CompileTimeConstants } from "@glimmer/interfaces";
+import { Opaque, RuntimeResolver, Compiler, CompileTimeLookup, LayoutWithContext, CompileTimeConstants, STDLib } from "@glimmer/interfaces";
 import { Program, LazyConstants } from "@glimmer/program";
 
 export interface LazyCompilerOptions<Locator> {
@@ -26,8 +26,11 @@ export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeB
     return compiler;
   }
 
+  public stdLib: STDLib;
+
   private constructor(private options: LazyCompilerOptions<Locator>) {
     super();
+    this.initialize();
   }
 
   protected get macros(): Macros {
@@ -44,10 +47,6 @@ export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeB
 
   get resolver(): CompileTimeLookup<Opaque> {
     return this.options.lookup;
-  }
-
-  get stdLib(): null {
-    return null;
   }
 
   builderFor(containingLayout: LayoutWithContext<Locator>): LazyOpcodeBuilder<Locator> {
