@@ -31,9 +31,7 @@ function queryParams({ positional, named }: CapturedArguments) {
   // tslint:disable-next-line:max-line-length
   assert('The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName=\'foo\') as opposed to just (query-params \'foo\')', positional.value().length === 0);
 
-  return QueryParams.create({
-    values: assign({}, named.value()),
-  });
+  return new QueryParams(assign({}, named.value()));
 }
 
 export default function(_vm: VM, args: Arguments) {
