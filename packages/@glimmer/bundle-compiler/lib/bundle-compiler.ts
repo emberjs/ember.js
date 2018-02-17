@@ -129,9 +129,8 @@ export default class BundleCompiler<Locator> {
    */
   add(_locator: PartialTemplateLocator<Locator>, templateSource: string): SerializedTemplateBlock {
     let locator = normalizeLocator(_locator);
-    let { meta } = locator;
 
-    let block = this.preprocess(meta || null, templateSource);
+    let block = this.preprocess(templateSource);
     this.compiledBlocks.set(locator, block);
 
     let template = new CompilableProgramInstance(this.compiler, {
@@ -185,11 +184,10 @@ export default class BundleCompiler<Locator> {
   }
 
   preprocess(
-    meta: Locator | null,
     input: string
   ): SerializedTemplateBlock {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
-    let template = TemplateCompiler.compile({ meta }, ast);
+    let template = TemplateCompiler.compile(ast);
     return template.toJSON();
   }
 

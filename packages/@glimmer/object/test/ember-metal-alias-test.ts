@@ -3,12 +3,10 @@ import{ Meta } from '@glimmer/object-reference';
 import { get, set, defineProperty } from './support';
 
 let obj: any;
-let count: number;
 
 QUnit.module('defineProperty - alias', {
   beforeEach() {
     obj = { foo: { faz: 'FOO' } };
-    count = 0;
   },
   afterEach() {
     obj = null;

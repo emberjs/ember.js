@@ -569,7 +569,7 @@ export class StdOpcodeBuilder {
 
 export type VMHandlePlaceholder = [number, () => VMHandle];
 
-export abstract class OpcodeBuilder<Locator> extends StdOpcodeBuilder {
+export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   public constants: CompileTimeConstants;
   public stdLib: STDLib;
   public component: ComponentBuilder<Locator> = new ComponentBuilder(this);

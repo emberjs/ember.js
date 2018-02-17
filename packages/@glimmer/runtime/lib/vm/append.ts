@@ -97,19 +97,19 @@ export default class VM<T> implements PublicVM {
     this.inner.ra = value;
   }
 
-  private get fp(): number {
+  get fp(): number {
     return this.stack.fp;
   }
 
-  private set fp(fp: number) {
+  set fp(fp: number) {
     this.stack.fp = fp;
   }
 
-  private get sp(): number {
+  get sp(): number {
     return this.stack.sp;
   }
 
-  private set sp(sp: number) {
+  set sp(sp: number) {
     this.stack.sp = sp;
   }
 

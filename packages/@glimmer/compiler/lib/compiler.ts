@@ -61,7 +61,7 @@ export function precompile(string: string, options?: PrecompileOptions): Templat
 export function precompile(string: string, options: PrecompileOptions = defaultOptions): TemplateJavascript {
   let ast = preprocess(string, options);
   let { meta } = options;
-  let { block } = TemplateCompiler.compile(options, ast);
+  let { block } = TemplateCompiler.compile(ast);
   let idFn = options.id || defaultId;
   let blockJSON = JSON.stringify(block.toJSON());
   let templateJSONObject: SerializedTemplateWithLazyBlock<TemplateMeta> = {
