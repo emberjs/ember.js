@@ -10,7 +10,6 @@ import print from "../generation/print";
 import Walker from "../traversal/walker";
 import * as handlebars from "handlebars";
 import { assign } from '@glimmer/util';
-import { Recast } from "@glimmer/interfaces";
 
 const voidMap: {
   [tagName: string]: boolean
@@ -36,7 +35,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tagOpenLine, this.tagOpenColumn),
-      end: null as Recast<null, AST.Position>
+      end: null as any as AST.Position
     };
   }
 
@@ -57,7 +56,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
-      end: null as Recast<null, AST.Position>
+      end: null as any as AST.Position
     };
   }
 
@@ -333,7 +332,7 @@ const syntax: Syntax = {
 
 export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
   let ast = (typeof html === 'object') ? html : handlebars.parse(html);
-  let program = new TokenizerEventHandlers(html, options).acceptNode(ast);
+  let program = new TokenizerEventHandlers(html).acceptNode(ast);
 
   if (options && options.plugins && options.plugins.ast) {
     for (let i = 0, l = options.plugins.ast.length; i < l; i++) {

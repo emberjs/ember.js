@@ -74,7 +74,7 @@
     "semver": "^5.3.0",
     "testem": "^1.16.0",
     "tslint": "^4.0.2",
-    "typescript": "^2.4.2"
+    "typescript": "^2.7.1"
   },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",

@@ -265,7 +265,7 @@ export function assertNodeTagName<T extends keyof ElementTagNameMap, U extends E
   return false;
 }
 
-export function assertNodeProperty<T extends keyof ElementTagNameMap, P extends keyof ElementTagNameMap[T], V extends HTMLElementTagNameMap[T][P]>(node: Node | null, tagName: T, prop: P, value: V) {
+export function assertNodeProperty<T extends keyof HTMLElementTagNameMap, P extends keyof ElementTagNameMap[T], V extends HTMLElementTagNameMap[T][P]>(node: Node | null, tagName: T, prop: P, value: V) {
   if (assertNodeTagName(node, tagName)) {
     QUnit.assert.strictEqual(node[prop], value);
   }

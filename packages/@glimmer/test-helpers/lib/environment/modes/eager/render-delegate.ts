@@ -156,7 +156,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
       let symbolTable;
 
       if (state.type === "Curly" || state.type === "Dynamic") {
-        let block = bundleCompiler.preprocess(locator.meta, state.template!);
+        let block = bundleCompiler.preprocess(state.template!);
         let parsedLayout = { block, referrer: locator.meta, asPartial: false };
         let wrapped = new WrappedBuilder(bundleCompiler.compiler, parsedLayout);
         bundleCompiler.addCompilableTemplate(locator, wrapped);

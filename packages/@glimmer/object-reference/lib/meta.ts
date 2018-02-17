@@ -114,7 +114,6 @@ class Meta implements IMeta, HasGuid {
 
   private object: any;
   private RootReferenceFactory: RootReferenceFactory<any>;
-  private DefaultPathReferenceFactory: InnerReferenceFactory<any>;
   private rootCache: IRootReference<any>;
   private references: Option<Dict<DictSet<IPathReference<any> & HasGuid>>> = null;
   public _guid: number;
@@ -122,10 +121,9 @@ class Meta implements IMeta, HasGuid {
   protected referenceTypes: Option<Dict<InnerReferenceFactory<any>>> = null;
   protected propertyMetadata: Option<Dict<any>> = null;
 
-  constructor(object: any, { RootReferenceFactory, DefaultPathReferenceFactory }: MetaOptions) {
+  constructor(object: any, { RootReferenceFactory }: MetaOptions) {
     this.object = object;
     this.RootReferenceFactory = (RootReferenceFactory || RootReference) as RootReferenceFactory<any>;
-    this.DefaultPathReferenceFactory = DefaultPathReferenceFactory || PropertyReference;
   }
 
   addReference(property: string, reference: IPathReference<any> & HasGuid) {

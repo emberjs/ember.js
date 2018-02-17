@@ -113,7 +113,7 @@ export namespace Statements {
   export type StaticArg     = [Opcodes.StaticArg, str, Expression];
   export type TrustingAttr  = [Opcodes.TrustingAttr, str, Expression, str];
   export type Debugger      = [Opcodes.Debugger, Core.EvalInfo];
-  export type ClientSide    = [Opcodes.ClientSideStatement, any];
+  export type ClientSide    = [Opcodes.ClientSideStatement, any] | [Opcodes.ClientSideStatement, any, any];
 
   export type Statement =
       Text
