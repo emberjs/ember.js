@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.1.0-beta.2 (February 19, 2018)
+
+- [#13355](https://github.com/emberjs/ember.js/pull/13355) [BUGFIX] Fix issue with `Ember.trySet` on destroyed objects.
+- [#16245](https://github.com/emberjs/ember.js/pull/16245) [BUGFIX] Ensure errors in deferred component hooks can be recovered.
+- [#16246](https://github.com/emberjs/ember.js/pull/16246) [BUGFIX] computed.sort should not sort if sortProperties is empty
+
 ### v3.1.0-beta.1 (February 14, 2018)
 
 - [emberjs/rfcs#276](https://github.com/emberjs/rfcs/blob/master/text/0276-named-args.md) [FEATURE named-args] enabled by default.
