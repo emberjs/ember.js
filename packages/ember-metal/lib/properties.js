@@ -20,9 +20,9 @@ import { peekCacheFor } from './computed';
   @private
 */
 export function Descriptor() {
-  this.isDescriptor = true;
 }
 
+Descriptor.prototype.isDescriptor = true;
 // ..........................................................
 // DEFINING PROPERTIES API
 //

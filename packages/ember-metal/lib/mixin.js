@@ -657,11 +657,10 @@ export function required() {
 }
 
 function Alias(methodName) {
-  this.isDescriptor = true;
   this.methodName = methodName;
 }
 
-Alias.prototype = new Descriptor();
+Alias.prototype = Object.create(Descriptor.prototype);
 
 /**
   Makes a method available via an additional name.
