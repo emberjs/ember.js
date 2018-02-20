@@ -1,8 +1,6 @@
 import { getOwner } from 'ember-utils';
 import { assert } from 'ember-debug';
 import { ComputedProperty } from './computed';
-import { AliasedProperty } from './alias';
-import { Descriptor } from './properties';
 import { descriptorFor } from './meta';
 
 /**
@@ -21,12 +19,13 @@ import { descriptorFor } from './meta';
          to the property's name
   @private
 */
-export default function InjectedProperty(type, name) {
-  this.type = type;
-  this.name = name;
+export default class InjectedProperty extends ComputedProperty {
+  constructor(type, name) {
+    super(injectedPropertyGet);
 
-  this._super$Constructor(injectedPropertyGet);
-  AliasedPropertyPrototype.oneWay.call(this);
+    this.type = type;
+    this.name = name;
+  }
 }
 
 function injectedPropertyGet(keyName) {
@@ -38,15 +37,3 @@ function injectedPropertyGet(keyName) {
 
   return owner.lookup(`${desc.type}:${desc.name || keyName}`);
 }
-
-InjectedProperty.prototype = Object.create(Descriptor.prototype);
-
-const InjectedPropertyPrototype = InjectedProperty.prototype;
-const ComputedPropertyPrototype = ComputedProperty.prototype;
-const AliasedPropertyPrototype = AliasedProperty.prototype;
-
-InjectedPropertyPrototype._super$Constructor = ComputedProperty;
-
-InjectedPropertyPrototype.get = ComputedPropertyPrototype.get;
-InjectedPropertyPrototype.readOnly = ComputedPropertyPrototype.readOnly;
-InjectedPropertyPrototype.teardown = ComputedPropertyPrototype.teardown;
