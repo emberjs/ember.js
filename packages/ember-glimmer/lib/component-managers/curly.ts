@@ -14,6 +14,7 @@ import {
   Arguments,
   Bounds,
   ComponentDefinition,
+  ComponentManager,
   ElementOperations,
   Invocation,
   PreparedArguments,
@@ -479,7 +480,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
   public symbolTable: ProgramSymbolTable | undefined;
 
   // tslint:disable-next-line:no-shadowed-variable
-  constructor(public name: string, public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: CurriedArgs) {
+  constructor(public name: string, public manager: ComponentManager<ComponentStateBucket, DefinitionState> = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: CurriedArgs) {
     const layout = template && template.asLayout();
     const symbolTable = layout ? layout.symbolTable : undefined;
     this.symbolTable = symbolTable;

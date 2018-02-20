@@ -7,6 +7,7 @@ import {
 import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, PartialDefinition, TemplateOptions } from '@glimmer/opcode-compiler';
 import { LazyConstants, Program } from '@glimmer/program';
 import {
+  ComponentManager,
   getDynamicVar,
   Helper,
   ModifierManager,
@@ -23,6 +24,8 @@ import {
 } from 'ember-views';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
+import { getCustomComponentManager } from './component-managers/custom-component-manager';
+import DefinitionState from './component-managers/definition-state';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as classHelper } from './helpers/-class';
@@ -46,6 +49,7 @@ import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { renderHelper } from './syntax/render';
 import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
+import ComponentStateBucket from './utils/curly-component-state-bucket';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 
 function instrumentationPayload(name: string) {
@@ -258,18 +262,27 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
 
   private _lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
-    let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
+    let { owner } = meta;
+    let { layout, component } = lookupComponent(owner, name, makeOptions(meta.moduleName));
 
     if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       return new TemplateOnlyComponentDefinition(layout);
+    }
+
+    let managerId = getCustomComponentManager(component.class);
+    let manager: ComponentManager<ComponentStateBucket, DefinitionState> | undefined;
+
+    if (managerId !== null) {
+      manager = owner.lookup(`component-manager:${managerId}`);
+      assert(`Could not find custom component manager '${managerId}'`, !!manager);
     }
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let definition = (layout || component) ?
       new CurlyComponentDefinition(
         name,
-        undefined,
-        component || meta.owner.factoryFor(P`component:-default`),
+        manager,
+        component || owner.factoryFor(P`component:-default`),
         null,
         layout
       ) : null;
