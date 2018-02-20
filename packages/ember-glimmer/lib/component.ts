@@ -19,6 +19,7 @@ import {
   ViewMixin,
   ViewStateSupport,
 } from 'ember-views';
+
 import { RootReference, UPDATE } from './utils/references';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');

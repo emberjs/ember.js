@@ -6,6 +6,7 @@ import {
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import {
+  ComponentManager,
   getDynamicVar,
   Helper,
   ModifierManager,
@@ -23,6 +24,7 @@ import {
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
+import DefinitionState from './component-managers/definition-state';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as classHelper } from './helpers/-class';
@@ -46,7 +48,11 @@ import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { renderHelper } from './syntax/render';
 import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
+import ComponentStateBucket from './utils/curly-component-state-bucket';
+import getCustomComponentManager from './utils/get-custom-component-manager';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
+
+import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -293,11 +299,17 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return new TemplateOnlyComponentDefinition(layout);
     }
 
+    let manager: ComponentManager<ComponentStateBucket, DefinitionState> | undefined;
+
+    if (GLIMMER_CUSTOM_COMPONENT_MANAGER && component && component.class) {
+      manager = getCustomComponentManager(meta.owner, component.class);
+    }
+
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
     let definition = (layout || component) ?
       new CurlyComponentDefinition(
         name,
-        undefined,
+        manager,
         component || meta.owner.factoryFor(P`component:-default`),
         null,
         layout
