@@ -656,12 +656,12 @@ export function required() {
   return REQUIRED;
 }
 
-function Alias(methodName) {
-  this.isDescriptor = true;
-  this.methodName = methodName;
+class Alias extends Descriptor {
+  constructor(methodName) {
+    super();
+    this.methodName = methodName;
+  }
 }
-
-Alias.prototype = new Descriptor();
 
 /**
   Makes a method available via an additional name.
