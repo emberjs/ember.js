@@ -68,34 +68,32 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
 
     ENV._APPLICATION_TEMPLATE_WRAPPER = false;
 
-    return this.runTask(() => {
-      return this.visit('/', bootOptions)
-        .then((instance) => {
+    return this.visit('/', bootOptions)
+      .then((instance) => {
+        assert.equal(
+          instance.rootElement.firstChild.nodeValue,
+          '%+b:0%',
+          'glimmer-vm comment node was not found'
+        );
+      }).then(() =>{
+        return this.runTask(()=>{
+          this.applicationInstance.destroy();
+          this.applicationInstance = null;
+        });
+      }).then(() => {
+        bootOptions = {
+          isBrowser: false,
+          rootElement,
+          _renderMode: 'rehydrate'
+        };
+        this.application.visit('/', bootOptions).then(instance => {
           assert.equal(
-            instance.rootElement.firstChild.nodeValue,
-            '%+b:0%',
-            'glimmer-vm comment node was not found'
+            instance.rootElement.innerHTML,
+            indexTemplate,
+            'was not properly rehydrated'
           );
         });
-    }).then(() =>{
-      return this.runTask(()=>{
-        this.applicationInstance.destroy();
-        this.applicationInstance = null;
       });
-    }).then(() => {
-      bootOptions = {
-        isBrowser: false,
-        rootElement,
-        _renderMode: 'rehydrate'
-      };
-      this.application.visit('/', bootOptions).then(instance => {
-        assert.equal(
-          instance.rootElement.innerHTML,
-          indexTemplate,
-          'was not properly rehydrated'
-        );
-      });
-    });
   }
 
   // This tests whether the application is "autobooted" by registering an
