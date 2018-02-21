@@ -828,14 +828,12 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
   guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
     this.pushFrame();
-
     this.startLabels();
+
     this.returnTo('END');
 
     this.expr(expression);
-
-    this.primitive(this.stdLib.getAppend(trusting));
-    this.invokeVirtual();
+    this.pushMachine(Op.InvokeStatic, this.stdLib.getAppend(trusting));
 
     this.label('END');
 
