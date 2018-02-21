@@ -279,3 +279,16 @@ QUnit.test('observing computed.reads prop and overriding it in create() works', 
   assert.equal(obj1.get('name'), '1');
   assert.equal(obj2.get('name'), '2');
 });
+
+QUnit.test('observing computed.reads prop and overriding it in create() works', function() {
+  let Obj = EmberObject.extend({
+    name: computed.reads('model.name'),
+    nameDidChange: observer('name', function() {})
+  });
+
+  let obj1 = Obj.create({name: '1'});
+  let obj2 = Obj.create({name: '2'});
+
+  equal(obj1.get('name'), '1');
+  equal(obj2.get('name'), '2');
+});
