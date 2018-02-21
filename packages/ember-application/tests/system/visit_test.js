@@ -86,6 +86,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
           rootElement,
           _renderMode: 'rehydrate'
         };
+
         this.application.visit('/', bootOptions).then(instance => {
           assert.equal(
             instance.rootElement.innerHTML,
