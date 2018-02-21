@@ -19,8 +19,10 @@ import { peekCacheFor } from './computed';
   @class Descriptor
   @private
 */
-export function Descriptor() {
-  this.isDescriptor = true;
+export class Descriptor {
+  constructor() {
+    this.isDescriptor = true;
+  }
 }
 
 // ..........................................................
