@@ -361,6 +361,24 @@ QUnit.test('it updates properly on @each with {} dependencies', function(assert)
   assert.deepEqual(obj.get('filtered'), []);
 });
 
+QUnit.test('it updates properly on @each with {} dependencies', function() {
+  let item = EmberObject.create({prop: true});
+
+  obj = EmberObject.extend({
+    filtered: filter('items.@each.{prop}', function(item, index) {
+      return item.get('prop') === true;
+    })
+  }).create({
+    items: [item]
+  });
+
+  deepEqual(obj.get('filtered'), [item]);
+
+  item.set('prop', false);
+
+  deepEqual(obj.get('filtered'), []);
+});
+
 QUnit.module('filterBy', {
   beforeEach() {
     obj = EmberObject.extend({
