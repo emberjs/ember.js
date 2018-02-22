@@ -133,12 +133,10 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
     builder.pushFrame();
 
-    builder.returnTo('END');
-
     builder.expr(name);
-
     builder.dup();
 
+    builder.returnTo('END');
     builder.enter(2);
 
     builder.jumpUnless('ELSE');
@@ -458,12 +456,10 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.pushFrame();
 
-    builder.returnTo('END');
-
     builder.expr(params[0]);
-
     builder.toBoolean();
 
+    builder.returnTo('END');
     builder.enter(1);
 
     builder.jumpUnless('ELSE');
@@ -512,12 +508,10 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.pushFrame();
 
-    builder.returnTo('END');
-
     builder.expr(params[0]);
-
     builder.toBoolean();
 
+    builder.returnTo('END');
     builder.enter(1);
 
     builder.jumpIf('ELSE');
@@ -566,13 +560,11 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.pushFrame();
 
-    builder.returnTo('END');
-
     builder.expr(params[0]);
-
     builder.dup();
     builder.toBoolean();
 
+    builder.returnTo('END');
     builder.enter(2);
 
     builder.jumpUnless('ELSE');
@@ -628,8 +620,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.pushFrame();
 
-    builder.returnTo('END');
-
     if (hash && hash[0][0] === 'key') {
       builder.expr(hash[1][0]);
     } else {
@@ -638,6 +628,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.expr(params[0]);
 
+    builder.returnTo('END');
     builder.enter(2);
 
     builder.putIterator();
@@ -646,10 +637,9 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.pushFrame();
 
-    builder.returnTo('ITER');
-
     builder.dup(Register.fp, 1);
 
+    builder.returnTo('ITER');
     builder.enterList('BODY');
 
     builder.label('ITER');
@@ -695,8 +685,6 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.pushFrame();
 
-    builder.returnTo('END');
-
     let [ keys, values ] = hash!;
 
     for (let i = 0; i < keys.length; i++) {
@@ -712,6 +700,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.dup();
 
+    builder.returnTo('END');
     builder.enter(4);
 
     builder.jumpUnless('ELSE');
