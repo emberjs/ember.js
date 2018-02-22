@@ -1052,6 +1052,51 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<div id="test">123</div>');
     this.assertStableRerender();
   }
+
+  @test "Failing test"() {
+    let called = 0;
+    this.registerHelper('the-sound-of-nothing', function () {
+      called++;
+    });
+
+    this.render('{{the-sound-of-nothing}}');
+    this.assertHTML('');
+    this.assert.equal(called, 1, 'called once');
+    this.assertStableRerender();
+    this.assert.equal(called, 2, 'called twice');
+
+    this.rerender();
+    this.assert.equal(called, 3, 'called three times');
+    this.assertStableNodes();
+  }
+
+  @test "Failing test 2: interior mutation"() {
+    let obj = { value: true };
+    this.render('{{value}}', obj);
+    this.assertHTML('true');
+    this.assertStableRerender();
+
+    obj.value = 'hello' as any;
+
+    this.rerender();
+    this.assertHTML('hello');
+    this.assertInvariants();
+  }
+
+  assertInvariants(oldSnapshot?: any, newSnapshot?: any) {
+    oldSnapshot = oldSnapshot || this.snapshot;
+    newSnapshot = newSnapshot || this.takeSnapshot();
+
+    this.assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
+
+    for (let i = 0; i < oldSnapshot.length; i++) {
+      this.assertSameNode(newSnapshot[i], oldSnapshot[i]);
+    }
+  }
+
+  assertSameNode(actual: any, expected: any) {
+    this.assert.strictEqual(actual, expected, 'DOM node stability');
+  }
 }
 
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
