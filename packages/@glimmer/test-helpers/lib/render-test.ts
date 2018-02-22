@@ -105,8 +105,8 @@ class SimplePathReference implements PathReference<Opaque> {
   }
 }
 
-type IndividualSnapshot = 'up' | 'down' | Node;
-type NodesSnapshot = IndividualSnapshot[];
+export type IndividualSnapshot = 'up' | 'down' | Node;
+export type NodesSnapshot = IndividualSnapshot[];
 
 export class RenderTest {
   protected element: HTMLElement;
@@ -115,7 +115,7 @@ export class RenderTest {
   protected renderResult: Option<RenderResult> = null;
   protected helpers = dict<UserHelper>();
   protected testType: ComponentKind;
-  private snapshot: NodesSnapshot = [];
+  protected snapshot: NodesSnapshot = [];
 
   constructor(protected delegate: RenderDelegate) {
     this.element = delegate.getInitialElement();
