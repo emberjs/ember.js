@@ -40,6 +40,8 @@ import { ContentType } from "../../runtime/lib/compiled/opcodes/content";
 
 export type Label = string;
 
+export type When = (match: number, callback: () => void) => void;
+
 class Labels {
   labels = dict<number>();
   targets: Array<{ at: number, target: string }> = [];
@@ -465,71 +467,94 @@ export class StdOpcodeBuilder {
     this.push(Op.PushEmptyArgs);
   }
 
-  stdAppend(trusting: boolean) {
-    this.startLabels();
-    this.contentType();
+  switch(_opcode: void, callback: (when: When) => void) {
+    // Setup the switch DSL
+    let clauses: Array<{ match: number, label: string, callback: () => void }> = [];
+
+    let count = 0;
+
+    function when(match: number, callback: () => void): void {
+      clauses.push({ match, callback, label: `CLAUSE${count++}` });
+    }
+
+    // Call the callback
+    callback(when);
+
+    // Emit the opcodes for the switch
     this.enter(2);
     this.assertSame();
     this.reifyU32();
 
-    this.jumpEq(ContentType.String, 'STRING');
-    this.jumpEq(ContentType.Component, 'COMPONENT');
-    this.jumpEq(ContentType.SafeString, 'SAFESTRING');
-    this.jumpEq(ContentType.Fragment, 'FRAGMENT');
-    this.jumpEq(ContentType.Node, 'NODE');
+    this.startLabels();
 
-    this.pop(2);
-    this.assertSame();
-    this.appendOther();
-    this.jump('END');
+    // First, emit the jump opcodes. We don't need a jump for the last
+    // opcode, since it bleeds directly into its clause.
+    clauses
+      .slice(0, -1)
+      .forEach(clause => this.jumpEq(clause.match, clause.label));
 
-    this.label('COMPONENT');
-    this.pop(2);
-    this.pushCurriedComponent();
-    this.pushDynamicComponentInstance();
-    this.invokeBareComponent();
-    this.jump('END');
+    // Enumerate the clauses in reverse order. Earlier matches will
+    // require fewer checks.
+    for (let i = clauses.length - 1; i >= 0; i--) {
+      let clause = clauses[i];
 
-    this.label('SAFESTRING');
-    this.pop(2);
-    this.assertSame();
-    this.appendSafeHTML();
-    this.jump('END');
-
-    this.label('FRAGMENT');
-    this.pop(2);
-    this.assertSame();
-    this.appendDocumentFragment();
-    this.jump('END');
-
-    this.label('NODE');
-    this.pop(2);
-    this.assertSame();
-    this.appendNode();
-    this.jump('END');
-
-    this.label('OTHER');
-    this.pop(2);
-    this.assertSame();
-    this.appendOther();
-    this.jump('END');
-
-    this.label('STRING');
-
-    if (trusting) {
+      this.label(clause.label);
       this.pop(2);
-      this.assertSame();
-      this.appendHTML();
-    } else {
-      this.pop(2);
-      this.appendText();
+
+      clause.callback();
+
+      // The first match is special: it is placed directly before the END
+      // label, so no additional jump is needed at the end of it.
+      if (i !== 0) {
+        this.jump('END');
+      }
     }
 
     this.label('END');
-    this.exit();
-    this.return();
 
     this.stopLabels();
+
+    this.exit();
+    this.return();
+  }
+
+  stdAppend(trusting: boolean) {
+    this.switch(this.contentType(), when => {
+      when(ContentType.String, () => {
+        if (trusting) {
+          this.assertSame();
+          this.appendHTML();
+        } else {
+          this.appendText();
+        }
+      });
+
+      when(ContentType.Component, () => {
+        this.pushCurriedComponent();
+        this.pushDynamicComponentInstance();
+        this.invokeBareComponent();
+      });
+
+      when(ContentType.SafeString, () => {
+        this.assertSame();
+        this.appendSafeHTML();
+      });
+
+      when(ContentType.Fragment, () => {
+        this.assertSame();
+        this.appendDocumentFragment();
+      });
+
+      when(ContentType.Node, () => {
+        this.assertSame();
+        this.appendNode();
+      });
+
+      when(ContentType.Other, () => {
+        this.assertSame();
+        this.appendOther();
+      });
+    });
   }
 
   populateLayout(state: number) {
@@ -791,12 +816,11 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
     this.pushFrame();
 
-    this.returnTo('END');
-
     this.expr(definition);
 
     this.dup();
 
+    this.returnTo('END');
     this.enter(2);
 
     this.jumpUnless('ELSE');
@@ -828,16 +852,11 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
   guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
     this.pushFrame();
-    this.startLabels();
-
-    this.returnTo('END');
 
     this.expr(expression);
+
     this.pushMachine(Op.InvokeStatic, this.stdLib.getAppend(trusting));
 
-    this.label('END');
-
-    this.stopLabels();
     this.popFrame();
   }
 
@@ -1069,6 +1088,18 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   }
 
   // convenience methods
+
+  updatableBlock(args: () => number, then: () => void): void {
+    this.startLabels();
+    this.pushFrame();
+    let count = args();
+    this.returnTo('END');
+    this.enter(count);
+    then();
+    this.label('END');
+    this.popFrame();
+    this.stopLabels();
+  }
 
   inlineBlock(block: SerializedInlineBlock): CompilableBlock {
     return new CompilableBlockInstance(this.compiler, {
