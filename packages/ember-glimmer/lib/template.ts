@@ -1,5 +1,5 @@
 import { Template } from '@glimmer/interfaces';
-import { templateFactory, TemplateFactory, TemplateOptions } from '@glimmer/opcode-compiler';
+import { LazyCompiler, templateFactory, TemplateFactory } from '@glimmer/opcode-compiler';
 import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 import { getOwner } from 'ember-utils';
 import { OwnedTemplateMeta, StaticTemplateMeta } from 'ember-views';
@@ -12,7 +12,7 @@ export default function template(json: StaticTemplate): Factory {
 }
 
 export interface Injections {
-  options: TemplateOptions<OwnedTemplateMeta>;
+  compiler: LazyCompiler<StaticTemplateMeta>;
   [key: string]: any;
 }
 
@@ -33,6 +33,6 @@ class FactoryWrapper implements Factory {
 
   create(injections: Injections): OwnedTemplate {
     const owner = getOwner(injections);
-    return this.factory.create(injections.options, { owner });
+    return this.factory.create(injections.compiler, { owner });
   }
 }

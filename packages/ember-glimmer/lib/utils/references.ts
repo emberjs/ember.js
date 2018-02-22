@@ -89,7 +89,7 @@ export class CachedReference extends EmberPathReference {
   value() {
     let { tag, _lastRevision, _lastValue } = this;
 
-    if (!_lastRevision || !tag.validate(_lastRevision)) {
+    if (_lastRevision === null || !tag.validate(_lastRevision)) {
       _lastValue = this._lastValue = this.compute();
       this._lastRevision = tag.value();
     }

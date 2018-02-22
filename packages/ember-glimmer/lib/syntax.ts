@@ -19,7 +19,7 @@ function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Opt
   assert(
     `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
     !(
-      (builder.resolver as CompileTimeLookup)['resolver']['builtInHelpers'][name] &&
+      (builder.compiler['resolver'] as CompileTimeLookup)['resolver']['builtInHelpers'][name] &&
       builder.referrer.owner.hasRegistration(`helper:${name}`)
     )
   );
@@ -27,7 +27,7 @@ function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Opt
     return false;
   }
 
-  let handle = builder.resolver.lookupComponentDefinition(name, builder.referrer);
+  let handle = builder.compiler['resolver'].lookupComponentDefinition(name, builder.referrer);
 
   if (handle !== null) {
     builder.component.static(handle, [params === null ? [] : params, hashToArgs(hash), null, null]);
@@ -42,7 +42,7 @@ function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, t
     return false;
   }
 
-  let handle = builder.resolver.lookupComponentDefinition(name, builder.referrer);
+  let handle = builder.compiler['resolver'].lookupComponentDefinition(name, builder.referrer);
 
   if (handle !== null) {
     wrapComponentClassAttribute(hash);
@@ -55,7 +55,7 @@ function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, t
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
     !(() => {
-      const resolver = (builder.resolver as CompileTimeLookup)['resolver'];
+      const resolver = (builder.compiler['resolver'] as CompileTimeLookup)['resolver'];
       const { owner, moduleName } = builder.referrer;
       if (name === 'component' || resolver['builtInHelpers'][name]) {
         return true;

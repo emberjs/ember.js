@@ -16,7 +16,7 @@ import {
 import Environment from './environment';
 import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
-import TemplateOptions from './template-options';
+import TemplateCompiler from './template-compiler';
 import ComponentTemplate from './templates/component';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
@@ -82,9 +82,9 @@ export function setupEngineRegistry(registry: Registry) {
 
   registry.register('service:-glimmer-environment', Environment);
 
-  registry.register(P`template-options:main`, TemplateOptions);
+  registry.register(P`template-compiler:main`, TemplateCompiler);
 
-  registry.injection('template', 'options', P`template-options:main`);
+  registry.injection('template', 'compiler', P`template-compiler:main`);
 
   registry.optionsForType('helper', { instantiate: false });
 

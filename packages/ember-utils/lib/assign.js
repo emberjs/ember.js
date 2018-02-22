@@ -37,4 +37,8 @@ export function assign(original) {
   return original;
 }
 
-export default Object.assign || assign;
+// Note: We use the bracket notation so
+//       that the babel plugin does not
+//       transform it.
+// https://www.npmjs.com/package/babel-plugin-transform-object-assign
+export default Object['assign'] || assign;
