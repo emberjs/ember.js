@@ -107,7 +107,7 @@ function notifyPropertyChange(obj, keyName, _meta) {
 
   if (hasMeta) {
     if (meta.isSourceDestroying()) { return; }
-    markObjectAsDirty(meta, keyName);
+    markObjectAsDirty(obj, keyName, meta);
   }
 
   if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {

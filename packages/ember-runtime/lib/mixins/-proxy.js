@@ -12,7 +12,8 @@ import {
   notifyPropertyChange,
   defineProperty,
   Mixin,
-  tagFor
+  tagFor,
+  setProxy
 } from 'ember-metal';
 import {
   assert,
@@ -55,8 +56,8 @@ export default Mixin.create({
 
   init() {
     this._super(...arguments);
+    setProxy(this);
     let m = meta(this);
-    m.setProxy();
     m.writableTag(() => combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)]));
   },
 

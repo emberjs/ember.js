@@ -35,7 +35,6 @@ export const UNDEFINED = symbol('undefined');
 const SOURCE_DESTROYING = 1 << 1;
 const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
-const IS_PROXY = 1 << 4;
 
 const NODE_STACK = [];
 
@@ -150,14 +149,6 @@ export class Meta {
 
   setMetaDestroyed() {
     this._flags |= META_DESTROYED;
-  }
-
-  isProxy() {
-    return (this._flags & IS_PROXY) !== 0;
-  }
-
-  setProxy() {
-    this._flags |= IS_PROXY;
   }
 
   _getOrCreateOwnMap(key) {

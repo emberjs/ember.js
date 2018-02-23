@@ -132,6 +132,7 @@ export {
   assertNotRendered
 } from './transaction';
 export {
-  isProxy
+  isProxy,
+  setProxy
 } from './is_proxy';
 export { default as descriptor } from './descriptor';
