@@ -180,11 +180,7 @@ function makeCtor(base) {
               let baseValue = self[keyName];
 
               if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
-                if (baseValue) {
-                  value = makeArray(baseValue).concat(value);
-                } else {
-                  value = makeArray(value);
-                }
+                value = makeArray(baseValue).concat(makeArray(value));
               }
 
               if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {

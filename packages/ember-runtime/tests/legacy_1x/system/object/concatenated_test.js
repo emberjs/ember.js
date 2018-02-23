@@ -127,5 +127,26 @@ moduleFor(
         `should concatenate functions property (expected: ${expected}, got: ${values})`
       );
     }
-  }
-);
+
+    ['@test concatenates instances with null/undefined properties'](assert) {
+      let objA = EmberObject.extend({
+        concatenatedProperties: ['values'],
+        values: null
+      })
+      .create({
+        values: ['a']
+      });
+
+      assert.deepEqual(objA.get('values'), ['a']);
+
+      let objB = EmberObject.extend({
+        concatenatedProperties: ['values'],
+        values: ['a']
+      })
+      .create({
+        values: null
+      });
+
+      assert.deepEqual(objB.get('values'), ['a']);
+    }
+});
