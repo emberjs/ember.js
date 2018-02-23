@@ -98,6 +98,8 @@ function makeCtor() {
               property === 'willWatchProperty' ||
               property === 'didUnwatchProperty' ||
               property === 'didAddListener' ||
+              property === '__DESCRIPTOR__' ||
+              property === 'isDescriptor' ||
               property in target
             ) {
               return Reflect.get(target, property, receiver);
