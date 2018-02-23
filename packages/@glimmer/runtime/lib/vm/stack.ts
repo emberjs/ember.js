@@ -197,7 +197,7 @@ function isImmediate(value: Opaque): value is number | boolean | null | undefine
       let abs = Math.abs(value as number);
 
       // too big
-      if (abs & HI) return false;
+      if (abs > HI) return false;
 
       return true;
     default:

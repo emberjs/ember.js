@@ -39,8 +39,7 @@ export type IteratorResult<T> = {
 
 export interface Constants<T> {
   resolver: RuntimeResolver<T>;
-  getFloat(value: number): number;
-  getNegative(value: number): number;
+  getNumber(value: number): number;
   getString(handle: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
