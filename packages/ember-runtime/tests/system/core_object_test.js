@@ -1,5 +1,5 @@
 import CoreObject, { POST_INIT } from '../../system/core_object';
-import { set, observer } from 'ember-metal';
+import { get, set, observer } from 'ember-metal';
 
 QUnit.module('Ember.CoreObject');
 
@@ -76,3 +76,32 @@ QUnit.test('[POST_INIT] invoked before finishChains', function(assert) {
 
   assert.equal(callCount, 1);
 });
+
+QUnit.test('should not trigger proxy assertion when retrieving a proxy with (GH#16263)', function(assert) {
+  let someProxyishThing = CoreObject.extend({
+    unknownProperty() {
+      return true;
+    }
+  }).create();
+
+  let obj = new CoreObject({
+    someProxyishThing
+  });
+
+  let proxy = get(obj, 'someProxyishThing');
+  assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+>>>>>>> 4e950a903... [BUGFIX beta] Ensure accessing a "proxy" itself does not error.
+QUnit.test('should not trigger proxy assertion when retrieving a proxy with (GH#16263)', function(assert) {
+  let someProxyishThing = CoreObject.extend({
+    unknownProperty() {
+      return true;
+    }
+  }).create();
+
+  let obj = new CoreObject({
+    someProxyishThing
+  });
+
+  let proxy = get(obj, 'someProxyishThing');
+  assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+>>>>>>> 4e950a903... [BUGFIX beta] Ensure accessing a "proxy" itself does not error.
