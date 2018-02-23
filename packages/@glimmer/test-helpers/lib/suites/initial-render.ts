@@ -840,6 +840,13 @@ export class InitialRenderSuite extends RenderTest {
     this.assertStableRerender();
   }
 
+  @test "Large numeric literals (Number.MAX_SAFE_INTEGER)"() {
+    this.registerHelper('testing', ([id]) => id);
+    this.render('<div>{{testing 9007199254740991}}</div>');
+    this.assertHTML('<div>9007199254740991</div>');
+    this.assertStableRerender();
+  }
+
   @test "Constant float numbers can render"() {
     this.registerHelper('testing', ([id]) => id);
     this.render('<div>{{testing 0.123}}</div>');

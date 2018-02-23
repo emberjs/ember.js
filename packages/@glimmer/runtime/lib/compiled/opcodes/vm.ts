@@ -41,7 +41,7 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       stack.push(value);
       break;
     case PrimitiveType.FLOAT:
-      stack.push(vm.constants.getFloat(value));
+      stack.push(vm.constants.getNumber(value));
       break;
     case PrimitiveType.STRING:
       stack.push(vm.constants.getString(value));
@@ -50,7 +50,10 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       stack.pushEncodedImmediate(primitive);
       break;
     case PrimitiveType.NEGATIVE:
-      stack.push(vm.constants.getNegative(value));
+      stack.push(vm.constants.getNumber(value));
+      break;
+    case PrimitiveType.BIG_NUM:
+      stack.push(vm.constants.getNumber(value));
       break;
   }
 });

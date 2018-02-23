@@ -557,11 +557,11 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
           if (_primitive as number > -1) {
             primitive = _primitive as number;
           } else {
-            primitive = this.negative(_primitive as number);
+            primitive = this.constants.number(_primitive as number);
             type = PrimitiveType.NEGATIVE;
           }
         } else {
-          primitive = this.float(_primitive as number);
+          primitive = this.constants.number(_primitive as number);
           type = PrimitiveType.FLOAT;
         }
         break;
@@ -586,15 +586,16 @@ export abstract class OpcodeBuilder<Locator> extends SimpleOpcodeBuilder {
         throw new Error('Invalid primitive passed to pushPrimitive');
     }
 
-    this.push(Op.Primitive, primitive << 3 | type);
+    let immediate = this.sizeImmediate(primitive << 3 | type, primitive);
+    this.push(Op.Primitive, immediate);
   }
 
-  float(num: number): number {
-    return this.constants.float(num);
-  }
+  sizeImmediate(shifted: number, primitive: number) {
+    if (shifted >= OpcodeSize.MAX_SIZE || shifted < 0) {
+      return this.constants.number(primitive) << 3 | PrimitiveType.BIG_NUM;
+    }
 
-  negative(num: number): number {
-    return this.constants.negative(num);
+    return shifted;
   }
 
   pushPrimitiveReference(primitive: Primitive) {
