@@ -7,7 +7,10 @@ import {
   computed,
   notifyPropertyChange,
   peekMeta,
-  meta
+  meta,
+  watch,
+  unwatch,
+  watcherCount
 } from '..';
 
 QUnit.module('Chains');
@@ -95,4 +98,48 @@ QUnit.test('checks cache correctly', function(assert) {
   get(obj, 'foo');
 
   assert.strictEqual(chainNode.value(), undefined);
+});
+
+QUnit.test('chains are watched correctly', function(assert) {
+  let obj = { foo: { bar: { baz: 1 } } };
+
+  watch(obj, 'foo.bar.baz');
+
+  assert.equal(watcherCount(obj, 'foo'), 1);
+  assert.equal(watcherCount(obj, 'foo.bar'), 0);
+  assert.equal(watcherCount(obj, 'foo.bar.baz'), 1);
+  assert.equal(watcherCount(obj.foo, 'bar'), 1);
+  assert.equal(watcherCount(obj.foo, 'bar.baz'), 0);
+  assert.equal(watcherCount(obj.foo.bar, 'baz'), 1);
+
+  unwatch(obj, 'foo.bar.baz');
+
+  assert.equal(watcherCount(obj, 'foo'), 0);
+  assert.equal(watcherCount(obj, 'foo.bar'), 0);
+  assert.equal(watcherCount(obj, 'foo.bar.baz'), 0);
+  assert.equal(watcherCount(obj.foo, 'bar'), 0);
+  assert.equal(watcherCount(obj.foo, 'bar.baz'), 0);
+  assert.equal(watcherCount(obj.foo.bar, 'baz'), 0);
+});
+
+QUnit.test('chains with single character keys are watched correctly', function (assert) {
+  let obj = { a: { b: { c: 1 } } };
+
+  watch(obj, 'a.b.c');
+
+  assert.equal(watcherCount(obj, 'a'), 1);
+  assert.equal(watcherCount(obj, 'a.b'), 0);
+  assert.equal(watcherCount(obj, 'a.b.c'), 1);
+  assert.equal(watcherCount(obj.a, 'b'), 1);
+  assert.equal(watcherCount(obj.a, 'b.c'), 0);
+  assert.equal(watcherCount(obj.a.b, 'c'), 1);
+
+  unwatch(obj, 'a.b.c');
+
+  assert.equal(watcherCount(obj, 'a'), 0);
+  assert.equal(watcherCount(obj, 'a.b'), 0);
+  assert.equal(watcherCount(obj, 'a.b.c'), 0);
+  assert.equal(watcherCount(obj.a, 'b'), 0);
+  assert.equal(watcherCount(obj.a, 'b.c'), 0);
+  assert.equal(watcherCount(obj.a.b, 'c'), 0);
 });
