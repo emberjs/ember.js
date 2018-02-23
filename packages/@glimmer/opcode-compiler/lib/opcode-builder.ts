@@ -140,7 +140,7 @@ export class StdOpcodeBuilder {
 
   main() {
     this.push(Op.Main, Register.s0);
-    this.invokePreparedComponent(false);
+    this.invokePreparedComponent(false, false, true);
   }
 
   appendHTML() {
@@ -195,6 +195,10 @@ export class StdOpcodeBuilder {
     this.push(Op.RootScope, symbols, (bindCallerScope ? 1 : 0));
   }
 
+  pushVirtualRootScope(register: Register) {
+    this.push(Op.VirtualRootScope, register);
+  }
+
   pushChildScope() {
     this.push(Op.ChildScope);
   }
@@ -230,6 +234,10 @@ export class StdOpcodeBuilder {
 
   getComponentLayout(state: Register) {
     this.push(Op.GetComponentLayout, state);
+  }
+
+  setupForEval(state: Register) {
+    this.push(Op.SetupForEval, state);
   }
 
   invokeComponentLayout(state: Register) {
@@ -272,7 +280,7 @@ export class StdOpcodeBuilder {
     this.push(Op.ToBoolean);
   }
 
-  invokePreparedComponent(hasBlock: boolean, populateLayout: Option<() => void> = null) {
+  invokePreparedComponent(hasBlock: boolean, bindableBlocks: boolean, bindableAtNames: boolean, populateLayout: Option<() => void> = null) {
     this.beginComponentTransaction();
     this.pushDynamicScope();
 
@@ -288,6 +296,12 @@ export class StdOpcodeBuilder {
 
     this.getComponentSelf(Register.s0);
 
+    this.pushVirtualRootScope(Register.s0);
+    this.setVariable(0);
+    this.setupForEval(Register.s0);
+    if (bindableAtNames) this.setNamedVariables(Register.s0);
+    if (bindableBlocks) this.setBlocks(Register.s0);
+    this.pop();
     this.invokeComponentLayout(Register.s0);
     this.didRenderLayout(Register.s0);
     this.popFrame();
@@ -379,6 +393,14 @@ export class StdOpcodeBuilder {
   }
 
   // expressions
+
+  setNamedVariables(state: Register) {
+    this.push(Op.SetNamedVariables, state);
+  }
+
+  setBlocks(state: Register) {
+    this.push(Op.SetBlocks, state);
+  }
 
   setVariable(symbol: number) {
     this.push(Op.SetVariable, symbol);
@@ -577,7 +599,7 @@ export class StdOpcodeBuilder {
     this.pushEmptyArgs();
     this.prepareArgs(Register.s0);
 
-    this.invokePreparedComponent(false, () => {
+    this.invokePreparedComponent(false, false, true, () => {
       this.getComponentLayout(Register.s0);
       this.populateLayout(Register.s0);
     });
@@ -646,7 +668,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
   // args
 
-  pushArgs(names: string[], flags: number) {
+  pushArgs(names: string[], flags: number): void {
     let serialized = this.constants.stringArray(names);
     this.push(Op.PushArgs, serialized, flags);
   }
@@ -678,19 +700,22 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     }
   }
 
-  invokeComponent(attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: CompilableProgram) {
+  invokeComponent(capabilities: ComponentCapabilities | true, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: CompilableProgram) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
 
     this.pushFrame();
 
+    let bindableBlocks = !!(block || inverse || attrs);
+    let bindableAtNames = (capabilities === true || capabilities.prepareArgs) || !!(hash && hash[0].length !== 0);
+
     let blocks = { main: block, else: inverse, attrs };
 
     this.compileArgs(params, hash, blocks, synthetic);
     this.prepareArgs(Register.s0);
 
-    this.invokePreparedComponent(block !== null, () => {
+    this.invokePreparedComponent(block !== null, bindableBlocks, bindableAtNames, () => {
       if (layout) {
         this.pushSymbolTable(layout.symbolTable);
         this.pushLayout(layout);
@@ -713,7 +738,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
       capabilities.prepareArgs;
 
     if (bailOut) {
-      this.invokeComponent(attrs, params, hash, synthetic, block, inverse, layout);
+      this.invokeComponent(capabilities, attrs, params, hash, synthetic, block, inverse, layout);
       return;
     }
 
@@ -729,8 +754,14 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     }
 
     this.beginComponentTransaction();
-    this.pushDynamicScope();
-    this.createComponent(Register.s0, block !== null);
+
+    if (capabilities.dynamicScope) {
+      this.pushDynamicScope();
+    }
+
+    if (capabilities.createInstance) {
+      this.createComponent(Register.s0, block !== null);
+    }
 
     if (capabilities.createArgs) {
       this.popFrame();
@@ -808,11 +839,19 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     }
 
     this.invokeStatic(layout);
-    this.didRenderLayout(Register.s0);
+
+    if (capabilities.createInstance) {
+      this.didRenderLayout(Register.s0);
+    }
+
     this.popFrame();
 
     this.popScope();
-    this.popDynamicScope();
+
+    if (capabilities.dynamicScope) {
+      this.popDynamicScope();
+    }
+
     this.commitComponentTransaction();
 
     this.load(Register.s0);
@@ -833,7 +872,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
         this.pushDynamicComponentInstance();
 
-        this.invokeComponent(null, params, hash, synthetic, block, inverse);
+        this.invokeComponent(true, null, params, hash, synthetic, block, inverse);
 
         this.label('ELSE');
       }
@@ -1268,7 +1307,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     return params.length;
   }
 
-  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, blocks: Option<Blocks>, synthetic: boolean) {
+  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, blocks: Option<Blocks>, synthetic: boolean): void {
     if (blocks) {
       this.pushYieldableBlock(blocks.main);
       this.pushYieldableBlock(blocks.else);

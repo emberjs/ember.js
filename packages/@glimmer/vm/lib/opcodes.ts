@@ -31,6 +31,30 @@ export const enum Op {
 
   /**
    * Operation:
+   *   Bind the named arguments in the Arguments to the symbols
+   *   specified by the symbol table in the component state at register.
+   * Format:
+   *   (SetNamedVariables register:u32)
+   * Operand Stack:
+   *   ..., Arguments →
+   *   ...
+   */
+  SetNamedVariables,
+
+  /**
+   * Operation:
+   *   Bind the blocks in the Arguments to the symbols specified by the
+   *   symbol table in the component state at register.
+   * Format:
+   *   (SetBlocks register:u32)
+   * Operand Stack:
+   *   ..., Arguments →
+   *   ...
+   */
+  SetBlocks,
+
+  /**
+   * Operation:
    *   Bind the variable represented by a symbol from
    *   the value at the top of the stack.
    * Format:
@@ -235,6 +259,20 @@ export const enum Op {
    *   the caller scope (for yielding blocks).
    */
   RootScope,
+
+  /**
+   * Operation: Push a new root scope onto the scope stack.
+   *
+   * Format:
+   *   (VirtualRootScope register:u32)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   * Description:
+   *   The symbol count is determined by the component state in
+   *   the specified register.
+   */
+  VirtualRootScope,
 
   /**
    * Operation: Push a new child scope onto the scope stack.
@@ -989,6 +1027,28 @@ export const enum Op {
    *   ..., ProgramSymbolTable, Handle
    */
   GetComponentLayout,
+
+  /**
+   * Operation: Populate the eval lookup if necessary.
+   *
+   * Format:
+   *   (SetupForEval state:register)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  SetupForEval,
+
+  /**
+   * Operation: Populate the eval lookup if necessary.
+   *
+   * Format:
+   *   (SetupForEval state:register)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  BindEvalScope,
 
   /**
    * Operation:

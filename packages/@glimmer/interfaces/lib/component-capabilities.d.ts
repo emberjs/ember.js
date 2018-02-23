@@ -48,6 +48,11 @@ export default interface ComponentCapabilities {
   createArgs: boolean;
 
   /**
+   * Whether the component needs the caller component
+   */
+  createCaller: boolean;
+
+  /**
    * Whether to call the `didSplatAttributes` hook on the component manager.
    */
   attributeHook: boolean;
@@ -56,4 +61,20 @@ export default interface ComponentCapabilities {
    * Whether to call the `didCreateElement` hook on the component manager.
    */
   elementHook: boolean;
+
+  /**
+   * Whether the component manager has an update hook.
+   */
+  updateHook: boolean;
+
+  /**
+   * Whether the component needs an additional dynamic scope frame.
+  */
+  dynamicScope: boolean;
+
+  /**
+   * Whether there is a component instance to create. If this is false,
+   * the component is a "template only component"
+   */
+  createInstance: boolean;
 }

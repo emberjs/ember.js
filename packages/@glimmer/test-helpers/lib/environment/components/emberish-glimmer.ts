@@ -16,7 +16,9 @@ export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
   dynamicTag: true,
   createArgs: true,
-  attributeHook: true
+  attributeHook: true,
+  updateHook: true,
+  createInstance: true
 };
 
 export interface EmberishGlimmerComponentState {
