@@ -1,7 +1,7 @@
 import { assert } from 'ember-debug';
 
 /**
-@module @ember/object
+@module @ember/object/computed
 */
 
 const END_WITH_EACH_REGEX = /\.@each$/;
