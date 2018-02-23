@@ -29,6 +29,7 @@ import {
 } from '../../computed/reduce_computed_macros';
 import { isArray } from '../../utils';
 import { A as emberA, removeAt } from '../../mixins/array';
+import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 
 let obj;
 QUnit.module('map', {
@@ -1299,19 +1300,25 @@ QUnit.test('changing item properties specified via @each triggers a resort of th
   assert.deepEqual(obj.get('sortedItems').mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], 'updating a specified property on an item resorts it');
 });
 
-QUnit.test('changing item properties not specified via @each does not trigger a resort', function(assert) {
-  let items = obj.get('items');
-  let cersei = items[1];
+if (!EMBER_METAL_TRACKED_PROPERTIES) {
+  QUnit.test('changing item properties not specified via @each does not trigger a resort', function(assert) {
+    let items = obj.get('items');
+    let cersei = items[1];
 
-  assert.deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
+    assert.deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'precond - array is initially sorted');
 
-  set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
+    set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
 
-  // The array has become unsorted.  If your sort function is sensitive to
-  // properties, they *must* be specified as dependent item property keys or
-  // we'll be doing binary searches on unsorted arrays.
-  assert.deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'updating an unspecified property on an item does not resort it');
-});
+    // The array has become unsorted.  If your sort function is sensitive to
+    // properties, they *must* be specified as dependent item property keys or
+    // we'll be doing binary searches on unsorted arrays.
+    assert.deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'updating an unspecified property on an item does not resort it');
+  });
+} else {
+  QUnit.todo('changing item properties not specified via @each does not trigger a resort', assert => {
+    assert.ok(false, 'It is unclear whether changing this behavior should be considered a breaking change, and whether it catches more bugs than it causes');
+  });
+}
 
 QUnit.module('sort - stability', {
   beforeEach() {

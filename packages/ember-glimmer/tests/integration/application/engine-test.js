@@ -717,8 +717,8 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       let href1337 = this.element.querySelector('.author-1337').href;
 
       // check if link ends with the suffix
-      assert.ok(this.stringsEndWith(href1, suffix1));
-      assert.ok(this.stringsEndWith(href1337, suffix1337));
+      assert.ok(this.stringsEndWith(href1, suffix1), `${href1} ends with ${suffix1}`);
+      assert.ok(this.stringsEndWith(href1337, suffix1337), `${href1337} ends with ${suffix1337}`);
     });
   }
 
