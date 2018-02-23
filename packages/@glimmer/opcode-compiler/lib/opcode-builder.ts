@@ -252,6 +252,14 @@ export class StdOpcodeBuilder {
     this.pushMachine(Op.PopFrame);
   }
 
+  pushSmallFrame() {
+    this.pushMachine(Op.PushSmallFrame);
+  }
+
+  popSmallFrame() {
+    this.pushMachine(Op.PopSmallFrame);
+  }
+
   invokeVirtual(): void {
     this.pushMachine(Op.InvokeVirtual);
   }
@@ -515,7 +523,6 @@ export class StdOpcodeBuilder {
     this.stopLabels();
 
     this.exit();
-    this.return();
   }
 
   stdAppend(trusting: boolean) {
@@ -729,6 +736,8 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
       this.popFrame();
     }
 
+    this.pushFrame();
+
     this.registerComponentDestructor(Register.s0);
 
     let bindings: { symbol: number, isBlock: boolean }[] = [];
@@ -798,8 +807,6 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
       }
     }
 
-    this.pushFrame();
-
     this.invokeStatic(layout);
     this.didRenderLayout(Register.s0);
     this.popFrame();
@@ -812,33 +819,25 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   }
 
   dynamicComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
-    this.startLabels();
+    this.try({
+      args: () => {
+        this.expr(definition);
+        this.dup();
+        return 2;
+      },
 
-    this.pushFrame();
+      body: () => {
+        this.jumpUnless('ELSE');
 
-    this.expr(definition);
+        this.resolveDynamicComponent(this.containingLayout.referrer);
 
-    this.dup();
+        this.pushDynamicComponentInstance();
 
-    this.returnTo('END');
-    this.enter(2);
+        this.invokeComponent(null, params, hash, synthetic, block, inverse);
 
-    this.jumpUnless('ELSE');
-
-    this.resolveDynamicComponent(this.containingLayout.referrer);
-
-    this.pushDynamicComponentInstance();
-
-    this.invokeComponent(null, params, hash, synthetic, block, inverse);
-
-    this.label('ELSE');
-    this.exit();
-    this.return();
-
-    this.label('END');
-    this.popFrame();
-
-    this.stopLabels();
+        this.label('ELSE');
+      }
+    });
   }
 
   yield(to: number, params: Option<WireFormat.Core.Params>) {
@@ -1089,16 +1088,161 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
   // convenience methods
 
-  updatableBlock(args: () => number, then: () => void): void {
+  /**
+   * A convenience for pushing some arguments on the stack and
+   * running some code if the code needs to be re-executed during
+   * updating execution if some of the arguments have changed.
+   *
+   * # Initial Execution
+   *
+   * The `args` function should push zero or more arguments onto
+   * the stack and return the number of arguments pushed.
+   *
+   * The `body` function provides the instructions to execute both
+   * during initial execution and during updating execution.
+   *
+   * Internally, this function starts by pushing a new frame, so
+   * that the body can return and sets the return point ($ra) to
+   * the ENDINITIAL label.
+   *
+   * It then executes the `args` function, which adds instructions
+   * responsible for pushing the arguments for the block to the
+   * stack. These arguments will be restored to the stack before
+   * updating execution.
+   *
+   * Next, it adds the Enter opcode, which marks the current position
+   * in the DOM, and remembers the current $pc (the next instruction)
+   * as the first instruction to execute during updating execution.
+   *
+   * Next, it runs `body`, which adds the opcodes that should
+   * execute both during initial execution and during updating execution.
+   * If the `body` wishes to finish early, it should Jump to the
+   * `FINALLY` label.
+   *
+   * Next, it adds the FINALLY label, followed by:
+   *
+   * - the Exit opcode, which finalizes the marked DOM started by the
+   *   Enter opcode.
+   * - the Return opcode, which returns to the current return point
+   *   ($ra).
+   *
+   * Finally, it adds the ENDINITIAL label followed by the PopFrame
+   * instruction, which restores $fp, $sp and $ra.
+   *
+   * # Updating Execution
+   *
+   * Updating execution for this `try` occurs if the `body` added an
+   * assertion, via one of the `JumpIf`, `JumpUnless` or `AssertSame` opcodes.
+   *
+   * If, during updating executon, the assertion fails, the initial VM is
+   * restored, and the stored arguments are pushed onto the stack. The DOM
+   * between the starting and ending markers is cleared, and the VM's cursor
+   * is set to the area just cleared.
+   *
+   * The return point ($ra) is set to -1, the exit instruction.
+   *
+   * Finally, the $pc is set to to the instruction saved off by the
+   * Enter opcode during initial execution, and execution proceeds as
+   * usual.
+   *
+   * The only difference is that when a `Return` instruction is
+   * encountered, the program jumps to -1 rather than the END label,
+   * and the PopFrame opcode is not needed.
+   */
+  try({ args, body }: { args(): number, body(): void }): void {
+    // Start a new label frame, to give END and RETURN
+    // a unique meaning.
     this.startLabels();
     this.pushFrame();
+
+    // If the body invokes a block, its return will return to
+    // END. Otherwise, the return in RETURN will return to END.
+    this.returnTo('ENDINITIAL');
+
+    // Push the arguments onto the stack. The args() function
+    // tells us how many stack elements to retain for re-execution
+    // when updating.
     let count = args();
-    this.returnTo('END');
+
+    // Start a new updating closure, remembering `count` elements
+    // from the stack. Everything after this point, and before END,
+    // will execute both initially and to update the block.
+    //
+    // The enter and exit opcodes also track the area of the DOM
+    // associated with this block. If an assertion inside the block
+    // fails (for example, the test value changes from true to false
+    // in an #if), the DOM is cleared and the program is re-executed,
+    // restoring `count` elements to the stack and executing the
+    // instructions between the enter and exit.
     this.enter(count);
-    then();
-    this.label('END');
+
+    // Evaluate the body of the block. The body of the block may
+    // return, which will jump execution to END during initial
+    // execution, and exit the updating routine.
+    body();
+
+    // All execution paths in the body should run the FINALLY once
+    // they are done. It is executed both during initial execution
+    // and during updating execution.
+    this.label('FINALLY');
+
+    // Finalize the DOM.
+    this.exit();
+
+    // In initial execution, this is a noop: it returns to the
+    // immediately following opcode. In updating execution, this
+    // exits the updating routine.
+    this.return();
+
+    // Cleanup code for the block. Runs on initial execution
+    // but not on updating.
+    this.label('ENDINITIAL');
     this.popFrame();
     this.stopLabels();
+  }
+
+  /**
+   * A specialized version of the `try` convenience that allows the
+   * caller to provide different code based upon whether the item at
+   * the top of the stack is true or false.
+   *
+   * As in `try`, the `ifTrue` and `ifFalse` code can invoke `return`.
+   *
+   * During the initial execution, a `return` will continue execution
+   * in the cleanup code, which finalizes the current DOM block and pops
+   * the current frame.
+   *
+   * During the updating execution, a `return` will exit the updating
+   * routine, as it can reuse the DOM block and is always only a single
+   * frame deep.
+   */
+  tryIf({ args, ifTrue, ifFalse }: { args(): number, ifTrue(): void, ifFalse?(): void }) {
+    this.try({
+      args,
+
+      body: () => {
+        // If the conditional is false, jump to the ELSE label.
+        this.jumpUnless('ELSE');
+
+        // Otherwise, execute the code associated with the true branch.
+        ifTrue();
+
+        // We're done, so return. In the initial execution, this runs
+        // the cleanup code. In the updating VM, it exits the updating
+        // routine.
+        this.jump('FINALLY');
+
+        this.label('ELSE');
+
+        // If the conditional is false, and code associatied ith the
+        // false branch was provided, execute it. If there was no code
+        // associated with the false branch, jumping to the else statement
+        // has no other behavior.
+        if (ifFalse) {
+          ifFalse();
+        }
+      }
+    });
   }
 
   inlineBlock(block: SerializedInlineBlock): CompilableBlock {
