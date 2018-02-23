@@ -50,9 +50,9 @@ export class AliasedProperty extends Descriptor {
 
   get(obj, keyName) {
     let ret = get(obj, this.altKey);
-    let meta = metaFor(obj);
     let cache = getCacheFor(obj);
     if (cache.get(keyName) !== CONSUMED) {
+      let meta = metaFor(obj);
       cache.set(keyName, CONSUMED);
       addDependentKeys(this, obj, keyName, meta);
     }
