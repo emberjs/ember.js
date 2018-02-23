@@ -21,6 +21,8 @@ import {
 
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
+function noop() {}
+
 /**
   A computed property transforms an object literal with object's accessor function(s) into a property.
 
@@ -138,11 +140,12 @@ class ComputedProperty extends Descriptor {
       this._getter = config;
     } else {
       assert('computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-      assert('Config object passed to computed can only contain `get` or `set` keys.', Object.keys(config).every((key)=> key === 'get' || key === 'set'));
-      this._getter = config.get;
+      assert('Config object passed to computed can only contain `get` and `set` keys.', Object.keys(config).every((key)=> key === 'get' || key === 'set'));
+      assert('Computed properties must receive a getter or a setter, you passed none.', !!config.get || !!config.set);
+      this._getter = config.get || noop;
       this._setter = config.set;
     }
-    assert('Computed properties must receive a getter or a setter, you passed none.', !!this._getter || !!this._setter);
+
     this._suspended = undefined;
     this._meta = undefined;
     this._volatile = false;

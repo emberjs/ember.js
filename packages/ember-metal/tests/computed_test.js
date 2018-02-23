@@ -41,7 +41,7 @@ QUnit.test('computed properties defined with an object only allow `get` and `set
       set() {},
       other() {}
     });
-  }, 'Config object passed to computed can only contain `get` or `set` keys.');
+  }, 'Config object passed to computed can only contain `get` and `set` keys.');
 });
 
 if (EMBER_METAL_ES5_GETTERS) {
@@ -652,6 +652,20 @@ QUnit.test('setter can be omited', function(assert) {
   assert.ok(testObj.get('a') === '1');
   testObj.set('aInt', '123');
   assert.ok(testObj.get('aInt') === '123', 'cp has been updated too');
+});
+
+QUnit.test('getter can be omited', function(assert) {
+  let testObj = EmberObject.extend({
+    com: computed({
+      set(key, value) {
+        return value;
+      }
+    })
+  }).create();
+
+  assert.ok(testObj.get('com') === undefined);
+  testObj.set('com', '123');
+  assert.ok(testObj.get('com') === '123', 'cp has been updated');
 });
 
 QUnit.test('the return value of the setter gets cached', function(assert) {
