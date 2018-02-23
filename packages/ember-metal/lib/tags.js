@@ -1,5 +1,6 @@
 import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import { meta as metaFor } from './meta';
+import { isProxy } from './is_proxy';
 import run from './run_loop';
 
 let hasViews = () => false;
@@ -15,11 +16,11 @@ function makeTag() {
 export function tagForProperty(object, propertyKey, _meta) {
   if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
 
-  let meta = _meta === undefined ? metaFor(object) : _meta;
-  if (meta.isProxy()) {
+  if (isProxy(object)) {
     return tagFor(object, meta);
   }
 
+  let meta = _meta === undefined ? metaFor(object) : _meta;
   let tags = meta.writableTags();
   let tag = tags[propertyKey];
   if (tag) { return tag; }
@@ -36,11 +37,11 @@ export function tagFor(object, _meta) {
   }
 }
 
-export function markObjectAsDirty(meta, propertyKey) {
+export function markObjectAsDirty(obj, propertyKey, meta) {
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {
-    if (meta.isProxy()) {
+    if (isProxy(obj)) {
       objectTag.inner.first.inner.dirty();
     } else {
       objectTag.inner.dirty();

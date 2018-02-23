@@ -49,6 +49,8 @@ export function watchKey(obj: any, keyName: string, meta?: any): void;
 
 export function isProxy(value: any): boolean;
 
+export function setProxy(value: any): any;
+
 export class Cache<T, V> {
   constructor(limit: number, func: (obj: T) => V, key?: (obj: T) => string, store?: any)
   get(obj: T): V
