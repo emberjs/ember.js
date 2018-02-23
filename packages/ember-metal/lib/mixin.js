@@ -130,19 +130,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
 
 function applyConcatenatedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
-  let ret;
-
-  if (baseValue === null || baseValue === undefined) {
-    ret = makeArray(value);
-  } else if (isArray(baseValue)) {
-    if (value === null || value === undefined) {
-      ret = baseValue;
-    } else {
-      ret = a_concat.call(baseValue, value);
-    }
-  } else {
-    ret = a_concat.call(makeArray(baseValue), value);
-  }
+  let ret = makeArray(baseValue).concat(makeArray(value));
 
   if (DEBUG) {
     // it is possible to use concatenatedProperties with strings (which cannot be frozen)
