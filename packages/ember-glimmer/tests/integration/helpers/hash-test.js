@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { set } from 'ember-metal';
+import { get, set } from 'ember-metal';
 
 moduleFor('Helpers test: {{hash}}', class extends RenderingTest {
 
@@ -94,6 +94,26 @@ moduleFor('Helpers test: {{hash}}', class extends RenderingTest {
     this.runTask(() => set(this.context, 'model', { firstName: 'Balint' }));
 
     this.assertText('Balint');
+  }
+
+  ['@test returns a real Object'](assert) {
+    let fooBarInstance;
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super();
+        fooBarInstance = this;
+      }
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent
+    });
+
+    this.render(`{{#with (hash name="Kelly") as |person|}}{{foo-bar person=person}}{{/with}}`);
+
+    let person = get(fooBarInstance, 'person');
+
+    assert.strictEqual(Object.getPrototypeOf(person).constructor, Object);
   }
 
   ['@test should yield hash of internal properties']() {
