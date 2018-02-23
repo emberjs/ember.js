@@ -108,7 +108,7 @@ function runInBrowser(url, retries, resolve, reject) {
 
             testsTotal++;
 
-            if (result.failed) {
+            if (result.failed > 0 && !result.todo) {
               testsFailed++;
               console.log('\n' + 'Test failed: ' + name);
 
