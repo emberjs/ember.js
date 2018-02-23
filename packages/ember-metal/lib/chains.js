@@ -241,7 +241,7 @@ class ChainNode {
     let node = chains[key];
 
     // unchain rest of path first...
-    if (tails.length > 1) {
+    if (tails.length > 0) {
       node.unchain(tails.shift(), tails);
     }
 
