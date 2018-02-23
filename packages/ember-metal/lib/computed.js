@@ -389,7 +389,6 @@ class ComputedProperty extends Descriptor {
   }
 
   _set(obj, keyName, value) {
-    let meta = metaFor(obj);
     let cache = getCacheFor(obj);
     let hadCachedValue = cache.has(keyName);
     let cachedValue = cache.get(keyName);
@@ -401,6 +400,7 @@ class ComputedProperty extends Descriptor {
       return ret;
     }
 
+    let meta = metaFor(obj);
     if (!hadCachedValue) {
       addDependentKeys(this, obj, keyName, meta);
     }
