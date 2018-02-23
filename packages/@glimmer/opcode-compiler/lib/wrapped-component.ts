@@ -124,7 +124,7 @@ export class ComponentBuilder<Locator> implements IComponentBuilder {
         builder.invokeStaticComponent(capabilities, compilable, null, params, hash, false, _default, inverse);
       } else {
         builder.pushComponentDefinition(handle);
-        builder.invokeComponent(null, params, hash, false, _default, inverse);
+        builder.invokeComponent(capabilities, null, params, hash, false, _default, inverse);
       }
     }
   }

@@ -117,7 +117,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
         builder.invokeStaticComponent(capabilities, compilable, attrsBlock, null, args, false, child && child);
       } else {
         builder.pushComponentDefinition(handle);
-        builder.invokeComponent(attrsBlock, null, args, false, child && child);
+        builder.invokeComponent(capabilities, attrsBlock, null, args, false, child && child);
       }
     } else {
       throw new Error(`Compile Error: Cannot find component ${tag}`);

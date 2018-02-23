@@ -301,6 +301,10 @@ OPCODE_METADATA(Op.RootScope, {
   operands: 2
 });
 
+OPCODE_METADATA(Op.VirtualRootScope, {
+  name: 'VirtualRootScope'
+});
+
 OPCODE_METADATA(Op.ChildScope, {
   name: 'ChildScope'
 });
@@ -403,6 +407,18 @@ OPCODE_METADATA(Op.GetComponentLayout, {
   ops: [Register('state')],
   operands: 1,
   stackChange: 2
+});
+
+OPCODE_METADATA(Op.SetupForEval, {
+  name: 'SetupForEval',
+  ops: [Register('state')],
+  operands: 1
+});
+
+OPCODE_METADATA(Op.BindEvalScope, {
+  name: 'BindEvalScope',
+  ops: [Register('state')],
+  operands: 1
 });
 
 OPCODE_METADATA(Op.InvokeComponentLayout, {
@@ -627,6 +643,18 @@ OPCODE_METADATA(Op.Helper, {
   ops: [Handle('helper')],
   operands: 1,
   stackChange: -1
+});
+
+OPCODE_METADATA(Op.SetNamedVariables, {
+  name: 'SetNamedVariables',
+  ops: [Register('register')],
+  operands: 1
+});
+
+OPCODE_METADATA(Op.SetBlocks, {
+  name: 'SetBlocks',
+  ops: [Register('register')],
+  operands: 1
 });
 
 OPCODE_METADATA(Op.SetVariable, {

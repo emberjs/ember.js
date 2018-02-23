@@ -38,7 +38,7 @@ export interface ComponentManager<ComponentInstanceState, ComponentDefinitionSta
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, state: ComponentDefinitionState, args: Option<IArguments>, dynamicScope: DynamicScope, caller: VersionedPathReference<Opaque>, hasDefaultBlock: boolean): ComponentInstanceState;
+  create(env: Environment, state: ComponentDefinitionState, args: Option<IArguments>, dynamicScope: Option<DynamicScope>, caller: Option<VersionedPathReference<Opaque>>, hasDefaultBlock: boolean): ComponentInstanceState;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
@@ -60,7 +60,7 @@ export interface ComponentManager<ComponentInstanceState, ComponentDefinitionSta
 
   // When the component's tag has invalidated, the manager's `update` hook is
   // called.
-  update(state: ComponentInstanceState, dynamicScope: DynamicScope): void;
+  update(state: ComponentInstanceState, dynamicScope: Option<DynamicScope>): void;
 
   // This hook is run after the entire layout has been updated.
   //
@@ -131,7 +131,11 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   prepareArgs: true,
   createArgs: true,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  dynamicScope: true,
+  createCaller: false,
+  updateHook: true,
+  createInstance: true
 };
 
 export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
@@ -140,7 +144,11 @@ export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  dynamicScope: false,
+  createCaller: false,
+  updateHook: false,
+  createInstance: false
 };
 
 export type BrandedComponentDefinition = CurriedComponentDefinition;

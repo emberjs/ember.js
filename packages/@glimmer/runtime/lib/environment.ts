@@ -75,8 +75,9 @@ export class Scope {
     return this.get<PathReference<Opaque>>(symbol);
   }
 
-  getBlock(symbol: number): ScopeBlock {
-    return this.get<ScopeBlock>(symbol);
+  getBlock(symbol: number): Option<ScopeBlock> {
+    let block = this.get(symbol);
+    return block === UNDEFINED_REFERENCE ? null : block as ScopeBlock;
   }
 
   getEvalScope(): Option<Dict<ScopeSlot>> {

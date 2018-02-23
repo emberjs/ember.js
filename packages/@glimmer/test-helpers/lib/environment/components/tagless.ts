@@ -13,7 +13,11 @@ export const STATIC_TAGLESS_CAPABILITIES = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  dynamicScope: false,
+  updateHook: false,
+  createCaller: false,
+  createInstance: false
 };
 
 export class StaticTaglessComponentManager extends BasicComponentManager {
