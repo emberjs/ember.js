@@ -262,6 +262,23 @@ OPCODE_METADATA(Op.PopFrame, {
   }
 });
 
+OPCODE_METADATA(Op.PushSmallFrame, {
+  name: 'PushSmallFrame',
+  stackChange: 1
+});
+
+OPCODE_METADATA(Op.PopSmallFrame, {
+  name: 'PopFrame',
+
+  before(_opcode: Opcode, vm: VM): { sp: number, fp: number } {
+    return { sp: vm.stack.sp, fp: vm.stack.fp };
+  },
+
+  stackChange({ state }: { state: { sp: number, fp: number } }) {
+    return state.fp - state.sp;
+  }
+});
+
 OPCODE_METADATA(Op.Enter, {
   name: 'Enter',
   ops: [I32('args')],

@@ -58,6 +58,4 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
     vm.pushFrame(); // sp += 2
     vm.call(vmHandle!);
   }
-
-  expectStackChange(vm.stack, 1, 'InvokePartial');
 });

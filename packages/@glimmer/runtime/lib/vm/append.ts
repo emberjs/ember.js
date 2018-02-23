@@ -21,6 +21,7 @@ import {
 
 import { Heap, Opcode } from "@glimmer/program";
 import { RuntimeResolver } from "@glimmer/interfaces";
+import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface PublicVM {
   env: Environment;
@@ -411,6 +412,10 @@ export default class VM<T> implements PublicVM {
   /// EXECUTION
 
   execute(start: number, initialize?: (vm: VM<T>) => void): RenderResult {
+    if (DEBUG) {
+      console.log(`EXECUTING FROM ${start}`);
+    }
+
     this.pc = this.heap.getaddr(start);
 
     if (initialize) initialize(this);

@@ -618,6 +618,28 @@ export const enum Op {
   PopFrame,
 
   /**
+   * Operation: Push a small stack frame
+   *
+   * Format:
+   *   (PushSmallFrame)
+   * Operand Stack:
+   *   ... →
+   *   $fp
+   */
+  PushSmallFrame,
+
+  /**
+   * Operation: Pop a stack frame
+   *
+   * Format:
+   *   (PopSmallFrame)
+   * Operand Stack:
+   *   $fp →
+   *   ...
+   */
+  PopSmallFrame,
+
+  /**
    * Operation:
    *   Start tracking a new output block that could change
    *   if one of its inputs changes.
