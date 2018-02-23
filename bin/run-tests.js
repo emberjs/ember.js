@@ -75,7 +75,7 @@ function runInBrowser(url, retries, resolve, reject) {
             var response;
 
             // Ignore passing assertions
-            if (details.result) {
+            if (details.result === details.todo) {
               return;
             }
 

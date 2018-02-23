@@ -200,7 +200,7 @@
 
           testsTotal++;
 
-          if (results.failed) {
+          if (results.failed > 0 && !results.todo) {
             testsFailed++;
           } else {
             testsPassed++;
