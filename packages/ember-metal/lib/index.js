@@ -72,8 +72,7 @@ export {
 } from './property_events';
 export {
   defineProperty,
-  Descriptor,
-  _hasCachedComputedProperties
+  Descriptor
 } from './properties';
 export {
   watchKey,

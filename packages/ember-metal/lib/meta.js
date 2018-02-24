@@ -446,6 +446,27 @@ if (EMBER_METAL_ES5_GETTERS) {
   Meta.prototype.removeDescriptors = function(subkey) {
     this.writeDescriptors(subkey, UNDEFINED);
   };
+
+  Meta.prototype.forEachDescriptors = function(fn) {
+    let pointer = this;
+    let seen;
+    while (pointer !== undefined) {
+      let map = pointer._descriptors;
+      if (map !== undefined) {
+        for (let key in map) {
+          seen = seen === undefined ? new Set() : seen;
+          if (!seen.has(key)) {
+            seen.add(key);
+            let value = map[key];
+            if (value !== UNDEFINED) {
+              fn(key, value);
+            }
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  };
 }
 
 const getPrototypeOf = Object.getPrototypeOf;
