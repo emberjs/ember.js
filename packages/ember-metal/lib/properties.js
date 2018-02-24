@@ -7,7 +7,6 @@ import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { descriptorFor, meta as metaFor, peekMeta, DESCRIPTOR, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
-import { peekCacheFor } from './computed';
 // ..........................................................
 // DESCRIPTOR
 //
@@ -22,6 +21,7 @@ import { peekCacheFor } from './computed';
 export class Descriptor {
   constructor() {
     this.isDescriptor = true;
+    this.enumerable = true;
   }
 }
 
@@ -282,8 +282,6 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       meta.writeDescriptors(keyName, value);
     }
 
-    didDefineComputedProperty(obj.constructor);
-
     if (typeof desc.setup === 'function') { desc.setup(obj, keyName); }
   } else if (desc === undefined || desc === null) {
     value = data;
@@ -332,18 +330,4 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (typeof obj.didDefineProperty === 'function') { obj.didDefineProperty(obj, keyName, value); }
 
   return this;
-}
-
-let hasCachedComputedProperties = false;
-export function _hasCachedComputedProperties() {
-  hasCachedComputedProperties = true;
-}
-
-function didDefineComputedProperty(constructor) {
-  if (hasCachedComputedProperties === false) { return; }
-
-  let cache = peekCacheFor(constructor);
-  if (cache !== undefined) {
-    cache.delete('_computedProperties');
-  }
 }

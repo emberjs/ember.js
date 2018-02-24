@@ -18,7 +18,6 @@ import {
 import {
   PROXY_CONTENT,
   descriptorFor,
-  get,
   meta,
   peekMeta,
   finishChains,
@@ -27,12 +26,10 @@ import {
   REQUIRED,
   defineProperty,
   ComputedProperty,
-  computed,
   InjectedProperty,
   run,
   deleteMeta,
-  descriptor,
-  _hasCachedComputedProperties
+  descriptor
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
@@ -917,34 +914,16 @@ let ClassMixinProps = {
     @private
   */
   metaForProperty(key) {
-    let proto = this.proto();
+    let proto = this.proto(); // ensure prototype is initialized
     let possibleDesc = descriptorFor(proto, key);
 
     assert(
       `metaForProperty() could not find a computed property with key '${key}'.`,
       possibleDesc !== undefined
     );
+
     return possibleDesc._meta || {};
   },
-
-  _computedProperties: computed(function() {
-    _hasCachedComputedProperties();
-    let proto = this.proto();
-    let possibleDesc;
-    let properties = [];
-
-    for (let name in proto) {
-      possibleDesc = descriptorFor(proto, name);
-
-      if (possibleDesc !== undefined) {
-        properties.push({
-          name,
-          meta: possibleDesc._meta
-        });
-      }
-    }
-    return properties;
-  }).readOnly(),
 
   /**
     Iterate over each computed property for the class, passing its name
@@ -956,16 +935,16 @@ let ClassMixinProps = {
     @param {Object} binding
     @private
   */
-  eachComputedProperty(callback, binding) {
-    let property;
+  eachComputedProperty(callback, binding = this) {
+    this.proto(); // ensure prototype is initialized
     let empty = {};
 
-    let properties = get(this, '_computedProperties');
-
-    for (let i = 0; i < properties.length; i++) {
-      property = properties[i];
-      callback.call(binding || this, property.name, property.meta || empty);
-    }
+    meta(this.prototype).forEachDescriptors((name, descriptor) => {
+      if (descriptor.enumerable) {
+        let meta = descriptor._meta || empty;
+        callback.call(binding, name, meta);
+      }
+    });
   }
 };
 

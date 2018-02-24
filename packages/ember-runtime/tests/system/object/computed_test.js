@@ -2,7 +2,8 @@ import {
   alias,
   computed,
   get as emberGet,
-  observer
+  observer,
+  defineProperty
 } from 'ember-metal';
 import { testWithDefault } from 'internal-test-helpers';
 import EmberObject from '../../../system/object';
@@ -149,6 +150,26 @@ QUnit.test('can retrieve metadata for a computed property', function(assert) {
   }, 'metaForProperty() could not find a computed property with key \'staticProperty\'.');
 });
 
+QUnit.test('overriding a computed property with null removes it from eachComputedProperty iteration', function(assert) {
+  let MyClass = EmberObject.extend({
+    foo: computed(function() {}),
+
+    fooDidChange: observer('foo', function() {}),
+
+    bar: computed(function() {}),
+  });
+
+  let SubClass = MyClass.extend({
+    foo: null
+  });
+
+  let list = [];
+
+  SubClass.eachComputedProperty(name => list.push(name));
+
+  assert.deepEqual(list.sort(), ['bar'], 'overridding with null removes from eachComputedProperty listing');
+});
+
 QUnit.test('can iterate over a list of computed properties for a class', function(assert) {
   let MyClass = EmberObject.extend({
     foo: computed(function() {}),
@@ -221,6 +242,16 @@ QUnit.test('list of properties updates when an additional property is added (suc
   });
 
   assert.deepEqual(list.sort(), ['bar', 'foo', 'baz'].sort(), 'expected three computed properties');
+
+  defineProperty(MyClass.prototype, 'qux', computed(K));
+
+  list = [];
+
+  MyClass.eachComputedProperty(function(name) {
+    list.push(name);
+  });
+
+  assert.deepEqual(list.sort(), ['bar', 'foo', 'baz', 'qux'].sort(), 'expected four computed properties');
 });
 
 QUnit.test('Calling _super in call outside the immediate function of a CP getter works', function(assert) {
