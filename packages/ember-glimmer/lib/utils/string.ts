@@ -1,5 +1,5 @@
 /**
-@module @ember/string
+@module @ember/template
 */
 
 export class SafeString {
@@ -62,7 +62,7 @@ export function escapeExpression(string: any): string {
   ensure Ember's rendering layer does not escape the HTML.
 
   ```javascript
-  import { htmlSafe } from '@ember/string';
+  import { htmlSafe } from '@ember/template';
 
   htmlSafe('<div>someString</div>')
   ```
@@ -86,7 +86,7 @@ export function htmlSafe(str: string) {
   Detects if a string was decorated using `htmlSafe`.
 
   ```javascript
-  import { htmlSafe, isHTMLSafe } from '@ember/string';
+  import { htmlSafe, isHTMLSafe } from '@ember/template';
 
   var plainString = 'plain string',
       safeString = htmlSafe('<div>someValue</div>');
