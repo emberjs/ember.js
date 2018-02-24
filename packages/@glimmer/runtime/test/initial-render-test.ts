@@ -31,8 +31,8 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   protected delegate: RehydrationDelegate;
   protected serverOutput: Option<string>;
 
-  renderServerSide(template: string | ComponentBlueprint, context: Dict<Opaque>): void {
-    this.serverOutput = this.delegate.renderServerSide(template as string, context, () => this.takeSnapshot());
+  renderServerSide(template: string | ComponentBlueprint, context: Dict<Opaque>, element: Element | undefined = undefined): void {
+    this.serverOutput = this.delegate.renderServerSide(template as string, context, () => this.takeSnapshot(), element);
     this.element.innerHTML = this.serverOutput;
   }
 
@@ -46,13 +46,32 @@ class AbstractRehydrationTests extends InitialRenderSuite {
     this.assert.equal(clearedNodes.length, nodes, 'cleared nodes');
   }
 
-  assertServerOutput(..._expected: Content[]) {
+  assertExactServerOutput(_expected: string) {
     let output = expect(this.serverOutput, 'must renderServerSide before calling assertServerOutput');
-    equalTokens(output, content([OPEN, ..._expected, CLOSE]));
+    equalTokens(output, _expected);
+  }
+
+  assertServerOutput(..._expected: Content[]) {
+    this.assertExactServerOutput(content([OPEN, ..._expected, CLOSE]));
   }
 }
 
 class Rehydration extends AbstractRehydrationTests {
+
+  @test "rehydrates into element with pre-existing content"() {
+    let rootElement = this.delegate.serverEnv.getAppendOperations().createElement('div') as HTMLDivElement;
+    let extraContent = this.delegate.serverEnv.getAppendOperations().createElement('noscript') as HTMLElement;
+    rootElement.appendChild(extraContent);
+
+    let noScriptString = '<noscript></noscript>';
+    let template = '<div>Hi!</div>';
+    this.renderServerSide(template, {}, rootElement);
+    this.assertExactServerOutput(content([noScriptString, OPEN, ...template, CLOSE]));
+    this.renderClientSide(template, {});
+    this.assertHTML('<noscript></noscript><div>Hi!</div>');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertStableNodes();
+  }
 
   @test "table with omitted tbody"() {
     let template = '<table><tr><td>standards</td></tr></table>';
