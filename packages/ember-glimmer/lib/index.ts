@@ -304,4 +304,4 @@ export { UpdatableReference, RootReference } from './utils/references';
 export { default as iterableFor } from './utils/iterable';
 export { default as DebugStack } from './utils/debug-stack';
 export { default as OutletView } from './views/outlet';
-export { COMPONENT_MANAGER } from './component-managers/custom-component-manager';
+export { default as CustomComponentManager, COMPONENT_MANAGER } from './component-managers/custom';

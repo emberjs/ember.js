@@ -38,7 +38,7 @@ const { backburner } = run;
 
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
-    public view: Component | null,
+    public view: Component | {} | null,
     public outletState: VersionedPathReference<OutletState | undefined>,
     public rootOutletState?: VersionedPathReference<OutletState | undefined>) {
   }

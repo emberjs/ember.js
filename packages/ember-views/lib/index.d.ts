@@ -24,6 +24,8 @@ export const TextSupport: any;
 export function getViewElement(view: Opaque): Simple.Element;
 export function setViewElement(view: Opaque, element: Simple.Element | null): void;
 
+export function addChildView(parent: Opaque, child: Opaque): void;
+
 export function isSimpleClick(event: Event): boolean;
 
 export function constructStyleDeprecationMessage(affectedStyle: any): string;

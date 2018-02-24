@@ -74,7 +74,7 @@ export function setViewElement(view, element) {
   return view[VIEW_ELEMENT] = element;
 }
 
-const CHILD_VIEW_IDS = symbol('CHILD_VIEW_IDS');
+const CHILD_VIEW_IDS = new WeakMap();
 
 /**
   @private
@@ -88,18 +88,25 @@ export function getChildViews(view) {
 }
 
 export function initChildViews(view) {
-  view[CHILD_VIEW_IDS] = [];
+  let childViews = [];
+  CHILD_VIEW_IDS.set(view, childViews);
+  return childViews;
 }
 
 export function addChildView(parent, child) {
-  parent[CHILD_VIEW_IDS].push(getViewId(child));
+  let childViews = CHILD_VIEW_IDS.get(parent);
+  if (childViews === undefined) {
+    childViews = initChildViews(parent);
+  }
+
+  childViews.push(getViewId(child));
 }
 
 export function collectChildViews(view, registry) {
   let ids = [];
   let views = [];
 
-  view[CHILD_VIEW_IDS].forEach(id => {
+  (CHILD_VIEW_IDS.get(view) || []).forEach(id => {
     let view = registry[id];
 
     if (view && !view.isDestroying && !view.isDestroyed && ids.indexOf(id) === -1) {
@@ -108,7 +115,7 @@ export function collectChildViews(view, registry) {
     }
   });
 
-  view[CHILD_VIEW_IDS] = ids;
+  CHILD_VIEW_IDS.set(view, ids);
 
   return views;
 }

@@ -39,13 +39,13 @@ import {
   getOwner,
   guidFor,
 } from 'ember-utils';
-import { OwnedTemplateMeta, setViewElement } from 'ember-views';
+import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
 import {
   BOUNDS,
   DIRTY_TAG,
   HAS_BLOCK,
   IS_DISPATCHING_ATTRS,
-  ROOT_REF,
+  ROOT_REF
 } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -198,23 +198,43 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return { positional: EMPTY_ARRAY, named };
   }
 
+  /**
+   * This hook is responsible for actually instantiating the component instance.
+   * It also is where we perform additional bookkeeping to support legacy
+   * features like exposed by view mixins like ChildViewSupport, ActionSupport,
+   * etc.
+   */
   create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
     if (DEBUG) {
       this._pushToDebugStack(`component:${state.name}`, environment);
     }
 
+    // Get the nearest concrete component instance from the scope. "Virtual"
+    // components will be skipped.
     let parentView = dynamicScope.view;
 
+    // Get the Ember.Component subclass to instantiate for this component.
     let factory = state.ComponentClass;
 
+    // Capture the arguments, which tells Glimmer to give us our own, stable
+    // copy of the Arguments object that is safe to hold on to between renders.
     let capturedArgs = args.named.capture();
     let props = processComponentArgs(capturedArgs);
 
+    // Alias `id` argument to `elementId` property on the component instance.
     aliasIdToElementId(args, props);
 
+    // Set component instance's parentView property to point to nearest concrete
+    // component.
     props.parentView = parentView;
+
+    // Set whether this component was invoked with a block
+    // (`{{#my-component}}{{/my-component}}`) or without one
+    // (`{{my-component}}`).
     props[HAS_BLOCK] = hasBlock;
 
+    // Save the current `this` context of the template as the component's
+    // `_targetObject`, so bubbled actions are routed to the right place.
     props._targetObject = callerSelfRef.value();
 
     // static layout asserts CurriedDefinition
@@ -222,14 +242,20 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       props.layout = state.template;
     }
 
+    // Now that we've built up all of the properties to set on the component instance,
+    // actually create it.
     let component = factory.create(props);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
+    // We become the new parentView for downstream components, so save our
+    // component off on the dynamic scope.
     dynamicScope.view = component;
 
+    // Unless we're the root component, we need to add ourselves to our parent
+    // component's childViews array.
     if (parentView !== null && parentView !== undefined) {
-      parentView.appendChild(component);
+      addChildView(parentView, component);
     }
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
@@ -245,6 +271,8 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       }
     }
 
+    // Track additional lifecycle metadata about this component in a state bucket.
+    // Essentially we're saving off all the state we'll need in the future.
     let bucket = new ComponentStateBucket(environment, component, capturedArgs, finalizer);
 
     if (args.named.has('class')) {
