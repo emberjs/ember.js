@@ -46,9 +46,9 @@ class AbstractRehydrationTests extends InitialRenderSuite {
     this.assert.equal(clearedNodes.length, nodes, 'cleared nodes');
   }
 
-  assertExactServerOutput(..._expected: Content[]) {
+  assertExactServerOutput(_expected: string) {
     let output = expect(this.serverOutput, 'must renderServerSide before calling assertServerOutput');
-    equalTokens(output, content([..._expected]));
+    equalTokens(output, _expected);
   }
 
   assertServerOutput(..._expected: Content[]) {
