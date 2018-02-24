@@ -188,8 +188,7 @@ function beginPropertyChanges() {
 function endPropertyChanges() {
   deferred--;
   if (deferred <= 0) {
-    observerSet.forEach((object, key)=> sendEvent(object, key, [object, key]));
-    observerSet.clear();
+    observerSet.flush();
   }
 }
 

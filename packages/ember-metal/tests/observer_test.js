@@ -673,6 +673,21 @@ testBoth('observers added/removed during changeProperties should do the right th
   assert.equal(removedAfterLastChangeObserver.didChangeCount, 0, 'removeObserver called after the last change sees none');
 });
 
+testBoth('calling changeProperties while executing deferred observers works correctly', function(get, set, assert) {
+  let obj = { foo: 0 };
+  let fooDidChange = 0;
+  
+  addObserver(obj, 'foo', () => {
+    fooDidChange++;
+    changeProperties(() => {});
+  });
+  
+  changeProperties(() => {
+    set(obj, 'foo', 1);
+  });
+  
+  assert.equal(fooDidChange, 1);
+});
 
 QUnit.module('Keys behavior with observers');
 
