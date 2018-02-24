@@ -628,7 +628,9 @@ const LinkComponent = EmberComponent.extend({
 
     if (get(this, 'loading')) {
       // tslint:disable-next-line:max-line-length
-      warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.', false);
+      warn('This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.', false, {
+        id: 'ember-glimmer.link-to.inactive-loading-state' 
+      });
       return false;
     }
 
