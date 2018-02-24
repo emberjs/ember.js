@@ -14,7 +14,8 @@ export { default as precompile } from './system/precompile';
 export { default as compile } from './system/compile';
 export {
   default as compileOptions,
-  registerPlugin
+  registerPlugin,
+  unregisterPlugin
 } from './system/compile-options';
 export { default as defaultPlugins } from './plugins';
 
@@ -23,3 +24,7 @@ import './compat';
 
 // used to bootstrap templates
 import './system/bootstrap';
+
+// add domTemplates initializer (only does something if `ember-template-compiler`
+// is loaded already)
+import './system/initializer';

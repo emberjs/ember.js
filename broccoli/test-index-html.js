@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-env node */
+
 const Funnel = require('broccoli-funnel');
 const StringReplace = require('broccoli-string-replace');
 const FEATURES = require('./features');
@@ -22,4 +22,4 @@ module.exports = function testIndexHTML() {
   });
   index._annotation = 'tests/index.html FEATURES';
   return index;
-}
+};

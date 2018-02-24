@@ -1,20 +1,13 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/application
 */
 
 import { assign } from 'ember-utils';
-import { deprecate } from 'ember-debug';
-import { get, set, run, computed } from 'ember-metal';
-import {
-  buildFakeRegistryWithDeprecations,
-  RSVP
-} from 'ember-runtime';
+import { get, set, computed } from 'ember-metal';
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from './engine-instance';
-
-let BootOptions;
+import { renderSettled } from 'ember-glimmer';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -37,15 +30,15 @@ let BootOptions;
   it once the particular test run or FastBoot request has finished.
 
   @public
-  @class Ember.ApplicationInstance
-  @extends Ember.EngineInstance
+  @class ApplicationInstance
+  @extends EngineInstance
 */
 
 const ApplicationInstance = EngineInstance.extend({
   /**
     The `Application` for which this is an instance.
 
-    @property {Ember.Application} application
+    @property {Application} application
     @private
   */
   application: null,
@@ -75,6 +68,8 @@ const ApplicationInstance = EngineInstance.extend({
 
   init() {
     this._super(...arguments);
+
+    this.application._watchInstance(this);
 
     // Register this instance in the per-instance registry.
     //
@@ -220,8 +215,7 @@ const ApplicationInstance = EngineInstance.extend({
     @return {String} the current URL
   */
   getURL() {
-    let router = get(this, 'router');
-    return get(router, 'url');
+    return get(this, 'router.url');
   },
 
   // `instance.visit(url)` should eventually replace `instance.handleURL()`;
@@ -235,7 +229,7 @@ const ApplicationInstance = EngineInstance.extend({
 
     @public
     @param url {String} the destination URL
-    @return {Promise<Ember.ApplicationInstance>}
+    @return {Promise<ApplicationInstance>}
   */
   visit(url) {
     this.setupRouter();
@@ -249,14 +243,8 @@ const ApplicationInstance = EngineInstance.extend({
         // No rendering is needed, and routing has completed, simply return.
         return this;
       } else {
-        return new RSVP.Promise((resolve) => {
-          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thennable)
-          // which resolves once the transition is completed, but the transition completion only queues up
-          // a scheduled revalidation (into the `render` queue) in the Renderer.
-          //
-          // This uses `run.schedule('afterRender', ....)` to resolve after that rendering has completed.
-          run.schedule('afterRender', null, resolve, this);
-        });
+        // Ensure that the visit promise resolves when all rendering has completed
+        return renderSettled().then(() => this);
       }
     };
 
@@ -279,6 +267,11 @@ const ApplicationInstance = EngineInstance.extend({
 
     // getURL returns the set url with the rootURL stripped off
     return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
+  },
+
+  willDestroy() {
+    this._super(...arguments);
+    this.application._unwatchInstance(this);
   }
 });
 
@@ -303,7 +296,7 @@ ApplicationInstance.reopenClass({
 
 /**
   A list of boot-time configuration options for customizing the behavior of
-  an `Ember.ApplicationInstance`.
+  an `ApplicationInstance`.
 
   This is an interface class that exists purely to document the available
   options; you do not need to construct it manually. Simply pass a regular
@@ -315,189 +308,183 @@ ApplicationInstance.reopenClass({
   ```
 
   Not all combinations of the supported options are valid. See the documentation
-  on `Ember.Application#visit` for the supported configurations.
+  on `Application#visit` for the supported configurations.
 
   Internal, experimental or otherwise unstable flags are marked as private.
 
   @class BootOptions
-  @namespace Ember.ApplicationInstance
+  @namespace ApplicationInstance
   @public
 */
-BootOptions = function BootOptions(options = {}) {
-  /**
-    Provide a specific instance of jQuery. This is useful in conjunction with
-    the `document` option, as it allows you to use a copy of `jQuery` that is
-    appropriately bound to the foreign `document` (e.g. a jsdom).
+class BootOptions {
+  constructor(options = {}) {
+    /**
+      Provide a specific instance of jQuery. This is useful in conjunction with
+      the `document` option, as it allows you to use a copy of `jQuery` that is
+      appropriately bound to the foreign `document` (e.g. a jsdom).
 
-    This is highly experimental and support very incomplete at the moment.
+      This is highly experimental and support very incomplete at the moment.
 
-    @property jQuery
-    @type Object
-    @default auto-detected
-    @private
-  */
-  this.jQuery = jQuery; // This default is overridable below
+      @property jQuery
+      @type Object
+      @default auto-detected
+      @private
+    */
+    this.jQuery = jQuery; // This default is overridable below
 
-  /**
-    Interactive mode: whether we need to set up event delegation and invoke
-    lifecycle callbacks on Components.
+    /**
+      Interactive mode: whether we need to set up event delegation and invoke
+      lifecycle callbacks on Components.
 
-    @property isInteractive
-    @type boolean
-    @default auto-detected
-    @private
-  */
-  this.isInteractive = environment.hasDOM; // This default is overridable below
+      @property isInteractive
+      @type boolean
+      @default auto-detected
+      @private
+    */
+    this.isInteractive = environment.hasDOM; // This default is overridable below
 
-  /**
-    Run in a full browser environment.
+    /**
+      Run in a full browser environment.
 
-    When this flag is set to `false`, it will disable most browser-specific
-    and interactive features. Specifically:
+      When this flag is set to `false`, it will disable most browser-specific
+      and interactive features. Specifically:
 
-    * It does not use `jQuery` to append the root view; the `rootElement`
-      (either specified as a subsequent option or on the application itself)
-      must already be an `Element` in the given `document` (as opposed to a
-      string selector).
+      * It does not use `jQuery` to append the root view; the `rootElement`
+        (either specified as a subsequent option or on the application itself)
+        must already be an `Element` in the given `document` (as opposed to a
+        string selector).
 
-    * It does not set up an `EventDispatcher`.
+      * It does not set up an `EventDispatcher`.
 
-    * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
+      * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
 
-    * It sets the `location` option to `"none"`. (If you would like to use
-      the location adapter specified in the app's router instead, you can also
-      specify `{ location: null }` to specifically opt-out.)
+      * It sets the `location` option to `"none"`. (If you would like to use
+        the location adapter specified in the app's router instead, you can also
+        specify `{ location: null }` to specifically opt-out.)
 
-    @property isBrowser
-    @type boolean
-    @default auto-detected
-    @public
-  */
-  if (options.isBrowser !== undefined) {
-    this.isBrowser = !!options.isBrowser;
-  } else {
-    this.isBrowser = environment.hasDOM;
+      @property isBrowser
+      @type boolean
+      @default auto-detected
+      @public
+    */
+    if (options.isBrowser !== undefined) {
+      this.isBrowser = !!options.isBrowser;
+    } else {
+      this.isBrowser = environment.hasDOM;
+    }
+
+    if (!this.isBrowser) {
+      this.jQuery = null;
+      this.isInteractive = false;
+      this.location = 'none';
+    }
+
+    /**
+      Disable rendering completely.
+
+      When this flag is set to `true`, it will disable the entire rendering
+      pipeline. Essentially, this puts the app into "routing-only" mode. No
+      templates will be rendered, and no Components will be created.
+
+      @property shouldRender
+      @type boolean
+      @default true
+      @public
+    */
+    if (options.shouldRender !== undefined) {
+      this.shouldRender = !!options.shouldRender;
+    } else {
+      this.shouldRender = true;
+    }
+
+    if (!this.shouldRender) {
+      this.jQuery = null;
+      this.isInteractive = false;
+    }
+
+    /**
+      If present, render into the given `Document` object instead of the
+      global `window.document` object.
+
+      In practice, this is only useful in non-browser environment or in
+      non-interactive mode, because Ember's `jQuery` dependency is
+      implicitly bound to the current document, causing event delegation
+      to not work properly when the app is rendered into a foreign
+      document object (such as an iframe's `contentDocument`).
+
+      In non-browser mode, this could be a "`Document`-like" object as
+      Ember only interact with a small subset of the DOM API in non-
+      interactive mode. While the exact requirements have not yet been
+      formalized, the `SimpleDOM` library's implementation is known to
+      work.
+
+      @property document
+      @type Document
+      @default the global `document` object
+      @public
+    */
+    if (options.document) {
+      this.document = options.document;
+    } else {
+      this.document = (typeof document !== 'undefined') ? document : null;
+    }
+
+    /**
+      If present, overrides the application's `rootElement` property on
+      the instance. This is useful for testing environment, where you
+      might want to append the root view to a fixture area.
+
+      In non-browser mode, because Ember does not have access to jQuery,
+      this options must be specified as a DOM `Element` object instead of
+      a selector string.
+
+      See the documentation on `Application`'s `rootElement` for
+      details.
+
+      @property rootElement
+      @type String|Element
+      @default null
+      @public
+     */
+    if (options.rootElement) {
+      this.rootElement = options.rootElement;
+    }
+
+    // Set these options last to give the user a chance to override the
+    // defaults from the "combo" options like `isBrowser` (although in
+    // practice, the resulting combination is probably invalid)
+
+    /**
+      If present, overrides the router's `location` property with this
+      value. This is useful for environments where trying to modify the
+      URL would be inappropriate.
+
+      @property location
+      @type string
+      @default null
+      @public
+    */
+    if (options.location !== undefined) {
+      this.location = options.location;
+    }
+
+    if (options.jQuery !== undefined) {
+      this.jQuery = options.jQuery;
+    }
+
+    if (options.isInteractive !== undefined) {
+      this.isInteractive = !!options.isInteractive;
+    }
   }
 
-  if (!this.isBrowser) {
-    this.jQuery = null;
-    this.isInteractive = false;
-    this.location = 'none';
+  toEnvironment() {
+    let env = assign({}, environment);
+    // For compatibility with existing code
+    env.hasDOM = this.isBrowser;
+    env.isInteractive = this.isInteractive;
+    env.options = this;
+    return env;
   }
-
-  /**
-    Disable rendering completely.
-
-    When this flag is set to `true`, it will disable the entire rendering
-    pipeline. Essentially, this puts the app into "routing-only" mode. No
-    templates will be rendered, and no Components will be created.
-
-    @property shouldRender
-    @type boolean
-    @default true
-    @public
-  */
-  if (options.shouldRender !== undefined) {
-    this.shouldRender = !!options.shouldRender;
-  } else {
-    this.shouldRender = true;
-  }
-
-  if (!this.shouldRender) {
-    this.jQuery = null;
-    this.isInteractive = false;
-  }
-
-  /**
-    If present, render into the given `Document` object instead of the
-    global `window.document` object.
-
-    In practice, this is only useful in non-browser environment or in
-    non-interactive mode, because Ember's `jQuery` dependency is
-    implicitly bound to the current document, causing event delegation
-    to not work properly when the app is rendered into a foreign
-    document object (such as an iframe's `contentDocument`).
-
-    In non-browser mode, this could be a "`Document`-like" object as
-    Ember only interact with a small subset of the DOM API in non-
-    interactive mode. While the exact requirements have not yet been
-    formalized, the `SimpleDOM` library's implementation is known to
-    work.
-
-    @property document
-    @type Document
-    @default the global `document` object
-    @public
-  */
-  if (options.document) {
-    this.document = options.document;
-  } else {
-    this.document = (typeof document !== 'undefined') ? document : null;
-  }
-
-  /**
-    If present, overrides the application's `rootElement` property on
-    the instance. This is useful for testing environment, where you
-    might want to append the root view to a fixture area.
-
-    In non-browser mode, because Ember does not have access to jQuery,
-    this options must be specified as a DOM `Element` object instead of
-    a selector string.
-
-    See the documentation on `Ember.Applications`'s `rootElement` for
-    details.
-
-    @property rootElement
-    @type String|Element
-    @default null
-    @public
-   */
-  if (options.rootElement) {
-    this.rootElement = options.rootElement;
-  }
-
-  // Set these options last to give the user a chance to override the
-  // defaults from the "combo" options like `isBrowser` (although in
-  // practice, the resulting combination is probably invalid)
-
-  /**
-    If present, overrides the router's `location` property with this
-    value. This is useful for environments where trying to modify the
-    URL would be inappropriate.
-
-    @property location
-    @type string
-    @default null
-    @public
-  */
-  if (options.location !== undefined) {
-    this.location = options.location;
-  }
-
-  if (options.jQuery !== undefined) {
-    this.jQuery = options.jQuery;
-  }
-
-  if (options.isInteractive !== undefined) {
-    this.isInteractive = !!options.isInteractive;
-  }
-};
-
-BootOptions.prototype.toEnvironment = function() {
-  let env = assign({}, environment);
-  // For compatibility with existing code
-  env.hasDOM = this.isBrowser;
-  env.isInteractive = this.isInteractive;
-  env.options = this;
-  return env;
-};
-
-Object.defineProperty(ApplicationInstance.prototype, 'registry', {
-  configurable: true,
-  enumerable: false,
-  get() {
-    return buildFakeRegistryWithDeprecations(this, 'ApplicationInstance');
-  }
-});
+}
 
 export default ApplicationInstance;

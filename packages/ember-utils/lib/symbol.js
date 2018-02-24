@@ -6,5 +6,5 @@ export default function symbol(debugName) {
   // want to require non-enumerability for this API, which
   // would introduce a large cost.
   let id = GUID_KEY + Math.floor(Math.random() * new Date());
-  return intern(`__${debugName}__ [id=${id}]`);
+  return intern(`__${debugName}${id}__`);
 }

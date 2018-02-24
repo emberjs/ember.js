@@ -1,5 +1,8 @@
 import { privatize as P } from 'container';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { ENV } from 'ember-environment';
+import {
+  EMBER_MODULE_UNIFICATION,
+} from 'ember/features';
 
 function lookupModuleUnificationComponentPair(componentLookup, owner, name, options) {
   let localComponent = componentLookup.componentFor(name, owner, options);
@@ -9,7 +12,7 @@ function lookupModuleUnificationComponentPair(componentLookup, owner, name, opti
   let globalLayout = componentLookup.layoutFor(name, owner);
 
   let localAndUniqueComponent = !!localComponent && (!globalComponent || localComponent.class !== globalComponent.class);
-  let localAndUniqueLayout = !!localLayout && (!globalLayout || localLayout.meta.moduleName !== globalLayout.meta.moduleName);
+  let localAndUniqueLayout = !!localLayout && (!globalLayout || localLayout.referrer.moduleName !== globalLayout.referrer.moduleName);
 
   if (localAndUniqueComponent && localAndUniqueLayout) {
     return { layout: localLayout, component: localComponent };
@@ -19,7 +22,11 @@ function lookupModuleUnificationComponentPair(componentLookup, owner, name, opti
     return { layout: null, component: localComponent };
   }
 
-  let defaultComponentFactory = owner.factoryFor(P`component:-default`);
+  let defaultComponentFactory = null;
+
+  if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+    defaultComponentFactory = owner.factoryFor(P`component:-default`);
+  }
 
   if (!localAndUniqueComponent && localAndUniqueLayout) {
     return { layout: localLayout, component: defaultComponentFactory };
@@ -39,7 +46,7 @@ function lookupComponentPair(componentLookup, owner, name, options) {
 
   let result = { layout, component };
 
-  if (layout && !component) {
+  if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS && layout && !component) {
     result.component = owner.factoryFor(P`component:-default`);
   }
 

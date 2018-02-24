@@ -4,7 +4,7 @@ export default function transformOldClassBindingSyntax(env) {
   return {
     name: 'transform-old-class-binding-syntax',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         process(b, node);
       },
@@ -48,7 +48,7 @@ function process(b, node) {
     node.hash.pairs.splice(index, 1);
   });
 
-  each(allOfTheMicrosyntaxes, ({ value, loc }) => {
+  each(allOfTheMicrosyntaxes, ({ value }) => {
     let sexprs = [];
     // TODO: add helpful deprecation when both `classNames` and `classNameBindings` can
     // be removed.

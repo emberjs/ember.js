@@ -1,6 +1,8 @@
 import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
 import {
+  descriptorFor,
+  isDescriptor,
   meta as metaFor,
   peekMeta,
   UNDEFINED
@@ -13,26 +15,27 @@ import {
 
 let handleMandatorySetter;
 
-export function watchKey(obj, keyName, meta) {
+export function watchKey(obj, keyName, _meta) {
   if (typeof obj !== 'object' || obj === null) { return; }
 
-  let m = meta || metaFor(obj);
-  let count = m.peekWatching(keyName) || 0;
-  m.writeWatching(keyName, count + 1);
+  let meta = _meta === undefined ? metaFor(obj) : _meta;
+  let count = meta.peekWatching(keyName) || 0;
+  meta.writeWatching(keyName, count + 1);
 
   if (count === 0) { // activate watching first time
-    let possibleDesc = obj[keyName];
-    let isDescriptor = possibleDesc !== null &&
-      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
-    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName); }
+    let possibleDesc = descriptorFor(obj, keyName, meta);
 
-    if ('function' === typeof obj.willWatchProperty) {
+    if (possibleDesc !== undefined && possibleDesc.willWatch) {
+      possibleDesc.willWatch(obj, keyName, meta);
+    }
+
+    if (typeof obj.willWatchProperty === 'function') {
       obj.willWatchProperty(keyName);
     }
 
     if (MANDATORY_SETTER) {
       // NOTE: this is dropped for prod + minified builds
-      handleMandatorySetter(m, obj, keyName);
+      handleMandatorySetter(meta, obj, keyName);
     }
   }
 }
@@ -40,7 +43,6 @@ export function watchKey(obj, keyName, meta) {
 
 if (MANDATORY_SETTER) {
   let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-
   let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
@@ -49,15 +51,11 @@ if (MANDATORY_SETTER) {
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
     let hasDescriptor = descriptor !== null;
+    let possibleDesc = hasDescriptor && descriptor.value;
+    if (isDescriptor(possibleDesc)) { return; }
     let configurable = hasDescriptor ? descriptor.configurable : true;
     let isWritable = hasDescriptor ? descriptor.writable : true;
     let hasValue = hasDescriptor ? 'value' in descriptor : true;
-    let possibleDesc = hasDescriptor && descriptor.value;
-    let isDescriptor = possibleDesc !== null &&
-                       typeof possibleDesc === 'object' &&
-                       possibleDesc.isDescriptor;
-
-    if (isDescriptor) { return; }
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
@@ -84,22 +82,23 @@ export function unwatchKey(obj, keyName, _meta) {
   if (typeof obj !== 'object' || obj === null) {
     return;
   }
-  let meta = _meta || peekMeta(obj);
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   // do nothing of this object has already been destroyed
-  if (!meta || meta.isSourceDestroyed()) { return; }
+  if (meta === undefined || meta.isSourceDestroyed()) { return; }
 
   let count = meta.peekWatching(keyName);
   if (count === 1) {
     meta.writeWatching(keyName, 0);
 
-    let possibleDesc = obj[keyName];
-    let isDescriptor = possibleDesc !== null &&
-      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    let possibleDesc = descriptorFor(obj, keyName, meta);
+    let isDescriptor = possibleDesc !== undefined;
 
-    if (isDescriptor && possibleDesc.didUnwatch) { possibleDesc.didUnwatch(obj, keyName); }
+    if (isDescriptor && possibleDesc.didUnwatch) {
+      possibleDesc.didUnwatch(obj, keyName, meta);
+    }
 
-    if ('function' === typeof obj.didUnwatchProperty) {
+    if (typeof obj.didUnwatchProperty === 'function') {
       obj.didUnwatchProperty(keyName);
     }
 

@@ -6,20 +6,22 @@ import { assert } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 /**
-  Ember.NoneLocation does not interact with the browser. It is useful for
+  NoneLocation does not interact with the browser. It is useful for
   testing, or when you need to manage state with your Router, but temporarily
   don't want it to muck with the URL (for example when you embed your
   application in a larger page).
 
+  Using `NoneLocation` causes Ember to not store the applications URL state
+  in the actual URL. This is generally used for testing purposes, and is one
+  of the changes made when calling `App.setupForTesting()`.
+
   @class NoneLocation
-  @namespace Ember
-  @extends Ember.Object
-  @private
+  @extends EmberObject
+  @protected
 */
 export default EmberObject.extend({
   implementation: 'none',
@@ -28,8 +30,10 @@ export default EmberObject.extend({
   detect() {
     let rootURL = this.rootURL;
 
-    assert('rootURL must end with a trailing forward slash e.g. "/app/"',
-                 rootURL.charAt(rootURL.length - 1) === '/');
+    assert(
+      'rootURL must end with a trailing forward slash e.g. "/app/"',
+      rootURL.charAt(rootURL.length - 1) === '/'
+    );
   },
 
   /**
@@ -89,7 +93,7 @@ export default EmberObject.extend({
 
     @private
     @method handleURL
-    @param callback {Function}
+    @param url {String}
   */
   handleURL(url) {
     set(this, 'path', url);

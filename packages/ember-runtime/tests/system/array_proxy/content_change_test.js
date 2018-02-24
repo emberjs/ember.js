@@ -1,30 +1,30 @@
-import { set, run } from 'ember-metal';
+import { get, set, run, changeProperties } from 'ember-metal';
 import { not } from '../../../computed/computed_macros';
 import ArrayProxy from '../../../system/array_proxy';
-import { A as emberA } from '../../../system/native_array';
+import { A as emberA } from '../../../mixins/array';
 
 QUnit.module('ArrayProxy - content change');
 
-QUnit.test('should update length for null content', function() {
+QUnit.test('should update length for null content', function(assert) {
   let proxy = ArrayProxy.create({
     content: emberA([1, 2, 3])
   });
 
-  equal(proxy.get('length'), 3, 'precond - length is 3');
+  assert.equal(proxy.get('length'), 3, 'precond - length is 3');
 
   proxy.set('content', null);
 
-  equal(proxy.get('length'), 0, 'length updates');
+  assert.equal(proxy.get('length'), 0, 'length updates');
 });
 
-QUnit.test('should update length for null content when there is a computed property watching length', function() {
+QUnit.test('should update length for null content when there is a computed property watching length', function(assert) {
   let proxy = ArrayProxy.extend({
     isEmpty: not('length')
   }).create({
     content: emberA([1, 2, 3])
   });
 
-  equal(proxy.get('length'), 3, 'precond - length is 3');
+  assert.equal(proxy.get('length'), 3, 'precond - length is 3');
 
   // Consume computed property that depends on length
   proxy.get('isEmpty');
@@ -32,58 +32,10 @@ QUnit.test('should update length for null content when there is a computed prope
   // update content
   proxy.set('content', null);
 
-  equal(proxy.get('length'), 0, 'length updates');
+  assert.equal(proxy.get('length'), 0, 'length updates');
 });
 
-QUnit.test('The `arrangedContentWillChange` method is invoked before `content` is changed.', function() {
-  let callCount = 0;
-  let expectedLength;
-
-  let proxy = ArrayProxy.extend({
-    arrangedContentWillChange() {
-      equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked before array has changed');
-      callCount++;
-    }
-  }).create({ content: emberA([1, 2, 3]) });
-
-  proxy.pushObject(4);
-  equal(callCount, 0, 'pushing content onto the array doesn\'t trigger it');
-
-  proxy.get('content').pushObject(5);
-  equal(callCount, 0, 'pushing content onto the content array doesn\'t trigger it');
-
-  expectedLength = 5;
-  proxy.set('content', emberA(['a', 'b']));
-  equal(callCount, 1, 'replacing the content array triggers the hook');
-});
-
-QUnit.test('The `arrangedContentDidChange` method is invoked after `content` is changed.', function() {
-  let callCount = 0;
-  let expectedLength;
-
-  let proxy = ArrayProxy.extend({
-    arrangedContentDidChange() {
-      equal(this.get('arrangedContent.length'), expectedLength, 'hook should be invoked after array has changed');
-      callCount++;
-    }
-  }).create({
-    content: emberA([1, 2, 3])
-  });
-
-  equal(callCount, 0, 'hook is not called after creating the object');
-
-  proxy.pushObject(4);
-  equal(callCount, 0, 'pushing content onto the array doesn\'t trigger it');
-
-  proxy.get('content').pushObject(5);
-  equal(callCount, 0, 'pushing content onto the content array doesn\'t trigger it');
-
-  expectedLength = 2;
-  proxy.set('content', emberA(['a', 'b']));
-  equal(callCount, 1, 'replacing the content array triggers the hook');
-});
-
-QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', function() {
+QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', function(assert) {
   let proxy1 = ArrayProxy.create();
   let proxy2 = ArrayProxy.create();
 
@@ -91,34 +43,95 @@ QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', f
 
   set(proxy2, 'content', proxy1);
 
-  ok(true, 'No exception was raised');
+  assert.ok(true, 'No exception was raised');
 });
 
-QUnit.test('arrayContent{Will,Did}Change are called when the content changes', function() {
-  // The behavior covered by this test may change in the future if we decide
-  // that built-in array methods are not overridable.
+QUnit.test('should update if content changes while change events are deferred', function(assert) {
+  let proxy = ArrayProxy.create();
 
-  let willChangeCallCount = 0;
-  let didChangeCallCount = 0;
+  assert.deepEqual(proxy.toArray(), []);
 
-  let content = emberA([1, 2, 3]);
-  ArrayProxy.extend({
-    arrayContentWillChange() {
-      willChangeCallCount++;
-      this._super(...arguments);
-    },
-    arrayContentDidChange() {
-      didChangeCallCount++;
-      this._super(...arguments);
+  changeProperties(() => {
+    proxy.set('content', emberA([1, 2, 3]));
+    assert.deepEqual(proxy.toArray(), [1, 2, 3]);
+  });
+});
+
+QUnit.test('objectAt recomputes the object cache correctly', function(assert) {
+  let indexes = [];
+
+  let proxy = ArrayProxy.extend({
+    objectAtContent(index) {
+      indexes.push(index);
+      return this.content[index];
     }
-  }).create({ content });
+  }).create({
+    content: emberA([1, 2, 3, 4, 5])
+  });
 
-  equal(willChangeCallCount, 0);
-  equal(didChangeCallCount, 0);
+  assert.deepEqual(indexes, []);
+  assert.deepEqual(proxy.objectAt(0), 1);
+  assert.deepEqual(indexes, [0, 1, 2, 3, 4]);
 
-  content.pushObject(4);
-  content.pushObject(5);
+  indexes.length = 0;
+  proxy.set('content', emberA([1, 2, 3]));
+  assert.deepEqual(proxy.objectAt(0), 1);
+  assert.deepEqual(indexes, [0, 1, 2]);
 
-  equal(willChangeCallCount, 2);
-  equal(didChangeCallCount, 2);
+  indexes.length = 0;
+  proxy.content.replace(2, 0, [4, 5]);
+  assert.deepEqual(proxy.objectAt(0), 1);
+  assert.deepEqual(proxy.objectAt(1), 2);
+  assert.deepEqual(indexes, []);
+  assert.deepEqual(proxy.objectAt(2), 4);
+  assert.deepEqual(indexes, [2, 3, 4]);
+});
+
+QUnit.test('getting length does not recompute the object cache', function(assert) {
+  let indexes = [];
+
+  let proxy = ArrayProxy.extend({
+    objectAtContent(index) {
+      indexes.push(index);
+      return this.content[index];
+    }
+  }).create({
+    content: emberA([1, 2, 3, 4, 5])
+  });
+
+  assert.equal(get(proxy, 'length'), 5);
+  assert.deepEqual(indexes, []);
+
+  indexes.length = 0;
+  proxy.set('content', emberA([6, 7, 8]));
+  assert.equal(get(proxy, 'length'), 3);
+  assert.deepEqual(indexes, []);
+
+  indexes.length = 0;
+  proxy.content.replace(1, 0, [1, 2, 3]);
+  assert.equal(get(proxy, 'length'), 6);
+  assert.deepEqual(indexes, []);
+});
+
+QUnit.test('negative indexes are handled correctly', function(assert) {
+  let indexes = [];
+
+  let proxy = ArrayProxy.extend({
+    objectAtContent(index) {
+      indexes.push(index);
+      return this.content[index];
+    }
+  }).create({
+    content: emberA([1, 2, 3, 4, 5])
+  });
+
+  assert.deepEqual(proxy.toArray(), [1, 2, 3, 4, 5]);
+
+  indexes.length = 0;
+
+  proxy.content.replace(-1, 0, [7]);
+  proxy.content.replace(-2, 0, [6]);
+
+  assert.deepEqual(proxy.toArray(), [1, 2, 3, 4, 6, 7, 5]);
+  assert.deepEqual(indexes, [4, 5, 6]);
 });

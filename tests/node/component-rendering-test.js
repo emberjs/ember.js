@@ -1,4 +1,3 @@
-var QUnit = require('qunitjs');
 var componentModule = require('./helpers/component-module');
 
 componentModule('Components can be rendered without a DOM dependency');

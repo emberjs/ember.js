@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/object
 */
 
 import {
@@ -14,11 +13,11 @@ import {
   beginPropertyChanges,
   propertyWillChange,
   propertyDidChange,
+  notifyPropertyChange,
   endPropertyChanges,
   addObserver,
   removeObserver,
-  observersFor,
-  cacheFor,
+  getCachedValueFor,
   isNone
 } from 'ember-metal';
 import { assert } from 'ember-debug';
@@ -35,7 +34,7 @@ import { assert } from 'ember-debug';
   application.
 
   Any object that has this mixin applied can be used in observer
-  operations. That includes `Ember.Object` and most objects you will
+  operations. That includes `EmberObject` and most objects you will
   interact with as you write your Ember application.
 
   Note that you will not generally apply this mixin to classes yourself,
@@ -53,14 +52,17 @@ import { assert } from 'ember-debug';
 
   ## Observing Property Changes
 
-  You typically observe property changes simply by using the `Ember.observer`
+  You typically observe property changes simply by using the `observer`
   function in classes that you write.
 
   For example:
 
   ```javascript
-  Ember.Object.extend({
-    valueObserver: Ember.observer('value', function(sender, key, value, rev) {
+  import { observer } from '@ember/object';
+  import EmberObject from '@ember/object';
+
+  EmberObject.extend({
+    valueObserver: observer('value', function(sender, key, value, rev) {
       // Executes whenever the "value" property changes
       // See the addObserver method for more information about the callback arguments
     })
@@ -68,7 +70,7 @@ import { assert } from 'ember-debug';
   ```
 
   Although this is the most common way to add an observer, this capability
-  is actually built into the `Ember.Object` class on top of two methods
+  is actually built into the `EmberObject` class on top of two methods
   defined in this mixin: `addObserver` and `removeObserver`. You can use
   these two methods to add and remove observers yourself if you need to
   do so at runtime.
@@ -88,7 +90,6 @@ import { assert } from 'ember-debug';
   because computed properties are not computed until `get` is called.
 
   @class Observable
-  @namespace Ember
   @public
 */
 export default Mixin.create({
@@ -110,7 +111,9 @@ export default Mixin.create({
     declared at the end, such as:
 
     ```javascript
-    fullName: Ember.computed('firstName', 'lastName', function() {
+    import { computed } from '@ember/object';
+
+    fullName: computed('firstName', 'lastName', function() {
       return this.get('firstName') + ' ' + this.get('lastName');
     })
     ```
@@ -240,7 +243,7 @@ export default Mixin.create({
     deferring.
 
     @method beginPropertyChanges
-    @return {Ember.Observable}
+    @return {Observable}
     @private
   */
   beginPropertyChanges() {
@@ -259,7 +262,7 @@ export default Mixin.create({
     deliver the deferred change notifications and end deferring.
 
     @method endPropertyChanges
-    @return {Ember.Observable}
+    @return {Observable}
     @private
   */
   endPropertyChanges() {
@@ -268,22 +271,7 @@ export default Mixin.create({
   },
 
   /**
-    Notify the observer system that a property is about to change.
-
-    Sometimes you need to change a value directly or indirectly without
-    actually calling `get()` or `set()` on it. In this case, you can use this
-    method and `propertyDidChange()` instead. Calling these two methods
-    together will notify all observers that the property has potentially
-    changed value.
-
-    Note that you must always call `propertyWillChange` and `propertyDidChange`
-    as a pair. If you do not, it may get the property change groups out of
-    order and cause notifications to be delivered more often than you would
-    like.
-
     @method propertyWillChange
-    @param {String} keyName The property key that is about to change.
-    @return {Ember.Observable}
     @private
   */
   propertyWillChange(keyName) {
@@ -292,22 +280,7 @@ export default Mixin.create({
   },
 
   /**
-    Notify the observer system that a property has just changed.
-
-    Sometimes you need to change a value directly or indirectly without
-    actually calling `get()` or `set()` on it. In this case, you can use this
-    method and `propertyWillChange()` instead. Calling these two methods
-    together will notify all observers that the property has potentially
-    changed value.
-
-    Note that you must always call `propertyWillChange` and `propertyDidChange`
-    as a pair. If you do not, it may get the property change groups out of
-    order and cause notifications to be delivered more often than you would
-    like.
-
     @method propertyDidChange
-    @param {String} keyName The property key that has just changed.
-    @return {Ember.Observable}
     @private
   */
   propertyDidChange(keyName) {
@@ -316,17 +289,20 @@ export default Mixin.create({
   },
 
   /**
-    Convenience method to call `propertyWillChange` and `propertyDidChange` in
-    succession.
+    Notify the observer system that a property has just changed.
+
+    Sometimes you need to change a value directly or indirectly without
+    actually calling `get()` or `set()` on it. In this case, you can use this
+    method instead. Calling this method will notify all observers that the
+    property has potentially changed value.
 
     @method notifyPropertyChange
     @param {String} keyName The property key to be notified about.
-    @return {Ember.Observable}
+    @return {Observable}
     @public
   */
   notifyPropertyChange(keyName) {
-    this.propertyWillChange(keyName);
-    this.propertyDidChange(keyName);
+    notifyPropertyChange(this, keyName);
     return this;
   },
 
@@ -344,8 +320,10 @@ export default Mixin.create({
 
     Observer methods have the following signature:
 
-    ```javascript
-    export default Ember.Component.extend({
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       init() {
         this._super(...arguments);
         this.addObserver('foo', this, 'fooDidChange');
@@ -371,10 +349,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @return {Observable}
     @public
   */
   addObserver(key, target, method) {
     addObserver(this, key, target, method);
+    return this;
   },
 
   /**
@@ -386,10 +366,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @return {Observable}
     @public
   */
   removeObserver(key, target, method) {
     removeObserver(this, key, target, method);
+    return this;
   },
 
   /**
@@ -404,7 +386,7 @@ export default Mixin.create({
     @private
   */
   hasObserverFor(key) {
-    return hasListeners(this, `${key}:change`);
+    return hasListeners(this, key);
   },
 
   /**
@@ -494,11 +476,6 @@ export default Mixin.create({
     @public
   */
   cacheFor(keyName) {
-    return cacheFor(this, keyName);
+    return getCachedValueFor(this, keyName);
   },
-
-  // intended for debugging purposes
-  observersForKey(keyName) {
-    return observersFor(this, keyName);
-  }
 });

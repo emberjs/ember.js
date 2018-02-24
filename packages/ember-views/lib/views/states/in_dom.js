@@ -1,13 +1,9 @@
 import { assign } from 'ember-utils';
-import { _addBeforeObserver } from 'ember-metal';
+import { addObserver } from 'ember-metal';
 import { Error as EmberError } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 
 import hasElement from './has_element';
-/**
-@module ember
-@submodule ember-views
-*/
 
 const inDOM = Object.create(hasElement);
 
@@ -18,7 +14,7 @@ assign(inDOM, {
     view.renderer.register(view);
 
     if (DEBUG) {
-      _addBeforeObserver(view, 'elementId', () => {
+      addObserver(view, 'elementId', () => {
         throw new EmberError('Changing a view\'s elementId after creation is not allowed');
       });
     }

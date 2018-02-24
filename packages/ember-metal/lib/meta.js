@@ -1,5 +1,4 @@
 import {
-  HAS_NATIVE_WEAKMAP,
   lookupDescriptor,
   symbol,
   toString
@@ -7,14 +6,11 @@ import {
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import {
-  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
-  MANDATORY_SETTER
-} from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 import {
   removeChainWatcher
 } from './chains';
+import { ENV } from 'ember-environment';
 
 let counters;
 if (DEBUG) {
@@ -30,7 +26,7 @@ if (DEBUG) {
 }
 
 /**
-@module ember-metal
+@module ember
 */
 
 export const UNDEFINED = symbol('undefined');
@@ -39,9 +35,7 @@ export const UNDEFINED = symbol('undefined');
 const SOURCE_DESTROYING = 1 << 1;
 const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
-const IS_PROXY = 1 << 4;
 
-const META_FIELD = '__ember_meta__';
 const NODE_STACK = [];
 
 export class Meta {
@@ -50,18 +44,21 @@ export class Meta {
       counters.metaInstantiated++;
     }
 
-    this._cache = undefined;
-    this._weak = undefined;
+    if (EMBER_METAL_ES5_GETTERS) {
+      this._descriptors = undefined;
+    }
+
     this._watching = undefined;
     this._mixins = undefined;
-    this._bindings = undefined;
+    if (ENV._ENABLE_BINDING_SUPPORT) {
+      this._bindings = undefined;
+    }
     this._values = undefined;
     this._deps = undefined;
     this._chainWatchers = undefined;
     this._chains = undefined;
     this._tag = undefined;
     this._tags = undefined;
-    this._factory = undefined;
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
@@ -80,17 +77,8 @@ export class Meta {
     // inherited, and we can optimize it much better than JS runtimes.
     this.parent = parentMeta;
 
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      this._lastRendered = undefined;
-      if (DEBUG) {
-        this._lastRenderedReferenceMap = undefined;
-        this._lastRenderedTemplateMap = undefined;
-      }
-    }
-
     this._listeners = undefined;
     this._listenersFinalized = false;
-    this._suspendedListeners = undefined;
   }
 
   isInitialized(obj) {
@@ -103,14 +91,14 @@ export class Meta {
     // remove chainWatchers to remove circular references that would prevent GC
     let nodes, key, nodeObject;
     let node = this.readableChains();
-    if (node) {
+    if (node !== undefined) {
       NODE_STACK.push(node);
       // process tree
       while (NODE_STACK.length > 0) {
         node = NODE_STACK.pop();
         // push children
         nodes = node._chains;
-        if (nodes) {
+        if (nodes !== undefined) {
           for (key in nodes) {
             if (nodes[key] !== undefined) {
               NODE_STACK.push(nodes[key]);
@@ -119,9 +107,9 @@ export class Meta {
         }
 
         // remove chainWatcher in node object
-        if (node._watching) {
+        if (node._isWatching) {
           nodeObject = node._object;
-          if (nodeObject) {
+          if (nodeObject !== undefined) {
             let foreignMeta = peekMeta(nodeObject);
             // avoid cleaning up chain watchers when both current and
             // foreign objects are being destroyed
@@ -161,14 +149,6 @@ export class Meta {
 
   setMetaDestroyed() {
     this._flags |= META_DESTROYED;
-  }
-
-  isProxy() {
-    return (this._flags & IS_PROXY) !== 0;
-  }
-
-  setProxy() {
-    this._flags |= IS_PROXY;
   }
 
   _getOrCreateOwnMap(key) {
@@ -256,9 +236,9 @@ export class Meta {
         let innerMap = map[subkey];
         if (innerMap !== undefined) {
           for (let innerKey in innerMap) {
-            seen = seen || Object.create(null);
-            if (seen[innerKey] === undefined) {
-              seen[innerKey] = true;
+            seen = seen === undefined ? new Set() : seen;
+            if (!seen.has(innerKey)) {
+              seen.add(innerKey);
               calls = calls || [];
               calls.push(innerKey, innerMap[innerKey]);
             }
@@ -274,20 +254,6 @@ export class Meta {
       }
     }
   }
-
-  set factory(factory) {
-    this._factory = factory;
-  }
-
-  get factory() {
-    return this._factory;
-  }
-
-  writableCache() { return this._getOrCreateOwnMap('_cache'); }
-  readableCache() { return this._cache; }
-
-  writableWeak() { return this._getOrCreateOwnMap('_weak'); }
-  readableWeak() { return this._weak; }
 
   writableTags() { return this._getOrCreateOwnMap('_tags'); }
   readableTags() { return this._tags; }
@@ -322,10 +288,10 @@ export class Meta {
     assert(`Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chains;
     if (ret === undefined) {
-      if (this.parent) {
-        ret = this.parent.writableChains(create).copy(this.source);
-      } else {
+      if (this.parent === undefined) {
         ret = create(this.source);
+      } else {
+        ret = this.parent.writableChains(create).copy(this.source);
       }
       this._chains = ret;
     }
@@ -343,7 +309,7 @@ export class Meta {
   }
 
   peekWatching(subkey) {
-   return this._findInherited('_watching', subkey);
+    return this._findInherited('_watching', subkey);
   }
 
   writeMixins(subkey, value) {
@@ -363,9 +329,9 @@ export class Meta {
       let map = pointer._mixins;
       if (map !== undefined) {
         for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
+          seen = seen === undefined ? new Set() : seen;
+          if (!seen.has(key)) {
+            seen.add(key);
             fn(key, map[key]);
           }
         }
@@ -375,6 +341,7 @@ export class Meta {
   }
 
   writeBindings(subkey, value) {
+    assert('Cannot invoke `meta.writeBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
     assert(`Cannot add a binding for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_bindings');
@@ -382,10 +349,13 @@ export class Meta {
   }
 
   peekBindings(subkey) {
+    assert('Cannot invoke `meta.peekBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
     return this._findInherited('_bindings', subkey);
   }
 
   forEachBindings(fn) {
+    assert('Cannot invoke `meta.forEachBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
+
     let pointer = this;
     let seen;
     while (pointer !== undefined) {
@@ -404,6 +374,7 @@ export class Meta {
   }
 
   clearBindings() {
+    assert('Cannot invoke `meta.clearBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
     assert(`Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     this._bindings = undefined;
   }
@@ -424,32 +395,9 @@ export class Meta {
   }
 }
 
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER || EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-  Meta.prototype.writableLastRendered = function() { return this._getOrCreateOwnMap('_lastRendered'); };
-  Meta.prototype.readableLastRendered = function() { return this._lastRendered; };
-  if (DEBUG) {
-    Meta.prototype.writableLastRenderedReferenceMap = function() { return this._getOrCreateOwnMap('_lastRenderedReferenceMap'); };
-    Meta.prototype.readableLastRenderedReferenceMap = function() { return this._lastRenderedReferenceMap; };
-    Meta.prototype.writableLastRenderedTemplateMap = function() { return this._getOrCreateOwnMap('_lastRenderedTemplateMap'); };
-    Meta.prototype.readableLastRenderedTemplateMap = function() { return this._lastRenderedTemplateMap; };
-  }
-}
-
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
-
-export const META_DESC = {
-  writable: true,
-  configurable: true,
-  enumerable: false,
-  value: null
-};
-
-const EMBER_META_PROPERTY = {
-  name: META_FIELD,
-  descriptor: META_DESC
-};
 
 if (MANDATORY_SETTER) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
@@ -483,56 +431,97 @@ if (MANDATORY_SETTER) {
   };
 }
 
-let setMeta, peekMeta;
-
-// choose the one appropriate for given platform
-if (HAS_NATIVE_WEAKMAP) {
-  let getPrototypeOf = Object.getPrototypeOf;
-  let metaStore = new WeakMap();
-
-  setMeta = function WeakMap_setMeta(obj, meta) {
-    if (DEBUG) {
-      counters.setCalls++;
-    }
-    metaStore.set(obj, meta);
+if (EMBER_METAL_ES5_GETTERS) {
+  Meta.prototype.writeDescriptors = function(subkey, value) {
+    assert(`Cannot update descriptors for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    let map = this._getOrCreateOwnMap('_descriptors');
+    map[subkey] = value;
   };
 
-  peekMeta = function WeakMap_peekParentMeta(obj) {
-    let pointer = obj;
-    let meta;
-    while (pointer !== undefined && pointer !== null) {
-      meta = metaStore.get(pointer);
-      // jshint loopfunc:true
-      if (DEBUG) {
-        counters.peekCalls++;
-      }
-      if (meta !== undefined) {
-        return meta;
-      }
-
-      pointer = getPrototypeOf(pointer);
-      if (DEBUG) {
-        counters.peekPrototypeWalks++;
-      }
-    }
-  };
-} else {
-  setMeta = function Fallback_setMeta(obj, meta) {
-    if (obj.__defineNonEnumerable) {
-      obj.__defineNonEnumerable(EMBER_META_PROPERTY);
-    } else {
-      Object.defineProperty(obj, META_FIELD, META_DESC);
-    }
-
-    obj[META_FIELD] = meta;
+  Meta.prototype.peekDescriptors = function(subkey) {
+    let possibleDesc = this._findInherited('_descriptors', subkey);
+    return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   };
 
-  peekMeta = function Fallback_peekMeta(obj) {
-    return obj[META_FIELD];
+  Meta.prototype.removeDescriptors = function(subkey) {
+    this.writeDescriptors(subkey, UNDEFINED);
+  };
+
+  Meta.prototype.forEachDescriptors = function(fn) {
+    let pointer = this;
+    let seen;
+    while (pointer !== undefined) {
+      let map = pointer._descriptors;
+      if (map !== undefined) {
+        for (let key in map) {
+          seen = seen === undefined ? new Set() : seen;
+          if (!seen.has(key)) {
+            seen.add(key);
+            let value = map[key];
+            if (value !== UNDEFINED) {
+              fn(key, value);
+            }
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
   };
 }
 
+const getPrototypeOf = Object.getPrototypeOf;
+const metaStore = new WeakMap();
+
+export function setMeta(obj, meta) {
+  assert('Cannot call `setMeta` on null', obj !== null);
+  assert('Cannot call `setMeta` on undefined', obj !== undefined);
+  assert(`Cannot call \`setMeta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
+  if (DEBUG) {
+    counters.setCalls++;
+  }
+  metaStore.set(obj, meta);
+}
+
+export function peekMeta(obj) {
+  assert('Cannot call `peekMeta` on null', obj !== null);
+  assert('Cannot call `peekMeta` on undefined', obj !== undefined);
+  assert(`Cannot call \`peekMeta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
+  let pointer = obj;
+  let meta;
+  while (pointer !== undefined && pointer !== null) {
+    meta = metaStore.get(pointer);
+    // jshint loopfunc:true
+    if (DEBUG) {
+      counters.peekCalls++;
+    }
+    if (meta !== undefined) {
+      return meta;
+    }
+
+    pointer = getPrototypeOf(pointer);
+    if (DEBUG) {
+      counters.peekPrototypeWalks++;
+    }
+  }
+}
+
+/**
+  Tears down the meta on an object so that it can be garbage collected.
+  Multiple calls will have no effect.
+
+  @method deleteMeta
+  @for Ember
+  @param {Object} obj  the object to destroy
+  @return {void}
+  @private
+*/
 export function deleteMeta(obj) {
+  assert('Cannot call `deleteMeta` on null', obj !== null);
+  assert('Cannot call `deleteMeta` on undefined', obj !== undefined);
+  assert(`Cannot call \`deleteMeta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
   if (DEBUG) {
     counters.deleteCalls++;
   }
@@ -562,6 +551,10 @@ export function deleteMeta(obj) {
   @return {Object} the meta hash for an object
 */
 export function meta(obj) {
+  assert('Cannot call `meta` on null', obj !== null);
+  assert('Cannot call `meta` on undefined', obj !== undefined);
+  assert(`Cannot call \`meta\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
   if (DEBUG) {
     counters.metaCalls++;
   }
@@ -582,8 +575,65 @@ export function meta(obj) {
   return newMeta;
 }
 
-export {
-  peekMeta,
-  setMeta,
-  counters
-};
+if (DEBUG) {
+  meta._counters = counters;
+}
+
+// Using `symbol()` here causes some node test to fail, presumably
+// because we define the CP with one copy of Ember and boot the app
+// with a different copy, so the random key we generate do not line
+// up. Is that testing a legit scenario?
+export const DESCRIPTOR = '__DESCRIPTOR__';
+
+/**
+  Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
+
+  @method descriptorFor
+  @param {Object} obj the object to check
+  @param {String} keyName the key to check
+  @return {Descriptor}
+  @private
+*/
+export function descriptorFor(obj, keyName, _meta) {
+  assert('Cannot call `descriptorFor` on null', obj !== null);
+  assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
+  assert(`Cannot call \`descriptorFor\` on ${typeof obj}`, typeof obj === 'object' || typeof obj === 'function');
+
+  if (EMBER_METAL_ES5_GETTERS) {
+    let meta = _meta === undefined ? peekMeta(obj) : _meta;
+
+    if (meta !== undefined) {
+      return meta.peekDescriptors(keyName);
+    }
+  } else {
+    let possibleDesc = obj[keyName];
+
+    if (DESCRIPTOR_TRAP && isDescriptorTrap(possibleDesc)) {
+      return possibleDesc[DESCRIPTOR];
+    } else {
+      return isDescriptor(possibleDesc) ? possibleDesc : undefined;
+    }
+  }
+}
+
+export function isDescriptorTrap(possibleDesc) {
+  if (DESCRIPTOR_TRAP) {
+    return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc[DESCRIPTOR] !== undefined;
+  } else {
+    throw new Error('Cannot call `isDescriptorTrap` in production');
+  }
+}
+
+/**
+  Check whether a value is a CP descriptor.
+
+  @method descriptorFor
+  @param {any} possibleDesc the value to check
+  @return {boolean}
+  @private
+*/
+export function isDescriptor(possibleDesc) {
+  return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+}
+
+export { counters };

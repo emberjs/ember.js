@@ -1,8 +1,8 @@
-export default function transformAngleBracketComponents(env) {
+export default function transformAngleBracketComponents(/* env */) {
   return {
     name: 'transform-angle-bracket-components',
 
-    visitors: {
+    visitor: {
       ComponentNode(node) {
         node.tag = `<${node.tag}>`;
       }

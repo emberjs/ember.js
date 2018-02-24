@@ -1,6 +1,6 @@
 import { assign } from 'ember-utils';
 import { compile } from 'ember-template-compiler';
-import { jQuery, EventDispatcher } from 'ember-views';
+import { EventDispatcher } from 'ember-views';
 import { helper, Helper, Component, _resetRenderers} from 'ember-glimmer';
 
 import AbstractTestCase from './abstract';
@@ -12,19 +12,23 @@ const TextNode = window.Text;
 export default class AbstractRenderingTestCase extends AbstractTestCase {
   constructor() {
     super();
+    let bootOptions = this.getBootOptions();
+
     let owner = this.owner = buildOwner({
       ownerOptions: this.getOwnerOptions(),
-      bootOptions: this.getBootOptions(),
-      resolver: this.getResolver()
+      resolver: this.getResolver(),
+      bootOptions,
     });
 
     this.renderer = this.owner.lookup('renderer:-dom');
-    this.element = jQuery('#qunit-fixture')[0];
+    this.element = document.querySelector('#qunit-fixture');
     this.component = null;
 
     owner.register('event_dispatcher:main', EventDispatcher);
     owner.inject('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
-    owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
+    if (!bootOptions || bootOptions.isInteractive !== false) {
+      owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
+    }
   }
 
   compile() {
@@ -39,7 +43,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   getBootOptions() { }
   getResolver() { }
 
-  teardown() {
+  afterEach() {
     try {
       if (this.component) {
         runDestroy(this.component);
@@ -99,7 +103,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerComponent(name, { ComponentClass = null, template = null }) {
+  registerComponent(name, { ComponentClass = Component, template = null }) {
     let { owner } = this;
 
     if (ComponentClass) {

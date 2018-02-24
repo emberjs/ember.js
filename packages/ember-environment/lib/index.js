@@ -78,8 +78,37 @@ ENV.LOG_VERSION = defaultTrue(ENV.LOG_VERSION);
 */
 ENV.LOG_BINDINGS = defaultFalse(ENV.LOG_BINDINGS);
 
-
 ENV.RAISE_ON_DEPRECATION = defaultFalse(ENV.RAISE_ON_DEPRECATION);
+
+/**
+  Whether to insert a `<div class="ember-view" />` wrapper around the
+  application template. See RFC #280.
+
+  This is not intended to be set directly, as the implementation may change in
+  the future. Use `@ember/optional-features` instead.
+
+  @property _APPLICATION_TEMPLATE_WRAPPER
+  @for EmberENV
+  @type Boolean
+  @default true
+  @private
+*/
+ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(ENV._APPLICATION_TEMPLATE_WRAPPER);
+
+/**
+  Whether to use Glimmer Component semantics (as opposed to the classic "Curly"
+  components semantics) for template-only components. See RFC #278.
+
+  This is not intended to be set directly, as the implementation may change in
+  the future. Use `@ember/optional-features` instead.
+
+  @property _TEMPLATE_ONLY_GLIMMER_COMPONENTS
+  @for EmberENV
+  @type Boolean
+  @default false
+  @private
+*/
+ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = defaultFalse(ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS);
 
 // check if window exists and actually is the global
 const hasDOM = typeof window !== 'undefined' && window === global &&
@@ -103,7 +132,6 @@ export const environment = hasDOM ? {
   hasDOM: true,
   isChrome: !!window.chrome && !window.opera,
   isFirefox: typeof InstallTrigger !== 'undefined',
-  isPhantom: !!window.callPhantom,
   location: window.location,
   history: window.history,
   userAgent: window.navigator.userAgent,
@@ -112,7 +140,6 @@ export const environment = hasDOM ? {
   hasDOM: false,
   isChrome: false,
   isFirefox: false,
-  isPhantom: false,
   location: null,
   history: null,
   userAgent: 'Lynx (textmode)',

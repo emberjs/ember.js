@@ -7,8 +7,7 @@ import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 let popstateFired = false;
@@ -24,13 +23,34 @@ function _uuid() {
 
 
 /**
-  Ember.HistoryLocation implements the location API using the browser's
+  HistoryLocation implements the location API using the browser's
   history.pushState API.
 
+  Using `HistoryLocation` results in URLs that are indistinguishable from a
+  standard URL. This relies upon the browser's `history` API.
+
+  Example:
+
+  ```app/router.js
+  Router.map(function() {
+    this.route('posts', function() {
+      this.route('new');
+    });
+  });
+
+  Router.reopen({
+    location: 'history'
+  });
+  ```
+
+  This will result in a posts.new url of `/posts/new`.
+
+  Keep in mind that your server must serve the Ember app at all the routes you
+  define.
+
   @class HistoryLocation
-  @namespace Ember
-  @extends Ember.Object
-  @private
+  @extends EmberObject
+  @protected
 */
 export default EmberObject.extend({
   implementation: 'history',
@@ -64,7 +84,14 @@ export default EmberObject.extend({
       this.supportsHistory = true;
     }
 
-    this.replaceState(this.formatURL(this.getURL()));
+    let state = this.getState();
+    let path = this.formatURL(this.getURL());
+    if (state && state.path === path) { // preserve existing state
+      // used for webkit workaround, since there will be no initial popstate event
+      this._previousURL = this.getURL();
+    } else {
+      this.replaceState(path);
+    }
   },
 
   /**

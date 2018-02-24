@@ -393,7 +393,7 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     `);
   }
 
-  ['@test keying off of `undefined` does not render'](assert) {
+  ['@test keying off of `undefined` does not render']() {
     this.render(strip`
       {{#each-in foo.bar.baz as |thing|}}
         {{thing}}
@@ -414,7 +414,7 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     this.assertText('');
   }
 
-  ['@test it iterate over array with `in` instead of walking over elements'](assert) {
+  ['@test it iterate over array with `in` instead of walking over elements']() {
     let arr = [1, 2, 3];
     arr.foo = 'bar';
 
@@ -443,7 +443,7 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
     this.assertText('[0:1][1:2][2:3][foo:bar]');
   }
 
-  ['@test it skips holes in sparse arrays'](assert) {
+  ['@test it skips holes in sparse arrays']() {
     let arr = [];
     arr[5] = 'foo';
     arr[6] = 'bar';

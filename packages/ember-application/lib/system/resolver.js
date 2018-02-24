@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/application
 */
 
 import { dictionary } from 'ember-utils';
@@ -61,12 +60,16 @@ export const Resolver = EmberObject.extend({
   in a subclass. For example, you could enhance how a template
   is resolved like so:
 
-  ```javascript
-  App = Ember.Application.create({
-    Resolver: Ember.DefaultResolver.extend({
-      resolveTemplate: function(parsedName) {
+  ```app/app.js
+  import Application from '@ember/application';
+  import GlobalsResolver from '@ember/application/globals-resolver';
+
+  App = Application.create({
+    Resolver: GlobalsResolver.extend({
+      resolveTemplate(parsedName) {
         let resolvedTemplate = this._super(parsedName);
         if (resolvedTemplate) { return resolvedTemplate; }
+
         return Ember.TEMPLATES['not_found'];
       }
     })
@@ -75,36 +78,29 @@ export const Resolver = EmberObject.extend({
 
   Some examples of how names are resolved:
 
-  ```
+  ```text
   'template:post'           //=> Ember.TEMPLATES['post']
   'template:posts/byline'   //=> Ember.TEMPLATES['posts/byline']
   'template:posts.byline'   //=> Ember.TEMPLATES['posts/byline']
-  'template:blogPost'       //=> Ember.TEMPLATES['blogPost']
-                            //   OR
-                            //   Ember.TEMPLATES['blog_post']
+  'template:blogPost'       //=> Ember.TEMPLATES['blog-post']
   'controller:post'         //=> App.PostController
   'controller:posts.index'  //=> App.PostsIndexController
   'controller:blog/post'    //=> Blog.PostController
-  'controller:basic'        //=> Ember.Controller
+  'controller:basic'        //=> Controller
   'route:post'              //=> App.PostRoute
   'route:posts.index'       //=> App.PostsIndexRoute
   'route:blog/post'         //=> Blog.PostRoute
-  'route:basic'             //=> Ember.Route
-  'view:post'               //=> App.PostView
-  'view:posts.index'        //=> App.PostsIndexView
-  'view:blog/post'          //=> Blog.PostView
-  'view:basic'              //=> Ember.View
+  'route:basic'             //=> Route
   'foo:post'                //=> App.PostFoo
   'model:post'              //=> App.Post
   ```
 
-  @class DefaultResolver
-  @namespace Ember
-  @extends Ember.Object
+  @class GlobalsResolver
+  @extends EmberObject
   @public
 */
 
-export default EmberObject.extend({
+const DefaultResolver = EmberObject.extend({
   /**
     This will be set to the Application instance when it is
     created.
@@ -253,13 +249,13 @@ export default EmberObject.extend({
     return description;
   },
 
-  makeToString(factory, fullName) {
+  makeToString(factory) {
     return factory.toString();
   },
 
   /**
     Given a parseName object (output from `parseName`), apply
-    the conventions expected by `Ember.Router`
+    the conventions expected by `Router`
 
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
@@ -372,31 +368,12 @@ export default EmberObject.extend({
   },
 
   /**
-   @method _logLookup
-   @param {Boolean} found
-   @param {Object} parsedName
-   @private
+    Used to iterate all items of a given type.
+
+    @method knownForType
+    @param {String} type the type to search for
+    @private
   */
-  _logLookup(found, parsedName) {
-    let symbol = found ? '[✓]' : '[ ]';
-
-    let padding;
-    if (parsedName.fullName.length > 60) {
-      padding = '.';
-    } else {
-      padding = new Array(60 - parsedName.fullName.length).join('.');
-    }
-
-    info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
-  },
-
-  /**
-   Used to iterate all items of a given type.
-
-   @method knownForType
-   @param {String} type the type to search for
-   @private
-   */
   knownForType(type) {
     let namespace = get(this, 'namespace');
     let suffix = StringUtils.classify(type);
@@ -418,19 +395,18 @@ export default EmberObject.extend({
   },
 
   /**
-   Converts provided name from the backing namespace into a container lookup name.
+    Converts provided name from the backing namespace into a container lookup name.
 
-   Examples:
+    Examples:
 
-   App.FooBarHelper -> helper:foo-bar
-   App.THelper -> helper:t
+    * App.FooBarHelper -> helper:foo-bar
+    * App.THelper -> helper:t
 
-   @method translateToContainerFullname
-   @param {String} type
-   @param {String} name
-   @private
-   */
-
+    @method translateToContainerFullname
+    @param {String} type
+    @param {String} name
+    @private
+  */
   translateToContainerFullname(type, name) {
     let suffix = StringUtils.classify(type);
     let namePrefix = name.slice(0, suffix.length * -1);
@@ -439,3 +415,28 @@ export default EmberObject.extend({
     return `${type}:${dasherizedName}`;
   }
 });
+
+export default DefaultResolver;
+
+if (DEBUG) {
+  DefaultResolver.reopen({
+    /**
+      @method _logLookup
+      @param {Boolean} found
+      @param {Object} parsedName
+      @private
+    */
+    _logLookup(found, parsedName) {
+      let symbol = found ? '[✓]' : '[ ]';
+
+      let padding;
+      if (parsedName.fullName.length > 60) {
+        padding = '.';
+      } else {
+        padding = new Array(60 - parsedName.fullName.length).join('.');
+      }
+
+      info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
+    }
+  });
+}

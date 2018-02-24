@@ -1,4 +1,3 @@
-/* eslint-env node */
 'use strict';
 
 const Funnel = require('broccoli-funnel');
@@ -12,7 +11,7 @@ module.exports = function _minify(tree, name) {
     },
     mangle: true,
     compress: {
-      // this is adversely affects heuristics for IIFE eval
+      // this adversely affects heuristics for IIFE eval
       negate_iife: false,
       // limit sequences because of memory issues during parsing
       sequences: 30
@@ -28,10 +27,10 @@ module.exports = function _minify(tree, name) {
     getDestinationPath(relativePath) {
       let ext = path.extname(relativePath);
       if (ext === '.map') {
-        return `${name}.map`
+        return `${name}.map`;
       }
       return `${name}.js`;
     },
     annotation: name
   });
-}
+};

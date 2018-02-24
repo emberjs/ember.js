@@ -1,9 +1,6 @@
-/* eslint-env node */
 /* eslint-disable no-console */
 
 var path = require('path');
-var QUnit = require('qunitjs');
-
 var distPath = path.join(__dirname, '../../../dist');
 var emberPath = path.join(distPath, 'ember.debug');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');

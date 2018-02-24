@@ -1,8 +1,6 @@
 'use strict';
-/* eslint-env node */
 
-function injectBabelHelpers(babel) {
-  let { types: t } = babel;
+function injectBabelHelpers() {
   return {
     pre(file) {
       file.set('helperGenerator', function (name) {
@@ -14,6 +12,6 @@ function injectBabelHelpers(babel) {
 
 injectBabelHelpers.baseDir = function() {
   return 'babel-core';
-}
+};
 
 module.exports = injectBabelHelpers;

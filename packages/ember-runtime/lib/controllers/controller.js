@@ -2,23 +2,18 @@ import { assert } from 'ember-debug';
 import EmberObject from '../system/object';
 import Mixin from '../mixins/controller';
 import { createInjectionHelper } from '../inject';
-import { deprecateUnderscoreActions } from '../mixins/action_handler';
 
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/controller
 */
 
 /**
   @class Controller
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @uses Ember.ControllerMixin
   @public
 */
 const Controller = EmberObject.extend(Mixin);
-
-deprecateUnderscoreActions(Controller);
 
 function controllerInjectionHelper(factory) {
   assert(
@@ -34,26 +29,24 @@ function controllerInjectionHelper(factory) {
 
   Example:
 
-  ```javascript
-  App.PostController = Ember.Controller.extend({
-    posts: Ember.inject.controller()
+  ```app/controllers/post.js
+  import Controller, {
+    inject as controller
+  } from '@ember/controller';
+
+  export default Controller.extend({
+    posts: controller()
   });
   ```
 
   This example will create a `posts` property on the `post` controller that
   looks up the `posts` controller in the container, making it easy to
-  reference other controllers. This is functionally equivalent to:
+  reference other controllers.
 
-  ```javascript
-  App.PostController = Ember.Controller.extend({
-    needs: 'posts',
-    posts: Ember.computed.alias('controllers.posts')
-  });
-  ```
-
-  @method controller
+  @method inject
+  @static
+  @for @ember/controller
   @since 1.10.0
-  @for Ember.inject
   @param {String} name (optional) name of the controller to inject, defaults
          to the property's name
   @return {Ember.InjectedProperty} injection descriptor instance

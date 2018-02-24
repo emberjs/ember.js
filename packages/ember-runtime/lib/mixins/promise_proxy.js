@@ -8,8 +8,7 @@ import { Error as EmberError } from 'ember-debug';
 import { not, or } from '../computed/computed_macros';
 
 /**
-  @module ember
-  @submodule ember-runtime
+  @module @ember/object
 */
 
 function tap(proxy, promise) {
@@ -41,10 +40,15 @@ function tap(proxy, promise) {
   A low level mixin making ObjectProxy promise-aware.
 
   ```javascript
-  let ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
+  import { resolve } from 'rsvp';
+  import $ from 'jquery';
+  import ObjectProxy from '@ember/object/proxy';
+  import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+
+  let ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
 
   let proxy = ObjectPromiseProxy.create({
-    promise: Ember.RSVP.cast($.getJSON('/some/remote/data.json'))
+    promise: resolve($.getJSON('/some/remote/data.json'))
   });
 
   proxy.then(function(json){
@@ -67,7 +71,7 @@ function tap(proxy, promise) {
   When the $.getJSON completes, and the promise is fulfilled
   with json, the life cycle attributes will update accordingly.
   Note that $.getJSON doesn't return an ECMA specified promise,
-  it is useful to wrap this with an `RSVP.cast` so that it behaves
+  it is useful to wrap this with an `RSVP.resolve` so that it behaves
   as a spec compliant promise.
 
   ```javascript
@@ -92,7 +96,7 @@ function tap(proxy, promise) {
   proxy.get('lastName')  //=> 'Penner'
   ```
 
-  @class Ember.PromiseProxyMixin
+  @class PromiseProxyMixin
   @public
 */
 export default Mixin.create({
@@ -151,7 +155,10 @@ export default Mixin.create({
     Example:
 
     ```javascript
-    Ember.ObjectProxy.extend(Ember.PromiseProxyMixin).create({
+    import ObjectProxy from '@ember/object/proxy';
+    import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+
+    ObjectProxy.extend(PromiseProxyMixin).create({
       promise: <thenable>
     });
     ```

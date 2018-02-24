@@ -1,13 +1,17 @@
-/* eslint-env node */
+'use strict';
 
-var testInfo = require('ember-cli-test-info');
-var useTestFrameworkDetector = require('../test-framework-detector');
+const stringUtil = require('ember-cli-string-utils');
+
+const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a controller unit test.',
   locals: function(options) {
+    let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
+    let controllerPathName = dasherizedModuleName;
     return {
-      friendlyTestDescription: testInfo.description(options.entity.name, 'Unit', 'Controller')
+      controllerPathName: controllerPathName,
+      friendlyTestDescription: ['Unit', 'Controller', dasherizedModuleName].join(' | ')
     };
   }
 });

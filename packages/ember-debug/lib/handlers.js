@@ -12,7 +12,7 @@ if (DEBUG) {
     HANDLERS[type] = (message, options) => {
       callback(message, options, nextHandler);
     };
-  }
+  };
 
   invoke = function invoke(type, message, test, options) {
     if (test) { return; }
@@ -22,10 +22,10 @@ if (DEBUG) {
     if (handlerForType) {
       handlerForType(message, options);
     }
-  }
+  };
 }
 
 export {
   registerHandler,
   invoke
-}
+};

@@ -99,13 +99,13 @@ moduleFor('Application Lifecycle', class extends AutobootApplicationTestCase {
     let route = this.applicationInstance.lookup('route:index');
 
     this.runTask(() => router.destroy());
-    equal(router._toplevelView, null, 'the toplevelView was cleared');
+    assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
 
     this.runTask(() => route.destroy());
-    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+    assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
 
     this.runTask(() => this.application.destroy());
-    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+    assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
   }
 
   [`@test initializers can augment an applications customEvents hash`](assert) {

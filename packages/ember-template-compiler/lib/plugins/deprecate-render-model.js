@@ -2,13 +2,14 @@ import { deprecate } from 'ember-debug';
 import calculateLocationDisplay from
   '../system/calculate-location-display';
 
+// Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
 export default function deprecateRenderModel(env) {
   let { moduleName } = env.meta;
 
   return {
     name: 'deprecate-render-model',
 
-    visitors: {
+    visitor: {
       MustacheStatement(node) {
         if (node.path.original === 'render' && node.params.length > 1) {
           node.params.forEach(param => {
@@ -23,7 +24,7 @@ export default function deprecateRenderModel(env) {
         }
       }
     }
-  }
+  };
 }
 
 function deprecationMessage(moduleName, node, param) {

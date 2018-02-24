@@ -42,14 +42,14 @@ function updateClassReferencesInNamespaces(data) {
     var originalClasses = data.modules[namespace].classes;
     for (var className in originalClasses) {
       if (data.classes.hasOwnProperty(className)) {
-        namespaceClasses[className] = originalClasses[className]
+        namespaceClasses[className] = originalClasses[className];
       }
     }
     data.modules[namespace].classes = namespaceClasses;
   }
 }
 
-module.exports = function (data, options) {
+module.exports = function (data) {
   var featuresToFilter = gatherFeatures();
   data.classes = gatherClassesToDocument(data, featuresToFilter);
   updateClassReferencesInNamespaces(data);

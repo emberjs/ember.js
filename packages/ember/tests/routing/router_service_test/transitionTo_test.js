@@ -4,8 +4,7 @@ import { Route, NoneLocation } from 'ember-routing';
 import { Controller } from 'ember-runtime';
 import {
   run,
-  get,
-  set
+  get
 } from 'ember-metal';
 import {
   RouterTestCase,
@@ -248,9 +247,55 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
       let queryParams = this.buildQueryParams({ sort: 'ASC' });
 
-      return this.visit('/').then(() => {
-        return this.routerService.transitionTo('parent.child', queryParams);
-      })
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('parent.child', queryParams);
+        })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+        });
+    }
+
+    ['@test RouterService#transitionTo passing only queryParams works'](assert) {
+      assert.expect(2);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['sort']
+      }));
+
+      let queryParams = this.buildQueryParams({ sort: 'DESC' });
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('parent.child');
+        })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child');
+        })
+        .then(() => {
+          return this.routerService.transitionTo(queryParams);
+        })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+        });
+    }
+
+    ['@test RouterService#transitionTo with unspecified query params'](assert) {
+      assert.expect(1);
+
+      this.add('controller:parent.child', Controller.extend({
+        queryParams: ['sort', 'page', 'category', 'extra'],
+        sort: 'ASC',
+        page: null,
+        category: undefined
+      }));
+
+      let queryParams = this.buildQueryParams({ sort: 'ASC' });
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('parent.child', queryParams);
+        })
         .then(() => {
           assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
         });

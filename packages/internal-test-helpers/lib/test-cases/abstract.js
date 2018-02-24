@@ -1,7 +1,9 @@
+/* global Element */
+
 import { assign } from 'ember-utils';
 import { run } from 'ember-metal';
-import { jQuery } from 'ember-views';
 
+import NodeQuery from './node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
 import {
@@ -9,6 +11,7 @@ import {
   regex,
   classes
 } from '../matchers';
+import { Promise } from 'rsvp';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -31,16 +34,29 @@ export default class AbstractTestCase {
     this.element = null;
     this.snapshot = null;
     this.assert = QUnit.config.current.assert;
+
+    let { fixture } = this;
+    if (fixture) {
+      this.setupFixture(fixture);
+    }
   }
 
   teardown() {}
+  afterEach() {}
 
   runTask(callback) {
     return run(callback);
   }
 
-  runTaskNext(callback) {
-    return run.next(callback);
+  runTaskNext() {
+    return new Promise((resolve) => {
+      return run.next(resolve);
+    });
+  }
+
+  setupFixture(innerHTML) {
+    let fixture = document.getElementById('qunit-fixture');
+    fixture.innerHTML = innerHTML;
   }
 
   // The following methods require `this.element` to work
@@ -84,15 +100,53 @@ export default class AbstractTestCase {
   }
 
   $(sel) {
-    return sel ? jQuery(sel, this.element) : jQuery(this.element);
+    if (sel instanceof Element) {
+      return NodeQuery.element(sel);
+    } else if (typeof sel === 'string') {
+      return NodeQuery.query(sel, this.element);
+    } else if (sel !== undefined) {
+      throw new Error(`Invalid this.$(${sel})`);
+    } else {
+      return NodeQuery.element(this.element);
+    }
+  }
+
+  wrap(element) {
+    return NodeQuery.element(element);
   }
 
   click(selector) {
-    return this.$(selector).click();
+    let element;
+    if (typeof selector === 'string') {
+      element = this.element.querySelector(selector);
+    } else {
+      element = selector;
+    }
+
+    let event = element.click();
+
+    return this.runLoopSettled(event);
+  }
+
+  // TODO: Find a better name 😎
+  runLoopSettled(value) {
+    return new Promise(function(resolve) {
+      // Every 5ms, poll for the async thing to have finished
+      let watcher = setInterval(() => {
+        // If there are scheduled timers or we are inside of a run loop, keep polling
+        if (run.hasScheduledTimers() || run.currentRunLoop) { return; }
+
+        // Stop polling
+        clearInterval(watcher);
+
+        // Synchronously resolve the promise
+        resolve(value);
+      }, 5);
+    });
   }
 
   textValue() {
-    return this.$().text();
+    return this.element.textContent;
   }
 
   takeSnapshot() {
@@ -116,7 +170,7 @@ export default class AbstractTestCase {
   }
 
   assertInnerHTML(html) {
-    equalInnerHTML(this.element, html);
+    equalInnerHTML(this.assert, this.element, html);
   }
 
   assertHTML(html) {
@@ -128,7 +182,7 @@ export default class AbstractTestCase {
       throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
     }
 
-    equalsElement(node, tagName, attrs, content);
+    equalsElement(this.assert, node, tagName, attrs, content);
   }
 
   assertComponentElement(node, { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }) {

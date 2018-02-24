@@ -8,19 +8,36 @@ import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 /**
-  `Ember.HashLocation` implements the location API using the browser's
+  `HashLocation` implements the location API using the browser's
   hash. At present, it relies on a `hashchange` event existing in the
   browser.
 
+  Using `HashLocation` results in URLs with a `#` (hash sign) separating the
+  server side URL portion of the URL from the portion that is used by Ember.
+
+  Example:
+
+  ```app/router.js
+  Router.map(function() {
+    this.route('posts', function() {
+      this.route('new');
+    });
+  });
+
+  Router.reopen({
+    location: 'hash'
+  });
+  ```
+
+  This will result in a posts.new url of `/#/posts/new`.
+
   @class HashLocation
-  @namespace Ember
-  @extends Ember.Object
-  @private
+  @extends EmberObject
+  @protected
 */
 export default EmberObject.extend({
   implementation: 'hash',

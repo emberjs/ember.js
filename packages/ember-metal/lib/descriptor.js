@@ -16,12 +16,21 @@ class Descriptor extends EmberDescriptor {
   constructor(desc) {
     super();
     this.desc = desc;
+    this.enumerable = desc.enumerable;
   }
 
   setup(obj, key) {
     Object.defineProperty(obj, key, this.desc);
   }
 
-  teardown(obj, key) {
+  get(obj, key) {
+    return obj[key];
+  }
+
+  set(obj, key, value) {
+    return obj[key] = value;
+  }
+
+  teardown() {
   }
 }

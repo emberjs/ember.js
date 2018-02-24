@@ -1,8 +1,11 @@
 /**
+ @module @ember/error
+*/
+
+/**
   A subclass of the JavaScript Error object for use in Ember.
 
-  @class Error
-  @namespace Ember
+  @class EmberError
   @extends Error
   @constructor
   @public

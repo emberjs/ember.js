@@ -1,23 +1,16 @@
 'use strict';
-/* eslint-env node */
 
-// To create fast production builds (without ES3 support, minification, derequire, or JSHint)
-// run the following:
-//
-// DISABLE_ES3=true DISABLE_JSCS=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
-
+const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
-const addon = require('./broccoli/addon');
 const concat = require('./broccoli/concat-bundle');
 const testIndexHTML = require('./broccoli/test-index-html');
 const toES5 = require('./broccoli/to-es5');
 const stripForProd = toES5.stripForProd;
 const minify = require('./broccoli/minify');
 const lint = require('./broccoli/lint');
-const Rollup = require('broccoli-rollup');
 const { stripIndent } = require('common-tags');
 const {
   routerES,
@@ -32,23 +25,22 @@ const {
   dagES,
   routeRecognizerES,
   emberPkgES,
-  glimmerPkgES,
+  glimmerTrees,
   emberTestsES,
   nodeModuleUtils,
   emberVersionES,
   emberLicense,
   emberFeaturesES,
-  packageManagerJSONs,
   nodeTests,
   rollupEmberMetal
 } = require('./broccoli/packages');
 const SHOULD_ROLLUP = true;
+const ENV = process.env.EMBER_ENV || 'development';
 
-module.exports = function(options) {
+module.exports = function() {
   let loader = internalLoader();
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
-  let ENV = process.env.EMBER_ENV || 'development';
   let debugFeatures = toES5(emberFeaturesES());
   let version = toES5(emberVersionES());
   let emberTesting = emberPkgES('ember-testing');
@@ -57,22 +49,14 @@ module.exports = function(options) {
   let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
   let emberTemplateCompiler = emberPkgES('ember-template-compiler');
   let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
-  let glimmerSyntax = toES5(
-    glimmerPkgES('@glimmer/syntax', ['@glimmer/util', 'handlebars', 'simple-html-tokenizer']),
-    { annotation: '@glimmer/syntax' }
-  );
-  let glimmerCompiler = toES5(
-    glimmerPkgES('@glimmer/compiler', ['@glimmer/util', '@glimmer/wire-format', '@glimmer/syntax']),
-    { annotation: '@glimmer/compiler' }
-  );
-  let glimmerReference = toES5(glimmerPkgES('@glimmer/reference', ['@glimmer/util']));
-  let glimmerUtil = toES5(glimmerPkgES('@glimmer/util'));
-  let glimmerWireFormat = toES5(glimmerPkgES('@glimmer/wire-format', ['@glimmer/util']));
   let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
   let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
   let rsvp = toES5(rsvpES(), { annotation: 'rsvp' });
-  let emberMetal = new Funnel('packages/ember-metal/lib', { destDir: '/' });
+  let emberMetal = new Funnel('packages/ember-metal/lib', {
+    destDir: '/',
+    include: ['**/*.js']
+  });
   let emberMetalES5 = rollupEmberMetal(emberMetal);
   let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);
   let emberConsoleES5 = toES5(emberConsole, { annotation: 'ember-console' });
@@ -94,20 +78,20 @@ module.exports = function(options) {
   let backburner = toES5(backburnerES());
 
   // Linting
-  let emberTestsLinted = emberTests.map(lint);
-  let emberLinted = emberCoreES6.map(lint);
+  let packages = new UnwatchedDir('packages');
+  let linting = lint(new Funnel(packages, {
+    include: ['**/*.js']
+  }));
 
   // ES5
   let dependenciesES5 = dependenciesES6().map(toES5);
   let emberES5 = emberCoreES6.map(toES5);
-  emberTests.push(addon('ember-dev', options.project));
   let emberTestsES5 = emberTests.map(toES5);
 
   // Bundling
   let emberTestsBundle = new MergeTrees([
     ...emberTestsES5,
-    ...emberTestsLinted,
-    ...emberLinted,
+    linting,
     loader,
     nodeModule,
     license,
@@ -132,9 +116,6 @@ module.exports = function(options) {
     emberMetalES5,
     emberConsoleES5,
     emberDebugES5,
-    glimmerReference,
-    glimmerUtil,
-    glimmerWireFormat,
     backburner,
     version,
     license,
@@ -191,11 +172,8 @@ module.exports = function(options) {
       emberConsoleES5,
       emberTemplateCompilerES5,
       emberDebugES5,
-      glimmerSyntax,
-      glimmerCompiler,
-      glimmerReference,
-      glimmerUtil,
-      glimmerWireFormat,
+      // metal depends on @glimmer/reference
+      ...glimmerTrees(['@glimmer/compiler', '@glimmer/reference']).map(toES5),
       backburner,
       debugFeatures,
       tokenizer,
@@ -225,9 +203,6 @@ module.exports = function(options) {
     });
 
     let depsProd = [
-      glimmerReference,
-      glimmerUtil,
-      glimmerWireFormat,
       backburner,
       rsvp
     ].map(stripForProd);
@@ -266,7 +241,7 @@ module.exports = function(options) {
     // because we strip babel helpers in the prod build
     let prodTemplateCompiler = new MergeTrees(templateCompiler(babelProdHelpersES5));
 
-    prodTemplateCompiler = stripForProd(prodTemplateCompiler)
+    prodTemplateCompiler = stripForProd(prodTemplateCompiler);
 
     prodTemplateCompiler = new MergeTrees([
       nodeModule,
@@ -328,22 +303,28 @@ module.exports = function(options) {
     emberTestsBundle,
     emberDebugBundle,
     emberTestingBundle,
-    packageManagerJSONs(),
     nodeTests()
   ]);
 };
 
 function dependenciesES6() {
+  let glimmerEntries = ['@glimmer/node', '@glimmer/opcode-compiler', '@glimmer/runtime'];
+  if (ENV === 'development') {
+    let hasGlimmerDebug = true;
+    try {
+      require('@glimmer/debug');
+    } catch (e) {
+      hasGlimmerDebug = false;
+    }
+    if (hasGlimmerDebug) {
+      glimmerEntries.push('@glimmer/debug', '@glimmer/local-debug-flags');
+    }
+  }
   return [
     dagES(),
     routerES(),
     routeRecognizerES(),
-    glimmerPkgES('@glimmer/node', ['@glimmer/runtime']),
-    glimmerPkgES('@glimmer/runtime', [
-      '@glimmer/util',
-      '@glimmer/reference',
-      '@glimmer/wire-format'
-    ])
+    ...glimmerTrees(glimmerEntries),
   ];
 }
 

@@ -4,28 +4,20 @@ import { w } from '../../../system/string';
 QUnit.module('EmberStringUtils.w');
 
 if (!ENV.EXTEND_PROTOTYPES.String) {
-  QUnit.test('String.prototype.w is not available without EXTEND_PROTOTYPES', function() {
-    ok('undefined' === typeof String.prototype.w, 'String.prototype helper disabled');
+  QUnit.test('String.prototype.w is not available without EXTEND_PROTOTYPES', function(assert) {
+    assert.ok('undefined' === typeof String.prototype.w, 'String.prototype helper disabled');
   });
 }
 
-QUnit.test('\'one two three\'.w() => [\'one\',\'two\',\'three\']', function() {
-  deepEqual(w('one two three'), ['one', 'two', 'three']);
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('one two three'.w(), ['one', 'two', 'three']);
-  }
-});
+function test(given, expected, description) {
+  QUnit.test(description, function(assert) {
+    assert.deepEqual(w(given), expected);
+    if (ENV.EXTEND_PROTOTYPES.String) {
+      assert.deepEqual(given.w(), expected);
+    }
+  });
+}
 
-QUnit.test('\'one    two    three\'.w() with extra spaces between words => [\'one\',\'two\',\'three\']', function() {
-  deepEqual(w('one   two  three'), ['one', 'two', 'three']);
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('one   two  three'.w(), ['one', 'two', 'three']);
-  }
-});
-
-QUnit.test('\'one two three\'.w() with tabs', function() {
-  deepEqual(w('one\ttwo  three'), ['one', 'two', 'three']);
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    deepEqual('one\ttwo  three'.w(), ['one', 'two', 'three']);
-  }
-});
+test('one two three',    ['one', 'two', 'three'], `w('one two three') => ['one','two','three']`);
+test('one   two  three', ['one', 'two', 'three'], `w('one    two    three') with extra spaces between words => ['one','two','three']`);
+test('one\ttwo  three',  ['one', 'two', 'three'], `w('one two three') with tabs`);

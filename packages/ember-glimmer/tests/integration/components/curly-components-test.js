@@ -13,6 +13,8 @@ import {
   inject,
   Service
 } from 'ember-runtime';
+import { jQueryDisabled } from 'ember-views/system/jquery';
+import { ENV } from 'ember-environment';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
@@ -23,25 +25,21 @@ import {
   styles
 } from '../../utils/test-helpers';
 import {
-  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
   MANDATORY_SETTER
 } from 'ember/features';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
-
-  ['@test it can render a basic component']() {
-    this.registerComponent('foo-bar', { template: 'hello' });
-
-    this.render('{{foo-bar}}');
-
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-    this.runTask(() => this.rerender());
-
-    this.assertComponentElement(this.firstChild, { content: 'hello' });
+  constructor() {
+    super();
+    this.originalDidInitAttrsSupport = ENV._ENABLE_DID_INIT_ATTRS_SUPPORT;
   }
 
-  ['@test it can render a template only component']() {
+  teardown() {
+    ENV._ENABLE_DID_INIT_ATTRS_SUPPORT = this.originalDidInitAttrsSupport;
+    super.teardown();
+  }
+
+  ['@test it can render a basic component']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
     this.render('{{foo-bar}}');
@@ -119,42 +117,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('FIZZ BAR hey');
   }
 
-  ['@test can specify template with `defaultLayout` property [DEPRECATED]']() {
-    expectDeprecation(/Specifying `defaultLayout` to .* is deprecated. Please use `layout` instead/);
-    let FooBarComponent = Component.extend({
-      elementId: 'blahzorz',
-      defaultLayout: compile('much wat {{lulz}}'),
-      init() {
-        this._super(...arguments);
-        this.lulz = 'hey';
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
-
-    this.render('{{foo-bar}}');
-
-    this.assertText('much wat hey');
-  }
-
-  ['@test layout takes precedence over defaultLayout']() {
-    let FooBarComponent = Component.extend({
-      elementId: 'blahzorz',
-      layout: compile('so much layout wat {{lulz}}'),
-      defaultLayout: compile('much wat {{lulz}}'),
-      init() {
-        this._super(...arguments);
-        this.lulz = 'hey';
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
-
-    this.render('{{foo-bar}}');
-
-    this.assertText('so much layout wat hey');
-  }
-
   ['@test layout supports computed property']() {
     let FooBarComponent = Component.extend({
       elementId: 'blahzorz',
@@ -214,7 +176,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(foundId, newFoundId);
   }
 
-  ['@test cannot pass both id and elementId at the same time'](assert) {
+  ['@test cannot pass both id and elementId at the same time']() {
     this.registerComponent('foo-bar', { template: '' });
 
     expectAssertion(() => {
@@ -269,7 +231,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
   }
 
-  ['@test tagName can not be a computed property'](assert) {
+  ['@test tagName can not be a computed property']() {
     let FooBarComponent = Component.extend({
       tagName: computed(function() {
         return 'foo-bar';
@@ -443,60 +405,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertSameNode(element2, element1);
   }
 
-  ['@test it has a jQuery proxy to the element'](assert) {
-    let instance;
-
-    let FooBarComponent = Component.extend({
-      init() {
-        this._super();
-        instance = this;
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
-
-    this.render('{{foo-bar}}');
-
-    let element1 = instance.$()[0];
-
-    this.assertComponentElement(element1, { content: 'hello' });
-
-    this.runTask(() => this.rerender());
-
-    let element2 = instance.$()[0];
-
-    this.assertComponentElement(element2, { content: 'hello' });
-
-    this.assertSameNode(element2, element1);
-  }
-
-  ['@test it scopes the jQuery proxy to the component element'](assert) {
-    let instance;
-
-    let FooBarComponent = Component.extend({
-      init() {
-        this._super();
-        instance = this;
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
-
-    this.render('<span class="outer">outer</span>{{foo-bar}}');
-
-    let $span = instance.$('span');
-
-    assert.equal($span.length, 1);
-    assert.equal($span.attr('class'), 'inner');
-
-    this.runTask(() => this.rerender());
-
-    $span = instance.$('span');
-
-    assert.equal($span.length, 1);
-    assert.equal($span.attr('class'), 'inner');
-  }
-
   ['@test an empty component does not have childNodes'](assert) {
     let fooBarInstance;
     let FooBarComponent = Component.extend({
@@ -561,7 +469,33 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
   }
 
-  ['@test it renders passed named arguments']() {
+  ['@feature(ember-glimmer-named-arguments) it renders passed named arguments']() {
+    this.registerComponent('foo-bar', {
+      template: '{{@foo}}'
+    });
+
+    this.render('{{foo-bar foo=model.bar}}', {
+      model: {
+        bar: 'Hola'
+      }
+    });
+
+    this.assertText('Hola');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hola');
+
+    this.runTask(() => this.context.set('model.bar', 'Hello'));
+
+    this.assertText('Hello');
+
+    this.runTask(() => this.context.set('model', { bar: 'Hola' }));
+
+    this.assertText('Hola');
+  }
+
+  ['@test it reflects named arguments as properties']() {
     this.registerComponent('foo-bar', {
       template: '{{foo}}'
     });
@@ -887,7 +821,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
   }
 
-  ['@test should not escape HTML in triple mustaches'](assert) {
+  ['@test should not escape HTML in triple mustaches']() {
     let expectedHtmlBold = 'you need to be more <b>bold</b>';
     let expectedHtmlItalic = 'you are so <i>super</i>';
     let component;
@@ -918,7 +852,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     equalTokens(this.firstChild, expectedHtmlBold);
   }
 
-  ['@test should not escape HTML if string is a htmlSafe'](assert) {
+  ['@test should not escape HTML if string is a htmlSafe']() {
     let expectedHtmlBold = 'you need to be more <b>bold</b>';
     let expectedHtmlItalic = 'you are so <i>super</i>';
     let component;
@@ -955,9 +889,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     // This is testing the scenario where you import a template and
     // set it to the layout property:
     //
+    // import Component from '@ember/component';
     // import layout from './template';
     //
-    // export default Ember.Component.extend({
+    // export default Component.extend({
     //   layout
     // });
     let hello = compile('Hello');
@@ -1090,6 +1025,30 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: something here');
   }
 
+  ['@feature(ember-glimmer-named-arguments) non-block with named argument']() {
+    this.registerComponent('non-block', {
+      template: 'In layout - someProp: {{@someProp}}'
+    });
+
+    this.render('{{non-block someProp=prop}}', {
+      prop: 'something here'
+    });
+
+    this.assertText('In layout - someProp: something here');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: something here');
+
+    this.runTask(() => this.context.set('prop', 'other thing there'));
+
+    this.assertText('In layout - someProp: other thing there');
+
+    this.runTask(() => this.context.set('prop', 'something here'));
+
+    this.assertText('In layout - someProp: something here');
+  }
+
   ['@test non-block with properties overridden in init']() {
     let instance;
     this.registerComponent('non-block', {
@@ -1198,7 +1157,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: wycats');
   }
 
-  ['@test this.attrs.foo === attrs.foo === foo']() {
+  ['@feature(!ember-glimmer-named-arguments) this.attrs.foo === attrs.foo === foo']() {
     this.registerComponent('foo-bar', {
       template: strip`
         Args: {{this.attrs.value}} | {{attrs.value}} | {{value}}
@@ -1233,6 +1192,46 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
     this.assertText('Args: wat | wat | wat123123123');
+  }
+
+  ['@feature(ember-glimmer-named-arguments) this.attrs.foo === attrs.foo === @foo === foo']() {
+    this.registerComponent('foo-bar', {
+      template: strip`
+        Args: {{this.attrs.value}} | {{attrs.value}} | {{@value}} | {{value}}
+        {{#each this.attrs.items as |item|}}
+          {{item}}
+        {{/each}}
+        {{#each attrs.items as |item|}}
+          {{item}}
+        {{/each}}
+        {{#each @items as |item|}}
+          {{item}}
+        {{/each}}
+        {{#each items as |item|}}
+          {{item}}
+        {{/each}}
+      `
+    });
+
+    this.render('{{foo-bar value=model.value items=model.items}}', {
+      model: {
+        value: 'wat',
+        items: [1, 2, 3]
+      }
+    });
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      this.context.set('model.value', 'lul');
+      this.context.set('model.items', [1]);
+    });
+
+    this.assertText(strip`Args: lul | lul | lul | lul1111`);
+
+    this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
+
+    this.assertText('Args: wat | wat | wat | wat123123123123');
   }
 
   ['@test non-block with properties on self']() {
@@ -1315,6 +1314,34 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('In layout - someProp: something here - In template');
   }
 
+  ['@feature(ember-glimmer-named-arguments) block with named argument']() {
+    this.registerComponent('with-block', {
+      template: 'In layout - someProp: {{@someProp}} - {{yield}}'
+    });
+
+    this.render(strip`
+      {{#with-block someProp=prop}}
+        In template
+      {{/with-block}}`, {
+        prop: 'something here'
+      }
+    );
+
+    this.assertText('In layout - someProp: something here - In template');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('In layout - someProp: something here - In template');
+
+    this.runTask(() => this.context.set('prop', 'something else'));
+
+    this.assertText('In layout - someProp: something else - In template');
+
+    this.runTask(() => this.context.set('prop', 'something here'));
+
+    this.assertText('In layout - someProp: something here - In template');
+  }
+
   ['@test static arbitrary number of positional parameters'](assert) {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
@@ -1358,7 +1385,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, 'You cannot specify positional parameters and the hash argument `names`.');
   }
 
-  ['@test can use hash parameter instead of arbitrary positional param [GH #12444]'](assert) {
+  ['@test can use hash parameter instead of arbitrary positional param [GH #12444]']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'names'
@@ -1421,7 +1448,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#no-positional').text(), 'one - two');
   }
 
-  ['@test dynamic arbitrary number of positional parameters'](assert) {
+  ['@test dynamic arbitrary number of positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'n'
@@ -1665,7 +1692,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '{{name}}'
     });
 
-    expectAssertion(() => {
+    expectDeprecation(() => {
       this.render('{{sample-component notMyName name=myName}}', {
         myName: 'Quint',
         notMyName: 'Sergio'
@@ -1708,7 +1735,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Yes:Hello42');
   }
 
-  ['@test expression hasBlock inverse'](assert) {
+  ['@test expression hasBlock inverse']() {
     this.registerComponent('check-inverse', {
       template: strip`
         {{#if (hasBlock "inverse")}}
@@ -1728,7 +1755,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlock default'](assert) {
+  ['@test expression hasBlock default']() {
     this.registerComponent('check-block', {
       template: strip`
         {{#if (hasBlock)}}
@@ -1748,7 +1775,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlockParams inverse'](assert) {
+  ['@test expression hasBlockParams inverse']() {
     this.registerComponent('check-inverse', {
       template: strip`
         {{#if (hasBlockParams "inverse")}}
@@ -1768,7 +1795,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlockParams default'](assert) {
+  ['@test expression hasBlockParams default']() {
     this.registerComponent('check-block', {
       template: strip`
         {{#if (hasBlockParams)}}
@@ -1789,7 +1816,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
 
-  ['@test non-expression hasBlock'](assert) {
+  ['@test non-expression hasBlock']() {
     this.registerComponent('check-block', {
       template: strip`
         {{#if hasBlock}}
@@ -1809,7 +1836,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test expression hasBlockParams'](assert) {
+  ['@test expression hasBlockParams']() {
     this.registerComponent('check-params', {
       template: strip`
         {{#if (hasBlockParams)}}
@@ -1829,7 +1856,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test non-expression hasBlockParams'](assert) {
+  ['@test non-expression hasBlockParams']() {
     this.registerComponent('check-params', {
       template: strip`
         {{#if hasBlockParams}}
@@ -1858,8 +1885,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{check-attr}}
       {{#check-attr}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
     this.assertStableRerender();
   }
@@ -1873,8 +1900,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{#check-attr}}{{/check-attr}}
       {{#check-attr}}{{else}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
     this.assertStableRerender();
   }
@@ -1888,8 +1915,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'true' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
     this.assertStableRerender();
   }
@@ -1903,13 +1930,13 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-    equalsElement(this.$('button')[0], 'button', { name: 'false' }, '');
-    equalsElement(this.$('button')[1], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+    equalsElement(assert, this.$('button')[1], 'button', { name: 'false' }, '');
 
     this.assertStableRerender();
   }
 
-  ['@test hasBlock as a param to a helper'](assert) {
+  ['@test hasBlock as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if hasBlock "true" "false"}}'
     });
@@ -1924,7 +1951,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock as an expression param to a helper'](assert) {
+  ['@test hasBlock as an expression param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlock) "true" "false"}}'
     });
@@ -1939,7 +1966,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlock inverse as a param to a helper'](assert) {
+  ['@test hasBlock inverse as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlock "inverse") "true" "false"}}'
     });
@@ -1954,7 +1981,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams as a param to a helper'](assert) {
+  ['@test hasBlockParams as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if hasBlockParams "true" "false"}}'
     });
@@ -1969,7 +1996,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams as an expression param to a helper'](assert) {
+  ['@test hasBlockParams as an expression param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlockParams) "true" "false"}}'
     });
@@ -1984,7 +2011,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertStableRerender();
   }
 
-  ['@test hasBlockParams inverse as a param to a helper'](assert) {
+  ['@test hasBlockParams inverse as a param to a helper']() {
     this.registerComponent('check-helper', {
       template: '{{if (hasBlockParams "inverse") "true" "false"}}'
     });
@@ -2138,40 +2165,14 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "value" twice on <\(.+> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
+    expectAssertion(() => {
       this.runTask(() => outer.set('value', 2));
-    } else {
-      expectAssertion(() => {
-        this.runTask(() => outer.set('value', 2));
-      }, expectedBacktrackingMessage);
-
-      return;
-    }
-
-    assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
-    assert.equal(this.$('#middle-value').text(), '2', 'second render of middle');
-
-    this.runTask(() => outer.set('value', 3));
-
-    assert.equal(this.$('#inner-value').text(), '3', 'third render of inner');
-    assert.equal(this.$('#middle-value').text(), '3', 'third render of middle');
-
-    this.runTask(() => outer.set('value', 1));
-
-    assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
-    assert.equal(this.$('#middle-value').text(), '1', 'reset render of middle');
+    }, expectedBacktrackingMessage);
   }
 
-  ['@test when a shared dependency is changed during children\'s rendering'](assert) {
-    let outer;
-
+  ['@test when a shared dependency is changed during children\'s rendering']() {
     this.registerComponent('x-outer', {
       ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          outer = this;
-        },
         value: 1,
         wrapper: EmberObject.create({ content: null })
       }),
@@ -2190,39 +2191,9 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <Ember\.Object.+> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
+    expectAssertion(() => {
       this.render('{{x-outer}}');
-    } else {
-      expectAssertion(() => {
-        this.render('{{x-outer}}');
-      }, expectedBacktrackingMessage);
-
-      return;
-    }
-
-    assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-    assert.equal(this.$('#outer-value').text(), '1', 'initial render of outer');
-
-    this.runTask(() => this.rerender());
-
-    assert.equal(this.$('#inner-value').text(), '1', 're-render of inner');
-    assert.equal(this.$('#outer-value').text(), '1', 're-render of outer');
-
-    this.runTask(() => outer.set('value', 2));
-
-    assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
-    assert.equal(this.$('#outer-value').text(), '2', 'second render of outer');
-
-    this.runTask(() => outer.set('value', 3));
-
-    assert.equal(this.$('#inner-value').text(), '3', 'third render of inner');
-    assert.equal(this.$('#outer-value').text(), '3', 'third render of outer');
-
-    this.runTask(() => outer.set('value', 1));
-
-    assert.equal(this.$('#inner-value').text(), '1', 'reset render of inner');
-    assert.equal(this.$('#outer-value').text(), '1', 'reset render of outer');
+    }, expectedBacktrackingMessage);
   }
 
   ['@test non-block with each rendering child components']() {
@@ -2291,7 +2262,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'button', attrs: { 'class': classes(expectedClassNames.join(' ')) } });
   }
 
-  ['@test specifying custom concatenatedProperties avoids clobbering'](assert) {
+  ['@test specifying custom concatenatedProperties avoids clobbering']() {
     this.registerComponent('some-clicky-thing', {
       ComponentClass: Component.extend({
         concatenatedProperties: ['blahzz'],
@@ -2345,7 +2316,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     if (MANDATORY_SETTER) {
       expectAssertion(() => {
         component.bar = 'foo-bar';
-      }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
+      }, /You must use set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
 
       this.assertText('initial value - initial value');
     }
@@ -2486,7 +2457,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Jackson');
   }
 
-  ['@test injecting an unknown service raises an exception'](assert) {
+  ['@test injecting an unknown service raises an exception']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         missingService: inject.service()
@@ -2496,33 +2467,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     expectAssertion(() => {
       this.render('{{foo-bar}}');
     }, 'Attempting to inject an unknown injection: \'service:missingService\'');
-  }
-
-  ['@test can access `actions` hash via `_actions` [DEPRECATED]']() {
-    let component;
-
-    function derp() { }
-
-    this.registerComponent('foo-bar', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          component = this;
-        },
-
-        actions: {
-          derp
-        }
-      })
-    });
-
-    this.render('{{foo-bar}}');
-
-    this.assert.strictEqual(component.actions.derp, derp);
-
-    expectDeprecation(() => {
-      this.assert.strictEqual(component._actions.derp, derp);
-    }, 'Usage of `_actions` is deprecated, use `actions` instead.');
   }
 
   ['@test throws if `this._super` is not called from `init`']() {
@@ -2569,7 +2513,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assertStyle('display: none;');
   }
 
-  ['@test isVisible does not overwrite component style'](assert) {
+  ['@test isVisible does not overwrite component style']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         attributeBindings: ['style'],
@@ -2804,6 +2748,8 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test using didInitAttrs as an event is deprecated'](assert) {
+    ENV._ENABLE_DID_INIT_ATTRS_SUPPORT = true;
+
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         foo: on('didInitAttrs', function() {
@@ -2817,53 +2763,21 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     }, /didInitAttrs called/);
   }
 
-  // This test is a replication of the "component unit tests" scenario. When we deprecate
-  // and remove them, this test could be removed as well. This is not fully/intentionally
-  // supported, and it is unclear that this particular behavior is actually relied on.
-  // Since there is no real "invocation" here, it has other issues and inconsistencies,
-  // like there is no real "attrs" here, and there is no "update" pass.
-  ['@test did{Init,Receive}Attrs fires even if component is not rendered'](assert) {
-    expectDeprecation(/didInitAttrs called/);
-
-    let didInitAttrsCount = 0;
-    let didReceiveAttrsCount = 0;
-
+  ['@test using didInitAttrs as an event throws an assert'](assert) {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          this.didInit = true;
-        },
-
-        didInitAttrs() {
-          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          didInitAttrsCount++;
-        },
-
-        didReceiveAttrs() {
-          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-          didReceiveAttrsCount++;
-        },
-
-        willRender() {
-          throw new Error('Unexpected render!');
-        }
+        foo: on('didInitAttrs', function() {
+          assert.ok(true, 'should fire `didInitAttrs` event');
+        })
       })
     });
 
-    assert.strictEqual(didInitAttrsCount, 0, 'precond: didInitAttrs is not fired');
-    assert.strictEqual(didReceiveAttrsCount, 0, 'precond: didReceiveAttrs is not fired');
-
-    this.runTask(() => this.component = this.owner.lookup('component:foo-bar'));
-
-    assert.strictEqual(didInitAttrsCount, 1, 'precond: didInitAttrs is fired');
-    assert.strictEqual(didReceiveAttrsCount, 1, 'precond: didReceiveAttrs is fired');
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /didInitAttrs called/);
   }
 
-  ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
-    expectDeprecation(/didInitAttrs called/);
-
-    let fooCopyDidChangeCount = 0;
+  ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
     let barCopyDidChangeCount = 0;
 
     this.registerComponent('foo-bar', {
@@ -2873,50 +2787,35 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this.didInit = true;
         },
 
-        didInitAttrs() {
-          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
-          this.set('fooCopy', this.attrs.foo.value + 1);
-        },
-
         didReceiveAttrs() {
           assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
           this.set('barCopy', this.attrs.bar.value + 1);
         },
 
-        fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
         barCopyDidChange: observer('barCopy', () => { barCopyDidChangeCount++; })
       }),
 
-      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+      template: '{{bar}}-{{barCopy}}'
     });
 
-    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+    this.render(`{{foo-bar bar=bar}}`, { bar: 3 });
 
-    this.assertText('1-2-3-4');
+    this.assertText('3-4');
 
-    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected NO observer firing for: fooCopy');
-    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
-
-    this.runTask(() => set(this.context, 'foo', 5));
-
-    this.assertText('5-2-3-4');
-
-    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
-    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
+    assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
 
     this.runTask(() => set(this.context, 'bar', 7));
 
-    this.assertText('5-2-7-8');
+    this.assertText('7-8');
 
-    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
-    assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
+    assert.strictEqual(barCopyDidChangeCount, 2, 'expected observer firing for: barCopy');
   }
 
   ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         didReceiveAttrs() {
-          assert.equal(1, this.get('foo'), 'expected attrs to have correct value')
+          assert.equal(1, this.get('foo'), 'expected attrs to have correct value');
         }
       }),
 
@@ -3058,7 +2957,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('|foo||bar||qux||baz|');
   }
 
-  ['@test unimplimented positionalParams do not cause an error GH#14416'](assert) {
+  ['@test unimplimented positionalParams do not cause an error GH#14416']() {
     this.registerComponent('foo-bar', {
       template: 'hello'
     });
@@ -3067,7 +2966,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('hello');
   }
 
-  ['@test using attrs for positional params'](assert) {
+  ['@test using attrs for positional params']() {
     let MyComponent = Component.extend();
 
     this.registerComponent('foo-bar', {
@@ -3082,7 +2981,22 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('MyVar1: 1 1 MyVar2: 2 2');
   }
 
-  ['@test can use `{{this}}` to emit the component\'s toString value [GH#14581]'](assert) {
+  ['@feature(ember-glimmer-named-arguments) using named arguments for positional params']() {
+    let MyComponent = Component.extend();
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: MyComponent.reopenClass({
+        positionalParams: ['myVar']
+      }),
+      template: 'MyVar1: {{@myVar}} {{myVar}} MyVar2: {{myVar2}} {{@myVar2}}'
+    });
+
+    this.render('{{foo-bar 1 myVar2=2}}');
+
+    this.assertText('MyVar1: 1 1 MyVar2: 2 2');
+  }
+
+  ['@test can use `{{this}}` to emit the component\'s toString value [GH#14581]']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
         toString() {
@@ -3097,7 +3011,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('special sauce goes here!');
   }
 
-  ['@test can use `{{this` to access paths on current context [GH#14581]'](assert) {
+  ['@test can use `{{this` to access paths on current context [GH#14581]']() {
     let instance;
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
@@ -3131,7 +3045,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('huzzah!');
   }
 
-  ['@test can use custom element in component layout'](assert) {
+  ['@test can use custom element in component layout']() {
     this.registerComponent('foo-bar', {
       template: '<blah-zorz>Hi!</blah-zorz>'
     });
@@ -3141,7 +3055,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Hi!');
   }
 
-  ['@test can use nested custom element in component layout'](assert) {
+  ['@test can use nested custom element in component layout']() {
     this.registerComponent('foo-bar', {
       template: '<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>'
     });
@@ -3151,7 +3065,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Hi!');
   }
 
-  ['@test can access properties off of rest style positionalParams array'](assert) {
+  ['@feature(!ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend().reopenClass({ positionalParams: 'things' }),
       // using `attrs` here to simulate `@things.length`
@@ -3162,4 +3076,113 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('3');
   }
+
+  ['@feature(ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend().reopenClass({ positionalParams: 'things' }),
+      template: `{{@things.length}}`
+    });
+
+    this.render('{{foo-bar "foo" "bar" "baz"}}');
+
+    this.assertText('3');
+  }
+
+  ['@test has attrs by didReceiveAttrs with native classes'](assert) {
+    class FooBarComponent extends Component {
+      constructor(injections) {
+        super(injections);
+        // analagous to class field defaults
+        this.foo = 'bar';
+      }
+
+      didReceiveAttrs() {
+        assert.equal(this.foo, 'bar', 'received default attrs correctly');
+      }
+    }
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
+  }
 });
+
+if (jQueryDisabled) {
+  moduleFor('Components test: curly components: jQuery disabled', class extends RenderingTest {
+    ['@test jQuery proxy is not available without jQuery']() {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+      this.render('{{foo-bar}}');
+
+      expectAssertion(() => {
+        instance.$()[0];
+      }, 'You cannot access this.$() with `jQuery` disabled.');
+    }
+  });
+} else {
+  moduleFor('Components test: curly components: jQuery enabled', class extends RenderingTest {
+    ['@test it has a jQuery proxy to the element']() {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+      this.render('{{foo-bar}}');
+
+      let element1 = instance.$()[0];
+
+      this.assertComponentElement(element1, { content: 'hello' });
+
+      this.runTask(() => this.rerender());
+
+      let element2 = instance.$()[0];
+
+      this.assertComponentElement(element2, { content: 'hello' });
+
+      this.assertSameNode(element2, element1);
+    }
+
+    ['@test it scopes the jQuery proxy to the component element'](assert) {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
+
+      this.render('<span class="outer">outer</span>{{foo-bar}}');
+
+      let $span = instance.$('span');
+
+      assert.equal($span.length, 1);
+      assert.equal($span.attr('class'), 'inner');
+
+      this.runTask(() => this.rerender());
+
+      $span = instance.$('span');
+
+      assert.equal($span.length, 1);
+      assert.equal($span.attr('class'), 'inner');
+    }
+
+  });
+}

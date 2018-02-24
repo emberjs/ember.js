@@ -1,7 +1,9 @@
 import RSVP from '../../ext/rsvp';
 import { getAdapter, setAdapter } from '../../test/adapter';
+import TestPromise, { getLastPromise } from '../../test/promise';
 import { run } from 'ember-metal';
 import { isTesting, setTesting } from 'ember-debug';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const originalTestAdapter = getAdapter();
 const originalTestingFlag = isTesting();
@@ -9,78 +11,107 @@ const originalTestingFlag = isTesting();
 let asyncStarted = 0;
 let asyncEnded = 0;
 
-QUnit.module('ember-testing RSVP', {
-  setup() {
+moduleFor('ember-testing RSVP', class extends AbstractTestCase {
+  constructor() {
+    super();
     setTesting(true);
     setAdapter({
       asyncStart() {
         asyncStarted++;
-        QUnit.stop();
       },
       asyncEnd() {
         asyncEnded++;
-        QUnit.start();
       }
     });
-  },
+  }
+
   teardown() {
     asyncStarted = 0;
     asyncEnded = 0;
     setAdapter(originalTestAdapter);
     setTesting(originalTestingFlag);
   }
+
+  ['@test given `Ember.testing = true`, correctly informs the test suite about async steps'](assert) {
+    let done = assert.async();
+    assert.expect(19);
+
+    assert.ok(!run.currentRunLoop, 'expect no run-loop');
+
+    setTesting(true);
+
+    assert.equal(asyncStarted, 0);
+    assert.equal(asyncEnded, 0);
+
+    let user = RSVP.Promise.resolve({ name: 'tomster' });
+
+    assert.equal(asyncStarted, 0);
+    assert.equal(asyncEnded, 0);
+
+    user.then(function(user) {
+      assert.equal(asyncStarted, 1);
+      assert.equal(asyncEnded, 1);
+
+      assert.equal(user.name, 'tomster');
+
+      return RSVP.Promise.resolve(1).then(function() {
+        assert.equal(asyncStarted, 1);
+        assert.equal(asyncEnded, 1);
+      });
+    }).then(function() {
+      assert.equal(asyncStarted, 1);
+      assert.equal(asyncEnded, 1);
+
+      return new RSVP.Promise(function(resolve) {
+        setTimeout(function() {
+          assert.equal(asyncStarted, 1);
+          assert.equal(asyncEnded, 1);
+
+          resolve({ name: 'async tomster' });
+
+          assert.equal(asyncStarted, 2);
+          assert.equal(asyncEnded, 1);
+        }, 0);
+      });
+    }).then(function(user) {
+      assert.equal(user.name, 'async tomster');
+      assert.equal(asyncStarted, 2);
+      assert.equal(asyncEnded, 2);
+      done();
+    });
+  }
 });
 
-QUnit.test('given `Ember.testing = true`, correctly informs the test suite about async steps', function() {
-  expect(19);
 
-  ok(!run.currentRunLoop, 'expect no run-loop');
+moduleFor('TestPromise', class extends AbstractTestCase {
 
-  setTesting(true);
-
-  equal(asyncStarted, 0);
-  equal(asyncEnded, 0);
-
-  let user = RSVP.Promise.resolve({
-    name: 'tomster'
-  });
-
-  equal(asyncStarted, 0);
-  equal(asyncEnded, 0);
-
-  user.then(function(user) {
-    equal(asyncStarted, 1);
-    equal(asyncEnded, 1);
-
-    equal(user.name, 'tomster');
-
-    return RSVP.Promise.resolve(1).then(function() {
-      equal(asyncStarted, 1);
-      equal(asyncEnded, 1);
+  ['does not throw error when falsy value passed to then'](assert) {
+    assert.expect(1);
+    return new TestPromise(function(resolve) {
+      resolve();
+    })
+    .then(null)
+    .then(function() {
+      assert.ok(true);
     });
-  }).then(function() {
-    equal(asyncStarted, 1);
-    equal(asyncEnded, 1);
+  }
 
-    return new RSVP.Promise(function(resolve) {
-      QUnit.stop(); // raw async, we must inform the test framework manually
-      setTimeout(function() {
-        QUnit.start(); // raw async, we must inform the test framework manually
+  ['able to get last Promise'](assert) {
+    assert.expect(2);
 
-        equal(asyncStarted, 1);
-        equal(asyncEnded, 1);
-
-        resolve({
-          name: 'async tomster'
-        });
-
-        equal(asyncStarted, 2);
-        equal(asyncEnded, 1);
-      }, 0);
+    var p1 = new TestPromise(function(resolve) {
+      resolve();
+    })
+    .then(function() {
+      assert.ok(true);
     });
-  }).then(function(user) {
-    equal(user.name, 'async tomster');
-    equal(asyncStarted, 2);
-    equal(asyncEnded, 2);
-  });
+
+    var p2 = new TestPromise(function(resolve) {
+      resolve();
+    });
+
+    assert.deepEqual(getLastPromise(), p2);
+    return p1;
+  }
+
 });

@@ -6,7 +6,7 @@ import {
   Descriptor,
   defineProperty
 } from './properties';
-import { ComputedProperty } from './computed';
+import { ComputedProperty, getCacheFor } from './computed';
 import { meta as metaFor } from './meta';
 import {
   addDependentKeys,
@@ -22,7 +22,6 @@ export default function alias(altKey) {
 export class AliasedProperty extends Descriptor {
   constructor(altKey) {
     super();
-    this.isDescriptor = true;
     this.altKey = altKey;
     this._dependentKeys = [altKey];
   }
@@ -36,25 +35,25 @@ export class AliasedProperty extends Descriptor {
   }
 
   teardown(obj, keyName, meta) {
-    if (meta && meta.peekWatching(keyName)) {
+    if (meta.peekWatching(keyName)) {
       removeDependentKeys(this, obj, keyName, meta);
     }
   }
 
-  willWatch(obj, keyName) {
-    addDependentKeys(this, obj, keyName, metaFor(obj));
+  willWatch(obj, keyName, meta) {
+    addDependentKeys(this, obj, keyName, meta);
   }
 
-  didUnwatch(obj, keyName) {
-    removeDependentKeys(this, obj, keyName, metaFor(obj));
+  didUnwatch(obj, keyName, meta) {
+    removeDependentKeys(this, obj, keyName, meta);
   }
 
   get(obj, keyName) {
     let ret = get(obj, this.altKey);
-    let meta = metaFor(obj);
-    let cache = meta.writableCache();
-    if (cache[keyName] !== CONSUMED) {
-      cache[keyName] = CONSUMED;
+    let cache = getCacheFor(obj);
+    if (cache.get(keyName) !== CONSUMED) {
+      let meta = metaFor(obj);
+      cache.set(keyName, CONSUMED);
       addDependentKeys(this, obj, keyName, meta);
     }
     return ret;
@@ -75,7 +74,7 @@ export class AliasedProperty extends Descriptor {
   }
 }
 
-function AliasedProperty_readOnlySet(obj, keyName, value) {
+function AliasedProperty_readOnlySet(obj, keyName, value) { // eslint-disable-line no-unused-vars
   throw new EmberError(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
 }
 

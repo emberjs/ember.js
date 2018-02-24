@@ -1,7 +1,9 @@
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 
 import Logger from 'ember-console';
 import deprecate from './deprecate';
+import { assert } from './index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 let registerHandler = () => {};
@@ -9,20 +11,21 @@ let warn = () => {};
 let missingOptionsDeprecation, missingOptionsIdDeprecation;
 
 /**
-@module ember
-@submodule ember-debug
+@module @ember/debug
 */
 
 if (DEBUG) {
   /**
     Allows for runtime registration of handler functions that override the default warning behavior.
-    Warnings are invoked by calls made to [Ember.warn](https://emberjs.com/api/classes/Ember.html#method_warn).
+    Warnings are invoked by calls made to [@ember/debug/warn](https://emberjs.com/api/ember/release/classes/@ember%2Fdebug/methods/warn?anchor=warn).
     The following example demonstrates its usage by registering a handler that does nothing overriding Ember's
     default warning behavior.
 
     ```javascript
+    import { registerWarnHandler } from '@ember/debug';
+
     // next is not called, so no warnings get the default behavior
-    Ember.Debug.registerWarnHandler(() => {});
+    registerWarnHandler(() => {});
     ```
 
     The handler function takes the following arguments:
@@ -39,25 +42,25 @@ if (DEBUG) {
     @public
     @static
     @method registerWarnHandler
-    @for Ember.Debug
+    @for @ember/debug
     @param handler {Function} A function to handle warnings.
     @since 2.1.0
   */
   registerHandler = function registerHandler(handler) {
     genericRegisterHandler('warn', handler);
-  }
+  };
 
-  registerHandler(function logWarning(message, options) {
+  registerHandler(function logWarning(message) {
     Logger.warn(`WARNING: ${message}`);
     if ('trace' in Logger) {
       Logger.trace();
     }
   });
 
-  missingOptionsDeprecation = 'When calling `Ember.warn` you ' +
+  missingOptionsDeprecation = 'When calling `warn` you ' +
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include an `id` property.';
-  missingOptionsIdDeprecation = 'When calling `Ember.warn` you must provide `id` in options.';
+  missingOptionsIdDeprecation = 'When calling `warn` you must provide `id` in options.';
 
   /**
     Display a warning with the provided message.
@@ -66,6 +69,8 @@ if (DEBUG) {
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
     @method warn
+    @for @ember/debug
+    @static
     @param {String} message A warning to display.
     @param {Boolean} test An optional boolean. If falsy, the warning
       will be displayed.
@@ -73,7 +78,6 @@ if (DEBUG) {
       `id` for this warning.  The `id` can be used by Ember debugging tools
       to change the behavior (raise, log, or silence) for that specific warning.
       The `id` should be namespaced by dots, e.g. "ember-debug.feature-flag-with-features-stripped"
-    @for Ember
     @public
     @since 1.0.0
   */
@@ -82,7 +86,13 @@ if (DEBUG) {
       options = test;
       test = false;
     }
-    if (!options) {
+
+    if (ENV._ENABLE_WARN_OPTIONS_SUPPORT !== true) {
+      assert(missingOptionsDeprecation, options);
+      assert(missingOptionsIdDeprecation, options && options.id);
+    }
+
+    if (!options && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsDeprecation,
         false,
@@ -94,7 +104,7 @@ if (DEBUG) {
       );
     }
 
-    if (options && !options.id) {
+    if (options && !options.id && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsIdDeprecation,
         false,
@@ -107,7 +117,7 @@ if (DEBUG) {
     }
 
     invoke('warn', message, test, options);
-  }
+  };
 }
 
 export default warn;
@@ -115,4 +125,4 @@ export {
   registerHandler,
   missingOptionsIdDeprecation,
   missingOptionsDeprecation
-}
+};

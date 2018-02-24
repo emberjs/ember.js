@@ -14,8 +14,7 @@ import {
 } from 'ember-debug';
 
 /**
-@module ember
-@submodule ember-metal
+@module @ember/object
 */
 
 function expandPropertiesToArray(predicateName, properties) {
@@ -27,7 +26,7 @@ function expandPropertiesToArray(predicateName, properties) {
 
   for (let i = 0; i < properties.length; i++) {
     let property = properties[i];
-    assert(`Dependent keys passed to Ember.computed.${predicateName}() can\'t have spaces.`, property.indexOf(' ') < 0);
+    assert(`Dependent keys passed to computed.${predicateName}() can\'t have spaces.`, property.indexOf(' ') < 0);
 
     expandProperties(property, extractProperty);
   }
@@ -37,20 +36,20 @@ function expandPropertiesToArray(predicateName, properties) {
 
 function generateComputedWithPredicate(name, predicate) {
   return (...properties) => {
-    let expandedProperties = expandPropertiesToArray(name, properties);
+    let dependentKeys = expandPropertiesToArray(name, properties);
 
     let computedFunc = new ComputedProperty(function() {
-      let lastIdx = expandedProperties.length - 1;
+      let lastIdx = dependentKeys.length - 1;
 
       for (let i = 0; i < lastIdx; i++) {
-        let value = get(this, expandedProperties[i]);
+        let value = get(this, dependentKeys[i]);
         if (!predicate(value)) {
           return value;
         }
       }
 
-      return get(this, expandedProperties[lastIdx]);
-    }, { dependentKeys: expandedProperties });
+      return get(this, dependentKeys[lastIdx]);
+    }, { dependentKeys });
 
     return computedFunc;
   };
@@ -63,8 +62,11 @@ function generateComputedWithPredicate(name, predicate) {
   Example
 
   ```javascript
-  let ToDoList = Ember.Object.extend({
-    isDone: Ember.computed.empty('todos')
+  import { empty } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let ToDoList = EmberObject.extend({
+    isDone: empty('todos')
   });
 
   let todoList = ToDoList.create({
@@ -78,10 +80,13 @@ function generateComputedWithPredicate(name, predicate) {
 
   @since 1.6.0
   @method empty
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which negate
-  the original value for property
+  @return {ComputedProperty} computed property which returns true if
+  the value of the dependent property is null, an empty string, empty array,
+  or empty function and false if the underlying value is not empty.
+
   @public
 */
 export function empty(dependentKey) {
@@ -97,8 +102,11 @@ export function empty(dependentKey) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasStuff: Ember.computed.notEmpty('backpack')
+  import { notEmpty } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasStuff: notEmpty('backpack')
   });
 
   let hamster = Hamster.create({ backpack: ['Food', 'Sleeping Bag', 'Tent'] });
@@ -109,9 +117,10 @@ export function empty(dependentKey) {
   ```
 
   @method notEmpty
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {ComputedProperty} computed property which returns true if
   original value for property is not empty.
   @public
 */
@@ -129,8 +138,11 @@ export function notEmpty(dependentKey) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    isHungry: Ember.computed.none('food')
+  import { none } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    isHungry: none('food')
   });
 
   let hamster = Hamster.create();
@@ -143,9 +155,10 @@ export function notEmpty(dependentKey) {
   ```
 
   @method none
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which
+  @return {ComputedProperty} computed property which
   returns true if original value for property is null or undefined.
   @public
 */
@@ -162,8 +175,11 @@ export function none(dependentKey) {
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
-    isAnonymous: Ember.computed.not('loggedIn')
+  import { not } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
+    isAnonymous: not('loggedIn')
   });
 
   let user = User.create({loggedIn: false});
@@ -174,9 +190,10 @@ export function none(dependentKey) {
   ```
 
   @method not
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which returns
+  @return {ComputedProperty} computed property which returns
   inverse of the original value for property
   @public
 */
@@ -191,8 +208,11 @@ export function not(dependentKey) {
   into a boolean value.
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasBananas: Ember.computed.bool('numBananas')
+  import { bool } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasBananas: bool('numBananas')
   });
 
   let hamster = Hamster.create();
@@ -207,9 +227,10 @@ export function not(dependentKey) {
   ```
 
   @method bool
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which converts
+  @return {ComputedProperty} computed property which converts
   to boolean the original value for property
   @public
 */
@@ -227,8 +248,11 @@ export function bool(dependentKey) {
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
-    hasValidEmail: Ember.computed.match('email', /^.+@.+\..+$/)
+  import { match } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
+    hasValidEmail: match('email', /^.+@.+\..+$/)
   });
 
   let user = User.create({loggedIn: false});
@@ -241,18 +265,18 @@ export function bool(dependentKey) {
   ```
 
   @method match
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {RegExp} regexp
-  @return {Ember.ComputedProperty} computed property which match
+  @return {ComputedProperty} computed property which match
   the original value for property against a given RegExp
   @public
 */
 export function match(dependentKey, regexp) {
   return computed(dependentKey, function() {
     let value = get(this, dependentKey);
-
-    return typeof value === 'string' ? regexp.test(value) : false;
+    return regexp.test(value);
   });
 }
 
@@ -263,8 +287,11 @@ export function match(dependentKey, regexp) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    satisfied: Ember.computed.equal('percentCarrotsEaten', 100)
+  import { equal } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    satisfied: equal('percentCarrotsEaten', 100)
   });
 
   let hamster = Hamster.create();
@@ -277,10 +304,11 @@ export function match(dependentKey, regexp) {
   ```
 
   @method equal
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {String|Number|Object} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {ComputedProperty} computed property which returns true if
   the original value for property is equal to the given value.
   @public
 */
@@ -297,8 +325,11 @@ export function equal(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasTooManyBananas: Ember.computed.gt('numBananas', 10)
+  import { gt } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasTooManyBananas: gt('numBananas', 10)
   });
 
   let hamster = Hamster.create();
@@ -311,10 +342,11 @@ export function equal(dependentKey, value) {
   ```
 
   @method gt
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {ComputedProperty} computed property which returns true if
   the original value for property is greater than given value.
   @public
 */
@@ -331,8 +363,11 @@ export function gt(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    hasTooManyBananas: Ember.computed.gte('numBananas', 10)
+  import { gte } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    hasTooManyBananas: gte('numBananas', 10)
   });
 
   let hamster = Hamster.create();
@@ -345,10 +380,11 @@ export function gt(dependentKey, value) {
   ```
 
   @method gte
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {ComputedProperty} computed property which returns true if
   the original value for property is greater or equal then given value.
   @public
 */
@@ -365,8 +401,11 @@ export function gte(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    needsMoreBananas: Ember.computed.lt('numBananas', 3)
+  import { lt } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    needsMoreBananas: lt('numBananas', 3)
   });
 
   let hamster = Hamster.create();
@@ -379,10 +418,11 @@ export function gte(dependentKey, value) {
   ```
 
   @method lt
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {ComputedProperty} computed property which returns true if
   the original value for property is less then given value.
   @public
 */
@@ -399,8 +439,11 @@ export function lt(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    needsMoreBananas: Ember.computed.lte('numBananas', 3)
+  import { lte } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    needsMoreBananas: lte('numBananas', 3)
   });
 
   let hamster = Hamster.create();
@@ -413,10 +456,11 @@ export function lt(dependentKey, value) {
   ```
 
   @method lte
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {Ember.ComputedProperty} computed property which returns true if
+  @return {ComputedProperty} computed property which returns true if
   the original value for property is less or equal than given value.
   @public
 */
@@ -438,9 +482,12 @@ export function lte(dependentKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    readyForCamp: Ember.computed.and('hasTent', 'hasBackpack'),
-    readyForHike: Ember.computed.and('hasWalkingStick', 'hasBackpack')
+  import { and } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    readyForCamp: and('hasTent', 'hasBackpack'),
+    readyForHike: and('hasWalkingStick', 'hasBackpack')
   });
 
   let tomster = Hamster.create();
@@ -457,13 +504,14 @@ export function lte(dependentKey, value) {
   ```
 
   @method and
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey*
-  @return {Ember.ComputedProperty} computed property which performs
+  @return {ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
   @public
 */
-export let and = generateComputedWithPredicate('and', value => value);
+export const and = generateComputedWithPredicate('and', value => value);
 
 /**
   A computed property which performs a logical `or` on the
@@ -477,9 +525,12 @@ export let and = generateComputedWithPredicate('and', value => value);
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    readyForRain: Ember.computed.or('hasJacket', 'hasUmbrella'),
-    readyForBeach: Ember.computed.or('{hasSunscreen,hasUmbrella}')
+  import { or } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    readyForRain: or('hasJacket', 'hasUmbrella'),
+    readyForBeach: or('{hasSunscreen,hasUmbrella}')
   });
 
   let tomster = Hamster.create();
@@ -494,13 +545,14 @@ export let and = generateComputedWithPredicate('and', value => value);
   ```
 
   @method or
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey*
-  @return {Ember.ComputedProperty} computed property which performs
+  @return {ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
   @public
 */
-export let or = generateComputedWithPredicate('or', value => !value);
+export const or = generateComputedWithPredicate('or', value => !value);
 
 /**
   Creates a new property that is an alias for another property
@@ -508,9 +560,12 @@ export let or = generateComputedWithPredicate('or', value => !value);
   though they were called on the original property.
 
   ```javascript
-  let Person = Ember.Object.extend({
+  import { alias } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Person = EmberObject.extend({
     name: 'Alex Matchneer',
-    nomen: Ember.computed.alias('name')
+    nomen: alias('name')
   });
 
   let alex = Person.create();
@@ -523,9 +578,10 @@ export let or = generateComputedWithPredicate('or', value => !value);
   ```
 
   @method alias
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates an
+  @return {ComputedProperty} computed property which creates an
   alias to the original value for property.
   @public
 */
@@ -540,15 +596,18 @@ export let or = generateComputedWithPredicate('or', value => !value);
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
+  import { oneWay } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
     firstName: null,
     lastName: null,
-    nickName: Ember.computed.oneWay('firstName')
+    nickName: oneWay('firstName')
   });
 
   let teddy = User.create({
     firstName: 'Teddy',
-    lastName:  'Zeenny'
+    lastName: 'Zeenny'
   });
 
   teddy.get('nickName');              // 'Teddy'
@@ -557,9 +616,10 @@ export let or = generateComputedWithPredicate('or', value => !value);
   ```
 
   @method oneWay
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates a
+  @return {ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
   @public
 */
@@ -572,9 +632,10 @@ export function oneWay(dependentKey) {
   whose name is somewhat ambiguous as to which direction the data flows.
 
   @method reads
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates a
+  @return {ComputedProperty} computed property which creates a
     one way computed property to the original value for property.
   @public
  */
@@ -589,10 +650,13 @@ export function oneWay(dependentKey) {
   Example
 
   ```javascript
-  let User = Ember.Object.extend({
+  import { readOnly } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let User = EmberObject.extend({
     firstName: null,
     lastName: null,
-    nickName: Ember.computed.readOnly('firstName')
+    nickName: readOnly('firstName')
   });
 
   let teddy = User.create({
@@ -602,14 +666,15 @@ export function oneWay(dependentKey) {
 
   teddy.get('nickName');              // 'Teddy'
   teddy.set('nickName', 'TeddyBear'); // throws Exception
-  // throw new Ember.Error('Cannot Set: nickName on: <User:ember27288>' );`
+  // throw new EmberError('Cannot Set: nickName on: <User:ember27288>' );`
   teddy.get('firstName');             // 'Teddy'
   ```
 
   @method readOnly
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates a
+  @return {ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
   @since 1.5.0
   @public
@@ -625,8 +690,11 @@ export function readOnly(dependentKey) {
   print a deprecation warning.
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    bananaCount: Ember.computed.deprecatingAlias('cavendishCount', {
+  import { deprecatingAlias } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    bananaCount: deprecatingAlias('cavendishCount', {
       id: 'hamster.deprecate-banana',
       until: '3.0.0'
     })
@@ -639,10 +707,11 @@ export function readOnly(dependentKey) {
   ```
 
   @method deprecatingAlias
-  @for Ember.computed
+  @static
+  @for @ember/object/computed
   @param {String} dependentKey
-  @param {Object} options Options for `Ember.deprecate`.
-  @return {Ember.ComputedProperty} computed property which creates an
+  @param {Object} options Options for `deprecate`.
+  @return {ComputedProperty} computed property which creates an
   alias with a deprecation to the original value for property.
   @since 1.7.0
   @public

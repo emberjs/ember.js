@@ -1,4 +1,3 @@
-import Ember from 'ember-metal'; // Ember as namespace
 import {
   A as emberA,
   typeOf,
@@ -8,8 +7,7 @@ import {
 } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-extension-support
+@module @ember/debug
 */
 
 /**
@@ -42,8 +40,7 @@ import {
   ```
 
   @class ContainerDebugAdapter
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @since 1.5.0
   @public
 */
@@ -90,14 +87,12 @@ export default EmberObject.extend({
     let typeSuffixRegex = new RegExp(`${StringUtils.classify(type)}$`);
 
     namespaces.forEach(namespace => {
-      if (namespace !== Ember) {
-        for (let key in namespace) {
-          if (!namespace.hasOwnProperty(key)) { continue; }
-          if (typeSuffixRegex.test(key)) {
-            let klass = namespace[key];
-            if (typeOf(klass) === 'class') {
-              types.push(StringUtils.dasherize(key.replace(typeSuffixRegex, '')));
-            }
+      for (let key in namespace) {
+        if (!namespace.hasOwnProperty(key)) { continue; }
+        if (typeSuffixRegex.test(key)) {
+          let klass = namespace[key];
+          if (typeOf(klass) === 'class') {
+            types.push(StringUtils.dasherize(key.replace(typeSuffixRegex, '')));
           }
         }
       }

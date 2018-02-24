@@ -1,140 +1,117 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { CompiledDynamicTemplate } from '@glimmer/runtime';
-import { OWNER } from 'ember-utils';
-
-class Counter {
-  constructor() {
-    this.reset();
-  }
-
-  increment(key) {
-    this.total++;
-    return this.counts[key] = (this.counts[key] || 0) + 1;
-  }
-
-  get(key) {
-    return this.counts[key] || 0;
-  }
-
-  reset() {
-    this.total  = 0;
-    this.counts = Object.create(null);
-  }
-}
-
-const COUNTER = new Counter();
-
-class BasicCompiler {
-  constructor(template) {
-    this.template = template;
-  }
-
-  compile(builder) {
-    let { template } = this;
-    COUNTER.increment(`${this.constructor.id}+${template.id}`);
-    builder.wrapLayout(template);
-  }
-}
-
-class TypeOneCompiler extends BasicCompiler {}
-class TypeTwoCompiler extends BasicCompiler {}
-
-TypeOneCompiler.id = 'type-one';
-TypeTwoCompiler.id = 'type-two';
+import { Component } from '../utils/helpers';
+import { set } from 'ember-metal';
+import { runDestroy, runAppend } from 'internal-test-helpers';
 
 moduleFor('Layout cache test', class extends RenderingTest {
 
-  constructor() {
-    super();
-    COUNTER.reset();
-  }
-
-  templateFor(content) {
-    let Factory = this.compile(content);
-    return this.env.getTemplate(Factory, this.owner);
-  }
-
   ['@test each template is only compiled once'](assert) {
-    let { env } = this;
+    // static layout
+    this.registerComponent('component-one', { template: 'One' });
 
-    let template1 = this.templateFor('Hello world!');
-    let template2 = this.templateFor('{{foo}} {{bar}}');
+    // test directly import template factory onto late bound layout
+    let Two = Component.extend({
+      layout: this.compile('Two'),
+    });
+    this.registerComponent('component-two', { ComponentClass: Two });
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 0);
-    assert.strictEqual(COUNTER.total, 1);
+    // inject layout onto component, share layout with component-one
+    this.registerComponent('root-component', { ComponentClass: Component });
+    this.owner.inject('component:root-component', 'layout', 'template:components/component-one');
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 0);
-    assert.strictEqual(COUNTER.total, 1);
+    // template instance shared between to template managers
+    let rootFactory = this.owner.factoryFor('component:root-component');
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 1);
-    assert.strictEqual(COUNTER.total, 2);
+    // assert precondition
+    let state = this.getCacheCounters();
+    assert.deepEqual(state, {
+      templateCacheHits: 0,
+      templateCacheMisses: 0,
+    }, 'precondition');
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    // show component-one for the first time
+    this.render(`
+    {{~#if cond~}}
+      {{component-one}}
+    {{~else~}}
+      {{component-two}}
+    {{~/if}}`, {
+      cond: true,
+    });
 
-    assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 1);
-    assert.strictEqual(COUNTER.total, 2);
+    this.assertText('One');
+    state = this.expectCacheChanges({}, state, 'test case component and component-one no change');
+
+    // show component-two for the first time
+    this.runTask(() => set(this.context, 'cond', false));
+
+    this.assertText('Two');
+    state = this.expectCacheChanges({
+      templateCacheMisses: 1,
+    }, state, 'component-two first render misses template cache');
+
+    // show component-one again
+    this.runTask(() => set(this.context, 'cond', true));
+
+    this.assertText('One');
+    state = this.expectCacheChanges({}, state, 'toggle back to component-one no change');
+
+    // show component-two again
+    this.runTask(() => set(this.context, 'cond', false));
+
+    this.assertText('Two');
+    state = this.expectCacheChanges({
+      templateCacheHits: 1,
+    }, state, 'toggle back to component-two hits template cache');
+
+    // render new root append
+    let root = rootFactory.create();
+    try {
+      runAppend(root);
+      this.assertText('TwoOne');
+      // roots have different capabilities so this will hit
+      state = this.expectCacheChanges({}, state, 'append root with component-one no change');
+
+      // render new root append
+      let root2 = rootFactory.create();
+      try {
+        runAppend(root2);
+        this.assertText('TwoOneOne');
+        state = this.expectCacheChanges({}, state, 'append another root no change');
+      } finally {
+        runDestroy(root2);
+      }
+    } finally {
+      runDestroy(root);
+    }
   }
 
-  ['@test each template/compiler pair is treated as unique'](assert) {
-    let { env } = this;
-
-    let template = this.templateFor('Hello world!');
-
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 0);
-    assert.strictEqual(COUNTER.total, 1);
-
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 0);
-    assert.strictEqual(COUNTER.total, 1);
-
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 1);
-    assert.strictEqual(COUNTER.total, 2);
-
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-
-    assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
-    assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 1);
-    assert.strictEqual(COUNTER.total, 2);
-  }
-
-  ['@test a template instance is returned (ensures templates can be injected into layout property)'](assert) {
-    let { owner, env } = this;
-
-    let templateInstanceFor = (content) => {
-      let Factory = this.compile(content);
-      return Factory.create({ [OWNER]: owner, env });
+  getCacheCounters() {
+    let { runtimeResolver: {
+      templateCacheHits,
+      templateCacheMisses,
+    } } = this;
+    return {
+      templateCacheHits,
+      templateCacheMisses,
     };
+  }
 
-    let template1 = templateInstanceFor('Hello world!');
-    let template2 = templateInstanceFor('{{foo}} {{bar}}');
-
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+  expectCacheChanges(expected, lastState, message) {
+    let state = this.getCacheCounters();
+    let actual = diff(state, lastState);
+    this.assert.deepEqual(actual, expected, message);
+    return state;
   }
 });
+
+function diff(state, lastState) {
+  let res = {};
+  Object.keys(state).forEach(key => {
+    let delta = state[key] - lastState[key];
+    if (delta !== 0) {
+      res[key] = state[key] - lastState[key];
+    }
+  });
+  return res;
+}

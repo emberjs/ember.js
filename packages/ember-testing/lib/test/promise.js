@@ -9,8 +9,10 @@ export default class TestPromise extends RSVP.Promise {
     lastPromise = this;
   }
 
-  then(onFulfillment, ...args) {
-    return super.then(result => isolate(onFulfillment, result), ...args);
+  then(_onFulfillment, ...args) {
+    let onFulfillment = typeof _onFulfillment === 'function' ?
+      result => isolate(_onFulfillment, result) : undefined;
+    return super.then(onFulfillment, ...args);
   }
 }
 

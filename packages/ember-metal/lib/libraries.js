@@ -1,6 +1,10 @@
-import { warn } from 'ember-debug';
+import { warn, debug } from 'ember-debug';
+import { DEBUG } from 'ember-env-flags';
+import { get } from './property_get';
 import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
-
+/**
+ @module ember
+*/
 /**
   Helper class that allows you to register your library with Ember.
 
@@ -16,14 +20,6 @@ export class Libraries {
     this._coreLibIndex = 0;
   }
 
-  isRegistered(name) {
-    return !!this._getLibraryByName(name);
-  }
-}
-
-Libraries.prototype = {
-  constructor: Libraries,
-
   _getLibraryByName(name) {
     let libs = this._registry;
     let count = libs.length;
@@ -33,7 +29,7 @@ Libraries.prototype = {
         return libs[i];
       }
     }
-  },
+  }
 
   register(name, version, isCoreLibrary) {
     let index = this._registry.length;
@@ -46,11 +42,11 @@ Libraries.prototype = {
     } else {
       warn(`Library "${name}" is already registered with Ember.`, false, { id: 'ember-metal.libraries-register' });
     }
-  },
+  }
 
   registerCoreLibrary(name, version) {
     this.register(name, version, true);
-  },
+  }
 
   deRegister(name) {
     let lib = this._getLibraryByName(name);
@@ -61,11 +57,27 @@ Libraries.prototype = {
       this._registry.splice(index, 1);
     }
   }
-};
+}
 
 if (EMBER_LIBRARIES_ISREGISTERED) {
   Libraries.prototype.isRegistered = function(name) {
     return !!this._getLibraryByName(name);
+  };
+}
+
+if (DEBUG) {
+  Libraries.prototype.logVersions = function() {
+    let libs = this._registry;
+    let nameLengths = libs.map(item => get(item, 'name.length'));
+    let maxNameLength = Math.max.apply(null, nameLengths);
+
+    debug('-------------------------------');
+    for (let i = 0; i < libs.length; i++) {
+      let lib = libs[i];
+      let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+      debug([lib.name, spaces, ' : ', lib.version].join(''));
+    }
+    debug('-------------------------------');
   };
 }
 

@@ -5,35 +5,6 @@ import {
   descriptor
 } from '..';
 
-// IE9 soft-fails when trying to delete a non-configurable property
-const hasCompliantDelete = (function() {
-  let obj = {};
-
-  Object.defineProperty(obj, 'zomg', { configurable: false, value: 'zomg' });
-
-  try {
-    delete obj.zomg;
-  } catch (e) {
-    return true;
-  }
-
-  return false;
-})();
-
-// IE9 soft-fails when trying to assign to a non-writable property
-const hasCompliantAssign = (function() {
-  let obj = {};
-
-  Object.defineProperty(obj, 'zomg', { writable: false, value: 'zomg' });
-
-  try {
-    obj.zomg = 'lol';
-  } catch (e) {
-    return true;
-  }
-
-  return false;
-})();
 
 class DescriptorTest {
 
@@ -239,11 +210,7 @@ classes.forEach(TestClass => {
 
     let source = factory.source();
 
-    if (hasCompliantDelete) {
-      assert.throws(() => delete source.foo, TypeError);
-    } else {
-      delete source.foo;
-    }
+    assert.throws(() => delete source.foo, TypeError);
 
     assert.throws(() => Object.defineProperty(source, 'foo', { configurable: true, value: 'baz' }), TypeError);
 
@@ -301,13 +268,8 @@ classes.forEach(TestClass => {
 
     let source = factory.source();
 
-    if (hasCompliantAssign) {
-      assert.throws(() => source.foo = 'baz', TypeError);
-      assert.throws(() => obj.foo = 'baz', TypeError);
-    } else {
-      source.foo = 'baz';
-      obj.foo = 'baz';
-    }
+    assert.throws(() => source.foo = 'baz', TypeError);
+    assert.throws(() => obj.foo = 'baz', TypeError);
 
     assert.equal(obj.foo, 'bar');
   });
@@ -391,11 +353,7 @@ classes.forEach(TestClass => {
 
     assert.equal(obj.fooBar, 'FOO-BAR');
 
-    if (hasCompliantAssign) {
-      assert.throws(() => obj.fooBar = 'foobar', TypeError);
-    } else {
-      obj.fooBar = 'foobar';
-    }
+    assert.throws(() => obj.fooBar = 'foobar', TypeError);
 
     assert.equal(obj.fooBar, 'FOO-BAR');
   });

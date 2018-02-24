@@ -1,24 +1,30 @@
 const { isArray } = Array;
-
+/**
+ @module @ember/array
+*/
 /**
  Forces the passed object to be part of an array. If the object is already
  an array, it will return the object. Otherwise, it will add the object to
  an array. If obj is `null` or `undefined`, it will return an empty array.
 
  ```javascript
- Ember.makeArray();            // []
- Ember.makeArray(null);        // []
- Ember.makeArray(undefined);   // []
- Ember.makeArray('lindsay');   // ['lindsay']
- Ember.makeArray([1, 2, 42]);  // [1, 2, 42]
+ import { makeArray } from '@ember/array';
+ import ArrayProxy from '@ember/array/proxy';
 
- let controller = Ember.ArrayProxy.create({ content: [] });
+ makeArray();            // []
+ makeArray(null);        // []
+ makeArray(undefined);   // []
+ makeArray('lindsay');   // ['lindsay']
+ makeArray([1, 2, 42]);  // [1, 2, 42]
 
- Ember.makeArray(controller) === controller;  // true
+ let controller = ArrayProxy.create({ content: [] });
+
+ makeArray(controller) === controller;  // true
  ```
 
  @method makeArray
- @for Ember
+ @static
+ @for @ember/array
  @param {Object} obj the object
  @return {Array}
  @private

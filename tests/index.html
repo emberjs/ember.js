@@ -128,23 +128,8 @@
         window.EmberDev = window.EmberDev || {};
         EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
 
-        // hack qunit to not suck for Ember objects
-        var originalTypeof = QUnit.jsDump.typeOf;
-
-        QUnit.jsDump.typeOf = function(obj) {
-          if (Ember && Ember.Object && Ember.Object.detectInstance(obj)) {
-            return "emberObject";
-          }
-
-          return originalTypeof.call(this, obj);
-        };
-
-        QUnit.jsDump.parsers.emberObject = function(obj) {
-          return obj.toString();
-        };
-
-        var EmberDevTestHelperAssert = window.Ember.__loader.require('ember-dev/test-helper/index')['default'];
-        var setupQUnit = window.Ember.__loader.require('ember-dev/test-helper/setup-qunit')['default'];
+        var EmberDevTestHelperAssert = window.Ember.__loader.require('internal-test-helpers/ember-dev/index')['default'];
+        var setupQUnit = window.Ember.__loader.require('internal-test-helpers/ember-dev/setup-qunit')['default'];
         var debugModule = window.Ember.__loader.require('ember-debug');
         var testHelpers = new EmberDevTestHelperAssert({
           Ember: window.Ember,
@@ -172,10 +157,46 @@
           QUnit.config.reorder = false;
         }
 
+        var testsTotal, testsPassed, testsFailed;
+
         QUnit.begin(function() {
+          testsTotal = testsPassed = testsFailed = 0;
+
           if (QUnit.urlParams.hideskipped) {
             $('#qunit-tests').addClass('hideskipped');
           }
+        });
+
+        // work around https://github.com/qunitjs/qunit/issues/1224
+        QUnit.testStart(function() {
+          var existingFixture = document.getElementById('qunit-fixture');
+
+          // create a new pristine fixture element
+          var newFixture = document.createElement('div');
+          newFixture.setAttribute('id', 'qunit-fixture');
+
+          // replace the old (possibly mutated fixture) with the new pristine one
+          existingFixture.parentNode.replaceChild(newFixture, existingFixture);
+        });
+
+        QUnit.testDone(function(results) {
+          var oldFixture = document.getElementById('qunit-fixture');
+          var parent = oldFixture.parentElement;
+          var newFixture = document.createElement('div');
+          newFixture.id = 'qunit-fixture';
+          parent.replaceChild(newFixture, oldFixture);
+
+          testsTotal++;
+
+          if (results.failed) {
+            testsFailed++;
+          } else {
+            testsPassed++;
+          }
+        });
+
+        QUnit.done(function(result) {
+            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
         });
       })();
     </script>

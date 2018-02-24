@@ -1,6 +1,5 @@
 /**
  @module ember
- @submodule ember-glimmer
 */
 
 /**
@@ -31,7 +30,7 @@ export default function transformHasBlockSyntax(env) {
   return {
     name: 'transform-has-block-syntax',
 
-    visitors: {
+    visitor: {
       PathExpression(node) {
         if (TRANSFORMATIONS[node.original]) {
           return b.sexpr(b.path(TRANSFORMATIONS[node.original]));
@@ -48,5 +47,5 @@ export default function transformHasBlockSyntax(env) {
         }
       }
     }
-  }
+  };
 }

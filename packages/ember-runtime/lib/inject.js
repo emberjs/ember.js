@@ -1,6 +1,8 @@
-import { InjectedProperty } from 'ember-metal';
+import { InjectedProperty, descriptorFor } from 'ember-metal';
 import { assert } from 'ember-debug';
-
+/**
+@module ember
+*/
 /**
   Namespace for injection helper methods.
 
@@ -10,7 +12,9 @@ import { assert } from 'ember-debug';
   @public
 */
 export default function inject() {
-  assert(`Injected properties must be created through helpers, see '${Object.keys(inject).join('"', '"')}'`);
+  assert(`Injected properties must be created through helpers, see '${Object.keys(inject)
+    .map(k => `'inject.${k}'`)
+    .join(' or ')}'`);
 }
 
 // Dictionary of injection validations by type, added to by `createInjectionHelper`
@@ -49,7 +53,7 @@ export function validatePropertyInjections(factory) {
   let types = [];
 
   for (let key in proto) {
-    let desc = proto[key];
+    let desc = descriptorFor(proto, key);
     if (desc instanceof InjectedProperty && types.indexOf(desc.type) === -1) {
       types.push(desc.type);
     }

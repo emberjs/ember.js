@@ -1,34 +1,30 @@
 import { run } from 'ember-metal';
 import Adapter from '../../adapters/adapter';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 var adapter;
 
-QUnit.module('ember-testing Adapter', {
-  setup() {
+moduleFor('ember-testing Adapter', class extends AbstractTestCase {
+  constructor() {
+    super();
     adapter = new Adapter();
-  },
+  }
+
   teardown() {
     run(adapter, adapter.destroy);
   }
-});
 
-// Can't test these this way anymore since we have nothing to compare to
-// test("asyncStart is a noop", function() {
-//   equal(adapter.asyncStart, K);
-// });
+  ['@test exception throws'](assert) {
+    var error = 'Hai';
+    var thrown;
 
-// test("asyncEnd is a noop", function() {
-//   equal(adapter.asyncEnd, K);
-// });
-
-QUnit.test('exception throws', function() {
-  var error = 'Hai';
-  var thrown;
-
-  try {
-    adapter.exception(error);
-  } catch (e) {
-    thrown = e;
+    try {
+      adapter.exception(error);
+    } catch (e) {
+      thrown = e;
+    }
+    assert.equal(thrown, error);
   }
-  equal(thrown, error);
+
 });
+

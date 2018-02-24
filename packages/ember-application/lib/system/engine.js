@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/engine
 */
 import { canInvoke } from 'ember-utils';
 import {
@@ -13,7 +12,7 @@ import {
   privatize as P
 } from 'container';
 import DAG from 'dag-map';
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { get, set } from 'ember-metal';
 import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
@@ -44,7 +43,6 @@ function props(obj) {
   Engines can spawn `EngineInstance` instances via `buildInstance()`.
 
   @class Engine
-  @namespace Ember
   @extends Ember.Namespace
   @uses RegistryProxy
   @public
@@ -82,7 +80,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
 
     @private
     @method buildInstance
-    @return {Ember.EngineInstance} the engine instance
+    @return {EngineInstance} the engine instance
   */
   buildInstance(options = {}) {
     this.ensureInitializers();
@@ -126,18 +124,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   runInitializers() {
     this._runInitializer('initializers', (name, initializer) => {
       assert(`No application initializer named '${name}'`, !!initializer);
-      if (initializer.initialize.length === 2) {
-        deprecate(`The \`initialize\` method for Application initializer '${name}' should take only one argument - \`App\`, an instance of an \`Application\`.`,
-          false, {
-            id: 'ember-application.app-initializer-initialize-arguments',
-            until: '3.0.0',
-            url: 'https://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
-          });
-
-        initializer.initialize(this.__registry__, this);
-      } else {
-        initializer.initialize(this);
-      }
+      initializer.initialize(this);
     });
   },
 
@@ -188,14 +175,17 @@ Engine.reopenClass({
     This must be a unique name, as trying to register two initializers with the
     same name will result in an error.
 
-    ```javascript
-    Ember.Application.initializer({
-      name: 'namedInitializer',
+    ```app/initializer/named-initializer.js
+    import { debug } from '@ember/debug';
 
-      initialize: function(application) {
-        Ember.debug('Running namedInitializer!');
-      }
-    });
+    export function initialize() {
+      debug('Running namedInitializer!');
+    }
+
+    export default {
+      name: 'named-initializer',
+      initialize
+    };
     ```
 
     * `before` and `after` are used to ensure that this initializer is ran prior
@@ -204,31 +194,41 @@ Engine.reopenClass({
 
     An example of ordering initializers, we create an initializer named `first`:
 
-    ```javascript
-    Ember.Application.initializer({
+    ```app/initializer/first.js
+    import { debug } from '@ember/debug';
+
+    export function initialize() {
+      debug('First initializer!');
+    }
+
+    export default {
       name: 'first',
+      initialize
+    };
+    ```
 
-      initialize: function(application) {
-        Ember.debug('First initializer!');
-      }
-    });
-
+    ```bash
     // DEBUG: First initializer!
     ```
 
     We add another initializer named `second`, specifying that it should run
     after the initializer named `first`:
 
-    ```javascript
-    Ember.Application.initializer({
+    ```app/initializer/second.js
+    import { debug } from '@ember/debug';
+
+    export function initialize() {
+      debug('Second initializer!');
+    }
+
+    export default {
       name: 'second',
       after: 'first',
+      initialize
+    };
+    ```
 
-      initialize: function(application) {
-        Ember.debug('Second initializer!');
-      }
-    });
-
+    ```
     // DEBUG: First initializer!
     // DEBUG: Second initializer!
     ```
@@ -236,16 +236,21 @@ Engine.reopenClass({
     Afterwards we add a further initializer named `pre`, this time specifying
     that it should run before the initializer named `first`:
 
-    ```javascript
-    Ember.Application.initializer({
+    ```app/initializer/pre.js
+    import { debug } from '@ember/debug';
+
+    export function initialize() {
+      debug('Pre initializer!');
+    }
+
+    export default {
       name: 'pre',
       before: 'first',
+      initialize
+    };
+    ```
 
-      initialize: function(application) {
-        Ember.debug('Pre initializer!');
-      }
-    });
-
+    ```bash
     // DEBUG: Pre initializer!
     // DEBUG: First initializer!
     // DEBUG: Second initializer!
@@ -254,16 +259,21 @@ Engine.reopenClass({
     Finally we add an initializer named `post`, specifying it should run after
     both the `first` and the `second` initializers:
 
-    ```javascript
-    Ember.Application.initializer({
+    ```app/initializer/post.js
+    import { debug } from '@ember/debug';
+
+    export function initialize() {
+      debug('Post initializer!');
+    }
+
+    export default {
       name: 'post',
       after: ['first', 'second'],
+      initialize
+    };
+    ```
 
-      initialize: function(application) {
-        Ember.debug('Post initializer!');
-      }
-    });
-
+    ```bash
     // DEBUG: Pre initializer!
     // DEBUG: First initializer!
     // DEBUG: Second initializer!
@@ -275,14 +285,18 @@ Engine.reopenClass({
 
     Example of using `application` to register an adapter:
 
-    ```javascript
-    Ember.Application.initializer({
-      name: 'api-adapter',
+    ```app/initializer/api-adapter.js
+    import ApiAdapter from '../utils/api-adapter';
 
-      initialize: function(application) {
-        application.register('api-adapter:main', ApiAdapter);
-      }
-    });
+    export function initialize(application) {
+      application.register('api-adapter:main', ApiAdapter);
+    }
+
+    export default {
+      name: 'post',
+      after: ['first', 'second'],
+      initialize
+    };
     ```
 
     @method initializer
@@ -306,30 +320,32 @@ Engine.reopenClass({
     registered. This must be a unique name, as trying to register two
     instanceInitializer with the same name will result in an error.
 
-    ```javascript
-    Ember.Application.instanceInitializer({
-      name: 'namedinstanceInitializer',
+    ```app/initializer/named-instance-initializer.js
+    import { debug } from '@ember/debug';
 
-      initialize: function(application) {
-        Ember.debug('Running namedInitializer!');
-      }
-    });
+    export function initialize() {
+      debug('Running named-instance-initializer!');
+    }
+
+    export default {
+      name: 'named-instance-initializer',
+      initialize
+    };
     ```
 
     * `before` and `after` are used to ensure that this initializer is ran prior
     or after the one identified by the value. This value can be a single string
     or an array of strings, referencing the `name` of other initializers.
 
-    * See Ember.Application.initializer for discussion on the usage of before
+    * See Application.initializer for discussion on the usage of before
     and after.
 
     Example instanceInitializer to preload data into the store.
 
-    ```javascript
-    Ember.Application.initializer({
-      name: 'preload-data',
+    ```app/initializer/preload-data.js
+    import $ from 'jquery';
 
-      initialize: function(application) {
+    export function initialize(application) {
         var userConfig, userConfigEncoded, store;
         // We have a HTML escaped JSON representation of the user's basic
         // configuration generated server side and stored in the DOM of the main
@@ -338,17 +354,24 @@ Engine.reopenClass({
         // needed for immediate rendering of the page. Keep in mind, this data,
         // like all local models and data can be manipulated by the user, so it
         // should not be relied upon for security or authorization.
-        //
+
         // Grab the encoded data from the meta tag
-        userConfigEncoded = Ember.$('head meta[name=app-user-config]').attr('content');
+        userConfigEncoded = $('head meta[name=app-user-config]').attr('content');
+
         // Unescape the text, then parse the resulting JSON into a real object
         userConfig = JSON.parse(unescape(userConfigEncoded));
+
         // Lookup the store
         store = application.lookup('service:store');
+
         // Push the encoded JSON into the store
         store.pushPayload(userConfig);
-      }
-    });
+    }
+
+    export default {
+      name: 'named-instance-initializer',
+      initialize
+    };
     ```
 
     @method instanceInitializer
@@ -377,12 +400,12 @@ Engine.reopenClass({
 
     @method buildRegistry
     @static
-    @param {Ember.Application} namespace the application for which to
+    @param {Application} namespace the application for which to
       build the registry
     @return {Ember.Registry} the built registry
     @private
   */
-  buildRegistry(namespace, options = {}) {
+  buildRegistry(namespace) {
     let registry = new Registry({
       resolver: resolverFor(namespace)
     });
@@ -398,8 +421,7 @@ Engine.reopenClass({
   },
 
   /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
-
+    Set this to provide an alternate class to `DefaultResolver`
 
     @deprecated Use 'Resolver' instead
     @property resolver
@@ -408,7 +430,7 @@ Engine.reopenClass({
   resolver: null,
 
   /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
+    Set this to provide an alternate class to `DefaultResolver`
 
     @property resolver
     @public
@@ -441,7 +463,7 @@ function resolverFor(namespace) {
 }
 
 function buildInitializerMethod(bucketName, humanName) {
-  return function(initializer) {
+  return function (initializer) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would

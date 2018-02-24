@@ -2,7 +2,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 import { set } from 'ember-metal';
-import { HAS_NATIVE_WEAKMAP } from 'ember-utils';
 
 let assert = QUnit.assert;
 
@@ -530,7 +529,7 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
     this.assertText('Who overcomes by force hath overcome but half his foe');
   }
 
-  ['@test class-based helper used in subexpression is destroyed']() {
+  ['@test class-based helper used in subexpression is destroyed'](assert) {
     let destroyCount = 0;
 
     this.registerHelper('dynamic-segment', {
@@ -562,83 +561,57 @@ moduleFor('Helpers test: custom helpers', class extends RenderingTest {
 
     runDestroy(this.component);
 
-    equal(destroyCount, 1, 'destroy is called after a view is destroyed');
+    assert.equal(destroyCount, 1, 'destroy is called after a view is destroyed');
+  }
+
+  ['@test simple helper can be invoked manually via `owner.factoryFor(...).create().compute()'](assert) {
+    this.registerHelper('some-helper', () => {
+      assert.ok(true, 'some-helper helper invoked');
+      return 'lolol';
+    });
+
+    let instance = this.owner.factoryFor('helper:some-helper').create();
+
+    assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
+    assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
+  }
+
+  ['@test class-based helper can be invoked manually via `owner.factoryFor(...).create().compute()']() {
+    this.registerHelper('some-helper', {
+      compute() {
+        assert.ok(true, 'some-helper helper invoked');
+        return 'lolol';
+      }
+    });
+
+    let instance = this.owner.factoryFor('helper:some-helper').create();
+
+    assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
+    assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
   }
 });
 
-// these feature detects prevent errors in these tests
-// on platforms (*cough* IE9 *cough*) that do not
-// property support `Object.freeze`
-let pushingIntoFrozenArrayThrows = (() => {
-  let array = [];
-  Object.freeze(array);
-
-  try {
-    array.push('foo');
-
-    return false;
-  } catch (e) {
-    return true;
-  }
-})();
-
-let assigningExistingFrozenPropertyThrows = (() => {
-  let obj = { foo: 'asdf' };
-  Object.freeze(obj);
-
-  try {
-    obj.foo = 'derp';
-
-    return false;
-  } catch (e) {
-    return true;
-  }
-})();
-
-let addingPropertyToFrozenObjectThrows = (() => {
-  let obj = { foo: 'asdf' };
-  Object.freeze(obj);
-
-  try {
-    obj.bar = 'derp';
-
-    return false;
-  } catch (e) {
-    return true;
-  }
-})();
-
-if (!EmberDev.runningProdBuild && HAS_NATIVE_WEAKMAP && (
-  pushingIntoFrozenArrayThrows ||
-    assigningExistingFrozenPropertyThrows ||
-    addingPropertyToFrozenObjectThrows
-)) {
+if (!EmberDev.runningProdBuild) {
   class HelperMutatingArgsTests extends RenderingTest {
     buildCompute() {
       return (params, hash) => {
-        if (pushingIntoFrozenArrayThrows) {
-          this.assert.throws(() => {
-            params.push('foo');
+        this.assert.throws(() => {
+          params.push('foo');
 
-            // cannot assert error message as it varies by platform
-          });
-        }
+          // cannot assert error message as it varies by platform
+        });
 
-        if (assigningExistingFrozenPropertyThrows) {
-          this.assert.throws(() => {
-            hash.foo = 'bar';
+        this.assert.throws(() => {
+          hash.foo = 'bar';
 
-            // cannot assert error message as it varies by platform
-          });
-        }
+          // cannot assert error message as it varies by platform
+        });
 
-        if (addingPropertyToFrozenObjectThrows) {
-          this.assert.throws(() => {
-            hash.someUnusedHashProperty = 'bar';
+        this.assert.throws(() => {
+          hash.someUnusedHashProperty = 'bar';
 
-            // cannot assert error message as it varies by platform
-          });
-        }
+          // cannot assert error message as it varies by platform
+        });
       };
     }
 

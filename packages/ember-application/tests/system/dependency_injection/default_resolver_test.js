@@ -19,7 +19,7 @@ import {
 } from 'ember-glimmer';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
-moduleFor('Ember.Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
 
   beforeEach() {
     this.runTask(() => this.createApplication());
@@ -98,7 +98,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
 
     let lookedUpShorthandHelper = this.applicationInstance.factoryFor('helper:shorthand').class;
 
-    assert.ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+    assert.ok(lookedUpShorthandHelper.isHelperFactory, 'shorthand helper isHelper');
 
     let lookedUpHelper = this.applicationInstance.factoryFor('helper:complete').class;
 
@@ -115,7 +115,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
 
     let lookedUpShorthandHelper = this.applicationInstance.factoryFor('helper:shorthand').class;
 
-    assert.ok(lookedUpShorthandHelper.isHelperInstance, 'shorthand helper isHelper');
+    assert.ok(lookedUpShorthandHelper.isHelperFactory, 'shorthand helper isHelper');
 
     let lookedUpHelper = this.applicationInstance.factoryFor('helper:complete').class;
 
@@ -147,15 +147,15 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     );
   }
 
-  [`@test the default resolver throws an error if the fullName to resolve is invalid`](assert) {
-    assert.throws(() => { this.applicationInstance.resolveRegistration(undefined);}, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration(null);     }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('');       }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('');       }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration(':');      }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('model');  }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration('model:'); }, TypeError, /Invalid fullName/);
-    assert.throws(() => { this.applicationInstance.resolveRegistration(':type');  }, TypeError, /Invalid fullName/);
+  [`@test the default resolver throws an error if the fullName to resolve is invalid`]() {
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(undefined);}, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(null);     }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('');       }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('');       }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(':');      }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('model');  }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration('model:'); }, /fullName must be a proper full name/);
+    expectAssertion(() => { this.applicationInstance.resolveRegistration(':type');  }, /fullName must be a proper full name/);
   }
 
   /*
@@ -179,41 +179,41 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
     );
   }
 
-  [`@test assertion for routes without isRouteFactory property`](assert) {
+  [`@test assertion for routes without isRouteFactory property`]() {
     this.application.FooRoute = Component.extend();
 
     expectAssertion(() => {
-      this.privateRegistry.resolve(`route:foo`)
+      this.privateRegistry.resolve(`route:foo`);
     }, /to resolve to an Ember.Route/, 'Should assert');
   }
 
-  [`@test no assertion for routes that extend from Ember.Route`](assert) {
+  [`@test no assertion for routes that extend from Route`](assert) {
     assert.expect(0);
     this.application.FooRoute = Route.extend();
     this.privateRegistry.resolve(`route:foo`);
   }
 
-  [`@test deprecation warning for service factories without isServiceFactory property`](assert) {
+  [`@test deprecation warning for service factories without isServiceFactory property`]() {
     expectAssertion(() =>{
       this.application.FooService = EmberObject.extend();
       this.privateRegistry.resolve('service:foo');
     }, /Expected service:foo to resolve to an Ember.Service but instead it was \.FooService\./);
   }
 
-  [`@test no deprecation warning for service factories that extend from Ember.Service`](assert) {
+  [`@test no deprecation warning for service factories that extend from Service`](assert) {
     assert.expect(0);
     this.application.FooService = Service.extend();
     this.privateRegistry.resolve('service:foo');
   }
 
-  [`@test deprecation warning for component factories without isComponentFactory property`](assert) {
+  [`@test deprecation warning for component factories without isComponentFactory property`]() {
     expectAssertion(() => {
       this.application.FooComponent = EmberObject.extend();
       this.privateRegistry.resolve('component:foo');
     }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
   }
 
-  [`@test no deprecation warning for component factories that extend from Ember.Component`](assert) {
+  [`@test no deprecation warning for component factories that extend from Component`]() {
     expectNoDeprecation();
     this.application.FooView = Component.extend();
     this.privateRegistry.resolve('component:foo');
@@ -241,7 +241,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
 
 });
 
-moduleFor('Ember.Application Dependency Injection - Integration - default resolver w/ other namespace', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application Dependency Injection - Integration - default resolver w/ other namespace', class extends DefaultResolverApplicationTestCase {
 
   beforeEach() {
     this.UserInterface = context.lookup.UserInterface = Namespace.create();
@@ -271,7 +271,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
   }
 });
 
-moduleFor('Ember.Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application Dependency Injection - Integration - default resolver', class extends DefaultResolverApplicationTestCase {
 
   constructor() {
     super();
@@ -341,7 +341,7 @@ moduleFor('Ember.Application Dependency Injection - Integration - default resolv
 
     this.application.ScoobyDoo = EmberObject.extend();
 
-    setDebugFunction('info', (symbol, name) => infoCount = infoCount + 1);
+    setDebugFunction('info', () => infoCount = infoCount + 1);
 
     this.applicationInstance.resolveRegistration('doo:scooby');
     this.applicationInstance.resolveRegistration('doo:scrappy');

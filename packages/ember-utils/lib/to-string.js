@@ -16,7 +16,6 @@ export default function toString(obj) {
     // Reimplement Array.prototype.join according to spec (22.1.3.13)
     // Changing ToString(element) with this safe version of ToString.
     let len = obj.length;
-    let sep = ',';
     let r = '';
 
     for (let k = 0; k < len; k++) {

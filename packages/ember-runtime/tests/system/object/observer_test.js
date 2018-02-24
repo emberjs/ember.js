@@ -4,7 +4,7 @@ import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject observer');
 
-testBoth('observer on class', function(get, set) {
+testBoth('observer on class', function(get, set, assert) {
   let MyClass = EmberObject.extend({
     count: 0,
 
@@ -14,13 +14,13 @@ testBoth('observer on class', function(get, set) {
   });
 
   let obj = new MyClass();
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observer on subclass', function(get, set) {
+testBoth('observer on subclass', function(get, set, assert) {
   let MyClass = EmberObject.extend({
     count: 0,
 
@@ -36,16 +36,16 @@ testBoth('observer on subclass', function(get, set) {
   });
 
   let obj = new Subclass();
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
-  equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
   set(obj, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observer on instance', function(get, set) {
+testBoth('observer on instance', function(get, set, assert) {
   let obj = EmberObject.extend({
     foo: observer('bar', function() {
       set(this, 'count', get(this, 'count') + 1);
@@ -54,13 +54,13 @@ testBoth('observer on instance', function(get, set) {
     count: 0
   });
 
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observer on instance overriding class', function(get, set) {
+testBoth('observer on instance overriding class', function(get, set, assert) {
   let MyClass = EmberObject.extend({
     count: 0,
 
@@ -75,16 +75,16 @@ testBoth('observer on instance overriding class', function(get, set) {
     })
   }).create();
 
-  equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', 'BAZ');
-  equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
   set(obj, 'baz', 'BAZ');
-  equal(get(obj, 'count'), 1, 'should invoke observer after change');
+  assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observer should not fire after being destroyed', function(get, set) {
+testBoth('observer should not fire after being destroyed', function(get, set, assert) {
   let obj = EmberObject.extend({
     count: 0,
     foo: observer('bar', function() {
@@ -92,7 +92,7 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
     })
   }).create();
 
-  equal(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
+  assert.equal(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
   run(() => obj.destroy());
 
@@ -100,14 +100,14 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
     set(obj, 'bar', 'BAZ');
   }, `calling set on destroyed object: ${obj}.bar = BAZ`);
 
-  equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+  assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 });
 // ..........................................................
 // COMPLEX PROPERTIES
 //
 
 
-testBoth('chain observer on class', function(get, set) {
+testBoth('chain observer on class', function(get, set, assert) {
   let MyClass = EmberObject.extend({
     count: 0,
 
@@ -124,20 +124,20 @@ testBoth('chain observer on class', function(get, set) {
     bar: { baz: 'biff2' }
   });
 
-  equal(get(obj1, 'count'), 0, 'should not invoke yet');
-  equal(get(obj2, 'count'), 0, 'should not invoke yet');
+  assert.equal(get(obj1, 'count'), 0, 'should not invoke yet');
+  assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
 
   set(get(obj1, 'bar'), 'baz', 'BIFF1');
-  equal(get(obj1, 'count'), 1, 'should invoke observer on obj1');
-  equal(get(obj2, 'count'), 0, 'should not invoke yet');
+  assert.equal(get(obj1, 'count'), 1, 'should invoke observer on obj1');
+  assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
 
   set(get(obj2, 'bar'), 'baz', 'BIFF2');
-  equal(get(obj1, 'count'), 1, 'should not invoke again');
-  equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
+  assert.equal(get(obj1, 'count'), 1, 'should not invoke again');
+  assert.equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
 });
 
 
-testBoth('chain observer on class', function(get, set) {
+testBoth('chain observer on class', function(get, set, assert) {
   let MyClass = EmberObject.extend({
     count: 0,
 
@@ -159,23 +159,23 @@ testBoth('chain observer on class', function(get, set) {
     bar2: { baz: 'biff3' }
   });
 
-  equal(get(obj1, 'count'), 0, 'should not invoke yet');
-  equal(get(obj2, 'count'), 0, 'should not invoke yet');
+  assert.equal(get(obj1, 'count'), 0, 'should not invoke yet');
+  assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
 
   set(get(obj1, 'bar'), 'baz', 'BIFF1');
-  equal(get(obj1, 'count'), 1, 'should invoke observer on obj1');
-  equal(get(obj2, 'count'), 0, 'should not invoke yet');
+  assert.equal(get(obj1, 'count'), 1, 'should invoke observer on obj1');
+  assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
 
   set(get(obj2, 'bar'), 'baz', 'BIFF2');
-  equal(get(obj1, 'count'), 1, 'should not invoke again');
-  equal(get(obj2, 'count'), 0, 'should not invoke yet');
+  assert.equal(get(obj1, 'count'), 1, 'should not invoke again');
+  assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
 
   set(get(obj2, 'bar2'), 'baz', 'BIFF3');
-  equal(get(obj1, 'count'), 1, 'should not invoke again');
-  equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
+  assert.equal(get(obj1, 'count'), 1, 'should not invoke again');
+  assert.equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
 });
 
-testBoth('chain observer on class that has a reference to an uninitialized object will finish chains that reference it', function(get, set) {
+testBoth('chain observer on class that has a reference to an uninitialized object will finish chains that reference it', function(get, set, assert) {
   let changed = false;
 
   let ChildClass = EmberObject.extend({
@@ -198,13 +198,13 @@ testBoth('chain observer on class that has a reference to an uninitialized objec
 
   let parent = new ParentClass();
 
-  equal(changed, false, 'precond');
+  assert.equal(changed, false, 'precond');
 
-  parent.set('one.two', 'new');
+  set(parent, 'one.two', 'new');
 
-  equal(changed, true, 'child should have been notified of change to path');
+  assert.equal(changed, true, 'child should have been notified of change to path');
 
-  parent.set('one', { two: 'newer' });
+  set(parent, 'one', { two: 'newer' });
 
-  equal(changed, true, 'child should have been notified of change to path');
+  assert.equal(changed, true, 'child should have been notified of change to path');
 });

@@ -37,7 +37,7 @@ class LoggingApplicationTestCase extends ApplicationTestCase {
   }
 }
 
-moduleFor('Ember.Application with LOG_ACTIVE_GENERATION=true', class extends LoggingApplicationTestCase {
+moduleFor('Application with LOG_ACTIVE_GENERATION=true', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
@@ -51,8 +51,9 @@ moduleFor('Ember.Application with LOG_ACTIVE_GENERATION=true', class extends Log
       return;
     }
 
-    this.visit('/posts');
-    assert.equal(Object.keys(this.logs).length, 4, 'expected logs');
+    return this.visit('/posts').then(() => {
+      assert.equal(Object.keys(this.logs).length, 4, 'expected logs');
+    });
   }
 
   ['@test actively generated classes get logged'](assert) {
@@ -61,12 +62,13 @@ moduleFor('Ember.Application with LOG_ACTIVE_GENERATION=true', class extends Log
       return;
     }
 
-    this.visit('/posts');
-    assert.equal(this.logs['controller:application'], 1, 'expected: ApplicationController was generated');
-    assert.equal(this.logs['controller:posts'], 1, 'expected: PostsController was generated');
+    return this.visit('/posts').then(() => {
+      assert.equal(this.logs['controller:application'], 1, 'expected: ApplicationController was generated');
+      assert.equal(this.logs['controller:posts'], 1, 'expected: PostsController was generated');
 
-    assert.equal(this.logs['route:application'], 1, 'expected: ApplicationRoute was generated');
-    assert.equal(this.logs['route:posts'], 1, 'expected: PostsRoute was generated');
+      assert.equal(this.logs['route:application'], 1, 'expected: ApplicationRoute was generated');
+      assert.equal(this.logs['route:posts'], 1, 'expected: PostsRoute was generated');
+    });
   }
 
   ['@test predefined classes do not get logged'](assert) {
@@ -75,18 +77,18 @@ moduleFor('Ember.Application with LOG_ACTIVE_GENERATION=true', class extends Log
     this.add('route:application', Route.extend());
     this.add('route:posts', Route.extend());
 
-    this.visit('/posts');
+    return this.visit('/posts').then(() => {
+      assert.ok(!this.logs['controller:application'], 'did not expect: ApplicationController was generated');
+      assert.ok(!this.logs['controller:posts'], 'did not expect: PostsController was generated');
 
-    assert.ok(!this.logs['controller:application'], 'did not expect: ApplicationController was generated');
-    assert.ok(!this.logs['controller:posts'], 'did not expect: PostsController was generated');
-
-    assert.ok(!this.logs['route:application'], 'did not expect: ApplicationRoute was generated');
-    assert.ok(!this.logs['route:posts'], 'did not expect: PostsRoute was generated');
+      assert.ok(!this.logs['route:application'], 'did not expect: ApplicationRoute was generated');
+      assert.ok(!this.logs['route:posts'], 'did not expect: PostsRoute was generated');
+    });
   }
 
 });
 
-moduleFor('Ember.Application when LOG_ACTIVE_GENERATION=false', class extends LoggingApplicationTestCase {
+moduleFor('Application when LOG_ACTIVE_GENERATION=false', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
@@ -95,13 +97,14 @@ moduleFor('Ember.Application when LOG_ACTIVE_GENERATION=false', class extends Lo
   }
 
   [`@test do NOT log class generation if logging disabled`](assert) {
-    this.visit('/posts');
-    assert.equal(Object.keys(this.logs).length, 0, 'expected logs');
+    return this.visit('/posts').then(() => {
+      assert.equal(Object.keys(this.logs).length, 0, 'expected logs');
+    });
   }
 
 });
 
-moduleFor('Ember.Application with LOG_VIEW_LOOKUPS=true', class extends LoggingApplicationTestCase {
+moduleFor('Application with LOG_VIEW_LOOKUPS=true', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
@@ -117,17 +120,18 @@ moduleFor('Ember.Application with LOG_VIEW_LOOKUPS=true', class extends LoggingA
 
     this.addTemplate('application', '{{outlet}}');
 
-    this.visit('/');
-    this.visit('/posts');
-
-    assert.equal(this.logs['template:application'], undefined, 'expected: Should not log template:application since it exists.');
-    assert.equal(this.logs['template:index'], 1, 'expected: Could not find "index" template or view.');
-    assert.equal(this.logs['template:posts'], 1, 'expected: Could not find "posts" template or view.');
+    return this.visit('/')
+      .then(() => this.visit('/posts'))
+      .then(() => {
+        assert.equal(this.logs['template:application'], undefined, 'expected: Should not log template:application since it exists.');
+        assert.equal(this.logs['template:index'], 1, 'expected: Could not find "index" template or view.');
+        assert.equal(this.logs['template:posts'], 1, 'expected: Could not find "posts" template or view.');
+      });
   }
 
 });
 
-moduleFor('Ember.Application with LOG_VIEW_LOOKUPS=false', class extends LoggingApplicationTestCase {
+moduleFor('Application with LOG_VIEW_LOOKUPS=false', class extends LoggingApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
@@ -136,12 +140,14 @@ moduleFor('Ember.Application with LOG_VIEW_LOOKUPS=false', class extends Logging
   }
 
   [`@test do not log when template and view are missing when flag is not true`](assert) {
-    this.visit('/posts');
-    assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
+    return this.visit('/posts').then(() => {
+      assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
+    });
   }
 
   [`@test do not log which views are used with templates when flag is not true`](assert) {
-    this.visit('/posts');
-    assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
+    return this.visit('/posts').then(() => {
+      assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
+    });
   }
 });

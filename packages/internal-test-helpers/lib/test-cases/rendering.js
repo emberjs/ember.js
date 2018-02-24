@@ -1,6 +1,5 @@
-import { ComponentLookup } from 'ember-views';
-
 import AbstractRenderingTestCase from './abstract-rendering';
+import { privatize as P } from 'container';
 
 export default class RenderingTestCase extends AbstractRenderingTestCase {
   constructor() {
@@ -8,8 +7,8 @@ export default class RenderingTestCase extends AbstractRenderingTestCase {
     let { owner } = this;
 
     this.env = owner.lookup('service:-glimmer-environment');
-    owner.register('component-lookup:main', ComponentLookup);
-    owner.registerOptionsForType('helper', { instantiate: false });
-    owner.registerOptionsForType('component', { singleton: false });
+    this.templateOptions = owner.lookup(P`template-options:main`);
+    this.compileTimeLookup = this.templateOptions.resolver;
+    this.runtimeResolver = this.compileTimeLookup.resolver;
   }
 }

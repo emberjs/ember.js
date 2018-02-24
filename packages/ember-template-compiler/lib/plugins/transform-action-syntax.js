@@ -1,6 +1,5 @@
 /**
  @module ember
- @submodule ember-glimmer
 */
 
 /**
@@ -30,7 +29,7 @@ export default function transformActionSyntax({ syntax }) {
   return {
     name: 'transform-action-syntax',
 
-    visitors: {
+    visitor: {
       ElementModifierStatement(node) {
         if (isAction(node)) {
           insertThisAsFirstParam(node, b);

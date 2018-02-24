@@ -1,5 +1,3 @@
-import applyStr from './apply-str';
-
 /**
   Checks to see if the `methodName` exists on the `obj`.
 
@@ -19,23 +17,30 @@ import applyStr from './apply-str';
   @private
 */
 export function canInvoke(obj, methodName) {
-  return !!(obj && typeof obj[methodName] === 'function');
+  return obj !== null && obj !== undefined && typeof obj[methodName] === 'function';
 }
+
+/**
+  @module @ember/utils
+*/
 
 /**
   Checks to see if the `methodName` exists on the `obj`,
   and if it does, invokes it with the arguments passed.
 
   ```javascript
+  import { tryInvoke } from '@ember/utils';
+
   let d = new Date('03/15/2013');
 
-  Ember.tryInvoke(d, 'getTime');              // 1363320000000
-  Ember.tryInvoke(d, 'setFullYear', [2014]);  // 1394856000000
-  Ember.tryInvoke(d, 'noSuchMethod', [2014]); // undefined
+  tryInvoke(d, 'getTime');              // 1363320000000
+  tryInvoke(d, 'setFullYear', [2014]);  // 1394856000000
+  tryInvoke(d, 'noSuchMethod', [2014]); // undefined
   ```
 
   @method tryInvoke
-  @for Ember
+  @for @ember/utils
+  @static
   @param {Object} obj The object to check for the method
   @param {String} methodName The method name to check for
   @param {Array} [args] The arguments to pass to the method
@@ -44,6 +49,7 @@ export function canInvoke(obj, methodName) {
 */
 export function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
-    return args ? applyStr(obj, methodName, args) : applyStr(obj, methodName);
+    let method = obj[methodName];
+    return method.apply(obj, args);
   }
 }

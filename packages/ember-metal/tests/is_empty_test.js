@@ -4,38 +4,38 @@ import {
   OrderedSet
 } from '..';
 
-QUnit.module('Ember.isEmpty');
+QUnit.module('isEmpty');
 
-QUnit.test('Ember.isEmpty', function() {
+QUnit.test('isEmpty', function(assert) {
   let string = 'string';
   let fn = function() {};
   let object = { length: 0 };
 
-  equal(true, isEmpty(null), 'for null');
-  equal(true, isEmpty(undefined), 'for undefined');
-  equal(true, isEmpty(''), 'for an empty String');
-  equal(false, isEmpty('  '), 'for a whitespace String');
-  equal(false, isEmpty('\n\t'), 'for another whitespace String');
-  equal(false, isEmpty(true), 'for true');
-  equal(false, isEmpty(false), 'for false');
-  equal(false, isEmpty(string), 'for a String');
-  equal(false, isEmpty(fn), 'for a Function');
-  equal(false, isEmpty(0), 'for 0');
-  equal(true, isEmpty([]), 'for an empty Array');
-  equal(false, isEmpty({}), 'for an empty Object');
-  equal(true, isEmpty(object), 'for an Object that has zero \'length\'');
+  assert.equal(true, isEmpty(null), 'for null');
+  assert.equal(true, isEmpty(undefined), 'for undefined');
+  assert.equal(true, isEmpty(''), 'for an empty String');
+  assert.equal(false, isEmpty('  '), 'for a whitespace String');
+  assert.equal(false, isEmpty('\n\t'), 'for another whitespace String');
+  assert.equal(false, isEmpty(true), 'for true');
+  assert.equal(false, isEmpty(false), 'for false');
+  assert.equal(false, isEmpty(string), 'for a String');
+  assert.equal(false, isEmpty(fn), 'for a Function');
+  assert.equal(false, isEmpty(0), 'for 0');
+  assert.equal(true, isEmpty([]), 'for an empty Array');
+  assert.equal(false, isEmpty({}), 'for an empty Object');
+  assert.equal(true, isEmpty(object), 'for an Object that has zero \'length\'');
 });
 
-QUnit.test('Ember.isEmpty Ember.Map', function() {
+QUnit.test('isEmpty Map', function(assert) {
   let map = new Map();
-  equal(true, isEmpty(map), 'Empty map is empty');
+  assert.equal(true, isEmpty(map), 'Empty map is empty');
   map.set('foo', 'bar');
-  equal(false, isEmpty(map), 'Map is not empty');
+  assert.equal(false, isEmpty(map), 'Map is not empty');
 });
 
-QUnit.test('Ember.isEmpty Ember.OrderedSet', function() {
+QUnit.test('isEmpty Ember.OrderedSet', function(assert) {
   let orderedSet = new OrderedSet();
-  equal(true, isEmpty(orderedSet), 'Empty ordered set is empty');
+  assert.equal(true, isEmpty(orderedSet), 'Empty ordered set is empty');
   orderedSet.add('foo');
-  equal(false, isEmpty(orderedSet), 'Ordered set is not empty');
+  assert.equal(false, isEmpty(orderedSet), 'Ordered set is not empty');
 });

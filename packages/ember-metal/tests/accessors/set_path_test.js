@@ -4,6 +4,7 @@ import {
   trySet,
   get
 } from '../..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let originalLookup = context.lookup;
 let lookup;
@@ -25,55 +26,66 @@ function commonTeardown() {
   obj = null;
 }
 
-QUnit.module('set with path', {
-  setup: commonSetup,
-  teardown: commonTeardown
-});
+moduleFor('set with path', class extends AbstractTestCase {
+  constructor() {
+    super();
+    commonSetup();
+  }
 
-QUnit.test('[Foo, bar] -> Foo.bar', function() {
-  lookup.Foo = { toString() { return 'Foo'; } }; // Behave like an Ember.Namespace
+  teardown() {
+    commonTeardown();
+  }
 
-  set(lookup.Foo, 'bar', 'baz');
-  equal(get(lookup.Foo, 'bar'), 'baz');
-});
+  ['@test [Foo, bar] -> Foo.bar'](assert) {
+    lookup.Foo = { toString() { return 'Foo'; } }; // Behave like an Ember.Namespace
 
-// ..........................................................
-//
-// LOCAL PATHS
+    set(lookup.Foo, 'bar', 'baz');
+    assert.equal(get(lookup.Foo, 'bar'), 'baz');
+  }
 
-QUnit.test('[obj, foo] -> obj.foo', function() {
-  set(obj, 'foo', 'BAM');
-  equal(get(obj, 'foo'), 'BAM');
-});
+  // ..........................................................
+  //
+  // LOCAL PATHS
 
-QUnit.test('[obj, foo.bar] -> obj.foo.bar', function() {
-  set(obj, 'foo.bar', 'BAM');
-  equal(get(obj, 'foo.bar'), 'BAM');
-});
+  ['@test [obj, foo] -> obj.foo'](assert) {
+    set(obj, 'foo', 'BAM');
+    assert.equal(get(obj, 'foo'), 'BAM');
+  }
 
-// ..........................................................
-// DEPRECATED
-//
-
-QUnit.module('set with path - deprecated', {
-  setup: commonSetup,
-  teardown: commonTeardown
-});
-
-QUnit.test('[obj, bla.bla] gives a proper exception message', function() {
-  let exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
-  try {
-    set(obj, 'bla.bla', 'BAM');
-  } catch (ex) {
-    equal(ex.message, exceptionMessage);
+  ['@test [obj, foo.bar] -> obj.foo.bar'](assert) {
+    set(obj, 'foo.bar', 'BAM');
+    assert.equal(get(obj, 'foo.bar'), 'BAM');
   }
 });
 
-QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  throws(() => set(obj, 'foo.baz.bat', 'BAM'));
-});
+moduleFor('set with path - deprecated', class extends AbstractTestCase {
+  constructor() {
+    super();
+    commonSetup();
+  }
 
-QUnit.test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  trySet(obj, 'foo.baz.bat', 'BAM');
-  ok(true, 'does not raise');
+  teardown() {
+    commonTeardown();
+  }
+
+  // ..........................................................
+  // DEPRECATED
+  //
+  ['@test [obj, bla.bla] gives a proper exception message'](assert) {
+    let exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
+    try {
+      set(obj, 'bla.bla', 'BAM');
+    } catch (ex) {
+      assert.equal(ex.message, exceptionMessage);
+    }
+  }
+
+  ['@test [obj, foo.baz.bat] -> EXCEPTION'](assert) {
+    assert.throws(() => set(obj, 'foo.baz.bat', 'BAM'));
+  }
+
+  ['@test [obj, foo.baz.bat] -> EXCEPTION'](assert) {
+    trySet(obj, 'foo.baz.bat', 'BAM');
+    assert.ok(true, 'does not raise');
+  }
 });

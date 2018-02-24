@@ -1,6 +1,5 @@
 import { Controller } from 'ember-runtime';
 import {
-  jQuery as $,
   getRootViews,
   getChildViews,
   getViewBounds,
@@ -121,17 +120,17 @@ moduleFor('View tree tests', class extends ApplicationTest {
     });
   }
 
-  ['@test getRootViews'](assert) {
+  ['@test getRootViews']() {
     return this.visit('/').then(() => {
       this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5']);
 
-      this.runTask(() => $('#toggle-application').click());
+      this.runTask(() => this.$('#toggle-application').click());
 
       this.assertRootViews(['root-1', 'root-2', 'root-4', 'root-5']);
 
       this.runTask(() => {
-        $('#toggle-application').click();
-        $('#toggle-index').click();
+        this.$('#toggle-application').click();
+        this.$('#toggle-index').click();
       });
 
       this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5', 'root-6']);
@@ -155,17 +154,17 @@ moduleFor('View tree tests', class extends ApplicationTest {
     this.assert.deepEqual(actual, expected, 'root views');
   }
 
-  ['@test getChildViews'](assert) {
+  ['@test getChildViews']() {
     return this.visit('/').then(() => {
       this.assertChildViews('root-2', ['inner-1', 'inner-2']);
       this.assertChildViews('root-5', []);
       this.assertChildViews('inner-2', ['inner-3']);
 
-      this.runTask(() => $('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
 
       this.assertChildViews('root-2', []);
 
-      this.runTask(() => $('#root-5').click());
+      this.runTask(() => this.$('#root-5').click());
 
       this.assertChildViews('root-5', ['inner-4', 'inner-5']);
       this.assertChildViews('inner-5', ['inner-6']);
@@ -177,7 +176,7 @@ moduleFor('View tree tests', class extends ApplicationTest {
       this.assertChildViews('inner-8', ['inner-9']);
       this.assertChildViews('root-9', []);
 
-      this.runTask(() => $('#root-8').click());
+      this.runTask(() => this.$('#root-8').click());
 
       this.assertChildViews('root-8', []);
 
@@ -192,28 +191,28 @@ moduleFor('View tree tests', class extends ApplicationTest {
       this.assertChildViews('root-2', []);
       this.assertChildViews('root-5', []);
 
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#inner-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#inner-2').click());
 
       this.assertChildViews('root-2', ['inner-1', 'inner-2']);
       this.assertChildViews('inner-2', []);
     });
   }
 
-  ['@test getChildViews does not return duplicates'](assert) {
+  ['@test getChildViews does not return duplicates']() {
     return this.visit('/').then(() => {
       this.assertChildViews('root-2', ['inner-1', 'inner-2']);
 
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
-      this.runTask(() => $('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
+      this.runTask(() => this.$('#root-2').click());
 
       this.assertChildViews('root-2', ['inner-1', 'inner-2']);
     });

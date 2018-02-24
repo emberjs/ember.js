@@ -1,37 +1,42 @@
 import { makeArray } from '..';
+import {
+  moduleFor,
+  AbstractTestCase as TestCase
+} from 'internal-test-helpers';
 
-QUnit.module('Ember.makeArray');
+moduleFor('Ember.makeArray', class extends TestCase {
+  ['@test undefined'](assert) {
+    assert.deepEqual(makeArray(), []);
+    assert.deepEqual(makeArray(undefined), []);
+  }
 
-QUnit.test('undefined', function() {
-  deepEqual(makeArray(), []);
-  deepEqual(makeArray(undefined), []);
+  ['@test null'](assert) {
+    assert.deepEqual(makeArray(null), []);
+  }
+
+  ['@test string'](assert) {
+    assert.deepEqual(makeArray('lindsay'), ['lindsay']);
+  }
+
+  ['@test number'](assert) {
+    assert.deepEqual(makeArray(0), [0]);
+    assert.deepEqual(makeArray(1), [1]);
+  }
+
+  ['@test array'](assert) {
+    assert.deepEqual(makeArray([1, 2, 42]), [1, 2, 42]);
+  }
+
+  ['@test true'](assert) {
+    assert.deepEqual(makeArray(true), [true]);
+  }
+
+  ['@test false'](assert) {
+    assert.deepEqual(makeArray(false), [false]);
+  }
+
+  ['@test object'](assert) {
+    assert.deepEqual(makeArray({}), [{}]);
+  }
 });
 
-QUnit.test('null', function() {
-  deepEqual(makeArray(null), []);
-});
-
-QUnit.test('string', function() {
-  deepEqual(makeArray('lindsay'), ['lindsay']);
-});
-
-QUnit.test('number', function() {
-  deepEqual(makeArray(0), [0]);
-  deepEqual(makeArray(1), [1]);
-});
-
-QUnit.test('array', function() {
-  deepEqual(makeArray([1, 2, 42]), [1, 2, 42]);
-});
-
-QUnit.test('true', function() {
-  deepEqual(makeArray(true), [true]);
-});
-
-QUnit.test('false', function() {
-  deepEqual(makeArray(false), [false]);
-});
-
-QUnit.test('object', function() {
-  deepEqual(makeArray({}), [{}]);
-});

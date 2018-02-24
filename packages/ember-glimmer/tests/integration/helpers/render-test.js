@@ -1,9 +1,20 @@
 import { observer, set, computed } from 'ember-metal';
 import { Controller } from 'ember-runtime';
+import { ENV } from 'ember-environment';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Helpers test: {{render}}', class extends RenderingTest {
+  constructor() {
+    super();
+    this.originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
+    ENV._ENABLE_RENDER_SUPPORT = true;
+  }
+
+  teardown() {
+    super.teardown();
+    ENV._ENABLE_RENDER_SUPPORT = this.originalRenderSupport;
+  }
+
   ['@test should render given template']() {
     this.registerTemplate('home', '<p>BYE</p>');
 
@@ -231,7 +242,7 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     assert.strictEqual(willDestroyFired, 2, 'it did destroy the controller');
   }
 
-  ['@test with a supplied model should not fire observers on the controller']() {
+  ['@test with a supplied model should not fire observers on the controller'](assert) {
     this.owner.register('controller:post', Controller.extend());
     this.registerTemplate('post', '<p>{{model.title}}</p>');
 
@@ -252,6 +263,7 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertText(`HIIt's Simple Made Easy`);
+    assert.equal(postDidChange, 0);
   }
 
   ['@test should raise an error when a given controller name does not resolve to a controller']() {
@@ -298,7 +310,7 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     this.assertText('0');
   }
 
-  ['@test should render templates with models multiple times'](assert) {
+  ['@test should render templates with models multiple times']() {
     this.owner.register('controller:post', Controller.extend());
 
     this.registerTemplate('post', '<p>{{model.title}}</p>');
@@ -434,7 +446,7 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
     postController.send('someAction');
   }
 
-  ['@test render helper emits useful backtracking re-render assertion message'](assert) {
+  ['@test render helper emits useful backtracking re-render assertion message']() {
     this.owner.register('controller:outer', Controller.extend());
     this.owner.register('controller:inner', Controller.extend({
       propertyWithError: computed(function() {
@@ -451,14 +463,9 @@ moduleFor('Helpers test: {{render}}', class extends RenderingTest {
       this.registerTemplate('outer', `Hi {{model.name}} | {{render 'inner' model}}`);
       this.registerTemplate('inner', `Hi {{propertyWithError}}`);
 
-      if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-        expectDeprecation(expectedBacktrackingMessage);
+      expectAssertion(() => {
         this.render(`{{render 'outer' person}}`, { person });
-      } else {
-        expectAssertion(() => {
-          this.render(`{{render 'outer' person}}`, { person });
-        }, expectedBacktrackingMessage);
-      }
+      }, expectedBacktrackingMessage);
     });
   }
 });

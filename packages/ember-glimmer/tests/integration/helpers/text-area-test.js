@@ -1,17 +1,10 @@
 import { assign } from 'ember-utils';
 import { set } from 'ember-metal';
-import { TextArea } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
 import { applyMixins } from '../../utils/abstract-test-case';
 
 class TextAreaRenderingTest extends RenderingTest {
-  constructor() {
-    super();
-
-    this.registerComponent('-text-area', { ComponentClass: TextArea });
-  }
-
   assertTextArea({ attrs, value } = {}) {
     let mergedAttrs = assign({ 'class': classes('ember-view ember-text-area') }, attrs);
     this.assertComponentElement(this.firstChild, { tagName: 'textarea', attrs: mergedAttrs });
@@ -37,7 +30,7 @@ class BoundTextAreaAttributes {
 
   generate({ attribute, first, second }) {
     return {
-      [`@test ${attribute}`](assert) {
+      [`@test ${attribute}`]() {
         this.render(`{{textarea ${attribute}=value}}`, {
           value: first
         });
@@ -70,39 +63,39 @@ applyMixins(
 
 moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
 
-  ['@test Should insert a textarea']() {
+  ['@test Should insert a textarea'](assert) {
     this.render('{{textarea}}');
 
-    equal(this.$('textarea').length, 1);
+    assert.equal(this.$('textarea').length, 1);
 
     this.assertStableRerender();
   }
 
-  ['@test Should respect disabled']() {
+  ['@test Should respect disabled'](assert) {
     this.render('{{textarea disabled=disabled}}', {
       disabled: true
     });
-    ok(this.$('textarea').is(':disabled'));
+    assert.ok(this.$('textarea').is(':disabled'));
   }
 
-  ['@test Should respect disabled when false']() {
+  ['@test Should respect disabled when false'](assert) {
     this.render('{{textarea disabled=disabled}}', {
       disabled: false
     });
-    ok(this.$('textarea').is(':not(:disabled)'));
+    assert.ok(this.$('textarea').is(':not(:disabled)'));
   }
 
-  ['@test Should become disabled when the context changes']() {
+  ['@test Should become disabled when the context changes'](assert) {
     this.render('{{textarea disabled=disabled}}');
-    ok(this.$('textarea').is(':not(:disabled)'));
+    assert.ok(this.$('textarea').is(':not(:disabled)'));
 
     this.assertStableRerender();
 
     this.runTask(() => set(this.context, 'disabled', true));
-    ok(this.$('textarea').is(':disabled'));
+    assert.ok(this.$('textarea').is(':disabled'));
 
     this.runTask(() => set(this.context, 'disabled', false));
-    ok(this.$('textarea').is(':not(:disabled)'));
+    assert.ok(this.$('textarea').is(':not(:disabled)'));
   }
 
   ['@test Should bind its contents to the specified value']() {
