@@ -10,8 +10,7 @@ export interface ConstantPool {
   strings: string[];
   arrays: number[][] | EMPTY_ARRAY;
   handles: number[];
-  floats: number[];
-  negatives: number[];
+  numbers: number[];
 }
 
 export const enum PrimitiveType {
@@ -19,7 +18,8 @@ export const enum PrimitiveType {
   FLOAT           = 0b001,
   STRING          = 0b010,
   BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE        = 0b100
+  NEGATIVE        = 0b100,
+  BIG_NUM         = 0b101
 }
 
 export class WriteOnlyConstants implements CompileTimeConstants {
@@ -30,22 +30,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   protected tables: SymbolTable[] = [];
   protected handles: number[] = [];
   protected resolved: Opaque[] = [];
-  protected floats: number[] = [];
-  protected negatives: number[] = [];
-
-  float(float: number) {
-    let index = this.floats.indexOf(float);
-
-    if (index > -1) {
-      return index;
-    }
-
-    return this.floats.push(float) - 1;
-  }
-
-  negative(negative: number) {
-    return this.negatives.push(negative) - 1;
-  }
+  protected numbers: number[] = [];
 
   string(value: string): number {
     let index = this.strings.indexOf(value);
@@ -101,13 +86,22 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     return this.strings.push(str) - 1;
   }
 
+  number(number: number): number {
+    let index = this.numbers.indexOf(number);
+
+    if (index > -1) {
+      return index;
+    }
+
+    return this.numbers.push(number) - 1;
+  }
+
   toPool(): ConstantPool {
     return {
       strings: this.strings,
       arrays: this.arrays,
       handles: this.handles,
-      floats: this.floats,
-      negatives: this.negatives
+      numbers: this.numbers
     };
   }
 }
@@ -117,30 +111,22 @@ export class RuntimeConstants<TemplateMeta> {
   protected arrays: number[][] | EMPTY_ARRAY;
   protected handles: number[];
   protected resolved: Opaque[];
-  protected floats: number[];
-  protected negatives: number[];
+  protected numbers: number[];
 
   constructor(public resolver: RuntimeResolver<TemplateMeta>, pool: ConstantPool) {
     this.strings = pool.strings;
     this.arrays = pool.arrays;
     this.handles = pool.handles;
-    this.floats = pool.floats;
-    this.negatives = pool.negatives;
     this.resolved = this.handles.map(() => UNRESOLVED);
-  }
-
-  // `0` means NULL
-
-  getFloat(value: number): number {
-    return this.floats[value];
-  }
-
-  getNegative(value: number): number {
-    return this.negatives[value];
+    this.numbers = pool.numbers;
   }
 
   getString(value: number): string {
     return this.strings[value];
+  }
+
+  getNumber(value: number): number {
+    return this.numbers[value];
   }
 
   getStringArray(value: number): string[] {
@@ -184,19 +170,13 @@ export class Constants<TemplateMeta> extends WriteOnlyConstants {
       this.strings = pool.strings;
       this.arrays = pool.arrays;
       this.handles = pool.handles;
-      this.floats = pool.floats;
-      this.negatives = pool.negatives;
       this.resolved = this.handles.map(() => UNRESOLVED);
+      this.numbers = pool.numbers;
     }
   }
 
-  // `0` means NULL
-  getFloat(value: number): number {
-    return this.floats[value];
-  }
-
-  getNegative(value: number): number {
-    return this.negatives[value];
+  getNumber(value: number): number {
+    return this.numbers[value];
   }
 
   getString(value: number): string {
