@@ -1,18 +1,18 @@
 {
   "name": "@glimmer/opcode-compiler",
-  "version": "0.32.0",
+  "version": "0.32.1",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/opcode-compiler",
   "dependencies": {
-    "@glimmer/util": "^0.32.0",
-    "@glimmer/wire-format": "^0.32.0",
-    "@glimmer/interfaces": "^0.32.0",
-    "@glimmer/program": "^0.32.0",
-    "@glimmer/vm": "^0.32.0",
-    "@glimmer/encoder": "^0.32.0",
-    "@glimmer/reference": "^0.32.0"
+    "@glimmer/util": "^0.32.1",
+    "@glimmer/wire-format": "^0.32.1",
+    "@glimmer/interfaces": "^0.32.1",
+    "@glimmer/program": "^0.32.1",
+    "@glimmer/vm": "^0.32.1",
+    "@glimmer/encoder": "^0.32.1",
+    "@glimmer/reference": "^0.32.1"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "^0.32.0",
+    "@glimmer/local-debug-flags": "^0.32.1",
     "typescript": "^2.2.0"
   }
 }
