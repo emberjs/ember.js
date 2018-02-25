@@ -33,6 +33,43 @@ moduleFor('Helpers test: {{readonly}}', class extends RenderingTest {
     // No U-R
   }
 
+  '@test updating a nested path of a {{readonly}}'(assert) {
+    let component;
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didInsertElement() {
+          component = this;
+        }
+      }),
+      template: '{{value.prop}}'
+    });
+
+    this.render('{{foo-bar value=(readonly thing)}}', {
+      thing: {
+        prop: 'initial',
+      }
+    });
+
+    this.assertText('initial');
+
+    this.assertStableRerender();
+
+    assert.notOk(component.attrs.value.update, 'no update available');
+    assert.deepEqual(get(component, 'value'), { prop: 'initial' });
+    assert.deepEqual(this.context.thing, { prop: 'initial' });
+
+    this.runTask(() => set(component, 'value.prop', 'updated!'));
+
+    this.assertText('updated!', 'nested path is updated');
+    assert.deepEqual(get(component, 'value'), { prop: 'updated!' });
+    assert.deepEqual(this.context.thing, { prop: 'updated!' });
+
+    this.runTask(() => set(component, 'value.prop', 'initial'));
+
+    this.assertText('initial');
+  }
+
   ['@test {{readonly}} of a string renders correctly']() {
     let component;
 
@@ -96,6 +133,7 @@ moduleFor('Helpers test: {{readonly}}', class extends RenderingTest {
     this.assert.equal(get(bottom, 'bar'), 12, 'bottom\'s local bar received the value');
     this.assert.equal(get(middle, 'foo'), 12, 'middle\'s local foo received the value');
 
+    // updating the mut-cell directly
     this.runTask(() => bottom.attrs.bar.update(13));
 
     this.assert.equal(get(bottom, 'bar'), 13, 'bottom\'s local bar was updated after set of bottom\'s bar');
@@ -124,6 +162,7 @@ moduleFor('Helpers test: {{readonly}}', class extends RenderingTest {
     this.assert.equal(get(bottom, 'bar'), 10, 'bottom\'s local bar was updated after set of context\'s val');
     this.assert.equal(get(middle, 'foo'), 10, 'middle\'s local foo was updated after set of context\'s val');
 
+    // setting as a normal property
     this.runTask(() => set(bottom, 'bar', undefined));
 
     this.assertText(' ');
