@@ -8,7 +8,7 @@
  Utility methods that are needed in < 80% of cases should be placed
  elsewhere (so they can be lazily evaluated / parsed).
 */
-export { default as symbol } from './symbol';
+export { default as symbol, isInternalSymbol } from './symbol';
 export { getOwner, setOwner, OWNER } from './owner';
 
 // Export `assignPolyfill` for testing

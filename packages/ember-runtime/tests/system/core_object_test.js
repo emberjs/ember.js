@@ -1,5 +1,6 @@
-import CoreObject, { POST_INIT } from '../../system/core_object';
-import { get, set, observer } from 'ember-metal';
+import { getOwner } from 'ember-utils';
+import { get } from 'ember-metal';
+import CoreObject from '../../system/core_object';
 
 QUnit.module('Ember.CoreObject');
 
@@ -38,45 +39,6 @@ QUnit.test('toString should be not be added as a property when calling toString(
   assert.notOk(obj.hasOwnProperty('toString'), 'Calling toString() should not create a toString class property');
 });
 
-QUnit.test('[POST_INIT] invoked during construction', function(assert) {
-  let callCount = 0;
-  let Obj = CoreObject.extend({
-    [POST_INIT]() {
-      callCount++;
-    }
-  });
-
-  assert.equal(callCount, 0);
-
-  Obj.create();
-
-  assert.equal(callCount, 1);
-});
-
-QUnit.test('[POST_INIT] invoked before finishChains', function(assert) {
-  let callCount = 0;
-
-  let Obj = CoreObject.extend({
-    [POST_INIT]() {
-      set(this, 'hi', 1);
-    },
-
-    hiDidChange: observer('hi', function() {
-      callCount++;
-    })
-  });
-
-  assert.equal(callCount, 0);
-
-  let obj = Obj.create();
-
-  assert.equal(callCount, 0);
-
-  set(obj, 'hi', 2);
-
-  assert.equal(callCount, 1);
-});
-
 QUnit.test('should not trigger proxy assertion when retrieving a proxy with (GH#16263)', function(assert) {
   let someProxyishThing = CoreObject.extend({
     unknownProperty() {
@@ -90,4 +52,17 @@ QUnit.test('should not trigger proxy assertion when retrieving a proxy with (GH#
 
   let proxy = get(obj, 'someProxyishThing');
   assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+});
+
+QUnit.test('should not trigger proxy assertion when probing for a "symbol"', function(assert) {
+  let proxy = CoreObject.extend({
+    unknownProperty() {
+      return true;
+    }
+  }).create();
+
+  assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+
+  // should not trigger an assertion
+  getOwner(proxy);
 });

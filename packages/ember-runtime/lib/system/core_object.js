@@ -14,7 +14,8 @@ import {
   symbol,
   NAME_KEY,
   GUID_KEY,
-  HAS_NATIVE_PROXY
+  HAS_NATIVE_PROXY,
+  isInternalSymbol,
 } from 'ember-utils';
 import {
   PROXY_CONTENT,
@@ -92,7 +93,7 @@ function makeCtor() {
             } else if (
               beforeInitCalled ||
               typeof property === 'symbol' ||
-              property === NAME_KEY ||
+              isInternalSymbol(property) ||
               property === GUID_KEY_PROPERTY ||
               property === 'toJSON' ||
               property === 'toString' ||
