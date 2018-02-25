@@ -29,7 +29,7 @@ module.exports.VERSION = (() => {
   let sha = info.sha || '';
   let suffix = process.env.BUILD_TYPE || info.branch;
   // * remove illegal non-alphanumeric characters from branch name.
-  suffix = suffix && suffix.replace(/[^a-zA-Z\d\s-]/, '-');
+  suffix = suffix && suffix.replace(/[^a-zA-Z\d\s-]/g, '-');
   let metadata = sha.slice(0, 8);
 
   return `${packageVersion}${suffix ? '-' + suffix : ''}+${metadata}`;
