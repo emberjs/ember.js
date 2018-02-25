@@ -1,3 +1,11 @@
 ///<reference path="./simple-dom.d.ts" />
-export { DOMChanges, DOMTreeConstruction } from '@glimmer/runtime';
-export { NodeDOMTreeConstruction } from '@glimmer/node';
+export {
+  DOMChanges,
+  DOMTreeConstruction,
+  clientBuilder,
+  rehydrationBuilder
+} from '@glimmer/runtime';
+export {
+  NodeDOMTreeConstruction,
+  serializeBuilder
+} from '@glimmer/node';

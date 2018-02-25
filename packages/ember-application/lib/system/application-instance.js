@@ -343,6 +343,15 @@ class BootOptions {
     */
     this.isInteractive = environment.hasDOM; // This default is overridable below
 
+
+    /**
+      @property _renderMode
+      @type string
+      @default false
+      @private
+    */
+    this._renderMode = options._renderMode;
+
     /**
       Run in a full browser environment.
 
@@ -482,6 +491,7 @@ class BootOptions {
     // For compatibility with existing code
     env.hasDOM = this.isBrowser;
     env.isInteractive = this.isInteractive;
+    env._renderMode = this._renderMode;
     env.options = this;
     return env;
   }

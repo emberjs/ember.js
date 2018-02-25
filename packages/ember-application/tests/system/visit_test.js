@@ -12,6 +12,7 @@ import Engine from '../../system/engine';
 import { Route } from 'ember-routing';
 import { Component, helper } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
+import { ENV } from 'ember-environment';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -21,6 +22,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
 
   teardown() {
     RSVP.on('error', onerrorDefault);
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
     super.teardown();
   }
 
@@ -33,6 +35,66 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
       document.getElementById('qunit-fixture').children.length, 0,
       `there are no elements in the fixture element ${message ? message : ''}`
     );
+  }
+
+  [`@test does not add serialize-mode markers by default`](assert) {
+    let templateContent = '<div class="foo">Hi, Mom!</div>';
+    this.addTemplate('index', templateContent);
+    let rootElement = document.createElement('div');
+
+    let bootOptions = {
+      isBrowser: false,
+      rootElement
+    };
+
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+    return this.visit('/', bootOptions).then(()=> {
+      assert.equal(rootElement.innerHTML, templateContent, 'without serialize flag renders as expected');
+    });
+  }
+
+  [`@test _renderMode: rehydration`](assert) {
+    assert.expect(2);
+
+    let indexTemplate = '<div class="foo">Hi, Mom!</div>';
+    this.addTemplate('index', indexTemplate);
+    let rootElement = document.createElement('div');
+
+    let bootOptions = {
+      isBrowser: false,
+      rootElement,
+      _renderMode: 'serialize'
+    };
+
+    ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+
+    return this.visit('/', bootOptions)
+      .then((instance) => {
+        assert.equal(
+          instance.rootElement.firstChild.nodeValue,
+          '%+b:0%',
+          'glimmer-vm comment node was not found'
+        );
+      }).then(() =>{
+        return this.runTask(()=>{
+          this.applicationInstance.destroy();
+          this.applicationInstance = null;
+        });
+      }).then(() => {
+        bootOptions = {
+          isBrowser: false,
+          rootElement,
+          _renderMode: 'rehydrate'
+        };
+
+        this.application.visit('/', bootOptions).then(instance => {
+          assert.equal(
+            instance.rootElement.innerHTML,
+            indexTemplate,
+            'was not properly rehydrated'
+          );
+        });
+      });
   }
 
   // This tests whether the application is "autobooted" by registering an
