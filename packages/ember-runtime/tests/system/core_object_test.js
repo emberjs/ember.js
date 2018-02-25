@@ -1,3 +1,4 @@
+import { getOwner } from 'ember-utils';
 import { get } from 'ember-metal';
 import CoreObject from '../../system/core_object';
 
@@ -51,4 +52,17 @@ QUnit.test('should not trigger proxy assertion when retrieving a proxy with (GH#
 
   let proxy = get(obj, 'someProxyishThing');
   assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+});
+
+QUnit.test('should not trigger proxy assertion when probing for a "symbol"', function(assert) {
+  let proxy = CoreObject.extend({
+    unknownProperty() {
+      return true;
+    }
+  }).create();
+
+  assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+
+  // should not trigger an assertion
+  getOwner(proxy);
 });
