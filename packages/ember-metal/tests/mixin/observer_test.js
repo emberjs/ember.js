@@ -2,9 +2,9 @@ import { testBoth } from 'internal-test-helpers';
 import {
   observer,
   mixin,
-  Mixin
-} from '../../mixin';
-import { isWatching } from '../../watching';
+  Mixin,
+  isWatching
+} from '../..';
 
 QUnit.module('Mixin observer');
 
@@ -184,7 +184,7 @@ testBoth('observing chain with property in mixin after', function(get, set) {
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with overriden property', function(get, set) {
+testBoth('observing chain with overridden property', function(get, set) {
   let obj2 = { baz: 'baz' };
   let obj3 = { baz: 'foo' };
 
@@ -211,7 +211,7 @@ testBoth('observing chain with overriden property', function(get, set) {
 });
 
 testBoth('providing the arguments in reverse order is deprecated', function(get, set) {
-  expectDeprecation(/Passing the dependentKeys after the callback function in Ember\.observer is deprecated. Ensure the callback function is the last argument/);
+  expectDeprecation(/Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument/);
 
   Mixin.create({
     count: 0,

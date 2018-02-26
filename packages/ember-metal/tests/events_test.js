@@ -1,7 +1,6 @@
-import { Mixin } from '../mixin';
-import { meta } from '../meta';
-
 import {
+  Mixin,
+  meta,
   on,
   addListener,
   removeListener,
@@ -9,7 +8,7 @@ import {
   suspendListeners,
   sendEvent,
   hasListeners
-} from '../events';
+} from '..';
 
 QUnit.module('system/props/events_test');
 
@@ -237,6 +236,20 @@ QUnit.test('a listener can be added as part of a mixin', function() {
   equal(triggered, 2, 'should invoke listeners');
 });
 
+QUnit.test('Ember.on asserts for invalid arguments', function() {
+  expectAssertion(()=> {
+    Mixin.create({
+      foo1: on('bar'),
+    });
+  }, 'on expects function as last argument');
+
+  expectAssertion(()=> {
+    Mixin.create({
+      foo1: on(function(){}),
+    });
+  }, 'on called without valid event names');
+});
+
 QUnit.test('a listener added as part of a mixin may be overridden', function() {
   let triggered = 0;
   let FirstMixin = Mixin.create({
@@ -255,7 +268,7 @@ QUnit.test('a listener added as part of a mixin may be overridden', function() {
   SecondMixin.apply(obj);
 
   sendEvent(obj, 'bar');
-  equal(triggered, 0, 'should not invoke from overriden property');
+  equal(triggered, 0, 'should not invoke from overridden property');
 
   sendEvent(obj, 'baz');
   equal(triggered, 1, 'should invoke from subclass property');

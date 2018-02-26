@@ -1,14 +1,9 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 
-import {
-  assert,
-  deprecate,
-  Mixin,
-  get
-} from 'ember-metal';
+import { Mixin, get } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 
 /**
   `Ember.ActionHandler` is available on some familiar classes including
@@ -38,16 +33,23 @@ const ActionHandler = Mixin.create({
     the `actions` hash defined on extended parent classes
     or mixins rather than just replace the entire hash, e.g.:
 
-    ```js
-    App.CanDisplayBanner = Ember.Mixin.create({
+    ```app/mixins/can-display-banner.js
+    import Mixin from '@ember/mixin';
+
+    export default Mixin.create({
       actions: {
         displayBanner(msg) {
           // ...
         }
       }
     });
+    ```
 
-    App.WelcomeRoute = Ember.Route.extend(App.CanDisplayBanner, {
+    ```app/routes/welcome.js
+    import Route from '@ember/routing/route';
+    import CanDisplayBanner from '../mixins/can-display-banner';
+
+    export default Route.extend(CanDisplayBanner, {
       actions: {
         playMusic() {
           // ...
@@ -66,8 +68,10 @@ const ActionHandler = Mixin.create({
     the value of the `this` context is the Controller, Route or
     Component object:
 
-    ```js
-    App.SongRoute = Ember.Route.extend({
+    ```app/routes/song.js
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
       actions: {
         myAction() {
           this.controllerFor("song");
@@ -84,19 +88,26 @@ const ActionHandler = Mixin.create({
 
     Take for example the following routes:
 
-    ```js
-    App.DebugRoute = Ember.Mixin.create({
+    ```app/mixins/debug-route.js
+    import Mixin from '@ember/mixin';
+
+    export default Ember.Mixin.create({
       actions: {
         debugRouteInformation() {
-          console.debug("trololo");
+          console.debug("It's a-me, console.debug!");
         }
       }
     });
+    ```
 
-    App.AnnoyingDebugRoute = Ember.Route.extend(App.DebugRoute, {
+    ```app/routes/annoying-debug.js
+    import Route from '@ember/routing/route';
+    import DebugRoute from '../mixins/debug-route';
+
+    export default Route.extend(DebugRoute, {
       actions: {
         debugRouteInformation() {
-          // also call the debugRouteInformation of mixed in App.DebugRoute
+          // also call the debugRouteInformation of mixed in DebugRoute
           this._super(...arguments);
 
           // show additional annoyance
@@ -112,21 +123,29 @@ const ActionHandler = Mixin.create({
     on the `actions` hash handles it. To continue bubbling the action,
     you must return `true` from the handler:
 
-    ```js
-    App.Router.map(function() {
+    ```app/router.js
+    Router.map(function() {
       this.route("album", function() {
         this.route("song");
       });
     });
+    ```
 
-    App.AlbumRoute = Ember.Route.extend({
+    ```app/routes/album.js
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
       actions: {
         startPlaying: function() {
         }
       }
     });
+    ```
 
-    App.AlbumSongRoute = Ember.Route.extend({
+    ```app/routes/album-song.js
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
       actions: {
         startPlaying() {
           // ...
@@ -157,11 +176,13 @@ const ActionHandler = Mixin.create({
 
     Example
 
-    ```js
-    App.WelcomeRoute = Ember.Route.extend({
+    ```app/routes/welcome.js
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
       actions: {
         playTheme() {
-           this.send('playMusic', 'theme.mp3');
+          this.send('playMusic', 'theme.mp3');
         },
         playMusic(track) {
           // ...
@@ -176,16 +197,15 @@ const ActionHandler = Mixin.create({
     @public
   */
   send(actionName, ...args) {
-    let target;
-
     if (this.actions && this.actions[actionName]) {
       let shouldBubble = this.actions[actionName].apply(this, args) === true;
       if (!shouldBubble) { return; }
     }
 
-    if (target = get(this, 'target')) {
+    let target = get(this, 'target');
+    if (target) {
       assert(
-        'The `target` for ' + this + ' (' + target + ') does not have a `send` method',
+        `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
         typeof target.send === 'function'
       );
       target.send(...arguments);

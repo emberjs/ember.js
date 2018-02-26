@@ -1,7 +1,7 @@
 import {
   mixin,
   Mixin
-} from '../../mixin';
+} from '../..';
 
 QUnit.module('Mixin Methods');
 

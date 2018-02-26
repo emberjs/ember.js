@@ -2,52 +2,43 @@ import { RootReference } from './utils/references';
 import {
   run,
   setHasViews,
-  assert,
-  runInTransaction as _runInTransaction,
-  isFeatureEnabled
+  runInTransaction
 } from 'ember-metal';
-import { CURRENT_TAG, UNDEFINED_REFERENCE } from 'glimmer-reference';
+import { CURRENT_TAG, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
   fallbackViewRegistry,
+  getViewElement,
+  setViewElement,
   getViewId
 } from 'ember-views';
 import { BOUNDS } from './component';
-import { RootComponentDefinition } from './syntax/curly-component';
-
-let runInTransaction;
-
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-  runInTransaction = _runInTransaction;
-} else {
-  runInTransaction = (context, methodName) => {
-    context[methodName]();
-    return false;
-  };
-}
+import { RootComponentDefinition } from './component-managers/root';
+import { TopLevelOutletComponentDefinition } from './component-managers/outlet';
+import { assert } from 'ember-debug';
 
 const { backburner } = run;
 
 class DynamicScope {
-  constructor(view, outletState, rootOutletState, isTopLevel, targetObject) {
+  constructor(view, outletState, rootOutletState, targetObject) {
     this.view = view;
     this.outletState = outletState;
     this.rootOutletState = rootOutletState;
-    this.isTopLevel = isTopLevel;
   }
 
   child() {
     return new DynamicScope(
-      this.view, this.outletState, this.rootOutletState, this.isTopLevel
+      this.view, this.outletState, this.rootOutletState
     );
   }
 
   get(key) {
-    return this[key];
+    assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
+    return this.outletState;
   }
 
   set(key, value) {
-    this[key] = value;
+    assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
+    this.outletState = value;
     return value;
   }
 }
@@ -61,18 +52,25 @@ class RootState {
     this.root = root;
     this.result = undefined;
     this.shouldReflush = false;
+    this.destroyed = false;
+    this._removing = false;
 
     let options = this.options = {
       alwaysRevalidate: false
     };
 
     this.render = () => {
-      let result = this.result = template.render(self, parentElement, dynamicScope);
+      let iterator = template.render(self, parentElement, dynamicScope);
+      let iteratorResult;
+
+      do {
+        iteratorResult = iterator.next();
+      } while (!iteratorResult.done);
+
+      let result = this.result = iteratorResult.value;
 
       // override .render function after initial render
-      this.render = () => {
-        result.rerender(options);
-      };
+      this.render = () => result.rerender(options);
     };
   }
 
@@ -82,6 +80,8 @@ class RootState {
 
   destroy() {
     let { result, env } = this;
+
+    this.destroyed = true;
 
     this.env = null;
     this.root = null;
@@ -115,6 +115,10 @@ class RootState {
 }
 
 const renderers = [];
+
+export function _resetRenderers() {
+  renderers.length = 0;
+}
 
 setHasViews(() => renderers.length > 0);
 
@@ -157,7 +161,7 @@ function loopEnd(current, next) {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-export class Renderer {
+class Renderer {
   constructor(env, rootTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false) {
     this._env = env;
     this._rootTemplate = rootTemplate;
@@ -166,40 +170,36 @@ export class Renderer {
     this._destroyed = false;
     this._roots = [];
     this._lastRevision = null;
+    this._isRenderingRoots = false;
+    this._removedRoots = [];
   }
 
   // renderer HOOKS
 
   appendOutletView(view, target) {
-    let self = new RootReference(view);
+    let definition = new TopLevelOutletComponentDefinition(view);
+    let outletStateReference = view.toReference();
     let targetObject = view.outletState.render.controller;
-    let ref = view.toReference();
-    let dynamicScope = new DynamicScope(null, ref, ref, true, targetObject);
-    let root = new RootState(view, this._env, view.template, self, target, dynamicScope);
 
-    this._renderRoot(root);
+    this._appendDefinition(view, definition, target, outletStateReference, targetObject);
   }
 
   appendTo(view, target) {
     let rootDef = new RootComponentDefinition(view);
-    let self = new RootReference(rootDef);
-    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE, UNDEFINED_REFERENCE, true, null);
-    let root = new RootState(view, this._env, this._rootTemplate, self, target, dynamicScope);
 
-    this._renderRoot(root);
+    this._appendDefinition(view, rootDef, target);
+  }
+
+  _appendDefinition(root, definition, target, outletStateReference = UNDEFINED_REFERENCE, targetObject = null) {
+    let self = new RootReference(definition);
+    let dynamicScope = new DynamicScope(null, outletStateReference, outletStateReference, true, targetObject);
+    let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope);
+
+    this._renderRoot(rootState);
   }
 
   rerender(view) {
     this._scheduleRevalidate();
-  }
-
-  componentInitAttrs() {
-    // TODO: Remove me
-  }
-
-  ensureViewNotRendering() {
-    // TODO: Implement this
-    // throw new Error('Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.');
   }
 
   register(view) {
@@ -215,13 +215,13 @@ export class Renderer {
   remove(view) {
     view._transitionTo('destroying');
 
-    view.element = null;
+    this.cleanupRootFor(view);
 
-    if (this._env.isInteractive) {
+    setViewElement(view, null);
+
+    if (this._destinedForDOM) {
       view.trigger('didDestroyElement');
     }
-
-    this.cleanupRootFor(view);
 
     if (!view.isDestroying) {
       view.destroy();
@@ -239,15 +239,10 @@ export class Renderer {
     let i = this._roots.length;
     while (i--) {
       let root = roots[i];
-      // check if the view being removed is a root view
       if (root.isFor(view)) {
         root.destroy();
         roots.splice(i, 1);
       }
-    }
-
-    if (this._roots.length === 0) {
-      deregister(this);
     }
   }
 
@@ -257,6 +252,10 @@ export class Renderer {
     }
     this._destroyed = true;
     this._clearAllRoots();
+  }
+
+  getElement(view) {
+    // overridden in the subclasses
   }
 
   getBounds(view) {
@@ -286,24 +285,34 @@ export class Renderer {
   }
 
   _renderRoots() {
-    let { _roots: roots, _env: env } = this;
-    let globalShouldReflush;
-
-    // ensure that for the first iteration of the loop
-    // each root is processed
-    let initial = true;
+    let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
+    let globalShouldReflush, initialRootsLength;
 
     do {
       env.begin();
+
+      // ensure that for the first iteration of the loop
+      // each root is processed
+      initialRootsLength = roots.length;
       globalShouldReflush = false;
 
       for (let i = 0; i < roots.length; i++) {
         let root = roots[i];
+
+        if (root.destroyed) {
+          // add to the list of roots to be removed
+          // they will be removed from `this._roots` later
+          removedRoots.push(root);
+
+          // skip over roots that have been marked as destroyed
+          continue;
+        }
+
         let { shouldReflush } = root;
 
         // when processing non-initial reflush loops,
         // do not process more roots than needed
-        if (!initial && !shouldReflush) {
+        if (i >= initialRootsLength && !shouldReflush) {
           continue;
         }
 
@@ -316,17 +325,47 @@ export class Renderer {
         globalShouldReflush = globalShouldReflush || shouldReflush;
       }
 
-      env.commit();
+      this._lastRevision = CURRENT_TAG.value();
 
-      initial = false;
-    } while (globalShouldReflush);
+      env.commit();
+    } while (globalShouldReflush || roots.length > initialRootsLength);
+
+    // remove any roots that were destroyed during this transaction
+    while (removedRoots.length) {
+      let root = removedRoots.pop();
+
+      let rootIndex = roots.indexOf(root);
+      roots.splice(rootIndex, 1);
+    }
+
+    if (this._roots.length === 0) {
+      deregister(this);
+    }
   }
 
   _renderRootsTransaction() {
+    if (this._isRenderingRoots) {
+      // currently rendering roots, a new root was added and will
+      // be processed by the existing _renderRoots invocation
+      return;
+    }
+
+    // used to prevent calling _renderRoots again (see above)
+    // while we are actively rendering roots
+    this._isRenderingRoots = true;
+
+    let completedWithoutError = false;
     try {
       this._renderRoots();
+      completedWithoutError = true;
     } finally {
-      this._lastRevision = CURRENT_TAG.value();
+      if (!completedWithoutError) {
+        this._lastRevision = CURRENT_TAG.value();
+        if (this._env.inTransaction === true) {
+          this._env.commit();
+        }
+      }
+      this._isRenderingRoots = false;
     }
   }
 
@@ -337,8 +376,11 @@ export class Renderer {
       root.destroy();
     }
 
+    this._removedRoots.length = 0;
     this._roots = null;
 
+    // if roots were present before destroying
+    // deregister this renderer instance
     if (roots.length) {
       deregister(this);
     }
@@ -360,14 +402,22 @@ export class Renderer {
   }
 }
 
-export const InertRenderer = {
-  create({ env, rootTemplate, _viewRegistry }) {
-    return new Renderer(env, rootTemplate, _viewRegistry, false);
+export class InertRenderer extends Renderer {
+  static create({ env, rootTemplate, _viewRegistry }) {
+    return new this(env, rootTemplate, _viewRegistry, false);
   }
-};
 
-export const InteractiveRenderer = {
-  create({ env, rootTemplate, _viewRegistry }) {
-    return new Renderer(env, rootTemplate, _viewRegistry, true);
+  getElement(view) {
+    throw new Error('Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).');
   }
-};
+}
+
+export class InteractiveRenderer extends Renderer {
+  static create({ env, rootTemplate, _viewRegistry }) {
+    return new this(env, rootTemplate, _viewRegistry, true);
+  }
+
+  getElement(view) {
+    return getViewElement(view);
+  }
+}

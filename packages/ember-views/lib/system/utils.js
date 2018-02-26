@@ -3,7 +3,6 @@ import { guidFor, symbol, getOwner } from 'ember-utils';
 
 /**
 @module ember
-@submodule ember-views
 */
 
 export function isSimpleClick(event) {
@@ -13,11 +12,14 @@ export function isSimpleClick(event) {
   return !modifier && !secondaryClick;
 }
 
-export const STYLE_WARNING = '' +
-  'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
-  'please ensure that values being bound are properly escaped. For more information, ' +
-  'including how to disable this warning, see ' +
-  'http://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes.';
+export function constructStyleDeprecationMessage(affectedStyle) {
+  return '' +
+    'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
+    'please ensure that values being bound are properly escaped. For more information, ' +
+    'including how to disable this warning, see ' +
+    'https://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes. ' +
+    'Style affected: "' + affectedStyle + '"';
+}
 
 /**
   @private
@@ -46,11 +48,33 @@ export function getRootViews(owner) {
   @param {Ember.View} view
  */
 export function getViewId(view) {
-  return view.elementId || guidFor(view);
+  if (view.tagName === '') {
+    return guidFor(view);
+  } else {
+    return view.elementId || guidFor(view);
+  }
 }
 
-export const CHILD_VIEW_IDS = symbol('CHILD_VIEW_IDS');
-export const CHILD_VIEW_COUNTER = symbol('CHILD_VIEW_COUNTER');
+const VIEW_ELEMENT = symbol('VIEW_ELEMENT');
+
+/**
+  @private
+  @method getViewElement
+  @param {Ember.View} view
+ */
+export function getViewElement(view) {
+  return view[VIEW_ELEMENT];
+}
+
+export function initViewElement(view) {
+  view[VIEW_ELEMENT] = null;
+}
+
+export function setViewElement(view, element) {
+  return view[VIEW_ELEMENT] = element;
+}
+
+const CHILD_VIEW_IDS = symbol('CHILD_VIEW_IDS');
 
 /**
   @private
@@ -133,7 +157,7 @@ export function getViewClientRects(view) {
   `getViewBoundingClientRect` provides information about the position of the
   bounding border box edges of a view relative to the viewport.
 
-  It is only intended to be used by development tools like the Ember Inpsector
+  It is only intended to be used by development tools like the Ember Inspector
   and may not work on older browsers.
 
   @private

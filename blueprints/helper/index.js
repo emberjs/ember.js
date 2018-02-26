@@ -1,5 +1,5 @@
 'use strict';
-/*jshint node:true*/
+/* eslint-env node */
 var normalizeEntityName = require('ember-cli-normalize-entity-name');
 
 module.exports = {

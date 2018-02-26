@@ -7,22 +7,26 @@ import {
 } from 'ember-metal';
 
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/object
 */
 
 /**
   This mixin allows for Ember objects to subscribe to and emit events.
 
-  ```javascript
-  App.Person = Ember.Object.extend(Ember.Evented, {
-    greet: function() {
+  ```app/utils/person.js
+  import EmberObject from '@ember/object';
+  import Evented from '@ember/object/evented';
+
+  export default EmberObject.extend(Evented, {
+    greet() {
       // ...
       this.trigger('greet');
     }
   });
+  ```
 
-  var person = App.Person.create();
+  ```javascript
+  var person = Person.create();
 
   person.on('greet', function() {
     console.log('Our person has greeted');
@@ -44,31 +48,30 @@ import {
   ```
 
   @class Evented
-  @namespace Ember
   @public
  */
 export default Mixin.create({
 
   /**
-   Subscribes to a named event with given function.
+    Subscribes to a named event with given function.
 
-   ```javascript
-   person.on('didLoad', function() {
-     // fired once the person has loaded
-   });
-   ```
+    ```javascript
+    person.on('didLoad', function() {
+      // fired once the person has loaded
+    });
+    ```
 
-   An optional target can be passed in as the 2nd argument that will
-   be set as the "this" for the callback. This is a good way to give your
-   function access to the object triggering the event. When the target
-   parameter is used the callback becomes the third argument.
+    An optional target can be passed in as the 2nd argument that will
+    be set as the "this" for the callback. This is a good way to give your
+    function access to the object triggering the event. When the target
+    parameter is used the callback becomes the third argument.
 
-   @method on
-   @param {String} name The name of the event
-   @param {Object} [target] The "this" binding for the callback
-   @param {Function} method The callback to execute
-   @return this
-   @public
+    @method on
+    @param {String} name The name of the event
+    @param {Object} [target] The "this" binding for the callback
+    @param {Function} method The callback to execute
+    @return this
+    @public
   */
   on(name, target, method) {
     addListener(this, name, target, method);

@@ -1,4 +1,4 @@
-import { toString } from '../index';
+import { toString } from '..';
 
 QUnit.module('ember-utils toString');
 
@@ -16,4 +16,11 @@ QUnit.test('toString falls back to Object.prototype.toString', function() {
   let obj = Object.create(null);
 
   strictEqual(toString(obj), {}.toString());
+});
+
+QUnit.test('toString does not fail when called on Arrays with objects without toString method', function() {
+  let obj = Object.create(null);
+  let arr = [obj, 2];
+
+  strictEqual(toString(arr), `${({}).toString()},2`);
 });

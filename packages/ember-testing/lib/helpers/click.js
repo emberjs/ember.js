@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-testing
 */
 import { focus, fireEvent } from '../events';
 
@@ -19,7 +18,7 @@ import { focus, fireEvent } from '../events';
   @method click
   @param {String} selector jQuery selector for finding element on the DOM
   @param {Object} context A DOM Element, Document, or jQuery to use as context
-  @return {RSVP.Promise}
+  @return {RSVP.Promise<undefined>}
   @public
 */
 export default function click(app, selector, context) {

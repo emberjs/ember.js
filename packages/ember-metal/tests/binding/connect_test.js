@@ -2,11 +2,11 @@ import { context } from 'ember-environment';
 import { testBoth } from 'internal-test-helpers';
 import {
   Binding,
-  bind
-} from '../../binding';
-import run from '../../run_loop';
-import { set } from '../../property_set';
-import { get } from '../../property_get';
+  bind,
+  run,
+  set,
+  get
+} from '../..';
 
 function performTest(binding, a, b, get, set, connect) {
   if (connect === undefined) {

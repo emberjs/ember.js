@@ -1,35 +1,30 @@
-import { run } from 'ember-metal';
-import Application from '../../system/application';
-import { Router } from 'ember-routing';
+import { assign } from 'ember-utils';
 import { jQuery } from 'ember-views';
-import { setTemplates } from 'ember-glimmer';
+import {
+  moduleFor,
+  DefaultResolverApplicationTestCase
+} from 'internal-test-helpers';
 
-let app;
+moduleFor('Ember.Application with default resolver and autoboot', class extends DefaultResolverApplicationTestCase {
+  constructor() {
+    jQuery('#qunit-fixture').html(`
+      <div id="app"></div>
 
-QUnit.module('Ember.Application', {
-  teardown() {
-    if (app) {
-      run(app, 'destroy');
-    }
-
-    setTemplates({});
+      <script type="text/x-handlebars">Hello {{outlet}}</script>
+      <script type="text/x-handlebars" id="index">World!</script>
+    `);
+    super();
   }
-});
 
-QUnit.test('templates in script tags are extracted at application creation', function(assert) {
-  jQuery('#qunit-fixture').html(`
-    <div id="app"></div>
+  get applicationOptions() {
+    return assign(super.applicationOptions, {
+      autoboot: true,
+      rootElement: '#app'
+    });
+  }
 
-    <script type="text/x-handlebars">Hello {{outlet}}</script>
-    <script type="text/x-handlebars" id="index">World!</script>
-  `);
-
-  let application = Application.extend();
-  application.Router = Router.extend({
-    location: 'none'
-  });
-
-  app = run(() => application.create({ rootElement: '#app' }));
-
-  assert.equal(jQuery('#app').text(), 'Hello World!');
+  ['@test templates in script tags are extracted at application creation'](assert) {
+    this.runTask(() => this.createApplication());
+    assert.equal(this.$('#app').text(), 'Hello World!');
+  }
 });

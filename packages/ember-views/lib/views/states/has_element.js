@@ -1,27 +1,12 @@
 import { assign } from 'ember-utils';
 import _default from './default';
-import { run, flaggedInstrument, get } from 'ember-metal';
-import jQuery from '../../system/jquery';
+import { run, flaggedInstrument } from 'ember-metal';
 
 const hasElement = Object.create(_default);
 
 assign(hasElement, {
-  $(view, sel) {
-    let elem = view.element;
-    return sel ? jQuery(sel, elem) : jQuery(elem);
-  },
 
-  getElement(view) {
-    let parent = get(view, 'parentView');
-    if (parent) { parent = get(parent, 'element'); }
-    if (parent) { return view.findElementInParentElement(parent); }
-    return jQuery('#' + get(view, 'elementId'))[0];
-  },
-
-  // once the view has been inserted into the DOM, rerendering is
-  // deferred to allow bindings to synchronize.
   rerender(view) {
-    view.renderer.ensureViewNotRendering(view);
     view.renderer.rerender(view);
   },
 

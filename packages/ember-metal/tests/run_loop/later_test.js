@@ -1,5 +1,5 @@
-import isNone from '../../is_none';
-import run from '../../run_loop';
+import { assign } from 'ember-utils';
+import { run, isNone } from '../..';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;
@@ -199,7 +199,7 @@ asyncTest('setTimeout should never run with a negative wait', function() {
   // happens when an expired timer callback takes a while to run,
   // which is what we simulate here.
   let newSetTimeoutUsed;
-  run.backburner._platform = {
+  run.backburner._platform = assign({}, originalPlatform, {
     setTimeout() {
       let wait = arguments[arguments.length - 1];
       newSetTimeoutUsed = true;
@@ -207,7 +207,7 @@ asyncTest('setTimeout should never run with a negative wait', function() {
 
       return originalPlatform.setTimeout.apply(originalPlatform, arguments);
     }
-  };
+  });
 
   let count = 0;
   run(() => {

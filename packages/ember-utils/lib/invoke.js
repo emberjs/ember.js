@@ -44,6 +44,6 @@ export function canInvoke(obj, methodName) {
 */
 export function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
-    return args ? applyStr(obj, methodName, args) : applyStr(obj, methodName);
+    return applyStr(obj, methodName, args);
   }
 }

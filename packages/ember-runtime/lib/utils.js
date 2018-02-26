@@ -12,11 +12,14 @@ const TYPE_MAP = {
   '[object Array]':    'array',
   '[object Date]':     'date',
   '[object RegExp]':   'regexp',
-  '[object Object]':   'object'
+  '[object Object]':   'object',
+  '[object FileList]': 'filelist'
 };
 
 const { toString } = Object.prototype;
-
+/**
+ @module @ember/array
+*/
 /**
   Returns true if the passed object is an array or Array-like.
 
@@ -36,7 +39,8 @@ const { toString } = Object.prototype;
   ```
 
   @method isArray
-  @for Ember
+  @static
+  @for @ember/array
   @param {Object} obj The object to test
   @return {Boolean} true if the passed object is an array or Array-like
   @public
@@ -48,10 +52,13 @@ export function isArray(obj) {
 
   let type = typeOf(obj);
   if ('array' === type) { return true; }
-  if ((obj.length !== undefined) && 'object' === type) { return true; }
+  let length = obj.length;
+  if (typeof length === 'number' && length === length && 'object' === type) { return true; }
   return false;
 }
-
+/**
+ @module @ember/utils
+*/
 /**
   Returns a consistent type for the passed object.
 
@@ -70,6 +77,7 @@ export function isArray(obj) {
       | 'array'       | An instance of Array                                 |
       | 'regexp'      | An instance of RegExp                                |
       | 'date'        | An instance of Date                                  |
+      | 'filelist'    | An instance of FileList                              |
       | 'class'       | An Ember class (created using Ember.Object.extend()) |
       | 'instance'    | An Ember object instance                             |
       | 'error'       | An instance of the Error object                      |
@@ -87,10 +95,11 @@ export function isArray(obj) {
   Ember.typeOf(new Number(101));        // 'number'
   Ember.typeOf(true);                   // 'boolean'
   Ember.typeOf(new Boolean(true));      // 'boolean'
-  Ember.typeOf(Ember.makeArray);        // 'function'
+  Ember.typeOf(Ember.A);                // 'function'
   Ember.typeOf([1, 2, 90]);             // 'array'
   Ember.typeOf(/abc/);                  // 'regexp'
   Ember.typeOf(new Date());             // 'date'
+  Ember.typeOf(event.target.files);     // 'filelist'
   Ember.typeOf(Ember.Object.extend());  // 'class'
   Ember.typeOf(Ember.Object.create());  // 'instance'
   Ember.typeOf(new Error('teamocil'));  // 'error'
@@ -100,10 +109,11 @@ export function isArray(obj) {
   ```
 
   @method typeOf
-  @for Ember
+  @for @ember/utils
   @param {Object} item the item to check
   @return {String} the type
   @public
+  @static
 */
 export function typeOf(item) {
   if (item === null) { return 'null'; }

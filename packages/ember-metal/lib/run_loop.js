@@ -1,9 +1,7 @@
 import { GUID_KEY } from 'ember-utils';
-import { assert } from './debug';
-import { isTesting } from './testing';
+import { assert, isTesting } from 'ember-debug';
 import {
-  getOnerror,
-  setOnerror
+  onErrorTarget
 } from './error_handler';
 import {
   beginPropertyChanges,
@@ -19,28 +17,22 @@ function onEnd(current, next) {
   run.currentRunLoop = next;
 }
 
-const onErrorTarget = {
-  get onerror() {
-    return getOnerror();
-  },
-  set onerror(handler) {
-    return setOnerror(handler);
-  }
-};
-
 const backburner = new Backburner(['sync', 'actions', 'destroy'], {
-  GUID_KEY: GUID_KEY,
+  GUID_KEY,
   sync: {
     before: beginPropertyChanges,
     after: endPropertyChanges
   },
   defaultQueue: 'actions',
-  onBegin: onBegin,
-  onEnd: onEnd,
-  onErrorTarget: onErrorTarget,
+  onBegin,
+  onEnd,
+  onErrorTarget,
   onErrorMethod: 'onerror'
 });
 
+/**
+ @module @ember/runloop
+*/
 // ..........................................................
 // run - this is ideally the only public API the dev sees
 //
@@ -61,8 +53,7 @@ const backburner = new Backburner(['sync', 'actions', 'destroy'], {
   });
   ```
 
-  @class run
-  @namespace Ember
+  @class @ember/runloop
   @static
   @constructor
   @param {Object} [target] target of method to call
@@ -105,7 +96,8 @@ export default function run() {
   ```
 
   @method join
-  @namespace Ember
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
     May be a function or a string. If you pass a string
@@ -135,16 +127,26 @@ run.join = function() {
   We can use that setup option to do some additional setup for our component.
   The component itself could look something like the following:
 
-  ```javascript
-  App.RichTextEditorComponent = Ember.Component.extend({
+  ```app/components/rich-text-editor.js
+  import Component from '@ember/component';
+  import { bind } from '@ember/runloop';
+
+  export default Component.extend({
     initializeTinyMCE: Ember.on('didInsertElement', function() {
       tinymce.init({
         selector: '#' + this.$().prop('id'),
         setup: Ember.run.bind(this, this.setupEditor)
       });
     }),
+    
+    didInsertElement() {
+      tinymce.init({
+        selector: '#' + this.$().prop('id'),
+        setup: Ember.run.bind(this, this.setupEditor)
+      });
+    }
 
-    setupEditor: function(editor) {
+    setupEditor(editor) {
       this.set('editor', editor);
 
       editor.on('change', function() {
@@ -155,11 +157,12 @@ run.join = function() {
   ```
 
   In this example, we use Ember.run.bind to bind the setupEditor method to the
-  context of the App.RichTextEditorComponent and to have the invocation of that
+  context of the RichTextEditor component and to have the invocation of that
   method be safely handled and executed by the Ember run loop.
 
   @method bind
-  @namespace Ember
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
     May be a function or a string. If you pass a string
@@ -187,6 +190,8 @@ run.queues = backburner.queueNames;
   ```
 
   @method begin
+  @static
+  @for @ember/runloop
   @return {void}
   @public
 */
@@ -206,6 +211,8 @@ run.begin = function() {
   ```
 
   @method end
+  @static
+  @for @ember/runloop
   @return {void}
   @public
 */
@@ -253,6 +260,8 @@ run.end = function() {
   ```
 
   @method schedule
+  @static
+  @for @ember/runloop
   @param {String} queue The name of the queue to schedule against.
     Default queues are 'sync' and 'actions'
   @param {Object} [target] target object to use as the context when invoking a method.
@@ -260,7 +269,7 @@ run.end = function() {
     will be resolved on the target object at the time the scheduled item is
     invoked allowing you to change the target function.
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
-  @return {void}
+  @return {*} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.schedule = function(/* queue, target, method */) {
@@ -269,7 +278,8 @@ run.schedule = function(/* queue, target, method */) {
     `You will need to wrap any code with asynchronous side-effects in a run`,
     run.currentRunLoop || !isTesting()
   );
-  backburner.schedule(...arguments);
+
+  return backburner.schedule(...arguments);
 };
 
 // Used by global test teardown
@@ -296,6 +306,8 @@ run.cancelTimers = function() {
   ```
 
   @method sync
+  @static
+  @for @ember/runloop
   @return {void}
   @private
 */
@@ -322,13 +334,15 @@ run.sync = function() {
   ```
 
   @method later
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
-  @return {*} Timer information for use in cancelling, see `run.cancel`.
+  @return {*} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.later = function(/*target, method*/) {
@@ -340,12 +354,14 @@ run.later = function(/*target, method*/) {
   to calling `scheduleOnce` with the "actions" queue.
 
   @method once
+  @static
+  @for @ember/runloop
   @param {Object} [target] The target of the method to invoke.
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.once = function(...args) {
@@ -379,9 +395,23 @@ run.once = function(...args) {
   });
   ```
 
-  Also note that passing an anonymous function to `run.scheduleOnce` will
-  not prevent additional calls with an identical anonymous function from
-  scheduling the items multiple times, e.g.:
+  Also note that for `run.scheduleOnce` to prevent additional calls, you need to
+  pass the same function instance. The following case works as expected:
+
+  ```javascript
+  function log() {
+    console.log('Logging only once');
+  }
+
+  function scheduleIt() {
+    run.scheduleOnce('actions', myContext, log);
+  }
+
+  scheduleIt();
+  scheduleIt();
+  ```
+
+  But this other case will schedule the function multiple times:
 
   ```javascript
   function scheduleIt() {
@@ -394,20 +424,22 @@ run.once = function(...args) {
   scheduleIt();
 
   // "Closure" will print twice, even though we're using `run.scheduleOnce`,
-  // because the function we pass to it is anonymous and won't match the
+  // because the function we pass to it won't match the
   // previously scheduled operation.
   ```
 
   Available queues, and their order, can be found at `run.queues`
 
   @method scheduleOnce
+  @static
+  @for @ember/runloop
   @param {String} [queue] The name of the queue to schedule against. Default queues are 'sync' and 'actions'.
   @param {Object} [target] The target of the method to invoke.
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.scheduleOnce = function(/*queue, target, method*/) {
@@ -445,8 +477,10 @@ run.scheduleOnce = function(/*queue, target, method*/) {
 
   Example:
 
-  ```javascript
-  export default Ember.Component.extend({
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+
+  export Component.extend({
     didInsertElement() {
       this._super(...arguments);
       run.scheduleOnce('afterRender', this, 'processChildElements');
@@ -474,12 +508,14 @@ run.scheduleOnce = function(/*queue, target, method*/) {
   outside of the current run loop, i.e. with `run.next`.
 
   @method next
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in cancelling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.next = function(...args) {
@@ -533,13 +569,15 @@ run.next = function(...args) {
     // will be executed since we passed in true (immediate)
   }, 100, true);
 
-  // the 100ms delay until this method can be called again will be cancelled
+  // the 100ms delay until this method can be called again will be canceled
   run.cancel(debounceImmediate);
   ```
 
   @method cancel
+  @static
+  @for @ember/runloop
   @param {Object} timer Timer object to cancel
-  @return {Boolean} true if cancelled or false/undefined if it wasn't found
+  @return {Boolean} true if canceled or false/undefined if it wasn't found
   @public
 */
 run.cancel = function(timer) {
@@ -604,6 +642,8 @@ run.cancel = function(timer) {
   ```
 
   @method debounce
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     May be a function or a string. If you pass a string
@@ -612,7 +652,7 @@ run.cancel = function(timer) {
   @param {Number} wait Number of milliseconds to wait.
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to false.
-  @return {Array} Timer information for use in cancelling, see `run.cancel`.
+  @return {Array} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.debounce = function() {
@@ -647,6 +687,8 @@ run.debounce = function() {
   ```
 
   @method throttle
+  @static
+  @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
     May be a function or a string. If you pass a string
@@ -655,7 +697,7 @@ run.debounce = function() {
   @param {Number} spacing Number of milliseconds to space out requests.
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to true.
-  @return {Array} Timer information for use in cancelling, see `run.cancel`.
+  @return {Array} Timer information for use in canceling, see `run.cancel`.
   @public
 */
 run.throttle = function() {

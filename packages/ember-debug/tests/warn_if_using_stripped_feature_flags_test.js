@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { getDebugFunction, setDebugFunction } from 'ember-metal';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
 import { _warnIfUsingStrippedFeatureFlags } from '../index';
 
 let oldWarn, oldRunInDebug, origEnvFeatures, origEnableOptional, features, knownFeatures;

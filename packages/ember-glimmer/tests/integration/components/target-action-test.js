@@ -205,11 +205,30 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
   }
 
   ['@test calling sendAction on a component within a block sends to the outer scope GH#14216'](assert) {
-    this.registerTemplate('components/action-delegate', strip`
-      {{#component-a}}
-        {{component-b bar="derp"}}
-      {{/component-a}}
-    `);
+    let testContext = this;
+    // overrides default action-delegate so actions can be added
+    this.registerComponent('action-delegate', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super();
+          testContext.delegate = this;
+          this.name = 'action-delegate';
+        },
+
+        actions: {
+          derp(arg1) {
+            assert.ok(true, 'action called on action-delgate');
+            assert.equal(arg1, 'something special', 'argument passed through properly');
+          }
+        }
+      }),
+
+      template: strip`
+        {{#component-a}}
+          {{component-b bar="derp"}}
+        {{/component-a}}
+      `
+    });
 
     this.registerComponent('component-a', {
       ComponentClass: Component.extend({
@@ -238,10 +257,7 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
 
     this.renderDelegate();
 
-    this.runTask(() => innerChild.sendAction('bar'));
-
-    this.assertSendCount(1);
-    this.assertNamedSendCount('derp', 1);
+    this.runTask(() => innerChild.sendAction('bar', 'something special'));
   }
 });
 
@@ -261,7 +277,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
       });
     });
 
-    this.registerComponent('foo-bar', {
+    this.addComponent('foo-bar', {
       ComponentClass: Component.extend({
         init() {
           this._super(...arguments);
@@ -271,15 +287,15 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
       template: `{{val}}`
     });
 
-    this.registerController('a', Controller.extend({
+    this.add('controller:a', Controller.extend({
       send(actionName, actionContext) {
         assert.equal(actionName, 'poke', 'send() method was invoked from a top level controller');
         assert.equal(actionContext, 'top', 'action arguments were passed into the top level controller');
       }
     }));
-    this.registerTemplate('a', '{{foo-bar val="a" poke="poke"}}');
+    this.addTemplate('a', '{{foo-bar val="a" poke="poke"}}');
 
-    this.registerRoute('b', Route.extend({
+    this.add('route:b', Route.extend({
       actions: {
         poke(actionContext) {
           assert.ok(true, 'Unhandled action sent to route');
@@ -287,9 +303,9 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
         }
       }
     }));
-    this.registerTemplate('b', '{{foo-bar val="b" poke="poke"}}');
+    this.addTemplate('b', '{{foo-bar val="b" poke="poke"}}');
 
-    this.registerRoute('c', Route.extend({
+    this.add('route:c', Route.extend({
       actions: {
         poke(actionContext) {
           assert.ok(true, 'Unhandled action sent to route');
@@ -297,19 +313,19 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
         }
       }
     }));
-    this.registerTemplate('c', '{{foo-bar val="c" poke="poke"}}{{outlet}}');
+    this.addTemplate('c', '{{foo-bar val="c" poke="poke"}}{{outlet}}');
 
-    this.registerRoute('c.d', Route.extend({}));
+    this.add('route:c.d', Route.extend({}));
 
-    this.registerController('c.d', Controller.extend({
+    this.add('controller:c.d', Controller.extend({
       send(actionName, actionContext) {
         assert.equal(actionName, 'poke', 'send() method was invoked from a nested controller');
         assert.equal(actionContext, 'nested', 'action arguments were passed into the nested controller');
       }
     }));
-    this.registerTemplate('c.d', '{{foo-bar val=".d" poke="poke"}}');
+    this.addTemplate('c.d', '{{foo-bar val=".d" poke="poke"}}');
 
-    this.registerRoute('c.e', Route.extend({
+    this.add('route:c.e', Route.extend({
       actions: {
         poke(actionContext) {
           assert.ok(true, 'Unhandled action sent to route');
@@ -317,7 +333,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
         }
       }
     }));
-    this.registerTemplate('c.e', '{{foo-bar val=".e" poke="poke"}}');
+    this.addTemplate('c.e', '{{foo-bar val=".e" poke="poke"}}');
 
     return this.visit('/a')
       .then(() => component.sendAction('poke', 'top'))
@@ -349,7 +365,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
 
     let component;
 
-    this.registerComponent('x-parent', {
+    this.addComponent('x-parent', {
       ComponentClass: Component.extend({
         actions: {
           poke() {
@@ -360,7 +376,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
       template: '{{x-child poke="poke"}}'
     });
 
-    this.registerComponent('x-child', {
+    this.addComponent('x-child', {
       ComponentClass: Component.extend({
         init() {
           this._super(...arguments);
@@ -369,8 +385,8 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
       })
     });
 
-    this.registerTemplate('application', '{{x-parent}}');
-    this.registerController('application', Controller.extend({
+    this.addTemplate('application', '{{x-parent}}');
+    this.add('controller:application', Controller.extend({
       send(actionName) {
         throw new Error('controller action should not be called');
       }
@@ -535,7 +551,7 @@ moduleFor('Components test: send', class extends RenderingTest {
     this.runTask(() => component.send('poke'));
   }
 
-   ['@test action can be handled by a superclass\' actions object'](assert) {
+  ['@test action can be handled by a superclass\' actions object'](assert) {
     this.assert.expect(4);
 
     let component;

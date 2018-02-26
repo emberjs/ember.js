@@ -1,6 +1,9 @@
 import { context } from 'ember-environment';
-import { set, trySet } from '../../property_set';
-import { get } from '../../property_get';
+import {
+  set,
+  trySet,
+  get
+} from '../..';
 
 let originalLookup = context.lookup;
 let lookup;
@@ -61,7 +64,7 @@ QUnit.test('[obj, bla.bla] gives a proper exception message', function() {
   let exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
   try {
     set(obj, 'bla.bla', 'BAM');
-  } catch(ex) {
+  } catch (ex) {
     equal(ex.message, exceptionMessage);
   }
 });

@@ -1,12 +1,11 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 
 import {
-  deprecate,
   Mixin
 } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -120,17 +119,6 @@ export default Mixin.create({
   hasRegistration: registryAlias('has'),
 
   /**
-   Register an option for a particular factory.
-
-   @public
-   @method registerOption
-   @param {String} fullName
-   @param {String} optionName
-   @param {Object} options
-   */
-  registerOption: registryAlias('option'),
-
-  /**
    Return a specific registered option for a particular factory.
 
    @public
@@ -169,7 +157,7 @@ export default Mixin.create({
    let appInstance = App.buildInstance();
 
    // if all of type `connection` must not be singletons
-   appInstance.optionsForType('connection', { singleton: false });
+   appInstance.registerOptionsForType('connection', { singleton: false });
 
    appInstance.register('connection:twitter', TwitterConnection);
    appInstance.register('connection:facebook', FacebookConnection);
@@ -241,11 +229,6 @@ export default Mixin.create({
     directly (via `create` or `new`) bypasses the dependency injection
     system.
 
-    **Note:** Ember-Data instantiates its models in a unique manner, and consequently
-    injections onto models (or all models) will not work as expected. Injections
-    on models can be enabled by setting `EmberENV.MODEL_FACTORY_INJECTIONS`
-    to `true`.
-
     @public
     @method inject
     @param  factoryNameOrType {String}
@@ -291,7 +274,7 @@ function buildFakeRegistryFunction(instance, typeForMessage, deprecatedProperty,
       {
         id: 'ember-application.app-instance-registry',
         until: '3.0.0',
-        url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-application-registry-ember-applicationinstance-registry'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-application-registry-ember-applicationinstance-registry'
       }
     );
     return instance[nonDeprecatedProperty](...arguments);

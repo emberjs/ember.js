@@ -1,9 +1,8 @@
 import { inspect } from 'ember-utils';
-import { assert, warn } from './debug';
+import { assert, warn, Error as EmberError } from 'ember-debug';
 import { set } from './property_set';
-import { meta as metaFor, peekMeta } from './meta';
+import { meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import expandProperties from './expand_properties';
-import EmberError from './error';
 import {
   Descriptor,
   defineProperty
@@ -18,12 +17,8 @@ import {
 } from './dependent_keys';
 
 /**
-@module ember
-@submodule ember-metal
+@module @ember/object
 */
-
-
-function UNDEFINED() { }
 
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
@@ -36,23 +31,25 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
   result to be recomputed if the dependencies are modified.
 
   In the following example we declare a computed property - `fullName` - by calling
-  `.Ember.computed()` with property dependencies (`firstName` and `lastName`) as leading arguments and getter accessor function. The `fullName` getter function
+  `computed` with property dependencies (`firstName` and `lastName`) as leading arguments and getter accessor function. The `fullName` getter function
   will be called once (regardless of how many times it is accessed) as long
   as its dependencies have not changed. Once `firstName` or `lastName` are updated
   any future calls (or anything bound) to `fullName` will incorporate the new
   values.
 
   ```javascript
-  let Person = Ember.Object.extend({
+  import EmberObject, { computed } from '@ember/object';
+
+  let Person = EmberObject.extend({
     // these will be supplied by `create`
     firstName: null,
     lastName: null,
 
-    fullName: Ember.computed('firstName', 'lastName', function() {
+    fullName: computed('firstName', 'lastName', function() {
       let firstName = this.get('firstName'),
           lastName  = this.get('lastName');
 
-      return firstName + ' ' + lastName;
+      return `${firstName} ${lastName}`;
     })
   });
 
@@ -69,12 +66,14 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
   value you want to set it to as arguments.
 
   ```javascript
-  let Person = Ember.Object.extend({
+  import EmberObject, { computed } from '@ember/object';
+
+  let Person = EmberObject.extend({
     // these will be supplied by `create`
     firstName: null,
     lastName: null,
 
-    fullName: Ember.computed('firstName', 'lastName', {
+    fullName: computed('firstName', 'lastName', {
       get(key) {
         let firstName = this.get('firstName'),
             lastName  = this.get('lastName');
@@ -104,12 +103,14 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
   You can also mark computed property as `.readOnly()` and block all attempts to set it.
 
   ```javascript
-  let Person = Ember.Object.extend({
+  import EmberObject, { computed } from '@ember/object';
+
+  let Person = EmberObject.extend({
     // these will be supplied by `create`
     firstName: null,
     lastName: null,
 
-    fullName: Ember.computed('firstName', 'lastName', {
+    fullName: computed('firstName', 'lastName', {
       get(key) {
         let firstName = this.get('firstName');
         let lastName  = this.get('lastName');
@@ -125,40 +126,33 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
   Additional resources:
   - [New CP syntax RFC](https://github.com/emberjs/rfcs/blob/master/text/0011-improved-cp-syntax.md)
-  - [New computed syntax explained in "Ember 1.12 released" ](http://emberjs.com/blog/2015/05/13/ember-1-12-released.html#toc_new-computed-syntax)
+  - [New computed syntax explained in "Ember 1.12 released" ](https://emberjs.com/blog/2015/05/13/ember-1-12-released.html#toc_new-computed-syntax)
 
   @class ComputedProperty
-  @namespace Ember
   @public
 */
 function ComputedProperty(config, opts) {
   this.isDescriptor = true;
-  if (typeof config === 'function') {
+  let hasGetterOnly = typeof config === 'function';
+  if (hasGetterOnly) {
     this._getter = config;
   } else {
-    assert('Ember.computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-    assert('Config object passed to an Ember.computed can only contain `get` or `set` keys.', (function() {
-      let keys = Object.keys(config);
-      for (let i = 0; i < keys.length; i++) {
-        if (keys[i] !== 'get' && keys[i] !== 'set') {
-          return false;
-        }
-      }
-      return true;
-    })());
+    assert('computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
+    assert('Config object passed to computed can only contain `get` or `set` keys.', Object.keys(config).every((key)=> key === 'get' || key === 'set'));
     this._getter = config.get;
     this._setter = config.set;
   }
   assert('Computed properties must receive a getter or a setter, you passed none.', !!this._getter || !!this._setter);
-  this._dependentKeys = undefined;
   this._suspended = undefined;
   this._meta = undefined;
   this._volatile = false;
+
   this._dependentKeys = opts && opts.dependentKeys;
-  this._readOnly =  false;
+  this._readOnly = opts && hasGetterOnly && opts.readOnly === true;
 }
 
 ComputedProperty.prototype = new Descriptor();
+ComputedProperty.prototype.constructor = ComputedProperty;
 
 const ComputedPropertyPrototype = ComputedProperty.prototype;
 
@@ -173,15 +167,19 @@ const ComputedPropertyPrototype = ComputedProperty.prototype;
   invalidation and notification when cached value is invalidated.
 
   ```javascript
-  let outsideService = Ember.Object.extend({
-    value: Ember.computed(function() {
+  import EmberObject, { computed } from '@ember/object';
+
+  let outsideService = EmberObject.extend({
+    value: computed(function() {
       return OutsideService.getValue();
     }).volatile()
   }).create();
   ```
 
   @method volatile
-  @return {Ember.ComputedProperty} this
+  @static
+  @for @ember/object/computed
+  @return {ComputedProperty} this
   @chainable
   @public
 */
@@ -195,8 +193,10 @@ ComputedPropertyPrototype.volatile = function() {
   mode the computed property will throw an error when set.
 
   ```javascript
-  let Person = Ember.Object.extend({
-    guid: Ember.computed(function() {
+  import EmberObject, { computed } from '@ember/object';
+
+  let Person = EmberObject.extend({
+    guid: computed(function() {
       return 'guid-guid-guid';
     }).readOnly()
   });
@@ -207,7 +207,9 @@ ComputedPropertyPrototype.volatile = function() {
   ```
 
   @method readOnly
-  @return {Ember.ComputedProperty} this
+  @static
+  @for @ember/object/computed
+  @return {ComputedProperty} this
   @chainable
   @public
 */
@@ -222,13 +224,15 @@ ComputedPropertyPrototype.readOnly = function() {
   arguments containing key paths that this computed property depends on.
 
   ```javascript
-  let President = Ember.Object.extend({
-    fullName: Ember.computed(function() {
+  import EmberObject, { computed } from '@ember/object';
+
+  let President = EmberObject.extend({
+    fullName: computed('firstName', 'lastName', function() {
       return this.get('firstName') + ' ' + this.get('lastName');
 
       // Tell Ember that this computed property depends on firstName
       // and lastName
-    }).property('firstName', 'lastName')
+    })
   });
 
   let president = President.create({
@@ -240,8 +244,10 @@ ComputedPropertyPrototype.readOnly = function() {
   ```
 
   @method property
+  @static
+  @for @ember/object/computed
   @param {String} path* zero or more property paths
-  @return {Ember.ComputedProperty} this
+  @return {ComputedProperty} this
   @chainable
   @public
 */
@@ -251,7 +257,7 @@ ComputedPropertyPrototype.property = function() {
   function addArg(property) {
     warn(
       `Dependent keys containing @each only work one level deep. ` +
-        `You cannot use nested forms like todos.@each.owner.name or todos.@each.owner.@each.name. ` +
+        `You used the key "${property}" which is invalid. ` +
           `Please create an intermediary computed property.`,
       DEEP_EACH_REGEX.test(property) === false,
       { id: 'ember-metal.computed-deep-each' }
@@ -276,10 +282,13 @@ ComputedPropertyPrototype.property = function() {
   You can pass a hash of these values to a computed property like this:
 
   ```
-  person: Ember.computed(function() {
+  import { computed } from '@ember/object';
+  import Person from 'my-app/utils/person';
+
+  person: computed(function() {
     let personId = this.get('personId');
-    return App.Person.create({ id: personId });
-  }).meta({ type: App.Person })
+    return Person.create({ id: personId });
+  }).meta({ type: Person })
   ```
 
   The hash that you pass to the `meta()` function will be saved on the
@@ -288,6 +297,8 @@ ComputedPropertyPrototype.property = function() {
   via the `metaForProperty()` function.
 
   @method meta
+  @static
+  @for @ember/object/computed
   @param {Object} meta
   @chainable
   @public
@@ -311,12 +322,12 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
 
   // don't create objects just to invalidate
   let meta = peekMeta(obj);
-  if (!meta || meta.source !== obj) {
+  if (meta === undefined || meta.source !== obj) {
     return;
   }
 
   let cache = meta.readableCache();
-  if (cache && cache[keyName] !== undefined) {
+  if (cache !== undefined && cache[keyName] !== undefined) {
     cache[keyName] = undefined;
     removeDependentKeys(this, obj, keyName, meta);
   }
@@ -338,14 +349,10 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   }
 
   let ret = this._getter.call(obj, keyName);
-  if (ret === undefined) {
-    cache[keyName] = UNDEFINED;
-  } else {
-    cache[keyName] = ret;
-  }
+  cache[keyName] = ret === undefined ? UNDEFINED : ret;
 
   let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers) {
+  if (chainWatchers !== undefined) {
     chainWatchers.revalidate(keyName);
   }
   addDependentKeys(this, obj, keyName, meta);
@@ -395,15 +402,14 @@ ComputedPropertyPrototype.setWithSuspend = function computedPropertySetWithSuspe
 };
 
 ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, value) {
-  // cache requires own meta
-  let meta           = metaFor(obj);
-  // either there is a writable cache or we need one to update
-  let cache          = meta.writableCache();
+  let meta = metaFor(obj);
+  let cache = meta.writableCache();
   let hadCachedValue = false;
   let cachedValue;
-  if (cache[keyName] !== undefined) {
-    if (cache[keyName] !== UNDEFINED) {
-      cachedValue = cache[keyName];
+  let val = cache[keyName];
+  if (val !== undefined) {
+    if (val !== UNDEFINED) {
+      cachedValue = val;
     }
     hadCachedValue = true;
   }
@@ -415,13 +421,11 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     return ret;
   }
 
-  propertyWillChange(obj, keyName);
+  propertyWillChange(obj, keyName, meta);
 
   if (hadCachedValue) {
     cache[keyName] = undefined;
-  }
-
-  if (!hadCachedValue) {
+  } else {
     addDependentKeys(this, obj, keyName, meta);
   }
 
@@ -431,19 +435,18 @@ ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, valu
     cache[keyName] = ret;
   }
 
-  propertyDidChange(obj, keyName);
+  propertyDidChange(obj, keyName, meta);
 
   return ret;
 };
 
 /* called before property is overridden */
-ComputedPropertyPrototype.teardown = function(obj, keyName) {
+ComputedPropertyPrototype.teardown = function(obj, keyName, meta) {
   if (this._volatile) {
     return;
   }
-  let meta = metaFor(obj);
   let cache = meta.readableCache();
-  if (cache && cache[keyName] !== undefined) {
+  if (cache !== undefined && cache[keyName] !== undefined) {
     removeDependentKeys(this, obj, keyName, meta);
     cache[keyName] = undefined;
   }
@@ -452,13 +455,15 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
 /**
   This helper returns a new property descriptor that wraps the passed
   computed property function. You can use this helper to define properties
-  with mixins or via `Ember.defineProperty()`.
+  with mixins or via `defineProperty()`.
 
   If you pass a function as an argument, it will be used as a getter. A computed
   property defined in this way might look like this:
 
   ```js
-  let Person = Ember.Object.extend({
+  import EmberObject, { computed } from '@ember/object';
+
+  let Person = EmberObject.extend({
     init() {
       this._super(...arguments);
 
@@ -466,7 +471,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
       this.lastName = 'Jones';
     },
 
-    fullName: Ember.computed('firstName', 'lastName', function() {
+    fullName: computed('firstName', 'lastName', function() {
       return `${this.get('firstName')} ${this.get('lastName')}`;
     })
   });
@@ -483,7 +488,9 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   argument to provide both a getter and setter:
 
   ```js
-  let Person = Ember.Object.extend({
+  import EmberObject, { computed } from '@ember/object';
+
+  let Person = EmberObject.extend({
     init() {
       this._super(...arguments);
 
@@ -491,7 +498,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
       this.lastName = 'Jones';
     },
 
-    fullName: Ember.computed('firstName', 'lastName', {
+    fullName: computed('firstName', 'lastName', {
       get(key) {
         return `${this.get('firstName')} ${this.get('lastName')}`;
       },
@@ -500,8 +507,8 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
         this.setProperties({ firstName, lastName });
         return value;
       }
-    });
-  })
+    })
+  });
 
   let client = Person.create();
   client.get('firstName'); // 'Betty'
@@ -515,7 +522,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
 
   _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
-  will have [prototype Extensions](http://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/) enabled._
+  will have [prototype Extensions](https://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/) enabled._
 
   The alternative syntax, with prototype extensions, might look like:
 
@@ -525,27 +532,21 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   }.property('firstName', 'lastName')
   ```
 
-  @class computed
-  @namespace Ember
-  @constructor
+  @method computed
+  @for @ember/object
   @static
   @param {String} [dependentKeys*] Optional dependent keys that trigger this computed property.
   @param {Function} func The computed property function.
-  @return {Ember.ComputedProperty} property descriptor instance
+  @return {ComputedProperty} property descriptor instance
   @public
 */
-export default function computed(func) {
-  let args;
-
-  if (arguments.length > 1) {
-    args = [].slice.call(arguments);
-    func = args.pop();
-  }
+export default function computed(...args) {
+  let func = args.pop();
 
   let cp = new ComputedProperty(func);
 
-  if (args) {
-    cp.property.apply(cp, args);
+  if (args.length > 0) {
+    cp.property(...args);
   }
 
   return cp;
@@ -558,7 +559,8 @@ export default function computed(func) {
   it to be created.
 
   @method cacheFor
-  @for Ember
+  @static
+  @for @ember/object/internals
   @param {Object} obj the object whose property you want to check
   @param {String} key the name of the property whose cached value you want
     to return

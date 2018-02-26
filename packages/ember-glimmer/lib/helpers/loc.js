@@ -1,13 +1,12 @@
+
+/**
+@module ember
+*/
 import { InternalHelperReference } from '../utils/references';
 import { String as StringUtils } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-templates
-*/
-
-/**
-  Calls [Ember.String.loc](/api/classes/Ember.String.html#method_loc) with the
+  Calls [loc](/api/classes/Ember.String.html#method_loc) with the
   provided string. This is a convenient way to localize text within a template.
   For example:
 
@@ -43,5 +42,5 @@ function locHelper({ positional }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(locHelper, args);
+  return new InternalHelperReference(locHelper, args.capture());
 }

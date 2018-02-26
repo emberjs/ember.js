@@ -22,6 +22,23 @@ suite.test('[].replace(0,0,\'X\') => [\'X\'] + notify', function() {
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
 
+suite.test('[].replace(0,0,"X") => ["X"] + avoid calling objectAt and notifying fistObject/lastObject when not in cache', function() {
+  var obj, exp, observer;
+  var called = 0;
+  exp = this.newFixture(1);
+  obj = this.newObject([]);
+  obj.objectAt = function() {
+    called++;
+  };
+  observer = this.newObserver(obj, 'firstObject', 'lastObject');
+
+  obj.replace(0, 0, exp);
+
+  equal(called, 0, 'should NOT have called objectAt upon replace when firstObject/lastObject are not cached');
+  equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject since not cached');
+  equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject since not cached');
+});
+
 suite.test('[A,B,C,D].replace(1,2,X) => [A,X,D] + notify', function() {
   let before  = this.newFixture(4);
   let replace = this.newFixture(1);
@@ -98,6 +115,27 @@ suite.test('[A,B,C,D].replace(2,2) => [A,B] + notify', function() {
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.replace(2, 2);
+
+  deepEqual(this.toArray(obj), after, 'post item results');
+
+  equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+  equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
+  equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
+
+  equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
+});
+
+suite.test('[A,B,C,D].replace(-1,1) => [A,B,C] + notify', function() {
+  let before  = this.newFixture(4);
+  let after   = [before[0], before[1], before[2]];
+
+  let obj = this.newObject(before);
+  let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+
+  obj.replace(-1, 1);
 
   deepEqual(this.toArray(obj), after, 'post item results');
 

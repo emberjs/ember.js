@@ -131,7 +131,7 @@ QUnit.test('binding disconnection actually works', function() {
   equal(get(toObject, 'value'), 'start');
 });
 
-let first, second, third, binding1, binding2; // global variables
+let first, second, third; // global variables
 
 // ..........................................................
 // chained binding
@@ -157,11 +157,11 @@ QUnit.module('chained binding', {
       root = { first: first, second: second, third: third };
 
       expectDeprecation(() => {
-        binding1 = bind(root, 'second.input', 'first.output');
+        bind(root, 'second.input', 'first.output');
       }, /`Ember\.Binding` is deprecated./);
 
       expectDeprecation(() => {
-        binding2 = bind(root, 'second.output', 'third.input');
+        bind(root, 'second.output', 'third.input');
       }, /`Ember\.Binding` is deprecated./);
     });
   },

@@ -1,20 +1,18 @@
 import { context } from 'ember-environment';
-import { meta } from '../../meta';
-import { set } from '../../property_set';
-import get from '../../property_get';
-import { computed } from '../../computed';
-import { defineProperty } from '../../properties';
-import { testBoth } from 'internal-test-helpers';
-import { addListener } from '../../events';
 import {
+  meta,
+  set,
+  get,
+  computed,
+  defineProperty,
+  addListener,
   watch,
   unwatch,
   destroy
-} from '../../watching';
+} from '../..';
+import { testBoth } from 'internal-test-helpers';
 
-let willCount, didCount,
-    willKeys, didKeys,
-    originalLookup, lookup;
+let willCount, didCount, willKeys, didKeys, originalLookup;
 
 QUnit.module('watch', {
   setup() {
@@ -23,7 +21,7 @@ QUnit.module('watch', {
     didKeys = [];
 
     originalLookup = context.lookup;
-    context.lookup = lookup = {};
+    context.lookup = {};
   },
 
   teardown() {

@@ -1,6 +1,6 @@
 import { tryInvoke, getOwner } from 'ember-utils';
-import { assert, get, set } from 'ember-metal';
-
+import { get, set } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
 import { environment } from 'ember-environment';
 
@@ -15,9 +15,9 @@ import {
 } from './util';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
+
 
 /**
   Ember.AutoLocation will select the best location option based off browser
@@ -29,10 +29,38 @@ import {
   Keep in mind that since some of your users will use `HistoryLocation`, your
   server must serve the Ember app at all the routes you define.
 
+  Browsers that support the `history` API will use `HistoryLocation`, those that
+  do not, but still support the `hashchange` event will use `HashLocation`, and
+  in the rare case neither is supported will use `NoneLocation`.
+
+  Example:
+
+  ```app/router.js
+  Router.map(function() {
+    this.route('posts', function() {
+      this.route('new');
+    });
+  });
+
+  Router.reopen({
+    location: 'auto'
+  });
+  ```
+
+  This will result in a posts.new url of `/posts/new` for modern browsers that
+  support the `history` api or `/#/posts/new` for older ones, like Internet
+  Explorer 9 and below.
+
+  When a user visits a link to your application, they will be automatically
+  upgraded or downgraded to the appropriate `Location` class, with the URL
+  transformed accordingly, if needed.
+
+  Keep in mind that since some of your users will use `HistoryLocation`, your
+  server must serve the Ember app at all the routes you define.
+
   @class AutoLocation
-  @namespace Ember
   @static
-  @private
+  @protected
 */
 export default EmberObject.extend({
   /**
@@ -121,7 +149,7 @@ export default EmberObject.extend({
       location: this.location,
       history: this.history,
       userAgent: this.userAgent,
-      rootURL: rootURL,
+      rootURL,
       documentMode: this.documentMode,
       global: this.global
     });
@@ -255,18 +283,18 @@ export function getHistoryPath(rootURL, location) {
 
     // If the path already has a trailing slash, remove the one
     // from the hashed route so we don't double up.
-    if (path.slice(-1) === '/') {
+    if (path.charAt(path.length - 1) === '/') {
       routeHash = routeHash.substr(1);
     }
 
     // This is the "expected" final order
-    path = path + routeHash + query;
+    path += routeHash + query;
 
     if (hashParts.length) {
       path += `#${hashParts.join('#')}`;
     }
   } else {
-    path = path + query + hash;
+    path += query + hash;
   }
 
   return path;
@@ -286,11 +314,11 @@ export function getHashPath(rootURL, location) {
   let routePath = historyPath.substr(rootURL.length);
 
   if (routePath !== '') {
-    if (routePath.charAt(0) !== '/') {
-      routePath = '/' + routePath;
+    if (routePath[0] !== '/') {
+      routePath = `/${routePath}`;
     }
 
-    path += '#' + routePath;
+    path += `#${routePath}`;
   }
 
   return path;

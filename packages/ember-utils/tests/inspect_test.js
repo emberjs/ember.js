@@ -1,4 +1,4 @@
-import { inspect } from '../index';
+import { inspect } from '..';
 
 // Symbol is not defined on pre-ES2015 runtimes, so this let's us safely test
 // for it's existence (where a simple `if (Symbol)` would ReferenceError)

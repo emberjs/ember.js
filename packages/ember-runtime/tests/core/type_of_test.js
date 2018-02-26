@@ -1,5 +1,6 @@
 import { typeOf } from '../../utils';
 import EmberObject from '../../system/object';
+import { environment } from 'ember-environment';
 
 QUnit.module('Ember Type Checking');
 
@@ -36,3 +37,12 @@ QUnit.test('Ember.typeOf', function() {
   equal(typeOf(EmberObject.extend()), 'class', 'item of type class');
   equal(typeOf(new Error()), 'error', 'item of type error');
 });
+
+if (environment.window && typeof environment.window.FileList === 'function') {
+  QUnit.test('Ember.typeOf(fileList)', function() {
+    let fileListElement = document.createElement('input');
+    fileListElement.type = 'file';
+    let fileList = fileListElement.files;
+    equal(typeOf(fileList), 'filelist', 'item of type filelist');
+  });
+}

@@ -1,6 +1,6 @@
 import { Mixin, alias } from 'ember-metal';
+import { deprecatingAlias } from '../computed/computed_macros';
 import ActionHandler from './action_handler';
-import ControllerContentModelAliasDeprecation from './controller_content_model_alias_deprecation';
 
 /**
   @class ControllerMixin
@@ -8,7 +8,7 @@ import ControllerContentModelAliasDeprecation from './controller_content_model_a
   @uses Ember.ActionHandler
   @private
 */
-export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecation, {
+export default Mixin.create(ActionHandler, {
   /* ducktype as a controller */
   isController: true,
 
@@ -38,12 +38,15 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
 
     @property model
     @public
-   */
+  */
   model: null,
 
   /**
     @private
   */
-  content: alias('model')
-
+  content: deprecatingAlias('model', {
+    id: 'ember-runtime.controller.content-alias',
+    until: '2.17.0',
+    url: 'https://emberjs.com/deprecations/v2.x/#toc_controller-content-alias'
+  })
 });

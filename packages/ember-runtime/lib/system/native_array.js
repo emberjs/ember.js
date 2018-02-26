@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 import Ember, { // Ember.A circular
   replace,
@@ -29,10 +28,9 @@ import copy from '../copy';
   false, this will be applied automatically. Otherwise you can apply the mixin
   at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
 
-  @class NativeArray
-  @namespace Ember
-  @uses Ember.MutableArray
-  @uses Ember.Observable
+  @class Ember.NativeArray
+  @uses MutableArray
+  @uses Observable
   @uses Ember.Copyable
   @public
 */
@@ -104,11 +102,11 @@ NativeArray.keys().forEach((methodName) => {
   }
 });
 
-NativeArray = NativeArray.without.apply(NativeArray, ignore);
+NativeArray = NativeArray.without(...ignore);
 
 /**
   Creates an `Ember.NativeArray` from an Array like object.
-  Does not modify the original object. Ember.A is not needed if
+  Does not modify the original object's contents. Ember.A is not needed if
   `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
   it is recommended that you use Ember.A when creating addons for
   ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
@@ -116,8 +114,10 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
 
   Example
 
-  ```js
-  export default Ember.Component.extend({
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+
+  export default Component.extend({
     tagName: 'ul',
     classNames: ['pagination'],
 
@@ -132,8 +132,9 @@ NativeArray = NativeArray.without.apply(NativeArray, ignore);
   ```
 
   @method A
-  @for Ember
-  @return {Ember.NativeArray}
+  @static
+  @for @ember/array
+  @return {EmberArray}
   @public
 */
 let A;

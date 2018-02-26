@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-testing
 */
 import { run } from 'ember-metal';
 
@@ -19,7 +18,7 @@ import { run } from 'ember-metal';
 
   @method visit
   @param {String} url the name of the route
-  @return {RSVP.Promise}
+  @return {RSVP.Promise<undefined>}
   @public
 */
 export default function visit(app, url) {

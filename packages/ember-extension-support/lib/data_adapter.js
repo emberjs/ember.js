@@ -9,11 +9,9 @@ import {
   removeArrayObserver,
   objectAt
 } from 'ember-runtime';
-import { Application } from 'ember-application';
 
 /**
-@module ember
-@submodule ember-extension-support
+@module @ember/debug
 */
 
 /**
@@ -54,7 +52,6 @@ import { Application } from 'ember-application';
   ```
 
   @class DataAdapter
-  @namespace Ember
   @extends EmberObject
   @public
 */
@@ -154,7 +151,7 @@ export default EmberObject.extend({
     typesAdded(typesToSend);
 
     let release = () => {
-      releaseMethods.forEach((fn) => fn() );
+      releaseMethods.forEach((fn) => fn());
       this.releaseMethods.removeObject(release);
     };
     this.releaseMethods.pushObject(release);
@@ -163,7 +160,9 @@ export default EmberObject.extend({
 
   _nameToClass(type) {
     if (typeof type === 'string') {
-      type = getOwner(this)._lookupFactory(`model:${type}`);
+      let owner = getOwner(this);
+      let Factory = owner.factoryFor(`model:${type}`);
+      type = Factory && Factory.class;
     }
     return type;
   },
@@ -293,8 +292,12 @@ export default EmberObject.extend({
     }
 
     let observer = {
-      didChange() {
-        run.scheduleOnce('actions', this, onChange);
+      didChange(array, idx, removedCount, addedCount) {
+        // Only re-fetch records if the record count changed
+        // (which is all we care about as far as model types are concerned).
+        if (removedCount > 0 || addedCount > 0) {
+          run.scheduleOnce('actions', this, onChange);
+        }
       },
       willChange() { return this; }
     };
@@ -360,7 +363,7 @@ export default EmberObject.extend({
     types = emberA(types).map((name) => {
       return {
         klass: this._nameToClass(name),
-        name: name
+        name
       };
     });
     types = emberA(types).filter(type => this.detect(type.klass));
@@ -385,12 +388,8 @@ export default EmberObject.extend({
         if (!namespace.hasOwnProperty(key)) { continue; }
         // Even though we will filter again in `getModelTypes`,
         // we should not call `lookupFactory` on non-models
-        // (especially when `EmberENV.MODEL_FACTORY_INJECTIONS` is `true`)
         if (!this.detect(namespace[key])) { continue; }
         let name = StringUtils.dasherize(key);
-        if (!(namespace instanceof Application) && namespace.toString()) {
-          name = `${namespace}/${name}`;
-        }
         types.push(name);
       }
     });

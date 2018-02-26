@@ -20,7 +20,7 @@ import EmberObject from '../../../system/object';
     broken anyway.  I don't think it ever even worked.
 */
 
-let MyApp, binding1, binding2;
+let MyApp;
 
 QUnit.module('System:run_loop() - chained binding', {
   setup() {
@@ -50,13 +50,13 @@ QUnit.test('Should propagate bindings after the RunLoop completes (using Ember.R
   run(() => {
     //Binding of output of MyApp.first object to input of MyApp.second object
     expectDeprecation(() => {
-      binding1 = Binding.from('first.output')
+      Binding.from('first.output')
         .to('second.input').connect(MyApp);
     }, deprecationMessage);
 
     //Binding of output of MyApp.second object to input of MyApp.third object
     expectDeprecation(() => {
-      binding2 = Binding.from('second.output')
+      Binding.from('second.output')
         .to('third.input').connect(MyApp);
     }, deprecationMessage);
   });
@@ -85,13 +85,13 @@ QUnit.test('Should propagate bindings after the RunLoop completes', function() {
   run(() => {
     //Binding of output of MyApp.first object to input of MyApp.second object
     expectDeprecation(() => {
-      binding1 = Binding.from('first.output')
+      Binding.from('first.output')
         .to('second.input').connect(MyApp);
     }, deprecationMessage);
 
     //Binding of output of MyApp.second object to input of MyApp.third object
     expectDeprecation(() => {
-      binding2 = Binding.from('second.output')
+      Binding.from('second.output')
         .to('third.input').connect(MyApp);
     }, deprecationMessage);
   });

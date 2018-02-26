@@ -3,13 +3,15 @@ import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
 import {
   set,
-  computed,
+  computed
+} from 'ember-metal';
+import {
   getDebugFunction,
   setDebugFunction
-} from 'ember-metal';
+} from 'ember-debug';
 import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
-import { STYLE_WARNING } from 'ember-views';
+import { constructStyleDeprecationMessage  } from 'ember-views';
 import { Component, SafeString } from '../utils/helpers';
 
 moduleFor('Static content tests', class extends RenderingTest {
@@ -98,6 +100,46 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertContent('hello');
     this.assertInvariants();
+  }
+
+  ['@test resolves the string length properly']() {
+    this.render('<p>{{foo.length}}</p>', { foo: undefined });
+
+    this.assertHTML('<p></p>');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'foo', 'foo'));
+
+    this.assertHTML('<p>3</p>');
+
+    this.runTask(() => set(this.context, 'foo', ''));
+
+    this.assertHTML('<p>0</p>');
+
+    this.runTask(() => set(this.context, 'foo', undefined));
+
+    this.assertHTML('<p></p>');
+  }
+
+  ['@test resolves the array length properly']() {
+    this.render('<p>{{foo.length}}</p>', { foo: undefined });
+
+    this.assertHTML('<p></p>');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'foo', [1, 2, 3]));
+
+    this.assertHTML('<p>3</p>');
+
+    this.runTask(() => set(this.context, 'foo', []));
+
+    this.assertHTML('<p>0</p>');
+
+    this.runTask(() => set(this.context, 'foo', undefined));
+
+    this.assertHTML('<p></p>');
   }
 
   ['@test it can render a capitalized path with no deprecation']() {
@@ -403,6 +445,68 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('hello');
     this.assertInvariants();
   }
+
+  ['@test it can render a readOnly property of a path']() {
+    let Messenger = EmberObject.extend({
+      message: computed.readOnly('a.b.c')
+    });
+
+    let messenger = Messenger.create({
+      a: {
+        b: {
+          c: 'hello'
+        }
+      }
+    });
+
+    this.renderPath('messenger.message', { messenger });
+
+    this.assertContent('hello');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(messenger, 'a.b.c', 'hi'));
+
+    this.assertContent('hi');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'messenger.a.b', {
+      c: 'goodbye'
+    }));
+
+    this.assertContent('goodbye');
+    this.assertInvariants();
+
+    this.runTask(() => set(this.context, 'messenger', {
+      message: 'hello'
+    }));
+
+    this.assertContent('hello');
+    this.assertInvariants();
+  }
+
+  ['@test it can render a property on a function']() {
+    let func = () => {};
+    func.aProp = 'this is a property on a function';
+
+    this.renderPath('func.aProp', { func });
+
+    this.assertContent('this is a property on a function');
+
+    this.assertStableRerender();
+
+    // this.runTask(() => set(func, 'aProp', 'still a property on a function'));
+    // this.assertContent('still a property on a function');
+    // this.assertInvariants();
+
+    // func = () => {};
+    // func.aProp = 'a prop on a new function';
+
+    // this.runTask(() => set(this.context, 'func', func));
+
+    // this.assertContent('a prop on a new function');
+    // this.assertInvariants();
+  }
 }
 
 const EMPTY = {};
@@ -553,7 +657,7 @@ moduleFor('Dynamic content tests (attribute position)', class extends DynamicCon
 
   assertIsEmpty() {
     this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <div> tag');
-    this.assertElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': '' }, content: '' });
+    this.assertElement(this.firstChild, { tagName: 'div', content: '' });
   }
 
   assertContent(content) {
@@ -1082,8 +1186,8 @@ class StyleTest extends RenderingTest {
     setDebugFunction('warn', originalWarn);
   }
 
-  assertStyleWarning() {
-    this.assert.deepEqual(warnings, [STYLE_WARNING]);
+  assertStyleWarning(style) {
+    this.assert.deepEqual(warnings, [constructStyleDeprecationMessage(style)]);
   }
 
   assertNoWarning() {
@@ -1144,11 +1248,12 @@ moduleFor('Inline style tests', class extends StyleTest {
 if (!EmberDev.runningProdBuild) {
   moduleFor('Inline style tests - warnings', class extends StyleTest {
     ['@test specifying <div style={{userValue}}></div> generates a warning'](assert) {
+      let userValue = 'width: 42px';
       this.render('<div style={{userValue}}></div>', {
-        userValue: 'width: 42px'
+        userValue
       });
 
-      this.assertStyleWarning();
+      this.assertStyleWarning(userValue);
     }
 
     ['@test specifying `attributeBindings: ["style"]` generates a warning'](assert) {
@@ -1157,12 +1262,12 @@ if (!EmberDev.runningProdBuild) {
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
-
+      let userValue = 'width: 42px';
       this.render('{{foo-bar style=userValue}}', {
-        userValue: 'width: 42px'
+        userValue
       });
 
-      this.assertStyleWarning();
+      this.assertStyleWarning(userValue);
     }
 
     ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning'](assert) {
@@ -1201,6 +1306,50 @@ if (!EmberDev.runningProdBuild) {
       });
 
       this.assertNoWarning();
+    }
+
+    ['@test no warnings are triggered when a safe string is quoted'](assert) {
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertNoWarning();
+    }
+
+    ['@test binding warning is triggered when an unsafe string is quoted'](assert) {
+      let userValue = 'width: 42px';
+      this.render('<div style="{{userValue}}"></div>', {
+        userValue
+      });
+
+      this.assertStyleWarning(userValue);
+    }
+
+    ['@test binding warning is triggered when a safe string for a complete property is concatenated in place'](assert) {
+      let userValue = 'width: 42px';
+      this.render('<div style="color: green; {{userValue}}"></div>', {
+        userValue: new SafeString('width: 42px')
+      });
+
+      this.assertStyleWarning(`color: green; ${userValue}`);
+    }
+
+    ['@test binding warning is triggered when a safe string for a value is concatenated in place'](assert) {
+      let userValue = '42px';
+      this.render('<div style="color: green; width: {{userValue}}"></div>', {
+        userValue: new SafeString(userValue)
+      });
+
+      this.assertStyleWarning(`color: green; width: ${userValue}`);
+    }
+
+    ['@test binding warning is triggered when a safe string for a property name is concatenated in place'](assert) {
+      let userValue = 'width';
+      this.render('<div style="color: green; {{userProperty}}: 42px"></div>', {
+        userProperty: new SafeString(userValue)
+      });
+
+      this.assertStyleWarning(`color: green; ${userValue}: 42px`);
     }
   });
 }

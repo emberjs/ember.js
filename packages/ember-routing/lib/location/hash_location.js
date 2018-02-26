@@ -8,8 +8,7 @@ import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
 
 /**
-@module ember
-@submodule ember-routing
+@module @ember/routing
 */
 
 /**
@@ -17,10 +16,28 @@ import EmberLocation from './api';
   hash. At present, it relies on a `hashchange` event existing in the
   browser.
 
+  Using `HashLocation` results in URLs with a `#` (hash sign) separating the
+  server side URL portion of the URL from the portion that is used by Ember.
+
+  Example:
+
+  ```app/router.js
+  Router.map(function() {
+    this.route('posts', function() {
+      this.route('new');
+    });
+  });
+
+  Router.reopen({
+    location: 'hash'
+  });
+  ```
+
+  This will result in a posts.new url of `/#/posts/new`.
+
   @class HashLocation
-  @namespace Ember
-  @extends Ember.Object
-  @private
+  @extends EmberObject
+  @protected
 */
 export default EmberObject.extend({
   implementation: 'hash',
@@ -56,7 +73,7 @@ export default EmberObject.extend({
     let originalPath = this.getHash().substr(1);
     let outPath = originalPath;
 
-    if (outPath.charAt(0) !== '/') {
+    if (outPath[0] !== '/') {
       outPath = '/';
 
       // Only add the # if the path isn't empty.
@@ -110,16 +127,14 @@ export default EmberObject.extend({
   onUpdateURL(callback) {
     this._removeEventListener();
 
-    this._hashchangeHandler = () => {
-      run(() => {
-        let path = this.getURL();
-        if (get(this, 'lastSetURL') === path) { return; }
+    this._hashchangeHandler = run.bind(this, function() {
+      let path = this.getURL();
+      if (get(this, 'lastSetURL') === path) { return; }
 
-        set(this, 'lastSetURL', null);
+      set(this, 'lastSetURL', null);
 
-        callback(path);
-      });
-    };
+      callback(path);
+    });
 
     window.addEventListener('hashchange', this._hashchangeHandler);
   },

@@ -1,11 +1,11 @@
 import { setOwner } from 'ember-utils';
 import {
   Descriptor,
-  defineProperty
-} from '../properties';
-import { get } from '../property_get';
-import { set } from '../property_set';
-import InjectedProperty from '../injected_property';
+  defineProperty,
+  get,
+  set,
+  InjectedProperty
+} from '..';
 
 QUnit.module('InjectedProperty');
 
@@ -19,7 +19,7 @@ QUnit.test('injected properties should be overridable', function() {
 
   set(obj, 'foo', 'bar');
 
-  equal(get(obj, 'foo'), 'bar', 'should return the overriden value');
+  equal(get(obj, 'foo'), 'bar', 'should return the overridden value');
 });
 
 QUnit.test('getting on an object without an owner or container should fail assertion', function() {

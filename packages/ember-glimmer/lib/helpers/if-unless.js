@@ -1,11 +1,9 @@
 /**
 @module ember
-@submodule ember-templates
 */
 
-import { assert } from 'ember-metal';
+import { assert } from 'ember-debug';
 import {
-  UNDEFINED_REFERENCE,
   CachedReference,
   ConditionalReference
 } from '../utils/references';
@@ -14,14 +12,11 @@ import {
   UpdatableTag,
   combine,
   isConst
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 class ConditionalHelperReference extends CachedReference {
-  static create(_condRef, _truthyRef, _falsyRef) {
+  static create(_condRef, truthyRef, falsyRef) {
     let condRef = ConditionalReference.create(_condRef);
-    let truthyRef = _truthyRef || UNDEFINED_REFERENCE;
-    let falsyRef = _falsyRef || UNDEFINED_REFERENCE;
-
     if (isConst(condRef)) {
       return condRef.value() ? truthyRef : falsyRef;
     } else {
@@ -41,9 +36,7 @@ class ConditionalHelperReference extends CachedReference {
   }
 
   compute() {
-    let { cond, truthy, falsy } = this;
-
-    let branch = cond.value() ? truthy : falsy;
+    let branch = this.cond.value() ? this.truthy : this.falsy;
 
     this.branchTag.update(branch.tag);
 
@@ -52,31 +45,94 @@ class ConditionalHelperReference extends CachedReference {
 }
 
 /**
+  The `if` helper allows you to conditionally render one of two branches,
+  depending on the "truthiness" of a property.
+  For example the following values are all falsey: `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
+
+  This helper has two forms, block and inline.
+
+  ## Block form
+
+  You can use the block form of `if` to conditionally render a section of the template.
+
+  To use it, pass the conditional value to the `if` helper,
+  using the block form to wrap the section of template you want to conditionally render.
+  Like so:
+
+  ```handlebars
+  {{! will not render if foo is falsey}}
+  {{#if foo}}
+    Welcome to the {{foo.bar}}
+  {{/if}}
+  ```
+
+  You can also specify a template to show if the property is falsey by using
+  the `else` helper.
+
+  ```handlebars
+  {{! is it raining outside?}}
+  {{#if isRaining}}
+    Yes, grab an umbrella!
+  {{else}}
+    No, it's lovely outside!
+  {{/if}}
+  ```
+
+  You are also able to combine `else` and `if` helpers to create more complex
+  conditional logic.
+
+  ```handlebars
+  {{#if isMorning}}
+    Good morning
+  {{else if isAfternoon}}
+    Good afternoon
+  {{else}}
+    Good night
+  {{/if}}
+  ```
+
+  ## Inline form
+
   The inline `if` helper conditionally renders a single property or string.
-  This helper acts like a ternary operator. If the first property is truthy,
-  the second argument will be displayed, otherwise, the third argument will be
-  displayed
+
+  In this form, the `if` helper receives three arguments, the conditional value,
+  the value to render when truthy, and the value to render when falsey.
+
+  For example, if `useLongGreeting` is truthy, the following:
+
   ```handlebars
   {{if useLongGreeting "Hello" "Hi"}} Alex
   ```
-  You can use the `if` helper inside another helper as a subexpression.
+
+  Will render:
+
+  ```html
+  Hello Alex
+  ```
+
+  ### Nested `if`
+
+  You can use the `if` helper inside another helper as a nested helper:
+
   ```handlebars
   {{some-component height=(if isBig "100" "10")}}
   ```
+
+  One detail to keep in mind is that both branches of the `if` helper will be evaluated,
+  so if you have `{{if condition "foo" (expensive-operation "bar")`,
+  `expensive-operation` will always calculate.
+
   @method if
   @for Ember.Templates.helpers
   @public
 */
 export function inlineIf(vm, { positional }) {
-  switch (positional.length) {
-    case 2: return ConditionalHelperReference.create(positional.at(0), positional.at(1), null);
-    case 3: return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
-    default:
-      assert(
-        'The inline form of the `if` helper expects two or three arguments, e.g. ' +
-        '`{{if trialExpired "Expired" expiryDate}}`.'
-      );
-  }
+  assert(
+    'The inline form of the `if` helper expects two or three arguments, e.g. ' +
+    '`{{if trialExpired "Expired" expiryDate}}`.',
+    positional.length === 3 || positional.length === 2
+  );
+  return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
 }
 
 /**
@@ -84,25 +140,26 @@ export function inlineIf(vm, { positional }) {
   This helper acts like a ternary operator. If the first property is falsy,
   the second argument will be displayed, otherwise, the third argument will be
   displayed
+
   ```handlebars
   {{unless useLongGreeting "Hi" "Hello"}} Ben
   ```
+
   You can use the `unless` helper inside another helper as a subexpression.
+
   ```handlebars
   {{some-component height=(unless isBig "10" "100")}}
   ```
+
   @method unless
   @for Ember.Templates.helpers
   @public
 */
 export function inlineUnless(vm, { positional }) {
-  switch (positional.length) {
-    case 2: return ConditionalHelperReference.create(positional.at(0), null, positional.at(1));
-    case 3: return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
-    default:
-      assert(
-        'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
-        '`{{unless isFirstLogin "Welcome back!"}}`.'
-      );
-  }
+  assert(
+    'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
+    '`{{unless isFirstLogin "Welcome back!"}}`.',
+    positional.length === 3 || positional.length === 2
+  );
+  return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
 }

@@ -30,3 +30,30 @@ QUnit.test('transitionToRoute considers an engine\'s mountPoint', function() {
   let queryParams = {};
   strictEqual(controller.transitionToRoute(queryParams), queryParams, 'passes query param only transitions through');
 });
+
+QUnit.test('replaceRoute considers an engine\'s mountPoint', function() {
+  expect(4);
+
+  let router = {
+    replaceWith(route) {
+      return route;
+    }
+  };
+
+  let engineInstance = buildOwner({
+    ownerOptions: {
+      routable: true,
+      mountPoint: 'foo.bar'
+    }
+  });
+
+  let controller = Controller.create({ target: router });
+  setOwner(controller, engineInstance);
+
+  strictEqual(controller.replaceRoute('application'), 'foo.bar.application', 'properly prefixes application route');
+  strictEqual(controller.replaceRoute('posts'), 'foo.bar.posts', 'properly prefixes child routes');
+  throws(() => controller.replaceRoute('/posts'), 'throws when trying to use a url');
+
+  let queryParams = {};
+  strictEqual(controller.replaceRoute(queryParams), queryParams, 'passes query param only transitions through');
+});

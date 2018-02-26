@@ -50,7 +50,30 @@ moduleFor('Input element tests', class extends RenderingTest {
   }
 
   ['@test input disabled attribute']() {
-    this.runPropertyTest('disabled', [false, true]);
+    let model = { model:  { value: false } };
+
+    this.render(`<input disabled={{model.value}}>`, model);
+
+    this.assert.equal(this.$inputElement().prop('disabled'), false);
+
+    this.runTask(() => this.rerender());
+
+    this.assert.equal(this.$inputElement().prop('disabled'), false);
+
+    this.runTask(() => this.context.set('model.value', true));
+
+    this.assert.equal(this.$inputElement().prop('disabled'), true);
+    this.assertHTML('<input disabled="">'); // Note the DOM output is <input disabled>
+
+    this.runTask(() => this.context.set('model.value', 'wat'));
+
+    this.assert.equal(this.$inputElement().prop('disabled'), true);
+    this.assertHTML('<input disabled="">'); // Note the DOM output is <input disabled>
+
+    this.runTask(() => this.context.set('model', { value: false }));
+
+    this.assert.equal(this.$inputElement().prop('disabled'), false);
+    this.assertHTML('<input>');
   }
 
   ['@test input value attribute']() {

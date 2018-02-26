@@ -4,7 +4,6 @@ import { prefixRouteNameArg } from '../utils';
 
 /**
 @module ember
-@submodule ember-routing
 */
 
 ControllerMixin.reopen({
@@ -14,20 +13,53 @@ ControllerMixin.reopen({
     Defines which query parameters the controller accepts.
     If you give the names `['category','page']` it will bind
     the values of these query parameters to the variables
-    `this.category` and `this.page`
-
+    `this.category` and `this.page`.
+    By default, Ember coerces query parameter values using `toggleProperty`.
+    This behavior may lead to unexpected results.
+    To explicitly configure a query parameter property so it coerces as expected, you must define a type property:
+    ```javascript
+      queryParams: [{
+        category: {
+          type: 'boolean'
+        }
+      }]
+    ```
     @property queryParams
     @public
   */
   queryParams: null,
 
   /**
-    @property _qpDelegate
+   This property is updated to various different callback functions depending on
+   the current "state" of the backing route. It is used by
+   `Ember.Controller.prototype._qpChanged`.
+
+   The methods backing each state can be found in the `Ember.Route.prototype._qp` computed
+   property return value (the `.states` property). The current values are listed here for
+   the sanity of future travelers:
+
+   * `inactive` - This state is used when this controller instance is not part of the active
+     route hierarchy. Set in `Ember.Route.prototype._reset` (a `router.js` microlib hook) and
+     `Ember.Route.prototype.actions.finalizeQueryParamChange`.
+   * `active` - This state is used when this controller instance is part of the active
+     route hierarchy. Set in `Ember.Route.prototype.actions.finalizeQueryParamChange`.
+   * `allowOverrides` - This state is used in `Ember.Route.prototype.setup` (`route.js` microlib hook).
+
+    @method _qpDelegate
     @private
   */
   _qpDelegate: null, // set by route
 
   /**
+   During `Ember.Route#setup` observers are created to invoke this method
+   when any of the query params declared in `Ember.Controller#queryParams` property
+   are changed.
+
+
+   When invoked this method uses the currently active query param update delegate
+   (see `Ember.Controller.prototype._qpDelegate` for details) and invokes it with
+   the QP key/value being changed.
+
     @method _qpChanged
     @private
   */
@@ -67,13 +99,15 @@ ControllerMixin.reopen({
     Multiple models will be applied last to first recursively up the
     route tree.
 
-    ```javascript
-    App.Router.map(function() {
+    ```app/router.js
+    Router.map(function() {
       this.route('blogPost', { path: ':blogPostId' }, function() {
         this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
+    ```
 
+    ```javascript
     aController.transitionToRoute('blogComment', aPost, aComment);
     aController.transitionToRoute('blogComment', 1, 13);
     ```
@@ -147,13 +181,15 @@ ControllerMixin.reopen({
     Multiple models will be applied last to first recursively up the
     route tree.
 
-    ```javascript
-    App.Router.map(function() {
+    ```app/router.js
+    Router.map(function() {
       this.route('blogPost', { path: ':blogPostId' }, function() {
         this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
       });
     });
+    ```
 
+    ```
     aController.replaceRoute('blogComment', aPost, aComment);
     aController.replaceRoute('blogComment', 1, 13);
     ```
@@ -172,13 +208,13 @@ ControllerMixin.reopen({
     while transitioning to the route.
     @for Ember.ControllerMixin
     @method replaceRoute
-    @private
+    @public
   */
   replaceRoute(...args) {
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;
-    return method.apply(target, prefixRouteNameArg(target, args));
+    return method.apply(target, prefixRouteNameArg(this, args));
   }
 });
 

@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 import {
   Mixin,
@@ -14,7 +13,7 @@ import {
   @class ContainerProxyMixin
   @private
 */
-export default Mixin.create({
+let containerProxyMixin = {
   /**
    The container stores state.
 
@@ -40,6 +39,7 @@ export default Mixin.create({
 
    @public
    @method ownerInjection
+   @since 2.3.0
    @return {Object}
   */
   ownerInjection() {
@@ -49,7 +49,7 @@ export default Mixin.create({
   /**
    Given a fullName return a corresponding instance.
 
-   The default behaviour is for lookup to return a singleton instance.
+   The default behavior is for lookup to return a singleton instance.
    The singleton is scoped to the container, allowing multiple containers
    to all have their own locally scoped singletons.
 
@@ -95,18 +95,6 @@ export default Mixin.create({
   },
 
   /**
-   Given a fullName return the corresponding factory.
-
-   @private
-   @method _lookupFactory
-   @param {String} fullName
-   @return {any}
-   */
-  _lookupFactory(fullName, options) {
-    return this.__container__.lookupFactory(fullName, options);
-  },
-
-  /**
    Given a name and a source path, resolve the fullName
 
    @private
@@ -130,5 +118,49 @@ export default Mixin.create({
     if (this.__container__) {
       run(this.__container__, 'destroy');
     }
+  },
+
+/**
+ Given a fullName return a factory manager.
+
+  This method returns a manager which can be used for introspection of the
+  factory's class or for the creation of factory instances with initial
+  properties. The manager is an object with the following properties:
+
+  * `class` - The registered or resolved class.
+  * `create` - A function that will create an instance of the class with
+    any dependencies injected.
+
+  For example:
+
+  ```javascript
+  let owner = Ember.getOwner(otherInstance);
+  // the owner is commonly the `applicationInstance`, and can be accessed via
+  // an instance initializer.
+
+  let factory = owner.factoryFor('service:bespoke');
+
+  factory.class;
+  // The registered or resolved class. For example when used with an Ember-CLI
+  // app, this would be the default export from `app/services/bespoke.js`.
+
+  let instance = factory.create({
+    someProperty: 'an initial property value'
+  });
+  // Create an instance with any injections and the passed options as
+  // initial properties.
+  ```
+
+  @public
+  @class ContainerProxyMixin
+  @method factoryFor
+  @param {String} fullName
+  @param {Object} options
+  @return {FactoryManager}
+  */
+  factoryFor(fullName, options = {}) {
+    return this.__container__.factoryFor(fullName, options);
   }
-});
+};
+
+export default Mixin.create(containerProxyMixin);

@@ -1,4 +1,4 @@
-import run from '../../run_loop';
+import { run } from '../..';
 
 QUnit.module('system/run_loop/run_bind_test');
 

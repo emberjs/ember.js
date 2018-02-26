@@ -1,13 +1,15 @@
-import { symbol, EmptyObject } from 'ember-utils';
+import {
+  HAS_NATIVE_WEAKMAP,
+  symbol
+} from 'ember-utils';
 import {
   get,
   set,
+  tagForProperty,
   tagFor,
   didRender,
-  meta as metaFor,
   watchKey,
-  isFeatureEnabled,
-  runInDebug
+  isProxy
 } from 'ember-metal';
 import {
   CONSTANT_TAG,
@@ -16,26 +18,38 @@ import {
   UpdatableTag,
   combine,
   isConst
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 import {
   ConditionalReference as GlimmerConditionalReference,
-  NULL_REFERENCE,
+  PrimitiveReference,
   UNDEFINED_REFERENCE
-} from 'glimmer-runtime';
+} from '@glimmer/runtime';
 import emberToBool from './to-bool';
 import { RECOMPUTE_TAG } from '../helper';
-import { isProxy } from 'ember-runtime';
+import { DEBUG } from 'ember-env-flags';
+import {
+  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
+  MANDATORY_SETTER
+} from 'ember/features';
 
 export const UPDATE = symbol('UPDATE');
 
-// @implements PathReference
-export class PrimitiveReference extends ConstReference {
-  get() {
-    return UNDEFINED_REFERENCE;
+let maybeFreeze;
+if (DEBUG) {
+  // gaurding this in a DEBUG gaurd (as well as all invocations)
+  // so that it is properly stripped during the minification's
+  // dead code elimination
+  maybeFreeze = (obj) => {
+    // re-freezing an already frozen object introduces a significant
+    // performance penalty on Chrome (tested through 59).
+    //
+    // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
+    if (!Object.isFrozen(obj) && HAS_NATIVE_WEAKMAP) {
+      Object.freeze(obj);
+    }
   }
 }
-
-export { NULL_REFERENCE, UNDEFINED_REFERENCE } from 'glimmer-runtime';
 
 // @abstract
 // @implements PathReference
@@ -74,13 +88,13 @@ export class CachedReference extends EmberPathReference {
 export class RootReference extends ConstReference {
   constructor(value) {
     super(value);
-    this.children = new EmptyObject();
+    this.children = Object.create(null);
   }
 
   get(propertyKey) {
     let ref = this.children[propertyKey];
 
-    if (!ref) {
+    if (ref === undefined) {
       ref = this.children[propertyKey] = new RootPropertyReference(this.inner, propertyKey);
     }
 
@@ -90,8 +104,8 @@ export class RootReference extends ConstReference {
 
 let TwoWayFlushDetectionTag;
 
-if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-    isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+    EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
   TwoWayFlushDetectionTag = class {
     constructor(tag, key, ref) {
       this.tag = tag;
@@ -144,23 +158,23 @@ export class RootPropertyReference extends PropertyReference {
     this._parentValue = parentValue;
     this._propertyKey = propertyKey;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      this.tag = new TwoWayFlushDetectionTag(tagFor(parentValue), propertyKey, this);
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+      this.tag = new TwoWayFlushDetectionTag(tagForProperty(parentValue, propertyKey), propertyKey, this);
     } else {
-      this.tag = tagFor(parentValue);
+      this.tag = tagForProperty(parentValue, propertyKey);
     }
 
-    if (isFeatureEnabled('mandatory-setter')) {
-      watchKey(parentValue, propertyKey, metaFor(parentValue));
+    if (MANDATORY_SETTER) {
+      watchKey(parentValue, propertyKey);
     }
   }
 
   compute() {
     let { _parentValue, _propertyKey } = this;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       this.tag.didCompute(_parentValue);
     }
 
@@ -183,8 +197,8 @@ export class NestedPropertyReference extends PropertyReference {
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
-    if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-        isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+        EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
       this.tag = new TwoWayFlushDetectionTag(tag, propertyKey, this);
     } else {
@@ -197,16 +211,21 @@ export class NestedPropertyReference extends PropertyReference {
 
     let parentValue = _parentReference.value();
 
-    _parentObjectTag.update(tagFor(parentValue));
+    _parentObjectTag.update(tagForProperty(parentValue, _propertyKey));
 
-    if (typeof parentValue === 'object' && parentValue) {
-      if (isFeatureEnabled('mandatory-setter')) {
-        let meta = metaFor(parentValue);
-        watchKey(parentValue, _propertyKey, meta);
+    let parentValueType = typeof parentValue;
+
+    if (parentValueType === 'string' && _propertyKey === 'length') {
+      return parentValue.length;
+    }
+
+    if (parentValueType === 'object' && parentValue !== null || parentValueType === 'function') {
+      if (MANDATORY_SETTER) {
+        watchKey(parentValue, _propertyKey);
       }
 
-      if (isFeatureEnabled('ember-glimmer-detect-backtracking-rerender') ||
-          isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+      if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER ||
+          EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
         this.tag.didCompute(parentValue);
       }
 
@@ -258,7 +277,7 @@ export class ConditionalReference extends GlimmerConditionalReference {
       if (isProxy(value)) {
         return new RootPropertyReference(value, 'isTruthy');
       } else {
-        return new PrimitiveReference(emberToBool(value));
+        return PrimitiveReference.create(emberToBool(value));
       }
     }
 
@@ -273,11 +292,11 @@ export class ConditionalReference extends GlimmerConditionalReference {
   }
 
   toBool(predicate) {
-    this.objectTag.update(tagFor(predicate));
-
     if (isProxy(predicate)) {
+      this.objectTag.update(tagForProperty(predicate, 'isTruthy'));
       return get(predicate, 'isTruthy');
     } else {
+      this.objectTag.update(tagFor(predicate));
       return emberToBool(predicate);
     }
   }
@@ -291,21 +310,17 @@ export class SimpleHelperReference extends CachedReference {
       let positionalValue = positional.value();
       let namedValue = named.value();
 
-      runInDebug(() => {
-        Object.freeze(positionalValue);
-        Object.freeze(namedValue);
-      });
+      if (DEBUG) {
+        maybeFreeze(positionalValue);
+        maybeFreeze(namedValue);
+      }
 
       let result = helper(positionalValue, namedValue);
 
-      if (result === null) {
-        return NULL_REFERENCE;
-      } else if (result === undefined) {
-        return UNDEFINED_REFERENCE;
-      } else if (typeof result === 'object') {
+      if (typeof result === 'object' && result !== null || typeof result === 'function') {
         return new RootReference(result);
       } else {
-        return new PrimitiveReference(result);
+        return PrimitiveReference.create(result);
       }
     } else {
       return new SimpleHelperReference(helper, args);
@@ -326,10 +341,10 @@ export class SimpleHelperReference extends CachedReference {
     let positionalValue = positional.value();
     let namedValue = named.value();
 
-    runInDebug(() => {
-      Object.freeze(positionalValue);
-      Object.freeze(namedValue);
-    });
+    if (DEBUG) {
+      maybeFreeze(positionalValue);
+      maybeFreeze(namedValue);
+    }
 
     return helper(positionalValue, namedValue);
   }
@@ -356,10 +371,10 @@ export class ClassBasedHelperReference extends CachedReference {
     let positionalValue = positional.value();
     let namedValue = named.value();
 
-    runInDebug(() => {
-      Object.freeze(positionalValue);
-      Object.freeze(namedValue);
-    });
+    if (DEBUG) {
+      maybeFreeze(positionalValue);
+      maybeFreeze(namedValue);
+    }
 
     return instance.compute(positionalValue, namedValue);
   }
@@ -383,14 +398,10 @@ export class InternalHelperReference extends CachedReference {
 // @implements PathReference
 export class UnboundReference extends ConstReference {
   static create(value) {
-    if (value === null) {
-      return NULL_REFERENCE;
-    } else if (value === undefined) {
-      return UNDEFINED_REFERENCE;
-    } else if (typeof value === 'object') {
+    if (typeof value === 'object' && value !== null || typeof result === 'function') {
       return new UnboundReference(value);
     } else {
-      return new PrimitiveReference(value);
+      return PrimitiveReference.create(value);
     }
   }
 

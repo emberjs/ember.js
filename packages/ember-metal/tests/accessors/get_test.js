@@ -1,13 +1,11 @@
 import { testBoth } from 'internal-test-helpers';
 import {
   get,
-  getWithDefault
-} from '../../property_get';
-import {
+  getWithDefault,
   Mixin,
-  observer
-} from '../../mixin';
-import { addObserver } from '../../observer';
+  observer,
+  addObserver
+} from '../..';
 
 QUnit.module('Ember.get');
 
@@ -57,19 +55,19 @@ testBoth('should call unknownProperty on watched values if the value is undefine
   equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
 });
 
-QUnit.test('warn on attemps to call get with no arguments', function() {
+QUnit.test('warn on attempts to call get with no arguments', function() {
   expectAssertion(function() {
     get('aProperty');
   }, /Get must be called with two arguments;/i);
 });
 
-QUnit.test('warn on attemps to call get with only one argument', function() {
+QUnit.test('warn on attempts to call get with only one argument', function() {
   expectAssertion(function() {
     get('aProperty');
   }, /Get must be called with two arguments;/i);
 });
 
-QUnit.test('warn on attemps to call get with more then two arguments', function() {
+QUnit.test('warn on attempts to call get with more then two arguments', function() {
   expectAssertion(function() {
     get({}, 'aProperty', true);
   }, /Get must be called with two arguments;/i);
@@ -106,6 +104,7 @@ QUnit.test('warn on attempts to use get with an unsupported property path', func
   expectAssertion(() => get(obj, undefined), /The key provided to get must be a string, you passed undefined/);
   expectAssertion(() => get(obj, false),     /The key provided to get must be a string, you passed false/);
   expectAssertion(() => get(obj, 42),        /The key provided to get must be a string, you passed 42/);
+  expectAssertion(() => get(obj, ''), /Cannot call `Ember.get` with an empty string/);
 });
 
 // ..........................................................

@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/* eslint-env node */
 
 var stringUtil         = require('ember-cli-string-utils');
 var pathUtil           = require('ember-cli-path-utils');
@@ -16,8 +16,8 @@ module.exports = {
       name: 'path',
       type: String,
       default: 'components',
-      aliases:[
-        {'no-path': ''}
+      aliases: [
+        { 'no-path': '' }
       ]
     }
   ],
@@ -57,7 +57,7 @@ module.exports = {
     var contents       = '';
     // if we're in an addon, build import statement
     if (options.project.isEmberCLIAddon() || options.inRepoAddon && !options.inDummy) {
-      if(options.pod) {
+      if (options.pod) {
         templatePath   = './template';
       } else {
         templatePath   = pathUtil.getRelativeParentPath(options.entity.name) +

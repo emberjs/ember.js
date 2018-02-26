@@ -114,357 +114,6 @@ QUnit.module('Basic Routing', {
   }
 });
 
-QUnit.test('warn on URLs not included in the route set', function () {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  bootApplication();
-
-  expectAssertion(() => run(() => router.handleURL('/what-is-this-i-dont-even')),
-                  'The URL \'/what-is-this-i-dont-even\' did not match any routes in your application');
-});
-
-QUnit.test('The Homepage', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeRoute = Route.extend({
-  });
-
-  let currentPath;
-
-  App.ApplicationController = Controller.extend({
-    currentPathDidChange: observer('currentPath', function() {
-      currentPath = get(this, 'currentPath');
-    })
-  });
-
-  bootApplication();
-
-  equal(currentPath, 'home');
-  equal(jQuery('h3:contains(Hours)', '#qunit-fixture').length, 1, 'The home template was rendered');
-});
-
-QUnit.test('The Home page and the Camelot page with multiple Router.map calls', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  Router.map(function() {
-    this.route('camelot', { path: '/camelot' });
-  });
-
-  App.HomeRoute = Route.extend({
-  });
-
-  App.CamelotRoute = Route.extend({
-  });
-
-  let currentPath;
-
-  App.ApplicationController = Controller.extend({
-    currentPathDidChange: observer('currentPath', function() {
-      currentPath = get(this, 'currentPath');
-    })
-  });
-
-  App.CamelotController = Controller.extend({
-    currentPathDidChange: observer('currentPath', function() {
-      currentPath = get(this, 'currentPath');
-    })
-  });
-
-  bootApplication();
-
-  handleURL('/camelot');
-
-  equal(currentPath, 'camelot');
-  equal(jQuery('h3:contains(silly)', '#qunit-fixture').length, 1, 'The camelot template was rendered');
-
-  handleURL('/');
-
-  equal(currentPath, 'home');
-  equal(jQuery('h3:contains(Hours)', '#qunit-fixture').length, 1, 'The home template was rendered');
-});
-
-QUnit.test('The Homepage with explicit template name in renderTemplate', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeRoute = Route.extend({
-    renderTemplate() {
-      this.render('homepage');
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('h3:contains(Megatroll)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
-});
-
-QUnit.test('An alternate template will pull in an alternate controller', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeRoute = Route.extend({
-    renderTemplate() {
-      this.render('homepage');
-    }
-  });
-
-  App.HomepageController = Controller.extend({
-    model: {
-      home: 'Comes from homepage'
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
-});
-
-QUnit.test('An alternate template will pull in an alternate controller instead of controllerName', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeRoute = Route.extend({
-    controllerName: 'foo',
-    renderTemplate() {
-      this.render('homepage');
-    }
-  });
-
-  App.FooController = Controller.extend({
-    model: {
-      home: 'Comes from Foo'
-    }
-  });
-
-  App.HomepageController = Controller.extend({
-    model: {
-      home: 'Comes from homepage'
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
-});
-
-QUnit.test('The template will pull in an alternate controller via key/value', function() {
-  Router.map(function() {
-    this.route('homepage', { path: '/' });
-  });
-
-  App.HomepageRoute = Route.extend({
-    renderTemplate() {
-      this.render({ controller: 'home' });
-    }
-  });
-
-  App.HomeController = Controller.extend({
-    model: {
-      home: 'Comes from home.'
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('h3:contains(Megatroll) + p:contains(Comes from home.)', '#qunit-fixture').length, 1, 'The homepage template was rendered from data from the HomeController');
-});
-
-QUnit.test('The Homepage with explicit template name in renderTemplate and controller', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeController = Controller.extend({
-    model: {
-      home: 'YES I AM HOME'
-    }
-  });
-
-  App.HomeRoute = Route.extend({
-    renderTemplate() {
-      this.render('homepage');
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, 'The homepage template was rendered');
-});
-
-QUnit.test('Model passed via renderTemplate model is set as controller\'s model', function() {
-  setTemplate('bio', compile('<p>{{model.name}}</p>'));
-
-  App.BioController = Controller.extend();
-
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeRoute = Route.extend({
-    renderTemplate() {
-      this.render('bio', {
-        model: { name: 'emberjs' }
-      });
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('p:contains(emberjs)', '#qunit-fixture').length, 1, 'Passed model was set as controllers model');
-});
-
-QUnit.test('render uses templateName from route', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  setTemplate('the_real_home_template', compile(
-    '<p>THIS IS THE REAL HOME</p>'
-  ));
-
-  App.HomeController = Controller.extend();
-  App.HomeRoute = Route.extend({
-    templateName: 'the_real_home_template'
-  });
-
-  bootApplication();
-
-  equal(jQuery('p', '#qunit-fixture').text(), 'THIS IS THE REAL HOME', 'The homepage template was rendered');
-});
-
-QUnit.test('defining templateName allows other templates to be rendered', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  setTemplate('alert', compile(
-    '<div class=\'alert-box\'>Invader!</div>'
-  ));
-  setTemplate('the_real_home_template', compile(
-    '<p>THIS IS THE REAL HOME</p>{{outlet \'alert\'}}'
-  ));
-
-  App.HomeController = Controller.extend();
-  App.HomeRoute = Route.extend({
-    templateName: 'the_real_home_template',
-    actions: {
-      showAlert() {
-        this.render('alert', {
-          into: 'home',
-          outlet: 'alert'
-        });
-      }
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('p', '#qunit-fixture').text(), 'THIS IS THE REAL HOME', 'The homepage template was rendered');
-
-  run(() => router.send('showAlert'));
-
-  equal(jQuery('.alert-box', '#qunit-fixture').text(), 'Invader!', 'Template for alert was render into outlet');
-});
-
-QUnit.test('templateName is still used when calling render with no name and options', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  setTemplate('alert', compile(
-    '<div class=\'alert-box\'>Invader!</div>'
-  ));
-  setTemplate('home', compile(
-    '<p>THIS IS THE REAL HOME</p>{{outlet \'alert\'}}'
-  ));
-
-  App.HomeRoute = Route.extend({
-    templateName: 'alert',
-    renderTemplate: function() {
-      this.render({});
-    }
-  });
-
-  bootApplication();
-
-  equal(jQuery('.alert-box', '#qunit-fixture').text(), 'Invader!', 'default templateName was rendered into outlet');
-});
-
-QUnit.test('The Homepage with a `setupController` hook', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeRoute = Route.extend({
-    setupController(controller) {
-      set(controller, 'hours', emberA([
-        'Monday through Friday: 9am to 5pm',
-        'Saturday: Noon to Midnight',
-        'Sunday: Noon to 6pm'
-      ]));
-    }
-  });
-
-  setTemplate('home', compile(
-    '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
-  ));
-
-  bootApplication();
-
-  equal(jQuery('ul li', '#qunit-fixture').eq(2).text(), 'Sunday: Noon to 6pm', 'The template was rendered with the hours context');
-});
-
-QUnit.test('The route controller is still set when overriding the setupController hook', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  App.HomeRoute = Route.extend({
-    setupController(controller) {
-      // no-op
-      // importantly, we are not calling  this._super here
-    }
-  });
-
-  registry.register('controller:home', Controller.extend());
-
-  bootApplication();
-
-  deepEqual(container.lookup('route:home').controller, container.lookup('controller:home'), 'route controller is the home controller');
-});
-
-QUnit.test('The route controller can be specified via controllerName', function() {
-  Router.map(function() {
-    this.route('home', { path: '/' });
-  });
-
-  setTemplate('home', compile(
-    '<p>{{myValue}}</p>'
-  ));
-
-  App.HomeRoute = Route.extend({
-    controllerName: 'myController'
-  });
-
-  registry.register('controller:myController', Controller.extend({
-    myValue: 'foo'
-  }));
-
-  bootApplication();
-
-  deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), 'route controller is set by controllerName');
-  equal(jQuery('p', '#qunit-fixture').text(), 'foo', 'The homepage template was rendered with data from the custom controller');
-});
-
 QUnit.test('The route controller specified via controllerName is used in render', function() {
   Router.map(function() {
     this.route('home', { path: '/' });
@@ -1374,7 +1023,6 @@ QUnit.test('Route inherits model from parent route', function() {
   let post1 = {};
   let post2 = {};
   let post3 = {};
-  let currentPost;
   let share1 = {};
   let share2 = {};
   let share3 = {};
@@ -1420,15 +1068,12 @@ QUnit.test('Route inherits model from parent route', function() {
 
   bootApplication();
 
-  currentPost = post1;
   handleURL('/posts/1/comments');
   handleURL('/posts/1/shares/1');
 
-  currentPost = post2;
   handleURL('/posts/2/comments');
   handleURL('/posts/2/shares/2');
 
-  currentPost = post3;
   handleURL('/posts/3/comments');
   handleURL('/posts/3/shares/3');
 });
@@ -1446,7 +1091,6 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
   let post1 = {};
   let post2 = {};
   let post3 = {};
-  let currentPost;
 
   let posts = {
     1: post1,
@@ -1470,13 +1114,8 @@ QUnit.test('Routes with { resetNamespace: true } inherits model from parent rout
 
   bootApplication();
 
-  currentPost = post1;
   handleURL('/posts/1/comments');
-
-  currentPost = post2;
   handleURL('/posts/2/comments');
-
-  currentPost = post3;
   handleURL('/posts/3/comments');
 });
 
@@ -1850,6 +1489,10 @@ QUnit.test('Parent route context change', function() {
       return { id: params.postId };
     },
 
+    serialize(model) {
+      return { postId: model.id };
+    },
+
     actions: {
       editPost(context) {
         this.transitionTo('post.edit');
@@ -2038,7 +1681,7 @@ QUnit.test('Generated route should be an instance of App.Route if provided', fun
   ok(generatedRoute instanceof App.Route, 'should extend the correct route');
 });
 
-QUnit.test('Nested index route is not overriden by parent\'s implicit index route', function() {
+QUnit.test('Nested index route is not overridden by parent\'s implicit index route', function() {
   Router.map(function() {
     this.route('posts', function() {
       this.route('index', { path: ':category' });
@@ -2290,6 +1933,8 @@ QUnit.test('Route should tear down multiple outlets', function() {
 
 
 QUnit.test('Route will assert if you try to explicitly render {into: ...} a missing template', function () {
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
   Router.map(function() {
     this.route('home', { path: '/' });
   });
@@ -2863,11 +2508,9 @@ QUnit.test('Specifying non-existent controller name in route#render throws', fun
 
   App.HomeRoute = Route.extend({
     renderTemplate() {
-      try {
+      expectAssertion(() => {
         this.render('homepage', { controller: 'stefanpenneristhemanforme' });
-      } catch(e) {
-        equal(e.message, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.');
-      }
+      }, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.')
     }
   });
 
@@ -3071,7 +2714,7 @@ QUnit.test('Errors in transition show error template if available', function() {
     }
   });
 
-  throws(() => bootApplication(), /More context objects were passed/);
+  bootApplication();
 
   equal(jQuery('#error').length, 1, 'Error template was rendered.');
 });
@@ -3441,7 +3084,12 @@ QUnit.test('Allows any route to disconnectOutlet another route\'s templates', fu
 });
 
 QUnit.test('Can this.render({into:...}) the render helper', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('bar', compile('bar'));
@@ -3468,7 +3116,12 @@ QUnit.test('Can this.render({into:...}) the render helper', function() {
 });
 
 QUnit.test('Can disconnect from the render helper', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
@@ -3493,7 +3146,12 @@ QUnit.test('Can disconnect from the render helper', function() {
 });
 
 QUnit.test('Can this.render({into:...}) the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
@@ -3522,7 +3180,12 @@ QUnit.test('Can this.render({into:...}) the render helper\'s children', function
 });
 
 QUnit.test('Can disconnect from the render helper\'s children', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('sidebar', compile('<div class="sidebar">{{outlet}}</div>'));
   setTemplate('index', compile('<div class="index">{{outlet}}</div>'));
   setTemplate('other', compile('other'));
@@ -3549,8 +3212,16 @@ QUnit.test('Can disconnect from the render helper\'s children', function() {
 });
 
 QUnit.test('Can this.render({into:...}) nested render helpers', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
-  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+  expectDeprecation(() => {
+    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
   setTemplate('baz', compile('baz'));
@@ -3577,8 +3248,16 @@ QUnit.test('Can this.render({into:...}) nested render helpers', function() {
 });
 
 QUnit.test('Can disconnect from nested render helpers', function() {
-  setTemplate('application', compile('{{render "sidebar"}}'));
-  setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+  expectDeprecation(() => {
+    setTemplate('application', compile('{{render "sidebar"}}'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+  expectDeprecation(() => {
+    setTemplate('sidebar', compile('<div class="sidebar">{{render "cart"}}</div>'));
+  }, /Please refactor [\w\{\}"` ]+ to a component/);
+
   setTemplate('cart', compile('<div class="cart">{{outlet}}</div>'));
   setTemplate('index', compile('other'));
 
@@ -3665,7 +3344,7 @@ QUnit.test('Doesnt swallow exception thrown from willTransition', function() {
 
   throws(() => {
     run(() => router.handleURL('/other'));
-  }, /boom/, 'expected an exception that didnt happen');
+  }, /boom/, 'expected an exception but none was thrown');
 });
 
 QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet', function(assert) {
@@ -3688,11 +3367,11 @@ QUnit.test('Exception if outlet name is undefined in render and disconnectOutlet
 
   bootApplication();
 
-  throws(() => {
+  expectAssertion(() => {
     run(() => router.send('showModal'));
   }, /You passed undefined as the outlet name/);
 
-  throws(() => {
+  expectAssertion(() => {
     run(() => router.send('hideModal'));
   }, /You passed undefined as the outlet name/);
 });
@@ -3722,7 +3401,7 @@ QUnit.test('Route serializers work for Engines', function() {
 
   bootApplication();
 
-  equal(router.router.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
+  equal(router._routerMicrolib.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
 });
 
 QUnit.test('Defining a Route#serialize method in an Engine throws an error', function() {

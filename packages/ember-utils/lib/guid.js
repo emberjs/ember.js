@@ -1,4 +1,7 @@
 import intern from './intern';
+/**
+ @module @ember/object
+*/
 
 /**
  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
@@ -49,7 +52,7 @@ const stringCache  = {};
   @type String
   @final
 */
-export const GUID_KEY = intern('__ember' + (+ new Date()));
+export const GUID_KEY = intern(`__ember${+ new Date()}`);
 
 export let GUID_DESC = {
   writable:     true,
@@ -77,7 +80,8 @@ export let GUID_KEY_PROPERTY = {
 
   @private
   @method generateGuid
-  @for Ember
+  @static
+  @for @ember/object/internals
   @param {Object} [obj] Object the guid will be used for. If passed in, the guid will
     be saved on the object and reused whenever you pass the same object
     again.
@@ -117,8 +121,9 @@ export function generateGuid(obj, prefix) {
   You can also use this method on DOM Element objects.
 
   @public
+  @static
   @method guidFor
-  @for Ember
+  @for @ember/object/internals
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
@@ -148,7 +153,7 @@ export function guidFor(obj) {
       ret = numberCache[obj];
 
       if (!ret) {
-        ret = numberCache[obj] = 'nu' + obj;
+        ret = numberCache[obj] = `nu${obj}`;
       }
 
       return ret;
@@ -157,7 +162,7 @@ export function guidFor(obj) {
       ret = stringCache[obj];
 
       if (!ret) {
-        ret = stringCache[obj] = 'st' + uuid();
+        ret = stringCache[obj] = `st${uuid()}`;
       }
 
       return ret;

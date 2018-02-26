@@ -1,10 +1,11 @@
-import _Ember, { FEATURES } from 'ember-metal';
+import _Ember from 'ember-metal';
+import * as FLAGS from 'ember/features';
 import { ENV } from 'ember-environment';
 import VERSION from 'ember/version';
 
 // private API used by ember-cli-htmlbars to setup ENV and FEATURES
 if (!_Ember.ENV) { _Ember.ENV = ENV; }
-if (!_Ember.FEATURES) { _Ember.FEATURES = FEATURES; }
+if (!_Ember.FEATURES) { _Ember.FEATURES = FLAGS.FEATURES; }
 if (!_Ember.VERSION) { _Ember.VERSION = VERSION; }
 
 export { _Ember };

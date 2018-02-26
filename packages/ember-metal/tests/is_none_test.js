@@ -1,4 +1,4 @@
-import isNone from '../is_none';
+import { isNone } from '..';
 
 QUnit.module('Ember.isNone');
 

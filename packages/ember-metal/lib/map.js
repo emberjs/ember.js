@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-metal
 */
 
 /*
@@ -8,7 +7,7 @@
   which are often used as dictionaries, may only have Strings as keys.
 
   Because Ember has a way to get a unique identifier for every object
-  via `Ember.guidFor`, we can implement a performant Map with arbitrary
+  via `guidFor`, we can implement a performant Map with arbitrary
   keys. Because it is commonly used in low-level bookkeeping, Map is
   implemented as a pure JavaScript object for performance.
 
@@ -18,9 +17,9 @@
   forEach method for iteration.
 
   Map is mocked out to look like an Ember object, so you can do
-  `Ember.Map.create()` for symmetry with other Ember classes.
+  `EmberMap.create()` for symmetry with other Ember classes.
 */
-import { EmptyObject, guidFor } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 
 function missingFunction(fn) {
   throw new TypeError(`${Object.prototype.toString.call(fn)} is not a function`);
@@ -31,10 +30,10 @@ function missingNew(name) {
 }
 
 function copyNull(obj) {
-  let output = new EmptyObject();
+  let output = Object.create(null);
 
   for (let prop in obj) {
-    // hasOwnPropery is not needed because obj is new EmptyObject();
+    // hasOwnPropery is not needed because obj is Object.create(null);
     output[prop] = obj[prop];
   }
 
@@ -65,7 +64,6 @@ function copyMap(original, newObject) {
 function OrderedSet() {
   if (this instanceof OrderedSet) {
     this.clear();
-    this._silenceRemoveDeprecation = false;
   } else {
     missingNew('OrderedSet');
   }
@@ -90,7 +88,7 @@ OrderedSet.prototype = {
     @private
   */
   clear() {
-    this.presenceSet = new EmptyObject();
+    this.presenceSet = Object.create(null);
     this.list = [];
     this.size = 0;
   },
@@ -209,7 +207,6 @@ OrderedSet.prototype = {
     let Constructor = this.constructor;
     let set = new Constructor();
 
-    set._silenceRemoveDeprecation = this._silenceRemoveDeprecation;
     set.presenceSet = copyNull(this.presenceSet);
     set.list = this.toArray();
     set.size = this.size;
@@ -226,7 +223,7 @@ OrderedSet.prototype = {
   Internally, a Map has two data structures:
 
   1. `keys`: an OrderedSet of all of the existing keys
-  2. `values`: a JavaScript Object indexed by the `Ember.guidFor(key)`
+  2. `values`: a JavaScript Object indexed by the `guidFor(key)`
 
   When a key/value pair is added for the first time, we
   add the key to the `keys` OrderedSet, and create or
@@ -241,8 +238,7 @@ OrderedSet.prototype = {
 function Map() {
   if (this instanceof Map) {
     this._keys = OrderedSet.create();
-    this._keys._silenceRemoveDeprecation = true;
-    this._values = new EmptyObject();
+    this._values = Object.create(null);
     this.size = 0;
   } else {
     missingNew('Map');
@@ -394,7 +390,7 @@ Map.prototype = {
   */
   clear() {
     this._keys.clear();
-    this._values = new EmptyObject();
+    this._values = Object.create(null);
     this.size = 0;
   },
 
@@ -428,7 +424,7 @@ function MapWithDefault(options) {
   @param [options]
     @param {*} [options.defaultValue]
   @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
-    `Ember.MapWithDefault` otherwise returns `Ember.Map`
+    `MapWithDefault` otherwise returns `EmberMap`
   @private
 */
 MapWithDefault.create = function(options) {

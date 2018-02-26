@@ -34,6 +34,37 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'foo', 'data-bar': 'bar' }, content: 'hello' });
   }
 
+  ['@test it can have attribute bindings with attrs']() {
+    let FooBarComponent = Component.extend({
+      attributeBindings: ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar foo=model.foo baz=model.baz}}', {
+      model: { foo: undefined, baz: { bar: 'bar' } }
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'data-bar': 'bar' } });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'data-bar': 'bar' } });
+
+    this.runTask(() => {
+      set(this.context, 'model.foo', 'foo');
+      set(this.context, 'model.baz.bar', undefined);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'foo' }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'model', {
+      foo: undefined, baz: { bar: 'bar' }
+    }));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', content: 'hello', attrs: { 'data-bar': 'bar' } });
+  }
+
   ['@test it can have attribute bindings with a nested path']() {
     let FooBarComponent = Component.extend({
       attributeBindings: ['foo.bar:data-foo-bar']
@@ -108,56 +139,52 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
   }
 
-  ['@test normalizes attributeBinding names']() {
+  ['@test normalizes attributeBindings for property names']() {
     let FooBarComponent = Component.extend({
-      attributeBindings: ['disAbled']
+      attributeBindings: ['tiTLe']
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
-    this.render('{{foo-bar disAbled=bool}}', {
-      bool: true
+    this.render('{{foo-bar tiTLe=name}}', {
+      name: 'qux'
     });
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { title: 'qux' }, content: 'hello' });
 
-    this.runTask(() => this.rerender());
+    this.assertStableRerender();
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
-
-    this.runTask(() => set(this.context, 'bool', null));
+    this.runTask(() => set(this.context, 'name', null));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
-    this.runTask(() => set(this.context, 'bool', true));
+    this.runTask(() => set(this.context, 'name', 'qux'));
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { title: 'qux' }, content: 'hello' });
   }
 
-  ['@test normalizes attributeBinding names']() {
+  ['@test normalizes attributeBindings for attribute names']() {
     let FooBarComponent = Component.extend({
-      attributeBindings: ['disAbled']
+      attributeBindings: ['foo:data-FOO']
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
 
-    this.render('{{foo-bar disAbled=bool}}', {
-      bool: true
+    this.render('{{foo-bar foo=foo}}', {
+      foo: 'qux'
     });
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'qux' }, content: 'hello' });
 
-    this.runTask(() => this.rerender());
+    this.assertStableRerender();
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
-
-    this.runTask(() => set(this.context, 'bool', false));
+    this.runTask(() => set(this.context, 'foo', null));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: {}, content: 'hello' });
 
-    this.runTask(() => set(this.context, 'bool', true));
+    this.runTask(() => set(this.context, 'foo', 'qux'));
 
-    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { disabled: '' }, content: 'hello' });
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'qux' }, content: 'hello' });
   }
 
   ['@test attributeBindings handles null/undefined']() {
@@ -516,5 +543,55 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.runTask(() => set(this.context, 'role', null));
 
     this.assertComponentElement(this.firstChild, { tagName: 'div' });
+  }
+
+  ['@test component with an `id` attribute binding of undefined']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['id'],
+
+        id: undefined
+      })
+    });
+
+    this.registerComponent('baz-qux', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['somethingUndefined:id'],
+
+        somethingUndefined: undefined
+      })
+    });
+    this.render(`{{foo-bar}}{{baz-qux}}`);
+
+    this.assertComponentElement(this.nthChild(0), { content: '' });
+    this.assertComponentElement(this.nthChild(1), { content: '' });
+
+    this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+    this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
+  }
+
+  ['@test component with an `id` attribute binding of null']() {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['id'],
+
+        id: null
+      })
+    });
+
+    this.registerComponent('baz-qux', {
+      ComponentClass: Component.extend({
+        attributeBindings: ['somethingNull:id'],
+
+        somethingNull: null
+      })
+    });
+    this.render(`{{foo-bar}}{{baz-qux}}`);
+
+    this.assertComponentElement(this.nthChild(0), { content: '' });
+    this.assertComponentElement(this.nthChild(1), { content: '' });
+
+    this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+    this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
   }
 });

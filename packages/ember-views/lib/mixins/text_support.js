@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-views
 */
 
 import {
@@ -19,7 +18,7 @@ const KEY_EVENTS = {
   `TextSupport` is a shared mixin used by both `Ember.TextField` and
   `Ember.TextArea`. `TextSupport` adds a number of methods that allow you to
   specify a controller action to invoke when a certain event is fired on your
-  text field or textarea. The specifed controller action would get the current
+  text field or textarea. The specified controller action would get the current
   value of the field passed in as the only argument unless the value of
   the field is empty. In that case, the instance of the field itself is passed
   in as the only argument.
@@ -110,7 +109,7 @@ const KEY_EVENTS = {
   @class TextSupport
   @namespace Ember
   @uses Ember.TargetActionSupport
-  @extends Ember.Mixin
+  @extends Mixin
   @private
 */
 export default Mixin.create(TargetActionSupport, {
@@ -123,6 +122,7 @@ export default Mixin.create(TargetActionSupport, {
     'disabled',
     'form',
     'maxlength',
+    'minlength',
     'placeholder',
     'readonly',
     'required',
@@ -334,7 +334,7 @@ export default Mixin.create(TargetActionSupport, {
 // sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  let action = get(view, 'attrs.' + eventName) || get(view, eventName);
+  let action = get(view, `attrs.${eventName}`) || get(view, eventName);
   let on = get(view, 'onEvent');
   let value = get(view, 'value');
 

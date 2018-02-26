@@ -1,19 +1,25 @@
 import Logger from 'ember-console';
-import { isTesting } from './testing';
+import { isTesting } from 'ember-debug';
 
 // To maintain stacktrace consistency across browsers
-let getStack = function(error) {
-  var stack = error.stack;
-  var message = error.message;
+let getStack = error => {
+  let stack = error.stack;
+  let message = error.message;
 
   if (stack && stack.indexOf(message) === -1) {
-    stack = message + '\n' + stack;
+    stack = `${message}\n${stack}`;
   }
 
   return stack;
 };
 
 let onerror;
+export const onErrorTarget = {
+  get onerror() {
+    return dispatchOverride || onerror;
+  }
+};
+
 // Ember.onerror getter
 export function getOnerror() {
   return onerror;
@@ -34,6 +40,9 @@ export function dispatchError(error) {
 }
 
 // allows testing adapter to override dispatch
+export function getDispatchOverride() {
+  return dispatchOverride;
+}
 export function setDispatchOverride(handler) {
   dispatchOverride = handler;
 }

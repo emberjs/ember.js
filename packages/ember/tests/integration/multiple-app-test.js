@@ -1,70 +1,95 @@
-import { run } from 'ember-metal';
-import { compile } from 'ember-template-compiler';
+import {
+  moduleFor,
+  ApplicationTestCase
+} from 'internal-test-helpers';
 import { Application } from 'ember-application';
 import { Component } from 'ember-glimmer';
 import { jQuery } from 'ember-views';
+import { assign, getOwner } from 'ember-utils';
 
-let App1, App2, actions;
+moduleFor('View Integration', class extends ApplicationTestCase {
 
-function startApp(rootElement) {
-  let application;
-
-  run(() => {
-    application = Application.create({
-      rootElement
+  constructor() {
+    jQuery('#qunit-fixture').html(`
+      <div id="one"></div>
+      <div id="two"></div>
+    `);
+    super();
+    this.runTask(() => {
+      this.createSecondApplication();
     });
-    application.deferReadiness();
+  }
 
-    application.Router.reopen({
-      location: 'none'
+  get applicationOptions() {
+    return assign(super.applicationOptions, {
+      rootElement: '#one',
+      router: null
     });
+  }
 
-    let registry = application.__registry__;
+  createSecondApplication(options) {
+    let {applicationOptions} = this;
+    let secondApplicationOptions = {rootElement: '#two'};
+    let myOptions = assign(applicationOptions, secondApplicationOptions, options);
+    this.secondApp = Application.create(myOptions);
+    this.secondResolver = myOptions.Resolver.lastInstance;
+    return this.secondApp;
+  }
 
-    registry.register('component:special-button', Component.extend({
+  teardown() {
+    super.teardown();
+
+    if (this.secondApp) {
+      this.runTask(() => {
+        this.secondApp.destroy();
+      });
+    }
+  }
+
+  addFactoriesToResolver(actions, resolver) {
+    resolver.add('component:special-button', Component.extend({
       actions: {
         doStuff() {
+          let rootElement = getOwner(this).application.rootElement;
           actions.push(rootElement);
         }
       }
     }));
-    registry.register('template:application', compile('{{outlet}}', { moduleName: 'application' }));
-    registry.register('template:index', compile('<h1>Node 1</h1>{{special-button}}', { moduleName: 'index' }));
-    registry.register('template:components/special-button', compile('<button class=\'do-stuff\' {{action \'doStuff\'}}>Button</button>', { moduleName: 'components/special-button' }));
-  });
 
-  return application;
-}
-
-function handleURL(application, path) {
-  let router = application.__container__.lookup('router:main');
-  return run(router, 'handleURL', path);
-}
-
-QUnit.module('View Integration', {
-  setup() {
-    actions = [];
-    jQuery('#qunit-fixture').html('<div id="app-1"></div><div id="app-2"></div>');
-    App1 = startApp('#app-1');
-    App2 = startApp('#app-2');
-  },
-
-  teardown() {
-    run(App1, 'destroy');
-    run(App2, 'destroy');
-    App1 = App2 = null;
+    resolver.add(
+      'template:index',
+      this.compile(`
+        <h1>Node 1</h1>{{special-button}}
+      `, {
+        moduleName: 'index'
+      })
+    );
+    resolver.add(
+      'template:components/special-button',
+      this.compile(`
+        <button class='do-stuff' {{action 'doStuff'}}>Button</button>
+      `, {
+        moduleName: 'components/special-button'
+      })
+    );
   }
-});
 
-QUnit.test('booting multiple applications can properly handle events', function(assert) {
-  run(App1, 'advanceReadiness');
-  run(App2, 'advanceReadiness');
+  [`@test booting multiple applications can properly handle events`](assert) {
+    let actions = [];
+    this.addFactoriesToResolver(actions, this.resolver);
+    this.addFactoriesToResolver(actions, this.secondResolver);
 
-  handleURL(App1, '/');
-  handleURL(App2, '/');
+    this.runTask(() => {
+      this.secondApp.visit('/');
+    });
+    this.runTask(() => {
+      this.application.visit('/');
+    });
 
-  jQuery('#app-2 .do-stuff').click();
-  jQuery('#app-1 .do-stuff').click();
+    jQuery('#two .do-stuff').click();
+    jQuery('#one .do-stuff').click();
 
-  assert.deepEqual(actions, ['#app-2', '#app-1']);
+    assert.deepEqual(actions, ['#two', '#one']);
+  }
+
 });

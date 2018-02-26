@@ -1,6 +1,6 @@
-import { EmptyObject } from 'ember-utils';
 import { RenderingTest, moduleFor } from '../utils/test-case';
-import { CompiledBlock } from 'glimmer-runtime';
+import { CompiledDynamicTemplate } from '@glimmer/runtime';
+import { OWNER } from 'ember-utils';
 
 class Counter {
   constructor() {
@@ -18,7 +18,7 @@ class Counter {
 
   reset() {
     this.total  = 0;
-    this.counts = new EmptyObject();
+    this.counts = Object.create(null);
   }
 }
 
@@ -32,7 +32,7 @@ class BasicCompiler {
   compile(builder) {
     let { template } = this;
     COUNTER.increment(`${this.constructor.id}+${template.id}`);
-    builder.wrapLayout(template.asLayout());
+    builder.wrapLayout(template);
   }
 }
 
@@ -60,29 +60,29 @@ moduleFor('Layout cache test', class extends RenderingTest {
     let template1 = this.templateFor('Hello world!');
     let template2 = this.templateFor('{{foo}} {{bar}}');
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
     assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 0);
     assert.strictEqual(COUNTER.total, 1);
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
     assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 0);
     assert.strictEqual(COUNTER.total, 1);
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
     assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 1);
     assert.strictEqual(COUNTER.total, 2);
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
 
     assert.strictEqual(COUNTER.get(`type-one+${template1.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-one+${template2.id}`), 1);
@@ -94,33 +94,47 @@ moduleFor('Layout cache test', class extends RenderingTest {
 
     let template = this.templateFor('Hello world!');
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
     assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 0);
     assert.strictEqual(COUNTER.total, 1);
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
     assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 0);
     assert.strictEqual(COUNTER.total, 1);
 
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
     assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 1);
     assert.strictEqual(COUNTER.total, 2);
 
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
-    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledBlock, 'should return a CompiledBlock');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeTwoCompiler, template) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
 
     assert.strictEqual(COUNTER.get(`type-one+${template.id}`), 1);
     assert.strictEqual(COUNTER.get(`type-two+${template.id}`), 1);
     assert.strictEqual(COUNTER.total, 2);
   }
 
+  ['@test a template instance is returned (ensures templates can be injected into layout property)'](assert) {
+    let { owner, env } = this;
+
+    let templateInstanceFor = (content) => {
+      let Factory = this.compile(content);
+      return Factory.create({ [OWNER]: owner, env });
+    };
+
+    let template1 = templateInstanceFor('Hello world!');
+    let template2 = templateInstanceFor('{{foo}} {{bar}}');
+
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template1) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+    assert.ok(env.getCompiledBlock(TypeOneCompiler, template2) instanceof CompiledDynamicTemplate, 'should return a CompiledDynamicTemplate');
+  }
 });

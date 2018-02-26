@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/array
 */
 
 
@@ -13,13 +12,12 @@ const EMPTY = [];
 
 import {
   get,
-  Error as EmberError,
-  Mixin,
-  isFeatureEnabled
+  Mixin
 } from 'ember-metal';
 import EmberArray, { objectAt } from './array';
 import MutableEnumerable from './mutable_enumerable';
 import Enumerable from './enumerable';
+import { Error as EmberError } from 'ember-debug';
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
@@ -54,8 +52,7 @@ export function removeAt(array, start, len) {
   modified, but if its underlying enumerable changes, it will change also.
 
   @class MutableArray
-  @namespace Ember
-  @uses Ember.Array
+  @uses EmberArray
   @uses Ember.MutableEnumerable
   @public
 */
@@ -73,7 +70,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
       idx >= length, then append to the end of the array.
     @param {Number} amt Number of elements that should be removed from
       the array, starting at *idx*.
-    @param {Array} objects An array of zero or more objects that should be
+    @param {EmberArray} objects An array of zero or more objects that should be
       inserted into the array at *idx*
     @public
   */
@@ -86,9 +83,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```javascript
     let colors = ['red', 'green', 'blue'];
 
-    color.length();   //  3
-    colors.clear();   //  []
-    colors.length();  //  0
+    colors.length;  // 3
+    colors.clear(); // []
+    colors.length;  // 0
     ```
 
     @method clear
@@ -119,7 +116,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method insertAt
     @param {Number} idx index of insert the object at.
     @param {Object} object object to insert
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
   insertAt(idx, object) {
@@ -149,7 +146,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     @method removeAt
     @param {Number} start index, start of range
     @param {Number} len length of passing range
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
   removeAt(start, len) {
@@ -188,8 +185,8 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method pushObjects
-    @param {Ember.Enumerable} objects the objects to add
-    @return {Ember.Array} receiver
+    @param {Enumerable} objects the objects to add
+    @return {EmberArray} receiver
     @public
   */
   pushObjects(objects) {
@@ -284,8 +281,8 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method unshiftObjects
-    @param {Ember.Enumerable} objects the objects to add
-    @return {Ember.Array} receiver
+    @param {Enumberable} objects the objects to add
+    @return {EmberArray} receiver
     @public
   */
   unshiftObjects(objects) {
@@ -298,7 +295,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     KVO-compliant.
 
     @method reverseObjects
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
      @public
   */
   reverseObjects() {
@@ -324,9 +321,9 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method setObjects
-    @param {Ember.Array} objects array whose content will be used for replacing
+    @param {EmberArray} objects array whose content will be used for replacing
         the content of the receiver
-    @return {Ember.Array} receiver with the new content
+    @return {EmberArray} receiver with the new content
     @public
   */
   setObjects(objects) {
@@ -356,7 +353,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     @method removeObject
     @param {*} obj object to remove
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
   removeObject(obj) {
@@ -384,17 +381,11 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
 
     @method addObject
     @param {*} obj object to add, if not already present
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
   addObject(obj) {
-    let included;
-
-    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-      included = this.includes(obj);
-    } else {
-      included = this.contains(obj);
-    }
+    let included = this.includes(obj);
 
     if (!included) {
       this.pushObject(obj);

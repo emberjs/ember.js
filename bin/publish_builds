@@ -3,13 +3,13 @@
 echo -e "CURRENT_BRANCH: ${TRAVIS_BRANCH}\n"
 echo -e "PULL_REQUEST: ${TRAVIS_PULL_REQUEST}\n"
 
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$DISABLE_PUBLISHING" != "true" ]; then
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$PUBLISH" == "true" ]; then
 
   if [ "$EMBER_ENV" != "production" ]; then
     DISABLE_JSCS=true DISABLE_JSHINT=true ember build --environment=production
   fi
 
-  npm run docs # Generate documentation to be published.
+  yarn run docs # Generate documentation to be published.
   ./bin/publish_to_s3.js
-  ./bin/bower_ember_build
+  ./bin/publish_npm_and_bower
 fi

@@ -1,16 +1,14 @@
 /**
 @module ember
-@submodule ember-runtime
 */
 
 import { context } from 'ember-environment';
 import {
-  assert,
   get,
   Mixin,
   computed
 } from 'ember-metal';
-
+import { assert } from 'ember-debug';
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
@@ -20,7 +18,7 @@ doing more complex event handling in Components.
 
 @class TargetActionSupport
 @namespace Ember
-@extends Ember.Mixin
+@extends Mixin
 @private
 */
 export default Mixin.create({
@@ -94,23 +92,11 @@ export default Mixin.create({
   @private
   */
   triggerAction(opts = {}) {
-    let action = opts.action || get(this, 'action');
-    let target = opts.target;
+    let { action, target, actionContext } = opts;
+    action = action || get(this, 'action');
+    target = target || getTarget(this);
 
-    if (!target) {
-      target = getTarget(this);
-    }
-
-    let actionContext = opts.actionContext;
-
-    function args(options, actionName) {
-      let ret = [];
-      if (actionName) { ret.push(actionName); }
-
-      return ret.concat(options);
-    }
-
-    if (typeof actionContext === 'undefined') {
+    if (actionContext === undefined) {
       actionContext = get(this, 'actionContextObject') || this;
     }
 
@@ -118,20 +104,18 @@ export default Mixin.create({
       let ret;
 
       if (target.send) {
-        ret = target.send.apply(target, args(actionContext, action));
+        ret = target.send(...[action].concat(actionContext));
       } else {
-        assert('The action \'' + action + '\' did not exist on ' + target, typeof target[action] === 'function');
-        ret = target[action].apply(target, args(actionContext));
+        assert(`The action '${action}' did not exist on ${target}`, typeof target[action] === 'function');
+        ret = target[action](...[].concat(actionContext));
       }
 
       if (ret !== false) {
-        ret = true;
+        return true;
       }
-
-      return ret;
-    } else {
-      return false;
     }
+
+    return false;
   }
 });
 

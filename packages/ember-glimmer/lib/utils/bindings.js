@@ -1,11 +1,15 @@
-import { HelperSyntax } from 'glimmer-runtime';
-import { get, assert } from 'ember-metal';
-import { String as StringUtils } from 'ember-runtime';
 import {
   CachedReference,
+  combine,
   map,
   referenceFromParts
-} from 'glimmer-reference';
+} from '@glimmer/reference';
+import {
+  Ops
+} from '@glimmer/wire-format';
+import { assert } from 'ember-debug';
+import { get } from 'ember-metal';
+import { String as StringUtils } from 'ember-runtime';
 import { ROOT_REF } from '../component';
 import { htmlSafe, isHTMLSafe } from './string';
 
@@ -14,24 +18,41 @@ function referenceForKey(component, key) {
 }
 
 function referenceForParts(component, parts) {
+  let isAttrs = parts[0] === 'attrs';
+
+  // TODO deprecate this
+  if (isAttrs) {
+    parts.shift();
+
+    if (parts.length === 1) {
+      return referenceForKey(component, parts[0]);
+    }
+  }
+
   return referenceFromParts(component[ROOT_REF], parts);
 }
 
 // TODO we should probably do this transform at build time
-export function wrapComponentClassAttribute(args) {
-  let { named } = args;
-  let index = named.keys.indexOf('class');
+export function wrapComponentClassAttribute(hash) {
+  if (!hash) {
+    return hash;
+  }
+
+  let [ keys, values ] = hash;
+  let index = keys.indexOf('class');
 
   if (index !== -1) {
-    let { ref, type } = named.values[index];
+    let [ type ] = values[index];
 
-    if (type === 'get') {
-      let propName = ref.parts[ref.parts.length - 1];
-      named.values[index] = HelperSyntax.fromSpec(['helper', ['-class'], [['get', ref.parts], propName], null]);
+    if (type === Ops.Get || type === Ops.MaybeLocal) {
+      let getExp = values[index];
+      let path = getExp[getExp.length - 1];
+      let propName = path[path.length - 1];
+      hash[1][index] = [Ops.Helper, ['-class'], [getExp, propName]];
     }
   }
 
-  return args;
+  return hash;
 }
 
 export const AttributeBinding = {
@@ -55,7 +76,11 @@ export const AttributeBinding = {
     let [prop, attribute, isSimple] = parsed;
 
     if (attribute === 'id') {
-      operations.addStaticAttribute(element, 'id', get(component, prop));
+      let elementId = get(component, prop);
+      if (elementId === undefined || elementId === null) {
+        elementId = component.elementId;
+      }
+      operations.addStaticAttribute(element, 'id', elementId);
       return;
     }
 
@@ -66,34 +91,9 @@ export const AttributeBinding = {
 
     if (attribute === 'style') {
       reference = new StyleBindingReference(reference, referenceForKey(component, 'isVisible'));
-    } else {
-      reference = map(reference, this.mapAttributeValue);
     }
 
     operations.addDynamicAttribute(element, attribute, reference);
-  },
-
-  mapAttributeValue(value) {
-    if (value === null || value === undefined || value === false) {
-      return null;
-    } else if (value === true) {
-      // Note:
-      // This is here to mimic functionality in HTMLBars for properties.
-      // For instance when a property like "disable" is set all of these
-      // forms are valid and have the same disabled functionality:
-      //
-      // <input disabled />
-      // <input disabled="true" />
-      // <input disabled="false" />
-      // <input disabled="" />
-      //
-      // For compatability sake we do not just cast the true boolean to
-      // a string. Potentially we can revisit this in the future as the
-      // casting feels better and we can remove this branch.
-      return '';
-    } else {
-      return value;
-    }
   }
 };
 
@@ -104,7 +104,7 @@ class StyleBindingReference extends CachedReference {
   constructor(inner, isVisible) {
     super();
 
-    this.tag = inner.tag;
+    this.tag = combine([inner.tag, isVisible.tag]);
     this.inner = inner;
     this.isVisible = isVisible;
   }
@@ -137,18 +137,24 @@ export const IsVisibleBinding = {
 export const ClassNameBinding = {
   install(element, component, microsyntax, operations) {
     let [ prop, truthy, falsy ] = microsyntax.split(':');
-    let isPath = prop.indexOf('.') > -1;
-    let parts = isPath && prop.split('.');
-    let value = isPath ? referenceForParts(component, parts) : referenceForKey(component, prop);
-    let ref;
+    let isStatic = prop === '';
 
-    if (truthy === undefined) {
-      ref = new SimpleClassNameBindingReference(value, isPath ? parts[parts.length - 1] : prop);
+    if (isStatic) {
+      operations.addStaticAttribute(element, 'class', truthy);
     } else {
-      ref = new ColonClassNameBindingReference(value, truthy, falsy);
-    }
+      let isPath = prop.indexOf('.') > -1;
+      let parts = isPath && prop.split('.');
+      let value = isPath ? referenceForParts(component, parts) : referenceForKey(component, prop);
+      let ref;
 
-    operations.addDynamicAttribute(element, 'class', ref);
+      if (truthy === undefined) {
+        ref = new SimpleClassNameBindingReference(value, isPath ? parts[parts.length - 1] : prop);
+      } else {
+        ref = new ColonClassNameBindingReference(value, truthy, falsy);
+      }
+
+      operations.addDynamicAttribute(element, 'class', ref);
+    }
   }
 };
 

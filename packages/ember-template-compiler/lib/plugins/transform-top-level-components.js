@@ -1,28 +1,23 @@
-export default function TransformTopLevelComponents() {
-  // set later within HTMLBars to the syntax package
-  this.syntax = null;
+export default function transformTopLevelComponent(env) {
+  return {
+    name: 'transform-top-level-component',
+
+    visitors: {
+      Program(node) {
+        hasSingleComponentNode(node, component => {
+          component.tag = `@${component.tag}`;
+          component.isStatic = true;
+        });
+      }
+    }
+  }
 }
-
-/**
-  @private
-  @method transform
-  @param {AST} The AST to be transformed.
-*/
-TransformTopLevelComponents.prototype.transform = function TransformTopLevelComponents_transform(ast) {
-  hasSingleComponentNode(ast, component => {
-    component.tag = `@${component.tag}`;
-    component.isStatic = true;
-  });
-
-  return ast;
-};
 
 function hasSingleComponentNode(program, componentCallback) {
   let { loc, body } = program;
   if (!loc || loc.start.line !== 1 || loc.start.column !== 0) { return; }
 
   let lastComponentNode;
-  let lastIndex;
   let nodeCount = 0;
 
   for (let i = 0; i < body.length; i++) {
@@ -36,7 +31,6 @@ function hasSingleComponentNode(program, componentCallback) {
 
     if (curr.type === 'ComponentNode' || curr.type === 'ElementNode') {
       lastComponentNode = curr;
-      lastIndex = i;
     }
   }
 

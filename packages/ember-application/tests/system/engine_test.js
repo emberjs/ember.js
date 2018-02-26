@@ -47,7 +47,6 @@ QUnit.test('builds a registry', function() {
 
   verifyInjection(engine, 'router', '_bucketCache', P`-bucket-cache:main`);
   verifyInjection(engine, 'route', '_bucketCache', P`-bucket-cache:main`);
-  verifyInjection(engine, 'controller', '_bucketCache', P`-bucket-cache:main`);
 
   verifyInjection(engine, 'route', 'router', 'router:main');
 

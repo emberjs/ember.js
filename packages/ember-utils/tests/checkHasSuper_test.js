@@ -1,5 +1,5 @@
 import { environment } from 'ember-environment';
-import { checkHasSuper } from '../index';
+import { checkHasSuper } from '..';
 
 QUnit.module('checkHasSuper');
 

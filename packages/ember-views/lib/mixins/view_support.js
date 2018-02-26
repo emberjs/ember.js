@@ -1,12 +1,11 @@
-import { guidFor, symbol } from 'ember-utils';
-import { assert, deprecate, Mixin } from 'ember-metal';
-import { POST_INIT } from 'ember-runtime';
+import { guidFor, getOwner } from 'ember-utils';
+import { descriptor, Mixin } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
-
-const INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
-
+import { POST_INIT } from 'ember-runtime/system/core_object';
 import jQuery from '../system/jquery';
+import { DEBUG } from 'ember-env-flags';
 
 function K() { return this; }
 
@@ -16,7 +15,64 @@ function K() { return this; }
  @private
 */
 export default Mixin.create({
+  /**
+    A list of properties of the view to apply as attributes. If the property
+    is a string value, the value of that string will be applied as the value
+    for an attribute of the property's name.
+
+    The following example creates a tag like `<div priority="high" />`.
+
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
+      attributeBindings: ['priority'],
+      priority: 'high'
+    });
+    ```
+
+    If the value of the property is a Boolean, the attribute is treated as
+    an HTML Boolean attribute. It will be present if the property is `true`
+    and omitted if the property is `false`.
+
+    The following example creates markup like `<div visible />`.
+
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
+      attributeBindings: ['visible'],
+      visible: true
+    });
+    ```
+
+    If you would prefer to use a custom value instead of the property name,
+    you can create the same markup as the last example with a binding like
+    this:
+
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
+      attributeBindings: ['isVisible:visible'],
+      isVisible: true
+    });
+    ```
+
+    This list of attributes is inherited from the component's superclasses,
+    as well.
+
+    @property attributeBindings
+    @type Array
+    @default []
+    @public
+   */
   concatenatedProperties: ['attributeBindings'],
+
+  [POST_INIT]() {
+    this.trigger('didInitAttrs');
+    this.trigger('didReceiveAttrs');
+  },
 
   // ..........................................................
   // TEMPLATE SUPPORT
@@ -95,7 +151,13 @@ export default Mixin.create({
     @type DOMElement
     @public
   */
-  element: null,
+  element: descriptor({
+    configurable: false,
+    enumerable: false,
+    get() {
+      return this.renderer.getElement(this);
+    }
+  }),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -112,7 +174,9 @@ export default Mixin.create({
   */
   $(sel) {
     assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
-    return this._currentState.$(this, sel);
+    if (this.element) {
+      return sel ? jQuery(sel, this.element) : jQuery(this.element);
+    }
   },
 
   /**
@@ -139,9 +203,9 @@ export default Mixin.create({
     if (env.hasDOM) {
       target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
-      assert('You tried to append to (' + selector + ') but that isn\'t in the DOM', target);
+      assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
       assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
-      assert('You cannot append to an existing Ember.View.', (function() {
+      assert('You cannot append to an existing Ember.View.', ((() => {
         let node = target.parentNode;
         while (node) {
           if (node.nodeType !== 9 && matches(node, '.ember-view')) {
@@ -152,91 +216,15 @@ export default Mixin.create({
         }
 
         return true;
-      })());
+      }))());
     } else {
       target = selector;
 
-      assert('You tried to append to a selector string (' + selector + ') in an environment without jQuery', typeof target !== 'string');
-      assert('You tried to append to a non-Element (' + selector + ') in an environment without jQuery', typeof selector.appendChild === 'function');
+      assert(`You tried to append to a selector string (${selector}) in an environment without jQuery`, typeof target !== 'string');
+      assert(`You tried to append to a non-Element (${selector}) in an environment without jQuery`, typeof selector.appendChild === 'function');
     }
 
     this.renderer.appendTo(this, target);
-
-    return this;
-  },
-
-  /**
-    Creates a new DOM element, renders the view into it, then returns the
-    element.
-
-    By default, the element created and rendered into will be a `BODY` element,
-    since this is the default context that views are rendered into when being
-    inserted directly into the DOM.
-
-    ```js
-    let element = view.renderToElement();
-    element.tagName; // => "BODY"
-    ```
-
-    You can override the kind of element rendered into and returned by
-    specifying an optional tag name as the first argument.
-
-    ```js
-    let element = view.renderToElement('table');
-    element.tagName; // => "TABLE"
-    ```
-
-    This method is useful if you want to render the view into an element that
-    is not in the document's body. Instead, a new `body` element, detached from
-    the DOM is returned. FastBoot uses this to serialize the rendered view into
-    a string for transmission over the network.
-
-    ```js
-    app.visit('/').then(function(instance) {
-      let element;
-      Ember.run(function() {
-        element = renderToElement(instance);
-      });
-
-      res.send(serialize(element));
-    });
-    ```
-
-    @method renderToElement
-    @param {String} tagName The tag of the element to create and render into. Defaults to "body".
-    @return {HTMLBodyElement} element
-    @private
-  */
-  renderToElement(tagName) {
-    tagName = tagName || 'body';
-
-    let element = this.renderer.createElement(tagName);
-
-    this.renderer.appendTo(this, element);
-    return element;
-  },
-
-  /**
-    Replaces the content of the specified parent element with this view's
-    element. If the view does not have an HTML representation yet,
-    the element will be generated automatically.
-
-    Note that this method just schedules the view to be appended; the DOM
-    element will not be appended to the given element until all bindings have
-    finished synchronizing
-
-    @method replaceIn
-    @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
-    @return {Ember.View} received
-    @private
-  */
-  replaceIn(selector) {
-    let target = jQuery(selector);
-
-    assert('You tried to replace in (' + selector + ') but that isn\'t in the DOM', target.length > 0);
-    assert('You cannot replace an existing Ember.View.', !target.is('.ember-view') && !target.parents().is('.ember-view'));
-
-    this.renderer.replaceIn(this, target[0]);
 
     return this;
   },
@@ -277,14 +265,16 @@ export default Mixin.create({
     `elementId`, you should do this when the component or element is being
     instantiated:
 
-    ```javascript
-      export default Ember.Component.extend({
-        init() {
-          this._super(...arguments);
-          let index = this.get('index');
-          this.set('elementId', 'component-id' + index);
-        }
-      });
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
+      init() {
+        this._super(...arguments);
+        let index = this.get('index');
+        this.set('elementId', 'component-id' + index);
+      }
+    });
     ```
 
     @property elementId
@@ -306,7 +296,7 @@ export default Mixin.create({
     @private
   */
   findElementInParentElement(parentElem) {
-    let id = '#' + this.elementId;
+    let id = `#${this.elementId}`;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
   },
 
@@ -319,12 +309,12 @@ export default Mixin.create({
   willInsertElement: K,
 
   /**
-    Called when the element of the view has been inserted into the DOM
-    or after the view was re-rendered. Override this function to do any
-    set up that requires an element in the document body.
+    Called when the element of the view has been inserted into the DOM.
+    Override this function to do any set up that requires an element
+    in the document body.
 
     When a view has children, didInsertElement will be called on the
-    child view(s) first, bubbling upwards through the hierarchy.
+    child view(s) first and on itself afterwards.
 
     @event didInsertElement
     @public
@@ -418,44 +408,41 @@ export default Mixin.create({
       this.elementId = guidFor(this);
     }
 
-    this[INIT_WAS_CALLED] = true;
+    // if we find an `eventManager` property, deopt the
+    // `EventDispatcher`'s `canDispatchToEventManager` property
+    // if `null`
+    if (this.eventManager) {
+      let owner = getOwner(this);
+      let dispatcher = owner && owner.lookup('event_dispatcher:main');
 
-    if (typeof(this.didInitAttrs) === 'function') {
       deprecate(
-        `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
+        `\`eventManager\` has been deprecated in ${this}.`,
         false,
         {
-          id: 'ember-views.did-init-attrs',
-          until: '3.0.0',
-          url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+          id: 'ember-views.event-dispatcher.canDispatchToEventManager',
+          until: '2.17.0'
         }
       );
+
+      if (dispatcher && !('canDispatchToEventManager' in dispatcher)) {
+        dispatcher.canDispatchToEventManager = true;
+      }
     }
+
+    deprecate(
+      `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
+      typeof(this.didInitAttrs) !== 'function',
+      {
+        id: 'ember-views.did-init-attrs',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+      }
+    );
 
     assert(
       'Using a custom `.render` function is no longer supported.',
       !this.render
     );
-  },
-
-  /*
-   This is a special hook implemented in CoreObject, that allows Views/Components
-   to have a way to ensure that `init` fires before `didInitAttrs` / `didReceiveAttrs`
-   (so that `this._super` in init does not trigger `didReceiveAttrs` before the classes
-   own `init` is finished).
-
-   @method __postInitInitialization
-   @private
-   */
-  [POST_INIT]: function() {
-    this._super();
-
-    assert(
-      `You must call \`this._super(...arguments);\` when implementing \`init\` in a component. Please update ${this} to call \`this._super\` from \`init\`.`,
-      this[INIT_WAS_CALLED]
-    );
-
-    this.renderer.componentInitAttrs(this, this.attrs || {});
   },
 
   __defineNonEnumerable(property) {
@@ -467,7 +454,7 @@ export default Mixin.create({
   //
 
   /**
-    Handle events from `Ember.EventDispatcher`
+    Handle events from `EventDispatcher`
 
     @method handleEvent
     @param eventName {String}

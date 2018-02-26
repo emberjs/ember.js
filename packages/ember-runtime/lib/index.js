@@ -1,9 +1,4 @@
-/**
-@module ember
-@submodule ember-runtime
-*/
-
-export { default as Object } from './system/object';
+export { default as Object, FrameworkObject } from './system/object';
 export { default as String } from './system/string';
 export {
   default as RegistryProxyMixin,
@@ -31,10 +26,7 @@ export {
 } from './system/namespace';
 export { default as ArrayProxy } from './system/array_proxy';
 export { default as ObjectProxy } from './system/object_proxy';
-export {
-  default as CoreObject,
-  POST_INIT
-} from './system/core_object';
+export { default as CoreObject } from './system/core_object';
 export { default as NativeArray, A } from './system/native_array';
 export {
   default as ActionHandler,
@@ -47,8 +39,7 @@ export {
   FROZEN_ERROR
 } from './mixins/freezable';
 export {
-  default as _ProxyMixin,
-  isProxy
+  default as _ProxyMixin
 } from './mixins/-proxy';
 export {
   onLoad,
@@ -79,11 +70,9 @@ export {
   lte,
   oneWay,
   readOnly,
-  defaultTo,
   deprecatingAlias,
   and,
-  or,
-  any
+  or
 } from './computed/computed_macros';
 
 export {

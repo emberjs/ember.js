@@ -133,5 +133,4 @@ describe('Acceptance: ember generate and destroy template', function() {
         expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal('');
       }));
   });
-
 });

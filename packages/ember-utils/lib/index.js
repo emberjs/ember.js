@@ -10,8 +10,10 @@
 */
 export { default as symbol } from './symbol';
 export { getOwner, setOwner, OWNER } from './owner';
-export { default as assign } from './assign';
-export { default as EmptyObject } from './empty-object';
+
+// Export `assignPolyfill` for testing
+export { default as assign, assign as assignPolyfill } from './assign';
+
 export { default as dictionary } from './dictionary';
 export {
   uuid,
@@ -28,4 +30,7 @@ export { default as lookupDescriptor } from './lookup-descriptor';
 export { canInvoke, tryInvoke } from './invoke';
 export { default as makeArray } from './make-array';
 export { default as applyStr } from './apply-str';
+export { default as NAME_KEY } from './name';
 export { default as toString } from './to-string';
+export { HAS_NATIVE_WEAKMAP } from './weak-map-utils';
+export { HAS_NATIVE_PROXY } from './proxy-utils';

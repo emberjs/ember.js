@@ -1,16 +1,13 @@
 /**
-@module ember
-@submodule ember-views
+@module @ember/component
 */
-import { EmptyObject } from 'ember-utils';
 import { computed } from 'ember-metal';
 import { environment } from 'ember-environment';
 import Component from '../component';
 import layout from '../templates/empty';
 import { TextSupport } from 'ember-views';
 
-let inputTypeTestElement;
-const inputTypes = new EmptyObject();
+const inputTypes = Object.create(null);
 function canSetTypeOfInput(type) {
   if (type in inputTypes) {
     return inputTypes[type];
@@ -24,13 +21,13 @@ function canSetTypeOfInput(type) {
     return type;
   }
 
-  if (!inputTypeTestElement) {
-    inputTypeTestElement = document.createElement('input');
-  }
+  let inputTypeTestElement = document.createElement('input');
 
   try {
     inputTypeTestElement.type = type;
-  } catch(e) { }
+  } catch (e) {
+    // ignored
+  }
 
   return inputTypes[type] = inputTypeTestElement.type === type;
 }
@@ -45,12 +42,10 @@ function canSetTypeOfInput(type) {
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
-  properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
-  layout section for more information.
+  properties will not be applied.
 
   @class TextField
-  @namespace Ember
-  @extends Ember.Component
+  @extends Component
   @uses Ember.TextSupport
   @public
 */
@@ -72,6 +67,7 @@ export default Component.extend(TextSupport, {
     'inputmode',
     'lang',
     'list',
+    'type', // needs to be before min and max. See #15675
     'max',
     'min',
     'multiple',
@@ -79,7 +75,6 @@ export default Component.extend(TextSupport, {
     'pattern',
     'size',
     'step',
-    'type',
     'value',
     'width'
   ],

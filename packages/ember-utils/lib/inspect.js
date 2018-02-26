@@ -1,5 +1,7 @@
 const objectToString = Object.prototype.toString;
-
+/**
+ @module @ember/debug
+*/
 /**
   Convenience method to inspect an object. This method will attempt to
   convert the object into a useful string description.
@@ -8,7 +10,7 @@ const objectToString = Object.prototype.toString;
   use something like JSDump: https://github.com/NV/jsDump
 
   @method inspect
-  @for Ember
+  @static
   @param {Object} obj The object you want to inspect.
   @return {String} A description of the object
   @since 1.4.0
@@ -22,12 +24,12 @@ export default function inspect(obj) {
     return 'undefined';
   }
   if (Array.isArray(obj)) {
-    return '[' + obj + ']';
+    return `[${obj}]`;
   }
   // for non objects
   let type = typeof obj;
   if (type !== 'object' && type !== 'symbol') {
-    return '' + obj;
+    return `${obj}`;
   }
   // overridden toString
   if (typeof obj.toString === 'function' && obj.toString !== objectToString) {
@@ -44,11 +46,11 @@ export default function inspect(obj) {
       if (typeof v === 'function') { v = 'function() { ... }'; }
 
       if (v && typeof v.toString !== 'function') {
-        ret.push(key + ': ' + objectToString.call(v));
+        ret.push(`${key}: ${objectToString.call(v)}`);
       } else {
-        ret.push(key + ': ' + v);
+        ret.push(`${key}: ${v}`);
       }
     }
   }
-  return '{' + ret.join(', ') + '}';
+  return `{${ret.join(', ')}}`;
 }

@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-testing
 */
 /**
   Like `find`, but throws an error if the element selector returns no results.

@@ -1,23 +1,34 @@
+import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import { meta as metaFor } from './meta';
-import require, { has } from 'require';
-
-const hasGlimmer = has('glimmer-reference');
-
-let CONSTANT_TAG, CURRENT_TAG, DirtyableTag, makeTag, run;
+import require from 'require';
 
 let hasViews = () => false;
+
 export function setHasViews(fn) {
   hasViews = fn;
 }
 
-export let markObjectAsDirty;
+function makeTag() {
+  return new DirtyableTag();
+}
 
-export function tagFor(object, _meta) {
-  if (!hasGlimmer) {
-    throw new Error('Cannot call tagFor without Glimmer');
+export function tagForProperty(object, propertyKey, _meta) {
+  if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
+
+  let meta = _meta || metaFor(object);
+  if (meta.isProxy()) {
+    return tagFor(object, meta);
   }
 
-  if (typeof object === 'object' && object) {
+  let tags = meta.writableTags();
+  let tag = tags[propertyKey];
+  if (tag) { return tag; }
+
+  return tags[propertyKey] = makeTag();
+}
+
+export function tagFor(object, _meta) {
+  if (typeof object === 'object' && object !== null) {
     let meta = _meta || metaFor(object);
     return meta.writableTag(makeTag);
   } else {
@@ -25,29 +36,36 @@ export function tagFor(object, _meta) {
   }
 }
 
-function K() {}
-function ensureRunloop() {
-  if (!run) {
-    run = require('ember-metal/run_loop').default;
+export function markObjectAsDirty(meta, propertyKey) {
+  let objectTag = meta.readableTag();
+
+  if (objectTag !== undefined) {
+    objectTag.dirty();
   }
 
-  if (hasViews() && !run.backburner.currentInstance) {
-    run.schedule('actions', K);
+  let tags = meta.readableTags();
+  let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
+
+  if (propertyTag !== undefined) {
+    propertyTag.dirty();
+  }
+
+  if (propertyKey === 'content' && meta.isProxy()) {
+    objectTag.contentDidChange();
+  }
+
+  if (objectTag !== undefined || propertyTag !== undefined) {
+    ensureRunloop();
   }
 }
 
-if (hasGlimmer) {
-  ({ DirtyableTag, CONSTANT_TAG, CURRENT_TAG } = require('glimmer-reference'));
-  makeTag = () => new DirtyableTag();
+let backburner;
+function ensureRunloop() {
+  if (backburner === undefined) {
+    backburner = require('ember-metal').run.backburner;
+  }
 
-  markObjectAsDirty = function(meta) {
-    let tag = meta && meta.readableTag();
-
-    if (tag) {
-      ensureRunloop();
-      tag.dirty();
-    }
-  };
-} else {
-  markObjectAsDirty = function() {};
+  if (hasViews()) {
+    backburner.ensureInstance();
+  }
 }

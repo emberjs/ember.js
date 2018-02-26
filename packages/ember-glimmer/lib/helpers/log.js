@@ -1,7 +1,6 @@
 import { InternalHelperReference } from '../utils/references';
 /**
 @module ember
-@submodule ember-templates
 */
 
 import Logger from 'ember-console';
@@ -24,5 +23,5 @@ function log({ positional }) {
 }
 
 export default function(vm, args) {
-  return new InternalHelperReference(log, args);
+  return new InternalHelperReference(log, args.capture());
 }

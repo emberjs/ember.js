@@ -1,4 +1,4 @@
-import EmberObject from './object';
+import FrameworkObject from './object';
 import _ProxyMixin from '../mixins/-proxy';
 
 /**
@@ -44,14 +44,14 @@ import _ProxyMixin from '../mixins/-proxy';
 
   ```javascript
   ProxyWithComputedProperty = Ember.ObjectProxy.extend({
-    fullName: function() {
+    fullName: Ember.computed('firstName', 'lastName', function() {
       var firstName = this.get('firstName'),
           lastName = this.get('lastName');
       if (firstName && lastName) {
         return firstName + ' ' + lastName;
       }
       return firstName || lastName;
-    }.property('firstName', 'lastName')
+    })
   });
 
   proxy = ProxyWithComputedProperty.create();
@@ -65,10 +65,9 @@ import _ProxyMixin from '../mixins/-proxy';
   ```
 
   @class ObjectProxy
-  @namespace Ember
-  @extends Ember.Object
-  @extends Ember._ProxyMixin
+  @extends EmberObject
+  @uses Ember.ProxyMixin
   @public
 */
 
-export default EmberObject.extend(_ProxyMixin);
+export default FrameworkObject.extend(_ProxyMixin);

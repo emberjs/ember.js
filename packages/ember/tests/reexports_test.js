@@ -1,6 +1,7 @@
 import Ember from '../index';
 import { confirmExport } from 'internal-test-helpers';
-import { isFeatureEnabled } from 'ember-metal';
+import { EMBER_METAL_WEAKMAP } from 'ember/features';
+import { DEBUG } from 'ember-env-flags';
 
 QUnit.module('ember reexports');
 
@@ -8,7 +9,7 @@ QUnit.module('ember reexports');
   // ember-utils
   ['getOwner', 'ember-utils', 'getOwner'],
   ['setOwner', 'ember-utils', 'setOwner'],
-  // ['assign', 'ember-metal'], TODO: fix this test, we use `Object.assign` if present
+  ['assign', 'ember-utils'],
   ['GUID_KEY', 'ember-utils'],
   ['uuid', 'ember-utils'],
   ['generateGuid', 'ember-utils'],
@@ -27,30 +28,32 @@ QUnit.module('ember reexports');
   ['Registry', 'container', 'Registry'],
   ['Container', 'container', 'Container'],
 
+  // ember-debug
+  ['deprecateFunc', 'ember-debug'],
+  ['deprecate', 'ember-debug'],
+  ['assert', 'ember-debug'],
+  ['warn', 'ember-debug'],
+  ['debug', 'ember-debug'],
+  ['runInDebug', 'ember-debug'],
+
   // ember-metal
   ['computed', 'ember-metal'],
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal'],
-  ['deprecate', 'ember-metal'],
-  ['deprecateFunc', 'ember-metal'],
-  ['assert', 'ember-metal'],
-  ['warn', 'ember-metal'],
-  ['debug', 'ember-metal'],
-  ['runInDebug', 'ember-metal'],
   ['merge', 'ember-metal'],
   ['instrument', 'ember-metal'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],
   ['Instrumentation.subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
   ['Instrumentation.reset', 'ember-metal', 'instrumentationReset'],
-  ['testing', 'ember-metal', { get: 'isTesting', set: 'setTesting' }],
+  ['testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
   ['onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
   // ['create'], TODO: figure out what to do here
   // ['keys'], TODO: figure out what to do here
-  ['FEATURES', 'ember-metal'],
-  ['FEATURES.isEnabled', 'ember-metal', 'isFeatureEnabled'],
-  ['Error', 'ember-metal'],
+  ['FEATURES', 'ember/features'],
+  ['FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
+  ['Error', 'ember-debug'],
   ['META_DESC', 'ember-metal'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],
@@ -68,7 +71,6 @@ QUnit.module('ember reexports');
   ['hasListeners', 'ember-metal'],
   ['watchedEvents', 'ember-metal'],
   ['listenersFor', 'ember-metal'],
-  ['accumulateListeners', 'ember-metal'],
   ['isNone', 'ember-metal'],
   ['isEmpty', 'ember-metal'],
   ['isBlank', 'ember-metal'],
@@ -102,7 +104,7 @@ QUnit.module('ember reexports');
   ['getProperties', 'ember-metal'],
   ['setProperties', 'ember-metal'],
   ['expandProperties', 'ember-metal'],
-  ['NAME_KEY', 'ember-metal'],
+  ['NAME_KEY', 'ember-utils'],
   ['addObserver', 'ember-metal'],
   ['observersFor', 'ember-metal'],
   ['removeObserver', 'ember-metal'],
@@ -121,6 +123,7 @@ QUnit.module('ember reexports');
   // ember-views
   ['$', 'ember-views', 'jQuery'],
   ['ViewUtils.isSimpleClick', 'ember-views', 'isSimpleClick'],
+  ['ViewUtils.getViewElement', 'ember-views', 'getViewElement'],
   ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
   ['ViewUtils.getViewClientRects', 'ember-views', 'getViewClientRects'],
   ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
@@ -131,7 +134,6 @@ QUnit.module('ember reexports');
   ['EventDispatcher', 'ember-views'],
 
   // ember-glimmer
-  ['_Renderer',     'ember-glimmer', 'Renderer'],
   ['Component',     'ember-glimmer', 'Component'],
   ['Helper',        'ember-glimmer', 'Helper'],
   ['Helper.helper', 'ember-glimmer', 'helper'],
@@ -144,7 +146,6 @@ QUnit.module('ember reexports');
   ['Handlebars.SafeString', 'ember-glimmer', { get: '_getSafeString' }],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
-  ['HTMLBars.makeBoundHelper', 'ember-glimmer', 'makeBoundHelper'],
 
   // ember-runtime
   ['_RegistryProxyMixin', 'ember-runtime', 'RegistryProxyMixin'],
@@ -223,14 +224,27 @@ QUnit.module('ember reexports');
   });
 });
 
-if (isFeatureEnabled('ember-string-ishtmlsafe')) {
-  QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
-    confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
+  confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+});
+
+if (EMBER_METAL_WEAKMAP) {
+  QUnit.test('Ember.WeakMap exports correctly', function(assert) {
+    confirmExport(Ember, assert, 'WeakMap', 'ember-metal', 'WeakMap');
   });
 }
 
-if (isFeatureEnabled('ember-metal-weakmap')) {
-  QUnit.test('Ember.WeakMap exports correctly', function(assert) {
-    confirmExport(Ember, assert, 'WeakMap', 'ember-metal', 'WeakMap');
+if (DEBUG) {
+  QUnit.test('Ember.MODEL_FACTORY_INJECTIONS', function(assert) {
+    let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
+    assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
+    assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
+
+    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false)
+
+    expectDeprecation(function() {
+      Ember.MODEL_FACTORY_INJECTIONS = true;
+    }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required')
+    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect')
   });
 }

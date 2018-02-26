@@ -144,6 +144,43 @@ QUnit.test('rejection', function() {
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 });
 
+// https://github.com/emberjs/ember.js/issues/15694
+QUnit.test('rejection without specifying reason', function() {
+  let reason = new Error('failure');
+  let deferred = RSVP.defer();
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  let didFulfillCount = 0;
+  let didRejectCount  = 0;
+
+  proxy.then(() => didFulfillCount++,
+             () => didRejectCount++);
+
+  equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+  equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
+  equal(get(proxy, 'isPending'), true, 'expects the proxy to indicate that it is loading');
+  equal(get(proxy, 'isSettled'), false, 'expects the proxy to indicate that it is not settled');
+  equal(get(proxy, 'isRejected'), false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
+
+  equal(didFulfillCount, 0, 'should not yet have been fulfilled');
+  equal(didRejectCount, 0, 'should not yet have been rejected');
+
+  run(deferred, 'reject');
+
+  equal(didFulfillCount, 0, 'should not yet have been fulfilled');
+  equal(didRejectCount, 1, 'should have been rejected');
+
+  equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+  equal(get(proxy, 'reason'), undefined, 'expects the proxy to have a reason');
+  equal(get(proxy, 'isPending'), false, 'expects the proxy to indicate that it is not longer loading');
+  equal(get(proxy, 'isSettled'), true, 'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'), true, 'expects the proxy to indicate that it is  rejected');
+  equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
+});
+
 QUnit.test('unhandled rejects still propagate to RSVP.on(\'error\', ...) ', function() {
   expect(1);
 
@@ -184,7 +221,6 @@ QUnit.test('should work with promise inheritance', function() {
 
   PromiseSubclass.prototype = Object.create(RSVP.Promise.prototype);
   PromiseSubclass.prototype.constructor = PromiseSubclass;
-  PromiseSubclass.cast = RSVP.Promise.cast;
 
   let proxy = ObjectPromiseProxy.create({
     promise: new PromiseSubclass(() => { })
@@ -252,7 +288,87 @@ QUnit.test('should have reason when isRejected is set', function() {
 
   try {
     run(deferred, 'reject', error);
-  } catch(e) {
+  } catch (e) {
     equal(e, error);
   }
+});
+
+QUnit.test('should not error if promise is resolved after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then(() => {}, () => {});
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'resolve', true);
+
+  ok(true, 'resolving the promise after the proxy has been destroyed does not raise an error');
+});
+
+QUnit.test('should not error if promise is rejected after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then(() => {}, () => {});
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'reject', 'some reason');
+
+  ok(true, 'rejecting the promise after the proxy has been destroyed does not raise an error');
+});
+
+QUnit.test('promise chain is not broken if promised is resolved after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+  let expectedValue = {};
+  let receivedValue;
+  let didResolveCount = 0;
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then((value) => {
+    receivedValue = value;
+    didResolveCount++;
+  }, () => {});
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'resolve', expectedValue);
+
+  equal(didResolveCount, 1, 'callback called');
+  equal(receivedValue, expectedValue, 'passed value is the value the promise was resolved with');
+});
+
+QUnit.test('promise chain is not broken if promised is rejected after proxy has been destroyed', function() {
+  let deferred = EmberRSVP.defer();
+  let expectedReason = 'some reason';
+  let receivedReason;
+  let didRejectCount = 0;
+
+  let proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.then(
+    () => {},
+    (reason) => {
+      receivedReason = reason;
+      didRejectCount++;
+    });
+
+  run(proxy, 'destroy');
+
+  run(deferred, 'reject', expectedReason);
+
+  equal(didRejectCount, 1, 'callback called');
+  equal(receivedReason, expectedReason, 'passed reason is the reason the promise was rejected for');
 });

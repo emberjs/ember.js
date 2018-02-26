@@ -1,8 +1,8 @@
-import isEmpty from '../is_empty';
 import {
+  isEmpty,
   Map,
   OrderedSet
-} from '../map';
+} from '..';
 
 QUnit.module('Ember.isEmpty');
 

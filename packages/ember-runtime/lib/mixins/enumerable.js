@@ -1,36 +1,37 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/enumerable
+@private
 */
 
 // ..........................................................
 // HELPERS
 //
 
-import { guidFor, EmptyObject } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import {
   get,
   set,
   Mixin,
   aliasMethod,
   computed,
-  isFeatureEnabled,
   propertyWillChange,
   propertyDidChange,
   addListener,
   removeListener,
   sendEvent,
-  hasListeners,
-  assert,
-  deprecate
+  hasListeners
 } from 'ember-metal';
+import { assert, deprecate } from 'ember-debug';
 import compare from '../compare';
 import require from 'require';
 
 let _emberA;
 
 function emberA() {
-  return (_emberA || (_emberA = require('ember-runtime/system/native_array').A))();
+  if (_emberA === undefined) {
+    _emberA = require('ember-runtime/system/native_array').A;
+  }
+  return _emberA();
 }
 
 const contexts = [];
@@ -47,12 +48,9 @@ function pushCtx(ctx) {
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
-  function i(item) {
-    let cur = get(item, key);
-    return valueProvided ? value === cur : !!cur;
-  }
-
-  return i;
+  return valueProvided ?
+    (item)=> value === get(item, key) :
+    (item)=> !!get(item, key);
 }
 
 /**
@@ -89,7 +87,6 @@ function iter(key, value) {
   JavaScript 1.8 API.
 
   @class Enumerable
-  @namespace Ember
   @since Ember 0.9
   @private
 */
@@ -223,19 +220,17 @@ const Enumerable = Mixin.create({
     ```
 
     @method contains
-    @deprecated Use `Enumerable#includes` instead. See http://emberjs.com/deprecations/v2.x#toc_enumerable-contains
+    @deprecated Use `Enumerable#includes` instead. See https://emberjs.com/deprecations/v2.x#toc_enumerable-contains
     @param {Object} obj The object to search for.
     @return {Boolean} `true` if object is found in enumerable.
     @public
   */
   contains(obj) {
-    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-      deprecate(
-        '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-        false,
-        { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-      );
-    }
+    deprecate(
+      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
+      false,
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+    );
 
     let found = this.find(item => item === obj);
 
@@ -269,9 +264,7 @@ const Enumerable = Mixin.create({
     @public
   */
   forEach(callback, target) {
-    if (typeof callback !== 'function') {
-      throw new TypeError();
-    }
+    assert('Enumerable#forEach expects a function as first argument.', typeof callback === 'function');
 
     let context = popCtx();
     let len = get(this, 'length');
@@ -347,6 +340,8 @@ const Enumerable = Mixin.create({
     @public
   */
   map(callback, target) {
+    assert('Enumerable#map expects a function as first argument.', typeof callback === 'function');
+
     let ret = emberA();
 
     this.forEach((x, idx, i) => ret[idx] = callback.call(target, x, idx, i));
@@ -397,9 +392,11 @@ const Enumerable = Mixin.create({
     @public
   */
   filter(callback, target) {
+    assert('Enumerable#filter expects a function as first argument.', typeof callback === 'function');
+
     let ret = emberA();
 
-    this.forEach(function(x, idx, i) {
+    this.forEach((x, idx, i) => {
       if (callback.call(target, x, idx, i)) {
         ret.push(x);
       }
@@ -436,6 +433,8 @@ const Enumerable = Mixin.create({
     @public
   */
   reject(callback, target) {
+    assert('Enumerable#reject expects a function as first argument.', typeof callback === 'function');
+
     return this.filter(function() {
       return !(callback.apply(target, arguments));
     });
@@ -505,6 +504,8 @@ const Enumerable = Mixin.create({
     @public
   */
   find(callback, target) {
+    assert('Enumerable#find expects a function as first argument.', typeof callback === 'function');
+
     let len = get(this, 'length');
 
     if (target === undefined) {
@@ -519,7 +520,8 @@ const Enumerable = Mixin.create({
     for (let idx = 0; idx < len && !found; idx++) {
       next = this.nextObject(idx, last, context);
 
-      if (found = callback.call(target, next, idx, this)) {
+      found = callback.call(target, next, idx, this);
+      if (found) {
         ret = next;
       }
 
@@ -585,6 +587,8 @@ const Enumerable = Mixin.create({
     @public
   */
   every(callback, target) {
+    assert('Enumerable#every expects a function as first argument.', typeof callback === 'function');
+
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
   },
 
@@ -592,6 +596,9 @@ const Enumerable = Mixin.create({
     Returns `true` if the passed property resolves to the value of the second
     argument for all items in the enumerable. This method is often simpler/faster
     than using a callback.
+
+    Note that like the native `Array.every`, `isEvery` will return true when called
+    on any empty enumerable.
 
     @method isEvery
     @param {String} key the property to test
@@ -606,7 +613,7 @@ const Enumerable = Mixin.create({
 
   /**
     Returns `true` if the passed function returns true for any item in the
-    enumeration. This corresponds with the `some()` method in JavaScript 1.6.
+    enumeration.
 
     The callback method you provide should have the following signature (all
     parameters are optional):
@@ -619,8 +626,9 @@ const Enumerable = Mixin.create({
     - `index` is the current index in the iteration.
     - `enumerable` is the enumerable object itself.
 
-    It should return the `true` to include the item in the results, `false`
-    otherwise.
+    It must return a truthy value (i.e. `true`) to include an item in the
+    results. Any non-truthy return value will discard the item from the
+    results.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
@@ -641,6 +649,8 @@ const Enumerable = Mixin.create({
     @public
   */
   any(callback, target) {
+    assert('Enumerable#any expects a function as first argument.', typeof callback === 'function');
+
     let len = get(this, 'length');
     let context = popCtx();
     let found = false;
@@ -713,9 +723,7 @@ const Enumerable = Mixin.create({
     @public
   */
   reduce(callback, initialValue, reducerProperty) {
-    if (typeof callback !== 'function') {
-      throw new TypeError();
-    }
+    assert('Enumerable#reduce expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 
@@ -740,11 +748,11 @@ const Enumerable = Mixin.create({
   invoke(methodName, ...args) {
     let ret = emberA();
 
-    this.forEach(function(x, idx) {
+    this.forEach((x, idx) => {
       let method = x && x[methodName];
 
       if ('function' === typeof method) {
-        ret[idx] = args ? method.apply(x, args) : x[methodName]();
+        ret[idx] = args.length ? method.apply(x, args) : x[methodName]();
       }
     }, this);
 
@@ -799,14 +807,15 @@ const Enumerable = Mixin.create({
     @public
   */
   without(value) {
-    if (!this.contains(value)) {
+    if (!this.includes(value)) {
       return this; // nothing to do
     }
 
     let ret = emberA();
 
     this.forEach(k => {
-      if (k !== value) {
+      // SameValueZero comparison (NaN !== NaN)
+      if (!(k === value || k !== k && value !== value)) {
         ret[ret.length] = k;
       }
     });
@@ -1069,102 +1078,76 @@ const Enumerable = Mixin.create({
       }
       return 0;
     });
+  },
+
+  /**
+    Returns a new enumerable that contains only items containing a unique property value.
+    The default implementation returns an array regardless of the receiver type.
+
+    ```javascript
+    let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
+    arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
+    ```
+
+    @method uniqBy
+    @return {Ember.Enumerable}
+    @public
+  */
+
+  uniqBy(key) {
+    let ret = emberA();
+    let seen = Object.create(null);
+
+    this.forEach((item) => {
+      let guid = guidFor(get(item, key));
+      if (!(guid in seen)) {
+        seen[guid] = true;
+        ret.push(item);
+      }
+    });
+
+    return ret;
+  },
+
+  /**
+    Returns `true` if the passed object can be found in the enumerable.
+
+    ```javascript
+    [1, 2, 3].includes(2);                     // true
+    [1, 2, 3].includes(4);                     // false
+    [1, 2, undefined].includes(undefined);     // true
+    [1, 2, null].includes(null);               // true
+    [1, 2, NaN].includes(NaN);                 // true
+    ```
+
+    @method includes
+    @param {Object} obj The object to search for.
+    @return {Boolean} `true` if object is found in the enumerable.
+    @public
+  */
+  includes(obj) {
+    assert('Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered.', arguments.length === 1);
+
+    let len = get(this, 'length');
+    let idx, next;
+    let last = null;
+    let found = false;
+
+    let context = popCtx();
+
+    for (idx = 0; idx < len && !found; idx++) {
+      next = this.nextObject(idx, last, context);
+
+      found = obj === next || (obj !== obj && next !== next);
+
+      last = next;
+    }
+
+    next = last = null;
+    context = pushCtx(context);
+
+    return found;
   }
 });
-
-
-if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
-  Enumerable.reopen({
-    /**
-      Returns a new enumerable that contains only items containing a unique property value.
-      The default implementation returns an array regardless of the receiver type.
-
-      ```javascript
-      let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
-      arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
-      ```
-
-      @method uniqBy
-      @return {Ember.Enumerable}
-      @public
-    */
-
-    uniqBy(key) {
-      let ret = emberA();
-      let seen = new EmptyObject();
-
-      this.forEach((item) => {
-        let guid = guidFor(get(item, key));
-        if (!(guid in seen)) {
-          seen[guid] = true;
-          ret.push(item);
-        }
-      });
-
-      return ret;
-    }
-  });
-}
-
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  Enumerable.reopen({
-    /**
-      Returns `true` if the passed object can be found in the enumerable.
-
-      ```javascript
-      [1, 2, 3].includes(2);                     // true
-      [1, 2, 3].includes(4);                     // false
-      [1, 2, undefined].includes(undefined);     // true
-      [1, 2, null].includes(null);               // true
-      [1, 2, NaN].includes(NaN);                 // true
-      ```
-
-      @method includes
-      @param {Object} obj The object to search for.
-      @return {Boolean} `true` if object is found in the enumerable.
-      @public
-    */
-    includes(obj) {
-      assert('Enumerable#includes cannot accept a second argument "startAt" as enumerable items are unordered.', arguments.length === 1);
-
-      let len = get(this, 'length');
-      let idx, next;
-      let last = null;
-      let found = false;
-
-      let context = popCtx();
-
-      for (idx = 0; idx < len && !found; idx++) {
-        next = this.nextObject(idx, last, context);
-
-        found = obj === next || (obj !== obj && next !== next);
-
-        last = next;
-      }
-
-      next = last = null;
-      context = pushCtx(context);
-
-      return found;
-    },
-
-    without(value) {
-      if (!this.includes(value)) {
-        return this; // nothing to do
-      }
-
-      let ret = emberA();
-
-      this.forEach(k => {
-        // SameValueZero comparison (NaN !== NaN)
-        if (!(k === value || k !== k && value !== value)) {
-          ret[ret.length] = k;
-        }
-      });
-
-      return ret;
-    }
-  });
-}
 
 export default Enumerable;

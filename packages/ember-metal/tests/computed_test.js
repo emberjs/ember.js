@@ -3,20 +3,16 @@ import { testBoth } from 'internal-test-helpers';
 import {
   ComputedProperty,
   computed,
-  cacheFor
-} from '../computed';
-
-import {
+  cacheFor,
   Descriptor,
-  defineProperty
-} from '../properties';
-import { get } from '../property_get';
-import { set } from '../property_set';
-import { isWatching } from '../watching';
-import {
+  defineProperty,
+  get,
+  set,
+  isWatching,
   addObserver,
-  _addBeforeObserver
-} from '../observer';
+  _addBeforeObserver,
+  meta as metaFor
+} from '..';
 
 let obj, count;
 
@@ -35,7 +31,7 @@ QUnit.test('computed properties assert the presence of a getter or setter functi
 QUnit.test('computed properties check for the presence of a function or configuration object', function() {
   expectAssertion(function() {
     computed('nolastargument');
-  }, 'Ember.computed expects a function or an object as last argument.');
+  }, 'computed expects a function or an object as last argument.');
 });
 
 QUnit.test('computed properties defined with an object only allow `get` and `set` keys', function() {
@@ -45,7 +41,7 @@ QUnit.test('computed properties defined with an object only allow `get` and `set
       set() {},
       other() {}
     });
-  }, 'Config object passed to an Ember.computed can only contain `get` or `set` keys.');
+  }, 'Config object passed to computed can only contain `get` or `set` keys.');
 });
 
 
@@ -89,10 +85,6 @@ QUnit.test('defining a computed property with a dependent key ending with @each 
 });
 
 QUnit.test('defining a computed property with a dependent key more than one level deep beyond @each is not supported', function() {
-  let warning = `Dependent keys containing @each only work one level deep. ` +
-                `You cannot use nested forms like todos.@each.owner.name or todos.@each.owner.@each.name. ` +
-                `Please create an intermediary computed property.`;
-
   expectNoWarning(() => {
     computed('todos', () => {});
   });
@@ -103,11 +95,11 @@ QUnit.test('defining a computed property with a dependent key more than one leve
 
   expectWarning(() => {
     computed('todos.@each.owner.name', () => {});
-  }, warning);
+  }, /You used the key "todos\.@each\.owner\.name" which is invalid\. /);
 
   expectWarning(() => {
     computed('todos.@each.owner.@each.name', () => {});
-  }, warning);
+  }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
 });
 
 let objA, objB;
@@ -490,6 +482,21 @@ testBoth('throws assertion if brace expansion notation has spaces', function (ge
   }, /cannot contain spaces/);
 });
 
+testBoth('throws an assertion if an uncached `get` is called after object is destroyed', function(get, set) {
+  equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+
+  let meta = metaFor(obj);
+  meta.destroy();
+
+  obj.toString = () => '<custom-obj:here>';
+
+  expectAssertion(() => {
+    get(obj, 'foo', 'bar');
+  }, 'Cannot modify dependent keys for `foo` on `<custom-obj:here>` after it has been destroyed.');
+
+  equal(isWatching(obj, 'bar'), false, 'deps were not updated');
+});
+
 // ..........................................................
 // CHAINED DEPENDENT KEYS
 //
@@ -653,7 +660,7 @@ QUnit.test('adding a computed property should show up in key iteration', functio
   for (let key in obj) {
     found.push(key);
   }
-  ok(found.indexOf('foo')>=0, 'should find computed property in iteration found=' + found);
+  ok(found.indexOf('foo') >= 0, 'should find computed property in iteration found=' + found);
   ok('foo' in obj, 'foo in obj should pass');
 });
 
@@ -684,16 +691,17 @@ testBoth('setting a watched computed property', function(get, set) {
     firstName: 'Yehuda',
     lastName: 'Katz'
   };
+
   defineProperty(obj, 'fullName', computed({
-      get() { return get(this, 'firstName') + ' ' + get(this, 'lastName'); },
-      set(key, value) {
-        let values = value.split(' ');
-        set(this, 'firstName', values[0]);
-        set(this, 'lastName', values[1]);
-        return value;
-      }
-    }).property('firstName', 'lastName')
-  );
+    get() { return get(this, 'firstName') + ' ' + get(this, 'lastName'); },
+    set(key, value) {
+      let values = value.split(' ');
+      set(this, 'firstName', values[0]);
+      set(this, 'lastName', values[1]);
+      return value;
+    }
+  }).property('firstName', 'lastName'));
+
   let fullNameWillChange = 0;
   let fullNameDidChange = 0;
   let firstNameWillChange = 0;
@@ -741,14 +749,15 @@ testBoth('setting a cached computed property that modifies the value you give it
   let obj = {
     foo: 0
   };
+
   defineProperty(obj, 'plusOne', computed({
-      get(key) { return get(this, 'foo') + 1; },
-      set(key, value) {
-        set(this, 'foo', value);
-        return value + 1;
-      }
-    }).property('foo')
-  );
+    get(key) { return get(this, 'foo') + 1; },
+    set(key, value) {
+      set(this, 'foo', value);
+      return value + 1;
+    }
+  }).property('foo'));
+
   let plusOneWillChange = 0;
   let plusOneDidChange = 0;
   _addBeforeObserver(obj, 'plusOne', function () {
@@ -822,7 +831,7 @@ testBoth('protects against setting', function(get, set) {
 
   throws(() => {
     set(obj, 'bar', 'newBar');
-  }, /Cannot set read\-only property "bar" on object:/ );
+  }, /Cannot set read\-only property "bar" on object:/);
 
   equal(get(obj, 'bar'), 'barValue');
 });

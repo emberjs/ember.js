@@ -1,4 +1,4 @@
-import setProperties from '../set_properties';
+import { setProperties } from '..';
 
 QUnit.module('Ember.setProperties');
 

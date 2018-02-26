@@ -8,8 +8,3 @@ import './ext/application';
 import './ext/rsvp';     // setup RSVP + run loop integration
 import './helpers';      // adds helpers to helpers object in Test
 import './initializers'; // to setup initializer
-
-/**
-  @module ember
-  @submodule ember-testing
-*/

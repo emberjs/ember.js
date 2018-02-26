@@ -6,30 +6,22 @@ import {
   _addBeforeObserver,
   _suspendObserver,
   _suspendObservers,
-  _removeBeforeObserver
-} from '../observer';
-import {
+  _removeBeforeObserver,
   propertyWillChange,
-  propertyDidChange
-} from '../property_events';
-import { defineProperty } from '../properties';
-import {
+  propertyDidChange,
+  defineProperty,
   computed,
-  cacheFor
-} from '../computed';
-import {
+  cacheFor,
   Mixin,
   mixin,
   observer,
   _beforeObserver,
-  _immediateObserver
-} from '../mixin';
-import run from '../run_loop';
-import {
+  _immediateObserver,
+  run,
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties
-} from '../property_events';
+} from '..';
 
 function K() {}
 
@@ -38,6 +30,18 @@ function K() {}
 //
 
 QUnit.module('addObserver');
+
+testBoth('observer should assert to invalid input', function(get, set) {
+  expectAssertion(()=> {
+    observer(()=>{})
+  }, 'observer called without valid path');
+
+  expectDeprecation('Passing the dependentKeys after the callback function in observer is deprecated. Ensure the callback function is the last argument.')
+
+  expectAssertion(()=> {
+    observer(null)
+  }, 'observer called without a function');
+})
 
 testBoth('observer should fire when property is modified', function(get, set) {
   let obj = {};
@@ -223,10 +227,10 @@ testBoth('removing an chain observer on change should not fail', function(get, s
   }
   function observer4() { count4++; }
 
-  addObserver(obj1, 'foo.bar' , observer1);
-  addObserver(obj2, 'foo.bar' , observer2);
-  addObserver(obj3, 'foo.bar' , observer3);
-  addObserver(obj4, 'foo.bar' , observer4);
+  addObserver(obj1, 'foo.bar', observer1);
+  addObserver(obj2, 'foo.bar', observer2);
+  addObserver(obj3, 'foo.bar', observer3);
+  addObserver(obj4, 'foo.bar', observer4);
 
   set(foo, 'bar', 'baz');
 
@@ -257,10 +261,10 @@ testBoth('removing an chain before observer on change should not fail', function
   }
   function observer4() { count4++; }
 
-  _addBeforeObserver(obj1, 'foo.bar' , observer1);
-  _addBeforeObserver(obj2, 'foo.bar' , observer2);
-  _addBeforeObserver(obj3, 'foo.bar' , observer3);
-  _addBeforeObserver(obj4, 'foo.bar' , observer4);
+  _addBeforeObserver(obj1, 'foo.bar', observer1);
+  _addBeforeObserver(obj2, 'foo.bar', observer2);
+  _addBeforeObserver(obj3, 'foo.bar', observer3);
+  _addBeforeObserver(obj4, 'foo.bar', observer4);
 
   set(foo, 'bar', 'baz');
 
@@ -448,7 +452,7 @@ testBoth('deferring property change notifications safely despite exceptions', fu
       set(obj, 'foo', 'BAZ');
       throw exc;
     });
-  } catch(err) {
+  } catch (err) {
     if (err !== exc) {
       throw err;
     }
@@ -966,7 +970,7 @@ testBoth('setting a cached computed property whose value has changed should trig
 QUnit.module('Ember.immediateObserver (Deprecated)');
 
 testBoth('immediate observers should fire synchronously', function(get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
   let obj = {};
   let observerCalled = 0;
   let mixin;
@@ -1034,7 +1038,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 }
 
 testBoth('immediate observers watching multiple properties via brace expansion fire synchronously', function (get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
   let obj = {};
   let observerCalled = 0;
   let mixin;
@@ -1066,7 +1070,7 @@ testBoth('immediate observers watching multiple properties via brace expansion f
 });
 
 testBoth('immediate observers are for internal properties only', function(get, set) {
-  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `Ember.observer` instead./);
+  expectDeprecation(/Usage of `Ember.immediateObserver` is deprecated, use `observer` instead./);
   expectAssertion(function() {
     _immediateObserver('foo.bar', function() { return this; });
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');

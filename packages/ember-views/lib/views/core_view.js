@@ -1,16 +1,16 @@
 import {
-  Object as EmberObject,
-  Evented,
   ActionHandler,
-  deprecateUnderscoreActions,
-  typeOf
+  Evented,
+  FrameworkObject,
+  deprecateUnderscoreActions
 } from 'ember-runtime';
+import { initViewElement } from '../system/utils';
 import { cloneStates, states } from './states';
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
   to both Ember's main view class `Ember.Component` and other classes that don't need
-  the fully functionaltiy of `Ember.Component`.
+  the full functionality of `Ember.Component`.
 
   Unless you have specific needs for `CoreView`, you will use `Ember.Component`
   in your applications.
@@ -23,7 +23,7 @@ import { cloneStates, states } from './states';
   @uses Ember.ActionHandler
   @private
 */
-const CoreView = EmberObject.extend(Evented, ActionHandler, {
+const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
   isView: true,
 
   _states: cloneStates(states),
@@ -32,12 +32,8 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._super(...arguments);
     this._state = 'preRender';
     this._currentState = this._states.preRender;
-    this._willInsert = false;
-    this.lastResult = null;
-    this._destroyingSubtreeForView = null;
-    this._isDispatchingAttrs = false;
-    this.element = null;
-    this._env = null;
+
+    initViewElement(this);
 
     if (!this.renderer) {
       throw new Error(`Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`);
@@ -70,21 +66,16 @@ const CoreView = EmberObject.extend(Evented, ActionHandler, {
     @param name {String}
     @private
   */
-  trigger() {
+  trigger(name, ...args) {
     this._super(...arguments);
-    let name = arguments[0];
     let method = this[name];
-    if (method) {
-      let args = new Array(arguments.length - 1);
-      for (let i = 1; i < arguments.length; i++) {
-        args[i - 1] = arguments[i];
-      }
+    if (typeof method === 'function') {
       return method.apply(this, args);
     }
   },
 
   has(name) {
-    return typeOf(this[name]) === 'function' || this._super(name);
+    return typeof this[name] === 'function' || this._super(name);
   }
 });
 

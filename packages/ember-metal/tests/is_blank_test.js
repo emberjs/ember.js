@@ -1,4 +1,4 @@
-import isBlank from '../is_blank';
+import { isBlank } from '..';
 
 QUnit.module('Ember.isBlank');
 

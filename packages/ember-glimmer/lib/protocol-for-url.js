@@ -1,6 +1,7 @@
 /* globals module, URL */
 
 import { environment as emberEnvironment } from 'ember-environment';
+import { IS_NODE, require } from 'node-module';
 
 let nodeURL;
 let parsingNode;
@@ -22,11 +23,11 @@ export default function installProtocolForURL(environment) {
     // URL globally provided, likely from FastBoot's sandbox
     nodeURL = URL;
     environment.protocolForURL = nodeProtocolForURL;
-  } else if (typeof module === 'object' && typeof module.require === 'function') {
+  } else if (IS_NODE) {
     // Otherwise, we need to fall back to our own URL parsing.
     // Global `require` is shadowed by Ember's loader so we have to use the fully
     // qualified `module.require`.
-    nodeURL = module.require('url');
+    nodeURL = require('url');
     environment.protocolForURL = nodeProtocolForURL;
   } else {
     throw new Error('Could not find valid URL parsing mechanism for URL Sanitization');

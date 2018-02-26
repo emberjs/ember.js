@@ -20,8 +20,6 @@ if (!EmberDev.runningProdBuild) {
   // this check is done via an assertion which is stripped from
   // production builds
   QUnit.test('injection type validation is run when first looked up', function() {
-    expect(1);
-
     createInjectionHelper('foo', function() {
       ok(true, 'should call validation method');
     });
@@ -34,7 +32,11 @@ if (!EmberDev.runningProdBuild) {
     });
 
     owner.register('foo:main', AnObject);
-    owner._lookupFactory('foo:main');
+    owner.register('foo:bar', EmberObject.extend());
+    owner.register('foo:baz', EmberObject.extend());
+
+    expect(1);
+    owner.lookup('foo:main');
   });
 
   QUnit.test('attempting to inject a nonexistent container key should error', function() {

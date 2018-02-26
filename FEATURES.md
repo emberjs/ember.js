@@ -1,6 +1,6 @@
 ## About Features
 
-Please read the [Feature Flag Guide](http://emberjs.com/guides/configuring-ember/feature-flags/)
+Please read the [Feature Flag Guide](https://emberjs.com/guides/configuring-ember/feature-flags/)
 for a detailed explanation.
 
 ## Feature Flags
@@ -10,21 +10,6 @@ for a detailed explanation.
   Add `isRegistered` to `Ember.libraries`. This convenience method checks whether
   a library is registered with Ember or not.
 
-* `ember-runtime-computed-uniq-by`
-
-  Introduces a computed and enumerable method "uniqBy" that allows creation of a new enumerable with unique values as  determined by the given property key.
-
-  Example:
-
-  ```javascript
-  comments: [
-    {id: 1, comment: 'I\'m a duplicate comment!'},
-    {id: 2, comment: 'Then you should be fixed!'},
-    {id: 1, comment: 'I\'m a duplicate comment!'}
-  ],
-  dedupedComments: Ember.computed.uniqBy('comments', 'id')
-  ```
-
 * `ember-improved-instrumentation`
 
   Adds additional instrumentation to Ember:
@@ -33,24 +18,27 @@ for a detailed explanation.
   - `interaction.ember-action` for closure actions.
   - `interaction.link-to` for link-to execution.
 
-* `ember-runtime-enumerable-includes`
+* `ember-testing-resume-test`
 
-Deprecates `Enumerable#contains` and `Array#contains` in favor of `Enumerable#includes` and `Array#includes`
-to stay in line with ES standards (see [RFC](https://github.com/emberjs/rfcs/blob/master/text/0136-contains-to-includes.md)).
+  Introduces the `resumeTest` testing helper to complement the `pauseTest` helper.
 
-* `ember-string-ishtmlsafe`
+* `glimmer-custom-component-manager`
 
-  Introduces an API to detect if strings are decorated as htmlSafe. Example:
+  Adds an ability to for developers to integrate their own custom component managers
+  into Ember Applications per [RFC](https://github.com/emberjs/rfcs/blob/custom-components/text/0000-custom-components.md).
 
-  ```javascript
-  var plainString = 'plain string',
-      safeString = Ember.String.htmlSafe('<div>someValue</div>');
+* `ember-module-unification`
 
-  Ember.String.isHTMLSafe(plainString); // false
-  Ember.String.isHTMLSafe(safeString);  // true
-  ```
+  Introduces support for Module Unification
+  ([RFC](https://github.com/dgeb/rfcs/blob/module-unification/text/0000-module-unification.md))
+  to Ember. This includes:
 
-* `ember-testing-check-waiters`
+  - Passing the `source` of a `lookup`/`factoryFor` call as the second argument
+    to an Ember resolver's `resolve` method (as a positional arg we will call
+    `referrer`).
+  - Making `lookupComponentPair` friendly to local/private resolutions. The
+    new code ensures a local resolution is not paired with a global resolution.
 
-Expose a simple mechanism for test tooling to determine if all foreign async has been
-handled before continueing the test. Replaces the intimate API `Ember.Test.waiters` (with a deprecation).
+  This feature is paired with the
+  [`EMBER_RESOLVER_MODULE_UNIFICATION`](https://github.com/ember-cli/ember-resolver#ember_resolver_module_unification)
+  flag on the ember-resolver package.

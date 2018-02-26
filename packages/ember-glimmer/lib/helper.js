@@ -1,9 +1,10 @@
+/**
+@module @ember/component
+*/
+
 import { symbol } from 'ember-utils';
-import {
-  Object as EmberObject,
-  POST_INIT
-} from 'ember-runtime';
-import { DirtyableTag } from 'glimmer-reference';
+import { FrameworkObject } from 'ember-runtime';
+import { DirtyableTag } from '@glimmer/reference';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -25,8 +26,10 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
   Helpers defined using a class must provide a `compute` function. For example:
 
-  ```js
-  export default Ember.Helper.extend({
+  ```app/helpers/format-currency.js
+  import Helper from '@ember/component/helper';
+
+  export default Helper.extend({
     compute(params, hash) {
       let cents = params[0];
       let currency = hash.currency;
@@ -43,14 +46,15 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
   Additionally, class helpers can call `recompute` to force a new computation.
 
-  @class Ember.Helper
+  @class Helper
   @public
   @since 1.13.0
 */
-var Helper = EmberObject.extend({
+var Helper = FrameworkObject.extend({
   isHelperInstance: true,
 
-  [POST_INIT]() {
+  init() {
+    this._super(...arguments);
     this[RECOMPUTE_TAG] = new DirtyableTag();
   },
 
@@ -61,11 +65,14 @@ var Helper = EmberObject.extend({
     For example, this component will rerender when the `currentUser` on a
     session service changes:
 
-    ```js
-    // app/helpers/current-user-email.js
-    export default Ember.Helper.extend({
-      session: Ember.inject.service(),
-      onNewUser: Ember.observer('session.currentUser', function() {
+    ```app/helpers/current-user-email.js
+    import Helper from '@ember/component/helper'
+    import { inject as service } from '@ember/service'
+    import { observer } from '@ember/object'
+
+    export default Helper.extend({
+      session: service(),
+      onNewUser: observer('session.currentUser', function() {
         this.recompute();
       }),
       compute() {
@@ -98,13 +105,14 @@ Helper.reopenClass({
 });
 
 /**
-  In many cases, the ceremony of a full `Ember.Helper` class is not required.
+  In many cases, the ceremony of a full `Helper` class is not required.
   The `helper` method create pure-function helpers without instances. For
   example:
 
-  ```js
-  // app/helpers/format-currency.js
-  export default Ember.Helper.helper(function(params, hash) {
+  ```app/helpers/format-currency.js
+  import { helper } from '@ember/component/helper';
+
+  export default helper(function(params, hash) {
     let cents = params[0];
     let currency = hash.currency;
     return `${currency}${cents * 0.01}`;
@@ -114,6 +122,7 @@ Helper.reopenClass({
   @static
   @param {Function} helper The helper function
   @method helper
+  @for @ember/component/helper
   @public
   @since 1.13.0
 */

@@ -1,9 +1,9 @@
 /**
  @module ember
- @submodule ember-views
 */
 import { inspect } from 'ember-utils';
-import { Mixin, get, isNone, assert } from 'ember-metal';
+import { Mixin, get, isNone } from 'ember-metal';
+import { assert } from 'ember-debug';
 import { MUTABLE_CELL } from '../compat/attrs';
 
 function validateAction(component, actionName) {
@@ -12,8 +12,7 @@ function validateAction(component, actionName) {
   }
 
   assert(
-    'The default action was triggered on the component ' + component.toString() +
-    ', but the action name (' + actionName + ') was not a string.',
+    `The default action was triggered on the component ${component.toString()}, but the action name (${actionName}) was not a string.`,
     isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function'
   );
   return actionName;
@@ -32,9 +31,10 @@ export default Mixin.create({
     into action notifications of "play" or "stop" depending on some internal state
     of the component:
 
-    ```javascript
-    // app/components/play-button.js
-    export default Ember.Component.extend({
+    ```app/components/play-button.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       click() {
         if (this.get('isPlaying')) {
           this.sendAction('play');
@@ -56,9 +56,10 @@ export default Mixin.create({
     interaction into application-specific semantics ("play" or "stop") and
     calls the specified action.
 
-    ```javascript
-    // app/controller/application.js
-    export default Ember.Controller.extend({
+    ```app/controller/application.js
+    import Controller from '@ember/controller';
+
+    export default Controller.extend({
       actions: {
         musicStarted() {
           // called when the play button is clicked
@@ -75,9 +76,10 @@ export default Mixin.create({
     If no action is passed to `sendAction` a default name of "action"
     is assumed.
 
-    ```javascript
-    // app/components/next-button.js
-    export default Ember.Component.extend({
+    ```app/components/next-button.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
       click() {
         this.sendAction();
       }
@@ -89,9 +91,10 @@ export default Mixin.create({
     {{next-button action=(action "playNextSongInAlbum")}}
     ```
 
-    ```javascript
-    // app/controllers/application.js
-    App.ApplicationController = Ember.Controller.extend({
+    ```app/controllers/application.js
+    import Controller from '@ember/controller';
+
+    export default Controller.extend({
       actions: {
         playNextSongInAlbum() {
           ...
@@ -129,7 +132,6 @@ export default Mixin.create({
   },
 
   send(actionName, ...args) {
-    let target;
     let action = this.actions && this.actions[actionName];
 
     if (action) {
@@ -137,12 +139,10 @@ export default Mixin.create({
       if (!shouldBubble) { return; }
     }
 
-    target = get(this, 'target') || get(this, '_targetObject');
-
+    let target = get(this, 'target');
     if (target) {
       assert(
-        'The `target` for ' + this + ' (' + target +
-        ') does not have a `send` method',
+        `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
         typeof target.send === 'function'
       );
       target.send(...arguments);

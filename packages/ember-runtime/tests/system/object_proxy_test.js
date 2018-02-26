@@ -30,10 +30,10 @@ testBoth('should not proxy properties passed to create', function (get, set) {
 
 testBoth('should proxy properties to content', function(get, set) {
   let content = {
-        firstName: 'Tom',
-        lastName: 'Dale',
-        unknownProperty(key) { return key + ' unknown';}
-      };
+    firstName: 'Tom',
+    lastName: 'Dale',
+    unknownProperty(key) { return key + ' unknown';}
+  };
   let proxy = ObjectProxy.create();
 
   equal(get(proxy, 'firstName'), undefined, 'get on proxy without content should return undefined');

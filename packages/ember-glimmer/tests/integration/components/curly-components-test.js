@@ -1,6 +1,5 @@
 /* globals EmberDev */
 import {
-  isFeatureEnabled,
   set,
   get,
   observer,
@@ -23,6 +22,10 @@ import {
   equalsElement,
   styles
 } from '../../utils/test-helpers';
+import {
+  EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER,
+  MANDATORY_SETTER
+} from 'ember/features';
 
 moduleFor('Components test: curly components', class extends RenderingTest {
 
@@ -152,6 +155,25 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('so much layout wat hey');
   }
 
+  ['@test layout supports computed property']() {
+    let FooBarComponent = Component.extend({
+      elementId: 'blahzorz',
+      layout: computed(function () {
+        return compile('so much layout wat {{lulz}}');
+      }),
+      init() {
+        this._super(...arguments);
+        this.lulz = 'heyo';
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('so much layout wat heyo');
+  }
+
   ['@test passing undefined elementId results in a default elementId'](assert) {
     let FooBarComponent = Component.extend({
       tagName: 'h1'
@@ -247,6 +269,20 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'foo-bar', content: 'hello' });
   }
 
+  ['@test tagName can not be a computed property'](assert) {
+    let FooBarComponent = Component.extend({
+      tagName: computed(function() {
+        return 'foo-bar';
+      })
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, /You cannot use a computed property for the component's `tagName` \(<\(.+>\)\./);
+  }
+
   ['@test class is applied before didInsertElement'](assert) {
     let componentClass;
     let FooBarComponent = Component.extend({
@@ -340,6 +376,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     let FooBarComponent = Component.extend({
       init() {
         this._super();
+        this.classNames = this.classNames.slice();
         this.classNames.push('foo', 'bar', `outside-${this.get('extraClass')}`);
       }
     });
@@ -560,6 +597,34 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(this.firstChild, { content: 'hello - In component' });
+  }
+
+  ['@test it can render a basic component with a block when the yield is in a partial']() {
+    this.registerPartial('_partialWithYield', 'yielded: [{{yield}}]');
+
+    this.registerComponent('foo-bar', { template: '{{partial "partialWithYield"}} - In component' });
+
+    this.render('{{#foo-bar}}hello{{/foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { content: 'yielded: [hello] - In component' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'yielded: [hello] - In component' });
+  }
+
+  ['@test it can render a basic component with a block param when the yield is in a partial']() {
+    this.registerPartial('_partialWithYield', 'yielded: [{{yield "hello"}}]');
+
+    this.registerComponent('foo-bar', { template: '{{partial "partialWithYield"}} - In component' });
+
+    this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+
+    this.assertComponentElement(this.firstChild, { content: 'yielded: [hello] - In component' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { content: 'yielded: [hello] - In component' });
   }
 
   ['@test it renders the layout with the component instance as the context']() {
@@ -886,7 +951,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
   ['@test late bound layouts return the same definition'](assert) {
     let templateIds = [];
-    let component;
 
     // This is testing the scenario where you import a template and
     // set it to the layout property:
@@ -903,7 +967,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       init() {
         this._super(...arguments);
         this.layout = this.cond ? hello : bye;
-        component = this;
         templateIds.push(this.layout.id);
       }
     });
@@ -1133,6 +1196,43 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     });
 
     this.assertText('In layout - someProp: wycats');
+  }
+
+  ['@test this.attrs.foo === attrs.foo === foo']() {
+    this.registerComponent('foo-bar', {
+      template: strip`
+        Args: {{this.attrs.value}} | {{attrs.value}} | {{value}}
+        {{#each this.attrs.items as |item|}}
+          {{item}}
+        {{/each}}
+        {{#each attrs.items as |item|}}
+          {{item}}
+        {{/each}}
+        {{#each items as |item|}}
+          {{item}}
+        {{/each}}
+      `
+    });
+
+    this.render('{{foo-bar value=model.value items=model.items}}', {
+      model: {
+        value: 'wat',
+        items: [1, 2, 3]
+      }
+    });
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      this.context.set('model.value', 'lul');
+      this.context.set('model.items', [1]);
+    });
+
+    this.assertText(strip`Args: lul | lul | lul111`);
+
+    this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
+
+    this.assertText('Args: wat | wat | wat123123123');
   }
 
   ['@test non-block with properties on self']() {
@@ -1385,7 +1485,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
   }
 
-  ['@test `template` specified in component is overriden by block']() {
+  ['@test `template` specified in component is overridden by block']() {
     this.registerComponent('with-template', {
       ComponentClass: Component.extend({
         template: compile('Should not be used')
@@ -1992,10 +2092,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a property is changed during children\'s rendering'](assert) {
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(/modified value twice in a single render/);
-    }
-
     let outer, middle;
 
     this.registerComponent('x-outer', {
@@ -2040,14 +2136,17 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
     assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
 
-    if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    let expectedBacktrackingMessage = /modified "value" twice on <\(.+> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
+
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+      expectDeprecation(expectedBacktrackingMessage);
+      this.runTask(() => outer.set('value', 2));
+    } else {
       expectAssertion(() => {
         this.runTask(() => outer.set('value', 2));
-      }, /modified value twice in a single render/);
+      }, expectedBacktrackingMessage);
 
       return;
-    } else {
-      this.runTask(() => outer.set('value', 2));
     }
 
     assert.equal(this.$('#inner-value').text(), '2', 'second render of inner');
@@ -2065,11 +2164,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test when a shared dependency is changed during children\'s rendering'](assert) {
-    if (isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
-      expectDeprecation(/modified wrapper.content twice in a single render/);
-    }
-
-    let outer, middle;
+    let outer;
 
     this.registerComponent('x-outer', {
       ComponentClass: Component.extend({
@@ -2085,10 +2180,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.registerComponent('x-inner', {
       ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          middle = this;
-        },
         didReceiveAttrs() {
           this.get('wrapper').set('content', this.get('value'));
         },
@@ -2097,14 +2188,17 @@ moduleFor('Components test: curly components', class extends RenderingTest {
       template: '<div id="inner-value">{{wrapper.content}}</div>'
     });
 
-    if (!isFeatureEnabled('ember-glimmer-allow-backtracking-rerender')) {
+    let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <Ember\.Object.+> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
+
+    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
+      expectDeprecation(expectedBacktrackingMessage);
+      this.render('{{x-outer}}');
+    } else {
       expectAssertion(() => {
         this.render('{{x-outer}}');
-      }, /modified wrapper.content twice in a single render/);
+      }, expectedBacktrackingMessage);
 
       return;
-    } else {
-      this.render('{{x-outer}}');
     }
 
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
@@ -2167,16 +2261,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test specifying classNames results in correct class'](assert) {
-    let clickyThing;
-
     this.registerComponent('some-clicky-thing', {
       ComponentClass: Component.extend({
         tagName: 'button',
-        classNames: ['foo', 'bar'],
-        init() {
-          this._super(...arguments);
-          clickyThing = this;
-        }
+        classNames: ['foo', 'bar']
       })
     });
 
@@ -2204,15 +2292,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test specifying custom concatenatedProperties avoids clobbering'](assert) {
-    let clickyThing;
     this.registerComponent('some-clicky-thing', {
       ComponentClass: Component.extend({
         concatenatedProperties: ['blahzz'],
-        blahzz: ['blark', 'pory'],
-        init() {
-          this._super(...arguments);
-          clickyThing = this;
-        }
+        blahzz: ['blark', 'pory']
       }),
       template: strip`
         {{#each blahzz as |p|}}
@@ -2259,10 +2342,10 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     this.assertText('initial value - initial value');
 
-    if (isFeatureEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       expectAssertion(() => {
         component.bar = 'foo-bar';
-      }, /You must use Ember\.set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
+      }, /You must use set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
 
       this.assertText('initial value - initial value');
     }
@@ -2403,6 +2486,18 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertText('Jackson');
   }
 
+  ['@test injecting an unknown service raises an exception'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        missingService: inject.service()
+      })
+    });
+
+    expectAssertion(() => {
+      this.render('{{foo-bar}}');
+    }, 'Attempting to inject an unknown injection: \'service:missingService\'');
+  }
+
   ['@test can access `actions` hash via `_actions` [DEPRECATED]']() {
     let component;
 
@@ -2439,7 +2534,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     expectAssertion(() => {
       this.render('{{foo-bar}}');
-    }, /You must call `this._super\(...arguments\);` when implementing `init` in a component. Please update .* to call `this._super` from `init`/);
+    }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
   }
 
   ['@test should toggle visibility with isVisible'](assert) {
@@ -2618,8 +2713,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
   }
 
   ['@test child triggers revalidate during parent destruction (GH#13846)']() {
-    let select;
-
     this.registerComponent('x-select', {
       ComponentClass: Component.extend({
         tagName: 'select',
@@ -2628,8 +2721,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
           this._super();
           this.options = emberA([]);
           this.value = null;
-
-          select = this;
         },
 
         updateValue() {
@@ -2687,6 +2778,31 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assert.ok(true, 'no errors during teardown');
   }
 
+  ['@test setting a property in willDestroyElement does not assert (GH#14273)'](assert) {
+    assert.expect(2);
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.showFoo = true;
+        },
+
+        willDestroyElement() {
+          this.set('showFoo', false);
+          assert.ok(true, 'willDestroyElement was fired');
+          this._super(...arguments);
+        }
+      }),
+
+      template: `{{#if showFoo}}things{{/if}}`
+    });
+
+    this.render(`{{foo-bar}}`);
+
+    this.assertText('things');
+  }
+
   ['@test using didInitAttrs as an event is deprecated'](assert) {
     this.registerComponent('foo-bar', {
       ComponentClass: Component.extend({
@@ -2699,5 +2815,351 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     expectDeprecation(() => {
       this.render('{{foo-bar}}');
     }, /didInitAttrs called/);
+  }
+
+  // This test is a replication of the "component unit tests" scenario. When we deprecate
+  // and remove them, this test could be removed as well. This is not fully/intentionally
+  // supported, and it is unclear that this particular behavior is actually relied on.
+  // Since there is no real "invocation" here, it has other issues and inconsistencies,
+  // like there is no real "attrs" here, and there is no "update" pass.
+  ['@test did{Init,Receive}Attrs fires even if component is not rendered'](assert) {
+    expectDeprecation(/didInitAttrs called/);
+
+    let didInitAttrsCount = 0;
+    let didReceiveAttrsCount = 0;
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.didInit = true;
+        },
+
+        didInitAttrs() {
+          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
+          didInitAttrsCount++;
+        },
+
+        didReceiveAttrs() {
+          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
+          didReceiveAttrsCount++;
+        },
+
+        willRender() {
+          throw new Error('Unexpected render!');
+        }
+      })
+    });
+
+    assert.strictEqual(didInitAttrsCount, 0, 'precond: didInitAttrs is not fired');
+    assert.strictEqual(didReceiveAttrsCount, 0, 'precond: didReceiveAttrs is not fired');
+
+    this.runTask(() => this.component = this.owner.lookup('component:foo-bar'));
+
+    assert.strictEqual(didInitAttrsCount, 1, 'precond: didInitAttrs is fired');
+    assert.strictEqual(didReceiveAttrsCount, 1, 'precond: didReceiveAttrs is fired');
+  }
+
+  ['@test did{Init,Receive}Attrs fires after .init() but before observers become active'](assert) {
+    expectDeprecation(/didInitAttrs called/);
+
+    let fooCopyDidChangeCount = 0;
+    let barCopyDidChangeCount = 0;
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+          this.didInit = true;
+        },
+
+        didInitAttrs() {
+          assert.ok(this.didInit, 'expected init to have run before didInitAttrs');
+          this.set('fooCopy', this.attrs.foo.value + 1);
+        },
+
+        didReceiveAttrs() {
+          assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
+          this.set('barCopy', this.attrs.bar.value + 1);
+        },
+
+        fooCopyDidChange: observer('fooCopy', () => { fooCopyDidChangeCount++; }),
+        barCopyDidChange: observer('barCopy', () => { barCopyDidChangeCount++; })
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.assertText('1-2-3-4');
+
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected NO observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
+
+    this.runTask(() => set(this.context, 'foo', 5));
+
+    this.assertText('5-2-3-4');
+
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 0, 'expected NO observer firing for: barCopy');
+
+    this.runTask(() => set(this.context, 'bar', 7));
+
+    this.assertText('5-2-7-8');
+
+    assert.strictEqual(fooCopyDidChangeCount, 0, 'expected observer firing for: fooCopy');
+    assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
+  }
+
+  ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didReceiveAttrs() {
+          assert.equal(1, this.get('foo'), 'expected attrs to have correct value')
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+  }
+
+  ['@test overriding didUpdateAttrs does not trigger deprecation'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        didUpdateAttrs() {
+          assert.equal(5, this.get('foo'), "expected newAttrs to have new value");
+        }
+      }),
+
+      template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+    });
+
+    this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
+
+    this.runTask(() => set(this.context, 'foo', 5));
+  }
+
+  ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](assert) {
+    this.registerComponent('display-toggle', {
+      ComponentClass: Component.extend({
+        actions: {
+          show() {
+            assert.ok(true, 'display-toggle show action was called');
+            return true;
+          }
+        }
+      }),
+
+      template: `<button {{action 'show'}}>Show</button>`
+    });
+
+    this.render(`{{display-toggle}}`, {
+      send() {
+        assert.notOk(true, 'send should not be called when action is not "subscribed" to');
+      }
+    });
+
+    this.assertText('Show');
+
+    this.runTask(() => this.$('button').click());
+  }
+
+  ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
+    assert.expect(4);
+
+    this.registerComponent('display-toggle', {
+      ComponentClass: Component.extend({
+        actions: {
+          show() {
+            assert.ok(true, 'display-toggle show action was called');
+            return true;
+          }
+        }
+      }),
+
+      template: `<button {{action 'show'}}>Show</button>`
+    });
+
+    this.render(`{{display-toggle target=this}}`, {
+      send(actionName) {
+        assert.ok(true, 'send should be called when action is "subscribed" to');
+        assert.equal(actionName, 'show');
+      }
+    });
+
+    this.assertText('Show');
+
+    this.runTask(() => this.$('button').click());
+  }
+
+  ['@test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)'](assert) {
+    assert.expect(3);
+
+    let payload = ['arbitrary', 'event', 'data'];
+
+    this.registerComponent('evented-component', {
+      ComponentClass: Component.extend({
+        someTruthyProperty: true,
+
+        init() {
+          this._super(...arguments);
+          this.trigger('someMethod', ...payload);
+          this.trigger('someTruthyProperty', ...payload);
+        },
+
+        someMethod(...data) {
+          assert.deepEqual(data, payload, 'the method `someMethod` should be called, when `someMethod` is triggered');
+        },
+
+        listenerForSomeMethod: on('someMethod', function(...data) {
+          assert.deepEqual(data, payload, 'the listener `listenerForSomeMethod` should be called, when `someMethod` is triggered');
+        }),
+
+        listenerForSomeTruthyProperty: on('someTruthyProperty', function(...data) {
+          assert.deepEqual(data, payload, 'the listener `listenerForSomeTruthyProperty` should be called, when `someTruthyProperty` is triggered');
+        })
+      })
+    });
+
+    this.render(`{{evented-component}}`);
+  }
+
+  ['@test component yielding in an {{#each}} has correct block values after rerendering (GH#14284)']() {
+    this.registerComponent('list-items', {
+      template: `{{#each items as |item|}}{{yield item}}{{/each}}`
+    });
+
+    this.render(strip`
+      {{#list-items items=items as |thing|}}
+        |{{thing}}|
+
+        {{#if editMode}}
+          Remove {{thing}}
+        {{/if}}
+      {{/list-items}}
+    `, {
+      editMode: false,
+      items: ['foo', 'bar', 'qux', 'baz']
+    });
+
+    this.assertText('|foo||bar||qux||baz|');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'editMode', true));
+
+    this.assertText('|foo|Remove foo|bar|Remove bar|qux|Remove qux|baz|Remove baz');
+
+    this.runTask(() => set(this.context, 'editMode', false));
+
+    this.assertText('|foo||bar||qux||baz|');
+  }
+
+  ['@test unimplimented positionalParams do not cause an error GH#14416'](assert) {
+    this.registerComponent('foo-bar', {
+      template: 'hello'
+    });
+
+    this.render('{{foo-bar wat}}');
+    this.assertText('hello');
+  }
+
+  ['@test using attrs for positional params'](assert) {
+    let MyComponent = Component.extend();
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: MyComponent.reopenClass({
+        positionalParams: ['myVar']
+      }),
+      template: 'MyVar1: {{attrs.myVar}} {{myVar}} MyVar2: {{myVar2}} {{attrs.myVar2}}'
+    });
+
+    this.render('{{foo-bar 1 myVar2=2}}');
+
+    this.assertText('MyVar1: 1 1 MyVar2: 2 2');
+  }
+
+  ['@test can use `{{this}}` to emit the component\'s toString value [GH#14581]'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        toString() {
+          return 'special sauce goes here!';
+        }
+      }),
+      template: '{{this}}'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('special sauce goes here!');
+  }
+
+  ['@test can use `{{this` to access paths on current context [GH#14581]'](assert) {
+    let instance;
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super(...arguments);
+
+          instance = this;
+        },
+
+        foo: {
+          bar: {
+            baz: 'huzzah!'
+          }
+        }
+      }),
+      template: '{{this.foo.bar.baz}}'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('huzzah!');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(instance, 'foo.bar.baz', 'yippie!'));
+
+    this.assertText('yippie!');
+
+    this.runTask(() => set(instance, 'foo.bar.baz', 'huzzah!'));
+
+    this.assertText('huzzah!');
+  }
+
+  ['@test can use custom element in component layout'](assert) {
+    this.registerComponent('foo-bar', {
+      template: '<blah-zorz>Hi!</blah-zorz>'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('Hi!');
+  }
+
+  ['@test can use nested custom element in component layout'](assert) {
+    this.registerComponent('foo-bar', {
+      template: '<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>'
+    });
+
+    this.render('{{foo-bar}}');
+
+    this.assertText('Hi!');
+  }
+
+  ['@test can access properties off of rest style positionalParams array'](assert) {
+    this.registerComponent('foo-bar', {
+      ComponentClass: Component.extend().reopenClass({ positionalParams: 'things' }),
+      // using `attrs` here to simulate `@things.length`
+      template: `{{attrs.things.length}}`
+    });
+
+    this.render('{{foo-bar "foo" "bar" "baz"}}');
+
+    this.assertText('3');
   }
 });

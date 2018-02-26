@@ -1,4 +1,4 @@
-import { EmptyObject } from 'ember-utils';
+import { UNDEFINED } from './meta';
 
 export default class Cache {
   constructor(limit, func, key, store) {
@@ -54,11 +54,9 @@ export default class Cache {
   }
 }
 
-function UNDEFINED() {}
-
 class DefaultStore {
   constructor() {
-    this.data = new EmptyObject();
+    this.data = Object.create(null);
   }
 
   get(key) {
@@ -70,6 +68,6 @@ class DefaultStore {
   }
 
   clear() {
-    this.data = new EmptyObject();
+    this.data = Object.create(null);
   }
 }

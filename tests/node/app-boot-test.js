@@ -82,19 +82,22 @@ QUnit.test("outlets", function(assert) {
 QUnit.test("lifecycle hooks disabled", function(assert) {
   assert.expect(1);
 
-  this.template('application', "{{my-component}}{{outlet}}");
+  this.template('application', "{{my-component foo='bar'}}{{outlet}}");
 
   this.component('my-component', {
-    willRender: function() {
-      assert.ok(true, "should trigger component willRender hook");
+    didReceiveAttrs() {
+      assert.ok(true, "should trigger didReceiveAttrs hook");
     },
-    didRender: function() {
+    willRender() {
+      assert.ok(false, "should not trigger willRender hook");
+    },
+    didRender() {
       assert.ok(false, "should not trigger didRender hook");
     },
-    willInsertElement: function() {
+    willInsertElement() {
       assert.ok(false, "should not trigger willInsertElement hook");
     },
-    didInsertElement: function() {
+    didInsertElement() {
       assert.ok(false, "should not trigger didInsertElement hook");
     }
   });

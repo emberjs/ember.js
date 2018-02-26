@@ -17,3 +17,4 @@ QUnit.test('has default AST plugins', function(assert) {
     assert.ok(plugins.indexOf(plugin) > -1, `includes ${plugin}`);
   }
 });
+

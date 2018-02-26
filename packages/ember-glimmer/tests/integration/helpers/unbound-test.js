@@ -274,12 +274,12 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
 
     this.render(strip`
       {{unbound (surround model.prefix model.value "bar")}} {{surround model.prefix model.value "bar"}} {{unbound (surround "bar" model.value model.suffix)}} {{surround "bar" model.value model.suffix}}`, {
-      model: {
-        prefix: 'before',
-        value: 'core',
-        suffix: 'after'
-      }
-    });
+        model: {
+          prefix: 'before',
+          value: 'core',
+          suffix: 'after'
+        }
+      });
 
     this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
 
@@ -513,12 +513,12 @@ moduleFor('Helpers test: {{unbound}}', class extends RenderingTest {
         {{#if model.bar}}true{{/if}}
         {{#unless model.bar}}false{{/unless}}
       {{/unless}}`, {
-      model: {
-        foo: true,
-        notfoo: false,
-        bar: true
-      }
-    });
+        model: {
+          foo: true,
+          notfoo: false,
+          bar: true
+        }
+      });
 
     this.assertText('truetrue');
 

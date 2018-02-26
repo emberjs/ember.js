@@ -1,6 +1,5 @@
 /**
 @module ember
-@submodule ember-routing
 */
 
 import { assign } from 'ember-utils';
@@ -16,9 +15,8 @@ import { routeArgs } from '../utils';
   The Routing service is used by LinkComponent, and provides facilities for
   the component/view layer to interact with the router.
 
-  While still private, this service can eventually be opened up, and provides
-  the set of API needed for components to control routing without interacting
-  with router internals.
+  This is a private service for internal usage only. For public usage,
+  refer to the `Router` service.
 
   @private
   @class RoutingService
@@ -30,10 +28,6 @@ export default Service.extend({
   currentState: readOnly('router.currentState'),
   currentRouteName: readOnly('router.currentRouteName'),
   currentPath: readOnly('router.currentPath'),
-
-  availableRoutes() {
-    return Object.keys(get(this, 'router').router.recognizer.names);
-  },
 
   hasRoute(routeName) {
     return get(this, 'router').hasRoute(routeName);
@@ -58,7 +52,7 @@ export default Service.extend({
 
   generateURL(routeName, models, queryParams) {
     let router = get(this, 'router');
-    if (!router.router) { return; }
+    if (!router._routerMicrolib) { return; }
 
     let visibleQueryParams = {};
     assign(visibleQueryParams, queryParams);
@@ -66,13 +60,13 @@ export default Service.extend({
     this.normalizeQueryParams(routeName, models, visibleQueryParams);
 
     let args = routeArgs(routeName, models, visibleQueryParams);
-    return router.generate.apply(router, args);
+    return router.generate(...args);
   },
 
   isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
     let router = get(this, 'router');
 
-    let handlers = router.router.recognizer.handlersFor(routeName);
+    let handlers = router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
     let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
@@ -97,7 +91,7 @@ export default Service.extend({
 function numberOfContextsAcceptedByHandler(handler, handlerInfos) {
   let req = 0;
   for (let i = 0; i < handlerInfos.length; i++) {
-    req = req + handlerInfos[i].names.length;
+    req += handlerInfos[i].names.length;
     if (handlerInfos[i].handler === handler) {
       break;
     }

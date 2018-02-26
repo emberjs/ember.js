@@ -1,9 +1,9 @@
 import {
   instrument,
-  subscribe,
-  unsubscribe,
-  reset
-} from '../instrumentation';
+  instrumentationSubscribe as subscribe,
+  instrumentationUnsubscribe as unsubscribe,
+  instrumentationReset as reset
+} from '..';
 
 QUnit.module('Ember Instrumentation', {
   teardown() {

@@ -1,4 +1,4 @@
-import { get } from '../../property_get';
+import { get } from '../..';
 
 let obj;
 const moduleOpts = {

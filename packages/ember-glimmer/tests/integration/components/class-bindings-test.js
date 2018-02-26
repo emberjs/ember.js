@@ -44,6 +44,37 @@ moduleFor('ClassNameBindings integration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view foo enabled sad') }, content: 'hello' });
   }
 
+  ['@test attrs in classNameBindings']() {
+    let FooBarComponent = Component.extend({
+      classNameBindings: ['attrs.joker:purple:green', 'attrs.batman.robin:black:red']
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+    this.render('{{foo-bar joker=model.wat batman=model.super}}', {
+      model: { wat: false, super: { robin: true } }
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view green black') }, content: 'hello' });
+
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view green black') }, content: 'hello' });
+
+    this.runTask(() => {
+      set(this.context, 'model.wat', true);
+      set(this.context, 'model.super.robin', false);
+    });
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view purple red') }, content: 'hello' });
+
+    this.runTask(() => set(this.context, 'model', {
+      wat: false, super: { robin: true }
+    }));
+
+    this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'class': classes('ember-view green black') }, content: 'hello' });
+  }
+
   ['@test it can have class name bindings in the template']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
@@ -269,7 +300,7 @@ moduleFor('ClassNameBindings integration', class extends RenderingTest {
       init() {
         this._super();
 
-        let bindings = this.classNameBindings;
+        let bindings = this.classNameBindings = this.classNameBindings.slice();
 
         if (this.get('bindIsEnabled')) {
           bindings.push('isEnabled:enabled');

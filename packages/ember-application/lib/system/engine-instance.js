@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/engine
 */
 
 import { guidFor } from 'ember-utils';
@@ -10,7 +9,8 @@ import {
   RegistryProxyMixin,
   RSVP
 } from 'ember-runtime';
-import { Error as EmberError, assert, run } from 'ember-metal';
+import { assert, Error as EmberError } from 'ember-debug';
+import { run } from 'ember-metal';
 import { Registry, privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 
@@ -19,8 +19,8 @@ import { getEngineParent, setEngineParent } from './engine-parent';
   running `Engine`.
 
   @public
-  @class Ember.EngineInstance
-  @extends Ember.Object
+  @class EngineInstance
+  @extends EmberObject
   @uses RegistryProxyMixin
   @uses ContainerProxyMixin
 */
@@ -129,14 +129,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   },
 
   /**
-    @private
-  */
-  willDestroy() {
-    this._super(...arguments);
-    run(this.__container__, 'destroy');
-  },
-
-  /**
     Build a new `Ember.EngineInstance` that's a child of this instance.
 
     Engines must be registered by name with their parent engine
@@ -146,7 +138,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @method buildChildEngineInstance
     @param name {String} the registered name of the engine.
     @param options {Object} options provided to the engine instance.
-    @return {Ember.EngineInstance,Error}
+    @return {EngineInstance,Error}
   */
   buildChildEngineInstance(name, options = {}) {
     let Engine = this.lookup(`engine:${name}`);
@@ -173,7 +165,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     let registrations = [
       'route:basic',
-      'event_dispatcher:main',
       'service:-routing',
       'service:-glimmer-environment'
     ];
@@ -187,8 +178,13 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       'router:main',
       P`-bucket-cache:main`,
       '-view-registry:main',
-      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`
+      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
+      'service:-document',
     ];
+
+    if (env.isInteractive) {
+      singletons.push('event_dispatcher:main');
+    }
 
     singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
 

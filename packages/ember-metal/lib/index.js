@@ -1,7 +1,3 @@
-/**
-@module ember
-@submodule ember-metal
-*/
 
 export { default } from './core'; // reexports
 export {
@@ -11,19 +7,7 @@ export {
 } from './computed';
 export { default as alias } from './alias';
 export { default as merge } from './merge';
-export {
-  assert,
-  info,
-  warn,
-  debug,
-  deprecate,
-  deprecateFunc,
-  runInDebug,
-  setDebugFunction,
-  getDebugFunction,
-  debugSeal,
-  debugFreeze
-} from './debug';
+export { deprecateProperty } from './deprecate_property';
 export {
   instrument,
   flaggedInstrument,
@@ -33,27 +17,18 @@ export {
   unsubscribe as instrumentationUnsubscribe
 } from './instrumentation';
 export {
-  isTesting,
-  setTesting
-} from './testing';
-export {
   getOnerror,
   setOnerror,
   dispatchError,
-  setDispatchOverride
+  setDispatchOverride,
+  getDispatchOverride
 } from './error_handler';
 export {
   META_DESC,
   meta,
   peekMeta
 } from './meta';
-export { default as Error } from './error';
 export { default as Cache } from './cache';
-export {
-  default as isFeatureEnabled,
-  FEATURES,
-  DEFAULT_FEATURES
-} from './features';
 export {
   _getPath,
   get,
@@ -63,9 +38,8 @@ export {
   set,
   trySet
 } from './property_set';
-export { default as WeakMap } from './weak_map';
+export { default as WeakMap, WeakMapPolyfill } from './weak_map';
 export {
-  accumulateListeners,
   addListener,
   hasListeners,
   listenersFor,
@@ -94,7 +68,8 @@ export {
 } from './property_events';
 export {
   defineProperty,
-  Descriptor
+  Descriptor,
+  _hasCachedComputedProperties
 } from './properties';
 export {
   watchKey,
@@ -112,12 +87,11 @@ export {
 export {
   destroy,
   isWatching,
-  rewatch,
   unwatch,
   watch,
   watcherCount
 } from './watching';
-export { default as libraries } from './libraries';
+export { default as libraries, Libraries } from './libraries';
 export {
   Map,
   MapWithDefault,
@@ -137,7 +111,6 @@ export {
   _removeBeforeObserver
 } from './observer';
 export {
-  NAME_KEY,
   Mixin,
   aliasMethod,
   _immediateObserver,
@@ -160,6 +133,7 @@ export {
 export { default as InjectedProperty } from './injected_property';
 export {
   setHasViews,
+  tagForProperty,
   tagFor,
   markObjectAsDirty
 } from './tags';
@@ -169,14 +143,7 @@ export {
   didRender,
   assertNotRendered
 } from './transaction';
+export {
+  isProxy
+} from './is_proxy';
 export { default as descriptor } from './descriptor';
-
-
-// TODO: this needs to be deleted once we refactor the build tooling
-// do this for side-effects of updating Ember.assert, warn, etc when
-// ember-debug is present
-// This needs to be called before any deprecateFunc
-import require, { has } from 'require';
-if (has('ember-debug')) {
-  require('ember-debug');
-}

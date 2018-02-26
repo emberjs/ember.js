@@ -4,15 +4,14 @@ import EmberObject from '../../system/object';
 import {
   computed,
   get,
-  _addBeforeObserver,
-  isFeatureEnabled
+  _addBeforeObserver
 } from 'ember-metal';
 
 const ObserverClass = EmberObject.extend({
   _keysBefore: null,
   _keys: null,
   _values: null,
-  _before : null,
+  _before: null,
   _after: null,
 
   isEnabled: true,
@@ -55,7 +54,7 @@ const ObserverClass = EmberObject.extend({
   observeBefore(obj) {
     let keys = Array.prototype.slice.call(arguments, 1);
     let loc  = keys.length;
-    while (--loc>=0) {
+    while (--loc >= 0) {
       _addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
     }
 
@@ -319,15 +318,11 @@ EnumerableTests.importModuleTests(sortByTests);
 EnumerableTests.importModuleTests(toArrayTests);
 EnumerableTests.importModuleTests(uniqTests);
 
-if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
-  EnumerableTests.importModuleTests(uniqByTests);
-}
+EnumerableTests.importModuleTests(uniqByTests);
 
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  EnumerableTests.importModuleTests(includesTests);
-}
+EnumerableTests.importModuleTests(includesTests);
 
 EnumerableTests.importModuleTests(withoutTests);
 
 export default EnumerableTests;
-export {EnumerableTests, ObserverClass};
+export { EnumerableTests, ObserverClass };

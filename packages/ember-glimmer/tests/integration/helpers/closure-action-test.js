@@ -1,14 +1,16 @@
 import {
   run,
+  set,
   computed,
-  isFeatureEnabled,
   instrumentationSubscribe,
   instrumentationUnsubscribe
 } from 'ember-metal';
+import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { strip } from '../../utils/abstract-test-case';
 import { Component, INVOKE } from '../../utils/helpers';
 
-if (isFeatureEnabled('ember-improved-instrumentation')) {
+if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor('Helpers test: closure {{action}} improved instrumentation', class extends RenderingTest {
 
     subscribe(eventName, options) {
@@ -119,8 +121,6 @@ if (isFeatureEnabled('ember-improved-instrumentation')) {
 
     ['@test instrumented action should return value']() {
       let returnedValue = 'Chris P is so krispy';
-      let beforeParameter;
-      let afterParameter;
       let actualReturnedValue;
 
       let InnerComponent = Component.extend({
@@ -149,10 +149,8 @@ if (isFeatureEnabled('ember-improved-instrumentation')) {
 
       this.subscribe('interaction.ember-action', {
         before(name, timestamp, payload) {
-          beforeParameter = payload.target.get('myProperty');
         },
         after(name, timestamp, payload) {
-          afterParameter = payload.target.get('myProperty');
         }
       });
 
@@ -212,7 +210,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: '{{inner-component submit=(action somethingThatIsUndefined)}}'
     });
 
-    this.assert.throws(() => {
+    expectAssertion(() => {
       this.render('{{outer-component}}');
     }, /Action passed is null or undefined in \(action[^)]*\) from .*\./);
   }
@@ -228,7 +226,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: '{{inner-component submit=(action nonFunctionThing)}}'
     });
 
-    this.assert.throws(() => {
+    expectAssertion(() => {
       this.render('{{outer-component}}');
     }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);
   }
@@ -242,7 +240,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: '{{inner-component}}'
     });
 
-    this.assert.throws(() => {
+    expectAssertion(() => {
       this.render('{{outer-component}}');
     }, /Action passed is null or undefined in \(action[^)]*\) from .*\./);
   }
@@ -633,7 +631,6 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     let actualReturnedValue;
 
     let innerComponent;
-    let outerComponent;
 
     let InnerComponent = Component.extend({
       init() {
@@ -646,10 +643,6 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     });
 
     let OuterComponent = Component.extend({
-      init() {
-        this._super(...arguments);
-        outerComponent = this;
-      },
       actions: {
         outerAction(incomingFirst, incomingSecond) {
           actualFirst = incomingFirst;
@@ -704,7 +697,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: `{{inner-component submit=(action 'doesNotExist')}}`
     });
 
-    this.assert.throws(() => {
+    expectAssertion(() => {
       this.render('{{outer-component}}');
     }, /An action named 'doesNotExist' was not found in /);
   }
@@ -726,7 +719,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
       template: `{{inner-component submit=(action 'doesNotExist')}}`
     });
 
-    this.assert.throws(() => {
+    expectAssertion(() => {
       this.render('{{outer-component}}');
     }, /An action named 'doesNotExist' was not found in /);
   }
@@ -911,7 +904,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     this.assert.equal(actualValue, newValue, 'property is read');
   }
 
-  ['@test action closure does not get auto-mut wrapped']() {
+  ['@test action closure does not get auto-mut wrapped'](assert) {
     let first = 'raging robert';
     let second = 'mild machty';
     let returnValue = 'butch brian';
@@ -927,7 +920,14 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
         innerComponent = this;
       },
       fireAction() {
-        actualReturnedValue = this.attrs.submit(second);
+        this.get('submit')(second);
+        this.get('attrs-submit')(second);
+        let attrsSubmitReturnValue = this.attrs['attrs-submit'](second);
+        let submitReturnValue = this.attrs.submit(second);
+
+        assert.equal(attrsSubmitReturnValue, submitReturnValue, 'both attrs.foo and foo should behave the same');
+
+        return submitReturnValue;
       }
     });
 
@@ -951,7 +951,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
 
     this.registerComponent('middle-component', {
       ComponentClass: MiddleComponent,
-      template: `{{inner-component submit=attrs.submit}}`
+      template: `{{inner-component attrs-submit=attrs.submit submit=submit}}`
     });
 
     this.registerComponent('outer-component', {
@@ -962,7 +962,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     this.render('{{outer-component}}');
 
     this.runTask(() => {
-      innerComponent.fireAction();
+      actualReturnedValue = innerComponent.fireAction();
     });
 
     this.assert.equal(actualFirst, first, 'first argument is correct');
@@ -1103,5 +1103,103 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     });
 
     this.assertText('Click me');
+  }
+
+  ['@test closure actions does not cause component hooks to fire unnecessarily [GH#14305] [GH#14654]'](assert) {
+    let clicked = 0;
+    let didReceiveAttrsFired = 0;
+
+    let ClickMeComponent = Component.extend({
+      tagName: 'button',
+
+      click() {
+        this.get('onClick').call(undefined, ++clicked);
+      },
+
+      didReceiveAttrs() {
+        didReceiveAttrsFired++;
+      }
+    });
+
+    this.registerComponent('click-me', {
+      ComponentClass: ClickMeComponent
+    });
+
+    let outer;
+
+    let OuterComponent = Component.extend({
+      clicked: 0,
+
+      actions: {
+        'on-click': function() {
+          this.incrementProperty('clicked');
+        }
+      },
+
+      init() {
+        this._super();
+        outer = this;
+        this.set('onClick', () => this.incrementProperty('clicked'));
+      }
+    });
+
+    this.registerComponent('outer-component', {
+      ComponentClass: OuterComponent,
+      template: strip`
+        <div id="counter">clicked: {{clicked}}; foo: {{foo}}</div>
+
+        {{click-me id="string-action" onClick=(action "on-click")}}
+        {{click-me id="function-action" onClick=(action onClick)}}
+        {{click-me id="mut-action" onClick=(action (mut clicked))}}
+      `
+    });
+
+    this.render('{{outer-component foo=foo}}', { foo: 1 });
+
+    this.assertText('clicked: 0; foo: 1');
+
+    assert.equal(didReceiveAttrsFired, 3);
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('clicked: 0; foo: 1');
+
+    assert.equal(didReceiveAttrsFired, 3);
+
+    this.runTask(() => set(this.context, 'foo', 2));
+
+    this.assertText('clicked: 0; foo: 2');
+
+    assert.equal(didReceiveAttrsFired, 3);
+
+    this.runTask(() => this.$('#string-action').click());
+
+    this.assertText('clicked: 1; foo: 2');
+
+    assert.equal(didReceiveAttrsFired, 3);
+
+    this.runTask(() => this.$('#function-action').click());
+
+    this.assertText('clicked: 2; foo: 2');
+
+    assert.equal(didReceiveAttrsFired, 3);
+
+    this.runTask(() => set(outer, 'onClick', function() { outer.incrementProperty('clicked'); }));
+
+    this.assertText('clicked: 2; foo: 2');
+
+    assert.equal(didReceiveAttrsFired, 3);
+
+    this.runTask(() => this.$('#function-action').click());
+
+    this.assertText('clicked: 3; foo: 2');
+
+    assert.equal(didReceiveAttrsFired, 3);
+
+    this.runTask(() => this.$('#mut-action').click());
+
+    this.assertText('clicked: 4; foo: 2');
+
+    assert.equal(didReceiveAttrsFired, 3);
   }
 });

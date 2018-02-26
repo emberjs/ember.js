@@ -6,18 +6,17 @@ import {
   combine,
   isConst,
   referenceFromParts
-} from 'glimmer-reference';
+} from '@glimmer/reference';
 
 /**
 @module ember
-@submodule ember-templates
 */
 
 /**
   Dynamically look up a property on an object. The second argument to `{{get}}`
   should have a string value, although it can be bound.
 
-  For example, these two usages are equivilent:
+  For example, these two usages are equivalent:
 
   ```handlebars
   {{person.height}}
@@ -36,16 +35,16 @@ import {
 
   ```handlebars
   {{get person factName}}
-  <button {{action (mut factName) "height"}}>Show height</button>
-  <button {{action (mut factName) "weight"}}>Show weight</button>
+  <button {{action (action (mut factName)) "height"}}>Show height</button>
+  <button {{action (action (mut factName)) "weight"}}>Show weight</button>
   ```
 
   The `{{get}}` helper can also respect mutable values itself. For example:
 
   ```handlebars
   {{input value=(mut (get person factName)) type="text"}}
-  <button {{action (mut factName) "height"}}>Show height</button>
-  <button {{action (mut factName) "weight"}}>Show weight</button>
+  <button {{action (action (mut factName)) "height"}}>Show height</button>
+  <button {{action (action (mut factName)) "weight"}}>Show weight</button>
   ```
 
   Would allow the user to swap what fact is being displayed, and also edit
@@ -90,13 +89,13 @@ class GetHelperReference extends CachedReference {
     let path = this.lastPath = this.pathReference.value();
 
     if (path !== lastPath) {
-      if (path) {
+      if (path !== undefined && path !== null && path !== '') {
         let pathType = typeof path;
 
         if (pathType === 'string') {
           innerReference = this.innerReference = referenceFromParts(this.sourceReference, path.split('.'));
         } else if (pathType === 'number') {
-          innerReference = this.innerReference = this.sourceReference.get(path);
+          innerReference = this.innerReference = this.sourceReference.get('' + path);
         }
 
         innerTag.update(innerReference.tag);

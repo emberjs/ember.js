@@ -1,80 +1,9 @@
-import { generateGuid, guidFor } from 'ember-utils';
-import {
-  ArgsSyntax,
-  StatementSyntax,
-  ComponentDefinition
-} from 'glimmer-runtime';
-import { _instrumentStart } from 'ember-metal';
-import { RootReference } from '../utils/references';
 import {
   UpdatableTag,
   ConstReference,
   combine
-} from 'glimmer-reference';
-
-function outletComponentFor(vm) {
-  let { outletState, isTopLevel } = vm.dynamicScope();
-
-  if (isTopLevel) {
-    return new TopLevelOutletComponentReference(outletState);
-  } else {
-    let args = vm.getArgs();
-    let outletNameRef;
-    if (args.positional.length === 0) {
-      outletNameRef = new ConstReference('main');
-    } else {
-      outletNameRef = args.positional.at(0);
-    }
-
-    return new OutletComponentReference(outletNameRef, outletState);
-  }
-}
-
-export class OutletSyntax extends StatementSyntax {
-  static create(environment, args, templates, symbolTable) {
-    let definitionArgs = ArgsSyntax.fromPositionalArgs(args.positional.slice(0, 1));
-
-    return new this(environment, definitionArgs, templates, symbolTable);
-  }
-
-  constructor(environment, args, templates, symbolTable) {
-    super();
-    this.definitionArgs = args;
-    this.definition = outletComponentFor;
-    this.args = ArgsSyntax.empty();
-    this.symbolTable = symbolTable;
-    this.templates = null;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
-  }
-}
-
-class TopLevelOutletComponentReference {
-  constructor(reference) {
-    this.outletReference = reference;
-    this.lastState = reference.value();
-    this.definition = new TopLevelOutletComponentDefinition(this.lastState.render.template);
-    this.tag = reference.tag;
-  }
-
-  value() {
-    let { lastState, outletReference, definition } = this;
-    let newState = outletReference.value();
-
-    definition = revalidate(definition, lastState, newState);
-
-    if (definition) {
-      return definition;
-    } else {
-      return new TopLevelOutletComponentDefinition(newState.render.template);
-    }
-
-    return this.definition;
-  }
-}
+} from '@glimmer/reference';
+import { OutletComponentDefinition } from '../component-managers/outlet';
 
 class OutletComponentReference {
   constructor(outletNameRef, parentOutletStateRef) {
@@ -88,7 +17,6 @@ class OutletComponentReference {
 
   value() {
     let { outletNameRef, parentOutletStateRef, definition, lastState } = this;
-
 
     let outletName = outletNameRef.value();
     let outletStateRef = parentOutletStateRef.get('outlets').get(outletName);
@@ -105,7 +33,7 @@ class OutletComponentReference {
     } else if (hasTemplate) {
       return this.definition = new OutletComponentDefinition(outletName, newState.render.template);
     } else {
-      return null;
+      return this.definition = null;
     }
   }
 }
@@ -129,137 +57,75 @@ function revalidate(definition, lastState, newState) {
   return null;
 }
 
-function instrumentationPayload({ render: { name, outlet } }) {
-  return { object: `${name}:${outlet}` };
+function outletComponentFor(vm, args) {
+  let { outletState } = vm.dynamicScope();
+
+  let outletNameRef;
+  if (args.positional.length === 0) {
+    outletNameRef = new ConstReference('main');
+  } else {
+    outletNameRef = args.positional.at(0);
+  }
+
+  return new OutletComponentReference(outletNameRef, outletState);
 }
 
-function NOOP() {}
+/**
+  The `{{outlet}}` helper lets you specify where a child route will render in
+  your template. An important use of the `{{outlet}}` helper is in your
+  application's `application.hbs` file:
 
-class StateBucket {
-  constructor(outletState) {
-    this.outletState = outletState;
-    this.instrument();
-  }
+  ```handlebars
+  {{! app/templates/application.hbs }}
+  <!-- header content goes here, and will always display -->
+  {{my-header}}
+  <div class="my-dynamic-content">
+    <!-- this content will change based on the current route, which depends on the current URL -->
+    {{outlet}}
+  </div>
+  <!-- footer content goes here, and will always display -->
+  {{my-footer}}
+  ```
 
-  instrument() {
-    this.finalizer = _instrumentStart('render.outlet', instrumentationPayload, this.outletState);
-  }
+  See [templates guide](https://emberjs.com/guides/templates/the-application-template/) for
+  additional information on using `{{outlet}}` in `application.hbs`.
+  You may also specify a name for the `{{outlet}}`, which is useful when using more than one
+  `{{outlet}}` in a template:
 
-  finalize() {
-    let { finalizer } = this;
-    finalizer();
-    this.finalizer = NOOP;
-  }
-}
+  ```handlebars
+  {{outlet "menu"}}
+  {{outlet "sidebar"}}
+  {{outlet "main"}}
+  ```
 
-class AbstractOutletComponentManager {
-  prepareArgs(definition, args) {
-    return args;
-  }
+  Your routes can then render into a specific one of these `outlet`s by specifying the `outlet`
+  attribute in your `renderTemplate` function:
 
-  create(environment, definition, args, dynamicScope) {
-    throw new Error('Not implemented: create');
-  }
+  ```app/routes/menu.js
+  import Route from '@ember/routing/route';
 
-  getSelf({ outletState }) {
-    return new RootReference(outletState.render.controller);
-  }
-
-  getTag() {
-    return null;
-  }
-
-  getDestructor() {
-    return null;
-  }
-
-  didRenderLayout(bucket) {
-    bucket.finalize();
-  }
-
-  didCreateElement() {}
-  didCreate(state) {}
-  update(bucket) {}
-  didUpdateLayout(bucket) {}
-  didUpdate(state) {}
-}
-
-class TopLevelOutletComponentManager extends AbstractOutletComponentManager {
-  create(environment, definition, args, dynamicScope) {
-    dynamicScope.isTopLevel = false;
-    return new StateBucket(dynamicScope.outletState.value());
-  }
-
-  layoutFor(definition, bucket, env) {
-    let { template } = definition;
-    if (!template) {
-      template = env.owner.lookup('template:-outlet');
+  export default Route.extend({
+    renderTemplate() {
+      this.render({ outlet: 'menu' });
     }
+  });
+  ```
 
-    return env.getCompiledBlock(TopLevelOutletLayoutCompiler, template);
+  See the [routing guide](https://emberjs.com/guides/routing/rendering-a-template/) for more
+  information on how your `route` interacts with the `{{outlet}}` helper.
+  Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
+
+  @method outlet
+  @param {String} [name]
+  @for Ember.Templates.helpers
+  @public
+*/
+export function outletMacro(name, params, hash, builder) {
+  if (!params) {
+    params = [];
   }
+  let definitionArgs = [params.slice(0, 1), null, null, null];
+  let emptyArgs = [[], null, null, null]; // FIXME
+  builder.component.dynamic(definitionArgs, outletComponentFor, emptyArgs);
+  return true;
 }
-
-const TOP_LEVEL_MANAGER = new TopLevelOutletComponentManager();
-
-class OutletComponentManager extends AbstractOutletComponentManager {
-  create(environment, definition, args, dynamicScope) {
-    let outletStateReference = dynamicScope.outletState = dynamicScope.outletState.get('outlets').get(definition.outletName);
-    let outletState = outletStateReference.value();
-    return new StateBucket(outletState);
-  }
-
-  layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
-  }
-}
-
-const MANAGER = new OutletComponentManager();
-
-class AbstractOutletComponentDefinition extends ComponentDefinition {
-  constructor(manager, outletName, template) {
-    super('outlet', manager, null);
-    this.outletName = outletName;
-    this.template = template;
-    generateGuid(this);
-  }
-}
-
-class TopLevelOutletComponentDefinition extends AbstractOutletComponentDefinition {
-  constructor(template) {
-    super(TOP_LEVEL_MANAGER, null, template);
-  }
-}
-
-class TopLevelOutletLayoutCompiler {
-  constructor(template) {
-    this.template = template;
-  }
-
-  compile(builder) {
-    builder.wrapLayout(this.template.asLayout());
-    builder.tag.static('div');
-    builder.attrs.static('id', guidFor(this));
-    builder.attrs.static('class', 'ember-view');
-  }
-}
-
-TopLevelOutletLayoutCompiler.id = 'top-level-outlet';
-
-class OutletComponentDefinition extends AbstractOutletComponentDefinition {
-  constructor(outletName, template) {
-    super(MANAGER, outletName, template);
-  }
-}
-
-export class OutletLayoutCompiler {
-  constructor(template) {
-    this.template = template;
-  }
-
-  compile(builder) {
-    builder.wrapLayout(this.template.asLayout());
-  }
-}
-
-OutletLayoutCompiler.id = 'outlet';

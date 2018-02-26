@@ -1,9 +1,8 @@
 /**
-@module ember
-@submodule ember-glimmer
+@module @ember/string
 */
 
-import { isFeatureEnabled, deprecate } from 'ember-metal';
+import { deprecate } from 'ember-debug';
 
 export class SafeString {
   constructor(string) {
@@ -22,11 +21,11 @@ export class SafeString {
 export function getSafeString() {
   deprecate(
     'Ember.Handlebars.SafeString is deprecated in favor of Ember.String.htmlSafe',
-    !isFeatureEnabled('ember-string-ishtmlsafe'),
+    false,
     {
       id: 'ember-htmlbars.ember-handlebars-safestring',
       until: '3.0.0',
-      url: 'http://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring'
+      url: 'https://emberjs.com/deprecations/v2.x#toc_use-ember-string-htmlsafe-over-ember-handlebars-safestring'
     }
   );
 
@@ -79,11 +78,13 @@ export function escapeExpression(string) {
   ensure Ember's rendering layer does not escape the HTML.
 
   ```javascript
-  Ember.String.htmlSafe('<div>someString</div>')
+  import { htmlSafe } from '@ember/string';
+
+  htmlSafe('<div>someString</div>')
   ```
 
   @method htmlSafe
-  @for Ember.String
+  @for @ember/string
   @static
   @return {Handlebars.SafeString} A string that will not be HTML escaped by Handlebars.
   @public
@@ -98,18 +99,20 @@ export function htmlSafe(str) {
 }
 
 /**
-  Detects if a string was decorated using `Ember.String.htmlSafe`.
+  Detects if a string was decorated using `htmlSafe`.
 
   ```javascript
-  var plainString = 'plain string',
-      safeString = Ember.String.htmlSafe('<div>someValue</div>');
+  import { htmlSafe, isHTMLSafe } from '@ember/string';
 
-  Ember.String.isHTMLSafe(plainString); // false
-  Ember.String.isHTMLSafe(safeString);  // true
+  var plainString = 'plain string',
+      safeString = htmlSafe('<div>someValue</div>');
+
+  isHTMLSafe(plainString); // false
+  isHTMLSafe(safeString);  // true
   ```
 
   @method isHTMLSafe
-  @for Ember.String
+  @for @ember/string
   @static
   @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
   @public

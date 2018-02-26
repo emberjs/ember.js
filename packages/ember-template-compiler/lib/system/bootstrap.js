@@ -1,15 +1,9 @@
 /**
 @module ember
-@submodule ember-templates
 */
 
-import { Error as EmberError } from 'ember-metal';
+import { Error as EmberError } from 'ember-debug';
 import compile from './compile';
-
-/**
-@module ember
-@submodule ember-templates
-*/
 
 /**
   Find templates stored in the head tag as script tags and make them available
@@ -48,7 +42,7 @@ function bootstrap({ context, hasTemplate, setTemplate }) {
 
     // Check if template of same name already exists.
     if (hasTemplate(templateName)) {
-      throw new EmberError('Template named "' + templateName  + '" already exists.');
+      throw new EmberError(`Template named "${templateName}" already exists.`);
     }
 
     // For templates which have a name, we save them and then remove them from the DOM.

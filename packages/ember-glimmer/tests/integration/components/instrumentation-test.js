@@ -123,13 +123,14 @@ moduleFor('Components instrumentation', class extends RenderingTest {
   }
 
   _assertEvents(label, actual, expected, initialRender) {
-    this.assert.equal(actual.length, expected.length , `${label}: expected ${expected.length} and got ${actual.length}`);
+    this.assert.equal(actual.length, expected.length, `${label}: expected ${expected.length} and got ${actual.length}`);
 
     actual.forEach((payload, i) => this.assertPayload(payload, expected[i], initialRender));
   }
 
   assertPayload(payload, component, initialRender) {
     this.assert.equal(payload.object, component.toString(), 'payload.object');
+    this.assert.ok(payload.containerKey, 'the container key should be present');
     this.assert.equal(payload.containerKey, component._debugContainerKey, 'payload.containerKey');
     this.assert.equal(payload.view, component, 'payload.view');
     this.assert.strictEqual(payload.initialRender, initialRender, 'payload.initialRender');

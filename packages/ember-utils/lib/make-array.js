@@ -1,3 +1,7 @@
+const { isArray } = Array;
+/**
+ @module @ember/array
+*/
 /**
  Forces the passed object to be part of an array. If the object is already
  an array, it will return the object. Otherwise, it will add the object to
@@ -16,12 +20,13 @@
  ```
 
  @method makeArray
- @for Ember
+ @static
+ @for @ember/array
  @param {Object} obj the object
  @return {Array}
  @private
  */
 export default function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
-  return Array.isArray(obj) ? obj : [obj];
+  return isArray(obj) ? obj : [obj];
 }

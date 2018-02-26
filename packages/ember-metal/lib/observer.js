@@ -10,7 +10,7 @@ import {
   suspendListener
 } from './events';
 /**
-@module ember-metal
+@module @ember/object
 */
 
 const AFTER_OBSERVERS = ':change';
@@ -26,7 +26,8 @@ function beforeEvent(keyName) {
 
 /**
   @method addObserver
-  @for Ember
+  @static
+  @for @ember/object/observers
   @param obj
   @param {String} _path
   @param {Object|Function} target
@@ -46,7 +47,8 @@ export function observersFor(obj, path) {
 
 /**
   @method removeObserver
-  @for Ember
+  @static
+  @for @ember/object/observers
   @param obj
   @param {String} path
   @param {Object|Function} target
@@ -62,7 +64,8 @@ export function removeObserver(obj, path, target, method) {
 
 /**
   @method _addBeforeObserver
-  @for Ember
+  @static
+  @for @ember/object/observers
   @param obj
   @param {String} path
   @param {Object|Function} target
@@ -92,7 +95,8 @@ export function _suspendObservers(obj, paths, target, method, callback) {
 
 /**
   @method removeBeforeObserver
-  @for Ember
+  @static
+  @for @ember/object/observers
   @param obj
   @param {String} path
   @param {Object|Function} target

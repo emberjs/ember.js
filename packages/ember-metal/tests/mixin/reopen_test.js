@@ -1,7 +1,9 @@
-import run from '../../run_loop';
-import get from '../../property_get';
 import { Object as EmberObject } from 'ember-runtime';
-import Mixin from '../../mixin';
+import {
+  run,
+  get,
+  Mixin
+} from '../..'
 
 QUnit.module('Ember.Mixin#reopen');
 
@@ -39,7 +41,7 @@ QUnit.test('using reopen() and calling _super where there is not a super functio
   run(() => {
     try {
       result = taco.createBreakfast();
-    } catch(e) {
+    } catch (e) {
       result = 'Your breakfast was interrupted by an infinite stack error.';
     }
   });

@@ -47,14 +47,9 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
   }
 
   ['@test throws an error if an event function is defined in a tagless component']() {
-    let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
       tagName: '',
-      init() {
-        this._super();
-        instance = this;
-      },
       click() { }
     });
 
@@ -66,14 +61,9 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
   }
 
   ['@test throws an error if a custom defined event function is defined in a tagless component']() {
-    let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
       tagName: '',
-      init() {
-        this._super();
-        instance = this;
-      },
       folks() { }
     });
 
@@ -85,14 +75,9 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
   }
 
   ['@test throws an error if `tagName` is an empty string and `classNameBindings` are specified']() {
-    let instance;
     let template = `hit dem folks`;
     let FooBarComponent = Component.extend({
       tagName: '',
-      init() {
-        this._super();
-        instance = this;
-      },
       foo: true,
       classNameBindings: ['foo:is-foo:is-bar']
     });
@@ -161,6 +146,43 @@ moduleFor('Components test: fragment components', class extends RenderingTest {
     });
 
     this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+    this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
+    this.assertText('baz');
+  }
+
+  ['@test does not throw an error if `tagName` is an empty string and `id` is bound property specified via template']() {
+    let template = `{{id}}`;
+    let FooBarComponent = Component.extend({
+      tagName: ''
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template });
+
+    this.render(`{{#foo-bar id=fooBarId}}{{/foo-bar}}`, { fooBarId: 'baz' });
+
+    this.assertText('baz');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'fooBarId', 'qux'));
+
+    this.assertText('qux');
+
+    this.runTask(() => set(this.context, 'fooBarId', 'baz'));
+
+    this.assertText('baz');
+  }
+
+  ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template and passed to child component']() {
+    let fooBarTemplate = `{{#baz-child id=id}}{{/baz-child}}`;
+    let FooBarComponent = Component.extend({
+      tagName: ''
+    });
+    let BazChildComponent = Component.extend();
+    let bazChildTemplate = `{{id}}`;
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: fooBarTemplate });
+    this.registerComponent('baz-child', { ComponentClass: BazChildComponent, template: bazChildTemplate });
     this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
     this.assertText('baz');
   }

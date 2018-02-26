@@ -1,12 +1,11 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/array
 */
 
 // ..........................................................
 // HELPERS
 //
-import { symbol } from 'ember-utils';
+import { symbol, toString } from 'ember-utils';
 import Ember, { // ES6TODO: Ember.A
   get,
   computed,
@@ -19,14 +18,15 @@ import Ember, { // ES6TODO: Ember.A
   removeListener,
   sendEvent,
   hasListeners,
-  meta as metaFor,
-  markObjectAsDirty,
-  deprecate,
-  isFeatureEnabled
+  _addBeforeObserver,
+  _removeBeforeObserver,
+  addObserver,
+  removeObserver,
+  meta,
+  peekMeta
 } from 'ember-metal';
-
+import { deprecate, assert } from 'ember-debug';
 import Enumerable from './enumerable';
-import EachProxy from '../system/each_proxy';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
@@ -56,11 +56,7 @@ export function removeArrayObserver(array, target, opts) {
 }
 
 export function objectAt(content, idx) {
-  if (content.objectAt) {
-    return content.objectAt(idx);
-  }
-
-  return content[idx];
+  return typeof content.objectAt === 'function' ? content.objectAt(idx) : content[idx];
 }
 
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
@@ -103,8 +99,6 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
 }
 
 export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
-  markObjectAsDirty(metaFor(array));
-
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
     startIdx = 0;
@@ -139,18 +133,29 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
-  let length = get(array, 'length');
-  let cachedFirst = cacheFor(array, 'firstObject');
-  let cachedLast = cacheFor(array, 'lastObject');
+  let meta = peekMeta(array);
+  let cache = meta !== undefined ? meta.readableCache() : undefined;
+  if (cache !== undefined) {
+    let length = get(array, 'length');
+    let addedAmount = (addAmt === -1 ? 0 : addAmt);
+    let removedAmount = (removeAmt === -1 ? 0 : removeAmt);
+    let delta = addedAmount - removedAmount;
+    let previousLength = length - delta;
 
-  if (objectAt(array, 0) !== cachedFirst) {
-    propertyWillChange(array, 'firstObject');
-    propertyDidChange(array, 'firstObject');
-  }
+    let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
+    if (cache.firstObject !== undefined && normalStartIdx === 0) {
+      propertyWillChange(array, 'firstObject', meta);
+      propertyDidChange(array, 'firstObject', meta);
+    }
 
-  if (objectAt(array, length - 1) !== cachedLast) {
-    propertyWillChange(array, 'lastObject');
-    propertyDidChange(array, 'lastObject');
+    if (cache.lastObject !== undefined) {
+      let previousLastIndex = previousLength - 1;
+      let lastAffectedIndex = normalStartIdx + removedAmount;
+      if (previousLastIndex < lastAffectedIndex) {
+        propertyWillChange(array, 'lastObject', meta);
+        propertyDidChange(array, 'lastObject', meta);
+      }
+   }
   }
 
   return array;
@@ -159,7 +164,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
-  return obj && !!obj[EMBER_ARRAY];
+  return obj && obj[EMBER_ARRAY];
 }
 
 // ..........................................................
@@ -190,15 +195,14 @@ export function isEmberArray(obj) {
   contents in a KVO-friendly way. You can also be notified whenever the
   membership of an array changes by using `.observes('myArray.[]')`.
 
-  To support `Ember.Array` in your own class, you must override two
+  To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
 
-  Note that the Ember.Array mixin also incorporates the `Ember.Enumerable`
-  mixin. All `Ember.Array`-like objects are also enumerable.
+  Note that the EmberArray mixin also incorporates the `Ember.Enumerable`
+  mixin. All `EmberArray`-like objects are also enumerable.
 
-  @class Array
-  @namespace Ember
-  @uses Ember.Enumerable
+  @class EmberArray
+  @uses Enumerable
   @since Ember 0.9.0
   @public
 */
@@ -221,7 +225,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Returns the object at the given `index`. If the given `index` is negative
     or is greater or equal than the array length, returns `undefined`.
 
-    This is one of the primitives you must implement to support `Ember.Array`.
+    This is one of the primitives you must implement to support `EmberArray`.
     If your object supports retrieving the value of an array item using `get()`
     (i.e. `myArray.get(0)`), then you do not need to implement this method
     yourself.
@@ -253,7 +257,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     This returns the objects at the specified indexes, using `objectAt`.
 
     ```javascript
-    let arr = ['a', 'b', 'c', 'd'];
+    let arr = ['a', 'b', 'c', 'd'];
 
     arr.objectsAt([0, 1, 2]);  // ['a', 'b', 'c']
     arr.objectsAt([2, 3, 4]);  // ['c', 'd', undefined]
@@ -304,18 +308,16 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   // optimized version from Enumerable
   contains(obj) {
-    if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-      deprecate(
-        '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
-        false,
-        { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'http://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
-      );
-    }
+    deprecate(
+      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
+      false,
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+    );
 
     return this.indexOf(obj) >= 0;
   },
 
-  // Add any extra methods to Ember.Array that are native to the built-in Array.
+  // Add any extra methods to EmberArray that are native to the built-in Array.
   /**
     Returns a new array that is a slice of the receiver. This implementation
     uses the observable array methods to retrieve the objects for the new
@@ -341,17 +343,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     if (isNone(beginIndex)) {
       beginIndex = 0;
+    } else if (beginIndex < 0) {
+      beginIndex = length + beginIndex;
     }
 
     if (isNone(endIndex) || (endIndex > length)) {
       endIndex = length;
-    }
-
-    if (beginIndex < 0) {
-      beginIndex = length + beginIndex;
-    }
-
-    if (endIndex < 0) {
+    } else if (endIndex < 0) {
       endIndex = length + endIndex;
     }
 
@@ -474,7 +472,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @param {Object} target The observer object.
     @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
 
@@ -491,7 +489,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @param {Object} target The object observing the array.
     @param {Object} opts Optional hash of configuration options including
       `willChange` and `didChange` option.
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
   removeArrayObserver(target, opts) {
@@ -510,7 +508,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   }),
 
   /**
-    If you are implementing an object that supports `Ember.Array`, call this
+    If you are implementing an object that supports `EmberArray`, call this
     method just before the array content changes to notify any observers and
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
@@ -521,7 +519,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
       pass `null` assumes 0
     @param {Number} addAmt The number of items that will be added. If you
       pass `null` assumes 0.
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
   arrayContentWillChange(startIdx, removeAmt, addAmt) {
@@ -529,7 +527,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    If you are implementing an object that supports `Ember.Array`, call this
+    If you are implementing an object that supports `EmberArray`, call this
     method just after the array content changes to notify any observers and
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
@@ -540,11 +538,58 @@ const ArrayMixin = Mixin.create(Enumerable, {
       pass `null` assumes 0
     @param {Number} addAmt The number of items that were added. If you
       pass `null` assumes 0.
-    @return {Ember.Array} receiver
+    @return {EmberArray} receiver
     @public
   */
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
     return arrayContentDidChange(this, startIdx, removeAmt, addAmt);
+  },
+
+  /**
+    Returns `true` if the passed object can be found in the array.
+    This method is a Polyfill for ES 2016 Array.includes.
+    If no `startAt` argument is given, the starting location to
+    search is 0. If it's negative, searches from the index of
+    `this.length + startAt` by asc.
+
+    ```javascript
+    [1, 2, 3].includes(2);     // true
+    [1, 2, 3].includes(4);     // false
+    [1, 2, 3].includes(3, 2);  // true
+    [1, 2, 3].includes(3, 3);  // false
+    [1, 2, 3].includes(3, -1); // true
+    [1, 2, 3].includes(1, -1); // false
+    [1, 2, 3].includes(1, -4); // true
+    [1, 2, NaN].includes(NaN); // true
+    ```
+
+    @method includes
+    @param {Object} obj The object to search for.
+    @param {Number} startAt optional starting location to search, default 0
+    @return {Boolean} `true` if object is found in the array.
+    @public
+  */
+  includes(obj, startAt) {
+    let len = get(this, 'length');
+
+    if (startAt === undefined) {
+      startAt = 0;
+    }
+
+    if (startAt < 0) {
+      startAt += len;
+    }
+
+    for (let idx = startAt; idx < len; idx++) {
+      let currentObj = objectAt(this, idx);
+
+      // SameValueZero comparison (NaN !== NaN)
+      if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
+        return true;
+      }
+    }
+
+    return false;
   },
 
   /**
@@ -580,58 +625,128 @@ const ArrayMixin = Mixin.create(Enumerable, {
     }
 
     return this.__each;
-  }).volatile()
+  }).volatile().readOnly()
 });
 
-if (isFeatureEnabled('ember-runtime-enumerable-includes')) {
-  ArrayMixin.reopen({
-    /**
-      Returns `true` if the passed object can be found in the array.
-      This method is a Polyfill for ES 2016 Array.includes.
-      If no `startAt` argument is given, the starting location to
-      search is 0. If it's negative, searches from the index of
-      `this.length + startAt` by asc.
+/**
+  This is the object instance returned when you get the `@each` property on an
+  array. It uses the unknownProperty handler to automatically create
+  EachArray instances for property names.
+  @class EachProxy
+  @private
+*/
+function EachProxy(content) {
+  this._content = content;
+  this._keys = undefined;
+  meta(this);
+}
 
-      ```javascript
-      [1, 2, 3].includes(2);     // true
-      [1, 2, 3].includes(4);     // false
-      [1, 2, 3].includes(3, 2);  // true
-      [1, 2, 3].includes(3, 3);  // false
-      [1, 2, 3].includes(3, -1); // true
-      [1, 2, 3].includes(1, -1); // false
-      [1, 2, 3].includes(1, -4); // true
-      [1, 2, NaN].includes(NaN); // true
-      ```
+EachProxy.prototype = {
+  __defineNonEnumerable(property) {
+    this[property.name] = property.descriptor.value;
+  },
 
-      @method includes
-      @param {Object} obj The object to search for.
-      @param {Number} startAt optional starting location to search, default 0
-      @return {Boolean} `true` if object is found in the array.
-      @public
-    */
-    includes(obj, startAt) {
-      let len = get(this, 'length');
+  // ..........................................................
+  // ARRAY CHANGES
+  // Invokes whenever the content array itself changes.
 
-      if (startAt === undefined) {
-        startAt = 0;
+  arrayWillChange(content, idx, removedCnt, addedCnt) {
+    let keys = this._keys;
+    let lim = removedCnt > 0 ? idx + removedCnt : -1;
+    let meta;
+    for (let key in keys) {
+      meta = meta || peekMeta(this);
+      if (lim > 0) {
+        removeObserverForContentKey(content, key, this, idx, lim);
       }
-
-      if (startAt < 0) {
-        startAt += len;
-      }
-
-      for (let idx = startAt; idx < len; idx++) {
-        let currentObj = objectAt(this, idx);
-
-        // SameValueZero comparison (NaN !== NaN)
-        if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
-          return true;
-        }
-      }
-
-      return false;
+      propertyWillChange(this, key, meta);
     }
-  });
+  },
+
+  arrayDidChange(content, idx, removedCnt, addedCnt) {
+    let keys = this._keys;
+    let lim = addedCnt > 0 ? idx + addedCnt : -1;
+    let meta;
+    for (let key in keys) {
+      meta = meta || peekMeta(this);
+      if (lim > 0) {
+        addObserverForContentKey(content, key, this, idx, lim);
+      }
+      propertyDidChange(this, key, meta);
+    }
+  },
+
+  // ..........................................................
+  // LISTEN FOR NEW OBSERVERS AND OTHER EVENT LISTENERS
+  // Start monitoring keys based on who is listening...
+
+  willWatchProperty(property) {
+    this.beginObservingContentKey(property);
+  },
+
+  didUnwatchProperty(property) {
+    this.stopObservingContentKey(property);
+  },
+
+  // ..........................................................
+  // CONTENT KEY OBSERVING
+  // Actual watch keys on the source content.
+
+  beginObservingContentKey(keyName) {
+    let keys = this._keys;
+    if (!keys) {
+      keys = this._keys = Object.create(null);
+    }
+
+    if (!keys[keyName]) {
+      keys[keyName] = 1;
+      let content = this._content;
+      let len = get(content, 'length');
+
+      addObserverForContentKey(content, keyName, this, 0, len);
+    } else {
+      keys[keyName]++;
+    }
+  },
+
+  stopObservingContentKey(keyName) {
+    let keys = this._keys;
+    if (keys && (keys[keyName] > 0) && (--keys[keyName] <= 0)) {
+      let content = this._content;
+      let len     = get(content, 'length');
+
+      removeObserverForContentKey(content, keyName, this, 0, len);
+    }
+  },
+
+  contentKeyWillChange(obj, keyName) {
+    propertyWillChange(this, keyName);
+  },
+
+  contentKeyDidChange(obj, keyName) {
+    propertyDidChange(this, keyName);
+  }
+};
+
+function addObserverForContentKey(content, keyName, proxy, idx, loc) {
+  while (--loc >= idx) {
+    let item = objectAt(content, loc);
+    if (item) {
+      assert(`When using @each to observe the array \`${toString(content)}\`, the array must return an object`, typeof item === 'object');
+      _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      addObserver(item, keyName, proxy, 'contentKeyDidChange');
+    }
+  }
+}
+
+function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
+  while (--loc >= idx) {
+    let item = objectAt(content, loc);
+    if (item) {
+      _removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      removeObserver(item, keyName, proxy, 'contentKeyDidChange');
+    }
+  }
 }
 
 export default ArrayMixin;

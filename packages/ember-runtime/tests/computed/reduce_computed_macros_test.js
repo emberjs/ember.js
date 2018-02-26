@@ -2,7 +2,6 @@ import {
   run,
   defineProperty,
   setProperties,
-  isFeatureEnabled,
   get,
   set,
   addObserver,
@@ -501,78 +500,76 @@ QUnit.test('properties values can be replaced', function() {
   });
 });
 
-if (isFeatureEnabled('ember-runtime-computed-uniq-by')) {
-  QUnit.module('computed.uniqBy', {
-    setup() {
-      obj = EmberObject.extend({
-        list: null,
-        uniqueById: uniqBy('list', 'id')
-      }).create({
-        list: emberA([
-          { id: 1, value: 'one' },
-          { id: 2, value: 'two' },
-          { id: 1, value: 'one' }
-        ])
-      });
-    },
-    teardown() {
-      run(obj, 'destroy');
-    }
-  });
-
-  QUnit.test('uniqBy is readOnly', function() {
-    QUnit.throws(function() {
-      obj.set('uniqueById', 1);
-    }, /Cannot set read-only property "uniqueById" on object:/);
-  });
-  QUnit.test('does not include duplicates', function() {
-    deepEqual(obj.get('uniqueById'), [
-      { id: 1, value: 'one' },
-      { id: 2, value: 'two' }
-    ]);
-  });
-
-  QUnit.test('it does not share state among instances', function() {
-    let MyObject = EmberObject.extend({
-      list: [],
-      uniqueByName: uniqBy('list', 'name')
-    });
-    let a = MyObject.create({ list: [{ name: 'bob' }, { name: 'mitch' }, { name: 'mitch' }] });
-    let b = MyObject.create({ list: [{ name: 'warren' }, { name: 'mitch' }] });
-
-    deepEqual(a.get('uniqueByName'), [{ name: 'bob' }, { name: 'mitch' }]);
-    // Making sure that 'mitch' appears
-    deepEqual(b.get('uniqueByName'), [{ name: 'warren' }, { name: 'mitch' }]);
-  });
-
-  QUnit.test('it handles changes to the dependent array', function() {
-    obj.get('list').pushObject({ id: 3, value: 'three' });
-
-    deepEqual(obj.get('uniqueById'), [
-      { id: 1, value: 'one' },
-      { id: 2, value: 'two' },
-      { id: 3, value: 'three' }
-    ], 'The list includes three');
-
-    obj.get('list').pushObject({ id: 3, value: 'three' });
-
-    deepEqual(obj.get('uniqueById'), [
-      { id: 1, value: 'one' },
-      { id: 2, value: 'two' },
-      { id: 3, value: 'three' }
-    ], 'The list does not include a duplicate three');
-  });
-
-  QUnit.test('it returns an empty array when computed on a non-array', function() {
-    let MyObject = EmberObject.extend({
+QUnit.module('computed.uniqBy', {
+  setup() {
+    obj = EmberObject.extend({
       list: null,
-      uniq: uniqBy('list', 'name')
+      uniqueById: uniqBy('list', 'id')
+    }).create({
+      list: emberA([
+        { id: 1, value: 'one' },
+        { id: 2, value: 'two' },
+        { id: 1, value: 'one' }
+      ])
     });
-    let a = MyObject.create({ list: 'not an array' });
+  },
+  teardown() {
+    run(obj, 'destroy');
+  }
+});
 
-    deepEqual(a.get('uniq'), []);
+QUnit.test('uniqBy is readOnly', function() {
+  QUnit.throws(function() {
+    obj.set('uniqueById', 1);
+  }, /Cannot set read-only property "uniqueById" on object:/);
+});
+QUnit.test('does not include duplicates', function() {
+  deepEqual(obj.get('uniqueById'), [
+    { id: 1, value: 'one' },
+    { id: 2, value: 'two' }
+  ]);
+});
+
+QUnit.test('it does not share state among instances', function() {
+  let MyObject = EmberObject.extend({
+    list: [],
+    uniqueByName: uniqBy('list', 'name')
   });
-}
+  let a = MyObject.create({ list: [{ name: 'bob' }, { name: 'mitch' }, { name: 'mitch' }] });
+  let b = MyObject.create({ list: [{ name: 'warren' }, { name: 'mitch' }] });
+
+  deepEqual(a.get('uniqueByName'), [{ name: 'bob' }, { name: 'mitch' }]);
+  // Making sure that 'mitch' appears
+  deepEqual(b.get('uniqueByName'), [{ name: 'warren' }, { name: 'mitch' }]);
+});
+
+QUnit.test('it handles changes to the dependent array', function() {
+  obj.get('list').pushObject({ id: 3, value: 'three' });
+
+  deepEqual(obj.get('uniqueById'), [
+    { id: 1, value: 'one' },
+    { id: 2, value: 'two' },
+    { id: 3, value: 'three' }
+  ], 'The list includes three');
+
+  obj.get('list').pushObject({ id: 3, value: 'three' });
+
+  deepEqual(obj.get('uniqueById'), [
+    { id: 1, value: 'one' },
+    { id: 2, value: 'two' },
+    { id: 3, value: 'three' }
+  ], 'The list does not include a duplicate three');
+});
+
+QUnit.test('it returns an empty array when computed on a non-array', function() {
+  let MyObject = EmberObject.extend({
+    list: null,
+    uniq: uniqBy('list', 'name')
+  });
+  let a = MyObject.create({ list: 'not an array' });
+
+  deepEqual(a.get('uniq'), []);
+});
 
 QUnit.module('computed.intersect', {
   setup() {
@@ -642,17 +639,17 @@ QUnit.test('setDiff is readOnly', function() {
   }, /Cannot set read-only property "diff" on object:/);
 });
 
-QUnit.test('it throws an error if given fewer or more than two dependent properties', function() {
-  throws(function () {
+QUnit.test('it asserts if given fewer or more than two dependent properties', function() {
+  expectAssertion(function () {
     EmberObject.extend({
       diff: setDiff('array')
     }).create({
       array: emberA([1, 2, 3, 4, 5, 6, 7]),
       array2: emberA([3, 4, 5])
     });
-  }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 
-  throws(function () {
+  expectAssertion(function () {
     EmberObject.extend({
       diff: setDiff('array', 'array2', 'array3')
     }).create({
@@ -660,7 +657,7 @@ QUnit.test('it throws an error if given fewer or more than two dependent propert
       array2: emberA([3, 4, 5]),
       array3: emberA([7])
     });
-  }, /requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
+  }, /Ember\.computed\.setDiff requires exactly two dependent arrays/, 'setDiff requires two dependent arrays');
 });
 
 
@@ -919,6 +916,13 @@ QUnit.test('updating sort properties detaches observers for old sort properties'
     'Jaime',
     'Cersei'
   ], 'after changing removed item array is not updated');
+});
+
+QUnit.test('sort works if array property is null (non array value) on first evaluation of computed prop', function() {
+  obj.set('items', null);
+  deepEqual(obj.get('sortedItems'), []);
+  obj.set('items', emberA([{fname: 'Cersei', lname: 'Lanister'}]));
+  deepEqual(obj.get('sortedItems'), [{fname: 'Cersei', lname: 'Lanister'}]);
 });
 
 QUnit.test('updating sort properties updates the sorted array', function() {

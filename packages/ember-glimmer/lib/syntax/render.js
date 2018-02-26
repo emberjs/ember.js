@@ -1,17 +1,18 @@
-import {
-  ArgsSyntax,
-  StatementSyntax,
-  ComponentDefinition
-} from 'glimmer-runtime';
-import { ConstReference, isConst } from 'glimmer-reference';
-import { assert } from 'ember-metal';
-import { RootReference } from '../utils/references';
-import { generateControllerFactory } from 'ember-routing';
-import { OutletLayoutCompiler } from './outlet';
+/**
+@module ember
+*/
 
-function makeComponentDefinition(vm) {
+import { ConstReference, isConst } from '@glimmer/reference';
+import { assert } from 'ember-debug';
+import { hashToArgs } from './utils';
+import {
+  RenderDefinition,
+  SINGLETON_RENDER_MANAGER,
+  NON_SINGLETON_RENDER_MANAGER
+} from '../component-managers/render';
+
+function makeComponentDefinition(vm, args) {
   let env     = vm.env;
-  let args    = vm.getArgs();
   let nameRef = args.positional.at(0);
 
   assert(`The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`, isConst(nameRef));
@@ -44,104 +45,85 @@ function makeComponentDefinition(vm) {
   }
 }
 
-export class RenderSyntax extends StatementSyntax {
-  static create(environment, args, templates, symbolTable) {
-    return new this(environment, args, templates, symbolTable);
+
+/**
+  Calling ``{{render}}`` from within a template will insert another
+  template that matches the provided name. The inserted template will
+  access its properties on its own controller (rather than the controller
+  of the parent template).
+
+  If a view class with the same name exists, the view class also will be used.
+  Note: A given controller may only be used *once* in your app in this manner.
+  A singleton instance of the controller will be created for you.
+
+  Example:
+
+  ```app/controllers/navigation.js
+  import Controller from '@ember/controller';
+
+  export default Controller.extend({
+    who: "world"
+  });
+  ```
+
+  ```handlebars
+  <!-- navigation.hbs -->
+  Hello, {{who}}.
+  ```
+
+  ```handlebars
+  <!-- application.hbs -->
+  <h1>My great app</h1>
+  {{render "navigation"}}
+  ```
+
+  ```html
+  <h1>My great app</h1>
+  <div class='ember-view'>
+    Hello, world.
+  </div>
+  ```
+
+  Optionally you may provide a second argument: a property path
+  that will be bound to the `model` property of the controller.
+  If a `model` property path is specified, then a new instance of the
+  controller will be created and `{{render}}` can be used multiple times
+  with the same name.
+
+  For example if you had this `author` template.
+
+  ```handlebars
+  <div class="author">
+    Written by {{firstName}} {{lastName}}.
+    Total Posts: {{postCount}}
+  </div>
+  ```
+
+  You could render it inside the `post` template using the `render` helper.
+
+  ```handlebars
+  <div class="post">
+    <h1>{{title}}</h1>
+    <div>{{body}}</div>
+    {{render "author" author}}
+  </div>
+  ```
+
+  @method render
+  @for Ember.Templates.helpers
+  @param {String} name
+  @param {Object?} context
+  @param {Hash} options
+  @return {String} HTML string
+  @public
+  @deprecated Use a component instead
+*/
+export function renderMacro(name, params, hash, builder) {
+  if (!params) {
+    params = [];
   }
-
-  constructor(environment, args, templates, symbolTable) {
-    super();
-    this.definitionArgs = args;
-    this.definition = makeComponentDefinition;
-    this.args = ArgsSyntax.fromPositionalArgs(args.positional.slice(1, 2));
-    this.templates = null;
-    this.symbolTable = symbolTable;
-    this.shadow = null;
-  }
-
-  compile(builder) {
-    builder.component.dynamic(this.definitionArgs, this.definition, this.args, this.templates, this.symbolTable, this.shadow);
-  }
-}
-
-class AbstractRenderManager {
-  prepareArgs(definition, args) {
-    return args;
-  }
-
-  /* abstract create(environment, definition, args, dynamicScope); */
-
-  layoutFor(definition, bucket, env) {
-    return env.getCompiledBlock(OutletLayoutCompiler, definition.template);
-  }
-
-  getSelf({ controller }) {
-    return new RootReference(controller);
-  }
-
-  getTag() {
-    return null;
-  }
-
-  getDestructor() {
-    return null;
-  }
-
-  didCreateElement() {}
-  didRenderLayout() {}
-  didCreate() {}
-  update() {}
-  didUpdateLayout() {}
-  didUpdate() {}
-}
-
-class SingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
-    let { name, env } = definition;
-    let controller = env.owner.lookup(`controller:${name}`);
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
-    return { controller };
-  }
-}
-
-const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
-
-class NonSingletonRenderManager extends AbstractRenderManager {
-  create(environment, definition, args, dynamicScope) {
-    let { name, env } = definition;
-    let modelRef = args.positional.at(0);
-
-    let factory = env.owner._lookupFactory(`controller:${name}`) || generateControllerFactory(env.owner, name);
-    let controller = factory.create({ model: modelRef.value() });
-
-    if (dynamicScope.rootOutletState) {
-      dynamicScope.outletState = dynamicScope.rootOutletState.getOrphan(name);
-    }
-
-    return { controller };
-  }
-
-  update({ controller }, args, dynamicScope) {
-    controller.set('model', args.positional.at(0).value());
-  }
-
-  getDestructor({ controller }) {
-    return controller;
-  }
-}
-
-const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
-
-class RenderDefinition extends ComponentDefinition {
-  constructor(name, template, env, manager) {
-    super('render', manager, null);
-
-    this.name = name;
-    this.template = template;
-    this.env = env;
-  }
+  let definitionArgs = [params.slice(0), hash, null, null];
+  let args = [params.slice(1), hashToArgs(hash), null, null];
+  builder.component.dynamic(definitionArgs, makeComponentDefinition, args);
+  return true;
 }

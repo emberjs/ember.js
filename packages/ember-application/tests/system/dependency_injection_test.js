@@ -1,4 +1,4 @@
-import { ENV, context } from 'ember-environment';
+import { context } from 'ember-environment';
 import { run } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 import Application from '../../system/application';
@@ -6,13 +6,10 @@ import Application from '../../system/application';
 let EmberApplication = Application;
 
 let originalLookup = context.lookup;
-let registry, locator, lookup, application, originalModelInjections;
+let registry, locator, application;
 
 QUnit.module('Ember.Application Dependency Injection', {
   setup() {
-    originalModelInjections = ENV.MODEL_FACTORY_INJECTIONS;
-    ENV.MODEL_FACTORY_INJECTIONS = true;
-
     application = run(EmberApplication, 'create');
 
     application.Person              = EmberObject.extend({});
@@ -30,13 +27,12 @@ QUnit.module('Ember.Application Dependency Injection', {
     registry = application.__registry__;
     locator = application.__container__;
 
-    lookup = context.lookup = {};
+    context.lookup = {};
   },
   teardown() {
     run(application, 'destroy');
     application = locator = null;
     context.lookup = originalLookup;
-    ENV.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 

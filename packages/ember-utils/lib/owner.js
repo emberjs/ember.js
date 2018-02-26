@@ -1,6 +1,5 @@
 /**
-@module ember
-@submodule ember-runtime
+@module @ember/application
 */
 
 import symbol from './symbol';
@@ -20,19 +19,21 @@ export const OWNER = symbol('OWNER');
   For example, this component dynamically looks up a service based on the
   `audioType` passed as an attribute:
 
-  ```
-  // app/components/play-audio.js
-  import Ember from 'ember';
+  ```app/components/play-audio.js
+  import Component from '@ember/component';
+  import { computed } from '@ember/object';
+  import { getOwner } from '@ember/application';
 
   // Usage:
   //
   //   {{play-audio audioType=model.audioType audioFile=model.file}}
   //
-  export default Ember.Component.extend({
-    audioService: Ember.computed('audioType', function() {
-      let owner = Ember.getOwner(this);
+  export default Component.extend({
+    audioService: computed('audioType', function() {
+      let owner = getOwner(this);
       return owner.lookup(`service:${this.get('audioType')}`);
     }),
+
     click() {
       let player = this.get('audioService');
       player.play(this.get('audioFile'));
@@ -41,7 +42,8 @@ export const OWNER = symbol('OWNER');
   ```
 
   @method getOwner
-  @for Ember
+  @static
+  @for @ember/application
   @param {Object} object An object with an owner.
   @return {Object} An owner object.
   @since 2.3.0
@@ -56,9 +58,10 @@ export function getOwner(object) {
   useful in some testing cases.
 
   @method setOwner
-  @for Ember
-  @param {Object} object An object with an owner.
-  @return {Object} An owner object.
+  @static
+  @for @ember/application
+  @param {Object} object An object instance.
+  @param {Object} object The new owner object of the object instance.
   @since 2.3.0
   @public
 */

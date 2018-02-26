@@ -1,17 +1,18 @@
-import Ember from 'ember';
+import Application from '@ember/application';
+import { run } from '@ember/runloop';
 import { initialize } from '<%= dasherizedModulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
 import destroyApp from '../../helpers/destroy-app';
 
 module('<%= friendlyTestName %>', {
-  beforeEach: function() {
-    Ember.run(() => {
-      this.application = Ember.Application.create();
+  beforeEach() {
+    run(() => {
+      this.application = Application.create();
       this.appInstance = this.application.buildInstance();
     });
   },
-  afterEach: function() {
-    Ember.run(this.appInstance, 'destroy');
+  afterEach() {
+    run(this.appInstance, 'destroy');
     destroyApp(this.application);
   }
 });

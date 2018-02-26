@@ -2,7 +2,7 @@ The Ember team and community are committed to everyone having a safe and inclusi
 
 **Our Community Guidelines / Code of Conduct can be found here**:
 
-http://emberjs.com/guidelines/
+https://emberjs.com/guidelines/
 
 For a history of updates, see the page history here:
 

@@ -2,14 +2,13 @@ import {
   get,
   setProperties,
   computed,
-  Mixin,
-  Error as EmberError
+  Mixin
 } from 'ember-metal';
+import { Error as EmberError } from 'ember-debug';
 import { not, or } from '../computed/computed_macros';
 
 /**
-  @module ember
-  @submodule ember-runtime
+  @module @ember/object
 */
 
 function tap(proxy, promise) {
@@ -19,16 +18,20 @@ function tap(proxy, promise) {
   });
 
   return promise.then(value => {
-    setProperties(proxy, {
-      content: value,
-      isFulfilled: true
-    });
+    if (!proxy.isDestroyed && !proxy.isDestroying) {
+      setProperties(proxy, {
+        content: value,
+        isFulfilled: true
+      });
+    }
     return value;
   }, reason => {
-    setProperties(proxy, {
-      reason: reason,
-      isRejected: true
-    });
+    if (!proxy.isDestroyed && !proxy.isDestroying) {
+      setProperties(proxy, {
+        reason,
+        isRejected: true
+      });
+    }
     throw reason;
   }, 'Ember: PromiseProxy');
 }
@@ -40,7 +43,7 @@ function tap(proxy, promise) {
   let ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
 
   let proxy = ObjectPromiseProxy.create({
-    promise: Ember.RSVP.cast($.getJSON('/some/remote/data.json'))
+    promise: Ember.RSVP.resolve($.getJSON('/some/remote/data.json'))
   });
 
   proxy.then(function(json){
@@ -63,7 +66,7 @@ function tap(proxy, promise) {
   When the $.getJSON completes, and the promise is fulfilled
   with json, the life cycle attributes will update accordingly.
   Note that $.getJSON doesn't return an ECMA specified promise,
-  it is useful to wrap this with an `RSVP.cast` so that it behaves
+  it is useful to wrap this with an `RSVP.resolve` so that it behaves
   as a spec compliant promise.
 
   ```javascript
@@ -88,7 +91,7 @@ function tap(proxy, promise) {
   proxy.get('lastName')  //=> 'Penner'
   ```
 
-  @class Ember.PromiseProxyMixin
+  @class PromiseProxyMixin
   @public
 */
 export default Mixin.create({
@@ -100,7 +103,7 @@ export default Mixin.create({
     @default null
     @public
   */
-  reason:  null,
+  reason: null,
 
   /**
     Once the proxied promise has settled this will become `false`.
@@ -109,7 +112,7 @@ export default Mixin.create({
     @default true
     @public
   */
-  isPending:  not('isSettled').readOnly(),
+  isPending: not('isSettled').readOnly(),
 
   /**
     Once the proxied promise has settled this will become `true`.
@@ -118,7 +121,7 @@ export default Mixin.create({
     @default false
     @public
   */
-  isSettled:  or('isRejected', 'isFulfilled').readOnly(),
+  isSettled: or('isRejected', 'isFulfilled').readOnly(),
 
   /**
     Will become `true` if the proxied promise is rejected.
@@ -127,7 +130,7 @@ export default Mixin.create({
     @default false
     @public
   */
-  isRejected:  false,
+  isRejected: false,
 
   /**
     Will become `true` if the proxied promise is fulfilled.

@@ -1,7 +1,6 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { Controller } from 'ember-runtime';
-import { Route } from 'ember-routing';
-import { set, isFeatureEnabled } from 'ember-metal';
+import { set } from 'ember-metal';
 import { LinkComponent } from '../../utils/helpers';
 import { classes as classMatcher } from '../../utils/test-helpers';
 
@@ -18,7 +17,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
 
   ['@test accessing `currentWhen` triggers a deprecation'](assert) {
     let component;
-    this.registerComponent('link-to', {
+    this.addComponent('link-to', {
       ComponentClass: LinkComponent.extend({
         init() {
           this._super(...arguments);
@@ -27,7 +26,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
       })
     });
 
-    this.registerTemplate('application', `{{link-to 'Index' 'index'}}`);
+    this.addTemplate('application', `{{link-to 'Index' 'index'}}`);
 
     return this.visit('/').then(() => {
       expectDeprecation(() => {
@@ -37,7 +36,7 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test should be able to be inserted in DOM when the router is not present']() {
-    this.registerTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
+    this.addTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
 
     return this.visit('/').then(() => {
       this.assertText('Go to Index');
@@ -47,8 +46,8 @@ moduleFor('Link-to component', class extends ApplicationTest {
   ['@test re-renders when title changes']() {
     let controller;
 
-    this.registerTemplate('application', '{{link-to title routeName}}');
-    this.registerController('application', Controller.extend({
+    this.addTemplate('application', '{{link-to title routeName}}');
+    this.add('controller:application', Controller.extend({
       init() {
         this._super(...arguments);
         controller = this;
@@ -65,8 +64,8 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test escaped inline form (double curlies) escapes link title']() {
-    this.registerTemplate('application', `{{link-to title 'index'}}`);
-    this.registerController('application', Controller.extend({
+    this.addTemplate('application', `{{link-to title 'index'}}`);
+    this.add('controller:application', Controller.extend({
       title: '<b>blah</b>'
     }));
 
@@ -76,8 +75,8 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test escaped inline form with (-html-safe) does not escape link title'](assert) {
-    this.registerTemplate('application', `{{link-to (-html-safe title) 'index'}}`);
-    this.registerController('application', Controller.extend({
+    this.addTemplate('application', `{{link-to (-html-safe title) 'index'}}`);
+    this.add('controller:application', Controller.extend({
       title: '<b>blah</b>'
     }));
 
@@ -88,8 +87,8 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test unescaped inline form (triple curlies) does not escape link title'](assert) {
-    this.registerTemplate('application', `{{{link-to title 'index'}}}`);
-    this.registerController('application', Controller.extend({
+    this.addTemplate('application', `{{{link-to title 'index'}}}`);
+    this.add('controller:application', Controller.extend({
       title: '<b>blah</b>'
     }));
 
@@ -103,8 +102,8 @@ moduleFor('Link-to component', class extends ApplicationTest {
     this.router.map(function() {
       this.route('profile', { path: '/profile/:id' });
     });
-    this.registerTemplate('application', `{{#link-to 'profile' otherController}}Text{{/link-to}}`);
-    this.registerController('application', Controller.extend({
+    this.addTemplate('application', `{{#link-to 'profile' otherController}}Text{{/link-to}}`);
+    this.add('controller:application', Controller.extend({
       otherController: Controller.create({
         model: 'foo'
       })
@@ -118,9 +117,9 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test able to safely extend the built-in component and use the normal path']() {
-    this.registerComponent('custom-link-to', { ComponentClass: LinkComponent.extend() });
-    this.registerTemplate('application', `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`);
-    this.registerController('application', Controller.extend({
+    this.addComponent('custom-link-to', { ComponentClass: LinkComponent.extend() });
+    this.addTemplate('application', `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`);
+    this.add('controller:application', Controller.extend({
       title: 'Hello'
     }));
 
@@ -130,9 +129,9 @@ moduleFor('Link-to component', class extends ApplicationTest {
   }
 
   ['@test [GH#13432] able to safely extend the built-in component and invoke it inline']() {
-    this.registerComponent('custom-link-to', { ComponentClass: LinkComponent.extend() });
-    this.registerTemplate('application', `{{custom-link-to title 'index'}}`);
-    this.registerController('application', Controller.extend({
+    this.addComponent('custom-link-to', { ComponentClass: LinkComponent.extend() });
+    this.addTemplate('application', `{{custom-link-to title 'index'}}`);
+    this.add('controller:application', Controller.extend({
       title: 'Hello'
     }));
 
@@ -146,28 +145,15 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
   constructor() {
     super(...arguments);
 
-    if (isFeatureEnabled('ember-routing-route-configured-query-params')) {
-      this.registerRoute('index', Route.extend({
-        queryParams: {
-          foo: {
-            defaultValue: '123'
-          },
-          bar: {
-            defaultValue: 'yes'
-          }
-        }
-      }));
-    } else {
-      this.registerController('index', Controller.extend({
-        queryParams: ['foo'],
-        foo: '123',
-        bar: 'yes'
-      }));
-    }
+    this.add('controller:index', Controller.extend({
+      queryParams: ['foo'],
+      foo: '123',
+      bar: 'yes'
+    }));
   }
 
   ['@test populates href with fully supplied query param values'](assert) {
-    this.registerTemplate('index', `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`);
+    this.addTemplate('index', `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`);
 
     return this.visit('/').then(() => {
       this.assertComponentElement(this.firstChild.firstElementChild, {
@@ -179,7 +165,7 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
   }
 
   ['@test populates href with partially supplied query param values, but omits if value is default value']() {
-    this.registerTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
+    this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
 
     return this.visit('/').then(() => {
       this.assertComponentElement(this.firstChild.firstElementChild, {

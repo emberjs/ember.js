@@ -1,7 +1,9 @@
 import { lookupDescriptor } from 'ember-utils';
-import isEnabled from './features';
+import { MANDATORY_SETTER } from 'ember/features';
 import {
-  meta as metaFor
+  meta as metaFor,
+  peekMeta,
+  UNDEFINED
 } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
@@ -12,50 +14,45 @@ import {
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, meta) {
+  if (typeof obj !== 'object' || obj === null) { return; }
+
   let m = meta || metaFor(obj);
+  let count = m.peekWatching(keyName) || 0;
+  m.writeWatching(keyName, count + 1);
 
-  // activate watching first time
-  if (!m.peekWatching(keyName)) {
-    m.writeWatching(keyName, 1);
-
+  if (count === 0) { // activate watching first time
     let possibleDesc = obj[keyName];
-    let desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
-    if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
+    let isDescriptor = possibleDesc !== null &&
+      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName); }
 
     if ('function' === typeof obj.willWatchProperty) {
       obj.willWatchProperty(keyName);
     }
 
-    if (isEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(m, obj, keyName);
     }
-  } else {
-    m.writeWatching(keyName, (m.peekWatching(keyName) || 0) + 1);
   }
 }
 
 
-if (isEnabled('mandatory-setter')) {
-  let hasOwnProperty = function(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key);
-  };
+if (MANDATORY_SETTER) {
+  let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-  let propertyIsEnumerable = function(obj, key) {
-    return Object.prototype.propertyIsEnumerable.call(obj, key);
-  };
+  let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
   // ember strip this entire block out
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
-    let configurable = descriptor ? descriptor.configurable : true;
-    let isWritable = descriptor ? descriptor.writable : true;
-    let hasValue = descriptor ? 'value' in descriptor : true;
-    let possibleDesc = descriptor && descriptor.value;
+    let hasDescriptor = descriptor !== null;
+    let configurable = hasDescriptor ? descriptor.configurable : true;
+    let isWritable = hasDescriptor ? descriptor.writable : true;
+    let hasValue = hasDescriptor ? 'value' in descriptor : true;
+    let possibleDesc = hasDescriptor && descriptor.value;
     let isDescriptor = possibleDesc !== null &&
                        typeof possibleDesc === 'object' &&
                        possibleDesc.isDescriptor;
@@ -83,26 +80,30 @@ if (isEnabled('mandatory-setter')) {
   };
 }
 
-import { UNDEFINED } from './meta';
+export function unwatchKey(obj, keyName, _meta) {
+  if (typeof obj !== 'object' || obj === null) {
+    return;
+  }
+  let meta = _meta || peekMeta(obj);
 
-export function unwatchKey(obj, keyName, meta) {
-  let m = meta || metaFor(obj);
-  let count = m.peekWatching(keyName);
+  // do nothing of this object has already been destroyed
+  if (meta === undefined || meta.isSourceDestroyed()) { return; }
+
+  let count = meta.peekWatching(keyName);
   if (count === 1) {
-    m.writeWatching(keyName, 0);
+    meta.writeWatching(keyName, 0);
 
     let possibleDesc = obj[keyName];
-    let desc = (possibleDesc !== null &&
-                typeof possibleDesc === 'object' &&
-                possibleDesc.isDescriptor) ? possibleDesc : undefined;
+    let isDescriptor = possibleDesc !== null &&
+      typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-    if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
+    if (isDescriptor && possibleDesc.didUnwatch) { possibleDesc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
       obj.didUnwatchProperty(keyName);
     }
 
-    if (isEnabled('mandatory-setter')) {
+    if (MANDATORY_SETTER) {
       // It is true, the following code looks quite WAT. But have no fear, It
       // exists purely to improve development ergonomics and is removed from
       // ember.min.js and ember.prod.js builds.
@@ -111,12 +112,12 @@ export function unwatchKey(obj, keyName, meta) {
       // for mutation, will bypass observation. This code exists to assert when
       // that occurs, and attempt to provide more helpful feedback. The alternative
       // is tricky to debug partially observable properties.
-      if (!desc && keyName in obj) {
+      if (!isDescriptor && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
         if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
           if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
-            let possibleValue = m.readInheritedValue('values', keyName);
+            let possibleValue = meta.readInheritedValue('values', keyName);
             if (possibleValue === UNDEFINED) {
               delete obj[keyName];
               return;
@@ -127,13 +128,13 @@ export function unwatchKey(obj, keyName, meta) {
             configurable: true,
             enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
             writable: true,
-            value: m.peekValues(keyName)
+            value: meta.peekValues(keyName)
           });
-          m.deleteFromValues(keyName);
+          meta.deleteFromValues(keyName);
         }
       }
     }
   } else if (count > 1) {
-    m.writeWatching(keyName, count - 1);
+    meta.writeWatching(keyName, count - 1);
   }
 }

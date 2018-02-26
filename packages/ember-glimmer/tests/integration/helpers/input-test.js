@@ -21,7 +21,7 @@ class InputRenderingTest extends RenderingTest {
   }
 
   assertDisabled() {
-    this.assert.ok(this.$('input').is(':disabled'), 'The input is disabled');
+    this.assert.ok(this.$('input').prop('disabled'), 'The input is disabled');
   }
 
   assertNotDisabled() {
@@ -125,6 +125,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder=placeholder
         name=name
         maxlength=maxlength
+        minlength=minlength
         size=size
         tabindex=tabindex
       }}`, {
@@ -133,6 +134,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder: 'Original placeholder',
         name: 'original-name',
         maxlength: 10,
+        minlength: 5,
         size: 20,
         tabindex: 30
       }
@@ -143,6 +145,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE  (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -153,6 +156,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -162,6 +166,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       set(this.context, 'placeholder', 'Updated placeholder');
       set(this.context, 'name', 'updated-name');
       set(this.context, 'maxlength', 11);
+      set(this.context, 'minlength', 6);
       // set(this.context, 'size', 21); //NOTE: failing in IE (TEST_SUITE=sauce)
       // set(this.context, 'tabindex', 31); //NOTE: failing in IE (TEST_SUITE=sauce)
     });
@@ -171,6 +176,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Updated placeholder');
     this.assertAttr('name', 'updated-name');
     this.assertAttr('maxlength', '11');
+    this.assertAttr('minlength', '6');
     // this.assertAttr('size', '21'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '31'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -180,6 +186,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       set(this.context, 'placeholder', 'Original placeholder');
       set(this.context, 'name', 'original-name');
       set(this.context, 'maxlength', 10);
+      set(this.context, 'minlength', 5);
       // set(this.context, 'size', 20); //NOTE: failing in IE (TEST_SUITE=sauce)
       // set(this.context, 'tabindex', 30); //NOTE: failing in IE (TEST_SUITE=sauce)
     });
@@ -189,6 +196,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
   }
@@ -201,6 +209,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
         placeholder="Original placeholder"
         name="original-name"
         maxlength=10
+        minlength=5
         size=20
         tabindex=30
       }}`
@@ -211,6 +220,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
 
@@ -221,6 +231,7 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
     this.assertAttr('placeholder', 'Original placeholder');
     this.assertAttr('name', 'original-name');
     this.assertAttr('maxlength', '10');
+    this.assertAttr('minlength', '5');
     // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
     // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
   }
@@ -414,6 +425,13 @@ moduleFor('Helpers test: {{input}}', class extends InputRenderingTest {
       keyCode: 65
     });
   }
+
+  ['@test GH#14727 can render a file input after having had render an input of other type']() {
+    this.render(`{{input type="text"}}{{input type="file"}}`);
+
+    this.assert.equal(this.$input()[0].type, 'text');
+    this.assert.equal(this.$input()[1].type, 'file');
+  }
 });
 
 moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRenderingTest {
@@ -436,6 +454,27 @@ moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRender
     this.assertAttr('type', 'password');
   }
 
+  ['@test a subexpression can be used to determine type']() {
+    this.render(`{{input type=(if isTruthy trueType falseType)}}`, {
+      isTruthy: true,
+      trueType: 'text',
+      falseType: 'password'
+    });
+
+    this.assertAttr('type', 'text');
+
+    this.runTask(() => this.rerender());
+
+    this.assertAttr('type', 'text');
+
+    this.runTask(() => set(this.context, 'isTruthy', false));
+
+    this.assertAttr('type', 'password');
+
+    this.runTask(() => set(this.context, 'isTruthy', true));
+
+    this.assertAttr('type', 'text');
+  }
 });
 
 moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderingTest {
@@ -514,6 +553,17 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertCheckboxIsChecked();
   }
 
+  ['@test native click changes check property'](assert) {
+    this.render(`{{input type="checkbox"}}`);
+
+    this.assertSingleCheckbox();
+    this.assertCheckboxIsNotChecked();
+    this.$input()[0].click();
+    this.assertCheckboxIsChecked();
+    this.$input()[0].click();
+    this.assertCheckboxIsNotChecked();
+  }
+
   ['@test with static values'](assert) {
     this.render(`{{input type="checkbox" disabled=false tabindex=10 name="original-name" checked=false}}`);
 
@@ -531,7 +581,6 @@ moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderin
     this.assertAttr('tabindex', '10');
     this.assertAttr('name', 'original-name');
   }
-
 });
 
 moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTest {
@@ -603,4 +652,57 @@ moduleFor(`Helpers test: {{input type='text'}}`, class extends InputRenderingTes
     // this.assertAttr('size', undefined); //NOTE: re-enable once `size` bug above has been addressed
     this.assertAttr('tabindex', undefined);
   }
+});
+
+// These are the permutations of the set:
+// ['type="range"', 'min="-5" max="50"', 'value="%x"']
+[
+  'type="range" min="-5" max="50" value="%x"',
+  'type="range" value="%x" min="-5" max="50"',
+  'min="-5" max="50" type="range" value="%x"',
+  'min="-5" max="50" value="%x" type="range"',
+  'value="%x" min="-5" max="50" type="range"',
+  'value="%x" type="range" min="-5" max="50"',
+].forEach(attrs => {
+  moduleFor(`[GH#15675] Helpers test: {{input ${attrs}}}`, class extends InputRenderingTest {
+    renderInput(value = 25) {
+      this.render(`{{input ${ attrs.replace("%x", value) }}}`);
+    }
+
+    assertValue(expected) {
+      let type = this.$input().attr('type');
+
+      if (type !== 'range') {
+        this.assert.ok(true, 'IE9 does not support range items');
+        return;
+      }
+
+      super.assertValue(expected);
+    }
+
+    ['@test value over default max but below set max is kept'](assert) {
+      this.renderInput("25");
+      this.assertValue("25");
+    }
+
+    ['@test value below default min but above set min is kept'](assert) {
+      this.renderInput("-2");
+      this.assertValue("-2");
+    }
+
+    ['@test in the valid default range is kept'](assert) {
+      this.renderInput("5");
+      this.assertValue("5");
+    }
+
+    ['@test value above max is reset to max'](assert) {
+      this.renderInput("55");
+      this.assertValue("50");
+    }
+
+    ['@test value below min is reset to min'](assert) {
+      this.renderInput("-10");
+      this.assertValue("-5");
+    }
+  });
 });

@@ -1,7 +1,7 @@
 {
   "name": "The Ember API",
   "description": "The Ember API: a framework for building ambitious web applications",
-  "url": "http://emberjs.com/",
+  "url": "https://emberjs.com/",
   "options": {
     "paths": [
       "packages/ember/lib",
@@ -17,10 +17,10 @@
       "packages/ember-testing/lib",
       "packages/ember-extension-support/lib",
       "packages/container/lib",
-      "bower_components/rsvp/lib",
-      "bower_components/router.js/lib/router"
+      "node_modules/rsvp/lib",
+      "node_modules/router_js/lib/router"
     ],
-    "exclude": "vendor,bower_components/router.js/lib/router/handler-info,bower_components/router.js/lib/router/transition-intent,bower_components/router.js/lib/router/router.js,bower_components/router.js/lib/router/transition-intent.js,bower_components/router.js/lib/router/transition-state.js,bower_components/router.js/lib/router/unrecognized-url-error.js,bower_components/router.js/lib/router/utils.js",
+    "exclude": "vendor,node_modules/router_js/lib/router/handler-info,node_modules/router_js/lib/router/transition-intent,node_modules/router_js/lib/router/router_js,node_modules/router_js/lib/router/transition-intent.js,node_modules/router_js/lib/router/transition-state.js,node_modules/router_js/lib/router/unrecognized-url-error.js,node_modules/router_js/lib/router/utils.js",
     "outdir":   "docs",
     "preprocessor": "bin/feature-flag-yuidoc-filter"
   }

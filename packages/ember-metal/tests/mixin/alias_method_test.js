@@ -1,9 +1,9 @@
-import { get } from '../../property_get';
 import {
+  get,
   Mixin,
   mixin,
   aliasMethod
-} from '../../mixin';
+} from '../..';
 
 QUnit.module('aliasMethod');
 

@@ -1,10 +1,6 @@
 /**
-@module ember-metal
+@module ember
 */
-
-import {
-  removeChainWatcher
-} from './chains';
 import {
   watchKey,
   unwatchKey
@@ -34,19 +30,16 @@ import {
   @param obj
   @param {String} _keyPath
 */
-function watch(obj, _keyPath, m) {
-  if (!isPath(_keyPath)) {
-    watchKey(obj, _keyPath, m);
-  } else {
+export function watch(obj, _keyPath, m) {
+  if (isPath(_keyPath)) {
     watchPath(obj, _keyPath, m);
+  } else {
+    watchKey(obj, _keyPath, m);
   }
 }
 
-export { watch };
-
 export function isWatching(obj, key) {
-  let meta = peekMeta(obj);
-  return (meta && meta.peekWatching(key)) > 0;
+  return watcherCount(obj, key) > 0;
 }
 
 export function watcherCount(obj, key) {
@@ -55,14 +48,12 @@ export function watcherCount(obj, key) {
 }
 
 export function unwatch(obj, _keyPath, m) {
-  if (!isPath(_keyPath)) {
-    unwatchKey(obj, _keyPath, m);
-  } else {
+  if (isPath(_keyPath)) {
     unwatchPath(obj, _keyPath, m);
+  } else {
+    unwatchKey(obj, _keyPath, m);
   }
 }
-
-const NODE_STACK = [];
 
 /**
   Tears down the meta on an object so that it can be garbage collected.
@@ -74,36 +65,4 @@ const NODE_STACK = [];
   @return {void}
   @private
 */
-export function destroy(obj) {
-  let meta = peekMeta(obj);
-  let node, nodes, key, nodeObject;
-
-  if (meta) {
-    deleteMeta(obj);
-    // remove chainWatchers to remove circular references that would prevent GC
-    node = meta.readableChains();
-    if (node) {
-      NODE_STACK.push(node);
-      // process tree
-      while (NODE_STACK.length > 0) {
-        node = NODE_STACK.pop();
-        // push children
-        nodes = node._chains;
-        if (nodes) {
-          for (key in nodes) {
-            if (nodes[key] !== undefined) {
-              NODE_STACK.push(nodes[key]);
-            }
-          }
-        }
-        // remove chainWatcher in node object
-        if (node._watching) {
-          nodeObject = node._object;
-          if (nodeObject) {
-            removeChainWatcher(nodeObject, node._key, node);
-          }
-        }
-      }
-    }
-  }
-}
+export { deleteMeta as destroy };

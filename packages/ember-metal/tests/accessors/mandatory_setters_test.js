@@ -1,24 +1,27 @@
-import isEnabled from '../../features';
-import { get } from '../../property_get';
-import { set } from '../../property_set';
-import { watch, unwatch } from '../../watching';
-import { meta as metaFor } from '../../meta';
+import { MANDATORY_SETTER } from 'ember/features';
+import {
+  get,
+  set,
+  watch,
+  unwatch,
+  meta as metaFor
+} from '../..';
 
 QUnit.module('mandatory-setters');
 
 function hasMandatorySetter(object, property) {
   try {
     return Object.getOwnPropertyDescriptor(object, property).set.isMandatorySetter === true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
 
 function hasMetaValue(object, property) {
-  return metaFor(object).hasInValues(property);
+  return metaFor(object).peekValues(property) !== undefined;
 }
 
-if (isEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   QUnit.test('does not assert if property is not being watched', function() {
     let obj = {
       someProp: null,
@@ -196,7 +199,7 @@ if (isEnabled('mandatory-setter')) {
     obj.someProp = 'foo-bar';
   });
 
-  QUnit.test('should assert if set without Ember.set when property is being watched', function() {
+  QUnit.test('should assert if set without set when property is being watched', function() {
     let obj = {
       someProp: null,
       toString() {
@@ -208,10 +211,10 @@ if (isEnabled('mandatory-setter')) {
 
     expectAssertion(function() {
       obj.someProp = 'foo-bar';
-    }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
+    }, 'You must use set() to set the `someProp` property (of custom-object) to `foo-bar`.');
   });
 
-  QUnit.test('should not assert if set with Ember.set when property is being watched', function() {
+  QUnit.test('should not assert if set with set when property is being watched', function() {
     let obj = {
       someProp: null,
       toString() {
@@ -364,7 +367,7 @@ if (isEnabled('mandatory-setter')) {
 
     expectAssertion(function() {
       obj2.someProp = 'foo-bar';
-    }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
+    }, 'You must use set() to set the `someProp` property (of custom-object) to `foo-bar`.');
   });
 
   QUnit.test('inheritance remains live', function() {
@@ -373,15 +376,15 @@ if (isEnabled('mandatory-setter')) {
 
     let child = new Parent();
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     watch(child, 'food');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     Parent.prototype.food  = 'icecreame';
 
-    equal(child.food , 'icecreame');
+    equal(child.food, 'icecreame');
 
     unwatch(child, 'food');
 
@@ -406,15 +409,15 @@ if (isEnabled('mandatory-setter')) {
 
     let child = new Parent('chips');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
     watch(child, 'food');
 
-    equal(child.food , 'chips');
+    equal(child.food, 'chips');
 
-    child._food  = 'icecreame';
+    child._food = 'icecreame';
 
-    equal(child.food , 'icecreame');
+    equal(child.food, 'icecreame');
 
     unwatch(child, 'food');
 

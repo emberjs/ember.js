@@ -1,5 +1,6 @@
-import { Registry } from '../index';
+import { Registry, privatize } from '..';
 import { factory } from 'internal-test-helpers';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 
 QUnit.module('Registry');
 
@@ -436,29 +437,6 @@ QUnit.test('`getTypeInjections` includes type injections from a fallback registr
   equal(registry.getTypeInjections('model').length, 1, 'Injections from the fallback registry are merged');
 });
 
-QUnit.test('`getFactoryInjections` includes factory injections from a fallback registry', function() {
-  let fallback = new Registry();
-  let registry = new Registry({ fallback: fallback });
-
-  equal(registry.getFactoryInjections('model:user').length, 0, 'No factory injections in the primary registry');
-
-  fallback.factoryInjection('model:user', 'store', 'store:main');
-
-  equal(registry.getFactoryInjections('model:user').length, 1, 'Factory injections from the fallback registry are merged');
-});
-
-
-QUnit.test('`getFactoryTypeInjections` includes factory type injections from a fallback registry', function() {
-  let fallback = new Registry();
-  let registry = new Registry({ fallback: fallback });
-
-  equal(registry.getFactoryTypeInjections('model').length, 0, 'No factory type injections in the primary registry');
-
-  fallback.factoryInjection('model', 'store', 'store:main');
-
-  equal(registry.getFactoryTypeInjections('model').length, 1, 'Factory type injections from the fallback registry are merged');
-});
-
 QUnit.test('`knownForType` contains keys for each item of a given type', function() {
   let registry = new Registry();
 
@@ -714,6 +692,7 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
 
   let resolver = {
     resolve(name) {
+      if (EMBER_MODULE_UNIFICATION && name === 'foo:baz') { return; }
       resolvedFullNames.push(name);
 
       return 'yippie!';
@@ -748,3 +727,42 @@ QUnit.test('has uses expandLocalLookup', function(assert) {
 
   assert.deepEqual(['foo:qux/bar'], resolvedFullNames);
 });
+
+QUnit.module('Registry privatize');
+
+QUnit.test('valid format', function(assert) {
+  let privatized = privatize(['secret:factory']);
+  let matched = privatized.match(/^([^:]+):([^:]+)-(\d+)$/);
+
+  assert.ok(matched, 'privatized format was recognized');
+  assert.equal(matched[1], 'secret');
+  assert.equal(matched[2], 'factory');
+  assert.ok(/^\d+$/.test(matched[3]));
+});
+
+if (EMBER_MODULE_UNIFICATION) {
+  QUnit.module('Registry module unification');
+
+  QUnit.test('The registry can pass a source to the resolver', function(assert) {
+    let PrivateComponent = factory();
+    let lookup = 'component:my-input';
+    let source = 'template:routes/application';
+    let resolveCount = 0;
+    let resolver = {
+      resolve(fullName, src) {
+        resolveCount++;
+        if (fullName === lookup && src === source) {
+          return PrivateComponent;
+        }
+      }
+    };
+    let registry = new Registry({ resolver });
+    registry.normalize = function(name) {
+      return name;
+    };
+
+    assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided');
+    assert.strictEqual(registry.resolve(lookup, { source }), PrivateComponent, 'The correct factory was provided again');
+    assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+  });
+}

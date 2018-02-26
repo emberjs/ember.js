@@ -1,13 +1,13 @@
-import { set } from '../property_set';
-import { get } from '../property_get';
-import { computed } from '../computed';
-import { defineProperty } from '../properties';
 import {
+  set,
+  get,
+  computed,
+  defineProperty,
   propertyDidChange,
   beginPropertyChanges,
-  endPropertyChanges
-} from '../property_events';
-import { addObserver } from '../observer';
+  endPropertyChanges,
+  addObserver
+} from '..';
 
 /*
   This test file is designed to capture performance regressions related to

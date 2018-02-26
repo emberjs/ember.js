@@ -24,12 +24,11 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
         expect(_file('tests/unit/initializers/foo-test.js'))
-          .to.contain("import FooInitializer from 'my-app/initializers/foo';");
+          .to.contain("import { initialize } from 'my-app/initializers/foo';");
       }));
   });
 
@@ -44,12 +43,11 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
         expect(_file('tests/unit/initializers/foo/bar-test.js'))
-          .to.contain("import FooBarInitializer from 'my-app/initializers/foo/bar';");
+          .to.contain("import { initialize } from 'my-app/initializers/foo/bar';");
       }));
   });
 
@@ -64,7 +62,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -87,7 +84,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -110,7 +106,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -133,7 +128,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -156,7 +150,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -179,7 +172,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
 
@@ -204,7 +196,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
       }));
@@ -222,7 +213,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo',\n" +
                       "  initialize\n" +
                       "};");
       }));
@@ -239,7 +229,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
       }));
@@ -258,7 +247,6 @@ describe('Acceptance: ember generate and destroy initializer', function() {
                       "}\n" +
                       "\n" +
                       "export default {\n" +
-                      "  name: 'foo/bar',\n" +
                       "  initialize\n" +
                       "};");
       }));
@@ -271,10 +259,10 @@ describe('Acceptance: ember generate and destroy initializer', function() {
     return emberNew()
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
-          .to.contain("import FooInitializer from 'my-app/initializers/foo';")
+          .to.contain("import { initialize } from 'my-app/initializers/foo';")
           .to.contain("module('Unit | Initializer | foo'")
-          .to.contain("application = Ember.Application.create();")
-          .to.contain("FooInitializer.initialize(application);");
+          .to.contain("application = Application.create();")
+          .to.contain("initialize(this.application);");
       }));
   });
 
@@ -284,10 +272,10 @@ describe('Acceptance: ember generate and destroy initializer', function() {
     return emberNew({ target: 'addon' })
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
-          .to.contain("import FooInitializer from 'dummy/initializers/foo';")
+          .to.contain("import { initialize } from 'dummy/initializers/foo';")
           .to.contain("module('Unit | Initializer | foo'")
-          .to.contain("application = Ember.Application.create();")
-          .to.contain("FooInitializer.initialize(application);");
+          .to.contain("application = Application.create();")
+          .to.contain("initialize(this.application);");
       }));
   });
 
@@ -296,15 +284,15 @@ describe('Acceptance: ember generate and destroy initializer', function() {
 
     return emberNew()
       .then(() => modifyPackages([
-        {name: 'ember-cli-qunit', delete: true},
-        {name: 'ember-cli-mocha', dev: true}
+        { name: 'ember-cli-qunit', delete: true },
+        { name: 'ember-cli-mocha', dev: true }
       ]))
       .then(() => emberGenerateDestroy(args, _file => {
         expect(_file('tests/unit/initializers/foo-test.js'))
-          .to.contain("import FooInitializer from 'my-app/initializers/foo';")
+          .to.contain("import { initialize } from 'my-app/initializers/foo';")
           .to.contain("describe('Unit | Initializer | foo', function() {")
-          .to.contain("application = Ember.Application.create();")
-          .to.contain("FooInitializer.initialize(application);");
+          .to.contain("application = Application.create();")
+          .to.contain("initialize(application);");
       }));
   });
 });

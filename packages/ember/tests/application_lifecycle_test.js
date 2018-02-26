@@ -1,220 +1,169 @@
+import {
+  moduleFor,
+  AutobootApplicationTestCase
+} from 'internal-test-helpers';
 import { Application } from 'ember-application';
-import { Route, controllerFor } from 'ember-routing';
-import { run } from 'ember-metal';
+import { Route, Router } from 'ember-routing';
 import {
   Component,
-  setTemplates,
-  getTemplates
 } from 'ember-glimmer';
-import { jQuery } from 'ember-views';
-import { compile } from 'ember-template-compiler';
 
-let App, TEMPLATES, appInstance, router;
+moduleFor('Application Lifecycle - route hooks', class extends AutobootApplicationTestCase {
 
-function setupApp(klass) {
-  run(function() {
-    App = klass.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    App.Router = App.Router.extend({
+  createApplication() {
+    let application = super.createApplication(...arguments);
+    this.add('router:main', Router.extend({
       location: 'none'
-    });
-
-    App.deferReadiness();
-
-    appInstance = App.__deprecatedInstance__;
-  });
-}
-
-QUnit.module('Application Lifecycle', {
-  setup() {
-    TEMPLATES = getTemplates();
-    setupApp(Application.extend());
-  },
-
-  teardown() {
-    router = null;
-    run(App, 'destroy');
-    setTemplates({});
+    }));
+    return application;
   }
-});
 
-function handleURL(path) {
-  router = appInstance.lookup('router:main');
-  return run(function() {
-    return router.handleURL(path).then(function(value) {
-      ok(true, 'url: `' + path + '` was handled');
-      return value;
-    }, function(reason) {
-      ok(false, reason);
-      throw reason;
+  constructor() {
+    super();
+    let menuItem = this.menuItem = {};
+
+    this.runTask(() => {
+      this.createApplication();
+
+      let SettingRoute = Route.extend({
+        setupController() {
+          this.controller.set('selectedMenuItem', menuItem);
+        },
+        deactivate() {
+          this.controller.set('selectedMenuItem', null);
+        }
+      });
+      this.add('route:index', SettingRoute);
+      this.add('route:application', SettingRoute);
     });
-  });
-}
+  }
 
-QUnit.test('Resetting the application allows controller properties to be set when a route deactivates', function() {
-  App.Router.map(function() {
-    this.route('home', { path: '/' });
-  });
+  get indexController() {
+    return this.applicationInstance.lookup('controller:index');
+  }
 
-  App.HomeRoute = Route.extend({
-    setupController() {
-      this.controllerFor('home').set('selectedMenuItem', 'home');
-    },
-    deactivate() {
-      this.controllerFor('home').set('selectedMenuItem', null);
-    }
-  });
-  App.ApplicationRoute = Route.extend({
-    setupController() {
-      this.controllerFor('application').set('selectedMenuItem', 'home');
-    },
-    deactivate() {
-      this.controllerFor('application').set('selectedMenuItem', null);
-    }
-  });
+  get applicationController() {
+    return this.applicationInstance.lookup('controller:application');
+  }
 
-  appInstance.lookup('router:main');
+  [`@test Resetting the application allows controller properties to be set when a route deactivates`](assert) {
+    let {
+      indexController,
+      applicationController
+    } = this;
+    assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
+    assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
 
-  run(App, 'advanceReadiness');
+    this.application.reset();
 
-  handleURL('/');
+    assert.equal(indexController.get('selectedMenuItem'), null);
+    assert.equal(applicationController.get('selectedMenuItem'), null);
+  }
 
-  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
-  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
+  [`@test Destroying the application resets the router before the appInstance is destroyed`](assert) {
+    let {
+      indexController,
+      applicationController
+    } = this;
+    assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
+    assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
 
-  App.reset();
+    this.runTask(() => {
+      this.application.destroy();
+    });
 
-  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
-  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
+    assert.equal(indexController.get('selectedMenuItem'), null);
+    assert.equal(applicationController.get('selectedMenuItem'), null);
+  }
+
 });
 
-QUnit.test('Destroying the application resets the router before the appInstance is destroyed', function() {
-  App.Router.map(function() {
-    this.route('home', { path: '/' });
-  });
+moduleFor('Application Lifecycle', class extends AutobootApplicationTestCase {
 
-  App.HomeRoute = Route.extend({
-    setupController() {
-      this.controllerFor('home').set('selectedMenuItem', 'home');
-    },
-    deactivate() {
-      this.controllerFor('home').set('selectedMenuItem', null);
-    }
-  });
-  App.ApplicationRoute = Route.extend({
-    setupController() {
-      this.controllerFor('application').set('selectedMenuItem', 'home');
-    },
-    deactivate() {
-      this.controllerFor('application').set('selectedMenuItem', null);
-    }
-  });
+  createApplication() {
+    let application = super.createApplication(...arguments);
+    this.add('router:main', Router.extend({
+      location: 'none'
+    }));
+    return application;
+  }
 
-  appInstance.lookup('router:main');
+  [`@test Destroying a route after the router does create an undestroyed 'toplevelView'`](assert) {
+    this.runTask(() => {
+      this.createApplication();
+      this.addTemplate('index', `Index!`);
+      this.addTemplate('application', `Application! {{outlet}}`);
+    });
 
-  run(App, 'advanceReadiness');
+    let router = this.applicationInstance.lookup('router:main');
+    let route = this.applicationInstance.lookup('route:index');
 
-  handleURL('/');
+    this.runTask(() => router.destroy());
+    equal(router._toplevelView, null, 'the toplevelView was cleared');
 
-  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), 'home');
-  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), 'home');
+    this.runTask(() => route.destroy());
+    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
 
-  run(App, 'destroy');
+    this.runTask(() => this.application.destroy());
+    equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+  }
 
-  equal(controllerFor(appInstance, 'home').get('selectedMenuItem'), null);
-  equal(controllerFor(appInstance, 'application').get('selectedMenuItem'), null);
-});
+  [`@test initializers can augment an applications customEvents hash`](assert) {
+    assert.expect(1);
 
-QUnit.test('Destroying a route after the router does create an undestroyed `toplevelView`', function() {
-  App.Router.map(function() {
-    this.route('home', { path: '/' });
-  });
+    let MyApplication = Application.extend();
 
-  setTemplates({
-    index: compile('Index!'),
-    application: compile('Application! {{outlet}}')
-  });
+    MyApplication.initializer({
+      name: 'customize-things',
+      initialize(application) {
+        application.customEvents = {
+          wowza: 'wowza'
+        };
+      }
+    });
 
-  App.IndexRoute = Route.extend();
-  run(App, 'advanceReadiness');
+    this.runTask(() => {
+      this.createApplication({}, MyApplication);
 
-  handleURL('/');
+      this.add('component:foo-bar', Component.extend({
+        wowza() {
+          assert.ok(true, 'fired the event!');
+        }
+      }));
 
-  let router = appInstance.lookup('router:main');
-  let route = appInstance.lookup('route:index');
+      this.addTemplate('application', `{{foo-bar}}`);
+      this.addTemplate('components/foo-bar', `<div id='wowza-thingy'></div>`);
+    });
 
-  run(router, 'destroy');
-  equal(router._toplevelView, null, 'the toplevelView was cleared');
+    this.$('#wowza-thingy').trigger('wowza');
+  }
 
-  run(route, 'destroy');
-  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+  [`@test instanceInitializers can augment an the customEvents hash`](assert) {
+    assert.expect(1);
 
-  run(App, 'destroy');
-  equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
-});
+    let MyApplication = Application.extend();
 
-QUnit.test('initializers can augment an applications customEvents hash', function(assert) {
-  assert.expect(1);
+    MyApplication.instanceInitializer({
+      name: 'customize-things',
+      initialize(application) {
+        application.customEvents = {
+          herky: 'jerky'
+        };
+      }
+    });
+    this.runTask(() => {
+      this.createApplication({}, MyApplication);
 
-  run(App, 'destroy');
+      this.add('component:foo-bar', Component.extend({
+        jerky() {
+          assert.ok(true, 'fired the event!');
+        }
+      }));
 
-  let ApplicationSubclass = Application.extend();
+      this.addTemplate('application', `{{foo-bar}}`);
+      this.addTemplate('components/foo-bar', `<div id='herky-thingy'></div>`);
+    });
 
-  ApplicationSubclass.initializer({
-    name: 'customize-things',
-    initialize(application) {
-      application.customEvents = {
-        wowza: 'wowza'
-      };
-    }
-  });
-
-  setupApp(ApplicationSubclass);
-
-  App.FooBarComponent = Component.extend({
-    wowza() {
-      assert.ok(true, 'fired the event!');
-    }
-  });
-
-  TEMPLATES['application'] = compile(`{{foo-bar}}`);
-  TEMPLATES['components/foo-bar'] = compile(`<div id='wowza-thingy'></div>`);
-
-  run(App, 'advanceReadiness');
-
-  run(() => jQuery('#wowza-thingy').trigger('wowza'));
-});
-
-QUnit.test('instanceInitializers can augment an the customEvents hash', function(assert) {
-  assert.expect(1);
-
-  run(App, 'destroy');
-
-  let ApplicationSubclass = Application.extend();
-
-  ApplicationSubclass.instanceInitializer({
-    name: 'customize-things',
-    initialize(application) {
-      application.customEvents = {
-        herky: 'jerky'
-      };
-    }
-  });
-
-  setupApp(ApplicationSubclass);
-
-  App.FooBarComponent = Component.extend({
-    jerky() {
-      assert.ok(true, 'fired the event!');
-    }
-  });
-
-  TEMPLATES['application'] = compile(`{{foo-bar}}`);
-  TEMPLATES['components/foo-bar'] = compile(`<div id='herky-thingy'></div>`);
-
-  run(App, 'advanceReadiness');
-
-  run(() => jQuery('#herky-thingy').trigger('herky'));
+    this.$('#herky-thingy').trigger('herky');
+  }
 });

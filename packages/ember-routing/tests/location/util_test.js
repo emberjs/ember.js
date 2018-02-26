@@ -131,7 +131,6 @@ QUnit.test("Feature-detecting the history API", function() {
     true,
     "returns true for Windows Phone 8.1 with misleading user agent string"
   );
-
 });
 // jscs:enable
 

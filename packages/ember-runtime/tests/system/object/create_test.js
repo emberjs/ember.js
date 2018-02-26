@@ -1,10 +1,10 @@
 import {
-  isFeatureEnabled,
   meta,
   computed,
   Mixin,
   observer
 } from 'ember-metal';
+import { MANDATORY_SETTER } from 'ember/features';
 import EmberObject from '../../../system/object';
 
 QUnit.module('EmberObject.create', {});
@@ -30,7 +30,7 @@ QUnit.test('calls computed property setters', function() {
   equal(o.get('foo'), 'bar');
 });
 
-if (isFeatureEnabled('mandatory-setter')) {
+if (MANDATORY_SETTER) {
   QUnit.test('sets up mandatory setters for watched simple properties', function() {
     let MyClass = EmberObject.extend({
       foo: null,
@@ -107,15 +107,6 @@ QUnit.test('throws if you try to \'mixin\' a definition', function() {
   }, 'Ember.Object.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
 });
 
-// This test is for IE8.
-QUnit.test('property name is the same as own prototype property', function() {
-  let MyClass = EmberObject.extend({
-    toString() { return 'MyClass'; }
-  });
-
-  equal(MyClass.create().toString(), 'MyClass', 'should inherit property from the arguments of `EmberObject.create`');
-});
-
 QUnit.test('inherits properties from passed in EmberObject', function() {
   let baseObj = EmberObject.create({ foo: 'bar' });
   let secondaryObj = EmberObject.create(baseObj);
@@ -124,9 +115,9 @@ QUnit.test('inherits properties from passed in EmberObject', function() {
 });
 
 QUnit.test('throws if you try to pass anything a string as a parameter', function() {
-  let expected = 'EmberObject.create only accepts an objects.';
+  let expected = 'Ember.Object.create only accepts objects.';
 
-  throws(() => EmberObject.create('some-string'), expected);
+  expectAssertion(() => EmberObject.create('some-string'), expected);
 });
 
 QUnit.test('EmberObject.create can take undefined as a parameter', function() {

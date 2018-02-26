@@ -58,7 +58,7 @@ suite.test('[A,B,C].unshiftObject(X) => [X,A,B,C] + notify', function() {
 suite.test('[A,B,C].unshiftObject(A) => [A,A,B,C] + notify', function() {
   let before = this.newFixture(3);
   let item = before[0]; // note same object as current head. should end up twice
-  let after  = [item, before[0], before[1], before[2]];
+  let after = [item, before[0], before[1], before[2]];
   let obj = this.newObject(before);
   let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
@@ -73,7 +73,7 @@ suite.test('[A,B,C].unshiftObject(A) => [A,A,B,C] + notify', function() {
   equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
-  equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
+  equal(observer.validate('firstObject'), true, 'should have notified firstObject');
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
 });
 

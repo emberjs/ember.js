@@ -1,7 +1,8 @@
 import { get, set, propertyDidChange } from 'ember-metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { A as emberA, ArrayProxy } from 'ember-runtime';
+import { A as emberA, ArrayProxy, RSVP } from 'ember-runtime';
+import { Component } from '../../utils/helpers';
 
 import {
   TogglingSyntaxConditionalsTest,
@@ -440,6 +441,48 @@ class SingleEachTest extends AbstractEachTest {
     this.assertText('aaa');
   }
 
+  [`@test updating and setting within #each`](assert) {
+    this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+
+    let FooBarComponent = Component.extend({
+      init() {
+        this._super(...arguments);
+        this.isEven = true;
+        this.tagName = 'li';
+      },
+
+      _isEven() {
+        this.set('isEven', this.get('item.value') % 2 === 0);
+      },
+
+      didUpdate() {
+        this._isEven();
+      }
+    });
+
+    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '{{#if isEven}}{{item.value}}{{/if}}' });
+
+    this.render(strip`
+      {{#each list as |item|}}
+        <li>Prev</li>
+        {{foo-bar item=item}}
+        <li>Next</li>
+      {{/each}}
+    `);
+
+    this.assertText('Prev1NextPrev2NextPrev3Next');
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context.list.objectAt(0), 'value', 3));
+
+    this.assertText('PrevNextPrev2NextPrev3Next');
+
+    this.replaceList([{ value: 1 }, { value: 2 }, { value: 3 }]);
+
+    this.assertText('Prev1NextPrev2NextPrev3Next');
+  }
+
   ['@test it can render duplicate objects']() {
     let duplicateItem = { text: 'foo' };
 
@@ -775,9 +818,9 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
         {{/each}}
       {{/each}}
       `, {
-      content: emberA(['X', 'Y']),
-      options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
-    });
+        content: emberA(['X', 'Y']),
+        options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
+      });
 
     this.assertText('X-1:One2:TwoY-1:One2:Two');
 
@@ -884,3 +927,123 @@ moduleFor('Syntax test: {{#each as}} undefined path', class extends RenderingTes
     this.assertText('');
   }
 });
+
+moduleFor('Syntax test: {{#each}} with sparse arrays', class extends RenderingTest {
+  ['@test it should itterate over holes'](assert) {
+    let sparseArray = [];
+    sparseArray[3] = 'foo';
+    sparseArray[4] = 'bar';
+
+    this.render(strip`
+      {{#each list as |value key|}}
+        [{{key}}:{{value}}]
+      {{/each}}`, { list: emberA(sparseArray) });
+
+    this.assertText('[0:][1:][2:][3:foo][4:bar]');
+
+    this.assertStableRerender();
+
+    this.runTask(() => {
+      let list = get(this.context, 'list');
+      list.pushObject('baz');
+    });
+
+    this.assertText('[0:][1:][2:][3:foo][4:bar][5:baz]');
+  }
+});
+
+/* globals MutationObserver: false */
+if (typeof MutationObserver === 'function') {
+  moduleFor('Syntax test: {{#each as}} DOM mutation test', class extends RenderingTest {
+    constructor() {
+      super();
+      this.observer = null;
+    }
+
+    observe(element) {
+      let observer = this.observer = new MutationObserver(function() {});
+      observer.observe(element, { childList: true, characterData: true });
+    }
+
+    teardown() {
+      if (this.observer) {
+        this.observer.disconnect();
+      }
+
+      super.teardown();
+    }
+
+    assertNoMutation() {
+      this.assert.deepEqual(this.observer.takeRecords(), [], 'Expected no mutations');
+    }
+
+    expectMutations() {
+      this.assert.ok(this.observer.takeRecords().length > 0, 'Expected some mutations');
+    }
+
+    ['@test {{#each}} should not mutate a subtree when the array has not changed [GH #14332]'](assert) {
+      let page = { title: 'Blog Posts' };
+
+      let model = [
+        { title: 'Rails is omakase' },
+        { title: 'Ember is omakase' }
+      ];
+
+      this.render(strip`
+        <h1>{{page.title}}</h1>
+
+        <ul id="posts">
+          {{#each model as |post|}}
+            <li>{{post.title}}</li>
+          {{/each}}
+        </ul>
+      `, { page, model });
+
+      this.assertHTML(strip`
+        <h1>Blog Posts</h1>
+
+        <ul id="posts">
+          <li>Rails is omakase</li>
+          <li>Ember is omakase</li>
+        </ul>
+      `);
+
+      this.observe(this.$('#posts')[0]);
+
+      // MutationObserver is async
+      return RSVP.Promise.resolve(() => {
+        this.assertStableRerender();
+      }).then(() => {
+        this.assertNoMutation();
+
+        this.runTask(() => set(this.context, 'page', { title: 'Essays' }));
+
+        this.assertHTML(strip`
+          <h1>Essays</h1>
+
+          <ul id="posts">
+            <li>Rails is omakase</li>
+            <li>Ember is omakase</li>
+          </ul>
+        `);
+      }).then(() => {
+        this.assertNoMutation();
+
+        this.runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
+
+        this.assertHTML(strip`
+          <h1>Think Pieces™</h1>
+
+          <ul id="posts">
+            <li>Rails is omakase</li>
+            <li>Ember is omakase</li>
+          </ul>
+        `);
+      }).then(() => {
+        // The last set is localized to the `page` object, so we do not expect Glimmer
+        // to re-iterate the list
+        this.assertNoMutation();
+      });
+    }
+  });
+}

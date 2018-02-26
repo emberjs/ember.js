@@ -34,8 +34,7 @@ QUnit.module('Ember.compare()', {
 });
 
 QUnit.test('ordering should work', function() {
-  let suspect, comparable, failureMessage,
-      suspectIndex, comparableIndex;
+  let suspect, comparable, failureMessage, suspectIndex, comparableIndex;
 
   for (suspectIndex = 0; suspectIndex < data.length; suspectIndex++) {
     suspect = data[suspectIndex];

@@ -1,18 +1,10 @@
-'no use strict';
-// Remove "use strict"; from transpiled module until
-// https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
-
 /**
-@module ember
-@submodule ember-metal
+@module @ember/object
 */
 import { applyStr } from 'ember-utils';
-import { assert } from './debug';
+import { deprecate, assert } from 'ember-debug';
 import { meta as metaFor, peekMeta } from './meta';
-import { deprecate } from './debug';
-
 import { ONCE, SUSPENDED } from './meta_listeners';
-
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -32,46 +24,12 @@ import { ONCE, SUSPENDED } from './meta_listeners';
 
 */
 
-function indexOf(array, target, method) {
-  let index = -1;
-  // hashes are added to the end of the event array
-  // so it makes sense to start searching at the end
-  // of the array and search in reverse
-  for (let i = array.length - 3 ; i >=0; i -= 3) {
-    if (target === array[i] && method === array[i + 1]) {
-      index = i;
-      break;
-    }
-  }
-  return index;
-}
-
-export function accumulateListeners(obj, eventName, otherActions) {
-  let meta = peekMeta(obj);
-  if (!meta) { return; }
-  let actions = meta.matchingListeners(eventName);
-  let newActions = [];
-
-  for (let i = actions.length - 3; i >= 0; i -= 3) {
-    let target = actions[i];
-    let method = actions[i + 1];
-    let flags = actions[i + 2];
-    let actionIndex = indexOf(otherActions, target, method);
-
-    if (actionIndex === -1) {
-      otherActions.push(target, method, flags);
-      newActions.push(target, method, flags);
-    }
-  }
-
-  return newActions;
-}
-
 /**
   Add an event listener
 
   @method addListener
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
   @param {Object|Function} target A target object or a function
@@ -80,7 +38,7 @@ export function accumulateListeners(obj, eventName, otherActions) {
   @public
 */
 export function addListener(obj, eventName, target, method, once) {
-  assert('You must pass at least an object and event name to Ember.addListener', !!obj && !!eventName);
+  assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
 
   deprecate(
     `didInitAttrs called in ${obj && obj.toString && obj.toString()}.`,
@@ -88,7 +46,7 @@ export function addListener(obj, eventName, target, method, once) {
     {
       id: 'ember-views.did-init-attrs',
       until: '3.0.0',
-      url: 'http://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+      url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
     }
   );
 
@@ -112,10 +70,11 @@ export function addListener(obj, eventName, target, method, once) {
 /**
   Remove an event listener
 
-  Arguments should match those passed to `Ember.addListener`.
+  Arguments should match those passed to `addListener`.
 
   @method removeListener
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
   @param {Object|Function} target A target object or a function
@@ -123,18 +82,16 @@ export function addListener(obj, eventName, target, method, once) {
   @public
 */
 export function removeListener(obj, eventName, target, method) {
-  assert('You must pass at least an object and event name to Ember.removeListener', !!obj && !!eventName);
+  assert('You must pass at least an object and event name to removeListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
     method = target;
     target = null;
   }
 
-  metaFor(obj).removeFromListeners(eventName, target, method, (...args) => {
-    if ('function' === typeof obj.didRemoveListener) {
-      obj.didRemoveListener(...args);
-    }
-  });
+  let func = ('function' === typeof obj.didRemoveListener) ?
+    obj.didRemoveListener.bind(obj) : ()=> {};
+  metaFor(obj).removeFromListeners(eventName, target, method, func);
 }
 
 /**
@@ -146,7 +103,8 @@ export function removeListener(obj, eventName, target, method) {
   setting that property.
 
   @method suspendListener
-  @for Ember
+  @static
+  @for @ember/object/events
 
   @private
   @param obj
@@ -163,7 +121,8 @@ export function suspendListener(obj, eventName, target, method, callback) {
   Suspends multiple listeners during a callback.
 
   @method suspendListeners
-  @for Ember
+  @static
+  @for @ember/object/events
 
   @private
   @param obj
@@ -185,11 +144,13 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
 
   @private
   @method watchedEvents
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
 */
 export function watchedEvents(obj) {
-  return metaFor(obj).watchedEvents();
+  let meta = peekMeta(obj);
+  return meta && meta.watchedEvents() || [];
 }
 
 /**
@@ -199,21 +160,25 @@ export function watchedEvents(obj) {
   is not passed, the actions stored on the passed object are invoked.
 
   @method sendEvent
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
   @param {Array} params Optional parameters for each listener.
   @param {Array} actions Optional array of actions (listeners).
+  @param {Meta}  meta Optional meta to lookup listeners
   @return true
   @public
 */
-export function sendEvent(obj, eventName, params, actions) {
-  if (!actions) {
-    let meta = peekMeta(obj);
-    actions = meta && meta.matchingListeners(eventName);
+export function sendEvent(obj, eventName, params, actions, _meta) {
+  if (actions === undefined) {
+    let meta = _meta || peekMeta(obj);
+    actions = typeof meta === 'object' &&
+                     meta !== null &&
+                     meta.matchingListeners(eventName);
   }
 
-  if (!actions || actions.length === 0) { return; }
+  if (actions === undefined || actions.length === 0) { return false; }
 
   for (let i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
     let target = actions[i];
@@ -244,20 +209,23 @@ export function sendEvent(obj, eventName, params, actions) {
 /**
   @private
   @method hasListeners
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
 */
 export function hasListeners(obj, eventName) {
   let meta = peekMeta(obj);
-  if (!meta) { return false; }
-  return meta.matchingListeners(eventName).length > 0;
+  if (meta === undefined) { return false; }
+  let matched = meta.matchingListeners(eventName);
+  return matched !== undefined && matched.length > 0;
 }
 
 /**
   @private
   @method listenersFor
-  @for Ember
+  @static
+  @for @ember/object/events
   @param obj
   @param {String} eventName
 */
@@ -283,19 +251,24 @@ export function listenersFor(obj, eventName) {
 
 
   ``` javascript
-  let Job = Ember.Object.extend({
-    logCompleted: Ember.on('completed', function() {
+  import EmberObject from '@ember/object';
+  import { on } from '@ember/object/evented';
+  import { sendEvent } from '@ember/object/events';
+
+  let Job = EmberObject.extend({
+    logCompleted: on('completed', function() {
       console.log('Job completed!');
     })
   });
 
   let job = Job.create();
 
-  Ember.sendEvent(job, 'completed'); // Logs 'Job completed!'
+  sendEvent(job, 'completed'); // Logs 'Job completed!'
  ```
 
   @method on
-  @for Ember
+  @static
+  @for @ember/object/evented
   @param {String} eventNames*
   @param {Function} func
   @return func
@@ -304,6 +277,10 @@ export function listenersFor(obj, eventName) {
 export function on(...args) {
   let func = args.pop();
   let events = args;
+
+  assert('on expects function as last argument', typeof func === 'function');
+  assert('on called without valid event names', events.length > 0 && events.every((p)=> typeof p === 'string' && p.length));
+
   func.__ember_listens__ = events;
   return func;
 }

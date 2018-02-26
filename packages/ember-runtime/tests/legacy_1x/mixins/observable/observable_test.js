@@ -406,7 +406,7 @@ QUnit.test('setting values should call function return value', function() {
     // property. Other properties blindly call set.
     expectedLength = 3;
     equal(calls.length, expectedLength, `set(${key}) should be called the right amount of times`);
-    for (idx = 0;idx < 2;idx++) {
+    for (idx = 0; idx < 2; idx++) {
       equal(calls[idx], values[idx], `call #${idx + 1} to set(${key}) should have passed value ${values[idx]}`);
     }
   });
@@ -611,7 +611,7 @@ QUnit.module('Observable objects & object properties ', {
       getEach() {
         var keys = ['normal', 'abnormal'];
         var ret = [];
-        for (var idx = 0; idx < keys.length;idx++) {
+        for (var idx = 0; idx < keys.length; idx++) {
           ret[ret.length] = this.get(keys[idx]);
         }
         return ret;
@@ -825,8 +825,7 @@ QUnit.test('removing an observer inside of an observer shouldn’t cause any pro
     run(function() {
       ObjectD.set('observableValue', 'hi world');
     });
-  }
-  catch(e) {
+  } catch (e) {
     encounteredError = true;
   }
   equal(encounteredError, false);

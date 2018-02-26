@@ -1,15 +1,13 @@
-import { computed } from '../../computed';
-import { get } from '../../property_get';
-import { defineProperty } from '../../properties';
 import {
+  computed,
+  get,
+  defineProperty,
   Mixin,
-  observer
-} from '../../mixin';
-import {
+  observer,
   addObserver,
-  removeObserver
-} from '../../observer';
-import { isWatching } from '../../watching';
+  removeObserver,
+  isWatching
+} from '../..';
 
 QUnit.module('isWatching');
 

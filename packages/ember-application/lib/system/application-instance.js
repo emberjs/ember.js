@@ -1,10 +1,10 @@
 /**
-@module ember
-@submodule ember-application
+@module @ember/application
 */
 
 import { assign } from 'ember-utils';
-import { deprecate, get, set, run, computed } from 'ember-metal';
+import { deprecate } from 'ember-debug';
+import { get, set, run, computed } from 'ember-metal';
 import {
   buildFakeRegistryWithDeprecations,
   RSVP
@@ -36,15 +36,15 @@ let BootOptions;
   it once the particular test run or FastBoot request has finished.
 
   @public
-  @class Ember.ApplicationInstance
-  @extends Ember.EngineInstance
+  @class ApplicationInstance
+  @extends EngineInstance
 */
 
 const ApplicationInstance = EngineInstance.extend({
   /**
     The `Application` for which this is an instance.
 
-    @property {Ember.Application} application
+    @property {Application} application
     @private
   */
   application: null,
@@ -234,27 +234,36 @@ const ApplicationInstance = EngineInstance.extend({
 
     @public
     @param url {String} the destination URL
-    @return {Promise}
+    @return {Promise<ApplicationInstance>}
   */
   visit(url) {
     this.setupRouter();
 
+    let bootOptions = this.__container__.lookup('-environment:main');
+
     let router = get(this, 'router');
 
-    let handleResolve = () => {
-      // Resolve only after rendering is complete
-      return new RSVP.Promise((resolve) => {
-        // TODO: why is this necessary? Shouldn't 'actions' queue be enough?
-        // Also, aren't proimses supposed to be async anyway?
-        run.next(null, resolve, this);
-      });
+    let handleTransitionResolve = () => {
+      if (!bootOptions.options.shouldRender) {
+        // No rendering is needed, and routing has completed, simply return.
+        return this;
+      } else {
+        return new RSVP.Promise((resolve) => {
+          // Resolve once rendering is completed. `router.handleURL` returns the transition (as a thennable)
+          // which resolves once the transition is completed, but the transition completion only queues up
+          // a scheduled revalidation (into the `render` queue) in the Renderer.
+          //
+          // This uses `run.schedule('afterRender', ....)` to resolve after that rendering has completed.
+          run.schedule('afterRender', null, resolve, this);
+        });
+      }
     };
 
-    let handleReject = (error) => {
+    let handleTransitionReject = (error) => {
       if (error.error) {
         throw error.error;
-      } else if (error.name === 'TransitionAborted' && router.router.activeTransition) {
-        return router.router.activeTransition.then(handleResolve, handleReject);
+      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
+        return router._routerMicrolib.activeTransition.then(handleTransitionResolve, handleTransitionReject);
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -268,7 +277,7 @@ const ApplicationInstance = EngineInstance.extend({
     location.setURL(url);
 
     // getURL returns the set url with the rootURL stripped off
-    return router.handleURL(location.getURL()).then(handleResolve, handleReject);
+    return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
   }
 });
 
@@ -310,7 +319,7 @@ ApplicationInstance.reopenClass({
   Internal, experimental or otherwise unstable flags are marked as private.
 
   @class BootOptions
-  @namespace Ember.ApplicationInstance
+  @namespace ApplicationInstance
   @public
 */
 BootOptions = function BootOptions(options = {}) {
@@ -481,27 +490,6 @@ BootOptions.prototype.toEnvironment = function() {
   env.options = this;
   return env;
 };
-
-Object.defineProperty(ApplicationInstance.prototype, 'container', {
-  configurable: true,
-  enumerable: false,
-  get() {
-    let instance = this;
-    return {
-      lookup() {
-        deprecate(
-          'Using `ApplicationInstance.container.lookup` is deprecated. Please use `ApplicationInstance.lookup` instead.',
-          false, {
-            id: 'ember-application.app-instance-container',
-            until: '3.0.0',
-            url: 'http://emberjs.com/deprecations/v2.x/#toc_ember-applicationinstance-container'
-          }
-        );
-        return instance.lookup(...arguments);
-      }
-    };
-  }
-});
 
 Object.defineProperty(ApplicationInstance.prototype, 'registry', {
   configurable: true,

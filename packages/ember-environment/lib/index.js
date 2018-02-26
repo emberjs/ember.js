@@ -1,7 +1,6 @@
 /* globals module */
 import global from './global';
 import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './utils';
-
 /**
   The hash of environment variables used to control various configuration
   settings. To specify your own or override default settings, add the
@@ -66,9 +65,6 @@ ENV.LOG_STACKTRACE_ON_DEPRECATION = defaultTrue(ENV.LOG_STACKTRACE_ON_DEPRECATIO
 */
 ENV.LOG_VERSION = defaultTrue(ENV.LOG_VERSION);
 
-// default false
-ENV.MODEL_FACTORY_INJECTIONS = defaultFalse(ENV.MODEL_FACTORY_INJECTIONS);
-
 /**
   Debug parameter you can turn on. This will log all bindings that fire to
   the console. This should be disabled in production code. Note that you
@@ -111,7 +107,7 @@ export const environment = hasDOM ? {
   location: window.location,
   history: window.history,
   userAgent: window.navigator.userAgent,
-  window: window
+  window
 } : {
   hasDOM: false,
   isChrome: false,

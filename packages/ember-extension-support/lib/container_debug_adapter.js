@@ -8,14 +8,13 @@ import {
 } from 'ember-runtime';
 
 /**
-@module ember
-@submodule ember-extension-support
+@module @ember/debug
 */
 
 /**
   The `ContainerDebugAdapter` helps the container and resolver interface
   with tools that debug Ember such as the
-  [Ember Extension](https://github.com/tildeio/ember-extension)
+  [Ember Inspector](https://github.com/emberjs/ember-inspector)
   for Chrome and Firefox.
 
   This class can be extended by a custom resolver implementer
@@ -42,8 +41,7 @@ import {
   ```
 
   @class ContainerDebugAdapter
-  @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
   @since 1.5.0
   @public
 */

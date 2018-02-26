@@ -62,9 +62,9 @@ QUnit.test('should reset namespace if nested with resource', function() {
   let router = Router.create();
   router._initRouterJs();
 
-  ok(router.router.recognizer.names['bleep'], 'nested resources do not contain parent name');
-  ok(router.router.recognizer.names['bloop'], 'nested resources do not contain parent name');
-  ok(router.router.recognizer.names['blork'], 'nested resources do not contain parent name');
+  ok(router._routerMicrolib.recognizer.names['bleep'], 'nested resources do not contain parent name');
+  ok(router._routerMicrolib.recognizer.names['bloop'], 'nested resources do not contain parent name');
+  ok(router._routerMicrolib.recognizer.names['blork'], 'nested resources do not contain parent name');
 });
 
 QUnit.test('should retain resource namespace if nested with routes', function() {
@@ -79,9 +79,9 @@ QUnit.test('should retain resource namespace if nested with routes', function() 
   let router = Router.create();
   router._initRouterJs();
 
-  ok(router.router.recognizer.names['bleep'], 'parent name was used as base of nested routes');
-  ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
-  ok(router.router.recognizer.names['bleep.bloop.blork'], 'parent name was used as base of nested routes');
+  ok(router._routerMicrolib.recognizer.names['bleep'], 'parent name was used as base of nested routes');
+  ok(router._routerMicrolib.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
+  ok(router._routerMicrolib.recognizer.names['bleep.bloop.blork'], 'parent name was used as base of nested routes');
 });
 
 QUnit.test('should add loading and error routes if _isRouterMapResult is true', function() {
@@ -95,9 +95,9 @@ QUnit.test('should add loading and error routes if _isRouterMapResult is true', 
 
   router._initRouterJs();
 
-  ok(router.router.recognizer.names['blork'], 'main route was created');
-  ok(router.router.recognizer.names['blork_loading'], 'loading route was added');
-  ok(router.router.recognizer.names['blork_error'], 'error route was added');
+  ok(router._routerMicrolib.recognizer.names['blork'], 'main route was created');
+  ok(router._routerMicrolib.recognizer.names['blork_loading'], 'loading route was added');
+  ok(router._routerMicrolib.recognizer.names['blork_error'], 'error route was added');
 });
 
 QUnit.test('should not add loading and error routes if _isRouterMapResult is false', function() {
@@ -108,9 +108,9 @@ QUnit.test('should not add loading and error routes if _isRouterMapResult is fal
   let router = Router.create();
   router._initRouterJs(false);
 
-  ok(router.router.recognizer.names['blork'], 'main route was created');
-  ok(!router.router.recognizer.names['blork_loading'], 'loading route was not added');
-  ok(!router.router.recognizer.names['blork_error'], 'error route was not added');
+  ok(router._routerMicrolib.recognizer.names['blork'], 'main route was created');
+  ok(!router._routerMicrolib.recognizer.names['blork_loading'], 'loading route was not added');
+  ok(!router._routerMicrolib.recognizer.names['blork_error'], 'error route was not added');
 });
 
 QUnit.test('should reset namespace of loading and error routes for routes with resetNamespace', function() {
@@ -127,17 +127,17 @@ QUnit.test('should reset namespace of loading and error routes for routes with r
 
   router._initRouterJs();
 
-  ok(router.router.recognizer.names['blork.blorp'], 'nested route was created');
-  ok(router.router.recognizer.names['blork.blorp_loading'], 'nested loading route was added');
-  ok(router.router.recognizer.names['blork.blorp_error'], 'nested error route was added');
+  ok(router._routerMicrolib.recognizer.names['blork.blorp'], 'nested route was created');
+  ok(router._routerMicrolib.recognizer.names['blork.blorp_loading'], 'nested loading route was added');
+  ok(router._routerMicrolib.recognizer.names['blork.blorp_error'], 'nested error route was added');
 
-  ok(router.router.recognizer.names['bleep'], 'reset route was created');
-  ok(router.router.recognizer.names['bleep_loading'], 'reset loading route was added');
-  ok(router.router.recognizer.names['bleep_error'], 'reset error route was added');
+  ok(router._routerMicrolib.recognizer.names['bleep'], 'reset route was created');
+  ok(router._routerMicrolib.recognizer.names['bleep_loading'], 'reset loading route was added');
+  ok(router._routerMicrolib.recognizer.names['bleep_error'], 'reset error route was added');
 
-  ok(!router.router.recognizer.names['blork.bleep'], 'nested reset route was not created');
-  ok(!router.router.recognizer.names['blork.bleep_loading'], 'nested reset loading route was not added');
-  ok(!router.router.recognizer.names['blork.bleep_error'], 'nested reset error route was not added');
+  ok(!router._routerMicrolib.recognizer.names['blork.bleep'], 'nested reset route was not created');
+  ok(!router._routerMicrolib.recognizer.names['blork.bleep_loading'], 'nested reset loading route was not added');
+  ok(!router._routerMicrolib.recognizer.names['blork.bleep_error'], 'nested reset error route was not added');
 });
 
 QUnit.test('should throw an error when defining a route serializer outside an engine', function() {
@@ -174,9 +174,9 @@ QUnit.test('should allow mounting of engines', function(assert) {
   setOwner(router, engineInstance);
   router._initRouterJs();
 
-  assert.ok(router.router.recognizer.names['bleep'], 'parent name was used as base of nested routes');
-  assert.ok(router.router.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
-  assert.ok(router.router.recognizer.names['bleep.bloop.chat'], 'parent name was used as base of mounted engine');
+  assert.ok(router._routerMicrolib.recognizer.names['bleep'], 'parent name was used as base of nested routes');
+  assert.ok(router._routerMicrolib.recognizer.names['bleep.bloop'], 'parent name was used as base of nested routes');
+  assert.ok(router._routerMicrolib.recognizer.names['bleep.bloop.chat'], 'parent name was used as base of mounted engine');
 });
 
 QUnit.test('should allow mounting of engines at a custom path', function(assert) {
@@ -199,10 +199,10 @@ QUnit.test('should allow mounting of engines at a custom path', function(assert)
   router._initRouterJs();
 
   assert.deepEqual(
-    router.router.recognizer.names['bleep.bloop.chat']
+    router._routerMicrolib.recognizer.names['bleep.bloop.chat']
       .segments
       .slice(1, 4)
-      .map(s => s.string),
+      .map(s => s.value),
     ['bleep', 'bloop', 'custom-chat'],
     'segments are properly associated with mounted engine');
 });
@@ -227,10 +227,10 @@ QUnit.test('should allow aliasing of engine names with `as`', function(assert) {
   router._initRouterJs();
 
   assert.deepEqual(
-    router.router.recognizer.names['bleep.bloop.blork']
+    router._routerMicrolib.recognizer.names['bleep.bloop.blork']
       .segments
       .slice(1, 4)
-      .map(s => s.string),
+      .map(s => s.value),
     ['bleep', 'bloop', 'blork'],
     'segments are properly associated with mounted engine with aliased name');
 });
@@ -250,9 +250,9 @@ QUnit.test('should add loading and error routes to a mount if _isRouterMapResult
   setOwner(router, engineInstance);
   router._initRouterJs();
 
-  ok(router.router.recognizer.names['chat'], 'main route was created');
-  ok(router.router.recognizer.names['chat_loading'], 'loading route was added');
-  ok(router.router.recognizer.names['chat_error'], 'error route was added');
+  ok(router._routerMicrolib.recognizer.names['chat'], 'main route was created');
+  ok(router._routerMicrolib.recognizer.names['chat_loading'], 'loading route was added');
+  ok(router._routerMicrolib.recognizer.names['chat_error'], 'error route was added');
 });
 
 QUnit.test('should add loading and error routes to a mount alias if _isRouterMapResult is true', function() {
@@ -270,9 +270,9 @@ QUnit.test('should add loading and error routes to a mount alias if _isRouterMap
   setOwner(router, engineInstance);
   router._initRouterJs();
 
-  ok(router.router.recognizer.names['shoutbox'], 'main route was created');
-  ok(router.router.recognizer.names['shoutbox_loading'], 'loading route was added');
-  ok(router.router.recognizer.names['shoutbox_error'], 'error route was added');
+  ok(router._routerMicrolib.recognizer.names['shoutbox'], 'main route was created');
+  ok(router._routerMicrolib.recognizer.names['shoutbox_loading'], 'loading route was added');
+  ok(router._routerMicrolib.recognizer.names['shoutbox_error'], 'error route was added');
 });
 
 QUnit.test('should not add loading and error routes to a mount if _isRouterMapResult is false', function() {
@@ -288,9 +288,9 @@ QUnit.test('should not add loading and error routes to a mount if _isRouterMapRe
   setOwner(router, engineInstance);
   router._initRouterJs(false);
 
-  ok(router.router.recognizer.names['chat'], 'main route was created');
-  ok(!router.router.recognizer.names['chat_loading'], 'loading route was not added');
-  ok(!router.router.recognizer.names['chat_error'], 'error route was not added');
+  ok(router._routerMicrolib.recognizer.names['chat'], 'main route was created');
+  ok(!router._routerMicrolib.recognizer.names['chat_loading'], 'loading route was not added');
+  ok(!router._routerMicrolib.recognizer.names['chat_error'], 'error route was not added');
 });
 
 QUnit.test('should reset namespace of loading and error routes for mounts with resetNamespace', function() {
@@ -311,15 +311,15 @@ QUnit.test('should reset namespace of loading and error routes for mounts with r
   setOwner(router, engineInstance);
   router._initRouterJs();
 
-  ok(router.router.recognizer.names['news.chat'], 'nested route was created');
-  ok(router.router.recognizer.names['news.chat_loading'], 'nested loading route was added');
-  ok(router.router.recognizer.names['news.chat_error'], 'nested error route was added');
+  ok(router._routerMicrolib.recognizer.names['news.chat'], 'nested route was created');
+  ok(router._routerMicrolib.recognizer.names['news.chat_loading'], 'nested loading route was added');
+  ok(router._routerMicrolib.recognizer.names['news.chat_error'], 'nested error route was added');
 
-  ok(router.router.recognizer.names['blog'], 'reset route was created');
-  ok(router.router.recognizer.names['blog_loading'], 'reset loading route was added');
-  ok(router.router.recognizer.names['blog_error'], 'reset error route was added');
+  ok(router._routerMicrolib.recognizer.names['blog'], 'reset route was created');
+  ok(router._routerMicrolib.recognizer.names['blog_loading'], 'reset loading route was added');
+  ok(router._routerMicrolib.recognizer.names['blog_error'], 'reset error route was added');
 
-  ok(!router.router.recognizer.names['news.blog'], 'nested reset route was not created');
-  ok(!router.router.recognizer.names['news.blog_loading'], 'nested reset loading route was not added');
-  ok(!router.router.recognizer.names['news.blog_error'], 'nested reset error route was not added');
+  ok(!router._routerMicrolib.recognizer.names['news.blog'], 'nested reset route was not created');
+  ok(!router._routerMicrolib.recognizer.names['news.blog_loading'], 'nested reset loading route was not added');
+  ok(!router._routerMicrolib.recognizer.names['news.blog_error'], 'nested reset error route was not added');
 });
