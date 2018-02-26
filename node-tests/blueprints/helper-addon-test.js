@@ -24,5 +24,12 @@ describe('Blueprint: helper-addon', function() {
           .to.equal(fixture('helper-addon.js'));
       });
     });
+
+    it('helper-addon foo/bar-baz --pod', function() {
+      return emberGenerateDestroy(['helper-addon', 'foo/bar-baz', '--pod'], _file => {
+        expect(_file('app/helpers/foo/bar-baz.js'))
+          .to.equal(fixture('helper-addon.js'));
+      });
+    });
   });
 });
