@@ -301,9 +301,8 @@ function notifyObservers(obj, keyName, meta) {
   if (deferred > 0) {
     listeners = observerSet.add(obj, keyName, eventName);
     accumulateListeners(obj, eventName, listeners, meta);
-  } else {
-    sendEvent(obj, eventName, [obj, keyName]);
-  }
+  } 
+  sendEvent(obj, eventName, [obj, keyName]);
 }
 
 export {
