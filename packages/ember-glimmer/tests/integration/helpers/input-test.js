@@ -446,6 +446,22 @@ moduleFor('Helpers test: {{input}} with dynamic type', class extends InputRender
 
     this.assertAttr('type', 'text');
   }
+
+  ['@test GH16256 input macro does not modify params in place']() {
+    this.registerComponent('my-input', {
+      template: `{{input type=inputType}}`
+    });
+
+    this.render(`{{my-input inputType=firstType}}{{my-input inputType=secondType}}`, {
+      firstType: 'password',
+      secondType: 'email'
+    });
+
+    let inputs = this.element.querySelectorAll('input');
+    this.assert.equal(inputs.length, 2, 'there are two inputs');
+    this.assert.equal(inputs[0].getAttribute('type'), 'password');
+    this.assert.equal(inputs[1].getAttribute('type'), 'email');
+  }
 });
 
 moduleFor(`Helpers test: {{input type='checkbox'}}`, class extends InputRenderingTest {
