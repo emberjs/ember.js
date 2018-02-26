@@ -8,11 +8,8 @@ import { FACTORY_FOR } from 'container';
 import {
   assign,
   guidFor,
-  generateGuid,
   makeArray,
-  GUID_KEY_PROPERTY,
   NAME_KEY,
-  GUID_KEY,
   HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from 'ember-utils';
@@ -88,7 +85,6 @@ function makeCtor() {
               beforeInitCalled ||
               typeof property === 'symbol' ||
               isInternalSymbol(property) ||
-              property === GUID_KEY_PROPERTY ||
               property === 'toJSON' ||
               property === 'toString' ||
               property === 'toStringExtension' ||
@@ -109,8 +105,6 @@ function makeCtor() {
           }
         });
       }
-
-      Object.defineProperty(this, GUID_KEY_PROPERTY.name, GUID_KEY_PROPERTY.descriptor);
 
       let m = meta(self);
       let proto = m.proto;
@@ -594,7 +588,6 @@ let ClassMixinProps = {
 
   isMethod: false,
   [NAME_KEY]: null,
-  [GUID_KEY]: null,
   /**
     Creates a new subclass.
 
@@ -705,7 +698,6 @@ let ClassMixinProps = {
 
     proto = Class.prototype = Object.create(this.prototype);
     proto.constructor = Class;
-    generateGuid(proto);
     meta(proto).proto = proto; // this will disable observers on prototype
 
     Class.ClassMixin.apply(Class);
