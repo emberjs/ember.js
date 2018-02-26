@@ -41,6 +41,8 @@ import {
 import emberToBool from './to-bool';
 
 export const UPDATE = symbol('UPDATE');
+export const INVOKE = symbol('INVOKE');
+export const ACTION = symbol('ACTION');
 
 let maybeFreeze: (obj: any) => void;
 if (DEBUG) {
@@ -442,6 +444,28 @@ export class UnboundReference<T> extends ConstReference<T> {
 
   get(key: string) {
     return valueToRef(get(this.inner, key), false);
+  }
+}
+
+export class ReadonlyReference extends CachedReference {
+  constructor(private inner: VersionedPathReference<Opaque>) {
+    super();
+  }
+
+  get tag() {
+    return this.inner.tag;
+  }
+
+  get [INVOKE]() {
+    return this.inner[INVOKE];
+  }
+
+  value() {
+    return this.inner.value();
+  }
+
+  get(key: string) {
+    return this.inner.get(key);
   }
 }
 

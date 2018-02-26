@@ -7,8 +7,7 @@ import {
 } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import { symbol } from 'ember-utils';
-import { UPDATE } from '../utils/references';
-import { INVOKE } from './action';
+import { INVOKE, UPDATE } from '../utils/references';
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the

@@ -259,7 +259,6 @@
   @public
 */
 
-export { INVOKE } from './helpers/action';
 export { default as RootTemplate } from './templates/root';
 export { default as template } from './template';
 export { default as Checkbox } from './components/checkbox';
@@ -300,7 +299,7 @@ export { default as AbstractComponentManager } from './component-managers/abstra
 // rather than the problem was solved
 // DebugStack should just test the assert message
 // it supports for example
-export { UpdatableReference } from './utils/references';
+export { UpdatableReference, INVOKE } from './utils/references';
 export { default as iterableFor } from './utils/iterable';
 export { default as DebugStack } from './utils/debug-stack';
 export { default as OutletView } from './views/outlet';

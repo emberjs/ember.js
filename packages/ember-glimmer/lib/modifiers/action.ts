@@ -21,7 +21,7 @@ import {
   ActionManager,
   isSimpleClick,
 } from 'ember-views';
-import { INVOKE } from '../helpers/action';
+import { INVOKE } from '../utils/references';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
