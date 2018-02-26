@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v3.1.0-beta.3 (February 26, 2018)
+- [#16271](https://github.com/emberjs/ember.js/pull/16271) [BUGFIX] Fix ChainNode unchaining
+- [#16274](https://github.com/emberjs/ember.js/pull/16274) [BUGFIX] Ensure accessing a "proxy" itself does not error.
+- [#16282](https://github.com/emberjs/ember.js/pull/16282) [BUGFIX] Fix nested ObserverSet flushes
+- [#16285](https://github.com/emberjs/ember.js/pull/16285) [BUGFIX] Fix version with many special chars.
+- [#16286](https://github.com/emberjs/ember.js/pull/16286) [BUGFIX] Update to glimmer-vm@0.32.1.
+- [#16287](https://github.com/emberjs/ember.js/pull/16287) [BUGFIX] Update to router_js@2.0.0-beta.2.
+- [#16288](https://github.com/emberjs/ember.js/pull/16288) [BUGFIX] Ensure all "internal symbols" avoid the proxy assertion
+
 ### v3.1.0-beta.2 (February 19, 2018)
 
 - [#13355](https://github.com/emberjs/ember.js/pull/13355) [BUGFIX] Fix issue with `Ember.trySet` on destroyed objects.
