@@ -18,8 +18,6 @@ export { default as dictionary } from './dictionary';
 export {
   uuid,
   GUID_KEY,
-  GUID_DESC,
-  GUID_KEY_PROPERTY,
   generateGuid,
   guidFor
 } from './guid';

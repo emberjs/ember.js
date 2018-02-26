@@ -1,4 +1,6 @@
 import intern from './intern';
+import { isObject } from './spec';
+
 /**
  @module @ember/object
 */
@@ -35,9 +37,8 @@ export function uuid() {
 const GUID_PREFIX = 'ember';
 
 // Used for guid generation...
-const numberCache  = [];
-const stringCache  = {};
-
+const OBJECT_GUIDS = new WeakMap();
+const NON_OBJECT_GUIDS = new Map();
 /**
   A unique key used to assign guids and other private metadata to objects.
   If you inspect an object in your browser debugger you will often see these.
@@ -53,25 +54,6 @@ const stringCache  = {};
   @final
 */
 export const GUID_KEY = intern(`__ember${+ new Date()}`);
-
-export let GUID_DESC = {
-  writable:     true,
-  configurable: true,
-  enumerable:   false,
-  value: null
-};
-
-let nullDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: null
-};
-
-export let GUID_KEY_PROPERTY = {
-  name: GUID_KEY,
-  descriptor: nullDescriptor
-};
 
 /**
   Generates a new guid, optionally saving the guid to the object that you
@@ -92,23 +74,19 @@ export let GUID_KEY_PROPERTY = {
   @return {String} the guid
 */
 export function generateGuid(obj, prefix = GUID_PREFIX) {
-  let ret = prefix + uuid();
-  if (obj !== undefined && obj !== null) {
-    if (obj[GUID_KEY] === null) {
-      obj[GUID_KEY] = ret;
-    } else {
-      GUID_DESC.value = ret;
-      Object.defineProperty(obj, GUID_KEY, GUID_DESC);
-    }
+  let guid = prefix + uuid();
+
+  if (isObject(obj)) {
+    OBJECT_GUIDS.set(obj, guid);
   }
-  return ret;
+
+  return guid;
 }
 
 /**
   Returns a unique id for the object. If the object does not yet have a guid,
   one will be assigned to it. You can call this on any object,
-  `EmberObject`-based or not, but be aware that it will add a `_guid`
-  property.
+  `EmberObject`-based or not.
 
   You can also use this method on DOM Element objects.
 
@@ -119,54 +97,35 @@ export function generateGuid(obj, prefix = GUID_PREFIX) {
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
-export function guidFor(obj) {
-  // special cases where we don't want to add a key to object
-  if (obj === undefined) {
-    return '(undefined)';
-  }
+export function guidFor(value) {
+  let guid;
 
-  if (obj === null) {
-    return '(null)';
-  }
+  if (isObject(value)) {
+    guid = OBJECT_GUIDS.get(value);
 
-  let type = typeof obj;
-  if ((type === 'object' || type === 'function') && obj[GUID_KEY]) {
-    return obj[GUID_KEY];
-  }
+    if (guid === undefined) {
+      guid = GUID_PREFIX + uuid();
+      OBJECT_GUIDS.set(value, guid);
+    }
+  } else {
+    guid = NON_OBJECT_GUIDS.get(value);
 
-  let ret;
-  // Don't allow prototype changes to String etc. to change the guidFor
-  switch (type) {
-    case 'number':
-      ret = numberCache[obj];
+    if (guid === undefined) {
+      let type = typeof value;
 
-      if (!ret) {
-        ret = numberCache[obj] = `nu${obj}`;
+      if (type === 'string') {
+        guid = 'st' + uuid();
+      } else if (type === 'number') {
+        guid = 'nu' + uuid();
+      } else if (type === 'symbol') {
+        guid = 'sy' + uuid();
+      } else {
+        guid = '(' + value + ')';
       }
 
-      return ret;
-
-    case 'string':
-      ret = stringCache[obj];
-
-      if (!ret) {
-        ret = stringCache[obj] = `st${uuid()}`;
-      }
-
-      return ret;
-
-    case 'boolean':
-      return obj ? '(true)' : '(false)';
-
-    default:
-      if (obj === Object) {
-        return '(Object)';
-      }
-
-      if (obj === Array) {
-        return '(Array)';
-      }
-
-      return generateGuid(obj);
+      NON_OBJECT_GUIDS.set(value, guid);
+    }
   }
+
+  return guid;
 }

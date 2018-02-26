@@ -51,7 +51,21 @@ moduleFor('guidFor', class extends TestCase {
     nanGuid(assert, a);
   }
 
-  ['@test numbers'](assert) {
+  ['@test symbols'](assert) {
+    if (typeof Symbol === 'undefined') {
+      assert.ok(true, 'symbols are not supported on this browser');
+      return;
+    }
+
+    let a = Symbol('a');
+    let b = Symbol('b');
+
+    sameGuid(assert, a, a, 'same symbols always yields same guid');
+    diffGuid(assert, a, b, 'different symbols yield different guids');
+    nanGuid(assert, a);
+  }
+
+  ['@test booleans'](assert) {
     let a = true;
     let aprime = true;
     let b = false;

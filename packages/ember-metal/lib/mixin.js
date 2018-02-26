@@ -5,7 +5,6 @@ import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import {
   assign,
   guidFor,
-  GUID_KEY,
   NAME_KEY,
   ROOT,
   wrap,
@@ -452,7 +451,6 @@ export default class Mixin {
     }
     this.ownerConstructor = undefined;
     this._without = undefined;
-    this[GUID_KEY] = null;
     this[NAME_KEY] = null;
     debugSeal(this);
   }
