@@ -11,7 +11,6 @@ import {
   makeArray
 } from 'ember-utils';
 import {
-  debugSeal,
   assert,
   deprecate
 } from 'ember-debug';
@@ -452,7 +451,18 @@ export default class Mixin {
     this.ownerConstructor = undefined;
     this._without = undefined;
     this[NAME_KEY] = null;
-    debugSeal(this);
+
+    if (DEBUG) {
+      /*
+        In debug builds, we seal mixins to help avoid performance pitfalls.
+
+        In IE11 there is a quirk that prevents sealed objects from being added
+        to a WeakMap. Unfortunately, the mixin system currently relies on
+        weak maps in `guidFor`, so we need to prime the guid cache weak map.
+      */
+      guidFor(this);
+      Object.seal(this);
+    }
   }
 
   static applyPartial(obj, ...args) {
@@ -581,7 +591,9 @@ if (ENV._ENABLE_BINDING_SUPPORT) {
 let MixinPrototype = Mixin.prototype;
 MixinPrototype.toString = Object.toString;
 
-debugSeal(MixinPrototype);
+if (DEBUG) {
+  Object.seal(MixinPrototype);
+}
 
 let unprocessedFlag = false;
 
