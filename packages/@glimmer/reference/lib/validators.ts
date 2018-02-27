@@ -89,6 +89,10 @@ export function isConstTag(tag: Tag): boolean {
 
 let $REVISION = INITIAL;
 
+export function bump() {
+  $REVISION++;
+}
+
 export class DirtyableTag extends RevisionTag {
   static create(revision = $REVISION) {
     return new TagWrapper(this.id, new DirtyableTag(revision));
