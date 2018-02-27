@@ -15,6 +15,7 @@ import {
 } from 'ember/features';
 import { deprecate } from 'ember-debug';
 import { assertNotRendered } from './transaction';
+import { changeEvent } from './observer';
 
 /**
  @module ember
@@ -219,10 +220,11 @@ function changeProperties(callback) {
 function notifyObservers(obj, keyName, meta) {
   if (meta.isSourceDestroying()) { return; }
 
+  let eventName = changeEvent(keyName);
   if (deferred > 0) {
-    observerSet.add(obj, keyName);
+    observerSet.add(obj, keyName, eventName);
   } else {
-    sendEvent(obj, keyName, [obj, keyName]);
+    sendEvent(obj, eventName, [obj, keyName]);
   }
 }
 

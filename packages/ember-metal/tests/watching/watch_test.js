@@ -18,7 +18,7 @@ import {
 let didCount, didKeys, originalLookup;
 
 function addListeners(obj, keyPath) {
-  addListener(obj, keyPath, function() {
+  addListener(obj, keyPath + ':change', function() {
     didCount++;
     didKeys.push(keyPath);
   });

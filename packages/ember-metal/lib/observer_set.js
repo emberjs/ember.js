@@ -21,7 +21,7 @@ export default class ObserverSet {
     this.queue = [];
   }
 
-  add(object, key) {
+  add(object, key, event) {
     let keys = this.added.get(object);
     if (keys === undefined) {
       keys = new Set();
@@ -29,7 +29,7 @@ export default class ObserverSet {
     }
 
     if (!keys.has(key)) {
-      this.queue.push([object, key]);
+      this.queue.push(object, key, event);
       keys.add(key);
     }
   }
@@ -40,16 +40,16 @@ export default class ObserverSet {
     this.added.clear();
     this.queue = [];
 
-    for (let i = 0; i < queue.length; i++) {
-      let pair = queue[i];
-      let object = pair[0];
-      let key = pair[1];
+    for (let i = 0; i < queue.length; i += 3) {
+      let object = queue[i];
+      let key = queue[i + 1];
+      let event = queue[i + 2];
 
       if (object.isDestroying || object.isDestroyed) {
         continue;
       }
 
-      sendEvent(object, key, pair);
+      sendEvent(object, event, [object, key]);
     }
   }
 }
