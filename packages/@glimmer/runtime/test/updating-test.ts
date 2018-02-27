@@ -1,7 +1,7 @@
 import { Template } from "@glimmer/interfaces";
 import { UNDEFINED_REFERENCE, RenderResult, SafeString, PrimitiveReference, VM, IteratorResult, clientBuilder } from "@glimmer/runtime";
 import { assertNodeTagName, BasicComponent, TestEnvironment, TestModifierManager, equalTokens, stripTight, trimLines } from "@glimmer/test-helpers";
-import { ConstReference } from "@glimmer/reference";
+import { ConstReference, bump } from "@glimmer/reference";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Opaque } from "@glimmer/util";
 import { test, module, assert } from './support';
@@ -51,6 +51,7 @@ function render(template: Template, context = {}) {
 
 function rerender(context: any = null) {
   if (context !== null) self.update(context);
+  bump();
   env.begin();
   result.rerender();
   env.commit();

@@ -1,4 +1,4 @@
-import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag } from "@glimmer/reference";
+import { PathReference, Tagged, TagWrapper, RevisionTag, DirtyableTag, Tag, bump } from "@glimmer/reference";
 import { RenderResult, TemplateIterator, Environment, Cursor, ElementBuilder } from "@glimmer/runtime";
 import { Opaque, Dict, dict, expect } from "@glimmer/util";
 import { NodeDOMTreeConstruction, serializeBuilder } from "@glimmer/node";
@@ -407,6 +407,7 @@ export class RenderTest {
 
   protected setProperties(properties: Dict<Opaque>): void {
     Object.assign(this.context, properties);
+    bump();
   }
 
   protected takeSnapshot() {
