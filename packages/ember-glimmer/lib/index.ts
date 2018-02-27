@@ -305,3 +305,4 @@ export { default as DebugStack } from './utils/debug-stack';
 export { default as OutletView } from './views/outlet';
 export { default as CustomComponentManager } from './component-managers/custom';
 export { COMPONENT_MANAGER, componentManager } from './utils/custom-component-manager';
+export { isSerializationFirstNode, SERIALIZATION_FIRST_NODE_STRING } from './utils/serialization-first-node-helpers';
