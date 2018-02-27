@@ -11,7 +11,7 @@ import {
   RootReference as IRootReference
 } from './types';
 
-import { PathReference as IPathReference, VOLATILE_TAG } from '@glimmer/reference';
+import { PathReference as IPathReference, CURRENT_TAG } from '@glimmer/reference';
 
 import { InnerReferenceFactory } from './references/descriptors';
 
@@ -20,7 +20,7 @@ const NOOP_DESTROY = { destroy() {} };
 class ConstPath implements IPathReference<any> {
   private parent: any;
   private property: string;
-  public tag = VOLATILE_TAG;
+  public tag = CURRENT_TAG;
 
   constructor(parent: any, _property: string) {
     this.parent = parent;
@@ -40,7 +40,7 @@ class ConstPath implements IPathReference<any> {
 
 class ConstRoot implements IRootReference<any> {
   private inner: any;
-  public tag = VOLATILE_TAG;
+  public tag = CURRENT_TAG;
 
   constructor(value: any) {
     this.inner = value;

@@ -9,7 +9,8 @@ import {
   ReferenceIterator,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
-  TagWrapper
+  TagWrapper,
+  CURRENT_TAG
 } from '@glimmer/reference';
 
 import { UpdatableReference } from '@glimmer/object-reference';
@@ -21,7 +22,7 @@ QUnit.module("Reference iterables");
 class Target implements IteratorSynchronizerDelegate {
   private map = dict<ListNode<BasicReference<Opaque>>>();
   private list = new LinkedList<ListNode<BasicReference<Opaque>>>();
-  public tag = VOLATILE_TAG;
+  public tag = CURRENT_TAG;
 
   retain(key: string, item: BasicReference<Opaque>) {
     if (item !== this.map[key].value) {
