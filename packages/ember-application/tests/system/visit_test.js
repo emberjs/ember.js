@@ -10,7 +10,7 @@ import Application from '../../system/application';
 import ApplicationInstance from '../../system/application-instance';
 import Engine from '../../system/engine';
 import { Route } from 'ember-routing';
-import { Component, helper } from 'ember-glimmer';
+import { Component, helper, isSerializationFirstNode } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
 import { ENV } from 'ember-environment';
 
@@ -70,9 +70,8 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
 
     return this.visit('/', bootOptions)
       .then((instance) => {
-        assert.equal(
-          instance.rootElement.firstChild.nodeValue,
-          '%+b:0%',
+        assert.ok(
+          isSerializationFirstNode(instance.rootElement.firstChild),
           'glimmer-vm comment node was not found'
         );
       }).then(() =>{
