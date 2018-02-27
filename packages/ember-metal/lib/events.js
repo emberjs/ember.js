@@ -15,7 +15,7 @@ import { meta as metaFor, peekMeta } from './meta';
       // Object's meta hash
       {
         listeners: {       // variable name: `listenerSet`
-          "foo": [ // variable name: `actions`
+          "foo:change": [ // variable name: `actions`
             target, method, once
           ]
         }

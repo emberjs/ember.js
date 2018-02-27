@@ -14,7 +14,7 @@ import {
 let didCount;
 
 function addListeners(obj, keyPath) {
-  addListener(obj, keyPath, () => didCount++);
+  addListener(obj, keyPath + ':change', () => didCount++);
 }
 
 moduleFor('unwatch', class extends AbstractTestCase {

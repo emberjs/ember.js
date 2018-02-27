@@ -10,6 +10,12 @@ import {
 @module @ember/object
 */
 
+const AFTER_OBSERVERS = ':change';
+
+export function changeEvent(keyName) {
+  return keyName + AFTER_OBSERVERS;
+}
+
 /**
   @method addObserver
   @static
@@ -21,7 +27,7 @@ import {
   @public
 */
 export function addObserver(obj, _path, target, method) {
-  addListener(obj, _path, target, method);
+  addListener(obj, changeEvent(_path), target, method);
   watch(obj, _path);
 }
 
@@ -37,5 +43,5 @@ export function addObserver(obj, _path, target, method) {
 */
 export function removeObserver(obj, path, target, method) {
   unwatch(obj, path);
-  removeListener(obj, path, target, method);
+  removeListener(obj, changeEvent(path), target, method);
 }
