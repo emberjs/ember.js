@@ -316,7 +316,7 @@ export default Mixin.create({
     @public
   */
   changeProperties(callback) {
-    changeProperties(this, callback);
+    changeProperties(callback);
     return this;
   },
 
