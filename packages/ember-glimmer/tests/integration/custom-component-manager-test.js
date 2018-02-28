@@ -5,16 +5,13 @@ import { Component } from '../utils/helpers';
 import { Object as EmberObject } from 'ember-runtime';
 import { set, setProperties, computed } from 'ember-metal';
 import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
-import { COMPONENT_MANAGER, CustomComponentManager } from 'ember-glimmer';
+import { componentManager, CustomComponentManager } from 'ember-glimmer';
 import { getChildViews } from 'ember-views';
+import { assign } from 'ember-utils';
 
 const MANAGER_ID = 'test-custom';
 
-const CustomComponent = EmberObject
-  .extend()
-  .reopenClass({
-    [COMPONENT_MANAGER]: MANAGER_ID
-  });
+const CustomComponent = componentManager(EmberObject.extend(), MANAGER_ID);
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
   moduleFor('Components test: curly components with custom manager', class extends RenderingTest {
@@ -24,7 +21,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
      * by passing custom hooks.
      */
     registerCustomComponentManager(overrides = {}) {
-      let options = Object.assign({
+      let options = assign({
         version: '3.1',
         create({ ComponentClass }) {
           return ComponentClass.create();

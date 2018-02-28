@@ -10,6 +10,17 @@ import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 
 export const COMPONENT_MANAGER = symbol('COMPONENT_MANAGER');
 
+export function componentManager(obj: any, managerId: String) {
+  if ('reopenClass' in obj) {
+    return obj.reopenClass({
+      [COMPONENT_MANAGER]: managerId
+    });
+  }
+
+  obj[COMPONENT_MANAGER] = managerId;
+  return obj;
+}
+
 export default function getCustomComponentManager(owner: Owner, obj: {}): ComponentManager<ComponentStateBucket, DefinitionState> | undefined {
   if (!GLIMMER_CUSTOM_COMPONENT_MANAGER) { return; }
 
@@ -19,7 +30,7 @@ export default function getCustomComponentManager(owner: Owner, obj: {}): Compon
   if (!managerId) { return; }
 
   let manager = owner.lookup(`component-manager:${managerId}`) as ComponentManager<ComponentStateBucket, DefinitionState>;
-  assert(`Could not find custom component manager '${managerId}'`, !!manager);
+  assert(`Could not find custom component manager '${managerId}' for ${obj}`, !!manager);
 
   return manager;
 }

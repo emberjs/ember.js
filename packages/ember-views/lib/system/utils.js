@@ -105,17 +105,18 @@ export function addChildView(parent, child) {
 export function collectChildViews(view, registry) {
   let ids = [];
   let views = [];
+  let childViews = CHILD_VIEW_IDS.get(view);
 
-  (CHILD_VIEW_IDS.get(view) || []).forEach(id => {
-    let view = registry[id];
+  if (childViews) {
+    childViews.forEach(id => {
+      let view = registry[id];
 
-    if (view && !view.isDestroying && !view.isDestroyed && ids.indexOf(id) === -1) {
-      ids.push(id);
-      views.push(view);
-    }
-  });
-
-  CHILD_VIEW_IDS.set(view, ids);
+      if (view && !view.isDestroying && !view.isDestroyed && ids.indexOf(id) === -1) {
+        ids.push(id);
+        views.push(view);
+      }
+    });
+  }
 
   return views;
 }

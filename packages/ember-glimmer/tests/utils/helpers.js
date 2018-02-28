@@ -14,6 +14,5 @@ export {
   htmlSafe,
   SafeString,
   DOMChanges,
-  isHTMLSafe,
-  COMPONENT_MANAGER
+  isHTMLSafe
 } from 'ember-glimmer';

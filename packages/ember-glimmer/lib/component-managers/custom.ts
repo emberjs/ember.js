@@ -17,6 +17,9 @@ export interface CustomComponentManagerDelegate<T> {
   getContext(instance: T): Opaque;
   update(instance: T, args: {}): void;
   destroy?(instance: T): void;
+  didCreate?(instance: T): void;
+  didUpdate?(instance: T): void;
+  getView?(instance: T): any;
 }
 
 export interface ComponentArguments<T = {}> {
@@ -76,6 +79,10 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
 
   update({ component, args }: CustomComponentState<T>) {
     this.delegate.update(component, args.value());
+  }
+
+  getContext(component: T) {
+    this.delegate.getContext(component);
   }
 
   getLayout(state: DefinitionState) {

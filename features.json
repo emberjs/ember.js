@@ -8,7 +8,7 @@
     "ember-routing-router-service": true,
     "ember-engines-mount-params": true,
     "ember-module-unification": null,
-    "glimmer-custom-component-manager": true,
+    "glimmer-custom-component-manager": null,
     "ember-template-block-let-helper": null
   },
   "deprecations": {
