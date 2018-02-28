@@ -135,10 +135,8 @@ versions of jQuery.
 
 ## From the CLI
 
-1. Install phantomjs from http://phantomjs.org.
-
-2. Run `yarn test` to run a basic test suite or run `TEST_SUITE=all yarn test` to
-   run a more comprehensive suite.
+Run `yarn test` to run a basic test suite or run `TEST_SUITE=all yarn test` to
+run a more comprehensive suite.
 
 ## From ember-cli
 
@@ -146,13 +144,11 @@ versions of jQuery.
 
 2. Connect the browsers you want.
 
-3. If phantom didn't connect automatically, you can run `./bin/connect-phantom-to <optional-port>`.
-
 To run a specific browser, you can use the `--launch` flag
 
 * `ember test --server --launch SL_Firefox_Current`
 * `ember test --launch SL_Firefox_Current`
-* `ember test --launch SL_Firefox_Current,PhantomJS`
+* `ember test --launch SL_Firefox_Current,Chrome`
 
 To test multiple launchers, you can separate them with commas.
 # Pull Requests
@@ -252,7 +248,7 @@ Within the Travis build, you can see that we (currently) run six different test 
 
 * The `each-package-tests` test suite is closest to what you normally run locally on your machine.
 * The `build-tests EMBER_ENV=production...` test suite runs tests against a production build.
-* The `sauce` test suite runs tests against various supported browsers.
+* The `browserstack` test suite runs tests against various supported browsers.
 
 ## Common Travis CI Build Issues
 
@@ -276,7 +272,7 @@ To recreate this build environment locally:
 
 ### Single Unexplained Test Suite Failure
 
-Sometimes a single test suite will fail, without giving any indication of a real error.  Sometimes this is just a phantom crash.
+Sometimes a single test suite will fail, without giving any indication of a real error.
 * Try to recreate the test environment locally (see above for production builds)
 * Restart all the test suites on Travis CI by doing another push
 * Ask a repo collab to restart that single test suite

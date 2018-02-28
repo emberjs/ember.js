@@ -1,16 +1,17 @@
 import { getOwner, setOwner, OWNER } from 'ember-utils';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('Owner', {});
+moduleFor('Owner', class extends AbstractTestCase {
+  ['@test An owner can be set with `setOwner` and retrieved with `getOwner`'](assert) {
+    let owner = {};
+    let obj = {};
 
-QUnit.test('An owner can be set with `setOwner` and retrieved with `getOwner`', function() {
-  let owner = {};
-  let obj = {};
+    assert.strictEqual(getOwner(obj), undefined, 'owner has not been set');
 
-  strictEqual(getOwner(obj), undefined, 'owner has not been set');
+    setOwner(obj, owner);
 
-  setOwner(obj, owner);
+    assert.strictEqual(getOwner(obj), owner, 'owner has been set');
 
-  strictEqual(getOwner(obj), owner, 'owner has been set');
-
-  strictEqual(obj[OWNER], owner, 'owner has been set to the OWNER symbol');
+    assert.strictEqual(obj[OWNER], owner, 'owner has been set to the OWNER symbol');
+  }
 });

@@ -1,29 +1,29 @@
 /**
 @module @ember/object
 */
-
-import { guidFor } from 'ember-utils';
 import { assert } from 'ember-debug';
 import {
   get,
   ComputedProperty,
-  computed,
   addObserver,
   removeObserver,
-  getProperties,
-  WeakMap
+  getProperties
 } from 'ember-metal';
 import compare from '../compare';
 import { isArray } from '../utils';
-import { A as emberA } from '../system/native_array';
+import { A as emberA } from '../mixins/array';
 
+function reduceMacro(dependentKey, callback, initialValue, name) {
+  assert(
+    `Dependent key passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
+  );
 
-function reduceMacro(dependentKey, callback, initialValue) {
   let cp = new ComputedProperty(function() {
     let arr = get(this, dependentKey);
     if (arr === null || typeof arr !== 'object') { return initialValue; }
     return arr.reduce(callback, initialValue, this);
-  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true })
+  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true });
 
   return cp;
 }
@@ -45,12 +45,18 @@ function arrayMacro(dependentKey, callback) {
     } else {
       return emberA();
     }
-  }, { dependentKeys: [ dependentKey ], readOnly: true });
+  }, { readOnly: true });
+
+  cp.property(dependentKey); // this forces to expand properties GH #15855
 
   return cp;
 }
 
-function multiArrayMacro(_dependentKeys, callback) {
+function multiArrayMacro(_dependentKeys, callback, name) {
+  assert(
+    `Dependent keys passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
+    _dependentKeys.every((dependentKey)=> !/[\[\]\{\}]/g.test(dependentKey))
+  );
   let dependentKeys = _dependentKeys.map(key => `${key}.[]`);
 
   let cp = new ComputedProperty(function() {
@@ -68,12 +74,12 @@ function multiArrayMacro(_dependentKeys, callback) {
   @for @ember/object/computed
   @static
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computes the sum of all values in the dependentKey's array
+  @return {ComputedProperty} computes the sum of all values in the dependentKey's array
   @since 1.4.0
   @public
 */
 export function sum(dependentKey) {
-  return reduceMacro(dependentKey, (sum, item) => sum + item, 0);
+  return reduceMacro(dependentKey, (sum, item) => sum + item, 0, 'sum');
 }
 
 /**
@@ -82,9 +88,12 @@ export function sum(dependentKey) {
   array is empty.
 
   ```javascript
-  let Person = Ember.Object.extend({
-    childAges: Ember.computed.mapBy('children', 'age'),
-    maxChildAge: Ember.computed.max('childAges')
+  import { mapBy, max } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Person = EmberObject.extend({
+    childAges: mapBy('children', 'age'),
+    maxChildAge: max('childAges')
   });
 
   let lordByron = Person.create({ children: [] });
@@ -115,11 +124,11 @@ export function sum(dependentKey) {
   @for @ember/object/computed
   @static
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computes the largest value in the dependentKey's array
+  @return {ComputedProperty} computes the largest value in the dependentKey's array
   @public
 */
 export function max(dependentKey) {
-  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity);
+  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity, 'max');
 }
 
 /**
@@ -128,9 +137,12 @@ export function max(dependentKey) {
   array is empty.
 
   ```javascript
-  let Person = Ember.Object.extend({
-    childAges: Ember.computed.mapBy('children', 'age'),
-    minChildAge: Ember.computed.min('childAges')
+  import { mapBy, min } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Person = EmberObject.extend({
+    childAges: mapBy('children', 'age'),
+    minChildAge: min('childAges')
   });
 
   let lordByron = Person.create({ children: [] });
@@ -161,11 +173,11 @@ export function max(dependentKey) {
   @for @ember/object/computed
   @static
   @param {String} dependentKey
-  @return {Ember.ComputedProperty} computes the smallest value in the dependentKey's array
+  @return {ComputedProperty} computes the smallest value in the dependentKey's array
   @public
 */
 export function min(dependentKey) {
-  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity);
+  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity, 'min');
 }
 
 /**
@@ -182,8 +194,11 @@ export function min(dependentKey) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    excitingChores: Ember.computed.map('chores', function(chore, index) {
+  import { map } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    excitingChores: map('chores', function(chore, index) {
       return chore.toUpperCase() + '!';
     })
   });
@@ -200,7 +215,7 @@ export function min(dependentKey) {
   @static
   @param {String} dependentKey
   @param {Function} callback
-  @return {Ember.ComputedProperty} an array mapped via the callback
+  @return {ComputedProperty} an array mapped via the callback
   @public
 */
 export function map(dependentKey, callback) {
@@ -213,8 +228,11 @@ export function map(dependentKey, callback) {
   Returns an array mapped to the specified key.
 
   ```javascript
-  let Person = Ember.Object.extend({
-    childAges: Ember.computed.mapBy('children', 'age')
+  import { mapBy } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Person = EmberObject.extend({
+    childAges: mapBy('children', 'age')
   });
 
   let lordByron = Person.create({ children: [] });
@@ -237,14 +255,18 @@ export function map(dependentKey, callback) {
   @static
   @param {String} dependentKey
   @param {String} propertyKey
-  @return {Ember.ComputedProperty} an array mapped to the specified key
+  @return {ComputedProperty} an array mapped to the specified key
   @public
 */
 export function mapBy(dependentKey, propertyKey) {
   assert(
-    'Ember.computed.mapBy expects a property string for its second argument, ' +
+    '\`computed.mapBy\` expects a property string for its second argument, ' +
     'perhaps you meant to use "map"',
     typeof propertyKey === 'string'
+  );
+  assert(
+    `Dependent key passed to \`computed.mapBy\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
   );
 
   return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));
@@ -263,8 +285,11 @@ export function mapBy(dependentKey, propertyKey) {
   ```
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    remainingChores: Ember.computed.filter('chores', function(chore, index, array) {
+  import { filter } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    remainingChores: filter('chores', function(chore, index, array) {
       return !chore.done;
     })
   });
@@ -283,17 +308,21 @@ export function mapBy(dependentKey, propertyKey) {
   You can also use `@each.property` in your dependent key, the callback will still use the underlying array:
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    remainingChores: Ember.computed.filter('chores.@each.done', function(chore, index, array) {
+  import { A } from '@ember/array';
+  import { filter } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    remainingChores: filter('chores.@each.done', function(chore, index, array) {
       return !chore.get('done');
     })
   });
 
   let hamster = Hamster.create({
-    chores: Ember.A([
-      Ember.Object.create({ name: 'cook', done: true }),
-      Ember.Object.create({ name: 'clean', done: true }),
-      Ember.Object.create({ name: 'write more unit tests', done: false })
+    chores: A([
+      EmberObject.create({ name: 'cook', done: true }),
+      EmberObject.create({ name: 'clean', done: true }),
+      EmberObject.create({ name: 'write more unit tests', done: false })
     ])
   });
   hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
@@ -307,7 +336,7 @@ export function mapBy(dependentKey, propertyKey) {
   @static
   @param {String} dependentKey
   @param {Function} callback
-  @return {Ember.ComputedProperty} the filtered array
+  @return {ComputedProperty} the filtered array
   @public
 */
 export function filter(dependentKey, callback) {
@@ -320,8 +349,11 @@ export function filter(dependentKey, callback) {
   Filters the array by the property and value
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    remainingChores: Ember.computed.filterBy('chores', 'done', false)
+  import { filterBy } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    remainingChores: filterBy('chores', 'done', false)
   });
 
   let hamster = Hamster.create({
@@ -341,12 +373,16 @@ export function filter(dependentKey, callback) {
   @param {String} dependentKey
   @param {String} propertyKey
   @param {*} value
-  @return {Ember.ComputedProperty} the filtered array
+  @return {ComputedProperty} the filtered array
   @public
 */
 export function filterBy(dependentKey, propertyKey, value) {
-  let callback;
+  assert(
+    `Dependent key passed to \`computed.filterBy\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
+  );
 
+  let callback;
   if (arguments.length === 2) {
     callback = (item) => get(item, propertyKey);
   } else {
@@ -363,8 +399,11 @@ export function filterBy(dependentKey, propertyKey, value) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    uniqueFruits: Ember.computed.uniq('fruits')
+  import { uniq } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    uniqueFruits: uniq('fruits')
   });
 
   let hamster = Hamster.create({
@@ -383,19 +422,21 @@ export function filterBy(dependentKey, propertyKey, value) {
   @for @ember/object/computed
   @static
   @param {String} propertyKey*
-  @return {Ember.ComputedProperty} computes a new array with all the
+  @return {ComputedProperty} computes a new array with all the
   unique elements from the dependent array
   @public
 */
 export function uniq(...args) {
   return multiArrayMacro(args, function(dependentKeys) {
     let uniq = emberA();
+    let seen = new Set();
 
     dependentKeys.forEach(dependentKey => {
       let value = get(this, dependentKey);
       if (isArray(value)) {
         value.forEach(item => {
-          if (uniq.indexOf(item) === -1) {
+          if (!seen.has(item)) {
+            seen.add(item);
             uniq.push(item);
           }
         });
@@ -403,7 +444,7 @@ export function uniq(...args) {
     });
 
     return uniq;
-  });
+  }, 'uniq');
 }
 
 /**
@@ -413,8 +454,11 @@ export function uniq(...args) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    uniqueFruits: Ember.computed.uniqBy('fruits', 'id')
+  import { uniqBy } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    uniqueFruits: uniqBy('fruits', 'id')
   });
   let hamster = Hamster.create({
     fruits: [
@@ -432,20 +476,25 @@ export function uniq(...args) {
   @static
   @param {String} dependentKey
   @param {String} propertyKey
-  @return {Ember.ComputedProperty} computes a new array with all the
+  @return {ComputedProperty} computes a new array with all the
   unique elements from the dependent array
   @public
 */
 export function uniqBy(dependentKey, propertyKey) {
+  assert(
+    `Dependent key passed to \`computed.uniqBy\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(dependentKey)
+  );
+
   let cp = new ComputedProperty(function() {
     let uniq = emberA();
-    let seen = Object.create(null);
     let list = get(this, dependentKey);
     if (isArray(list)) {
+      let seen = new Set();
       list.forEach(item => {
-        let guid = guidFor(get(item, propertyKey));
-        if (!(guid in seen)) {
-          seen[guid] = true;
+        let val = get(item, propertyKey);
+        if (!seen.has(val)) {
+          seen.add(val);
           uniq.push(item);
         }
       });
@@ -463,8 +512,11 @@ export function uniqBy(dependentKey, propertyKey) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    uniqueFruits: Ember.computed.union('fruits', 'vegetables')
+  import { union } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    uniqueFruits: union('fruits', 'vegetables')
   });
 
   let hamster = Hamster.create({
@@ -489,7 +541,7 @@ export function uniqBy(dependentKey, propertyKey) {
   @for @ember/object/computed
   @static
   @param {String} propertyKey*
-  @return {Ember.ComputedProperty} computes a new array with all the
+  @return {ComputedProperty} computes a new array with all the
   unique elements from the dependent array
   @public
 */
@@ -502,8 +554,11 @@ export let union = uniq;
   Example
 
   ```javascript
-  let obj = Ember.Object.extend({
-    friendsInCommon: Ember.computed.intersect('adaFriends', 'charlesFriends')
+  import { intersect } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let obj = EmberObject.extend({
+    friendsInCommon: intersect('adaFriends', 'charlesFriends')
   }).create({
     adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
     charlesFriends: ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock']
@@ -516,7 +571,7 @@ export let union = uniq;
   @for @ember/object/computed
   @static
   @param {String} propertyKey*
-  @return {Ember.ComputedProperty} computes a new array with all the
+  @return {ComputedProperty} computes a new array with all the
   duplicated elements from the dependent arrays
   @public
 */
@@ -542,8 +597,7 @@ export function intersect(...args) {
       }
 
       return true;
-    });
-
+    }, 'intersect');
 
     return emberA(results);
   });
@@ -558,9 +612,12 @@ export function intersect(...args) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
+  import { setDiff } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
     likes: ['banana', 'grape', 'kale'],
-    wants: Ember.computed.setDiff('likes', 'fruits')
+    wants: setDiff('likes', 'fruits')
   });
 
   let hamster = Hamster.create({
@@ -578,14 +635,18 @@ export function intersect(...args) {
   @static
   @param {String} setAProperty
   @param {String} setBProperty
-  @return {Ember.ComputedProperty} computes a new array with all the
+  @return {ComputedProperty} computes a new array with all the
   items from the first dependent array that are not in the second
   dependent array
   @public
 */
 export function setDiff(setAProperty, setBProperty) {
-  assert('Ember.computed.setDiff requires exactly two dependent arrays.',
+  assert('\`computed.setDiff\` requires exactly two dependent arrays.',
     arguments.length === 2
+  );
+  assert(
+    `Dependent keys passed to \`computed.setDiff\` shouldn't contain brace expanding pattern.`,
+    !/[\[\]\{\}]/g.test(setAProperty) && !/[\[\]\{\}]/g.test(setBProperty)
   );
 
   let cp = new ComputedProperty(function() {
@@ -611,8 +672,11 @@ export function setDiff(setAProperty, setBProperty) {
   Example
 
   ```javascript
-  let Hamster = Ember.Object.extend({
-    clothes: Ember.computed.collect('hat', 'shirt')
+  import { collect } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    clothes: collect('hat', 'shirt')
   });
 
   let hamster = Hamster.create();
@@ -627,7 +691,7 @@ export function setDiff(setAProperty, setBProperty) {
   @for @ember/object/computed
   @static
   @param {String} dependentKey*
-  @return {Ember.ComputedProperty} computed property which maps
+  @return {ComputedProperty} computed property which maps
   values of all passed in properties to an array.
   @public
 */
@@ -645,7 +709,7 @@ export function collect(...dependentKeys) {
       }
     }
     return res;
-  });
+  }, 'collect');
 }
 
 /**
@@ -672,17 +736,20 @@ export function collect(...dependentKeys) {
   Example
 
   ```javascript
-  let ToDoList = Ember.Object.extend({
+  import { sort } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let ToDoList = EmberObject.extend({
     // using standard ascending sort
-    todosSorting: ['name'],
-    sortedTodos: Ember.computed.sort('todos', 'todosSorting'),
+    todosSorting: Object.freeze(['name']),
+    sortedTodos: sort('todos', 'todosSorting'),
 
     // using descending sort
-    todosSortingDesc: ['name:desc'],
-    sortedTodosDesc: Ember.computed.sort('todos', 'todosSortingDesc'),
+    todosSortingDesc: Object.freeze(['name:desc']),
+    sortedTodosDesc: sort('todos', 'todosSortingDesc'),
 
     // using a custom sort function
-    priorityTodos: Ember.computed.sort('todos', function(a, b){
+    priorityTodos: sort('todos', function(a, b){
       if (a.priority > b.priority) {
         return 1;
       } else if (a.priority < b.priority) {
@@ -710,13 +777,13 @@ export function collect(...dependentKeys) {
   @param {String} itemsKey
   @param {String or Function} sortDefinition a dependent key to an
   array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting
-  @return {Ember.ComputedProperty} computes a new sorted array based
+  @return {ComputedProperty} computes a new sorted array based
   on the sort property array or callback function
   @public
 */
 export function sort(itemsKey, sortDefinition) {
   assert(
-    'Ember.computed.sort requires two arguments: an array key to sort and ' +
+    '\`computed.sort\` requires two arguments: an array key to sort and ' +
     'either a sort properties key or sort function',
     arguments.length === 2
   );
@@ -757,6 +824,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
       this.notifyPropertyChange(key);
     }
 
+    let itemsKeyIsAtThis = (itemsKey === '@this');
     let normalizedSortProperties = normalizeSortProperties(sortProperties);
     activeObservers = normalizedSortProperties.map(([prop]) => {
       let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
@@ -766,11 +834,14 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     activeObserversMap.set(this, activeObservers);
 
-    let itemsKeyIsAtThis = (itemsKey === '@this');
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
     if (!isArray(items)) { return emberA(); }
 
-    return sortByNormalizedSortProperties(items, normalizedSortProperties);
+    if (normalizedSortProperties.length === 0) {
+      return emberA(items.slice());
+    } else {
+      return sortByNormalizedSortProperties(items, normalizedSortProperties);
+    }
   }, { dependentKeys: [`${sortPropertiesKey}.[]`], readOnly: true });
 
   cp._activeObserverMap = undefined;

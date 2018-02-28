@@ -12,7 +12,7 @@ import EmberLocation from './api';
 */
 
 /**
-  `Ember.HashLocation` implements the location API using the browser's
+  `HashLocation` implements the location API using the browser's
   hash. At present, it relies on a `hashchange` event existing in the
   browser.
 

@@ -1,0 +1,86 @@
+import { Simple } from '@glimmer/interfaces';
+import { environment } from 'ember-environment';
+import { run } from 'ember-metal';
+import { assign, OWNER, Owner } from 'ember-utils';
+import { OutletDefinitionState } from '../component-managers/outlet';
+import { Renderer } from '../renderer';
+import { OwnedTemplate } from '../template';
+import { OutletState, RootOutletReference } from '../utils/outlet';
+
+export interface BootEnvironment {
+  hasDOM: boolean;
+  isInteractive: boolean;
+  options: any;
+}
+
+const TOP_LEVEL_NAME = '-top-level';
+const TOP_LEVEL_OUTLET = 'main';
+
+export default class OutletView {
+  static extend(injections: any) {
+    return class extends OutletView {
+      static create(options: any) {
+        if (options) {
+          return super.create(assign({}, injections, options));
+        } else {
+          return super.create(injections);
+        }
+      }
+    };
+  }
+
+  static reopenClass(injections: any) {
+    assign(this, injections);
+  }
+
+  static create(options: any) {
+    let { _environment, renderer, template } = options;
+    let owner = options[OWNER];
+    return new OutletView(_environment, renderer, owner, template);
+  }
+
+  public ref: RootOutletReference;
+  public state: OutletDefinitionState;
+
+  constructor(private _environment: BootEnvironment, public renderer: Renderer, public owner: Owner, public template: OwnedTemplate) {
+    let ref = this.ref = new RootOutletReference({
+      outlets: { main: undefined },
+      render: {
+        owner: owner,
+        into: undefined,
+        outlet: TOP_LEVEL_OUTLET,
+        name: TOP_LEVEL_NAME,
+        controller: undefined,
+        template,
+      },
+    });
+    this.state = {
+      ref,
+      name: TOP_LEVEL_NAME,
+      outlet: TOP_LEVEL_OUTLET,
+      template,
+      controller: undefined
+    };
+  }
+
+  appendTo(selector: string | Simple.Element) {
+    let env = this._environment || environment;
+    let target;
+
+    if (env.hasDOM) {
+      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    } else {
+      target = selector;
+    }
+
+    run.schedule('render', this.renderer, 'appendOutletView', this, target);
+  }
+
+  rerender() { /**/ }
+
+  setOutletState(state: OutletState) {
+    this.ref.update(state);
+  }
+
+  destroy() { /**/ }
+}

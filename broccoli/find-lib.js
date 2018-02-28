@@ -1,19 +1,8 @@
-/* eslint-env node */
 "use strict";
 
-const path = require('path');
+const findPackage = require('./find-package');
 
 module.exports = function findLib(name, libPath) {
-  let packagePath = path.join(name, 'package');
-  let packageRoot = path.dirname(require.resolve(packagePath));
-
-  libPath = libPath || getLibPath(packagePath);
-
-  return path.resolve(packageRoot, libPath);
+  let pkg = findPackage(name);
+  return pkg.resolve(libPath) || (pkg.module || pkg.main).dir;
 };
-
-function getLibPath(packagePath) {
-  let packageJson = require(packagePath);
-
-  return path.dirname(packageJson['module'] || packageJson['main']);
-}

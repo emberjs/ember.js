@@ -1,5 +1,4 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
-import TestResolver from '../test-resolver';
 import { Application } from 'ember-application';
 import { assign } from 'ember-utils';
 import { Router } from 'ember-routing';
@@ -18,14 +17,21 @@ export default class AutobootApplicationTestCase extends TestResolverApplication
     return application;
   }
 
-  visit(url, options) {
-    return this.runTask(() => {
-      return this.applicationInstance.visit(url, options);
-    });
+  visit(url) {
+    return this.application.boot()
+      .then(() => {
+        return this.applicationInstance.visit(url);
+      });
   }
 
   get applicationInstance() {
-    return this.application.__deprecatedInstance__;
+    let { application } = this;
+
+    if (!application) {
+      return undefined;
+    }
+
+    return application.__deprecatedInstance__;
   }
 
 }

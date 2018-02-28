@@ -2,46 +2,49 @@
 @module @ember/array
 */
 
-// ..........................................................
-// HELPERS
-//
 import { symbol, toString } from 'ember-utils';
-import Ember, { // ES6TODO: Ember.A
+import {
   get,
+  set,
+  objectAt,
+  replace,
   computed,
-  cacheFor,
   isNone,
+  aliasMethod,
   Mixin,
-  propertyWillChange,
-  propertyDidChange,
+  notifyPropertyChange,
   addListener,
   removeListener,
   sendEvent,
   hasListeners,
-  _addBeforeObserver,
-  _removeBeforeObserver,
-  addObserver,
-  removeObserver,
-  meta,
-  peekMeta
+  peekMeta,
+  eachProxyFor,
+  eachProxyArrayWillChange,
+  eachProxyArrayDidChange,
+  beginPropertyChanges,
+  endPropertyChanges,
+  peekCacheFor
 } from 'ember-metal';
-import { deprecate, assert } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 import Enumerable from './enumerable';
+import compare from '../compare';
+import { ENV } from 'ember-environment';
+import Observable from '../mixins/observable';
+import Copyable from '../mixins/copyable';
+import copy from '../copy';
+import { Error as EmberError } from 'ember-debug';
+import MutableEnumerable from './mutable_enumerable';
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
   let didChange  = (opts && opts.didChange) || 'arrayDidChange';
   let hasObservers = get(obj, 'hasArrayObservers');
 
-  if (hasObservers === notify) {
-    propertyWillChange(obj, 'hasArrayObservers');
-  }
-
   operation(obj, '@array:before', target, willChange);
   operation(obj, '@array:change', target, didChange);
 
   if (hasObservers === notify) {
-    propertyDidChange(obj, 'hasArrayObservers');
+    notifyPropertyChange(obj, 'hasArrayObservers');
   }
 
   return obj;
@@ -55,13 +58,7 @@ export function removeArrayObserver(array, target, opts) {
   return arrayObserversHelper(array, target, opts, removeListener, true);
 }
 
-export function objectAt(content, idx) {
-  return typeof content.objectAt === 'function' ? content.objectAt(idx) : content[idx];
-}
-
 export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
-  let removing, lim;
-
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
     startIdx = 0;
@@ -76,24 +73,9 @@ export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
     }
   }
 
-  if (array.__each) {
-    array.__each.arrayWillChange(array, startIdx, removeAmt, addAmt);
-  }
+  eachProxyArrayWillChange(array, startIdx, removeAmt, addAmt);
 
   sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
-
-  if (startIdx >= 0 && removeAmt >= 0 && get(array, 'hasEnumerableObservers')) {
-    removing = [];
-    lim = startIdx + removeAmt;
-
-    for (let idx = startIdx; idx < lim; idx++) {
-      removing.push(objectAt(array, idx));
-    }
-  } else {
-    removing = removeAmt;
-  }
-
-  array.enumerableContentWillChange(removing, addAmt);
 
   return array;
 }
@@ -113,28 +95,18 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     }
   }
 
-  let adding;
-  if (startIdx >= 0 && addAmt >= 0 && get(array, 'hasEnumerableObservers')) {
-    adding = [];
-    let lim = startIdx + addAmt;
-
-    for (let idx = startIdx; idx < lim; idx++) {
-      adding.push(objectAt(array, idx));
-    }
-  } else {
-    adding = addAmt;
+  if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
+    notifyPropertyChange(array, 'length');
   }
 
-  array.enumerableContentDidChange(removeAmt, adding);
+  notifyPropertyChange(array, '[]');
 
-  if (array.__each) {
-    array.__each.arrayDidChange(array, startIdx, removeAmt, addAmt);
-  }
+  eachProxyArrayDidChange(array, startIdx, removeAmt, addAmt);
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
   let meta = peekMeta(array);
-  let cache = meta !== undefined ? meta.readableCache() : undefined;
+  let cache = peekCacheFor(array);
   if (cache !== undefined) {
     let length = get(array, 'length');
     let addedAmount = (addAmt === -1 ? 0 : addAmt);
@@ -143,19 +115,17 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     let previousLength = length - delta;
 
     let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
-    if (cache.firstObject !== undefined && normalStartIdx === 0) {
-      propertyWillChange(array, 'firstObject', meta);
-      propertyDidChange(array, 'firstObject', meta);
+    if (cache.has('firstObject') && normalStartIdx === 0) {
+      notifyPropertyChange(array, 'firstObject', meta);
     }
 
-    if (cache.lastObject !== undefined) {
+    if (cache.has('lastObject')) {
       let previousLastIndex = previousLength - 1;
       let lastAffectedIndex = normalStartIdx + removedAmount;
       if (previousLastIndex < lastAffectedIndex) {
-        propertyWillChange(array, 'lastObject', meta);
-        propertyDidChange(array, 'lastObject', meta);
+        notifyPropertyChange(array, 'lastObject', meta);
       }
-   }
+    }
   }
 
   return array;
@@ -165,6 +135,14 @@ const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
   return obj && obj[EMBER_ARRAY];
+}
+
+function iter(key, value) {
+  let valueProvided = arguments.length === 2;
+
+  return valueProvided ?
+    (item)=> value === get(item, key) :
+    (item)=> !!get(item, key);
 }
 
 // ..........................................................
@@ -180,11 +158,11 @@ export function isEmberArray(obj) {
   the Array Mixin by way of the MutableArray mixin, which allows observable
   changes to be made to the underlying array.
 
-  Unlike `Ember.Enumerable,` this mixin defines methods specifically for
-  collections that provide index-ordered access to their contents. When you
-  are designing code that needs to accept any kind of Array-like object, you
-  should use these methods instead of Array primitives because these will
-  properly notify observers of changes to the array.
+  This mixin defines methods specifically for collections that provide
+  index-ordered access to their contents. When you are designing code that
+  needs to accept any kind of Array-like object, you should use these methods
+  instead of Array primitives because these will properly notify observers of
+  changes to the array.
 
   Although these methods are efficient, they do add a layer of indirection to
   your application so it is a good idea to use them only when you need the
@@ -198,9 +176,12 @@ export function isEmberArray(obj) {
   To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
 
+<<<<<<< HEAD
   Note that the EmberArray mixin also incorporates the `Ember.Enumerable`
   mixin. All `EmberArray`-like objects are also enumerable.
 
+=======
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
   @class EmberArray
   @uses Enumerable
   @since Ember 0.9.0
@@ -272,24 +253,17 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return indexes.map(idx => objectAt(this, idx));
   },
 
-  // overrides Ember.Enumerable version
-  nextObject(idx) {
-    return objectAt(this, idx);
-  },
-
   /**
     This is the handler for the special array content property. If you get
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
-
-    This property overrides the default property defined in `Ember.Enumerable`.
 
     @property []
     @return this
     @public
   */
   '[]': computed({
-    get(key) {
+    get(key) {   // eslint-disable-line no-unused-vars
       return this;
     },
     set(key, value) {
@@ -298,14 +272,29 @@ const ArrayMixin = Mixin.create(Enumerable, {
     }
   }),
 
+  /**
+    The first object in the array, or `undefined` if the array is empty.
+
+    @property firstObject
+    @return {Object | undefined} The first object in the array
+    @public
+  */
   firstObject: computed(function() {
     return objectAt(this, 0);
   }).readOnly(),
 
+  /**
+    The last object in the array, or `undefined` if the array is empty.
+
+    @property lastObject
+    @return {Object | undefined} The last object in the array
+    @public
+  */
   lastObject: computed(function() {
     return objectAt(this, get(this, 'length') - 1);
   }).readOnly(),
 
+<<<<<<< HEAD
   // optimized version from Enumerable
   contains(obj) {
     deprecate(
@@ -317,6 +306,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return this.indexOf(obj) >= 0;
   },
 
+=======
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
   // Add any extra methods to EmberArray that are native to the built-in Array.
   /**
     Returns a new array that is a slice of the receiver. This implementation
@@ -338,7 +329,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   slice(beginIndex, endIndex) {
-    let ret = Ember.A();
+    let ret = A();
     let length = get(this, 'length');
 
     if (isNone(beginIndex)) {
@@ -546,6 +537,524 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
+    Iterates through the array, calling the passed function on each
+    item. This method corresponds to the `forEach()` method defined in
+    JavaScript 1.6.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, array);
+    ```
+
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `array` is the array itself.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as `this` on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    @method forEach
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Object} receiver
+    @public
+  */
+  forEach(callback, target = null) {
+    assert('forEach expects a function as first argument.', typeof callback === 'function');
+
+    let length = get(this, 'length');
+
+    for (let index = 0; index < length; index++) {
+      let item = this.objectAt(index);
+      callback.call(target, item, index, this);
+    }
+
+    return this;
+  },
+
+  /**
+    Alias for `mapBy`
+
+    @method getEach
+    @param {String} key name of the property
+    @return {Array} The mapped array.
+    @public
+  */
+  getEach: aliasMethod('mapBy'),
+
+  /**
+    Sets the value on the named property for each member. This is more
+    ergonomic than using other methods defined on this helper. If the object
+    implements Observable, the value will be changed to `set(),` otherwise
+    it will be set directly. `null` objects are skipped.
+
+    @method setEach
+    @param {String} key The key to set
+    @param {Object} value The object to set
+    @return {Object} receiver
+    @public
+  */
+  setEach(key, value) {
+    return this.forEach(item => set(item, key, value));
+  },
+
+  /**
+    Maps all of the items in the enumeration to another value, returning
+    a new array. This method corresponds to `map()` defined in JavaScript 1.6.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, array);
+    ```
+
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `array` is the array itself.
+
+    It should return the mapped value.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as `this` on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    @method map
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Array} The mapped array.
+    @public
+  */
+  map(callback, target) {
+    assert('map expects a function as first argument.', typeof callback === 'function');
+
+    let ret = A();
+
+    this.forEach((x, idx, i) => ret[idx] = callback.call(target, x, idx, i));
+
+    return ret;
+  },
+
+  /**
+    Similar to map, this specialized function returns the value of the named
+    property on all items in the enumeration.
+
+    @method mapBy
+    @param {String} key name of the property
+    @return {Array} The mapped array.
+    @public
+  */
+  mapBy(key) {
+    return this.map(next => get(next, key));
+  },
+
+  /**
+    Returns an array with all of the items in the enumeration that the passed
+    function returns true for. This method corresponds to `filter()` defined in
+    JavaScript 1.6.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, array);
+    ```
+
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `array` is the array itself.
+
+    It should return `true` to include the item in the results, `false`
+    otherwise.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as `this` on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    @method filter
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Array} A filtered array.
+    @public
+  */
+  filter(callback, target) {
+    assert('filter expects a function as first argument.', typeof callback === 'function');
+
+    let ret = A();
+
+    this.forEach((x, idx, i) => {
+      if (callback.call(target, x, idx, i)) {
+        ret.push(x);
+      }
+    });
+
+    return ret;
+  },
+
+  /**
+    Returns an array with all of the items in the enumeration where the passed
+    function returns false. This method is the inverse of filter().
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, array);
+    ```
+
+    - *item* is the current item in the iteration.
+    - *index* is the current index in the iteration
+    - *array* is the array itself.
+
+    It should return a falsey value to include the item in the results.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as "this" on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    @method reject
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Array} A rejected array.
+    @public
+  */
+  reject(callback, target) {
+    assert('reject expects a function as first argument.', typeof callback === 'function');
+
+    return this.filter(function() {
+      return !(callback.apply(target, arguments));
+    });
+  },
+
+  /**
+    Returns an array with just the items with the matched property. You
+    can pass an optional second argument with the target value. Otherwise
+    this will match any property that evaluates to `true`.
+
+    @method filterBy
+    @param {String} key the property to test
+    @param {*} [value] optional value to test against.
+    @return {Array} filtered array
+    @public
+  */
+  filterBy(key, value) { // eslint-disable-line no-unused-vars
+    return this.filter(iter.apply(this, arguments));
+  },
+
+  /**
+    Returns an array with the items that do not have truthy values for
+    key.  You can pass an optional second argument with the target value.  Otherwise
+    this will match any property that evaluates to false.
+
+    @method rejectBy
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Array} rejected array
+    @public
+  */
+  rejectBy(key, value) {
+    let exactValue = item => get(item, key) === value;
+    let hasValue = item  => !!get(item, key);
+    let use = (arguments.length === 2 ? exactValue : hasValue);
+
+    return this.reject(use);
+  },
+
+  /**
+    Returns the first item in the array for which the callback returns true.
+    This method is similar to the `find()` method defined in ECMAScript 2015.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, array);
+    ```
+
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `array` is the array itself.
+
+    It should return the `true` to include the item in the results, `false`
+    otherwise.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as `this` on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    @method find
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Object} Found item or `undefined`.
+    @public
+  */
+  find(callback, target = null) {
+    assert('find expects a function as first argument.', typeof callback === 'function');
+
+    let length = get(this, 'length');
+
+    for (let index = 0; index < length; index++) {
+      let item = this.objectAt(index);
+
+      if (callback.call(target, item, index, this)) {
+        return item;
+      }
+    }
+  },
+
+  /**
+    Returns the first item with a property matching the passed value. You
+    can pass an optional second argument with the target value. Otherwise
+    this will match any property that evaluates to `true`.
+
+    This method works much like the more generic `find()` method.
+
+    @method findBy
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Object} found item or `undefined`
+    @public
+  */
+  findBy(key, value) {  // eslint-disable-line no-unused-vars
+    return this.find(iter.apply(this, arguments));
+  },
+
+  /**
+    Returns `true` if the passed function returns true for every item in the
+    enumeration. This corresponds with the `every()` method in JavaScript 1.6.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, array);
+    ```
+
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `array` is the array itself.
+
+    It should return the `true` or `false`.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as `this` on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    Example Usage:
+
+    ```javascript
+    if (people.every(isEngineer)) {
+      Paychecks.addBigBonus();
+    }
+    ```
+
+    @method every
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Boolean}
+    @public
+  */
+  every(callback, target) {
+    assert('every expects a function as first argument.', typeof callback === 'function');
+
+    return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
+  },
+
+  /**
+    Returns `true` if the passed property resolves to the value of the second
+    argument for all items in the array. This method is often simpler/faster
+    than using a callback.
+
+    Note that like the native `Array.every`, `isEvery` will return true when called
+    on any empty array.
+
+    @method isEvery
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against. Defaults to `true`
+    @return {Boolean}
+    @since 1.3.0
+    @public
+  */
+  isEvery(key, value) {  // eslint-disable-line no-unused-vars
+    return this.every(iter.apply(this, arguments));
+  },
+
+  /**
+    Returns `true` if the passed function returns true for any item in the
+    enumeration.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, array);
+    ```
+
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `array` is the array object itself.
+
+    It must return a truthy value (i.e. `true`) to include an item in the
+    results. Any non-truthy return value will discard the item from the
+    results.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as `this` on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    Usage Example:
+
+    ```javascript
+    if (people.any(isManager)) {
+      Paychecks.addBiggerBonus();
+    }
+    ```
+
+    @method any
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Boolean} `true` if the passed function returns `true` for any item
+    @public
+  */
+  any(callback, target = null) {
+    assert('any expects a function as first argument.', typeof callback === 'function');
+
+    let length = get(this, 'length');
+
+    for (let index = 0; index < length; index++) {
+      let item = this.objectAt(index);
+
+      if (callback.call(target, item, index, this)) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
+  /**
+    Returns `true` if the passed property resolves to the value of the second
+    argument for any item in the array. This method is often simpler/faster
+    than using a callback.
+
+    @method isAny
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against. Defaults to `true`
+    @return {Boolean}
+    @since 1.3.0
+    @public
+  */
+  isAny(key, value) {  // eslint-disable-line no-unused-vars
+    return this.any(iter.apply(this, arguments));
+  },
+
+  /**
+    This will combine the values of the enumerator into a single value. It
+    is a useful way to collect a summary value from an enumeration. This
+    corresponds to the `reduce()` method defined in JavaScript 1.8.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(previousValue, item, index, array);
+    ```
+
+    - `previousValue` is the value returned by the last call to the iterator.
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `array` is the array itself.
+
+    Return the new cumulative value.
+
+    In addition to the callback you can also pass an `initialValue`. An error
+    will be raised if you do not pass an initial value and the enumerator is
+    empty.
+
+    Note that unlike the other methods, this method does not allow you to
+    pass a target object to set as this for the callback. It's part of the
+    spec. Sorry.
+
+    @method reduce
+    @param {Function} callback The callback to execute
+    @param {Object} initialValue Initial value for the reduce
+    @param {String} reducerProperty internal use only.
+    @return {Object} The reduced value.
+    @public
+  */
+  reduce(callback, initialValue, reducerProperty) {
+    assert('reduce expects a function as first argument.', typeof callback === 'function');
+
+    let ret = initialValue;
+
+    this.forEach(function(item, i) {
+      ret = callback(ret, item, i, this, reducerProperty);
+    }, this);
+
+    return ret;
+  },
+
+  /**
+    Invokes the named method on every object in the receiver that
+    implements it. This method corresponds to the implementation in
+    Prototype 1.6.
+
+    @method invoke
+    @param {String} methodName the name of the method
+    @param {Object...} args optional arguments to pass as well.
+    @return {Array} return values from calling invoke.
+    @public
+  */
+  invoke(methodName, ...args) {
+    let ret = A();
+
+    this.forEach((x, idx) => {
+      let method = x && x[methodName];
+
+      if ('function' === typeof method) {
+        ret[idx] = args.length ? method.apply(x, args) : x[methodName]();
+      }
+    }, this);
+
+    return ret;
+  },
+
+  /**
+    Simply converts the object into a genuine array. The order is not
+    guaranteed. Corresponds to the method implemented by Prototype.
+
+    @method toArray
+    @return {Array} the object as an array.
+    @public
+  */
+  toArray() {
+    let ret = A();
+
+    this.forEach((o, idx) => ret[idx] = o);
+
+    return ret;
+  },
+
+  /**
+    Returns a copy of the array with all `null` and `undefined` elements removed.
+
+    ```javascript
+    let arr = ['a', null, 'c', undefined];
+    arr.compact();  // ['a', 'c']
+    ```
+
+    @method compact
+    @return {Array} the array without null and undefined elements.
+    @public
+  */
+  compact() {
+    return this.filter(value => value != null);
+  },
+
+  /**
     Returns `true` if the passed object can be found in the array.
     This method is a Polyfill for ES 2016 Array.includes.
     If no `startAt` argument is given, the starting location to
@@ -593,9 +1102,130 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
+    Converts the array into an array and sorts by the keys
+    specified in the argument.
+
+    You may provide multiple arguments to sort by multiple properties.
+
+    @method sortBy
+    @param {String} property name(s) to sort on
+    @return {Array} The sorted array.
+    @since 1.2.0
+    @public
+  */
+  sortBy() {
+    let sortKeys = arguments;
+
+    return this.toArray().sort((a, b) => {
+      for (let i = 0; i < sortKeys.length; i++) {
+        let key = sortKeys[i];
+        let propA = get(a, key);
+        let propB = get(b, key);
+        // return 1 or -1 else continue to the next sortKey
+        let compareValue = compare(propA, propB);
+
+        if (compareValue) {
+          return compareValue;
+        }
+      }
+      return 0;
+    });
+  },
+
+  /**
+    Returns a new array that contains only unique values. The default
+    implementation returns an array regardless of the receiver type.
+
+    ```javascript
+    let arr = ['a', 'a', 'b', 'b'];
+    arr.uniq();  // ['a', 'b']
+    ```
+
+    This only works on primitive data types, e.g. Strings, Numbers, etc.
+
+    @method uniq
+    @return {EmberArray}
+    @public
+  */
+  uniq() {
+    let ret = A();
+
+    let seen = new Set();
+    this.forEach(item => {
+      if (!seen.has(item)) {
+        seen.add(item);
+        ret.push(item);
+      }
+    });
+
+    return ret;
+  },
+
+  /**
+    Returns a new array that contains only items containing a unique property value.
+    The default implementation returns an array regardless of the receiver type.
+
+    ```javascript
+    let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
+    arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
+    ```
+
+    @method uniqBy
+    @return {EmberArray}
+    @public
+  */
+
+  uniqBy(key) {
+    let ret = A();
+    let seen = new Set();
+
+    this.forEach((item) => {
+      let val = get(item, key);
+      if (!seen.has(val)) {
+        seen.add(val);
+        ret.push(item);
+      }
+    });
+
+    return ret;
+  },
+
+  /**
+    Returns a new array that excludes the passed value. The default
+    implementation returns an array regardless of the receiver type.
+    If the receiver does not contain the value it returns the original array.
+
+    ```javascript
+    let arr = ['a', 'b', 'a', 'c'];
+    arr.without('a');  // ['b', 'c']
+    ```
+
+    @method without
+    @param {Object} value
+    @return {EmberArray}
+    @public
+  */
+  without(value) {
+    if (!this.includes(value)) {
+      return this; // nothing to do
+    }
+
+    let ret = A();
+
+    this.forEach(k => {
+      // SameValueZero comparison (NaN !== NaN)
+      if (!(k === value || k !== k && value !== value)) {
+        ret[ret.length] = k;
+      }
+    });
+
+    return ret;
+  },
+
+  /**
     Returns a special object that can be used to observe individual properties
     on the array. Just get an equivalent property on this object and it will
-    return an enumerable that maps automatically to the named key on the
+    return an array that maps automatically to the named key on the
     member objects.
 
     `@each` should only be used in a non-terminal context. Example:
@@ -619,134 +1249,568 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '@each': computed(function() {
-    // TODO use Symbol or add to meta
-    if (!this.__each) {
-      this.__each = new EachProxy(this);
+    deprecate(
+      `Getting the '@each' property on object ${toString(this)} is deprecated`,
+      false,
+      {
+        id: 'ember-metal.getting-each',
+        until: '3.5.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property'
+      }
+    );
+
+    return eachProxyFor(this);
+  }).readOnly()
+});
+
+
+const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
+const EMPTY = [];
+
+export function removeAt(array, start, len) {
+  if ('number' === typeof start) {
+    if ((start < 0) || (start >= get(array, 'length'))) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
 
-    return this.__each;
-  }).volatile().readOnly()
+    // fast case
+    if (len === undefined) {
+      len = 1;
+    }
+
+    array.replace(start, len, EMPTY);
+  }
+
+  return array;
+}
+
+/**
+  This mixin defines the API for modifying array-like objects. These methods
+  can be applied only to a collection that keeps its items in an ordered set.
+  It builds upon the Array mixin and adds methods to modify the array.
+  One concrete implementations of this class include ArrayProxy.
+
+  It is important to use the methods in this class to modify arrays so that
+  changes are observable. This allows the binding system in Ember to function
+  correctly.
+
+
+  Note that an Array can change even if it does not implement this mixin.
+  For example, one might implement a SparseArray that cannot be directly
+  modified, but if its underlying enumerable changes, it will change also.
+
+  @class MutableArray
+  @uses EmberArray
+  @uses MutableEnumerable
+  @public
+*/
+
+const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
+
+  /**
+    __Required.__ You must implement this method to apply this mixin.
+
+    This is one of the primitives you must implement to support `Array`.
+    You should replace amt objects started at idx with the objects in the
+    passed array. You should also call `this.arrayContentDidChange()`
+
+    @method replace
+    @param {Number} idx Starting index in the array to replace. If
+      idx >= length, then append to the end of the array.
+    @param {Number} amt Number of elements that should be removed from
+      the array, starting at *idx*.
+    @param {EmberArray} objects An array of zero or more objects that should be
+      inserted into the array at *idx*
+    @public
+  */
+  replace: null,
+
+  /**
+    Remove all elements from the array. This is useful if you
+    want to reuse an existing array without having to recreate it.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.length;  // 3
+    colors.clear(); // []
+    colors.length;  // 0
+    ```
+
+    @method clear
+    @return {Array} An empty Array.
+    @public
+  */
+  clear() {
+    let len = get(this, 'length');
+    if (len === 0) {
+      return this;
+    }
+
+    this.replace(0, len, EMPTY);
+    return this;
+  },
+
+  /**
+    This will use the primitive `replace()` method to insert an object at the
+    specified index.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.insertAt(2, 'yellow');  // ['red', 'green', 'yellow', 'blue']
+    colors.insertAt(5, 'orange');  // Error: Index out of range
+    ```
+
+    @method insertAt
+    @param {Number} idx index of insert the object at.
+    @param {Object} object object to insert
+    @return {EmberArray} receiver
+    @public
+  */
+  insertAt(idx, object) {
+    if (idx > get(this, 'length')) {
+      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    }
+
+    this.replace(idx, 0, [object]);
+    return this;
+  },
+
+  /**
+    Remove an object at the specified index using the `replace()` primitive
+    method. You can pass either a single index, or a start and a length.
+
+    If you pass a start and length that is beyond the
+    length this method will throw an `OUT_OF_RANGE_EXCEPTION`.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue', 'yellow', 'orange'];
+
+    colors.removeAt(0);     // ['green', 'blue', 'yellow', 'orange']
+    colors.removeAt(2, 2);  // ['green', 'blue']
+    colors.removeAt(4, 2);  // Error: Index out of range
+    ```
+
+    @method removeAt
+    @param {Number} start index, start of range
+    @param {Number} len length of passing range
+    @return {EmberArray} receiver
+    @public
+  */
+  removeAt(start, len) {
+    return removeAt(this, start, len);
+  },
+
+  /**
+    Push the object onto the end of the array. Works just like `push()` but it
+    is KVO-compliant.
+
+    ```javascript
+    let colors = ['red', 'green'];
+
+    colors.pushObject('black');     // ['red', 'green', 'black']
+    colors.pushObject(['yellow']);  // ['red', 'green', ['yellow']]
+    ```
+
+    @method pushObject
+    @param {*} obj object to push
+    @return object same object passed as a param
+    @public
+  */
+  pushObject(obj) {
+    this.insertAt(get(this, 'length'), obj);
+    return obj;
+  },
+
+  /**
+    Add the objects in the passed array to the end of the array. Defers
+    notifying observers of the change until all objects are added.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.pushObjects(['yellow', 'orange']);  // ['red', 'yellow', 'orange']
+    ```
+
+    @method pushObjects
+    @param {EmberArray} objects the objects to add
+    @return {EmberArray} receiver
+    @public
+  */
+  pushObjects(objects) {
+    if (!Array.isArray(objects)) {
+      throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
+    }
+    this.replace(get(this, 'length'), 0, objects);
+    return this;
+  },
+
+  /**
+    Pop object from array or nil if none are left. Works just like `pop()` but
+    it is KVO-compliant.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.popObject();   // 'blue'
+    console.log(colors);  // ['red', 'green']
+    ```
+
+    @method popObject
+    @return object
+    @public
+  */
+  popObject() {
+    let len = get(this, 'length');
+    if (len === 0) {
+      return null;
+    }
+
+    let ret = objectAt(this, len - 1);
+    this.removeAt(len - 1, 1);
+    return ret;
+  },
+
+  /**
+    Shift an object from start of array or nil if none are left. Works just
+    like `shift()` but it is KVO-compliant.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.shiftObject();  // 'red'
+    console.log(colors);   // ['green', 'blue']
+    ```
+
+    @method shiftObject
+    @return object
+    @public
+  */
+  shiftObject() {
+    if (get(this, 'length') === 0) {
+      return null;
+    }
+
+    let ret = objectAt(this, 0);
+    this.removeAt(0);
+    return ret;
+  },
+
+  /**
+    Unshift an object to start of array. Works just like `unshift()` but it is
+    KVO-compliant.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.unshiftObject('yellow');    // ['yellow', 'red']
+    colors.unshiftObject(['black']);   // [['black'], 'yellow', 'red']
+    ```
+
+    @method unshiftObject
+    @param {*} obj object to unshift
+    @return object same object passed as a param
+    @public
+  */
+  unshiftObject(obj) {
+    this.insertAt(0, obj);
+    return obj;
+  },
+
+  /**
+    Adds the named objects to the beginning of the array. Defers notifying
+    observers until all objects have been added.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.unshiftObjects(['black', 'white']);   // ['black', 'white', 'red']
+    colors.unshiftObjects('yellow'); // Type Error: 'undefined' is not a function
+    ```
+
+    @method unshiftObjects
+    @param {Enumberable} objects the objects to add
+    @return {EmberArray} receiver
+    @public
+  */
+  unshiftObjects(objects) {
+    this.replace(0, 0, objects);
+    return this;
+  },
+
+  /**
+    Reverse objects in the array. Works just like `reverse()` but it is
+    KVO-compliant.
+
+    @method reverseObjects
+    @return {EmberArray} receiver
+     @public
+  */
+  reverseObjects() {
+    let len = get(this, 'length');
+    if (len === 0) {
+      return this;
+    }
+
+    let objects = this.toArray().reverse();
+    this.replace(0, len, objects);
+    return this;
+  },
+
+  /**
+    Replace all the receiver's content with content of the argument.
+    If argument is an empty array receiver will be cleared.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.setObjects(['black', 'white']);  // ['black', 'white']
+    colors.setObjects([]);                  // []
+    ```
+
+    @method setObjects
+    @param {EmberArray} objects array whose content will be used for replacing
+        the content of the receiver
+    @return {EmberArray} receiver with the new content
+    @public
+  */
+  setObjects(objects) {
+    if (objects.length === 0) {
+      return this.clear();
+    }
+
+    let len = get(this, 'length');
+    this.replace(0, len, objects);
+    return this;
+  },
+
+  /**
+    Remove all occurrences of an object in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin', 'Lima', 'Chicago'];
+
+    cities.removeObject('Chicago');  // ['Berlin', 'Lima']
+    cities.removeObject('Lima');     // ['Berlin']
+    cities.removeObject('Tokyo')     // ['Berlin']
+    ```
+
+    @method removeObject
+    @param {*} obj object to remove
+    @return {EmberArray} receiver
+    @public
+  */
+  removeObject(obj) {
+    let loc = get(this, 'length') || 0;
+    while (--loc >= 0) {
+      let curObject = objectAt(this, loc);
+
+      if (curObject === obj) {
+        this.removeAt(loc);
+      }
+    }
+    return this;
+  },
+
+  /**
+    Removes each object in the passed array from the receiver.
+
+    @method removeObjects
+    @param {EmberArray} objects the objects to remove
+    @return {EmberArray} receiver
+    @public
+  */
+  removeObjects(objects) {
+    beginPropertyChanges(this);
+    for (let i = objects.length - 1; i >= 0; i--) {
+      this.removeObject(objects[i]);
+    }
+    endPropertyChanges(this);
+    return this;
+  },
+
+  /**
+    Push the object onto the end of the array if it is not already
+    present in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin'];
+
+    cities.addObject('Lima');    // ['Chicago', 'Berlin', 'Lima']
+    cities.addObject('Berlin');  // ['Chicago', 'Berlin', 'Lima']
+    ```
+
+    @method addObject
+    @param {*} obj object to add, if not already present
+    @return {EmberArray} receiver
+    @public
+  */
+  addObject(obj) {
+    let included = this.includes(obj);
+
+    if (!included) {
+      this.pushObject(obj);
+    }
+
+    return this;
+  },
+
+  /**
+    Adds each object in the passed array to the receiver.
+
+    @method addObjects
+    @param {EmberArray} objects the objects to add.
+    @return {EmberArray} receiver
+    @public
+  */
+  addObjects(objects) {
+    beginPropertyChanges(this);
+    objects.forEach(obj => this.addObject(obj));
+    endPropertyChanges(this);
+    return this;
+  }
 });
 
 /**
-  This is the object instance returned when you get the `@each` property on an
-  array. It uses the unknownProperty handler to automatically create
-  EachArray instances for property names.
-  @class EachProxy
-  @private
+  Creates an `Ember.NativeArray` from an Array-like object.
+  Does not modify the original object's contents. `A()` is not needed if
+  `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
+  it is recommended that you use `A()` when creating addons for
+  ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
+  will be `true`.
+
+  Example
+
+  ```app/components/my-component.js
+  import Component from '@ember/component';
+  import { A } from '@ember/array';
+
+  export default Component.extend({
+    tagName: 'ul',
+    classNames: ['pagination'],
+
+    init() {
+      this._super(...arguments);
+
+      if (!this.get('content')) {
+        this.set('content', A());
+        this.set('otherContent', A([1,2,3]));
+      }
+    }
+  });
+  ```
+
+  @method A
+  @static
+  @for @ember/array
+  @return {Ember.NativeArray}
+  @public
 */
-function EachProxy(content) {
-  this._content = content;
-  this._keys = undefined;
-  meta(this);
-}
 
-EachProxy.prototype = {
-  __defineNonEnumerable(property) {
-    this[property.name] = property.descriptor.value;
-  },
+// Add Ember.Array to Array.prototype. Remove methods with native
+// implementations and supply some more optimized versions of generic methods
+// because they are so common.
+/**
+@module ember
+*/
+/**
+  The NativeArray mixin contains the properties needed to make the native
+  Array support MutableArray and all of its dependent APIs. Unless you
+  have `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Array` set to
+  false, this will be applied automatically. Otherwise you can apply the mixin
+  at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
 
-  // ..........................................................
-  // ARRAY CHANGES
-  // Invokes whenever the content array itself changes.
+  @class Ember.NativeArray
+  @uses MutableArray
+  @uses Observable
+  @uses Ember.Copyable
+  @public
+*/
+let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
-  arrayWillChange(content, idx, removedCnt, addedCnt) {
-    let keys = this._keys;
-    let lim = removedCnt > 0 ? idx + removedCnt : -1;
-    let meta;
-    for (let key in keys) {
-      meta = meta || peekMeta(this);
-      if (lim > 0) {
-        removeObserverForContentKey(content, key, this, idx, lim);
-      }
-      propertyWillChange(this, key, meta);
-    }
-  },
-
-  arrayDidChange(content, idx, removedCnt, addedCnt) {
-    let keys = this._keys;
-    let lim = addedCnt > 0 ? idx + addedCnt : -1;
-    let meta;
-    for (let key in keys) {
-      meta = meta || peekMeta(this);
-      if (lim > 0) {
-        addObserverForContentKey(content, key, this, idx, lim);
-      }
-      propertyDidChange(this, key, meta);
-    }
-  },
-
-  // ..........................................................
-  // LISTEN FOR NEW OBSERVERS AND OTHER EVENT LISTENERS
-  // Start monitoring keys based on who is listening...
-
-  willWatchProperty(property) {
-    this.beginObservingContentKey(property);
-  },
-
-  didUnwatchProperty(property) {
-    this.stopObservingContentKey(property);
-  },
-
-  // ..........................................................
-  // CONTENT KEY OBSERVING
-  // Actual watch keys on the source content.
-
-  beginObservingContentKey(keyName) {
-    let keys = this._keys;
-    if (!keys) {
-      keys = this._keys = Object.create(null);
-    }
-
-    if (!keys[keyName]) {
-      keys[keyName] = 1;
-      let content = this._content;
-      let len = get(content, 'length');
-
-      addObserverForContentKey(content, keyName, this, 0, len);
+  // because length is a built-in property we need to know to just get the
+  // original property.
+  get(key) {
+    if ('number' === typeof key) {
+      return this[key];
     } else {
-      keys[keyName]++;
+      return this._super(key);
     }
   },
 
-  stopObservingContentKey(keyName) {
-    let keys = this._keys;
-    if (keys && (keys[keyName] > 0) && (--keys[keyName] <= 0)) {
-      let content = this._content;
-      let len     = get(content, 'length');
+  objectAt(idx) {
+    return this[idx];
+  },
 
-      removeObserverForContentKey(content, keyName, this, 0, len);
+  // primitive for array support.
+  replace(idx, amt, objects) {
+    assert('The third argument to replace needs to be an array.', objects === null || objects === undefined || Array.isArray(objects));
+
+    // if we replaced exactly the same number of items, then pass only the
+    // replaced range. Otherwise, pass the full remaining array length
+    // since everything has shifted
+    let len = objects ? get(objects, 'length') : 0;
+    arrayContentWillChange(this, idx, amt, len);
+
+    if (len === 0) {
+      this.splice(idx, amt);
+    } else {
+      replace(this, idx, amt, objects);
     }
+
+    arrayContentDidChange(this, idx, amt, len);
+    return this;
   },
 
-  contentKeyWillChange(obj, keyName) {
-    propertyWillChange(this, keyName);
+  // If you ask for an unknown property, then try to collect the value
+  // from member items.
+  unknownProperty(key, value) {
+    let ret;// = this.reducedProperty(key, value);
+    if (value !== undefined && ret === undefined) {
+      ret = this[key] = value;
+    }
+    return ret;
   },
 
-  contentKeyDidChange(obj, keyName) {
-    propertyDidChange(this, keyName);
+  indexOf: Array.prototype.indexOf,
+  lastIndexOf: Array.prototype.lastIndexOf,
+
+  copy(deep) {
+    if (deep) {
+      return this.map((item) => copy(item, true));
+    }
+
+    return this.slice();
   }
+});
+
+// Remove any methods implemented natively so we don't override them
+const ignore = ['length'];
+NativeArray.keys().forEach((methodName) => {
+  if (Array.prototype[methodName]) {
+    ignore.push(methodName);
+  }
+});
+
+NativeArray = NativeArray.without(...ignore);
+
+let A;
+
+if (ENV.EXTEND_PROTOTYPES.Array) {
+  NativeArray.apply(Array.prototype);
+  A = arr => arr || [];
+} else {
+  A = arr => {
+    if (!arr) { arr = []; }
+    return ArrayMixin.detect(arr) ? arr : NativeArray.apply(arr);
+  };
+}
+
+export {
+  A,
+  NativeArray,
+  MutableArray
 };
-
-function addObserverForContentKey(content, keyName, proxy, idx, loc) {
-  while (--loc >= idx) {
-    let item = objectAt(content, loc);
-    if (item) {
-      assert(`When using @each to observe the array \`${toString(content)}\`, the array must return an object`, typeof item === 'object');
-      _addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
-      addObserver(item, keyName, proxy, 'contentKeyDidChange');
-    }
-  }
-}
-
-function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
-  while (--loc >= idx) {
-    let item = objectAt(content, loc);
-    if (item) {
-      _removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
-      removeObserver(item, keyName, proxy, 'contentKeyDidChange');
-    }
-  }
-}
 
 export default ArrayMixin;

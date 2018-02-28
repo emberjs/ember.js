@@ -100,7 +100,7 @@ export const Resolver = EmberObject.extend({
   @public
 */
 
-export default EmberObject.extend({
+const DefaultResolver = EmberObject.extend({
   /**
     This will be set to the Application instance when it is
     created.
@@ -249,13 +249,13 @@ export default EmberObject.extend({
     return description;
   },
 
-  makeToString(factory, fullName) {
+  makeToString(factory) {
     return factory.toString();
   },
 
   /**
     Given a parseName object (output from `parseName`), apply
-    the conventions expected by `Ember.Router`
+    the conventions expected by `Router`
 
     @param {Object} parsedName a parseName object with the parsed
       fullName lookup string
@@ -368,25 +368,6 @@ export default EmberObject.extend({
   },
 
   /**
-    @method _logLookup
-    @param {Boolean} found
-    @param {Object} parsedName
-    @private
-  */
-  _logLookup(found, parsedName) {
-    let symbol = found ? '[✓]' : '[ ]';
-
-    let padding;
-    if (parsedName.fullName.length > 60) {
-      padding = '.';
-    } else {
-      padding = new Array(60 - parsedName.fullName.length).join('.');
-    }
-
-    info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
-  },
-
-  /**
     Used to iterate all items of a given type.
 
     @method knownForType
@@ -434,3 +415,28 @@ export default EmberObject.extend({
     return `${type}:${dasherizedName}`;
   }
 });
+
+export default DefaultResolver;
+
+if (DEBUG) {
+  DefaultResolver.reopen({
+    /**
+      @method _logLookup
+      @param {Boolean} found
+      @param {Object} parsedName
+      @private
+    */
+    _logLookup(found, parsedName) {
+      let symbol = found ? '[✓]' : '[ ]';
+
+      let padding;
+      if (parsedName.fullName.length > 60) {
+        padding = '.';
+      } else {
+        padding = new Array(60 - parsedName.fullName.length).join('.');
+      }
+
+      info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
+    }
+  });
+}

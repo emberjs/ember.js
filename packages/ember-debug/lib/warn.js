@@ -1,7 +1,9 @@
 import { DEBUG } from 'ember-env-flags';
+import { ENV } from 'ember-environment';
 
 import Logger from 'ember-console';
 import deprecate from './deprecate';
+import { assert } from './index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 let registerHandler = () => {};
@@ -15,7 +17,7 @@ let missingOptionsDeprecation, missingOptionsIdDeprecation;
 if (DEBUG) {
   /**
     Allows for runtime registration of handler functions that override the default warning behavior.
-    Warnings are invoked by calls made to [warn](https://emberjs.com/api/classes/Ember.html#method_warn).
+    Warnings are invoked by calls made to [@ember/debug/warn](https://emberjs.com/api/ember/release/classes/@ember%2Fdebug/methods/warn?anchor=warn).
     The following example demonstrates its usage by registering a handler that does nothing overriding Ember's
     default warning behavior.
 
@@ -46,9 +48,9 @@ if (DEBUG) {
   */
   registerHandler = function registerHandler(handler) {
     genericRegisterHandler('warn', handler);
-  }
+  };
 
-  registerHandler(function logWarning(message, options) {
+  registerHandler(function logWarning(message) {
     Logger.warn(`WARNING: ${message}`);
     if ('trace' in Logger) {
       Logger.trace();
@@ -84,7 +86,13 @@ if (DEBUG) {
       options = test;
       test = false;
     }
-    if (!options) {
+
+    if (ENV._ENABLE_WARN_OPTIONS_SUPPORT !== true) {
+      assert(missingOptionsDeprecation, options);
+      assert(missingOptionsIdDeprecation, options && options.id);
+    }
+
+    if (!options && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsDeprecation,
         false,
@@ -96,7 +104,7 @@ if (DEBUG) {
       );
     }
 
-    if (options && !options.id) {
+    if (options && !options.id && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsIdDeprecation,
         false,
@@ -109,7 +117,7 @@ if (DEBUG) {
     }
 
     invoke('warn', message, test, options);
-  }
+  };
 }
 
 export default warn;
@@ -117,4 +125,4 @@ export {
   registerHandler,
   missingOptionsIdDeprecation,
   missingOptionsDeprecation
-}
+};

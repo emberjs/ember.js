@@ -1,7 +1,4 @@
-/*globals __dirname*/
-
 var path = require('path');
-var QUnit = require('qunitjs');
 
 var distPath = path.join(__dirname, '../../dist');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
@@ -12,11 +9,11 @@ var test = QUnit.test;
 var templateCompiler;
 
 module('ember-template-compiler.js', {
-  setup: function() {
+  beforeEach: function() {
     templateCompiler = require(templateCompilerPath);
   },
 
-  teardown: function() {
+  afterEach: function() {
     // clear the previously cached version of this module
     delete require.cache[templateCompilerPath + '.js'];
   }

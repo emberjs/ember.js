@@ -3,13 +3,13 @@
 */
 
 import { Mixin, get } from 'ember-metal';
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 
 /**
   `Ember.ActionHandler` is available on some familiar classes including
-  `Ember.Route`, `Ember.Component`, and `Ember.Controller`.
+  `Route`, `Component`, and `Controller`.
   (Internally the mixin is used by `Ember.CoreView`, `Ember.ControllerMixin`,
-  and `Ember.Route` and available to the above classes through
+  and `Route` and available to the above classes through
   inheritance.)
 
   @class ActionHandler
@@ -91,7 +91,7 @@ const ActionHandler = Mixin.create({
     ```app/mixins/debug-route.js
     import Mixin from '@ember/mixin';
 
-    export default Ember.Mixin.create({
+    export default Mixin.create({
       actions: {
         debugRouteInformation() {
           console.debug("It's a-me, console.debug!");
@@ -210,40 +210,7 @@ const ActionHandler = Mixin.create({
       );
       target.send(...arguments);
     }
-  },
-
-  willMergeMixin(props) {
-    assert('Specifying `_actions` and `actions` in the same mixin is not supported.', !props.actions || !props._actions);
-
-    if (props._actions) {
-      deprecate(
-        'Specifying actions in `_actions` is deprecated, please use `actions` instead.',
-        false,
-        { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
-      );
-
-      props.actions = props._actions;
-      delete props._actions;
-    }
   }
 });
 
 export default ActionHandler;
-
-export function deprecateUnderscoreActions(factory) {
-  Object.defineProperty(factory.prototype, '_actions', {
-    configurable: true,
-    enumerable: false,
-    set(value) {
-      assert(`You cannot set \`_actions\` on ${this}, please use \`actions\` instead.`);
-    },
-    get() {
-      deprecate(
-        `Usage of \`_actions\` is deprecated, use \`actions\` instead.`,
-        false,
-        { id: 'ember-runtime.action-handler-_actions', until: '3.0.0' }
-      );
-      return get(this, 'actions');
-    }
-  });
-}

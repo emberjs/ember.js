@@ -4,7 +4,6 @@
 
 import { ENV } from 'ember-environment';
 import {
-  fmt,
   w,
   loc,
   camelize,
@@ -19,111 +18,138 @@ const StringPrototype = String.prototype;
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   /**
-    See [Ember.String.fmt](/api/classes/Ember.String.html#method_fmt).
-
-    @method fmt
-    @for @ember/string
-    @static
-    @private
-    @deprecated
-  */
-  StringPrototype.fmt = function (...args) {
-    return fmt(this, args);
-  };
-
-  /**
-    See [Ember.String.w](/api/classes/Ember.String.html#method_w).
+    See [String.w](/api/ember/release/classes/String/methods/w?anchor=w).
 
     @method w
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.w = function () {
-    return w(this);
-  };
+  Object.defineProperty(StringPrototype, 'w', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function() {
+      return w(this);
+    }
+  });
 
   /**
-    See [Ember.String.loc](/api/classes/Ember.String.html#method_loc).
+    See [String.loc](/api/ember/release/classes/String/methods/loc?anchor=loc).
 
     @method loc
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.loc = function (...args) {
-    return loc(this, args);
-  };
+  Object.defineProperty(StringPrototype, 'loc', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function(...args) {
+      return loc(this, args);
+    }
+  });
 
   /**
-    See [Ember.String.camelize](/api/classes/Ember.String.html#method_camelize).
+    See [String.camelize](/api/ember/release/classes/String/methods/camelize?anchor=camelize).
 
     @method camelize
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.camelize = function () {
-    return camelize(this);
-  };
+  Object.defineProperty(StringPrototype, 'camelize', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function() {
+      return camelize(this);
+    }
+  });
 
   /**
-    See [Ember.String.decamelize](/api/classes/Ember.String.html#method_decamelize).
+    See [String.decamelize](/api/ember/release/classes/String/methods/decamelize?anchor=decamelize).
 
     @method decamelize
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.decamelize = function () {
-    return decamelize(this);
-  };
+  Object.defineProperty(StringPrototype, 'decamelize', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function() {
+      return decamelize(this);
+    }
+  });
 
   /**
-    See [Ember.String.dasherize](/api/classes/Ember.String.html#method_dasherize).
+    See [String.dasherize](/api/ember/release/classes/String/methods/dasherize?anchor=dasherize).
 
     @method dasherize
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.dasherize = function () {
-    return dasherize(this);
-  };
+  Object.defineProperty(StringPrototype, 'dasherize', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function() {
+      return dasherize(this);
+    }
+  });
 
   /**
-    See [Ember.String.underscore](/api/classes/Ember.String.html#method_underscore).
+    See [String.underscore](/api/ember/release/classes/String/methods/underscore?anchor=underscore).
 
     @method underscore
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.underscore = function () {
-    return underscore(this);
-  };
+  Object.defineProperty(StringPrototype, 'underscore', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function() {
+      return underscore(this);
+    }
+  });
 
   /**
-    See [Ember.String.classify](/api/classes/Ember.String.html#method_classify).
+    See [String.classify](/api/ember/release/classes/String/methods/classify?anchor=classify).
 
     @method classify
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.classify = function () {
-    return classify(this);
-  };
+  Object.defineProperty(StringPrototype, 'classify', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function() {
+      return classify(this);
+    }
+  });
 
   /**
-    See [Ember.String.capitalize](/api/classes/Ember.String.html#method_capitalize).
+    See [String.capitalize](/api/ember/release/classes/String/methods/capitalize?anchor=capitalize).
 
     @method capitalize
     @for @ember/string
     @static
     @private
   */
-  StringPrototype.capitalize = function () {
-    return capitalize(this);
-  };
+  Object.defineProperty(StringPrototype, 'capitalize', {
+    configurable: true,
+    enumerable: false,
+    writeable: true,
+    value: function() {
+      return capitalize(this);
+    }
+  });
 }

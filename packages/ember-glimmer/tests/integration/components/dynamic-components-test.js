@@ -1,8 +1,8 @@
 import { set, computed } from 'ember-metal';
+import { jQueryDisabled } from 'ember-views/system/jquery';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER } from 'ember/features';
 
 moduleFor('Components test: dynamic components', class extends RenderingTest {
 
@@ -79,60 +79,6 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(element2, { content: 'hello' });
 
     this.assertSameNode(element2, element1);
-  }
-
-  ['@test it has a jQuery proxy to the element'](assert) {
-    let instance;
-
-    let FooBarComponent = Component.extend({
-      init() {
-        this._super();
-        instance = this;
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
-
-    this.render('{{component "foo-bar"}}');
-
-    let element1 = instance.$()[0];
-
-    this.assertComponentElement(element1, { content: 'hello' });
-
-    this.runTask(() => this.rerender());
-
-    let element2 = instance.$()[0];
-
-    this.assertComponentElement(element2, { content: 'hello' });
-
-    this.assertSameNode(element2, element1);
-  }
-
-  ['@test it scopes the jQuery proxy to the component element'](assert) {
-    let instance;
-
-    let FooBarComponent = Component.extend({
-      init() {
-        this._super();
-        instance = this;
-      }
-    });
-
-    this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
-
-    this.render('<span class="outer">outer</span>{{component "foo-bar"}}');
-
-    let $span = instance.$('span');
-
-    assert.equal($span.length, 1);
-    assert.equal($span.attr('class'), 'inner');
-
-    this.runTask(() => this.rerender());
-
-    $span = instance.$('span');
-
-    assert.equal($span.length, 1);
-    assert.equal($span.attr('class'), 'inner');
   }
 
   ['@test it has the right parentView and childViews'](assert) {
@@ -353,7 +299,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     assert.deepEqual(destroyed, { 'foo-bar': 1, 'foo-bar-baz': 1 });
   }
 
-  ['@test component helper with bound properties are updating correctly in init of component'](assert) {
+  ['@test component helper with bound properties are updating correctly in init of component']() {
     this.registerComponent('foo-bar', {
       template: 'foo-bar {{location}} {{locationCopy}} {{yield}}',
       ComponentClass: Component.extend({
@@ -411,12 +357,11 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
         classNames: 'inner-component',
         didInsertElement() {
           // trigger action on click in absence of app's EventDispatcher
-          this.$().on('click', () => {
-            this.sendAction('somethingClicked');
-          });
+          let sendAction = this.eventHandler = () => this.sendAction('somethingClicked');
+          this.element.addEventListener('click', sendAction);
         },
         willDestroyElement() {
-          this.$().off('click');
+          this.element.removeEventListener('click', this.eventHandler);
         }
       })
     });
@@ -440,13 +385,13 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     assert.equal(actionTriggered, 0, 'action was not triggered');
 
     this.runTask(() => {
-      this.$('.inner-component').trigger('click');
+      this.$('.inner-component').click();
     });
 
     assert.equal(actionTriggered, 1, 'action was triggered');
   }
 
-  ['@test nested component helpers'](assert) {
+  ['@test nested component helpers']() {
     this.registerComponent('foo-bar', { template: 'yippie! {{attrs.location}} {{yield}}' });
     this.registerComponent('baz-qux', { template: 'yummy {{attrs.location}} {{yield}}' });
     this.registerComponent('corge-grault', { template: 'delicious {{attrs.location}} {{yield}}' });
@@ -479,19 +424,19 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('yippie! Caracas yummy Caracas arepas!');
   }
 
-  ['@test component with dynamic name argument resolving to non-existent component'](assert) {
+  ['@test component with dynamic name argument resolving to non-existent component']() {
     expectAssertion(() => {
       this.render('{{component componentName}}', { componentName: 'does-not-exist' });
     }, /Could not find component named "does-not-exist"/);
   }
 
-  ['@test component with static name argument for non-existent component'](assert) {
+  ['@test component with static name argument for non-existent component']() {
     expectAssertion(() => {
       this.render('{{component "does-not-exist"}}');
     }, /Could not find component named "does-not-exist"/);
   }
 
-  ['@test component with dynamic component name resolving to a component, then non-existent component'](assert) {
+  ['@test component with dynamic component name resolving to a component, then non-existent component']() {
     this.registerComponent('foo-bar', { template: 'hello {{name}}' });
 
     this.render('{{component componentName name=name}}', { componentName: 'foo-bar', name: 'Alex' });
@@ -511,7 +456,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('hello Alex');
   }
 
-  ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044'](assert) {
+  ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044']() {
     this.registerComponent('foo-bar', {
       template: '[{{internalName}} - {{name}}]',
       ComponentClass: Component.extend({
@@ -551,7 +496,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('[Robert - Robert][Jacquie - Jacquie]');
   }
 
-  ['@test dashless components should not be found'](assert) {
+  ['@test dashless components should not be found']() {
     this.registerComponent('dashless2', { template: 'Do not render me!' });
 
     expectAssertion(() => {
@@ -559,7 +504,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
   }
 
-  ['@test positional parameters does not clash when rendering different components'](assert) {
+  ['@test positional parameters does not clash when rendering different components']() {
     this.registerComponent('foo-bar', {
       template: 'hello {{name}} ({{age}}) from foo-bar',
       ComponentClass: Component.extend().reopenClass({
@@ -607,7 +552,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'hello Alex (29) from foo-bar' });
   }
 
-  ['@test positional parameters does not pollute the attributes when changing components'](assert) {
+  ['@test positional parameters does not pollute the attributes when changing components']() {
     this.registerComponent('normal-message', {
       template: 'Normal: {{something}}!',
       ComponentClass: Component.extend().reopenClass({
@@ -648,7 +593,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { content: 'Normal: Hello!' });
   }
 
-  ['@test static arbitrary number of positional parameters'](assert) {
+  ['@test static arbitrary number of positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'names'
@@ -668,7 +613,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('Foo4Bar5Baz');
   }
 
-  ['@test dynamic arbitrary number of positional parameters'](assert) {
+  ['@test dynamic arbitrary number of positional parameters']() {
     this.registerComponent('sample-component', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: 'n'
@@ -708,7 +653,7 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
     this.assertText('Foo4');
   }
 
-  ['@test component helper emits useful backtracking re-render assertion message'](assert) {
+  ['@test component helper emits useful backtracking re-render assertion message']() {
     this.registerComponent('outer-component', {
       ComponentClass: Component.extend({
         init() {
@@ -731,13 +676,87 @@ moduleFor('Components test: dynamic components', class extends RenderingTest {
 
     let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "component:outer-component" and modified in "component:error-component"/;
 
-    if (EMBER_GLIMMER_ALLOW_BACKTRACKING_RERENDER) {
-      expectDeprecation(expectedBacktrackingMessage);
+    expectAssertion(() => {
       this.render('{{component componentName}}', { componentName: 'outer-component' });
-    } else {
-      expectAssertion(() => {
-        this.render('{{component componentName}}', { componentName: 'outer-component' });
-      }, expectedBacktrackingMessage);
-    }
+    }, expectedBacktrackingMessage);
   }
 });
+
+if (jQueryDisabled) {
+  moduleFor('Components test: dynamic components: jQuery disabled', class extends RenderingTest {
+    ['@test jQuery proxy is not available without jQuery']() {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+      this.render('{{component "foo-bar"}}');
+
+      expectAssertion(() => {
+        instance.$()[0];
+      }, 'You cannot access this.$() with `jQuery` disabled.');
+    }
+  });
+} else {
+  moduleFor('Components test: dynamic components : jQuery enabled', class extends RenderingTest {
+    ['@test it has a jQuery proxy to the element']() {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: 'hello' });
+
+      this.render('{{component "foo-bar"}}');
+
+      let element1 = instance.$()[0];
+
+      this.assertComponentElement(element1, { content: 'hello' });
+
+      this.runTask(() => this.rerender());
+
+      let element2 = instance.$()[0];
+
+      this.assertComponentElement(element2, { content: 'hello' });
+
+      this.assertSameNode(element2, element1);
+    }
+
+    ['@test it scopes the jQuery proxy to the component element'](assert) {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super();
+          instance = this;
+        }
+      });
+
+      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent, template: '<span class="inner">inner</span>' });
+
+      this.render('<span class="outer">outer</span>{{component "foo-bar"}}');
+
+      let $span = instance.$('span');
+
+      assert.equal($span.length, 1);
+      assert.equal($span.attr('class'), 'inner');
+
+      this.runTask(() => this.rerender());
+
+      $span = instance.$('span');
+
+      assert.equal($span.length, 1);
+      assert.equal($span.attr('class'), 'inner');
+    }
+  });
+}

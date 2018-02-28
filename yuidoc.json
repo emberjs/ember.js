@@ -3,9 +3,11 @@
   "description": "The Ember API: a framework for building ambitious web applications",
   "url": "https://emberjs.com/",
   "options": {
+    "extension": ".js,.ts",
     "paths": [
       "packages/ember/lib",
       "packages/ember-utils/lib",
+      "packages/ember-console/lib",
       "packages/ember-debug/lib",
       "packages/ember-metal/lib",
       "packages/ember-runtime/lib",

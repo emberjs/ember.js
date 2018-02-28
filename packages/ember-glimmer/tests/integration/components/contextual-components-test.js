@@ -3,7 +3,7 @@ import { Component } from '../../utils/helpers';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { isEmpty } from 'ember-metal';
-import { A as emberA } from 'ember-runtime/system/native_array';
+import { A as emberA } from 'ember-runtime/mixins/array';
 
 moduleFor('Components test: contextual components', class extends RenderingTest {
   ['@test renders with component helper']() {
@@ -87,27 +87,27 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.render('{{component (component "-looked-up" model.greeting model.name) model.name model.greeting}}', {
       model: {
         greeting: 'Gabon ',
-        name: 'Zack'
+        name: 'Zack '
       }
     });
 
-    this.assertText('ZackGabon ');
+    this.assertText('Gabon Zack Zack Gabon ');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('ZackGabon ');
+    this.assertText('Gabon Zack Zack Gabon ');
 
     this.runTask(() => this.context.set('model.greeting', 'Good morning '));
 
-    this.assertText('ZackGood morning ');
+    this.assertText('Good morning Zack Zack Good morning ');
 
-    this.runTask(() => this.context.set('model.name', 'Matthew'));
+    this.runTask(() => this.context.set('model.name', 'Matthew '));
 
-    this.assertText('MatthewGood morning ');
+    this.assertText('Good morning Matthew Matthew Good morning ');
 
-    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack' }));
+    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack ' }));
 
-    this.assertText('ZackGabon ');
+    this.assertText('Gabon Zack Zack Gabon ');
   }
 
   ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
@@ -155,27 +155,27 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.render('{{component (component (component "-looked-up" model.greeting model.name) model.name model.greeting)}}', {
       model: {
         greeting: 'Gabon ',
-        name: 'Zack'
+        name: 'Zack '
       }
     });
 
-    this.assertText('ZackGabon ');
+    this.assertText('Gabon Zack Zack Gabon ');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('ZackGabon ');
+    this.assertText('Gabon Zack Zack Gabon ');
 
     this.runTask(() => this.context.set('model.greeting', 'Good morning '));
 
-    this.assertText('ZackGood morning ');
+    this.assertText('Good morning Zack Zack Good morning ');
 
-    this.runTask(() => this.context.set('model.name', 'Matthew'));
+    this.runTask(() => this.context.set('model.name', 'Matthew '));
 
-    this.assertText('MatthewGood morning ');
+    this.assertText('Good morning Matthew Matthew Good morning ');
 
-    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack' }));
+    this.runTask(() => this.context.set('model',  { greeting: 'Gabon ', name: 'Zack ' }));
 
-    this.assertText('ZackGabon ');
+    this.assertText('Gabon Zack Zack Gabon ');
   }
 
   ['@test renders with component helper with curried params, hash']() {
@@ -284,7 +284,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Hodi');
   }
 
-  ['@test nested components overwrite named positional parameters']() {
+  ['@test nested components do not overwrite positional parameters']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name', 'age']
@@ -294,11 +294,150 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
 
     this.render('{{component (component (component "-looked-up" "Sergio" 29) "Marvin" 21) "Hodari"}}');
 
-    this.assertText('Hodari 21');
+    this.assertText('Sergio 29');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('Hodari 21');
+    this.assertText('Sergio 29');
+  }
+
+  ['@test positional parameters are combined not clobbered']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['greeting', 'name', 'age']
+      }),
+      template: '{{greeting}} {{name}} {{age}}'
+    });
+
+    this.render('{{component (component (component "-looked-up" "Hi") "Max") 9}}');
+
+    this.assertText('Hi Max 9');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hi Max 9');
+  }
+
+  ['@test nested components positional parameters override named parameters [DEPRECATED]']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['name', 'age']
+      }),
+      template: '{{name}} {{age}}'
+    });
+
+    expectDeprecation(() => {
+      this.render('{{component (component (component "-looked-up" "Sergio" 29) name="Marvin" age=21)}}');
+    }, 'You cannot specify both a positional param (at position 1) and the hash argument `age`.');
+
+    this.assertText('Sergio 29');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Sergio 29');
+  }
+
+  ['@test nested components with positional params at outer layer are override hash parameters [DEPRECATED]']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['greeting', 'name', 'age']
+      }),
+      template: '{{greeting}} {{name}} {{age}}'
+    });
+
+    expectDeprecation(() => {
+      this.render(
+        strip`
+        {{#with (component "-looked-up" "Hola" "Dolores" 33) as |first|}}
+          {{#with (component first greeting="Hej" name="Sigmundur") as |second|}}
+            {{component second greeting=model.greeting}}
+          {{/with}}
+        {{/with}}`,
+        {
+          model: {
+            greeting: 'Hodi'
+          }
+        }
+      );
+    }, 'You cannot specify both a positional param (at position 1) and the hash argument `name`.');
+
+    this.assertText('Hola Dolores 33');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hola Dolores 33');
+  }
+
+  ['@test nested components with positional params at middle layer partially override hash parameters [DEPRECATED]']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['greeting', 'name', 'age']
+      }),
+
+      template: '{{greeting}} {{name}} {{age}}'
+    });
+
+    expectDeprecation(() => {
+      this.render(
+        strip`
+          {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
+            {{#with (component first "Hej" "Sigmundur") as |second|}}
+              {{component second greeting=model.greeting}}
+            {{/with}}
+          {{/with}}`,
+        {
+          model: {
+            greeting: 'Hodi'
+          }
+        }
+      );
+    }, 'You cannot specify both a positional param (at position 0) and the hash argument `greeting`.');
+
+    this.assertText('Hej Sigmundur 33');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hej Sigmundur 33');
+  }
+
+  ['@test nested components with positional params at invocation override earlier hash parameters [DEPRECATED]']() {
+    this.registerComponent('-looked-up', {
+      ComponentClass: Component.extend().reopenClass({
+        positionalParams: ['greeting', 'name', 'age']
+      }),
+
+      template: '{{greeting}} {{name}} {{age}}'
+    });
+
+    expectDeprecation(() => {
+      this.render(
+        strip`
+          {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
+            {{#with (component first greeting="Hej" name="Sigmundur") as |second|}}
+              {{component second model.greeting}}
+            {{/with}}
+          {{/with}}`,
+        {
+          model: {
+            greeting: 'Hodi'
+          }
+        }
+      );
+    }, 'You cannot specify both a positional param (at position 0) and the hash argument `greeting`.');
+
+    this.assertText('Hodi Sigmundur 33');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('Hodi Sigmundur 33');
+
+    this.runTask(() => this.context.set('model.greeting', 'Kaixo'));
+
+    this.assertText('Kaixo Sigmundur 33');
+
+    this.runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+
+    this.assertText('Hodi Sigmundur 33');
   }
 
   ['@test nested components overwrite hash parameters']() {
@@ -354,19 +493,19 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       }
     });
 
-    this.assertText('Inner 28');
+    this.assertText('Outer 28');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('Inner 28');
+    this.assertText('Outer 28');
 
     this.runTask(() => this.context.set('model.outerAge', 29));
 
-    this.assertText('Inner 29');
+    this.assertText('Outer 29');
 
     this.runTask(() => this.context.set('model.outerName', 'Not outer'));
 
-    this.assertText('Inner 29');
+    this.assertText('Not outer 29');
 
     this.runTask(() => {
       this.context.set('model', {
@@ -375,7 +514,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       });
     });
 
-    this.assertText('Inner 28');
+    this.assertText('Outer 28');
   }
 
   ['@test bound outer hash parameters get updated in the right scope']() {
@@ -421,7 +560,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Inner 28');
   }
 
-  ['@test conflicting positional and hash parameters raise and assertion if in the same component context']() {
+  ['@test conflicting positional and hash parameters trigger a deprecation if in the same component context [DEPRECATED]']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
@@ -429,7 +568,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{greeting}} {{name}}'
     });
 
-    expectAssertion(() => {
+    expectDeprecation(() => {
       this.render('{{component (component "-looked-up" "Hodari" name="Sergio") "Hodari" greeting="Hodi"}}');
     }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
   }
@@ -465,7 +604,7 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
     this.assertText('Hodi Hodari');
   }
 
-  ['@test conflicting positional and hash parameters does not raise an assertion if in different component context']() {
+  ['@test conflicting positional and hash parameters trigger a deprecation [DEPRECATED]']() {
     this.registerComponent('-looked-up', {
       ComponentClass: Component.extend().reopenClass({
         positionalParams: ['name']
@@ -473,33 +612,107 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
       template: '{{greeting}} {{name}}'
     });
 
-    this.render('{{component (component "-looked-up" "Hodari") name="Sergio" greeting="Hodi"}}');
+    expectDeprecation(() => {
+      this.render('{{component (component "-looked-up" "Hodari") name="Sergio" greeting="Hodi"}}');
+    }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
 
-    this.assertText('Hodi Sergio');
+    this.assertText('Hodi Hodari');
 
     this.runTask(() => this.rerender());
 
-    this.assertText('Hodi Sergio');
+    this.assertText('Hodi Hodari');
   }
 
-  ['@test raises an asserton when component path is null']() {
-    expectAssertion(() => {
-      this.render('{{component (component lookupComponent)}}');
-    });
+  ['@test component with dynamic component name resolving to undefined, then an existing component']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: undefined, name: 'Alex' });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', undefined));
+
+    this.assertText('');
+  }
+
+  ['@test component with dynamic component name resolving to a component, then undefined']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: 'foo-bar', name: 'Alex' });
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', undefined));
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
+  }
+
+  ['@test component with dynamic component name resolving to null, then an existing component']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: null, name: 'Alex' });
+
+    this.assertText('');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', null));
+
+    this.assertText('');
+  }
+
+  ['@test component with dynamic component name resolving to a component, then null']() {
+    this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+
+    this.render('{{component (component componentName name=name)}}', { componentName: 'foo-bar', name: 'Alex' });
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.rerender());
+
+    this.assertText('hello Alex');
+
+    this.runTask(() => this.context.set('componentName', null));
+
+    this.assertText('');
+
+    this.runTask(() => this.context.set('componentName', 'foo-bar'));
+
+    this.assertText('hello Alex');
   }
 
   ['@test raises an assertion when component path is not a component name (static)']() {
     expectAssertion(() => {
       this.render('{{component (component "not-a-component")}}');
-    }, 'The component helper cannot be used without a valid component name. You used "not-a-component" via (component "not-a-component")');
+    }, 'Could not find component named \"not-a-component\" (no component or template with that name was found)');
   }
 
   ['@test raises an assertion when component path is not a component name (dynamic)']() {
     expectAssertion(() => {
-      this.render('{{component (component compName)}}', {
-        compName: 'not-a-component'
-      });
-    }, /The component helper cannot be used without a valid component name. You used "not-a-component" via \(component .*\)/);
+      this.render('{{component (component compName)}}', { compName: "not-a-component" });
+    }, 'Could not find component named \"not-a-component\" (no component or template with that name was found)');
   }
 
   ['@test renders with dot path']() {
@@ -1083,13 +1296,13 @@ moduleFor('Components test: contextual components', class extends RenderingTest 
   ['@test GH#14632 give useful warning when calling contextual components with input as a name']() {
     expectAssertion(() => {
       this.render('{{component (component "input" type="text")}}');
-    }, 'You cannot use the input helper as a contextual helper. Please extend TextField or Checkbox to use it as a contextual component.');
+    }, 'You cannot use \'input\' as a component name. Component names must contain a hyphen.');
   }
 
   ['@test GH#14632 give useful warning when calling contextual components with textarea as a name']() {
     expectAssertion(() => {
       this.render('{{component (component "textarea" type="text")}}');
-    }, 'You cannot use the textarea helper as a contextual helper. Please extend TextArea to use it as a contextual component.');
+    }, 'You cannot use \'textarea\' as a component name. Component names must contain a hyphen.');
   }
 });
 

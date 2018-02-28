@@ -1,66 +1,55 @@
-import { guidFor } from 'ember-utils';
 import { sendEvent } from './events';
 
-/*
-  this.observerSet = {
-    [senderGuid]: { // variable name: `keySet`
-      [keyName]: listIndex
-    }
-  },
-  this.observers = [
-    {
-      sender: obj,
-      keyName: keyName,
-      eventName: eventName,
-      listeners: [
-        [target, method, flags]
-      ]
-    },
-    ...
-  ]
+/**
+  ObserverSet is a data structure used to keep track of observers
+  that have been deferred.
+
+  It ensures that observers are called in the same order that they
+  were initially triggered.
+
+  It also ensures that observers for any object-key pairs are called
+  only once, even if they were triggered multiple times while
+  deferred. In this case, the order that the observer is called in
+  will depend on the first time the observer was triggered.
+
+  @private
+  @class ObserverSet
 */
 export default class ObserverSet {
   constructor() {
-    this.clear();
+    this.added = new Map();
+    this.queue = [];
   }
 
-  add(sender, keyName, eventName) {
-    let observerSet = this.observerSet;
-    let observers = this.observers;
-    let senderGuid = guidFor(sender);
-    let keySet = observerSet[senderGuid];
-
-    if (keySet === undefined) {
-      observerSet[senderGuid] = keySet = {};
+  add(object, key, event) {
+    let keys = this.added.get(object);
+    if (keys === undefined) {
+      keys = new Set();
+      this.added.set(object, keys);
     }
 
-    let index = keySet[keyName];
-    if (index === undefined) {
-      index = observers.push({
-        sender,
-        keyName,
-        eventName,
-        listeners: []
-      }) - 1;
-      keySet[keyName] = index;
+    if (!keys.has(key)) {
+      this.queue.push(object, key, event);
+      keys.add(key);
     }
-    return observers[index].listeners;
   }
 
   flush() {
-    let observers = this.observers;
-    let observer, sender;
-    this.clear();
-    for (let i = 0; i < observers.length; ++i) {
-      observer = observers[i];
-      sender = observer.sender;
-      if (sender.isDestroying || sender.isDestroyed) { continue; }
-      sendEvent(sender, observer.eventName, [sender, observer.keyName], observer.listeners);
-    }
-  }
+    // The queue is saved off to support nested flushes.
+    let queue = this.queue;
+    this.added.clear();
+    this.queue = [];
 
-  clear() {
-    this.observerSet = {};
-    this.observers = [];
+    for (let i = 0; i < queue.length; i += 3) {
+      let object = queue[i];
+      let key = queue[i + 1];
+      let event = queue[i + 2];
+
+      if (object.isDestroying || object.isDestroyed) {
+        continue;
+      }
+
+      sendEvent(object, event, [object, key]);
+    }
   }
 }

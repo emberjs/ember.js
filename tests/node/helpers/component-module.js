@@ -1,4 +1,3 @@
-/* globals global */
 var path = require('path');
 var SimpleDOM = require('simple-dom');
 var buildOwner = require('./build-owner');
@@ -74,8 +73,7 @@ function setupComponentTest() {
       outlet: 'main',
       name: 'application',
       controller: module,
-      ViewClass: undefined,
-      template: OutletTemplate
+      template: OutletTemplate,
     },
 
     outlets: { }
@@ -93,7 +91,7 @@ function setupComponentTest() {
     module.run(function() {
       module.Ember.set(module, property, value);
     });
-  }
+  };
 }
 
 function render(_template) {
@@ -108,9 +106,7 @@ function render(_template) {
     outlet: 'main',
     name: 'index',
     controller: this,
-    ViewClass: undefined,
     template: this.owner.lookup(templateFullName),
-    outlets: { }
   };
 
   stateToRender.name = 'index';

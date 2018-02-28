@@ -1,10 +1,10 @@
 import { assert } from 'ember-debug';
 
 /**
-@module @ember/object
+@module @ember/object/computed
 */
 
-var END_WITH_EACH_REGEX = /\.@each$/;
+const END_WITH_EACH_REGEX = /\.@each$/;
 
 /**
   Expands `pattern`, invoking `callback` for each expansion.

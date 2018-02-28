@@ -2,7 +2,6 @@
 @module @ember/string
 */
 import { Cache } from 'ember-metal';
-import { deprecate } from 'ember-debug';
 import { inspect } from 'ember-utils';
 import { isArray } from '../utils';
 import {
@@ -16,7 +15,7 @@ const STRING_DASHERIZE_CACHE = new Cache(1000, key => decamelize(key).replace(ST
 const STRING_CAMELIZE_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);
 const STRING_CAMELIZE_REGEXP_2 = (/(^|\/)([A-Z])/g);
 
-const CAMELIZE_CACHE = new Cache(1000, key => key.replace(STRING_CAMELIZE_REGEXP_1, (match, separator, chr) => chr ? chr.toUpperCase() : '').replace(STRING_CAMELIZE_REGEXP_2, (match, separator, chr) => match.toLowerCase()));
+const CAMELIZE_CACHE = new Cache(1000, key => key.replace(STRING_CAMELIZE_REGEXP_1, (match, separator, chr) => chr ? chr.toUpperCase() : '').replace(STRING_CAMELIZE_REGEXP_2, (match /*, separator, chr */) => match.toLowerCase()));
 
 const STRING_CLASSIFY_REGEXP_1 = (/^(\-|_)+(.)?/);
 const STRING_CLASSIFY_REGEXP_2 = (/(.)(\-|\_|\.|\s)+(.)?/g);
@@ -32,7 +31,7 @@ const CLASSIFY_CACHE = new Cache(1000, str => {
       .replace(STRING_CLASSIFY_REGEXP_2, replace2);
   }
   return parts.join('/')
-  .replace(STRING_CLASSIFY_REGEXP_3, (match, separator, chr) => match.toUpperCase());
+    .replace(STRING_CLASSIFY_REGEXP_3, (match /*, separator, chr */) => match.toUpperCase());
 });
 
 const STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
@@ -43,7 +42,7 @@ const UNDERSCORE_CACHE = new Cache(1000, str => str.replace(STRING_UNDERSCORE_RE
 
 const STRING_CAPITALIZE_REGEXP = (/(^|\/)([a-z\u00C0-\u024F])/g);
 
-const CAPITALIZE_CACHE = new Cache(1000, str => str.replace(STRING_CAPITALIZE_REGEXP, (match, separator, chr) => match.toUpperCase()));
+const CAPITALIZE_CACHE = new Cache(1000, str => str.replace(STRING_CAPITALIZE_REGEXP, (match /*, separator, chr */) => match.toUpperCase()));
 
 const STRING_DECAMELIZE_REGEXP = (/([a-z\d])([A-Z])/g);
 
@@ -61,21 +60,12 @@ function _fmt(str, formats) {
   }
 
   // first, replace any ORDERED replacements.
-  let idx  = 0; // the current index for non-numerical replacements
+  let idx = 0; // the current index for non-numerical replacements
   return str.replace(/%@([0-9]+)?/g, (s, argIndex) => {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = cachedFormats[argIndex];
     return (s === null) ? '(null)' : (s === undefined) ? '' : inspect(s);
   });
-}
-
-function fmt(str, formats) {
-  deprecate(
-    'Ember.String.fmt is deprecated, use ES6 template strings instead.',
-    false,
-    { id: 'ember-string-utils.fmt', until: '3.0.0', url: 'http://babeljs.io/docs/learn-es2015/#template-strings' }
-  );
-  return _fmt(...arguments);
 }
 
 function loc(str, formats) {
@@ -125,46 +115,23 @@ function capitalize(str) {
 */
 export default {
   /**
-    Apply formatting options to the string. This will look for occurrences
-    of "%@" in your string and substitute them with the arguments you pass into
-    this method. If you want to control the specific order of replacement,
-    you can add a number after the key as well to indicate which argument
-    you want to insert.
-
-    Ordered insertions are most useful when building loc strings where values
-    you need to insert may appear in different orders.
-
-    ```javascript
-    "Hello %@ %@".fmt('John', 'Doe');     // "Hello John Doe"
-    "Hello %@2, %@1".fmt('John', 'Doe');  // "Hello Doe, John"
-    ```
-
-    @method fmt
-    @param {String} str The string to format
-    @param {Array} formats An array of parameters to interpolate into string.
-    @return {String} formatted string
-    @public
-    @deprecated Use ES6 template strings instead: http://babeljs.io/docs/learn-es2015/#template-strings
-  */
-  fmt,
-
-  /**
     Formats the passed string, but first looks up the string in the localized
-    strings hash. This is a convenient way to localize text. See
-    `Ember.String.fmt()` for more information on formatting.
+    strings hash. This is a convenient way to localize text.
 
     Note that it is traditional but not required to prefix localized string
     keys with an underscore or other character so you can easily identify
     localized strings.
 
     ```javascript
+    import { loc } from '@ember/string';
+
     Ember.STRINGS = {
       '_Hello World': 'Bonjour le monde',
       '_Hello %@ %@': 'Bonjour %@ %@'
     };
 
-    Ember.String.loc("_Hello World");  // 'Bonjour le monde';
-    Ember.String.loc("_Hello %@ %@", ["John", "Smith"]);  // "Bonjour John Smith";
+    loc("_Hello World");  // 'Bonjour le monde';
+    loc("_Hello %@ %@", ["John", "Smith"]);  // "Bonjour John Smith";
     ```
 
     @method loc
@@ -181,7 +148,9 @@ export default {
     is mostly useful when applied to the `String.prototype`.
 
     ```javascript
-    Ember.String.w("alpha beta gamma").forEach(function(key) {
+    import { w } from '@ember/string';
+
+    w("alpha beta gamma").forEach(function(key) {
       console.log(key);
     });
 
@@ -308,7 +277,6 @@ export default {
 };
 
 export {
-  fmt,
   loc,
   w,
   decamelize,

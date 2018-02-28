@@ -22,7 +22,7 @@
   @public
 */
 export default function merge(original, updates) {
-  if (!updates || typeof updates !== 'object') {
+  if (updates === null || typeof updates !== 'object') {
     return original;
   }
 

@@ -29,10 +29,10 @@ moduleFor('The example renders correctly', class extends ApplicationTestCase {
     return this.visit('/').then(() => {
       let $ = this.$();
 
-      assert.equal($.find('h1:contains(People)').length, 1);
-      assert.equal($.find('li').length, 2);
-      assert.equal($.find('li:nth-of-type(1)').text(), 'Hello, Tom Dale!');
-      assert.equal($.find('li:nth-of-type(2)').text(), 'Hello, Yehuda Katz!');
+      assert.equal($.findAll('h1').text(), 'People');
+      assert.equal($.findAll('li').length, 2);
+      assert.equal($.findAll('li:nth-of-type(1)').text(), 'Hello, Tom Dale!');
+      assert.equal($.findAll('li:nth-of-type(2)').text(), 'Hello, Yehuda Katz!');
     });
   }
 });

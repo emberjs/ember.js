@@ -7,6 +7,7 @@ import {
   mixin,
   Mixin
 } from '../..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const PrivateProperty = Mixin.create({
   _foo: '_FOO'
@@ -33,17 +34,18 @@ const Combined = Mixin.create(BarProperties, BarMethods);
 
 let obj;
 
-QUnit.module('Basic introspection', {
-  setup() {
+moduleFor('Basic introspection', class extends AbstractTestCase {
+  beforeEach() {
     obj = {};
     mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
   }
-});
 
-QUnit.test('Ember.mixins()', function() {
-  function mapGuids(ary) {
-    return ary.map(x => guidFor(x));
+  ['@test Ember.mixins()'](assert) {
+    function mapGuids(ary) {
+      return ary.map(x => guidFor(x));
+    }
+
+    assert.deepEqual(mapGuids(Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
   }
-
-  deepEqual(mapGuids(Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
 });
+

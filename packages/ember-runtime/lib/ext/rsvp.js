@@ -1,19 +1,19 @@
 import * as RSVP from 'rsvp';
 import {
   run,
-  dispatchError
+  getDispatchOverride
 } from 'ember-metal';
 import { assert } from 'ember-debug';
+import { privatize as P } from 'container';
 
 const backburner = run.backburner;
-run._addQueue('rsvpAfter', 'destroy');
 
 RSVP.configure('async', (callback, promise) => {
   backburner.schedule('actions', null, callback, promise);
 });
 
 RSVP.configure('after', cb => {
-  backburner.schedule('rsvpAfter', null, cb);
+  backburner.schedule(P`rsvpAfter`, null, cb);
 });
 
 RSVP.on('error', onerrorDefault);
@@ -21,7 +21,12 @@ RSVP.on('error', onerrorDefault);
 export function onerrorDefault(reason) {
   let error = errorFor(reason);
   if (error) {
-    dispatchError(error);
+    let overrideDispatch = getDispatchOverride();
+    if (overrideDispatch) {
+      overrideDispatch(error);
+    } else {
+      throw error;
+    }
   }
 }
 

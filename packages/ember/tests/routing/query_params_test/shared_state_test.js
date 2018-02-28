@@ -1,10 +1,9 @@
 import {
   Controller,
-  Service
+  Service,
+  inject
 } from 'ember-runtime';
-import Ember from 'ember';
 import { run } from 'ember-metal';
-import { jQuery } from 'ember-views';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor('Query Params - shared service state', class extends QueryParamTestCase {
@@ -25,11 +24,11 @@ moduleFor('Query Params - shared service state', class extends QueryParamTestCas
     }));
 
     this.add('controller:home', Controller.extend({
-      filters: Ember.inject.service()
+      filters: inject.service()
     }));
 
     this.add('controller:dashboard', Controller.extend({
-      filters: Ember.inject.service(),
+      filters: inject.service(),
       queryParams: [
         { 'filters.shared': 'shared' }
       ]
@@ -47,7 +46,7 @@ moduleFor('Query Params - shared service state', class extends QueryParamTestCas
     assert.expect(1);
 
     return this.boot().then(() => {
-      this.$input = jQuery('#filters-checkbox');
+      this.$input = document.getElementById('filters-checkbox');
 
       // click the checkbox once to set filters.shared to false
       run(this.$input, 'click');
@@ -62,7 +61,7 @@ moduleFor('Query Params - shared service state', class extends QueryParamTestCas
     assert.expect(1);
 
     return this.boot().then(() => {
-      this.$input = jQuery('#filters-checkbox');
+      this.$input = document.getElementById('filters-checkbox');
 
       // click the checkbox twice to set filters.shared to false and back to true
       run(this.$input, 'click');

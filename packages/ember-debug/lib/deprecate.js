@@ -6,6 +6,7 @@ import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
 
+import { assert } from './index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 /**
  @module @ember/debug
@@ -13,12 +14,14 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 */
 /**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
-  Deprecations are invoked by calls to [Ember.deprecate](https://emberjs.com/api/classes/Ember.html#method_deprecate).
+  Deprecations are invoked by calls to [@ember/application/deprecations/deprecate](https://emberjs.com/api/ember/release/classes/@ember%2Fapplication%2Fdeprecations/methods/deprecate?anchor=deprecate).
   The following example demonstrates its usage by registering a handler that throws an error if the
   message contains the word "should", otherwise defers to the default handler.
 
   ```javascript
-  Ember.Debug.registerDeprecationHandler((message, options, next) => {
+  import { registerDeprecationHandler } from '@ember/debug';
+
+  registerDeprecationHandler((message, options, next) => {
     if (message.indexOf('should') !== -1) {
       throw new Error(`Deprecation message with should: ${message}`);
     } else {
@@ -53,7 +56,7 @@ let missingOptionsDeprecation, missingOptionsIdDeprecation, missingOptionsUntilD
 if (DEBUG) {
   registerHandler = function registerHandler(handler) {
     genericRegisterHandler('deprecate', handler);
-  }
+  };
 
   let formatMessage = function formatMessage(_message, options) {
     let message = _message;
@@ -67,7 +70,7 @@ if (DEBUG) {
     }
 
     return message;
-  }
+  };
 
   registerHandler(function logDeprecationToConsole(message, options) {
     let updatedMessage = formatMessage(message, options);
@@ -125,11 +128,11 @@ if (DEBUG) {
     }
   });
 
-  missingOptionsDeprecation = 'When calling `Ember.deprecate` you ' +
+  missingOptionsDeprecation = 'When calling `deprecate` you ' +
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include `id` and `until` properties.';
-  missingOptionsIdDeprecation = 'When calling `Ember.deprecate` you must provide `id` in options.';
-  missingOptionsUntilDeprecation = 'When calling `Ember.deprecate` you must provide `until` in options.';
+  missingOptionsIdDeprecation = 'When calling `deprecate` you must provide `id` in options.';
+  missingOptionsUntilDeprecation = 'When calling `deprecate` you must provide `until` in options.';
   /**
    @module @ember/application
    @public
@@ -159,7 +162,13 @@ if (DEBUG) {
     @since 1.0.0
   */
   deprecate = function deprecate(message, test, options) {
-    if (!options || (!options.id && !options.until)) {
+    if (ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT !== true) {
+      assert(missingOptionsDeprecation, options && (options.id || options.until));
+      assert(missingOptionsIdDeprecation, options.id);
+      assert(missingOptionsUntilDeprecation, options.until);
+    }
+
+    if ((!options || (!options.id && !options.until)) && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsDeprecation,
         false,
@@ -171,7 +180,7 @@ if (DEBUG) {
       );
     }
 
-    if (options && !options.id) {
+    if (options && !options.id && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsIdDeprecation,
         false,
@@ -183,7 +192,7 @@ if (DEBUG) {
       );
     }
 
-    if (options && !options.until) {
+    if (options && !options.until && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(
         missingOptionsUntilDeprecation,
         options && options.until,
@@ -196,7 +205,7 @@ if (DEBUG) {
     }
 
     invoke('deprecate', ...arguments);
-  }
+  };
 }
 
 export default deprecate;
@@ -206,4 +215,4 @@ export {
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
   missingOptionsUntilDeprecation
-}
+};

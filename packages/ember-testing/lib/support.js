@@ -1,5 +1,5 @@
 import { warn } from 'ember-debug';
-import { jQuery } from 'ember-views';
+import { jQuery, jQueryDisabled } from 'ember-views';
 
 import { environment } from 'ember-environment';
 
@@ -28,7 +28,7 @@ function testCheckboxClick(handler) {
     .remove();
 }
 
-if (environment.hasDOM && typeof $ === 'function') {
+if (environment.hasDOM && !jQueryDisabled) {
   $(function() {
     /*
       Determine whether a checkbox checked using jQuery's "click" method will have
@@ -43,7 +43,7 @@ if (environment.hasDOM && typeof $ === 'function') {
         $.event.special.click = {
           // For checkbox, fire native event so checked state will be right
           trigger() {
-            if ($.nodeName(this, 'input') && this.type === 'checkbox' && this.click) {
+            if (this.nodeName === 'INPUT' && this.type === 'checkbox' && this.click) {
               this.click();
               return false;
             }

@@ -1,6 +1,7 @@
-import { Object as EmberObject } from 'ember-runtime';
 
-export default EmberObject.extend({
-  isQueryParams: true,
-  values: null
-});
+export default class QueryParams {
+  constructor(values = null) {
+    this.values = values;
+    this.isQueryParams = true;
+  }
+}

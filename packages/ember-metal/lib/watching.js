@@ -13,16 +13,14 @@ import {
   isPath
 } from './path_cache';
 import {
-  peekMeta,
-  deleteMeta
+  peekMeta
 } from './meta';
 
 /**
   Starts watching a property on an object. Whenever the property changes,
-  invokes `Ember.propertyWillChange` and `Ember.propertyDidChange`. This is the
-  primitive used by observers and dependent keys; usually you will never call
-  this method directly but instead use higher level methods like
-  `Ember.addObserver()`
+  invokes `Ember.notifyPropertyChange`. This is the primitive used by observers
+  and dependent keys; usually you will never call this method directly but instead
+  use higher level methods like `addObserver()`.
 
   @private
   @method watch
@@ -44,7 +42,7 @@ export function isWatching(obj, key) {
 
 export function watcherCount(obj, key) {
   let meta = peekMeta(obj);
-  return (meta && meta.peekWatching(key)) || 0;
+  return (meta !== undefined && meta.peekWatching(key)) || 0;
 }
 
 export function unwatch(obj, _keyPath, m) {
@@ -54,15 +52,3 @@ export function unwatch(obj, _keyPath, m) {
     unwatchKey(obj, _keyPath, m);
   }
 }
-
-/**
-  Tears down the meta on an object so that it can be garbage collected.
-  Multiple calls will have no effect.
-
-  @method destroy
-  @for Ember
-  @param {Object} obj  the object to destroy
-  @return {void}
-  @private
-*/
-export { deleteMeta as destroy };

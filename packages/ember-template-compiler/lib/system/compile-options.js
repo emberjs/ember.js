@@ -35,7 +35,7 @@ function wrapLegacyPluginIfNeeded(_plugin) {
       return {
         name: _plugin.constructor && _plugin.constructor.name,
 
-        visitors: {
+        visitor: {
           Program(node) {
             if (!pluginInstantiated) {
 

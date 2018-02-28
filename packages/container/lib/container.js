@@ -4,14 +4,12 @@ import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
 import {
   dictionary,
-  symbol,
   setOwner,
   OWNER,
   assign,
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 
-const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
 
 /**
  A container used to instantiate and cache objects.
@@ -26,20 +24,19 @@ const CONTAINER_OVERRIDE = symbol('CONTAINER_OVERRIDE');
  @private
  @class Container
  */
-export default function Container(registry, options = {}) {
-  this.registry        = registry;
-  this.owner           = options.owner || null;
-  this.cache           = dictionary(options.cache || null);
-  this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
-  this[CONTAINER_OVERRIDE] = undefined;
-  this.isDestroyed = false;
+export default class Container {
+  constructor(registry, options = {}) {
+    this.registry        = registry;
+    this.owner           = options.owner || null;
+    this.cache           = dictionary(options.cache || null);
+    this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
+    this.isDestroyed = false;
 
-  if (DEBUG) {
-    this.validationCache = dictionary(options.validationCache || null);
+    if (DEBUG) {
+      this.validationCache = dictionary(options.validationCache || null);
+    }
   }
-}
 
-Container.prototype = {
   /**
    @private
    @property registry
@@ -92,9 +89,9 @@ Container.prototype = {
    @return {any}
    */
   lookup(fullName, options) {
-    assert('fullName must be a proper full name', this.registry.validateFullName(fullName));
+    assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
-  },
+  }
 
   /**
    A depth first traversal, destroying the container, its descendant containers and all
@@ -105,7 +102,7 @@ Container.prototype = {
   destroy() {
     destroyDestroyables(this);
     this.isDestroyed = true;
-  },
+  }
 
   /**
    Clear either the entire cache or just the cache for a particular key.
@@ -115,12 +112,12 @@ Container.prototype = {
    @param {String} fullName optional key to reset; if missing, resets everything
   */
   reset(fullName) {
-    if (fullName !== undefined) {
-      resetMember(this, this.registry.normalize(fullName));
-    } else {
+    if (fullName === undefined) {
       resetCache(this);
+    } else {
+      resetMember(this, this.registry.normalize(fullName));
     }
-  },
+  }
 
   /**
    Returns an object that can be used to provide an owner to a
@@ -131,11 +128,11 @@ Container.prototype = {
   */
   ownerInjection() {
     return { [OWNER]: this.owner };
-  },
+  }
 
   _resolverCacheKey(name, options) {
     return this.registry.resolverCacheKey(name, options);
-  },
+  }
 
   /**
    Given a fullName, return the corresponding factory. The consumer of the factory
@@ -152,7 +149,7 @@ Container.prototype = {
   factoryFor(fullName, options = {}) {
     let normalizedName = this.registry.normalize(fullName);
 
-    assert('fullName must be a proper full name', this.registry.validateFullName(normalizedName));
+    assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
 
     if (options.source) {
       let expandedFullName = this.registry.expandLocalLookup(fullName, options);
@@ -195,8 +192,7 @@ Container.prototype = {
     this.factoryManagerCache[cacheKey] = manager;
     return manager;
   }
-};
-
+}
 /*
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
@@ -204,7 +200,7 @@ Container.prototype = {
 function wrapManagerInDeprecationProxy(manager) {
   if (HAS_NATIVE_PROXY) {
     let validator = {
-      set(obj, prop, value) {
+      set(obj, prop) {
         throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
       }
     };
@@ -220,7 +216,8 @@ function wrapManagerInDeprecationProxy(manager) {
       }
     };
 
-    return new Proxy(proxiedManager, validator);
+    let proxy = new Proxy(proxiedManager, validator);
+    FACTORY_FOR.set(proxy, manager);
   }
 
   return manager;
@@ -253,10 +250,12 @@ function lookup(container, fullName, options = {}) {
     }
   }
 
-  let cacheKey = container._resolverCacheKey(fullName, options);
-  let cached = container.cache[cacheKey];
-  if (cached !== undefined && options.singleton !== false) {
-    return cached;
+  if (options.singleton !== false) {
+    let cacheKey = container._resolverCacheKey(fullName, options);
+    let cached = container.cache[cacheKey];
+    if (cached !== undefined) {
+      return cached;
+    }
   }
 
   return instantiateFactory(container, fullName, options);
@@ -285,11 +284,10 @@ function instantiateFactory(container, fullName, options) {
     return;
   }
 
-  let cacheKey = container._resolverCacheKey(fullName, options);
-
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
+    let cacheKey = container._resolverCacheKey(fullName, options);
     return container.cache[cacheKey] = factoryManager.create();
   }
 
@@ -306,57 +304,34 @@ function instantiateFactory(container, fullName, options) {
   throw new Error('Could not create factory');
 }
 
-function markInjectionsAsDynamic(injections) {
-  injections._dynamic = true;
-}
-
-function areInjectionsNotDynamic(injections) {
-  return injections._dynamic !== true;
-}
-
-function buildInjections() /* container, ...injections */{
+function buildInjections(container, injections) {
   let hash = {};
+  let isDynamic = false;
 
-  if (arguments.length > 1) {
-    let container = arguments[0];
-    let injections = [];
-    let injection;
-
-    for (let i = 1; i < arguments.length; i++) {
-      if (arguments[i]) {
-        injections = injections.concat(arguments[i]);
-      }
-    }
-
+  if (injections.length > 0) {
     if (DEBUG) {
       container.registry.validateInjections(injections);
     }
 
-    let markAsDynamic = false;
+    let injection;
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
-      if (!markAsDynamic) {
-        markAsDynamic = !isSingleton(container, injection.fullName);
+      if (!isDynamic) {
+        isDynamic = !isSingleton(container, injection.fullName);
       }
-    }
-
-    if (markAsDynamic) {
-      markInjectionsAsDynamic(hash);
     }
   }
 
-  return hash;
+  return { injections: hash, isDynamic };
 }
 
 function injectionsFor(container, fullName) {
   let registry = container.registry;
-  let splitName = fullName.split(':');
-  let type = splitName[0];
+  let [type] = fullName.split(':');
 
-  let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
-
-  return injections;
+  let injections = registry.getTypeInjections(type).concat(registry.getInjections(fullName));
+  return buildInjections(container, injections);
 }
 
 function destroyDestroyables(container) {
@@ -367,7 +342,7 @@ function destroyDestroyables(container) {
     let key = keys[i];
     let value = cache[key];
 
-    if (isInstantiatable(container, key) && value.destroy) {
+    if (value.destroy) {
       value.destroy();
     }
   }
@@ -375,7 +350,8 @@ function destroyDestroyables(container) {
 
 function resetCache(container) {
   destroyDestroyables(container);
-  container.cache.dict = dictionary(null);
+  container.cache = dictionary(null);
+  container.factoryManagerCache = dictionary(null);
 }
 
 function resetMember(container, fullName) {
@@ -392,6 +368,7 @@ function resetMember(container, fullName) {
   }
 }
 
+export const FACTORY_FOR = new WeakMap();
 class FactoryManager {
   constructor(container, factory, fullName, normalizedName) {
     this.container = container;
@@ -401,10 +378,11 @@ class FactoryManager {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
+    FACTORY_FOR.set(this, this);
   }
 
   toString() {
-    if (!this.madeToString) {
+    if (this.madeToString === undefined) {
       this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
     }
 
@@ -412,14 +390,16 @@ class FactoryManager {
   }
 
   create(options = {}) {
-    let injections = this.injections;
-    if (injections === undefined) {
-      injections = injectionsFor(this.container, this.normalizedName);
-      if (areInjectionsNotDynamic(injections)) {
+    let injectionsCache = this.injections;
+    if (injectionsCache === undefined) {
+      let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
+      injectionsCache = injections;
+      if (!isDynamic) {
         this.injections = injections;
       }
     }
-    let props = assign({}, injections, options);
+
+    let props = assign({}, injectionsCache, options);
 
     if (DEBUG) {
       let lazyInjections;
@@ -454,6 +434,9 @@ class FactoryManager {
       setOwner(props, this.owner);
     }
 
-    return this.class.create(props);
+    let instance = this.class.create(props);
+    FACTORY_FOR.set(instance, this);
+
+    return instance;
   }
 }

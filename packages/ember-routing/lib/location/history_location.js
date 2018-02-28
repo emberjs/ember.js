@@ -23,7 +23,7 @@ function _uuid() {
 
 
 /**
-  Ember.HistoryLocation implements the location API using the browser's
+  HistoryLocation implements the location API using the browser's
   history.pushState API.
 
   Using `HistoryLocation` results in URLs that are indistinguishable from a
@@ -84,7 +84,14 @@ export default EmberObject.extend({
       this.supportsHistory = true;
     }
 
-    this.replaceState(this.formatURL(this.getURL()));
+    let state = this.getState();
+    let path = this.formatURL(this.getURL());
+    if (state && state.path === path) { // preserve existing state
+      // used for webkit workaround, since there will be no initial popstate event
+      this._previousURL = this.getURL();
+    } else {
+      this.replaceState(path);
+    }
   },
 
   /**

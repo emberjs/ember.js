@@ -1,15 +1,12 @@
 import { assign } from 'ember-utils';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import { Application, ApplicationInstance } from 'ember-application';
-import { jQuery } from 'ember-views';
 
-moduleFor('Ember.Application instance initializers', class extends AutobootApplicationTestCase {
-  constructor() {
-    jQuery('#qunit-fixture').html(`
-      <div id="one">ONE</div>
+moduleFor('Application instance initializers', class extends AutobootApplicationTestCase {
+  get fixture() {
+    return `<div id="one">ONE</div>
       <div id="two">TWO</div>
-    `);
-    super();
+    `;
   }
 
   get applicationOptions() {
@@ -68,7 +65,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     MyApplication.instanceInitializer({
       name: 'fourth',
       after: 'third',
-      initialize(registry) {
+      initialize() {
         order.push('fourth');
       }
     });
@@ -77,7 +74,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
       name: 'second',
       after: 'first',
       before: 'third',
-      initialize(registry) {
+      initialize() {
         order.push('second');
       }
     });
@@ -86,7 +83,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
       name: 'fifth',
       after: 'fourth',
       before: 'sixth',
-      initialize(registry) {
+      initialize() {
         order.push('fifth');
       }
     });
@@ -94,21 +91,21 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     MyApplication.instanceInitializer({
       name: 'first',
       before: 'second',
-      initialize(registry) {
+      initialize() {
         order.push('first');
       }
     });
 
     MyApplication.instanceInitializer({
       name: 'third',
-      initialize(registry) {
+      initialize() {
         order.push('third');
       }
     });
 
     MyApplication.instanceInitializer({
       name: 'sixth',
-      initialize(registry) {
+      initialize() {
         order.push('sixth');
       }
     });
@@ -124,7 +121,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
 
     MyApplication.instanceInitializer({
       name: 'third',
-      initialize(registry) {
+      initialize() {
         order.push('third');
       }
     });
@@ -133,7 +130,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
       name: 'second',
       after: 'first',
       before: ['third', 'fourth'],
-      initialize(registry) {
+      initialize() {
         order.push('second');
       }
     });
@@ -141,7 +138,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     MyApplication.instanceInitializer({
       name: 'fourth',
       after: ['second', 'third'],
-      initialize(registry) {
+      initialize() {
         order.push('fourth');
       }
     });
@@ -150,7 +147,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
       name: 'fifth',
       after: 'fourth',
       before: 'sixth',
-      initialize(registry) {
+      initialize() {
         order.push('fifth');
       }
     });
@@ -158,14 +155,14 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     MyApplication.instanceInitializer({
       name: 'first',
       before: ['second'],
-      initialize(registry) {
+      initialize() {
         order.push('first');
       }
     });
 
     MyApplication.instanceInitializer({
       name: 'sixth',
-      initialize(registry) {
+      initialize() {
         order.push('sixth');
       }
     });
@@ -181,34 +178,34 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     let a = {
       name: 'a',
       before: 'b',
-      initialize(registry) {
+      initialize() {
         order.push('a');
       }
     };
     let b = {
       name: 'b',
-      initialize(registry) {
+      initialize() {
         order.push('b');
       }
     };
     let c = {
       name: 'c',
       after: 'b',
-      initialize(registry) {
+      initialize() {
         order.push('c');
       }
     };
     let afterB = {
       name: 'after b',
       after: 'b',
-      initialize(registry) {
+      initialize() {
         order.push('after b');
       }
     };
     let afterC = {
       name: 'after c',
       after: 'c',
-      initialize(registry) {
+      initialize() {
         order.push('after c');
       }
     };
@@ -234,7 +231,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
 
     FirstApp.instanceInitializer({
       name: 'first',
-      initialize(registry) {
+      initialize() {
         firstInitializerRunCount++;
       }
     });
@@ -242,7 +239,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     let SecondApp = Application.extend();
     SecondApp.instanceInitializer({
       name: 'second',
-      initialize(registry) {
+      initialize() {
         secondInitializerRunCount++;
       }
     });
@@ -265,7 +262,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
 
     FirstApp.instanceInitializer({
       name: 'first',
-      initialize(registry) {
+      initialize() {
         firstInitializerRunCount++;
       }
     });
@@ -273,21 +270,21 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     let SecondApp = FirstApp.extend();
     SecondApp.instanceInitializer({
       name: 'second',
-      initialize(registry) {
+      initialize() {
         secondInitializerRunCount++;
       }
     });
 
     this.runTask(() => this.createApplication({}, FirstApp));
 
-    equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
-    equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
+    assert.equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
+    assert.equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
 
     firstInitializerRunCount = 0;
     this.runTask(() => this.createSecondApplication({}, SecondApp));
 
-    equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
-    equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
+    assert.equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
+    assert.equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
   }
 
   [`@test initializers are per-app`](assert) {
@@ -296,13 +293,13 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     let FirstApp = Application.extend();
     FirstApp.instanceInitializer({
       name: 'abc',
-      initialize(app) {}
+      initialize() {}
     });
 
     expectAssertion(function() {
       FirstApp.instanceInitializer({
         name: 'abc',
-        initialize(app) {}
+        initialize() {}
       });
     });
 
@@ -311,7 +308,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     let SecondApp = Application.extend();
     SecondApp.instanceInitializer({
       name: 'abc',
-      initialize(app) {}
+      initialize() {}
     });
 
     this.runTask(() => this.createSecondApplication({}, SecondApp));
@@ -348,7 +345,7 @@ moduleFor('Ember.Application instance initializers', class extends AutobootAppli
     MyApplication.instanceInitializer({
       name: 'coolInitializer',
       myProperty: 'cool',
-      initialize(registry, application) {
+      initialize() {
         assert.equal(this.myProperty, 'cool', 'should have access to its own context');
       }
     });

@@ -12,7 +12,7 @@ import {
   privatize as P
 } from 'container';
 import DAG from 'dag-map';
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { get, set } from 'ember-metal';
 import DefaultResolver from './resolver';
 import EngineInstance from './engine-instance';
@@ -124,18 +124,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   runInitializers() {
     this._runInitializer('initializers', (name, initializer) => {
       assert(`No application initializer named '${name}'`, !!initializer);
-      if (initializer.initialize.length === 2) {
-        deprecate(`The \`initialize\` method for Application initializer '${name}' should take only one argument - \`App\`, an instance of an \`Application\`.`,
-          false, {
-            id: 'ember-application.app-initializer-initialize-arguments',
-            until: '3.0.0',
-            url: 'https://emberjs.com/deprecations/v2.x/#toc_initializer-arity'
-          });
-
-        initializer.initialize(this.__registry__, this);
-      } else {
-        initializer.initialize(this);
-      }
+      initializer.initialize(this);
     });
   },
 
@@ -348,7 +337,7 @@ Engine.reopenClass({
     or after the one identified by the value. This value can be a single string
     or an array of strings, referencing the `name` of other initializers.
 
-    * See Ember.Application.initializer for discussion on the usage of before
+    * See Application.initializer for discussion on the usage of before
     and after.
 
     Example instanceInitializer to preload data into the store.
@@ -416,7 +405,7 @@ Engine.reopenClass({
     @return {Ember.Registry} the built registry
     @private
   */
-  buildRegistry(namespace, options = {}) {
+  buildRegistry(namespace) {
     let registry = new Registry({
       resolver: resolverFor(namespace)
     });
@@ -432,7 +421,7 @@ Engine.reopenClass({
   },
 
   /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
+    Set this to provide an alternate class to `DefaultResolver`
 
     @deprecated Use 'Resolver' instead
     @property resolver
@@ -441,7 +430,7 @@ Engine.reopenClass({
   resolver: null,
 
   /**
-    Set this to provide an alternate class to `Ember.DefaultResolver`
+    Set this to provide an alternate class to `DefaultResolver`
 
     @property resolver
     @public
@@ -474,7 +463,7 @@ function resolverFor(namespace) {
 }
 
 function buildInitializerMethod(bucketName, humanName) {
-  return function(initializer) {
+  return function (initializer) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would

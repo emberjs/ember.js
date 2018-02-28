@@ -1,15 +1,18 @@
-/* eslint-env node */
+'use strict';
 
-var testInfo = require('ember-cli-test-info');
-var stringUtils = require('ember-cli-string-utils');
-var useTestFrameworkDetector = require('../test-framework-detector');
+const path = require('path');
+const stringUtils = require('ember-cli-string-utils');
+const existsSync = require('exists-sync');
+
+const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates an initializer unit test.',
   locals: function(options) {
     return {
-      friendlyTestName: testInfo.name(options.entity.name, 'Unit', 'Initializer'),
-      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix)
+      friendlyTestName: ['Unit', 'Initializer', options.entity.name].join(' | '),
+      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
+      destroyAppExists: existsSync(path.join(this.project.root, '/tests/helpers/destroy-app.js'))
     };
   }
 });

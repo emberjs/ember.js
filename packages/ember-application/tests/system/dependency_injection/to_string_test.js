@@ -1,6 +1,5 @@
 import { guidFor, assign } from 'ember-utils';
 import { Object as EmberObject } from 'ember-runtime';
-import { Resolver as DefaultResolver } from 'ember-application';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -8,7 +7,7 @@ import {
   DefaultResolverApplicationTestCase
 } from 'internal-test-helpers';
 
-moduleFor('Ember.Application Dependency Injection - DefaultResolver#toString', class extends DefaultResolverApplicationTestCase {
+moduleFor('Application Dependency Injection - DefaultResolver#toString', class extends DefaultResolverApplicationTestCase {
   constructor() {
     super();
     this.runTask(() => this.createApplication());
@@ -35,7 +34,7 @@ moduleFor('Ember.Application Dependency Injection - DefaultResolver#toString', c
   }
 });
 
-moduleFor('Ember.Application Dependency Injection - Resolver#toString', class extends ApplicationTestCase {
+moduleFor('Application Dependency Injection - Resolver#toString', class extends ApplicationTestCase {
 
   beforeEach() {
     return this.visit('/');

@@ -1,18 +1,21 @@
 import { toString } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
-import { _getPath as getPath } from './property_get';
+import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 import {
-  propertyWillChange,
-  propertyDidChange
+  notifyPropertyChange
 } from './property_events';
 
 import {
   isPath
 } from './path_cache';
 import {
-  peekMeta
+  isDescriptor,
+  isDescriptorTrap,
+  peekMeta,
+  DESCRIPTOR,
+  descriptorFor
 } from './meta';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 /**
  @module @ember/object
 */
@@ -23,7 +26,8 @@ import { MANDATORY_SETTER } from 'ember/features';
   method then that will be invoked as well.
 
   ```javascript
-  Ember.set(obj, "name", value);
+  import { set } from '@ember/object';
+  set(obj, "name", value);
   ```
 
   @method set
@@ -41,18 +45,34 @@ export function set(obj, keyName, value, tolerant) {
     arguments.length === 3 || arguments.length === 4
   );
   assert(`Cannot call set with '${keyName}' on an undefined object.`, obj && typeof obj === 'object' || typeof obj === 'function');
-  assert(`The key provided to set must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
-  assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, !obj.isDestroyed);
+  assert(`The key provided to set must be a string or number, you passed ${keyName}`, typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName)));
+  assert(`'this' in paths is not supported`, typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0);
+
+  if (obj.isDestroyed) {
+    assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, tolerant);
+    return;
+  }
 
   if (isPath(keyName)) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let currentValue = obj[keyName];
-  let isDescriptor = currentValue !== null && typeof currentValue === 'object' && currentValue.isDescriptor;
+  if (EMBER_METAL_ES5_GETTERS) {
+    let possibleDesc = descriptorFor(obj, keyName);
 
-  if (isDescriptor) { /* computed property */
+    if (possibleDesc !== undefined) { /* computed property */
+      possibleDesc.set(obj, keyName, value);
+      return value;
+    }
+  }
+
+  let currentValue = getPossibleMandatoryProxyValue(obj, keyName);
+
+  if (DESCRIPTOR_TRAP && isDescriptorTrap(currentValue)) {
+    currentValue = currentValue[DESCRIPTOR];
+  }
+
+  if (isDescriptor(currentValue)) { /* computed property */
     currentValue.set(obj, keyName, value);
   } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
     typeof obj.setUnknownProperty === 'function') { /* unknown property */
@@ -60,7 +80,6 @@ export function set(obj, keyName, value, tolerant) {
   } else if (currentValue === value) { /* no change */
   } else {
     let meta = peekMeta(obj);
-    propertyWillChange(obj, keyName, meta);
 
     if (MANDATORY_SETTER) {
       setWithMandatorySetter(meta, obj, keyName, value);
@@ -68,7 +87,7 @@ export function set(obj, keyName, value, tolerant) {
       obj[keyName] = value;
     }
 
-    propertyDidChange(obj, keyName, meta);
+    notifyPropertyChange(obj, keyName, meta);
   }
 
   return value;
@@ -76,7 +95,7 @@ export function set(obj, keyName, value, tolerant) {
 
 if (MANDATORY_SETTER) {
   var setWithMandatorySetter = (meta, obj, keyName, value) => {
-    if (meta && meta.peekWatching(keyName) > 0) {
+    if (meta !== undefined && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);
     } else {
@@ -98,7 +117,7 @@ function setPath(root, path, value, tolerant) {
   let parts = path.split('.');
   let keyName = parts.pop();
 
-  assert('Property set failed: You passed an empty path', keyName.trim().length > 0)
+  assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
 
   let newPath = parts.join('.');
 
@@ -112,7 +131,7 @@ function setPath(root, path, value, tolerant) {
 }
 
 /**
-  Error-tolerant form of `Ember.set`. Will not blow up if any part of the
+  Error-tolerant form of `set`. Will not blow up if any part of the
   chain is `undefined`, `null`, or destroyed.
 
   This is primarily used when syncing bindings, which may try to update after

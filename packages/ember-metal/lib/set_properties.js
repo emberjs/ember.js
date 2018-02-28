@@ -9,7 +9,8 @@ import { set } from './property_set';
   observers will be buffered.
 
   ```javascript
-  let anObject = Ember.Object.create();
+  import EmberObject from '@ember/object';
+  let anObject = EmberObject.create();
 
   anObject.setProperties({
     firstName: 'Stanley',
@@ -27,7 +28,7 @@ import { set } from './property_set';
   @public
 */
 export default function setProperties(obj, properties) {
-  if (!properties || typeof properties !== 'object') { return properties; }
+  if (properties === null || typeof properties !== 'object') { return properties; }
   changeProperties(() => {
     let props = Object.keys(properties);
     let propertyName;

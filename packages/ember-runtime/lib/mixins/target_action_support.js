@@ -6,9 +6,10 @@ import { context } from 'ember-environment';
 import {
   get,
   Mixin,
-  computed
+  computed,
+  descriptor
 } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
@@ -23,6 +24,22 @@ doing more complex event handling in Components.
 */
 export default Mixin.create({
   target: null,
+  targetObject: descriptor({
+    configurable: true,
+    enumerable: false,
+    get() {
+      let message = `${this} Usage of \`targetObject\` is deprecated. Please use \`target\` instead.`;
+      let options = { id: 'ember-runtime.using-targetObject', until: '3.5.0' };
+      deprecate(message, false, options);
+      return this._targetObject;
+    },
+    set(value) {
+      let message = `${this} Usage of \`targetObject\` is deprecated. Please use \`target\` instead.`;
+      let options = { id: 'ember-runtime.using-targetObject', until: '3.5.0' };
+      deprecate(message, false, options);
+      this._targetObject = value;
+    }
+  }),
   action: null,
   actionContext: null,
 
@@ -43,10 +60,12 @@ export default Mixin.create({
   and target will be retrieved from properties of the object. For example:
 
   ```javascript
+  import { alias } from '@ember/object/computed';
+
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    target: Ember.computed.alias('controller'),
+    target: alias('controller'),
     action: 'save',
-    actionContext: Ember.computed.alias('context'),
+    actionContext: alias('context'),
     click() {
       this.triggerAction(); // Sends the `save` action, along with the current context
                             // to the current controller
@@ -75,8 +94,10 @@ export default Mixin.create({
   to `triggerAction`, or a combination:
 
   ```javascript
+  import { alias } from '@ember/object/computed';
+
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    target: Ember.computed.alias('controller'),
+    target: alias('controller'),
     click() {
       this.triggerAction({
         action: 'save'
@@ -120,16 +141,7 @@ export default Mixin.create({
 });
 
 function getTarget(instance) {
-  // TODO: Deprecate specifying `targetObject`
-  let target = get(instance, 'targetObject');
-
-  // if a `targetObject` CP was provided, use it
-  if (target) { return target; }
-
-  // if _targetObject use it
-  if (instance._targetObject) { return instance._targetObject; }
-
-  target = get(instance, 'target');
+  let target = get(instance, 'target');
   if (target) {
     if (typeof target === 'string') {
       let value = get(instance, target);
@@ -142,6 +154,12 @@ function getTarget(instance) {
       return target;
     }
   }
+
+  // if a `targetObject` CP was provided, use it
+  if (target) { return target; }
+
+  // if _targetObject use it
+  if (instance._targetObject) { return instance._targetObject; }
 
   return null;
 }

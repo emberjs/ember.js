@@ -1,7 +1,5 @@
 import {
   assign,
-  guidFor,
-  dictionary,
   getOwner
 } from 'ember-utils';
 import Logger from 'ember-console';
@@ -10,8 +8,7 @@ import {
   set,
   defineProperty,
   computed,
-  run,
-  deprecateProperty
+  run
 } from 'ember-metal';
 import {
   Error as EmberError,
@@ -32,9 +29,10 @@ import {
 import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';
 import {
-  routeArgs,
+  resemblesURL,
   getActiveTargetName,
-  calculateCacheKey
+  calculateCacheKey,
+  extractRouteArgs
 } from '../utils';
 import RouterState from './router_state';
 import { DEBUG } from 'ember-env-flags';
@@ -51,10 +49,14 @@ const { slice } = Array.prototype;
 
 
 /**
-  The `Ember.Router` class manages the application state and URLs. Refer to
+  The `EmberRouter` class manages the application state and URLs. Refer to
   the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
+<<<<<<< HEAD
   @class Router
+=======
+  @class EmberRouter
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
   @extends EmberObject
   @uses Evented
   @public
@@ -92,7 +94,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _initRouterJs() {
     let routerMicrolib = this._routerMicrolib = new Router();
-    routerMicrolib.triggerEvent = triggerEvent;
+    routerMicrolib.triggerEvent = triggerEvent.bind(this);
 
     routerMicrolib._triggerWillChangeContext = K;
     routerMicrolib._triggerWillLeave = K;
@@ -116,10 +118,8 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _buildDSL() {
-    let moduleBasedResolver = this._hasModuleBasedResolver();
-    let options = {
-      enableLoadingSubstates: !!moduleBasedResolver
-    };
+    let enableLoadingSubstates = this._hasModuleBasedResolver();
+    let options = { enableLoadingSubstates };
 
     let owner = getOwner(this);
     let router = this;
@@ -144,9 +144,9 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     this._qpCache = Object.create(null);
     this._resetQueuedQueryParameterChanges();
-    this._handledErrors = dictionary(null);
+    this._handledErrors = new Set();
     this._engineInstances = Object.create(null);
-    this._engineInfoByRoute = Object.create(null)
+    this._engineInfoByRoute = Object.create(null);
   },
 
   /*
@@ -171,14 +171,10 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _hasModuleBasedResolver() {
     let owner = getOwner(this);
-
     if (!owner) { return false; }
 
-    let resolver = owner.application && owner.application.__registry__ && owner.application.__registry__.resolver;
-
-    if (!resolver) { return false; }
-
-    return !!resolver.moduleBasedResolver;
+    let resolver = get(owner, 'application.__registry__.resolver.moduleBasedResolver');
+    return !!resolver;
   },
 
   /**
@@ -236,7 +232,10 @@ const EmberRouter = EmberObject.extend(Evented, {
     you could use this hook.  (Note: requires also including GA scripts, etc.)
 
     ```javascript
-    let Router = Ember.Router.extend({
+    import config from './config/environment';
+    import EmberRouter from '@ember/routing/router';
+
+    let Router = EmberRouter.extend({
       location: config.locationType,
 
       didTransition: function() {
@@ -274,7 +273,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   },
 
   _setOutlets() {
-    // This is triggered async during Ember.Route#willDestroy.
+    // This is triggered async during Route#willDestroy.
     // If the router is also being destroyed we do not want to
     // to create another this._toplevelView (and leak the renderer)
     if (this.isDestroying || this.isDestroyed) { return; }
@@ -363,7 +362,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     Transition the application into another route. The route may
     be either a single route or route path:
 
-    See [Route.transitionTo](https://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) for more info.
+    See [transitionTo](/api/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
     @method transitionTo
     @param {String} name the name of the route or a URL
@@ -376,21 +375,11 @@ const EmberRouter = EmberObject.extend(Evented, {
     @public
   */
   transitionTo(...args) {
-    let queryParams;
-    let arg = args[0];
-    if (resemblesURL(arg)) {
-      return this._doURLTransition('transitionTo', arg);
+    if (resemblesURL(args[0])) {
+      return this._doURLTransition('transitionTo', args[0]);
     }
-
-    let possibleQueryParams = args[args.length - 1];
-    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
-      queryParams = args.pop().queryParams;
-    } else {
-      queryParams = {};
-    }
-
-    let targetRouteName = args.shift();
-    return this._doTransition(targetRouteName, args, queryParams);
+    let { routeName, models, queryParams } = extractRouteArgs(args);
+    return this._doTransition(routeName, models, queryParams);
   },
 
   intermediateTransitionTo() {
@@ -780,8 +769,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     assign(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams, _keepDefaultQueryParamValues);
 
-    let transitionArgs = routeArgs(targetRouteName, models, queryParams);
-    let transition = this._routerMicrolib.transitionTo(...transitionArgs);
+    let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
 
     didBeginTransition(transition, this);
 
@@ -1009,12 +997,11 @@ const EmberRouter = EmberObject.extend(Evented, {
       // the transition that put us in a loading state.
       return;
     }
-
-    this.set('targetState', RouterState.create({
-      emberRouter: this,
-      routerJs: this._routerMicrolib,
-      routerJsState: this._routerMicrolib.activeTransition.state
-    }));
+    let targetState = new RouterState(
+      this, this._routerMicrolib,
+      this._routerMicrolib.activeTransition.state
+    );
+    this.set('targetState', targetState);
 
     transition.trigger(true, 'loading', transition, originRoute);
   },
@@ -1028,16 +1015,16 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   // These three helper functions are used to ensure errors aren't
   // re-raised if they're handled in a route's error action.
-  _markErrorAsHandled(errorGuid) {
-    this._handledErrors[errorGuid] = true;
+  _markErrorAsHandled(error) {
+    this._handledErrors.add(error);
   },
 
-  _isErrorHandled(errorGuid) {
-    return this._handledErrors[errorGuid];
+  _isErrorHandled(error) {
+    return this._handledErrors.has(error);
   },
 
-  _clearHandledError(errorGuid) {
-    delete this._handledErrors[errorGuid];
+  _clearHandledError(error) {
+    this._handledErrors.delete(error);
   },
 
   _getEngineInstance({ name, instanceId, mountPoint }) {
@@ -1086,22 +1073,22 @@ const EmberRouter = EmberObject.extend(Evented, {
   @param {Function} callback
   @return {Void}
  */
-function forEachRouteAbove(originRoute, handlerInfos, callback) {
-  let originRouteFound = false;
+function forEachRouteAbove(handlerInfos, callback) {
 
   for (let i = handlerInfos.length - 1; i >= 0; --i) {
     let handlerInfo = handlerInfos[i];
     let route = handlerInfo.handler;
 
-    if (originRoute === route) {
-      originRouteFound = true;
-    }
+    // handlerInfo.handler being `undefined` generally means either:
+    //
+    // 1. an error occurred during creation of the route in question
+    // 2. the route is across an async boundary (e.g. within an engine)
+    //
+    // In both of these cases, we cannot invoke the callback on that specific
+    // route, because it just doesn't exist...
+    if (route === undefined) { continue; }
 
-    if (!originRouteFound) {
-      continue;
-    }
-
-    if (callback(route) !== true) {
+    if (callback(route, handlerInfo) !== true) {
       return;
     }
   }
@@ -1111,24 +1098,29 @@ function forEachRouteAbove(originRoute, handlerInfos, callback) {
 // and are not meant to be overridable.
 let defaultActionHandlers = {
 
-  willResolveModel(transition, originRoute) {
-    originRoute.router._scheduleLoadingEvent(transition, originRoute);
+  willResolveModel(handlerInfos, transition, originRoute) {
+    this._scheduleLoadingEvent(transition, originRoute);
   },
 
   // Attempt to find an appropriate error route or substate to enter.
-  error(error, transition, originRoute) {
-    let handlerInfos = transition.state.handlerInfos;
-    let router = originRoute.router;
+  error(handlerInfos, error, transition) {
+    let router = this;
 
-    forEachRouteAbove(originRoute, handlerInfos, route => {
-      // Check for the existence of an 'error' route.
-      // We don't check for an 'error' route on the originRoute, since that would
+    let handlerInfoWithError = handlerInfos[handlerInfos.length - 1];
+
+    forEachRouteAbove(handlerInfos, (route, handlerInfo) => {
+      // We don't check the leaf most handlerInfo since that would
       // technically be below where we're at in the route hierarchy.
-      if (originRoute !== route) {
+      if (handlerInfo !== handlerInfoWithError) {
+        // Check for the existence of an 'error' route.
         let errorRouteName = findRouteStateName(route, 'error');
         if (errorRouteName) {
+<<<<<<< HEAD
           let errorId = guidFor(error);
           router._markErrorAsHandled(errorId);
+=======
+          router._markErrorAsHandled(error);
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
           router.intermediateTransitionTo(errorRouteName, error);
           return false;
         }
@@ -1137,8 +1129,12 @@ let defaultActionHandlers = {
       // Check for an 'error' substate route
       let errorSubstateName = findRouteSubstateName(route, 'error');
       if (errorSubstateName) {
+<<<<<<< HEAD
         var errorId = guidFor(error);
         router._markErrorAsHandled(errorId);
+=======
+        router._markErrorAsHandled(error);
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
         router.intermediateTransitionTo(errorSubstateName, error);
         return false;
       }
@@ -1150,15 +1146,16 @@ let defaultActionHandlers = {
   },
 
   // Attempt to find an appropriate loading route or substate to enter.
-  loading(transition, originRoute) {
-    let handlerInfos = transition.state.handlerInfos;
-    let router = originRoute.router;
+  loading(handlerInfos, transition) {
+    let router = this;
 
-    forEachRouteAbove(originRoute, handlerInfos, route => {
-      // Check for the existence of a 'loading' route.
-      // We don't check for a 'loading' route on the originRoute, since that would
+    let handlerInfoWithSlowLoading = handlerInfos[handlerInfos.length - 1];
+
+    forEachRouteAbove(handlerInfos, (route, handlerInfo) => {
+      // We don't check the leaf most handlerInfo since that would
       // technically be below where we're at in the route hierarchy.
-      if (originRoute !== route) {
+      if (handlerInfo !== handlerInfoWithSlowLoading) {
+        // Check for the existence of a 'loading' route.
         let loadingRouteName = findRouteStateName(route, 'loading');
         if (loadingRouteName) {
           router.intermediateTransitionTo(loadingRouteName);
@@ -1281,17 +1278,16 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
       } else {
         // Should only hit here if a non-bubbling error action is triggered on a route.
         if (name === 'error') {
-          let errorId = guidFor(args[0]);
-          handler.router._markErrorAsHandled(errorId);
+          handler.router._markErrorAsHandled(args[0]);
         }
         return;
       }
     }
   }
 
-  let defaultHandler = defaultActionHandlers[name]
+  let defaultHandler = defaultActionHandlers[name];
   if (defaultHandler) {
-    defaultHandler.apply(null, args);
+    defaultHandler.apply(this, [handlerInfos, ...args]);
     return;
   }
 
@@ -1352,8 +1348,6 @@ function updatePaths(router) {
 }
 
 EmberRouter.reopenClass({
-  router: null,
-
   /**
     The `Router.map` function allows you to define mappings from URLs to routes
     in your application. These mappings are defined within the
@@ -1443,11 +1437,11 @@ EmberRouter.reopenClass({
 });
 
 function didBeginTransition(transition, router) {
-  let routerState = RouterState.create({
-    emberRouter: router,
-    routerJs: router._routerMicrolib,
-    routerJsState: transition.state
-  });
+  let routerState = new RouterState(
+    router,
+    router._routerMicrolib,
+    transition.state
+  );
 
   if (!router.currentState) {
     router.set('currentState', routerState);
@@ -1455,18 +1449,12 @@ function didBeginTransition(transition, router) {
   router.set('targetState', routerState);
 
   transition.promise = transition.catch(error => {
-    let errorId = guidFor(error);
-
-    if (router._isErrorHandled(errorId)) {
-      router._clearHandledError(errorId);
+    if (router._isErrorHandled(error)) {
+      router._clearHandledError(error);
     } else {
       throw error;
     }
   });
-}
-
-function resemblesURL(str) {
-  return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
 function forEachQueryParam(router, handlerInfos, queryParams, callback) {
@@ -1552,7 +1540,7 @@ function appendOrphan(liveRoutes, into, myState) {
   run.schedule('afterRender', () => {
     // `wasUsed` gets set by the render helper.
     assert(`You attempted to render into '${into}' but it was not found`,
-                 liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
+      liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);
   });
 }
 
@@ -1578,11 +1566,5 @@ function representEmptyRoute(liveRoutes, defaultParentState, route) {
     return defaultParentState;
   }
 }
-
-deprecateProperty(EmberRouter.prototype, 'router', '_routerMicrolib', {
-  id: 'ember-router.router',
-  until: '2.16',
-  url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-router-router-renamed-to-ember-router-_routermicrolib'
-});
 
 export default EmberRouter;

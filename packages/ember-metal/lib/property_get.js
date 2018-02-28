@@ -3,13 +3,33 @@
 */
 
 import { assert } from 'ember-debug';
+import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_GETTER } from 'ember/features';
 import { isPath } from './path_cache';
+import { isDescriptor, isDescriptorTrap, DESCRIPTOR, descriptorFor } from './meta';
 
 const ALLOWABLE_TYPES = {
   object: true,
   function: true,
   string: true
 };
+
+export const PROXY_CONTENT = symbol('PROXY_CONTENT');
+
+export function getPossibleMandatoryProxyValue(obj, keyName) {
+  if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY) {
+    let content = obj[PROXY_CONTENT];
+    if (content === undefined) {
+      return obj[keyName];
+    } else {
+      /* global Reflect */
+      return Reflect.get(content, keyName, obj);
+    }
+  } else {
+    return obj[keyName];
+  }
+}
+
 
 // ..........................................................
 // GET AND SET
@@ -24,7 +44,8 @@ const ALLOWABLE_TYPES = {
   object implements the `unknownProperty` method then that will be invoked.
 
   ```javascript
-  Ember.get(obj, "name");
+  import { get } from '@ember/object';
+  get(obj, "name");
   ```
 
   If you plan to run on IE8 and older browsers then you should use this
@@ -51,18 +72,44 @@ const ALLOWABLE_TYPES = {
 export function get(obj, keyName) {
   assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
   assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
-  assert(`The key provided to get must be a string, you passed ${keyName}`, typeof keyName === 'string');
-  assert(`'this' in paths is not supported`, keyName.lastIndexOf('this.', 0) !== 0);
-  assert('Cannot call `Ember.get` with an empty string', keyName !== '');
+  assert(`The key provided to get must be a string or number, you passed ${keyName}`, typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName)));
+  assert(`'this' in paths is not supported`, typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0);
+  assert('Cannot call `get` with an empty string', keyName !== '');
 
-  let value = obj[keyName];
-  let isDescriptor = value !== null && typeof value === 'object' && value.isDescriptor;
+  let type = typeof obj;
 
-  if (isDescriptor) {
-    return value.get(obj, keyName);
-  } else if (isPath(keyName)) {
+  let isObject = type === 'object';
+  let isFunction = type === 'function';
+  let isObjectLike = isObject || isFunction;
+
+  let descriptor = undefined;
+  let value;
+
+  if (isObjectLike) {
+    if (EMBER_METAL_ES5_GETTERS) {
+      descriptor = descriptorFor(obj, keyName);
+    }
+
+    if (!EMBER_METAL_ES5_GETTERS || descriptor === undefined) {
+      value = getPossibleMandatoryProxyValue(obj, keyName);
+
+      if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
+        descriptor = value[DESCRIPTOR];
+      } else if (isDescriptor(value)) {
+        descriptor = value;
+      }
+    }
+
+    if (descriptor !== undefined) {
+      return descriptor.get(obj, keyName);
+    }
+  } else {
+    value = obj[keyName];
+  }
+
+  if (isPath(keyName)) {
     return _getPath(obj, keyName);
-  } else if (value === undefined && 'object' === typeof obj && !(keyName in obj) &&
+  } else if (value === undefined && isObject && !(keyName in obj) &&
     typeof obj.unknownProperty === 'function') {
     return obj.unknownProperty(keyName);
   } else {
@@ -98,7 +145,8 @@ function isGettable(obj) {
   case that the property returns `undefined`.
 
   ```javascript
-  Ember.getWithDefault(person, 'lastName', 'Doe');
+  import { getWithDefault } from '@ember/object';
+  getWithDefault(person, 'lastName', 'Doe');
   ```
 
   @method getWithDefault

@@ -1,11 +1,12 @@
 import { assign } from 'ember-utils';
 import { shallowEqual } from '../utils';
-import { Object as EmberObject } from 'ember-runtime';
 
-export default EmberObject.extend({
-  emberRouter: null,
-  routerJs: null,
-  routerJsState: null,
+export default class RouterState {
+  constructor(emberRouter = null, routerJs = null, routerJsState = null) {
+    this.emberRouter = emberRouter;
+    this.routerJs = routerJs;
+    this.routerJsState = routerJsState;
+  }
 
   isActiveIntent(routeName, models, queryParams, queryParamsMustMatch) {
     let state = this.routerJsState;
@@ -20,4 +21,5 @@ export default EmberObject.extend({
 
     return true;
   }
-});
+
+}

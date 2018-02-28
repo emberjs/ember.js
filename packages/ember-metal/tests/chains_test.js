@@ -5,14 +5,17 @@ import {
   finishChains,
   defineProperty,
   computed,
-  propertyDidChange,
+  notifyPropertyChange,
   peekMeta,
-  meta
+  meta,
+  watch,
+  unwatch,
+  watcherCount
 } from '..';
 
 QUnit.module('Chains');
 
-QUnit.test('finishChains should properly copy chains from prototypes to instances', function() {
+QUnit.test('finishChains should properly copy chains from prototypes to instances', function(assert) {
   function didChange() {}
 
   let obj = {};
@@ -25,7 +28,7 @@ QUnit.test('finishChains should properly copy chains from prototypes to instance
 
   finishChains(childMeta);
 
-  ok(parentMeta.readableChains() !== childMeta.readableChains(), 'The chains object is copied');
+  assert.ok(parentMeta.readableChains() !== childMeta.readableChains(), 'The chains object is copied');
 });
 
 QUnit.test('does not observe primitive values', function(assert) {
@@ -39,7 +42,7 @@ QUnit.test('does not observe primitive values', function(assert) {
 });
 
 
-QUnit.test('observer and CP chains', function() {
+QUnit.test('observer and CP chains', function(assert) {
   let obj = { };
 
   defineProperty(obj, 'foo', computed('qux.[]', function() { }));
@@ -65,7 +68,7 @@ QUnit.test('observer and CP chains', function() {
   */
 
   // invalidate qux
-  propertyDidChange(obj, 'qux');
+  notifyPropertyChange(obj, 'qux');
 
   // CP chain is blown away
 
@@ -83,7 +86,7 @@ QUnit.test('observer and CP chains', function() {
   */
 
   get(obj, 'qux'); // CP chain re-recreated
-  ok(true, 'no crash');
+  assert.ok(true, 'no crash');
 });
 
 QUnit.test('checks cache correctly', function(assert) {
@@ -95,4 +98,48 @@ QUnit.test('checks cache correctly', function(assert) {
   get(obj, 'foo');
 
   assert.strictEqual(chainNode.value(), undefined);
+});
+
+QUnit.test('chains are watched correctly', function(assert) {
+  let obj = { foo: { bar: { baz: 1 } } };
+
+  watch(obj, 'foo.bar.baz');
+
+  assert.equal(watcherCount(obj, 'foo'), 1);
+  assert.equal(watcherCount(obj, 'foo.bar'), 0);
+  assert.equal(watcherCount(obj, 'foo.bar.baz'), 1);
+  assert.equal(watcherCount(obj.foo, 'bar'), 1);
+  assert.equal(watcherCount(obj.foo, 'bar.baz'), 0);
+  assert.equal(watcherCount(obj.foo.bar, 'baz'), 1);
+
+  unwatch(obj, 'foo.bar.baz');
+
+  assert.equal(watcherCount(obj, 'foo'), 0);
+  assert.equal(watcherCount(obj, 'foo.bar'), 0);
+  assert.equal(watcherCount(obj, 'foo.bar.baz'), 0);
+  assert.equal(watcherCount(obj.foo, 'bar'), 0);
+  assert.equal(watcherCount(obj.foo, 'bar.baz'), 0);
+  assert.equal(watcherCount(obj.foo.bar, 'baz'), 0);
+});
+
+QUnit.test('chains with single character keys are watched correctly', function (assert) {
+  let obj = { a: { b: { c: 1 } } };
+
+  watch(obj, 'a.b.c');
+
+  assert.equal(watcherCount(obj, 'a'), 1);
+  assert.equal(watcherCount(obj, 'a.b'), 0);
+  assert.equal(watcherCount(obj, 'a.b.c'), 1);
+  assert.equal(watcherCount(obj.a, 'b'), 1);
+  assert.equal(watcherCount(obj.a, 'b.c'), 0);
+  assert.equal(watcherCount(obj.a.b, 'c'), 1);
+
+  unwatch(obj, 'a.b.c');
+
+  assert.equal(watcherCount(obj, 'a'), 0);
+  assert.equal(watcherCount(obj, 'a.b'), 0);
+  assert.equal(watcherCount(obj, 'a.b.c'), 0);
+  assert.equal(watcherCount(obj.a, 'b'), 0);
+  assert.equal(watcherCount(obj.a, 'b.c'), 0);
+  assert.equal(watcherCount(obj.a.b, 'c'), 0);
 });

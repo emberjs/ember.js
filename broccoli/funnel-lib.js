@@ -1,4 +1,3 @@
-/* eslint-env node */
 "use strict";
 
 const Funnel = require('broccoli-funnel');
@@ -16,4 +15,4 @@ module.exports = function funnelLib(name) {
 
 
   return new Funnel(findLib(name, libPath), options);
-}
+};

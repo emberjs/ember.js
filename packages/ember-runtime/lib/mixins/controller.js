@@ -1,4 +1,4 @@
-import { Mixin, alias } from 'ember-metal';
+import { Mixin } from 'ember-metal';
 import { deprecatingAlias } from '../computed/computed_macros';
 import ActionHandler from './action_handler';
 

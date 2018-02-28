@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { Mixin } from 'ember-metal';
+import { Mixin, descriptorFor } from 'ember-metal';
 import { assert } from 'ember-debug';
 
 const EMPTY_ARRAY = Object.freeze([]);
@@ -18,8 +18,8 @@ export default Mixin.create({
   init() {
     this._super(...arguments);
 
-    assert(`Only arrays are allowed for 'classNameBindings'`, Array.isArray(this.classNameBindings));
-    assert(`Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`, Array.isArray(this.classNames));
+    assert(`Only arrays are allowed for 'classNameBindings'`, descriptorFor(this, 'classNameBindings') === undefined && Array.isArray(this.classNameBindings));
+    assert(`Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`, descriptorFor(this, 'classNames') === undefined && Array.isArray(this.classNames));
   },
 
   /**
@@ -41,7 +41,8 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'high' class to the view element
-    Ember.Component.extend({
+    import Component from '@ember/component';
+    Component.extend({
       classNameBindings: ['priority'],
       priority: 'high'
     });
@@ -52,7 +53,8 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'is-urgent' class to the view element
-    Ember.Component.extend({
+    import Component from '@ember/component';
+    Component.extend({
       classNameBindings: ['isUrgent'],
       isUrgent: true
     });
@@ -63,7 +65,8 @@ export default Mixin.create({
 
     ```javascript
     // Applies the 'urgent' class to the view element
-    Ember.Component.extend({
+    import Component from '@ember/component';
+    Component.extend({
       classNameBindings: ['isUrgent:urgent'],
       isUrgent: true
     });

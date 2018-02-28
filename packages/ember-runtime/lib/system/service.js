@@ -42,7 +42,11 @@ createInjectionHelper('service');
 
 /**
   @class Service
+<<<<<<< HEAD
 
+=======
+  @extends EmberObject
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
   @since 1.10.0
   @public
 */

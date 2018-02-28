@@ -20,7 +20,7 @@ import {
 
 
 /**
-  Ember.AutoLocation will select the best location option based off browser
+  AutoLocation will select the best location option based off browser
   support with the priority order: history, hash, none.
 
   Clean pushState paths accessed by hashchange-only browsers will be redirected
@@ -206,12 +206,14 @@ function delegateToConcreteImplementation(methodName) {
 */
 
 function detectImplementation(options) {
-  let location = options.location;
-  let userAgent = options.userAgent;
-  let history = options.history;
-  let documentMode = options.documentMode;
-  let global = options.global;
-  let rootURL = options.rootURL;
+  let {
+    location,
+    userAgent,
+    history,
+    documentMode,
+    global,
+    rootURL
+  } = options;
 
   let implementation = 'none';
   let cancelRouterSetup = false;
@@ -223,15 +225,13 @@ function detectImplementation(options) {
     // If the browser supports history and we have a history path, we can use
     // the history location with no redirects.
     if (currentPath === historyPath) {
-      return 'history';
+      implementation = 'history';
+    } else if (currentPath.substr(0, 2) === '/#') {
+      history.replaceState({ path: historyPath }, null, historyPath);
+      implementation = 'history';
     } else {
-      if (currentPath.substr(0, 2) === '/#') {
-        history.replaceState({ path: historyPath }, null, historyPath);
-        implementation = 'history';
-      } else {
-        cancelRouterSetup = true;
-        replacePath(location, historyPath);
-      }
+      cancelRouterSetup = true;
+      replacePath(location, historyPath);
     }
   } else if (supportsHashChange(documentMode, global)) {
     let hashPath = getHashPath(rootURL, location);

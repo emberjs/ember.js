@@ -12,9 +12,8 @@ import {
   peekMeta
 } from 'ember-metal';
 import { Route } from 'ember-routing';
-import { jQuery } from 'ember-views';
 
-import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
+import { QueryParamTestCase, moduleFor, getTextOf } from 'internal-test-helpers';
 
 moduleFor('Query Params - main', class extends QueryParamTestCase {
   refreshModelWhileLoadingTest(loadingReturn) {
@@ -31,7 +30,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
           defaultValue: 'applol'
         }
       },
-      model(params) {
+      model(/* params */) {
         appModelCount++;
       }
     }));
@@ -329,7 +328,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index');
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model(/* params, transition */) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: 'bar' }, 'could retrieve params for index');
       }
     }));
@@ -347,7 +346,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index');
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model(/* params, transition */) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: 'boo' }, 'could retrieve params for index');
       }
     }));
@@ -365,7 +364,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'foo', false);
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model(/* params, transition */) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: false }, 'could retrieve params for index');
       }
     }));
@@ -383,7 +382,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('index', 'foo', true);
 
     this.add('route:index', Route.extend({
-      model(params, transition) {
+      model(/* params, transition */) {
         assert.deepEqual(this.paramsFor('index'), { something: 'baz', foo: false }, 'could retrieve params for index');
       }
     }));
@@ -443,7 +442,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     let appModelCount = 0;
     this.add('route:application', Route.extend({
-      model(params) {
+      model(/* params, transition */) {
         appModelCount++;
       }
     }));
@@ -486,7 +485,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     let appModelCount = 0;
     this.add('route:application', Route.extend({
-      model(params) {
+      model(/* params */) {
         appModelCount++;
       }
     }));
@@ -592,14 +591,14 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     }));
 
     return this.visitAndAssert('/').then(() => {
-      assert.equal(jQuery('#test-value').text().trim(), '1');
+      assert.equal(getTextOf(document.getElementById('test-value')), '1');
 
-      run(jQuery('#test-button'), 'click');
-      assert.equal(jQuery('#test-value').text().trim(), '2');
+      run(document.getElementById('test-button'), 'click');
+      assert.equal(getTextOf(document.getElementById('test-value')), '2');
       this.assertCurrentPath('/?foo=2');
 
-      run(jQuery('#test-button'), 'click');
-      assert.equal(jQuery('#test-value').text().trim(), '3');
+      run(document.getElementById('test-button'), 'click');
+      assert.equal(getTextOf(document.getElementById('test-value')), '3');
       this.assertCurrentPath('/?foo=3');
     });
   }
@@ -612,7 +611,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     let appModelCount = 0;
     this.add('route:application', Route.extend({
-      model(params) {
+      model(/* params */) {
         appModelCount++;
       }
     }));
@@ -620,7 +619,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     let indexModelCount = 0;
     this.add('route:index', Route.extend({
       queryParams: EmberObject.create({
-        unknownProperty(keyName) {
+        unknownProperty() {
           return { refreshModel: true };
         }
       }),
@@ -783,7 +782,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     return this.visit('/parent/child?foo=lol').then(() => {
       assert.equal(parentModelCount, 1);
 
-      run(jQuery('#parent-link'), 'click');
+      run(document.getElementById('parent-link'), 'click');
       assert.equal(parentModelCount, 2);
     });
   }
@@ -795,7 +794,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
 
     this.add('route:application', Route.extend({
       queryParams: EmberObject.create({
-        unknownProperty(keyName) {
+        unknownProperty(/* keyName */) {
           // We are simulating all qps requiring refresh
           return { replace: true };
         }
@@ -892,18 +891,18 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     this.setSingleQPController('abc.def.zoo', 'bar', 'haha');
 
     return this.visitAndAssert('/').then(() => {
-      assert.equal(jQuery('#one').attr('href'), '/abcdef?foo=123');
-      assert.equal(jQuery('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+      assert.equal(this.$('#one').attr('href'), '/abcdef?foo=123');
+      assert.equal(this.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-      run(jQuery('#one'), 'click');
+      run(this.$('#one'), 'click');
       this.assertCurrentPath('/abcdef?foo=123');
 
-      run(jQuery('#two'), 'click');
+      run(this.$('#two'), 'click');
       this.assertCurrentPath('/abcdef/zoo?bar=456&foo=123');
     });
   }
 
-  ['@test transitionTo supports query params'](assert) {
+  ['@test transitionTo supports query params']() {
     this.setSingleQPController('index', 'foo', 'lol');
 
     return this.visitAndAssert('/').then(() => {
@@ -921,7 +920,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
-  ['@test transitionTo supports query params (multiple)'](assert) {
+  ['@test transitionTo supports query params (multiple)']() {
     this.add('controller:index', Controller.extend({
       queryParams: ['foo', 'bar'],
       foo: 'lol',
@@ -1215,7 +1214,7 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
 
     this.add('route:application', Route.extend({
-      model(p, trans) {
+      model(/* p, trans */) {
         return { woot: true };
       }
     }));
@@ -1253,19 +1252,19 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
       let controller = this.getController('bar');
 
       this.expectedPushURL = '/foo';
-      run(jQuery('#foo-link'), 'click');
+      run(document.getElementById('foo-link'), 'click');
 
       this.expectedPushURL = '/bar';
-      run(jQuery('#bar-no-qp-link'), 'click');
+      run(document.getElementById('bar-no-qp-link'), 'click');
 
       this.expectedReplaceURL = '/bar?raytiley=woot';
       this.setAndFlush(controller, 'raytiley', 'woot');
 
       this.expectedPushURL = '/foo';
-      run(jQuery('#foo-link'), 'click');
+      run(document.getElementById('foo-link'), 'click');
 
       this.expectedPushURL = '/bar?raytiley=isthebest';
-      run(jQuery('#bar-link'), 'click');
+      run(document.getElementById('bar-link'), 'click');
     });
   }
 
@@ -1297,15 +1296,15 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
-  ['@test when refreshModel is true and loading hook is undefined, model hook will rerun when QPs change even if previous did not finish'](assert) {
+  ['@test when refreshModel is true and loading hook is undefined, model hook will rerun when QPs change even if previous did not finish']() {
     return this.refreshModelWhileLoadingTest();
   }
 
-  ['@test when refreshModel is true and loading hook returns false, model hook will rerun when QPs change even if previous did not finish'](assert) {
+  ['@test when refreshModel is true and loading hook returns false, model hook will rerun when QPs change even if previous did not finish']() {
     return this.refreshModelWhileLoadingTest(false);
   }
 
-  ['@test when refreshModel is true and loading hook returns true, model hook will rerun when QPs change even if previous did not finish'](assert) {
+  ['@test when refreshModel is true and loading hook returns true, model hook will rerun when QPs change even if previous did not finish']() {
     return this.refreshModelWhileLoadingTest(true);
   }
 

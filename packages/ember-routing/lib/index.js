@@ -1,5 +1,4 @@
 // ES6TODO: Cleanup modules with side-effects below
-import './ext/run_loop';
 import './ext/controller';
 
 export { default as Location } from './location/api';

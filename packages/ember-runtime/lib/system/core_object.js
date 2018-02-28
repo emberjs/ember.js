@@ -4,46 +4,41 @@
 
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
+import { FACTORY_FOR } from 'container';
 import {
   assign,
   guidFor,
-  generateGuid,
   makeArray,
-  GUID_KEY_PROPERTY,
-  symbol,
   NAME_KEY,
-  GUID_KEY
+  HAS_NATIVE_PROXY,
+  isInternalSymbol,
 } from 'ember-utils';
 import {
-  get,
+  PROXY_CONTENT,
+  descriptorFor,
   meta,
+  peekMeta,
   finishChains,
   sendEvent,
-  detectBinding,
   Mixin,
   REQUIRED,
   defineProperty,
-  Binding,
   ComputedProperty,
-  computed,
   InjectedProperty,
   run,
-  destroy,
-  descriptor,
-  _hasCachedComputedProperties
+  deleteMeta,
+  descriptor
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
-import { assert, Error as EmberError } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { MANDATORY_SETTER } from 'ember/features';
+import { ENV } from 'ember-environment';
+import { MANDATORY_GETTER, MANDATORY_SETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 
-let schedule = run.schedule;
-let applyMixin = Mixin._apply;
-let finishPartial = Mixin.finishPartial;
-let reopen = Mixin.prototype.reopen;
-
-export const POST_INIT = symbol('POST_INIT');
+const schedule = run.schedule;
+const applyMixin = Mixin._apply;
+const reopen = Mixin.prototype.reopen;
 
 function makeCtor() {
   // Note: avoid accessing any properties on the object since it makes the
@@ -51,81 +46,120 @@ function makeCtor() {
   // possible.
 
   let wasApplied = false;
-  let initProperties, initFactory;
+  let initFactory;
 
   class Class {
-    constructor() {
+    constructor(properties) {
+      let self = this;
+
       if (!wasApplied) {
         Class.proto(); // prepare prototype...
       }
 
-      if (arguments.length > 0) {
-        initProperties = [arguments[0]];
+      let beforeInitCalled; // only used in debug builds to enable the proxy trap
+
+      // using DEBUG here to avoid the extraneous variable when not needed
+      if (DEBUG) {
+        beforeInitCalled = true;
       }
 
-      this.__defineNonEnumerable(GUID_KEY_PROPERTY);
-      let m = meta(this);
-      let proto = m.proto;
-      m.proto = this;
+      if (DEBUG && MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
+        let messageFor = (obj, property) => {
+          return `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
+            `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
+            `to access computed properties. However, in this case, the object in question\n` +
+            `is a special kind of Ember object (a proxy). Therefore, it is still necessary\n` +
+            `to use \`.get('${String(property)}')\` in this case.\n\n` +
+            `If you encountered this error because of third-party code that you don't control,\n` +
+            `there is more information at https://github.com/emberjs/ember.js/issues/16148, and\n` +
+            `you can help us improve this error message by telling us more about what happened in\n` +
+            `this situation.`;
+          };
 
-      if (initFactory) {
-        m.factory = initFactory;
-        initFactory = null;
-      }
-      if (initProperties) {
-        // capture locally so we can clear the closed over variable
-        let props = initProperties;
-        initProperties = null;
-
-        let concatenatedProperties = this.concatenatedProperties;
-        let mergedProperties = this.mergedProperties;
-        let hasConcatenatedProps = concatenatedProperties && concatenatedProperties.length > 0;
-        let hasMergedProps = mergedProperties && mergedProperties.length > 0;
-
-        for (let i = 0; i < props.length; i++) {
-          let properties = props[i];
-
-          assert(
-            'Ember.Object.create only accepts objects.',
-            typeof properties === 'object' || properties === undefined
-          );
-
-          assert(
-            'Ember.Object.create no longer supports mixing in other ' +
-            'definitions, use .extend & .create separately instead.',
-            !(properties instanceof Mixin)
-          );
-
-          if (!properties) { continue; }
-
-          let keyNames = Object.keys(properties);
-
-          for (let j = 0; j < keyNames.length; j++) {
-            let keyName = keyNames[j];
-            let value = properties[keyName];
-
-            if (detectBinding(keyName)) {
-              m.writeBindings(keyName, value);
+        /* globals Proxy Reflect */
+        self = new Proxy(this, {
+          get(target, property, receiver) {
+            if (property === PROXY_CONTENT) {
+              return target;
+            } else if (
+              beforeInitCalled ||
+              typeof property === 'symbol' ||
+              isInternalSymbol(property) ||
+              property === 'toJSON' ||
+              property === 'toString' ||
+              property === 'toStringExtension' ||
+              property === 'didDefineProperty' ||
+              property === 'willWatchProperty' ||
+              property === 'didUnwatchProperty' ||
+              property === 'didAddListener' ||
+              property === '__DESCRIPTOR__' ||
+              property === 'isDescriptor' ||
+              property in target
+            ) {
+              return Reflect.get(target, property, receiver);
             }
 
-            assert(
-              'Ember.Object.create no longer supports defining computed ' +
-              'properties. Define computed properties using extend() or reopen() ' +
-              'before calling create().',
-              !(value instanceof ComputedProperty)
-            );
-            assert(
-              'Ember.Object.create no longer supports defining methods that call _super.',
-              !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
-            );
-            assert(
-              '`actions` must be provided at extend time, not at create time, ' +
-              'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
-              !((keyName === 'actions') && ActionHandler.detect(this))
-            );
+            let value = target.unknownProperty.call(receiver, property);
 
-            let baseValue = this[keyName];
-            let isDescriptor = baseValue !== null && typeof baseValue === 'object' && baseValue.isDescriptor;
+            assert(messageFor(receiver, property), value === undefined);
+          }
+        });
+      }
+
+      let m = meta(self);
+      let proto = m.proto;
+      m.proto = self;
+
+      if (initFactory) {
+        FACTORY_FOR.set(this, initFactory);
+        initFactory = null;
+      }
+
+      if (properties !== undefined) {
+        assert('EmberObject.create only accepts objects.', typeof properties === 'object' && properties !== null);
+
+        assert(
+          'EmberObject.create no longer supports mixing in other ' +
+          'definitions, use .extend & .create separately instead.',
+          !(properties instanceof Mixin)
+        );
+
+        let concatenatedProperties = self.concatenatedProperties;
+        let mergedProperties = self.mergedProperties;
+        let hasConcatenatedProps = concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+        let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+
+        let keyNames = Object.keys(properties);
+
+        for (let i = 0; i < keyNames.length; i++) {
+          let keyName = keyNames[i];
+          let value = properties[keyName];
+
+          if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
+            m.writeBindings(keyName, value);
+          }
+
+          assert(
+            'EmberObject.create no longer supports defining computed ' +
+            'properties. Define computed properties using extend() or reopen() ' +
+            'before calling create().',
+            !(value instanceof ComputedProperty)
+          );
+          assert(
+            'EmberObject.create no longer supports defining methods that call _super.',
+            !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
+          );
+          assert(
+            '`actions` must be provided at extend time, not at create time, ' +
+            'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+            !((keyName === 'actions') && ActionHandler.detect(this))
+          );
+
+          let possibleDesc = descriptorFor(self, keyName, m);
+          let isDescriptor = possibleDesc !== undefined;
+
+          if (!isDescriptor) {
+            let baseValue = self[keyName];
 
             if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
               if (baseValue) {
@@ -138,31 +172,40 @@ function makeCtor() {
             if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
               value = assign({}, baseValue, value);
             }
+          }
 
-            if (isDescriptor) {
-              baseValue.set(this, keyName, value);
-            } else if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
-              this.setUnknownProperty(keyName, value);
+          if (isDescriptor) {
+            possibleDesc.set(self, keyName, value);
+          } else if (typeof self.setUnknownProperty === 'function' && !(keyName in self)) {
+            self.setUnknownProperty(keyName, value);
+          } else {
+            if (MANDATORY_SETTER) {
+              defineProperty(self, keyName, null, value); // setup mandatory setter
             } else {
-              if (MANDATORY_SETTER) {
-                defineProperty(this, keyName, null, value); // setup mandatory setter
-              } else {
-                this[keyName] = value;
-              }
+              self[keyName] = value;
             }
           }
         }
       }
 
-      finishPartial(this, m);
+      if (ENV._ENABLE_BINDING_SUPPORT) {
+        Mixin.finishPartial(self, m);
+      }
 
-      this.init(...arguments);
-
-      this[POST_INIT]();
+      // using DEBUG here to avoid the extraneous variable when not needed
+      if (DEBUG) {
+        beforeInitCalled = false;
+      }
+      self.init(...arguments);
 
       m.proto = proto;
       finishChains(m);
-      sendEvent(this, 'init', undefined, undefined, undefined, m);
+      sendEvent(self, 'init', undefined, undefined, undefined, m);
+
+      // only return when in debug builds and `self` is the proxy created above
+      if (DEBUG && self !== this) {
+        return self;
+      }
     }
 
     static willReopen() {
@@ -173,7 +216,6 @@ function makeCtor() {
       wasApplied = false;
     }
 
-    static _initProperties(args) { initProperties = args; }
     static _initFactory(factory) { initFactory = factory; }
 
     static proto() {
@@ -194,6 +236,32 @@ function makeCtor() {
   return Class;
 }
 
+const IS_DESTROYED = descriptor({
+  configurable: true,
+  enumerable: false,
+
+  get() {
+    return peekMeta(this).isSourceDestroyed();
+  },
+
+  set(value) {
+    assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, value === IS_DESTROYED);
+  }
+});
+
+const IS_DESTROYING = descriptor({
+  configurable: true,
+  enumerable: false,
+
+  get() {
+    return peekMeta(this).isSourceDestroying();
+  },
+
+  set(value) {
+    assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, value === IS_DESTROYING);
+  }
+});
+
 /**
   @class CoreObject
   @public
@@ -213,7 +281,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     Example:
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       init() {
         alert(`Name is ${this.get('name')}`);
       }
@@ -237,13 +307,6 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   init() {},
 
-  [POST_INIT]() { }, // Private, and only for didInitAttrs willReceiveAttrs
-
-  __defineNonEnumerable(property) {
-    Object.defineProperty(this, property.name, property.descriptor);
-    //this[property.name] = property.descriptor.value;
-  },
-
   /**
     Defines the properties that will be concatenated from the superclass
     (instead of overridden).
@@ -259,7 +322,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     property and a normal one:
 
     ```javascript
-    const Bar = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Bar = EmberObject.extend({
       // Configure which properties to concatenate
       concatenatedProperties: ['concatenatedProperty'],
 
@@ -301,7 +366,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     Using the `concatenatedProperties` property, we can tell Ember to mix the
     content of the properties.
 
-    In `Ember.Component` the `classNames`, `classNameBindings` and
+    In `Component` the `classNames`, `classNameBindings` and
     `attributeBindings` properties are concatenated.
 
     This feature is available for you to use throughout the Ember object model,
@@ -332,7 +397,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     property and a normal one:
 
     ```javascript
-    const Bar = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Bar = EmberObject.extend({
       // Configure which properties are to be merged
       mergedProperties: ['mergedProperty'],
 
@@ -376,7 +443,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     This behavior is not available during object `create` calls. It is only
     available at `extend` time.
 
-    In `Ember.Route` the `queryParams` property is merged.
+    In `Route` the `queryParams` property is merged.
 
     This feature is available for you to use throughout the Ember object model,
     although typical app developers are likely to use it infrequently. Since
@@ -401,20 +468,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroyed: descriptor({
-    get() {
-      return meta(this).isSourceDestroyed();
-    },
-
-    set(value) {
-      // prevent setting while applying mixins
-      if (value !== null && typeof value === 'object' && value.isDescriptor) {
-        return;
-      }
-
-      assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, false);
-    }
-  }),
+  isDestroyed: IS_DESTROYED,
 
   /**
     Destruction scheduled flag. The `destroy()` method has been called.
@@ -426,20 +480,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @default false
     @public
   */
-  isDestroying: descriptor({
-    get() {
-      return meta(this).isSourceDestroying();
-    },
-
-    set(value) {
-      // prevent setting while applying mixins
-      if (value !== null && typeof value === 'object' && value.isDescriptor) {
-        return;
-      }
-
-      assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, false);
-    }
-  }),
+  isDestroying: IS_DESTROYING,
 
   /**
     Destroys an object by setting the `isDestroyed` flag and removing its
@@ -456,7 +497,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @public
   */
   destroy() {
-    let m = meta(this);
+    let m = peekMeta(this);
     if (m.isSourceDestroying()) { return; }
 
     m.setSourceDestroying();
@@ -484,14 +525,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   _scheduledDestroy(m) {
     if (m.isSourceDestroyed()) { return; }
-    destroy(this);
+    deleteMeta(this);
     m.setSourceDestroyed();
-  },
-
-  bind(to, from) {
-    if (!(from instanceof Binding)) { from = Binding.from(from); }
-    from.to(to).connect(this);
-    return from;
   },
 
   /**
@@ -500,18 +535,20 @@ CoreObject.PrototypeMixin = Mixin.create({
     objects.
 
     ```javascript
-    const Person = Ember.Object.extend()
-    person = Person.create()
-    person.toString() //=> "<Person:ember1024>"
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend();
+    person = Person.create();
+    person.toString(); //=> "<Person:ember1024>"
     ```
 
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
     ```javascript
-    const Student = Person.extend()
-    let student = Student.create()
-    student.toString() //=> "<(subclass of Person):ember1025>"
+    const Student = Person.extend();
+    let student = Student.create();
+    student.toString(); //=> "<(subclass of Person):ember1025>"
     ```
 
     If the method `toStringExtension` is defined, its return value will be
@@ -523,7 +560,7 @@ CoreObject.PrototypeMixin = Mixin.create({
         return this.get('fullName');
       }
     });
-    teacher = Teacher.create()
+    teacher = Teacher.create();
     teacher.toString(); //=> "<Teacher:ember1026:Tom Dale>"
     ```
 
@@ -535,7 +572,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${this[NAME_KEY] || meta(this).factory || this.constructor.toString()}:${guidFor(this)}${extension}>`;
+    let ret = `<${this[NAME_KEY] || FACTORY_FOR.get(this) || this.constructor.toString()}:${guidFor(this)}${extension}>`;
 
     return ret;
   }
@@ -547,33 +584,32 @@ CoreObject.__super__ = null;
 
 let ClassMixinProps = {
 
-  ClassMixin: REQUIRED,
-
-  PrototypeMixin: REQUIRED,
-
   isClass: true,
 
   isMethod: false,
   [NAME_KEY]: null,
-  [GUID_KEY]: null,
   /**
     Creates a new subclass.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       say(thing) {
         alert(thing);
        }
     });
     ```
 
-    This defines a new subclass of Ember.Object: `Person`. It contains one method: `say()`.
+    This defines a new subclass of EmberObject: `Person`. It contains one method: `say()`.
 
     You can also create a subclass from any existing class by calling its `extend()` method.
-    For example, you might want to create a subclass of Ember's built-in `Ember.Component` class:
+    For example, you might want to create a subclass of Ember's built-in `Component` class:
 
     ```javascript
-    const PersonComponent = Ember.Component.extend({
+    import Component from '@ember/component';
+
+    const PersonComponent = Component.extend({
       tagName: 'li',
       classNameBindings: ['isAdministrator']
     });
@@ -583,7 +619,9 @@ let ClassMixinProps = {
     implementation of your parent class by calling the special `_super()` method:
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       say(thing) {
         let name = this.get('name');
         alert(`${name} says: ${thing}`);
@@ -613,7 +651,10 @@ let ClassMixinProps = {
     You can also pass `Mixin` classes to add additional properties to the subclass.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+    import Mixin from '@ember/object/mixin';
+
+    const Person = EmberObject.extend({
       say(thing) {
         alert(`${this.get('name')} says: ${thing}`);
       }
@@ -657,7 +698,6 @@ let ClassMixinProps = {
 
     proto = Class.prototype = Object.create(this.prototype);
     proto.constructor = Class;
-    generateGuid(proto);
     meta(proto).proto = proto; // this will disable observers on prototype
 
     Class.ClassMixin.apply(Class);
@@ -669,7 +709,9 @@ let ClassMixinProps = {
     containing values to initialize the newly instantiated object with.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       helloWorld() {
         alert(`Hi, my name is ${this.get('name')}`);
       }
@@ -683,7 +725,7 @@ let ClassMixinProps = {
     ```
 
     `create` will call the `init` function if defined during
-    `Ember.AnyObject.extend`
+    `AnyObject.extend`
 
     If no arguments are passed to `create`, it will not set values to the new
     instance during initialization:
@@ -703,12 +745,14 @@ let ClassMixinProps = {
     @param [arguments]*
     @public
   */
-  create(...args) {
+  create(props, extra) {
     let C = this;
-    if (args.length > 0) {
-      this._initProperties(args);
+
+    if (extra === undefined) {
+      return new C(props);
+    } else {
+      return new C(flattenProps.apply(this, arguments));
     }
-    return new C();
   },
 
   /**
@@ -716,7 +760,9 @@ let ClassMixinProps = {
     properties and functions:
 
     ```javascript
-    const MyObject = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const MyObject = EmberObject.extend({
       name: 'an object'
     });
 
@@ -753,7 +799,9 @@ let ClassMixinProps = {
     Augments a constructor's own properties and functions:
 
     ```javascript
-    const MyObject = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const MyObject = EmberObject.extend({
       name: 'an object'
     });
 
@@ -769,7 +817,9 @@ let ClassMixinProps = {
     These are only available on the class and not on any instance of that class.
 
     ```javascript
-    const Person = Ember.Object.extend({
+    import EmberObject from '@ember/object';
+
+    const Person = EmberObject.extend({
       name: '',
       sayHello() {
         alert(`Hello. My name is ${this.get('name')}`);
@@ -834,7 +884,9 @@ let ClassMixinProps = {
     You can pass a hash of these values to a computed property like this:
 
     ```javascript
-    person: Ember.computed(function() {
+    import { computed } from '@ember/object';
+
+    person: computed(function() {
       let personId = this.get('personId');
       return Person.create({ id: personId });
     }).meta({ type: Person })
@@ -855,34 +907,16 @@ let ClassMixinProps = {
     @private
   */
   metaForProperty(key) {
-    let proto = this.proto();
-    let possibleDesc = proto[key];
+    let proto = this.proto(); // ensure prototype is initialized
+    let possibleDesc = descriptorFor(proto, key);
 
     assert(
       `metaForProperty() could not find a computed property with key '${key}'.`,
-      possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor
+      possibleDesc !== undefined
     );
+
     return possibleDesc._meta || {};
   },
-
-  _computedProperties: computed(function() {
-    _hasCachedComputedProperties();
-    let proto = this.proto();
-    let property;
-    let properties = [];
-
-    for (let name in proto) {
-      property = proto[name];
-
-      if (property !== null && typeof property === 'object' && property.isDescriptor) {
-        properties.push({
-          name,
-          meta: property._meta
-        });
-      }
-    }
-    return properties;
-  }).readOnly(),
 
   /**
     Iterate over each computed property for the class, passing its name
@@ -894,21 +928,71 @@ let ClassMixinProps = {
     @param {Object} binding
     @private
   */
-  eachComputedProperty(callback, binding) {
-    let property;
+  eachComputedProperty(callback, binding = this) {
+    this.proto(); // ensure prototype is initialized
     let empty = {};
 
-    let properties = get(this, '_computedProperties');
-
-    for (let i = 0; i < properties.length; i++) {
-      property = properties[i];
-      callback.call(binding || this, property.name, property.meta || empty);
-    }
+    meta(this.prototype).forEachDescriptors((name, descriptor) => {
+      if (descriptor.enumerable) {
+        let meta = descriptor._meta || empty;
+        callback.call(binding, name, meta);
+      }
+    });
   }
 };
 
+if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
+  ClassMixinProps.ClassMixin = REQUIRED;
+  ClassMixinProps.PrototypeMixin = REQUIRED;
+}
+
 function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));
+}
+
+function flattenProps(... props) {
+  let { concatenatedProperties, mergedProperties } = this;
+  let hasConcatenatedProps = concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+  let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+
+  let initProperties = {};
+
+  for (let i = 0; i < props.length; i++) {
+    let properties = props[i];
+
+    assert(
+      'EmberObject.create no longer supports mixing in other ' +
+      'definitions, use .extend & .create separately instead.',
+      !(properties instanceof Mixin)
+    );
+
+    let keyNames = Object.keys(properties);
+
+    for (let j = 0, k = keyNames.length; j < k; j++) {
+      let keyName = keyNames[j];
+      let value = properties[keyName];
+
+      if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+        let baseValue = initProperties[keyName];
+
+        if (baseValue) {
+          value = makeArray(baseValue).concat(value);
+        } else {
+          value = makeArray(value);
+        }
+      }
+
+      if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+        let baseValue = initProperties[keyName];
+
+        value = assign({}, baseValue, value);
+      }
+
+      initProperties[keyName] = value;
+    }
+  }
+
+  return initProperties;
 }
 
 if (DEBUG) {
@@ -919,31 +1003,31 @@ if (DEBUG) {
     @method _onLookup
   */
   ClassMixinProps._onLookup = injectedPropertyAssertion;
+  /**
+    Returns a hash of property names and container names that injected
+    properties will lookup on the container lazily.
+
+    @method _lazyInjections
+    @return {Object} Hash of all lazy injected property keys to container names
+    @private
+  */
+  ClassMixinProps._lazyInjections = function() {
+    let injections = {};
+    let proto = this.proto();
+    let key;
+    let desc;
+
+    for (key in proto) {
+      desc = descriptorFor(proto, key);
+      if (desc instanceof InjectedProperty) {
+        injections[key] = `${desc.type}:${desc.name || key}`;
+      }
+    }
+
+    return injections;
+  };
 }
 
-/**
-  Returns a hash of property names and container names that injected
-  properties will lookup on the container lazily.
-
-  @method _lazyInjections
-  @return {Object} Hash of all lazy injected property keys to container names
-  @private
-*/
-ClassMixinProps._lazyInjections = function() {
-  let injections = {};
-  let proto = this.proto();
-  let key;
-  let desc;
-
-  for (key in proto) {
-    desc = proto[key];
-    if (desc instanceof InjectedProperty) {
-      injections[key] = `${desc.type}:${desc.name || key}`;
-    }
-  }
-
-  return injections;
-};
 
 let ClassMixin = Mixin.create(ClassMixinProps);
 

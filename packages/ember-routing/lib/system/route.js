@@ -4,12 +4,11 @@ import {
   set,
   getProperties,
   setProperties,
-  isNone,
   computed,
   run,
   isEmpty
 } from 'ember-metal';
-import { assert, info, Error as EmberError, isTesting } from 'ember-debug';
+import { assert, info, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   typeOf,
@@ -18,8 +17,7 @@ import {
   Object as EmberObject,
   A as emberA,
   Evented,
-  ActionHandler,
-  deprecateUnderscoreActions
+  ActionHandler
 } from 'ember-runtime';
 import generateController from './generate_controller';
 import {
@@ -34,10 +32,10 @@ function K() { return this; }
 export function defaultSerialize(model, params) {
   if (params.length < 1 || !model) { return; }
 
-  let name = params[0];
   let object = {};
 
   if (params.length === 1) {
+    let name = params[0];
     if (name in model) {
       object[name] = get(model, name);
     } else if (/_id$/.test(name)) {
@@ -63,12 +61,12 @@ export function hasDefaultSerialize(route) {
 */
 
 /**
-  The `Ember.Route` class is used to define individual routes. Refer to
+  The `Route` class is used to define individual routes. Refer to
   the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
   @class Route
   @extends EmberObject
-  @uses Ember.ActionHandler
+  @uses ActionHandler
   @uses Evented
   @since 1.0.0
   @public
@@ -362,7 +360,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     If we visit `/turing/maths?memberQp=member&interestQp=interest` the model for
-    the `member.interest` route is hash with:
+    the `member.interest` route is a hash with:
 
     * `name`: `turing`
     * `memberQp`: `member`
@@ -672,11 +670,12 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     as well as any unhandled errors from child routes:
 
     ```app/routes/admin.js
+    import { reject } from 'rsvp';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
       beforeModel() {
-        return Ember.RSVP.reject('bad things!');
+        return reject('bad things!');
       },
 
       actions: {
@@ -725,10 +724,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     not executed when the model for the route changes.
 
     ```app/routes/application.js
+    import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
-      collectAnalytics: Ember.on('activate', function(){
+      collectAnalytics: on('activate', function(){
         collectAnalytics();
       })
     });
@@ -744,10 +744,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     route. It is not executed when the model for the route changes.
 
     ```app/routes/index.js
+    import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
-      trackPageLeaveAnalytics: Ember.on('deactivate', function(){
+      trackPageLeaveAnalytics: on('deactivate', function(){
         trackPageLeaveAnalytics();
       })
     });
@@ -1007,9 +1008,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/index.js
-    import Ember from 'ember':
+    import Route from '@ember/routing/route';
 
-    export Ember.Route.extend({
+    export Route.extend({
       actions: {
         moveToSecret(context) {
           if (authorized()) {
@@ -1116,7 +1117,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  transitionTo(name, context) {
+  transitionTo(name, context) { // eslint-disable-line no-unused-vars
     return this.router.transitionTo(...prefixRouteNameArg(this, arguments));
   },
 
@@ -1309,20 +1310,17 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       // Update the model dep values used to calculate cache keys.
       stashParamNames(this.router, transition.state.handlerInfos);
 
+      let cache = this._bucketCache;
       let params = transition.params;
       let allParams = queryParams.propertyNames;
-      let cache = this._bucketCache;
 
       allParams.forEach(prop => {
         let aQp = queryParams.map[prop];
-
         aQp.values = params;
-        let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
 
-        if (cache) {
-          let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
-          set(controller, prop, value);
-        }
+        let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
+        let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
+        set(controller, prop, value);
       });
 
       let qpValues = getQueryParamsFor(this, transition.state);
@@ -1344,13 +1342,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   _qpChanged(prop, value, qp) {
     if (!qp) { return; }
 
-    let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, qp.values);
-
     // Update model-dep cache
     let cache = this._bucketCache;
-    if (cache) {
-      cache.stash(cacheKey, prop, value);
-    }
+    let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, qp.values);
+    cache.stash(cacheKey, prop, value);
   },
 
   /**
@@ -1517,7 +1512,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     This hook follows the asynchronous/promise semantics
     described in the documentation for `beforeModel`. In particular,
     if a promise returned from `model` fails, the error will be
-    handled by the `error` hook on `Ember.Route`.
+    handled by the `error` hook on `Route`.
 
     Example
 
@@ -1647,12 +1642,13 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     ```app/routes/post.js
+    import $ from 'jquery';
     import Route from '@ember/routing/route';
 
     export default Route.extend({
       model(params) {
         // the server returns `{ id: 12 }`
-        return Ember.$.getJSON('/posts/' + params.post_id);
+        return $.getJSON('/posts/' + params.post_id);
       },
 
       serialize(model) {
@@ -1665,7 +1661,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     The default `serialize` method will insert the model's `id` into the
     route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'.
     If the route has multiple dynamic segments or does not contain '_id', `serialize`
-    will return `Ember.getProperties(model, params)`
+    will return `getProperties(model, params)`
 
     This method is called when `transitionTo` is called with a context
     in order to populate the URL.
@@ -1729,7 +1725,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     ```
 
     For the `post` route, a controller named `App.PostController` would
-    be used if it is defined. If it is not defined, a basic `Ember.Controller`
+    be used if it is defined. If it is not defined, a basic `Controller`
     instance would be used.
 
     Example
@@ -1750,7 +1746,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  setupController(controller, context, transition) {
+  setupController(controller, context, transition) {  // eslint-disable-line no-unused-vars
     if (controller && (context !== undefined)) {
       set(controller, 'model', context);
     }
@@ -1926,7 +1922,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  renderTemplate(controller, model) {
+  renderTemplate(controller, model) {  // eslint-disable-line no-unused-vars
     this.render();
   },
 
@@ -1997,7 +1993,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     The string values provided for the template name, and controller
     will eventually pass through to the resolver for lookup. See
-    Ember.Resolver for how these are mapped to JavaScript objects in your
+    Resolver for how these are mapped to JavaScript objects in your
     application. The template to render into needs to be related to  either the
     current route or one of its ancestors.
 
@@ -2060,14 +2056,13 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   render(_name, options) {
     let name;
-    let isDefaultRender = true;
-    if (arguments.length > 0) {
-      assert('The name in the given arguments is undefined', !isNone(_name));
-      isDefaultRender = isEmpty(_name);
+    let isDefaultRender = arguments.length === 0;
+    if (!isDefaultRender) {
       if (typeof _name === 'object' && !options) {
         name = this.templateName || this.routeName;
         options = _name;
       } else {
+        assert('The name in the given arguments is undefined or empty string', !isEmpty(_name));
         name = _name;
       }
     }
@@ -2127,7 +2122,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         }
       }
     });
-	```
+        ```
 
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name
@@ -2184,7 +2179,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           name: connection.name,
           controller: undefined,
           template: undefined,
-          ViewClass: undefined
         };
         run.once(this.router, '_setOutlets');
       }
@@ -2207,8 +2201,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     }
   }
 });
-
-deprecateUnderscoreActions(Route);
 
 Route.reopenClass({
   isRouteFactory: true
@@ -2289,7 +2281,6 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     name,
     controller,
     template: template || route._topLevelViewTemplate,
-    ViewClass: undefined
   };
 
   if (DEBUG) {

@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTest } from '../../utils/test-case';
+import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
 import { LinkComponent } from '../../utils/helpers';
@@ -13,26 +13,6 @@ moduleFor('Link-to component', class extends ApplicationTest {
     }, deprecation);
 
     return p;
-  }
-
-  ['@test accessing `currentWhen` triggers a deprecation'](assert) {
-    let component;
-    this.addComponent('link-to', {
-      ComponentClass: LinkComponent.extend({
-        init() {
-          this._super(...arguments);
-          component = this;
-        }
-      })
-    });
-
-    this.addTemplate('application', `{{link-to 'Index' 'index'}}`);
-
-    return this.visit('/').then(() => {
-      expectDeprecation(() => {
-        component.get('currentWhen');
-      }, /Usage of `currentWhen` is deprecated, use `current-when` instead/);
-    });
   }
 
   ['@test should be able to be inserted in DOM when the router is not present']() {
@@ -60,6 +40,30 @@ moduleFor('Link-to component', class extends ApplicationTest {
       this.assertText('foo');
       this.runTask(() => set(controller, 'title', 'bar'));
       this.assertText('bar');
+    });
+  }
+
+  ['@test re-computes active class when params change'](assert) {
+    let controller;
+
+    this.addTemplate('application', '{{link-to "foo" routeName}}');
+
+    this.add('controller:application', Controller.extend({
+      init() {
+        this._super(...arguments);
+        controller = this;
+      },
+      routeName: 'index'
+    }));
+
+    this.router.map(function() {
+      this.route('bar', { path: '/bar' });
+    });
+
+    return this.visit('/bar').then(() => {
+      assert.equal(this.firstChild.classList.contains('active'), false);
+      this.runTask(() => set(controller, 'routeName', 'bar'));
+      assert.equal(this.firstChild.classList.contains('active'), true);
     });
   }
 
@@ -95,24 +99,6 @@ moduleFor('Link-to component', class extends ApplicationTest {
     return this.visit('/').then(() => {
       this.assertText('blah');
       assert.equal(this.$('b').length, 1);
-    });
-  }
-
-  ['@test unwraps controllers']() {
-    this.router.map(function() {
-      this.route('profile', { path: '/profile/:id' });
-    });
-    this.addTemplate('application', `{{#link-to 'profile' otherController}}Text{{/link-to}}`);
-    this.add('controller:application', Controller.extend({
-      otherController: Controller.create({
-        model: 'foo'
-      })
-    }));
-
-    let deprecation = /Providing `{{link-to}}` with a param that is wrapped in a controller is deprecated./;
-
-    return this.visitWithDeprecation('/', deprecation).then(() => {
-      this.assertText('Text');
     });
   }
 
@@ -152,11 +138,11 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
     }));
   }
 
-  ['@test populates href with fully supplied query param values'](assert) {
+  ['@test populates href with fully supplied query param values']() {
     this.addTemplate('index', `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`);
 
     return this.visit('/').then(() => {
-      this.assertComponentElement(this.firstChild.firstElementChild, {
+      this.assertComponentElement(this.firstChild, {
         tagName: 'a',
         attrs: { href: '/?bar=NAW&foo=456' },
         content: 'Index'
@@ -168,11 +154,25 @@ moduleFor('Link-to component with query-params', class extends ApplicationTest {
     this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
 
     return this.visit('/').then(() => {
-      this.assertComponentElement(this.firstChild.firstElementChild, {
+      this.assertComponentElement(this.firstChild, {
         tagName: 'a',
         attrs: { href: '/', class: classMatcher('ember-view active') },
         content: 'Index'
       });
     });
+  }
+});
+
+moduleFor('Link-to component', class extends RenderingTest {
+  ['@test should be able to be inserted in DOM when the router is not present - block']() {
+    this.render(`{{#link-to 'index'}}Go to Index{{/link-to}}`);
+
+    this.assertText('Go to Index');
+  }
+
+  ['@test should be able to be inserted in DOM when the router is not present - inline']() {
+    this.render(`{{link-to 'Go to Index' 'index'}}`);
+
+    this.assertText('Go to Index');
   }
 });

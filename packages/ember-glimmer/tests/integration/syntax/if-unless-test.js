@@ -70,7 +70,7 @@ moduleFor('Syntax test: {{#if}}', class extends RenderingTest {
     this.assertText('123');
   }
 
-  ['@test looking up `undefined` property defaults to false'](assert) {
+  ['@test looking up `undefined` property defaults to false']() {
     this.render(strip`
       {{#if foo.bar.baz}}
         Here!

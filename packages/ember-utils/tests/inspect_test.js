@@ -1,66 +1,71 @@
 import { inspect } from '..';
+import {
+  moduleFor,
+  AbstractTestCase as TestCase
+} from 'internal-test-helpers';
 
 // Symbol is not defined on pre-ES2015 runtimes, so this let's us safely test
 // for it's existence (where a simple `if (Symbol)` would ReferenceError)
 const HAS_NATIVE_SYMBOL = typeof Symbol === 'function';
 
-QUnit.module('Ember.inspect');
+moduleFor('Ember.inspect', class extends TestCase {
+  ['@test strings'](assert) {
+    assert.equal(inspect('foo'), 'foo');
+  }
 
-QUnit.test('strings', function() {
-  equal(inspect('foo'), 'foo');
-});
+  ['@test numbers'](assert) {
+    assert.equal(inspect(2.6), '2.6');
+  }
 
-QUnit.test('numbers', function() {
-  equal(inspect(2.6), '2.6');
-});
+  ['@test null'](assert) {
+    assert.equal(inspect(null), 'null');
+  }
 
-QUnit.test('null', function() {
-  equal(inspect(null), 'null');
-});
+  ['@test undefined'](assert) {
+    assert.equal(inspect(undefined), 'undefined');
+  }
 
-QUnit.test('undefined', function() {
-  equal(inspect(undefined), 'undefined');
-});
+  ['@test true'](assert) {
+    assert.equal(inspect(true), 'true');
+  }
 
-QUnit.test('true', function() {
-  equal(inspect(true), 'true');
-});
+  ['@test false'](assert) {
+    assert.equal(inspect(false), 'false');
+  }
 
-QUnit.test('false', function() {
-  equal(inspect(false), 'false');
-});
+  ['@test object'](assert) {
+    assert.equal(inspect({}), '{}');
+    assert.equal(inspect({ foo: 'bar' }), '{foo: bar}');
+    assert.equal(inspect({ foo() { return this; } }), '{foo: function() { ... }}');
+  }
 
-QUnit.test('object', function() {
-  equal(inspect({}), '{}');
-  equal(inspect({ foo: 'bar' }), '{foo: bar}');
-  equal(inspect({ foo() { return this; } }), '{foo: function() { ... }}');
-});
+  ['@test objects without a prototype'](assert) {
+    let prototypelessObj = Object.create(null);
+    assert.equal(inspect({ foo: prototypelessObj }), '{foo: [object Object]}');
+  }
 
-QUnit.test('objects without a prototype', function() {
-  let prototypelessObj = Object.create(null);
-  equal(inspect({ foo: prototypelessObj }), '{foo: [object Object]}');
-});
+  ['@test array'](assert) {
+    assert.equal(inspect([1, 2, 3]), '[1,2,3]');
+  }
 
-QUnit.test('array', function() {
-  equal(inspect([1, 2, 3]), '[1,2,3]');
-});
+  ['@test regexp'](assert) {
+    assert.equal(inspect(/regexp/), '/regexp/');
+  }
 
-QUnit.test('regexp', function() {
-  equal(inspect(/regexp/), '/regexp/');
-});
+  ['@test date'](assert) {
+    let inspected = inspect(new Date('Sat Apr 30 2011 13:24:11'));
+    assert.ok(inspected.match(/Sat Apr 30/), 'The inspected date has its date');
+    assert.ok(inspected.match(/2011/), 'The inspected date has its year');
+    assert.ok(inspected.match(/13:24:11/), 'The inspected date has its time');
+  }
 
-QUnit.test('date', function() {
-  let inspected = inspect(new Date('Sat Apr 30 2011 13:24:11'));
-  ok(inspected.match(/Sat Apr 30/), 'The inspected date has its date');
-  ok(inspected.match(/2011/), 'The inspected date has its year');
-  ok(inspected.match(/13:24:11/), 'The inspected date has its time');
-});
-
-QUnit.test('inspect outputs the toString() representation of Symbols', function() {
-  if (HAS_NATIVE_SYMBOL) {
-    let symbol = Symbol('test');
-    equal(inspect(symbol), 'Symbol(test)');
-  } else {
-    expect(0);
+  ['@test inspect outputs the toString() representation of Symbols'](assert) {
+    if (HAS_NATIVE_SYMBOL) {
+      let symbol = Symbol('test');
+      assert.equal(inspect(symbol), 'Symbol(test)');
+    } else {
+      assert.expect(0);
+    }
   }
 });
+

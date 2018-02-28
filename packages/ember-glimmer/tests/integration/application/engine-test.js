@@ -5,8 +5,48 @@ import { Controller, RSVP } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Engine } from 'ember-application';
 import { Route } from 'ember-routing';
+import { run } from 'ember-metal';
 
 moduleFor('Application test: engine rendering', class extends ApplicationTest {
+  get routerOptions() {
+    return {
+      location: 'none',
+
+      // This creates a handler function similar to what is in use by ember-engines
+      // internally. Specifically, it returns a promise when transitioning _into_
+      // the first engine route, but returns the synchronously available handler
+      // _after_ the engine has been resolved.
+      _getHandlerFunction() {
+        let syncHandler = this._super(...arguments);
+        this._enginePromises = Object.create(null);
+        this._resolvedEngines = Object.create(null);
+
+        return name => {
+          let engineInfo = this._engineInfoByRoute[name];
+          if (!engineInfo) { return syncHandler(name); }
+
+          let engineName = engineInfo.name;
+          if (this._resolvedEngines[engineName]) { return syncHandler(name); }
+
+          let enginePromise = this._enginePromises[engineName];
+
+          if (!enginePromise) {
+            enginePromise = new RSVP.Promise(resolve => {
+              setTimeout(() => {
+                this._resolvedEngines[engineName] = true;
+
+                resolve();
+              }, 1);
+            });
+            this._enginePromises[engineName] = enginePromise;
+          }
+
+          return enginePromise.then(() => syncHandler(name));
+        };
+      }
+    };
+  }
+
   setupAppAndRoutableEngine(hooks = []) {
     let self = this;
 
@@ -134,7 +174,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this._additionalEngineRegistrations = callback;
   }
 
-  setupEngineWithAttrs(hooks) {
+  setupEngineWithAttrs() {
     this.addTemplate('application', 'Application{{mount "chat-engine"}}');
 
     this.add('engine:chat-engine', Engine.extend({
@@ -271,7 +311,10 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.setupAppAndRoutableEngine(hooks);
 
     return this.visit('/blog', { shouldRender: false }).then(() => {
-      this.assertText('');
+      assert.strictEqual(
+        document.getElementById('qunit-fixture').children.length, 0,
+        `there are no elements in the qunit-fixture element`
+      );
 
       this.assert.deepEqual(hooks, [
         'application - application',
@@ -354,7 +397,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     });
   }
 
-  ['@test engine should lookup and use correct controller'](assert) {
+  ['@test engine should lookup and use correct controller']() {
     this.setupAppAndRoutableEngine();
 
     return this.visit('/blog?lang=English').then(() => {
@@ -365,8 +408,15 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   ['@test error substate route works for the application route of an Engine'](assert) {
     assert.expect(2);
 
+    let errorEntered = RSVP.defer();
+
     this.setupAppAndRoutableEngine();
     this.additionalEngineRegistrations(function() {
+      this.register('route:application_error', Route.extend({
+        activate() {
+          run.next(errorEntered.resolve);
+        }
+      }));
       this.register('template:application_error', compile('Error! {{model.message}}'));
       this.register('route:post', Route.extend({
         model() {
@@ -379,6 +429,8 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('Application');
       return this.transitionTo('blog.post');
     }).then(() => {
+      return errorEntered.promise;
+    }).then(() => {
       this.assertText('ApplicationError! Oh, noes!');
     });
   }
@@ -386,8 +438,15 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   ['@test error route works for the application route of an Engine'](assert) {
     assert.expect(2);
 
+    let errorEntered = RSVP.defer();
+
     this.setupAppAndRoutableEngine();
     this.additionalEngineRegistrations(function() {
+      this.register('route:error', Route.extend({
+        activate() {
+          run.next(errorEntered.resolve);
+        }
+      }));
       this.register('template:error', compile('Error! {{model.message}}'));
       this.register('route:post', Route.extend({
         model() {
@@ -400,6 +459,8 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('Application');
       return this.transitionTo('blog.post');
     }).then(() => {
+      return errorEntered.promise;
+    }).then(() => {
       this.assertText('ApplicationEngineError! Oh, noes!');
     });
   }
@@ -407,8 +468,15 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   ['@test error substate route works for a child route of an Engine'](assert) {
     assert.expect(2);
 
+    let errorEntered = RSVP.defer();
+
     this.setupAppAndRoutableEngine();
     this.additionalEngineRegistrations(function() {
+      this.register('route:post_error', Route.extend({
+        activate() {
+          run.next(errorEntered.resolve);
+        }
+      }));
       this.register('template:post_error', compile('Error! {{model.message}}'));
       this.register('route:post', Route.extend({
         model() {
@@ -421,6 +489,8 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('Application');
       return this.transitionTo('blog.post');
     }).then(() => {
+      return errorEntered.promise;
+    }).then(() => {
       this.assertText('ApplicationEngineError! Oh, noes!');
     });
   }
@@ -428,8 +498,15 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
   ['@test error route works for a child route of an Engine'](assert) {
     assert.expect(2);
 
+    let errorEntered = RSVP.defer();
+
     this.setupAppAndRoutableEngine();
     this.additionalEngineRegistrations(function() {
+      this.register('route:post.error', Route.extend({
+        activate() {
+          run.next(errorEntered.resolve);
+        }
+      }));
       this.register('template:post.error', compile('Error! {{model.message}}'));
       this.register('route:post.comments', Route.extend({
         model() {
@@ -442,24 +519,31 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('Application');
       return this.transitionTo('blog.post.comments');
     }).then(() => {
+      return errorEntered.promise;
+    }).then(() => {
       this.assertText('ApplicationEngineError! Oh, noes!');
     });
   }
 
   ['@test loading substate route works for the application route of an Engine'](assert) {
     assert.expect(3);
+    let done = assert.async();
 
-    let resolveLoading;
+    let loadingEntered = RSVP.defer();
+    let resolveLoading = RSVP.defer();
 
     this.setupAppAndRoutableEngine();
     this.additionalEngineRegistrations(function() {
+      this.register('route:application_loading', Route.extend({
+        activate() {
+          run.next(loadingEntered.resolve);
+        }
+      }));
       this.register('template:application_loading', compile('Loading'));
       this.register('template:post', compile('Post'));
       this.register('route:post', Route.extend({
         model() {
-          return new RSVP.Promise((resolve) => {
-            resolveLoading = resolve;
-          });
+          return resolveLoading.promise;
         }
       }));
     });
@@ -468,31 +552,39 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('Application');
       let transition = this.transitionTo('blog.post');
 
-      this.runTaskNext(() => {
+      loadingEntered.promise.then(() => {
         this.assertText('ApplicationLoading');
-        resolveLoading();
+        resolveLoading.resolve();
+
+        return this.runTaskNext().then(() => {
+          this.assertText('ApplicationEnginePost');
+          done();
+        });
       });
 
-      return transition.then(() => {
-        this.runTaskNext(() => this.assertText('ApplicationEnginePost'));
-      });
+      return transition;
     });
   }
 
   ['@test loading route works for the application route of an Engine'](assert) {
     assert.expect(3);
+    let done = assert.async();
 
-    let resolveLoading;
+    let loadingEntered = RSVP.defer();
+    let resolveLoading = RSVP.defer();
 
     this.setupAppAndRoutableEngine();
     this.additionalEngineRegistrations(function() {
+      this.register('route:loading', Route.extend({
+        activate() {
+          run.next(loadingEntered.resolve);
+        }
+      }));
       this.register('template:loading', compile('Loading'));
       this.register('template:post', compile('Post'));
       this.register('route:post', Route.extend({
         model() {
-          return new RSVP.Promise((resolve) => {
-            resolveLoading = resolve;
-          });
+          return resolveLoading.promise;
         }
       }));
     });
@@ -501,14 +593,17 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('Application');
       let transition = this.transitionTo('blog.post');
 
-      this.runTaskNext(() => {
+      loadingEntered.promise.then(() => {
         this.assertText('ApplicationEngineLoading');
-        resolveLoading();
+        resolveLoading.resolve();
+
+        return this.runTaskNext().then(() => {
+          this.assertText('ApplicationEnginePost');
+          done();
+        });
       });
 
-      return transition.then(() => {
-        this.runTaskNext(() => this.assertText('ApplicationEnginePost'));
-      });
+      return transition;
     });
   }
 
@@ -536,33 +631,38 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('ApplicationEngineComments');
       let transition = this.transitionTo('blog.post.likes');
 
-      this.runTaskNext(() => {
+      this.runTaskNext().then(() => {
         this.assertText('ApplicationEngineLoading');
         resolveLoading();
       });
 
-      return transition.then(() => {
-        this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
-      });
+      return transition
+        .then(() => this.runTaskNext())
+        .then(() => this.assertText('ApplicationEngineLikes'));
     });
   }
 
   ['@test loading route works for a child route of an Engine'](assert) {
     assert.expect(3);
+    let done = assert.async();
 
-    let resolveLoading;
+    let loadingEntered = RSVP.defer();
+    let resolveLoading = RSVP.defer();
 
     this.setupAppAndRoutableEngine();
     this.additionalEngineRegistrations(function() {
       this.register('template:post', compile('{{outlet}}'));
       this.register('template:post.comments', compile('Comments'));
+      this.register('route:post.loading', Route.extend({
+        activate() {
+          run.next(loadingEntered.resolve);
+        }
+      }));
       this.register('template:post.loading', compile('Loading'));
       this.register('template:post.likes', compile('Likes'));
       this.register('route:post.likes', Route.extend({
         model() {
-          return new RSVP.Promise((resolve) => {
-            resolveLoading = resolve;
-          });
+          return resolveLoading.promise;
         }
       }));
     });
@@ -571,14 +671,17 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.assertText('ApplicationEngineComments');
       let transition = this.transitionTo('blog.post.likes');
 
-      this.runTaskNext(() => {
+      loadingEntered.promise.then(() => {
         this.assertText('ApplicationEngineLoading');
-        resolveLoading();
+        resolveLoading.resolve();
+
+        return this.runTaskNext().then(() => {
+          this.assertText('ApplicationEngineLikes');
+          done();
+        });
       });
 
-      return transition.then(() => {
-        this.runTaskNext(() => this.assertText('ApplicationEngineLikes'));
-      });
+      return transition;
     });
   }
 
@@ -617,5 +720,29 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       assert.ok(this.stringsEndWith(href1, suffix1));
       assert.ok(this.stringsEndWith(href1337, suffix1337));
     });
+  }
+
+  ['@test visit() routable engine which errors on init'](assert) {
+    assert.expect(1);
+
+    let hooks = [];
+
+    this.additionalEngineRegistrations(function() {
+      this.register('route:application', Route.extend({
+        init() {
+          throw new Error('Whoops! Something went wrong...');
+        }
+      }));
+    });
+
+    this.setupAppAndRoutableEngine(hooks);
+
+    return this.visit('/', { shouldRender: true })
+      .then(() => {
+        return this.visit('/blog');
+      })
+      .catch((error) => {
+        assert.equal(error.message, 'Whoops! Something went wrong...');
+      });
   }
 });

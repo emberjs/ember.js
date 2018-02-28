@@ -1,10 +1,9 @@
-import { peekMeta } from './meta';
+const PROXIES = new WeakMap();
 
-export function isProxy(value) {
-  if (typeof value === 'object' && value !== null) {
-    let meta = peekMeta(value);
-    return meta === undefined ? false : meta.isProxy();
-  }
+export function isProxy(object) {
+  return PROXIES.has(object);
+}
 
-  return false;
+export function setProxy(object) {
+  return PROXIES.set(object, true);
 }

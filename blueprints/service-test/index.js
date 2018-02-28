@@ -1,13 +1,12 @@
-/* eslint-env node */
+'use strict';
 
-var testInfo = require('ember-cli-test-info');
-var useTestFrameworkDetector = require('../test-framework-detector');
+const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a service unit test.',
   locals: function(options) {
     return {
-      friendlyTestDescription: testInfo.description(options.entity.name, 'Unit', 'Service')
+      friendlyTestDescription: ['Unit', 'Service', options.entity.name].join(' | ')
     };
   },
 });

@@ -4,14 +4,20 @@ import { Error as EmberError } from 'ember-debug';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export function routeArgs(targetRouteName, models, queryParams) {
-  let args = [];
-  if (typeof targetRouteName === 'string') {
-    args.push(`${targetRouteName}`);
+export function extractRouteArgs(args) {
+  args = args.slice();
+  let possibleQueryParams = args[args.length - 1];
+
+  let queryParams;
+  if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+    queryParams = args.pop().queryParams;
+  } else {
+    queryParams = {};
   }
-  args.push(...models);
-  args.push({ queryParams });
-  return args;
+
+  let routeName = args.shift();
+
+  return { routeName, models: args, queryParams };
 }
 
 export function getActiveTargetName(router) {
@@ -167,8 +173,8 @@ function accumulateQueryParamDescriptors(_desc, accum) {
 
   @private
 */
-function resemblesURL(str) {
-  return typeof str === 'string' && (str === '' || str.charAt(0) === '/');
+export function resemblesURL(str) {
+  return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
 /*

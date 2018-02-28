@@ -387,7 +387,7 @@ moduleFor('Components test: sendAction to a controller', class extends Applicati
 
     this.addTemplate('application', '{{x-parent}}');
     this.add('controller:application', Controller.extend({
-      send(actionName) {
+      send() {
         throw new Error('controller action should not be called');
       }
     }));
@@ -600,13 +600,18 @@ moduleFor('Components test: send', class extends RenderingTest {
   }
 
   ['@test actions cannot be provided at create time'](assert) {
-    expectAssertion(() => Component.create({
-      actions: {
-        foo() {
-          assert.ok(true, 'foo');
+    this.registerComponent('foo-bar', Component.extend());
+    let ComponentFactory = this.owner.factoryFor('component:foo-bar');
+
+    expectAssertion(() => {
+      ComponentFactory.create({
+        actions: {
+          foo() {
+            assert.ok(true, 'foo');
+          }
         }
-      }
-    }));
+      });
+    }, /`actions` must be provided at extend time, not at create time/);
     // but should be OK on an object that doesn't mix in Ember.ActionHandler
     EmberObject.create({
       actions: ['foo']
