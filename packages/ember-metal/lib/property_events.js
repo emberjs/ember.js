@@ -206,7 +206,7 @@ function endPropertyChanges() {
 
   @method changeProperties
   @param {Function} callback
-  @public
+  @private
 */
 function changeProperties(callback) {
   beginPropertyChanges();
