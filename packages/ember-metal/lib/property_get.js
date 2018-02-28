@@ -2,7 +2,7 @@
 @module @ember/object
 */
 
-import { assert } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
 import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_GETTER } from 'ember/features';
 import { isPath } from './path_cache';
@@ -96,6 +96,15 @@ export function get(obj, keyName) {
       if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
         descriptor = value[DESCRIPTOR];
       } else if (isDescriptor(value)) {
+        deprecate(
+          `[DEPRECATED] computed property '${keyName}' was not set on object '${obj && obj.toString && obj.toString()}' via 'defineProperty'`,
+          !EMBER_METAL_ES5_GETTERS,
+          {
+            id: 'ember-meta.descriptor-on-object',
+            until: '3.5.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties'
+          }
+        );
         descriptor = value;
       }
     }
