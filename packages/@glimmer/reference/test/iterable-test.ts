@@ -1,5 +1,4 @@
 import {
-  VOLATILE_TAG,
   BasicReference,
   RevisionTag,
   AbstractIterable,
