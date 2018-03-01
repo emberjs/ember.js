@@ -4,7 +4,7 @@ import { Environment } from '../environment';
 import Bounds, { bounds, Cursor } from '../bounds';
 import { Simple, Option, Opaque } from "@glimmer/interfaces";
 import { DynamicContentWrapper } from './content/dynamic';
-import { expect, assert, Stack } from "@glimmer/util";
+import { expect, assert, Stack, isSerializationFirstNode, SERIALIZATION_FIRST_NODE_STRING} from "@glimmer/util";
 import { SVG_NAMESPACE } from '../dom/helper';
 
 export class RehydratingCursor extends Cursor {
@@ -31,11 +31,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let node = this.currentCursor!.element.firstChild;
 
     while (node !== null) {
-      if (isComment(node) && node.nodeValue === '%+b:0%') { break; }
+      if (isComment(node) && isSerializationFirstNode(node)) { break; }
       node = node.nextSibling;
     }
 
-    assert(node, 'Must have opening comment <!--%+b:0%--> for rehydration.');
+    assert(node, `Must have opening comment <!--${SERIALIZATION_FIRST_NODE_STRING}--> for rehydration.`);
     this.candidate = node;
   }
 
