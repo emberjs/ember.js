@@ -2,7 +2,7 @@ import { EMPTY_CACHE } from '../utils';
 import { dict } from '@glimmer/util';
 import Meta from '../meta';
 import { PropertyReference } from './descriptors';
-import { VOLATILE_TAG, PathReference as IPathReference, Reference, Tag } from '@glimmer/reference';
+import { PathReference as IPathReference, Reference, Tag, CURRENT_TAG } from '@glimmer/reference';
 import { Dict, HasGuid } from '@glimmer/util';
 import { Option } from "@glimmer/interfaces";
 
@@ -14,7 +14,7 @@ export default class PathReference<T> implements IPathReference<T>, HasGuid {
   private chains: Option<Dict<PathReference<any>>> = null;
   private lastParentValue: any = EMPTY_CACHE;
   public _guid = 0;
-  public tag: Tag = VOLATILE_TAG;
+  public tag: Tag = CURRENT_TAG;
 
   constructor(parent: IPathReference<T>, property: string) {
     this.parent = parent;

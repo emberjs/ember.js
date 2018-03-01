@@ -17,6 +17,7 @@ import { assign } from "@glimmer/util";
 import { Template } from "@glimmer/interfaces";
 import { RenderResult, clientBuilder } from '@glimmer/runtime';
 import { assert } from './support';
+import { bump } from "@glimmer/reference";
 
 export class EmberishRootView extends EmberObject {
   public element: Element;
@@ -159,6 +160,7 @@ export function assertElementIsEmberishElement(element: Element | null, ...args:
 }
 
 function rerender() {
+  bump();
   view.rerender();
 }
 
