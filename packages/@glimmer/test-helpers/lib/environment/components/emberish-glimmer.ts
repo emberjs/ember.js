@@ -1,4 +1,3 @@
-import { TemplateOptions } from "@glimmer/opcode-compiler";
 import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, Invocation } from "@glimmer/runtime";
 import { Opaque, Option, ComponentCapabilities } from "@glimmer/interfaces";
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
@@ -58,9 +57,9 @@ export class EmberishGlimmerComponentManager
   getLayout(state: TestComponentDefinitionState, resolver: LazyRuntimeResolver | EagerRuntimeResolver): Invocation {
     let { name, locator } = state;
     if (resolver instanceof LazyRuntimeResolver) {
-      let compile = (source: string, options: TemplateOptions<{}>) => {
+      let compile = (source: string) => {
         let template = createTemplate(source);
-        let layout = template.create(options).asLayout();
+        let layout = template.create(resolver.compiler).asLayout();
 
         return {
           handle: layout.compile(),

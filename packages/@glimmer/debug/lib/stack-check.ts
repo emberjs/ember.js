@@ -1,4 +1,4 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple } from "@glimmer/interfaces";
+import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple, Maybe } from "@glimmer/interfaces";
 
 export interface Checker<T> {
   type: T;
@@ -76,10 +76,10 @@ class InstanceofChecker<T> implements Checker<T> {
 class OptionChecker<T> implements Checker<Option<T>> {
   type: Option<T>;
 
-  constructor(private checker: Checker<T>) {}
+  constructor(private checker: Checker<T>, private emptyValue: null | undefined) {}
 
   validate(value: Opaque): value is Option<T> {
-    if (value === null) return true;
+    if (value === this.emptyValue) return true;
     return this.checker.validate(value);
   }
 
@@ -172,12 +172,32 @@ class OpaqueChecker implements Checker<Opaque> {
   }
 }
 
+export interface SafeString {
+  toHTML(): string;
+}
+
+class SafeStringChecker implements Checker<SafeString> {
+  type: SafeString;
+
+  validate(value: Opaque): value is SafeString {
+    return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
+  }
+
+  expected(): string {
+    return `SafeString`;
+  }
+}
+
 export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
   return new InstanceofChecker<T>(Class);
 }
 
 export function CheckOption<T>(checker: Checker<T>): Checker<Option<T>> {
-  return new OptionChecker(checker);
+  return new OptionChecker(checker, null);
+}
+
+export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
+  return new OptionChecker(checker, undefined);
 }
 
 export function CheckInterface<I extends { [P in keyof O]: O[P]['type'] }, O extends Dict<Checker<Opaque>>>(obj: O): Checker<I> {
@@ -217,6 +237,7 @@ export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolea
 export const CheckHandle: Checker<number> = CheckNumber;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckOpaque: Checker<Opaque> = new OpaqueChecker();
+export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
 
 export function CheckOr<T, U>(left: Checker<T>, right: Checker<U>): Checker<T | U> {
   return new OrChecker(left, right);
@@ -234,6 +255,9 @@ export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> =
 
 export const CheckElement: Checker<Simple.Element> =
   CheckInterface({ nodeType: CheckValue(1), tagName: CheckString, nextSibling: CheckOpaque });
+
+export const CheckDocumentFragment: Checker<Simple.DocumentFragment> =
+  CheckInterface({ nodeType: CheckValue(11), nextSibling: CheckOpaque });
 
 export const CheckNode: Checker<Simple.Node> =
   CheckInterface({ nodeType: CheckNumber, nextSibling: CheckOpaque });

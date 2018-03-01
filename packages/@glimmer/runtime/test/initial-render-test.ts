@@ -86,7 +86,7 @@ class Rehydration extends AbstractRehydrationTests {
   @test "mismatched text nodes"() {
     let template = '{{content}}';
     this.renderServerSide(template, { content: 'hello' });
-    this.assertServerOutput("hello");
+    this.assertServerOutput(OPEN, "hello", CLOSE);
 
     this.renderClientSide(template, { content: 'goodbye' });
     this.assertHTML("goodbye");
@@ -98,7 +98,7 @@ class Rehydration extends AbstractRehydrationTests {
   @test "mismatched text nodes (server-render empty)"() {
     let template = "{{content}} world";
     this.renderServerSide(template, { content: '' });
-    this.assertServerOutput(EMPTY, " world");
+    this.assertServerOutput(OPEN, EMPTY, CLOSE, " world");
 
     this.renderClientSide(template, { content: 'hello' });
     this.assertHTML("hello world");
@@ -124,7 +124,7 @@ class Rehydration extends AbstractRehydrationTests {
   @test "extra nodes at the end"() {
     let template = "{{#if admin}}<div>hi admin</div>{{else}}<div>HAXOR{{stopHaxing}}</div>{{/if}}";
     this.renderServerSide(template, { admin: false, stopHaxing: 'stahp' });
-    this.assertServerOutput(OPEN, "<div>HAXOR<!--%|%-->stahp</div>", CLOSE);
+    this.assertServerOutput(OPEN, "<div>HAXOR", OPEN, "stahp", CLOSE, "</div>", CLOSE);
 
     this.renderClientSide(template, { admin: true });
     this.assertRehydrationStats({ nodesRemoved: 1 });
@@ -138,7 +138,7 @@ class Rehydration extends AbstractRehydrationTests {
     let env = this.delegate.serverEnv;
     let node = env.getAppendOperations().createTextNode('hello');
     this.renderServerSide(template, { node });
-    this.assertServerOutput('<div>hello</div>');
+    this.assertServerOutput('<div>', OPEN, 'hello', CLOSE, '</div>');
     env = this.delegate.clientEnv;
     let clientNode = env.getDOM().createTextNode('hello');
     this.context = { node: clientNode };

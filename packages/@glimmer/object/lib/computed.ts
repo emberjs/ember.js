@@ -142,7 +142,7 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
   desc.get = function(this: any) {
     let lastSuper = this._super;
     this._super = function(this: any) {
-      return (superDesc.get as any).call(this);
+      return (superDesc as any).get.call(this);
     };
 
     try {

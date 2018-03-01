@@ -113,7 +113,7 @@ export namespace Statements {
   export type StaticArg     = [Opcodes.StaticArg, str, Expression];
   export type TrustingAttr  = [Opcodes.TrustingAttr, str, Expression, str];
   export type Debugger      = [Opcodes.Debugger, Core.EvalInfo];
-  export type ClientSide    = [Opcodes.ClientSideStatement, any];
+  export type ClientSide    = [Opcodes.ClientSideStatement, any] | [Opcodes.ClientSideStatement, any, any];
 
   export type Statement =
       Text
@@ -195,12 +195,12 @@ export interface SerializedTemplate<T extends TemplateMeta> {
 export type SerializedTemplateBlockJSON = string;
 
 /**
- * A JSON object containing the SerializedTemplateBlock as JSON and TemplateMeta.
+ * A JSON object containing the SerializedTemplateBlock as JSON and Locator.
  */
-export interface SerializedTemplateWithLazyBlock<TemplateMeta> {
+export interface SerializedTemplateWithLazyBlock<Locator> {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
-  meta: TemplateMeta;
+  meta: Locator;
 }
 
 /**

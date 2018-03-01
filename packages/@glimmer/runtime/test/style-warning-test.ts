@@ -8,7 +8,7 @@ let env: TestEnvironment;
 let root: HTMLElement;
 
 function compile(template: string) {
-  let out = env.compile(template);
+  let out = env.preprocess(template);
   return out;
 }
 

@@ -8,7 +8,6 @@ import GlimmerObject, {
 } from './object';
 
 import { ROOT } from './utils';
-import { Option } from "@glimmer/interfaces";
 
 const { isArray } = Array;
 
@@ -33,7 +32,7 @@ export interface Extensions {
 }
 
 export class Mixin {
-  private extensions: Option<Dict<any>> = null;
+  private extensions: Dict<any> = null as any; // assigned before used
   private concatenatedProperties: string[] = [];
   private mergedProperties: string[] = [];
   private dependencies: Mixin[] = [];

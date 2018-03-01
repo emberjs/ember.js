@@ -15,25 +15,20 @@ function isTrustedValue(value: any) {
 }
 
 export default class TemplateCompiler {
-  static compile(options: CompileOptions, ast: AST.Program): Template {
+  static compile(ast: AST.Program): Template {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
-    let compiler = new TemplateCompiler(options);
+    let compiler = new TemplateCompiler();
     let opcodes = compiler.process(templateVisitor.actions);
     return JavaScriptCompiler.process(opcodes, ast['symbols']);
   }
 
-  private options: CompileOptions;
   private templateId = 0;
   private templateIds: number[] = [];
   private symbolStack = new Stack<SymbolTable>();
   private opcodes: any[] = [];
   private includeMeta = false;
-
-  constructor(options: CompileOptions) {
-    this.options = options || {};
-  }
 
   get symbols(): SymbolTable {
     return expect(this.symbolStack.current, 'Expected a symbol table on the stack');

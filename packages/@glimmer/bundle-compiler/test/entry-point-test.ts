@@ -19,10 +19,6 @@ class TestCompilerDelegate implements CompilerDelegate<{}> {
     throw new Error("Method not implemented.");
   }
 
-  getComponentLayout(): never {
-    throw new Error("Method not implemented.");
-  }
-
   hasHelperInScope(): boolean {
     return false;
   }
@@ -49,7 +45,7 @@ class TestCompilerDelegate implements CompilerDelegate<{}> {
 }
 
 class SimpleResolver implements RuntimeResolver<{}> {
-  lookupComponent(): never {
+  lookupComponentDefinition(): never {
     throw new Error("Method not implemented.");
   }
 

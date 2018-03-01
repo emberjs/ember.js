@@ -16,7 +16,6 @@ function currentNode(cursor: ElementBuilder | { element: Simple.Element, nextSib
 
 class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   private serializeBlockDepth = 0;
-  private inTable = false;
 
   __openBlock(): void {
     let depth = this.serializeBlockDepth++;
@@ -79,8 +78,6 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
         this.constructing!['needsExtraClose'] = true;
         this.flushElement();
       }
-
-      this.inTable = false;
     }
 
     return super.openElement(tag);

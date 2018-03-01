@@ -1,18 +1,12 @@
 import { clear, Cursor, DestroyableBounds, single, Bounds, bounds } from '../bounds';
 
 import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
-import { isString, isSafeString, isNode, isFragment, isEmpty } from '../dom/normalize';
 
 import { Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from '@glimmer/util';
 
 import { Environment } from '../environment';
 
 import { VersionedReference } from '@glimmer/reference';
-
-import { DynamicContent, DynamicContentWrapper } from './content/dynamic';
-import DynamicTextContent from './content/text';
-import DynamicNodeContent from './content/node';
-import DynamicHTMLContent, { DynamicTrustedHTMLContent } from './content/html';
 
 import { DynamicAttribute } from './attributes/dynamic';
 
@@ -74,8 +68,12 @@ export interface DOMStack {
   flushElement(): void;
   appendText(string: string): Simple.Text;
   appendComment(string: string): Simple.Comment;
-  appendTrustingDynamicContent(reference: Opaque): DynamicContentWrapper;
-  appendCautiousDynamicContent(reference: Opaque): DynamicContentWrapper;
+
+  appendDynamicHTML(value: string): void;
+  appendDynamicText(value: string): Simple.Text;
+  appendDynamicFragment(value: Simple.DocumentFragment): void;
+  appendDynamicNode(value: Simple.Node): void;
+
   setStaticAttribute(name: string, value: string, namespace: Option<string>): void;
   setDynamicAttribute(name: string, value: Opaque, isTrusting: boolean, namespace: Option<string>): DynamicAttribute;
   closeElement(): void;
@@ -90,8 +88,6 @@ export interface TreeOperations {
   __appendComment(string: string): Simple.Comment;
   __appendNode(node: Simple.Node): Simple.Node;
   __appendHTML(html: string): Bounds;
-  __appendTrustingDynamicContent(value: Opaque): DynamicContent;
-  __appendCautiousDynamicContent(value: Opaque): DynamicContent;
   __setAttribute(name: string, value: string, namespace: Option<string>): void;
   __setProperty(name: string, value: Opaque): void;
 }
@@ -318,66 +314,34 @@ export class NewElementBuilder implements ElementBuilder {
     return this.dom.insertHTMLBefore(this.element, this.nextSibling, html);
   }
 
-  appendTrustingDynamicContent(value: Opaque): DynamicContentWrapper {
-    let wrapper = new DynamicContentWrapper(this.__appendTrustingDynamicContent(value));
-    this.didAppendBounds(wrapper);
-    return wrapper;
+  appendDynamicHTML(value: string): void {
+    let bounds = this.trustedContent(value);
+    this.didAppendBounds(bounds);
   }
 
-  __appendTrustingDynamicContent(value: Opaque): DynamicContent {
-    if (isString(value)) {
-      return this.trustedContent(value);
-    } else if (isEmpty(value)) {
-      return this.trustedContent('');
-    } else if (isSafeString(value)) {
-      return this.trustedContent(value.toHTML());
-    } if (isFragment(value)) {
-      let bounds = this.__appendFragment(value);
-      return new DynamicNodeContent(bounds, value, true);
-    } else if (isNode(value)) {
-      let node = this.__appendNode(value);
-      return new DynamicNodeContent(single(this.element, node), node, true);
-    }
-
-    return this.trustedContent(String(value));
+  appendDynamicText(value: string): Simple.Text {
+    let node = this.untrustedContent(value);
+    this.didAppendNode(node);
+    return node;
   }
 
-  appendCautiousDynamicContent(value: Opaque): DynamicContentWrapper {
-    let wrapper = new DynamicContentWrapper(this.__appendCautiousDynamicContent(value));
-    this.didAppendBounds(wrapper.bounds);
-    return wrapper;
+  appendDynamicFragment(value: Simple.DocumentFragment): void {
+    let bounds = this.__appendFragment(value);
+    this.didAppendBounds(bounds);
   }
 
-  __appendCautiousDynamicContent(value: Opaque): DynamicContent {
-    if (isString(value)) {
-      return this.untrustedContent(value);
-    } else if (isEmpty(value)) {
-      return this.untrustedContent('');
-    } else if (isFragment(value)) {
-      let bounds = this.__appendFragment(value);
-      return new DynamicNodeContent(bounds, value, false);
-    } else if (isNode(value)) {
-      let node = this.__appendNode(value);
-      return new DynamicNodeContent(single(this.element, node), node, false);
-    } else if (isSafeString(value)) {
-      let normalized = value.toHTML();
-      let bounds = this.__appendHTML(normalized);
-      // let bounds = this.dom.insertHTMLBefore(this.element, this.nextSibling, normalized);
-      return new DynamicHTMLContent(bounds, value, false);
-    }
-
-    return this.untrustedContent(String(value));
+  appendDynamicNode(value: Simple.Node): void {
+    let node = this.__appendNode(value);
+    let bounds = single(this.element, node);
+    this.didAppendBounds(bounds);
   }
 
-  private trustedContent(value: string) {
-    let bounds = this.__appendHTML(value);
-    return new DynamicTrustedHTMLContent(bounds, value, true);
+  private trustedContent(value: string): Bounds {
+    return this.__appendHTML(value);
   }
 
-  private untrustedContent(value: string) {
-    let textNode = this.__appendText(value);
-    let bounds = single(this.element, textNode);
-    return new DynamicTextContent(bounds, value, false);
+  private untrustedContent(value: string): Simple.Text {
+    return this.__appendText(value);
   }
 
   appendComment(string: string): Simple.Comment {

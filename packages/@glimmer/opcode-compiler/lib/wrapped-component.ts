@@ -1,26 +1,23 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, CompilableProgram, CompilableBlock } from '@glimmer/interfaces';
+import { ProgramSymbolTable, CompilableProgram, CompilableBlock, LayoutWithContext, Compiler, Recast } from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
-  ComponentBuilder as IComponentBuilder,
-  ParsedLayout
+  ComponentBuilder as IComponentBuilder
 } from './interfaces';
 
-import { CompileOptions } from './syntax';
-import CompilableTemplate from './compilable-template';
-import { debugSlice } from './debug';
+import { debug, AnyAbstractCompiler } from './compiler';
+import { CompilableBlock as CompilableBlockInstance } from './compilable-template';
 import { OpcodeBuilder } from './opcode-builder';
 import { ATTRS_BLOCK } from './syntax';
 
 import { DEBUG } from "@glimmer/local-debug-flags";
 import { EMPTY_ARRAY } from "@glimmer/util";
 
-export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
+export class WrappedBuilder<Locator> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
-  private referrer: TemplateMeta;
 
-  constructor(public options: CompileOptions<TemplateMeta>, private layout: ParsedLayout<TemplateMeta>) {
+  constructor(private compiler: Compiler<OpcodeBuilder<Locator>>, private layout: LayoutWithContext<Locator>) {
     let { block } = layout;
 
     this.symbolTable = {
@@ -58,11 +55,8 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
     //        DidRenderLayout
     //        Exit
 
-    let { options, layout, referrer } = this;
-    let { program, resolver, macros, asPartial } = options;
-    let { Builder } = options;
-
-    let b = new Builder(program, resolver, referrer, macros, layout, asPartial);
+    let { compiler, layout } = this;
+    let b = compiler.builderFor(layout);
 
     b.startLabels();
 
@@ -84,7 +78,7 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
 
     b.label('BODY');
 
-    b.invokeStaticBlock(blockFor(layout, this.options));
+    b.invokeStaticBlock(blockFor(layout, compiler));
 
     b.fetch(Register.s1);
     b.jumpUnless('END');
@@ -95,41 +89,39 @@ export class WrappedBuilder<TemplateMeta> implements CompilableProgram {
 
     b.stopLabels();
 
-    let handle = b.commit(options.program.heap, layout.block.symbols.length);
+    let handle = b.commit();
 
     if (DEBUG) {
-      let { program, program: { heap } } = options;
-      let start = heap.getaddr(handle);
-      let end = start + heap.sizeof(handle);
-      debugSlice(program, start, end);
+      debug(compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>, handle);
     }
 
     return handle;
   }
 }
 
-function blockFor<TemplateMeta>(layout: ParsedLayout, options: CompileOptions<TemplateMeta>): CompilableBlock {
-  let { block, referrer } = layout;
-
-  return new CompilableTemplate(block.statements, layout, options, { referrer, parameters: EMPTY_ARRAY });
+function blockFor<Locator>(layout: LayoutWithContext, compiler: Compiler<OpcodeBuilder<Locator>>): CompilableBlock {
+  return new CompilableBlockInstance(compiler, {
+    block: {
+      statements: layout.block.statements,
+      parameters: EMPTY_ARRAY
+    },
+    containingLayout: layout
+  });
 }
 
-export class ComponentBuilder<TemplateMeta> implements IComponentBuilder {
-  constructor(private builder: OpcodeBuilder<TemplateMeta>) {}
+export class ComponentBuilder<Locator> implements IComponentBuilder {
+  constructor(private builder: OpcodeBuilder<Locator>) {}
 
   static(handle: number, args: ComponentArgs) {
     let [params, hash, _default, inverse] = args;
     let { builder } = this;
-    let { resolver } = builder;
 
     if (handle !== null) {
-      let capabilities = resolver.getCapabilities(handle);
+      let { capabilities, compilable } = builder.compiler.resolveLayoutForHandle(handle);
 
-      if (capabilities.dynamicLayout === false) {
-        let layout = resolver.getLayout(handle)!;
-
+      if (compilable) {
         builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(capabilities, layout, null, params, hash, false, _default, inverse);
+        builder.invokeStaticComponent(capabilities, compilable, null, params, hash, false, _default, inverse);
       } else {
         builder.pushComponentDefinition(handle);
         builder.invokeComponent(null, params, hash, false, _default, inverse);

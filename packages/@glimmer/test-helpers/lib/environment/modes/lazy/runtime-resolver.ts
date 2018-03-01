@@ -1,15 +1,16 @@
 import { RuntimeResolver, ComponentDefinition } from '@glimmer/interfaces';
-import { TemplateOptions } from '@glimmer/opcode-compiler';
+import { LazyCompiler } from '@glimmer/opcode-compiler';
 import { Option, Opaque } from '@glimmer/util';
 import { Invocation } from '@glimmer/runtime';
 
+import { TestMeta } from './environment';
 import Registry, { TypedRegistry, Lookup, LookupType } from '../../registry';
 
-export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
+export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
   private handleLookup: TypedRegistry<Opaque>[] = [];
   private registry = new Registry();
 
-  private options: TemplateOptions<{}>;
+  public compiler: LazyCompiler<TestMeta>;
 
   register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
     let registry = this.registry[type];
@@ -27,7 +28,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
     }
   }
 
-  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: TemplateOptions<{}>) => Invocation): Invocation {
+  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: LazyCompiler<TestMeta>) => Invocation): Invocation {
     let invocationHandle = this.lookup('template', templateName);
 
     if (invocationHandle) {
@@ -36,7 +37,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
 
     let source = this.resolve<string>(sourceHandle);
 
-    let invocation = create(source, this.options);
+    let invocation = create(source, this.compiler);
     this.register('template', templateName, invocation);
     return invocation;
   }
@@ -49,7 +50,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<{}> {
     return this.lookup('modifier', name, referrer);
   }
 
-  lookupComponent(name: string, referrer?: {}): Option<ComponentDefinition> {
+  lookupComponentDefinition(name: string, referrer?: {}): Option<ComponentDefinition> {
     let handle = this.lookupComponentHandle(name, referrer);
     if (handle === null) return null;
     return this.resolve(handle) as ComponentDefinition;

@@ -35,15 +35,12 @@ export interface Attribute {
 
 export class Parser {
   protected elementStack: Element[] = [];
-  private options: Object;
   private source: string[];
   public currentAttribute: Option<Attribute> = null;
   public currentNode: Option<AST.CommentStatement | AST.TextNode | Tag<'StartTag' | 'EndTag'>> = null;
   public tokenizer = new EventedTokenizer(this, entityParser);
 
-  constructor(source: string, options: Object = {}) {
-    this.options = options;
-
+  constructor(source: string) {
     this.tokenizer.states.tagOpen = function(this: EventedTokenizer) {
       let char = this.consume();
       if (char === "!") {
