@@ -5,22 +5,20 @@ import { SerializedTemplateBlock } from "@glimmer/wire-format";
 import {
   ProgramSymbolTable,
   Recast,
-  STDLib,
-  VMHandle,
   Unique,
   ModuleLocator,
   TemplateLocator,
   CompilableProgram,
-  CompilableTemplate
+  CompilableTemplate,
+  CompileTimeLookup,
+  LayoutWithContext
 } from "@glimmer/interfaces";
 import {
-  CompilableTemplate as CompilableTemplateImpl,
+  CompilableProgram as CompilableProgramInstance,
   Macros,
   OpcodeBuilderConstructor,
-  CompileOptions,
   EagerOpcodeBuilder,
-  TemplateOptions,
-  SimpleOpcodeBuilder,
+  AbstractCompiler
 } from "@glimmer/opcode-compiler";
 import {
   WriteOnlyProgram,
@@ -31,8 +29,8 @@ import {
 import ModuleLocatorMap from "./module-locator-map";
 import DebugConstants from "./debug-constants";
 import ExternalModuleTable from "./external-module-table";
-import CompilerDelegate from "./compiler-delegate";
-import CompilerResolver from "./compiler-resolver";
+import BundleCompilerDelegate from "./delegate";
+import BundleCompilerLookup from "./lookup";
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -40,7 +38,6 @@ export interface BundleCompileOptions {
 
 export interface BundleCompilerOptions {
   macros?: Macros;
-  Builder?: OpcodeBuilderConstructor;
   plugins?: ASTPluginBuilder[];
   program?: WriteOnlyProgram;
 }
@@ -78,13 +75,19 @@ export interface BundleCompilationResult {
   symbolTables: ModuleLocatorMap<ProgramSymbolTable>;
 }
 
-export interface PartialTemplateLocator<TemplateMeta> extends ModuleLocator {
-  meta?: TemplateMeta;
+export interface PartialTemplateLocator<Locator> extends ModuleLocator {
+  meta?: Locator;
   kind?: 'template';
 }
 
 // to make --declaration happy
 export { CompilableTemplate };
+
+export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcodeBuilder<Locator>, WriteOnlyProgram> {
+  builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
+    return new EagerOpcodeBuilder(this, containingLayout);
+  }
+}
 
 /**
  * The BundleCompiler is used to compile all of the component templates in a
@@ -99,43 +102,44 @@ export { CompilableTemplate };
  * which is suitable for serialization into bytecode and JavaScript assets that
  * can be loaded and run in the browser.
  */
-export default class BundleCompiler<TemplateMeta> {
+export default class BundleCompiler<Locator> {
   public compilableTemplates = new ModuleLocatorMap<CompilableProgram>();
-  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<TemplateMeta>>();
-  public meta = new ModuleLocatorMap<TemplateMeta>();
+  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<Locator>>();
+  public meta = new ModuleLocatorMap<Locator>();
+  public compiler: EagerCompiler<Locator>;
 
-  protected delegate: CompilerDelegate<TemplateMeta>;
+  protected delegate: BundleCompilerDelegate<Locator>;
   protected macros: Macros;
   protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
-  protected program: WriteOnlyProgram;
-  protected templateOptions: TemplateOptions<TemplateMeta>;
-  protected table = new ExternalModuleTable();
+  protected resolver: BundleCompilerLookup<Locator>;
 
-  constructor(delegate: CompilerDelegate<TemplateMeta>, options: BundleCompilerOptions = {}) {
+  constructor(delegate: BundleCompilerDelegate<Locator>, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
-    this.macros = options.macros || new Macros();
-    this.Builder =
-      options.Builder || (EagerOpcodeBuilder as OpcodeBuilderConstructor);
-    this.program =
-      options.program || new WriteOnlyProgram(new DebugConstants());
+    let macros = this.macros = options.macros || new Macros();
+
+    let program = options.program || new WriteOnlyProgram(new DebugConstants());
     this.plugins = options.plugins || [];
+
+    this.compiler = new EagerCompiler(macros, program, this.compilerResolver());
   }
 
   /**
    * Adds the template source code for a component to the bundle.
    */
-  add(_locator: PartialTemplateLocator<TemplateMeta>, templateSource: string): SerializedTemplateBlock {
+  add(_locator: PartialTemplateLocator<Locator>, templateSource: string): SerializedTemplateBlock {
     let locator = normalizeLocator(_locator);
-    let { meta } = locator;
 
-    let block = this.preprocess(meta || null, templateSource);
+    let block = this.preprocess(templateSource);
     this.compiledBlocks.set(locator, block);
 
-    let compileOptions = this.compileOptions(locator);
-    let compilableTemplate = CompilableTemplateImpl.topLevel(block, compileOptions);
+    let template = new CompilableProgramInstance(this.compiler, {
+      block,
+      referrer: locator.meta,
+      asPartial: false
+    });
 
-    this.addCompilableTemplate(locator, compilableTemplate);
+    this.addCompilableTemplate(locator, template);
 
     return block;
   }
@@ -144,26 +148,13 @@ export default class BundleCompiler<TemplateMeta> {
    * Adds a custom CompilableTemplate instance to the bundle.
    */
   addCompilableTemplate(
-    _locator: PartialTemplateLocator<TemplateMeta>,
+    _locator: PartialTemplateLocator<Locator>,
     template: CompilableProgram
   ): void {
     let locator = normalizeLocator(_locator);
 
     this.meta.set(locator, locator.meta);
     this.compilableTemplates.set(locator, template);
-  }
-
-  compileSTDLib(_locator: PartialTemplateLocator<TemplateMeta>): STDLib {
-    let builder = new SimpleOpcodeBuilder();
-    builder.main();
-    let main = builder.commit(this.program.heap, 0);
-    let locator = normalizeLocator(_locator);
-    let { program, resolver, referrer, macros } = this.compileOptions(locator);
-    let block = this.preprocess(null, '');
-    let eagerBuilder = new EagerOpcodeBuilder(program, resolver, referrer, macros, {block, referrer: null}, false);
-    eagerBuilder.builtInGuardedAppend();
-    let guardedAppend = eagerBuilder.commit(program.heap, 0);
-    return { main, guardedAppend };
   }
 
   /**
@@ -173,63 +164,52 @@ export default class BundleCompiler<TemplateMeta> {
    * data segment.
    */
   compile(): BundleCompilationResult {
-    let stdLib = this.compileSTDLib({ module: '__std__', name: '<unreachable>' });
-    let { main } = stdLib;
+    let { main } = this.compiler.stdLib;
     let symbolTables = new ModuleLocatorMap<ProgramSymbolTable>();
 
     this.compilableTemplates.forEach((template, locator) => {
-      this.compileTemplate(locator, stdLib);
+      this.compileTemplate(locator);
       symbolTables.set(locator, template.symbolTable);
     });
 
-    let { heap, constants } = this.program;
+    let { heap, constants } = this.compiler.program;
+
     return {
       main: main as Recast<Unique<"Handle">, number>,
       heap: heap.capture() as SerializedHeap,
       pool: constants.toPool(),
-      table: this.table,
+      table: this.resolver.getTable(),
       symbolTables
     };
   }
 
   preprocess(
-    meta: TemplateMeta | null,
     input: string
   ): SerializedTemplateBlock {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
-    let template = TemplateCompiler.compile({ meta }, ast);
+    let template = TemplateCompiler.compile(ast);
     return template.toJSON();
   }
 
-  compileOptions(
-    locator: TemplateLocator<TemplateMeta>,
-    asPartial = false
-  ): CompileOptions<TemplateMeta> {
-    let templateOptions = this.templateOptions;
-    if (!templateOptions) {
-      let { program, macros, Builder } = this;
-      let resolver = new CompilerResolver<TemplateMeta>(this.delegate, this.table, this);
-      templateOptions = this.templateOptions = {
-        program,
-        macros,
-        Builder,
-        resolver
-      };
+  compilerResolver(): CompileTimeLookup<Locator> {
+    let resolver = this.resolver;
+    if (!resolver) {
+      resolver = this.resolver = new BundleCompilerLookup<Locator>(this.delegate, this);
     }
 
-    return { ...templateOptions, asPartial, referrer: locator.meta };
+    return resolver;
   }
 
   /**
    * Performs the actual compilation of the template identified by the passed
    * locator into the Program. Returns the VM handle for the compiled template.
    */
-  protected compileTemplate(locator: ModuleLocator, stdLib: STDLib): number {
+  protected compileTemplate(locator: ModuleLocator): number {
     // If this locator already has an assigned VM handle, it means we've already
     // compiled it. We need to skip compiling it again and just return the same
     // VM handle.
-    let vmHandle = this.table.vmHandleByModuleLocator.get(locator);
-    if (vmHandle) return vmHandle;
+    let vmHandle = this.resolver.getHandleByLocator(locator);
+    if (vmHandle !== undefined) return vmHandle;
 
     // It's an error to try to compile a template that wasn't first added to the
     // bundle via the add() or addCompilableTemplate() methods.
@@ -240,19 +220,10 @@ export default class BundleCompiler<TemplateMeta> {
 
     // Compile the template, which writes opcodes to the heap and returns the VM
     // handle (the address of the compiled program in the heap).
-    vmHandle = compilableTemplate.compile(stdLib);
+    vmHandle = compilableTemplate.compile();
 
     // Index the locator by VM handle and vice versa for easy lookups.
-    this.table.byVMHandle.set(vmHandle as Recast<VMHandle, number>, locator);
-    this.table.vmHandleByModuleLocator.set(locator, vmHandle as Recast<
-      VMHandle,
-      number
-    >);
-
-    // We also make sure to assign a non-VM application handle to every
-    // top-level component as well, so any associated component classes appear
-    // in the module map.
-    this.table.handleForModuleLocator(locator);
+    this.resolver.setHandleByLocator(locator, vmHandle);
 
     return vmHandle;
   }

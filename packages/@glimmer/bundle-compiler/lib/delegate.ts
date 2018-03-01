@@ -1,6 +1,4 @@
-import { ComponentCapabilities, CompilableProgram, ModuleLocator } from "@glimmer/interfaces";
-import { CompileOptions } from "@glimmer/opcode-compiler";
-import { SerializedTemplateBlock } from "@glimmer/wire-format";
+import { ComponentCapabilities, ModuleLocator } from "@glimmer/interfaces";
 
 /**
  * A CompilerDelegate helps the BundleCompiler map external references it finds
@@ -28,7 +26,7 @@ import { SerializedTemplateBlock } from "@glimmer/wire-format";
  * uses this information to perform additional optimizations during the
  * compilation phase.
  */
-export default interface CompilerDelegate<TemplateMeta> {
+export default interface BundleCompilerDelegate<Locator> {
   /**
    * During compilation, the compiler will ask the delegate about each component
    * invocation found in the passed template. If the component exists in scope,
@@ -38,7 +36,7 @@ export default interface CompilerDelegate<TemplateMeta> {
    */
   hasComponentInScope(
     componentName: string,
-    referrer: TemplateMeta
+    referrer: Locator
   ): boolean;
 
   /**
@@ -50,7 +48,7 @@ export default interface CompilerDelegate<TemplateMeta> {
    */
   resolveComponent(
     componentName: string,
-    referrer: TemplateMeta
+    referrer: Locator
   ): ModuleLocator;
 
   /**
@@ -59,19 +57,8 @@ export default interface CompilerDelegate<TemplateMeta> {
    * a ComponentCapabilities descriptor.
    */
   getComponentCapabilities(
-    locator: TemplateMeta
+    locator: Locator
   ): ComponentCapabilities;
-
-  /**
-   * This hook is called with the return value of `resolveComponent`,
-   * and it should return a compilable template that the compiler adds to the
-   * set of templates to compile for the bundle.
-   */
-  getComponentLayout(
-    locator: TemplateMeta,
-    block: SerializedTemplateBlock,
-    options: CompileOptions<TemplateMeta>
-  ): CompilableProgram;
 
   /**
    * During compilation, the compiler will ask the delegate about each possible
@@ -88,13 +75,13 @@ export default interface CompilerDelegate<TemplateMeta> {
    * `hasHelperInScope` returns `false`, the compiler will treat `currentTime`
    * as a value rather than a helper.
    */
-  hasHelperInScope(helperName: string, referrer: TemplateMeta): boolean;
+  hasHelperInScope(helperName: string, referrer: Locator): boolean;
 
   /**
    * If the delegate returns `true` from `hasHelperInScope()`, the compiler will
    * next ask the delegate to provide a module locator corresponding to the helper function.
    */
-  resolveHelper(helperName: string, referrer: TemplateMeta): ModuleLocator;
+  resolveHelper(helperName: string, referrer: Locator): ModuleLocator;
 
   /**
    * During compilation, the compiler will ask the delegate about each element
@@ -106,14 +93,14 @@ export default interface CompilerDelegate<TemplateMeta> {
    * modifier does not exist in scope, return `false`. Note that returning
    * `false` will cause the compilation process to fail.
    */
-  hasModifierInScope(modifierName: string, referrer: TemplateMeta): boolean;
+  hasModifierInScope(modifierName: string, referrer: Locator): boolean;
 
   /**
    * If the delegate returns `true` from `hasModifierInScope()`, the compiler
    * will next ask the delegate to provide a module locator corresponding to the
    * element modifier function.
    */
-  resolveModifier(modifierName: string, referrer: TemplateMeta): ModuleLocator;
+  resolveModifier(modifierName: string, referrer: Locator): ModuleLocator;
 
   /**
    * During compilation, the compiler will ask the delegate about each partial
@@ -130,7 +117,7 @@ export default interface CompilerDelegate<TemplateMeta> {
    * return `false` from `hasPartialInScope` to disable the feature entirely.
    * Components replace all use cases for partials with better performance.
    */
-  hasPartialInScope(partialName: string, referrer: TemplateMeta): boolean;
+  hasPartialInScope(partialName: string, referrer: Locator): boolean;
 
   /**
    * If the delegate returns `true` from `hasPartialInScope()`, the compiler
@@ -139,6 +126,6 @@ export default interface CompilerDelegate<TemplateMeta> {
    */
   resolvePartial(
     partialName: string,
-    referrer: TemplateMeta
+    referrer: Locator
   ): ModuleLocator;
 };

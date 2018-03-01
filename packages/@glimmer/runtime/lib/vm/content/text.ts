@@ -1,19 +1,33 @@
-import DynamicContentBase, { DynamicContent } from './dynamic';
-import { SingleNodeBounds } from '../../bounds';
-import Environment from '../../environment';
-import { isNode, isSafeString, isEmpty, isString } from '../../dom/normalize';
-import { Opaque } from "@glimmer/interfaces";
+import { isEmpty, isString } from '../../dom/normalize';
+import { Opaque, Simple } from "@glimmer/interfaces";
+import { UpdatingOpcode } from '../../opcodes';
+import { Tag, VersionedReference } from '@glimmer/reference';
 
-export default class DynamicTextContent extends DynamicContentBase {
-  constructor(public bounds: SingleNodeBounds, private lastValue: string, trusted: boolean) {
-    super(trusted);
+export default class DynamicTextContent extends UpdatingOpcode {
+  public type = 'dynamic-text';
+
+  public tag: Tag;
+  public lastRevision: number;
+
+  constructor(public node: Simple.Text, private reference: VersionedReference<Opaque>, private lastValue: string) {
+    super();
+    this.tag = reference.tag;
+    this.lastRevision = this.tag.value();
   }
 
-  update(env: Environment, value: Opaque): DynamicContent {
+  evaluate() {
+    let { reference, tag } = this;
+
+    if (!tag.validate(this.lastRevision)) {
+      this.lastRevision = tag.value();
+      this.update(reference.value());
+    }
+  }
+
+  update(value: Opaque): void {
     let { lastValue } = this;
 
-    if (value === lastValue) return this;
-    if (isNode(value) || isSafeString(value)) return this.retry(env, value);
+    if (value === lastValue) return;
 
     let normalized: string;
 
@@ -26,10 +40,8 @@ export default class DynamicTextContent extends DynamicContentBase {
     }
 
     if (normalized !== lastValue) {
-      let textNode = this.bounds.firstNode();
+      let textNode = this.node;
       textNode.nodeValue = this.lastValue = normalized;
     }
-
-    return this;
   }
 }

@@ -7,7 +7,7 @@ export default class TestMacros extends Macros {
   constructor() {
     super();
 
-    let { blocks, inlines} = this;
+    let { blocks, inlines } = this;
 
     blocks.add('identity', (_params, _hash, template, _inverse, builder) => {
       builder.invokeStaticBlock(template!);
@@ -22,9 +22,7 @@ export default class TestMacros extends Macros {
         params = [];
       }
 
-      let lookup = builder.resolver;
-
-      let handle = lookup.lookupComponentDefinition(name, builder.referrer);
+      let { handle } = builder.compiler.resolveLayoutForTag(name, builder.referrer);
 
       if (handle !== null) {
         builder.component.static(handle, [params, hashToArgs(hash), template, inverse]);
@@ -35,8 +33,7 @@ export default class TestMacros extends Macros {
     });
 
     inlines.addMissing((name, params, hash, builder) => {
-      let lookup = builder.resolver;
-      let handle = lookup.lookupComponentDefinition(name, builder.referrer);
+      let { handle } = builder.compiler.resolveLayoutForTag(name, builder.referrer);
 
       if (handle !== null) {
         builder.component.static(handle, [params!, hashToArgs(hash), null, null]);

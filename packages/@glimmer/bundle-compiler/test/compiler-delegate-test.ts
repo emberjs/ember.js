@@ -1,14 +1,12 @@
 import { BundleCompiler } from '@glimmer/bundle-compiler';
-import { ComponentCapabilities, ModuleLocator, CompilableProgram } from '@glimmer/interfaces';
+import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 import { BASIC_CAPABILITIES } from '@glimmer/test-helpers';
-import { CompilableTemplate, CompileOptions } from '@glimmer/opcode-compiler';
-import { SerializedTemplateBlock } from '@glimmer/wire-format';
 
 const { test } = QUnit;
 
 QUnit.module("[glimmer-bundle-compiler] CompilerDelegate");
 
-type TemplateMeta = {
+type Locator = {
   locator: ModuleLocator;
 };
 
@@ -23,29 +21,25 @@ function locatorFor(locator: ModuleLocator) {
 }
 
 test("correct referrer is passed during component lookup", function(assert) {
-  let inScopeReferrers: TemplateMeta[] = [];
-  let resolveComponentReferrers: TemplateMeta[] = [];
+  let inScopeReferrers: Locator[] = [];
+  let resolveComponentReferrers: Locator[] = [];
 
   // This partial implementation of CompilerDelegate tracks what referrers are
   // passed to hasComponentInScope and resolveComponent so that they
   // can be verified after compilation has finished.
   class TestDelegate {
-    hasComponentInScope(_componentName: string, referrer: TemplateMeta): boolean {
+    hasComponentInScope(_componentName: string, referrer: Locator): boolean {
       inScopeReferrers.push(referrer);
       return true;
     }
 
-    resolveComponent(componentName: string, referrer: TemplateMeta): ModuleLocator {
+    resolveComponent(componentName: string, referrer: Locator): ModuleLocator {
       resolveComponentReferrers.push(referrer);
       return { module: componentName, name: 'default' };
     }
 
     getComponentCapabilities(): ComponentCapabilities {
       return BASIC_CAPABILITIES;
-    }
-
-    getComponentLayout(_locator: ModuleLocator, block: SerializedTemplateBlock, options: CompileOptions<TemplateMeta>): CompilableProgram {
-      return CompilableTemplate.topLevel(block, options);
     }
   }
 

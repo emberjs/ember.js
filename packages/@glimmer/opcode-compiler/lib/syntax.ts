@@ -1,9 +1,9 @@
-import { CompilableBlock, CompileTimeProgram, Option, Opaque } from '@glimmer/interfaces';
+import { CompilableBlock, Option, Opaque, Compiler } from '@glimmer/interfaces';
 import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
-import OpcodeBuilder, { CompileTimeLookup, OpcodeBuilderConstructor } from "./opcode-builder";
+import OpcodeBuilder from "./opcode-builder";
 
 import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;
@@ -11,22 +11,22 @@ import E = WireFormat.Expressions;
 import C = WireFormat.Core;
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
-export type CompilerFunction<T extends TupleSyntax, TemplateMeta> = ((sexp: T, builder: OpcodeBuilder<TemplateMeta>) => void);
+export type CompilerFunction<T extends TupleSyntax> = ((sexp: T, builder: OpcodeBuilder<Opaque>) => void);
 
 export const ATTRS_BLOCK = '&attrs';
 
-export class Compilers<T extends TupleSyntax> {
+export class Compilers<Syntax extends TupleSyntax> {
   private names = dict<number>();
-  private funcs: CompilerFunction<T, Opaque>[] = [];
+  private funcs: CompilerFunction<Syntax>[] = [];
 
   constructor(private offset = 0) {}
 
-  add<TemplateMeta>(name: number, func: CompilerFunction<T, TemplateMeta>): void {
+  add<T extends Syntax>(name: number, func: (sexp: T, builder: OpcodeBuilder<Opaque>) => void): void {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  compile<TemplateMeta>(sexp: T, builder: OpcodeBuilder<TemplateMeta>): void {
+  compile(sexp: Syntax, builder: OpcodeBuilder<Opaque>): void {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
@@ -37,7 +37,7 @@ export class Compilers<T extends TupleSyntax> {
 
 let _statementCompiler: Compilers<WireFormat.Statement>;
 
-export function statementCompiler() {
+export function statementCompiler(): Compilers<WireFormat.Statement> {
   if (_statementCompiler) {
     return _statementCompiler;
   }
@@ -61,12 +61,12 @@ export function statementCompiler() {
   });
 
   STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
-    let { resolver, referrer } = builder;
+    let { referrer } = builder;
     let [, name, params, hash] = sexp;
 
-    let handle = resolver.lookupModifier(name, referrer);
+    let handle = builder.compiler.resolveModifier(name, referrer);
 
-    if (handle) {
+    if (handle !== null) {
       builder.modifier(handle, params, hash);
     } else {
       throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
@@ -98,11 +98,11 @@ export function statementCompiler() {
 
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
     let [, tag, _attrs, args, block] = sexp;
-    let { resolver, referrer } = builder;
-    let handle = resolver.lookupComponentDefinition(tag, referrer);
+    let { referrer } = builder;
 
-    if (handle !== null) {
-      let capabilities = resolver.getCapabilities(handle);
+    let { handle, capabilities, compilable } = builder.compiler.resolveLayoutForTag(tag, referrer);
+
+    if (handle !== null && capabilities !== null) {
 
       let attrs: WireFormat.Statement[] = [
         [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
@@ -112,11 +112,9 @@ export function statementCompiler() {
       let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
       let child = builder.template(block);
 
-      if (capabilities.dynamicLayout === false) {
-        let layout = resolver.getLayout(handle)!;
-
+      if (compilable) {
         builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(capabilities, layout, attrsBlock, null, args, false, child && child);
+        builder.invokeStaticComponent(capabilities, compilable, attrsBlock, null, args, false, child && child);
       } else {
         builder.pushComponentDefinition(handle);
         builder.invokeComponent(attrsBlock, null, args, false, child && child);
@@ -186,26 +184,11 @@ export function statementCompiler() {
   STATEMENTS.add(Ops.Append, (sexp: S.Append, builder) => {
     let [, value, trusting] = sexp;
 
-    let { inlines } = builder.macros;
-    let returned = inlines.compile(sexp, builder) || value;
+    let returned = builder.compileInline(sexp) || value;
 
     if (returned === true) return;
 
-    let isGet = WireFormat.isGet(value);
-    let isMaybeLocal = WireFormat.isMaybeLocal(value);
-
-    if (trusting) {
-      builder.guardedAppend(value, true);
-    } else {
-      if (isGet || isMaybeLocal) {
-        builder.guardedAppend(value, false);
-      } else {
-        builder.expr(value);
-        builder.primitive(false);
-        builder.load(Register.t0);
-        builder.dynamicContent();
-      }
-    }
+    builder.guardedAppend(value, trusting);
   });
 
   STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
@@ -216,22 +199,21 @@ export function statementCompiler() {
     let templateBlock = template && template;
     let inverseBlock = inverse && inverse;
 
-    let { blocks } = builder.macros;
-    blocks.compile(name, params, hash, templateBlock, inverseBlock, builder);
+    builder.compileBlock(name, params, hash, templateBlock, inverseBlock);
   });
 
   const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
 
-  CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
     builder.putComponentOperations();
     builder.openPrimitiveElement(sexp[2]);
   });
 
-  CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
     builder.didCreateElement(Register.s0);
   });
 
-  CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder: OpcodeBuilder) => {
     builder.setComponentAttrs(sexp[2]);
   });
 
@@ -240,14 +222,14 @@ export function statementCompiler() {
     debugger;
   });
 
-  CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder) => {
+  CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder: OpcodeBuilder) => {
     builder.didRenderLayout(Register.s0);
   });
 
   return STATEMENTS;
 }
 
-function dynamicAttr<TemplateMeta>(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder<TemplateMeta>) {
+function dynamicAttr<Locator>(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder<Locator>) {
   let [, name, value, namespace] = sexp;
 
   builder.expr(value);
@@ -269,10 +251,10 @@ export function expressionCompiler() {
   const EXPRESSIONS = _expressionCompiler = new Compilers<WireFormat.TupleExpression>();
 
   EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-    let { resolver, asPartial, referrer } = builder;
+    let { compiler, referrer, containingLayout: { asPartial } } = builder;
     let name = sexp[1];
 
-    let handle = resolver.lookupHelper(name, referrer);
+    let handle = compiler.resolveHelper(name, referrer);
 
     if (handle !== null) {
       builder.helper(handle, null, null);
@@ -293,7 +275,7 @@ export function expressionCompiler() {
   });
 
   EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
-    let { resolver, referrer } = builder;
+    let { compiler, referrer } = builder;
     let [, name, params, hash] = sexp;
 
     // TODO: triage this in the WF compiler
@@ -305,7 +287,7 @@ export function expressionCompiler() {
       return;
     }
 
-    let handle = resolver.lookupHelper(name, referrer);
+    let handle = compiler.resolveHelper(name, referrer);
 
     if (handle !== null) {
       builder.helper(handle, params, hash);
@@ -325,7 +307,7 @@ export function expressionCompiler() {
   EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder) => {
     let [, path] = sexp;
 
-    if (builder.asPartial) {
+    if (builder.containingLayout.asPartial) {
       let head = path[0];
       path = path.slice(1);
 
@@ -365,24 +347,24 @@ export class Macros {
   }
 }
 
-export type BlockMacro<TemplateMeta> = (params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<TemplateMeta>) => void;
-export type MissingBlockMacro<TemplateMeta> = (name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<TemplateMeta>) => void;
+export type BlockMacro<Locator> = (params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>) => void;
+export type MissingBlockMacro<Locator> = (name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>) => void;
 
 export class Blocks {
   private names = dict<number>();
   private funcs: BlockMacro<Opaque>[] = [];
   private missing: MissingBlockMacro<Opaque>;
 
-  add<TemplateMeta>(name: string, func: BlockMacro<TemplateMeta>) {
+  add<Locator>(name: string, func: BlockMacro<Locator>) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing<TemplateMeta>(func: MissingBlockMacro<TemplateMeta>) {
+  addMissing<Locator>(func: MissingBlockMacro<Locator>) {
     this.missing = func;
   }
 
-  compile<TemplateMeta>(name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<TemplateMeta>): void {
+  compile<Locator>(name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>): void {
     let index = this.names[name];
 
     if (index === undefined) {
@@ -398,23 +380,23 @@ export class Blocks {
 }
 
 export type AppendSyntax = S.Append;
-export type AppendMacro<TemplateMeta> = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder<TemplateMeta>) => ['expr', WireFormat.Expression] | true | false;
+export type AppendMacro<Locator> = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder<Locator>) => ['expr', WireFormat.Expression] | true | false;
 
 export class Inlines {
   private names = dict<number>();
   private funcs: AppendMacro<Opaque>[] = [];
   private missing: AppendMacro<Opaque>;
 
-  add<TemplateMeta>(name: string, func: AppendMacro<TemplateMeta>) {
+  add<Locator>(name: string, func: AppendMacro<Locator>) {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing<TemplateMeta>(func: AppendMacro<TemplateMeta>) {
+  addMissing<Locator>(func: AppendMacro<Locator>) {
     this.missing = func;
   }
 
-  compile<TemplateMeta>(sexp: AppendSyntax, builder: OpcodeBuilder<TemplateMeta>): ['expr', WireFormat.Expression] | true {
+  compile<Locator>(sexp: AppendSyntax, builder: OpcodeBuilder<Locator>): ['expr', WireFormat.Expression] | true {
     let value = sexp[1];
 
     // TODO: Fix this so that expression macros can return
@@ -794,17 +776,8 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
   return { blocks, inlines };
 }
 
-export interface TemplateOptions<TemplateMeta> {
-  // already in compilation options
-  program: CompileTimeProgram;
-  macros: Macros;
-  Builder: OpcodeBuilderConstructor;
-
-  // a subset of the resolver w/ a couple of small tweaks
-  resolver: CompileTimeLookup<TemplateMeta>;
-}
-
-export interface CompileOptions<TemplateMeta> extends TemplateOptions<TemplateMeta> {
+export interface CompileOptions<Locator, Builder = Opaque> {
+  compiler: Compiler<Builder>;
   asPartial: boolean;
-  referrer: TemplateMeta;
+  referrer: Locator;
 }

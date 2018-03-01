@@ -105,8 +105,8 @@ class SimplePathReference implements PathReference<Opaque> {
   }
 }
 
-type IndividualSnapshot = 'up' | 'down' | Node;
-type NodesSnapshot = IndividualSnapshot[];
+export type IndividualSnapshot = 'up' | 'down' | Node;
+export type NodesSnapshot = IndividualSnapshot[];
 
 export class RenderTest {
   protected element: HTMLElement;
@@ -115,7 +115,7 @@ export class RenderTest {
   protected renderResult: Option<RenderResult> = null;
   protected helpers = dict<UserHelper>();
   protected testType: ComponentKind;
-  private snapshot: NodesSnapshot = [];
+  protected snapshot: NodesSnapshot = [];
 
   constructor(protected delegate: RenderDelegate) {
     this.element = delegate.getInitialElement();
@@ -807,6 +807,8 @@ function componentModule<D extends RenderDelegate, T extends RenderTest>(name: s
       if (test['kind'] === undefined) {
         let skip = test['skip'];
         switch (skip) {
+          case 'all':
+            break;
           case 'glimmer':
             tests.curly.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test));
@@ -894,7 +896,7 @@ function isTestFunction(
 }
 
 export function renderTemplate(src: string, env: LazyTestEnvironment, self: PathReference<Opaque>, builder: ElementBuilder) {
-  let template = env.compile(src);
+  let template = env.preprocess(src);
   let iterator = env.renderMain(template, self, builder);
   return renderSync(env, iterator);
 }

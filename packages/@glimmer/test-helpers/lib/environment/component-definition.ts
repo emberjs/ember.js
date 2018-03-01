@@ -1,11 +1,11 @@
 import { Option } from '@glimmer/util';
 import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator, TemplateLocator } from '@glimmer/interfaces';
 
-export interface TemplateMeta {
+export interface Locator {
   locator: ModuleLocator;
 }
 
-export function locatorFor(locator: ModuleLocator): TemplateLocator<TemplateMeta> {
+export function locatorFor(locator: ModuleLocator): TemplateLocator<Locator> {
   let { module, name } = locator;
 
   return {
@@ -25,7 +25,7 @@ export interface TestComponentDefinitionState {
   ComponentClass: any;
   type: string;
   layout: Option<number>;
-  locator: TemplateLocator<TemplateMeta>;
+  locator: TemplateLocator<Locator>;
   template?: string;
   hasSymbolTable?: boolean;
   symbolTable?: ProgramSymbolTable;

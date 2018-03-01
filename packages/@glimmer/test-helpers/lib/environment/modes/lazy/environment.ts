@@ -19,14 +19,14 @@ import {
   TemplateIterator
 } from "@glimmer/runtime";
 import { Template } from "@glimmer/interfaces";
-import { templateFactory, TemplateOptions, LazyOpcodeBuilder, OpcodeBuilderConstructor, PartialDefinition } from "@glimmer/opcode-compiler";
+import { templateFactory, PartialDefinition, LazyCompiler } from "@glimmer/opcode-compiler";
 import { precompile } from "@glimmer/compiler";
-import { LazyConstants, Program } from "@glimmer/program";
+import { Program } from "@glimmer/program";
 import { TestDynamicScope } from "../../../environment";
 import TestEnvironment from '../../environment';
 import { ComponentKind } from '../../../render-test';
 
-import LazyCompilerResolver from './compiler-resolver';
+import LazyCompileTimeLookup from './lookup';
 import LazyRuntimeResolver from './runtime-resolver';
 
 import {
@@ -52,6 +52,7 @@ import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
 import { Opaque } from "@glimmer/util";
 import { PathReference } from "@glimmer/reference";
+import { TemplateMeta } from "@glimmer/wire-format";
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
@@ -65,23 +66,40 @@ export interface TestEnvironmentOptions {
   program?: CompilableProgram;
 }
 
+export interface TestMeta extends TemplateMeta {
+  version: number;
+  lang: string;
+  moduleName: string;
+  owner?: {};
+}
+
+export const DEFAULT_TEST_META = Object.freeze({
+  version: 1,
+  lang: 'en',
+  moduleName: 'index'
+});
+
 export type TestCompilationOptions = CompilationOptions<AnnotatedModuleLocator, LazyRuntimeResolver>;
 
-export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModuleLocator> {
+export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
   public resolver = new LazyRuntimeResolver();
-  protected program = new Program(new LazyConstants(this.resolver));
+  protected program: Program<TestMeta>;
 
-  public compileOptions: TemplateOptions<any> = {
-    resolver: new LazyCompilerResolver(this.resolver),
-    program: this.program,
-    macros: new TestMacros(),
-    Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor
-  };
+  public compiler: LazyCompiler<TestMeta>;
 
   constructor(options?: TestEnvironmentOptions) {
     super(testOptions(options));
+
+    this.compiler = new LazyCompiler<TestMeta>(
+      new LazyCompileTimeLookup(this.resolver),
+      this.resolver,
+      new TestMacros()
+    );
+
+    this.program = this.compiler.program;
+
     // recursive field, so "unsafely" set one half late (but before the resolver is actually used)
-    this.resolver['options'] = this.compileOptions;
+    this.resolver['compiler'] = this.compiler;
     this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
     this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
     this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
@@ -159,7 +177,7 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
   }
 
   registerPartial(name: string, source: string): PartialDefinition {
-    let definition = new PartialDefinition(name, this.compile(source, null));
+    let definition = new PartialDefinition(name, this.preprocess(source));
     this.resolver.register('partial', name, definition);
     return definition;
   }
@@ -188,10 +206,10 @@ export default class LazyTestEnvironment extends TestEnvironment<AnnotatedModule
     return handle === null ? null : this.resolver.resolve<ModifierManager>(handle);
   }
 
-  compile<TemplateMeta>(template: string, meta?: TemplateMeta): Template<TemplateMeta> {
+  preprocess(template: string, meta?: TestMeta): Template<TestMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
-    return factory.create(this.compileOptions, (meta || {}) as any as TemplateMeta);
+    return factory.create(this.compiler, (meta || DEFAULT_TEST_META));
   }
 
   private registerComponent(name: string, type: ComponentKind, manager: ComponentManager<Opaque, Opaque>, layout: Option<number>, ComponentClass: Opaque, capabilities: ComponentCapabilities) {

@@ -1,5 +1,4 @@
 import { Op, Register } from '@glimmer/vm';
-import { TemplateMeta } from '@glimmer/wire-format';
 import { Opaque, Option, Dict, dict, assert, unreachable, expect } from '@glimmer/util';
 import {
   VMHandle,
@@ -31,7 +30,7 @@ import { DynamicScope, ScopeSlot } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM, VM } from '../../vm';
 import { Arguments, IArguments } from '../../vm/arguments';
-import { IsCurriedComponentDefinitionReference } from './content';
+import { IsCurriedComponentDefinitionReference, ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { Component } from '../../internal-interfaces';
 import { resolveComponent } from "../../component/resolve";
@@ -110,13 +109,20 @@ APPEND_OPCODES.add(Op.IsComponent, vm => {
   stack.push(IsCurriedComponentDefinitionReference.create(ref));
 });
 
+APPEND_OPCODES.add(Op.ContentType, vm => {
+  let stack = vm.stack;
+  let ref = check(stack.peek(), CheckReference);
+
+  stack.push(new ContentTypeReference(ref));
+});
+
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
   let definition = check(stack.pop(), CheckReference);
   let capturedArgs = check(stack.pop(), CheckCapturedArguments);
 
-  let meta = vm.constants.getSerializable<TemplateMeta>(_meta);
+  let meta = vm.constants.getSerializable(_meta);
   let resolver = vm.constants.resolver;
 
   vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, capturedArgs));
@@ -217,6 +223,12 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
 
   ARGS.setup(stack, names, blockNames, positionalCount, !!synthetic);
   stack.push(ARGS);
+});
+
+APPEND_OPCODES.add(Op.PushEmptyArgs, vm => {
+  let { stack } = vm;
+
+  stack.push(ARGS.empty(stack));
 });
 
 APPEND_OPCODES.add(Op.CaptureArgs, vm => {

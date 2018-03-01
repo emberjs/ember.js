@@ -3,17 +3,24 @@ export * from './lib/interfaces';
 export {
   ATTRS_BLOCK,
   CompileOptions,
-  Macros,
-  TemplateOptions
+  Macros
 } from './lib/syntax';
 
+export * from './lib/lazy';
+export * from './lib/compile';
+export * from './lib/compiler';
+
 export {
-  CompileTimeLookup,
+  CompilableBlock,
+  CompilableProgram
+} from './lib/compilable-template';
+
+export {
   LazyOpcodeBuilder,
   EagerOpcodeBuilder,
   OpcodeBuilder,
   OpcodeBuilderConstructor,
-  SimpleOpcodeBuilder,
+  StdOpcodeBuilder,
 } from './lib/opcode-builder';
 
 export { PartialDefinition } from './lib/partial-template';
@@ -22,10 +29,6 @@ export {
   default as templateFactory,
   TemplateFactory
 } from './lib/template';
-
-export {
-  default as CompilableTemplate,
-} from './lib/compilable-template';
 
 export {
   debug,
