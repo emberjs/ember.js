@@ -157,10 +157,6 @@ export class StdOpcodeBuilder {
     this.push(Op.AppendNode);
   }
 
-  appendOther() {
-    this.push(Op.AppendOther);
-  }
-
   appendText() {
     this.push(Op.AppendText);
   }
@@ -478,11 +474,6 @@ export class StdOpcodeBuilder {
     this.jumpEq(ContentType.Fragment, 'FRAGMENT');
     this.jumpEq(ContentType.Node, 'NODE');
 
-    this.pop(2);
-    this.assertSame();
-    this.appendOther();
-    this.jump('END');
-
     this.label('COMPONENT');
     this.pop(2);
     this.pushCurriedComponent();
@@ -506,12 +497,6 @@ export class StdOpcodeBuilder {
     this.pop(2);
     this.assertSame();
     this.appendNode();
-    this.jump('END');
-
-    this.label('OTHER');
-    this.pop(2);
-    this.assertSame();
-    this.appendOther();
     this.jump('END');
 
     this.label('STRING');
