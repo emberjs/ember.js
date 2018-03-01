@@ -29,7 +29,7 @@ import layout from '../templates/empty';
   @extends Component
   @public
 */
-export default EmberComponent.extend({
+const Checkbox = EmberComponent.extend({
   layout,
   classNames: ['ember-checkbox'],
 
@@ -60,3 +60,7 @@ export default EmberComponent.extend({
    set(this, 'checked', this.element.checked);
   },
 });
+
+Checkbox.toString = () => '@ember/component/checkbox';
+
+export default Checkbox;

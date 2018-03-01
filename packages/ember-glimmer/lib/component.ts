@@ -9,7 +9,7 @@ import {
   PROPERTY_DID_CHANGE,
 } from 'ember-metal';
 import { TargetActionSupport } from 'ember-runtime';
-import { getOwner, NAME_KEY, symbol } from 'ember-utils';
+import { getOwner, symbol } from 'ember-utils';
 import {
   ActionSupport,
   ChildViewsSupport,
@@ -907,7 +907,7 @@ const Component = CoreView.extend(
   },
 );
 
-Component[NAME_KEY] = 'Ember.Component';
+Component.toString = () => '@ember/component';
 
 Component.reopenClass({
   isComponentFactory: true,

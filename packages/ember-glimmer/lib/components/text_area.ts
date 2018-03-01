@@ -214,7 +214,7 @@ import layout from '../templates/empty';
   @uses Ember.TextSupport
   @public
 */
-export default Component.extend(TextSupport, {
+const TextArea = Component.extend(TextSupport, {
   classNames: ['ember-text-area'],
 
   layout,
@@ -234,3 +234,7 @@ export default Component.extend(TextSupport, {
   rows: null,
   cols: null,
 });
+
+TextArea.toString = () => '@ember/component/text-area';
+
+export default TextArea;

@@ -824,7 +824,7 @@ const LinkComponent = EmberComponent.extend({
   },
 });
 
-LinkComponent.toString = () => 'LinkComponent';
+LinkComponent.toString = () => '@ember/routing/link-component';
 
 LinkComponent.reopenClass({
   positionalParams: 'params',
