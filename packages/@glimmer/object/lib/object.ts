@@ -16,6 +16,7 @@ const { isArray } = Array;
 
 import { ROOT } from './utils';
 import { Option } from "@glimmer/interfaces";
+import { bump } from '@glimmer/reference';
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 
@@ -395,10 +396,12 @@ export default class GlimmerObject {
 
   set(key: string, value: any) {
     this[key] = value;
+    bump();
   }
 
   setProperties(attrs: Object) {
     assign(this, attrs);
+    bump();
   }
 
   destroy() {}
