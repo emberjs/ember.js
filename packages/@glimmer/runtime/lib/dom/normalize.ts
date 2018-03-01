@@ -31,6 +31,10 @@ export function normalizeTrustedValue(value: Opaque): TrustingInsertion {
   return String(value);
 }
 
+export function shouldCoerce(value: Opaque) {
+  return isString(value) || isEmpty(value) || typeof value === 'boolean' || typeof value === 'number';
+}
+
 export function isEmpty(value: Opaque): boolean {
   return value === null || value === undefined || typeof value.toString !== 'function';
 }
