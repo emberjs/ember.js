@@ -49,7 +49,7 @@ function canSetTypeOfInput(type: string) {
   @uses Ember.TextSupport
   @public
 */
-export default Component.extend(TextSupport, {
+const TextField = Component.extend(TextSupport, {
   layout,
   classNames: ['ember-text-field'],
   tagName: 'input',
@@ -156,3 +156,7 @@ export default Component.extend(TextSupport, {
   */
   max: null,
 });
+
+TextField.toString = () => '@ember/component/text-field';
+
+export default TextField;
