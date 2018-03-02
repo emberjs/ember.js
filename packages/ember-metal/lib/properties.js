@@ -94,7 +94,7 @@ if (EMBER_METAL_ES5_GETTERS) {
       `This implementation detail has now changed and the "descriptor" ` +
       `object is no longer present at this location. Soon, accessing ` +
       `\`${keyName}\` on this object will return the computed property's ` +
-      `current value (see RFC #281 for more details).\n\n` +
+      `current value (see RFC #281 for more details: https://github.com/emberjs/rfcs/blob/master/text/0281-es5-getters.md).\n\n` +
       `If you are seeing this error, you are likely using an addon that ` +
       `relies on this now-defunct private implementation detail. If you ` +
       `can, identify the addon from the stack trace below and report this ` +
