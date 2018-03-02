@@ -129,7 +129,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
     let { referrer } = builder;
 
-    builder.tryIf({
+    builder.replayableIf({
       args() {
         builder.expr(name);
         builder.dup();
@@ -441,7 +441,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
     }
 
-    builder.tryIf({
+    builder.replayableIf({
       args() {
         builder.expr(params[0]);
         builder.toBoolean();
@@ -477,7 +477,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
     }
 
-    builder.tryIf({
+    builder.replayableIf({
       args() {
         builder.expr(params[0]);
         builder.toBoolean();
@@ -513,7 +513,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
     }
 
-    builder.tryIf({
+    builder.replayableIf({
       args() {
         builder.expr(params[0]);
         builder.dup();
@@ -557,7 +557,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:    Noop
     //         Exit
 
-    builder.try({
+    builder.replayable({
       args() {
         if (hash && hash[0][0] === 'key') {
           builder.expr(hash[1][0]);
@@ -609,7 +609,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #in-element requires a single argument`);
     }
 
-    builder.tryIf({
+    builder.replayableIf({
       args() {
         let [ keys, values ] = hash!;
 
