@@ -502,11 +502,6 @@ OPCODE_METADATA(Op.AppendNode, {
   stackChange: -1
 });
 
-OPCODE_METADATA(Op.AppendOther, {
-  name: 'AppendNode',
-  stackChange: -1
-});
-
 OPCODE_METADATA(Op.AppendText, {
   name: 'AppendText',
   stackChange: -1

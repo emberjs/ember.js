@@ -159,10 +159,6 @@ export class StdOpcodeBuilder {
     this.push(Op.AppendNode);
   }
 
-  appendOther() {
-    this.push(Op.AppendOther);
-  }
-
   appendText() {
     this.push(Op.AppendText);
   }
@@ -577,11 +573,6 @@ export class StdOpcodeBuilder {
       when(ContentType.Node, () => {
         this.assertSame();
         this.appendNode();
-      });
-
-      when(ContentType.Other, () => {
-        this.assertSame();
-        this.appendOther();
       });
     });
   }

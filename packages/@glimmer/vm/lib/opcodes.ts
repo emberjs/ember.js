@@ -380,16 +380,6 @@ export const enum Op {
   AppendNode,
 
   /**
-   * Operation: Append an unknown value.
-   * Format:
-   *   (AppendOther)
-   * Operand Stack:
-   *   ..., VersionedPathReference<Opaque> →
-   *   ...
-   */
-  AppendOther,
-
-  /**
    * Operation: Append content as text.
    * Format:
    *   (AppendText)
