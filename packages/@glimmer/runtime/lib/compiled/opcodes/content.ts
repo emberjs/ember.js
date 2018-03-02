@@ -7,7 +7,7 @@ import { APPEND_OPCODES } from '../../opcodes';
 import { ConditionalReference } from '../../references';
 import { isCurriedComponentDefinition, isComponentDefinition } from '../../component/curried-component';
 import { CheckPathReference } from './-debug-strip';
-import { isString, isEmpty, isSafeString, isFragment, isNode } from '../../dom/normalize';
+import { isEmpty, isSafeString, isFragment, isNode, shouldCoerce } from '../../dom/normalize';
 import DynamicTextContent from '../../vm/content/text';
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {
@@ -40,7 +40,7 @@ export class ContentTypeReference implements Reference<ContentType> {
   value(): ContentType {
     let value = this.inner.value();
 
-    if (isString(value) || isEmpty(value)) {
+    if (shouldCoerce(value)) {
       return ContentType.String;
     } else if (isComponentDefinition(value)) {
       return ContentType.Component;
@@ -51,7 +51,7 @@ export class ContentTypeReference implements Reference<ContentType> {
     } else if (isNode(value)) {
       return ContentType.Node;
     } else {
-      return ContentType.Other;
+      return ContentType.String;
     }
   }
 }
@@ -60,7 +60,7 @@ APPEND_OPCODES.add(Op.AppendHTML, vm => {
   let reference = check(vm.stack.pop(), CheckPathReference);
 
   let rawValue = reference.value();
-  let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
+  let value = isEmpty(rawValue) ? '' : String(rawValue);
 
   vm.elements().appendDynamicHTML(value);
 });
@@ -78,7 +78,7 @@ APPEND_OPCODES.add(Op.AppendText, vm => {
   let reference = check(vm.stack.pop(), CheckPathReference);
 
   let rawValue = reference.value();
-  let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
+  let value = isEmpty(rawValue) ? '' : String(rawValue);
 
   let node = vm.elements().appendDynamicText(value);
 
@@ -101,12 +101,4 @@ APPEND_OPCODES.add(Op.AppendNode, vm => {
   let value = check(reference.value(), CheckNode);
 
   vm.elements().appendDynamicNode(value);
-});
-
-APPEND_OPCODES.add(Op.AppendOther, vm => {
-  let reference = check(vm.stack.pop(), CheckPathReference);
-
-  let value = reference.value();
-
-  vm.elements().appendDynamicText(String(value));
 });
