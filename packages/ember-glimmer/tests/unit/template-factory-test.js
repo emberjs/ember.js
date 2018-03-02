@@ -9,7 +9,7 @@ moduleFor('Template factory test', class extends RenderingTest {
     let { runtimeResolver } = this;
 
     let templateStr = 'Hello {{name}}';
-    let options = { moduleName: 'some-module' };
+    let options = { moduleName: 'my-app/templates/some-module.hbs' };
 
     let spec = precompile(templateStr, options);
     let body = `exports.default = template(${spec});`;

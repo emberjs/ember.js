@@ -202,14 +202,20 @@ function buildResolver() {
       let [sourceType, sourceName ] = sourceFullName.split(':');
       let [type, name ] = fullName.split(':');
 
-      if (type !== 'template' && sourceType === 'template' && sourceName.slice(0, 11) === 'components/') {
-        sourceName = sourceName.slice(11);
+      sourceName = sourceName.replace('my-app/', '');
+
+      if (sourceType === 'template' && sourceName.slice(0, 21) === 'templates/components/') {
+        sourceName = sourceName.slice(21);
       }
 
-      if (type === 'template' && sourceType === 'template' && name.slice(0, 11) === 'components/') {
+      name = name.replace('my-app/', '');
+
+      if (type === 'template' && name.slice(0, 11) === 'components/') {
         name = name.slice(11);
+        sourceName = `components/${sourceName}`;
       }
 
+      sourceName = sourceName.replace('.hbs', '');
 
       let result = `${type}:${sourceName}/${name}`;
 
@@ -229,13 +235,15 @@ moduleFor('Components test: local lookup with expandLocalLookup feature', class 
 if (EMBER_MODULE_UNIFICATION) {
   class LocalLookupTestResolver extends ModuleBasedTestResolver {
     resolve(specifier, referrer) {
+      let [type, name ] = specifier.split(':');
       let fullSpecifier = specifier;
 
       if (referrer) {
-        let namespace = referrer.split('template:components/')[1];
+        let namespace = referrer.split('components/')[1] || '';
+        namespace = namespace.replace('.hbs', '');
         if (specifier.indexOf('template:components/') !== -1) {
-            let name = specifier.split('template:components/')[1];
-            fullSpecifier = `template:components/${namespace}/${name}`;
+          name = name.replace('components/', '');
+          fullSpecifier = `${type}:components/${namespace}/${name}`;
         } else if (specifier.indexOf(':') !== -1) {
           let [type, name] = specifier.split(':');
           fullSpecifier = `${type}:${namespace}/${name}`;
@@ -272,7 +280,7 @@ if (EMBER_MODULE_UNIFICATION) {
 
       if (typeof template === 'string') {
         resolver.add(`template:components/${name}`, this.compile(template, {
-          moduleName: `components/${name}`
+          moduleName: `my-name/templates/components/${name}.hbs`
         }));
       }
     }
@@ -281,7 +289,7 @@ if (EMBER_MODULE_UNIFICATION) {
       let { resolver } = this;
       if (typeof template === 'string') {
         resolver.add(`template:${name}`, this.compile(template, {
-          moduleName: name
+          moduleName: `my-name/templates/${name}.hbs`
         }));
       } else {
         throw new Error(`Registered template "${name}" must be a string`);

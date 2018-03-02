@@ -407,7 +407,7 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
       template: 'Hi {{person.name}} from component'
     });
 
-    let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:routeWithError" and modified in "component:x-foo"/;
+    let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/routeWithError.hbs" and modified in "component:x-foo"/;
 
     return this.visit('/').then(() => {
       expectAssertion(() => {
