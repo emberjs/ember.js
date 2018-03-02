@@ -849,7 +849,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   }
 
   dynamicComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
-    this.try({
+    this.replayable({
       args: () => {
         this.expr(definition);
         this.dup();
@@ -1161,7 +1161,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
    *
    * # Updating Execution
    *
-   * Updating execution for this `try` occurs if the `body` added an
+   * Updating execution for this `replayable` occurs if the `body` added an
    * assertion, via one of the `JumpIf`, `JumpUnless` or `AssertSame` opcodes.
    *
    * If, during updating executon, the assertion fails, the initial VM is
@@ -1179,7 +1179,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
    * encountered, the program jumps to -1 rather than the END label,
    * and the PopFrame opcode is not needed.
    */
-  try({ args, body }: { args(): number, body(): void }): void {
+  replayable({ args, body }: { args(): number, body(): void }): void {
     // Start a new label frame, to give END and RETURN
     // a unique meaning.
     this.startLabels();
@@ -1232,11 +1232,11 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   }
 
   /**
-   * A specialized version of the `try` convenience that allows the
+   * A specialized version of the `replayable` convenience that allows the
    * caller to provide different code based upon whether the item at
    * the top of the stack is true or false.
    *
-   * As in `try`, the `ifTrue` and `ifFalse` code can invoke `return`.
+   * As in `replayable`, the `ifTrue` and `ifFalse` code can invoke `return`.
    *
    * During the initial execution, a `return` will continue execution
    * in the cleanup code, which finalizes the current DOM block and pops
@@ -1246,8 +1246,8 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
    * routine, as it can reuse the DOM block and is always only a single
    * frame deep.
    */
-  tryIf({ args, ifTrue, ifFalse }: { args(): number, ifTrue(): void, ifFalse?(): void }) {
-    this.try({
+  replayableIf({ args, ifTrue, ifFalse }: { args(): number, ifTrue(): void, ifFalse?(): void }) {
+    this.replayable({
       args,
 
       body: () => {
