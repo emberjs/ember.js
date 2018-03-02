@@ -502,7 +502,7 @@ function commonSetupRegistry(registry) {
   registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
   registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
 
-  registry.injection('route', 'router', 'router:main');
+  registry.injection('route', '_router', 'router:main');
 
   // Register the routing service...
   registry.register('service:-routing', RoutingService);

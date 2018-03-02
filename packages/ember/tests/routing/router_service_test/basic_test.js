@@ -72,7 +72,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       this.add('route:parent.index', Route.extend({
         init() {
           this._super();
-          set(this.router, 'rootURL', '/homepage');
+          set(this._router, 'rootURL', '/homepage');
         }
       }));
 

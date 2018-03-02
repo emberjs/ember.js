@@ -135,7 +135,7 @@ moduleFor('Application', class extends ApplicationTestCase {
     verifyInjection(assert, application, 'router', '_bucketCache', P`-bucket-cache:main`);
     verifyInjection(assert, application, 'route', '_bucketCache', P`-bucket-cache:main`);
 
-    verifyInjection(assert, application, 'route', 'router', 'router:main');
+    verifyInjection(assert, application, 'route', '_router', 'router:main');
 
     verifyRegistration(assert, application, 'component:-text-field');
     verifyRegistration(assert, application, 'component:-text-area');
