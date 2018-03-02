@@ -61,7 +61,7 @@ moduleFor('View Integration', class extends ApplicationTestCase {
       this.compile(`
         <h1>Node 1</h1>{{special-button}}
       `, {
-        moduleName: 'index'
+        moduleName: 'my-app/templates/index.hbs'
       })
     );
     resolver.add(
@@ -69,7 +69,7 @@ moduleFor('View Integration', class extends ApplicationTestCase {
       this.compile(`
         <button class='do-stuff' {{action 'doStuff'}}>Button</button>
       `, {
-        moduleName: 'components/special-button'
+        moduleName: 'my-app/templates/components/special-button.hbs'
       })
     );
   }

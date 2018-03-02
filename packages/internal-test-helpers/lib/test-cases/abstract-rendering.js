@@ -98,8 +98,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   registerPartial(name, template) {
     let owner = this.env.owner || this.owner;
     if (typeof template === 'string') {
-      let moduleName = `template:${name}`;
-      owner.register(moduleName, this.compile(template, { moduleName }));
+      owner.register(`template:${name}`, this.compile(template, { moduleName: `my-app/templates/-${name}.hbs` }));
     }
   }
 
@@ -112,7 +111,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
 
     if (typeof template === 'string') {
       owner.register(`template:components/${name}`, this.compile(template, {
-        moduleName: `components/${name}`
+        moduleName: `my-app/templates/components/${name}.hbs`
       }));
     }
   }
@@ -121,7 +120,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     let { owner } = this;
     if (typeof template === 'string') {
       owner.register(`template:${name}`, this.compile(template, {
-        moduleName: name
+        moduleName: `my-app/templates/${name}.hbs`
       }));
     } else {
       throw new Error(`Registered template "${name}" must be a string`);

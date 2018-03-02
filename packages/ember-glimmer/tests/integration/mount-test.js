@@ -64,7 +64,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
   }
 
   ['@test it boots an engine, instantiates its application controller, and renders its application template'](assert) {
-    this.engineRegistrations['template:application'] = compile('<h2>Chat here, {{username}}</h2>', { moduleName: 'application' });
+    this.engineRegistrations['template:application'] = compile('<h2>Chat here, {{username}}</h2>', { moduleName: 'my-app/templates/application.hbs' });
 
     let controller;
 
@@ -103,12 +103,12 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
     this.addTemplate('index', '');
     this.addTemplate('route-with-mount', '{{mount "chat"}}');
 
-    this.engineRegistrations['template:application'] = compile('hi {{person.name}} [{{component-with-backtracking-set person=person}}]', { moduleName: 'application' });
+    this.engineRegistrations['template:application'] = compile('hi {{person.name}} [{{component-with-backtracking-set person=person}}]', { moduleName: 'my-app/templates/application.hbs' });
     this.engineRegistrations['controller:application'] = Controller.extend({
       person: { name: 'Alex' }
     });
 
-    this.engineRegistrations['template:components/component-with-backtracking-set'] = compile('[component {{person.name}}]', { moduleName: 'components/component-with-backtracking-set' });
+    this.engineRegistrations['template:components/component-with-backtracking-set'] = compile('[component {{person.name}}]', { moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs' });
     this.engineRegistrations['component:component-with-backtracking-set'] = Component.extend({
       init() {
         this._super(...arguments);
@@ -116,7 +116,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       }
     });
 
-    let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:route-with-mount" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
+    let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/route-with-mount.hbs" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
 
     return this.visit('/').then(() => {
       expectAssertion(() => {
@@ -143,14 +143,14 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       router: null,
       init() {
         this._super(...arguments);
-        this.register('template:application', compile('<h2>Foo Engine</h2>', { moduleName: 'application' }));
+        this.register('template:application', compile('<h2>Foo Engine</h2>', { moduleName: 'my-app/templates/application.hbs' }));
       }
     }));
     this.add('engine:bar', Engine.extend({
       router: null,
       init() {
         this._super(...arguments);
-        this.register('template:application', compile('<h2>Bar Engine</h2>', { moduleName: 'application' }));
+        this.register('template:application', compile('<h2>Bar Engine</h2>', { moduleName: 'my-app/templates/application.hbs' }));
       }
     }));
 
@@ -203,7 +203,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
       router: null,
       init() {
         this._super(...arguments);
-        this.register('template:application', compile('<h2>Foo Engine: {{tagless-component}}</h2>', { moduleName: 'application' }));
+        this.register('template:application', compile('<h2>Foo Engine: {{tagless-component}}</h2>', { moduleName: 'my-app/templates/application.hbs' }));
         this.register('component:tagless-component', Component.extend({
           tagName: "",
           init() {
@@ -211,7 +211,7 @@ moduleFor('{{mount}} test', class extends ApplicationTest {
             component = this;
           }
         }));
-        this.register('template:components/tagless-component', compile('Tagless Component', { moduleName: 'components/tagless-component' }));
+        this.register('template:components/tagless-component', compile('Tagless Component', { moduleName: 'my-app/templates/components/tagless-component.hbs' }));
       }
     }));
 
@@ -236,7 +236,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
         router: null,
         init() {
           this._super(...arguments);
-          this.register('template:application', compile('<h2>Param Engine: {{model.foo}}</h2>', { moduleName: 'application' }));
+          this.register('template:application', compile('<h2>Param Engine: {{model.foo}}</h2>', { moduleName: 'my-app/templates/application.hbs' }));
         }
       }));
     }
@@ -311,7 +311,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
         router: null,
         init() {
           this._super(...arguments);
-          this.register('template:application', compile('{{model.foo}}', { moduleName: 'application' }));
+          this.register('template:application', compile('{{model.foo}}', { moduleName: 'my-app/templates/application.hbs' }));
         }
       }));
       this.addTemplate('engine-params-contextual-component', '{{mount "componentParamEngine" model=(hash foo=(component "foo-component"))}}');

@@ -38,7 +38,7 @@ class Resolver {
       throw new Error(`You called addTemplate for "${templateName}" with a template argument of type of '${templateType}'. addTemplate expects an argument of an uncompiled template as a string.`);
     }
     return this._registered[serializeKey(`template:${templateName}`)] = compile(template, {
-      moduleName: templateName
+      moduleName: `my-app/templates/${templateName}.hbs`
     });
   }
   static create() {

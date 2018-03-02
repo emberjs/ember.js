@@ -17,7 +17,7 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
 
   addTemplate(templateName, templateString) {
     this.resolver.add(`template:${templateName}`, this.compile(templateString, {
-      moduleName: templateName
+      moduleName: `my-app/templates/${templateName}.hbs`
     }));
   }
 
@@ -28,7 +28,7 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
 
     if (typeof template === 'string') {
       this.resolver.add(`template:components/${name}`, this.compile(template, {
-        moduleName: `components/${name}`
+        moduleName: `my-app/templates/components/${name}.hbs`
       }));
     }
   }
