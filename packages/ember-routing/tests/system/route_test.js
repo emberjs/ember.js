@@ -327,9 +327,9 @@ moduleFor('Route with engines', class extends AbstractTestCase {
       }
     });
 
-    let applicationRoute = EmberRoute.create({ router, routeName: 'application', fullRouteName: 'foo.bar' });
-    let postsRoute = EmberRoute.create({ router, routeName: 'posts', fullRouteName: 'foo.bar.posts' });
-    let route = EmberRoute.create({ router });
+    let applicationRoute = EmberRoute.create({ _router: router, routeName: 'application', fullRouteName: 'foo.bar' });
+    let postsRoute = EmberRoute.create({ _router: router, routeName: 'posts', fullRouteName: 'foo.bar.posts' });
+    let route = EmberRoute.create({ _router: router });
 
     setOwner(applicationRoute, engineInstance);
     setOwner(postsRoute, engineInstance);
@@ -370,9 +370,9 @@ moduleFor('Route with engines', class extends AbstractTestCase {
       }
     });
 
-    let applicationRoute = EmberRoute.create({ router, routeName: 'application' });
-    let postsRoute = EmberRoute.create({ router, routeName: 'posts' });
-    let route = EmberRoute.create({ router });
+    let applicationRoute = EmberRoute.create({ _router: router, routeName: 'application' });
+    let postsRoute = EmberRoute.create({ _router: router, routeName: 'posts' });
+    let route = EmberRoute.create({ _router: router });
 
     setOwner(applicationRoute, engineInstance);
     setOwner(postsRoute, engineInstance);
@@ -396,7 +396,7 @@ moduleFor('Route with engines', class extends AbstractTestCase {
       }
     });
 
-    let route = EmberRoute.create({ router });
+    let route = EmberRoute.create({ _router: router });
     setOwner(route, engineInstance);
 
     assert.strictEqual(route.transitionTo('application'), 'foo.bar.application', 'properly prefixes application route');
@@ -422,7 +422,7 @@ moduleFor('Route with engines', class extends AbstractTestCase {
       }
     });
 
-    let route = EmberRoute.create({ router });
+    let route = EmberRoute.create({ _router: router });
     setOwner(route, engineInstance);
 
     route.intermediateTransitionTo('application');
@@ -452,7 +452,7 @@ moduleFor('Route with engines', class extends AbstractTestCase {
       }
     });
 
-    let route = EmberRoute.create({ router });
+    let route = EmberRoute.create({ _router: router });
     setOwner(route, engineInstance);
 
     assert.strictEqual(route.replaceWith('application'), 'foo.bar.application', 'properly prefixes application route');
@@ -461,5 +461,13 @@ moduleFor('Route with engines', class extends AbstractTestCase {
 
     let queryParams = {};
     assert.strictEqual(route.replaceWith(queryParams), queryParams, 'passes query param only transitions through');
+  }
+
+  ['@test `router` is a deprecated one-way alias to `_router`'](assert) {
+    let router = {};
+    let route = EmberRoute.create({ _router: router });
+    expectDeprecation(function() {
+      return assert.equal(route.router, router);
+    }, 'Route#router is an intimate API that has been renamed to Route#_router. However you might want to consider using the router service');
   }
 });
