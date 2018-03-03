@@ -3,7 +3,7 @@ import { Op } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { PartialDefinition } from '@glimmer/opcode-compiler';
 import { assert, Dict } from "@glimmer/util";
-import { check, expectStackChange } from '@glimmer/debug';
+import { check } from '@glimmer/debug';
 import { Opaque } from "@glimmer/interfaces";
 import { CheckReference } from './-debug-strip';
 
@@ -58,6 +58,4 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
     vm.pushFrame(); // sp += 2
     vm.call(vmHandle!);
   }
-
-  expectStackChange(vm.stack, 1, 'InvokePartial');
 });

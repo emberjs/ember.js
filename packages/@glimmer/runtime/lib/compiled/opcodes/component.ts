@@ -13,7 +13,8 @@ import {
   Tag,
   VersionedReference,
   isConst,
-  isConstTag
+  isConstTag,
+  VersionedPathReference
 } from '@glimmer/reference';
 import {
   check,
@@ -29,7 +30,7 @@ import Bounds from '../../bounds';
 import { DynamicScope, ScopeSlot } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM, VM } from '../../vm';
-import { Arguments, IArguments } from '../../vm/arguments';
+import { Arguments, IArguments, BlockArguments } from '../../vm/arguments';
 import { IsCurriedComponentDefinitionReference, ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { Component } from '../../internal-interfaces';
@@ -77,6 +78,7 @@ export interface ComponentInstance {
   state: ComponentInstanceState;
   handle: number;
   table: ProgramSymbolTable;
+  lookup: Option<Dict<ScopeSlot>>;
 }
 
 export interface InitialComponentInstance {
@@ -86,6 +88,7 @@ export interface InitialComponentInstance {
   state: null;
   handle: Option<VMHandle>;
   table: Option<ProgramSymbolTable>;
+  lookup: Option<Dict<ScopeSlot>>;
 }
 
 export interface PopulatedComponentInstance {
@@ -95,6 +98,7 @@ export interface PopulatedComponentInstance {
   state: null;
   handle: Option<VMHandle>;
   table: Option<ProgramSymbolTable>;
+  lookup: Option<Dict<ScopeSlot>>;
 }
 
 export interface PartialComponentDefinition {
@@ -143,7 +147,8 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
     capabilities,
     state: null,
     handle: null,
-    table: null
+    table: null,
+    lookup: null
   };
 
   vm.stack.push(instance);
@@ -304,12 +309,15 @@ function resolveCurriedComponentDefinition(instance: ComponentInstance, definiti
 }
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
-  let dynamicScope = vm.dynamicScope();
-
   let instance = vm.fetchValue<PopulatedComponentInstance>(_state);
   let { definition, manager } = instance;
 
   let capabilities = instance.capabilities = capabilityFlagsFrom(manager.getCapabilities(definition.state));
+
+  let dynamicScope: Option<DynamicScope> = null;
+  if (hasCapability(capabilities, Capability.DynamicScope)) {
+    dynamicScope = vm.dynamicScope();
+  }
 
   let hasDefaultBlock = flags & 1;
   let args: Option<IArguments> = null;
@@ -318,7 +326,12 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
     args = check(vm.stack.peek(), CheckArguments);
   }
 
-  let state = manager.create(vm.env, definition.state, args, dynamicScope, vm.getSelf(), !!hasDefaultBlock);
+  let self: Option<VersionedPathReference<Opaque>> = null;
+  if (hasCapability(capabilities, Capability.CreateCaller)) {
+    self = vm.getSelf();
+  }
+
+  let state = manager.create(vm.env, definition.state, args, dynamicScope, self, !!hasDefaultBlock);
 
   // We want to reuse the `state` POJO here, because we know that the opcodes
   // only transition at exactly one place.
@@ -326,7 +339,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 
   let tag = manager.getTag(state);
 
-  if (!isConstTag(tag)) {
+  if (hasCapability(capabilities, Capability.UpdateHook) && !isConstTag(tag)) {
     vm.updateWith(new UpdateComponentOpcode(tag, state, manager, dynamicScope));
   }
 });
@@ -478,7 +491,8 @@ APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
     capabilities,
     state: null,
     handle: invocation.handle as Recast<number, VMHandle>,
-    table: invocation.symbolTable
+    table: invocation.symbolTable,
+    lookup: null
   };
 
   vm.loadValue(register, state);
@@ -496,58 +510,64 @@ APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {
   state.table = table;
 });
 
+APPEND_OPCODES.add(Op.VirtualRootScope, (vm, { op1: _state }) => {
+  let { symbols } = check(vm.fetchValue(_state), CheckFinishedComponentInstance).table;
+
+  vm.pushRootScope(symbols.length + 1, true);
+});
+
+APPEND_OPCODES.add(Op.SetupForEval, (vm, { op1: _state }) => {
+  let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
+
+  if (state.table.hasEval) {
+    let lookup = state.lookup = dict<ScopeSlot>();
+    vm.scope().bindEvalScope(lookup);
+  }
+});
+
+APPEND_OPCODES.add(Op.SetNamedVariables, (vm, { op1: _state }) => {
+  let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
+  let scope = vm.scope();
+
+  let args = check(vm.stack.peek(), CheckArguments);
+  let callerNames = args.named.atNames;
+
+  for (let i=callerNames.length - 1; i>=0; i--) {
+    let atName = callerNames[i];
+    let symbol = state.table.symbols.indexOf(callerNames[i]);
+    let value = args.named.get(atName, false);
+
+    if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
+    if (state.lookup) state.lookup[atName] = value;
+  }
+});
+
+function bindBlock(symbolName: string, blockName: string, state: ComponentInstance, blocks: BlockArguments, vm: VM<Opaque>) {
+  let symbol = state.table.symbols.indexOf(symbolName);
+
+  let block = blocks.get(blockName);
+
+  if (symbol !== -1) {
+    vm.scope().bindBlock(symbol + 1, block);
+  }
+
+  if (state.lookup) state.lookup[symbolName] = block;
+};
+
+APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
+  let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
+  let { blocks } = check(vm.stack.peek(), CheckArguments);
+
+  bindBlock('&attrs', 'attrs', state, blocks, vm);
+  bindBlock('&inverse', 'else', state, blocks, vm);
+  bindBlock('&default', 'main', state, blocks, vm);
+});
+
 // Dynamic Invocation Only
 APPEND_OPCODES.add(Op.InvokeComponentLayout, (vm, { op1: _state }) => {
-  let { stack } = vm;
-  let { handle, table: { symbols, hasEval } } =
-    check(vm.fetchValue(_state), CheckFinishedComponentInstance);
+  let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
 
-  {
-    let self = check(stack.pop(), CheckPathReference);
-
-    let scope = vm.pushRootScope(symbols.length + 1, true);
-    scope.bindSelf(self);
-
-    let args = check(vm.stack.pop(), CheckArguments);
-
-    let lookup: Option<Dict<ScopeSlot>> = null;
-
-    if (hasEval) {
-      lookup = dict<ScopeSlot>();
-    }
-
-    let callerNames = args.named.atNames;
-
-    for (let i=callerNames.length - 1; i>=0; i--) {
-      let atName = callerNames[i];
-      let symbol = symbols.indexOf(callerNames[i]);
-      let value = args.named.get(atName, false);
-
-      if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
-      if (hasEval) lookup![atName] = value;
-    }
-
-    let bindBlock = (symbolName: string, blockName: string) => {
-      let symbol = symbols.indexOf(symbolName);
-
-      let block = blocks.get(blockName);
-
-      if (symbol !== -1) {
-        scope.bindBlock(symbol + 1, block);
-      }
-
-      if (lookup) lookup[symbolName] = block;
-    };
-
-    let blocks = args.blocks;
-    bindBlock('&attrs', 'attrs');
-    bindBlock('&inverse', 'else');
-    bindBlock('&default', 'main');
-
-    if (lookup) scope.bindEvalScope(lookup);
-
-    vm.call(handle!);
-  }
+  vm.call(state.handle!);
 });
 
 APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
@@ -561,14 +581,10 @@ APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
   vm.env.didCreate(state, manager);
 
   vm.updateWith(new DidUpdateLayoutOpcode(manager, state, bounds));
-
-  expectStackChange(vm.stack, 0, 'DidRenderLayout');
 });
 
 APPEND_OPCODES.add(Op.CommitComponentTransaction, vm => {
   vm.commitCacheGroup();
-
-  expectStackChange(vm.stack, 0, 'CommitComponentTransaction');
 });
 
 export class UpdateComponentOpcode extends UpdatingOpcode {
@@ -578,7 +594,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     public tag: Tag,
     private component: Component,
     private manager: InternalComponentManager,
-    private dynamicScope: DynamicScope,
+    private dynamicScope: Option<DynamicScope>,
   ) {
     super();
   }

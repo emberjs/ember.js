@@ -9,8 +9,12 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
     prepareArgs: false,
     createArgs: false,
     attributeHook: false,
-    elementHook: false
-  }), 0b000000, 'empty capabilities');
+    elementHook: false,
+    dynamicScope: false,
+    createCaller: false,
+    updateHook: false,
+    createInstance: false
+  }), 0b0000000000, 'empty capabilities');
 
   assert.equal(capabilityFlagsFrom({
     dynamicLayout: true,
@@ -18,8 +22,12 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
     prepareArgs: true,
     createArgs: true,
     attributeHook: true,
-    elementHook: true
-  }), 0b111111, 'all capabilities');
+    elementHook: true,
+    dynamicScope: true,
+    createCaller: true,
+    updateHook: true,
+    createInstance: true
+  }), 0b1111111111, 'all capabilities');
 
   assert.equal(capabilityFlagsFrom({
     dynamicLayout: true,
@@ -27,8 +35,12 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
     prepareArgs: true,
     createArgs: false,
     attributeHook: false,
-    elementHook: true
-  }), 0b100101, 'random sample');
+    elementHook: true,
+    dynamicScope: false,
+    createCaller: false,
+    updateHook: true,
+    createInstance: true
+  }), 0b1100100101, 'random sample');
 });
 
 QUnit.test('allows querying bitmap for a capability', assert => {
@@ -38,7 +50,11 @@ QUnit.test('allows querying bitmap for a capability', assert => {
     prepareArgs: true,
     createArgs: false,
     attributeHook: false,
-    elementHook: true
+    elementHook: true,
+    dynamicScope: true,
+    createCaller: false,
+    updateHook: true,
+    createInstance: false
   });
 
   assert.strictEqual(true, hasCapability(capabilities, Capability.DynamicLayout));
@@ -47,4 +63,8 @@ QUnit.test('allows querying bitmap for a capability', assert => {
   assert.strictEqual(false, hasCapability(capabilities, Capability.CreateArgs));
   assert.strictEqual(false, hasCapability(capabilities, Capability.AttributeHook));
   assert.strictEqual(true, hasCapability(capabilities, Capability.ElementHook));
+  assert.strictEqual(true, hasCapability(capabilities, Capability.DynamicScope));
+  assert.strictEqual(false, hasCapability(capabilities, Capability.CreateCaller));
+  assert.strictEqual(true, hasCapability(capabilities, Capability.UpdateHook));
+  assert.strictEqual(false, hasCapability(capabilities, Capability.CreateInstance));
 });
