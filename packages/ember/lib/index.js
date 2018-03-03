@@ -146,9 +146,6 @@ Ember.expandProperties = metal.expandProperties;
 Ember.NAME_KEY = utils.NAME_KEY;
 Ember.addObserver = metal.addObserver;
 Ember.removeObserver = metal.removeObserver;
-if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
-  Ember.required = metal.required;
-}
 Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
 Ember.mixin = metal.mixin;
