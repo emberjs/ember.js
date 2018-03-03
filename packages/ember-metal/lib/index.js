@@ -135,3 +135,9 @@ export {
   setProxy
 } from './is_proxy';
 export { default as descriptor } from './descriptor';
+export {
+  addArrayObserver,
+  removeArrayObserver,
+  arrayContentWillChange,
+  arrayContentDidChange
+} from './array';

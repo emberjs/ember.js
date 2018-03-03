@@ -1,12 +1,16 @@
 import { getOwner } from 'ember-utils';
-import { get, run, objectAt } from 'ember-metal';
+import {
+  get,
+  run,
+  objectAt,
+  addArrayObserver,
+  removeArrayObserver
+} from 'ember-metal';
 import {
   String as StringUtils,
   Namespace,
   Object as EmberObject,
   A as emberA,
-  addArrayObserver,
-  removeArrayObserver
 } from 'ember-runtime';
 
 /**
