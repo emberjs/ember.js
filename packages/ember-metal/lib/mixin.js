@@ -3,7 +3,7 @@
 */
 import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import { assign, guidFor, ROOT, wrap, makeArray } from 'ember-utils';
-import { assert, deprecate } from 'ember-debug';
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
@@ -171,10 +171,6 @@ function applyMergedProperties(obj, key, value, values) {
 
 function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
   if (value instanceof Descriptor) {
-    if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT && value === REQUIRED && descs[key]) {
-      return CONTINUE;
-    }
-
     // Wrap descriptor function to implement
     // _super() if needed
     if (value._getter) {
@@ -316,10 +312,6 @@ function applyMixin(obj, mixins, partial) {
 
     desc = descs[key];
     value = values[key];
-
-    if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT && desc === REQUIRED) {
-      continue;
-    }
 
     while (desc && desc instanceof Alias) {
       let followed = followAlias(obj, desc, descs, values);
@@ -655,24 +647,6 @@ function _keys(mixin, ret = new Set(), seen = new Set()) {
   return ret;
 }
 
-const REQUIRED = new Descriptor();
-REQUIRED.toString = () => '(Required Property)';
-
-/**
-  Denotes a required property for a mixin
-
-  @method required
-  @for Ember
-  @private
-*/
-export function required() {
-  deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false, {
-    id: 'ember-metal.required',
-    until: '3.0.0',
-  });
-  return REQUIRED;
-}
-
 class Alias extends Descriptor {
   constructor(methodName) {
     super();
@@ -763,4 +737,4 @@ export function observer(...args) {
   return func;
 }
 
-export { Mixin, REQUIRED };
+export { Mixin };

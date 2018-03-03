@@ -80,7 +80,7 @@ export { default as setProperties } from './set_properties';
 export { default as expandProperties } from './expand_properties';
 
 export { addObserver, removeObserver } from './observer';
-export { Mixin, aliasMethod, mixin, observer, required, REQUIRED } from './mixin';
+export { Mixin, aliasMethod, mixin, observer } from './mixin';
 export { default as InjectedProperty } from './injected_property';
 export { setHasViews, tagForProperty, tagFor, markObjectAsDirty } from './tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './transaction';

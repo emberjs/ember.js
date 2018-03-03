@@ -1,5 +1,4 @@
 import Ember from '../index';
-import { ENV } from 'ember-environment';
 import { confirmExport } from 'internal-test-helpers';
 import { DEBUG } from 'ember-env-flags';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -255,7 +254,3 @@ let allExports = [
   ['DataAdapter', 'ember-extension-support'],
   ['ContainerDebugAdapter', 'ember-extension-support'],
 ];
-
-if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
-  allExports.push(['required', 'ember-metal']);
-}
