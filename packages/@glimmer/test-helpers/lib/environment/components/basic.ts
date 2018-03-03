@@ -25,7 +25,11 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  dynamicScope: false,
+  createCaller: false,
+  updateHook: false,
+  createInstance: true
 };
 
 export class BasicComponentManager implements WithStaticLayout<BasicComponent, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {

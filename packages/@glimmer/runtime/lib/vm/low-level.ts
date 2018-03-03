@@ -52,6 +52,14 @@ export default class LowLevelVM {
     this.stack.fp = this.stack.getSmi(1);
   }
 
+  pushSmallFrame() {
+    this.stack.pushSmi(this.ra);
+  }
+
+  popSmallFrame() {
+    this.ra = this.stack.popSmi();
+  }
+
   // Jump to an address in `program`
   goto(offset: number) {
     let addr = (this.pc + offset) - this.currentOpSize;
@@ -119,6 +127,10 @@ export default class LowLevelVM {
         return this.pushFrame();
       case Op.PopFrame:
         return this.popFrame();
+      case Op.PushSmallFrame:
+        return this.pushSmallFrame();
+      case Op.PopSmallFrame:
+        return this.popSmallFrame();
       case Op.InvokeStatic:
         return this.call(opcode.op1);
       case Op.InvokeVirtual:

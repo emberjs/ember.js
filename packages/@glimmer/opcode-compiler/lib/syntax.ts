@@ -117,7 +117,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
         builder.invokeStaticComponent(capabilities, compilable, attrsBlock, null, args, false, child && child);
       } else {
         builder.pushComponentDefinition(handle);
-        builder.invokeComponent(attrsBlock, null, args, false, child && child);
+        builder.invokeComponent(capabilities, attrsBlock, null, args, false, child && child);
       }
     } else {
       throw new Error(`Compile Error: Cannot find component ${tag}`);
@@ -129,32 +129,19 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
     let { referrer } = builder;
 
-    builder.startLabels();
+    builder.replayableIf({
+      args() {
+        builder.expr(name);
+        builder.dup();
+        return 2;
+      },
 
-    builder.pushFrame();
-
-    builder.returnTo('END');
-
-    builder.expr(name);
-
-    builder.dup();
-
-    builder.enter(2);
-
-    builder.jumpUnless('ELSE');
-
-    builder.invokePartial(referrer, builder.evalSymbols()!, evalInfo);
-    builder.popScope();
-    builder.popFrame();
-
-    builder.label('ELSE');
-    builder.exit();
-    builder.return();
-
-    builder.label('END');
-    builder.popFrame();
-
-    builder.stopLabels();
+      ifTrue() {
+        builder.invokePartial(referrer, builder.evalSymbols()!, evalInfo);
+        builder.popScope();
+        builder.popFrame(); // FIXME: WAT
+      }
+    });
   });
 
   STATEMENTS.add(Ops.Yield, (sexp: WireFormat.Statements.Yield, builder) => {
@@ -454,41 +441,23 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
     }
 
-    builder.startLabels();
+    builder.replayableIf({
+      args() {
+        builder.expr(params[0]);
+        builder.toBoolean();
+        return 1;
+      },
 
-    builder.pushFrame();
+      ifTrue() {
+        builder.invokeStaticBlock(unwrap(template));
+      },
 
-    builder.returnTo('END');
-
-    builder.expr(params[0]);
-
-    builder.toBoolean();
-
-    builder.enter(1);
-
-    builder.jumpUnless('ELSE');
-
-    builder.invokeStaticBlock(unwrap(template));
-
-    if (inverse) {
-      builder.jump('EXIT');
-
-      builder.label('ELSE');
-      builder.invokeStaticBlock(inverse);
-
-      builder.label('EXIT');
-      builder.exit();
-      builder.return();
-    } else {
-      builder.label('ELSE');
-      builder.exit();
-      builder.return();
-    }
-
-    builder.label('END');
-    builder.popFrame();
-
-    builder.stopLabels();
+      ifFalse() {
+        if (inverse) {
+          builder.invokeStaticBlock(inverse);
+        }
+      }
+    });
   });
 
   blocks.add('unless', (params, _hash, template, inverse, builder) => {
@@ -508,41 +477,23 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
     }
 
-    builder.startLabels();
+    builder.replayableIf({
+      args() {
+        builder.expr(params[0]);
+        builder.toBoolean();
+        return 1;
+      },
 
-    builder.pushFrame();
+      ifTrue() {
+        if (inverse) {
+          builder.invokeStaticBlock(inverse);
+        }
+      },
 
-    builder.returnTo('END');
-
-    builder.expr(params[0]);
-
-    builder.toBoolean();
-
-    builder.enter(1);
-
-    builder.jumpIf('ELSE');
-
-    builder.invokeStaticBlock(unwrap(template));
-
-    if (inverse) {
-      builder.jump('EXIT');
-
-      builder.label('ELSE');
-      builder.invokeStaticBlock(inverse);
-
-      builder.label('EXIT');
-      builder.exit();
-      builder.return();
-    } else {
-      builder.label('ELSE');
-      builder.exit();
-      builder.return();
-    }
-
-    builder.label('END');
-    builder.popFrame();
-
-    builder.stopLabels();
+      ifFalse() {
+        builder.invokeStaticBlock(unwrap(template));
+      }
+    });
   });
 
   blocks.add('with', (params, _hash, template, inverse, builder) => {
@@ -562,42 +513,24 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
     }
 
-    builder.startLabels();
+    builder.replayableIf({
+      args() {
+        builder.expr(params[0]);
+        builder.dup();
+        builder.toBoolean();
+        return 2;
+      },
 
-    builder.pushFrame();
+      ifTrue() {
+        builder.invokeStaticBlock(unwrap(template), 1);
+      },
 
-    builder.returnTo('END');
-
-    builder.expr(params[0]);
-
-    builder.dup();
-    builder.toBoolean();
-
-    builder.enter(2);
-
-    builder.jumpUnless('ELSE');
-
-    builder.invokeStaticBlock(unwrap(template), 1);
-
-    if (inverse) {
-      builder.jump('EXIT');
-
-      builder.label('ELSE');
-      builder.invokeStaticBlock(inverse);
-
-      builder.label('EXIT');
-      builder.exit();
-      builder.return();
-    } else {
-      builder.label('ELSE');
-      builder.exit();
-      builder.return();
-    }
-
-    builder.label('END');
-    builder.popFrame();
-
-    builder.stopLabels();
+      ifFalse() {
+        if (inverse) {
+          builder.invokeStaticBlock(inverse);
+        }
+      }
+    });
   });
 
   blocks.add('each', (params, hash, template, inverse, builder) => {
@@ -624,66 +557,51 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
     // END:    Noop
     //         Exit
 
-    builder.startLabels();
+    builder.replayable({
+      args() {
+        if (hash && hash[0][0] === 'key') {
+          builder.expr(hash[1][0]);
+        } else {
+          builder.pushPrimitiveReference(null);
+        }
 
-    builder.pushFrame();
+        builder.expr(params[0]);
 
-    builder.returnTo('END');
+        return 2;
+      },
 
-    if (hash && hash[0][0] === 'key') {
-      builder.expr(hash[1][0]);
-    } else {
-      builder.pushPrimitiveReference(null);
-    }
+      body() {
+        builder.putIterator();
 
-    builder.expr(params[0]);
+        builder.jumpUnless('ELSE');
 
-    builder.enter(2);
+        builder.pushFrame();
 
-    builder.putIterator();
+        builder.dup(Register.fp, 1);
 
-    builder.jumpUnless('ELSE');
+        builder.returnTo('ITER');
+        builder.enterList('BODY');
 
-    builder.pushFrame();
+        builder.label('ITER');
+        builder.iterate('BREAK');
 
-    builder.returnTo('ITER');
+        builder.label('BODY');
+        builder.invokeStaticBlock(unwrap(template), 2);
+        builder.pop(2);
+        builder.jump('FINALLY');
 
-    builder.dup(Register.fp, 1);
+        builder.label('BREAK');
+        builder.exitList();
+        builder.popFrame();
 
-    builder.enterList('BODY');
+        builder.jump('FINALLY');
+        builder.label('ELSE');
 
-    builder.label('ITER');
-    builder.iterate('BREAK');
-
-    builder.label('BODY');
-    builder.invokeStaticBlock(unwrap(template), 2);
-    builder.pop(2);
-    builder.exit();
-    builder.return();
-
-    builder.label('BREAK');
-    builder.exitList();
-    builder.popFrame();
-
-    if (inverse) {
-      builder.jump('EXIT');
-
-      builder.label('ELSE');
-      builder.invokeStaticBlock(inverse);
-
-      builder.label('EXIT');
-      builder.exit();
-      builder.return();
-    } else {
-      builder.label('ELSE');
-      builder.exit();
-      builder.return();
-    }
-
-    builder.label('END');
-    builder.popFrame();
-
-    builder.stopLabels();
+        if (inverse) {
+          builder.invokeStaticBlock(inverse);
+        }
+      }
+    });
   });
 
   blocks.add('in-element', (params, hash, template, _inverse, builder) => {
@@ -691,43 +609,32 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
       throw new Error(`SYNTAX ERROR: #in-element requires a single argument`);
     }
 
-    builder.startLabels();
+    builder.replayableIf({
+      args() {
+        let [ keys, values ] = hash!;
 
-    builder.pushFrame();
+        for (let i = 0; i < keys.length; i++) {
+          let key = keys[i];
+          if (key === 'nextSibling' || key === 'guid') {
+            builder.expr(values[i]);
+          } else {
+            throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);
+          }
+        }
 
-    builder.returnTo('END');
+        builder.expr(params[0]);
 
-    let [ keys, values ] = hash!;
+        builder.dup();
 
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i];
-      if (key === 'nextSibling' || key === 'guid') {
-        builder.expr(values[i]);
-      } else {
-        throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);
+        return 4;
+      },
+
+      ifTrue() {
+        builder.pushRemoteElement();
+        builder.invokeStaticBlock(unwrap(template));
+        builder.popRemoteElement();
       }
-    }
-
-    builder.expr(params[0]);
-
-    builder.dup();
-
-    builder.enter(4);
-
-    builder.jumpUnless('ELSE');
-
-    builder.pushRemoteElement();
-    builder.invokeStaticBlock(unwrap(template));
-    builder.popRemoteElement();
-
-    builder.label('ELSE');
-    builder.exit();
-    builder.return();
-
-    builder.label('END');
-    builder.popFrame();
-
-    builder.stopLabels();
+    });
   });
 
   blocks.add('-with-dynamic-vars', (_params, hash, template, _inverse, builder) => {

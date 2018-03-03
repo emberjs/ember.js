@@ -56,7 +56,11 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   prepareArgs: true,
   createArgs: true,
   attributeHook: true,
-  elementHook: true
+  elementHook: true,
+  dynamicScope: true,
+  createCaller: true,
+  updateHook: true,
+  createInstance: true
 };
 
 export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = {

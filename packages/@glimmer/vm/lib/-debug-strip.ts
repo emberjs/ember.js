@@ -262,6 +262,23 @@ OPCODE_METADATA(Op.PopFrame, {
   }
 });
 
+OPCODE_METADATA(Op.PushSmallFrame, {
+  name: 'PushSmallFrame',
+  stackChange: 1
+});
+
+OPCODE_METADATA(Op.PopSmallFrame, {
+  name: 'PopFrame',
+
+  before(_opcode: Opcode, vm: VM): { sp: number, fp: number } {
+    return { sp: vm.stack.sp, fp: vm.stack.fp };
+  },
+
+  stackChange({ state }: { state: { sp: number, fp: number } }) {
+    return state.fp - state.sp;
+  }
+});
+
 OPCODE_METADATA(Op.Enter, {
   name: 'Enter',
   ops: [I32('args')],
@@ -282,6 +299,10 @@ OPCODE_METADATA(Op.RootScope, {
   name: 'RootScope',
   ops: [I32('symbols'), Bool('bindCallerScope')],
   operands: 2
+});
+
+OPCODE_METADATA(Op.VirtualRootScope, {
+  name: 'VirtualRootScope'
 });
 
 OPCODE_METADATA(Op.ChildScope, {
@@ -386,6 +407,18 @@ OPCODE_METADATA(Op.GetComponentLayout, {
   ops: [Register('state')],
   operands: 1,
   stackChange: 2
+});
+
+OPCODE_METADATA(Op.SetupForEval, {
+  name: 'SetupForEval',
+  ops: [Register('state')],
+  operands: 1
+});
+
+OPCODE_METADATA(Op.BindEvalScope, {
+  name: 'BindEvalScope',
+  ops: [Register('state')],
+  operands: 1
 });
 
 OPCODE_METADATA(Op.InvokeComponentLayout, {
@@ -605,6 +638,18 @@ OPCODE_METADATA(Op.Helper, {
   ops: [Handle('helper')],
   operands: 1,
   stackChange: -1
+});
+
+OPCODE_METADATA(Op.SetNamedVariables, {
+  name: 'SetNamedVariables',
+  ops: [Register('register')],
+  operands: 1
+});
+
+OPCODE_METADATA(Op.SetBlocks, {
+  name: 'SetBlocks',
+  ops: [Register('register')],
+  operands: 1
 });
 
 OPCODE_METADATA(Op.SetVariable, {
