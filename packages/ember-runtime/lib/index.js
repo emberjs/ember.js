@@ -13,8 +13,6 @@ export { default as isEqual } from './is-equal';
 export {
   default as Array,
   isEmberArray,
-  addArrayObserver,
-  removeArrayObserver,
   NativeArray,
   A,
   MutableArray,

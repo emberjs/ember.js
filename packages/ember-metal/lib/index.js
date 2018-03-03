@@ -41,7 +41,13 @@ export {
   set,
   trySet
 } from './property_set';
-export { objectAt } from './array';
+export {
+  objectAt,
+  addArrayObserver,
+  removeArrayObserver,
+  arrayContentWillChange,
+  arrayContentDidChange
+} from './array';
 export {
   eachProxyFor,
   eachProxyArrayWillChange,

@@ -4,16 +4,15 @@ import {
   objectAt,
   addObserver,
   observer as emberObserver,
-  computed
-} from 'ember-metal';
-import { testBoth } from 'internal-test-helpers';
-import EmberObject from '../../system/object';
-import EmberArray, {
+  computed,
   addArrayObserver,
   removeArrayObserver,
   arrayContentDidChange,
   arrayContentWillChange
-} from '../../mixins/array';
+} from 'ember-metal';
+import { testBoth } from 'internal-test-helpers';
+import EmberObject from '../../system/object';
+import EmberArray from '../../mixins/array';
 import { A as emberA } from '../../mixins/array';
 
 /*
