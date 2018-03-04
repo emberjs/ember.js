@@ -12,11 +12,7 @@ import {
   isNone,
   run,
 } from 'ember-metal';
-import { symbol } from 'ember-utils';
-import { UnboundReference } from '../utils/references';
-
-export const INVOKE = symbol('INVOKE');
-export const ACTION = symbol('ACTION');
+import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually

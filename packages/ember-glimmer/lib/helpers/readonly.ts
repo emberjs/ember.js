@@ -3,9 +3,9 @@
 */
 import {
   Arguments,
-  VM
+  VM,
 } from '@glimmer/runtime';
-import { UPDATE } from '../utils/references';
+import { ReadonlyReference, } from '../utils/references';
 import { unMut } from './mut';
 
 /**
@@ -109,9 +109,5 @@ import { unMut } from './mut';
 export default function(_vm: VM, args: Arguments) {
   let ref = unMut(args.positional.at(0));
 
-  let wrapped = Object.create(ref);
-
-  wrapped[UPDATE] = undefined;
-
-  return wrapped;
+  return new ReadonlyReference(ref);
 }
