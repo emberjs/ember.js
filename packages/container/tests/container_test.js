@@ -691,4 +691,41 @@ if (EMBER_MODULE_UNIFICATION) {
         'The correct factory was stored in the cache with the correct key which includes the source.');
     }
   });
+
+  QUnit.test('The container can pass a namespaced path to factoryFor', function(assert) {
+    let PrivateComponent = factory();
+    let lookup = 'template:components/my-addon::my-input';
+    let registry = new Registry();
+    let resolveCount = 0;
+    registry.resolve = function(fullName) {
+      resolveCount++;
+      if (fullName === lookup) {
+        return PrivateComponent;
+      }
+    };
+
+    let container = registry.container();
+
+    assert.strictEqual(container.factoryFor(lookup).class, PrivateComponent, 'The correct factory was provided');
+    assert.strictEqual(container.factoryFor(lookup).class, PrivateComponent, 'The correct factory was provided again');
+    assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+  });
+
+  QUnit.test('The container can pass a namespaced to lookup', function(assert) {
+    let PrivateComponent = factory();
+    let lookup = 'template:components/my-addon::my-input';
+    let registry = new Registry();
+    registry.resolve = function(fullName) {
+      if (fullName === lookup) {
+        return PrivateComponent;
+      }
+    };
+
+    let container = registry.container();
+
+    let result = container.lookup(lookup);
+    assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
+    assert.ok(container.cache[`template:components/my-addon::my-input`] instanceof PrivateComponent,
+       'The correct factory was stored in the cache with the correct key which includes the source.');
+  });
 }
