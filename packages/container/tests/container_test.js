@@ -650,7 +650,9 @@ if (EMBER_MODULE_UNIFICATION) {
       let registry = new Registry();
       let resolveCount = 0;
       let expandedKey = 'boom, special expanded key';
-      registry.expandLocalLookup = function() {
+      registry.expandLocalLookup = (specifier, options) => {
+        this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
+        this.assert.strictEqual(options.source, expectedSource, 'source is expanded');
         return expandedKey;
       };
       registry.resolve = function(fullName) {
@@ -673,7 +675,9 @@ if (EMBER_MODULE_UNIFICATION) {
       let expectedSource = 'template:routes/application';
       let registry = new Registry();
       let expandedKey = 'boom, special expanded key';
-      registry.expandLocalLookup = function() {
+      registry.expandLocalLookup = (specifier, options) => {
+        this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
+        this.assert.strictEqual(options.source, expectedSource, 'source is expanded');
         return expandedKey;
       };
       registry.resolve = function(fullName) {
@@ -690,5 +694,58 @@ if (EMBER_MODULE_UNIFICATION) {
       this.assert.ok(container.cache[expandedKey] instanceof PrivateComponent,
         'The correct factory was stored in the cache with the correct key which includes the source.');
     }
+
+    ['@test The container can expand and resolve a namespace to factoryFor'](assert) {
+      let PrivateComponent = factory();
+      let lookup = 'component:my-input';
+      let expectedNamespace = 'my-addon';
+      let registry = new Registry();
+      let resolveCount = 0;
+      let expandedKey = 'boom, special expanded key';
+      registry.expandLocalLookup = (specifier, options) => {
+        this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
+        this.assert.strictEqual(options.namespace, expectedNamespace, 'namespace is expanded');
+        return expandedKey;
+      };
+      registry.resolve = function(fullName) {
+        resolveCount++;
+        if (fullName === expandedKey) {
+          return PrivateComponent;
+        }
+      };
+
+      let container = registry.container();
+
+      assert.strictEqual(container.factoryFor(lookup, { namespace: expectedNamespace }).class, PrivateComponent, 'The correct factory was provided');
+      assert.strictEqual(container.factoryFor(lookup, { namespace: expectedNamespace }).class, PrivateComponent, 'The correct factory was provided again');
+      assert.equal(resolveCount, 1, 'resolve called only once and a cached factory was returned the second time');
+    }
+
+    ['@test The container can expand and resolve a namespace to lookup']() {
+      let PrivateComponent = factory();
+      let lookup = 'component:my-input';
+      let expectedNamespace = 'my-addon';
+      let registry = new Registry();
+      let expandedKey = 'boom, special expanded key';
+      registry.expandLocalLookup = (specifier, options) => {
+        this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
+        this.assert.strictEqual(options.namespace, expectedNamespace, 'namespace is expanded');
+        return expandedKey;
+      };
+      registry.resolve = function(fullName) {
+        if (fullName === expandedKey) {
+          return PrivateComponent;
+        }
+      };
+
+      let container = registry.container();
+
+      let result = container.lookup(lookup, { namespace: expectedNamespace });
+      this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
+
+      this.assert.ok(container.cache[expandedKey] instanceof PrivateComponent,
+        'The correct factory was stored in the cache with the correct key which includes the source.');
+    }
   });
+
 }

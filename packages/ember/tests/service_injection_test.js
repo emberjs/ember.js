@@ -168,6 +168,22 @@ if (EMBER_MODULE_UNIFICATION) {
       });
     }
 
+    ['@test Service with namespace can be injected and is resolved'](assert) {
+      this.add('controller:application', Controller.extend({
+        myService: inject.service('my-namespace::my-service')
+      }));
+      let MyService = Service.extend();
+      this.add({
+        specifier: 'service:my-service',
+        namespace: 'my-namespace'
+      }, MyService);
+
+      this.visit('/').then(() => {
+        let controller = this.applicationInstance.lookup('controller:application');
+        assert.ok(controller.get('myService') instanceof MyService);
+      });
+    }
+
   });
 
 }

@@ -56,9 +56,7 @@ function lookupComponentPair(componentLookup, owner, name, options) {
 export default function lookupComponent(owner, name, options) {
   let componentLookup = owner.lookup('component-lookup:main');
 
-  let source = options && options.source;
-
-  if (source) {
+  if (options && (options.source || options.namespace)) {
     let localResult = lookupComponentPair(componentLookup, owner, name, options);
 
     if (localResult.component || localResult.layout) {

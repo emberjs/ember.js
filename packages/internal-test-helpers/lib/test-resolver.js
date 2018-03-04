@@ -2,8 +2,9 @@ import { compile } from 'ember-template-compiler';
 
 const DELIMITER = '%';
 
-function serializeKey(specifier, source) {
-  return [specifier, source].join(DELIMITER);
+function serializeKey(specifier, source, namespace) {
+  let [type, name] = specifier.split(':');
+  return `${type}://${[name, (namespace ? '[source invalid due to namespace]' : source), namespace].join(DELIMITER)}`;
 }
 
 class Resolver {
@@ -14,16 +15,24 @@ class Resolver {
   resolve(specifier) {
     return this._registered[specifier] || this._registered[serializeKey(specifier)];
   }
-  expandLocalLookup(specifier, source) {
-    let key = serializeKey(specifier, source);
-    if (this._registered[key]) {
-      return key;
+  expandLocalLookup(specifier, source, namespace) {
+    if (specifier.indexOf('://') !== -1) {
+      return specifier; // an already expanded specifier
     }
 
-    /*
-     * For a top-level resolution or no resolution, return null
-     */
-    return null;
+    if (source || namespace) {
+      let key = serializeKey(specifier, source, namespace);
+      if (this._registered[key]) {
+        return key; // like local lookup
+      }
+
+      key = serializeKey(specifier);
+      if (this._registered[key]) {
+        return specifier; // top level resolution despite source/namespace
+      }
+    }
+
+    return specifier; // didn't know how to expand it
   }
   add(lookup, factory) {
     let key;
@@ -35,7 +44,7 @@ class Resolver {
         key = serializeKey(lookup);
         break;
       case 'object':
-        key = serializeKey(lookup.specifier, lookup.source);
+        key = serializeKey(lookup.specifier, lookup.source, lookup.namespace);
         break;
       default:
         throw new Error('Specifier string has an unknown type');
