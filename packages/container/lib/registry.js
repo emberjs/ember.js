@@ -151,10 +151,9 @@ export default class Registry {
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
-    let cacheKey = this.resolverCacheKey(normalizedName);
-    assert(`Cannot re-register: '${fullName}', as it has already been resolved.`, !this._resolveCache[cacheKey]);
+    assert(`Cannot re-register: '${fullName}', as it has already been resolved.`, !this._resolveCache[normalizedName]);
 
-    this._failSet.delete(cacheKey);
+    this._failSet.delete(normalizedName);
     this.registrations[normalizedName] = factory;
     this._options[normalizedName] = options;
   }
@@ -180,14 +179,13 @@ export default class Registry {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
-    let cacheKey = this.resolverCacheKey(normalizedName);
 
     this._localLookupCache = Object.create(null);
 
     delete this.registrations[normalizedName];
-    delete this._resolveCache[cacheKey];
+    delete this._resolveCache[normalizedName];
     delete this._options[normalizedName];
-    this._failSet.delete(cacheKey);
+    this._failSet.delete(normalizedName);
   }
 
   /**
@@ -567,10 +565,6 @@ export default class Registry {
     return injections;
   }
 
-  resolverCacheKey(name) {
-    return name;
-  }
-
   /**
    Given a fullName and a source fullName returns the fully resolved
    fullName. Used to allow for local lookup.
@@ -685,10 +679,9 @@ function resolve(registry, normalizedName, options) {
     }
   }
 
-  let cacheKey = registry.resolverCacheKey(normalizedName);
-  let cached = registry._resolveCache[cacheKey];
+  let cached = registry._resolveCache[normalizedName];
   if (cached !== undefined) { return cached; }
-  if (registry._failSet.has(cacheKey)) { return; }
+  if (registry._failSet.has(normalizedName)) { return; }
 
   let resolved;
 
@@ -701,9 +694,9 @@ function resolve(registry, normalizedName, options) {
   }
 
   if (resolved === undefined) {
-    registry._failSet.add(cacheKey);
+    registry._failSet.add(normalizedName);
   } else {
-    registry._resolveCache[cacheKey] = resolved;
+    registry._resolveCache[normalizedName] = resolved;
   }
 
   return resolved;
