@@ -37,19 +37,6 @@ class extends ApplicationTestCase {
     return this.applicationInstance.lookup(`controller:${name}`);
   }
 
-  handleURL(assert, path) {
-    return run(() => {
-      let router = this.applicationInstance.lookup('router:main');
-      return router.handleURL(path).then(function (value) {
-        assert.ok(true, 'url: `' + path + '` was handled');
-        return value;
-      }, function (reason) {
-        assert.ok(false, 'failed to visit:`' + path + '` reason: `' + QUnit.jsDump.parse(reason));
-        throw reason;
-      });
-    });
-  }
-
   handleURLAborts(assert, path) {
     run(() => {
       let router = this.applicationInstance.lookup('router:main');
@@ -818,7 +805,6 @@ class extends ApplicationTestCase {
       let router = this.applicationInstance.lookup('router:main');
       let menuItem = MenuItem.create({ id: 1 });
 
-      run.later(() => RSVP.resolve(menuItem), 1);
       return router.transitionTo('special', menuItem).then(function() {
         assert.equal(rootSetup, 1, 'The root setup was not triggered again');
         assert.equal(rootRender, 1, 'The root render was not triggered again');
@@ -1096,10 +1082,8 @@ class extends ApplicationTestCase {
     return this.visit('/').then(() => {
       let router = this.applicationInstance.lookup('router:main');
 
-      run(() => {
-        addObserver(router, 'url', function () {
-          assert.ok(true, 'url change event was fired');
-        });
+      addObserver(router, 'url', function () {
+        assert.ok(true, 'url change event was fired');
       });
       ['foo', 'bar', '/foo'].forEach(destination => run(router, 'transitionTo', destination));
     });
@@ -1226,15 +1210,23 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
-      this.handleURL(assert, '/posts/1/comments');
-      this.handleURL(assert, '/posts/1/shares/1');
-
-      this.handleURL(assert, '/posts/2/comments');
-      this.handleURL(assert, '/posts/2/shares/2');
-
-      this.handleURL(assert, '/posts/3/comments');
-      this.handleURL(assert, '/posts/3/shares/3');
+    return this.visit('/posts/1/comments').then(() => {
+      assert.ok(true, 'url: /posts/1/comments was handled');
+      return this.visit('/posts/1/shares/1');
+    }).then(() => {
+      assert.ok(true, 'url: /posts/1/shares/1 was handled');
+      return this.visit('/posts/2/comments');
+    }).then(() => {
+      assert.ok(true, 'url: /posts/2/comments was handled');
+      return this.visit('/posts/2/shares/2');
+    }).then(() => {
+      assert.ok(true, 'url: /posts/2/shares/2 was handled');
+      return this.visit('/posts/3/comments');
+    }).then(() => {
+      assert.ok(true, 'url: /posts/3/shares was handled');
+      return this.visit('/posts/3/shares/3');
+    }).then(() => {
+      assert.ok(true, 'url: /posts/3/shares/3 was handled');
     });
   }
 
@@ -1272,10 +1264,14 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
-      this.handleURL(assert, '/posts/1/comments');
-      this.handleURL(assert, '/posts/2/comments');
-      this.handleURL(assert, '/posts/3/comments');
+    return this.visit('/posts/1/comments').then(()=> {
+      assert.ok(true, '/posts/1/comments');
+      return this.visit('/posts/2/comments');
+    }).then(() => {
+      assert.ok(true, '/posts/2/comments');
+      return this.visit('/posts/3/comments');
+    }).then(() => {
+      assert.ok(true, '/posts/3/comments');
     });
   }
 
@@ -1311,15 +1307,17 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
-      currentPost = post1;
-      this.handleURL(assert, '/posts/1/comments');
-
+    currentPost = post1;
+    return this.visit('/posts/1/comments').then(() => {
+      assert.ok(true, '/posts/1/comments has been handled');
       currentPost = post2;
-      this.handleURL(assert, '/posts/2/comments');
-
+      return this.visit('/posts/2/comments');
+    }).then(() => {
+      assert.ok(true, '/posts/2/comments has been handled');
       currentPost = post3;
-      this.handleURL(assert, '/posts/3/comments');
+      return this.visit('/posts/3/comments');
+    }).then(() => {
+      assert.ok(true, '/posts/3/comments has been handled');
     });
   }
 
@@ -1419,8 +1417,8 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
-      this.handleURL(assert, '/foo/bar/baz');
+    return this.visit('/foo/bar/baz').then(() => {
+      assert.ok(true, '/foo/bar/baz has been handled');
       assert.equal(this.applicationInstance.lookup('controller:application').get('currentPath'), 'foo.bar.baz');
       assert.equal(successCount, 1, 'transitionTo success handler was called once');
     });
@@ -1483,10 +1481,10 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
+    return this.visit('/foo/bar/baz').then(() => {
+      assert.ok(true, '/foo/bar/baz has been handled');
       let applicationController = this.applicationInstance.lookup('controller:application');
       let router = this.applicationInstance.lookup('router:main');
-      this.handleURL(assert, '/foo/bar/baz');
       assert.equal(applicationController.get('currentPath'), 'foo.bar.baz');
       run(() => router.send('goToQux'));
       assert.equal(applicationController.get('currentPath'), 'foo.qux');
@@ -1533,9 +1531,9 @@ class extends ApplicationTestCase {
       name: 'BarBaz'
     }));
 
-    return this.visit('/').then(() => {
+    return this.visit('/top/middle/bottom').then(() => {
+      assert.ok(true, '/top/middle/bottom has been handled');
       let rootElement = document.getElementById('qunit-fixture');
-      this.handleURL(assert, '/top/middle/bottom');
       assert.equal(getTextOf(rootElement.querySelector('.main .middle .bottom p')), 'BarBazBottom!', 'The templates were rendered into their appropriate parents');
     });
   }
@@ -1555,9 +1553,9 @@ class extends ApplicationTestCase {
       });
     });
 
-    return this.visit('/').then(() => {
+    return this.visit('/top/middle/bottom').then(() => {
+      assert.ok(true, '/top/middle/bottom has been handled');
       let rootElement = document.getElementById('qunit-fixture');
-      this.handleURL(assert, '/top/middle/bottom');
       assert.equal(getTextOf(rootElement.querySelector('.main .middle .bottom p')), 'Bottom!', 'The templates were rendered into their appropriate parents');
     });
   }
@@ -1583,9 +1581,9 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
+    return this.visit('/top/middle/bottom').then(() => {
+      assert.ok(true, '/top/middle/bottom has been handled');
       let rootElement = document.getElementById('qunit-fixture');
-      this.handleURL(assert, '/top/middle/bottom');
       assert.equal(rootElement.querySelectorAll('.main .middle .bottom p').length, 0, 'should not render into the middle template');
       assert.equal(getTextOf(rootElement.querySelector('.main .middle > p')), 'Bottom!', 'The template was rendered into the top template');
     });
@@ -1666,10 +1664,9 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
+    return this.visit('/posts/1').then(() => {
+      assert.ok(true, '/posts/1 has been handled');
       let router = this.applicationInstance.lookup('router:main');
-      this.handleURL(assert, '/posts/1');
-
       run(() => router.send('editPost'));
       run(() => router.send('showPost', { id: '2' }));
       run(() => router.send('editPost'));
@@ -1774,8 +1771,8 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
-      this.handleURL(assert, '/posts');
+    return this.visit('/posts').then(() => {
+      assert.ok(true, '/posts has been handled');
       let rootElement = document.getElementById('qunit-fixture');
       assert.equal(getTextOf(rootElement.querySelector('div.posts-menu')), 'postsMenu', 'The posts/menu template was rendered');
       assert.equal(getTextOf(rootElement.querySelector('p.posts-index')), 'postsIndex', 'The posts/index template was rendered');
@@ -1798,8 +1795,8 @@ class extends ApplicationTestCase {
       }
     }));
 
-    return this.visit('/').then(() => {
-      this.handleURL(assert, '/posts/1');
+    return this.visit('/posts/1').then(() => {
+      assert.ok(true, '/posts/1 has been handled');
 
       let route = this.applicationInstance.lookup('route:post');
       assert.equal(route.modelFor('post'), posts[1]);
