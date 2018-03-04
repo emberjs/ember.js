@@ -1,6 +1,5 @@
 import { dictionary, assign, intern } from 'ember-utils';
 import { assert, deprecate } from 'ember-debug';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import Container from './container';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
@@ -321,8 +320,9 @@ export default class Registry {
     }
 
     let source = options && options.source && this.normalize(options.source);
+    let namespace = (options && options.namespace) || undefined;
 
-    return has(this, this.normalize(fullName), source);
+    return has(this, this.normalize(fullName), source, namespace);
   }
 
   /**
@@ -586,13 +586,12 @@ export default class Registry {
   expandLocalLookup(fullName, options) {
     if (this.resolver !== null && this.resolver.expandLocalLookup) {
       assert('fullName must be a proper full name', this.isValidFullName(fullName));
-      assert('options.source must be provided to expandLocalLookup', options && options.source);
-      assert('options.source must be a proper full name', this.isValidFullName(options.source));
+      assert('options.source must be a proper full name', !options.source || this.isValidFullName(options.source));
 
       let normalizedFullName = this.normalize(fullName);
       let normalizedSource = this.normalize(options.source);
 
-      return expandLocalLookup(this, normalizedFullName, normalizedSource);
+      return expandLocalLookup(this, normalizedFullName, normalizedSource, options.namespace);
     } else if (this.fallback !== null) {
       return this.fallback.expandLocalLookup(fullName, options);
     } else {
@@ -616,13 +615,14 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
-        let { specifier, source } = hash[key];
+        let { specifier, source, namespace } = hash[key];
         assert(`Expected a proper full name, given '${specifier}'`, this.isValidFullName(specifier));
 
         injections.push({
           property: key,
           specifier,
-          source
+          source,
+          namespace
         });
       }
     }
@@ -634,14 +634,14 @@ if (DEBUG) {
     if (!injections) { return; }
 
     for (let i = 0; i < injections.length; i++) {
-      let {specifier, source} = injections[i];
+      let {specifier, source, namespace} = injections[i];
 
-      assert(`Attempting to inject an unknown injection: '${specifier}'`, this.has(specifier, {source}));
+      assert(`Attempting to inject an unknown injection: '${specifier}'`, this.has(specifier, {source, namespace}));
     }
   };
 }
 
-function expandLocalLookup(registry, normalizedName, normalizedSource) {
+function expandLocalLookup(registry, normalizedName, normalizedSource, namespace) {
   let cache = registry._localLookupCache;
   let normalizedNameCache = cache[normalizedName];
 
@@ -649,33 +649,25 @@ function expandLocalLookup(registry, normalizedName, normalizedSource) {
     normalizedNameCache = cache[normalizedName] = Object.create(null);
   }
 
-  let cached = normalizedNameCache[normalizedSource];
+  let cacheKey = namespace || normalizedSource;
+
+  let cached = normalizedNameCache[cacheKey];
 
   if (cached !== undefined) { return cached; }
 
-  let expanded = registry.resolver.expandLocalLookup(normalizedName, normalizedSource);
+  let expanded = registry.resolver.expandLocalLookup(normalizedName, normalizedSource, namespace);
 
-  return normalizedNameCache[normalizedSource] = expanded;
+  return normalizedNameCache[cacheKey] = expanded;
 }
 
-function resolve(registry, normalizedName, options) {
-  if (options && options.source) {
-    // when `source` is provided expand normalizedName
-    // and source into the full normalizedName
-    let expandedNormalizedName = registry.expandLocalLookup(normalizedName, options);
-
-    // if expandLocalLookup returns falsey, we do not support local lookup
-    if (!EMBER_MODULE_UNIFICATION) {
-      if (!expandedNormalizedName) {
-        return;
-      }
-
-      normalizedName = expandedNormalizedName;
-    } else if (expandedNormalizedName) {
-      // with ember-module-unification, if expandLocalLookup returns something,
-      // pass it to the resolve without the source
-      normalizedName = expandedNormalizedName;
-      options = {};
+function resolve(registry, _normalizedName, options={}) {
+  let normalizedName = _normalizedName;
+  // when `source` is provided expand normalizedName
+  // and source into the full normalizedName
+  if (options.source || options.namespace) {
+    normalizedName = registry.expandLocalLookup(_normalizedName, options);
+    if (!normalizedName) {
+      return;
     }
   }
 
@@ -702,8 +694,8 @@ function resolve(registry, normalizedName, options) {
   return resolved;
 }
 
-function has(registry, fullName, source) {
-  return registry.resolve(fullName, { source }) !== undefined;
+function has(registry, fullName, source, namespace) {
+  return registry.resolve(fullName, { source, namespace }) !== undefined;
 }
 
 const privateNames = dictionary(null);

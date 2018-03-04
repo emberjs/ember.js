@@ -698,9 +698,7 @@ moduleFor('Registry', class extends AbstractTestCase{
 
     let resolver = {
       resolve(name) {
-        if (EMBER_MODULE_UNIFICATION && name === 'foo:baz') { return; }
         resolvedFullNames.push(name);
-
         return 'yippie!';
       },
 
@@ -761,12 +759,51 @@ if (EMBER_MODULE_UNIFICATION) {
       let registry = new Registry({ resolver });
 
       assert.strictEqual(
+        registry.resolve(specifier),
+        undefined,
+        'Not returned when specifier not scoped'
+      );
+      assert.strictEqual(
         registry.resolve(specifier, { source }),
         PrivateComponent,
         'The correct factory was provided'
       );
       assert.strictEqual(
         registry.resolve(specifier, { source }),
+        PrivateComponent,
+        'The correct factory was provided again'
+      );
+    }
+
+    ['@test The registry can pass a namespace to the resolver'](assert) {
+      let PrivateComponent = factory();
+      let type = 'component';
+      let name = 'my-input';
+      let specifier = `${type}:${name}`;
+      let source = 'template:routes/application';
+      let namespace = 'my-addon';
+
+      let resolver = new ModuleBasedTestResolver();
+      resolver.add({specifier, source, namespace}, PrivateComponent);
+      let registry = new Registry({ resolver });
+
+      assert.strictEqual(
+        registry.resolve(specifier),
+        undefined,
+        'Not returned when specifier not scoped'
+      );
+      assert.strictEqual(
+        registry.resolve(specifier, {source}),
+        undefined,
+        'Not returned when specifier is missing namespace'
+      );
+      assert.strictEqual(
+        registry.resolve(specifier, { source, namespace }),
+        PrivateComponent,
+        'The correct factory was provided'
+      );
+      assert.strictEqual(
+        registry.resolve(specifier, { source, namespace }),
         PrivateComponent,
         'The correct factory was provided again'
       );

@@ -201,6 +201,10 @@ function buildResolver() {
   let resolver = {
     resolve() { },
     expandLocalLookup(fullName, sourceFullName) {
+      if (!sourceFullName) {
+        return null;
+      }
+
       let [sourceType, sourceName ] = sourceFullName.split(':');
       let [type, name ] = fullName.split(':');
 

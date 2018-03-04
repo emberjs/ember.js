@@ -2,6 +2,7 @@ import { assign } from 'ember-utils';
 import { compile } from 'ember-template-compiler';
 import { EventDispatcher } from 'ember-views';
 import { helper, Helper, Component, _resetRenderers} from 'ember-glimmer';
+import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
@@ -41,7 +42,42 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
 
   getOwnerOptions() { }
   getBootOptions() { }
-  getResolver() { }
+
+  get resolver() {
+    return this.owner.__registry__.fallback.resolver;
+  }
+
+  getResolver() {
+    return new ModuleBasedResolver();
+  }
+
+  add(specifier, factory) {
+    this.resolver.add(specifier, factory);
+  }
+
+  addTemplate(templateName, templateString) {
+    if (typeof templateName === 'string') {
+      this.resolver.add(`template:${templateName}`, this.compile(templateString, {
+        moduleName: templateName
+      }));
+    } else {
+      this.resolver.add(templateName, this.compile(templateString, {
+        moduleName: templateName.moduleName
+      }));
+    }
+  }
+
+  addComponent(name, { ComponentClass = null, template = null }) {
+    if (ComponentClass) {
+      this.resolver.add(`component:${name}`, ComponentClass);
+    }
+
+    if (typeof template === 'string') {
+      this.resolver.add(`template:components/${name}`, this.compile(template, {
+        moduleName: `components/${name}`
+      }));
+    }
+  }
 
   afterEach() {
     try {

@@ -24,8 +24,20 @@ export default class InjectedProperty extends ComputedProperty {
     super(injectedPropertyGet);
 
     this.type = type;
-    this.name = name;
     this.source = options ? options.source : undefined;
+
+    if (name) {
+      let namespaceDelimiterOffset = name.indexOf('::');
+      if (namespaceDelimiterOffset === -1) {
+        this.name = name;
+        this.namespace = undefined;
+      } else {
+        this.name = name.slice(namespaceDelimiterOffset+2);
+        this.namespace = name.slice(0, namespaceDelimiterOffset);
+      }
+    } else {
+      this.name = undefined;
+    }
   }
 }
 
@@ -37,5 +49,5 @@ function injectedPropertyGet(keyName) {
   assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, owner);
 
   let specifier = `${desc.type}:${desc.name || keyName}`;
-  return owner.lookup(specifier, {source: desc.source});
+  return owner.lookup(specifier, {source: desc.source, namespace: desc.namespace});
 }

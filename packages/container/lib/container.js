@@ -146,21 +146,15 @@ export default class Container {
     let normalizedName = this.registry.normalize(fullName);
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
+    assert(
+      'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to factoryFor',
+      EMBER_MODULE_UNIFICATION || !options.namespace
+    );
 
-    if (options.source) {
-      let expandedFullName = this.registry.expandLocalLookup(fullName, options);
-      // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!EMBER_MODULE_UNIFICATION) {
-        if (!expandedFullName) {
-          return;
-        }
-
-        normalizedName = expandedFullName;
-      } else if (expandedFullName) {
-        // with ember-module-unification, if expandLocalLookup returns something,
-        // pass it to the resolve without the source
-        normalizedName = expandedFullName;
-        options = {};
+    if (options.source || options.namespace) {
+      normalizedName = this.registry.expandLocalLookup(fullName, options);
+      if (!normalizedName) {
+        return;
       }
     }
 
@@ -206,22 +200,17 @@ function isInstantiatable(container, fullName) {
 }
 
 function lookup(container, fullName, options = {}) {
+  assert(
+    'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to lookup',
+    EMBER_MODULE_UNIFICATION || !options.namespace
+  );
+
   let normalizedName = fullName;
-  if (options.source) {
-    let expandedFullName = container.registry.expandLocalLookup(fullName, options);
 
-    if (!EMBER_MODULE_UNIFICATION) {
-      // if expandLocalLookup returns falsey, we do not support local lookup
-      if (!expandedFullName) {
-        return;
-      }
-
-      normalizedName = expandedFullName;
-    } else if (expandedFullName) {
-      // with ember-module-unification, if expandLocalLookup returns something,
-      // pass it to the resolve without the source
-      normalizedName = expandedFullName;
-      options = {};
+  if (options.source || options.namespace) {
+    normalizedName = container.registry.expandLocalLookup(fullName, options);
+    if (!normalizedName) {
+      return;
     }
   }
 

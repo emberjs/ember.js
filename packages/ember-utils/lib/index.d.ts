@@ -8,7 +8,8 @@ export interface Factory<T, C> {
 }
 
 export interface LookupOptions {
-  source: string;
+  source?: string;
+  namespace?: string;
 }
 
 export interface Owner {

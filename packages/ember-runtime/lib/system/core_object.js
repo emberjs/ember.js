@@ -1021,8 +1021,9 @@ if (DEBUG) {
       desc = descriptorFor(proto, key);
       if (desc instanceof InjectedProperty) {
         injections[key] = {
-          specifier: `${desc.type}:${desc.name || key}`,
-          source: desc.source
+          namespace: desc.namespace,
+          source: desc.source,
+          specifier: `${desc.type}:${desc.name || key}`
         };
       }
     }
