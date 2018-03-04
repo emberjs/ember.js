@@ -18,9 +18,6 @@ export interface Owner {
   factoryFor(fullName: string, options?: LookupOptions): Factory<any, any> | undefined;
   buildChildEngineInstance<T>(name: string): T;
   hasRegistration(name: string, options?: LookupOptions): boolean;
-
-  // maybe not needed, we were only using for cache key
-  _resolveLocalLookupName(name: string, source: string): any;
 }
 
 export const NAME_KEY: string;
