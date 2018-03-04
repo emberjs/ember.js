@@ -130,10 +130,6 @@ export default class Container {
     return { [OWNER]: this.owner };
   }
 
-  _resolverCacheKey(name) {
-    return this.registry.resolverCacheKey(name);
-  }
-
   /**
    Given a fullName, return the corresponding factory. The consumer of the factory
    is responsible for the destruction of any factory instances, as there is no
@@ -230,8 +226,7 @@ function lookup(container, fullName, options = {}) {
   }
 
   if (options.singleton !== false) {
-    let cacheKey = container._resolverCacheKey(normalizedName);
-    let cached = container.cache[cacheKey];
+    let cached = container.cache[normalizedName];
     if (cached !== undefined) {
       return cached;
     }
@@ -242,8 +237,7 @@ function lookup(container, fullName, options = {}) {
 
 
 function factoryFor(container, normalizedName, fullName) {
-  let cacheKey = container._resolverCacheKey(normalizedName);
-  let cached = container.factoryManagerCache[cacheKey];
+  let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) { return cached; }
 
@@ -263,7 +257,7 @@ function factoryFor(container, normalizedName, fullName) {
     manager = wrapManagerInDeprecationProxy(manager);
   }
 
-  container.factoryManagerCache[cacheKey] = manager;
+  container.factoryManagerCache[normalizedName] = manager;
   return manager;
 }
 
@@ -293,8 +287,7 @@ function instantiateFactory(container, normalizedName, fullName, options) {
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    let cacheKey = container._resolverCacheKey(normalizedName);
-    return container.cache[cacheKey] = factoryManager.create();
+    return container.cache[normalizedName] = factoryManager.create();
   }
 
   // SomeClass { singleton: false, instantiate: true }
@@ -364,13 +357,12 @@ function resetCache(container) {
 }
 
 function resetMember(container, fullName) {
-  let cacheKey = container._resolverCacheKey(fullName);
-  let member = container.cache[cacheKey];
+  let member = container.cache[fullName];
 
-  delete container.factoryManagerCache[cacheKey];
+  delete container.factoryManagerCache[fullName];
 
   if (member) {
-    delete container.cache[cacheKey];
+    delete container.cache[fullName];
 
     if (member.destroy) {
       member.destroy();
