@@ -136,6 +136,13 @@ function setPath(root, path, value, tolerant) {
 
   This is primarily used when syncing bindings, which may try to update after
   an object has been destroyed.
+  
+  ```javascript
+  import { trySet } from '@ember/object';
+  
+  let obj = { name: "Zoey" };
+  trySet(obj, "contacts.twitter", "@emberjs");
+  ```
 
   @method trySet
   @static
