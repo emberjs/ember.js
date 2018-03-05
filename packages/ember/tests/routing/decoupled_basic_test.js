@@ -1,4 +1,8 @@
+import { getOwner } from 'ember-utils';
 import RSVP from 'rsvp';
+import Logger from 'ember-console';
+import { compile } from 'ember-template-compiler';
+import { ENV } from 'ember-environment';
 import {
   Route,
   NoneLocation,
@@ -21,10 +25,12 @@ import {
 } from 'ember-metal';
 import { getTextOf } from 'internal-test-helpers';
 import { Component } from 'ember-glimmer';
+import { Engine } from 'ember-application';
 import { Transition } from 'router';
 
-moduleFor('Basic Routing - Decoupled from global resolver',
-class extends ApplicationTestCase {
+let originalRenderSupport;
+
+moduleFor('Basic Routing - Decoupled from global resolver', class extends ApplicationTestCase {
   constructor() {
     super();
     this.addTemplate('home', '<h3 class="hours">Hours</h3>');
@@ -34,6 +40,13 @@ class extends ApplicationTestCase {
     this.router.map(function() {
       this.route('home', { path: '/' });
     });
+    originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
+    ENV._ENABLE_RENDER_SUPPORT = true;
+  }
+
+  teardown() {
+    super.teardown();
+    ENV._ENABLE_RENDER_SUPPORT = originalRenderSupport;
   }
 
   getController(name) {
@@ -66,7 +79,6 @@ class extends ApplicationTestCase {
       assert.equal(reason, expectedReason);
     });
   }
-
 
   ['@test warn on URLs not included in the route set']() {
     return this.visit('/').then(() => {
@@ -2554,6 +2566,1100 @@ class extends ApplicationTestCase {
       transitionAndCheck('to.index', 'be.excellent.to.index', 'to.index');
       transitionAndCheck('each', 'be.excellent.to.each.index', 'each.index');
       transitionAndCheck('each.other', 'be.excellent.to.each.other', 'each.other');
+    });
+  }
+
+  ['@test Route model hook finds the same model as a manual find'](assert) {
+    let post;
+    let Post = EmberObject.extend();
+    this.add('model:post', Post);
+    Post.reopenClass({
+      find() {
+        post = this;
+        return {};
+      }
+    });
+
+    this.router.map(function () {
+      this.route('post', { path: '/post/:post_id' });
+    });
+
+    return this.visit('/post/1').then(() => {
+      assert.equal(Post, post);
+    });
+  }
+
+  ['@test Routes can refresh themselves causing their model hooks to be re-run'](assert) {
+    this.router.map(function () {
+      this.route('parent', { path: '/parent/:parent_id' }, function () {
+        this.route('child');
+      });
+    });
+
+    let appcount = 0;
+    this.add('route:application', Route.extend({
+      model() {
+        ++appcount;
+      }
+    }));
+
+    let parentcount = 0;
+    this.add('route:parent', Route.extend({
+      model(params) {
+        assert.equal(params.parent_id, '123');
+        ++parentcount;
+      },
+      actions: {
+        refreshParent() {
+          this.refresh();
+        }
+      }
+    }));
+
+    let childcount = 0;
+    this.add('route:parent.child', Route.extend({
+      model() {
+        ++childcount;
+      }
+    }));
+
+    let router;
+    return this.visit('/').then(() => {
+      router = this.applicationInstance.lookup('router:main');
+      assert.equal(appcount, 1);
+      assert.equal(parentcount, 0);
+      assert.equal(childcount, 0);
+      return run(router, 'transitionTo', 'parent.child', '123');
+    }).then(() => {
+      assert.equal(appcount, 1);
+      assert.equal(parentcount, 1);
+      assert.equal(childcount, 1);
+      return run(router, 'send', 'refreshParent');
+    }).then(() => {
+      assert.equal(appcount, 1);
+      assert.equal(parentcount, 2);
+      assert.equal(childcount, 2);
+    });
+  }
+
+  ['@test Specifying non-existent controller name in route#render throws'](assert) {
+    assert.expect(1);
+
+    this.router.map(function () {
+      this.route('home', { path: '/' });
+    });
+
+    this.add('route:home', Route.extend({
+      renderTemplate() {
+        expectAssertion(() => {
+          this.render('homepage', { controller: 'stefanpenneristhemanforme' });
+        }, 'You passed `controller: \'stefanpenneristhemanforme\'` into the `render` method, but no such controller could be found.');
+      }
+    }));
+
+    return this.visit('/');
+  }
+
+  ['@test Redirecting with null model doesn\'t error out'](assert) {
+    this.router.map(function () {
+      this.route('home', { path: '/' });
+      this.route('about', { path: '/about/:hurhurhur' });
+    });
+
+    this.add('route:about', Route.extend({
+      serialize: function (model) {
+        if (model === null) {
+          return { hurhurhur: 'TreeklesMcGeekles' };
+        }
+      }
+    }));
+
+    this.add('route:home', Route.extend({
+      beforeModel() {
+        this.transitionTo('about', null);
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(router.get('location.path'), '/about/TreeklesMcGeekles');
+    });
+  }
+
+  ['@test rejecting the model hooks promise with a non-error prints the `message` property'](assert) {
+    assert.expect(5);
+
+    let rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
+    let rejectedStack = 'Yeah, buddy: stack gets printed too.';
+
+    this.router.map(function () {
+      this.route('yippie', { path: '/' });
+    });
+
+    Logger.error = function (initialMessage, errorMessage, errorStack) {
+      assert.equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
+      assert.equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
+      assert.equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
+    };
+
+    this.add('route:yippie', Route.extend({
+      model() {
+        return RSVP.reject({ message: rejectedMessage, stack: rejectedStack });
+      }
+    }));
+
+    return assert.throws(() => {
+      return this.visit('/');
+    }, function (err) {
+      assert.equal(err.message, rejectedMessage);
+      return true;
+    }, 'expected an exception');
+  }
+
+  ['@test rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property'](assert) {
+    assert.expect(5);
+    let rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
+    let rejectedStack = 'Yeah, buddy: stack gets printed too.';
+
+    this.router.map(function () {
+      this.route('yippie', { path: '/' });
+    });
+
+    Logger.error = function (initialMessage, errorMessage, errorStack) {
+      assert.equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
+      assert.equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
+      assert.equal(errorStack, rejectedStack, 'the rejected reason\'s stack property is logged');
+    };
+
+    this.add('route:yippie', Route.extend({
+      model() {
+        return RSVP.reject({
+          errorThrown: { message: rejectedMessage, stack: rejectedStack }
+        });
+      }
+    }));
+
+    assert.throws(() => this.visit('/'), function (err) {
+      assert.equal(err.message, rejectedMessage);
+      return true;
+    }, 'expected an exception');
+  }
+
+  ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
+    assert.expect(2);
+    this.router.map(function() {
+      this.route('wowzers', { path: '/' });
+    });
+
+    Logger.error = function(initialMessage) {
+      assert.equal(initialMessage, 'Error while processing route: wowzers', 'a message with the current route name is printed');
+    };
+
+    this.add('route:wowzers', Route.extend({
+      model() {
+        return RSVP.reject();
+      }
+    }));
+
+    return assert.throws(() => this.visit('/'));
+  }
+
+  ['@test rejecting the model hooks promise with a string shows a good error'](assert) {
+    assert.expect(3);
+    let originalLoggerError = Logger.error;
+    let rejectedMessage = 'Supercalifragilisticexpialidocious';
+
+    this.router.map(function() {
+      this.route('yondo', { path: '/' });
+    });
+
+    Logger.error = function(initialMessage, errorMessage) {
+      assert.equal(initialMessage, 'Error while processing route: yondo', 'a message with the current route name is printed');
+      assert.equal(errorMessage, rejectedMessage, 'the rejected reason\'s message property is logged');
+    };
+
+    this.add('route:yondo', Route.extend({
+      model() {
+        return RSVP.reject(rejectedMessage);
+      }
+    }));
+
+    assert.throws(() => this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
+
+    Logger.error = originalLoggerError;
+  }
+
+  ['@test willLeave, willChangeContext, willChangeModel actions don\'t fire unless feature flag enabled'](assert) {
+    assert.expect(1);
+
+    this.router.map(function() {
+      this.route('about');
+    });
+
+    function shouldNotFire() {
+      assert.ok(false, 'this action shouldn\'t have been received');
+    }
+
+    this.add('route:index', Route.extend({
+      actions: {
+        willChangeModel: shouldNotFire,
+        willChangeContext: shouldNotFire,
+        willLeave: shouldNotFire
+      }
+    }));
+
+    this.add('route:about', Route.extend({
+      setupController() {
+        assert.ok(true, 'about route was entered');
+      }
+    }));
+
+    return this.visit('/about');
+  }
+
+  ['@test Errors in transitionTo within redirect hook are logged'](assert) {
+    assert.expect(4);
+    let actual = [];
+
+    this.router.map(function() {
+      this.route('yondo', { path: '/' });
+      this.route('stink-bomb');
+    });
+
+    this.add('route:yondo', Route.extend({
+      redirect() {
+        this.transitionTo('stink-bomb', { something: 'goes boom' });
+      }
+    }));
+
+    Logger.error = function() {
+      // push the arguments onto an array so we can detect if the error gets logged twice
+      actual.push(arguments);
+    };
+
+    assert.throws(() => this.visit('/'), /More context objects were passed/);
+
+    assert.equal(actual.length, 1, 'the error is only logged once');
+    assert.equal(actual[0][0], 'Error while processing route: yondo', 'source route is printed');
+    assert.ok(actual[0][1].match(/More context objects were passed than there are dynamic segments for the route: stink-bomb/), 'the error is printed');
+  }
+
+  ['@test Errors in transition show error template if available'](assert) {
+    this.addTemplate('error', '<div id=\'error\'>Error!</div>');
+
+    this.router.map(function() {
+      this.route('yondo', { path: '/' });
+      this.route('stink-bomb');
+    });
+
+    this.add('route:yondo', Route.extend({
+      redirect() {
+        this.transitionTo('stink-bomb', { something: 'goes boom' });
+      }
+    }));
+
+    this.visit('/').then(() => {
+      let rootElement = document.querySelector('#qunit-fixture');
+      assert.equal(rootElement.querySelectorAll('#error').length, 1, 'Error template was rendered.');
+    });
+  }
+
+  ['@test Route#resetController gets fired when changing models and exiting routes'](assert) {
+    assert.expect(4);
+
+    this.router.map(function() {
+      this.route('a', function() {
+        this.route('b', { path: '/b/:id', resetNamespace: true }, function() { });
+        this.route('c', { path: '/c/:id', resetNamespace: true }, function() { });
+      });
+      this.route('out');
+    });
+
+    let calls = [];
+
+    let SpyRoute = Route.extend({
+      setupController(/* controller, model, transition */) {
+        calls.push(['setup', this.routeName]);
+      },
+
+      resetController(/* controller */) {
+        calls.push(['reset', this.routeName]);
+      }
+    });
+
+    this.add('route:a', SpyRoute.extend());
+    this.add('route:b', SpyRoute.extend());
+    this.add('route:c', SpyRoute.extend());
+    this.add('route:out', SpyRoute.extend());
+
+    let router;
+    return this.visit('/').then(() => {
+      router = this.applicationInstance.lookup('router:main');
+      assert.deepEqual(calls, []);
+      return run(router, 'transitionTo', 'b', 'b-1');
+    }).then(() => {
+      assert.deepEqual(calls, [['setup', 'a'], ['setup', 'b']]);
+      calls.length = 0;
+      return run(router, 'transitionTo', 'c', 'c-1');
+    }).then(() => {
+      assert.deepEqual(calls, [['reset', 'b'], ['setup', 'c']]);
+      calls.length = 0;
+      return run(router, 'transitionTo', 'out');
+    }).then(() => {
+      assert.deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+    });
+  }
+
+  ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
+    this.router.map(function() {
+      this.route('boom');
+    });
+    this.add('route:boom', Route.extend({
+      init() {
+        throw new Error('boom!');
+      }
+    }));
+
+    return assert.throws(() => this.visit('/boom'), /\bboom\b/);
+  }
+
+  ['@test Exception during initialization of initial route is not swallowed'](assert) {
+    this.router.map(function() {
+      this.route('boom', { path: '/' });
+    });
+    this.add('route:boom', Route.extend({
+      init() {
+        throw new Error('boom!');
+      }
+    }));
+    return assert.throws(() => this.visit('/'), /\bboom\b/);
+  }
+
+  ['@test {{outlet}} works when created after initial render'](assert) {
+    this.addTemplate('sample', 'Hi{{#if showTheThing}}{{outlet}}{{/if}}Bye');
+    this.addTemplate('sample.inner', 'Yay');
+    this.addTemplate('sample.inner2', 'Boo');
+    this.router.map(function() {
+      this.route('sample', { path: '/' }, function() {
+        this.route('inner', { path: '/' });
+        this.route('inner2', { path: '/2' });
+      });
+    });
+
+    let rootElement;
+    return this.visit('/').then(() => {
+      rootElement = document.getElementById('qunit-fixture');
+      assert.equal(rootElement.textContent.trim(), 'HiBye', 'initial render');
+
+      run(() => this.applicationInstance.lookup('controller:sample').set('showTheThing', true));
+
+      assert.equal(rootElement.textContent.trim(), 'HiYayBye', 'second render');
+      return this.visit('/2');
+    }).then(() => {
+      assert.equal(rootElement.textContent.trim(), 'HiBooBye', 'third render');
+    });
+  }
+
+  ['@test Can render into a named outlet at the top level'](assert) {
+    this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
+    this.addTemplate('modal', 'Hello world');
+    this.addTemplate('index', 'The index');
+    this.router.map(function() {
+      this.route('index', { path: '/' });
+    });
+    this.add('route:application', Route.extend({
+      renderTemplate() {
+        this.render();
+        this.render('modal', {
+          into: 'application',
+          outlet: 'other'
+        });
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      assert.equal(rootElement.textContent.trim(), 'A-The index-B-Hello world-C', 'initial render');
+    });
+  }
+
+  ['@test Can disconnect a named outlet at the top level'](assert) {
+    this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
+    this.addTemplate('modal', 'Hello world');
+    this.addTemplate('index', 'The index');
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.add('route:application', Route.extend({
+      renderTemplate() {
+        this.render();
+        this.render('modal', {
+          into: 'application',
+          outlet: 'other'
+        });
+      },
+      actions: {
+        banish() {
+          this.disconnectOutlet({
+            parentView: 'application',
+            outlet: 'other'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      assert.equal(rootElement.textContent.trim(), 'A-The index-B-Hello world-C', 'initial render');
+
+      run(this.applicationInstance.lookup('router:main'), 'send', 'banish');
+
+      assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'second render');
+    });
+  }
+
+  ['@test Can render into a named outlet at the top level, with empty main outlet'](assert) {
+    this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
+    this.addTemplate('modal', 'Hello world');
+
+    this.router.map(function() {
+      this.route('hasNoTemplate', { path: '/' });
+    });
+
+    this.add('route:application', Route.extend({
+      renderTemplate() {
+        this.render();
+        this.render('modal', {
+          into: 'application',
+          outlet: 'other'
+        });
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      assert.equal(rootElement.textContent.trim(), 'A--B-Hello world-C', 'initial render');
+    });
+  }
+
+  ['@test Can render into a named outlet at the top level, later'](assert) {
+    this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
+    this.addTemplate('modal', 'Hello world');
+    this.addTemplate('index', 'The index');
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.add('route:application', Route.extend({
+      actions: {
+        launch() {
+          this.render('modal', {
+            into: 'application',
+            outlet: 'other'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'initial render');
+      run(this.applicationInstance.lookup('router:main'), 'send', 'launch');
+      assert.equal(rootElement.textContent.trim(), 'A-The index-B-Hello world-C', 'second render');
+    });
+  }
+
+  ['@test Can render routes with no \'main\' outlet and their children'](assert) {
+    this.addTemplate('application', '<div id="application">{{outlet "app"}}</div>');
+    this.addTemplate('app', '<div id="app-common">{{outlet "common"}}</div><div id="app-sub">{{outlet "sub"}}</div>');
+    this.addTemplate('common', '<div id="common"></div>');
+    this.addTemplate('sub', '<div id="sub"></div>');
+
+    this.router.map(function() {
+      this.route('app', { path: '/app' }, function() {
+        this.route('sub', { path: '/sub', resetNamespace: true });
+      });
+    });
+
+    this.add('route:app', Route.extend({
+      renderTemplate() {
+        this.render('app', {
+          outlet: 'app',
+          into: 'application'
+        });
+        this.render('common', {
+          outlet: 'common',
+          into: 'app'
+        });
+      }
+    }));
+
+    this.add('route:sub', Route.extend({
+      renderTemplate() {
+        this.render('sub', {
+          outlet: 'sub',
+          into: 'app'
+        });
+      }
+    }));
+
+    let rootElement;
+    return this.visit('/app').then(() => {
+      rootElement = document.getElementById('qunit-fixture');
+      assert.equal(rootElement.querySelectorAll('#app-common #common').length, 1, 'Finds common while viewing /app');
+      return this.visit('/app/sub');
+    }).then(() => {
+      assert.equal(rootElement.querySelectorAll('#app-common #common').length, 1, 'Finds common while viewing /app/sub');
+      assert.equal(rootElement.querySelectorAll('#app-sub #sub').length, 1, 'Finds sub while viewing /app/sub');
+    });
+  }
+
+  ['@test Tolerates stacked renders'](assert) {
+    this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
+    this.addTemplate('index', 'hi');
+    this.addTemplate('layer', 'layer');
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.add('route:application', Route.extend({
+      actions: {
+        openLayer() {
+          this.render('layer', {
+            into: 'application',
+            outlet: 'modal'
+          });
+        },
+        close() {
+          this.disconnectOutlet({
+            outlet: 'modal',
+            parentView: 'application'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(rootElement.textContent.trim(), 'hi');
+      run(router, 'send', 'openLayer');
+      assert.equal(rootElement.textContent.trim(), 'hilayer');
+      run(router, 'send', 'openLayer');
+      assert.equal(rootElement.textContent.trim(), 'hilayer');
+      run(router, 'send', 'close');
+      assert.equal(rootElement.textContent.trim(), 'hi');
+    });
+  }
+
+  ['@test Renders child into parent with non-default template name'](assert) {
+    this.addTemplate('application', '<div class="a">{{outlet}}</div>');
+    this.addTemplate('exports.root', '<div class="b">{{outlet}}</div>');
+    this.addTemplate('exports.index', '<div class="c"></div>');
+
+    this.router.map(function() {
+      this.route('root', function() {
+      });
+    });
+
+    this.add('route:root', Route.extend({
+      renderTemplate() {
+        this.render('exports/root');
+      }
+    }));
+
+    this.add('route:root.index', Route.extend({
+      renderTemplate() {
+        this.render('exports/index');
+      }
+    }));
+
+    return this.visit('/root').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      assert.equal(rootElement.querySelectorAll('.a .b .c').length, 1);
+    });
+  }
+
+  ['@test Allows any route to disconnectOutlet another route\'s templates'](assert) {
+    this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
+    this.addTemplate('index', 'hi');
+    this.addTemplate('layer', 'layer');
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.add('route:application', Route.extend({
+      actions: {
+        openLayer() {
+          this.render('layer', {
+            into: 'application',
+            outlet: 'modal'
+          });
+        }
+      }
+    }));
+    this.add('route:index', Route.extend({
+      actions: {
+        close() {
+          this.disconnectOutlet({
+            parentView: 'application',
+            outlet: 'modal'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(rootElement.textContent.trim(), 'hi');
+      run(router, 'send', 'openLayer');
+      assert.equal(rootElement.textContent.trim(), 'hilayer');
+      run(router, 'send', 'close');
+      assert.equal(rootElement.textContent.trim(), 'hi');
+    });
+  }
+
+  ['@test Can this.render({into:...}) the render helper'](assert) {
+    expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+    expectDeprecation(() => {
+      this.addTemplate('application', '{{render "sidebar"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
+    this.addTemplate('index', 'other');
+    this.addTemplate('bar', 'bar');
+
+    this.add('route:index', Route.extend({
+      renderTemplate() {
+        this.render({ into: 'sidebar' });
+      },
+      actions: {
+        changeToBar() {
+          this.disconnectOutlet({
+            parentView: 'sidebar',
+            outlet: 'main'
+          });
+          this.render('bar', { into: 'sidebar' });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
+      run(router, 'send', 'changeToBar');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'bar');
+    });
+  }
+
+  ['@test Can disconnect from the render helper'](assert) {
+    expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+    expectDeprecation(() => {
+      this.addTemplate('application', '{{render "sidebar"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
+    this.addTemplate('index', 'other');
+
+    this.add('route:index', Route.extend({
+      renderTemplate() {
+        this.render({ into: 'sidebar' });
+      },
+      actions: {
+        disconnect: function() {
+          this.disconnectOutlet({
+            parentView: 'sidebar',
+            outlet: 'main'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
+      run(router, 'send', 'disconnect');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar')), '');
+    });
+  }
+
+  ["@test Can this.render({into:...}) the render helper's children"](assert) {
+    expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+    expectDeprecation(() => {
+      this.addTemplate('application', '{{render "sidebar"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
+    this.addTemplate('index', '<div class="index">{{outlet}}</div>');
+    this.addTemplate('other', 'other');
+    this.addTemplate('bar', 'bar');
+    this.router.map(function() {
+      this.route('index', { path: '/' });
+    });
+    this.add('route:index', Route.extend({
+      renderTemplate() {
+        this.render({ into: 'sidebar' });
+        this.render('other', { into: 'index' });
+      },
+      actions: {
+        changeToBar() {
+          this.disconnectOutlet({
+            parentView: 'index',
+            outlet: 'main'
+          });
+          this.render('bar', { into: 'index' });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
+      run(router, 'send', 'changeToBar');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'bar');
+    });
+  }
+
+  ['@test Can disconnect from the render helper\'s children'](assert) {
+    expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+    expectDeprecation(() => {
+      this.addTemplate('application', '{{render "sidebar"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
+    this.addTemplate('index', '<div class="index">{{outlet}}</div>');
+    this.addTemplate('other', 'other');
+
+    this.add('route:index', Route.extend({
+      renderTemplate() {
+        this.render({ into: 'sidebar' });
+        this.render('other', { into: 'index' });
+      },
+      actions: {
+        disconnect() {
+          this.disconnectOutlet({
+            parentView: 'index',
+            outlet: 'main'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
+      run(router, 'send', 'disconnect');
+      assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), '');
+    });
+  }
+
+  ['@test Can this.render({into:...}) nested render helpers'](assert) {
+    expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+    expectDeprecation(() => {
+      this.addTemplate('application', '{{render "sidebar"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    expectDeprecation(() => {
+      this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.addTemplate('cart', '<div class="cart">{{outlet}}</div>');
+    this.addTemplate('index', 'other');
+    this.addTemplate('baz', 'baz');
+
+    this.add('route:index', Route.extend({
+      renderTemplate() {
+        this.render({ into: 'cart' });
+      },
+      actions: {
+        changeToBaz() {
+          this.disconnectOutlet({
+            parentView: 'cart',
+            outlet: 'main'
+          });
+          this.render('baz', { into: 'cart' });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
+      run(router, 'send', 'changeToBaz');
+      assert.equal(getTextOf(rootElement.querySelector('.cart')), 'baz');
+    });
+  }
+
+  ['@test Can disconnect from nested render helpers'](assert) {
+    expectDeprecation(/Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./);
+
+    expectDeprecation(() => {
+      this.addTemplate('application', '{{render "sidebar"}}');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+
+    expectDeprecation(() => {
+      this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
+    }, /Please refactor [\w\{\}"` ]+ to a component/);
+    this.router.map(function () {
+      this.route('index', { path: '/' });
+    });
+    this.addTemplate('cart', '<div class="cart">{{outlet}}</div>');
+    this.addTemplate('index', 'other');
+
+    this.add('route:index', Route.extend({
+      renderTemplate() {
+        this.render({ into: 'cart' });
+      },
+      actions: {
+        disconnect() {
+          this.disconnectOutlet({
+            parentView: 'cart',
+            outlet: 'main'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let rootElement = document.getElementById('qunit-fixture');
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
+      run(router, 'send', 'disconnect');
+      assert.equal(getTextOf(rootElement.querySelector('.cart')), '');
+    });
+  }
+
+  ['@test Components inside an outlet have their didInsertElement hook invoked when the route is displayed'](assert) {
+    this.addTemplate('index', '{{#if showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}');
+
+    let myComponentCounter = 0;
+    let otherComponentCounter = 0;
+    let indexController;
+
+    this.router.map(function() {
+      this.route('index', { path: '/' });
+    });
+
+    this.add('controller:index', Controller.extend({
+      showFirst: true
+    }));
+
+    this.add('route:index', Route.extend({
+      setupController(controller) {
+        indexController = controller;
+      }
+    }));
+
+    this.add('component:my-component', Component.extend({
+      didInsertElement() {
+        myComponentCounter++;
+      }
+    }));
+
+    this.add('component:other-component', Component.extend({
+      didInsertElement() {
+        otherComponentCounter++;
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      assert.strictEqual(myComponentCounter, 1, 'didInsertElement invoked on displayed component');
+      assert.strictEqual(otherComponentCounter, 0, 'didInsertElement not invoked on displayed component');
+
+      run(() => indexController.set('showFirst', false));
+
+      assert.strictEqual(myComponentCounter, 1, 'didInsertElement not invoked on displayed component');
+      assert.strictEqual(otherComponentCounter, 1, 'didInsertElement invoked on displayed component');
+    });
+  }
+
+  ['@test Doesnt swallow exception thrown from willTransition'](assert) {
+    assert.expect(1);
+    this.addTemplate('application', '{{outlet}}');
+    this.addTemplate('index', 'index');
+    this.addTemplate('other', 'other');
+
+    this.router.map(function() {
+      this.route('index', { path: '/' });
+      this.route('other', function() {
+      });
+    });
+
+    this.add('route:index', Route.extend({
+      actions: {
+        willTransition() {
+          throw new Error('boom');
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      return assert.throws(() => {
+        return this.visit('/other');
+      }, /boom/, 'expected an exception but none was thrown');
+    });
+  }
+
+  ['@test Exception if outlet name is undefined in render and disconnectOutlet']() {
+    this.add('route:application', Route.extend({
+      actions: {
+        showModal() {
+          this.render({
+            outlet: undefined,
+            parentView: 'application'
+          });
+        },
+        hideModal() {
+          this.disconnectOutlet({
+            outlet: undefined,
+            parentView: 'application'
+          });
+        }
+      }
+    }));
+
+    return this.visit('/').then(() => {
+      let router = this.applicationInstance.lookup('router:main');
+      expectAssertion(() => {
+        run(() => router.send('showModal'));
+      }, /You passed undefined as the outlet name/);
+
+      expectAssertion(() => {
+        run(() => router.send('hideModal'));
+      }, /You passed undefined as the outlet name/);
+    });
+  }
+
+  ['@test Route serializers work for Engines'](assert) {
+    assert.expect(2);
+
+    // Register engine
+    let BlogEngine = Engine.extend();
+    this.add('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let postSerialize = function(params) {
+      assert.ok(true, 'serialize hook runs');
+      return {
+        post_id: params.id
+      };
+    };
+    let BlogMap = function() {
+      this.route('post', { path: '/post/:post_id', serialize: postSerialize });
+    };
+    this.add('route-map:blog', BlogMap);
+
+    this.router.map(function() {
+      this.mount('blog');
+    });
+
+    return this.visit('/').then(() => {
+      let router = this.applicationInstance.lookup('router:main');
+      assert.equal(router._routerMicrolib.generate('blog.post', { id: '13' }), '/blog/post/13', 'url is generated properly');
+    });
+  }
+
+  ['@test Defining a Route#serialize method in an Engine throws an error'](assert) {
+    assert.expect(1);
+
+    // Register engine
+    let BlogEngine = Engine.extend();
+    this.add('engine:blog', BlogEngine);
+
+    // Register engine route map
+    let BlogMap = function() {
+      this.route('post');
+    };
+    this.add('route-map:blog', BlogMap);
+
+    this.router.map(function() {
+      this.mount('blog');
+    });
+
+    return this.visit('/').then(() => {
+      let router = this.applicationInstance.lookup('router:main');
+      let PostRoute = Route.extend({ serialize() {} });
+      this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
+
+      assert.throws(() => router.transitionTo('blog.post'), /Defining a custom serialize method on an Engine route is not supported/);
+    });
+  }
+
+  ['@test App.destroy does not leave undestroyed views after clearing engines'](assert) {
+    assert.expect(4);
+
+    let engineInstance;
+    // Register engine
+    let BlogEngine = Engine.extend();
+    this.add('engine:blog', BlogEngine);
+    let EngineIndexRoute = Route.extend({
+      init() {
+        this._super(...arguments);
+        engineInstance = getOwner(this);
+      }
+    });
+
+    // Register engine route map
+    let BlogMap = function() {
+      this.route('post');
+    };
+    this.add('route-map:blog', BlogMap);
+
+    this.router.map(function() {
+      this.mount('blog');
+    });
+
+    return this.visit('/').then(() => {
+      let engine = this.applicationInstance.lookup('engine:blog');
+      engine.register('route:index', EngineIndexRoute);
+      engine.register('template:index', compile('Engine Post!'));
+      return this.visit('/blog');
+    }).then(() => {
+      assert.ok(true, '/blog has been handled');
+      let route = engineInstance.lookup('route:index');
+      let router = this.applicationInstance.lookup('router:main');
+
+      run(router, 'destroy');
+      assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+
+      run(route, 'destroy');
+      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+
+      run(this.applicationInstance, 'destroy');
+      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+    });
+  }
+
+  ['@test Generated route should be an instance of App\'s default route if provided'](assert) {
+    let generatedRoute;
+
+    this.router.map(function () {
+      this.route('posts');
+    });
+
+    let AppRoute = Route.extend();
+    this.add('route:basic', AppRoute);
+
+    return this.visit('/posts').then(() => {
+      generatedRoute = this.applicationInstance.lookup('route:posts');
+
+      assert.ok(generatedRoute instanceof AppRoute, 'should extend the correct route');
     });
   }
 });
