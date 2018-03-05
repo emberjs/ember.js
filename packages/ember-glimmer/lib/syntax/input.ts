@@ -10,7 +10,7 @@ import { wrapComponentClassAttribute } from '../utils/bindings';
 import { hashToArgs } from './utils';
 
 function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuilder<OwnedTemplateMeta>) {
-  let definition = builder.resolver.lookupComponentDefinition(type, builder.referrer);
+  let definition = builder.compiler['resolver'].lookupComponentDefinition(type, builder.referrer);
   builder.component.static(definition!, [params, hashToArgs(hash), null, null]);
   return true;
 }

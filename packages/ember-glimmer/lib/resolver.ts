@@ -4,8 +4,7 @@ import {
   Option,
   RuntimeResolver as IRuntimeResolver
 } from '@glimmer/interfaces';
-import { LazyOpcodeBuilder, Macros, OpcodeBuilderConstructor, PartialDefinition, TemplateOptions } from '@glimmer/opcode-compiler';
-import { LazyConstants, Program } from '@glimmer/program';
+import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import {
   getDynamicVar,
   Helper,
@@ -88,12 +87,7 @@ const BUILTIN_MODIFIERS = {
 };
 
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
-  public templateOptions: TemplateOptions<OwnedTemplateMeta> = {
-    program: new Program<OwnedTemplateMeta>(new LazyConstants(this)),
-    macros: new Macros(),
-    resolver: new CompileTimeLookup(this),
-    Builder: LazyOpcodeBuilder as OpcodeBuilderConstructor,
-  };
+  public compiler: LazyCompiler<OwnedTemplateMeta>;
 
   private handles: any[] = [
     undefined, // ensure no falsy handle
@@ -115,7 +109,13 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   public templateCacheMisses = 0;
 
   constructor() {
-    populateMacros(this.templateOptions.macros);
+    let macros = new Macros();
+    populateMacros(macros);
+    this.compiler = new LazyCompiler<OwnedTemplateMeta>(
+      new CompileTimeLookup(this),
+      this,
+      macros
+    );
   }
 
   /***  IRuntimeResolver ***/
@@ -123,13 +123,17 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   /**
    * Called while executing Append Op.PushDynamicComponentManager if string
    */
-  lookupComponent(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
-    let handle = this.lookupComponentDefinition(name, meta);
+  lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
+    let handle = this.lookupComponentHandle(name, meta);
     if (handle === null) {
       assert(`Could not find component named "${name}" (no component or template with that name was found)`);
       return null;
     }
     return this.resolve(handle);
+  }
+
+  lookupComponentHandle(name: string, meta: OwnedTemplateMeta) {
+    return this.handle(this._lookupComponentDefinition(name, meta));
   }
 
   /**
@@ -149,13 +153,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return this.handle(handle);
     }
     return null;
-  }
-
-  /**
-   * Called by CompileTimeLookup compiling the Component OpCode
-   */
-  lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<number> {
-    return this.handle(this._lookupComponentDefinition(name, meta));
   }
 
   /**
@@ -188,7 +185,8 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     }
     let template = cache.get(factory);
     if (template === undefined) {
-      const injections: Injections = { options: this.templateOptions };
+      const { compiler } = this;
+      const injections: Injections = { compiler };
       setOwner(injections, owner);
       template = factory.create(injections);
       cache.set(factory, template);

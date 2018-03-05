@@ -550,7 +550,6 @@ class ContentTestGenerator {
           this.assertStableRerender();
 
           this.runTask(() => set(this.context, 'value', 'hello'));
-
           this.assertContent('hello');
           this.assertInvariants();
 
@@ -612,6 +611,7 @@ moduleFor('Dynamic content tests (content position)', class extends DynamicConte
   assertContent(content) {
     this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one text node');
     this.assertTextNode(this.firstChild, content);
+    // this.takeSnapshot();
   }
 
 });

@@ -1,11 +1,9 @@
-import { CompilableTemplate, ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
-import { CompileTimeLookup as ICompileTimeLookup } from '@glimmer/opcode-compiler';
+import { CompilableTemplate, CompileTimeLookup as ICompileTimeLookup, ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
 import { ComponentDefinition, ComponentManager, WithStaticLayout } from '@glimmer/runtime';
 import { OwnedTemplateMeta } from 'ember-views';
 import RuntimeResolver from './resolver';
 
-interface StaticComponentManager<DefinitionState> extends WithStaticLayout<any, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
-                                                          ComponentManager<any, DefinitionState> {
+interface StaticComponentManager<DefinitionState> extends WithStaticLayout<any, DefinitionState, OwnedTemplateMeta, RuntimeResolver>, ComponentManager<any, DefinitionState> {
 }
 
 export default class CompileTimeLookup implements ICompileTimeLookup<OwnedTemplateMeta> {
@@ -42,7 +40,7 @@ export default class CompileTimeLookup implements ICompileTimeLookup<OwnedTempla
   }
 
   lookupComponentDefinition(name: string, referrer: OwnedTemplateMeta): Option<number> {
-    return this.resolver.lookupComponentDefinition(name, referrer);
+    return this.resolver.lookupComponentHandle(name, referrer);
   }
 
   lookupPartial(name: string, referrer: OwnedTemplateMeta): Option<number> {

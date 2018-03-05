@@ -101,7 +101,7 @@ class RootState {
     this.render = () => {
       let layout = template.asLayout();
       let handle = layout.compile();
-      let iterator = renderMain(layout['options'].program,
+      let iterator = renderMain(layout['compiler'].program,
         env,
         self,
         dynamicScope,
