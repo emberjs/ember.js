@@ -48,9 +48,9 @@ FailureOnlyPerBrowserReporter.prototype.summaryDisplay = function() {
 module.exports = {
   framework: "qunit",
   test_page: "dist/tests/index.html?hidepassed&hideskipped&timeout=60000",
-  timeout: 540,
+  timeout: 1200,
   reporter: FailureOnlyPerBrowserReporter,
-  browser_start_timeout: 1200,
+  browser_start_timeout: 2000,
   parallel: 4,
   disable_watching: true,
   launchers: {
