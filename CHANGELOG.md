@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.1.0-beta.4 (March 5, 2018)
+- [#16294](https://github.com/emberjs/ember.js/pull/16294) [BUGFIX] Fix input macro params handling
+- [#16297](https://github.com/emberjs/ember.js/pull/16297) [BUGFIX] Revert "Update to backburner.js@2.2.0."
+- [#16299](https://github.com/emberjs/ember.js/pull/16299) [BUGFIX] Revert "[CLEANUP] Remove ':change' suffix on change events"
+- [#16307](https://github.com/emberjs/ember.js/pull/16307) [BUGFIX] Ensure proper .toString() of default components.
+
 ### v3.1.0-beta.3 (February 26, 2018)
 - [#16271](https://github.com/emberjs/ember.js/pull/16271) [BUGFIX] Fix ChainNode unchaining
 - [#16274](https://github.com/emberjs/ember.js/pull/16274) [BUGFIX] Ensure accessing a "proxy" itself does not error.
