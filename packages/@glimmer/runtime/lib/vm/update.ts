@@ -81,9 +81,19 @@ export interface ExceptionHandler {
   handleException(): void;
 }
 
-export interface VMState<T = Opaque> {
+/**
+  The Runtime is the set of static structures that contain the compiled
+  code and any host configuration.
+
+  The contents of the Runtime do not change as the VM executes, unlike
+  the VM state.
+ */
+export interface Runtime {
   env: Environment;
-  program: RuntimeProgram<T>;
+  program: RuntimeProgram<Opaque>
+}
+
+export interface VMState {
   scope: Scope;
   dynamicScope: DynamicScope;
   stack: Opaque[];
@@ -97,7 +107,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
 
   protected bounds: DestroyableBounds;
 
-  constructor(public start: number, protected state: VMState, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
+  constructor(public start: number, protected state: VMState, protected runtime: Runtime, bounds: DestroyableBounds, children: LinkedList<UpdatingOpcode>) {
     super();
 
     this.children = children;
@@ -127,7 +137,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   }
 
   didDestroy() {
-    this.state.env.didDestroy(this.bounds);
+    this.runtime.env.didDestroy(this.bounds);
   }
 }
 
@@ -140,8 +150,8 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds: UpdatableTracker;
 
-  constructor(start: number, state: VMState, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
-    super(start, state, bounds, children);
+  constructor(start: number, state: VMState, runtime: Runtime, bounds: UpdatableTracker, children: LinkedList<UpdatingOpcode>) {
+    super(start, state, runtime, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
 
@@ -154,17 +164,17 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { state, bounds, children, start, prev, next } = this;
+    let { state, bounds, children, start, prev, next, runtime } = this;
 
     children.clear();
 
     let elementStack = NewElementBuilder.resume(
-      state.env,
+      runtime.env,
       bounds,
-      bounds.reset(state.env)
+      bounds.reset(runtime.env)
     );
 
-    let vm = VM.resume(state, elementStack);
+    let vm = VM.resume(state, runtime, elementStack);
 
     let updating = new LinkedList<UpdatingOpcode>();
 
@@ -265,8 +275,8 @@ export class ListBlockOpcode extends BlockOpcode {
   private lastIterated: Revision = INITIAL;
   private _tag: TagWrapper<UpdatableTag>;
 
-  constructor(start: number, state: VMState, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
-    super(start, state, bounds, children);
+  constructor(start: number, state: VMState, runtime: Runtime, bounds: Tracker, children: LinkedList<UpdatingOpcode>, artifacts: IterationArtifacts) {
+    super(start, state, runtime, bounds, children);
     this.artifacts = artifacts;
     let _tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
     this.tag = combine([artifacts.tag, _tag]);
@@ -303,14 +313,14 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 
   vmForInsertion(nextSibling: Option<Simple.Node>): VM<Opaque> {
-    let { bounds, state } = this;
+    let { bounds, state, runtime } = this;
 
     let elementStack = NewElementBuilder.forInitialRender(
-      state.env,
+      runtime.env,
       { element: bounds.parentElement(), nextSibling }
     );
 
-    return VM.resume(state, elementStack);
+    return VM.resume(state, runtime, elementStack);
   }
 }
 
