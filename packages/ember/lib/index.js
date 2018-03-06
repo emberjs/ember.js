@@ -416,19 +416,20 @@ Object.defineProperty(Ember, 'BOOTED', {
 });
 
 import {
+  Checkbox,
   Component,
+  componentManager,
+  escapeExpression,
+  getTemplates,
   Helper,
   helper,
-  Checkbox,
-  TextField,
-  TextArea,
-  LinkComponent,
   htmlSafe,
-  template,
-  escapeExpression,
   isHTMLSafe,
-  getTemplates,
-  setTemplates
+  LinkComponent,
+  setTemplates,
+  template,
+  TextField,
+  TextArea
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -438,6 +439,11 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 Ember.LinkComponent = LinkComponent;
+
+Object.defineProperty(Ember, '_setComponentManager', {
+  enumerable: false,
+  get() { return componentManager; }
+});
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {

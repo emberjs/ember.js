@@ -303,3 +303,5 @@ export { UpdatableReference, INVOKE } from './utils/references';
 export { default as iterableFor } from './utils/iterable';
 export { default as DebugStack } from './utils/debug-stack';
 export { default as OutletView } from './views/outlet';
+export { default as CustomComponentManager } from './component-managers/custom';
+export { COMPONENT_MANAGER, componentManager } from './utils/custom-component-manager';
