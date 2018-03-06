@@ -141,7 +141,7 @@ ControllerMixin.reopen({
       while transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
       containing a mapping of query parameters
-    @for ControllerMixin
+    @for Ember.ControllerMixin
     @method transitionToRoute
     @public
   */
@@ -206,7 +206,7 @@ ControllerMixin.reopen({
     @param {String} name the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used
     while transitioning to the route.
-    @for ControllerMixin
+    @for Ember.ControllerMixin
     @method replaceRoute
     @public
   */
