@@ -67,16 +67,24 @@ if (DEBUG) {
 
 if (DEBUG) {
   /**
-    Define an assertion that will throw an exception if the condition is not met.
+    Verify that a certain expectation is met, or throw a exception otherwise.
 
-    * In a production build, this method is defined as an empty function (NOP).
-    Uses of this method in Ember itself are stripped from the ember.prod.js build.
+    This is useful for communicating assumptions in the code to other human
+    readers as well as catching bugs that accidentally violates these
+    expectations.
+
+    Assertions are removed from production builds, so they can be freely added
+    for documentation and debugging purposes without worries of incuring any
+    performance penalty. However, because of that, they should not be used for
+    checks that could reasonably fail during normal usage. Furthermore, care
+    should be taken to avoid accidentally relying on side-effects produced from
+    evaluating the condition itself, since the code will not run in production.
 
     ```javascript
     import { assert } from '@ember/debug';
 
     // Test for truthiness
-    assert('Must pass a valid object', obj);
+    assert('Must pass a string', typeof str === 'string');
 
     // Fail unconditionally
     assert('This code path should never be run');
@@ -85,9 +93,9 @@ if (DEBUG) {
     @method assert
     @static
     @for @ember/debug
-    @param {String} desc A description of the assertion. This will become
-      the text of the Error thrown if the assertion fails.
-    @param {Boolean} test Must be truthy for the assertion to pass. If
+    @param {String} description Describes the expectation. This will become the
+      text of the Error thrown if the assertion fails.
+    @param {Boolean} condition Must be truthy for the assertion to pass. If
       falsy, an exception will be thrown.
     @public
     @since 1.0.0
@@ -101,8 +109,9 @@ if (DEBUG) {
   /**
     Display a debug notice.
 
-    * In a production build, this method is defined as an empty function (NOP).
-    Uses of this method in Ember itself are stripped from the ember.prod.js build.
+    Calls to this function are removed from production builds, so they can be
+    freely added for documentation and debugging purposes without worries of
+    incuring any performance penalty.
 
     ```javascript
     import { debug } from '@ember/debug';
@@ -123,8 +132,9 @@ if (DEBUG) {
   /**
     Display an info notice.
 
-    * In a production build, this method is defined as an empty function (NOP).
-    Uses of this method in Ember itself are stripped from the ember.prod.js build.
+    Calls to this function are removed from production builds, so they can be
+    freely added for documentation and debugging purposes without worries of
+    incuring any performance penalty.
 
     @method info
     @private
@@ -144,7 +154,9 @@ if (DEBUG) {
     Display a deprecation warning with the provided message and a stack trace
     (Chrome and Firefox only) when the assigned method is called.
 
-    * In a production build, this method is defined as an empty function (NOP).
+    Calls to this function are removed from production builds, so they can be
+    freely added for documentation and debugging purposes without worries of
+    incuring any performance penalty.
 
     ```javascript
     import { deprecateFunc } from '@ember/application/deprecations';
@@ -185,8 +197,9 @@ if (DEBUG) {
   /**
     Run a function meant for debugging.
 
-    * In a production build, this method is defined as an empty function (NOP).
-    Uses of this method in Ember itself are stripped from the ember.prod.js build.
+    Calls to this function are removed from production builds, so they can be
+    freely added for documentation and debugging purposes without worries of
+    incuring any performance penalty.
 
     ```javascript
     import Component from '@ember/component';
