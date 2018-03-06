@@ -279,7 +279,7 @@
   It is also possible to override the default event in this manner:
 
   ```javascript
-  import LinkCompoennt from '@ember/routing/link-component';
+  import LinkComponent from '@ember/routing/link-component';
 
   export default LinkComponent.extend({
     eventName: 'customEventName'
