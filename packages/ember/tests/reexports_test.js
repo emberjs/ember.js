@@ -114,6 +114,7 @@ let allExports =[
   ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
   ['ViewUtils.getRootViews', 'ember-views', 'getRootViews'],
   ['ViewUtils.getChildViews', 'ember-views', 'getChildViews'],
+  ['ViewUtils.isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
   ['TextSupport', 'ember-views'],
   ['ComponentLookup', 'ember-views'],
   ['EventDispatcher', 'ember-views'],

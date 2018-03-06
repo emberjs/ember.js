@@ -429,7 +429,8 @@ import {
   setTemplates,
   template,
   TextField,
-  TextArea
+  TextArea,
+  isSerializationFirstNode
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -507,7 +508,8 @@ Ember.ViewUtils = {
   getViewClientRects: views.getViewClientRects,
   getViewBoundingClientRect: views.getViewBoundingClientRect,
   getRootViews: views.getRootViews,
-  getChildViews: views.getChildViews
+  getChildViews: views.getChildViews,
+  isSerializationFirstNode: isSerializationFirstNode
 };
 
 Ember.TextSupport = views.TextSupport;
