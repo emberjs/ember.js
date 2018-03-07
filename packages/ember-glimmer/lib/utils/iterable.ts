@@ -99,7 +99,7 @@ class ArrayIterator implements Iterator {
     let { length } = array;
 
     if (length > 0) {
-      return new this(array, array.length, keyFor);
+      return new this(array, length, keyFor);
     } else {
       return EMPTY_ITERATOR;
     }
@@ -147,10 +147,6 @@ class EmberArrayIterator extends ArrayIterator {
     } else {
       return EMPTY_ITERATOR;
     }
-  }
-
-  constructor(array: any[], length: number, keyFor: KeyFor) {
-    super(array, length, keyFor);
   }
 
   getValue(position: number) {
