@@ -82,7 +82,11 @@ const CAPABILITIES = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true
 };
 
 class SingletonRenderManager extends AbstractRenderManager<RenderState> {
@@ -107,13 +111,17 @@ class SingletonRenderManager extends AbstractRenderManager<RenderState> {
 
 export const SINGLETON_RENDER_MANAGER = new SingletonRenderManager();
 
-const NONSINGLETON_CAPABILITIES = {
+const NONSINGLETON_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
   createArgs: true,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  dynamicScope: true,
+  createCaller: false,
+  updateHook: true,
+  createInstance: true
 };
 
 class NonSingletonRenderManager extends AbstractRenderManager<RenderStateWithModel> {

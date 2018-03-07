@@ -58,7 +58,11 @@ const CAPABILITIES =  {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true
 };
 
 class MountManager extends AbstractManager<EngineState | EngineWithModelState, EngineDefinitionState>

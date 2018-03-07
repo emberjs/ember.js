@@ -77,7 +77,11 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: true,
-  elementHook: true
+  elementHook: true,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: false
 };
 
 export class RootComponentDefinition implements ComponentDefinition {

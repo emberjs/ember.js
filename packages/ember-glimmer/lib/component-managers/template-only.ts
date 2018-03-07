@@ -12,7 +12,11 @@ const CAPABILITIES: ComponentCapabilities = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true
 };
 
 export default class TemplateOnlyComponentManager extends AbstractManager<null, OwnedTemplate> implements WithStaticLayout<null, OwnedTemplate, OwnedTemplateMeta, RuntimeResolver> {
