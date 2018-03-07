@@ -108,7 +108,11 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
       prepareArgs: false,
       createArgs: true,
       attributeHook: false,
-      elementHook: false
+      elementHook: false,
+      createCaller: false,
+      dynamicScope: true,
+      updateHook: true,
+      createInstance: true
     };
   }
 

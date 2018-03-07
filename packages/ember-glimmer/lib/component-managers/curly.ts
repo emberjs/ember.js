@@ -504,7 +504,11 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   prepareArgs: true,
   createArgs: true,
   attributeHook: true,
-  elementHook: true
+  elementHook: true,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true
 };
 
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();

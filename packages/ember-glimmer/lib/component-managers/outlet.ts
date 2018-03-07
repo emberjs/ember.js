@@ -51,7 +51,11 @@ const CAPABILITIES: ComponentCapabilities = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true
 };
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
