@@ -560,7 +560,7 @@ export function intersect(...args) {
   ```javascript
   let Hamster = Ember.Object.extend({
     likes: ['banana', 'grape', 'kale'],
-    wants: Ember.computed.setDiff('likes', 'fruits')
+    wants: setDiff('likes', 'fruits')
   });
 
   let hamster = Hamster.create({
