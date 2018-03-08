@@ -364,7 +364,7 @@ export function filterBy(dependentKey, propertyKey, value) {
 
   ```javascript
   let Hamster = Ember.Object.extend({
-    uniqueFruits: Ember.computed.uniq('fruits')
+    uniqueFruits: uniq('fruits')
   });
 
   let hamster = Hamster.create({
