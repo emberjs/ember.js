@@ -81,6 +81,12 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
     this.delegate.update(component, args.value());
   }
 
+  didUpdate({ component }: CustomComponentState<T>) {
+    if (typeof this.delegate.didUpdate === 'function') {
+      this.delegate.didUpdate(component);
+    }
+  }
+
   getContext(component: T) {
     this.delegate.getContext(component);
   }
@@ -123,6 +129,9 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
   didRenderLayout({ component }: CustomComponentState<T>, _bounds: Bounds) {
     const renderer = getRenderer(component);
     renderer.register(component);
+    if (typeof this.delegate.didCreate === 'function') {
+      this.delegate.didCreate(component);
+    }
   }
 }
 
