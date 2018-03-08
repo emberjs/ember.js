@@ -22,6 +22,7 @@ import layout from '../templates/empty';
     * `tabindex`
     * `selectionEnd`
     * `selectionStart`
+    * `autocomplete`
     * `selectionDirection`
     * `wrap`
     * `readonly`
@@ -226,6 +227,7 @@ const TextArea = Component.extend(TextSupport, {
     'name',
     'selectionEnd',
     'selectionStart',
+    'autocomplete',
     'wrap',
     'lang',
     'dir',
