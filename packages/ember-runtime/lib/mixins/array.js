@@ -7,7 +7,7 @@ import {
   get,
   set,
   objectAt,
-  replace,
+  replaceInNativeArray,
   computed,
   isNone,
   aliasMethod,
@@ -31,6 +31,7 @@ import copy from '../copy';
 import { Error as EmberError } from 'ember-debug';
 import MutableEnumerable from './mutable_enumerable';
 
+const EMPTY_ARRAY = Object.freeze([]);
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
@@ -1624,22 +1625,11 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   },
 
   // primitive for array support.
-  replace(idx, amt, objects) {
-    assert('The third argument to replace needs to be an array.', objects === null || objects === undefined || Array.isArray(objects));
+  replace(start, deleteCount, items = EMPTY_ARRAY) {
+    assert('The third argument to replace needs to be an array.', Array.isArray(items));
 
-    // if we replaced exactly the same number of items, then pass only the
-    // replaced range. Otherwise, pass the full remaining array length
-    // since everything has shifted
-    let len = objects ? get(objects, 'length') : 0;
-    arrayContentWillChange(this, idx, amt, len);
+    replaceInNativeArray(this, start, deleteCount, items);
 
-    if (len === 0) {
-      this.splice(idx, amt);
-    } else {
-      replace(this, idx, amt, objects);
-    }
-
-    arrayContentDidChange(this, idx, amt, len);
     return this;
   },
 

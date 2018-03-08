@@ -43,6 +43,8 @@ export {
 } from './property_set';
 export {
   objectAt,
+  replace,
+  replaceInNativeArray,
   addArrayObserver,
   removeArrayObserver,
   arrayContentWillChange,
@@ -130,7 +132,6 @@ export {
   tagFor,
   markObjectAsDirty
 } from './tags';
-export { default as replace } from './replace';
 export {
   default as runInTransaction,
   didRender,
