@@ -129,7 +129,7 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
 /**
  * Stores internal state about a component instance after it's been created.
  */
-class CustomComponentState<T> {
+export class CustomComponentState<T> {
   constructor(
     public delegate: CustomComponentManagerDelegate<T>,
     public component: T,

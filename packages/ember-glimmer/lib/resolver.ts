@@ -24,6 +24,7 @@ import {
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
+import CustomComponentManager, { CustomComponentState } from './component-managers/custom';
 import DefinitionState from './component-managers/definition-state';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
@@ -297,7 +298,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return new TemplateOnlyComponentDefinition(layout);
     }
 
-    let manager: ComponentManager<ComponentStateBucket, DefinitionState> | undefined;
+    let manager: ComponentManager<ComponentStateBucket, DefinitionState> | CustomComponentManager<CustomComponentState<any>> | undefined;
 
     if (GLIMMER_CUSTOM_COMPONENT_MANAGER && component && component.class) {
       manager = getCustomComponentManager(meta.owner, component.class);
