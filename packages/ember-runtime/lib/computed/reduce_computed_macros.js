@@ -464,7 +464,7 @@ export function uniqBy(dependentKey, propertyKey) {
 
   ```javascript
   let Hamster = Ember.Object.extend({
-    uniqueFruits: Ember.computed.union('fruits', 'vegetables')
+    uniqueFruits: union('fruits', 'vegetables')
   });
 
   let hamster = Hamster.create({
