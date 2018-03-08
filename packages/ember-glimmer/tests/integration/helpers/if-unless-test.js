@@ -10,13 +10,13 @@ moduleFor('Helpers test: inline {{if}}', class extends IfUnlessHelperTest {
   ['@test it raises when there are more than three arguments']() {
     expectAssertion(() => {
       this.render(`{{if condition 'a' 'b' 'c'}}`, { condition: true });
-    }, /The inline form of the `if` helper expects two or three arguments/);
+    }, `The inline form of the 'if' helper expects two or three arguments. ('-top-level' @ L1:C0) `);
   }
 
   ['@test it raises when there are less than two arguments']() {
     expectAssertion(() => {
       this.render(`{{if condition}}`, { condition: true });
-    }, /The inline form of the `if` helper expects two or three arguments/);
+    }, `The inline form of the 'if' helper expects two or three arguments. ('-top-level' @ L1:C0) `);
   }
 
 });

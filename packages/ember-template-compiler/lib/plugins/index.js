@@ -19,6 +19,7 @@ import TransformInElement from './transform-in-element';
 import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER
 } from 'ember/features';
+import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 
 const transforms = [
   TransformDotComponentInvocation,
@@ -38,6 +39,7 @@ const transforms = [
   TransformHasBlockSyntax,
   AssertInputHelperWithoutBlock,
   TransformInElement,
+  AssertIfHelperWithoutArguments
 ];
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
