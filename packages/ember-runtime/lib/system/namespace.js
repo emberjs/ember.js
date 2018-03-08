@@ -1,7 +1,6 @@
 /**
 @module ember
 */
-import { guidFor } from 'ember-utils';
 import {
   get,
   Mixin,
@@ -57,7 +56,7 @@ const Namespace = EmberObject.extend({
   },
 
   nameClasses() {
-    processNamespace([this.toString()], this, {});
+    processNamespace([this.toString()], this);
   },
 
   destroy() {
@@ -91,7 +90,7 @@ let NAMESPACES_BY_ID = Namespace.NAMESPACES_BY_ID;
 
 let hasOwnProp = ({}).hasOwnProperty;
 
-function processNamespace(paths, root, seen) {
+function processNamespace(paths, root, seen = new Set()) {
   let idx = paths.length;
 
   NAMESPACES_BY_ID[paths.join('.')] = root;
@@ -117,8 +116,8 @@ function processNamespace(paths, root, seen) {
     // Support nested namespaces
     } else if (obj && obj.isNamespace) {
       // Skip aliased namespaces
-      if (seen[guidFor(obj)]) { continue; }
-      seen[guidFor(obj)] = true;
+      if (seen.has(obj)) { continue; }
+      seen.add(obj);
 
       // Process the child namespace
       processNamespace(paths, obj, seen);
@@ -214,7 +213,7 @@ function processAllNamespaces() {
 
     for (let i = 0; i < namespaces.length; i++) {
       namespace = namespaces[i];
-      processNamespace([namespace.toString()], namespace, {});
+      processNamespace([namespace.toString()], namespace);
     }
 
     clearUnprocessedMixins();
