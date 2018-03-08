@@ -465,6 +465,10 @@ export default class Mixin {
     }
   }
 
+  static _apply() {
+    return applyMixin(...arguments);
+  }
+
   static applyPartial(obj, ...args) {
     return applyMixin(obj, args, true);
   }
@@ -573,9 +577,12 @@ export default class Mixin {
     return _keys(this);
   }
 
+  toString() {
+    return '(unknown mixin)';
+  }
+
 }
 
-Mixin._apply = applyMixin;
 if (ENV._ENABLE_BINDING_SUPPORT) {
   // slotting this so that the legacy addon can add the function here
   // without triggering an error due to the Object.seal done below
@@ -583,13 +590,8 @@ if (ENV._ENABLE_BINDING_SUPPORT) {
   Mixin.detectBinding = null;
 }
 
-let MixinPrototype = Mixin.prototype;
-MixinPrototype.toString = function Mixin_toString() {
-  return '(unknown mixin)';
-};
-
 if (DEBUG) {
-  Object.seal(MixinPrototype);
+  Object.seal(Mixin.prototype);
 }
 
 let unprocessedFlag = false;
