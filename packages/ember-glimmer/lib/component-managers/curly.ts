@@ -65,6 +65,7 @@ import {
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 import AbstractManager from './abstract';
+import CustomComponentManager, { CustomComponentState } from './custom';
 import DefinitionState from './definition-state';
 
 function aliasIdToElementId(args: Arguments, props: any) {
@@ -519,7 +520,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
   public symbolTable: ProgramSymbolTable | undefined;
 
   // tslint:disable-next-line:no-shadowed-variable
-  constructor(public name: string, public manager: ComponentManager<ComponentStateBucket, DefinitionState> = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: CurriedArgs) {
+  constructor(public name: string, public manager: ComponentManager<ComponentStateBucket, DefinitionState> | CustomComponentManager<CustomComponentState<any>> = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: CurriedArgs) {
     const layout = template && template.asLayout();
     const symbolTable = layout ? layout.symbolTable : undefined;
     this.symbolTable = symbolTable;

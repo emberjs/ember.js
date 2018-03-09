@@ -1,10 +1,7 @@
-import { ComponentManager } from '@glimmer/runtime';
-
 import { assert } from 'ember-debug';
 import { Owner, symbol } from 'ember-utils';
 
-import DefinitionState from '../component-managers/definition-state';
-import ComponentStateBucket from '../utils/curly-component-state-bucket';
+import CustomComponentManager, { CustomComponentState } from '../component-managers/custom';
 
 import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 
@@ -21,7 +18,7 @@ export function componentManager(obj: any, managerId: String) {
   return obj;
 }
 
-export default function getCustomComponentManager(owner: Owner, obj: {}): ComponentManager<ComponentStateBucket, DefinitionState> | undefined {
+export default function getCustomComponentManager(owner: Owner, obj: {}): CustomComponentManager<CustomComponentState<any>> | undefined {
   if (!GLIMMER_CUSTOM_COMPONENT_MANAGER) { return; }
 
   if (!obj) { return; }
@@ -29,7 +26,7 @@ export default function getCustomComponentManager(owner: Owner, obj: {}): Compon
   let managerId = obj[COMPONENT_MANAGER];
   if (!managerId) { return; }
 
-  let manager = owner.lookup(`component-manager:${managerId}`) as ComponentManager<ComponentStateBucket, DefinitionState>;
+  let manager = new CustomComponentManager(owner.lookup(`component-manager:${managerId}`)) as CustomComponentManager<CustomComponentState<any>>;
   assert(`Could not find custom component manager '${managerId}' for ${obj}`, !!manager);
 
   return manager;

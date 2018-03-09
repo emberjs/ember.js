@@ -5,7 +5,7 @@ import { Component } from '../utils/helpers';
 import { Object as EmberObject } from 'ember-runtime';
 import { set, setProperties, computed } from 'ember-metal';
 import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
-import { componentManager, CustomComponentManager } from 'ember-glimmer';
+import { componentManager } from 'ember-glimmer';
 import { getChildViews } from 'ember-views';
 import { assign } from 'ember-utils';
 
@@ -35,9 +35,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         }
       }, overrides);
 
-      let manager = new CustomComponentManager(options);
-
-      this.owner.register(`component-manager:${MANAGER_ID}`, manager, { singleton: true, instantiate: false });
+      this.owner.register(`component-manager:${MANAGER_ID}`, options, { singleton: true, instantiate: false });
     }
 
     // Renders a simple component with a custom component manager and verifies
