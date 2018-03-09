@@ -3,7 +3,7 @@ import Application from '@ember/application';
 import { initialize } from '<%= dasherizedModulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
-import destroyApp from '../../helpers/destroy-app';
+<% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } else { %>import { run } from '@ember/runloop';<% } %>
 
 module('<%= friendlyTestName %>', function(hooks) {
   setupTest(hooks);
@@ -18,8 +18,8 @@ module('<%= friendlyTestName %>', function(hooks) {
     this.instance = this.application.buildInstance();
   });
   hooks.afterEach(function() {
-    destroyApp(this.application);
-    destroyApp(this.instance);
+    <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
+    <% if (destroyAppExists) { %>destroyApp(this.instance);<% } else { %>run(this.instance, 'destroy');<% } %>
   });
 
   // Replace this with your real tests.
