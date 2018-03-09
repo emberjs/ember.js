@@ -5,7 +5,6 @@ import {
   ApplicationTestCase
 } from 'internal-test-helpers';
 
-import Logger from 'ember-console';
 import { Controller } from 'ember-runtime';
 import { Route } from 'ember-routing';
 import { assign } from 'ember-utils';
@@ -17,14 +16,16 @@ class LoggingApplicationTestCase extends ApplicationTestCase {
 
     this.logs = {};
 
-    this._originalLogger = Logger.info;
+    /* eslint-disable no-console */
+    this._originalLogger = console.info;
 
-    Logger.info = (_, {fullName}) => {
+    console.info = (_, {fullName}) => {
       if (!this.logs.hasOwnProperty(fullName)) {
         this.logs[fullName] = 0;
       }
-      this.logs[fullName]++;
-    };
+    /* eslint-ensable no-console */
+    this.logs[fullName]++;
+  };
 
     this.router.map(function() {
       this.route('posts', { resetNamespace: true });
@@ -32,7 +33,9 @@ class LoggingApplicationTestCase extends ApplicationTestCase {
   }
 
   teardown() {
-    Logger.info = this._originalLogger;
+    /* eslint-disable no-console */
+    console.info = this._originalLogger;
+    /* eslint-enable no-console */
     super.teardown();
   }
 }

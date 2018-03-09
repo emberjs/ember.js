@@ -2,7 +2,6 @@
 @module ember
 */
 import { RSVP } from 'ember-runtime';
-import Logger from 'ember-console';
 import { assert } from 'ember-debug';
 
 let resume;
@@ -58,7 +57,8 @@ export function resumeTest() {
  @public
 */
 export function pauseTest() {
-  Logger.info('Testing paused. Use `resumeTest()` to continue.');
+  // eslint-disable-next-line no-console
+  console.info('Testing paused. Use `resumeTest()` to continue.');
 
   return new RSVP.Promise((resolve) => {
     resume = resolve;

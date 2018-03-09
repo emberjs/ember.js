@@ -1,4 +1,3 @@
-import Logger from 'ember-console';
 import { setDispatchOverride } from 'ember-metal';
 
 let adapter;
@@ -29,5 +28,6 @@ export function asyncEnd() {
 
 function adapterDispatch(error) {
   adapter.exception(error);
-  Logger.error(error.stack);
+  
+  console.error(error.stack);// eslint-disable-line no-console 
 }

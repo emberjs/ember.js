@@ -345,7 +345,7 @@ moduleFor('Application Dependency Injection - Integration - default resolver', c
 
     this.applicationInstance.resolveRegistration('doo:scooby');
     this.applicationInstance.resolveRegistration('doo:scrappy');
-    assert.equal(infoCount, 0, 'Logger.info should not be called if LOG_RESOLVER is not set');
+    assert.equal(infoCount, 0, 'console.info should not be called if LOG_RESOLVER is not set');
   }
 
 });

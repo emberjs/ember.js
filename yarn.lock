@@ -2745,9 +2745,9 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-eslint-plugin-ember-internal@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ember-internal/-/eslint-plugin-ember-internal-1.1.0.tgz#4bf01f696ca607cb256c9291aaad7447c9ec18bd"
+eslint-plugin-ember-internal@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ember-internal/-/eslint-plugin-ember-internal-1.1.1.tgz#5327f709799eac010bfcf0dd1be8d0acbc917d34"
   dependencies:
     line-column "^1.0.2"
     requireindex "~1.1.0"
