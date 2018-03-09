@@ -48,10 +48,10 @@ export function getRootViews(owner) {
   @param {Ember.View} view
  */
 export function getViewId(view) {
-  if (view.tagName === '') {
-    return guidFor(view);
+  if (view.tagName !== '' && view.elementId) {
+    return view.elementId;
   } else {
-    return view.elementId || guidFor(view);
+    return guidFor(view);
   }
 }
 
@@ -88,7 +88,7 @@ export function getChildViews(view) {
 }
 
 export function initChildViews(view) {
-  let childViews = [];
+  let childViews = new Set();
   CHILD_VIEW_IDS.set(view, childViews);
   return childViews;
 }
@@ -99,20 +99,17 @@ export function addChildView(parent, child) {
     childViews = initChildViews(parent);
   }
 
-  childViews.push(getViewId(child));
+  childViews.add(getViewId(child));
 }
 
 export function collectChildViews(view, registry) {
-  let ids = [];
   let views = [];
   let childViews = CHILD_VIEW_IDS.get(view);
 
-  if (childViews) {
+  if (childViews !== undefined) {
     childViews.forEach(id => {
       let view = registry[id];
-
-      if (view && !view.isDestroying && !view.isDestroyed && ids.indexOf(id) === -1) {
-        ids.push(id);
+      if (view && !view.isDestroying && !view.isDestroyed) {
         views.push(view);
       }
     });
