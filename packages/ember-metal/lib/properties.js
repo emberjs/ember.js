@@ -126,6 +126,7 @@ if (EMBER_METAL_ES5_GETTERS) {
             property === 'toString' ||
             property === 'valueOf' ||
             property === 'inspect' ||
+            property === 'toJSON' ||
             Symbol && property === Symbol.toPrimitive ||
             Symbol && property === Symbol.toStringTag
           ) {
@@ -148,6 +149,7 @@ if (EMBER_METAL_ES5_GETTERS) {
       });
 
       trap.toString = trap.valueOf = () => '[COMPUTED PROPERTY]';
+      trap.toJSON = trap.valueOf = () => '[COMPUTED PROPERTY]';
 
       // Without a proxy, we can only trap the "likely" properties
       ['isDescriptor', 'setup', 'teardown', 'get', '_getter', 'set', '_setter', 'meta'].forEach(property => {
