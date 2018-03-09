@@ -411,7 +411,7 @@ moduleFor('Registry', class extends AbstractTestCase{
     let fallback = new Registry();
     let registry = new Registry({ fallback: fallback });
 
-    assert.equal(registry.getInjections('model:user').length, 0, 'No injections in the primary registry');
+    assert.strictEqual(registry.getInjections('model:user'), undefined, 'No injections in the primary registry');
 
     fallback.injection('model:user', 'post', 'model:post');
 
@@ -422,7 +422,7 @@ moduleFor('Registry', class extends AbstractTestCase{
     let fallback = new Registry();
     let registry = new Registry({ fallback: fallback });
 
-    assert.equal(registry.getTypeInjections('model').length, 0, 'No injections in the primary registry');
+    assert.strictEqual(registry.getTypeInjections('model'), undefined, 'No injections in the primary registry');
 
     fallback.injection('model', 'source', 'source:main');
 

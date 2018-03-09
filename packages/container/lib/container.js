@@ -292,37 +292,56 @@ function instantiateFactory(container, normalizedName, fullName, options) {
   throw new Error('Could not create factory');
 }
 
-function buildInjections(container, injections) {
-  let hash = {};
-  let isDynamic = false;
-
-  if (injections.length > 0) {
-    if (DEBUG) {
-      container.registry.validateInjections(injections);
-    }
-
-    for (let i = 0; i < injections.length; i++) {
-      let {property, specifier, source} = injections[i];
-      if (source) {
-        hash[property] = lookup(container, specifier, {source});
-      } else {
-        hash[property] = lookup(container, specifier);
-      }
-      if (!isDynamic) {
-        isDynamic = !isSingleton(container, specifier);
-      }
-    }
+function processInjections(container, injections, result) {
+  if (DEBUG) {
+    container.registry.validateInjections(injections);
   }
 
-  return { injections: hash, isDynamic };
+  let hash = result.injections;
+  if (hash === undefined) {
+    hash = result.injections = {};
+  }
+
+  for (let i = 0; i < injections.length; i++) {
+    let {property, specifier, source} = injections[i];
+
+    if (source) {
+      hash[property] = lookup(container, specifier, { source });
+    } else {
+      hash[property] = lookup(container, specifier);
+    }
+
+    if (!result.isDynamic) {
+      result.isDynamic = !isSingleton(container, specifier);
+    }
+  }
+}
+
+function buildInjections(container, typeInjections, injections) {
+  let result = {
+    injections: undefined,
+    isDyanmic: false,
+  };
+
+  if (typeInjections !== undefined) {
+    processInjections(container, typeInjections, result);
+  }
+
+  if (injections !== undefined) {
+    processInjections(container, injections, result);
+  }
+
+  return result;
 }
 
 function injectionsFor(container, fullName) {
   let registry = container.registry;
   let [type] = fullName.split(':');
 
-  let injections = registry.getTypeInjections(type).concat(registry.getInjections(fullName));
-  return buildInjections(container, injections);
+  let typeInjections = registry.getTypeInjections(type);
+  let injections = registry.getInjections(fullName);
+
+  return buildInjections(container, typeInjections, injections);
 }
 
 function destroyDestroyables(container) {
@@ -380,7 +399,7 @@ class FactoryManager {
     return this.madeToString;
   }
 
-  create(options = {}) {
+  create(options) {
     let injectionsCache = this.injections;
     if (injectionsCache === undefined) {
       let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
@@ -390,7 +409,10 @@ class FactoryManager {
       }
     }
 
-    let props = assign({}, injectionsCache, options);
+    let props = injectionsCache;
+    if (options !== undefined) {
+      props = assign({}, injectionsCache, options);
+    }
 
     if (DEBUG) {
       let lazyInjections;
@@ -422,6 +444,10 @@ class FactoryManager {
       // template instantiation which rely heavily on
       // `options[OWNER]` being passed into `create`
       // TODO: clean this up, and remove in future versions
+      if (options === undefined || props === undefined) {
+        // avoid mutating `props` here since they are the cached injections
+        props = assign({}, props);
+      }
       setOwner(props, this.owner);
     }
 
