@@ -127,8 +127,6 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
   }
 
   didRenderLayout({ component }: CustomComponentState<T>, _bounds: Bounds) {
-    const renderer = getRenderer(component);
-    renderer.register(component);
     if (typeof this.delegate.didCreate === 'function') {
       this.delegate.didCreate(component);
     }
@@ -148,15 +146,6 @@ export class CustomComponentState<T> {
   destroy() {
     const { delegate, component } = this;
 
-    let renderer = getRenderer(component);
-    renderer.unregister(component);
-
     if (delegate.destroy) { delegate.destroy(component); }
   }
-}
-
-function getRenderer(component: {}): Renderer {
-  let renderer = component['renderer'];
-  if (!renderer) { throw new Error(`missing renderer for component ${component}`); }
-  return renderer as Renderer;
 }
