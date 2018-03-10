@@ -390,78 +390,6 @@ export class Meta {
     }
   }
 
-  writeBindings(subkey: string, value: any) {
-    if (BINDING_SUPPORT) {
-      assert(
-        'Cannot invoke `meta.writeBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-        ENV._ENABLE_BINDING_SUPPORT
-      );
-      assert(
-        this.isMetaDestroyed()
-          ? `Cannot add a binding for \`${subkey}\` on \`${toString(
-              this.source
-            )}\` after it has been destroyed.`
-          : '',
-        !this.isMetaDestroyed()
-      );
-
-      let map = this._getOrCreateOwnMap('_bindings');
-      map[subkey] = value;
-    }
-  }
-
-  peekBindings(subkey: string) {
-    if (BINDING_SUPPORT) {
-      assert(
-        'Cannot invoke `meta.peekBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-        ENV._ENABLE_BINDING_SUPPORT
-      );
-      return this._findInherited('_bindings', subkey);
-    }
-  }
-
-  forEachBindings(fn: Function) {
-    if (BINDING_SUPPORT) {
-      assert(
-        'Cannot invoke `meta.forEachBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-        ENV._ENABLE_BINDING_SUPPORT
-      );
-
-      let pointer: Meta | undefined = this;
-      let seen: { [key: string]: any } | undefined;
-      while (pointer !== undefined) {
-        let map = pointer._bindings;
-        if (map !== undefined) {
-          for (let key in map) {
-            // cleanup typing
-            seen = seen === undefined ? Object.create(null) : seen;
-            if (seen![key] === undefined) {
-              seen![key] = true;
-              fn(key, map[key]);
-            }
-          }
-        }
-        pointer = pointer.parent;
-      }
-    }
-  }
-
-  clearBindings() {
-    if (BINDING_SUPPORT) {
-      assert(
-        'Cannot invoke `meta.clearBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-        ENV._ENABLE_BINDING_SUPPORT
-      );
-      assert(
-        this.isMetaDestroyed()
-          ? `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`
-          : '',
-        !this.isMetaDestroyed()
-      );
-      this._bindings = undefined;
-    }
-  }
-
   writeDescriptors(subkey: string, value: any) {
     assert(
       this.isMetaDestroyed()
@@ -596,6 +524,59 @@ export interface Meta {
   deleteFromValues(key: string): any;
   readInheritedValue(key: string, subkey: string): any;
   writeValue(obj: object, key: string, value: any): any;
+  writeBindings(subkey: string, value: any): void;
+  peekBindings(subkey: string): void;
+  forEachBindings(fn: Function): void;
+  clearBindings(): void;
+}
+
+if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
+  Meta.prototype.writeBindings = function(subkey: string, value: any) {
+    assert(
+      this.isMetaDestroyed()
+        ? `Cannot add a binding for \`${subkey}\` on \`${toString(
+            this.source
+          )}\` after it has been destroyed.`
+        : '',
+      !this.isMetaDestroyed()
+    );
+
+    let map = this._getOrCreateOwnMap('_bindings');
+    map[subkey] = value;
+  };
+
+  Meta.prototype.peekBindings = function(subkey: string) {
+    return this._findInherited('_bindings', subkey);
+  };
+
+  Meta.prototype.forEachBindings = function(fn: Function) {
+    let pointer: Meta | undefined = this;
+    let seen: { [key: string]: any } | undefined;
+    while (pointer !== undefined) {
+      let map = pointer._bindings;
+      if (map !== undefined) {
+        for (let key in map) {
+          // cleanup typing
+          seen = seen === undefined ? Object.create(null) : seen;
+          if (seen![key] === undefined) {
+            seen![key] = true;
+            fn(key, map[key]);
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  };
+
+  Meta.prototype.clearBindings = function() {
+    assert(
+      this.isMetaDestroyed()
+        ? `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`
+        : '',
+      !this.isMetaDestroyed()
+    );
+    this._bindings = undefined;
+  };
 }
 
 if (DEBUG) {
