@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### v3.1.0-beta.5 (March 12, 2018)
+- [#15601](https://github.com/emberjs/ember.js/pull/15601) [BUGFIX] Ensure Mixin.prototype.toString does not return constructor code
+- [#16326](https://github.com/emberjs/ember.js/pull/16326) [BUGFIX] Expanded syntax error for if handlebars helper to include source of error
+- [#16347](https://github.com/emberjs/ember.js/pull/16347) [BUGFIX] Adds toJSON to list of descriptorTrap assertion exception
+- [#16350](https://github.com/emberjs/ember.js/pull/16350) [BUGFIX] Fix initialiters tests blueprints
+- [#16351](https://github.com/emberjs/ember.js/pull/16351) [BUGFIX] Bring RSVP.cast back from the dead
+- [#16365](https://github.com/emberjs/ember.js/pull/16365) [BUGFIX] Fold all trap methods together
+
 ### v3.1.0-beta.4 (March 5, 2018)
 - [#16294](https://github.com/emberjs/ember.js/pull/16294) [BUGFIX] Fix input macro params handling
 - [#16297](https://github.com/emberjs/ember.js/pull/16297) [BUGFIX] Revert "Update to backburner.js@2.2.0."
