@@ -146,9 +146,8 @@ if (EMBER_METAL_ES5_GETTERS) {
         value: descriptor
       });
 
-      trap.toString = trap.valueOf = () => '[COMPUTED PROPERTY]';
-      trap.toJSON = trap.valueOf = () => '[COMPUTED PROPERTY]';
-
+      trap.toString = trap.toJSON = trap.valueOf = () => '[COMPUTED PROPERTY]';
+      
       // Without a proxy, we can only trap the "likely" properties
       ['isDescriptor', 'setup', 'teardown', 'get', '_getter', 'set', '_setter', 'meta'].forEach(property => {
         Object.defineProperty(trap, property, {
