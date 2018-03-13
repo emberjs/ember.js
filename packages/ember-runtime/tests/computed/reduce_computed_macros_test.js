@@ -1315,7 +1315,7 @@ if (!EMBER_METAL_TRACKED_PROPERTIES) {
     assert.deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], 'updating an unspecified property on an item does not resort it');
   });
 } else {
-  QUnit.todo('changing item properties not specified via @each does not trigger a resort', assert => {
+  QUnit.skip('changing item properties not specified via @each does not trigger a resort', assert => {
     assert.ok(false, 'It is unclear whether changing this behavior should be considered a breaking change, and whether it catches more bugs than it causes');
   });
 }
