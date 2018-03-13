@@ -128,7 +128,7 @@ export class Meta {
   }
 
   isSourceDestroying() {
-    return (this._flags & SOURCE_DESTROYING) !== 0;
+    return this._hasFlag(SOURCE_DESTROYING);
   }
 
   setSourceDestroying() {
@@ -136,7 +136,7 @@ export class Meta {
   }
 
   isSourceDestroyed() {
-    return (this._flags & SOURCE_DESTROYED) !== 0;
+    return this._hasFlag(SOURCE_DESTROYED);
   }
 
   setSourceDestroyed() {
@@ -144,11 +144,15 @@ export class Meta {
   }
 
   isMetaDestroyed() {
-    return (this._flags & META_DESTROYED) !== 0;
+    return this._hasFlag(META_DESTROYED);
   }
 
   setMetaDestroyed() {
     this._flags |= META_DESTROYED;
+  }
+
+  _hasFlag(flag) {
+    return (this._flags & flag) === flag;
   }
 
   _getOrCreateOwnMap(key) {
