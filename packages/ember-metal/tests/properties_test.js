@@ -3,7 +3,6 @@ import {
   defineProperty,
   deprecateProperty
 } from '..';
-
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('defineProperty', class extends AbstractTestCase {
