@@ -86,7 +86,7 @@
     "babel-plugin-transform-object-assign": "^6.22.0",
     "babel-plugin-transform-proto-to-assign": "^6.26.0",
     "babel-template": "^6.26.0",
-    "backburner.js": "^2.2.1",
+    "backburner.js": "2.1.0",
     "broccoli-babel-transpiler": "^6.1.2",
     "broccoli-concat": "^3.2.2",
     "broccoli-debug": "^0.6.4",
