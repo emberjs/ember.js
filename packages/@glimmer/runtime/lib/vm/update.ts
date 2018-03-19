@@ -90,7 +90,7 @@ export interface ExceptionHandler {
  */
 export interface Runtime {
   env: Environment;
-  program: RuntimeProgram<Opaque>
+  program: RuntimeProgram<Opaque>;
 }
 
 export interface VMState {

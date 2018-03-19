@@ -50,7 +50,7 @@ export class ProgramSymbolTable extends SymbolTable {
     let named = this.named[name];
 
     if (!named) {
-      named = this.named[name] = this.allocate(`@${name}`);
+      named = this.named[name] = this.allocate(name);
     }
 
     return named;

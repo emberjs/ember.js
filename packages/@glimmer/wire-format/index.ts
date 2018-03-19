@@ -58,7 +58,7 @@ export namespace Expressions {
   export type ClientSide     = [Opcodes.ClientSideExpression, any];
 
   export type TupleExpression =
-    Unknown
+     Unknown
     | Get
     | MaybeLocal
     | Concat
@@ -153,6 +153,8 @@ export namespace Statements {
 }
 
 export type Statement = Statements.Statement;
+export type Attribute = Statements.Attribute;
+export type Parameter = Statements.Parameter;
 
 /**
  * A JSON object of static compile time meta for the template.
