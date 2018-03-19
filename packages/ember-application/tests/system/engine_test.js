@@ -54,7 +54,7 @@ moduleFor('Engine', class extends TestCase {
     verifyInjection(assert, engine, 'router', '_bucketCache', P`-bucket-cache:main`);
     verifyInjection(assert, engine, 'route', '_bucketCache', P`-bucket-cache:main`);
 
-    verifyInjection(assert, engine, 'route', 'router', 'router:main');
+    verifyInjection(assert, engine, 'route', '_router', 'router:main');
 
     verifyRegistration(assert, engine, 'component:-text-field');
     verifyRegistration(assert, engine, 'component:-text-area');

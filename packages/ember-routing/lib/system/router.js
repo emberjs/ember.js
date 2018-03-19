@@ -1196,7 +1196,7 @@ function logError(_error, initialMessage) {
 */
 function findRouteSubstateName(route, state) {
   let owner = getOwner(route);
-  let { routeName, fullRouteName, router } = route;
+  let { routeName, fullRouteName, _router: router } = route;
 
   let substateName = `${routeName}_${state}`;
   let substateNameFull = `${fullRouteName}_${state}`;
@@ -1218,7 +1218,7 @@ function findRouteSubstateName(route, state) {
 */
 function findRouteStateName(route, state) {
   let owner = getOwner(route);
-  let { routeName, fullRouteName, router } = route;
+  let { routeName, fullRouteName, _router: router } = route;
 
   let stateName = routeName === 'application' ? state : `${routeName}.${state}`;
   let stateNameFull = fullRouteName === 'application' ? state : `${fullRouteName}.${state}`;
@@ -1266,7 +1266,7 @@ export function triggerEvent(handlerInfos, ignoreFailure, args) {
       } else {
         // Should only hit here if a non-bubbling error action is triggered on a route.
         if (name === 'error') {
-          handler.router._markErrorAsHandled(args[0]);
+          handler._router._markErrorAsHandled(args[0]);
         }
         return;
       }
