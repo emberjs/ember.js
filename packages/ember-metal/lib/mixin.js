@@ -50,9 +50,8 @@ const CONTINUE = {};
 
 function mixinProperties(mixinsMeta, mixin) {
   if (mixin instanceof Mixin) {
-    let guid = guidFor(mixin);
-    if (mixinsMeta.peekMixins(guid)) { return CONTINUE; }
-    mixinsMeta.writeMixins(guid, mixin);
+    if (mixinsMeta.hasMixin(mixin)) { return CONTINUE; }
+    mixinsMeta.addMixin(mixin);
     return mixin.properties;
   } else {
     return mixin; // apply anonymous mixin properties
@@ -494,7 +493,7 @@ export default class Mixin {
     let ret = [];
     if (meta === undefined) { return ret; }
 
-    meta.forEachMixins((key, currentMixin) => {
+    meta.forEachMixins((currentMixin) => {
       // skip primitive mixins since these are always anonymous
       if (!currentMixin.properties) { ret.push(currentMixin); }
     });
@@ -564,7 +563,7 @@ export default class Mixin {
     if (obj instanceof Mixin) { return _detect(obj, this); }
     let meta = peekMeta(obj);
     if (meta === undefined) { return false; }
-    return !!meta.peekMixins(guidFor(this));
+    return meta.hasMixin(this);
   }
 
   without(...args) {

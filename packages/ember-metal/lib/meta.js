@@ -159,6 +159,10 @@ export class Meta {
     return this[key] || (this[key] = Object.create(null));
   }
 
+  _getOrCreateOwnSet(key) {
+    return this[key] || (this[key] = new Set());
+  }
+
   _getInherited(key) {
     let pointer = this;
     while (pointer !== undefined) {
@@ -182,6 +186,20 @@ export class Meta {
       }
       pointer = pointer.parent;
     }
+}
+
+  _hasInInheritedSet(key, value) {
+    let pointer = this;
+    while (pointer !== undefined) {
+      let set = pointer[key];
+      if (set !== undefined) {
+        if (set.has(value)) {
+          return true;
+        }
+      }
+      pointer = pointer.parent;
+    }
+    return false;
   }
 
   // Implements a member that provides a lazily created map of maps,
@@ -316,29 +334,29 @@ export class Meta {
     return this._findInherited('_watching', subkey);
   }
 
-  writeMixins(subkey, value) {
-    assert(`Cannot add mixins for \`${subkey}\` on \`${toString(this.source)}\` call writeMixins after it has been destroyed.`, !this.isMetaDestroyed());
-    let map = this._getOrCreateOwnMap('_mixins');
-    map[subkey] = value;
+  addMixin(mixin) {
+    assert(`Cannot add mixins of \`${toString(mixin)}\` on \`${toString(this.source)}\` call addMixin after it has been destroyed.`, !this.isMetaDestroyed());
+    let set = this._getOrCreateOwnSet('_mixins');
+    set.add(mixin);
   }
 
-  peekMixins(subkey) {
-    return this._findInherited('_mixins', subkey);
+  hasMixin(mixin) {
+    return this._hasInInheritedSet('_mixins', mixin);
   }
 
   forEachMixins(fn) {
     let pointer = this;
     let seen;
     while (pointer !== undefined) {
-      let map = pointer._mixins;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen === undefined ? new Set() : seen;
-          if (!seen.has(key)) {
-            seen.add(key);
-            fn(key, map[key]);
+      let set = pointer._mixins;
+      if (set !== undefined) {
+        seen = seen === undefined ? new Set() : seen;
+        set.forEach((mixin)=> {
+          if (!seen.has(mixin)) {
+            seen.add(mixin);
+            fn(mixin);
           }
-        }
+        });
       }
       pointer = pointer.parent;
     }
