@@ -33,7 +33,7 @@ module.exports = function(tsTree, jsTree, packagesTree) {
   let nodeTests = transpileNodeTestsToCommonJS(jsTree);
 
   return merge([browserTests, nodeTests]);
-}
+};
 
 function transpileBrowserTestsToAMD(tsTree, jsTree) {
   let testTree = funnel(jsTree, {
@@ -58,16 +58,12 @@ function transpileBrowserTestsToAMD(tsTree, jsTree) {
 
 function transpileNodeTestsToCommonJS(jsTree) {
   let testTree = funnel(jsTree, {
-    include: [
-      '@glimmer/**/test/**/*-node-test.js'
-    ]
+    include: ['@glimmer/**/test/**/*-node-test.js']
   });
 
   return babel(testTree, {
     sourceMaps: 'inline',
-    plugins: [
-      'transform-es2015-modules-commonjs'
-    ]
+    plugins: ['transform-es2015-modules-commonjs']
   });
 }
 
@@ -80,9 +76,7 @@ function generateTSLintTests(tsTree) {
 
 function includeGlimmerAMD(packages) {
   let libAMD = funnel(packages, {
-    include: [
-      '@glimmer/*/dist/amd/es5/*.js'
-    ]
+    include: ['@glimmer/*/dist/amd/es5/*.js']
   });
 
   return concat(libAMD, {
@@ -91,10 +85,12 @@ function includeGlimmerAMD(packages) {
 }
 
 function includeVendorDependencies() {
-  let simpleHTMLTokenizer = funnel('node_modules/simple-html-tokenizer/dist/es6', {
-    include: ['*.js'],
-    destDir: 'simple-html-tokenizer'
-  });
+  let simpleHTMLTokenizer = funnel(
+    'node_modules/simple-html-tokenizer/dist/es6',
+    {
+      destDir: 'simple-html-tokenizer'
+    }
+  );
 
   let simpleDOM = new Rollup('node_modules/simple-dom/lib', {
     rollup: {
@@ -106,13 +102,18 @@ function includeVendorDependencies() {
     }
   });
 
-  let transpiled = transpileES6(merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler, simpleDOM]), 'test-dependencies', {
-    avoidDefine: false
-  });
+  let transpiled = transpileES6(
+    merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler, simpleDOM]),
+    'test-dependencies',
+    {
+      avoidDefine: false
+    }
+  );
 
   return concat(transpiled, {
+    inputFiles: ['**/*.js'],
     outputFile: 'assets/vendor.js'
-  })
+  });
 }
 
 function includeTestHarness() {
@@ -122,7 +123,7 @@ function includeTestHarness() {
 
   let loaderPath = path.parse(require.resolve('loader.js'));
   let loader = funnel(loaderPath.dir, {
-    files: [ loaderPath.base ],
+    files: [loaderPath.base],
     destDir: '/assets'
   });
 
@@ -130,11 +131,7 @@ function includeTestHarness() {
     destDir: 'assets/'
   });
 
-  let harnessTrees = [
-    html,
-    loader,
-    qunit
-  ];
+  let harnessTrees = [html, loader, qunit];
 
   return merge(harnessTrees);
 }

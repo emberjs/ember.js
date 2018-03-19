@@ -2,9 +2,9 @@ import {
   EventedTokenizer,
   EntityParser,
   HTML5NamedCharRefs as namedCharRefs
-} from "simple-html-tokenizer";
-import { Program } from "./types/nodes";
-import * as AST from "./types/nodes";
+} from 'simple-html-tokenizer';
+import { Program } from './types/nodes';
+import * as AST from './types/nodes';
 import * as HandlebarsAST from './types/handlebars-ast';
 import { Option } from '@glimmer/interfaces';
 import { assert, expect } from '@glimmer/util';
@@ -33,38 +33,38 @@ export interface Attribute {
   valueStartColumn: number;
 }
 
-export class Parser {
+export abstract class Parser {
   protected elementStack: Element[] = [];
   private source: string[];
   public currentAttribute: Option<Attribute> = null;
-  public currentNode: Option<AST.CommentStatement | AST.TextNode | Tag<'StartTag' | 'EndTag'>> = null;
+  public currentNode: Option<
+    AST.CommentStatement | AST.TextNode | Tag<'StartTag' | 'EndTag'>
+  > = null;
   public tokenizer = new EventedTokenizer(this, entityParser);
 
   constructor(source: string) {
-    this.tokenizer.states.tagOpen = function(this: EventedTokenizer) {
-      let char = this.consume();
-      if (char === "!") {
-        this['state'] = 'markupDeclaration';
-      } else if (char === "/") {
-        this['state'] = 'endTagOpen';
-      } else if (/[A-Za-z]/.test(char)) {
-        this['state'] = 'tagName';
-        this['delegate'].beginStartTag();
-        this['delegate'].appendToTagName(char);
-      }
-    };
-
-    this.tokenizer.states.endTagOpen = function(this: EventedTokenizer) {
-      let char = this.consume();
-      if (/[A-Za-z]/.test(char)) {
-        this['state'] = 'tagName';
-        this['delegate'].beginEndTag();
-        this['delegate'].appendToTagName(char);
-      }
-    };
-
     this.source = source.split(/(?:\r\n?|\n)/g);
   }
+
+  abstract reset(): void;
+  abstract finishData(): void;
+  abstract tagOpen(): void;
+  abstract beginData(): void;
+  abstract appendToData(char: string): void;
+  abstract beginStartTag(): void;
+  abstract appendToTagName(char: string): void;
+  abstract beginAttribute(): void;
+  abstract appendToAttributeName(char: string): void;
+  abstract beginAttributeValue(quoted: boolean): void;
+  abstract appendToAttributeValue(char: string): void;
+  abstract finishAttributeValue(): void;
+  abstract markTagAsSelfClosing(): void;
+  abstract beginEndTag(): void;
+  abstract finishTag(): void;
+  abstract beginComment(): void;
+  abstract appendToCommentData(char: string): void;
+  abstract finishComment(): void;
+  abstract reportSyntaxError(error: string): void;
 
   get currentAttr(): Attribute {
     return expect(this.currentAttribute, 'expected attribute');
@@ -72,7 +72,10 @@ export class Parser {
 
   get currentTag(): Tag<'StartTag' | 'EndTag'> {
     let node = this.currentNode;
-    assert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
+    assert(
+      node && (node.type === 'StartTag' || node.type === 'EndTag'),
+      'expected tag'
+    );
     return node as Tag<'StartTag' | 'EndTag'>;
   }
 
@@ -98,7 +101,6 @@ export class Parser {
     let node = this.currentNode;
     assert(node && node.type === 'TextNode', 'expected a text node');
     return node as AST.TextNode;
-
   }
 
   acceptNode(node: HandlebarsAST.Program): Program;
@@ -111,7 +113,10 @@ export class Parser {
     return this.elementStack[this.elementStack.length - 1];
   }
 
-  sourceForNode(node: HandlebarsAST.Node, endNode?: { loc: HandlebarsAST.SourceLocation }): string {
+  sourceForNode(
+    node: HandlebarsAST.Node,
+    endNode?: { loc: HandlebarsAST.SourceLocation }
+  ): string {
     let firstLine = node.loc.start.line - 1;
     let currentLine = firstLine - 1;
     let firstColumn = node.loc.start.column;
