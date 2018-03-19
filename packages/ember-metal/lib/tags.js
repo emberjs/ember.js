@@ -18,12 +18,12 @@ export const TRACKED_GETTERS = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : 
 
 export function tagForProperty(object, propertyKey, _meta) {
   if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
+  let meta = _meta === undefined ? metaFor(object) : _meta;
 
   if (isProxy(object)) {
     return tagFor(object, meta);
   }
 
-  let meta = _meta === undefined ? metaFor(object) : _meta;
   let tags = meta.writableTags();
   let tag = tags[propertyKey];
   if (tag) { return tag; }
