@@ -372,7 +372,7 @@ export default class Registry {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName, options = {}) {
+  options(fullName, options) {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   }
@@ -390,7 +390,7 @@ export default class Registry {
   getOption(fullName, optionName) {
     let options = this._options[fullName];
 
-    if (options && options[optionName] !== undefined) {
+    if (options !== undefined && options[optionName] !== undefined) {
       return options[optionName];
     }
 
@@ -550,18 +550,28 @@ export default class Registry {
   }
 
   getInjections(fullName) {
-    let injections = this._injections[fullName] || [];
+    let injections = this._injections[fullName];
     if (this.fallback !== null) {
-      injections = injections.concat(this.fallback.getInjections(fullName));
+      let fallbackInjections = this.fallback.getInjections(fullName);
+
+      if (fallbackInjections !== undefined) {
+        injections = injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
+      }
     }
+
     return injections;
   }
 
   getTypeInjections(type) {
-    let injections = this._typeInjections[type] || [];
+    let injections = this._typeInjections[type];
     if (this.fallback !== null) {
-      injections = injections.concat(this.fallback.getTypeInjections(type));
+      let fallbackInjections = this.fallback.getTypeInjections(type);
+
+      if (fallbackInjections !== undefined) {
+        injections = injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
+      }
     }
+
     return injections;
   }
 
@@ -660,11 +670,11 @@ function expandLocalLookup(registry, normalizedName, normalizedSource, namespace
   return normalizedNameCache[cacheKey] = expanded;
 }
 
-function resolve(registry, _normalizedName, options={}) {
+function resolve(registry, _normalizedName, options) {
   let normalizedName = _normalizedName;
   // when `source` is provided expand normalizedName
   // and source into the full normalizedName
-  if (options.source || options.namespace) {
+  if (options !== undefined && (options.source || options.namespace)) {
     normalizedName = registry.expandLocalLookup(_normalizedName, options);
     if (!normalizedName) {
       return;
