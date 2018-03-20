@@ -1,10 +1,10 @@
-import TemplateVisitor, { SymbolTable, Action } from "./template-visitor";
+import TemplateVisitor, { Action } from "./template-visitor";
 import JavaScriptCompiler, { Template } from "./javascript-compiler";
-import { Stack } from "@glimmer/util";
-import { assert, expect, Option } from "@glimmer/util";
+import { assert, Option } from "@glimmer/util";
 import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
 import { getAttrNamespace } from './utils';
 import { Opaque } from "@glimmer/interfaces";
+import { SymbolAllocator, InOp as SymbolInOp, OutOp as SymbolOutOp } from "./allocate-symbols";
 
 export interface CompileOptions {
   meta: Opaque;
@@ -14,27 +14,26 @@ function isTrustedValue(value: any) {
   return value.escaped !== undefined && !value.escaped;
 }
 
+export const THIS = 0;
+
 export default class TemplateCompiler {
   static compile(ast: AST.Program): Template {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
     let compiler = new TemplateCompiler();
-    let opcodes = compiler.process(templateVisitor.actions);
-    return JavaScriptCompiler.process(opcodes, ast['symbols']);
+    let opcodes: SymbolInOp[] = compiler.process(templateVisitor.actions);
+    let symbols: SymbolOutOp[] = new SymbolAllocator(opcodes).process();
+
+    return JavaScriptCompiler.process(symbols, ast['symbols']);
   }
 
   private templateId = 0;
   private templateIds: number[] = [];
-  private symbolStack = new Stack<SymbolTable>();
-  private opcodes: any[] = [];
+  private opcodes: SymbolInOp[] = [];
   private includeMeta = false;
 
-  get symbols(): SymbolTable {
-    return expect(this.symbolStack.current, 'Expected a symbol table on the stack');
-  }
-
-  process(actions: Action[]): Action[] {
+  process(actions: Action[]): SymbolInOp[] {
     actions.forEach(([name, ...args]) => {
       if (!this[name]) { throw new Error(`Unimplemented ${name} on TemplateCompiler`); }
       (this[name] as any)(...args);
@@ -42,34 +41,30 @@ export default class TemplateCompiler {
     return this.opcodes;
   }
 
-  startProgram(program: [AST.Program]) {
-    this.symbolStack.push(program[0]['symbols']);
-    this.opcode('startProgram', program, program);
+  startProgram([program]: [AST.Program]) {
+    this.opcode(['startProgram', program], program);
   }
 
   endProgram() {
-    this.symbolStack.pop();
-    this.opcode('endProgram', null);
+    this.opcode(['endProgram', null], null);
   }
 
-  startBlock(program: [AST.Program]) {
-    this.symbolStack.push(program[0]['symbols']);
+  startBlock([program]: [AST.Program]) {
     this.templateId++;
-    this.opcode('startBlock', program, program);
+    this.opcode(['startBlock', program], program);
   }
 
   endBlock() {
-    this.symbolStack.pop();
     this.templateIds.push(this.templateId - 1);
-    this.opcode('endBlock', null);
+    this.opcode(['endBlock', null], null);
   }
 
   text([action]: [AST.TextNode]) {
-    this.opcode('text', action, action.chars);
+    this.opcode(['text', action.chars], action);
   }
 
   comment([action]: [AST.CommentStatement]) {
-    this.opcode('comment', action, action.value);
+    this.opcode(['comment', action.value], action);
   }
 
   openElement([action]: [AST.ElementNode]) {
@@ -85,9 +80,9 @@ export default class TemplateCompiler {
     }
 
     if (hasSplat) {
-      this.opcode('openSplattedElement', action, action);
+      this.opcode(['openSplattedElement', action], action);
     } else {
-      this.opcode('openElement', action, action);
+      this.opcode(['openElement', action], action);
     }
 
     let typeAttr : Option<AST.AttrNode> = null;
@@ -107,13 +102,11 @@ export default class TemplateCompiler {
     for (let i = 0; i < action.modifiers.length; i++) {
       this.modifier([action.modifiers[i]]);
     }
-    this.opcode('flushElement', null);
-    this.symbolStack.push(action['symbols']);
+    this.opcode(['flushElement', action], null);
   }
 
   closeElement([action]: [AST.ElementNode]) {
-    this.symbolStack.pop();
-    this.opcode('closeElement', null, action);
+    this.opcode(['closeElement', action], action);
   }
 
   attribute([action]: [AST.AttrNode]) {
@@ -126,25 +119,25 @@ export default class TemplateCompiler {
     if (name.charAt(0) === '@') {
       // Arguments
       if (isStatic) {
-        this.opcode('staticArg', action, name);
+        this.opcode(['staticArg', name], action);
       } else if (action.value.type === 'MustacheStatement') {
-        this.opcode('dynamicArg', action, name);
+        this.opcode(['dynamicArg', name], action);
       } else {
-        this.opcode('dynamicArg', action, name);
+        this.opcode(['dynamicArg', name], action);
       }
     } else {
       let isTrusting = isTrustedValue(value);
 
       if (isStatic && name === '...attributes') {
-        this.opcode('attrSplat', action, this.symbols.allocateBlock('attrs'));
+        this.opcode(['attrSplat', null], action);
       } else if (isStatic) {
-        this.opcode('staticAttr', action, name, namespace);
+        this.opcode(['staticAttr', [name, namespace]], action);
       } else if (isTrusting) {
-        this.opcode('trustingAttr', action, name, namespace);
+        this.opcode(['trustingAttr', [name, namespace]], action);
       } else if (action.value.type === 'MustacheStatement') {
-        this.opcode('dynamicAttr', action, name);
+        this.opcode(['dynamicAttr', [name, null]], action);
       } else {
-        this.opcode('dynamicAttr', action, name, namespace);
+        this.opcode(['dynamicAttr', [name, namespace]], action);
       }
     }
   }
@@ -155,7 +148,7 @@ export default class TemplateCompiler {
     let { path: { parts } } = action;
 
     this.prepareHelper(action);
-    this.opcode('modifier', action, parts[0]);
+    this.opcode(['modifier', parts[0]], action);
   }
 
   mustache([action]: [AST.MustacheStatement]) {
@@ -163,7 +156,7 @@ export default class TemplateCompiler {
 
     if (isLiteral(path)) {
       this.mustacheExpression(action);
-      this.opcode('append', action, !action.escaped);
+      this.opcode(['append', !action.escaped], action);
     } else if (isYield(path)) {
       let to = assertValidYield(action);
       this.yield(to, action);
@@ -175,71 +168,75 @@ export default class TemplateCompiler {
       this.debugger('debugger', action);
     } else {
       this.mustacheExpression(action);
-      this.opcode('append', action, !action.escaped);
+      this.opcode(['append', !action.escaped], action);
     }
   }
 
   block([action/*, index, count*/]: [AST.BlockStatement]) {
     this.prepareHelper(action);
-    let templateId = this.templateIds.pop();
-    let inverseId = action.inverse === null ? null : this.templateIds.pop();
-    this.opcode('block', action, action.path.parts[0], templateId, inverseId);
+    let templateId = this.templateIds.pop()!;
+    let inverseId = action.inverse === null ? null : this.templateIds.pop()!;
+    this.opcode(['block', [action.path.parts[0], templateId, inverseId]], action);
   }
 
   /// Internal actions, not found in the original processed actions
 
   arg([path]: [AST.PathExpression]) {
     let { parts: [head, ...rest] } = path;
-    let symbol = this.symbols.allocateNamed(head);
-    this.opcode('get', path, symbol, rest);
+    this.opcode(['get', [`@${head}`, rest]], path);
   }
 
   mustacheExpression(expr: AST.MustacheStatement) {
     let { path } = expr;
 
     if (isLiteral(path)) {
-      this.opcode('literal', expr, path.value);
+      this.opcode(['literal', path.value], expr);
     } else if (isBuiltInHelper(path)) {
       this.builtInHelper(expr as AST.Call);
     } else if (isArg(path)) {
       this.arg([path]);
     } else if (isHelperInvocation(expr)) {
       this.prepareHelper(expr);
-      this.opcode('helper', expr, path.parts[0]);
+      this.opcode(['helper', path.parts[0]], expr);
     } else if (path.this) {
-      this.opcode('get', expr, 0, path.parts);
-    } else if (isLocal(path, this.symbols)) {
-      let [head, ...parts] = path.parts;
-      this.opcode('get', expr, this.symbols.get(head), parts);
-    } else if (isSimplePath(path)) {
-      this.opcode('unknown', expr, path.parts[0]);
+      this.opcode(['get', [0, path.parts]], expr);
     } else {
-      this.opcode('maybeLocal', expr, path.parts);
+      let [head, ...parts] = path.parts;
+      this.opcode(['maybeGet', [head, parts]], expr);
     }
+
+    // } else if (isLocal(path, this.symbols)) {
+    //   let [head, ...parts] = path.parts;
+    //   this.opcode(['get', [head, parts]], expr);
+    // } else if (isSimplePath(path)) {
+    //   this.opcode(['unknown', path.parts[0]], expr);
+    // } else {
+    //   this.opcode(['maybeLocal', path.parts], expr);
+    // }
   }
 
   /// Internal Syntax
 
   yield(to: string, action: AST.MustacheStatement) {
     this.prepareParams(action.params);
-    this.opcode('yield', action, this.symbols.allocateBlock(to));
+    this.opcode(['yield', to], action);
   }
 
   debugger(_name: string, action: AST.MustacheStatement) {
-    this.opcode('debugger', action, this.symbols.getEvalInfo());
+    this.opcode(['debugger', null], action);
   }
 
   hasBlock(name: string, action: AST.Call) {
-    this.opcode('hasBlock', action, this.symbols.allocateBlock(name));
+    this.opcode(['hasBlock', name], action);
   }
 
   hasBlockParams(name: string, action: AST.Call) {
-    this.opcode('hasBlockParams', action, this.symbols.allocateBlock(name));
+    this.opcode(['hasBlockParams', name], action);
   }
 
   partial(_params: AST.Expression[], action: AST.MustacheStatement) {
     this.prepareParams(action.params);
-    this.opcode('partial', action, this.symbols.getEvalInfo());
+    this.opcode(['partial', null], action);
   }
 
   builtInHelper(expr: AST.Call) {
@@ -260,7 +257,7 @@ export default class TemplateCompiler {
       this.builtInHelper(expr);
     } else {
       this.prepareHelper(expr);
-      this.opcode('helper', expr, expr.path.parts[0]);
+      this.opcode(['helper', expr.path.parts[0]], expr);
     }
   }
 
@@ -268,45 +265,42 @@ export default class TemplateCompiler {
     if (expr.data) {
       this.arg([expr]);
     } else {
-      let { symbols } = this;
-      let [head] = expr.parts;
+      let [head, ...rest] = expr.parts;
 
       if (expr.this) {
-        this.opcode('get', expr, 0, expr.parts);
-      } else if (symbols.has(head)) {
-        this.opcode('get', expr, symbols.get(head), expr.parts.slice(1));
+        this.opcode(['get', [0, expr.parts]], expr);
       } else {
-        this.opcode('maybeLocal',expr, expr.parts);
+        this.opcode(['get', [head, rest]], expr);
       }
     }
   }
 
   StringLiteral(action: AST.StringLiteral) {
-    this.opcode('literal', null, action.value);
+    this.opcode(['literal', action.value], action);
   }
 
   BooleanLiteral(action: AST.BooleanLiteral) {
-    this.opcode('literal', null, action.value);
+    this.opcode(['literal', action.value], action);
   }
 
   NumberLiteral(action: AST.NumberLiteral) {
-    this.opcode('literal', null, action.value);
+    this.opcode(['literal', action.value], action);
   }
 
   NullLiteral(action: AST.NullLiteral) {
-    this.opcode('literal', null, action.value);
+    this.opcode(['literal', action.value], action);
   }
 
   UndefinedLiteral(action: AST.UndefinedLiteral) {
-    this.opcode('literal', null, action.value);
+    this.opcode(['literal', action.value], action);
   }
 
   /// Utilities
 
-  opcode(name: any, action: any, ...args: any[]) {
-    let opcode = [name, ...args];
+  opcode<O extends SymbolInOp>(opcode: O, action: Option<AST.BaseNode> = null) {
+    // TODO: This doesn't really work
     if (this.includeMeta && action) {
-      opcode.push(this.meta(action));
+      (opcode as any).push(this.meta(action));
     }
 
     this.opcodes.push(opcode);
@@ -323,7 +317,7 @@ export default class TemplateCompiler {
 
   prepareParams(params: AST.Expression[]) {
     if (!params.length) {
-      this.opcode('literal', null, null);
+      this.opcode(['literal', null], null);
       return;
     }
 
@@ -334,14 +328,14 @@ export default class TemplateCompiler {
       (this[param.type] as any)(param);
     }
 
-    this.opcode('prepareArray', null, params.length);
+    this.opcode(['prepareArray', params.length], null);
   }
 
   prepareHash(hash: AST.Hash) {
     let pairs = hash.pairs;
 
     if (!pairs.length) {
-      this.opcode('literal', null, null);
+      this.opcode(['literal', null], null);
       return;
     }
 
@@ -350,10 +344,10 @@ export default class TemplateCompiler {
 
       assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
       (this[value.type] as any)(value);
-      this.opcode('literal', null, key);
+      this.opcode(['literal', key], null);
     }
 
-    this.opcode('prepareObject', null, pairs.length);
+    this.opcode(['prepareObject', pairs.length], null);
   }
 
   prepareAttributeValue(value: AST.AttrNode['value']) {
@@ -361,14 +355,14 @@ export default class TemplateCompiler {
 
     switch (value.type) {
       case 'TextNode':
-        this.opcode('literal', value, value.chars);
+        this.opcode(['literal', value.chars], value);
         return true;
       case 'MustacheStatement':
         this.attributeMustache([value]);
         return false;
       case 'ConcatStatement':
         this.prepareConcatParts(value.parts);
-        this.opcode('concat', value);
+        this.opcode(['concat', null], value);
         return false;
     }
   }
@@ -380,11 +374,11 @@ export default class TemplateCompiler {
       if (part.type === 'MustacheStatement') {
         this.attributeMustache([part]);
       } else if (part.type === 'TextNode') {
-        this.opcode('literal', null, part.chars);
+        this.opcode(['literal', part.chars], null);
       }
     }
 
-    this.opcode('prepareArray', null, parts.length);
+    this.opcode(['prepareArray', parts.length], null);
   }
 
   attributeMustache([action]: [AST.MustacheStatement]) {
@@ -407,10 +401,6 @@ function isHelperInvocation(mustache: AST.MustacheStatement): mustache is AST.Mu
 
 function isSimplePath({ parts }: AST.PathExpression): boolean {
   return parts.length === 1;
-}
-
-function isLocal({ parts }: AST.PathExpression, symbols: SymbolTable): boolean {
-  return symbols && /* parts.length && */ symbols.has(parts[0]);
 }
 
 function isYield(path: AST.PathExpression) {
