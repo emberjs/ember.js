@@ -5,7 +5,7 @@ import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, asse
 import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import LowLevelVM, { Program } from './low-level';
-import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode } from './update';
+import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode, Runtime } from './update';
 import RenderResult from './render-result';
 import EvaluationStack from './stack';
 
@@ -188,7 +188,7 @@ export default class VM<T> implements PublicVM {
   ) {
     let scopeSize = program.heap.scopesizeof(handle);
     let scope = Scope.root(self, scopeSize);
-    let vm = new VM(program, env, scope, dynamicScope, elementStack);
+    let vm = new VM({ program, env }, scope, dynamicScope, elementStack);
     vm.pc = vm.heap.getaddr(handle);
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     return vm;
@@ -205,29 +205,27 @@ export default class VM<T> implements PublicVM {
       child() { return dynamicScope; }
     };
 
-    let vm = new VM(program, env, Scope.root(UNDEFINED_REFERENCE, 0), dynamicScope, elementStack);
+    let vm = new VM({ program, env }, Scope.root(UNDEFINED_REFERENCE, 0), dynamicScope, elementStack);
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     return vm;
   }
 
-  static resume({ program, env, scope, dynamicScope }: VMState, stack: ElementBuilder) {
-    return new VM(program, env, scope, dynamicScope, stack);
+  static resume({ scope, dynamicScope }: VMState, runtime: Runtime, stack: ElementBuilder) {
+    return new VM(runtime, scope, dynamicScope, stack);
   }
 
   constructor(
-    private program: RuntimeProgram<T>,
-    public env: Environment,
+    private runtime: Runtime,
     scope: Scope,
     dynamicScope: DynamicScope,
     private elementStack: ElementBuilder,
   ) {
-    this.env = env;
-    this.heap = program.heap;
-    this.constants = program.constants;
+    this.heap = this.program.heap;
+    this.constants = this.program.constants;
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
-    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap, program, {
+    this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap, runtime.program, {
       debugBefore: (opcode: Opcode): DebugState => {
         return APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
       },
@@ -238,10 +236,16 @@ export default class VM<T> implements PublicVM {
     });
   }
 
+  get program(): RuntimeProgram<Opaque> {
+    return this.runtime.program;
+  }
+
+  get env(): Environment {
+    return this.runtime.env;
+  }
+
   capture(args: number): VMState {
     return {
-      env: this.env,
-      program: this.program as any,
       dynamicScope: this.dynamicScope(),
       scope: this.scope(),
       stack: this.stack.capture(args)
@@ -281,7 +285,7 @@ export default class VM<T> implements PublicVM {
     let state = this.capture(args);
     let tracker = this.elements().pushUpdatableBlock();
 
-    let tryOpcode = new TryOpcode(this.heap.gethandle(this.pc), state, tracker, updating);
+    let tryOpcode = new TryOpcode(this.heap.gethandle(this.pc), state, this.runtime, tracker, updating);
 
     this.didEnter(tryOpcode);
   }
@@ -298,7 +302,7 @@ export default class VM<T> implements PublicVM {
     // this.ip = end + 4;
     // this.frames.push(ip);
 
-    return new TryOpcode(this.heap.gethandle(this.pc), state, tracker, new LinkedList<UpdatingOpcode>());
+    return new TryOpcode(this.heap.gethandle(this.pc), state, this.runtime, tracker, new LinkedList<UpdatingOpcode>());
   }
 
   enterItem(key: string, opcode: TryOpcode) {
@@ -316,7 +320,7 @@ export default class VM<T> implements PublicVM {
     let addr = (this.pc + relativeStart) - this.currentOpSize;
     let start = this.heap.gethandle(addr);
 
-    let opcode = new ListBlockOpcode(start, state, tracker, updating, artifacts);
+    let opcode = new ListBlockOpcode(start, state, this.runtime, tracker, updating, artifacts);
 
     this.listBlockStack.push(opcode);
 

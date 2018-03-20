@@ -1,13 +1,21 @@
 {
-  "version": "0.1.0",
+  "version": "2.0.0",
   "command": "npm",
-  "isShellCommand": true,
-  "showOutput": "always",
-  "suppressTaskName": true,
   "tasks": [{
-    "taskName": "vscode-build",
+    "label": "vscode-build",
+    "type": "shell",
+    "command": "npm",
     "args": ["run", "problems"],
-    "isBuildCommand": true,
-    "problemMatcher": "$tsc"
+    "group": {
+      "kind": "build",
+      "isDefault": true
+    },
+    "problemMatcher": "$tsc",
+    "presentation": {
+      "echo": true,
+      "reveal": "always",
+      "focus": false,
+      "panel": "shared"
+    }
   }]
 }

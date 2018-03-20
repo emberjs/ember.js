@@ -17,6 +17,7 @@ import {
   isArgument,
   isAttribute
 } from '@glimmer/wire-format';
+import { Processor, CompilerOps, OpName, Op } from "./compiler-ops";
 
 export type str = string;
 export type Params = Core.Params;
@@ -127,18 +128,21 @@ export class Template {
   }
 }
 
-export default class JavaScriptCompiler {
-  static process(opcodes: any[], symbols: ProgramSymbolTable): Template {
+export type InVariable = number;
+export type InOp<K extends keyof CompilerOps<InVariable> = OpName> = Op<InVariable, CompilerOps<InVariable>, K>;
+
+export default class JavaScriptCompiler implements Processor<CompilerOps<number>, void, CompilerOps<void>> {
+  static process(opcodes: InOp[], symbols: ProgramSymbolTable): Template {
     let compiler = new JavaScriptCompiler(opcodes, symbols);
     return compiler.process();
   }
 
   private template: Template;
   private blocks = new Stack<Block>();
-  private opcodes: any[];
+  private opcodes: InOp[];
   private values: StackValue[] = [];
 
-  constructor(opcodes: any[], symbols: ProgramSymbolTable) {
+  constructor(opcodes: InOp[], symbols: ProgramSymbolTable) {
     this.opcodes = opcodes;
     this.template = new Template(symbols);
   }
@@ -148,9 +152,12 @@ export default class JavaScriptCompiler {
   }
 
   process(): Template {
-    this.opcodes.forEach(([opcode, ...args]) => {
+    this.opcodes.forEach(op => {
+      let opcode = op[0];
+      let arg = op[1];
+
       if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on JavaScriptCompiler`); }
-      this[opcode](...args);
+      (this[opcode] as any)(arg);
     });
 
     return this.template;
@@ -158,7 +165,7 @@ export default class JavaScriptCompiler {
 
   /// Nesting
 
-  startBlock([program]: [AST.Program]) {
+  startBlock(program: AST.Program) {
     let block: Block = new InlineBlock(program['symbols']);
     this.blocks.push(block);
   }
@@ -198,7 +205,7 @@ export default class JavaScriptCompiler {
     this.push([Ops.Modifier, name, params, hash]);
   }
 
-  block(name: string, template: number, inverse: number) {
+  block([name, template, inverse]: [string, number, number]) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
@@ -248,17 +255,17 @@ export default class JavaScriptCompiler {
     }
   }
 
-  staticAttr(name: str, namespace: str) {
+  staticAttr([name, namespace]: [string, string]) {
     let value = this.popValue<Expression>();
     this.push([Ops.StaticAttr, name, value, namespace]);
   }
 
-  dynamicAttr(name: str, namespace: str) {
+  dynamicAttr([name, namespace]: [string, string]) {
     let value = this.popValue<Expression>();
     this.push([Ops.DynamicAttr, name, value, namespace]);
   }
 
-  trustingAttr(name: str, namespace: str) {
+  trustingAttr([name, namespace]: [string, string]) {
     let value = this.popValue<Expression>();
     this.push([Ops.TrustingAttr, name, value, namespace]);
   }
@@ -315,7 +322,7 @@ export default class JavaScriptCompiler {
     this.pushValue<Expressions.Unknown>([Ops.Unknown, name]);
   }
 
-  get(head: number, path: string[]) {
+  get([head, path]: [number, string[]]) {
     this.pushValue<Expressions.Get>([Ops.Get, head, path]);
   }
 
