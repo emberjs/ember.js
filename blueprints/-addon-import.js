@@ -10,15 +10,9 @@ module.exports = {
   fileMapTokens: function() {
     return {
       __name__: function(options) {
-        if (options.pod && options.hasPathToken) {
-          return options.locals.blueprintName;
-        }
         return options.dasherizedModuleName;
       },
       __path__: function(options) {
-        if (options.pod && options.hasPathToken) {
-          return path.join(options.podPath, options.dasherizedModuleName);
-        }
         return inflector.pluralize(options.locals.blueprintName);
       },
       __root__: function(options) {
@@ -40,10 +34,6 @@ module.exports = {
     if (blueprintName.match(/-addon/)) {
       blueprintName = blueprintName.substr(0, blueprintName.indexOf('-addon'));
       modulePathSegments = [addonName, inflector.pluralize(blueprintName), fileName];
-    }
-
-    if (options.pod) {
-      modulePathSegments = [addonName, fileName, blueprintName];
     }
 
     return {
