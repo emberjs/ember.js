@@ -1,11 +1,12 @@
-import b from "../builders";
-import { appendChild, isLiteral, printLiteral } from "../utils";
+import b from '../builders';
+import { appendChild, isLiteral, printLiteral } from '../utils';
 import * as AST from '../types/nodes';
 import * as HandlebarsAST from '../types/handlebars-ast';
 import { Parser, Tag, Attribute } from '../parser';
 import SyntaxError from '../errors/syntax-error';
-import { Option } from "@glimmer/util";
-import { Recast } from "@glimmer/interfaces";
+import { Option } from '@glimmer/util';
+import { Recast } from '@glimmer/interfaces';
+import { TokenizerState } from 'simple-html-tokenizer';
 
 export abstract class HandlebarsNodeVisitors extends Parser {
   abstract appendToCommentData(s: string): void;
@@ -22,11 +23,14 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let body: AST.Statement[] = [];
     this.cursorCount = 0;
     let node = b.program(body, program.blockParams, program.loc);
-    let i, l = program.body.length;
+    let i,
+      l = program.body.length;
 
     this.elementStack.push(node);
 
-    if (l === 0) { return this.elementStack.pop() as AST.Program; }
+    if (l === 0) {
+      return this.elementStack.pop() as AST.Program;
+    }
 
     for (i = 0; i < l; i++) {
       this.acceptNode(program.body[i]);
@@ -37,7 +41,14 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     if (poppedNode !== node) {
       let elementNode = poppedNode as AST.ElementNode;
 
-      throw new SyntaxError("Unclosed element `" + elementNode.tag + "` (on line " + elementNode.loc!.start.line + ").", elementNode.loc);
+      throw new SyntaxError(
+        'Unclosed element `' +
+          elementNode.tag +
+          '` (on line ' +
+          elementNode.loc!.start.line +
+          ').',
+        elementNode.loc
+      );
     }
 
     return node;
@@ -49,15 +60,22 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       return;
     }
 
-    if (this.tokenizer['state'] !== 'comment' && this.tokenizer['state'] !== 'data' && this.tokenizer['state'] !== 'beforeData') {
-      throw new SyntaxError("A block may only be used inside an HTML element or another block.", block.loc);
+    if (
+      this.tokenizer['state'] !== 'comment' &&
+      this.tokenizer['state'] !== 'data' &&
+      this.tokenizer['state'] !== 'beforeData'
+    ) {
+      throw new SyntaxError(
+        'A block may only be used inside an HTML element or another block.',
+        block.loc
+      );
     }
 
     let { path, params, hash } = acceptCallNodes(this, block);
     let program = this.Program(block.program);
     let inverse = block.inverse ? this.Program(block.inverse) : null;
 
-    if(path.original === 'in-element') {
+    if (path.original === 'in-element') {
       hash = addInElementHash(this.cursor(), hash, block.loc);
     }
 
@@ -88,40 +106,45 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         loc
       };
     } else {
-      let { path, params, hash } = acceptCallNodes(this, rawMustache as HandlebarsAST.MustacheStatement & { path: HandlebarsAST.PathExpression });
+      let { path, params, hash } = acceptCallNodes(
+        this,
+        rawMustache as HandlebarsAST.MustacheStatement & {
+          path: HandlebarsAST.PathExpression;
+        }
+      );
       mustache = b.mustache(path, params, hash, !escaped, loc);
     }
 
-    switch (tokenizer['state']) {
+    switch (tokenizer.state) {
       // Tag helpers
-      case "tagName":
+      case TokenizerState.tagName:
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer['state'] = "beforeAttributeName";
+        tokenizer.transitionTo(TokenizerState.beforeAttributeName);
         break;
-      case "beforeAttributeName":
+      case TokenizerState.beforeAttributeName:
         addElementModifier(this.currentStartTag, mustache);
         break;
-      case "attributeName":
-      case "afterAttributeName":
+      case TokenizerState.attributeName:
+      case TokenizerState.afterAttributeName:
         this.beginAttributeValue(false);
         this.finishAttributeValue();
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer['state'] = "beforeAttributeName";
+        tokenizer.transitionTo(TokenizerState.beforeAttributeName);
         break;
-      case "afterAttributeValueQuoted":
+      case TokenizerState.afterAttributeValueQuoted:
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer['state'] = "beforeAttributeName";
+        tokenizer.transitionTo(TokenizerState.beforeAttributeName);
         break;
 
       // Attribute values
-      case "beforeAttributeValue":
+      case TokenizerState.beforeAttributeValue:
         this.beginAttributeValue(false);
         appendDynamicAttributeValuePart(this.currentAttribute!, mustache);
-        tokenizer['state'] = 'attributeValueUnquoted';
+        tokenizer.transitionTo(TokenizerState.attributeValueUnquoted);
         break;
-      case "attributeValueDoubleQuoted":
-      case "attributeValueSingleQuoted":
-      case "attributeValueUnquoted":
+      case TokenizerState.attributeValueDoubleQuoted:
+      case TokenizerState.attributeValueSingleQuoted:
+      case TokenizerState.attributeValueUnquoted:
         appendDynamicAttributeValuePart(this.currentAttribute!, mustache);
         break;
 
@@ -141,10 +164,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     this.tokenizer.flushData();
   }
 
-  CommentStatement(rawComment: HandlebarsAST.CommentStatement): Option<AST.MustacheCommentStatement> {
+  CommentStatement(
+    rawComment: HandlebarsAST.CommentStatement
+  ): Option<AST.MustacheCommentStatement> {
     let { tokenizer } = this;
 
-    if (tokenizer['state'] === 'comment') {
+    if (tokenizer.state === TokenizerState.comment) {
       this.appendToCommentData(this.sourceForNode(rawComment));
       return null;
     }
@@ -152,18 +177,25 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let { value, loc } = rawComment;
     let comment = b.mustacheComment(value, loc);
 
-    switch (tokenizer['state']) {
-      case "beforeAttributeName":
+    switch (tokenizer.state) {
+      case TokenizerState.beforeAttributeName:
         this.currentStartTag.comments.push(comment);
         break;
 
-      case 'beforeData':
-      case 'data':
+      case TokenizerState.beforeData:
+      case TokenizerState.data:
         appendChild(this.currentElement(), comment);
         break;
 
       default:
-        throw new SyntaxError(`Using a Handlebars comment when in the \`${tokenizer['state']}\` state is not supported: "${comment.value}" on line ${loc.start.line}:${loc.start.column}`, rawComment.loc);
+        throw new SyntaxError(
+          `Using a Handlebars comment when in the \`${
+            tokenizer['state']
+          }\` state is not supported: "${comment.value}" on line ${
+            loc.start.line
+          }:${loc.start.column}`,
+          rawComment.loc
+        );
     }
 
     return comment;
@@ -172,25 +204,49 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   PartialStatement(partial: HandlebarsAST.PartialStatement) {
     let { loc } = partial;
 
-    throw new SyntaxError(`Handlebars partials are not supported: "${this.sourceForNode(partial, partial.name)}" at L${loc.start.line}:C${loc.start.column}`, partial.loc);
+    throw new SyntaxError(
+      `Handlebars partials are not supported: "${this.sourceForNode(
+        partial,
+        partial.name
+      )}" at L${loc.start.line}:C${loc.start.column}`,
+      partial.loc
+    );
   }
 
   PartialBlockStatement(partialBlock: HandlebarsAST.PartialBlockStatement) {
     let { loc } = partialBlock;
 
-    throw new SyntaxError(`Handlebars partial blocks are not supported: "${this.sourceForNode(partialBlock, partialBlock.name)}" at L${loc.start.line}:C${loc.start.column}`, partialBlock.loc);
+    throw new SyntaxError(
+      `Handlebars partial blocks are not supported: "${this.sourceForNode(
+        partialBlock,
+        partialBlock.name
+      )}" at L${loc.start.line}:C${loc.start.column}`,
+      partialBlock.loc
+    );
   }
 
   Decorator(decorator: HandlebarsAST.Decorator) {
     let { loc } = decorator;
 
-    throw new SyntaxError(`Handlebars decorators are not supported: "${this.sourceForNode(decorator, decorator.path)}" at L${loc.start.line}:C${loc.start.column}`, decorator.loc);
+    throw new SyntaxError(
+      `Handlebars decorators are not supported: "${this.sourceForNode(
+        decorator,
+        decorator.path
+      )}" at L${loc.start.line}:C${loc.start.column}`,
+      decorator.loc
+    );
   }
 
   DecoratorBlock(decoratorBlock: HandlebarsAST.DecoratorBlock) {
     let { loc } = decoratorBlock;
 
-    throw new SyntaxError(`Handlebars decorator blocks are not supported: "${this.sourceForNode(decoratorBlock, decoratorBlock.path)}" at L${loc.start.line}:C${loc.start.column}`, decoratorBlock.loc);
+    throw new SyntaxError(
+      `Handlebars decorator blocks are not supported: "${this.sourceForNode(
+        decoratorBlock,
+        decoratorBlock.path
+      )}" at L${loc.start.line}:C${loc.start.column}`,
+      decoratorBlock.loc
+    );
   }
 
   SubExpression(sexpr: HandlebarsAST.SubExpression): AST.SubExpression {
@@ -204,15 +260,30 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     if (original.indexOf('/') !== -1) {
       if (original.slice(0, 2) === './') {
-        throw new SyntaxError(`Using "./" is not supported in Glimmer and unnecessary: "${path.original}" on line ${loc.start.line}.`, path.loc);
+        throw new SyntaxError(
+          `Using "./" is not supported in Glimmer and unnecessary: "${
+            path.original
+          }" on line ${loc.start.line}.`,
+          path.loc
+        );
       }
       if (original.slice(0, 3) === '../') {
-        throw new SyntaxError(`Changing context using "../" is not supported in Glimmer: "${path.original}" on line ${loc.start.line}.`, path.loc);
+        throw new SyntaxError(
+          `Changing context using "../" is not supported in Glimmer: "${
+            path.original
+          }" on line ${loc.start.line}.`,
+          path.loc
+        );
       }
       if (original.indexOf('.') !== -1) {
-        throw new SyntaxError(`Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: "${path.original}" on line ${loc.start.line}.`, path.loc);
+        throw new SyntaxError(
+          `Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: "${
+            path.original
+          }" on line ${loc.start.line}.`,
+          path.loc
+        );
       }
-      parts = [ path.parts.join('/') ];
+      parts = [path.parts.join('/')];
     } else {
       parts = path.parts;
     }
@@ -248,7 +319,9 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     for (let i = 0; i < hash.pairs.length; i++) {
       let pair = hash.pairs[i];
-      pairs.push(b.pair(pair.key, this.acceptNode<AST.Expression>(pair.value), pair.loc));
+      pairs.push(
+        b.pair(pair.key, this.acceptNode<AST.Expression>(pair.value), pair.loc)
+      );
     }
 
     return b.hash(pairs, hash.loc);
@@ -280,7 +353,7 @@ function calculateRightStrippedOffsets(original: string, value: string) {
     // if it is empty, just return the count of newlines
     // in original
     return {
-      lines: original.split("\n").length - 1,
+      lines: original.split('\n').length - 1,
       columns: 0
     };
   }
@@ -297,11 +370,17 @@ function calculateRightStrippedOffsets(original: string, value: string) {
   };
 }
 
-function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: HandlebarsAST.ContentStatement) {
+function updateTokenizerLocation(
+  tokenizer: Parser['tokenizer'],
+  content: HandlebarsAST.ContentStatement
+) {
   let line = content.loc.start.line;
   let column = content.loc.start.column;
 
-  let offsets = calculateRightStrippedOffsets(content.original as Recast<HandlebarsAST.StripFlags, string>, content.value);
+  let offsets = calculateRightStrippedOffsets(
+    content.original as Recast<HandlebarsAST.StripFlags, string>,
+    content.value
+  );
 
   line = line + offsets.lines;
   if (offsets.lines) {
@@ -314,32 +393,53 @@ function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: Handle
   tokenizer.column = column;
 }
 
-function acceptCallNodes(compiler: HandlebarsNodeVisitors, node: { path: HandlebarsAST.PathExpression, params: HandlebarsAST.Expression[], hash: HandlebarsAST.Hash }): { path: AST.PathExpression, params: AST.Expression[], hash: AST.Hash } {
+function acceptCallNodes(
+  compiler: HandlebarsNodeVisitors,
+  node: {
+    path: HandlebarsAST.PathExpression;
+    params: HandlebarsAST.Expression[];
+    hash: HandlebarsAST.Hash;
+  }
+): { path: AST.PathExpression; params: AST.Expression[]; hash: AST.Hash } {
   let path = compiler.PathExpression(node.path);
 
-  let params = node.params ? node.params.map(e => compiler.acceptNode<AST.Expression>(e)) : [];
+  let params = node.params
+    ? node.params.map(e => compiler.acceptNode<AST.Expression>(e))
+    : [];
   let hash = node.hash ? compiler.Hash(node.hash) : b.hash();
 
   return { path, params, hash };
 }
 
-function addElementModifier(element: Tag<'StartTag'>, mustache: AST.MustacheStatement) {
+function addElementModifier(
+  element: Tag<'StartTag'>,
+  mustache: AST.MustacheStatement
+) {
   let { path, params, hash, loc } = mustache;
 
   if (isLiteral(path)) {
     let modifier = `{{${printLiteral(path)}}}`;
     let tag = `<${element.name} ... ${modifier} ...`;
 
-    throw new SyntaxError(`In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc && loc.start.line}.`, mustache.loc);
+    throw new SyntaxError(
+      `In ${tag}, ${modifier} is not a valid modifier: "${
+        path.original
+      }" on line ${loc && loc.start.line}.`,
+      mustache.loc
+    );
   }
 
   let modifier = b.elementModifier(path, params, hash, loc);
   element.modifiers.push(modifier);
 }
 
-function addInElementHash(cursor: string, hash: AST.Hash, loc: AST.SourceLocation) {
+function addInElementHash(
+  cursor: string,
+  hash: AST.Hash,
+  loc: AST.SourceLocation
+) {
   let hasNextSibling = false;
-  hash.pairs.forEach((pair) => {
+  hash.pairs.forEach(pair => {
     if (pair.key === 'guid') {
       throw new SyntaxError('Cannot pass `guid` from user space', loc);
     }
@@ -362,7 +462,10 @@ function addInElementHash(cursor: string, hash: AST.Hash, loc: AST.SourceLocatio
   return hash;
 }
 
-function appendDynamicAttributeValuePart(attribute: Attribute, part: AST.MustacheStatement) {
+function appendDynamicAttributeValuePart(
+  attribute: Attribute,
+  part: AST.MustacheStatement
+) {
   attribute.isDynamic = true;
   attribute.parts.push(part);
 }
