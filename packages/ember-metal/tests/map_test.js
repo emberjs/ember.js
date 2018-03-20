@@ -3,6 +3,7 @@ import {
   MapWithDefault,
   OrderedSet
 } from '..';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let object, number, string, map, variety;
 const varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];
@@ -10,7 +11,7 @@ const varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];
 function testMap(nameAndFunc) {
   variety = nameAndFunc[0];
 
-  QUnit.module('Ember.' + variety + ' (forEach and get are implicitly tested)', {
+  moduleFor('Ember.' + variety + ' (forEach and get are implicitly tested)', class extends AbstractTestCase {
     beforeEach() {
       object = {};
       number = 42;
@@ -18,37 +19,8 @@ function testMap(nameAndFunc) {
 
       map = nameAndFunc[1].create();
     }
-  });
 
-  let mapHasLength = function(assert, expected, theMap) {
-    theMap = theMap || map;
-
-    let length = 0;
-    theMap.forEach(function() {
-      length++;
-    });
-
-    assert.equal(length, expected, 'map should contain ' + expected + ' items');
-  };
-
-  let mapHasEntries = function(assert, entries, theMap) {
-    theMap = theMap || map;
-
-    for (let i = 0; i < entries.length; i++) {
-      assert.equal(theMap.get(entries[i][0]), entries[i][1]);
-      assert.equal(theMap.has(entries[i][0]), true);
-    }
-
-    mapHasLength(assert, entries.length, theMap);
-  };
-
-  let unboundThis;
-
-  (function() {
-    unboundThis = this;
-  }());
-
-  QUnit.test('set', function(assert) {
+  ['@test set'](assert) {
     map.set(object, 'winning');
     map.set(number, 'winning');
     map.set(string, 'winning');
@@ -71,9 +43,9 @@ function testMap(nameAndFunc) {
 
     assert.equal(map.has('nope'), false, 'expected the key `nope` to not be present');
     assert.equal(map.has({}), false, 'expected they key `{}` to not be present');
-  });
+  }
 
-  QUnit.test('set chaining', function(assert) {
+  ['@test set chaining'](assert) {
     map.set(object, 'winning').
         set(number, 'winning').
         set(string, 'winning');
@@ -96,9 +68,9 @@ function testMap(nameAndFunc) {
 
     assert.equal(map.has('nope'), false, 'expected the key `nope` to not be present');
     assert.equal(map.has({}), false, 'expected they key `{}` to not be present');
-  });
+  }
 
-  QUnit.test('with key with undefined value', function(assert) {
+  ['@test with key with undefined value'](assert) {
     map.set('foo', undefined);
 
     map.forEach(function(value, key) {
@@ -109,22 +81,22 @@ function testMap(nameAndFunc) {
     assert.ok(map.has('foo'), 'has key foo, even with undefined value');
 
     assert.equal(map.size, 1);
-  });
+  }
 
-  QUnit.test('arity of forEach is 1 – es6 23.1.3.5', function(assert) {
+  ['@test arity of forEach is 1 – es6 23.1.3.5'](assert) {
     assert.equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
-  });
+  }
 
-  QUnit.test('forEach throws without a callback as the first argument', function(assert) {
+  ['@test forEach throws without a callback as the first argument'](assert) {
     assert.equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
-  });
+  }
 
-  QUnit.test('has empty collection', function(assert) {
+  ['@test has empty collection'](assert) {
     assert.equal(map.has('foo'), false);
     assert.equal(map.has(), false);
-  });
+  }
 
-  QUnit.test('delete', function(assert) {
+  ['@test delete'](assert) {
     expectNoDeprecation();
 
     map.set(object, 'winning');
@@ -139,9 +111,9 @@ function testMap(nameAndFunc) {
     map.delete({});
 
     mapHasEntries(assert, []);
-  });
+  }
 
-  QUnit.test('copy and then update', function(assert) {
+  ['@test copy and then update'](assert) {
     map.set(object, 'winning');
     map.set(number, 'winning');
     map.set(string, 'winning');
@@ -163,9 +135,9 @@ function testMap(nameAndFunc) {
       [number, 'losing'],
       [string, 'losing']
     ], map2);
-  });
+  }
 
-  QUnit.test('copy and then delete', function(assert) {
+  ['@test copy and then delete'](assert) {
     map.set(object, 'winning');
     map.set(number, 'winning');
     map.set(string, 'winning');
@@ -183,9 +155,9 @@ function testMap(nameAndFunc) {
     ]);
 
     mapHasEntries(assert, [], map2);
-  });
+  }
 
-  QUnit.test('size', function(assert) {
+  ['@test size'](assert) {
     //Add a key twice
     assert.equal(map.size, 0);
     map.set(string, 'a string');
@@ -216,9 +188,9 @@ function testMap(nameAndFunc) {
     assert.equal(map.size, 0);
     map.delete(string);
     assert.equal(map.size, 0);
-  });
+  }
 
-  QUnit.test('forEach without proper callback', function(assert) {
+  ['@test forEach without proper callback'](assert) {
     expectAssertion(function() {
       map.forEach();
     }, '[object Undefined] is not a function');
@@ -243,9 +215,9 @@ function testMap(nameAndFunc) {
     expectAssertion(function() {
       map.forEach({});
     }, '[object Object] is not a function');
-  });
+  }
 
-  QUnit.test('forEach basic', function(assert) {
+  ['@test forEach basic'](assert) {
     map.set('a', 1);
     map.set('b', 2);
     map.set('c', 3);
@@ -270,9 +242,9 @@ function testMap(nameAndFunc) {
     });
 
     assert.equal(iteration, 3, 'expected 3 iterations');
-  });
+  }
 
-  QUnit.test('forEach basic /w context', function(assert) {
+  ['@test forEach basic /w context'](assert) {
     map.set('a', 1);
     map.set('b', 2);
     map.set('c', 3);
@@ -297,9 +269,9 @@ function testMap(nameAndFunc) {
     }, context);
 
     assert.equal(iteration, 3, 'expected 3 iterations');
-  });
+  }
 
-  QUnit.test('forEach basic /w deletion while enumerating', function(assert) {
+  ['@test forEach basic /w deletion while enumerating'](assert) {
     map.set('a', 1);
     map.set('b', 2);
     map.set('c', 3);
@@ -327,9 +299,9 @@ function testMap(nameAndFunc) {
     });
 
     assert.equal(iteration, 2, 'expected 3 iterations');
-  });
+  }
 
-  QUnit.test('forEach basic /w addition while enumerating', function(assert) {
+  ['@test forEach basic /w addition while enumerating'](assert) {
     map.set('a', 1);
     map.set('b', 2);
     map.set('c', 3);
@@ -359,9 +331,9 @@ function testMap(nameAndFunc) {
     });
 
     assert.equal(iteration, 4, 'expected 3 iterations');
-  });
+  }
 
-  QUnit.test('clear', function(assert) {
+  ['@test clear'](assert) {
     let iterations = 0;
 
     map.set('a', 1);
@@ -383,9 +355,9 @@ function testMap(nameAndFunc) {
       iterations++;
     });
     assert.equal(iterations, 0);
-  });
+  }
 
-  QUnit.skip('-0', function(assert) {
+  ['@skip -0'](assert) {
     assert.equal(map.has(-0), false);
     assert.equal(map.has(0), false);
 
@@ -400,9 +372,9 @@ function testMap(nameAndFunc) {
     map.forEach(function(value, key) {
       assert.equal(1 / key, Infinity, 'spec says key should be positive zero');
     });
-  });
+  }
 
-  QUnit.test('NaN', function(assert) {
+  ['@test NaN'](assert) {
     assert.equal(map.has(NaN), false);
 
     map.set(NaN, 'not-a-number');
@@ -410,9 +382,9 @@ function testMap(nameAndFunc) {
     assert.equal(map.has(NaN), true);
 
     assert.equal(map.get(NaN), 'not-a-number');
-  });
+  }
 
-  QUnit.test('NaN Boxed', function(assert) {
+  ['@test NaN Boxed'](assert) {
     //jshint -W053
     let boxed = new Number(NaN);
     assert.equal(map.has(boxed), false);
@@ -424,9 +396,9 @@ function testMap(nameAndFunc) {
 
     assert.equal(map.get(NaN), undefined);
     assert.equal(map.get(boxed), 'not-a-number');
-  });
+  }
 
-  QUnit.test('0 value', function(assert) {
+  ['@test 0 value'](assert) {
     let obj = {};
     assert.equal(map.has(obj), false);
 
@@ -441,68 +413,97 @@ function testMap(nameAndFunc) {
     assert.equal(map.has(obj), false);
     assert.equal(map.get(obj), undefined);
     assert.equal(map.size, 0);
+  }
   });
+
+  let mapHasLength = function(assert, expected, theMap) {
+    theMap = theMap || map;
+
+    let length = 0;
+    theMap.forEach(function() {
+      length++;
+    });
+
+    assert.equal(length, expected, 'map should contain ' + expected + ' items');
+  };
+
+  let mapHasEntries = function(assert, entries, theMap) {
+    theMap = theMap || map;
+
+    for (let i = 0; i < entries.length; i++) {
+      assert.equal(theMap.get(entries[i][0]), entries[i][1]);
+      assert.equal(theMap.has(entries[i][0]), true);
+    }
+
+    mapHasLength(assert, entries.length, theMap);
+  };
+
+  let unboundThis;
+
+  (function() {
+    unboundThis = this;
+  }());
 }
 
 for (let i = 0;  i < varieties.length;  i++) {
   testMap(varieties[i]);
 }
 
-QUnit.module('MapWithDefault - default values');
+moduleFor('MapWithDefault - default values', class extends AbstractTestCase {
+  ['@test Retrieving a value that has not been set returns and sets a default value'](assert) {
+    let map = MapWithDefault.create({
+      defaultValue(key) {
+        return [key];
+      }
+    });
 
-QUnit.test('Retrieving a value that has not been set returns and sets a default value', function(assert) {
-  let map = MapWithDefault.create({
-    defaultValue(key) {
-      return [key];
-    }
-  });
+    let value = map.get('ohai');
+    assert.deepEqual(value, ['ohai']);
 
-  let value = map.get('ohai');
-  assert.deepEqual(value, ['ohai']);
+    assert.strictEqual(value, map.get('ohai'));
+  }
 
-  assert.strictEqual(value, map.get('ohai'));
+  ['@test Map.prototype.constructor'](assert) {
+    let map = new Map();
+    assert.equal(map.constructor, Map);
+  }
+
+  ['@test MapWithDefault.prototype.constructor'](assert) {
+    let map = new MapWithDefault({
+      defaultValue(key) { return key; }
+    });
+    assert.equal(map.constructor, MapWithDefault);
+  }
+
+  ['@test Copying a MapWithDefault copies the default value'](assert) {
+    let map = MapWithDefault.create({
+      defaultValue(key) {
+        return [key];
+      }
+    });
+
+    map.set('ohai', 1);
+    map.get('bai');
+
+    let map2 = map.copy();
+
+    assert.equal(map2.get('ohai'), 1);
+    assert.deepEqual(map2.get('bai'), ['bai']);
+
+    map2.set('kthx', 3);
+
+    assert.deepEqual(map.get('kthx'), ['kthx']);
+    assert.equal(map2.get('kthx'), 3);
+
+    assert.deepEqual(map2.get('default'), ['default']);
+
+    map2.defaultValue = key => ['tom is on', key];
+
+    assert.deepEqual(map2.get('drugs'), ['tom is on', 'drugs']);
+  }
 });
 
-QUnit.test('Map.prototype.constructor', function(assert) {
-  let map = new Map();
-  assert.equal(map.constructor, Map);
-});
-
-QUnit.test('MapWithDefault.prototype.constructor', function(assert) {
-  let map = new MapWithDefault({
-    defaultValue(key) { return key; }
-  });
-  assert.equal(map.constructor, MapWithDefault);
-});
-
-QUnit.test('Copying a MapWithDefault copies the default value', function(assert) {
-  let map = MapWithDefault.create({
-    defaultValue(key) {
-      return [key];
-    }
-  });
-
-  map.set('ohai', 1);
-  map.get('bai');
-
-  let map2 = map.copy();
-
-  assert.equal(map2.get('ohai'), 1);
-  assert.deepEqual(map2.get('bai'), ['bai']);
-
-  map2.set('kthx', 3);
-
-  assert.deepEqual(map.get('kthx'), ['kthx']);
-  assert.equal(map2.get('kthx'), 3);
-
-  assert.deepEqual(map2.get('default'), ['default']);
-
-  map2.defaultValue = key => ['tom is on', key];
-
-  assert.deepEqual(map2.get('drugs'), ['tom is on', 'drugs']);
-});
-
-QUnit.module('OrderedSet', {
+moduleFor('OrderedSet', class extends AbstractTestCase {
   beforeEach() {
     object = {};
     number = 42;
@@ -510,10 +511,11 @@ QUnit.module('OrderedSet', {
 
     map = OrderedSet.create();
   }
+
+  ['@test add returns the set'](assert) {
+    let obj = {};
+    assert.equal(map.add(obj), map);
+    assert.equal(map.add(obj), map, 'when it is already in the set');
+  }
 });
 
-QUnit.test('add returns the set', function(assert) {
-  let obj = {};
-  assert.equal(map.add(obj), map);
-  assert.equal(map.add(obj), map, 'when it is already in the set');
-});
