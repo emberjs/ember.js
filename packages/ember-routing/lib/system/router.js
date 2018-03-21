@@ -262,7 +262,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
-        // eslint-disable-next-line no-console 
+        // eslint-disable-next-line no-console
         console.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
       }
     }
@@ -336,7 +336,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
-        // eslint-disable-next-line no-console 
+        // eslint-disable-next-line no-console
         console.log(`Preparing to transition from '${EmberRouter._routePath(oldInfos)}' to '${EmberRouter._routePath(newInfos)}'`);
       }
     }
@@ -373,9 +373,11 @@ const EmberRouter = EmberObject.extend(Evented, {
   */
   transitionTo(...args) {
     if (resemblesURL(args[0])) {
+      assert(`A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`, !this.isDestroying && !this.isDestroyed);
       return this._doURLTransition('transitionTo', args[0]);
     }
     let { routeName, models, queryParams } = extractRouteArgs(args);
+    assert(`A transition was attempted from '${this.currentRouteName}' to '${routeName}' but the application instance has already been destroyed.`, !this.isDestroying && !this.isDestroyed);
     return this._doTransition(routeName, models, queryParams);
   },
 
@@ -387,7 +389,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     if (DEBUG) {
       let infos = this._routerMicrolib.currentHandlerInfos;
       if (get(this, 'namespace').LOG_TRANSITIONS) {
-        // eslint-disable-next-line no-console 
+        // eslint-disable-next-line no-console
         console.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
       }
     }
