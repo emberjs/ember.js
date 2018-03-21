@@ -1,4 +1,5 @@
 import { assign } from 'ember-utils';
+import { runDestroy } from "internal-test-helpers";
 import {
   moduleFor,
   RenderingTest,
@@ -258,6 +259,34 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
     this.renderDelegate();
 
     this.runTask(() => innerChild.sendAction('bar', 'something special'));
+  }
+
+  ['@test asserts if called on a destroyed component']() {
+    let component;
+
+    this.registerComponent('rip-alley', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super();
+          component = this;
+        },
+
+        toString() {
+          return 'component:rip-alley';
+        }
+      })
+    });
+
+    this.render('{{rip-alley}}');
+
+    runDestroy(component);
+
+    expectAssertion(
+      () => {
+        component.sendAction('trigger-me-dead');
+      },
+      "Attempted to call .sendAction() with the action 'trigger-me-dead' on the destroyed object 'component:rip-alley'."
+    );
   }
 });
 
@@ -616,5 +645,33 @@ moduleFor('Components test: send', class extends RenderingTest {
     EmberObject.create({
       actions: ['foo']
     });
+  }
+
+  ['@test asserts if called on a destroyed component']() {
+    let component;
+
+    this.registerComponent('rip-alley', {
+      ComponentClass: Component.extend({
+        init() {
+          this._super();
+          component = this;
+        },
+
+        toString() {
+          return 'component:rip-alley';
+        }
+      })
+    });
+
+    this.render('{{rip-alley}}');
+
+    runDestroy(component);
+
+    expectAssertion(
+      () => {
+        component.send('trigger-me-dead');
+      },
+      "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'component:rip-alley'."
+    );
   }
 });

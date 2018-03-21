@@ -193,6 +193,18 @@ moduleFor('Route', class extends AbstractTestCase {
     assert.equal(false, route.send('returnsFalse'));
     assert.equal(undefined, route.send('nonexistent', 1, 2, 3));
   }
+
+  ['@test .send asserts if called on a destroyed route']() {
+    route.routeName = 'rip-alley';
+    runDestroy(route);
+
+    expectAssertion(
+      () => {
+        route.send('trigger-me-dead');
+      },
+      "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed route 'rip-alley'."
+    );
+  }
 });
 
 moduleFor('Route serialize', class extends AbstractTestCase {

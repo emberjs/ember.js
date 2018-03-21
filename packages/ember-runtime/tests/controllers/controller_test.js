@@ -5,7 +5,7 @@ import Service from '../../system/service';
 import { Mixin, get } from 'ember-metal';
 import EmberObject from '../../system/object';
 import inject from '../../inject';
-import { buildOwner } from 'internal-test-helpers';
+import { runDestroy, buildOwner } from 'internal-test-helpers';
 
 QUnit.module('Controller event handling');
 
@@ -80,6 +80,26 @@ QUnit.test('Action can be handled by a superclass\' actions object', function(as
   controller.send('foo');
   controller.send('bar', 'HELLO');
   controller.send('baz');
+});
+
+QUnit.test('.send asserts if called on a destroyed controller', function() {
+  let owner = buildOwner();
+
+  owner.register('controller:application', Controller.extend({
+    toString() {
+      return 'controller:rip-alley';
+    }
+  }));
+
+  let controller = owner.lookup('controller:application');
+  runDestroy(owner);
+
+  expectAssertion(
+    () => {
+      controller.send('trigger-me-dead');
+    },
+    "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'controller:rip-alley'."
+  );
 });
 
 QUnit.module('Controller deprecations');
