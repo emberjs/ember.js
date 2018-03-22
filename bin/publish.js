@@ -83,10 +83,16 @@ function validateNewVersion(version) {
 function applyNewVersion() {
   console.log(`Apply ${newVersion}`);
 
+  // Update root package.json
+  let rootPkgPath = path.join(__dirname, '../package.json');
+  let rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
+  let rootSimpleHTMLTokenizerVersion = rootPkg.dependencies['simple-html-tokenizer'];
+
   // Update packages in the dist directory
   packages.forEach(package => {
     package.pkg.version = newVersion;
     package.updateDependencies(newVersion);
+    package.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
 
     if (!DRY_RUN) {
       package.savePackageJSON();
@@ -99,6 +105,7 @@ function applyNewVersion() {
     .forEach(package => {
       package.pkg.version = newVersion;
       package.updateDependencies(newVersion);
+      package.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
 
       if (!DRY_RUN) {
         package.savePackageJSON();
@@ -106,9 +113,6 @@ function applyNewVersion() {
       execWithSideEffects(`git add "${package.packageJSONPath}"`);
     });
 
-  // Update root package.json
-  let rootPkgPath = path.join(__dirname, '../package.json');
-  let rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8'));
   rootPkg.version = newVersion;
   if (!DRY_RUN) {
     fs.writeFileSync(rootPkgPath, JSON.stringify(rootPkg, null, 2));

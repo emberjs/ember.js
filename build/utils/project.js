@@ -65,6 +65,24 @@ class Package {
     this._updateDependencies(this.pkg.devDependencies, newVersion);
   }
 
+  get simpleHTMLTokenizerVersion() {
+    return this.pkg.dependencies && this.pkg.dependencies['simple-html-tokenizer'];
+  }
+
+  set simpleHTMLTokenizerVersion(value) {
+    if (this.pkg.dependencies) {
+      this.pkg.dependencies['simple-html-tokenizer'] = value;
+    }
+  }
+
+  updateSimpleHTMLTokenizer(newVersion) {
+    let version = this.simpleHTMLTokenizerVersion;
+    if (version && version !== newVersion) {
+      console.log(`updating simple-html-tokenizer dep in ${this.relativePath} to ${newVersion}`);
+      this.simpleHTMLTokenizerVersion = newVersion;
+    }
+  }
+
   _updateDependencies(deps, newVersion) {
     if (!deps) { return; }
 
