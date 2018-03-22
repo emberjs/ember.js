@@ -1,5 +1,4 @@
 import { assign } from 'ember-utils';
-import { runDestroy } from "internal-test-helpers";
 import {
   moduleFor,
   RenderingTest,
@@ -277,9 +276,11 @@ moduleFor('Components test: sendAction', class extends RenderingTest {
       })
     });
 
-    this.render('{{rip-alley}}');
+    this.render('{{#if shouldRender}}{{rip-alley}}{{/if}}', { shouldRender: true });
 
-    runDestroy(component);
+    this.runTask(() => {
+      set(this.context, 'shouldRender', false);
+    });
 
     expectAssertion(
       () => {
@@ -663,9 +664,11 @@ moduleFor('Components test: send', class extends RenderingTest {
       })
     });
 
-    this.render('{{rip-alley}}');
+    this.render('{{#if shouldRender}}{{rip-alley}}{{/if}}', { shouldRender: true });
 
-    runDestroy(component);
+    this.runTask(() => {
+      set(this.context, 'shouldRender', false);
+    });
 
     expectAssertion(
       () => {
