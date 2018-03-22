@@ -6,8 +6,7 @@
     "@glimmer/syntax": "^0.33.1",
     "@glimmer/util": "^0.33.1",
     "@glimmer/wire-format": "^0.33.1",
-    "@glimmer/interfaces": "^0.33.1",
-    "simple-html-tokenizer": "^0.4.1"
+    "@glimmer/interfaces": "^0.33.1"
   },
   "devDependencies": {
     "typescript": "^2.2.0"
