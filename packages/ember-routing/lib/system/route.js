@@ -1272,6 +1272,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
   */
   send(...args) {
+    assert(
+      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
     if ((this._router && this._router._routerMicrolib) || !isTesting()) {
       this._router.send(...args);
     } else {

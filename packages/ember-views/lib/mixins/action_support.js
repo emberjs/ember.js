@@ -109,6 +109,11 @@ export default Mixin.create({
     @public
   */
   sendAction(action, ...contexts) {
+    assert(
+      `Attempted to call .sendAction() with the action '${action}' on the destroyed object '${this}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
+
     let actionName;
 
     // Send the default action
@@ -132,6 +137,11 @@ export default Mixin.create({
   },
 
   send(actionName, ...args) {
+    assert(
+      `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
+
     let action = this.actions && this.actions[actionName];
 
     if (action) {
