@@ -23,7 +23,7 @@ import {
   WithDynamicTagName,
   WithStaticLayout,
 } from '@glimmer/runtime';
-import { Destroyable, EMPTY_ARRAY, Opaque } from '@glimmer/util';
+import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
 import { privatize as P } from 'container';
 import {
   assert,
@@ -206,7 +206,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
    * features like exposed by view mixins like ChildViewSupport, ActionSupport,
    * etc.
    */
-  create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference<Opaque>, hasBlock: boolean): ComponentStateBucket {
+  create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference, hasBlock: boolean): ComponentStateBucket {
     if (DEBUG) {
       this._pushToDebugStack(`component:${state.name}`, environment);
     }
@@ -298,7 +298,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return bucket;
   }
 
-  getSelf({ component }: ComponentStateBucket): VersionedPathReference<Opaque> {
+  getSelf({ component }: ComponentStateBucket): VersionedPathReference {
     return component[ROOT_REF];
   }
 

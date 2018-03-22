@@ -17,15 +17,11 @@ class ArrayLike {
     this._array = content;
   }
 
-  get length() {
-    return this._array.length;
-  }
-
-  forEach(callback) {
-    this._array.forEach(callback);
-  }
-
   // The following methods are APIs used by the tests
+
+  toArray() {
+    return this._array.slice();
+  }
 
   objectAt(idx) {
     return this._array[idx];
@@ -87,7 +83,26 @@ class ArrayLike {
     notifyPropertyChange(this, '[]');
     notifyPropertyChange(this, 'length');
   }
+}
 
+class ForEachable extends ArrayLike {
+  get length() {
+    return this._array.length;
+  }
+
+  forEach(callback) {
+    this._array.forEach(callback);
+  }
+}
+
+let ArrayIterable;
+
+if (HAS_NATIVE_SYMBOL) {
+  ArrayIterable = class extends ArrayLike {
+    [Symbol.iterator]() {
+      return this._array[Symbol.iterator]();
+    }
+  };
 }
 
 class TogglingEachTest extends TogglingSyntaxConditionalsTest {
@@ -99,27 +114,36 @@ class TogglingEachTest extends TogglingSyntaxConditionalsTest {
 
 class BasicEachTest extends TogglingEachTest {}
 
+const TRUTHY_CASES = [
+  ['hello'],
+  emberA(['hello']),
+  new ForEachable(['hello']),
+  ArrayProxy.create({ content: ['hello'] }),
+  ArrayProxy.create({ content: emberA(['hello']) })
+];
+
+const FALSY_CASES = [
+  null,
+  undefined,
+  false,
+  '',
+  0,
+  [],
+  emberA([]),
+  new ForEachable([]),
+  ArrayProxy.create({ content: [] }),
+  ArrayProxy.create({ content: emberA([]) })
+];
+
+if (HAS_NATIVE_SYMBOL) {
+  TRUTHY_CASES.push(new ArrayIterable(['hello']));
+  FALSY_CASES.push(new ArrayIterable([]));
+}
+
 applyMixins(BasicEachTest,
-
-  new TruthyGenerator([
-    ['hello'],
-    emberA(['hello']),
-    new ArrayLike(['hello']),
-    ArrayProxy.create({ content: ['hello'] }),
-    ArrayProxy.create({ content: emberA(['hello']) })
-  ]),
-
-  new FalsyGenerator([
-    null,
-    undefined,
-    false,
-    '',
-    0,
-    []
-  ]),
-
+  new TruthyGenerator(TRUTHY_CASES),
+  new FalsyGenerator(FALSY_CASES),
   ArrayTestCases
-
 );
 
 moduleFor('Syntax test: toggling {{#each}}', class extends BasicEachTest {
@@ -186,7 +210,7 @@ class AbstractEachTest extends RenderingTest {
   }
 
   forEach(callback) {
-    return this.delegate.forEach(callback);
+    return this.delegate.toArray().forEach(callback);
   }
 
   objectAt(idx) {
@@ -753,10 +777,20 @@ moduleFor('Syntax test: {{#each}} with arrays', class extends SingleEachTest {
 moduleFor('Syntax test: {{#each}} with array-like objects', class extends SingleEachTest {
 
   makeList(list) {
-    return this.list = this.delegate = new ArrayLike(list);
+    return this.list = this.delegate = new ForEachable(list);
   }
 
 });
+
+if (HAS_NATIVE_SYMBOL) {
+  moduleFor('Syntax test: {{#each}} with native iterables', class extends SingleEachTest {
+
+    makeList(list) {
+      return this.list = this.delegate = new ArrayIterable(list);
+    }
+
+  });
+}
 
 moduleFor('Syntax test: {{#each}} with array proxies, modifying itself', class extends SingleEachTest {
 
@@ -778,110 +812,6 @@ moduleFor('Syntax test: {{#each}} with array proxies, replacing its content', cl
   }
 
 });
-
-if (HAS_NATIVE_SYMBOL) {
-  class IterableThingy {
-    constructor(ary) {
-      this._internalArray = ary;
-    }
-
-    [Symbol.iterator]() {
-      let index = 0;
-      return {
-        next: () => {
-          if (index < this._internalArray.length) {
-            return { value: this._internalArray[index++], done: false };
-          } else {
-            return { done: true };
-          }
-        }
-      };
-    }
-  }
-
-  moduleFor('Syntax test: {{#each}} with iterables', class extends RenderingTest {
-
-    ['@test it repeats the given block for each item']() {
-      let list = new IterableThingy([{ text: 'hello' }]);
-
-      this.render(`{{#each list as |item|}}{{item.text}}{{else}}Empty{{/each}}`, { list });
-
-      this.assertText('hello');
-
-      this.runTask(() => this.rerender());
-
-      this.assertText('hello');
-
-      this.runTask(() => set(this.context, 'list', new IterableThingy([{ text: 'Hello' }])));
-
-      this.assertText('Hello');
-
-      this.runTask(() => set(this.context, 'list', new IterableThingy([{ text: 'Hello' }, { text: ' ' }, { text: 'World' }])));
-
-      this.assertText('Hello World');
-    }
-
-    ['@test it receives the index as the second parameter']() {
-      let list = new IterableThingy([{ text: 'hello' }, { text: 'world' }]);
-
-      this.render(`{{#each list as |item index|}}[{{index}}. {{item.text}}]{{/each}}`, { list });
-
-      this.assertText('[0. hello][1. world]');
-
-      this.assertStableRerender();
-
-      this.runTask(() => set(this.context, 'list', new IterableThingy([{ text: 'hello' }, { text: 'my' }, { text: 'world' }])));
-
-      this.assertText('[0. hello][1. my][2. world]');
-    }
-
-    ['@test it can render duplicate primitive items']() {
-      let list = new IterableThingy(['a', 'a', 'a']);
-
-      this.render(`{{#each list as |item|}}{{item}}{{/each}}`, { list });
-
-      this.assertText('aaa');
-
-      this.assertStableRerender();
-
-      this.runTask(() => set(this.context, 'list', new IterableThingy(['a', 'a', 'a', 'a'])));
-
-      this.assertText('aaaa');
-    }
-
-    ['@test it can render duplicate objects']() {
-      let duplicateItem = { text: 'foo' };
-
-      let list = new IterableThingy([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]);
-
-      this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`, { list });
-
-      this.assertText('foofoobarbaz');
-
-      this.assertStableRerender();
-
-      this.runTask(() => set(this.context, 'list', new IterableThingy([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }, duplicateItem])));
-
-      this.assertText('foofoobarbazfoo');
-    }
-
-    ['@test it renders the inverse template when there is no items']() {
-      let list = new IterableThingy([]);
-
-      this.render(`{{#each list as |thing|}}Has Thing{{else}}No Thing{{/each}}`, { list });
-
-      this.assertText('No Thing');
-
-      this.runTask(() => this.rerender());
-
-      this.assertText('No Thing');
-
-      this.runTask(() => set(this.context, 'list', new IterableThingy(['a'])));
-
-      this.assertText('Has Thing');
-    }
-  });
-}
 
 // TODO: Refactor the following tests so we can run them against different kind of arrays
 

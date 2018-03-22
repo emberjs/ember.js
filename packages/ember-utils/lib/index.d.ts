@@ -31,3 +31,6 @@ export const OWNER: string;
 export function generateGuid(obj: Opaque, prefix?: string): string;
 export function guidFor(obj: Opaque): string;
 export function uuid(): number;
+
+export const HAS_NATIVE_SYMBOL: boolean;
+export const HAS_NATIVE_PROXY: boolean;

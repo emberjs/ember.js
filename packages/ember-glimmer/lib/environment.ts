@@ -1,10 +1,9 @@
 import {
-  Reference,
+  OpaqueIterable, VersionedReference,
 } from '@glimmer/reference';
 import {
   ElementBuilder,
   Environment as GlimmerEnvironment,
-  PrimitiveReference,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import {
@@ -21,7 +20,6 @@ import DebugStack from './utils/debug-stack';
 import createIterable from './utils/iterable';
 import {
   ConditionalReference,
-  RootPropertyReference,
   UpdatableReference,
 } from './utils/references';
 import { isHTMLSafe } from './utils/string';
@@ -45,7 +43,7 @@ export default class Environment extends GlimmerEnvironment {
   public destroyedComponents: Destroyable[];
 
   public debugStack: typeof DebugStack;
-  public inTransaction: boolean;
+  public inTransaction = false;
 
   constructor(injections: any) {
     super(injections);
@@ -72,11 +70,11 @@ export default class Environment extends GlimmerEnvironment {
     return lookupComponent(meta.owner, name, meta);
   }
 
-  toConditionalReference(reference: UpdatableReference): ConditionalReference | RootPropertyReference | PrimitiveReference<any> {
+  toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
     return ConditionalReference.create(reference);
   }
 
-  iterableFor(ref: Reference<Opaque>, key: string) {
+  iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
     return createIterable(ref, key);
   }
 
@@ -86,23 +84,23 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  scheduleUpdateModifier(modifier: any, manager: any) {
+  scheduleUpdateModifier(modifier: any, manager: any): void {
     if (this.isInteractive) {
       super.scheduleUpdateModifier(modifier, manager);
     }
   }
 
-  didDestroy(destroyable: Destroyable) {
+  didDestroy(destroyable: Destroyable): void {
     destroyable.destroy();
   }
 
-  begin() {
+  begin(): void {
     this.inTransaction = true;
 
     super.begin();
   }
 
-  commit() {
+  commit(): void {
     let destroyedComponents = this.destroyedComponents;
     this.destroyedComponents = [];
     // components queued for destruction must be destroyed before firing

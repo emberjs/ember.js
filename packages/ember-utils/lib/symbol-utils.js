@@ -1,9 +1,9 @@
 export const HAS_NATIVE_SYMBOL = (function() {
-  let hasSymbol = typeof Symbol === 'function';
-  if (hasSymbol === false) { return false; }
+  if (typeof Symbol !== 'function') {
+    return false;
+  }
 
-  let instance = Symbol('test-symbol');
   // use `Object`'s `.toString` directly to prevent us from detecting
   // polyfills as native
-  return Object.prototype.toString.call(instance) === '[object Symbol]';
+  return Object.prototype.toString.call(Symbol()) === '[object Symbol]';
 })();
