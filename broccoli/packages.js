@@ -4,7 +4,8 @@ const { readFileSync, existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
-const filterTypeScript = require('broccoli-typescript-compiler').filterTypeScript;
+const filterTypeScript = require('broccoli-typescript-compiler')
+  .filterTypeScript;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
 const findPackage = require('./find-package');
@@ -33,7 +34,6 @@ module.exports.routerES = function _routerES() {
     annotation: 'router.js'
   });
 };
-
 
 module.exports.jquery = function _jquery() {
   return new Funnel(findLib('jquery'), {
@@ -68,17 +68,26 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
 
   let debuggedInput = debugTree(input, 'ember-glimmer:input');
 
-  let compiledTemplatesAndTypescript = new GlimmerTemplatePrecompiler(debuggedInput, {
-    persist: true,
-    glimmer: require('@glimmer/compiler'),
-    annotation: 'ember-glimmer es'
-  });
+  let compiledTemplatesAndTypescript = new GlimmerTemplatePrecompiler(
+    debuggedInput,
+    {
+      persist: true,
+      glimmer: require('@glimmer/compiler'),
+      annotation: 'ember-glimmer es'
+    }
+  );
 
-  let debuggedCompiledTemplatesAndTypeScript = debugTree(compiledTemplatesAndTypescript, 'ember-glimmer:templates-output');
+  let debuggedCompiledTemplatesAndTypeScript = debugTree(
+    compiledTemplatesAndTypescript,
+    'ember-glimmer:templates-output'
+  );
 
-  let typescriptCompiled = filterTypeScript(debuggedCompiledTemplatesAndTypeScript, {
-    noImplicitAny: false
-  });
+  let typescriptCompiled = filterTypeScript(
+    debuggedCompiledTemplatesAndTypeScript,
+    {
+      noImplicitAny: false
+    }
+  );
 
   let funneled = new Funnel(typescriptCompiled, {
     getDestinationPath(path) {
@@ -116,8 +125,8 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
         file: 'ember-glimmer.js',
         format: 'es',
         exports: 'named'
-      },
-    },
+      }
+    }
   });
 
   return debugTree(rollup, 'ember-glimmer:output');
@@ -147,7 +156,10 @@ function handlebarsFix() {
         return {
           code: code
             .replace('exports.__esModule = true;', '')
-            .replace('exports[\'default\'] = handlebars;', 'export default handlebars;'),
+            .replace(
+              "exports['default'] = handlebars;",
+              'export default handlebars;'
+            ),
 
           map: { mappings: null }
         };
@@ -166,7 +178,7 @@ module.exports.rsvpES = function _rsvpES() {
         file: 'rsvp.js',
         format: 'es',
         exports: 'named'
-      },
+      }
     }
   });
 };
@@ -186,10 +198,12 @@ module.exports.dagES = function _dagES() {
 
   return new StringReplace(lib, {
     files: ['dag-map.js'],
-    patterns: [{
-      match: /\/\/# sourceMappingURL=dag-map.js.map/g,
-      replacement: ''
-    }],
+    patterns: [
+      {
+        match: /\/\/# sourceMappingURL=dag-map.js.map/g,
+        replacement: ''
+      }
+    ],
     annotation: 'remove sourcemap annotation (dag-map)'
   });
 };
@@ -205,10 +219,12 @@ module.exports.routeRecognizerES = function _routeRecognizerES() {
 };
 
 module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
-  return new Rollup(findLib('simple-html-tokenizer', 'dist/es6'), {
+  let packageInfo = findPackage('simple-html-tokenizer', '@glimmer/syntax');
+  let moduleInfo = packageInfo.module;
+  return new Rollup(moduleInfo.dir, {
     annotation: 'simple-html-tokenizer es',
     rollup: {
-      input: 'index.js',
+      input: moduleInfo.base,
       output: {
         file: 'simple-html-tokenizer.js',
         format: 'es',
@@ -254,7 +270,7 @@ function rollupGlimmerPackage(pkg) {
         output: {
           file: name + '.js',
           format: 'es'
-        },
+        }
       },
       annotation: name
     });
@@ -275,7 +291,7 @@ module.exports.glimmerTrees = function glimmerTrees(entries) {
   seen.add('@glimmer/object-reference');
 
   let trees = [];
-  let queue = Array.isArray(entries) ? entries.slice() : [ entries ];
+  let queue = Array.isArray(entries) ? entries.slice() : [entries];
   let name;
   while ((name = queue.pop()) !== undefined) {
     if (seen.has(name)) {
@@ -330,10 +346,12 @@ module.exports.emberLicense = function _emberLicense() {
 
   return new StringReplace(license, {
     files: ['license.js'],
-    patterns: [{
-      match: VERSION_PLACEHOLDER,
-      replacement: VERSION
-    }],
+    patterns: [
+      {
+        match: VERSION_PLACEHOLDER,
+        replacement: VERSION
+      }
+    ],
     annotation: 'license'
   });
 };
@@ -347,13 +365,18 @@ module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
     export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
 
 
-    ${Object.keys(toConst(FEATURES)).map((FEATURE) => {
-      return `export const ${FEATURE} = FEATURES["${FEATURE.replace(/_/g, '-').toLowerCase()}"];`;
-    }).join('\n')}
+    ${Object.keys(toConst(FEATURES))
+      .map(FEATURE => {
+        return `export const ${FEATURE} = FEATURES["${FEATURE.replace(
+          /_/g,
+          '-'
+        ).toLowerCase()}"];`;
+      })
+      .join('\n')}
   `;
 
   return new WriteFile('ember/features.js', content, {
-    annotation: `ember/features ${production ? 'production' : 'debug' }`
+    annotation: `ember/features ${production ? 'production' : 'debug'}`
   });
 };
 
@@ -364,31 +387,37 @@ module.exports.nodeTests = function _nodeTests() {
 };
 
 module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
-  options = Object.assign({ transformModules: false, annotation: 'ember metal' }, options);
+  options = Object.assign(
+    { transformModules: false, annotation: 'ember metal' },
+    options
+  );
   let emberMetalES5 = toES5(tree, options);
-  return toES5(new Rollup(emberMetalES5, {
-    annotation: `rollup ember-metal`,
-    rollup: {
-      input: `index.js`,
-      output: {
-        amd: { id: 'ember-metal' },
-        file: 'ember-metal.js',
-        format: 'amd',
-        exports: 'named'
-      },
-      external: [
-        'node-module',
-        'ember-babel',
-        'ember-debug',
-        'ember-environment',
-        'ember-utils',
-        '@glimmer/reference',
-        'require',
-        'backburner',
-        'ember-console',
-        'ember-env-flags',
-        'ember/features'
-      ]
-    }
-  }), { transformDefine: true });
+  return toES5(
+    new Rollup(emberMetalES5, {
+      annotation: `rollup ember-metal`,
+      rollup: {
+        input: `index.js`,
+        output: {
+          amd: { id: 'ember-metal' },
+          file: 'ember-metal.js',
+          format: 'amd',
+          exports: 'named'
+        },
+        external: [
+          'node-module',
+          'ember-babel',
+          'ember-debug',
+          'ember-environment',
+          'ember-utils',
+          '@glimmer/reference',
+          'require',
+          'backburner',
+          'ember-console',
+          'ember-env-flags',
+          'ember/features'
+        ]
+      }
+    }),
+    { transformDefine: true }
+  );
 };

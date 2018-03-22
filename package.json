@@ -56,7 +56,7 @@
     "ember-router-generator": "^1.2.3",
     "inflection": "^1.12.0",
     "jquery": "^3.3.1",
-    "resolve": "^1.5.0"
+    "resolve": "^1.6.0"
   },
   "devDependencies": {
     "@glimmer/compiler": "^0.33.0",
@@ -126,7 +126,6 @@
     "semver": "^5.5.0",
     "serve-static": "^1.12.2",
     "simple-dom": "^0.3.0",
-    "simple-html-tokenizer": "^0.4.1",
     "testem": "^1.18.4",
     "tslint": "^5.9.1"
   },
