@@ -265,7 +265,7 @@ moduleFor('Ember Router', class extends AbstractTestCase {
   ['@test transitionTo should throw an error when called after owner is destroyed']() {
     let router = createRouter();
 
-    runDestroy(owner);
+    runDestroy(router);
 
     router.currentRouteName = 'route-a';
 
