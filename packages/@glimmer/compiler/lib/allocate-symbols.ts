@@ -1,28 +1,44 @@
-import { CompilerOps, Processor, Op, OpName, TemplateCompilerOps } from "./compiler-ops";
-import { AST } from "@glimmer/syntax";
-import { Option, Opaque } from "@glimmer/interfaces";
-import { Stack, expect } from "@glimmer/util";
-import { SymbolTable } from "./template-visitor";
+import {
+  CompilerOps,
+  Processor,
+  Op,
+  OpName,
+  TemplateCompilerOps
+} from './compiler-ops';
+import { AST } from '@glimmer/syntax';
+import { Option, Opaque } from '@glimmer/interfaces';
+import { Stack, expect } from '@glimmer/util';
+import { SymbolTable } from './template-visitor';
 
 export type InVariable = 0 | string;
 export type OutVariable = number;
 
-export type OutOp<K extends keyof CompilerOps<OutVariable> = OpName> = Op<OutVariable, CompilerOps<OutVariable>, K>;
-export type InOp<K extends keyof TemplateCompilerOps = keyof TemplateCompilerOps> = Op<0 | string, TemplateCompilerOps, K>;
+export type OutOp<K extends keyof CompilerOps<OutVariable> = OpName> = Op<
+  OutVariable,
+  CompilerOps<OutVariable>,
+  K
+>;
+export type InOp<
+  K extends keyof TemplateCompilerOps = keyof TemplateCompilerOps
+> = Op<0 | string, TemplateCompilerOps, K>;
 
-export class SymbolAllocator implements Processor<CompilerOps<InVariable>, OutVariable, CompilerOps<OutVariable>> {
+export class SymbolAllocator
+  implements
+    Processor<CompilerOps<InVariable>, OutVariable, CompilerOps<OutVariable>> {
   private symbolStack = new Stack<SymbolTable>();
 
   constructor(private ops: Array<InOp>) {}
 
   process(): OutOp[] {
     let out: OutOp[] = [];
+    let { ops } = this;
 
-    for (let op of this.ops) {
+    for (let i = 0; i < ops.length; i++) {
+      let op = ops[i];
       let result = this.dispatch(op);
 
       if (result === undefined) {
-        out.push(op as any);
+        out.push(op as OutOp);
       } else {
         out.push(result as any);
       }
@@ -39,7 +55,10 @@ export class SymbolAllocator implements Processor<CompilerOps<InVariable>, OutVa
   }
 
   get symbols(): SymbolTable {
-    return expect(this.symbolStack.current, 'Expected a symbol table on the stack');
+    return expect(
+      this.symbolStack.current,
+      'Expected a symbol table on the stack'
+    );
   }
 
   startProgram(op: AST.Program) {
@@ -88,7 +107,9 @@ export class SymbolAllocator implements Processor<CompilerOps<InVariable>, OutVa
     }
   }
 
-  maybeGet(op: [InVariable, string[]]): OutOp<'get' | 'unknown' | 'maybeLocal'> {
+  maybeGet(
+    op: [InVariable, string[]]
+  ): OutOp<'get' | 'unknown' | 'maybeLocal'> {
     let [name, rest] = op;
 
     if (name === 0) {
