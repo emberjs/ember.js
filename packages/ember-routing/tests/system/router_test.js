@@ -261,5 +261,20 @@ moduleFor('Ember Router', class extends AbstractTestCase {
 
     triggerEvent(handlerInfos, false, ['loading']);
   }
-});
 
+  ['@test transitionTo should throw an error when called after owner is destroyed']() {
+    let router = createRouter();
+
+    runDestroy(router);
+
+    router.currentRouteName = 'route-a';
+
+    expectAssertion(function() {
+      router.transitionTo('route-b');
+    }, "A transition was attempted from 'route-a' to 'route-b' but the application instance has already been destroyed.");
+
+    expectAssertion(function() {
+      router.transitionTo('./route-b/1');
+    }, "A transition was attempted from 'route-a' to './route-b/1' but the application instance has already been destroyed.");
+  }
+});
