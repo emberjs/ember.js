@@ -6,6 +6,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let libs, registry;
 let originalWarn = getDebugFunction('warn');
+function noop() {}
 
 moduleFor('Libraries registry', class extends AbstractTestCase {
   beforeEach() {
@@ -33,6 +34,8 @@ moduleFor('Libraries registry', class extends AbstractTestCase {
   ['@test only the first registration of a library is stored'](assert) {
     assert.expect(3);
 
+    // overwrite warn to supress the double registration warning (see https://github.com/emberjs/ember.js/issues/16391)
+    setDebugFunction('warn', noop);
     libs.register('magic', 1.23);
     libs.register('magic', 2.23);
 
