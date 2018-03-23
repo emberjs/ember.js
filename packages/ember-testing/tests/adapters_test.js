@@ -8,6 +8,8 @@ import { RSVP } from 'ember-runtime';
 
 var App, originalAdapter, originalQUnit, originalWindowOnerror;
 
+var originalConsoleError = console.error; // eslint-disable-line no-console
+
 function runThatThrowsSync(message = 'Error for testing error handling') {
   return run(() => {
     throw new Error(message);
@@ -26,6 +28,10 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
     originalAdapter = Test.adapter;
     originalQUnit = window.QUnit;
     originalWindowOnerror = window.onerror;
+  }
+
+  afterEach() {
+    console.error = originalConsoleError;// eslint-disable-line no-console
   }
 
   teardown() {
@@ -259,6 +265,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
     [`@test ${message} when TestAdapter is present - rsvp`](assert) {
       assert.expect(1);
 
+      console.error = () => {}; // eslint-disable-line no-console
       let thrown = new Error('the error');
       Test.adapter = QUnitAdapter.create({
         exception(error) {

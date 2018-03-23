@@ -10,7 +10,10 @@ import { Route } from 'ember-routing';
 import { RSVP } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views';
 
+var originalConsoleError = console.error; // eslint-disable-line no-console
+
 if (!jQueryDisabled) {
+
   moduleFor('ember-testing Acceptance', class extends AutobootApplicationTestCase {
     constructor() {
       super();
@@ -82,6 +85,9 @@ if (!jQueryDisabled) {
 
         this.application.injectTestHelpers();
       });
+    }
+    afterEach() {
+      console.error = originalConsoleError;// eslint-disable-line no-console
     }
 
     teardown() {
@@ -239,6 +245,7 @@ if (!jQueryDisabled) {
     [`@test Unhandled exceptions are logged via Ember.Test.adapter#exception`](assert) {
       assert.expect(2);
 
+      console.error = () => {}; // eslint-disable-line no-console
       let asyncHandled;
       Test.adapter = QUnitAdapter.create({
         exception(error) {
@@ -266,6 +273,7 @@ if (!jQueryDisabled) {
     [`@test Unhandled exceptions in 'andThen' are logged via Ember.Test.adapter#exception`](assert) {
       assert.expect(1);
 
+      console.error = () => {}; // eslint-disable-line no-console
       Test.adapter = QUnitAdapter.create({
         exception(error) {
           assert.equal(
