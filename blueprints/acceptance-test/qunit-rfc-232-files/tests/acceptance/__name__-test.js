@@ -1,6 +1,6 @@
 import { module, test } from 'qunit';
 import { visit, currentURL } from '@ember/test-helpers';
-import setupApplicationTest from '<%= dasherizedPackageName %>/tests/helpers/setup-application-test';
+import setupApplicationTest from '<%= testFolderRoot %>/tests/helpers/index';
 
 module('<%= friendlyTestName %>', function(hooks) {
   setupApplicationTest(hooks);
