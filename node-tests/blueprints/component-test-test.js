@@ -8,22 +8,13 @@ const emberNew = blueprintHelpers.emberNew;
 const emberGenerate = blueprintHelpers.emberGenerate;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const modifyPackages = blueprintHelpers.modifyPackages;
+const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
-
-function expectError(promise, expectedErrorText) {
-  return promise
-    .then(() => {
-      throw 'the command should raise an exception';
-    })
-    .catch(error => {
-      expect(error).to.equal(expectedErrorText);
-    });
-}
 
 describe('Blueprint: component-test', function() {
   setupTestHooks(this);
