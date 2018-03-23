@@ -7,6 +7,10 @@ import { Route, Router } from 'ember-routing';
 import {
   Component,
 } from 'ember-glimmer';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
+
+const originalDebug = getDebugFunction('debug');
+const noop = function(){};
 
 moduleFor('Application Lifecycle - route hooks', class extends AutobootApplicationTestCase {
 
@@ -19,6 +23,7 @@ moduleFor('Application Lifecycle - route hooks', class extends AutobootApplicati
   }
 
   constructor() {
+    setDebugFunction('debug', noop);
     super();
     let menuItem = this.menuItem = {};
 
@@ -36,6 +41,10 @@ moduleFor('Application Lifecycle - route hooks', class extends AutobootApplicati
       this.add('route:index', SettingRoute);
       this.add('route:application', SettingRoute);
     });
+  }
+
+  teardown() {
+    setDebugFunction('debug', originalDebug);
   }
 
   get indexController() {

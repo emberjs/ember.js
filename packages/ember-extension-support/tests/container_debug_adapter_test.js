@@ -3,11 +3,15 @@ import { assign } from 'ember-utils';
 import { run } from 'ember-metal';
 import { Controller as EmberController } from 'ember-runtime';
 import '../index'; // Must be required to export Ember.ContainerDebugAdapter.
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
+const originalDebug = getDebugFunction('debug');
+const noop = function(){};
 let adapter;
 
 moduleFor('Container Debug Adapter', class extends ApplicationTestCase {
   constructor() {
+    setDebugFunction('debug', noop);
     super();
     adapter = this.application.__deprecatedInstance__.lookup('container-debug-adapter:main');
   }
@@ -19,6 +23,7 @@ moduleFor('Container Debug Adapter', class extends ApplicationTestCase {
   }
 
   teardown() {
+    setDebugFunction('debug', originalDebug);
     run(() => {
       adapter.destroy();
     });

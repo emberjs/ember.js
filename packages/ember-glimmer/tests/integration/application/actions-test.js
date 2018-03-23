@@ -1,8 +1,21 @@
 import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
+
+const originalDebug = getDebugFunction('debug');
+const noop = function(){};
 
 moduleFor('Application test: actions', class extends ApplicationTest {
+  constructor() {
+    setDebugFunction('debug', noop);
+    super();
+  }
+
+  teardown() {
+    setDebugFunction('debug', originalDebug);
+  }
+
   ['@test actions in top level template application template target application controller'](assert) {
     assert.expect(1);
 

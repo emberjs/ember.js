@@ -9,10 +9,15 @@ import QUnitAdapter from '../adapters/qunit';
 import { Route } from 'ember-routing';
 import { RSVP } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
+
+const originalDebug = getDebugFunction('debug');
+const noop = function(){};
 
 if (!jQueryDisabled) {
   moduleFor('ember-testing Acceptance', class extends AutobootApplicationTestCase {
     constructor() {
+      setDebugFunction('debug', noop);
       super();
       this._originalAdapter = Test.adapter;
 
@@ -85,6 +90,7 @@ if (!jQueryDisabled) {
     }
 
     teardown() {
+      setDebugFunction('debug', originalDebug);
       Test.adapter = this._originalAdapter;
       super.teardown();
     }

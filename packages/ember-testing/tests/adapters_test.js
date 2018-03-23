@@ -5,6 +5,10 @@ import QUnitAdapter from '../adapters/qunit';
 import { Application as EmberApplication } from 'ember-application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { RSVP } from 'ember-runtime';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
+
+const originalDebug = getDebugFunction('debug');
+const noop = function(){};
 
 var App, originalAdapter, originalQUnit, originalWindowOnerror;
 
@@ -22,6 +26,7 @@ function runThatThrowsAsync(message = 'Error for testing error handling') {
 
 class AdapterSetupAndTearDown extends AbstractTestCase {
   constructor() {
+    setDebugFunction('debug', noop);
     super();
     originalAdapter = Test.adapter;
     originalQUnit = window.QUnit;
@@ -29,6 +34,7 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
   }
 
   teardown() {
+    setDebugFunction('debug', originalDebug);
     if (App) {
       run(App, App.destroy);
       App.removeTestHelpers();
