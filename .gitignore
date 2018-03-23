@@ -33,6 +33,7 @@ tmp.bpm
 tmp.spade
 tests/source
 node_modules
+yarn-error.log
 bundle/
 *~
 publish_to_bower/
