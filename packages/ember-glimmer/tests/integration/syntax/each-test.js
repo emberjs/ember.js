@@ -3,6 +3,7 @@ import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA, ArrayProxy, RSVP } from 'ember-runtime';
 import { Component } from '../../utils/helpers';
+import { HAS_NATIVE_SYMBOL } from 'ember-utils';
 
 import {
   TogglingSyntaxConditionalsTest,
@@ -777,6 +778,110 @@ moduleFor('Syntax test: {{#each}} with array proxies, replacing its content', cl
   }
 
 });
+
+if (HAS_NATIVE_SYMBOL) {
+  class IterableThingy {
+    constructor(ary) {
+      this._internalArray = ary;
+    }
+
+    [Symbol.iterator]() {
+      let index = 0;
+      return {
+        next: () => {
+          if (index < this._internalArray.length) {
+            return { value: this._internalArray[index++], done: false };
+          } else {
+            return { done: true };
+          }
+        }
+      };
+    }
+  }
+
+  moduleFor('Syntax test: {{#each}} with iterables', class extends RenderingTest {
+
+    ['@test it repeats the given block for each item']() {
+      let list = new IterableThingy([{ text: 'hello' }]);
+
+      this.render(`{{#each list as |item|}}{{item.text}}{{else}}Empty{{/each}}`, { list });
+
+      this.assertText('hello');
+
+      this.runTask(() => this.rerender());
+
+      this.assertText('hello');
+
+      this.runTask(() => set(this.context, 'list', new IterableThingy([{ text: 'Hello' }])));
+
+      this.assertText('Hello');
+
+      this.runTask(() => set(this.context, 'list', new IterableThingy([{ text: 'Hello' }, { text: ' ' }, { text: 'World' }])));
+
+      this.assertText('Hello World');
+    }
+
+    ['@test it receives the index as the second parameter']() {
+      let list = new IterableThingy([{ text: 'hello' }, { text: 'world' }]);
+
+      this.render(`{{#each list as |item index|}}[{{index}}. {{item.text}}]{{/each}}`, { list });
+
+      this.assertText('[0. hello][1. world]');
+
+      this.assertStableRerender();
+
+      this.runTask(() => set(this.context, 'list', new IterableThingy([{ text: 'hello' }, { text: 'my' }, { text: 'world' }])));
+
+      this.assertText('[0. hello][1. my][2. world]');
+    }
+
+    ['@test it can render duplicate primitive items']() {
+      let list = new IterableThingy(['a', 'a', 'a']);
+
+      this.render(`{{#each list as |item|}}{{item}}{{/each}}`, { list });
+
+      this.assertText('aaa');
+
+      this.assertStableRerender();
+
+      this.runTask(() => set(this.context, 'list', new IterableThingy(['a', 'a', 'a', 'a'])));
+
+      this.assertText('aaaa');
+    }
+
+    ['@test it can render duplicate objects']() {
+      let duplicateItem = { text: 'foo' };
+
+      let list = new IterableThingy([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]);
+
+      this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`, { list });
+
+      this.assertText('foofoobarbaz');
+
+      this.assertStableRerender();
+
+      this.runTask(() => set(this.context, 'list', new IterableThingy([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }, duplicateItem])));
+
+      this.assertText('foofoobarbazfoo');
+    }
+
+    ['@test it renders the inverse template when there is no items']() {
+      let list = new IterableThingy([]);
+
+      this.render(`{{#each list as |thing|}}Has Thing{{else}}No Thing{{/each}}`, { list });
+
+      this.assertText('No Thing');
+
+      this.runTask(() => this.rerender());
+
+      this.assertText('No Thing');
+
+      this.runTask(() => set(this.context, 'list', new IterableThingy(['a'])));
+
+      this.assertText('Has Thing');
+    }
+  });
+}
 
 // TODO: Refactor the following tests so we can run them against different kind of arrays
 

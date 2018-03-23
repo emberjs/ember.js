@@ -17,7 +17,7 @@ import {
   _contentFor,
   isEmberArray
 } from 'ember-runtime';
-import { guidFor } from 'ember-utils';
+import { guidFor, HAS_NATIVE_SYMBOL } from 'ember-utils';
 import { isEachIn } from '../helpers/each-in';
 import {
   UpdatablePrimitiveReference,
@@ -244,7 +244,6 @@ class EachInIterable {
     reference.update(item.value);
   }
 }
-
 class ArrayIterable {
   public ref: UpdatableReference;
   public keyFor: KeyFor;
@@ -279,6 +278,8 @@ class ArrayIterable {
       let array: any[] = [];
       iterable.forEach((item: any) => array.push(item));
       return ArrayIterator.from(array, keyFor);
+    } else if (HAS_NATIVE_SYMBOL && typeof iterable[Symbol.iterator] === 'function') {
+      return ArrayIterator.from(Array.from(iterable), keyFor);
     } else {
       return EMPTY_ITERATOR;
     }
