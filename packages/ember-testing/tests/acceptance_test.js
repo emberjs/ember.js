@@ -88,6 +88,7 @@ if (!jQueryDisabled) {
     }
     afterEach() {
       console.error = originalConsoleError;// eslint-disable-line no-console
+      super.afterEach();
     }
 
     teardown() {
