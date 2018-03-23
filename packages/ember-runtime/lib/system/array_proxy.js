@@ -7,17 +7,15 @@ import {
   objectAt,
   computed,
   alias,
-  PROPERTY_DID_CHANGE
+  PROPERTY_DID_CHANGE,
+  addArrayObserver,
+  removeArrayObserver
 } from 'ember-metal';
 import {
   isArray
 } from '../utils';
 import EmberObject from './object';
 import { MutableArray } from '../mixins/array';
-import {
-  addArrayObserver,
-  removeArrayObserver
-} from '../mixins/array';
 import { assert } from 'ember-debug';
 
 const ARRAY_OBSERVER_MAPPING = {

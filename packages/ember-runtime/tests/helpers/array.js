@@ -1,15 +1,18 @@
 import ArrayProxy from '../../system/array_proxy';
 import EmberArray, {
   A as emberA,
-  MutableArray,
-  arrayContentDidChange,
-  arrayContentWillChange,
-  addArrayObserver,
-  removeArrayObserver,
+  MutableArray
 } from '../../mixins/array';
 import { generateGuid, guidFor } from 'ember-utils';
-import { get, set } from 'ember-metal';
-import { computed } from 'ember-metal';
+import {
+  get,
+  set,
+  computed,
+  addArrayObserver,
+  removeArrayObserver,
+  arrayContentWillChange,
+  arrayContentDidChange
+} from 'ember-metal';
 import EmberObject from '../../system/object';
 import Copyable from '../../mixins/copyable';
 import { moduleFor } from 'internal-test-helpers';
