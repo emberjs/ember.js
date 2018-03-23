@@ -9,7 +9,7 @@
     "ember-engines-mount-params": true,
     "ember-module-unification": null,
     "glimmer-custom-component-manager": null,
-    "ember-template-block-let-helper": null,
+    "ember-template-block-let-helper": true,
     "ember-metal-tracked-properties": null
   },
   "deprecations": {
