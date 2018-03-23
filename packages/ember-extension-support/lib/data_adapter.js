@@ -16,7 +16,7 @@ import {
 /**
   The `DataAdapter` helps a data persistence library
   interface with tools that debug Ember such
-  as the [Ember Extension](https://github.com/tildeio/ember-extension)
+  as the [Ember Inspector](https://github.com/emberjs/ember-inspector)
   for Chrome and Firefox.
 
   This class will be extended by a persistence library
