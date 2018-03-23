@@ -31,7 +31,7 @@ const RouterService = Service.extend({
 
      ```app/router.js
      Router.map(function() {
-       this.route('about);
+       this.route('about');
        this.route('blog', function () {
          this.route('post', { path: ':post_id' });
        });
@@ -59,7 +59,7 @@ const RouterService = Service.extend({
 
      ```app/router.js
      Router.map(function() {
-       this.route('about);
+       this.route('about');
        this.route('blog', function () {
          this.route('post', { path: ':post_id' });
        });
@@ -70,8 +70,8 @@ const RouterService = Service.extend({
 
      * `/` when you visit `/`
      * `/about` when you visit `/about`
-     * `/blog/index` when you visit `/blog`
-     * `/blog/post` when you visit `/blog/some-post-id`
+     * `/blog` when you visit `/blog`
+     * `/blog/some-post-id` when you visit `/blog/some-post-id`
 
      @property currentURL
      @type String
