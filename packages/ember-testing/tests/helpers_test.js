@@ -32,6 +32,10 @@ import {
   registerWaiter,
   unregisterWaiter
 } from '../test/waiters';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
+
+var originalInfo = getDebugFunction('info');
+var noop = function(){};
 
 function registerHelper() {
   Test.registerHelper('LeakyMcLeakLeak', () => {});
@@ -889,7 +893,10 @@ if (!jQueryDisabled) {
   });
 
   moduleFor('ember-testing: debugging helpers', class extends HelpersApplicationTestCase {
-
+    afterEach() {
+      setDebugFunction('info', originalInfo);
+    }
+  
     constructor() {
       super();
       this.runTask(() => {
@@ -899,6 +906,8 @@ if (!jQueryDisabled) {
 
     [`@test pauseTest pauses`](assert) {
       assert.expect(1);
+      // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
+      setDebugFunction('info', noop);
 
       let {application: {testHelpers: {andThen, pauseTest}}} = this;
       andThen(() => {
@@ -915,6 +924,8 @@ if (!jQueryDisabled) {
 
     [`@test resumeTest resumes paused tests`](assert) {
       assert.expect(1);
+      // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
+      setDebugFunction('info', noop);
 
       let {application: {testHelpers: {pauseTest, resumeTest}}} = this;
 
