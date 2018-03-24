@@ -116,22 +116,24 @@ function notifyPropertyChange(obj, keyName, _meta) {
   }
 }
 
-let DID_SEEN = null;
+const SEEN_MAP = new Map();
+let IS_TOP_SEEN_MAP = true;
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
   if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
-  let seen = DID_SEEN;
-  let top = seen === null;
+  let seen = SEEN_MAP;
+  let isTop = IS_TOP_SEEN_MAP;
 
-  if (top) {
-    seen = DID_SEEN = new Map();
+  if (isTop) {
+    IS_TOP_SEEN_MAP = false;
   }
 
   iterDeps(notifyPropertyChange, obj, depKey, seen, meta);
 
-  if (top) {
-    DID_SEEN = null;
+  if (isTop) {
+    SEEN_MAP.clear();
+    IS_TOP_SEEN_MAP = true;
   }
 }
 
