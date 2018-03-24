@@ -26,13 +26,14 @@ import {
   @method watch
   @for Ember
   @param obj
-  @param {String} _keyPath
+  @param {String} keyPath
+  @param {Object} meta
 */
-export function watch(obj, _keyPath, m) {
-  if (isPath(_keyPath)) {
-    watchPath(obj, _keyPath, m);
+export function watch(obj, keyPath, meta) {
+  if (isPath(keyPath)) {
+    watchPath(obj, keyPath, meta);
   } else {
-    watchKey(obj, _keyPath, m);
+    watchKey(obj, keyPath, meta);
   }
 }
 
@@ -45,10 +46,22 @@ export function watcherCount(obj, key) {
   return (meta !== undefined && meta.peekWatching(key)) || 0;
 }
 
-export function unwatch(obj, _keyPath, m) {
-  if (isPath(_keyPath)) {
-    unwatchPath(obj, _keyPath, m);
+/**
+  Stops watching a property on an object. Usually you will never call this method directly but instead
+  use higher level methods like `removeObserver()`.
+
+  @private
+  @method unwatch
+  @for Ember
+  @param obj
+  @param {String} keyPath
+  @param {Object} meta
+*/
+
+export function unwatch(obj, keyPath, meta) {
+  if (isPath(keyPath)) {
+    unwatchPath(obj, keyPath, meta);
   } else {
-    unwatchKey(obj, _keyPath, m);
+    unwatchKey(obj, keyPath, meta);
   }
 }
