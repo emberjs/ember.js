@@ -12,8 +12,8 @@ export function objectAt(array, index) {
     return array[index];
   } else {
     return array.objectAt(index);
-  }  
-}  
+  }
+}
 
 export function replace(array, start, deleteCount, items = EMPTY_ARRAY) {
   if (Array.isArray(array)) {
@@ -104,17 +104,18 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
     }
   }
 
+  let meta = peekMeta(array);
+
   if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
-    notifyPropertyChange(array, 'length');
+    notifyPropertyChange(array, 'length', meta);
   }
 
-  notifyPropertyChange(array, '[]');
+  notifyPropertyChange(array, '[]', meta);
 
   eachProxyArrayDidChange(array, startIdx, removeAmt, addAmt);
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
-  let meta = peekMeta(array);
   let cache = peekCacheFor(array);
   if (cache !== undefined) {
     let length = get(array, 'length');
