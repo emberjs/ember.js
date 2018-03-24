@@ -45,9 +45,9 @@ class EachProxy {
     let keys = this._keys;
     let lim = removedCnt > 0 ? idx + removedCnt : -1;
     if (lim > 0) {
-      for (let key in keys) {
+      keys.forEach((val, key)=> {
         removeObserverForContentKey(content, key, this, idx, lim);
-      }
+      });
     }
   }
 
@@ -55,12 +55,12 @@ class EachProxy {
     let keys = this._keys;
     let lim = addedCnt > 0 ? idx + addedCnt : -1;
     let meta = peekMeta(this);
-    for (let key in keys) {
+    keys.forEach((val, key)=> {
       if (lim > 0) {
         addObserverForContentKey(content, key, this, idx, lim);
       }
       notifyPropertyChange(this, key, meta);
-    }
+    });
   }
 
   // ..........................................................
@@ -82,27 +82,33 @@ class EachProxy {
   beginObservingContentKey(keyName) {
     let keys = this._keys;
     if (keys === undefined) {
-      keys = this._keys = Object.create(null);
+      keys = this._keys = new Map();
     }
 
-    if (!keys[keyName]) {
-      keys[keyName] = 1;
+    let count = keys.get(keyName);
+    if (count === undefined) {
+      count = 0;
       let content = this._content;
       let len = get(content, 'length');
-
       addObserverForContentKey(content, keyName, this, 0, len);
-    } else {
-      keys[keyName]++;
     }
+    keys.set(keyName, count + 1);
   }
 
   stopObservingContentKey(keyName) {
     let keys = this._keys;
-    if (keys !== undefined && (keys[keyName] > 0) && (--keys[keyName] <= 0)) {
-      let content = this._content;
-      let len = get(content, 'length');
+    let count = keys !== undefined && keys.get(keyName);
 
-      removeObserverForContentKey(content, keyName, this, 0, len);
+    if (count !== undefined) {
+      count--;
+      if (count <= 0) {
+        keys.delete(keyName);
+        let content = this._content;
+        let len = get(content, 'length');
+        removeObserverForContentKey(content, keyName, this, 0, len);
+      } else {
+        keys.set(keyName, count);
+      }
     }
   }
 
