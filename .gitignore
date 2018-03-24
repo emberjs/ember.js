@@ -42,3 +42,5 @@ npm-debug.log
 DEBUG/
 *.tgz
 *.tar.gz
+*.log
+

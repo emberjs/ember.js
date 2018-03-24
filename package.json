@@ -92,7 +92,7 @@
     "broccoli-debug": "^0.6.4",
     "broccoli-file-creator": "^1.1.1",
     "broccoli-lint-eslint": "^3.2.2",
-    "broccoli-rollup": "^2.0.0",
+    "broccoli-rollup": "^2.1.0",
     "broccoli-source": "^1.1.0",
     "broccoli-string-replace": "^0.1.2",
     "broccoli-typescript-compiler": "^2.2.0",
