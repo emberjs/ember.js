@@ -12,9 +12,10 @@ import {
   ArrayTestCases
 } from '../../utils/shared-conditional-tests';
 
-class ArrayLike {
-  constructor(content) {
+class ArrayDelegate {
+  constructor(content, target) {
     this._array = content;
+    this._target = target || this;
   }
 
   // The following methods are APIs used by the tests
@@ -80,12 +81,20 @@ class ArrayLike {
   }
 
   arrayContentDidChange() {
-    notifyPropertyChange(this, '[]');
-    notifyPropertyChange(this, 'length');
+    notifyPropertyChange(this._target, '[]');
+    notifyPropertyChange(this._target, 'length');
+  }
+
+  toString() {
+    return `#<${this.constructor.name || 'UnknownArrayDelegate'}>`;
+  }
+
+  toJSON() {
+    return this.toString();
   }
 }
 
-class ForEachable extends ArrayLike {
+class ForEachable extends ArrayDelegate {
   get length() {
     return this._array.length;
   }
@@ -98,7 +107,7 @@ class ForEachable extends ArrayLike {
 let ArrayIterable;
 
 if (HAS_NATIVE_SYMBOL) {
-  ArrayIterable = class extends ArrayLike {
+  ArrayIterable = class extends ArrayDelegate {
     [Symbol.iterator]() {
       return this._array[Symbol.iterator]();
     }
@@ -200,13 +209,19 @@ moduleFor('Syntax test: toggling {{#each as}}', class extends EachEdgeCasesTest 
 class AbstractEachTest extends RenderingTest {
 
   /* abstract */
-  makeList() {
-    // this.list = this.delegate = ...;
-    throw new Error('Not implemented: `makeList`');
+  createList(/* items */) {
+    throw new Error('Not implemented: `createList`');
+  }
+
+  makeList(items) {
+    let { list, delegate } = this.createList(items);
+
+    this.list = list;
+    this.delegate = delegate;
   }
 
   replaceList(list) {
-    this.runTask(() => set(this.context, 'list', this.makeList(list)));
+    this.runTask(() => set(this.context, 'list', this.createList(list).list));
   }
 
   forEach(callback) {
@@ -258,18 +273,18 @@ class AbstractEachTest extends RenderingTest {
   }
 
   render(template, context = {}) {
-    if (this.list === undefined) {
-      throw new Error('Must call `this.makeList()` before calling this.render()');
+    if (this.list !== undefined) {
+      context.list = this.list;
     }
-
-    context.list = this.list;
 
     return super.render(template, context);
   }
 
 }
 
-class SingleEachTest extends AbstractEachTest {
+class EachTest extends AbstractEachTest {
+
+  /* single each */
 
   ['@test it repeats the given block for each item in the array']() {
     this.makeList([{ text: 'hello' }]);
@@ -499,7 +514,7 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context.list.objectAt(0), 'value', 3));
+    this.runTask(() => set(this.objectAt(0), 'value', 3));
 
     this.assertText('PrevNextPrev2NextPrev3Next');
 
@@ -764,63 +779,16 @@ class SingleEachTest extends AbstractEachTest {
 
     this.assertText('');
   }
-}
 
-moduleFor('Syntax test: {{#each}} with arrays', class extends SingleEachTest {
-
-  makeList(list) {
-    return this.list = this.delegate = emberA(list);
-  }
-
-});
-
-moduleFor('Syntax test: {{#each}} with array-like objects', class extends SingleEachTest {
-
-  makeList(list) {
-    return this.list = this.delegate = new ForEachable(list);
-  }
-
-});
-
-if (HAS_NATIVE_SYMBOL) {
-  moduleFor('Syntax test: {{#each}} with native iterables', class extends SingleEachTest {
-
-    makeList(list) {
-      return this.list = this.delegate = new ArrayIterable(list);
-    }
-
-  });
-}
-
-moduleFor('Syntax test: {{#each}} with array proxies, modifying itself', class extends SingleEachTest {
-
-  makeList(list) {
-    return this.list = this.delegate = ArrayProxy.create({ content: emberA(list) });
-  }
-
-});
-
-moduleFor('Syntax test: {{#each}} with array proxies, replacing its content', class extends SingleEachTest {
-
-  makeList(list) {
-    let content = this.delegate = emberA(list);
-    return this.list = ArrayProxy.create({ content });
-  }
-
-  replaceList(list) {
-    this.runTask(() => this.list.set('content', emberA(list)));
-  }
-
-});
-
-// TODO: Refactor the following tests so we can run them against different kind of arrays
-
-moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingTest {
+  /* multi each */
 
   ['@test re-using the same variable with different {{#each}} blocks does not override each other']() {
+    let admins = this.createList([{ name: 'Tom Dale' }]);
+    let users = this.createList([{ name: 'Yehuda Katz' }]);
+
     this.render(`Admin: {{#each admins key="name" as |person|}}[{{person.name}}]{{/each}} User: {{#each users key="name" as |person|}}[{{person.name}}]{{/each}}`, {
-      admins: emberA([{ name: 'Tom Dale' }]),
-      users: emberA([{ name: 'Yehuda Katz' }])
+      admins: admins.list,
+      users: users.list
     });
 
     this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
@@ -830,21 +798,24 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
     this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
 
     this.runTask(() => {
-      get(this.context, 'admins').pushObject({ name: 'Godfrey Chan' });
-      set(get(this.context, 'users').objectAt(0), 'name', 'Stefan Penner');
+      admins.delegate.pushObject({ name: 'Godfrey Chan' });
+      set(users.delegate.objectAt(0), 'name', 'Stefan Penner');
     });
 
     this.assertText('Admin: [Tom Dale][Godfrey Chan] User: [Stefan Penner]');
 
     this.runTask(() => {
-      set(this.context, 'admins', [{ name: 'Tom Dale' }]);
-      set(this.context, 'users', [{ name: 'Yehuda Katz' }]);
+      set(this.context, 'admins', this.createList([{ name: 'Tom Dale' }]).list);
+      set(this.context, 'users', this.createList([{ name: 'Yehuda Katz' }]).list);
     });
 
     this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
   }
 
   [`@test an outer {{#each}}'s scoped variable does not clobber an inner {{#each}}'s property if they share the same name - Issue #1315`]() {
+    let content = this.createList(['X', 'Y']);
+    let options = this.createList([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]);
+
     this.render(strip`
       {{#each content as |value|}}
         {{value}}-
@@ -853,8 +824,8 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
         {{/each}}
       {{/each}}
       `, {
-        content: emberA(['X', 'Y']),
-        options: emberA([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }])
+        content: content.list,
+        options: options.list
       });
 
     this.assertText('X-1:One2:TwoY-1:One2:Two');
@@ -862,26 +833,30 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
     this.assertStableRerender();
 
     this.runTask(() => {
-      get(this.context, 'content').pushObject('Z');
-      set(get(this.context, 'options').objectAt(0), 'value', 0);
+      content.delegate.pushObject('Z');
+      set(options.delegate.objectAt(0), 'value', 0);
     });
 
     this.assertText('X-0:One2:TwoY-0:One2:TwoZ-0:One2:Two');
 
     this.runTask(() => {
-      set(this.context, 'content', ['X', 'Y']);
-      set(this.context, 'options', [{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]);
+      set(this.context, 'content', this.createList(['X', 'Y']).list);
+      set(this.context, 'options', this.createList([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]).list);
     });
 
     this.assertText('X-1:One2:TwoY-1:One2:Two');
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block']() {
+    let first = this.createList(['Limbo']);
+    let fifth = this.createList(['Wrath']);
+    let ninth = this.createList(['Treachery']);
+
     this.render(`{{ring}}-{{#each first as |ring|}}{{ring}}-{{#each fifth as |ring|}}{{ring}}-{{#each ninth as |ring|}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}`, {
       ring: 'Greed',
-      first: emberA(['Limbo']),
-      fifth: emberA(['Wrath']),
-      ninth: emberA(['Treachery'])
+      first: first.list,
+      fifth: fifth.list,
+      ninth: ninth.list
     });
 
     this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
@@ -892,31 +867,34 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
 
     this.runTask(() => {
       set(this.context, 'ring', 'O');
-      get(this.context, 'fifth').insertAt(0, 'D');
+      fifth.delegate.insertAt(0, 'D');
     });
 
     this.assertText('O-Limbo-D-Treachery-D-Wrath-Treachery-Wrath-Limbo-O');
 
     this.runTask(() => {
-      get(this.context, 'first').pushObject('I');
-      get(this.context, 'ninth').replace(0, 1, ['K']);
+      first.delegate.pushObject('I');
+      ninth.delegate.replace(0, 1, ['K']);
     });
 
     this.assertText('O-Limbo-D-K-D-Wrath-K-Wrath-Limbo-I-D-K-D-Wrath-K-Wrath-I-O');
 
     this.runTask(() => {
       set(this.context, 'ring', 'Greed');
-      set(this.context, 'first', ['Limbo']);
-      set(this.context, 'fifth', ['Wrath']);
-      set(this.context, 'ninth', ['Treachery']);
+      set(this.context, 'first', this.createList(['Limbo']).list);
+      set(this.context, 'fifth', this.createList(['Wrath']).list);
+      set(this.context, 'ninth', this.createList(['Treachery']).list);
     });
 
     this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
   }
 
   ['@test it should support {{#each name as |foo|}}, then {{#each foo as |bar|}}']() {
+    let inner = this.createList(['caterpillar']);
+    let outer = this.createList([inner.list]);
+
     this.render(`{{#each name key="@index" as |foo|}}{{#each foo as |bar|}}{{bar}}{{/each}}{{/each}}`, {
-      name: emberA([emberA(['caterpillar'])])
+      name: outer.list
     });
 
     this.assertText('caterpillar');
@@ -926,16 +904,69 @@ moduleFor('Syntax test: Multiple {{#each as}} helpers', class extends RenderingT
     this.assertText('caterpillar');
 
     this.runTask(() => {
-      let name = get(this.context, 'name');
-      name.objectAt(0).replace(0, 1, ['lady']);
-      name.pushObject(['bird']);
+      inner.delegate.replace(0, 1, ['lady']);
+      outer.delegate.pushObject(this.createList(['bird']).list);
     });
 
     this.assertText('ladybird');
 
-    this.runTask(() => set(this.context, 'name', [['caterpillar']]));
+    this.runTask(() => set(this.context, 'name', this.createList([this.createList(['caterpillar']).list]).list));
 
     this.assertText('caterpillar');
+  }
+}
+
+moduleFor('Syntax test: {{#each}} with native arrays', class extends EachTest {
+
+  createList(items) {
+    return { list: items, delegate: new ArrayDelegate(items, items) };
+  }
+
+});
+
+moduleFor('Syntax test: {{#each}} with emberA-wrapped arrays', class extends EachTest {
+
+  createList(items) {
+    let wrapped = emberA(items);
+    return { list: wrapped, delegate: wrapped };
+  }
+
+});
+
+moduleFor('Syntax test: {{#each}} with array-like objects implementing forEach', class extends EachTest {
+
+  createList(items) {
+    let forEachable = new ForEachable(items);
+    return { list: forEachable, delegate: forEachable };
+  }
+
+});
+
+if (HAS_NATIVE_SYMBOL) {
+  moduleFor('Syntax test: {{#each}} with array-like objects implementing Symbol.iterator', class extends EachTest {
+
+    createList(items) {
+      let iterable = new ArrayIterable(items);
+      return { list: iterable, delegate: iterable };
+    }
+
+  });
+}
+
+moduleFor('Syntax test: {{#each}} with array proxies, modifying itself', class extends EachTest {
+
+  createList(items) {
+    let proxty = ArrayProxy.create({ content: emberA(items) });
+    return { list: proxty, delegate: proxty };
+  }
+
+});
+
+moduleFor('Syntax test: {{#each}} with array proxies, replacing its content', class extends EachTest {
+
+  createList(items) {
+    let wrapped = emberA(items);
+    return { list: wrapped, delegate: ArrayProxy.create({ content: wrapped }) };
   }
 
 });
