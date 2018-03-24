@@ -9,11 +9,16 @@ import {
   moduleFor,
   AbstractTestCase as TestCase
 } from 'internal-test-helpers';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
+
+const originalDebug = getDebugFunction('debug');
+const noop = function(){};
 
 let application, appInstance;
 
 moduleFor('ApplicationInstance', class extends TestCase {
   constructor() {
+    setDebugFunction('debug', noop);
     super();
 
     document.getElementById('qunit-fixture').innerHTML = `
@@ -23,6 +28,7 @@ moduleFor('ApplicationInstance', class extends TestCase {
   }
 
   teardown() {
+    setDebugFunction('debug', originalDebug);
     if (appInstance) {
       run(appInstance, 'destroy');
     }

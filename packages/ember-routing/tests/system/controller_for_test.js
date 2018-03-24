@@ -4,8 +4,21 @@ import {
 import controllerFor from '../../system/controller_for';
 import generateController from '../../system/generate_controller';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { getDebugFunction, setDebugFunction } from 'ember-debug';
+
+const originalDebug = getDebugFunction('debug');
+const noop = function(){};
 
 moduleFor('controllerFor', class extends ApplicationTestCase {
+  constructor() {
+    setDebugFunction('debug', noop);
+    super();
+  }
+
+  teardown() {
+    setDebugFunction('debug', originalDebug);
+  }
+
   ['@test controllerFor should lookup for registered controllers'](assert) {
     this.add('controller:app', Controller.extend());
 
@@ -19,6 +32,15 @@ moduleFor('controllerFor', class extends ApplicationTestCase {
 });
 
 moduleFor('generateController', class extends ApplicationTestCase {
+  constructor() {
+    setDebugFunction('debug', noop);
+    super();
+  }
+
+  teardown() {
+    setDebugFunction('debug', originalDebug);
+  }
+
   ['@test generateController should return Controller'](assert) {
     return this.visit('/').then(() => {
       let controller = generateController(this.applicationInstance, 'home');
