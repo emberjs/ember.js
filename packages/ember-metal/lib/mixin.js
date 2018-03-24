@@ -428,25 +428,7 @@ export function mixin(obj, ...args) {
 export default class Mixin {
   constructor(mixins, properties) {
     this.properties = properties;
-
-    let length = mixins && mixins.length;
-
-    if (length > 0) {
-      let m = new Array(length);
-
-      for (let i = 0; i < length; i++) {
-        let x = mixins[i];
-        if (x instanceof Mixin) {
-          m[i] = x;
-        } else {
-          m[i] = new Mixin(undefined, x);
-        }
-      }
-
-      this.mixins = m;
-    } else {
-      this.mixins = undefined;
-    }
+    this.mixins = buildMixinsArray(mixins);
     this.ownerConstructor = undefined;
     this._without = undefined;
     this[NAME_KEY] = null;
@@ -506,35 +488,18 @@ export default class Mixin {
     @param arguments*
     @private
   */
-  reopen() {
-    let currentMixin;
+  reopen(...args) {
+    if (args.length === 0) { return; }
 
     if (this.properties) {
-      currentMixin = new Mixin(undefined, this.properties);
+      let currentMixin = new Mixin(undefined, this.properties);
       this.properties = undefined;
       this.mixins = [currentMixin];
     } else if (!this.mixins) {
       this.mixins = [];
     }
 
-    let mixins = this.mixins;
-    let idx;
-
-    for (idx = 0; idx < arguments.length; idx++) {
-      currentMixin = arguments[idx];
-      assert(
-        `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
-        typeof currentMixin === 'object' && currentMixin !== null &&
-          Object.prototype.toString.call(currentMixin) !== '[object Array]'
-      );
-
-      if (currentMixin instanceof Mixin) {
-        mixins.push(currentMixin);
-      } else {
-        mixins.push(new Mixin(undefined, currentMixin));
-      }
-    }
-
+    this.mixins = this.mixins.concat(buildMixinsArray(args));
     return this;
   }
 
@@ -580,6 +545,30 @@ export default class Mixin {
     return '(unknown mixin)';
   }
 
+}
+
+function buildMixinsArray(mixins) {
+  let length = mixins && mixins.length;
+  let m;
+
+  if (length > 0) {
+    m = new Array(length);
+    for (let i = 0; i < length; i++) {
+      let x = mixins[i];
+      assert(
+        `Expected hash or Mixin instance, got ${Object.prototype.toString.call(x)}`,
+        typeof x === 'object' && x !== null && Object.prototype.toString.call(x) !== '[object Array]'
+      );
+
+      if (x instanceof Mixin) {
+        m[i] = x;
+      } else {
+        m[i] = new Mixin(undefined, x);
+      }
+    }
+  }
+
+  return m;
 }
 
 if (ENV._ENABLE_BINDING_SUPPORT) {
