@@ -1,136 +1,58 @@
 import {
+  AbstractIterable,
   combine,
   CONSTANT_TAG,
   IterationItem,
-  TagWrapper,
+  OpaqueIterator,
+  Tag,
   UpdatableTag,
+  VersionedReference
 } from '@glimmer/reference';
-import { Opaque } from '@glimmer/util';
-import {
-  get,
-  isProxy,
-  objectAt,
-  tagFor,
-  tagForProperty
-} from 'ember-metal';
-import {
-  _contentFor,
-  isEmberArray
-} from 'ember-runtime';
-import { guidFor } from 'ember-utils';
+import { Opaque, Option } from '@glimmer/util';
+import { assert } from 'ember-debug';
+import { get, isProxy, objectAt, tagFor, tagForProperty } from 'ember-metal';
+import { _contentFor, isEmberArray } from 'ember-runtime';
+import { guidFor, HAS_NATIVE_SYMBOL } from 'ember-utils';
 import { isEachIn } from '../helpers/each-in';
-import {
-  UpdatablePrimitiveReference,
-  UpdatableReference,
-} from './references';
+import { UpdatableReference } from './references';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
-type KeyFor = (value: any, memo: any) => any;
+// FIXME: export this from Glimmer
+type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
+type EmberIterable = AbstractIterable<Opaque, Opaque, OpaqueIterationItem, UpdatableReference, UpdatableReference>;
 
-export default function iterableFor(ref: any, keyPath: string) {
+export default function iterableFor(ref: VersionedReference, keyPath: string | null | undefined): EmberIterable {
   if (isEachIn(ref)) {
-    return new EachInIterable(ref, keyForEachIn(keyPath));
+    return new EachInIterable(ref, keyPath || '@key');
   } else {
-    return new ArrayIterable(ref, keyForArray(keyPath));
+    return new EachIterable(ref, keyPath || '@identity');
   }
 }
 
-function keyForEachIn(keyPath: string | undefined | null) {
-  switch (keyPath) {
-    case '@index':
-    case undefined:
-    case null:
-      return index;
-    case '@identity':
-      return identity;
-    default:
-      return (item: any) => get(item, keyPath);
-  }
-}
+abstract class BoundedIterator implements OpaqueIterator {
+  private position = 0;
 
-function keyForArray(keyPath: string | undefined | null) {
-  switch (keyPath) {
-    case '@index':
-      return index;
-    case '@identity':
-    case undefined:
-    case null:
-      return identity;
-    default:
-      return (item: any) => get(item, keyPath);
-  }
-}
+  constructor(private length: number, private keyFor: KeyFor) {}
 
-function index(_item: any, i: any): string {
-  return String(i);
-}
-
-function identity(item: any) {
-  switch (typeof item) {
-    case 'string':
-    case 'number':
-      return String(item);
-    default:
-      return guidFor(item);
-  }
-}
-
-function ensureUniqueKey(seen: any, key: string) {
-  let seenCount = seen[key];
-
-  if (seenCount > 0) {
-    seen[key]++;
-    return `${key}${ITERATOR_KEY_GUID}${seenCount}`;
-  } else {
-    seen[key] = 1;
-  }
-
-  return key;
-}
-
-interface Iterator {
-  isEmpty(): boolean;
-  next(): any;
-}
-
-class ArrayIterator implements Iterator {
-  static from(array: any[], keyFor: KeyFor): Iterator {
-    let { length } = array;
-
-    if (length > 0) {
-      return new this(array, length, keyFor);
-    } else {
-      return EMPTY_ITERATOR;
-    }
-  }
-
-  public position = 0;
-  public seen: any = Object.create(null);
-
-  constructor(public array: any[], public length: number, public keyFor: KeyFor) {
-  }
-
-  isEmpty() {
+  isEmpty(): false {
     return false;
   }
 
-  getMemo(position: number) {
+  abstract valueFor(position: number): Opaque;
+
+  memoFor(position: number): Opaque {
     return position;
   }
 
-  getValue(position: number) {
-    return this.array[position];
-  }
-
-  next() {
-    let { length, keyFor, position, seen } = this;
+  next(): Option<OpaqueIterationItem> {
+    let { length, keyFor, position } = this;
 
     if (position >= length) { return null; }
 
-    let value = this.getValue(position);
-    let memo = this.getMemo(position);
-    let key = ensureUniqueKey(seen, keyFor(value, memo));
+    let value = this.valueFor(position);
+    let memo = this.memoFor(position);
+    let key = keyFor(value, memo, position);
 
     this.position++;
 
@@ -138,72 +60,199 @@ class ArrayIterator implements Iterator {
   }
 }
 
-class EmberArrayIterator extends ArrayIterator {
-  static from(array: any[], keyFor: KeyFor): Iterator {
-    let length = get(array, 'length');
+class ArrayIterator extends BoundedIterator {
+  static from(array: Opaque[], keyFor: KeyFor): OpaqueIterator {
+    let { length } = array;
 
-    if (length > 0) {
-      return new this(array, length, keyFor);
-    } else {
+    if (length === 0) {
       return EMPTY_ITERATOR;
+    } else {
+      return new this(array, length, keyFor);
     }
   }
 
-  getValue(position: number) {
+  static fromForEachable(object: ForEachable, keyFor: KeyFor): OpaqueIterator {
+    let array: Opaque[] = [];
+    object.forEach(item => array.push(item));
+    return this.from(array, keyFor);
+  }
+
+  constructor(private array: Opaque[], length: number, keyFor: KeyFor) {
+    super(length, keyFor);
+  }
+
+  valueFor(position: number): Opaque {
+    return this.array[position];
+  }
+}
+
+class EmberArrayIterator extends BoundedIterator {
+  static from(array: Opaque, keyFor: KeyFor): OpaqueIterator {
+    let length = get(array, 'length');
+
+    if (length === 0) {
+      return EMPTY_ITERATOR;
+    } else {
+      return new this(array, length, keyFor);
+    }
+  }
+
+  constructor(private array: Opaque, length: number, keyFor: KeyFor) {
+    super(length, keyFor);
+  }
+
+  valueFor(position: number): Opaque {
     return objectAt(this.array, position);
   }
 }
 
-class ObjectKeysIterator extends ArrayIterator {
-  static from(obj: object, keyFor: KeyFor): Iterator {
+class ObjectIterator extends BoundedIterator {
+  static fromIndexable(obj: Indexable, keyFor: KeyFor): OpaqueIterator {
     let keys = Object.keys(obj);
+    let values: Opaque[] = [];
+
     let { length } = keys;
 
-    if (length > 0) {
-      return new this(keys, keys.map((key) => obj[key]), length, keyFor);
-    } else{
+    for (let i=0; i<length; i++) {
+      values.push(get(obj, keys[i]));
+    }
+
+    if (length === 0) {
       return EMPTY_ITERATOR;
+    } else{
+      return new this(keys, values, length, keyFor);
     }
   }
 
-  constructor(public keys: any[], values: any[], length: number, keyFor: KeyFor) {
-    super(values, length, keyFor);
+  static fromForEachable(obj: ForEachable, keyFor: KeyFor): OpaqueIterator {
+    let keys: Opaque[] = [];
+    let values: Opaque[] = [];
+    let length = 0;
+
+    let isMapLike = false;
+
+    obj.forEach((value: Opaque, key: Opaque) => {
+      isMapLike = isMapLike || arguments.length >= 2;
+
+      if (isMapLike) {
+        keys.push(key);
+        values.push(value);
+      } else {
+        values.push(value);
+      }
+
+      length++;
+    });
+
+    if (length === 0) {
+      return EMPTY_ITERATOR;
+    } else if (isMapLike) {
+      return new this(keys, values, length, keyFor);
+    } else {
+      return new ArrayIterator(values, length, keyFor);
+    }
   }
 
-  getMemo(position: number) {
+  constructor(private keys: Opaque[], private values: Opaque[], length: number, keyFor: KeyFor) {
+    super(length, keyFor);
+  }
+
+  valueFor(position: number): Opaque {
+    return this.values[position];
+  }
+
+  memoFor(position: number): Opaque {
     return this.keys[position];
   }
 }
 
-class EmptyIterator implements Iterator {
-  isEmpty() {
-    return true;
+interface NativeIteratorConstructor<T = Opaque> {
+  new(iterable: Iterator<T>, result: IteratorResult<T>, keyFor: KeyFor): NativeIterator<T>;
+}
+
+abstract class NativeIterator<T = Opaque> implements OpaqueIterator {
+  static from<T>(this: NativeIteratorConstructor<T>, iterable: Iterable<T>, keyFor: KeyFor): OpaqueIterator {
+    let iterator = iterable[Symbol.iterator]();
+    let result = iterator.next();
+    let { value, done } = result;
+
+    if (done) {
+      return EMPTY_ITERATOR;
+    } else if (Array.isArray(value) && value.length === 2) {
+      return new this(iterator, result, keyFor);
+    } else {
+      return new ArrayLikeNativeIterator(iterator, result, keyFor);
+    }
   }
 
-  next(): IterationItem<Opaque, Opaque> {
-    throw new Error('Cannot call next() on an empty iterator');
+  private position = 0;
+
+  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>, private keyFor: KeyFor) {}
+
+  isEmpty(): false {
+    return false;
+  }
+
+  abstract valueFor(result: IteratorResult<T>, position: number): Opaque;
+  abstract memoFor(result: IteratorResult<T>, position: number): Opaque;
+
+  next(): Option<OpaqueIterationItem> {
+    let { iterable, result, position, keyFor } = this;
+
+    if (result.done) { return null; }
+
+    let value = this.valueFor(result, position);
+    let memo = this.memoFor(result, position);
+    let key = keyFor(value, memo, position);
+
+    this.position++;
+    this.result = iterable.next();
+
+    return { key, value, memo };
   }
 }
 
-const EMPTY_ITERATOR = new EmptyIterator();
-
-class EachInIterable {
-  public ref: any;
-  public keyFor: ((iterable: any) => any) | ((item: any, i: any) => string);
-  public valueTag: TagWrapper<UpdatableTag>;
-  public tag: any;
-
-  constructor(ref: any, keyFor: ((iterable: any) => any) | ((item: any, i: any) => string)) {
-    this.ref = ref;
-    this.keyFor = keyFor;
-
-    let valueTag = this.valueTag = UpdatableTag.create(CONSTANT_TAG);
-
-    this.tag = combine([ref.tag, valueTag]);
+class ArrayLikeNativeIterator extends NativeIterator {
+  valueFor(result: IteratorResult<Opaque>): Opaque {
+    return result.value;
   }
 
-  iterate() {
-    let { ref, keyFor, valueTag } = this;
+  memoFor(_result: IteratorResult<Opaque>, position: number): Opaque {
+    return position;
+  }
+}
+
+class MapLikeNativeIterator extends NativeIterator<[Opaque, Opaque]> {
+  valueFor(result: IteratorResult<[Opaque, Opaque]>): Opaque {
+    return result.value[1];
+  }
+
+  memoFor(result: IteratorResult<[Opaque, Opaque]>): Opaque {
+    return result.value[0];
+  }
+}
+
+const EMPTY_ITERATOR: OpaqueIterator = {
+  isEmpty(): true {
+    return true;
+  },
+
+  next(): null {
+    assert('Cannot call next() on an empty iterator');
+    return null;
+  }
+};
+
+class EachInIterable implements EmberIterable {
+  public tag: Tag;
+  private valueTag = UpdatableTag.create(CONSTANT_TAG);
+
+  constructor(private ref: VersionedReference, private keyPath: string) {
+    this.tag = combine([ref.tag, this.valueTag]);
+  }
+
+  iterate(): OpaqueIterator {
+    let { ref, valueTag } = this;
 
     let iterable = ref.value();
     let tag = tagFor(iterable);
@@ -216,52 +265,64 @@ class EachInIterable {
 
     valueTag.inner.update(tag);
 
-    let typeofIterable = typeof iterable;
-
-    if (iterable !== null && (typeofIterable === 'object' || typeofIterable === 'function')) {
-      return ObjectKeysIterator.from(iterable, keyFor);
-    } else {
+    if (!isIndexable(iterable)) {
       return EMPTY_ITERATOR;
+    }
+
+    if (Array.isArray(iterable) || isEmberArray(iterable)) {
+      return ObjectIterator.fromIndexable(iterable, this.keyFor(true));
+    } else if (HAS_NATIVE_SYMBOL && isNativeIterable<[Opaque, Opaque]>(iterable)) {
+      return MapLikeNativeIterator.from(iterable, this.keyFor());
+    } else if (hasForEach(iterable)) {
+      return ObjectIterator.fromForEachable(iterable, this.keyFor());
+    } else {
+      return ObjectIterator.fromIndexable(iterable, this.keyFor(true));
     }
   }
 
-  // {{each-in}} yields |key value| instead of |value key|, so the memo and
-  // value are flipped
-
-  valueReferenceFor(item: any): UpdatablePrimitiveReference {
-    return new UpdatablePrimitiveReference(item.memo);
-  }
-
-  updateValueReference(reference: UpdatableReference, item: any) {
-    reference.update(item.memo);
-  }
-
-  memoReferenceFor(item: any): UpdatableReference {
+  valueReferenceFor(item: OpaqueIterationItem): UpdatableReference {
     return new UpdatableReference(item.value);
   }
 
-  updateMemoReference(reference: UpdatableReference, item: any) {
-    reference.update(item.value);
+  updateValueReference(ref: UpdatableReference, item: OpaqueIterationItem): void {
+    ref.update(item.value);
+  }
+
+  memoReferenceFor(item: OpaqueIterationItem): UpdatableReference {
+    return new UpdatableReference(item.memo);
+  }
+
+  updateMemoReference(ref: UpdatableReference, item: OpaqueIterationItem): void {
+    ref.update(item.memo);
+  }
+
+  private keyFor(hasUniqueKeys = false): KeyFor {
+    let { keyPath } = this;
+
+    switch (keyPath) {
+      case '@key':
+        return hasUniqueKeys ? ObjectKey : Unique(MapKey);
+      case '@index':
+        return Index;
+      case '@identity':
+        return Unique(Identity);
+      default:
+        assert(`Invalid key: ${keyPath}`, keyPath[0] !== '@');
+        return Unique(KeyPath(keyPath));
+    }
   }
 }
 
-class ArrayIterable {
-  public ref: UpdatableReference;
-  public keyFor: KeyFor;
-  public valueTag: TagWrapper<UpdatableTag>;
-  public tag: any;
+class EachIterable implements EmberIterable {
+  public tag: Tag;
+  private valueTag = UpdatableTag.create(CONSTANT_TAG);
 
-  constructor(ref: UpdatableReference, keyFor: KeyFor) {
-    this.ref = ref;
-    this.keyFor = keyFor;
-
-    let valueTag = this.valueTag = UpdatableTag.create(CONSTANT_TAG);
-
-    this.tag = combine([ref.tag, valueTag]);
+  constructor(private ref: VersionedReference, private keyPath: string) {
+    this.tag = combine([ref.tag, this.valueTag]);
   }
 
-  iterate(): Iterator {
-    let { ref, keyFor, valueTag } = this;
+  iterate(): OpaqueIterator {
+    let { ref, valueTag } = this;
 
     let iterable = ref.value();
 
@@ -271,32 +332,117 @@ class ArrayIterable {
       return EMPTY_ITERATOR;
     }
 
+    let keyFor = this.keyFor();
+
     if (Array.isArray(iterable)) {
       return ArrayIterator.from(iterable, keyFor);
     } else if (isEmberArray(iterable)) {
       return EmberArrayIterator.from(iterable, keyFor);
-    } else if (typeof iterable.forEach === 'function') {
-      let array: any[] = [];
-      iterable.forEach((item: any) => array.push(item));
-      return ArrayIterator.from(array, keyFor);
+    } else if (HAS_NATIVE_SYMBOL && isNativeIterable(iterable)) {
+      return ArrayLikeNativeIterator.from(iterable, keyFor);
+    } else if (hasForEach(iterable)) {
+      return ArrayIterator.fromForEachable(iterable, keyFor);
     } else {
       return EMPTY_ITERATOR;
     }
   }
 
-  valueReferenceFor(item: any): UpdatableReference {
+  valueReferenceFor(item: OpaqueIterationItem): UpdatableReference {
     return new UpdatableReference(item.value);
   }
 
-  updateValueReference(reference: UpdatableReference, item: any) {
-    reference.update(item.value);
+  updateValueReference(ref: UpdatableReference, item: OpaqueIterationItem): void {
+    ref.update(item.value);
   }
 
-  memoReferenceFor(item: any): UpdatablePrimitiveReference {
-    return new UpdatablePrimitiveReference(item.memo);
+  memoReferenceFor(item: OpaqueIterationItem): UpdatableReference {
+    return new UpdatableReference(item.memo as number);
   }
 
-  updateMemoReference(reference: UpdatablePrimitiveReference, item: any) {
-    reference.update(item.memo);
+  updateMemoReference(ref: UpdatableReference, item: OpaqueIterationItem): void {
+    ref.update(item.memo);
   }
+
+  private keyFor(): KeyFor {
+    let { keyPath } = this;
+
+    switch (keyPath) {
+      case '@index':
+        return Index;
+      case '@identity':
+        return Unique(Identity);
+      default:
+        assert(`Invalid key: ${keyPath}`, keyPath[0] !== '@');
+        return Unique(KeyPath(keyPath));
+    }
+  }
+}
+
+interface ForEachable {
+  forEach(callback: (item: Opaque, key: Opaque) => void): void;
+}
+
+function hasForEach(value: object): value is ForEachable {
+  return typeof value['forEach'] === 'function';
+}
+
+function isNativeIterable<T = Opaque>(value: object): value is Iterable<T> {
+  return typeof value[Symbol.iterator] === 'function';
+}
+
+interface Indexable {
+  readonly [key: string]: Opaque;
+}
+
+function isIndexable(value: Opaque): value is Indexable {
+  return value !== null && (typeof value === 'object' || typeof value === 'function');
+}
+
+type KeyFor = (value: Opaque, memo: Opaque, position: number) => string;
+
+// Position in an array is guarenteed to be unique
+function Index(_value: Opaque, _memo: Opaque, position: number): string {
+  return String(position);
+}
+
+// Object.keys(...) is guarenteed to be strings and unique
+function ObjectKey(_value: Opaque, memo: Opaque): string {
+  return memo as string;
+}
+
+// Map keys can be any objects
+function MapKey(_value: Opaque, memo: Opaque): string {
+  return Identity(memo);
+}
+
+function Identity(value: Opaque): string {
+  switch (typeof value) {
+    case 'string':
+      return value as string;
+    case 'number':
+      return String(value);
+    default:
+      return guidFor(value);
+  }
+}
+
+function KeyPath(keyPath: string): KeyFor {
+  return (value: Opaque) => String(get(value, keyPath));
+}
+
+function Unique(func: KeyFor): KeyFor {
+  let seen = new Set();
+
+  return (value: Opaque, memo: Opaque, position: number) => {
+    let key = func(value, memo, position);
+    let count = seen[key];
+
+    if (count === undefined) {
+      seen[key] = 0;
+      return key;
+    } else {
+      seen[key] = ++count;
+      return `${key}${ITERATOR_KEY_GUID}${count}`;
+    }
+  };
 }

@@ -137,6 +137,7 @@ export {
   didRender,
   assertNotRendered
 } from './transaction';
+export { default as WeakSet } from './weak_set';
 export {
   isProxy,
   setProxy

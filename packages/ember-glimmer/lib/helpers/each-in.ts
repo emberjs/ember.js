@@ -1,10 +1,12 @@
 /**
 @module ember
 */
+import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
   VM
 } from '@glimmer/runtime';
+import { Opaque } from '@glimmer/util';
 import { symbol } from 'ember-utils';
 
 /**
@@ -115,12 +117,27 @@ import { symbol } from 'ember-utils';
 */
 const EACH_IN_REFERENCE = symbol('EACH_IN');
 
-export function isEachIn(ref: any): boolean {
-  return ref && ref[EACH_IN_REFERENCE];
+class EachInReference implements VersionedPathReference {
+  public tag: Tag;
+
+  constructor(private inner: VersionedPathReference) {
+    this.tag = inner.tag;
+    this[EACH_IN_REFERENCE] = true;
+  }
+
+  value(): Opaque {
+    return this.inner.value();
+  }
+
+  get(key: string): VersionedPathReference {
+    return this.inner.get(key);
+  }
+}
+
+export function isEachIn(ref: Opaque): ref is VersionedPathReference {
+  return ref !== null && typeof ref === 'object' && ref[EACH_IN_REFERENCE];
 }
 
 export default function(_vm: VM, args: Arguments) {
-  let ref = Object.create(args.positional.at(0));
-  ref[EACH_IN_REFERENCE] = true;
-  return ref;
+  return new EachInReference(args.positional.at(0));
 }

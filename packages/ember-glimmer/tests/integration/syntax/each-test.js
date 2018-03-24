@@ -3,6 +3,7 @@ import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA, ArrayProxy, RSVP } from 'ember-runtime';
 import { Component } from '../../utils/helpers';
+import { HAS_NATIVE_SYMBOL } from 'ember-utils';
 
 import {
   TogglingSyntaxConditionalsTest,
@@ -16,15 +17,11 @@ class ArrayLike {
     this._array = content;
   }
 
-  get length() {
-    return this._array.length;
-  }
-
-  forEach(callback) {
-    this._array.forEach(callback);
-  }
-
   // The following methods are APIs used by the tests
+
+  toArray() {
+    return this._array.slice();
+  }
 
   objectAt(idx) {
     return this._array[idx];
@@ -86,7 +83,26 @@ class ArrayLike {
     notifyPropertyChange(this, '[]');
     notifyPropertyChange(this, 'length');
   }
+}
 
+class ForEachable extends ArrayLike {
+  get length() {
+    return this._array.length;
+  }
+
+  forEach(callback) {
+    this._array.forEach(callback);
+  }
+}
+
+let ArrayIterable;
+
+if (HAS_NATIVE_SYMBOL) {
+  ArrayIterable = class extends ArrayLike {
+    [Symbol.iterator]() {
+      return this._array[Symbol.iterator]();
+    }
+  };
 }
 
 class TogglingEachTest extends TogglingSyntaxConditionalsTest {
@@ -98,27 +114,36 @@ class TogglingEachTest extends TogglingSyntaxConditionalsTest {
 
 class BasicEachTest extends TogglingEachTest {}
 
+const TRUTHY_CASES = [
+  ['hello'],
+  emberA(['hello']),
+  new ForEachable(['hello']),
+  ArrayProxy.create({ content: ['hello'] }),
+  ArrayProxy.create({ content: emberA(['hello']) })
+];
+
+const FALSY_CASES = [
+  null,
+  undefined,
+  false,
+  '',
+  0,
+  [],
+  emberA([]),
+  new ForEachable([]),
+  ArrayProxy.create({ content: [] }),
+  ArrayProxy.create({ content: emberA([]) })
+];
+
+if (HAS_NATIVE_SYMBOL) {
+  TRUTHY_CASES.push(new ArrayIterable(['hello']));
+  FALSY_CASES.push(new ArrayIterable([]));
+}
+
 applyMixins(BasicEachTest,
-
-  new TruthyGenerator([
-    ['hello'],
-    emberA(['hello']),
-    new ArrayLike(['hello']),
-    ArrayProxy.create({ content: ['hello'] }),
-    ArrayProxy.create({ content: emberA(['hello']) })
-  ]),
-
-  new FalsyGenerator([
-    null,
-    undefined,
-    false,
-    '',
-    0,
-    []
-  ]),
-
+  new TruthyGenerator(TRUTHY_CASES),
+  new FalsyGenerator(FALSY_CASES),
   ArrayTestCases
-
 );
 
 moduleFor('Syntax test: toggling {{#each}}', class extends BasicEachTest {
@@ -185,7 +210,7 @@ class AbstractEachTest extends RenderingTest {
   }
 
   forEach(callback) {
-    return this.delegate.forEach(callback);
+    return this.delegate.toArray().forEach(callback);
   }
 
   objectAt(idx) {
@@ -752,10 +777,20 @@ moduleFor('Syntax test: {{#each}} with arrays', class extends SingleEachTest {
 moduleFor('Syntax test: {{#each}} with array-like objects', class extends SingleEachTest {
 
   makeList(list) {
-    return this.list = this.delegate = new ArrayLike(list);
+    return this.list = this.delegate = new ForEachable(list);
   }
 
 });
+
+if (HAS_NATIVE_SYMBOL) {
+  moduleFor('Syntax test: {{#each}} with native iterables', class extends SingleEachTest {
+
+    makeList(list) {
+      return this.list = this.delegate = new ArrayIterable(list);
+    }
+
+  });
+}
 
 moduleFor('Syntax test: {{#each}} with array proxies, modifying itself', class extends SingleEachTest {
 

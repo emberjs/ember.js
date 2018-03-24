@@ -1,12 +1,8 @@
-import { inspect } from '..';
+import { HAS_NATIVE_SYMBOL, inspect } from '..';
 import {
   moduleFor,
   AbstractTestCase as TestCase
 } from 'internal-test-helpers';
-
-// Symbol is not defined on pre-ES2015 runtimes, so this let's us safely test
-// for it's existence (where a simple `if (Symbol)` would ReferenceError)
-const HAS_NATIVE_SYMBOL = typeof Symbol === 'function';
 
 moduleFor('Ember.inspect', class extends TestCase {
   ['@test strings'](assert) {

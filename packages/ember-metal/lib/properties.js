@@ -3,7 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import { HAS_NATIVE_PROXY } from 'ember-utils';
+import { HAS_NATIVE_PROXY, HAS_NATIVE_SYMBOL } from 'ember-utils';
 import { descriptorFor, meta as metaFor, peekMeta, DESCRIPTOR, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
@@ -127,8 +127,8 @@ if (EMBER_METAL_ES5_GETTERS) {
             property === 'valueOf' ||
             property === 'inspect' ||
             property === 'toJSON' ||
-            Symbol && property === Symbol.toPrimitive ||
-            Symbol && property === Symbol.toStringTag
+            HAS_NATIVE_SYMBOL && property === Symbol.toPrimitive ||
+            HAS_NATIVE_SYMBOL && property === Symbol.toStringTag
           ) {
             return () => '[COMPUTED PROPERTY]';
           }

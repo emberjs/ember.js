@@ -55,3 +55,5 @@ export class Cache<T, V> {
   constructor(limit: number, func: (obj: T) => V, key?: (obj: T) => string, store?: any)
   get(obj: T): V
 }
+
+export const WeakSet: WeakSetConstructor;
