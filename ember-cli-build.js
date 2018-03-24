@@ -1,6 +1,5 @@
 'use strict';
 
-const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
@@ -10,7 +9,6 @@ const testIndexHTML = require('./broccoli/test-index-html');
 const toES5 = require('./broccoli/to-es5');
 const stripForProd = toES5.stripForProd;
 const minify = require('./broccoli/minify');
-const lint = require('./broccoli/lint');
 const { stripIndent } = require('common-tags');
 const {
   routerES,
@@ -77,12 +75,6 @@ module.exports = function() {
   let testHarness = testHarnessFiles();
   let backburner = toES5(backburnerES());
 
-  // Linting
-  let packages = new UnwatchedDir('packages');
-  let linting = lint(new Funnel(packages, {
-    include: ['**/*.js']
-  }));
-
   // ES5
   let dependenciesES5 = dependenciesES6().map(toES5);
   let emberES5 = emberCoreES6.map(toES5);
@@ -91,19 +83,10 @@ module.exports = function() {
   // Bundling
   let emberTestsBundle = new MergeTrees([
     ...emberTestsES5,
-    linting,
     loader,
     nodeModule,
     license,
     babelDebugHelpersES5,
-    lint(emberUtils),
-    lint(emberTesting),
-    lint(emberDebug),
-    lint(emberTemplateCompiler),
-    lint(emberMetal),
-    lint(emberConsole),
-    lint(emberEnvironment),
-    lint(container)
   ]);
 
   let emberDebugBase = [
