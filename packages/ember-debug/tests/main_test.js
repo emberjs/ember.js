@@ -30,6 +30,8 @@ let originalDeprecateHandler;
 let originalWarnHandler;
 let originalWarnOptions;
 let originalDeprecationOptions;
+const originalConsoleWarn = console.warn; // eslint-disable-line no-console
+const noop = function(){};
 
 moduleFor('ember-debug', class extends TestCase {
 
@@ -55,8 +57,13 @@ moduleFor('ember-debug', class extends TestCase {
     ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = originalDeprecationOptions;
   }
 
+  afterEach() {
+    console.warn = originalConsoleWarn; // eslint-disable-line no-console
+  }
+
   ['@test deprecate does not throw if RAISE_ON_DEPRECATION is false'](assert) {
     assert.expect(1);
+    console.warn = noop; // eslint-disable-line no-console
 
     ENV.RAISE_ON_DEPRECATION = false;
 
@@ -70,6 +77,7 @@ moduleFor('ember-debug', class extends TestCase {
 
   ['@test deprecate resets deprecation level to RAISE if ENV.RAISE_ON_DEPRECATION is set'](assert) {
     assert.expect(2);
+    console.warn = noop; // eslint-disable-line no-console
 
     ENV.RAISE_ON_DEPRECATION = false;
 
