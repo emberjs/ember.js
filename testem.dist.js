@@ -5,7 +5,9 @@ function FailureOnlyPerBrowserReporter() {
   this._resultsByBrowser = {};
 }
 
-FailureOnlyPerBrowserReporter.prototype = Object.create(FailureOnlyReporter.prototype);
+FailureOnlyPerBrowserReporter.prototype = Object.create(
+  FailureOnlyReporter.prototype
+);
 FailureOnlyPerBrowserReporter.prototype.constructor = FailureOnlyPerBrowserReporter;
 
 FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
@@ -28,7 +30,10 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
 };
 
 FailureOnlyPerBrowserReporter.prototype.summaryDisplay = function() {
-  var originalSummary = FailureOnlyReporter.prototype.summaryDisplay.apply(this, arguments);
+  var originalSummary = FailureOnlyReporter.prototype.summaryDisplay.apply(
+    this,
+    arguments
+  );
   var lines = [];
   var resultsByBrowser = this._resultsByBrowser;
   Object.keys(resultsByBrowser).forEach(function(browser) {
@@ -46,8 +51,8 @@ FailureOnlyPerBrowserReporter.prototype.summaryDisplay = function() {
 };
 
 module.exports = {
-  framework: "qunit",
-  test_page: "dist/tests/index.html?hidepassed&hideskipped&timeout=60000",
+  framework: 'qunit',
+  test_page: 'dist/tests/index.html?hidepassed&hideskipped&timeout=60000',
   timeout: 1200,
   reporter: FailureOnlyPerBrowserReporter,
   browser_start_timeout: 2000,
@@ -55,40 +60,114 @@ module.exports = {
   disable_watching: true,
   launchers: {
     BS_Chrome_Current: {
-      exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "Windows", "--osv", "10", "--b", "chrome", "--bv", "latest", "-t", "1200", "--u", "<url>"],
-      protocol: "browser"
+      exe: 'node_modules/.bin/browserstack-launch',
+      args: [
+        '--os',
+        'Windows',
+        '--osv',
+        '10',
+        '--b',
+        'chrome',
+        '--bv',
+        'latest',
+        '-t',
+        '1200',
+        '--u',
+        '<url>'
+      ],
+      protocol: 'browser'
     },
     BS_Firefox_Current: {
-      exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "Windows", "--osv", "10", "--b", "firefox", "--bv", "latest", "-t", "1200", "--u", "<url>"],
-      protocol: "browser"
+      exe: 'node_modules/.bin/browserstack-launch',
+      args: [
+        '--os',
+        'Windows',
+        '--osv',
+        '10',
+        '--b',
+        'firefox',
+        '--bv',
+        'latest',
+        '-t',
+        '1200',
+        '--u',
+        '<url>'
+      ],
+      protocol: 'browser'
     },
     BS_Safari_Current: {
-      exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "OS X", "--osv", "High Sierra", "--b", "safari", "--bv", "11", "-t", "1200", "--u", "<url>"],
-      protocol: "browser"
+      exe: 'node_modules/.bin/browserstack-launch',
+      args: [
+        '--os',
+        'OS X',
+        '--osv',
+        'High Sierra',
+        '--b',
+        'safari',
+        '--bv',
+        '11',
+        '-t',
+        '1200',
+        '--u',
+        '<url>'
+      ],
+      protocol: 'browser'
     },
     BS_Safari_Last: {
-      exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "OS X", "--osv", "Sierra", "--b", "safari", "--bv", "10.1", "-t", "1200", "--u", "<url>"],
-      protocol: "browser"
+      exe: 'node_modules/.bin/browserstack-launch',
+      args: [
+        '--os',
+        'OS X',
+        '--osv',
+        'Sierra',
+        '--b',
+        'safari',
+        '--bv',
+        '10.1',
+        '-t',
+        '1200',
+        '--u',
+        '<url>'
+      ],
+      protocol: 'browser'
     },
     BS_MS_Edge: {
-      exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "Windows", "--osv", "10", "--b", "edge", "--bv", "latest", "-t", "1200", "--u", "<url>"],
-      protocol: "browser"
+      exe: 'node_modules/.bin/browserstack-launch',
+      args: [
+        '--os',
+        'Windows',
+        '--osv',
+        '10',
+        '--b',
+        'edge',
+        '--bv',
+        'latest',
+        '-t',
+        '1200',
+        '--u',
+        '<url>'
+      ],
+      protocol: 'browser'
     },
     BS_IE_11: {
-      exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "Windows", "--osv", "10", "--b", "ie", "--bv", "11.0", "-t", "1200", "--u", "<url>"],
-      protocol: "browser"
+      exe: 'node_modules/.bin/browserstack-launch',
+      args: [
+        '--os',
+        'Windows',
+        '--osv',
+        '10',
+        '--b',
+        'ie',
+        '--bv',
+        '11.0',
+        '-t',
+        '1500',
+        '--u',
+        '<url>'
+      ],
+      protocol: 'browser'
     }
   },
   launch_in_dev: [],
-  launch_in_ci: [
-    "BS_Safari_Current",
-    "BS_MS_Edge",
-    "BS_IE_11"
-  ]
+  launch_in_ci: ['BS_Safari_Current', 'BS_MS_Edge', 'BS_IE_11']
 };

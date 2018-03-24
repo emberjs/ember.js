@@ -93,7 +93,7 @@ Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;
 Ember.changeProperties = metal.changeProperties;
-Ember.platform        = {
+Ember.platform = {
   defineProperty: true,
   hasPropertyAccessors: true
 };
@@ -126,12 +126,11 @@ Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
 Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;
-Ember.bind = metal.bind;
-Ember.Binding = metal.Binding;
-
 
 Object.defineProperty(Ember, 'ENV', {
-  get() { return ENV; },
+  get() {
+    return ENV;
+  },
   enumerable: false
 });
 
@@ -141,8 +140,12 @@ Object.defineProperty(Ember, 'ENV', {
  @private
  */
 Object.defineProperty(Ember, 'lookup', {
-  get()      { return context.lookup; },
-  set(value) { context.lookup = value; },
+  get() {
+    return context.lookup;
+  },
+  set(value) {
+    context.lookup = value;
+  },
   enumerable: false
 });
 
@@ -150,38 +153,49 @@ Ember.EXTEND_PROTOTYPES = ENV.EXTEND_PROTOTYPES;
 
 // BACKWARDS COMPAT ACCESSORS FOR ENV FLAGS
 Object.defineProperty(Ember, 'LOG_STACKTRACE_ON_DEPRECATION', {
-  get()      { return ENV.LOG_STACKTRACE_ON_DEPRECATION;    },
-  set(value) { ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value; },
+  get() {
+    return ENV.LOG_STACKTRACE_ON_DEPRECATION;
+  },
+  set(value) {
+    ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value;
+  },
   enumerable: false
 });
 
 Object.defineProperty(Ember, 'LOG_VERSION', {
-  get()      { return ENV.LOG_VERSION;   },
-  set(value) { ENV.LOG_VERSION = !!value; },
+  get() {
+    return ENV.LOG_VERSION;
+  },
+  set(value) {
+    ENV.LOG_VERSION = !!value;
+  },
   enumerable: false
 });
 
 if (DEBUG) {
   Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
-    get()      { return false; },
+    get() {
+      return false;
+    },
     set() {
-      deprecate(
-        'Ember.MODEL_FACTORY_INJECTIONS is no longer required',
-        false,
-        {
-          id: 'ember-metal.model_factory_injections',
-          until: '2.17.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_id-ember-metal-model_factory_injections'
-        }
-      );
+      deprecate('Ember.MODEL_FACTORY_INJECTIONS is no longer required', false, {
+        id: 'ember-metal.model_factory_injections',
+        until: '2.17.0',
+        url:
+          'https://emberjs.com/deprecations/v2.x/#toc_id-ember-metal-model_factory_injections'
+      });
     },
     enumerable: false
   });
 }
 
 Object.defineProperty(Ember, 'LOG_BINDINGS', {
-  get()      { return ENV.LOG_BINDINGS;    },
-  set(value) { ENV.LOG_BINDINGS = !!value; },
+  get() {
+    return ENV.LOG_BINDINGS;
+  },
+  set(value) {
+    ENV.LOG_BINDINGS = !!value;
+  },
   enumerable: false
 });
 
@@ -287,7 +301,6 @@ import {
   deprecatingAlias,
   and,
   or,
-  any,
 
   // reduced computed macros
   sum,
@@ -360,7 +373,6 @@ computed.readOnly = readOnly;
 computed.deprecatingAlias = deprecatingAlias;
 computed.and = and;
 computed.or = or;
-computed.any = any;
 
 computed.sum = sum;
 computed.min = min;
@@ -443,7 +455,9 @@ Ember.LinkComponent = LinkComponent;
 
 Object.defineProperty(Ember, '_setComponentManager', {
   enumerable: false,
-  get() { return componentManager; }
+  get() {
+    return componentManager;
+  }
 });
 
 if (ENV.EXTEND_PROTOTYPES.String) {
@@ -452,9 +466,10 @@ if (ENV.EXTEND_PROTOTYPES.String) {
   };
 }
 
-let EmberHandlebars = Ember.Handlebars = Ember.Handlebars || {};
-let EmberHTMLBars = Ember.HTMLBars = Ember.HTMLBars || {};
-let EmberHandleBarsUtils = EmberHandlebars.Utils = EmberHandlebars.Utils || {};
+let EmberHandlebars = (Ember.Handlebars = Ember.Handlebars || {});
+let EmberHTMLBars = (Ember.HTMLBars = Ember.HTMLBars || {});
+let EmberHandleBarsUtils = (EmberHandlebars.Utils =
+  EmberHandlebars.Utils || {});
 
 EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
@@ -498,8 +513,6 @@ metal.libraries.registerCoreLibrary('Ember', VERSION);
 import * as views from 'ember-views';
 
 Ember.$ = views.jQuery;
-
-Ember.ViewTargetActionSupport = views.ViewTargetActionSupport;
 
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
@@ -545,7 +558,6 @@ import * as extensionSupport from 'ember-extension-support';
 Ember.DataAdapter = extensionSupport.DataAdapter;
 Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
 
-
 if (has('ember-template-compiler')) {
   require('ember-template-compiler');
 }
@@ -568,7 +580,6 @@ runLoadHooks('Ember');
   @private
 */
 export default Ember;
-
 
 /* globals module */
 if (IS_NODE) {
