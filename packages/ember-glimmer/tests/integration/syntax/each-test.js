@@ -94,6 +94,36 @@ class ArrayDelegate {
   }
 }
 
+const makeSet = (() => {
+  // IE11 does not support `new Set(items);`
+  let set = new Set([1,2,3]);
+
+  if (set.size === 3) {
+    return items => new Set(items);
+  } else {
+    return items => {
+      let s = new Set();
+      items.forEach(value => s.add(value));
+      return s;
+    };
+  }
+})();
+
+class SetDelegate extends ArrayDelegate {
+  constructor(set) {
+    let array = [];
+    set.forEach(value => array.push(value));
+    super(array, set);
+    this._set = set;
+  }
+
+  arrayContentDidChange() {
+    this._set.clear();
+    this._array.forEach(value => this._set.add(value));
+    super.arrayContentDidChange();
+  }
+}
+
 class ForEachable extends ArrayDelegate {
   get length() {
     return this._array.length;
@@ -126,6 +156,7 @@ class BasicEachTest extends TogglingEachTest {}
 const TRUTHY_CASES = [
   ['hello'],
   emberA(['hello']),
+  makeSet(['hello']),
   new ForEachable(['hello']),
   ArrayProxy.create({ content: ['hello'] }),
   ArrayProxy.create({ content: emberA(['hello']) })
@@ -139,6 +170,7 @@ const FALSY_CASES = [
   0,
   [],
   emberA([]),
+  makeSet([]),
   new ForEachable([]),
   ArrayProxy.create({ content: [] }),
   ArrayProxy.create({ content: emberA([]) })
@@ -929,6 +961,23 @@ moduleFor('Syntax test: {{#each}} with emberA-wrapped arrays', class extends Eac
   createList(items) {
     let wrapped = emberA(items);
     return { list: wrapped, delegate: wrapped };
+  }
+
+});
+
+moduleFor('Syntax test: {{#each}} with native Set', class extends EachTest {
+
+  createList(items) {
+    let set = makeSet(items);
+    return { list: set, delegate: new SetDelegate(set) };
+  }
+
+  ['@test it can render duplicate primitive items'](assert) {
+    assert.ok(true, 'not supported by Set');
+  }
+
+  ['@test it can render duplicate objects'](assert) {
+    assert.ok(true, 'not supported by Set');
   }
 
 });
