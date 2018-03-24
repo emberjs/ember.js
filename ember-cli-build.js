@@ -40,7 +40,8 @@ module.exports = function() {
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
 
-  let es6 = new MergeTrees([
+  // generate "loose" ES<latest> modules...
+  let combinedES = new MergeTrees([
     emberVersionES(),
     emberFeaturesES(),
     emberPkgES('ember-testing'),
@@ -56,46 +57,53 @@ module.exports = function() {
     emberPkgES('ember-environment'),
     emberPkgES('ember-utils'),
     emberPkgES('container'),
-    ...emberES6(),
-    ...dependenciesES6()
+    ...emberES(),
+    ...dependenciesES()
   ]);
 
-  return es6;
+  let es = new Funnel(combinedES, {
+    destDir: 'es',
+  });
 
-  // let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
-  // let tokenizer = toES5(, { annotation: 'tokenizer' });
-  // let rsvp = toES5(, { annotation: 'rsvp' });
-  // let emberMetal = new Funnel('packages/ember-metal/lib', {
-  //   destDir: '/',
-  //   include: ['**/*.js']
-  // });
-  // let emberMetalES5 = rollupEmberMetal(emberMetal);
-  // let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, [
-  //   'ember-environment'
-  // ]);
-  // let emberConsoleES5 = toES5(emberConsole, { annotation: 'ember-console' });
-  // let emberEnvironment = emberPkgES('ember-environment', SHOULD_ROLLUP);
-  // let emberEnvironmentES5 = toES5(emberEnvironment, {
-  //   annotation: 'ember-environment'
-  // });
-  // let emberUtils = emberPkgES('ember-utils', SHOULD_ROLLUP);
-  // let emberUtilsES5 = toES5(emberUtils, { annotation: 'ember-utils' });
-  // let container = emberPkgES('container', SHOULD_ROLLUP, [
-  //   'ember-debug',
-  //   'ember-utils',
-  //   'ember-environment',
-  //   'ember-env-flags',
-  //   'ember/features'
-  // ]);
-  // let containerES5 = toES5(container, { annotation: 'container' });
-  let emberCoreES6 = emberES6();
+  let debugFeatures = toES5(emberFeaturesES());
+  let version = toES5(emberVersionES());
+  let emberTesting = emberPkgES('ember-testing');
+  let emberTestingES5 = toES5(emberTesting, { annotation: 'ember-testing' });
+  let emberDebug = emberPkgES('ember-debug');
+  let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
+  let emberTemplateCompiler = emberPkgES('ember-template-compiler');
+  let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
+  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
+  let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
+  let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
+  let rsvp = toES5(rsvpES(), { annotation: 'rsvp' });
+  let emberMetal = new Funnel('packages/ember-metal/lib', {
+    destDir: '/',
+    include: ['**/*.js']
+  });
+  let emberMetalES5 = rollupEmberMetal(emberMetal);
+  let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);
+  let emberConsoleES5 = toES5(emberConsole, { annotation: 'ember-console' });
+  let emberEnvironment = emberPkgES('ember-environment', SHOULD_ROLLUP);
+  let emberEnvironmentES5 = toES5(emberEnvironment, { annotation: 'ember-environment' });
+  let emberUtils = emberPkgES('ember-utils', SHOULD_ROLLUP);
+  let emberUtilsES5 = toES5(emberUtils, { annotation: 'ember-utils' });
+  let container = emberPkgES('container', SHOULD_ROLLUP, [
+    'ember-debug',
+    'ember-utils',
+    'ember-environment',
+    'ember-env-flags',
+    'ember/features'
+  ]);
+  let containerES5 = toES5(container, { annotation: 'container' });
+  let emberCoreES = emberES();
   let emberTests = emberTestsES6();
   let testHarness = testHarnessFiles();
-  // let backburner = toES5();
+  let backburner = toES5(backburnerES());
 
   // ES5
-  let dependenciesES5 = dependenciesES6().map(toES5);
-  let emberES5 = emberCoreES6.map(toES5);
+  let dependenciesES5 = dependenciesES().map(toES5);
+  let emberES5 = emberCoreES.map(toES5);
   let emberTestsES5 = emberTests.map(toES5);
 
   // Bundling
@@ -198,8 +206,8 @@ module.exports = function() {
     );
 
     let emberProdES5 = [
-      ...emberCoreES6,
-      ...dependenciesES6(),
+      ...emberCoreES,
+      ...dependenciesES(),
       container,
       emberUtils,
       emberEnvironment,
@@ -310,6 +318,7 @@ module.exports = function() {
   }
 
   return new MergeTrees([
+    es,
     ...trees,
     ...testHarness,
     emberTestsBundle,
@@ -319,7 +328,7 @@ module.exports = function() {
   ]);
 };
 
-function dependenciesES6() {
+function dependenciesES() {
   let glimmerEntries = [
     '@glimmer/node',
     '@glimmer/opcode-compiler',
@@ -363,7 +372,7 @@ function emberTestsES6() {
   ];
 }
 
-function emberES6() {
+function emberES() {
   return [
     emberPkgES('ember-views'),
     emberPkgES('ember'),

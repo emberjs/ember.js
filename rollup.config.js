@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export default {
-  input: 'dist/ember/index.js',
+  input: 'dist/es/ember/index.js',
   plugins: [emberPackage()],
   output: {
     file: 'rollup-bundle.es.js',
@@ -18,8 +18,8 @@ function emberPackage() {
     resolveId(importee, importer) {
       if (importee[0] === '.' || importee[0] === '/') return;
       let resolved = [
-        path.resolve('dist', `${importee}.js`),
-        path.resolve('dist', `${importee}/index.js`)
+        path.resolve('dist', `es/${importee}.js`),
+        path.resolve('dist', `es/${importee}/index.js`)
       ].find(fs.existsSync);
       if (resolved) {
         // console.log('resolved ' + resolved);
