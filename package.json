@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "broccoli-funnel": "^2.0.1",
-    "broccoli-merge-trees": "^3.0.0",
+    "broccoli-merge-trees": "^2.0.0",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-is-package-missing": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
