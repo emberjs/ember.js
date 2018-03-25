@@ -32,7 +32,7 @@ export const protoMethods = {
     this._listenersFinalized = true;
   },
 
-  removeFromListeners(eventName, target, method, didRemove) {
+  removeFromListeners(eventName, target, method) {
     let pointer = this;
     while (pointer !== undefined) {
       let listeners = pointer._listeners;
@@ -40,11 +40,7 @@ export const protoMethods = {
         for (let index = listeners.length - 4; index >= 0; index -= 4) {
           if (listeners[index] === eventName && (!method || (listeners[index + 1] === target && listeners[index + 2] === method))) {
             if (pointer === this) {
-              // we are modifying our own list, so we edit directly
-              if (typeof didRemove === 'function') {
-                didRemove(eventName, target, listeners[index + 2]);
-              }
-              listeners.splice(index, 4);
+              listeners.splice(index, 4); // we are modifying our own list, so we edit directly
             } else {
               // we are trying to remove an inherited listener, so we do
               // just-in-time copying to detach our own listeners from
