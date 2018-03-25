@@ -91,8 +91,6 @@ function makeCtor() {
               property === 'didDefineProperty' ||
               property === 'willWatchProperty' ||
               property === 'didUnwatchProperty' ||
-              property === 'didAddListener' ||
-              property === 'didRemoveListener' ||
               property === '__DESCRIPTOR__' ||
               property === 'isDescriptor' ||
               property in target
