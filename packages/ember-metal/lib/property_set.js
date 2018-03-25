@@ -77,7 +77,6 @@ export function set(obj, keyName, value, tolerant) {
   } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
     typeof obj.setUnknownProperty === 'function') { /* unknown property */
     obj.setUnknownProperty(keyName, value);
-  } else if (currentValue === value) { /* no change */
   } else {
     let meta = peekMeta(obj);
 
@@ -87,7 +86,9 @@ export function set(obj, keyName, value, tolerant) {
       obj[keyName] = value;
     }
 
-    notifyPropertyChange(obj, keyName, meta);
+    if (currentValue !== value) {
+      notifyPropertyChange(obj, keyName, meta);
+    }
   }
 
   return value;
@@ -136,10 +137,10 @@ function setPath(root, path, value, tolerant) {
 
   This is primarily used when syncing bindings, which may try to update after
   an object has been destroyed.
-  
+
   ```javascript
   import { trySet } from '@ember/object';
-  
+
   let obj = { name: "Zoey" };
   trySet(obj, "contacts.twitter", "@emberjs");
   ```

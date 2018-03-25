@@ -12,6 +12,11 @@ moduleFor('setProperties', class extends AbstractTestCase {
     assert.deepEqual(setProperties({}, NaN), NaN, 'noop for NaN');
     assert.deepEqual(setProperties({}, {}), {}, 'meh');
 
+    let props = setProperties({}, { foo: undefined });
+    assert.deepEqual(props, { foo: undefined }, 'Setting undefined value');
+    assert.ok('foo' in props, 'Setting undefined value');
+    assert.deepEqual(Object.keys(props), ['foo'], 'Setting undefined value');
+
     assert.deepEqual(setProperties({}, { foo: 1 }), { foo: 1 }, 'Set a single property');
 
     assert.deepEqual(setProperties({}, { foo: 1, bar: 1 }), { foo: 1, bar: 1 }, 'Set multiple properties');
@@ -23,5 +28,3 @@ moduleFor('setProperties', class extends AbstractTestCase {
     }, 'Set an additional, previously unset property');
   }
 });
-
-

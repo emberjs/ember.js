@@ -21,16 +21,14 @@ moduleFor('set', class extends AbstractTestCase {
       undefinedValue: undefined
     };
 
-    let newObj = {
-      undefinedValue: 'emberjs'
-    };
+    let newObj = {};
 
     for (let key in obj) {
-      if (!obj.hasOwnProperty(key)) {
-        continue;
-      }
+      if (!obj.hasOwnProperty(key)) { continue; }
 
       assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
+      assert.ok(key in newObj, 'should have key');
+      assert.ok(newObj.hasOwnProperty(key), 'should have key');
       assert.equal(get(newObj, key), obj[key], 'should set value');
     }
   }
