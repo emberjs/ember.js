@@ -53,7 +53,9 @@ export class Meta {
     if (ENV._ENABLE_BINDING_SUPPORT) {
       this._bindings = undefined;
     }
-    this._values = undefined;
+    if (MANDATORY_SETTER) {
+      this._values = undefined;
+    }
     this._deps = undefined;
     this._chainWatchers = undefined;
     this._chains = undefined;
@@ -401,20 +403,6 @@ export class Meta {
     this._bindings = undefined;
   }
 
-  writeValues(subkey, value) {
-    assert(`Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
-
-    let map = this._getOrCreateOwnMap('_values');
-    map[subkey] = value;
-  }
-
-  peekValues(subkey) {
-    return this._findInherited('_values', subkey);
-  }
-
-  deleteFromValues(subkey) {
-    delete this._getOrCreateOwnMap('_values')[subkey];
-  }
 }
 
 for (let name in listenerMethods) {
@@ -422,6 +410,21 @@ for (let name in listenerMethods) {
 }
 
 if (MANDATORY_SETTER) {
+  Meta.prototype.writeValues = function (subkey, value) {
+    assert(`Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+
+    let map = this._getOrCreateOwnMap('_values');
+    map[subkey] = value;
+  };
+
+  Meta.prototype.peekValues = function (subkey) {
+    return this._findInherited('_values', subkey);
+  };
+
+  Meta.prototype.deleteFromValues = function (subkey) {
+    delete this._getOrCreateOwnMap('_values')[subkey];
+  };
+
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
 
