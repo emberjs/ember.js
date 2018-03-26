@@ -80,10 +80,17 @@
     <script>
       var dist = QUnit.urlParams.dist;
 
-      if (dist) {
-        loadScript('../ember.' + dist + '.js');
-      } else {
-        loadScript('../ember.debug.js');
+      switch (dist) {
+        case 'prod':
+        case 'min':
+          loadScript('../ember.' + dist + '.js');
+          break;
+        case 'es':
+          loadScript('../ember-all.debug.js');
+          break;
+        default:
+          loadScript('../ember.debug.js');
+          break;
       }
     </script>
 
@@ -97,8 +104,11 @@
 
     <script>
       var prod = QUnit.urlParams.prod;
+      var dist = QUnit.urlParams.dist;
 
-      if (prod) {
+      if (dist === 'es') {
+        // do nothing, tests are included
+      } else if (prod) {
         loadScript('../ember-tests.prod.js');
       } else {
         loadScript('../ember-tests.js');
@@ -120,7 +130,8 @@
           }
         }
 
-        Ember.Debug.registerDeprecationHandler(function (message, options, next) {
+        let EmberDebug = Ember.__loader.require('ember-debug');
+        EmberDebug.registerDeprecationHandler(function (message, options, next) {
           var id = options && options.id;
           next(message, options);
         });
