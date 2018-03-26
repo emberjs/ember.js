@@ -25,6 +25,7 @@ function emberPackage() {
         // console.log('resolved ' + resolved);
         return fs.realpathSync(resolved);
       } else {
+        // eslint-disable-next-line no-console
         console.log('could not resolve ' + importee + ' from ' + importer);
       }
     }
