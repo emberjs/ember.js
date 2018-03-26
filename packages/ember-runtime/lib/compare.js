@@ -95,14 +95,12 @@ export default function compare(v, w) {
   let type1 = typeOf(v);
   let type2 = typeOf(w);
 
-  if (Comparable) {
-    if (type1 === 'instance' && Comparable.detect(v) && v.constructor.compare) {
-      return v.constructor.compare(v, w);
-    }
+  if (type1 === 'instance' && Comparable.detect(v) && v.constructor.compare) {
+    return v.constructor.compare(v, w);
+  }
 
-    if (type2 === 'instance' && Comparable.detect(w) && w.constructor.compare) {
-      return w.constructor.compare(w, v) * -1;
-    }
+  if (type2 === 'instance' && Comparable.detect(w) && w.constructor.compare) {
+    return w.constructor.compare(w, v) * -1;
   }
 
   let res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
@@ -137,7 +135,7 @@ export default function compare(v, w) {
       return spaceship(vLen, wLen);
     }
     case 'instance':
-      if (Comparable && Comparable.detect(v)) {
+      if (Comparable.detect(v)) {
         return v.compare(v, w);
       }
       return 0;
