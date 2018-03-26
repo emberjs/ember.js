@@ -1,5 +1,5 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { Component, htmlSafe } from '../../utils/helpers';
 import { set, get, computed } from 'ember-metal';
 import { styles } from '../../utils/test-helpers';
 
@@ -436,7 +436,7 @@ moduleFor('Mutable Bindings used in Computed Properties that are bound as attrib
         },
         style: computed('height', function() {
           let height = this.get('height');
-          return `height: ${height}px;`;
+          return htmlSafe(`height: ${height}px;`);
         }),
         height: 20
       }),
@@ -489,7 +489,7 @@ moduleFor('Mutable Bindings used in Computed Properties that are bound as attrib
         style: computed('height', 'width', function() {
           let height = this.get('height');
           let width = this.get('width');
-          return `height: ${height}px; width: ${width}px;`;
+          return htmlSafe(`height: ${height}px; width: ${width}px;`);
         }),
         height: 20,
         width: computed('height', {

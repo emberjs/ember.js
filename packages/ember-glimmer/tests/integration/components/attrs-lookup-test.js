@@ -1,5 +1,5 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { Component, htmlSafe } from '../../utils/helpers';
 import { set, computed } from 'ember-metal';
 import { styles } from '../../utils/test-helpers';
 
@@ -213,7 +213,7 @@ moduleFor('Components test: attrs lookup', class extends RenderingTest {
       style: computed('height', 'color', function() {
         let height = this.get('height');
         let color = this.get('color');
-        return `height: ${height}px; background-color: ${color};`;
+        return htmlSafe(`height: ${height}px; background-color: ${color};`);
       }),
       color: 'red',
       height: 20
