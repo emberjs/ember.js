@@ -12,7 +12,7 @@ import {
 import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
 import { constructStyleDeprecationMessage  } from 'ember-views';
-import { Component, SafeString } from '../utils/helpers';
+import { Component, SafeString, htmlSafe } from '../utils/helpers';
 
 moduleFor('Static content tests', class extends RenderingTest {
 
@@ -1199,7 +1199,7 @@ moduleFor('Inline style tests', class extends StyleTest {
   ['@test can set dynamic style']() {
     this.render('<div style={{model.style}}></div>', {
       model: {
-        style: 'width: 60px;'
+        style: htmlSafe('width: 60px;')
       }
     });
 
@@ -1225,7 +1225,7 @@ moduleFor('Inline style tests', class extends StyleTest {
   ['@test can set dynamic style with -html-safe']() {
     this.render('<div style={{-html-safe model.style}}></div>', {
       model: {
-        style: 'width: 60px;'
+        style: htmlSafe('width: 60px;')
       }
     });
 
