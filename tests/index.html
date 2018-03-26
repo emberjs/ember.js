@@ -99,7 +99,13 @@
     </script>
 
     <script>
-      loadScript('../ember-template-compiler.js');
+      var dist = QUnit.urlParams.dist;
+
+      if (dist === 'es') {
+        // do nothing template compiler already included
+      } else {
+        loadScript('../ember-template-compiler.js');
+      }
     </script>
 
     <script>

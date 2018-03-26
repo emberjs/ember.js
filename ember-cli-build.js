@@ -61,7 +61,7 @@ module.exports = function() {
     emberPkgES('ember-utils'),
     emberPkgES('container'),
     ...emberES(),
-    ...dependenciesES()
+    ...dependenciesES({ includeGlimmerCompiler: true }),
   ]);
 
   let es = new Funnel(combinedES, {
@@ -346,12 +346,17 @@ module.exports = function() {
   ]);
 };
 
-function dependenciesES() {
+function dependenciesES(options = {}) {
   let glimmerEntries = [
     '@glimmer/node',
     '@glimmer/opcode-compiler',
     '@glimmer/runtime'
   ];
+
+  if (options.includeGlimmerCompiler) {
+    glimmerEntries.push('@glimmer/compiler');
+  }
+
   if (ENV === 'development') {
     let hasGlimmerDebug = true;
     try {
