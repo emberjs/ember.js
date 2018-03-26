@@ -338,6 +338,17 @@ module.exports.emberVersionES = function _emberVersionES() {
   });
 };
 
+module.exports.buildEmberEnvFlagsES = function(flags) {
+  let content = '';
+  for (let key in flags) {
+    content += `\nexport const ${key} = ${flags[key]};`;
+  }
+
+  return new WriteFile('ember-env-flags.js', content, {
+    annotation: 'ember-env-flags'
+  });
+};
+
 module.exports.emberLicense = function _emberLicense() {
   let license = new Funnel('generators', {
     files: ['license.js'],

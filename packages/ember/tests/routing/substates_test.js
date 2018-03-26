@@ -643,9 +643,13 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       }
     }));
 
-    assert.throws(() => {
-      this.visit('/grandma/mom/sally');
-    }, (err) => err.msg === 'did it broke?', 'it broke');
+    assert.throws(
+      () => {
+        this.visit('/grandma/mom/sally');
+      },
+      function(err) { return err.msg === 'did it broke?'; },
+      'it broke'
+    );
 
     return this.runLoopSettled();
   }
@@ -678,9 +682,13 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       }
     }));
 
-    assert.throws(() => {
-      this.visit('/grandma/mom/sally');
-    }, (err) => err.msg  === 'did it broke?', `it broke`);
+    assert.throws(
+      () => {
+        this.visit('/grandma/mom/sally');
+      },
+      function(err) { return err.msg  === 'did it broke?'; },
+      `it broke`
+    );
 
     return this.runLoopSettled();
   }
@@ -701,9 +709,13 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       }
     }));
 
-    assert.throws(() => {
-      this.visit('/grandma/mom/sally');
-    }, (err) => err.msg == "did it broke?", 'Correct error was thrown');
+    assert.throws(
+      () => {
+        this.visit('/grandma/mom/sally');
+      },
+      function(err) { return err.msg == "did it broke?"; },
+      'Correct error was thrown'
+    );
 
     return this.runLoopSettled();
   }
@@ -736,9 +748,13 @@ moduleFor('Loading/Error Substates - nested routes', class extends ApplicationTe
       }
     }));
 
-    assert.throws(() => {
-      this.visit('/grandma/mom/sally');
-    }, (err) => err.msg === 'did it broke?', 'it broke');
+    assert.throws(
+      () => {
+        this.visit('/grandma/mom/sally');
+      },
+      function(err) { return err.msg === 'did it broke?'; },
+      'it broke'
+    );
 
     return this.runLoopSettled();
   }

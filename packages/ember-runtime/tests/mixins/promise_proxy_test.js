@@ -214,12 +214,7 @@ QUnit.test('unhandled rejects still propagate to RSVP.on(\'error\', ...) ', func
 });
 
 QUnit.test('should work with promise inheritance', function(assert) {
-  function PromiseSubclass() {
-    RSVP.Promise.apply(this, arguments);
-  }
-
-  PromiseSubclass.prototype = Object.create(RSVP.Promise.prototype);
-  PromiseSubclass.prototype.constructor = PromiseSubclass;
+  class PromiseSubclass extends RSVP.Promise { }
 
   let proxy = ObjectPromiseProxy.create({
     promise: new PromiseSubclass(() => { })

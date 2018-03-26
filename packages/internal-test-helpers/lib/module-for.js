@@ -1,5 +1,6 @@
 import { isFeatureEnabled } from 'ember-debug';
 import applyMixins from './apply-mixins';
+import getAllPropertyNames from './get-all-property-names';
 import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
@@ -42,12 +43,8 @@ export default function moduleFor(description, TestClass, ...mixins) {
     applyMixins(TestClass, ...mixins);
   }
 
-  let proto = TestClass.prototype;
-
-  while (proto !== Object.prototype) {
-    Object.keys(proto).forEach(generateTest);
-    proto = Object.getPrototypeOf(proto);
-  }
+  let properties = getAllPropertyNames(TestClass);
+  properties.forEach(generateTest);
 
   function shouldTest(features) {
     return features.every(feature => {
