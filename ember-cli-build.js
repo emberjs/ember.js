@@ -4,7 +4,7 @@ const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
-const concat = require('./broccoli/concat-bundle');
+const concatBundle = require('./broccoli/concat-bundle');
 const testIndexHTML = require('./broccoli/test-index-html');
 const toES5 = require('./broccoli/to-es5');
 const stripForProd = toES5.stripForProd;
@@ -133,7 +133,7 @@ module.exports = function() {
     bootstrapModule('ember')
   ];
 
-  emberTestsBundle = concat(emberTestsBundle, {
+  emberTestsBundle = concatBundle(emberTestsBundle, {
     outputFile: 'ember-tests.js',
     hasBootstrap: false
   });
@@ -147,7 +147,7 @@ module.exports = function() {
     emberTemplateCompilerES5
   ]);
 
-  emberDebugBundle = concat(emberDebugBundle, {
+  emberDebugBundle = concatBundle(emberDebugBundle, {
     outputFile: 'ember.debug.js'
   });
 
@@ -160,7 +160,7 @@ module.exports = function() {
     nodeModule
   ]);
 
-  emberTestingBundle = concat(emberTestingBundle, {
+  emberTestingBundle = concatBundle(emberTestingBundle, {
     outputFile: 'ember-testing.js',
     hasBootstrap: false,
     footer: stripIndent`
@@ -265,7 +265,7 @@ module.exports = function() {
       loader
     ]);
 
-    prodTemplateCompiler = concat(prodTemplateCompiler, {
+    prodTemplateCompiler = concatBundle(prodTemplateCompiler, {
       outputFile: 'ember-template-compiler.js'
     });
 
@@ -279,15 +279,15 @@ module.exports = function() {
       nodeModule
     ]);
 
-    emberRuntimeBundle = concat(emberRuntimeBundle, {
+    emberRuntimeBundle = concatBundle(emberRuntimeBundle, {
       outputFile: 'ember-runtime.js'
     });
 
-    emberProdBundle = concat(emberProdBundle, {
+    emberProdBundle = concatBundle(emberProdBundle, {
       outputFile: 'ember.prod.js'
     });
 
-    emberProdTestsBundle = concat(emberProdTestsBundle, {
+    emberProdTestsBundle = concatBundle(emberProdTestsBundle, {
       outputFile: 'ember-tests.prod.js',
       hasBootstrap: false
     });
@@ -310,7 +310,7 @@ module.exports = function() {
       nodeModule
     ]);
 
-    emberTemplateCompilerBundle = concat(emberTemplateCompilerBundle, {
+    emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {
       outputFile: 'ember-template-compiler.js'
     });
 
