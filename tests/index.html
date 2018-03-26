@@ -95,7 +95,8 @@
     </script>
 
     <script type="text/javascript">
-      Ember.testing = true;
+      var setTesting = Ember.__loader.require('ember-debug')['setTesting'];
+      setTesting(true);
     </script>
 
     <script>
@@ -135,12 +136,6 @@
             return skip(string, callback);
           }
         }
-
-        let EmberDebug = Ember.__loader.require('ember-debug');
-        EmberDebug.registerDeprecationHandler(function (message, options, next) {
-          var id = options && options.id;
-          next(message, options);
-        });
 
         window.EmberDev = window.EmberDev || {};
         EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
