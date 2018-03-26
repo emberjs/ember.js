@@ -47,6 +47,9 @@ module.exports = function() {
   let combinedES = new MergeTrees([
     emberVersionES(),
     emberFeaturesES(),
+    new Funnel('packages/@ember', {
+      destDir: '@ember',
+    }),
     emberPkgES('ember-testing'),
     emberPkgES('ember-debug'),
     emberPkgES('ember-template-compiler'),
