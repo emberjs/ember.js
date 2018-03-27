@@ -11,6 +11,7 @@ const toES5 = require('./broccoli/to-es5');
 const toNamedAMD = require('./broccoli/to-named-amd');
 const stripForProd = toES5.stripForProd;
 const minify = require('./broccoli/minify');
+const rename = require('./broccoli/rename');
 const { stripIndent } = require('common-tags');
 const {
   routerES,
@@ -309,7 +310,8 @@ module.exports = function() {
       hasBootstrap: false
     });
 
-    let emberMinBundle = minify(emberProdBundle, 'ember.min');
+    let emberProdMinRename = rename(emberProdBundle, { 'ember.prod.js': 'ember.min.js' });
+    let emberMinBundle = minify(emberProdMinRename);
 
     trees.push(
       emberRuntimeBundle,
