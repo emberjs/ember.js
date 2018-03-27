@@ -181,6 +181,7 @@ let allExports =[
   ['generateController', 'ember-routing'],
   ['RouterDSL', 'ember-routing'],
   ['Router', 'ember-routing'],
+  ['RouterService', 'ember-routing'],
   ['Route', 'ember-routing'],
 
   // ember-application

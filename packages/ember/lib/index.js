@@ -541,6 +541,7 @@ Ember.generateControllerFactory = routing.generateControllerFactory;
 Ember.generateController = routing.generateController;
 Ember.RouterDSL = routing.RouterDSL;
 Ember.Router = routing.Router;
+Ember.RouterService = routing.RouterService;
 Ember.Route = routing.Route;
 
 import * as application from 'ember-application';
