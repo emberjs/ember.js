@@ -50,26 +50,35 @@ module.exports = function() {
   let combinedES = new MergeTrees([
     emberVersionES(),
     emberFeaturesES(),
-    emberPkgES('ember-testing'),
-    emberPkgES('ember-debug'),
-    emberPkgES('ember-template-compiler'),
-    babelHelpers('debug'),
     backburnerES(),
     handlebarsES(),
     simpleHTMLTokenizerES(),
     rsvpES(),
-    emberPkgES('ember-metal'),
-    emberPkgES('ember-console'),
-    emberPkgES('ember-environment'),
-    emberPkgES('ember-utils'),
     emberPkgES('container'),
-    ...emberES(),
+    emberPkgES('ember-application'),
+    emberPkgES('ember-console'),
+    emberPkgES('ember-debug'),
+    emberPkgES('ember-environment'),
+    emberPkgES('ember-extension-support'),
+    emberGlimmerES,
+    emberPkgES('ember-metal'),
+    emberPkgES('ember-routing'),
+    emberPkgES('ember-runtime'),
+    emberPkgES('ember-template-compiler'),
+    emberPkgES('ember-testing'),
+    emberPkgES('ember-utils'),
+    emberPkgES('ember-views'),
+    emberPkgES('ember'),
     ...dependenciesES({ includeGlimmerCompiler: true }),
   ]);
 
   let es = new Funnel(combinedES, {
     destDir: 'es',
   });
+
+  let esMin = minify(new Funnel(combinedES, {
+    destDir: 'es-min',
+  }));
 
   let emberTestsES = buildEmberTestsES();
   let pkgAndTestES = new MergeTrees([combinedES, ...emberTestsES]);
@@ -320,6 +329,10 @@ module.exports = function() {
       emberProdTestsBundle,
       prodTemplateCompiler
     );
+
+    if (process.env.INCLUDE_ES_MIN) {
+      trees.push(esMin);
+    }
   } else {
     let emberTemplateCompilerBundle = new MergeTrees([
       ...templateCompiler(babelDebugHelpersES5),
