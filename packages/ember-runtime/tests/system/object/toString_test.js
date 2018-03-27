@@ -1,4 +1,4 @@
-import { guidFor, NAME_KEY } from 'ember-utils';
+import { guidFor, setName } from 'ember-utils';
 import { context } from 'ember-environment';
 import EmberObject from '../../../system/object';
 import Namespace from '../../../system/namespace';
@@ -15,13 +15,13 @@ QUnit.module('system/object/toString', {
   }
 });
 
-QUnit.test('NAME_KEY slot is present on Class', function(assert) {
-  assert.ok(EmberObject.extend().hasOwnProperty(NAME_KEY), 'Ember Class\'s have a NAME_KEY slot');
-});
-
-QUnit.test('toString() returns the same value if called twice', function(assert) {
+QUnit.test('toString() returns the same value if called twice', function(
+  assert
+) {
   let Foo = Namespace.create();
-  Foo.toString = function() { return 'Foo'; };
+  Foo.toString = function() {
+    return 'Foo';
+  };
 
   Foo.Bar = EmberObject.extend();
 
@@ -36,36 +36,45 @@ QUnit.test('toString() returns the same value if called twice', function(assert)
   assert.equal(Foo.Bar.toString(), 'Foo.Bar');
 });
 
-QUnit.test('toString on a class returns a useful value when nested in a namespace', function(assert) {
-  let obj;
+QUnit.test(
+  'toString on a class returns a useful value when nested in a namespace',
+  function(assert) {
+    let obj;
 
-  let Foo = Namespace.create();
-  Foo.toString = function() { return 'Foo'; };
+    let Foo = Namespace.create();
+    Foo.toString = function() {
+      return 'Foo';
+    };
 
-  Foo.Bar = EmberObject.extend();
-  assert.equal(Foo.Bar.toString(), 'Foo.Bar');
+    Foo.Bar = EmberObject.extend();
+    assert.equal(Foo.Bar.toString(), 'Foo.Bar');
 
-  obj = Foo.Bar.create();
-  assert.equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
+    obj = Foo.Bar.create();
+    assert.equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
 
-  Foo.Baz = Foo.Bar.extend();
-  assert.equal(Foo.Baz.toString(), 'Foo.Baz');
+    Foo.Baz = Foo.Bar.extend();
+    assert.equal(Foo.Baz.toString(), 'Foo.Baz');
 
-  obj = Foo.Baz.create();
-  assert.equal(obj.toString(), '<Foo.Baz:' + guidFor(obj) + '>');
+    obj = Foo.Baz.create();
+    assert.equal(obj.toString(), '<Foo.Baz:' + guidFor(obj) + '>');
 
-  obj = Foo.Bar.create();
-  assert.equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
-});
+    obj = Foo.Bar.create();
+    assert.equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
+  }
+);
 
-QUnit.test('toString on a namespace finds the namespace in lookup', function(assert) {
-  let Foo = lookup.Foo = Namespace.create();
+QUnit.test('toString on a namespace finds the namespace in lookup', function(
+  assert
+) {
+  let Foo = (lookup.Foo = Namespace.create());
 
   assert.equal(Foo.toString(), 'Foo');
 });
 
-QUnit.test('toString on a namespace finds the namespace in lookup', function(assert) {
-  let Foo = lookup.Foo = Namespace.create();
+QUnit.test('toString on a namespace finds the namespace in lookup', function(
+  assert
+) {
+  let Foo = (lookup.Foo = Namespace.create());
   let obj;
 
   Foo.Bar = EmberObject.extend();
@@ -76,11 +85,14 @@ QUnit.test('toString on a namespace finds the namespace in lookup', function(ass
   assert.equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
 });
 
-QUnit.test('toString on a namespace falls back to modulePrefix, if defined', function(assert) {
-  let Foo = Namespace.create({ modulePrefix: 'foo' });
+QUnit.test(
+  'toString on a namespace falls back to modulePrefix, if defined',
+  function(assert) {
+    let Foo = Namespace.create({ modulePrefix: 'foo' });
 
-  assert.equal(Foo.toString(), 'foo');
-});
+    assert.equal(Foo.toString(), 'foo');
+  }
+);
 
 QUnit.test('toString includes toStringExtension if defined', function(assert) {
   let Foo = EmberObject.extend({
@@ -93,9 +105,17 @@ QUnit.test('toString includes toStringExtension if defined', function(assert) {
   let bar = Bar.create();
 
   // simulate these classes being defined on a Namespace
-  Foo[NAME_KEY] = 'Foo';
-  Bar[NAME_KEY] = 'Bar';
+  setName(Foo, 'Foo');
+  setName(Bar, 'Bar');
 
-  assert.equal(bar.toString(), '<Bar:' + guidFor(bar) + '>', 'does not include toStringExtension part');
-  assert.equal(foo.toString(), '<Foo:' + guidFor(foo) + ':fooey>', 'Includes toStringExtension result');
+  assert.equal(
+    bar.toString(),
+    '<Bar:' + guidFor(bar) + '>',
+    'does not include toStringExtension part'
+  );
+  assert.equal(
+    foo.toString(),
+    '<Foo:' + guidFor(foo) + ':fooey>',
+    'Includes toStringExtension result'
+  );
 });

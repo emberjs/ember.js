@@ -5,10 +5,10 @@ import {
   get,
   Mixin,
   hasUnprocessedMixins,
-  clearUnprocessedMixins,
+  clearUnprocessedMixins
 } from 'ember-metal'; // Preloaded into namespaces
 import { context } from 'ember-environment';
-import { NAME_KEY } from 'ember-utils';
+import { getName, setName } from 'ember-utils';
 import EmberObject from './object';
 
 let searchDisabled = false;
@@ -49,10 +49,12 @@ const Namespace = EmberObject.extend({
 
   toString() {
     let name = get(this, 'name') || get(this, 'modulePrefix');
-    if (name) { return name; }
+    if (name) {
+      return name;
+    }
 
     findNamespaces();
-    return this[NAME_KEY];
+    return getName(this);
   },
 
   nameClasses() {
@@ -88,7 +90,7 @@ Namespace.reopenClass({
 
 let NAMESPACES_BY_ID = Namespace.NAMESPACES_BY_ID;
 
-let hasOwnProp = ({}).hasOwnProperty;
+let hasOwnProp = {}.hasOwnProperty;
 
 function processNamespace(paths, root, seen = new Set()) {
   let idx = paths.length;
@@ -97,7 +99,9 @@ function processNamespace(paths, root, seen = new Set()) {
 
   // Loop over all of the keys in the namespace, looking for classes
   for (let key in root) {
-    if (!hasOwnProp.call(root, key)) { continue; }
+    if (!hasOwnProp.call(root, key)) {
+      continue;
+    }
     let obj = root[key];
 
     // If we are processing the `Ember` namespace, for example, the
@@ -108,15 +112,16 @@ function processNamespace(paths, root, seen = new Set()) {
     paths[idx] = key;
 
     // If we have found an unprocessed class
-    if (obj && obj.toString === classToString && !obj[NAME_KEY]) {
+    if (obj && obj.toString === classToString && getName(obj) === void 0) {
       // Replace the class' `toString` with the dot-separated path
-      // and set its `NAME_KEY`
-      obj[NAME_KEY] = paths.join('.');
+      setName(obj, paths.join('.'));
 
-    // Support nested namespaces
+      // Support nested namespaces
     } else if (obj && obj.isNamespace) {
       // Skip aliased namespaces
-      if (seen.has(obj)) { continue; }
+      if (seen.has(obj)) {
+        continue;
+      }
       seen.add(obj);
 
       // Process the child namespace
@@ -128,8 +133,9 @@ function processNamespace(paths, root, seen = new Set()) {
 }
 
 function isUppercase(code) {
-  return code >= 65 && // A
-         code <= 90;   // Z
+  return (
+    code >= 65 && code <= 90 // A
+  ); // Z
 }
 
 function tryIsNamespace(lookup, prop) {
@@ -155,7 +161,7 @@ function findNamespaces() {
     }
     let obj = tryIsNamespace(lookup, key);
     if (obj) {
-      obj[NAME_KEY] = key;
+      setName(obj, key);
     }
   }
 }
@@ -163,8 +169,9 @@ function findNamespaces() {
 function superClassString(mixin) {
   let superclass = mixin.superclass;
   if (superclass) {
-    if (superclass[NAME_KEY]) {
-      return superclass[NAME_KEY];
+    let superclassName = getName(superclass);
+    if (superclassName !== void 0) {
+      return superclassName;
     }
     return superClassString(superclass);
   }
@@ -176,8 +183,8 @@ function calculateToString(target) {
   if (!searchDisabled) {
     processAllNamespaces();
     // can also be set by processAllNamespaces
-    str = target[NAME_KEY];
-    if (str) {
+    str = getName(target);
+    if (str !== void 0) {
       return str;
     } else {
       str = superClassString(target);
@@ -192,10 +199,13 @@ function calculateToString(target) {
 }
 
 function classToString() {
-  let name = this[NAME_KEY];
-  if (name) { return name; }
-
-  return (this[NAME_KEY] = calculateToString(this));
+  let name = getName(this);
+  if (name !== void 0) {
+    return name;
+  }
+  name = calculateToString(this);
+  setName(this, name);
+  return name;
 }
 
 function processAllNamespaces() {
