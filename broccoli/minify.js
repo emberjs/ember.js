@@ -1,36 +1,27 @@
 'use strict';
 
-const Funnel = require('broccoli-funnel');
-const Uglify = require('broccoli-uglify-js');
-const path = require('path');
+const Uglify = require('broccoli-uglify-sourcemap');
 
-module.exports = function _minify(tree, name) {
-  let minified = new Uglify(tree, {
-    sourceMapConfig: {
-      enable: false
-    },
-    mangle: true,
-    compress: {
-      // this adversely affects heuristics for IIFE eval
-      negate_iife: false,
-      // limit sequences because of memory issues during parsing
-      sequences: 30
-    },
-    output: {
-      // no difference in size
-      // and much easier to debug
-      semicolons: false
-    }
-  });
+module.exports = function _minify(tree) {
+  let options = {
+      enabled: true,
 
-  return new Funnel(minified, {
-    getDestinationPath(relativePath) {
-      let ext = path.extname(relativePath);
-      if (ext === '.map') {
-        return `${name}.map`;
+      uglify: {
+        compress: {
+          // this is adversely affects heuristics for IIFE eval
+          'negate_iife': false,
+          // limit sequences because of memory issues during parsing
+          sequences: 0,
+        },
+        mangle: {
+          safari10: true
+        },
+        output: {
+          // no difference in size and much easier to debug
+          semicolons: false,
+        },
       }
-      return `${name}.js`;
-    },
-    annotation: name
-  });
+  };
+
+  return new Uglify(tree, options);
 };

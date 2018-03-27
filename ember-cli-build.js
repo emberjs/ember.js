@@ -11,13 +11,14 @@ const toES5 = require('./broccoli/to-es5');
 const toNamedAMD = require('./broccoli/to-named-amd');
 const stripForProd = toES5.stripForProd;
 const minify = require('./broccoli/minify');
+const rename = require('./broccoli/rename');
 const { stripIndent } = require('common-tags');
 const {
   routerES,
   jquery,
   internalLoader,
   qunit,
-  emberGlimmerES,
+  rollupEmberGlimmerES,
   handlebarsES,
   rsvpES,
   simpleHTMLTokenizerES,
@@ -25,6 +26,7 @@ const {
   dagES,
   routeRecognizerES,
   emberPkgES,
+  emberTypescriptPkgES,
   glimmerTrees,
   emberTestsES: emberPkgTestsES,
   nodeModuleUtils,
@@ -42,6 +44,7 @@ module.exports = function() {
   let loader = internalLoader();
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
+  let emberGlimmerES = emberTypescriptPkgES('ember-glimmer');
 
   // generate "loose" ES<latest> modules...
   let combinedES = new MergeTrees([
@@ -114,7 +117,7 @@ module.exports = function() {
     'ember/features'
   ]);
   let containerES5 = toES5(container, { annotation: 'container' });
-  let emberCoreES = emberES();
+  let emberCoreES = emberES().concat(rollupEmberGlimmerES(emberGlimmerES));
   let testHarness = testHarnessFiles();
   let backburner = toES5(backburnerES());
 
@@ -307,7 +310,8 @@ module.exports = function() {
       hasBootstrap: false
     });
 
-    let emberMinBundle = minify(emberProdBundle, 'ember.min');
+    let emberProdMinRename = rename(emberProdBundle, { 'ember.prod.js': 'ember.min.js' });
+    let emberMinBundle = minify(emberProdMinRename);
 
     trees.push(
       emberRuntimeBundle,
@@ -401,7 +405,6 @@ function emberES() {
     emberPkgES('ember-runtime'),
     emberPkgES('ember-extension-support'),
     emberPkgES('ember-routing'),
-    emberGlimmerES()
   ];
 }
 
