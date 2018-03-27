@@ -161,7 +161,6 @@ module.exports = function() {
     babelDebugHelpersES5,
     inlineParser,
     debugFeatures,
-    emberTemplateCompilerES5
   ]);
 
   emberDebugBundle = concatBundle(emberDebugBundle, {
@@ -289,7 +288,6 @@ module.exports = function() {
     let emberProdTestsBundle = new MergeTrees([
       ...emberProdTestES5,
       tokenizer,
-      emberTemplateCompilerES5,
       babelProdHelpersES5,
       license,
       loader,

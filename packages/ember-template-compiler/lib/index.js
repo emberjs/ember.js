@@ -17,7 +17,7 @@ export {
   registerPlugin,
   unregisterPlugin
 } from './system/compile-options';
-export { default as defaultPlugins } from './plugins';
+export { default as defaultPlugins } from './plugins/index';
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import './compat';
