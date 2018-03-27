@@ -61,25 +61,25 @@ module.exports.qunit = function _qunit() {
   });
 };
 
-module.exports.emberGlimmerES = function _emberGlimmerES() {
-  let input = new Funnel('packages/ember-glimmer/lib', {
-    destDir: 'packages/ember-glimmer/lib'
+module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
+  let input = new Funnel(`packages/${name}/lib`, {
+    destDir: `packages/${name}/lib`
   });
 
-  let debuggedInput = debugTree(input, 'ember-glimmer:input');
+  let debuggedInput = debugTree(input, `${name}:input`);
 
   let compiledTemplatesAndTypescript = new GlimmerTemplatePrecompiler(
     debuggedInput,
     {
       persist: true,
       glimmer: require('@glimmer/compiler'),
-      annotation: 'ember-glimmer es'
+      annotation: `${name} templates -> es`
     }
   );
 
   let debuggedCompiledTemplatesAndTypeScript = debugTree(
     compiledTemplatesAndTypescript,
-    'ember-glimmer:templates-output'
+    `${name}:templates-output`
   );
 
   let typescriptCompiled = filterTypeScript(
@@ -95,7 +95,11 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
     }
   });
 
-  let rollup = new Rollup(funneled, {
+  return debugTree(funneled, `${name}:output`);
+};
+
+module.exports.rollupEmberGlimmerES = function(emberGlimmerES) {
+  return new Rollup(emberGlimmerES, {
     annotation: 'ember-glimmer',
     rollup: {
       external: [
@@ -128,8 +132,6 @@ module.exports.emberGlimmerES = function _emberGlimmerES() {
       }
     }
   });
-
-  return debugTree(rollup, 'ember-glimmer:output');
 };
 
 module.exports.handlebarsES = function _handlebars() {
