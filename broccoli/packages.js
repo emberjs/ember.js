@@ -4,8 +4,7 @@ const { readFileSync, existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
-const filterTypeScript = require('broccoli-typescript-compiler')
-  .filterTypeScript;
+const filterTypeScript = require('broccoli-typescript-compiler').filterTypeScript;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
 const findPackage = require('./find-package');
@@ -62,8 +61,8 @@ module.exports.qunit = function _qunit() {
 };
 
 module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
-  let input = new Funnel(`packages/${name}/lib`, {
-    destDir: `packages/${name}/lib`
+  let input = new Funnel(`packages/${name}`, {
+    destDir: `packages/${name}`
   });
 
   let debuggedInput = debugTree(input, `${name}:input`);
@@ -90,9 +89,7 @@ module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
   );
 
   let funneled = new Funnel(typescriptCompiled, {
-    getDestinationPath(path) {
-      return path.replace('/lib/', '/').replace('packages/', '/');
-    }
+    srcDir: 'packages',
   });
 
   return debugTree(funneled, `${name}:output`);

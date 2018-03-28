@@ -81,7 +81,7 @@ module.exports = function() {
   }));
 
   let emberTestsES = buildEmberTestsES();
-  let pkgAndTestES = new MergeTrees([combinedES, ...emberTestsES]);
+  let pkgAndTestES = new MergeTrees([combinedES, ...emberTestsES], { overwrite: true });
 
   let pkgAndTestESInAMD = toNamedAMD(pkgAndTestES);
   let emberEnvFlagsDebug = toNamedAMD(buildEmberEnvFlagsES({ DEBUG: true }));

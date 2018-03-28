@@ -259,39 +259,39 @@
   @public
 */
 
-export { default as RootTemplate } from './templates/root';
-export { default as template } from './template';
-export { default as Checkbox } from './components/checkbox';
-export { default as TextField } from './components/text_field';
-export { default as TextArea } from './components/text_area';
-export { default as LinkComponent } from './components/link-to';
-export { default as Component, ROOT_REF } from './component';
-export { default as Helper, helper } from './helper';
-export { default as Environment } from './environment';
+export { default as RootTemplate } from './lib/templates/root';
+export { default as template } from './lib/template';
+export { default as Checkbox } from './lib/components/checkbox';
+export { default as TextField } from './lib/components/text_field';
+export { default as TextArea } from './lib/components/text_area';
+export { default as LinkComponent } from './lib/components/link-to';
+export { default as Component, ROOT_REF } from './lib/component';
+export { default as Helper, helper } from './lib/helper';
+export { default as Environment } from './lib/environment';
 export {
   SafeString,
   escapeExpression,
   htmlSafe,
   isHTMLSafe
-} from './utils/string';
+} from './lib/utils/string';
 export {
   Renderer,
   InertRenderer,
   InteractiveRenderer,
   _resetRenderers,
   renderSettled,
-} from './renderer';
+} from './lib/renderer';
 export {
   getTemplate,
   setTemplate,
   hasTemplate,
   getTemplates,
   setTemplates,
-} from './template_registry';
-export { setupEngineRegistry, setupApplicationRegistry } from './setup-registry';
-export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './dom';
-export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './syntax';
-export { default as AbstractComponentManager } from './component-managers/abstract';
+} from './lib/template_registry';
+export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
+export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
+export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './lib/syntax';
+export { default as AbstractComponentManager } from './lib/component-managers/abstract';
 
 // needed for test
 // TODO just test these through public API
@@ -299,10 +299,10 @@ export { default as AbstractComponentManager } from './component-managers/abstra
 // rather than the problem was solved
 // DebugStack should just test the assert message
 // it supports for example
-export { UpdatableReference, INVOKE } from './utils/references';
-export { default as iterableFor } from './utils/iterable';
-export { default as DebugStack } from './utils/debug-stack';
-export { default as OutletView } from './views/outlet';
-export { default as CustomComponentManager } from './component-managers/custom';
-export { COMPONENT_MANAGER, componentManager } from './utils/custom-component-manager';
-export { isSerializationFirstNode } from './utils/serialization-first-node-helpers';
+export { UpdatableReference, INVOKE } from './lib/utils/references';
+export { default as iterableFor } from './lib/utils/iterable';
+export { default as DebugStack } from './lib/utils/debug-stack';
+export { default as OutletView } from './lib/views/outlet';
+export { default as CustomComponentManager } from './lib/component-managers/custom';
+export { COMPONENT_MANAGER, componentManager } from './lib/utils/custom-component-manager';
+export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
