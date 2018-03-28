@@ -4,7 +4,7 @@
     "target": "es2017",
     "sourceMap": true,
     "outDir": "dist",
-    "baseUrl" : "packages",
+    "baseUrl": "packages",
     "rootDir": "packages",
 
     // Environment Configuration

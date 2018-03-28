@@ -4,7 +4,8 @@ const { readFileSync, existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
-const filterTypeScript = require('broccoli-typescript-compiler').filterTypeScript;
+const MergeTrees = require('broccoli-merge-trees');
+const typescript = require('broccoli-typescript-compiler').typescript;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
 const findPackage = require('./find-package');
@@ -81,18 +82,22 @@ module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
     `${name}:templates-output`
   );
 
-  let typescriptCompiled = filterTypeScript(
-    debuggedCompiledTemplatesAndTypeScript,
-    {
-      noImplicitAny: false
-    }
-  );
-
-  let funneled = new Funnel(typescriptCompiled, {
+  let nonTypeScriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
     srcDir: 'packages',
+    exclude: ["**/*.ts"],
   });
 
-  return debugTree(funneled, `${name}:output`);
+  let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
+    include: ["**/*.ts"],
+  });
+
+  let typescriptCompiled = typescript(debugTree(typescriptContents, `${name}:ts:input`));
+
+  let debuggedCompiledTypescript = debugTree(typescriptCompiled, `${name}:ts:output`);
+
+  let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], { overwrite: true });
+
+  return debugTree(mergedFinalOutput, `${name}:output`);
 };
 
 module.exports.rollupEmberGlimmerES = function(emberGlimmerES) {
