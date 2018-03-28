@@ -1,5 +1,4 @@
 import { Mixin } from 'ember-metal';
-import { deprecatingAlias } from '../computed/computed_macros';
 import ActionHandler from './action_handler';
 
 /**
@@ -40,13 +39,4 @@ export default Mixin.create(ActionHandler, {
     @public
   */
   model: null,
-
-  /**
-    @private
-  */
-  content: deprecatingAlias('model', {
-    id: 'ember-runtime.controller.content-alias',
-    until: '2.17.0',
-    url: 'https://emberjs.com/deprecations/v2.x/#toc_controller-content-alias'
-  })
 });
