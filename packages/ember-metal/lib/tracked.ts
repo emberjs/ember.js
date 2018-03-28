@@ -1,17 +1,8 @@
-import { combine, CONSTANT_TAG, CURRENT_TAG, DirtyableTag, Tag, TagWrapper, UpdatableTag } from '@glimmer/reference';
-
-import {
-  MANDATORY_SETTER
-} from 'ember/features';
-import { meta as metaFor } from './meta';
-import { dirty, markObjectAsDirty, tagFor, tagForProperty, TRACKED_GETTERS, update } from './tags';
+import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
+import { dirty,  tagFor, tagForProperty, update } from './tags';
 
 type Option<T> = T | null;
 type unknown = null | undefined | void | {};
-
-interface Dict<T> {
-  [key: string]: T;
-}
 
 /**
   An object that that tracks @tracked properties that were consumed.
@@ -35,7 +26,7 @@ class Tracker {
     if (this.tags.size === 0) {
       return CONSTANT_TAG;
     } else if (this.tags.size === 1) {
-      return this.last;
+      return this.last as Tag;
     } else {
       let tags: Tag[] = [];
       this.tags.forEach(tag => tags.push(tag));
@@ -105,7 +96,7 @@ class Tracker {
 
   @param dependencies Optional dependents to be tracked.
  */
-export function tracked(target: object, key: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor {
+export function tracked(_target: object, key: string, descriptor: PropertyDescriptor): PropertyDescriptor {
   if ('value' in descriptor) {
     return descriptorForDataProperty(key, descriptor);
   } else {
@@ -191,7 +182,7 @@ export type Key = string;
   from it.
  */
 
-function descriptorForDataProperty(key, descriptor) {
+function descriptorForDataProperty(key: string, descriptor: PropertyDescriptor) {
   let shadowKey = Symbol(key);
 
   return {
@@ -208,8 +199,8 @@ function descriptorForDataProperty(key, descriptor) {
       return this[shadowKey];
     },
 
-    set(newValue) {
-      tagFor(this).inner.dirty();
+    set(newValue: any) {
+      tagFor(this).inner!['dirty']();
       dirty(tagForProperty(this, key));
       this[shadowKey] = newValue;
       propertyDidChange();
