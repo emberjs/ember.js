@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2015",
-    "module": "es2015",
+    "target": "es2017",
     "inlineSources": true,
     "inlineSourceMap": true,
     "outDir": "dist",
