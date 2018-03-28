@@ -5,6 +5,7 @@ import {
   observer,
   defineProperty
 } from 'ember-metal';
+import { oneWay as reads } from 'ember-runtime';
 import { testWithDefault } from 'internal-test-helpers';
 import EmberObject from '../../../system/object';
 
@@ -300,7 +301,7 @@ QUnit.test('Calling _super in apply outside the immediate function of a CP gette
 
 QUnit.test('observing computed.reads prop and overriding it in create() works', function(assert) {
   let Obj = EmberObject.extend({
-    name: computed.reads('model.name'),
+    name: reads('model.name'),
     nameDidChange: observer('name', function() {})
   });
 
