@@ -1,11 +1,7 @@
 export { default as Object, FrameworkObject } from './system/object';
 export { default as String } from './system/string';
-export {
-  default as RegistryProxyMixin,
-} from './mixins/registry_proxy';
-export {
-  default as ContainerProxyMixin
-} from './mixins/container_proxy';
+export { default as RegistryProxyMixin } from './mixins/registry_proxy';
+export { default as ContainerProxyMixin } from './mixins/container_proxy';
 export { default as copy } from './copy';
 export { default as inject } from './inject';
 export { default as compare } from './compare';
@@ -19,27 +15,18 @@ export {
   removeAt
 } from './mixins/array';
 export { default as Comparable } from './mixins/comparable';
-export {
-  default as Namespace,
-  isSearchDisabled as isNamespaceSearchDisabled,
-  setSearchDisabled as setNamespaceSearchDisabled
-} from './system/namespace';
+export { default as Namespace } from './system/namespace';
 export { default as ArrayProxy } from './system/array_proxy';
 export { default as ObjectProxy } from './system/object_proxy';
 export { default as CoreObject } from './system/core_object';
-export {
-  default as ActionHandler
-} from './mixins/action_handler';
+export { default as ActionHandler } from './mixins/action_handler';
 export { default as Copyable } from './mixins/copyable';
 export { default as Enumerable } from './mixins/enumerable';
 export {
-  default as _ProxyMixin, contentFor as _contentFor
+  default as _ProxyMixin,
+  contentFor as _contentFor
 } from './mixins/-proxy';
-export {
-  onLoad,
-  runLoadHooks,
-  _loaded
-} from './system/lazy_load';
+export { onLoad, runLoadHooks, _loaded } from './system/lazy_load';
 export { default as Observable } from './mixins/observable';
 export { default as MutableEnumerable } from './mixins/mutable_enumerable';
 export { default as TargetActionSupport } from './mixins/target_action_support';
@@ -85,15 +72,9 @@ export {
 export { default as Controller } from './controllers/controller';
 export { default as ControllerMixin } from './mixins/controller';
 export { default as Service } from './system/service';
-export {
-  default as RSVP,
-  onerrorDefault
-} from './ext/rsvp';     // just for side effect of extending Ember.RSVP
+export { default as RSVP, onerrorDefault } from './ext/rsvp'; // just for side effect of extending Ember.RSVP
 export { isArray, typeOf } from './utils';
-export {
-  getStrings,
-  setStrings
-} from './string_registry';
+export { getStrings, setStrings } from './string_registry';
 
-import './ext/string';   // just for side effect of extending String.prototype
+import './ext/string'; // just for side effect of extending String.prototype
 import './ext/function'; // just for side effect of extending Function.prototype

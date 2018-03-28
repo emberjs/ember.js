@@ -9,6 +9,7 @@ import {
   assign,
   guidFor,
   getName,
+  setName,
   makeArray,
   HAS_NATIVE_PROXY,
   isInternalSymbol
@@ -27,7 +28,8 @@ import {
   InjectedProperty,
   schedule,
   deleteMeta,
-  descriptor
+  descriptor,
+  classToString
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
@@ -277,8 +279,6 @@ function makeCtor(base) {
     return Class.prototype;
   };
 
-  Class.toString = Mixin.prototype.toString;
-
   return Class;
 }
 
@@ -319,7 +319,10 @@ const IS_DESTROYING = descriptor({
   @public
 */
 let CoreObject = makeCtor();
-CoreObject.toString = () => 'Ember.CoreObject';
+CoreObject.prototype.toString = classToString;
+CoreObject.toString = classToString;
+setName(CoreObject, 'Ember.CoreObject');
+
 CoreObject.PrototypeMixin = Mixin.create({
   reopen(...args) {
     applyMixin(this, args, true);

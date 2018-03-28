@@ -1,4 +1,3 @@
-
 export { default } from './core'; // reexports
 export {
   default as computed,
@@ -24,23 +23,10 @@ export {
   setDispatchOverride,
   getDispatchOverride
 } from './error_handler';
-export {
-  descriptorFor,
-  meta,
-  peekMeta,
-  deleteMeta
-} from './meta';
+export { descriptorFor, meta, peekMeta, deleteMeta } from './meta';
 export { default as Cache } from './cache';
-export {
-  PROXY_CONTENT,
-  _getPath,
-  get,
-  getWithDefault
-} from './property_get';
-export {
-  set,
-  trySet
-} from './property_set';
+export { PROXY_CONTENT, _getPath, get, getWithDefault } from './property_get';
+export { set, trySet } from './property_set';
 export {
   objectAt,
   replace,
@@ -97,69 +83,48 @@ export {
   propertyWillChange,
   PROPERTY_DID_CHANGE
 } from './property_events';
-export {
-  defineProperty,
-  Descriptor
-} from './properties';
-export {
-  watchKey,
-  unwatchKey
-} from './watch_key';
-export {
-  ChainNode,
-  finishChains,
-  removeChainWatcher
-} from './chains';
-export {
-  watchPath,
-  unwatchPath
-} from './watch_path';
-export {
-  isWatching,
-  unwatch,
-  watch,
-  watcherCount
-} from './watching';
+export { defineProperty, Descriptor } from './properties';
+export { watchKey, unwatchKey } from './watch_key';
+export { ChainNode, finishChains, removeChainWatcher } from './chains';
+export { watchPath, unwatchPath } from './watch_path';
+export { isWatching, unwatch, watch, watcherCount } from './watching';
 export { default as libraries, Libraries } from './libraries';
-export {
-  Map,
-  MapWithDefault,
-  OrderedSet
-} from './map';
+export { Map, MapWithDefault, OrderedSet } from './map';
 export { default as getProperties } from './get_properties';
 export { default as setProperties } from './set_properties';
 export { default as expandProperties } from './expand_properties';
 
-export {
-  addObserver,
-  removeObserver
-} from './observer';
+export { addObserver, removeObserver } from './observer';
 export {
   Mixin,
   aliasMethod,
   mixin,
   observer,
   required,
-  REQUIRED,
-  hasUnprocessedMixins,
-  clearUnprocessedMixins,
+  REQUIRED
 } from './mixin';
 export { default as InjectedProperty } from './injected_property';
-export {
-  setHasViews,
-  tagForProperty,
-  tagFor,
-  markObjectAsDirty
-} from './tags';
+export { setHasViews, tagForProperty, tagFor, markObjectAsDirty } from './tags';
 export {
   default as runInTransaction,
   didRender,
   assertNotRendered
 } from './transaction';
 export { default as WeakSet } from './weak_set';
-export {
-  isProxy,
-  setProxy
-} from './is_proxy';
+export { isProxy, setProxy } from './is_proxy';
 export { default as descriptor } from './descriptor';
 export { tracked } from './tracked';
+
+export {
+  NAMESPACES,
+  NAMESPACES_BY_ID,
+  addNamespace,
+  classToString,
+  findNamespace,
+  findNamespaces,
+  processNamespace,
+  processAllNamespaces,
+  removeNamespace,
+  isSearchDisabled as isNamespaceSearchDisabled,
+  setSearchDisabled as setNamespaceSearchDisabled
+} from './namespace_search';

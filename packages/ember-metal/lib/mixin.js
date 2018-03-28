@@ -12,6 +12,7 @@ import { Descriptor, defineProperty } from './properties';
 import { ComputedProperty } from './computed';
 import { addObserver, removeObserver } from './observer';
 import { addListener, removeListener } from './events';
+import { setUnprocessedMixins, classToString } from './namespace_search';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
@@ -538,7 +539,7 @@ export default class Mixin {
   */
   static create(...args) {
     // ES6TODO: this relies on a global state?
-    unprocessedFlag = true;
+    setUnprocessedMixins();
     let M = this;
     return new M(args, undefined);
   }
@@ -668,18 +669,10 @@ if (ENV._ENABLE_BINDING_SUPPORT) {
   Mixin.detectBinding = null;
 }
 
+Mixin.prototype.toString = classToString;
+
 if (DEBUG) {
   Object.seal(Mixin.prototype);
-}
-
-let unprocessedFlag = false;
-
-export function hasUnprocessedMixins() {
-  return unprocessedFlag;
-}
-
-export function clearUnprocessedMixins() {
-  unprocessedFlag = false;
 }
 
 function _detect(curMixin, targetMixin, seen = new Set()) {
