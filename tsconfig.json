@@ -2,8 +2,7 @@
   "compilerOptions": {
     // Compilation Configuration
     "target": "es2017",
-    "inlineSources": true,
-    "inlineSourceMap": true,
+    "sourceMap": true,
     "outDir": "dist",
     "baseUrl" : "packages",
     "rootDir": "packages",
