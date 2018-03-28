@@ -77,6 +77,7 @@ let allExports =[
   ['run.cancel', 'ember-metal', 'cancel'],
   ['run.debounce', 'ember-metal', 'debounce'],
   ['run.end', 'ember-metal', 'end'],
+  ['run.hasScheduledTimers', 'ember-metal', 'hasScheduledTimers'],
   ['run.join', 'ember-metal', 'join'],
   ['run.later', 'ember-metal', 'later'],
   ['run.next', 'ember-metal', 'next'],
