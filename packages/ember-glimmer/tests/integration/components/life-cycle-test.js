@@ -1,4 +1,4 @@
-import { set, setProperties, run } from 'ember-metal';
+import { set, setProperties, schedule } from 'ember-metal';
 import { A as emberA } from 'ember-runtime';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
@@ -139,7 +139,7 @@ class LifeCycleHooksTest extends RenderingTest {
 
         this.on('init', () => pushHook('on(init)'));
 
-        run.schedule('afterRender', () => {
+        schedule('afterRender', () => {
           this.isInitialRender = false;
         });
       },
@@ -1279,7 +1279,7 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
     let ComponentClass = Component.extend({
       width: '5',
       didInsertElement() {
-        run.schedule('afterRender', () => {
+        schedule('afterRender', () => {
           this.set('width', '10');
         });
       }
@@ -1300,7 +1300,7 @@ moduleFor('Run loop and lifecycle hooks', class extends RenderingTest {
   ['@test afterRender set on parent']() {
     let ComponentClass = Component.extend({
       didInsertElement() {
-        run.schedule('afterRender', () => {
+        schedule('afterRender', () => {
           let parent = this.get('parent');
           parent.set('foo', 'wat');
         });

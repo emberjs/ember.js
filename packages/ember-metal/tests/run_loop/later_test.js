@@ -1,16 +1,23 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { assign } from 'ember-utils';
-import { run, isNone } from '../..';
+import {
+  run,
+  later,
+  backburner,
+  isNone,
+  hasScheduledTimers,
+  getCurrentRunLoop,
+} from '../..';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;
-const originalPlatform = run.backburner._platform;
+const originalPlatform = backburner._platform;
 
 function wait(callback, maxWaitCount) {
   maxWaitCount = isNone(maxWaitCount) ? 100 : maxWaitCount;
 
   originalSetTimeout(() => {
-    if (maxWaitCount > 0 && (run.hasScheduledTimers() || run.currentRunLoop)) {
+    if (maxWaitCount > 0 && (hasScheduledTimers() || getCurrentRunLoop())) {
       wait(callback, maxWaitCount - 1);
 
       return;
@@ -21,9 +28,9 @@ function wait(callback, maxWaitCount) {
 }
 
 // Synchronous "sleep". This simulates work being done
-// after run.later was called but before the run loop
+// after later was called but before the run loop
 // has flushed. In previous versions, this would have
-// caused the run.later callback to have run from
+// caused the later callback to have run from
 // within the run loop flush, since by the time the
 // run loop has to flush, it would have considered
 // the timer already expired.
@@ -33,7 +40,7 @@ function pauseUntil(time) {
 
 moduleFor('run.later', class extends AbstractTestCase {
   teardown() {
-    run.backburner._platform = originalPlatform;
+    backburner._platform = originalPlatform;
     window.setTimeout = originalSetTimeout;
     Date.prototype.valueOf = originalDateValueOf;
   }
@@ -43,7 +50,7 @@ moduleFor('run.later', class extends AbstractTestCase {
     let invoked = false;
 
     run(() => {
-      run.later(() => invoked = true, 100);
+      later(() => invoked = true, 100);
     });
 
     wait(() => {
@@ -57,7 +64,7 @@ moduleFor('run.later', class extends AbstractTestCase {
     let obj = { invoked: false };
 
     run(() => {
-      run.later(obj, function() { this.invoked = true; }, 100);
+      later(obj, function() { this.invoked = true; }, 100);
     });
 
     wait(() => {
@@ -71,7 +78,7 @@ moduleFor('run.later', class extends AbstractTestCase {
     let obj = { invoked: 0 };
 
     run(() => {
-      run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);
+      later(obj, function(amt) { this.invoked += amt; }, 10, 100);
     });
 
     wait(() => {
@@ -86,18 +93,18 @@ moduleFor('run.later', class extends AbstractTestCase {
     let firstRunLoop, secondRunLoop;
 
     run(() => {
-      firstRunLoop = run.currentRunLoop;
+      firstRunLoop = getCurrentRunLoop();
 
-      run.later(obj, function(amt) {
+      later(obj, function(amt) {
         this.invoked += amt;
-        secondRunLoop = run.currentRunLoop;
+        secondRunLoop = getCurrentRunLoop();
       }, 10, 1);
 
       pauseUntil(+new Date() + 100);
     });
 
     assert.ok(firstRunLoop, 'first run loop captured');
-    assert.ok(!run.currentRunLoop, 'shouldn\'t be in a run loop after flush');
+    assert.ok(!getCurrentRunLoop(), 'shouldn\'t be in a run loop after flush');
     assert.equal(obj.invoked, 0, 'shouldn\'t have invoked later item yet');
 
     wait(() => {
@@ -117,11 +124,11 @@ moduleFor('run.later', class extends AbstractTestCase {
   //   function fn(val) { array.push(val); }
 
   //   run(function() {
-  //     run.later(this, fn, 4, 5);
-  //     run.later(this, fn, 1, 1);
-  //     run.later(this, fn, 5, 10);
-  //     run.later(this, fn, 2, 3);
-  //     run.later(this, fn, 3, 3);
+  //     later(this, fn, 4, 5);
+  //     later(this, fn, 1, 1);
+  //     later(this, fn, 5, 10);
+  //     later(this, fn, 2, 3);
+  //     later(this, fn, 3, 3);
   //   });
 
   //   deepEqual(array, []);
@@ -139,18 +146,18 @@ moduleFor('run.later', class extends AbstractTestCase {
 
   // asyncTest('callbacks coalesce into same run loop if expiring at the same time', function() {
   //   let array = [];
-  //   function fn(val) { array.push(run.currentRunLoop); }
+  //   function fn(val) { array.push(getCurrentRunLoop()); }
 
   //   run(function() {
 
   //     // Force +new Date to return the same result while scheduling
-  //     // run.later timers. Otherwise: non-determinism!
+  //     // later timers. Otherwise: non-determinism!
   //     let now = +new Date();
   //     Date.prototype.valueOf = function() { return now; };
 
-  //     run.later(this, fn, 10);
-  //     run.later(this, fn, 200);
-  //     run.later(this, fn, 200);
+  //     later(this, fn, 10);
+  //     later(this, fn, 200);
+  //     later(this, fn, 200);
 
   //     Date.prototype.valueOf = originalDateValueOf;
   //   });
@@ -167,21 +174,21 @@ moduleFor('run.later', class extends AbstractTestCase {
   //   });
   // });
 
-  ['@test inception calls to run.later should run callbacks in separate run loops'](assert) {
+  ['@test inception calls to later should run callbacks in separate run loops'](assert) {
     let done = assert.async();
     let runLoop, finished;
 
     run(() => {
-      runLoop = run.currentRunLoop;
+      runLoop = getCurrentRunLoop();
       assert.ok(runLoop);
 
-      run.later(() => {
-        assert.ok(run.currentRunLoop && run.currentRunLoop !== runLoop,
+      later(() => {
+        assert.ok(getCurrentRunLoop() && getCurrentRunLoop() !== runLoop,
           'first later callback has own run loop');
-        runLoop = run.currentRunLoop;
+        runLoop = getCurrentRunLoop();
 
-        run.later(() => {
-          assert.ok(run.currentRunLoop && run.currentRunLoop !== runLoop,
+        later(() => {
+          assert.ok(getCurrentRunLoop() && getCurrentRunLoop() !== runLoop,
             'second later callback has own run loop');
           finished = true;
         }, 40);
@@ -203,7 +210,7 @@ moduleFor('run.later', class extends AbstractTestCase {
     // happens when an expired timer callback takes a while to run,
     // which is what we simulate here.
     let newSetTimeoutUsed;
-    run.backburner._platform = assign({}, originalPlatform, {
+    backburner._platform = assign({}, originalPlatform, {
       setTimeout() {
         let wait = arguments[arguments.length - 1];
         newSetTimeoutUsed = true;
@@ -215,7 +222,7 @@ moduleFor('run.later', class extends AbstractTestCase {
 
     let count = 0;
     run(() => {
-      run.later(() => {
+      later(() => {
         count++;
 
         // This will get run first. Waste some time.
@@ -227,7 +234,7 @@ moduleFor('run.later', class extends AbstractTestCase {
         pauseUntil(+new Date() + 60);
       }, 1);
 
-      run.later(() => {
+      later(() => {
         assert.equal(count, 1, 'callbacks called in order');
       }, 50);
     });

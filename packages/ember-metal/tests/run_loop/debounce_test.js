@@ -1,4 +1,4 @@
-import { run } from '../..';
+import { debounce } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('debounce', class extends AbstractTestCase {
@@ -12,9 +12,9 @@ moduleFor('debounce', class extends AbstractTestCase {
       }
     };
 
-    run.debounce(target, target.someFunc, 10);
-    run.debounce(target, target.someFunc, 10);
-    run.debounce(target, target.someFunc, 10);
+    debounce(target, target.someFunc, 10);
+    debounce(target, target.someFunc, 10);
+    debounce(target, target.someFunc, 10);
 
     setTimeout(() => {
       assert.deepEqual(calledWith, [ [] ], 'someFunc called once with correct arguments');
@@ -32,9 +32,9 @@ moduleFor('debounce', class extends AbstractTestCase {
       }
     };
 
-    run.debounce(target, 'someFunc', 10);
-    run.debounce(target, 'someFunc', 10);
-    run.debounce(target, 'someFunc', 10);
+    debounce(target, 'someFunc', 10);
+    debounce(target, 'someFunc', 10);
+    debounce(target, 'someFunc', 10);
 
     setTimeout(() => {
       assert.deepEqual(calledWith, [ [] ], 'someFunc called once with correct arguments');
@@ -50,9 +50,9 @@ moduleFor('debounce', class extends AbstractTestCase {
       calledWith.push(args);
     }
 
-    run.debounce(someFunc, 10);
-    run.debounce(someFunc, 10);
-    run.debounce(someFunc, 10);
+    debounce(someFunc, 10);
+    debounce(someFunc, 10);
+    debounce(someFunc, 10);
 
     setTimeout(() => {
       assert.deepEqual(calledWith, [ [] ], 'someFunc called once with correct arguments');
@@ -68,9 +68,9 @@ moduleFor('debounce', class extends AbstractTestCase {
       calledWith.push(args);
     }
 
-    run.debounce(someFunc, { isFoo: true }, 10);
-    run.debounce(someFunc, { isBar: true }, 10);
-    run.debounce(someFunc, { isBaz: true }, 10);
+    debounce(someFunc, { isFoo: true }, 10);
+    debounce(someFunc, { isBar: true }, 10);
+    debounce(someFunc, { isBaz: true }, 10);
 
     setTimeout(() => {
       assert.deepEqual(calledWith, [ [ { isBaz: true } ] ], 'someFunc called once with correct arguments');

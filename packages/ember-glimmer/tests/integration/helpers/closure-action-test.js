@@ -1,5 +1,5 @@
 import {
-  run,
+  getCurrentRunLoop,
   set,
   computed,
   instrumentationSubscribe,
@@ -987,7 +987,7 @@ moduleFor('Helpers test: closure {{action}}', class extends RenderingTest {
     let OuterComponent = Component.extend({
       actions: {
         submit() {
-          capturedRunLoop = run.currentRunLoop;
+          capturedRunLoop = getCurrentRunLoop();
         }
       }
     });

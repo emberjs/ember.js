@@ -5,7 +5,7 @@ import {
   RSVP,
   onerrorDefault
 } from 'ember-runtime';
-import { run } from 'ember-metal';
+import { later } from 'ember-metal';
 import Application from '../../system/application';
 import ApplicationInstance from '../../system/application-instance';
 import Engine from '../../system/engine';
@@ -104,7 +104,7 @@ moduleFor('Application - visit()', class extends ApplicationTestCase {
   // does not fire.
   [`@test Applications with autoboot set to false do not autoboot`](assert) {
     function delay(time) {
-      return new RSVP.Promise(resolve => run.later(resolve, time));
+      return new RSVP.Promise(resolve => later(resolve, time));
     }
 
     let appBooted = 0;

@@ -1,12 +1,10 @@
 import * as RSVP from 'rsvp';
 import {
-  run,
+  backburner,
   getDispatchOverride
 } from 'ember-metal';
 import { assert } from 'ember-debug';
 import { privatize as P } from 'container';
-
-const backburner = run.backburner;
 
 RSVP.configure('async', (callback, promise) => {
   backburner.schedule('actions', null, callback, promise);

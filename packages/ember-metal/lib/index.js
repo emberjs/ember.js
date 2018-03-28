@@ -67,7 +67,26 @@ export { default as isNone } from './is_none';
 export { default as isEmpty } from './is_empty';
 export { default as isBlank } from './is_blank';
 export { default as isPresent } from './is_present';
-export { default as run } from './run_loop';
+export {
+  getCurrentRunLoop,
+  backburner,
+  run,
+  join,
+  bind,
+  begin,
+  end,
+  schedule,
+  hasScheduledTimers,
+  cancelTimers,
+  later,
+  once,
+  scheduleOnce,
+  next,
+  cancel,
+  debounce,
+  throttle,
+  _globalsRun,
+} from './run_loop';
 export {
   beginPropertyChanges,
   changeProperties,

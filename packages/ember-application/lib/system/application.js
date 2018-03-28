@@ -7,7 +7,11 @@ import { assert, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   libraries,
-  run
+  run,
+  join,
+  schedule,
+  bind,
+  once,
 } from 'ember-metal';
 import {
   Namespace,
@@ -493,9 +497,9 @@ const Application = Engine.extend({
   */
   waitForDOMReady() {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, 'domReady');
+      schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(run.bind(this, 'domReady'));
+      this.$().ready(bind(this, 'domReady'));
     }
   },
 
@@ -594,7 +598,7 @@ const Application = Engine.extend({
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
-      run.once(this, this.didBecomeReady);
+      once(this, this.didBecomeReady);
     }
   },
 
@@ -751,10 +755,10 @@ const Application = Engine.extend({
     function handleReset() {
       run(instance, 'destroy');
       this._buildDeprecatedInstance();
-      run.schedule('actions', this, '_bootSync');
+      schedule('actions', this, '_bootSync');
     }
 
-    run.join(this, handleReset);
+    join(this, handleReset);
   },
 
   /**

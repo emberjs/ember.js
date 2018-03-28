@@ -1,7 +1,7 @@
 /* global Element */
 
 import { assign } from 'ember-utils';
-import { run } from 'ember-metal';
+import { run, next, hasScheduledTimers, getCurrentRunLoop } from 'ember-metal';
 
 import NodeQuery from './node-query';
 import equalInnerHTML from '../equal-inner-html';
@@ -50,7 +50,7 @@ export default class AbstractTestCase {
 
   runTaskNext() {
     return new Promise((resolve) => {
-      return run.next(resolve);
+      return next(resolve);
     });
   }
 
@@ -134,7 +134,7 @@ export default class AbstractTestCase {
       // Every 5ms, poll for the async thing to have finished
       let watcher = setInterval(() => {
         // If there are scheduled timers or we are inside of a run loop, keep polling
-        if (run.hasScheduledTimers() || run.currentRunLoop) { return; }
+        if (hasScheduledTimers() || getCurrentRunLoop()) { return; }
 
         // Stop polling
         clearInterval(watcher);

@@ -3,7 +3,7 @@ import {
   AutobootApplicationTestCase
 } from 'internal-test-helpers';
 
-import { run } from 'ember-metal';
+import { later } from 'ember-metal';
 import Test from '../test';
 import QUnitAdapter from '../adapters/qunit';
 import { Route } from 'ember-routing';
@@ -85,7 +85,7 @@ if (!jQueryDisabled) {
         this.application.setupForTesting();
 
         Test.registerAsyncHelper('slowHelper', () => {
-          return new RSVP.Promise(resolve => run.later(resolve, 10));
+          return new RSVP.Promise(resolve => later(resolve, 10));
         });
 
         this.application.injectTestHelpers();

@@ -15,7 +15,7 @@ import {
   Destroyable
 } from '@glimmer/util';
 import { assert } from 'ember-debug';
-import { flaggedInstrument, run } from 'ember-metal';
+import { flaggedInstrument, join } from 'ember-metal';
 import { uuid } from 'ember-utils';
 import {
   ActionManager,
@@ -140,7 +140,7 @@ export class ActionState {
       event.stopPropagation();
     }
 
-    run.join(() => {
+    join(() => {
       let args = this.getActionArgs();
       let payload = {
         args,

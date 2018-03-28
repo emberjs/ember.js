@@ -10,7 +10,7 @@ import {
   flaggedInstrument,
   get,
   isNone,
-  run,
+  join,
 } from 'ember-metal';
 import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
@@ -375,7 +375,7 @@ function makeClosureAction(context: any, target: any, action: any, processArgs: 
   return (...args: any[]) => {
     let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
-      return run.join(self, fn, ...processArgs(args));
+      return join(self, fn, ...processArgs(args));
     });
   };
 }

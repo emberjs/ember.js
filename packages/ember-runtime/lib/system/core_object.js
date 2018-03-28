@@ -25,7 +25,7 @@ import {
   defineProperty,
   ComputedProperty,
   InjectedProperty,
-  run,
+  schedule,
   deleteMeta,
   descriptor
 } from 'ember-metal';
@@ -36,7 +36,6 @@ import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 import { MANDATORY_GETTER, MANDATORY_SETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 
-const schedule = run.schedule;
 const applyMixin = Mixin._apply;
 const reopen = Mixin.prototype.reopen;
 

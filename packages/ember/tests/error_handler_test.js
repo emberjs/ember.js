@@ -1,5 +1,5 @@
 import { isTesting, setTesting } from 'ember-debug';
-import { run, getOnerror, setOnerror } from 'ember-metal';
+import { run, later, getOnerror, setOnerror } from 'ember-metal';
 import RSVP from 'rsvp';
 
 let WINDOW_ONERROR;
@@ -118,7 +118,7 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = true, no Emb
     return true;
   };
 
-  run.later(() => {
+  later(() => {
     throw new Error('the error');
   }, 10);
 
@@ -146,7 +146,7 @@ QUnit.test('does not swallow exceptions by default (Ember.testing = false, no Em
     return true;
   };
 
-  run.later(() => {
+  later(() => {
     throw new Error('the error');
   }, 10);
 
@@ -178,7 +178,7 @@ QUnit.test('Ember.onerror can intercept errors (aka swallow) by not rethrowing (
     assert.strictEqual(error, thrown, 'Ember.onerror is called with the error');
   });
 
-  run.later(() => {
+  later(() => {
     throw thrown;
   }, 10);
 

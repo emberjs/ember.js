@@ -1,4 +1,4 @@
-import { run } from '../..';
+import { run, cancel, schedule, getCurrentRunLoop } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
@@ -6,8 +6,8 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
     let cnt = 0;
 
     run(() => {
-      run.schedule('actions', () => cnt++);
-      run.schedule('actions', () => cnt++);
+      schedule('actions', () => cnt++);
+      schedule('actions', () => cnt++);
       assert.equal(cnt, 0, 'should not run action yet');
     });
 
@@ -18,8 +18,8 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
     let hasRan = false;
 
     run(() => {
-      let cancelId = run.schedule('actions', () => hasRan = true);
-      run.cancel(cancelId);
+      let cancelId = schedule('actions', () => hasRan = true);
+      cancel(cancelId);
     });
 
     assert.notOk(hasRan, 'should not have ran callback run');
@@ -29,11 +29,11 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
     let cnt = 0;
 
     run(() => {
-      run.schedule('actions', () => cnt++);
+      schedule('actions', () => cnt++);
       assert.equal(cnt, 0, 'should not run action yet');
 
       run(() => {
-        run.schedule('actions', () => cnt++);
+        schedule('actions', () => cnt++);
       });
       assert.equal(cnt, 1, 'should not run action yet');
     });
@@ -45,36 +45,36 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
     let order = [];
 
     run(() => {
-      let runLoop = run.currentRunLoop;
+      let runLoop = getCurrentRunLoop();
       assert.ok(runLoop, 'run loop present');
 
       expectDeprecation(() => {
-        run.schedule('sync', () => {
+        schedule('sync', () => {
           order.push('sync');
-          assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
+          assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
         });
       }, `Scheduling into the 'sync' run loop queue is deprecated.`);
 
-      run.schedule('actions', () => {
+      schedule('actions', () => {
         order.push('actions');
-        assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
+        assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
 
-        run.schedule('actions', () => {
+        schedule('actions', () => {
           order.push('actions');
-          assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
+          assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
         });
 
         expectDeprecation(() => {
-          run.schedule('sync', () => {
+          schedule('sync', () => {
             order.push('sync');
-            assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
+            assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
           });
         }, `Scheduling into the 'sync' run loop queue is deprecated.`);
       });
 
-      run.schedule('destroy', () => {
+      schedule('destroy', () => {
         order.push('destroy');
-        assert.equal(runLoop, run.currentRunLoop, 'same run loop used');
+        assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
       });
     });
 
@@ -82,9 +82,9 @@ moduleFor('system/run_loop/schedule_test', class extends AbstractTestCase {
   }
 
   ['@test makes sure it does not trigger an autorun during testing']() {
-    expectAssertion(() => run.schedule('actions', () => {}), /wrap any code with asynchronous side-effects in a run/);
+    expectAssertion(() => schedule('actions', () => {}), /wrap any code with asynchronous side-effects in a run/);
 
     // make sure not just the first violation is asserted.
-    expectAssertion(() => run.schedule('actions', () => {}), /wrap any code with asynchronous side-effects in a run/);
+    expectAssertion(() => schedule('actions', () => {}), /wrap any code with asynchronous side-effects in a run/);
   }
 });
