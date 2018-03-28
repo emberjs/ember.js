@@ -1,4 +1,4 @@
-import { run, setOnerror } from 'ember-metal';
+import { run, next, setOnerror } from 'ember-metal';
 import Test from '../test';
 import Adapter from '../adapters/adapter';
 import QUnitAdapter from '../adapters/qunit';
@@ -21,7 +21,7 @@ function runThatThrowsSync(message = 'Error for testing error handling') {
 }
 
 function runThatThrowsAsync(message = 'Error for testing error handling') {
-  return run.next(() => {
+  return next(() => {
     throw new Error(message);
   });
 }
@@ -201,12 +201,12 @@ moduleFor('ember-testing Adapters', class extends AdapterSetupAndTearDown {
 
     Test.adapter ={
       exception() {
-        assert.notOk(true, 'Adapter.exception is not called for errors thrown in run.next');
+        assert.notOk(true, 'Adapter.exception is not called for errors thrown in next');
       }
     };
 
     setOnerror(function() {
-      assert.ok(true, 'onerror is invoked for errors thrown in run.next/run.later');
+      assert.ok(true, 'onerror is invoked for errors thrown in next/later');
     });
 
     runThatThrowsAsync();

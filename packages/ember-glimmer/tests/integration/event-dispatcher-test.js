@@ -3,7 +3,8 @@ import { Component } from '../utils/helpers';
 import {
   instrumentationSubscribe,
   instrumentationReset,
-  run
+  run,
+  getCurrentRunLoop,
 } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
@@ -93,7 +94,7 @@ moduleFor('EventDispatcher', class extends RenderingTest {
     this.registerComponent('x-foo', {
       ComponentClass: Component.extend({
         change() {
-          assert.ok(run.currentRunLoop, 'a run loop should have started');
+          assert.ok(getCurrentRunLoop(), 'a run loop should have started');
         }
       }),
       template: `<input id="is-done" type="checkbox">`

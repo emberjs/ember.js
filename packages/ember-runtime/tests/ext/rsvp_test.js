@@ -1,7 +1,9 @@
 import {
   setOnerror,
   getOnerror,
-  run
+  run,
+  schedule,
+  next,
 } from 'ember-metal';
 import RSVP from '../../ext/rsvp';
 import { isTesting, setTesting } from 'ember-debug';
@@ -177,12 +179,12 @@ QUnit.test('handled within the same micro-task (via Ember.RVP.Promise)', functio
 QUnit.test('handled within the same micro-task (via direct run-loop)', function(assert) {
   run(function() {
     let rejection = RSVP.Promise.reject(reason);
-    run.schedule('afterRender', () => rejection.catch(function() { }));
+    schedule('afterRender', () => rejection.catch(function() { }));
   }); // handled, we shouldn't need to assert.
   assert.ok(true, 'reached end of test');
 });
 
-QUnit.test('handled in the next microTask queue flush (run.next)', function(assert) {
+QUnit.test('handled in the next microTask queue flush (next)', function(assert) {
   assert.expect(2);
   let done = assert.async();
 
@@ -190,7 +192,7 @@ QUnit.test('handled in the next microTask queue flush (run.next)', function(asse
     run(function() {
       let rejection = RSVP.Promise.reject(reason);
 
-      run.next(() => {
+      next(() => {
         rejection.catch(function() { });
         assert.ok(true, 'reached end of test');
         done();

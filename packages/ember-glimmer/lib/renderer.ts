@@ -15,7 +15,8 @@ import {
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
 import {
-  run,
+  backburner,
+  getCurrentRunLoop,
   runInTransaction,
   setHasViews,
 } from 'ember-metal';
@@ -36,7 +37,6 @@ import { OutletState } from './utils/outlet';
 import { UnboundReference } from './utils/references';
 import OutletView from './views/outlet';
 
-const { backburner } = run;
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
 export class DynamicScope implements GlimmerDynamicScope {
@@ -203,7 +203,7 @@ export function renderSettled() {
     renderSettledDeferred = RSVP.defer();
     // if there is no current runloop, the promise created above will not have
     // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!run.currentRunLoop) {
+    if (!getCurrentRunLoop()) {
       // ensure a runloop has been kicked off
       backburner.schedule('actions', null, K);
     }

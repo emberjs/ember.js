@@ -2,7 +2,7 @@ import { CONSTANT_TAG, UpdatableTag, DirtyableTag, combine } from '@glimmer/refe
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { meta as metaFor } from './meta';
 import { isProxy } from './is_proxy';
-import run from './run_loop';
+import { backburner } from './run_loop';
 
 let hasViews = () => false;
 
@@ -85,12 +85,7 @@ export function markObjectAsDirty(obj, propertyKey, meta) {
   }
 }
 
-let backburner;
 function ensureRunloop() {
-  if (backburner === undefined) {
-    backburner = run.backburner;
-  }
-
   if (hasViews()) {
     backburner.ensureInstance();
   }

@@ -5,7 +5,7 @@ import { Controller, RSVP } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Engine } from 'ember-application';
 import { Route } from 'ember-routing';
-import { run } from 'ember-metal';
+import { next } from 'ember-metal';
 
 moduleFor('Application test: engine rendering', class extends ApplicationTest {
   get routerOptions() {
@@ -414,7 +414,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.additionalEngineRegistrations(function() {
       this.register('route:application_error', Route.extend({
         activate() {
-          run.next(errorEntered.resolve);
+          next(errorEntered.resolve);
         }
       }));
       this.register('template:application_error', compile('Error! {{model.message}}'));
@@ -444,7 +444,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.additionalEngineRegistrations(function() {
       this.register('route:error', Route.extend({
         activate() {
-          run.next(errorEntered.resolve);
+          next(errorEntered.resolve);
         }
       }));
       this.register('template:error', compile('Error! {{model.message}}'));
@@ -474,7 +474,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.additionalEngineRegistrations(function() {
       this.register('route:post_error', Route.extend({
         activate() {
-          run.next(errorEntered.resolve);
+          next(errorEntered.resolve);
         }
       }));
       this.register('template:post_error', compile('Error! {{model.message}}'));
@@ -504,7 +504,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.additionalEngineRegistrations(function() {
       this.register('route:post.error', Route.extend({
         activate() {
-          run.next(errorEntered.resolve);
+          next(errorEntered.resolve);
         }
       }));
       this.register('template:post.error', compile('Error! {{model.message}}'));
@@ -536,7 +536,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.additionalEngineRegistrations(function() {
       this.register('route:application_loading', Route.extend({
         activate() {
-          run.next(loadingEntered.resolve);
+          next(loadingEntered.resolve);
         }
       }));
       this.register('template:application_loading', compile('Loading'));
@@ -577,7 +577,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
     this.additionalEngineRegistrations(function() {
       this.register('route:loading', Route.extend({
         activate() {
-          run.next(loadingEntered.resolve);
+          next(loadingEntered.resolve);
         }
       }));
       this.register('template:loading', compile('Loading'));
@@ -655,7 +655,7 @@ moduleFor('Application test: engine rendering', class extends ApplicationTest {
       this.register('template:post.comments', compile('Comments'));
       this.register('route:post.loading', Route.extend({
         activate() {
-          run.next(loadingEntered.resolve);
+          next(loadingEntered.resolve);
         }
       }));
       this.register('template:post.loading', compile('Loading'));

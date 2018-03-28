@@ -5,7 +5,7 @@ import {
 } from 'internal-test-helpers';
 import { renderSettled } from 'ember-glimmer';
 import { all } from 'rsvp';
-import { run } from 'ember-metal';
+import { run, schedule } from 'ember-metal';
 
 moduleFor('renderSettled', class extends RenderingTestCase {
   ['@test resolves when no rendering is happening'](assert) {
@@ -52,14 +52,14 @@ moduleFor('renderSettled', class extends RenderingTestCase {
     let promise;
 
     return run(() => {
-      run.schedule('actions', null, () => {
+      schedule('actions', null, () => {
         this.component.set('foo', 'set in actions');
 
         promise = renderSettled().then(() => {
           this.assertText('set in afterRender');
         });
 
-        run.schedule('afterRender', null, () => {
+        schedule('afterRender', null, () => {
           this.component.set('foo', 'set in afterRender');
         });
       });

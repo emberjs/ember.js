@@ -7,7 +7,11 @@ import {
   set,
   defineProperty,
   computed,
-  run
+  run,
+  once,
+  scheduleOnce,
+  schedule,
+  cancel,
 } from 'ember-metal';
 import {
   Error as EmberError,
@@ -258,7 +262,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     // Put this in the runloop so url will be accurate. Seems
     // less surprising than didTransition being out of sync.
-    run.once(this, this.trigger, 'didTransition');
+    once(this, this.trigger, 'didTransition');
 
     if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
@@ -332,7 +336,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @since 1.11.0
   */
   willTransition(oldInfos, newInfos, transition) {
-    run.once(this, this.trigger, 'willTransition', transition);
+    once(this, this.trigger, 'willTransition', transition);
 
     if (DEBUG) {
       if (get(this, 'namespace').LOG_TRANSITIONS) {
@@ -486,7 +490,7 @@ const EmberRouter = EmberObject.extend(Evented, {
   */
   _activeQPChanged(queryParameterName, newValue) {
     this._queuedQPChanges[queryParameterName] = newValue;
-    run.once(this, this._fireQueryParamTransition);
+    once(this, this._fireQueryParamTransition);
   },
 
   _updatingQPChanged(queryParameterName) {
@@ -633,7 +637,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
     routerMicrolib.updateURL = path => {
       lastURL = path;
-      run.once(doUpdateURL);
+      once(doUpdateURL);
     };
 
     if (location.replaceURL) {
@@ -644,7 +648,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
       routerMicrolib.replaceURL = path => {
         lastURL = path;
-        run.once(doReplaceURL);
+        once(doReplaceURL);
       };
     }
 
@@ -985,7 +989,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _scheduleLoadingEvent(transition, originRoute) {
     this._cancelSlowTransitionTimer();
-    this._slowTransitionTimer = run.scheduleOnce('routerTransitions', this, '_handleSlowTransition', transition, originRoute);
+    this._slowTransitionTimer = scheduleOnce('routerTransitions', this, '_handleSlowTransition', transition, originRoute);
   },
 
   currentState: null,
@@ -1008,7 +1012,7 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   _cancelSlowTransitionTimer() {
     if (this._slowTransitionTimer) {
-      run.cancel(this._slowTransitionTimer);
+      cancel(this._slowTransitionTimer);
     }
     this._slowTransitionTimer = null;
   },
@@ -1527,7 +1531,7 @@ function appendOrphan(liveRoutes, into, myState) {
     };
   }
   liveRoutes.outlets.__ember_orphans__.outlets[into] = myState;
-  run.schedule('afterRender', () => {
+  schedule('afterRender', () => {
     // `wasUsed` gets set by the render helper.
     assert(`You attempted to render into '${into}' but it was not found`,
       liveRoutes.outlets.__ember_orphans__.outlets[into].wasUsed);

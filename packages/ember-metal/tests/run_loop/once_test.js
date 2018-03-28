@@ -1,4 +1,4 @@
-import { run } from '../..';
+import { run, getCurrentRunLoop, once } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('system/run_loop/once_test', class extends AbstractTestCase {
@@ -6,9 +6,9 @@ moduleFor('system/run_loop/once_test', class extends AbstractTestCase {
     let count = 0;
     run(() => {
       function F() { count++; }
-      run.once(F);
-      run.once(F);
-      run.once(F);
+      once(F);
+      once(F);
+      once(F);
     });
 
     assert.equal(count, 1, 'should have invoked once');
@@ -19,10 +19,10 @@ moduleFor('system/run_loop/once_test', class extends AbstractTestCase {
     let B = { count: 0 };
     run(() => {
       function F() { this.count++; }
-      run.once(A, F);
-      run.once(B, F);
-      run.once(A, F);
-      run.once(B, F);
+      once(A, F);
+      once(B, F);
+      once(A, F);
+      once(B, F);
     });
 
     assert.equal(A.count, 1, 'should have invoked once on A');
@@ -36,10 +36,10 @@ moduleFor('system/run_loop/once_test', class extends AbstractTestCase {
 
     run(() => {
       function F(amt) { this.count += amt; }
-      run.once(A, F, 10);
-      run.once(B, F, 20);
-      run.once(A, F, 30);
-      run.once(B, F, 40);
+      once(A, F, 10);
+      once(B, F, 20);
+      once(A, F, 30);
+      once(B, F, 40);
     });
 
     assert.equal(A.count, 30, 'should have invoked once on A');
@@ -48,7 +48,7 @@ moduleFor('system/run_loop/once_test', class extends AbstractTestCase {
 
   ['@test should be inside of a runloop when running'](assert) {
     run(() => {
-      run.once(() => assert.ok(!!run.currentRunLoop, 'should have a runloop'));
+      once(() => assert.ok(!!getCurrentRunLoop(), 'should have a runloop'));
     });
   }
 });

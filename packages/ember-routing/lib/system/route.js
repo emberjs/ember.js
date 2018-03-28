@@ -5,7 +5,7 @@ import {
   getProperties,
   setProperties,
   computed,
-  run,
+  once,
   isEmpty
 } from 'ember-metal';
 import { assert, info, isTesting, deprecate } from 'ember-debug';
@@ -2082,7 +2082,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     let renderOptions = buildRenderOptions(this, isDefaultRender, name, options);
     this.connections.push(renderOptions);
-    run.once(this._router, '_setOutlets');
+    once(this._router, '_setOutlets');
   },
 
   /**
@@ -2193,7 +2193,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           controller: undefined,
           template: undefined,
         };
-        run.once(this._router, '_setOutlets');
+        once(this._router, '_setOutlets');
       }
     }
   },
@@ -2210,7 +2210,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   teardownViews() {
     if (this.connections && this.connections.length > 0) {
       this.connections = [];
-      run.once(this._router, '_setOutlets');
+      once(this._router, '_setOutlets');
     }
   }
 });

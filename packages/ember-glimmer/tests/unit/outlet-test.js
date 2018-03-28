@@ -1,5 +1,5 @@
 import { OutletView } from 'ember-glimmer';
-import { run } from 'ember-metal';
+import { run, schedule } from 'ember-metal';
 
 QUnit.module('Glimmer OutletView');
 
@@ -22,7 +22,7 @@ QUnit.test('render in the render queue', function(assert) {
     outletView.appendTo(expectedOutlet);
     assert.equal(didAppendOutletView, 0, 'appendOutletView should not yet have been called (sync after appendTo)');
 
-    run.schedule('actions', () => assert.equal(didAppendOutletView, 0, 'appendOutletView should not yet have been called (in actions)'));
-    run.schedule('render',  () => assert.equal(didAppendOutletView, 1, 'appendOutletView should be invoked in render'));
+    schedule('actions', () => assert.equal(didAppendOutletView, 0, 'appendOutletView should not yet have been called (in actions)'));
+    schedule('render',  () => assert.equal(didAppendOutletView, 1, 'appendOutletView should be invoked in render'));
   });
 });

@@ -6,18 +6,15 @@ interface IBackburner {
   scheduleOnce(...args: any[]): void;
   schedule(queueName: string, target: Object | null, method: Function | string): void;
 }
-interface IRun {
-  (...args: any[]): any;
-  schedule(...args: any[]): void;
-  later(...args: any[]): void;
-  join(...args: any[]): void;
-  backburner: IBackburner;
-  currentRunLoop: boolean;
-}
 
 export function peekMeta(obj: any): any;
 
-export const run: IRun;
+export function run(...args: any[]): any;
+export function schedule(...args: any[]): void;
+export function later(...args: any[]): void;
+export function join(...args: any[]): void;
+export const backburner: IBackburner;
+export function getCurrentRunLoop(): boolean;
 
 export const PROPERTY_DID_CHANGE: symbol;
 

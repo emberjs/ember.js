@@ -9,7 +9,7 @@ import {
   Controller,
   RSVP
 } from 'ember-runtime';
-import { run } from 'ember-metal';
+import { later } from 'ember-metal';
 import {
   Component,
 } from 'ember-glimmer';
@@ -561,7 +561,7 @@ if (!jQueryDisabled) {
       });
 
       let waitDone = false;
-      run.later(() => {
+      later(() => {
         waitDone = true;
       }, 20);
 
@@ -896,7 +896,7 @@ if (!jQueryDisabled) {
     afterEach() {
       setDebugFunction('info', originalInfo);
     }
-  
+
     constructor() {
       super();
       this.runTask(() => {
@@ -909,7 +909,8 @@ if (!jQueryDisabled) {
       // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
       setDebugFunction('info', noop);
 
-      let {application: {testHelpers: {andThen, pauseTest}}} = this;
+      let { andThen, pauseTest } = this.application.testHelpers;
+
       andThen(() => {
         Test.adapter.asyncStart = () => {
           assert.ok(
@@ -929,7 +930,7 @@ if (!jQueryDisabled) {
 
       let {application: {testHelpers: {pauseTest, resumeTest}}} = this;
 
-      run.later(() => resumeTest(), 20);
+      later(() => resumeTest(), 20);
       return pauseTest().then(() => {
         assert.ok(true, 'pauseTest promise was resolved');
       });
@@ -1138,7 +1139,7 @@ if (!jQueryDisabled) {
           * at least one tick to test whether wait() held off while the
           * async router was still loading. 20ms should be enough.
           */
-          run.later(resolve, {firstName: 'Tom'}, 20);
+          later(resolve, {firstName: 'Tom'}, 20);
         });
 
         this.add('route:user', Route.extend({

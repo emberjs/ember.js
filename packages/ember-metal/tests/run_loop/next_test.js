@@ -1,4 +1,4 @@
-import { run } from '../..';
+import { run, next, getCurrentRunLoop } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('run.next', class extends AbstractTestCase {
@@ -6,7 +6,7 @@ moduleFor('run.next', class extends AbstractTestCase {
     let done = assert.async();
     let invoked = false;
 
-    run(() => run.next(() => invoked = true));
+    run(() => next(() => invoked = true));
 
     assert.equal(invoked, false, 'should not have invoked yet');
 
@@ -20,8 +20,8 @@ moduleFor('run.next', class extends AbstractTestCase {
     let done = assert.async();
     let firstRunLoop, secondRunLoop;
     run(() => {
-      firstRunLoop = run.currentRunLoop;
-      run.next(() => secondRunLoop = run.currentRunLoop);
+      firstRunLoop = getCurrentRunLoop();
+      next(() => secondRunLoop = getCurrentRunLoop());
     });
 
     setTimeout(() => {
@@ -31,12 +31,12 @@ moduleFor('run.next', class extends AbstractTestCase {
     }, 20);
   }
 
-  ['@test multiple calls to run.next share coalesce callbacks into same run loop'](assert) {
+  ['@test multiple calls to next share coalesce callbacks into same run loop'](assert) {
     let done = assert.async();
     let secondRunLoop, thirdRunLoop;
     run(() => {
-      run.next(() => secondRunLoop = run.currentRunLoop);
-      run.next(() => thirdRunLoop  = run.currentRunLoop);
+      next(() => secondRunLoop = getCurrentRunLoop());
+      next(() => thirdRunLoop  = getCurrentRunLoop());
     });
 
     setTimeout(() => {

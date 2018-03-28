@@ -1,7 +1,7 @@
 import RSVP from '../../ext/rsvp';
 import { getAdapter, setAdapter } from '../../test/adapter';
 import TestPromise, { getLastPromise } from '../../test/promise';
-import { run } from 'ember-metal';
+import { getCurrentRunLoop } from 'ember-metal';
 import { isTesting, setTesting } from 'ember-debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -36,7 +36,7 @@ moduleFor('ember-testing RSVP', class extends AbstractTestCase {
     let done = assert.async();
     assert.expect(19);
 
-    assert.ok(!run.currentRunLoop, 'expect no run-loop');
+    assert.ok(!getCurrentRunLoop(), 'expect no run-loop');
 
     setTesting(true);
 

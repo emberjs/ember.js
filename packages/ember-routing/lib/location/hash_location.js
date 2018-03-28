@@ -1,7 +1,7 @@
 import {
   get,
   set,
-  run
+  bind
 } from 'ember-metal';
 
 import { Object as EmberObject } from 'ember-runtime';
@@ -127,7 +127,7 @@ export default EmberObject.extend({
   onUpdateURL(callback) {
     this._removeEventListener();
 
-    this._hashchangeHandler = run.bind(this, function() {
+    this._hashchangeHandler = bind(this, function() {
       let path = this.getURL();
       if (get(this, 'lastSetURL') === path) { return; }
 

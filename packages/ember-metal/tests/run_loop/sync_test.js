@@ -1,4 +1,4 @@
-import { run } from '../..';
+import { run, schedule } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor('system/run_loop/sync_test', class extends AbstractTestCase {
@@ -11,10 +11,10 @@ moduleFor('system/run_loop/sync_test', class extends AbstractTestCase {
       function syncfunc() {
         if (++cnt < 5) {
           expectDeprecation(() => {
-            run.schedule('sync', syncfunc);
+            schedule('sync', syncfunc);
           }, `Scheduling into the 'sync' run loop queue is deprecated.`);
         }
-        run.schedule('actions', cntup);
+        schedule('actions', cntup);
       }
 
       syncfunc();
