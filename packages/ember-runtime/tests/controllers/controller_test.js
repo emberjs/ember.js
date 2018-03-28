@@ -106,17 +106,6 @@ QUnit.module('Controller deprecations');
 
 QUnit.module('Controller Content -> Model Alias');
 
-QUnit.test('`content` is a deprecated alias of `model`', function(assert) {
-  assert.expect(2);
-  let controller = Controller.extend({
-    model: 'foo-bar'
-  }).create();
-
-  expectDeprecation(function () {
-    assert.equal(controller.get('content'), 'foo-bar', 'content is an alias of model');
-  });
-});
-
 QUnit.test('`content` is not moved to `model` when `model` is unset', function(assert) {
   assert.expect(2);
   let controller;
