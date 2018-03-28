@@ -96,6 +96,7 @@ Ember.run.bind = metal.bind;
 Ember.run.cancel = metal.cancel;
 Ember.run.debounce = metal.debounce;
 Ember.run.end = metal.end;
+Ember.run.hasScheduledTimers = metal.hasScheduledTimers;
 Ember.run.join = metal.join;
 Ember.run.later = metal.later;
 Ember.run.next = metal.next;
