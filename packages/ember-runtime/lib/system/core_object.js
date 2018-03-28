@@ -44,15 +44,15 @@ function makeCtor() {
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
 
-  let wasApplied = false;
   let initFactory;
 
   class Class {
     constructor(properties) {
       let self = this;
+      let m = meta(this);
 
-      if (!wasApplied) {
-        Class.proto(); // prepare prototype...
+      if (!m.parent.wasApplied) {
+        this.constructor.proto(); // prepare prototype...
       }
 
       let beforeInitCalled; // only used in debug builds to enable the proxy trap
@@ -104,9 +104,12 @@ function makeCtor() {
             assert(messageFor(receiver, property), value === undefined);
           }
         });
+
+        // We've changed "self" so meta will necessarily change as well, due to it being a different
+        // object. Reset meta in this case as well.
+        m = meta(self);
       }
 
-      let m = meta(self);
       let proto = m.proto;
       m.proto = self;
 
@@ -209,22 +212,35 @@ function makeCtor() {
     }
 
     static willReopen() {
-      if (wasApplied) {
-        Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
+      let m = meta(this.prototype);
+      if (m.wasApplied) {
+        this.PrototypeMixin = Mixin.create(this.PrototypeMixin);
       }
 
-      wasApplied = false;
+      m.wasApplied = false;
     }
 
     static _initFactory(factory) { initFactory = factory; }
 
     static proto() {
-      let superclass = Class.superclass;
-      if (superclass) { superclass.proto(); }
+      // Native classes set the prototype of the constructor to the superclass,
+      // so first we check to see if it exists and contains `proto`. If not, we
+      // look for a manually assigned superclass.
+      let superclass = Object.getPrototypeOf(this);
 
-      if (!wasApplied) {
-        wasApplied = true;
-        Class.PrototypeMixin.applyPartial(Class.prototype);
+      if (typeof superclass.proto === 'function') {
+        superclass.proto();
+      } else if (this.superclass) {
+        this.superclass.proto();
+      }
+
+      let m = meta(this.prototype);
+
+      // Setup proto incase it hasn't been setup, as in ES Class extend
+      m.proto = this.prototype;
+      if (!m.wasApplied) {
+        m.wasApplied = true;
+        this.PrototypeMixin.applyPartial(this.prototype);
       }
 
       return this.prototype;
@@ -683,10 +699,27 @@ let ClassMixinProps = {
     @public
   */
   extend() {
-    let Class = makeCtor();
-    let proto;
-    Class.ClassMixin = Mixin.create(this.ClassMixin);
-    Class.PrototypeMixin = Mixin.create(this.PrototypeMixin);
+    let Class, proto;
+
+    if (Object.getPrototypeOf(this) === Function.prototype) {
+      // The class we're extending is a base class, does not have anything
+      // else in the prototype chain, so continue as normal
+      Class = makeCtor();
+    } else {
+      // Create a simple wrapper class to defer to the rest of the prototype chain
+      // for native classes and classes that extend from native classes
+      Class = class extends this {};
+    }
+
+    if (this.hasOwnProperty('ClassMixin')) {
+      Class.ClassMixin = Mixin.create(this.ClassMixin);
+      Class.PrototypeMixin = Mixin.create(this.PrototypeMixin);
+    } else {
+      // Native classes do not have a ClassMixin or PrototypeMixin,
+      // create one using their constructor and prototype respectively
+      Class.ClassMixin = Mixin.create(this);
+      Class.PrototypeMixin = Mixin.create(this.prototype);
+    }
 
     Class.ClassMixin.ownerConstructor = Class;
     Class.PrototypeMixin.ownerConstructor = Class;
@@ -790,6 +823,7 @@ let ClassMixinProps = {
     @public
   */
   reopen() {
+    assert(`You cannot reopen ${this.name} because it was defined with native class syntax`, this.hasOwnProperty('PrototypeMixin'));
     this.willReopen();
     reopen.apply(this.PrototypeMixin, arguments);
     return this;
@@ -857,6 +891,7 @@ let ClassMixinProps = {
     @public
   */
   reopenClass() {
+    assert(`You cannot reopen ${this.name} because it was defined with native class syntax`, this.hasOwnProperty('ClassMixin'));
     reopen.apply(this.ClassMixin, arguments);
     applyMixin(this, arguments, false);
     return this;
@@ -1038,6 +1073,10 @@ let ClassMixin = Mixin.create(ClassMixinProps);
 ClassMixin.ownerConstructor = CoreObject;
 
 CoreObject.ClassMixin = ClassMixin;
+
+// ensure CoreObject itself has a proper class meta
+let proto = CoreObject.prototype;
+meta(proto).proto = proto;
 
 ClassMixin.apply(CoreObject);
 export default CoreObject;
