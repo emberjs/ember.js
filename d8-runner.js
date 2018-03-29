@@ -1,3 +1,4 @@
+'use strict';
 // GETTTING D8 (v8 + basic console):
 //   1. git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 //   2. add depot_tools to your path: export PATH=/path/to/depo/tools/depot_tools:"$PATH"

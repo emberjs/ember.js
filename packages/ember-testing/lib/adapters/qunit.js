@@ -1,3 +1,5 @@
+/* globals QUnit */
+
 import { inspect } from 'ember-utils';
 import Adapter from './adapter';
 /**

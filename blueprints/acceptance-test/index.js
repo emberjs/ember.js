@@ -1,9 +1,9 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const pathUtil = require('ember-cli-path-utils');
 const stringUtils = require('ember-cli-string-utils');
-const existsSync = require('exists-sync');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -18,7 +18,7 @@ module.exports = useTestFrameworkDetector({
     }
 
     let destroyAppExists =
-      existsSync(path.join(this.project.root, '/tests/helpers/destroy-app.js'));
+      fs.existsSync(path.join(this.project.root, '/tests/helpers/destroy-app.js'));
 
     let friendlyTestName = ['Acceptance', stringUtils.dasherize(options.entity.name).replace(/[-]/g,' ')].join(' | ');
 

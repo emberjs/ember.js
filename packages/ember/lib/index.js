@@ -601,7 +601,6 @@ runLoadHooks('Ember');
 */
 export default Ember;
 
-/* globals module */
 if (IS_NODE) {
   module.exports = Ember;
 } else {
