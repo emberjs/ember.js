@@ -65,30 +65,50 @@ module.exports = {
       },
     },
     {
+      // matches all node-land files
       files: [
         'node-tests/**/*.js',
         'tests/node/**/*.js',
         'blueprints/**/*.js',
-        'broccoli/**/*.js',
         'bin/**/*.js',
         'config/**/*.js',
         'lib/**/*.js',
         'server/**/*.js',
         'testem.travis-browsers.js',
         'testem.dist.js',
-        'ember-cli-build.js',
         'd8-runner.js',
+        'broccoli/**/*.js',
+        'ember-cli-build.js',
         'rollup.config.js',
       ],
 
       parserOptions: {
-        ecmaVersion: 2015,
+        ecmaVersion: 2018,
         sourceType: 'script',
       },
 
       env: {
         node: true,
         es6: true,
+      },
+
+      plugins: ['node'],
+      rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
+        // add your custom rules and overrides for node files here
+        'no-process-exit': 'off',
+      }),
+    },
+    {
+      // matches node-land files that aren't shipped to consumers (allows using Node 6+ features)
+      files: [
+        'broccoli/**/*.js',
+        'ember-cli-build.js',
+        'rollup.config.js',
+        'd8-runner.js',
+      ],
+
+      rules: {
+        'node/no-unsupported-features': ['error', { version: 6 }],
       }
     },
     {

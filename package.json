@@ -112,6 +112,7 @@
     "ember-publisher": "0.0.7",
     "eslint": "^4.9.1",
     "eslint-plugin-ember-internal": "^1.1.1",
+    "eslint-plugin-node": "^6.0.1",
     "execa": "^0.10.0",
     "express": "^4.16.2",
     "finalhandler": "^1.0.2",
@@ -131,6 +132,9 @@
     "simple-dom": "^0.3.0",
     "testem": "^1.18.4",
     "tslint": "^5.9.1"
+  },
+  "engines": {
+    "node": "^4.5 || 6.* || >= 8.*"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
