@@ -1,6 +1,7 @@
 import ArrayProxy from '../../../system/array_proxy';
 import EmberObject from '../../../system/object';
-import { observer, computed } from 'ember-metal';
+import { observer } from 'ember-metal';
+import { oneWay as reads } from 'ember-runtime';
 import { A as a } from '../../../mixins/array';
 
 QUnit.module('Ember.ArrayProxy - content change (length)');
@@ -11,8 +12,8 @@ QUnit.test('array proxy + aliasedProperty complex test', function(assert) {
   aCalled = bCalled = cCalled = dCalled = eCalled = 0;
 
   let obj = EmberObject.extend({
-    colors: computed.reads('model'),
-    length: computed.reads('colors.length'),
+    colors: reads('model'),
+    length: reads('colors.length'),
 
     a: observer('length',                () => aCalled++),
     b: observer('colors.length',         () => bCalled++),

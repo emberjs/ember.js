@@ -9,7 +9,7 @@ import {
   getDebugFunction,
   setDebugFunction
 } from 'ember-debug';
-import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
+import { Object as EmberObject, ObjectProxy, readOnly } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
 import { constructStyleDeprecationMessage  } from 'ember-views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
@@ -448,7 +448,7 @@ class DynamicContentTest extends RenderingTest {
 
   ['@test it can render a readOnly property of a path']() {
     let Messenger = EmberObject.extend({
-      message: computed.readOnly('a.b.c')
+      message: readOnly('a.b.c')
     });
 
     let messenger = Messenger.create({

@@ -5,13 +5,6 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 const SEMVER_REGEX = /^((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))(?:-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$/;
 
 moduleFor('ember-metal/core/main', class extends AbstractTestCase {
-  ['@test Ember registers itself'](assert) {
-    let lib = Ember.libraries._registry[0];
-
-    assert.equal(lib.name, 'Ember');
-    assert.equal(lib.version, Ember.VERSION);
-  }
-
   ['@test Ember.VERSION is in alignment with SemVer v2.0.0'](assert) {
     assert.ok(SEMVER_REGEX.test(Ember.VERSION), `Ember.VERSION (${Ember.VERSION})is valid SemVer v2.0.0`);
   }

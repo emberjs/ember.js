@@ -185,6 +185,9 @@ function generateEachPackageTests() {
     testFunctions.push(function() {
       return run('package=' + packageName);
     });
+    testFunctions.push(function() {
+      return run('package=' + packageName + '&dist=es');
+    });
     if (packages[packageName].requiresJQuery === false) {
       testFunctions.push(function() {
         return run('package=' + packageName + '&jquery=none');
