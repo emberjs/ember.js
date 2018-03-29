@@ -7,7 +7,10 @@ QUnit.test('detect detects classes correctly', function(assert) {
   let B = A.extend();
   let C = A.extend();
 
-  assert.ok(EmberObject.detect(EmberObject), 'EmberObject is an EmberObject class');
+  assert.ok(
+    EmberObject.detect(EmberObject),
+    'EmberObject is an EmberObject class'
+  );
   assert.ok(EmberObject.detect(A), 'A is an EmberObject class');
   assert.ok(EmberObject.detect(B), 'B is an EmberObject class');
   assert.ok(EmberObject.detect(C), 'C is an EmberObject class');

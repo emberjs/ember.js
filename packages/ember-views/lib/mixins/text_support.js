@@ -2,11 +2,7 @@
 @module ember
 */
 
-import {
-  get,
-  set,
-  Mixin
-} from 'ember-metal';
+import { get, set, Mixin } from 'ember-metal';
 import { TargetActionSupport } from 'ember-runtime';
 
 const KEY_EVENTS = {
@@ -167,7 +163,9 @@ export default Mixin.create(TargetActionSupport, {
     let method = map[event.keyCode];
 
     this._elementValueDidChange();
-    if (method) { return this[method](event); }
+    if (method) {
+      return this[method](event);
+    }
   },
 
   _elementValueDidChange() {

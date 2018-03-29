@@ -6,7 +6,9 @@ QUnit.module('system/core_object/reopen');
 QUnit.test('adds new properties to subclass instance', function(assert) {
   let Subclass = EmberObject.extend();
   Subclass.reopen({
-    foo() { return 'FOO'; },
+    foo() {
+      return 'FOO';
+    },
     bar: 'BAR'
   });
 
@@ -19,7 +21,9 @@ QUnit.test('reopened properties inherited by subclasses', function(assert) {
   let SubSub = Subclass.extend();
 
   Subclass.reopen({
-    foo() { return 'FOO'; },
+    foo() {
+      return 'FOO';
+    },
     bar: 'BAR'
   });
 

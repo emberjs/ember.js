@@ -18,7 +18,6 @@ import {
 @module @ember/routing
 */
 
-
 /**
   AutoLocation will select the best location option based off browser
   support with the priority order: history, hash, none.
@@ -142,8 +141,10 @@ export default EmberObject.extend({
   detect() {
     let rootURL = this.rootURL;
 
-    assert('rootURL must end with a trailing forward slash e.g. "/app/"',
-                 rootURL.charAt(rootURL.length - 1) === '/');
+    assert(
+      'rootURL must end with a trailing forward slash e.g. "/app/"',
+      rootURL.charAt(rootURL.length - 1) === '/'
+    );
 
     let implementation = detectImplementation({
       location: this.location,
@@ -186,7 +187,10 @@ export default EmberObject.extend({
 function delegateToConcreteImplementation(methodName) {
   return function(...args) {
     let concreteImplementation = get(this, 'concreteImplementation');
-    assert('AutoLocation\'s detect() method should be called before calling any other hooks.', !!concreteImplementation);
+    assert(
+      "AutoLocation's detect() method should be called before calling any other hooks.",
+      !!concreteImplementation
+    );
     return tryInvoke(concreteImplementation, methodName, args);
   };
 }
@@ -206,14 +210,7 @@ function delegateToConcreteImplementation(methodName) {
 */
 
 function detectImplementation(options) {
-  let {
-    location,
-    userAgent,
-    history,
-    documentMode,
-    global,
-    rootURL
-  } = options;
+  let { location, userAgent, history, documentMode, global, rootURL } = options;
 
   let implementation = 'none';
   let cancelRouterSetup = false;
@@ -239,7 +236,10 @@ function detectImplementation(options) {
     // Be sure we're using a hashed path, otherwise let's switch over it to so
     // we start off clean and consistent. We'll count an index path with no
     // hash as "good enough" as well.
-    if (currentPath === hashPath || (currentPath === '/' && hashPath === '/#/')) {
+    if (
+      currentPath === hashPath ||
+      (currentPath === '/' && hashPath === '/#/')
+    ) {
       implementation = 'hash';
     } else {
       // Our URL isn't in the expected hash-supported format, so we want to
@@ -270,7 +270,10 @@ export function getHistoryPath(rootURL, location) {
   let rootURLIndex = path.indexOf(rootURL);
   let routeHash, hashParts;
 
-  assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
+  assert(
+    `Path ${path} does not start with the provided rootURL ${rootURL}`,
+    rootURLIndex === 0
+  );
 
   // By convention, Ember.js routes using HashLocation are required to start
   // with `#/`. Anything else should NOT be considered a route and should

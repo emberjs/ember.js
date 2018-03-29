@@ -10,7 +10,9 @@ function isNone(obj) {
 */
 export default function toString(obj) {
   let type = typeof obj;
-  if (type === "string") { return obj; }
+  if (type === 'string') {
+    return obj;
+  }
 
   if (Array.isArray(obj)) {
     // Reimplement Array.prototype.join according to spec (22.1.3.13)

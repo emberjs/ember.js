@@ -5,7 +5,7 @@ const { stripIndent } = require('common-tags');
 
 GlimmerTemplatePrecompiler.prototype = Object.create(Filter.prototype);
 
-function GlimmerTemplatePrecompiler (inputTree, options) {
+function GlimmerTemplatePrecompiler(inputTree, options) {
   if (!(this instanceof GlimmerTemplatePrecompiler)) {
     return new GlimmerTemplatePrecompiler(inputTree, options);
   }
@@ -26,8 +26,13 @@ GlimmerTemplatePrecompiler.prototype.baseDir = function() {
   return __dirname;
 };
 
-GlimmerTemplatePrecompiler.prototype.processString = function(content, relativePath) {
-  var compiled = this.precompile(content, { meta: { moduleName: relativePath } });
+GlimmerTemplatePrecompiler.prototype.processString = function(
+  content,
+  relativePath
+) {
+  var compiled = this.precompile(content, {
+    meta: { moduleName: relativePath }
+  });
   return stripIndent`
     import template from '../template';
     export default template(${compiled});

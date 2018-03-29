@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const findPackage = require('./find-package');
 

@@ -1,8 +1,5 @@
 import ArrayProxy from '../../system/array_proxy';
-import EmberArray, {
-  A as emberA,
-  MutableArray
-} from '../../mixins/array';
+import EmberArray, { A as emberA, MutableArray } from '../../mixins/array';
 import { generateGuid, guidFor } from 'ember-utils';
 import {
   get,
@@ -54,7 +51,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
 
   observe(obj, ...keys) {
     if (obj.addObserver) {
-      let loc  = keys.length;
+      let loc = keys.length;
 
       while (--loc >= 0) {
         obj.addObserver(keys[loc], this, 'propertyDidChange');
@@ -76,18 +73,28 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   propertyDidChange(target, key, value) {
-    if (this._keys[key] === undefined) { this._keys[key] = 0; }
+    if (this._keys[key] === undefined) {
+      this._keys[key] = 0;
+    }
     this._keys[key]++;
     this._values[key] = value;
   },
 
   arrayWillChange() {
-    QUnit.config.current.assert.equal(this._before, null, 'should only call once');
+    QUnit.config.current.assert.equal(
+      this._before,
+      null,
+      'should only call once'
+    );
     this._before = Array.prototype.slice.call(arguments);
   },
 
   arrayDidChange() {
-    QUnit.config.current.assert.equal(this._after, null, 'should only call once');
+    QUnit.config.current.assert.equal(
+      this._after,
+      null,
+      'should only call once'
+    );
     this._after = Array.prototype.slice.call(arguments);
   },
 
@@ -233,7 +240,6 @@ const TestArray = EmberObject.extend(EmberArray, {
   enumerable can impl this API.
 */
 const TestMutableArray = EmberObject.extend(MutableArray, {
-
   _content: null,
 
   init(ary = []) {
@@ -243,7 +249,7 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
   replace(idx, amt, objects) {
     let args = objects ? objects.slice() : [];
     let removeAmt = amt;
-    let addAmt    = args.length;
+    let addAmt = args.length;
 
     arrayContentWillChange(this, idx, removeAmt, addAmt);
 
@@ -301,8 +307,8 @@ class EmberArrayHelpers extends MutableArrayHelpers {
 
 export function runArrayTests(name, Tests, ...types) {
   if (types.length > 0) {
-    types.forEach((type) => {
-      switch(type) {
+    types.forEach(type => {
+      switch (type) {
         case 'ArrayProxy':
           moduleFor(`ArrayProxy: ${name}`, Tests, ArrayProxyHelpers);
           break;

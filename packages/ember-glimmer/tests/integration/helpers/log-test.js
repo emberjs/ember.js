@@ -1,61 +1,61 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 
+moduleFor(
+  'Helpers test: {{log}}',
+  class extends RenderingTest {
+    constructor() {
+      super();
+      /* eslint-disable no-console */
+      this.originalLog = console.log;
+      this.logCalls = [];
+      console.log = (...args) => {
+        this.logCalls.push(...args);
+        /* eslint-enable no-console */
+      };
+    }
 
-moduleFor('Helpers test: {{log}}', class extends RenderingTest {
+    teardown() {
+      super.teardown();
+      /* eslint-disable no-console */
+      console.log = this.originalLog;
+      /* eslint-enable no-console */
+    }
 
-  constructor() {
-    super();
-    /* eslint-disable no-console */
-    this.originalLog = console.log;
-    this.logCalls = [];
-    console.log = (...args) => {
-      this.logCalls.push(...args);
-    /* eslint-enable no-console */
-  };
-  }
+    assertLog(values) {
+      this.assertText('');
+      this.assert.strictEqual(this.logCalls.length, values.length);
 
-  teardown() {
-    super.teardown();
-    /* eslint-disable no-console */
-    console.log = this.originalLog;
-    /* eslint-enable no-console */
-  }
+      for (let i = 0, len = values.length; i < len; i++) {
+        this.assert.strictEqual(this.logCalls[i], values[i]);
+      }
+    }
 
-  assertLog(values) {
-    this.assertText('');
-    this.assert.strictEqual(this.logCalls.length, values.length);
+    ['@test correctly logs primitives']() {
+      this.render(`{{log "one" 1 true}}`);
 
-    for (let i = 0, len = values.length; i < len; i++) {
-      this.assert.strictEqual(this.logCalls[i], values[i]);
+      this.assertLog(['one', 1, true]);
+    }
+
+    ['@test correctly logs a property']() {
+      this.render(`{{log value}}`, {
+        value: 'one'
+      });
+
+      this.assertLog(['one']);
+    }
+
+    ['@test correctly logs multiple arguments']() {
+      this.render(`{{log "my variable:" value}}`, {
+        value: 'one'
+      });
+
+      this.assertLog(['my variable:', 'one']);
+    }
+
+    ['@test correctly logs `this`']() {
+      this.render(`{{log this}}`);
+
+      this.assertLog([this.context]);
     }
   }
-
-  ['@test correctly logs primitives']() {
-    this.render(`{{log "one" 1 true}}`);
-
-    this.assertLog(['one', 1, true]);
-  }
-
-  ['@test correctly logs a property']() {
-    this.render(`{{log value}}`, {
-      value: 'one'
-    });
-
-    this.assertLog(['one']);
-  }
-
-  ['@test correctly logs multiple arguments']() {
-    this.render(`{{log "my variable:" value}}`, {
-      value: 'one'
-    });
-
-    this.assertLog(['my variable:', 'one']);
-  }
-
-  ['@test correctly logs `this`']() {
-    this.render(`{{log this}}`);
-
-    this.assertLog([this.context]);
-  }
-
-});
+);

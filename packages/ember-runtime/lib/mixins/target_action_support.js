@@ -3,12 +3,7 @@
 */
 
 import { context } from 'ember-environment';
-import {
-  get,
-  Mixin,
-  computed,
-  descriptor
-} from 'ember-metal';
+import { get, Mixin, computed, descriptor } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
@@ -48,7 +43,9 @@ export default Mixin.create({
 
     if (typeof actionContext === 'string') {
       let value = get(this, actionContext);
-      if (value === undefined) { value = get(context.lookup, actionContext); }
+      if (value === undefined) {
+        value = get(context.lookup, actionContext);
+      }
       return value;
     } else {
       return actionContext;
@@ -127,7 +124,10 @@ export default Mixin.create({
       if (target.send) {
         ret = target.send(...[action].concat(actionContext));
       } else {
-        assert(`The action '${action}' did not exist on ${target}`, typeof target[action] === 'function');
+        assert(
+          `The action '${action}' did not exist on ${target}`,
+          typeof target[action] === 'function'
+        );
         ret = target[action](...[].concat(actionContext));
       }
 
@@ -156,10 +156,14 @@ function getTarget(instance) {
   }
 
   // if a `targetObject` CP was provided, use it
-  if (target) { return target; }
+  if (target) {
+    return target;
+  }
 
   // if _targetObject use it
-  if (instance._targetObject) { return instance._targetObject; }
+  if (instance._targetObject) {
+    return instance._targetObject;
+  }
 
   return null;
 }

@@ -1,10 +1,7 @@
 import { RSVP } from 'ember-runtime';
 import { backburner } from 'ember-metal';
 import { isTesting } from 'ember-debug';
-import {
-  asyncStart,
-  asyncEnd
-} from '../test/adapter';
+import { asyncStart, asyncEnd } from '../test/adapter';
 
 RSVP.configure('async', function(callback, promise) {
   // if schedule will cause autorun, we need to inform adapter

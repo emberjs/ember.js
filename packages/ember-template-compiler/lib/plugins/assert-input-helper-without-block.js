@@ -9,7 +9,9 @@ export default function errorOnInputWithContent(env) {
 
     visitor: {
       BlockStatement(node) {
-        if (node.path.original !== 'input') { return; }
+        if (node.path.original !== 'input') {
+          return;
+        }
 
         assert(assertMessage(moduleName, node));
       }

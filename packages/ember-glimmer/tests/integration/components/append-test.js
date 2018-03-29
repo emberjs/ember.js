@@ -4,7 +4,6 @@ import { Component, compile } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 
 class AbstractAppendTest extends RenderingTest {
-
   constructor() {
     super();
 
@@ -21,7 +20,9 @@ class AbstractAppendTest extends RenderingTest {
 
     this.ids.forEach(id => {
       let $element = document.getElementById(id);
-      if ($element) { $element.parentNode.removeChild($element); }
+      if ($element) {
+        $element.parentNode.removeChild($element);
+      }
       // this.assert.strictEqual($element.length, 0, `Should not leak element: #${id}`);
     });
 
@@ -52,7 +53,9 @@ class AbstractAppendTest extends RenderingTest {
           init() {
             this._super(...arguments);
             if (name in componentsByName) {
-              throw new TypeError('Component named: ` ' + name + ' ` already registered');
+              throw new TypeError(
+                'Component named: ` ' + name + ' ` already registered'
+              );
             }
             componentsByName[name] = this;
             pushHook('init');
@@ -119,7 +122,8 @@ class AbstractAppendTest extends RenderingTest {
         layoutName: 'components/x-parent'
       }),
 
-      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}'
+      template:
+        '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}'
     });
 
     this.registerComponent('x-child', {
@@ -136,120 +140,145 @@ class AbstractAppendTest extends RenderingTest {
 
     this.component = XParent.create({ foo: 'zomg' });
 
-    assert.deepEqual(hooks, [
-      ['x-parent', 'init'],
-      ['x-parent', 'on(init)']
-    ], 'creation of x-parent');
+    assert.deepEqual(
+      hooks,
+      [['x-parent', 'init'], ['x-parent', 'on(init)']],
+      'creation of x-parent'
+    );
 
     hooks.length = 0;
 
     this.element = this.append(this.component);
 
-    assert.deepEqual(hooks, [
-      ['x-parent', 'willInsertElement'],
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willInsertElement'],
 
-      ['x-child', 'init'],
-      ['x-child', 'on(init)'],
-      ['x-child', 'didReceiveAttrs'],
-      ['x-child', 'willRender'],
-      ['x-child', 'willInsertElement'],
+        ['x-child', 'init'],
+        ['x-child', 'on(init)'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willRender'],
+        ['x-child', 'willInsertElement'],
 
-      ['x-child', 'didInsertElement'],
-      ['x-child', 'didRender'],
+        ['x-child', 'didInsertElement'],
+        ['x-child', 'didRender'],
 
-      ['x-parent', 'didInsertElement'],
-      ['x-parent', 'didRender']
-    ], 'appending of x-parent');
+        ['x-parent', 'didInsertElement'],
+        ['x-parent', 'didRender']
+      ],
+      'appending of x-parent'
+    );
 
     hooks.length = 0;
 
     this.runTask(() => componentsByName['x-parent'].rerender());
 
-    assert.deepEqual(hooks, [
-      ['x-parent', 'willUpdate'],
-      ['x-parent', 'willRender'],
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
 
-      ['x-parent', 'didUpdate'],
-      ['x-parent', 'didRender']
-    ], 'rerender x-parent');
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender']
+      ],
+      'rerender x-parent'
+    );
 
     hooks.length = 0;
 
     this.runTask(() => componentsByName['x-child'].rerender());
 
-    assert.deepEqual(hooks, [
-      ['x-parent', 'willUpdate'],
-      ['x-parent', 'willRender'],
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
 
-      ['x-child', 'willUpdate'],
-      ['x-child', 'willRender'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
 
-      ['x-child', 'didUpdate'],
-      ['x-child', 'didRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
 
-      ['x-parent', 'didUpdate'],
-      ['x-parent', 'didRender']
-    ], 'rerender x-child');
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender']
+      ],
+      'rerender x-child'
+    );
 
     hooks.length = 0;
 
     this.runTask(() => set(this.component, 'foo', 'wow'));
 
-    assert.deepEqual(hooks, [
-      ['x-parent', 'willUpdate'],
-      ['x-parent', 'willRender'],
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
 
-      ['x-child', 'didUpdateAttrs'],
-      ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
 
-      ['x-child', 'willUpdate'],
-      ['x-child', 'willRender'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
 
-      ['x-child', 'didUpdate'],
-      ['x-child', 'didRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
 
-      ['x-parent', 'didUpdate'],
-      ['x-parent', 'didRender']
-    ], 'set foo = wow');
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender']
+      ],
+      'set foo = wow'
+    );
 
     hooks.length = 0;
 
     this.runTask(() => set(this.component, 'foo', 'zomg'));
 
-    assert.deepEqual(hooks, [
-      ['x-parent', 'willUpdate'],
-      ['x-parent', 'willRender'],
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
 
-      ['x-child', 'didUpdateAttrs'],
-      ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
 
-      ['x-child', 'willUpdate'],
-      ['x-child', 'willRender'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
 
-      ['x-child', 'didUpdate'],
-      ['x-child', 'didRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
 
-      ['x-parent', 'didUpdate'],
-      ['x-parent', 'didRender']
-    ], 'set foo = zomg');
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender']
+      ],
+      'set foo = zomg'
+    );
 
     hooks.length = 0;
 
     this.runTask(() => this.component.destroy());
 
-    assert.deepEqual(hooks, [
-      ['x-parent', 'willDestroyElement'],
-      ['x-parent', 'willClearRender'],
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willDestroyElement'],
+        ['x-parent', 'willClearRender'],
 
-      ['x-child', 'willDestroyElement'],
-      ['x-child', 'willClearRender'],
+        ['x-child', 'willDestroyElement'],
+        ['x-child', 'willClearRender'],
 
-      ['x-child', 'didDestroyElement'],
-      ['x-parent', 'didDestroyElement'],
+        ['x-child', 'didDestroyElement'],
+        ['x-parent', 'didDestroyElement'],
 
-      ['x-parent', 'willDestroy'],
-      ['x-child', 'willDestroy']
-    ], 'destroy');
+        ['x-parent', 'willDestroy'],
+        ['x-child', 'willDestroy']
+      ],
+      'destroy'
+    );
   }
 
   ['@test appending, updating and destroying a single component'](assert) {
@@ -263,7 +292,8 @@ class AbstractAppendTest extends RenderingTest {
         }
       }),
 
-      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}'
+      template:
+        '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}'
     });
 
     this.registerComponent('x-child', {
@@ -286,32 +316,59 @@ class AbstractAppendTest extends RenderingTest {
 
     let componentElement = this.component.element;
 
-    this.assertComponentElement(componentElement, { content: '[parent: zomg][child: zomg][yielded: zomg]' });
+    this.assertComponentElement(componentElement, {
+      content: '[parent: zomg][child: zomg][yielded: zomg]'
+    });
 
-    assert.equal(componentElement.parentElement, this.element, 'It should be attached to the target');
+    assert.equal(
+      componentElement.parentElement,
+      this.element,
+      'It should be attached to the target'
+    );
 
     this.runTask(() => this.rerender());
 
-    this.assertComponentElement(componentElement, { content: '[parent: zomg][child: zomg][yielded: zomg]' });
+    this.assertComponentElement(componentElement, {
+      content: '[parent: zomg][child: zomg][yielded: zomg]'
+    });
 
-    assert.equal(componentElement.parentElement, this.element, 'It should be attached to the target');
+    assert.equal(
+      componentElement.parentElement,
+      this.element,
+      'It should be attached to the target'
+    );
 
     this.runTask(() => set(this.component, 'foo', 'wow'));
 
-    this.assertComponentElement(componentElement, { content: '[parent: wow][child: wow][yielded: wow]' });
+    this.assertComponentElement(componentElement, {
+      content: '[parent: wow][child: wow][yielded: wow]'
+    });
 
-    assert.equal(componentElement.parentElement, this.element, 'It should be attached to the target');
+    assert.equal(
+      componentElement.parentElement,
+      this.element,
+      'It should be attached to the target'
+    );
 
     this.runTask(() => set(this.component, 'foo', 'zomg'));
 
-    this.assertComponentElement(componentElement, { content: '[parent: zomg][child: zomg][yielded: zomg]' });
+    this.assertComponentElement(componentElement, {
+      content: '[parent: zomg][child: zomg][yielded: zomg]'
+    });
 
-    assert.equal(componentElement.parentElement, this.element, 'It should be attached to the target');
+    assert.equal(
+      componentElement.parentElement,
+      this.element,
+      'It should be attached to the target'
+    );
 
     this.runTask(() => this.component.destroy());
 
     assert.ok(!this.component.element, 'It should not have an element');
-    assert.ok(!componentElement.parentElement, 'The component element should be detached');
+    assert.ok(
+      !componentElement.parentElement,
+      'The component element should be detached'
+    );
 
     this.assert.equal(willDestroyCalled, 1);
   }
@@ -373,33 +430,63 @@ class AbstractAppendTest extends RenderingTest {
 
     let wrapper1, wrapper2;
 
-    this.runTask(() => wrapper1 = this.append(first));
-    this.runTask(() => wrapper2 = this.append(second));
+    this.runTask(() => (wrapper1 = this.append(first)));
+    this.runTask(() => (wrapper2 = this.append(second)));
 
     let componentElement1 = first.element;
     let componentElement2 = second.element;
 
     this.assertComponentElement(componentElement1, { content: 'x-first foo!' });
-    this.assertComponentElement(componentElement2, { content: 'x-second bar!' });
+    this.assertComponentElement(componentElement2, {
+      content: 'x-second bar!'
+    });
 
-    assert.equal(componentElement1.parentElement, wrapper1, 'The first component should be attached to the target');
-    assert.equal(componentElement2.parentElement, wrapper2, 'The second component should be attached to the target');
+    assert.equal(
+      componentElement1.parentElement,
+      wrapper1,
+      'The first component should be attached to the target'
+    );
+    assert.equal(
+      componentElement2.parentElement,
+      wrapper2,
+      'The second component should be attached to the target'
+    );
 
     this.runTask(() => set(first, 'foo', 'FOO'));
 
     this.assertComponentElement(componentElement1, { content: 'x-first FOO!' });
-    this.assertComponentElement(componentElement2, { content: 'x-second bar!' });
+    this.assertComponentElement(componentElement2, {
+      content: 'x-second bar!'
+    });
 
-    assert.equal(componentElement1.parentElement, wrapper1, 'The first component should be attached to the target');
-    assert.equal(componentElement2.parentElement, wrapper2, 'The second component should be attached to the target');
+    assert.equal(
+      componentElement1.parentElement,
+      wrapper1,
+      'The first component should be attached to the target'
+    );
+    assert.equal(
+      componentElement2.parentElement,
+      wrapper2,
+      'The second component should be attached to the target'
+    );
 
     this.runTask(() => set(second, 'bar', 'BAR'));
 
     this.assertComponentElement(componentElement1, { content: 'x-first FOO!' });
-    this.assertComponentElement(componentElement2, { content: 'x-second BAR!' });
+    this.assertComponentElement(componentElement2, {
+      content: 'x-second BAR!'
+    });
 
-    assert.equal(componentElement1.parentElement, wrapper1, 'The first component should be attached to the target');
-    assert.equal(componentElement2.parentElement, wrapper2, 'The second component should be attached to the target');
+    assert.equal(
+      componentElement1.parentElement,
+      wrapper1,
+      'The first component should be attached to the target'
+    );
+    assert.equal(
+      componentElement2.parentElement,
+      wrapper2,
+      'The second component should be attached to the target'
+    );
 
     this.runTask(() => {
       set(first, 'foo', 'foo');
@@ -407,10 +494,20 @@ class AbstractAppendTest extends RenderingTest {
     });
 
     this.assertComponentElement(componentElement1, { content: 'x-first foo!' });
-    this.assertComponentElement(componentElement2, { content: 'x-second bar!' });
+    this.assertComponentElement(componentElement2, {
+      content: 'x-second bar!'
+    });
 
-    assert.equal(componentElement1.parentElement, wrapper1, 'The first component should be attached to the target');
-    assert.equal(componentElement2.parentElement, wrapper2, 'The second component should be attached to the target');
+    assert.equal(
+      componentElement1.parentElement,
+      wrapper1,
+      'The first component should be attached to the target'
+    );
+    assert.equal(
+      componentElement2.parentElement,
+      wrapper2,
+      'The second component should be attached to the target'
+    );
 
     this.runTask(() => {
       first.destroy();
@@ -418,10 +515,19 @@ class AbstractAppendTest extends RenderingTest {
     });
 
     assert.ok(!first.element, 'The first component should not have an element');
-    assert.ok(!second.element, 'The second component should not have an element');
+    assert.ok(
+      !second.element,
+      'The second component should not have an element'
+    );
 
-    assert.ok(!componentElement1.parentElement, 'The first component element should be detached');
-    assert.ok(!componentElement2.parentElement, 'The second component element should be detached');
+    assert.ok(
+      !componentElement1.parentElement,
+      'The first component element should be detached'
+    );
+    assert.ok(
+      !componentElement2.parentElement,
+      'The second component element should be detached'
+    );
 
     this.assert.equal(willDestroyCalled, 2);
   }
@@ -429,7 +535,7 @@ class AbstractAppendTest extends RenderingTest {
   ['@test can appendTo while rendering']() {
     let owner = this.owner;
 
-    let append = (component) => {
+    let append = component => {
       return this.append(component);
     };
 
@@ -469,7 +575,7 @@ class AbstractAppendTest extends RenderingTest {
   ['@test can appendTo and remove while rendering'](assert) {
     let owner = this.owner;
 
-    let append = (component) => {
+    let append = component => {
       return this.append(component);
     };
 
@@ -548,15 +654,18 @@ class AbstractAppendTest extends RenderingTest {
       })
     });
 
-    this.render(strip`
+    this.render(
+      strip`
       {{#if showFooBar}}
         {{foo-bar}}
       {{else}}
         {{baz-qux}}
       {{/if}}
-    `, { showFooBar: true });
+    `,
+      { showFooBar: true }
+    );
 
-    this.assertComponentElement(element1, { });
+    this.assertComponentElement(element1, {});
     this.assertComponentElement(element2, { content: 'fake-thing: 0' });
     assert.equal(instantiatedRoots, 1);
 
@@ -567,7 +676,7 @@ class AbstractAppendTest extends RenderingTest {
     assert.equal(instantiatedRoots, 2);
     assert.equal(destroyedRoots, 1);
 
-    this.assertComponentElement(element3, { });
+    this.assertComponentElement(element3, {});
     this.assertComponentElement(element4, { content: 'fake-thing: 1' });
 
     this.runTask(() => {
@@ -578,68 +687,80 @@ class AbstractAppendTest extends RenderingTest {
     assert.equal(instantiatedRoots, 2);
     assert.equal(destroyedRoots, 2);
   }
-
 }
 
-moduleFor('append: no arguments (attaching to document.body)', class extends AbstractAppendTest {
-
-  append(component) {
-    this.runTask(() => component.append());
-    this.didAppend(component);
-    return document.body;
+moduleFor(
+  'append: no arguments (attaching to document.body)',
+  class extends AbstractAppendTest {
+    append(component) {
+      this.runTask(() => component.append());
+      this.didAppend(component);
+      return document.body;
+    }
   }
+);
 
-});
+moduleFor(
+  'appendTo: a selector',
+  class extends AbstractAppendTest {
+    append(component) {
+      this.runTask(() => component.appendTo('#qunit-fixture'));
+      this.didAppend(component);
+      return document.getElementById('qunit-fixture');
+    }
 
-moduleFor('appendTo: a selector', class extends AbstractAppendTest {
+    ['@test raises an assertion when the target does not exist in the DOM'](
+      assert
+    ) {
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          layoutName: 'components/foo-bar'
+        }),
+        template: 'FOO BAR!'
+      });
 
-  append(component) {
-    this.runTask(() => component.appendTo('#qunit-fixture'));
-    this.didAppend(component);
-    return document.getElementById('qunit-fixture');
+      let FooBar = this.owner.factoryFor('component:foo-bar');
+
+      this.component = FooBar.create();
+
+      assert.ok(
+        !this.component.element,
+        'precond - should not have an element'
+      );
+
+      this.runTask(() => {
+        expectAssertion(() => {
+          this.component.appendTo('#does-not-exist-in-dom');
+        }, /You tried to append to \(#does-not-exist-in-dom\) but that isn't in the DOM/);
+      });
+
+      assert.ok(
+        !this.component.element,
+        'component should not have an element'
+      );
+    }
   }
+);
 
-  ['@test raises an assertion when the target does not exist in the DOM'](assert) {
-    this.registerComponent('foo-bar', {
-      ComponentClass: Component.extend({
-        layoutName: 'components/foo-bar'
-      }),
-      template: 'FOO BAR!'
-    });
-
-    let FooBar = this.owner.factoryFor('component:foo-bar');
-
-    this.component = FooBar.create();
-
-    assert.ok(!this.component.element, 'precond - should not have an element');
-
-    this.runTask(() => {
-      expectAssertion(() => {
-        this.component.appendTo('#does-not-exist-in-dom');
-      }, /You tried to append to \(#does-not-exist-in-dom\) but that isn't in the DOM/);
-    });
-
-    assert.ok(!this.component.element, 'component should not have an element');
+moduleFor(
+  'appendTo: an element',
+  class extends AbstractAppendTest {
+    append(component) {
+      let element = document.getElementById('qunit-fixture');
+      this.runTask(() => component.appendTo(element));
+      this.didAppend(component);
+      return element;
+    }
   }
+);
 
-});
-
-moduleFor('appendTo: an element', class extends AbstractAppendTest {
-
-  append(component) {
-    let element = document.getElementById('qunit-fixture');
-    this.runTask(() => component.appendTo(element));
-    this.didAppend(component);
-    return element;
+moduleFor(
+  'appendTo: with multiple components',
+  class extends AbstractAppendTest {
+    append(component) {
+      this.runTask(() => component.appendTo('#qunit-fixture'));
+      this.didAppend(component);
+      return document.getElementById('qunit-fixture');
+    }
   }
-
-});
-
-moduleFor('appendTo: with multiple components', class extends AbstractAppendTest {
-
-  append(component) {
-    this.runTask(() => component.appendTo('#qunit-fixture'));
-    this.didAppend(component);
-    return document.getElementById('qunit-fixture');
-  }
-});
+);

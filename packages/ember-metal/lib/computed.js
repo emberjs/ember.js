@@ -4,17 +4,9 @@ import { set } from './property_set';
 import { meta as metaFor, peekMeta } from './meta';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import expandProperties from './expand_properties';
-import {
-  Descriptor,
-  defineProperty
-} from './properties';
-import {
-  notifyPropertyChange
-} from './property_events';
-import {
-  addDependentKeys,
-  removeDependentKeys
-} from './dependent_keys';
+import { Descriptor, defineProperty } from './properties';
+import { notifyPropertyChange } from './property_events';
+import { addDependentKeys, removeDependentKeys } from './dependent_keys';
 import { getCurrentTracker, setCurrentTracker } from './tracked';
 import { tagForProperty, update } from './tags';
 
@@ -142,9 +134,18 @@ class ComputedProperty extends Descriptor {
     if (hasGetterOnly) {
       this._getter = config;
     } else {
-      assert('computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-      assert('Config object passed to computed can only contain `get` and `set` keys.', Object.keys(config).every((key)=> key === 'get' || key === 'set'));
-      assert('Computed properties must receive a getter or a setter, you passed none.', !!config.get || !!config.set);
+      assert(
+        'computed expects a function or an object as last argument.',
+        typeof config === 'object' && !Array.isArray(config)
+      );
+      assert(
+        'Config object passed to computed can only contain `get` and `set` keys.',
+        Object.keys(config).every(key => key === 'get' || key === 'set')
+      );
+      assert(
+        'Computed properties must receive a getter or a setter, you passed none.',
+        !!config.get || !!config.set
+      );
       this._getter = config.get || noop;
       this._setter = config.set;
     }
@@ -216,7 +217,10 @@ class ComputedProperty extends Descriptor {
   */
   readOnly() {
     this._readOnly = true;
-    assert('Computed properties that define a setter using the new syntax cannot be read-only', !(this._readOnly && this._setter && this._setter !== this._getter));
+    assert(
+      'Computed properties that define a setter using the new syntax cannot be read-only',
+      !(this._readOnly && this._setter && this._setter !== this._getter)
+    );
     return this;
   }
 
@@ -257,7 +261,7 @@ class ComputedProperty extends Descriptor {
       warn(
         `Dependent keys containing @each only work one level deep. ` +
           `You used the key "${property}" which is invalid. ` +
-            `Please create an intermediary computed property.`,
+          `Please create an intermediary computed property.`,
         DEEP_EACH_REGEX.test(property) === false,
         { id: 'ember-metal.computed-deep-each' }
       );
@@ -343,7 +347,10 @@ class ComputedProperty extends Descriptor {
       if (cache.has(keyName)) {
         // special-case for computed with no dependent keys used to
         // trigger cacheable behavior.
-        if (!this._auto && (!this._dependentKeys || this._dependentKeys.length === 0)) {
+        if (
+          !this._auto &&
+          (!this._dependentKeys || this._dependentKeys.length === 0)
+        ) {
           return cache.get(keyName);
         }
 
@@ -406,7 +413,9 @@ class ComputedProperty extends Descriptor {
   }
 
   _throwReadOnlyError(obj, keyName) {
-    throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
+    throw new EmberError(
+      `Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`
+    );
   }
 
   clobberSet(obj, keyName, value) {
@@ -579,7 +588,9 @@ export default function computed(...args) {
 }
 
 const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap();
-const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : undefined;
+const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
+  ? new WeakMap()
+  : undefined;
 
 /**
   Returns the cached value for a property, if one exists.
@@ -640,7 +651,4 @@ export function peekCacheFor(obj) {
   return COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
 }
 
-export {
-  ComputedProperty,
-  computed
-};
+export { ComputedProperty, computed };

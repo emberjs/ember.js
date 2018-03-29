@@ -1,9 +1,12 @@
-import { notifyPropertyChange } from "./property_events";
-import { eachProxyArrayDidChange, eachProxyArrayWillChange } from "./each_proxy";
-import { peekMeta } from "./meta";
-import { sendEvent, removeListener, addListener } from "./events";
-import { peekCacheFor } from "./computed";
-import { get } from "./property_get";
+import { notifyPropertyChange } from './property_events';
+import {
+  eachProxyArrayDidChange,
+  eachProxyArrayWillChange
+} from './each_proxy';
+import { peekMeta } from './meta';
+import { sendEvent, removeListener, addListener } from './events';
+import { peekCacheFor } from './computed';
+import { get } from './property_get';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
@@ -46,7 +49,7 @@ export function replaceInNativeArray(array, start, deleteCount, items) {
 
 function arrayObserversHelper(obj, target, opts, operation, notify) {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
-  let didChange  = (opts && opts.didChange) || 'arrayDidChange';
+  let didChange = (opts && opts.didChange) || 'arrayDidChange';
   let hasObservers = get(obj, 'hasArrayObservers');
 
   operation(obj, '@array:before', target, willChange);
@@ -119,8 +122,8 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
   let cache = peekCacheFor(array);
   if (cache !== undefined) {
     let length = get(array, 'length');
-    let addedAmount = (addAmt === -1 ? 0 : addAmt);
-    let removedAmount = (removeAmt === -1 ? 0 : removeAmt);
+    let addedAmount = addAmt === -1 ? 0 : addAmt;
+    let removedAmount = removeAmt === -1 ? 0 : removeAmt;
     let delta = addedAmount - removedAmount;
     let previousLength = length - delta;
 

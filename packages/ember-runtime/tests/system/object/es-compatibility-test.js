@@ -22,18 +22,50 @@ QUnit.test('extending an Ember.Object', function(assert) {
 
   let myObject = MyObject.create({ passedProperty: 'passed-property' });
 
-  assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
-  assert.equal(myObject.postInitProperty, 'post-init-property', 'constructor property available on instance (create)');
-  assert.equal(myObject.initProperty, 'init-property', 'init property available on instance (create)');
-  assert.equal(myObject.passedProperty, 'passed-property', 'passed property available on instance (create)');
+  assert.deepEqual(
+    calls,
+    ['constructor', 'init'],
+    'constructor then init called (create)'
+  );
+  assert.equal(
+    myObject.postInitProperty,
+    'post-init-property',
+    'constructor property available on instance (create)'
+  );
+  assert.equal(
+    myObject.initProperty,
+    'init-property',
+    'init property available on instance (create)'
+  );
+  assert.equal(
+    myObject.passedProperty,
+    'passed-property',
+    'passed property available on instance (create)'
+  );
 
   calls = [];
   myObject = new MyObject({ passedProperty: 'passed-property' });
 
-  assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
-  assert.equal(myObject.postInitProperty, 'post-init-property', 'constructor property available on instance (new)');
-  assert.equal(myObject.initProperty, 'init-property', 'init property available on instance (new)');
-  assert.equal(myObject.passedProperty, 'passed-property', 'passed property available on instance (new)');
+  assert.deepEqual(
+    calls,
+    ['constructor', 'init'],
+    'constructor then init called (new)'
+  );
+  assert.equal(
+    myObject.postInitProperty,
+    'post-init-property',
+    'constructor property available on instance (new)'
+  );
+  assert.equal(
+    myObject.initProperty,
+    'init-property',
+    'init property available on instance (new)'
+  );
+  assert.equal(
+    myObject.passedProperty,
+    'passed-property',
+    'passed property available on instance (new)'
+  );
 });
 
 QUnit.test('using super', function(assert) {
@@ -62,11 +94,11 @@ QUnit.test('using super', function(assert) {
   let myObject = new MyObject();
   myObject.method();
 
-  assert.deepEqual(calls, [
-    'super-super-method',
-    'super-method',
-    'method'
-  ], 'chain of prototype methods called with super');
+  assert.deepEqual(
+    calls,
+    ['super-super-method', 'super-method', 'method'],
+    'chain of prototype methods called with super'
+  );
 });
 
 QUnit.test('using mixins', function(assert) {
@@ -116,11 +148,19 @@ QUnit.test('extending an ES subclass of EmberObject', function(assert) {
   class MyObject extends SubEmberObject {}
 
   MyObject.create();
-  assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
+  assert.deepEqual(
+    calls,
+    ['constructor', 'init'],
+    'constructor then init called (create)'
+  );
 
   calls = [];
   new MyObject();
-  assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
+  assert.deepEqual(
+    calls,
+    ['constructor', 'init'],
+    'constructor then init called (new)'
+  );
 });
 
 // TODO: Needs to be fixed. Currently only `init` is called.
@@ -142,9 +182,17 @@ QUnit.skip('calling extend on an ES subclass of EmberObject', function(assert) {
   let MyObject = SubEmberObject.extend({});
 
   MyObject.create();
-  assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
+  assert.deepEqual(
+    calls,
+    ['constructor', 'init'],
+    'constructor then init called (create)'
+  );
 
   calls = [];
   new MyObject();
-  assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
+  assert.deepEqual(
+    calls,
+    ['constructor', 'init'],
+    'constructor then init called (new)'
+  );
 });

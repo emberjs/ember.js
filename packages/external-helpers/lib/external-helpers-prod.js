@@ -8,7 +8,10 @@ export function inherits(subClass, superClass) {
     }
   });
 
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : defaults(subClass, superClass);
+  if (superClass)
+    Object.setPrototypeOf
+      ? Object.setPrototypeOf(subClass, superClass)
+      : defaults(subClass, superClass);
 }
 
 export function taggedTemplateLiteralLoose(strings, raw) {
@@ -44,8 +47,10 @@ export function defaults(obj, defaults) {
   return obj;
 }
 
-export const possibleConstructorReturn = (function (self, call) {
-  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
-});
+export const possibleConstructorReturn = function(self, call) {
+  return call && (typeof call === 'object' || typeof call === 'function')
+    ? call
+    : self;
+};
 
 export const slice = Array.prototype.slice;

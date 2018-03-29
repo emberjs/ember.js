@@ -15,7 +15,9 @@ export default function transformTopLevelComponent(/* env */) {
 
 function hasSingleComponentNode(program, componentCallback) {
   let { loc, body } = program;
-  if (!loc || loc.start.line !== 1 || loc.start.column !== 0) { return; }
+  if (!loc || loc.start.line !== 1 || loc.start.column !== 0) {
+    return;
+  }
 
   let lastComponentNode;
   let nodeCount = 0;
@@ -24,17 +26,23 @@ function hasSingleComponentNode(program, componentCallback) {
     let curr = body[i];
 
     // text node with whitespace only
-    if (curr.type === 'TextNode' && /^[\s]*$/.test(curr.chars)) { continue; }
+    if (curr.type === 'TextNode' && /^[\s]*$/.test(curr.chars)) {
+      continue;
+    }
 
     // has multiple root elements if we've been here before
-    if (nodeCount++ > 0) { return false; }
+    if (nodeCount++ > 0) {
+      return false;
+    }
 
     if (curr.type === 'ComponentNode' || curr.type === 'ElementNode') {
       lastComponentNode = curr;
     }
   }
 
-  if (!lastComponentNode) { return; }
+  if (!lastComponentNode) {
+    return;
+  }
 
   if (lastComponentNode.type === 'ComponentNode') {
     componentCallback(lastComponentNode);

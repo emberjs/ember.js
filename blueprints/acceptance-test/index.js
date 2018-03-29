@@ -14,13 +14,21 @@ module.exports = useTestFrameworkDetector({
     let testFolderRoot = stringUtils.dasherize(options.project.name());
 
     if (options.project.isEmberCLIAddon()) {
-      testFolderRoot = pathUtil.getRelativeParentPath(options.entity.name, -1, false);
+      testFolderRoot = pathUtil.getRelativeParentPath(
+        options.entity.name,
+        -1,
+        false
+      );
     }
 
-    let destroyAppExists =
-      fs.existsSync(path.join(this.project.root, '/tests/helpers/destroy-app.js'));
+    let destroyAppExists = fs.existsSync(
+      path.join(this.project.root, '/tests/helpers/destroy-app.js')
+    );
 
-    let friendlyTestName = ['Acceptance', stringUtils.dasherize(options.entity.name).replace(/[-]/g,' ')].join(' | ');
+    let friendlyTestName = [
+      'Acceptance',
+      stringUtils.dasherize(options.entity.name).replace(/[-]/g, ' ')
+    ].join(' | ');
 
     return {
       testFolderRoot: testFolderRoot,

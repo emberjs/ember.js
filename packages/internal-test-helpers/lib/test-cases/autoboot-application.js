@@ -4,10 +4,9 @@ import { assign } from 'ember-utils';
 import { Router } from 'ember-routing';
 
 export default class AutobootApplicationTestCase extends TestResolverApplicationTestCase {
-
-  createApplication(options, MyApplication=Application) {
+  createApplication(options, MyApplication = Application) {
     let myOptions = assign(this.applicationOptions, options);
-    let application = this.application = MyApplication.create(myOptions);
+    let application = (this.application = MyApplication.create(myOptions));
     this.resolver = myOptions.Resolver.lastInstance;
 
     if (this.resolver) {
@@ -18,10 +17,9 @@ export default class AutobootApplicationTestCase extends TestResolverApplication
   }
 
   visit(url) {
-    return this.application.boot()
-      .then(() => {
-        return this.applicationInstance.visit(url);
-      });
+    return this.application.boot().then(() => {
+      return this.applicationInstance.visit(url);
+    });
   }
 
   get applicationInstance() {
@@ -33,5 +31,4 @@ export default class AutobootApplicationTestCase extends TestResolverApplication
 
     return application.__deprecatedInstance__;
   }
-
 }

@@ -10,9 +10,15 @@ module.exports = useTestFrameworkDetector({
   description: 'Generates an initializer unit test.',
   locals: function(options) {
     return {
-      friendlyTestName: ['Unit', 'Initializer', options.entity.name].join(' | '),
-      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
-      destroyAppExists: fs.existsSync(path.join(this.project.root, '/tests/helpers/destroy-app.js'))
+      friendlyTestName: ['Unit', 'Initializer', options.entity.name].join(
+        ' | '
+      ),
+      dasherizedModulePrefix: stringUtils.dasherize(
+        options.project.config().modulePrefix
+      ),
+      destroyAppExists: fs.existsSync(
+        path.join(this.project.root, '/tests/helpers/destroy-app.js')
+      )
     };
   }
 });

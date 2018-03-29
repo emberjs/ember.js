@@ -31,8 +31,16 @@ class AnyTests extends AbstractTestCase {
       return --cnt <= 0;
     });
     this.assert.equal(result, true, 'return value of obj.any');
-    this.assert.equal(found.length, exp, 'should invoke proper number of times');
-    this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during any() should match');
+    this.assert.equal(
+      found.length,
+      exp,
+      'should invoke proper number of times'
+    );
+    this.assert.deepEqual(
+      found,
+      ary.slice(0, -2),
+      'items passed during any() should match'
+    );
   }
 
   '@test any should return true if any object matches the callback'() {
@@ -43,7 +51,9 @@ class AnyTests extends AbstractTestCase {
     this.assert.equal(result, true, 'return value of obj.any');
   }
 
-  '@test any should produce correct results even if the matching element is undefined'(assert) {
+  '@test any should produce correct results even if the matching element is undefined'(
+    assert
+  ) {
     let obj = emberA([undefined]);
     let result;
 

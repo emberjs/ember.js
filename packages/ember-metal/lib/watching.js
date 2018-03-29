@@ -1,20 +1,10 @@
 /**
 @module ember
 */
-import {
-  watchKey,
-  unwatchKey
-} from './watch_key';
-import {
-  watchPath,
-  unwatchPath
-} from './watch_path';
-import {
-  isPath
-} from './path_cache';
-import {
-  peekMeta
-} from './meta';
+import { watchKey, unwatchKey } from './watch_key';
+import { watchPath, unwatchPath } from './watch_path';
+import { isPath } from './path_cache';
+import { peekMeta } from './meta';
 
 /**
   Starts watching a property on an object. Whenever the property changes,

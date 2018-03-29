@@ -82,20 +82,31 @@ module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
     `${name}:templates-output`
   );
 
-  let nonTypeScriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
-    srcDir: 'packages',
-    exclude: ["**/*.ts"],
-  });
+  let nonTypeScriptContents = new Funnel(
+    debuggedCompiledTemplatesAndTypeScript,
+    {
+      srcDir: 'packages',
+      exclude: ['**/*.ts']
+    }
+  );
 
   let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
-    include: ["**/*.ts"],
+    include: ['**/*.ts']
   });
 
-  let typescriptCompiled = typescript(debugTree(typescriptContents, `${name}:ts:input`));
+  let typescriptCompiled = typescript(
+    debugTree(typescriptContents, `${name}:ts:input`)
+  );
 
-  let debuggedCompiledTypescript = debugTree(typescriptCompiled, `${name}:ts:output`);
+  let debuggedCompiledTypescript = debugTree(
+    typescriptCompiled,
+    `${name}:ts:output`
+  );
 
-  let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], { overwrite: true });
+  let mergedFinalOutput = new MergeTrees(
+    [nonTypeScriptContents, debuggedCompiledTypescript],
+    { overwrite: true }
+  );
 
   return debugTree(mergedFinalOutput, `${name}:output`);
 };

@@ -12,10 +12,16 @@ import ObjectProxy from '../../system/object_proxy';
 
 QUnit.module('ObjectProxy');
 
-testBoth('should not proxy properties passed to create', function(get, set, assert) {
+testBoth('should not proxy properties passed to create', function(
+  get,
+  set,
+  assert
+) {
   let Proxy = ObjectProxy.extend({
     cp: computed({
-      get() { return this._cp; },
+      get() {
+        return this._cp;
+      },
       set(key, value) {
         this._cp = value;
         return this._cp;
@@ -35,30 +41,64 @@ testBoth('should proxy properties to content', function(get, set, assert) {
   let content = {
     firstName: 'Tom',
     lastName: 'Dale',
-    unknownProperty(key) { return key + ' unknown';}
+    unknownProperty(key) {
+      return key + ' unknown';
+    }
   };
   let proxy = ObjectProxy.create();
 
-  assert.equal(get(proxy, 'firstName'), undefined, 'get on proxy without content should return undefined');
+  assert.equal(
+    get(proxy, 'firstName'),
+    undefined,
+    'get on proxy without content should return undefined'
+  );
   expectAssertion(() => {
     set(proxy, 'firstName', 'Foo');
   }, /Cannot delegate set\('firstName', Foo\) to the 'content'/i);
 
   set(proxy, 'content', content);
 
-  assert.equal(get(proxy, 'firstName'), 'Tom', 'get on proxy with content should forward to content');
-  assert.equal(get(proxy, 'lastName'), 'Dale', 'get on proxy with content should forward to content');
-  assert.equal(get(proxy, 'foo'), 'foo unknown', 'get on proxy with content should forward to content');
+  assert.equal(
+    get(proxy, 'firstName'),
+    'Tom',
+    'get on proxy with content should forward to content'
+  );
+  assert.equal(
+    get(proxy, 'lastName'),
+    'Dale',
+    'get on proxy with content should forward to content'
+  );
+  assert.equal(
+    get(proxy, 'foo'),
+    'foo unknown',
+    'get on proxy with content should forward to content'
+  );
 
   set(proxy, 'lastName', 'Huda');
 
-  assert.equal(get(content, 'lastName'), 'Huda', 'content should have new value from set on proxy');
-  assert.equal(get(proxy, 'lastName'), 'Huda', 'proxy should have new value from set on proxy');
+  assert.equal(
+    get(content, 'lastName'),
+    'Huda',
+    'content should have new value from set on proxy'
+  );
+  assert.equal(
+    get(proxy, 'lastName'),
+    'Huda',
+    'proxy should have new value from set on proxy'
+  );
 
   set(proxy, 'content', { firstName: 'Yehuda', lastName: 'Katz' });
 
-  assert.equal(get(proxy, 'firstName'), 'Yehuda', 'proxy should reflect updated content');
-  assert.equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
+  assert.equal(
+    get(proxy, 'firstName'),
+    'Yehuda',
+    'proxy should reflect updated content'
+  );
+  assert.equal(
+    get(proxy, 'lastName'),
+    'Katz',
+    'proxy should reflect updated content'
+  );
 });
 
 QUnit.test('getting proxied properties with Ember.get should work', assert => {
@@ -71,7 +111,6 @@ QUnit.test('getting proxied properties with Ember.get should work', assert => {
   assert.equal(get(proxy, 'foo'), 'FOO');
 });
 
-
 QUnit.test(`JSON.stringify doens't assert`, assert => {
   let proxy = ObjectProxy.create({
     content: {
@@ -79,7 +118,10 @@ QUnit.test(`JSON.stringify doens't assert`, assert => {
     }
   });
 
-  assert.equal(JSON.stringify(proxy), JSON.stringify({ content: { foo: 'FOO' } }));
+  assert.equal(
+    JSON.stringify(proxy),
+    JSON.stringify({ content: { foo: 'FOO' } })
+  );
 });
 
 QUnit.test(`setting a property on the proxy avoids the assertion`, assert => {
@@ -95,19 +137,22 @@ QUnit.test(`setting a property on the proxy avoids the assertion`, assert => {
   assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
 });
 
-QUnit.test(`setting a property on the proxy's prototype avoids the assertion`, assert => {
-  let proxy = ObjectProxy.extend({
-    toJSON: null
-  }).create({
-    content: {
-      toJSON() {
-        return 'hello';
+QUnit.test(
+  `setting a property on the proxy's prototype avoids the assertion`,
+  assert => {
+    let proxy = ObjectProxy.extend({
+      toJSON: null
+    }).create({
+      content: {
+        toJSON() {
+          return 'hello';
+        }
       }
-    }
-  });
+    });
 
-  assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
-});
+    assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
+  }
+);
 
 if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY) {
   QUnit.test('getting proxied properties with [] should be an error', () => {
@@ -128,7 +173,7 @@ testBoth('should work with watched properties', function(get, set, assert) {
   let last;
 
   let Proxy = ObjectProxy.extend({
-    fullName: computed(function () {
+    fullName: computed(function() {
       let firstName = this.get('firstName');
       let lastName = this.get('lastName');
 
@@ -141,7 +186,7 @@ testBoth('should work with watched properties', function(get, set, assert) {
 
   let proxy = Proxy.create();
 
-  addObserver(proxy, 'fullName', function () {
+  addObserver(proxy, 'fullName', function() {
     last = get(proxy, 'fullName');
     count++;
   });
@@ -191,7 +236,7 @@ QUnit.test('set and get should work with paths', function(assert) {
   assert.equal(proxy.get('foo.bar'), 'hello');
   assert.equal(proxy.get('content.foo.bar'), 'hello');
 
-  proxy.addObserver('foo.bar', function () {
+  proxy.addObserver('foo.bar', function() {
     count++;
   });
 
@@ -202,7 +247,11 @@ QUnit.test('set and get should work with paths', function(assert) {
   assert.equal(proxy.get('content.foo.bar'), 'bye');
 });
 
-testBoth('should transition between watched and unwatched strategies', function(get, set, assert) {
+testBoth('should transition between watched and unwatched strategies', function(
+  get,
+  set,
+  assert
+) {
   let content = { foo: 'foo' };
   let proxy = ObjectProxy.create({ content: content });
   let count = 0;
@@ -250,12 +299,19 @@ testBoth('should transition between watched and unwatched strategies', function(
   assert.equal(get(proxy, 'foo'), 'foo');
 });
 
-testBoth('setting `undefined` to a proxied content property should override its existing value', function(get, set, assert) {
-  let proxyObject = ObjectProxy.create({
-    content: {
-      prop: 'emberjs'
-    }
-  });
-  set(proxyObject, 'prop', undefined);
-  assert.equal(get(proxyObject, 'prop'), undefined, 'sets the `undefined` value to the proxied content');
-});
+testBoth(
+  'setting `undefined` to a proxied content property should override its existing value',
+  function(get, set, assert) {
+    let proxyObject = ObjectProxy.create({
+      content: {
+        prop: 'emberjs'
+      }
+    });
+    set(proxyObject, 'prop', undefined);
+    assert.equal(
+      get(proxyObject, 'prop'),
+      undefined,
+      'sets the `undefined` value to the proxied content'
+    );
+  }
+);

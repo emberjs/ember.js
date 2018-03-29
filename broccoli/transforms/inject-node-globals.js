@@ -11,28 +11,32 @@ function injectNodeGlobals({ types: t }) {
           moduleId = path.scope.globals.module;
 
           if (requireId || moduleId) {
-
             let specifiers = [];
-            let source = t.stringLiteral(this.file.resolveModuleSource('node-module'));
+            let source = t.stringLiteral(
+              this.file.resolveModuleSource('node-module')
+            );
 
             if (requireId) {
               delete path.scope.globals.require;
-              specifiers.push(t.importSpecifier(requireId, t.identifier('require')));
+              specifiers.push(
+                t.importSpecifier(requireId, t.identifier('require'))
+              );
             }
 
             if (moduleId) {
               delete path.scope.globals.module;
-              specifiers.push(t.importSpecifier(moduleId, t.identifier('module')));
+              specifiers.push(
+                t.importSpecifier(moduleId, t.identifier('module'))
+              );
             }
 
             importDecl = t.importDeclaration(specifiers, source);
             path.unshiftContainer('body', importDecl);
           }
-
         },
         exit(path) {
           if (requireId) {
-            path.scope.rename("require");
+            path.scope.rename('require');
           }
         }
       },

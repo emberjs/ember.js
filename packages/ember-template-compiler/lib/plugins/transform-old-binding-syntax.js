@@ -27,17 +27,29 @@ function processHash(b, node, moduleName) {
 
     let sourceInformation = calculateLocationDisplay(moduleName, pair.loc);
 
-    if (key === 'classBinding') { return; }
+    if (key === 'classBinding') {
+      return;
+    }
 
-    assert(`Setting 'attributeBindings' via template helpers is not allowed ${sourceInformation}`, key !== 'attributeBindings');
+    assert(
+      `Setting 'attributeBindings' via template helpers is not allowed ${sourceInformation}`,
+      key !== 'attributeBindings'
+    );
 
     if (key.substr(-7) === 'Binding') {
       let newKey = key.slice(0, -7);
 
       deprecate(
-        `You're using legacy binding syntax: ${key}=${exprToString(value)} ${sourceInformation}. Please replace with ${newKey}=${value.original}`,
+        `You're using legacy binding syntax: ${key}=${exprToString(
+          value
+        )} ${sourceInformation}. Please replace with ${newKey}=${
+          value.original
+        }`,
         false,
-        { id: 'ember-template-compiler.transform-old-binding-syntax', until: '3.0.0' }
+        {
+          id: 'ember-template-compiler.transform-old-binding-syntax',
+          until: '3.0.0'
+        }
       );
 
       pair.key = newKey;
@@ -50,7 +62,9 @@ function processHash(b, node, moduleName) {
 
 function exprToString(expr) {
   switch (expr.type) {
-    case 'StringLiteral': return `"${expr.original}"`;
-    case 'PathExpression': return expr.original;
+    case 'StringLiteral':
+      return `"${expr.original}"`;
+    case 'PathExpression':
+      return expr.original;
   }
 }

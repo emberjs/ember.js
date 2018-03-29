@@ -1,7 +1,4 @@
-export {
-  compile,
-  precompile
-} from 'ember-template-compiler';
+export { compile, precompile } from 'ember-template-compiler';
 
 export {
   INVOKE,

@@ -8,20 +8,10 @@ import {
   unregisterHelper
 } from './test/helpers';
 import { onInjectHelpers } from './test/on_inject_helpers';
-import TestPromise, {
-  promise,
-  resolve
-} from './test/promise';
-import {
-  checkWaiters,
-  registerWaiter,
-  unregisterWaiter
-} from './test/waiters';
+import TestPromise, { promise, resolve } from './test/promise';
+import { checkWaiters, registerWaiter, unregisterWaiter } from './test/waiters';
 
-import {
-  getAdapter,
-  setAdapter
-} from './test/adapter';
+import { getAdapter, setAdapter } from './test/adapter';
 
 /**
   This is a container for an assortment of testing related functionality:

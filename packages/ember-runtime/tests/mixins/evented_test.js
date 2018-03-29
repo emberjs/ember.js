@@ -15,8 +15,5 @@ QUnit.test('works properly on proxy-ish objects', function(assert) {
   eventedProxyObj.on('foo', noop);
   eventedProxyObj.off('foo', noop);
 
-  assert.ok(
-    true,
-    "An assertion was triggered"
-  );
+  assert.ok(true, 'An assertion was triggered');
 });

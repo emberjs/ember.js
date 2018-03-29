@@ -26,7 +26,6 @@ const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
   @extends Ember.Object
 */
 export default EmberObject.extend({
-
   /**
     The set of events names (and associated handler function names) to be setup
     and dispatched by the `EventDispatcher`. Modifications to this list can be done
@@ -61,33 +60,33 @@ export default EmberObject.extend({
     @private
   */
   events: {
-    touchstart:  'touchStart',
-    touchmove:   'touchMove',
-    touchend:    'touchEnd',
+    touchstart: 'touchStart',
+    touchmove: 'touchMove',
+    touchend: 'touchEnd',
     touchcancel: 'touchCancel',
-    keydown:     'keyDown',
-    keyup:       'keyUp',
-    keypress:    'keyPress',
-    mousedown:   'mouseDown',
-    mouseup:     'mouseUp',
+    keydown: 'keyDown',
+    keyup: 'keyUp',
+    keypress: 'keyPress',
+    mousedown: 'mouseDown',
+    mouseup: 'mouseUp',
     contextmenu: 'contextMenu',
-    click:       'click',
-    dblclick:    'doubleClick',
-    mousemove:   'mouseMove',
-    focusin:     'focusIn',
-    focusout:    'focusOut',
-    mouseenter:  'mouseEnter',
-    mouseleave:  'mouseLeave',
-    submit:      'submit',
-    input:       'input',
-    change:      'change',
-    dragstart:   'dragStart',
-    drag:        'drag',
-    dragenter:   'dragEnter',
-    dragleave:   'dragLeave',
-    dragover:    'dragOver',
-    drop:        'drop',
-    dragend:     'dragEnd'
+    click: 'click',
+    dblclick: 'doubleClick',
+    mousemove: 'mouseMove',
+    focusin: 'focusIn',
+    focusout: 'focusOut',
+    mouseenter: 'mouseEnter',
+    mouseleave: 'mouseLeave',
+    submit: 'submit',
+    input: 'input',
+    change: 'change',
+    dragstart: 'dragStart',
+    drag: 'drag',
+    dragenter: 'dragEnter',
+    dragleave: 'dragLeave',
+    dragover: 'dragOver',
+    drop: 'drop',
+    dragend: 'dragEnd'
   },
 
   /**
@@ -109,12 +108,15 @@ export default EmberObject.extend({
   init() {
     this._super();
 
-    assert('EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.', (() => {
-      let owner = getOwner(this);
-      let environment = owner.lookup('-environment:main');
+    assert(
+      'EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.',
+      (() => {
+        let owner = getOwner(this);
+        let environment = owner.lookup('-environment:main');
 
-      return environment.isInteractive;
-    })());
+        return environment.isInteractive;
+      })()
+    );
 
     this._eventHandlers = Object.create(null);
   },
@@ -133,7 +135,11 @@ export default EmberObject.extend({
   */
   setup(addedEvents, _rootElement) {
     let event, rootElement;
-    let events = this._finalEvents = assign({}, get(this, 'events'), addedEvents);
+    let events = (this._finalEvents = assign(
+      {},
+      get(this, 'events'),
+      addedEvents
+    ));
 
     if (!isNone(_rootElement)) {
       set(this, 'rootElement', _rootElement);
@@ -142,14 +148,28 @@ export default EmberObject.extend({
     let rootElementSelector = get(this, 'rootElement');
     if (HAS_JQUERY) {
       rootElement = jQuery(rootElementSelector);
-      assert(`You cannot use the same root element (${rootElement.selector || rootElement[0].tagName}) multiple times in an Ember.Application`, !rootElement.is(ROOT_ELEMENT_SELECTOR));
-      assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest(ROOT_ELEMENT_SELECTOR).length);
-      assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find(ROOT_ELEMENT_SELECTOR).length);
+      assert(
+        `You cannot use the same root element (${rootElement.selector ||
+          rootElement[0].tagName}) multiple times in an Ember.Application`,
+        !rootElement.is(ROOT_ELEMENT_SELECTOR)
+      );
+      assert(
+        'You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application',
+        !rootElement.closest(ROOT_ELEMENT_SELECTOR).length
+      );
+      assert(
+        'You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application',
+        !rootElement.find(ROOT_ELEMENT_SELECTOR).length
+      );
 
       rootElement.addClass(ROOT_ELEMENT_CLASS);
 
       if (!rootElement.is(ROOT_ELEMENT_SELECTOR)) {
-        throw new TypeError(`Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector || rootElement[0].tagName}). Make sure you set rootElement to the body or an element in the body.`);
+        throw new TypeError(
+          `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector ||
+            rootElement[0]
+              .tagName}). Make sure you set rootElement to the body or an element in the body.`
+        );
       }
     } else {
       if (typeof rootElementSelector !== 'string') {
@@ -158,24 +178,41 @@ export default EmberObject.extend({
         rootElement = document.querySelector(rootElementSelector);
       }
 
-      assert(`You cannot use the same root element (${get(this, 'rootElement') || rootElement.tagName}) multiple times in an Ember.Application`, !rootElement.classList.contains(ROOT_ELEMENT_CLASS));
-      assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', (() => {
-        let target = rootElement.parentNode;
-        do {
-         if (target.classList.contains(ROOT_ELEMENT_CLASS)) {
-           return false;
-         }
+      assert(
+        `You cannot use the same root element (${get(this, 'rootElement') ||
+          rootElement.tagName}) multiple times in an Ember.Application`,
+        !rootElement.classList.contains(ROOT_ELEMENT_CLASS)
+      );
+      assert(
+        'You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application',
+        (() => {
+          let target = rootElement.parentNode;
+          do {
+            if (target.classList.contains(ROOT_ELEMENT_CLASS)) {
+              return false;
+            }
 
-          target = target.parentNode;
-        } while(target && target.nodeType === 1);
+            target = target.parentNode;
+          } while (target && target.nodeType === 1);
 
-        return true;
-      })());
-      assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.querySelector(ROOT_ELEMENT_SELECTOR));
+          return true;
+        })()
+      );
+      assert(
+        'You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application',
+        !rootElement.querySelector(ROOT_ELEMENT_SELECTOR)
+      );
 
       rootElement.classList.add(ROOT_ELEMENT_CLASS);
 
-      assert(`Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${get(this, 'rootElement') || rootElement.tagName}). Make sure you set rootElement to the body or an element in the body.`, rootElement.classList.contains(ROOT_ELEMENT_CLASS));
+      assert(
+        `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${get(
+          this,
+          'rootElement'
+        ) ||
+          rootElement.tagName}). Make sure you set rootElement to the body or an element in the body.`,
+        rootElement.classList.contains(ROOT_ELEMENT_CLASS)
+      );
     }
 
     let viewRegistry = this._getViewRegistry();
@@ -233,7 +270,11 @@ export default EmberObject.extend({
             // We have to check for action here since in some cases, jQuery will trigger
             // an event on `removeChild` (i.e. focusout) after we've already torn down the
             // action handlers for the view.
-            if (action && action.eventName === eventName && handledActions.indexOf(action) === -1) {
+            if (
+              action &&
+              action.eventName === eventName &&
+              handledActions.indexOf(action) === -1
+            ) {
               action.handler(evt);
               // Action handlers can mutate state which in turn creates new attributes on the element.
               // This effect could cause the `data-ember-action` attribute to shift down and be invoked twice.
@@ -274,7 +315,9 @@ export default EmberObject.extend({
             let attrName = attr.name;
 
             if (attrName.indexOf('data-ember-action-') === 0) {
-              actions = actions.concat(ActionManager.registeredActions[attr.value]);
+              actions = actions.concat(
+                ActionManager.registeredActions[attr.value]
+              );
             }
           }
         }
@@ -295,7 +338,7 @@ export default EmberObject.extend({
         }
       };
 
-      let handleEvent = this._eventHandlers[event] = (event) => {
+      let handleEvent = (this._eventHandlers[event] = event => {
         let target = event.target;
 
         do {
@@ -312,8 +355,8 @@ export default EmberObject.extend({
           }
 
           target = target.parentNode;
-        } while(target && target.nodeType === 1);
-      };
+        } while (target && target.nodeType === 1);
+      });
 
       rootElement.addEventListener(event, handleEvent);
     }
@@ -321,7 +364,8 @@ export default EmberObject.extend({
 
   _getViewRegistry() {
     let owner = getOwner(this);
-    let viewRegistry = owner && owner.lookup('-view-registry:main') || fallbackViewRegistry;
+    let viewRegistry =
+      (owner && owner.lookup('-view-registry:main')) || fallbackViewRegistry;
 
     return viewRegistry;
   },
@@ -335,7 +379,9 @@ export default EmberObject.extend({
       rootElement = document.querySelector(rootElementSelector);
     }
 
-    if (!rootElement) { return; }
+    if (!rootElement) {
+      return;
+    }
 
     if (HAS_JQUERY) {
       jQuery(rootElementSelector).off('.ember', '**');

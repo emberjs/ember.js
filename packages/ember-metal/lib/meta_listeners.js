@@ -11,22 +11,29 @@
  */
 
 export const protoMethods = {
-
   addToListeners(eventName, target, method, once) {
-    if (this._listeners === undefined) { this._listeners = []; }
+    if (this._listeners === undefined) {
+      this._listeners = [];
+    }
     this._listeners.push(eventName, target, method, once);
   },
 
   _finalizeListeners() {
-    if (this._listenersFinalized) { return; }
-    if (this._listeners === undefined) { this._listeners = []; }
+    if (this._listenersFinalized) {
+      return;
+    }
+    if (this._listeners === undefined) {
+      this._listeners = [];
+    }
     let pointer = this.parent;
     while (pointer !== undefined) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         this._listeners = this._listeners.concat(listeners);
       }
-      if (pointer._listenersFinalized) { break; }
+      if (pointer._listenersFinalized) {
+        break;
+      }
       pointer = pointer.parent;
     }
     this._listenersFinalized = true;
@@ -38,7 +45,12 @@ export const protoMethods = {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         for (let index = listeners.length - 4; index >= 0; index -= 4) {
-          if (listeners[index] === eventName && (!method || (listeners[index + 1] === target && listeners[index + 2] === method))) {
+          if (
+            listeners[index] === eventName &&
+            (!method ||
+              (listeners[index + 1] === target &&
+                listeners[index + 2] === method))
+          ) {
             if (pointer === this) {
               listeners.splice(index, 4); // we are modifying our own list, so we edit directly
             } else {
@@ -51,7 +63,9 @@ export const protoMethods = {
           }
         }
       }
-      if (pointer._listenersFinalized) { break; }
+      if (pointer._listenersFinalized) {
+        break;
+      }
       pointer = pointer.parent;
     }
   },
@@ -69,7 +83,9 @@ export const protoMethods = {
           }
         }
       }
-      if (pointer._listenersFinalized) { break; }
+      if (pointer._listenersFinalized) {
+        break;
+      }
       pointer = pointer.parent;
     }
     return result;
@@ -79,8 +95,15 @@ export const protoMethods = {
 function pushUniqueListener(destination, source, index) {
   let target = source[index + 1];
   let method = source[index + 2];
-  for (let destinationIndex = 0; destinationIndex < destination.length; destinationIndex += 3) {
-    if (destination[destinationIndex] === target && destination[destinationIndex + 1] === method) {
+  for (
+    let destinationIndex = 0;
+    destinationIndex < destination.length;
+    destinationIndex += 3
+  ) {
+    if (
+      destination[destinationIndex] === target &&
+      destination[destinationIndex + 1] === method
+    ) {
       return;
     }
   }

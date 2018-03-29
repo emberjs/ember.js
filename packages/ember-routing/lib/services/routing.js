@@ -3,10 +3,7 @@
 */
 
 import { assign } from 'ember-utils';
-import {
-  Service,
-  readOnly
-} from 'ember-runtime';
+import { Service, readOnly } from 'ember-runtime';
 import { get } from 'ember-metal';
 
 /**
@@ -50,7 +47,9 @@ export default Service.extend({
   generateURL(routeName, models, queryParams) {
     let router = get(this, 'router');
     // return early when the router microlib is not present, which is the case for {{link-to}} in integration tests
-    if (!router._routerMicrolib) { return; }
+    if (!router._routerMicrolib) {
+      return;
+    }
 
     let visibleQueryParams = {};
     if (queryParams) {
@@ -58,15 +57,26 @@ export default Service.extend({
       this.normalizeQueryParams(routeName, models, visibleQueryParams);
     }
 
-    return router.generate(routeName, ...models, { queryParams: visibleQueryParams });
+    return router.generate(routeName, ...models, {
+      queryParams: visibleQueryParams
+    });
   },
 
-  isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
+  isActiveForRoute(
+    contexts,
+    queryParams,
+    routeName,
+    routerState,
+    isCurrentWhenSpecified
+  ) {
     let router = get(this, 'router');
 
     let handlers = router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
-    let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
+    let maximumContexts = numberOfContextsAcceptedByHandler(
+      routeName,
+      handlers
+    );
 
     // NOTE: any ugliness in the calculation of activeness is largely
     // due to the fact that we support automatic normalizing of
@@ -82,7 +92,12 @@ export default Service.extend({
       routeName = leafName;
     }
 
-    return routerState.isActiveIntent(routeName, contexts, queryParams, !isCurrentWhenSpecified);
+    return routerState.isActiveIntent(
+      routeName,
+      contexts,
+      queryParams,
+      !isCurrentWhenSpecified
+    );
   }
 });
 

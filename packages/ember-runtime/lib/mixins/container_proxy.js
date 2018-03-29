@@ -1,10 +1,7 @@
 /**
 @module ember
 */
-import {
-  Mixin,
-  run
-} from 'ember-metal';
+import { Mixin, run } from 'ember-metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -107,7 +104,7 @@ let containerProxyMixin = {
     }
   },
 
-/**
+  /**
  Given a fullName return a factory manager.
 
   This method returns a manager which can be used for introspection of the

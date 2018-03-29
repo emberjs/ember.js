@@ -70,7 +70,8 @@ testBoth('observer on instance overriding class', function(get, set, assert) {
   });
 
   let obj = MyClass.extend({
-    foo: observer('baz', function() { // <-- change property we observe
+    foo: observer('baz', function() {
+      // <-- change property we observe
       set(this, 'count', get(this, 'count') + 1);
     })
   }).create();
@@ -84,7 +85,11 @@ testBoth('observer on instance overriding class', function(get, set, assert) {
   assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observer should not fire after being destroyed', function(get, set, assert) {
+testBoth('observer should not fire after being destroyed', function(
+  get,
+  set,
+  assert
+) {
   let obj = EmberObject.extend({
     count: 0,
     foo: observer('bar', function() {
@@ -92,7 +97,11 @@ testBoth('observer should not fire after being destroyed', function(get, set, as
     })
   }).create();
 
-  assert.equal(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
+  assert.equal(
+    get(obj, 'count'),
+    0,
+    'precond - should not invoke observer immediately'
+  );
 
   run(() => obj.destroy());
 
@@ -105,7 +114,6 @@ testBoth('observer should not fire after being destroyed', function(get, set, as
 // ..........................................................
 // COMPLEX PROPERTIES
 //
-
 
 testBoth('chain observer on class', function(get, set, assert) {
   let MyClass = EmberObject.extend({
@@ -135,7 +143,6 @@ testBoth('chain observer on class', function(get, set, assert) {
   assert.equal(get(obj1, 'count'), 1, 'should not invoke again');
   assert.equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
 });
-
 
 testBoth('chain observer on class', function(get, set, assert) {
   let MyClass = EmberObject.extend({
@@ -175,36 +182,47 @@ testBoth('chain observer on class', function(get, set, assert) {
   assert.equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
 });
 
-testBoth('chain observer on class that has a reference to an uninitialized object will finish chains that reference it', function(get, set, assert) {
-  let changed = false;
+testBoth(
+  'chain observer on class that has a reference to an uninitialized object will finish chains that reference it',
+  function(get, set, assert) {
+    let changed = false;
 
-  let ChildClass = EmberObject.extend({
-    parent: null,
-    parentOneTwoDidChange: observer('parent.one.two', function() {
-      changed = true;
-    })
-  });
+    let ChildClass = EmberObject.extend({
+      parent: null,
+      parentOneTwoDidChange: observer('parent.one.two', function() {
+        changed = true;
+      })
+    });
 
-  let ParentClass = EmberObject.extend({
-    one: {
-      two: 'old'
-    },
-    init() {
-      this.child = ChildClass.create({
-        parent: this
-      });
-    }
-  });
+    let ParentClass = EmberObject.extend({
+      one: {
+        two: 'old'
+      },
+      init() {
+        this.child = ChildClass.create({
+          parent: this
+        });
+      }
+    });
 
-  let parent = new ParentClass();
+    let parent = new ParentClass();
 
-  assert.equal(changed, false, 'precond');
+    assert.equal(changed, false, 'precond');
 
-  set(parent, 'one.two', 'new');
+    set(parent, 'one.two', 'new');
 
-  assert.equal(changed, true, 'child should have been notified of change to path');
+    assert.equal(
+      changed,
+      true,
+      'child should have been notified of change to path'
+    );
 
-  set(parent, 'one', { two: 'newer' });
+    set(parent, 'one', { two: 'newer' });
 
-  assert.equal(changed, true, 'child should have been notified of change to path');
-});
+    assert.equal(
+      changed,
+      true,
+      'child should have been notified of change to path'
+    );
+  }
+);

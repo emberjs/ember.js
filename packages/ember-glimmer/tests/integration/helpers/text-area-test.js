@@ -6,8 +6,14 @@ import { applyMixins } from '../../utils/abstract-test-case';
 
 class TextAreaRenderingTest extends RenderingTest {
   assertTextArea({ attrs, value } = {}) {
-    let mergedAttrs = assign({ 'class': classes('ember-view ember-text-area') }, attrs);
-    this.assertComponentElement(this.firstChild, { tagName: 'textarea', attrs: mergedAttrs });
+    let mergedAttrs = assign(
+      { class: classes('ember-view ember-text-area') },
+      attrs
+    );
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'textarea',
+      attrs: mergedAttrs
+    });
 
     if (value) {
       this.assert.strictEqual(value, this.firstChild.value);
@@ -61,101 +67,107 @@ applyMixins(
   ])
 );
 
-moduleFor('Helpers test: {{textarea}}', class extends TextAreaRenderingTest {
+moduleFor(
+  'Helpers test: {{textarea}}',
+  class extends TextAreaRenderingTest {
+    ['@test Should insert a textarea'](assert) {
+      this.render('{{textarea}}');
 
-  ['@test Should insert a textarea'](assert) {
-    this.render('{{textarea}}');
+      assert.equal(this.$('textarea').length, 1);
 
-    assert.equal(this.$('textarea').length, 1);
+      this.assertStableRerender();
+    }
 
-    this.assertStableRerender();
+    ['@test Should respect disabled'](assert) {
+      this.render('{{textarea disabled=disabled}}', {
+        disabled: true
+      });
+      assert.ok(this.$('textarea').is(':disabled'));
+    }
+
+    ['@test Should respect disabled when false'](assert) {
+      this.render('{{textarea disabled=disabled}}', {
+        disabled: false
+      });
+      assert.ok(this.$('textarea').is(':not(:disabled)'));
+    }
+
+    ['@test Should become disabled when the context changes'](assert) {
+      this.render('{{textarea disabled=disabled}}');
+      assert.ok(this.$('textarea').is(':not(:disabled)'));
+
+      this.assertStableRerender();
+
+      this.runTask(() => set(this.context, 'disabled', true));
+      assert.ok(this.$('textarea').is(':disabled'));
+
+      this.runTask(() => set(this.context, 'disabled', false));
+      assert.ok(this.$('textarea').is(':not(:disabled)'));
+    }
+
+    ['@test Should bind its contents to the specified value']() {
+      this.render('{{textarea value=model.val}}', {
+        model: { val: 'A beautiful day in Seattle' }
+      });
+      this.assertTextArea({ value: 'A beautiful day in Seattle' });
+
+      this.assertStableRerender();
+
+      this.runTask(() => set(this.context, 'model.val', 'Auckland'));
+      this.assertTextArea({ value: 'Auckland' });
+
+      this.runTask(() =>
+        set(this.context, 'model', { val: 'A beautiful day in Seattle' })
+      );
+      this.assertTextArea({ value: 'A beautiful day in Seattle' });
+    }
+
+    ['@test GH#14001 Should correctly handle an empty string bound value']() {
+      this.render('{{textarea value=message}}', { message: '' });
+
+      this.assert.strictEqual(this.firstChild.value, '');
+
+      this.assertStableRerender();
+
+      this.runTask(() => set(this.context, 'message', 'hello'));
+
+      this.assert.strictEqual(this.firstChild.value, 'hello');
+
+      this.runTask(() => set(this.context, 'message', ''));
+
+      this.assert.strictEqual(this.firstChild.value, '');
+    }
+
+    ['@test should update the value for `cut` / `input` / `change` events']() {
+      this.render('{{textarea value=model.val}}', {
+        model: { val: 'A beautiful day in Seattle' }
+      });
+      this.assertTextArea({ value: 'A beautiful day in Seattle' });
+
+      this.assertStableRerender();
+
+      this.runTask(() => {
+        this.firstChild.value = 'Auckland';
+        this.triggerEvent('cut');
+      });
+      this.assertTextArea({ value: 'Auckland' });
+
+      this.runTask(() => {
+        this.firstChild.value = 'Hope';
+        this.triggerEvent('paste');
+      });
+      this.assertTextArea({ value: 'Hope' });
+
+      this.runTask(() => {
+        this.firstChild.value = 'Boston';
+        this.triggerEvent('input');
+      });
+      this.assertTextArea({ value: 'Boston' });
+
+      this.runTask(() =>
+        set(this.context, 'model', { val: 'A beautiful day in Seattle' })
+      );
+      this.assertTextArea({ value: 'A beautiful day in Seattle' });
+    }
   }
-
-  ['@test Should respect disabled'](assert) {
-    this.render('{{textarea disabled=disabled}}', {
-      disabled: true
-    });
-    assert.ok(this.$('textarea').is(':disabled'));
-  }
-
-  ['@test Should respect disabled when false'](assert) {
-    this.render('{{textarea disabled=disabled}}', {
-      disabled: false
-    });
-    assert.ok(this.$('textarea').is(':not(:disabled)'));
-  }
-
-  ['@test Should become disabled when the context changes'](assert) {
-    this.render('{{textarea disabled=disabled}}');
-    assert.ok(this.$('textarea').is(':not(:disabled)'));
-
-    this.assertStableRerender();
-
-    this.runTask(() => set(this.context, 'disabled', true));
-    assert.ok(this.$('textarea').is(':disabled'));
-
-    this.runTask(() => set(this.context, 'disabled', false));
-    assert.ok(this.$('textarea').is(':not(:disabled)'));
-  }
-
-  ['@test Should bind its contents to the specified value']() {
-    this.render('{{textarea value=model.val}}', {
-      model: { val: 'A beautiful day in Seattle' }
-    });
-    this.assertTextArea({ value: 'A beautiful day in Seattle' });
-
-    this.assertStableRerender();
-
-    this.runTask(() => set(this.context, 'model.val', 'Auckland'));
-    this.assertTextArea({ value: 'Auckland' });
-
-    this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
-    this.assertTextArea({ value: 'A beautiful day in Seattle' });
-  }
-
-  ['@test GH#14001 Should correctly handle an empty string bound value']() {
-    this.render('{{textarea value=message}}', { message: '' });
-
-    this.assert.strictEqual(this.firstChild.value, '');
-
-    this.assertStableRerender();
-
-    this.runTask(() => set(this.context, 'message', 'hello'));
-
-    this.assert.strictEqual(this.firstChild.value, 'hello');
-
-    this.runTask(() => set(this.context, 'message', ''));
-
-    this.assert.strictEqual(this.firstChild.value, '');
-  }
-
-  ['@test should update the value for `cut` / `input` / `change` events']() {
-    this.render('{{textarea value=model.val}}', {
-      model: { val: 'A beautiful day in Seattle' }
-    });
-    this.assertTextArea({ value: 'A beautiful day in Seattle' });
-
-    this.assertStableRerender();
-
-    this.runTask(() => {
-      this.firstChild.value = 'Auckland';
-      this.triggerEvent('cut');
-    });
-    this.assertTextArea({ value: 'Auckland' });
-
-    this.runTask(() => {
-      this.firstChild.value = 'Hope';
-      this.triggerEvent('paste');
-    });
-    this.assertTextArea({ value: 'Hope' });
-
-    this.runTask(() => {
-      this.firstChild.value = 'Boston';
-      this.triggerEvent('input');
-    });
-    this.assertTextArea({ value: 'Boston' });
-
-    this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
-    this.assertTextArea({ value: 'A beautiful day in Seattle' });
-  }
-});
+);

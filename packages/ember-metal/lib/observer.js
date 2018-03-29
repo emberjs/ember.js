@@ -1,11 +1,5 @@
-import {
-  watch,
-  unwatch
-} from './watching';
-import {
-  addListener,
-  removeListener
-} from './events';
+import { watch, unwatch } from './watching';
+import { addListener, removeListener } from './events';
 /**
 @module @ember/object
 */

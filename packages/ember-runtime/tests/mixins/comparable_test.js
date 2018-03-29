@@ -14,7 +14,6 @@ const Rectangle = EmberObject.extend(Comparable, {
   compare(a, b) {
     return compare(a.area(), b.area());
   }
-
 });
 
 let r1, r2;
@@ -26,7 +25,9 @@ QUnit.module('Comparable', {
   }
 });
 
-QUnit.test('should be comparable and return the correct result', function(assert) {
+QUnit.test('should be comparable and return the correct result', function(
+  assert
+) {
   assert.equal(Comparable.detect(r1), true);
   assert.equal(compare(r1, r1), 0);
   assert.equal(compare(r1, r2), -1);

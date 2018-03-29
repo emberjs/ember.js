@@ -2,7 +2,7 @@ import { assign } from 'ember-utils';
 import getAllPropertyNames from './get-all-property-names';
 
 function isGenerator(mixin) {
-  return Array.isArray(mixin.cases) && (typeof mixin.generate === 'function');
+  return Array.isArray(mixin.cases) && typeof mixin.generate === 'function';
 }
 
 export default function applyMixins(TestClass, ...mixins) {

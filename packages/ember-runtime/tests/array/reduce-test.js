@@ -10,13 +10,19 @@ class ReduceTests extends AbstractTestCase {
 
   '@test passes index of item to callback'() {
     let obj = this.newObject([1, 2, 3]);
-    let res = obj.reduce((previousValue, item, index) => previousValue + index, 0);
+    let res = obj.reduce(
+      (previousValue, item, index) => previousValue + index,
+      0
+    );
     this.assert.equal(res, 3);
   }
 
   '@test passes enumerable object to callback'() {
     let obj = this.newObject([1, 2, 3]);
-    let res = obj.reduce((previousValue, item, index, enumerable) => enumerable, 0);
+    let res = obj.reduce(
+      (previousValue, item, index, enumerable) => enumerable,
+      0
+    );
     this.assert.equal(res, obj);
   }
 }

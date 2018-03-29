@@ -2,17 +2,17 @@ import { typeOf } from './utils';
 import Comparable from './mixins/comparable';
 
 const TYPE_ORDER = {
-  'undefined': 0,
-  'null': 1,
-  'boolean': 2,
-  'number': 3,
-  'string': 4,
-  'array': 5,
-  'object': 6,
-  'instance': 7,
-  'function': 8,
-  'class': 9,
-  'date': 10
+  undefined: 0,
+  null: 1,
+  boolean: 2,
+  number: 3,
+  string: 4,
+  array: 5,
+  object: 6,
+  instance: 7,
+  function: 8,
+  class: 9,
+  date: 10
 };
 
 //

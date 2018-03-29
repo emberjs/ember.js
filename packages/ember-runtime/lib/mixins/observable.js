@@ -93,7 +93,6 @@ import { assert } from 'ember-debug';
   @public
 */
 export default Mixin.create({
-
   /**
     Retrieves the value of a property from the object.
 
@@ -211,7 +210,6 @@ export default Mixin.create({
   set(keyName, value) {
     return set(this, keyName, value);
   },
-
 
   /**
     Sets a list of properties at once. These properties are set inside
@@ -422,9 +420,18 @@ export default Mixin.create({
     @public
   */
   incrementProperty(keyName, increment) {
-    if (isNone(increment)) { increment = 1; }
-    assert('Must pass a numeric value to incrementProperty', (!isNaN(parseFloat(increment)) && isFinite(increment)));
-    return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
+    if (isNone(increment)) {
+      increment = 1;
+    }
+    assert(
+      'Must pass a numeric value to incrementProperty',
+      !isNaN(parseFloat(increment)) && isFinite(increment)
+    );
+    return set(
+      this,
+      keyName,
+      (parseFloat(get(this, keyName)) || 0) + increment
+    );
   },
 
   /**
@@ -442,8 +449,13 @@ export default Mixin.create({
     @public
   */
   decrementProperty(keyName, decrement) {
-    if (isNone(decrement)) { decrement = 1; }
-    assert('Must pass a numeric value to decrementProperty', (!isNaN(parseFloat(decrement)) && isFinite(decrement)));
+    if (isNone(decrement)) {
+      decrement = 1;
+    }
+    assert(
+      'Must pass a numeric value to decrementProperty',
+      !isNaN(parseFloat(decrement)) && isFinite(decrement)
+    );
     return set(this, keyName, (get(this, keyName) || 0) - decrement);
   },
 
@@ -477,5 +489,5 @@ export default Mixin.create({
   */
   cacheFor(keyName) {
     return getCachedValueFor(this, keyName);
-  },
+  }
 });

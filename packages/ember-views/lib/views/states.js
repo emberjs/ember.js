@@ -15,7 +15,9 @@ export function cloneStates(from) {
   into.inDOM = Object.create(into.hasElement);
 
   for (let stateName in from) {
-    if (!from.hasOwnProperty(stateName)) { continue; }
+    if (!from.hasOwnProperty(stateName)) {
+      continue;
+    }
     assign(into[stateName], from[stateName]);
   }
 

@@ -16,7 +16,7 @@ module.exports = useTestFrameworkDetector({
 
   fileMapTokens: function() {
     return {
-      __test__: function (options) {
+      __test__: function(options) {
         let moduleName = options.locals.moduleName;
 
         if (options.pod) {
@@ -42,8 +42,10 @@ module.exports = useTestFrameworkDetector({
     }
 
     return {
-      friendlyTestDescription: ['Unit', 'Route', options.entity.name].join(' | '),
+      friendlyTestDescription: ['Unit', 'Route', options.entity.name].join(
+        ' | '
+      ),
       moduleName: stringUtil.dasherize(moduleName)
     };
-  },
+  }
 });

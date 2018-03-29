@@ -14,7 +14,11 @@ class FindTests extends AbstractTestCase {
       return false;
     });
     this.assert.equal(result, undefined, 'return value of obj.find');
-    this.assert.deepEqual(found, ary, 'items passed during find() should match');
+    this.assert.deepEqual(
+      found,
+      ary,
+      'items passed during find() should match'
+    );
   }
 
   '@test every should stop invoking when you return true'() {
@@ -30,8 +34,16 @@ class FindTests extends AbstractTestCase {
       return --cnt >= 0;
     });
     this.assert.equal(result, ary[exp - 1], 'return value of obj.find');
-    this.assert.equal(found.length, exp, 'should invoke proper number of times');
-    this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during find() should match');
+    this.assert.equal(
+      found.length,
+      exp,
+      'should invoke proper number of times'
+    );
+    this.assert.deepEqual(
+      found,
+      ary.slice(0, -2),
+      'items passed during find() should match'
+    );
   }
 }
 
@@ -75,22 +87,27 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', null), ary[0], 'findBy(\'foo\', null)');
-    this.assert.equal(obj.findBy('bar', null), ary[1], 'findBy(\'bar\', null)');
+    this.assert.equal(obj.findBy('foo', null), ary[0], "findBy('foo', null)");
+    this.assert.equal(obj.findBy('bar', null), ary[1], "findBy('bar', null)");
   }
 
   '@test should return first undefined property match'() {
     let ary, obj;
 
-    ary = [
-      { foo: undefined, bar: 'BAZ' },
-      EmberObject.create({ })
-    ];
+    ary = [{ foo: undefined, bar: 'BAZ' }, EmberObject.create({})];
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', undefined), ary[0], 'findBy(\'foo\', undefined)');
-    this.assert.equal(obj.findBy('bar', undefined), ary[1], 'findBy(\'bar\', undefined)');
+    this.assert.equal(
+      obj.findBy('foo', undefined),
+      ary[0],
+      "findBy('foo', undefined)"
+    );
+    this.assert.equal(
+      obj.findBy('bar', undefined),
+      ary[1],
+      "findBy('bar', undefined)"
+    );
   }
 }
 

@@ -15,14 +15,34 @@ QUnit.test('render in the render queue', function(assert) {
     }
   };
 
-  let outletView  = new OutletView({}, renderer);
+  let outletView = new OutletView({}, renderer);
 
   run(() => {
-    assert.equal(didAppendOutletView, 0, 'appendOutletView should not yet have been called (before appendTo)');
+    assert.equal(
+      didAppendOutletView,
+      0,
+      'appendOutletView should not yet have been called (before appendTo)'
+    );
     outletView.appendTo(expectedOutlet);
-    assert.equal(didAppendOutletView, 0, 'appendOutletView should not yet have been called (sync after appendTo)');
+    assert.equal(
+      didAppendOutletView,
+      0,
+      'appendOutletView should not yet have been called (sync after appendTo)'
+    );
 
-    schedule('actions', () => assert.equal(didAppendOutletView, 0, 'appendOutletView should not yet have been called (in actions)'));
-    schedule('render',  () => assert.equal(didAppendOutletView, 1, 'appendOutletView should be invoked in render'));
+    schedule('actions', () =>
+      assert.equal(
+        didAppendOutletView,
+        0,
+        'appendOutletView should not yet have been called (in actions)'
+      )
+    );
+    schedule('render', () =>
+      assert.equal(
+        didAppendOutletView,
+        1,
+        'appendOutletView should be invoked in render'
+      )
+    );
   });
 });

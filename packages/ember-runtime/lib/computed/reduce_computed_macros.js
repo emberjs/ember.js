@@ -19,11 +19,16 @@ function reduceMacro(dependentKey, callback, initialValue, name) {
     !/[\[\]\{\}]/g.test(dependentKey)
   );
 
-  let cp = new ComputedProperty(function() {
-    let arr = get(this, dependentKey);
-    if (arr === null || typeof arr !== 'object') { return initialValue; }
-    return arr.reduce(callback, initialValue, this);
-  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true });
+  let cp = new ComputedProperty(
+    function() {
+      let arr = get(this, dependentKey);
+      if (arr === null || typeof arr !== 'object') {
+        return initialValue;
+      }
+      return arr.reduce(callback, initialValue, this);
+    },
+    { dependentKeys: [`${dependentKey}.[]`], readOnly: true }
+  );
 
   return cp;
 }
@@ -38,14 +43,17 @@ function arrayMacro(dependentKey, callback) {
     dependentKey += '.[]';
   }
 
-  let cp = new ComputedProperty(function() {
-    let value = get(this, propertyName);
-    if (isArray(value)) {
-      return emberA(callback.call(this, value));
-    } else {
-      return emberA();
-    }
-  }, { readOnly: true });
+  let cp = new ComputedProperty(
+    function() {
+      let value = get(this, propertyName);
+      if (isArray(value)) {
+        return emberA(callback.call(this, value));
+      } else {
+        return emberA();
+      }
+    },
+    { readOnly: true }
+  );
 
   cp.property(dependentKey); // this forces to expand properties GH #15855
 
@@ -55,13 +63,16 @@ function arrayMacro(dependentKey, callback) {
 function multiArrayMacro(_dependentKeys, callback, name) {
   assert(
     `Dependent keys passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
-    _dependentKeys.every((dependentKey)=> !/[\[\]\{\}]/g.test(dependentKey))
+    _dependentKeys.every(dependentKey => !/[\[\]\{\}]/g.test(dependentKey))
   );
   let dependentKeys = _dependentKeys.map(key => `${key}.[]`);
 
-  let cp = new ComputedProperty(function() {
-    return emberA(callback.call(this, _dependentKeys));
-  }, { dependentKeys, readOnly: true });
+  let cp = new ComputedProperty(
+    function() {
+      return emberA(callback.call(this, _dependentKeys));
+    },
+    { dependentKeys, readOnly: true }
+  );
 
   return cp;
 }
@@ -128,7 +139,12 @@ export function sum(dependentKey) {
   @public
 */
 export function max(dependentKey) {
-  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity, 'max');
+  return reduceMacro(
+    dependentKey,
+    (max, item) => Math.max(max, item),
+    -Infinity,
+    'max'
+  );
 }
 
 /**
@@ -177,7 +193,12 @@ export function max(dependentKey) {
   @public
 */
 export function min(dependentKey) {
-  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity, 'min');
+  return reduceMacro(
+    dependentKey,
+    (min, item) => Math.min(min, item),
+    Infinity,
+    'min'
+  );
 }
 
 /**
@@ -260,8 +281,8 @@ export function map(dependentKey, callback) {
 */
 export function mapBy(dependentKey, propertyKey) {
   assert(
-    '\`computed.mapBy\` expects a property string for its second argument, ' +
-    'perhaps you meant to use "map"',
+    '`computed.mapBy` expects a property string for its second argument, ' +
+      'perhaps you meant to use "map"',
     typeof propertyKey === 'string'
   );
   assert(
@@ -269,7 +290,9 @@ export function mapBy(dependentKey, propertyKey) {
     !/[\[\]\{\}]/g.test(dependentKey)
   );
 
-  return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));
+  return map(`${dependentKey}.@each.${propertyKey}`, item =>
+    get(item, propertyKey)
+  );
 }
 
 /**
@@ -384,9 +407,9 @@ export function filterBy(dependentKey, propertyKey, value) {
 
   let callback;
   if (arguments.length === 2) {
-    callback = (item) => get(item, propertyKey);
+    callback = item => get(item, propertyKey);
   } else {
-    callback = (item) => get(item, propertyKey) === value;
+    callback = item => get(item, propertyKey) === value;
   }
 
   return filter(`${dependentKey}.@each.${propertyKey}`, callback);
@@ -427,24 +450,28 @@ export function filterBy(dependentKey, propertyKey, value) {
   @public
 */
 export function uniq(...args) {
-  return multiArrayMacro(args, function(dependentKeys) {
-    let uniq = emberA();
-    let seen = new Set();
+  return multiArrayMacro(
+    args,
+    function(dependentKeys) {
+      let uniq = emberA();
+      let seen = new Set();
 
-    dependentKeys.forEach(dependentKey => {
-      let value = get(this, dependentKey);
-      if (isArray(value)) {
-        value.forEach(item => {
-          if (!seen.has(item)) {
-            seen.add(item);
-            uniq.push(item);
-          }
-        });
-      }
-    });
+      dependentKeys.forEach(dependentKey => {
+        let value = get(this, dependentKey);
+        if (isArray(value)) {
+          value.forEach(item => {
+            if (!seen.has(item)) {
+              seen.add(item);
+              uniq.push(item);
+            }
+          });
+        }
+      });
 
-    return uniq;
-  }, 'uniq');
+      return uniq;
+    },
+    'uniq'
+  );
 }
 
 /**
@@ -486,21 +513,24 @@ export function uniqBy(dependentKey, propertyKey) {
     !/[\[\]\{\}]/g.test(dependentKey)
   );
 
-  let cp = new ComputedProperty(function() {
-    let uniq = emberA();
-    let list = get(this, dependentKey);
-    if (isArray(list)) {
-      let seen = new Set();
-      list.forEach(item => {
-        let val = get(item, propertyKey);
-        if (!seen.has(val)) {
-          seen.add(val);
-          uniq.push(item);
-        }
-      });
-    }
-    return uniq;
-  }, { dependentKeys: [`${dependentKey}.[]`], readOnly: true });
+  let cp = new ComputedProperty(
+    function() {
+      let uniq = emberA();
+      let list = get(this, dependentKey);
+      if (isArray(list)) {
+        let seen = new Set();
+        list.forEach(item => {
+          let val = get(item, propertyKey);
+          if (!seen.has(val)) {
+            seen.add(val);
+            uniq.push(item);
+          }
+        });
+      }
+      return uniq;
+    },
+    { dependentKeys: [`${dependentKey}.[]`], readOnly: true }
+  );
 
   return cp;
 }
@@ -593,7 +623,9 @@ export function intersect(...args) {
           }
         }
 
-        if (found === false) { return false; }
+        if (found === false) {
+          return false;
+        }
       }
 
       return true;
@@ -602,7 +634,6 @@ export function intersect(...args) {
     return emberA(results);
   });
 }
-
 
 /**
   A computed property which returns a new array with all the
@@ -641,7 +672,8 @@ export function intersect(...args) {
   @public
 */
 export function setDiff(setAProperty, setBProperty) {
-  assert('\`computed.setDiff\` requires exactly two dependent arrays.',
+  assert(
+    '`computed.setDiff` requires exactly two dependent arrays.',
     arguments.length === 2
   );
   assert(
@@ -649,18 +681,25 @@ export function setDiff(setAProperty, setBProperty) {
     !/[\[\]\{\}]/g.test(setAProperty) && !/[\[\]\{\}]/g.test(setBProperty)
   );
 
-  let cp = new ComputedProperty(function() {
-    let setA = this.get(setAProperty);
-    let setB = this.get(setBProperty);
+  let cp = new ComputedProperty(
+    function() {
+      let setA = this.get(setAProperty);
+      let setB = this.get(setBProperty);
 
-    if (!isArray(setA)) { return emberA(); }
-    if (!isArray(setB)) { return emberA(setA); }
+      if (!isArray(setA)) {
+        return emberA();
+      }
+      if (!isArray(setB)) {
+        return emberA(setA);
+      }
 
-    return setA.filter(x => setB.indexOf(x) === -1);
-  }, {
-    dependentKeys: [ `${setAProperty}.[]`, `${setBProperty}.[]` ],
-    readOnly: true
-  });
+      return setA.filter(x => setB.indexOf(x) === -1);
+    },
+    {
+      dependentKeys: [`${setAProperty}.[]`, `${setBProperty}.[]`],
+      readOnly: true
+    }
+  );
 
   return cp;
 }
@@ -696,20 +735,24 @@ export function setDiff(setAProperty, setBProperty) {
   @public
 */
 export function collect(...dependentKeys) {
-  return multiArrayMacro(dependentKeys, function() {
-    let properties = getProperties(this, dependentKeys);
-    let res = emberA();
-    for (let key in properties) {
-      if (properties.hasOwnProperty(key)) {
-        if (properties[key] === undefined) {
-          res.push(null);
-        } else {
-          res.push(properties[key]);
+  return multiArrayMacro(
+    dependentKeys,
+    function() {
+      let properties = getProperties(this, dependentKeys);
+      let res = emberA();
+      for (let key in properties) {
+        if (properties.hasOwnProperty(key)) {
+          if (properties[key] === undefined) {
+            res.push(null);
+          } else {
+            res.push(properties[key]);
+          }
         }
       }
-    }
-    return res;
-  }, 'collect');
+      return res;
+    },
+    'collect'
+  );
 }
 
 /**
@@ -783,8 +826,8 @@ export function collect(...dependentKeys) {
 */
 export function sort(itemsKey, sortDefinition) {
   assert(
-    '\`computed.sort\` requires two arguments: an array key to sort and ' +
-    'either a sort properties key or sort function',
+    '`computed.sort` requires two arguments: an array key to sort and ' +
+      'either a sort properties key or sort function',
     arguments.length === 2
   );
 
@@ -804,45 +847,54 @@ function customSort(itemsKey, comparator) {
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
-  let cp = new ComputedProperty(function(key) {
-    let sortProperties = get(this, sortPropertiesKey);
+  let cp = new ComputedProperty(
+    function(key) {
+      let sortProperties = get(this, sortPropertiesKey);
 
-    assert(
-      `The sort definition for '${key}' on ${this} must be a function or an array of strings`,
-      isArray(sortProperties) && sortProperties.every(s => typeof s === 'string')
-    );
+      assert(
+        `The sort definition for '${key}' on ${this} must be a function or an array of strings`,
+        isArray(sortProperties) &&
+          sortProperties.every(s => typeof s === 'string')
+      );
 
-    // Add/remove property observers as required.
-    let activeObserversMap = cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
-    let activeObservers = activeObserversMap.get(this);
+      // Add/remove property observers as required.
+      let activeObserversMap =
+        cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
+      let activeObservers = activeObserversMap.get(this);
 
-    if (activeObservers !== undefined) {
-      activeObservers.forEach(args => removeObserver(...args));
-    }
+      if (activeObservers !== undefined) {
+        activeObservers.forEach(args => removeObserver(...args));
+      }
 
-    function sortPropertyDidChange() {
-      this.notifyPropertyChange(key);
-    }
+      function sortPropertyDidChange() {
+        this.notifyPropertyChange(key);
+      }
 
-    let itemsKeyIsAtThis = (itemsKey === '@this');
-    let normalizedSortProperties = normalizeSortProperties(sortProperties);
-    activeObservers = normalizedSortProperties.map(([prop]) => {
-      let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
-      addObserver(this, path, sortPropertyDidChange);
-      return [this, path, sortPropertyDidChange];
-    });
+      let itemsKeyIsAtThis = itemsKey === '@this';
+      let normalizedSortProperties = normalizeSortProperties(sortProperties);
+      activeObservers = normalizedSortProperties.map(([prop]) => {
+        let path = itemsKeyIsAtThis
+          ? `@each.${prop}`
+          : `${itemsKey}.@each.${prop}`;
+        addObserver(this, path, sortPropertyDidChange);
+        return [this, path, sortPropertyDidChange];
+      });
 
-    activeObserversMap.set(this, activeObservers);
+      activeObserversMap.set(this, activeObservers);
 
-    let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
-    if (!isArray(items)) { return emberA(); }
+      let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
+      if (!isArray(items)) {
+        return emberA();
+      }
 
-    if (normalizedSortProperties.length === 0) {
-      return emberA(items.slice());
-    } else {
-      return sortByNormalizedSortProperties(items, normalizedSortProperties);
-    }
-  }, { dependentKeys: [`${sortPropertiesKey}.[]`], readOnly: true });
+      if (normalizedSortProperties.length === 0) {
+        return emberA(items.slice());
+      } else {
+        return sortByNormalizedSortProperties(items, normalizedSortProperties);
+      }
+    },
+    { dependentKeys: [`${sortPropertiesKey}.[]`], readOnly: true }
+  );
 
   cp._activeObserverMap = undefined;
 
@@ -859,14 +911,16 @@ function normalizeSortProperties(sortProperties) {
 }
 
 function sortByNormalizedSortProperties(items, normalizedSortProperties) {
-  return emberA(items.slice().sort((itemA, itemB) => {
-    for (let i = 0; i < normalizedSortProperties.length; i++) {
-      let [prop, direction] = normalizedSortProperties[i];
-      let result = compare(get(itemA, prop), get(itemB, prop));
-      if (result !== 0) {
-        return (direction === 'desc') ? (-1 * result) : result;
+  return emberA(
+    items.slice().sort((itemA, itemB) => {
+      for (let i = 0; i < normalizedSortProperties.length; i++) {
+        let [prop, direction] = normalizedSortProperties[i];
+        let result = compare(get(itemA, prop), get(itemB, prop));
+        if (result !== 0) {
+          return direction === 'desc' ? -1 * result : result;
+        }
       }
-    }
-    return 0;
-  }));
+      return 0;
+    })
+  );
 }

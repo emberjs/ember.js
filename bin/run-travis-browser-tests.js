@@ -1,7 +1,6 @@
-
 /* eslint-disable no-console */
 
-var RSVP  = require('rsvp');
+var RSVP = require('rsvp');
 var spawn = require('child_process').spawn;
 
 function run(command, _args) {
@@ -35,13 +34,18 @@ function run(command, _args) {
   });
 }
 
-
 RSVP.resolve()
   .then(function() {
     return run('./node_modules/.bin/testem', ['launchers']);
   })
   .then(function() {
-    return run('./node_modules/.bin/testem', ['ci', '--file', 'testem.travis-browsers.js', '--port', '7000']);
+    return run('./node_modules/.bin/testem', [
+      'ci',
+      '--file',
+      'testem.travis-browsers.js',
+      '--port',
+      '7000'
+    ]);
   })
   .catch(function(error) {
     console.error(error.stack);

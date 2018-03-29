@@ -19,5 +19,9 @@ QUnit.module('ember-runtime/mixins/container_proxy', {
 QUnit.test('provides ownerInjection helper method', function(assert) {
   let result = this.instance.ownerInjection();
 
-  assert.equal(result[OWNER], this.instance, 'returns an object with the OWNER symbol');
+  assert.equal(
+    result[OWNER],
+    this.instance,
+    'returns an object with the OWNER symbol'
+  );
 });

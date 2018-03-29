@@ -1,8 +1,4 @@
-import {
-  ActionHandler,
-  Evented,
-  FrameworkObject
-} from 'ember-runtime';
+import { ActionHandler, Evented, FrameworkObject } from 'ember-runtime';
 import { initViewElement } from '../system/utils';
 import { cloneStates, states } from './states';
 
@@ -35,7 +31,9 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     initViewElement(this);
 
     if (!this.renderer) {
-      throw new Error(`Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`);
+      throw new Error(
+        `Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`
+      );
     }
   },
 

@@ -2,7 +2,6 @@ import { ENV } from 'ember-environment';
 import { loc } from '../../../system/string';
 import { setStrings, getStrings } from '../../../string_registry';
 
-
 let oldString;
 
 QUnit.module('EmberStringUtils.loc', {
@@ -22,9 +21,15 @@ QUnit.module('EmberStringUtils.loc', {
 });
 
 if (!ENV.EXTEND_PROTOTYPES.String) {
-  QUnit.test('String.prototype.loc is not available without EXTEND_PROTOTYPES', function(assert) {
-    assert.ok('undefined' === typeof String.prototype.loc, 'String.prototype helper disabled');
-  });
+  QUnit.test(
+    'String.prototype.loc is not available without EXTEND_PROTOTYPES',
+    function(assert) {
+      assert.ok(
+        'undefined' === typeof String.prototype.loc,
+        'String.prototype helper disabled'
+      );
+    }
+  );
 }
 
 function test(given, args, expected, description) {
@@ -36,10 +41,30 @@ function test(given, args, expected, description) {
   });
 }
 
-test('_Hello World',    [],              'Bonjour le monde', `loc('_Hello World') => 'Bonjour le monde'`);
-test('_Hello %@ %@',    ['John', 'Doe'], 'Bonjour John Doe', `loc('_Hello %@ %@', ['John', 'Doe']) => 'Bonjour John Doe'`);
-test('_Hello %@# %@#',  ['John', 'Doe'], 'Bonjour Doe John', `loc('_Hello %@# %@#', ['John', 'Doe']) => 'Bonjour Doe John'`);
-test('_Not In Strings', [],              '_Not In Strings',  `loc('_Not In Strings') => '_Not In Strings'`);
+test(
+  '_Hello World',
+  [],
+  'Bonjour le monde',
+  `loc('_Hello World') => 'Bonjour le monde'`
+);
+test(
+  '_Hello %@ %@',
+  ['John', 'Doe'],
+  'Bonjour John Doe',
+  `loc('_Hello %@ %@', ['John', 'Doe']) => 'Bonjour John Doe'`
+);
+test(
+  '_Hello %@# %@#',
+  ['John', 'Doe'],
+  'Bonjour Doe John',
+  `loc('_Hello %@# %@#', ['John', 'Doe']) => 'Bonjour Doe John'`
+);
+test(
+  '_Not In Strings',
+  [],
+  '_Not In Strings',
+  `loc('_Not In Strings') => '_Not In Strings'`
+);
 
 QUnit.test('works with argument form', function(assert) {
   assert.equal(loc('_Hello %@', 'John'), 'Bonjour John');
