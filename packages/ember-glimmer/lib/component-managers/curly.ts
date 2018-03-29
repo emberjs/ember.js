@@ -268,6 +268,10 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (component.tagName === '') {
+      if (component.elementId === guidFor(component)) {
+        component.elementId = '';
+      }
+
       if (environment.isInteractive) {
         component.trigger('willRender');
       }
@@ -476,8 +480,10 @@ export function processComponentInitializationAssertions(component: Component, p
     component.tagName !== '' || !component.classNameBindings || component.classNameBindings.length === 0);
 
   assert(`You cannot use \`elementId\` on a tag-less component: ${component}`,
-    component.tagName !== '' || props.id === component.elementId ||
-    (!component.elementId && component.elementId !== ''));
+    component.tagName !== '' || // component has a tagname
+    props.id === component.elementId || // elementId comes from cloning id
+    guidFor(component) === component.elementId || // elementId is set by default
+    !(component.elementId && component.elementId !== ''));
 
   assert(`You cannot use \`attributeBindings\` on a tag-less component: ${component}`,
     component.tagName !== '' || !component.attributeBindings || component.attributeBindings.length === 0);
