@@ -95,3 +95,4 @@ moduleFor('ember-template-compiler: custom plugins passed to compile', class ext
     });
   }
 });
+

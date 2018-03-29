@@ -55,7 +55,11 @@ const { slice } = Array.prototype;
   The `EmberRouter` class manages the application state and URLs. Refer to
   the [routing guide](https://emberjs.com/guides/routing/) for documentation.
 
+<<<<<<< HEAD
+  @class Router
+=======
   @class EmberRouter
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
   @extends EmberObject
   @uses Evented
   @public
@@ -1119,7 +1123,12 @@ let defaultActionHandlers = {
         // Check for the existence of an 'error' route.
         let errorRouteName = findRouteStateName(route, 'error');
         if (errorRouteName) {
+<<<<<<< HEAD
+          let errorId = guidFor(error);
+          router._markErrorAsHandled(errorId);
+=======
           router._markErrorAsHandled(error);
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
           router.intermediateTransitionTo(errorRouteName, error);
           return false;
         }
@@ -1128,7 +1137,12 @@ let defaultActionHandlers = {
       // Check for an 'error' substate route
       let errorSubstateName = findRouteSubstateName(route, 'error');
       if (errorSubstateName) {
+<<<<<<< HEAD
+        var errorId = guidFor(error);
+        router._markErrorAsHandled(errorId);
+=======
         router._markErrorAsHandled(error);
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
         router.intermediateTransitionTo(errorSubstateName, error);
         return false;
       }

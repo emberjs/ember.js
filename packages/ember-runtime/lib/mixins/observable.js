@@ -15,6 +15,7 @@ import {
   propertyDidChange,
   notifyPropertyChange,
   endPropertyChanges,
+  changeProperties,
   addObserver,
   removeObserver,
   getCachedValueFor,
@@ -238,9 +239,18 @@ export default Mixin.create({
     will not be sent until the changes are finished. If you plan to make a
     large number of changes to an object at one time, you should call this
     method at the beginning of the changes to begin deferring change
-    notifications. When you are done making changes, call
+    notifications.
+    
+    When you are done making changes, you must call
     `endPropertyChanges()` to deliver the deferred change notifications and end
-    deferring.
+    deferring. We recommend using a try...finally block to ensure that
+    `endPropertyChanges` is called under all conditions. 
+
+    Failing to call `endPropertyChanges` will stop all observers working across
+    the entire application.
+
+    For that reason this is a private method. At the application or addon level
+    you should instead use {@link changeProperties} which wraps your function in a begin...endPropertyChanges block.
 
     @method beginPropertyChanges
     @return {Observable}
@@ -261,12 +271,52 @@ export default Mixin.create({
     notifications. When you are done making changes, call this method to
     deliver the deferred change notifications and end deferring.
 
+    We recommend using a try...finally block to ensure that
+    `endPropertyChanges` is called under all conditions. Failing to call
+    `endPropertyChanges` will stop all observers working across the 
+    entire application.
+
+    For that reason this is a private method. At the application or addon level
+    you should instead use {@link changeProperties} which wraps your function in a begin...endPropertyChanges block.
+
     @method endPropertyChanges
     @return {Observable}
     @private
   */
   endPropertyChanges() {
     endPropertyChanges();
+    return this;
+  },
+
+  /**
+    Groups a number of property changes and defers notifications until all changes are made.
+
+    You can use this method to wrap a function that makes a number of property changes
+    so that notifications will not be sent until the changes are finished. If you plan
+    to make a large number of changes to an object at one time, you should call this
+    method at the beginning of the changes to begin deferring change notifications.
+    
+    If all the changes you are making are to a single object you may choose to call
+    {@link setProperties} instead.
+
+    ```javascript
+    import {changeProperties} from '@ember/observable';
+    
+    ...
+    
+    changeProperties(() => {
+      obj1.set('foo', mayBlowUpWhenSet);
+      obj2.set('bar', baz);
+      this.set('bar.name', 'Cantina Bar and Grill');
+    });
+    ```
+
+    @method changeProperties
+    @param {Function} callback
+    @public
+  */
+  changeProperties(callback) {
+    changeProperties(this, callback);
     return this;
   },
 

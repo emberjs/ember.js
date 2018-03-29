@@ -77,6 +77,12 @@ function iter(key, value) {
   To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
 
+<<<<<<< HEAD
+  Note that the EmberArray mixin also incorporates the `Ember.Enumerable`
+  mixin. All `EmberArray`-like objects are also enumerable.
+
+=======
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
   @class EmberArray
   @uses Enumerable
   @since Ember 0.9.0
@@ -189,6 +195,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return objectAt(this, get(this, 'length') - 1);
   }).readOnly(),
 
+<<<<<<< HEAD
+  // optimized version from Enumerable
+  contains(obj) {
+    deprecate(
+      '`Enumerable#contains` is deprecated, use `Enumerable#includes` instead.',
+      false,
+      { id: 'ember-runtime.enumerable-contains', until: '3.0.0', url: 'https://emberjs.com/deprecations/v2.x#toc_enumerable-contains' }
+    );
+
+    return this.indexOf(obj) >= 0;
+  },
+
+=======
+>>>>>>> e0d4b3fba4fd9c5ae6d9c61f18055d99e1989265
   // Add any extra methods to EmberArray that are native to the built-in Array.
   /**
     Returns a new array that is a slice of the receiver. This implementation

@@ -22,6 +22,11 @@ import { changeEvent } from './observer';
  @private
  */
 
+/**
+ @module ember
+ @private
+ */
+
 export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
 const observerSet = new ObserverSet();
