@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2015",
-    "module": "es2015",
-    "inlineSources": true,
-    "inlineSourceMap": true,
+    "target": "es2017",
+    "sourceMap": true,
     "outDir": "dist",
-    "baseUrl" : "packages",
+    "baseUrl": "packages",
     "rootDir": "packages",
 
     // Environment Configuration
@@ -23,15 +21,16 @@
 
     "newLine": "LF",
     "noEmit": true,
-    "allowJs": false,
-
-    "paths": {
-      "*": ["*/lib"]
-    }
+    "allowJs": false
   },
 
-  "files": [
-    "packages/ember-glimmer/externs.d.ts",
-    "packages/ember-glimmer/lib/index.ts"
+  "include": [
+    "packages/**/*.ts"
+  ],
+
+  "exclude": [
+    "dist",
+    "tmp",
+    "node_modules"
   ]
 }
