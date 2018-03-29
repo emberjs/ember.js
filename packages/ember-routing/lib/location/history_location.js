@@ -1,7 +1,4 @@
-import {
-  get,
-  set
-} from 'ember-metal';
+import { get, set } from 'ember-metal';
 
 import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';
@@ -15,12 +12,11 @@ let popstateFired = false;
 function _uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r, v;
-    r = Math.random() * 16 | 0;
-    v = c === 'x' ? r : r & 3 | 8;
+    r = (Math.random() * 16) | 0;
+    v = c === 'x' ? r : (r & 3) | 8;
     return v.toString(16);
   });
 }
-
 
 /**
   HistoryLocation implements the location API using the browser's
@@ -86,7 +82,8 @@ export default EmberObject.extend({
 
     let state = this.getState();
     let path = this.formatURL(this.getURL());
-    if (state && state.path === path) { // preserve existing state
+    if (state && state.path === path) {
+      // preserve existing state
       // used for webkit workaround, since there will be no initial popstate event
       this._previousURL = this.getURL();
     } else {
@@ -125,7 +122,7 @@ export default EmberObject.extend({
     let url = path
       .replace(new RegExp(`^${baseURL}(?=/|$)`), '')
       .replace(new RegExp(`^${rootURL}(?=/|$)`), '')
-      .replace(/\/\/$/g,'/'); // remove extra slashes
+      .replace(/\/\/$/g, '/'); // remove extra slashes
 
     let search = location.search || '';
     url += search + this.getHash();
@@ -239,7 +236,9 @@ export default EmberObject.extend({
       // Ignore initial page load popstate event in Chrome
       if (!popstateFired) {
         popstateFired = true;
-        if (this.getURL() === this._previousURL) { return; }
+        if (this.getURL() === this._previousURL) {
+          return;
+        }
       }
       callback(this.getURL());
     };

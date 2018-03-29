@@ -59,7 +59,7 @@ export function resumeTest() {
 export function pauseTest() {
   info('Testing paused. Use `resumeTest()` to continue.');
 
-  return new RSVP.Promise((resolve) => {
+  return new RSVP.Promise(resolve => {
     resume = resolve;
   }, 'TestAdapter paused promise');
 }

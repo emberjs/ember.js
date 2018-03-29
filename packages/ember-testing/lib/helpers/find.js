@@ -30,7 +30,9 @@ import { jQueryDisabled } from 'ember-views';
 */
 export default function find(app, selector, context) {
   if (jQueryDisabled) {
-    assert('If jQuery is disabled, please import and use helpers from @ember/test-helpers [https://github.com/emberjs/ember-test-helpers]. Note: `find` is not an available helper.');
+    assert(
+      'If jQuery is disabled, please import and use helpers from @ember/test-helpers [https://github.com/emberjs/ember-test-helpers]. Note: `find` is not an available helper.'
+    );
   }
   let $el;
   context = context || get(app, 'rootElement');

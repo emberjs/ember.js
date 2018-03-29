@@ -32,7 +32,9 @@ function process(b, node) {
     }
   });
 
-  if (allOfTheMicrosyntaxes.length === 0) { return; }
+  if (allOfTheMicrosyntaxes.length === 0) {
+    return;
+  }
 
   let classValue = [];
 

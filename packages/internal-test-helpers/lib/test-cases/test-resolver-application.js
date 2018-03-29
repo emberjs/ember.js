@@ -4,7 +4,6 @@ import { Component } from 'ember-glimmer';
 import { assign } from 'ember-utils';
 
 export default class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
-
   get applicationOptions() {
     return assign(super.applicationOptions, {
       Resolver: ModuleBasedResolver
@@ -16,9 +15,12 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
   }
 
   addTemplate(templateName, templateString) {
-    this.resolver.add(`template:${templateName}`, this.compile(templateString, {
-      moduleName: `my-app/templates/${templateName}.hbs`
-    }));
+    this.resolver.add(
+      `template:${templateName}`,
+      this.compile(templateString, {
+        moduleName: `my-app/templates/${templateName}.hbs`
+      })
+    );
   }
 
   addComponent(name, { ComponentClass = Component, template = null }) {
@@ -27,10 +29,12 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
     }
 
     if (typeof template === 'string') {
-      this.resolver.add(`template:components/${name}`, this.compile(template, {
-        moduleName: `my-app/templates/components/${name}.hbs`
-      }));
+      this.resolver.add(
+        `template:components/${name}`,
+        this.compile(template, {
+          moduleName: `my-app/templates/components/${name}.hbs`
+        })
+      );
     }
   }
-
 }

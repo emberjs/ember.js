@@ -21,7 +21,9 @@ export default function compile(templateString, options) {
   }
 
   if (!template) {
-    throw new Error('Cannot call `compile` with only the template compiler loaded. Please load `ember.debug.js` or `ember.prod.js` prior to calling `compile`.');
+    throw new Error(
+      'Cannot call `compile` with only the template compiler loaded. Please load `ember.debug.js` or `ember.prod.js` prior to calling `compile`.'
+    );
   }
 
   let precompiledTemplateString = precompile(templateString, options);

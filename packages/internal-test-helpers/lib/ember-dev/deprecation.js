@@ -17,14 +17,16 @@ class DeprecationAssert extends DebugAssert {
     // expectNoDeprecation();
     // Ember.deprecate("Old And Busted");
     //
-    let expectNoDeprecation = (func) => {
+    let expectNoDeprecation = func => {
       if (typeof func !== 'function') {
         func = null;
       }
 
-      this.runExpectation(func, (tracker) => {
+      this.runExpectation(func, tracker => {
         if (tracker.isExpectingCalls()) {
-          throw new Error("expectNoDeprecation was called after expectDeprecation was called!");
+          throw new Error(
+            'expectNoDeprecation was called after expectDeprecation was called!'
+          );
         }
 
         tracker.expectNoCalls();
@@ -49,16 +51,18 @@ class DeprecationAssert extends DebugAssert {
         func = null;
       }
 
-      this.runExpectation(func, (tracker) => {
+      this.runExpectation(func, tracker => {
         if (tracker.isExpectingNoCalls()) {
-          throw new Error("expectDeprecation was called after expectNoDeprecation was called!");
+          throw new Error(
+            'expectDeprecation was called after expectNoDeprecation was called!'
+          );
         }
 
         tracker.expectCall(message);
       });
     };
 
-    let ignoreDeprecation = (func) => {
+    let ignoreDeprecation = func => {
       callWithStub(this.env, 'deprecate', func);
     };
 

@@ -69,19 +69,23 @@ module.exports = function() {
     emberPkgES('ember-utils'),
     emberPkgES('ember-views'),
     emberPkgES('ember'),
-    ...dependenciesES({ includeGlimmerCompiler: true }),
+    ...dependenciesES({ includeGlimmerCompiler: true })
   ]);
 
   let es = new Funnel(combinedES, {
-    destDir: 'es',
+    destDir: 'es'
   });
 
-  let esMin = minify(new Funnel(combinedES, {
-    destDir: 'es-min',
-  }));
+  let esMin = minify(
+    new Funnel(combinedES, {
+      destDir: 'es-min'
+    })
+  );
 
   let emberTestsES = buildEmberTestsES();
-  let pkgAndTestES = new MergeTrees([combinedES, ...emberTestsES], { overwrite: true });
+  let pkgAndTestES = new MergeTrees([combinedES, ...emberTestsES], {
+    overwrite: true
+  });
 
   let pkgAndTestESInAMD = toNamedAMD(pkgAndTestES);
   let emberEnvFlagsDebug = toNamedAMD(buildEmberEnvFlagsES({ DEBUG: true }));
@@ -102,8 +106,12 @@ module.exports = function() {
   let emberDebug = emberPkgES('ember-debug');
   let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
   let emberTemplateCompiler = emberPkgES('ember-template-compiler');
-  let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
-  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
+  let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, {
+    annotation: 'ember-template-compiler'
+  });
+  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), {
+    annotation: 'babel helpers debug'
+  });
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
   let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
   let rsvp = toES5(rsvpES(), { annotation: 'rsvp' });
@@ -112,10 +120,14 @@ module.exports = function() {
     include: ['**/*.js']
   });
   let emberMetalES5 = rollupEmberMetal(emberMetal);
-  let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);
+  let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, [
+    'ember-environment'
+  ]);
   let emberConsoleES5 = toES5(emberConsole, { annotation: 'ember-console' });
   let emberEnvironment = emberPkgES('ember-environment', SHOULD_ROLLUP);
-  let emberEnvironmentES5 = toES5(emberEnvironment, { annotation: 'ember-environment' });
+  let emberEnvironmentES5 = toES5(emberEnvironment, {
+    annotation: 'ember-environment'
+  });
   let emberUtils = emberPkgES('ember-utils', SHOULD_ROLLUP);
   let emberUtilsES5 = toES5(emberUtils, { annotation: 'ember-utils' });
   let container = emberPkgES('container', SHOULD_ROLLUP, [
@@ -141,7 +153,7 @@ module.exports = function() {
     loader,
     nodeModule,
     license,
-    babelDebugHelpersES5,
+    babelDebugHelpersES5
   ]);
 
   let emberDebugBase = [
@@ -172,7 +184,7 @@ module.exports = function() {
     emberTestingES5,
     babelDebugHelpersES5,
     inlineParser,
-    debugFeatures,
+    debugFeatures
   ]);
 
   emberDebugBundle = concatBundle(emberDebugBundle, {
@@ -319,7 +331,9 @@ module.exports = function() {
       hasBootstrap: false
     });
 
-    let emberProdMinRename = rename(emberProdBundle, { 'ember.prod.js': 'ember.min.js' });
+    let emberProdMinRename = rename(emberProdBundle, {
+      'ember.prod.js': 'ember.min.js'
+    });
     let emberMinBundle = minify(emberProdMinRename);
 
     trees.push(
@@ -417,7 +431,7 @@ function emberES() {
     emberPkgES('ember-application'),
     emberPkgES('ember-runtime'),
     emberPkgES('ember-extension-support'),
-    emberPkgES('ember-routing'),
+    emberPkgES('ember-routing')
   ];
 }
 

@@ -3,155 +3,206 @@ import { Controller } from 'ember-runtime';
 import { Router } from 'ember-routing';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
-moduleFor('Application - resetting', class extends AutobootApplicationTestCase {
-
-  ['@test Brings its own run-loop if not provided'](assert) {
-    assert.expect(0);
-    run(() => this.createApplication());
-    this.application.reset();
-  }
-
-  ['@test Does not bring its own run loop if one is already provided'](assert) {
-    assert.expect(3);
-
-    let didBecomeReady = false;
-
-    run(() => this.createApplication());
-
-    run(() => {
-      this.application.ready = () => {
-        didBecomeReady = true;
-      };
-
+moduleFor(
+  'Application - resetting',
+  class extends AutobootApplicationTestCase {
+    ['@test Brings its own run-loop if not provided'](assert) {
+      assert.expect(0);
+      run(() => this.createApplication());
       this.application.reset();
+    }
 
-      this.application.deferReadiness();
-      assert.ok(!didBecomeReady, 'app is not ready');
-    });
+    ['@test Does not bring its own run loop if one is already provided'](
+      assert
+    ) {
+      assert.expect(3);
 
-    assert.ok(!didBecomeReady, 'app is not ready');
-    run(this.application, 'advanceReadiness');
-    assert.ok(didBecomeReady, 'app is ready');
-  }
+      let didBecomeReady = false;
 
-  ['@test When an application is reset, new instances of controllers are generated'](assert) {
-    run(() => {
-      this.createApplication();
-      this.add('controller:academic', Controller.extend());
-    });
+      run(() => this.createApplication());
 
-    let firstController = this.applicationInstance.lookup('controller:academic');
-    let secondController = this.applicationInstance.lookup('controller:academic');
-
-    this.application.reset();
-
-    let thirdController = this.applicationInstance.lookup('controller:academic');
-
-    assert.strictEqual(firstController, secondController, 'controllers looked up in succession should be the same instance');
-
-    assert.ok(firstController.isDestroying, 'controllers are destroyed when their application is reset');
-
-    assert.notStrictEqual(firstController, thirdController, 'controllers looked up after the application is reset should not be the same instance');
-  }
-
-  ['@test When an application is reset, the eventDispatcher is destroyed and recreated'](assert) {
-    let eventDispatcherWasSetup = 0;
-    let eventDispatcherWasDestroyed = 0;
-
-    let mockEventDispatcher = {
-      setup() {
-        eventDispatcherWasSetup++;
-      },
-      destroy() {
-        eventDispatcherWasDestroyed++;
-      }
-    };
-
-    run(() => {
-      this.createApplication();
-      this.add('event_dispatcher:main', {create: () => mockEventDispatcher});
-
-      assert.equal(eventDispatcherWasSetup, 0);
-      assert.equal(eventDispatcherWasDestroyed, 0);
-    });
-
-    assert.equal(eventDispatcherWasSetup, 1);
-    assert.equal(eventDispatcherWasDestroyed, 0);
-
-    this.application.reset();
-
-    assert.equal(eventDispatcherWasDestroyed, 1);
-    assert.equal(eventDispatcherWasSetup, 2, 'setup called after reset');
-  }
-
-  ['@test When an application is reset, the router URL is reset to `/`'](assert) {
-    run(() => {
-      this.createApplication();
-
-      this.add('router:main', Router.extend({
-        location: 'none'
-      }));
-
-      this.router.map(function() {
-        this.route('one');
-        this.route('two');
-      });
-    });
-
-    let initialRouter, initialApplicationController;
-    return this.visit('/one')
-      .then(() => {
-        initialApplicationController = this.applicationInstance.lookup('controller:application');
-        initialRouter = this.applicationInstance.lookup('router:main');
-        let location = initialRouter.get('location');
-
-        assert.equal(location.getURL(), '/one');
-        assert.equal(get(initialApplicationController, 'currentPath'), 'one');
+      run(() => {
+        this.application.ready = () => {
+          didBecomeReady = true;
+        };
 
         this.application.reset();
 
-        return this.application._bootPromise;
-      })
-      .then(() => {
-        let applicationController = this.applicationInstance.lookup('controller:application');
-        assert.strictEqual(applicationController, undefined, 'application controller no longer exists');
-
-        return this.visit('/one');
-      })
-      .then(() => {
-        let applicationController = this.applicationInstance.lookup('controller:application');
-        let router = this.applicationInstance.lookup('router:main');
-        let location = router.get('location');
-
-        assert.notEqual(initialRouter, router, 'a different router instance was created');
-        assert.notEqual(initialApplicationController, applicationController, 'a different application controller is created');
-
-        assert.equal(location.getURL(), '/one');
-        assert.equal(get(applicationController, 'currentPath'), 'one');
+        this.application.deferReadiness();
+        assert.ok(!didBecomeReady, 'app is not ready');
       });
-  }
 
-  ['@test When an application with advance/deferReadiness is reset, the app does correctly become ready after reset'](assert) {
-    let readyCallCount = 0;
+      assert.ok(!didBecomeReady, 'app is not ready');
+      run(this.application, 'advanceReadiness');
+      assert.ok(didBecomeReady, 'app is ready');
+    }
 
-    run(() => {
-      this.createApplication({
-        ready() {
-          readyCallCount++;
+    ['@test When an application is reset, new instances of controllers are generated'](
+      assert
+    ) {
+      run(() => {
+        this.createApplication();
+        this.add('controller:academic', Controller.extend());
+      });
+
+      let firstController = this.applicationInstance.lookup(
+        'controller:academic'
+      );
+      let secondController = this.applicationInstance.lookup(
+        'controller:academic'
+      );
+
+      this.application.reset();
+
+      let thirdController = this.applicationInstance.lookup(
+        'controller:academic'
+      );
+
+      assert.strictEqual(
+        firstController,
+        secondController,
+        'controllers looked up in succession should be the same instance'
+      );
+
+      assert.ok(
+        firstController.isDestroying,
+        'controllers are destroyed when their application is reset'
+      );
+
+      assert.notStrictEqual(
+        firstController,
+        thirdController,
+        'controllers looked up after the application is reset should not be the same instance'
+      );
+    }
+
+    ['@test When an application is reset, the eventDispatcher is destroyed and recreated'](
+      assert
+    ) {
+      let eventDispatcherWasSetup = 0;
+      let eventDispatcherWasDestroyed = 0;
+
+      let mockEventDispatcher = {
+        setup() {
+          eventDispatcherWasSetup++;
+        },
+        destroy() {
+          eventDispatcherWasDestroyed++;
         }
+      };
+
+      run(() => {
+        this.createApplication();
+        this.add('event_dispatcher:main', {
+          create: () => mockEventDispatcher
+        });
+
+        assert.equal(eventDispatcherWasSetup, 0);
+        assert.equal(eventDispatcherWasDestroyed, 0);
       });
 
-      this.application.deferReadiness();
-      assert.equal(readyCallCount, 0, 'ready has not yet been called');
-    });
+      assert.equal(eventDispatcherWasSetup, 1);
+      assert.equal(eventDispatcherWasDestroyed, 0);
 
-    run(this.application, 'advanceReadiness');
+      this.application.reset();
 
-    assert.equal(readyCallCount, 1, 'ready was called once');
+      assert.equal(eventDispatcherWasDestroyed, 1);
+      assert.equal(eventDispatcherWasSetup, 2, 'setup called after reset');
+    }
 
-    this.application.reset();
+    ['@test When an application is reset, the router URL is reset to `/`'](
+      assert
+    ) {
+      run(() => {
+        this.createApplication();
 
-    assert.equal(readyCallCount, 2, 'ready was called twice');
+        this.add(
+          'router:main',
+          Router.extend({
+            location: 'none'
+          })
+        );
+
+        this.router.map(function() {
+          this.route('one');
+          this.route('two');
+        });
+      });
+
+      let initialRouter, initialApplicationController;
+      return this.visit('/one')
+        .then(() => {
+          initialApplicationController = this.applicationInstance.lookup(
+            'controller:application'
+          );
+          initialRouter = this.applicationInstance.lookup('router:main');
+          let location = initialRouter.get('location');
+
+          assert.equal(location.getURL(), '/one');
+          assert.equal(get(initialApplicationController, 'currentPath'), 'one');
+
+          this.application.reset();
+
+          return this.application._bootPromise;
+        })
+        .then(() => {
+          let applicationController = this.applicationInstance.lookup(
+            'controller:application'
+          );
+          assert.strictEqual(
+            applicationController,
+            undefined,
+            'application controller no longer exists'
+          );
+
+          return this.visit('/one');
+        })
+        .then(() => {
+          let applicationController = this.applicationInstance.lookup(
+            'controller:application'
+          );
+          let router = this.applicationInstance.lookup('router:main');
+          let location = router.get('location');
+
+          assert.notEqual(
+            initialRouter,
+            router,
+            'a different router instance was created'
+          );
+          assert.notEqual(
+            initialApplicationController,
+            applicationController,
+            'a different application controller is created'
+          );
+
+          assert.equal(location.getURL(), '/one');
+          assert.equal(get(applicationController, 'currentPath'), 'one');
+        });
+    }
+
+    ['@test When an application with advance/deferReadiness is reset, the app does correctly become ready after reset'](
+      assert
+    ) {
+      let readyCallCount = 0;
+
+      run(() => {
+        this.createApplication({
+          ready() {
+            readyCallCount++;
+          }
+        });
+
+        this.application.deferReadiness();
+        assert.equal(readyCallCount, 0, 'ready has not yet been called');
+      });
+
+      run(this.application, 'advanceReadiness');
+
+      assert.equal(readyCallCount, 1, 'ready was called once');
+
+      this.application.reset();
+
+      assert.equal(readyCallCount, 2, 'ready was called twice');
+    }
   }
-
-});
+);

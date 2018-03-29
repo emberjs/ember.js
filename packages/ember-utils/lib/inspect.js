@@ -42,8 +42,12 @@ export default function inspect(obj) {
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
-      if (v === 'toString') { continue; } // ignore useless items
-      if (typeof v === 'function') { v = 'function() { ... }'; }
+      if (v === 'toString') {
+        continue;
+      } // ignore useless items
+      if (typeof v === 'function') {
+        v = 'function() { ... }';
+      }
 
       if (v && typeof v.toString !== 'function') {
         ret.push(`${key}: ${objectToString.call(v)}`);

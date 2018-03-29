@@ -17,45 +17,54 @@ QUnit.test('should update length for null content', function(assert) {
   assert.equal(proxy.get('length'), 0, 'length updates');
 });
 
-QUnit.test('should update length for null content when there is a computed property watching length', function(assert) {
-  let proxy = ArrayProxy.extend({
-    isEmpty: not('length')
-  }).create({
-    content: emberA([1, 2, 3])
-  });
+QUnit.test(
+  'should update length for null content when there is a computed property watching length',
+  function(assert) {
+    let proxy = ArrayProxy.extend({
+      isEmpty: not('length')
+    }).create({
+      content: emberA([1, 2, 3])
+    });
 
-  assert.equal(proxy.get('length'), 3, 'precond - length is 3');
+    assert.equal(proxy.get('length'), 3, 'precond - length is 3');
 
-  // Consume computed property that depends on length
-  proxy.get('isEmpty');
+    // Consume computed property that depends on length
+    proxy.get('isEmpty');
 
-  // update content
-  proxy.set('content', null);
+    // update content
+    proxy.set('content', null);
 
-  assert.equal(proxy.get('length'), 0, 'length updates');
-});
+    assert.equal(proxy.get('length'), 0, 'length updates');
+  }
+);
 
-QUnit.test('The ArrayProxy doesn\'t explode when assigned a destroyed object', function(assert) {
-  let proxy1 = ArrayProxy.create();
-  let proxy2 = ArrayProxy.create();
+QUnit.test(
+  "The ArrayProxy doesn't explode when assigned a destroyed object",
+  function(assert) {
+    let proxy1 = ArrayProxy.create();
+    let proxy2 = ArrayProxy.create();
 
-  run(() => proxy1.destroy());
+    run(() => proxy1.destroy());
 
-  set(proxy2, 'content', proxy1);
+    set(proxy2, 'content', proxy1);
 
-  assert.ok(true, 'No exception was raised');
-});
+    assert.ok(true, 'No exception was raised');
+  }
+);
 
-QUnit.test('should update if content changes while change events are deferred', function(assert) {
-  let proxy = ArrayProxy.create();
+QUnit.test(
+  'should update if content changes while change events are deferred',
+  function(assert) {
+    let proxy = ArrayProxy.create();
 
-  assert.deepEqual(proxy.toArray(), []);
+    assert.deepEqual(proxy.toArray(), []);
 
-  changeProperties(() => {
-    proxy.set('content', emberA([1, 2, 3]));
-    assert.deepEqual(proxy.toArray(), [1, 2, 3]);
-  });
-});
+    changeProperties(() => {
+      proxy.set('content', emberA([1, 2, 3]));
+      assert.deepEqual(proxy.toArray(), [1, 2, 3]);
+    });
+  }
+);
 
 QUnit.test('objectAt recomputes the object cache correctly', function(assert) {
   let indexes = [];
@@ -87,7 +96,9 @@ QUnit.test('objectAt recomputes the object cache correctly', function(assert) {
   assert.deepEqual(indexes, [2, 3, 4]);
 });
 
-QUnit.test('getting length does not recompute the object cache', function(assert) {
+QUnit.test('getting length does not recompute the object cache', function(
+  assert
+) {
   let indexes = [];
 
   let proxy = ArrayProxy.extend({

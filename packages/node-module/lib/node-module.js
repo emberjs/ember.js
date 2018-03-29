@@ -1,6 +1,7 @@
 /*global enifed, module */
 enifed('node-module', ['exports'], function(_exports) {
-  var IS_NODE = typeof module === 'object' && typeof module.require === 'function';
+  var IS_NODE =
+    typeof module === 'object' && typeof module.require === 'function';
   if (IS_NODE) {
     _exports.require = module.require;
     _exports.module = module;

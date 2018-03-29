@@ -20,7 +20,10 @@ if (DEBUG) {
     stack.pushEngine('engine:my-engine');
     stack.push('component:component-in-engine');
 
-    assert.equal(stack.peek(), '"component:component-in-engine" (in "engine:my-engine")');
+    assert.equal(
+      stack.peek(),
+      '"component:component-in-engine" (in "engine:my-engine")'
+    );
 
     stack.pop();
     stack.pop();

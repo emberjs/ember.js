@@ -1,6 +1,4 @@
-import {
-  tracked
-} from '../..';
+import { tracked } from '../..';
 
 export function createTracked(values, proto = {}) {
   function Class() {
@@ -10,7 +8,16 @@ export function createTracked(values, proto = {}) {
   }
 
   for (let prop in values) {
-    Object.defineProperty(proto, prop, tracked(proto, prop, { enumerable: true, configurable: true, writable: true, value: values[prop] }));
+    Object.defineProperty(
+      proto,
+      prop,
+      tracked(proto, prop, {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: values[prop]
+      })
+    );
   }
 
   Class.prototype = proto;
@@ -23,7 +30,11 @@ export function createWithDescriptors(values) {
 
   for (let prop in values) {
     let descriptor = Object.getOwnPropertyDescriptor(values, prop);
-    Object.defineProperty(Class.prototype, prop, tracked(Class.prototype, prop, descriptor));
+    Object.defineProperty(
+      Class.prototype,
+      prop,
+      tracked(Class.prototype, prop, descriptor)
+    );
   }
 
   return new Class();

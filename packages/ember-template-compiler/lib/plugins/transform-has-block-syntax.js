@@ -38,12 +38,22 @@ export default function transformHasBlockSyntax(env) {
       },
       MustacheStatement(node) {
         if (TRANSFORMATIONS[node.path.original]) {
-          return b.mustache(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash, null, node.loc);
+          return b.mustache(
+            b.path(TRANSFORMATIONS[node.path.original]),
+            node.params,
+            node.hash,
+            null,
+            node.loc
+          );
         }
       },
       SubExpression(node) {
         if (TRANSFORMATIONS[node.path.original]) {
-          return b.sexpr(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash);
+          return b.sexpr(
+            b.path(TRANSFORMATIONS[node.path.original]),
+            node.params,
+            node.hash
+          );
         }
       }
     }

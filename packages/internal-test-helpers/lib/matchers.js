@@ -47,7 +47,18 @@ export function classes(expected) {
 
     match(actual) {
       actual = actual.trim();
-      return actual && (expected.split(/\s+/).sort().join(' ') === actual.trim().split(/\s+/).sort().join(' '));
+      return (
+        actual &&
+        expected
+          .split(/\s+/)
+          .sort()
+          .join(' ') ===
+          actual
+            .trim()
+            .split(/\s+/)
+            .sort()
+            .join(' ')
+      );
     },
 
     expected() {
@@ -71,8 +82,18 @@ export function styles(expected) {
       actual = actual.trim();
 
       return (
-        expected.split(';').map(s => s.trim()).filter(s => s).sort().join('; ') ===
-        actual.split(';').map(s => s.trim()).filter(s => s).sort().join('; ')
+        expected
+          .split(';')
+          .map(s => s.trim())
+          .filter(s => s)
+          .sort()
+          .join('; ') ===
+        actual
+          .split(';')
+          .map(s => s.trim())
+          .filter(s => s)
+          .sort()
+          .join('; ')
       );
     },
 

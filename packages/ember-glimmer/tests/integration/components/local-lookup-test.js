@@ -1,15 +1,22 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { compile } from 'ember-template-compiler';
 import { ModuleBasedTestResolver } from 'internal-test-helpers';
-import { moduleFor as applicationModuleFor, ApplicationTestCase } from 'internal-test-helpers';
+import {
+  moduleFor as applicationModuleFor,
+  ApplicationTestCase
+} from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { helper, Helper } from 'ember-glimmer';
 
 class LocalLookupTest extends RenderingTest {
   ['@test it can lookup a local template']() {
-    this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
-    this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
+    this.registerComponent('x-outer/x-inner', {
+      template: 'Nested template says: {{yield}}'
+    });
+    this.registerComponent('x-outer', {
+      template: '{{#x-inner}}Hi!{{/x-inner}}'
+    });
 
     this.render('{{x-outer}}');
 
@@ -21,7 +28,9 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test tagless blockless component can lookup local template']() {
-    this.registerComponent('x-outer/x-inner', { template: 'Nested template says: {{yield}}' });
+    this.registerComponent('x-outer/x-inner', {
+      template: 'Nested template says: {{yield}}'
+    });
     this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
     this.registerComponent('x-outer', {
       ComponentClass: Component.extend({ tagName: '' })
@@ -37,7 +46,10 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test it can lookup a local component template']() {
-    this.registerTemplate('components/x-outer/x-inner', 'Nested template says: {{yield}}');
+    this.registerTemplate(
+      'components/x-outer/x-inner',
+      'Nested template says: {{yield}}'
+    );
     this.registerTemplate('components/x-outer', '{{#x-inner}}Hi!{{/x-inner}}');
 
     this.render('{{x-outer}}');
@@ -50,7 +62,9 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test it can local lookup a dynamic component']() {
-    this.registerComponent('foo-bar', { template: 'yall finished {{component child}}' });
+    this.registerComponent('foo-bar', {
+      template: 'yall finished {{component child}}'
+    });
     this.registerComponent('foo-bar/biz-baz', { template: 'or yall done?' });
 
     this.render('{{foo-bar child=child}}', { child: 'biz-baz' });
@@ -63,10 +77,15 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test it can local lookup a dynamic component from a dynamic component']() {
-    this.registerComponent('foo-bar', { template: 'yall finished {{component child}}' });
+    this.registerComponent('foo-bar', {
+      template: 'yall finished {{component child}}'
+    });
     this.registerComponent('foo-bar/biz-baz', { template: 'or yall done?' });
 
-    this.render('{{component componentName child=child}}', { componentName: 'foo-bar', child: 'biz-baz' });
+    this.render('{{component componentName child=child}}', {
+      componentName: 'foo-bar',
+      child: 'biz-baz'
+    });
 
     this.assertText('yall finished or yall done?');
 
@@ -76,7 +95,9 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test it can local lookup a dynamic component from a passed named argument']() {
-    this.registerComponent('parent-foo', { template: `yall finished {{global-biz baz=(component 'local-bar')}}` });
+    this.registerComponent('parent-foo', {
+      template: `yall finished {{global-biz baz=(component 'local-bar')}}`
+    });
     this.registerComponent('global-biz', { template: 'or {{component baz}}' });
     this.registerComponent('parent-foo/local-bar', { template: 'yall done?' });
 
@@ -90,10 +111,16 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test it can local lookup a re-wrapped dynamic component from a passed named argument']() {
-    this.registerComponent('parent-foo', { template: `yall finished {{global-x comp=(component 'local-bar')}}` });
-    this.registerComponent('global-x', { template: `or {{global-y comp=(component comp phrase='done')}}` });
+    this.registerComponent('parent-foo', {
+      template: `yall finished {{global-x comp=(component 'local-bar')}}`
+    });
+    this.registerComponent('global-x', {
+      template: `or {{global-y comp=(component comp phrase='done')}}`
+    });
     this.registerComponent('global-y', { template: `{{component comp}}?` });
-    this.registerComponent('parent-foo/local-bar', { template: 'yall {{phrase}}' });
+    this.registerComponent('parent-foo/local-bar', {
+      template: 'yall {{phrase}}'
+    });
 
     this.render('{{parent-foo}}');
 
@@ -105,10 +132,18 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test it can nest local lookups of dynamic components from a passed named argument']() {
-    this.registerComponent('parent-foo', { template: `yall finished {{global-x comp=(component 'local-bar')}}` });
-    this.registerComponent('global-x', { template: `or {{global-y comp=(component comp phrase='done')}}` });
-    this.registerComponent('global-y', { template: `{{component comp}}{{component 'local-bar'}}` });
-    this.registerComponent('parent-foo/local-bar', { template: 'yall {{phrase}}' });
+    this.registerComponent('parent-foo', {
+      template: `yall finished {{global-x comp=(component 'local-bar')}}`
+    });
+    this.registerComponent('global-x', {
+      template: `or {{global-y comp=(component comp phrase='done')}}`
+    });
+    this.registerComponent('global-y', {
+      template: `{{component comp}}{{component 'local-bar'}}`
+    });
+    this.registerComponent('parent-foo/local-bar', {
+      template: 'yall {{phrase}}'
+    });
     this.registerComponent('global-y/local-bar', { template: `?` });
 
     this.render('{{parent-foo}}');
@@ -121,8 +156,12 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test it can switch from local to global lookups of dynamic components from a passed named argument']() {
-    this.registerComponent('parent-foo', { template: `yall finished {{global-x comp=(component bar)}}` });
-    this.registerComponent('global-x', { template: `or yall {{component comp}}` });
+    this.registerComponent('parent-foo', {
+      template: `yall finished {{global-x comp=(component bar)}}`
+    });
+    this.registerComponent('global-x', {
+      template: `or yall {{component comp}}`
+    });
     this.registerComponent('parent-foo/local-bar', { template: 'done?' });
     this.registerComponent('global-bar', { template: `ready?` });
 
@@ -173,7 +212,9 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test lookup without match issues standard assertion (with local helper name)']() {
-    this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
+    this.registerComponent('x-outer', {
+      template: '{{#x-inner}}Hi!{{/x-inner}}'
+    });
 
     expectAssertion(() => {
       this.render('{{x-outer}}');
@@ -181,17 +222,29 @@ class LocalLookupTest extends RenderingTest {
   }
 
   ['@test overrides global lookup']() {
-    this.registerComponent('x-outer', { template: '{{#x-inner}}Hi!{{/x-inner}}' });
-    this.registerComponent('x-outer/x-inner', { template: 'Nested template says (from local): {{yield}}' });
-    this.registerComponent('x-inner', { template: 'Nested template says (from global): {{yield}}' });
+    this.registerComponent('x-outer', {
+      template: '{{#x-inner}}Hi!{{/x-inner}}'
+    });
+    this.registerComponent('x-outer/x-inner', {
+      template: 'Nested template says (from local): {{yield}}'
+    });
+    this.registerComponent('x-inner', {
+      template: 'Nested template says (from global): {{yield}}'
+    });
 
-    this.render('{{#x-inner}}Hi!{{/x-inner}} {{x-outer}} {{#x-outer/x-inner}}Hi!{{/x-outer/x-inner}}');
+    this.render(
+      '{{#x-inner}}Hi!{{/x-inner}} {{x-outer}} {{#x-outer/x-inner}}Hi!{{/x-outer/x-inner}}'
+    );
 
-    this.assertText('Nested template says (from global): Hi! Nested template says (from local): Hi! Nested template says (from local): Hi!');
+    this.assertText(
+      'Nested template says (from global): Hi! Nested template says (from local): Hi! Nested template says (from local): Hi!'
+    );
 
     this.runTask(() => this.rerender());
 
-    this.assertText('Nested template says (from global): Hi! Nested template says (from local): Hi! Nested template says (from local): Hi!');
+    this.assertText(
+      'Nested template says (from global): Hi! Nested template says (from local): Hi! Nested template says (from local): Hi!'
+    );
   }
 }
 
@@ -199,18 +252,21 @@ class LocalLookupTest extends RenderingTest {
 
 function buildResolver() {
   let resolver = {
-    resolve() { },
+    resolve() {},
     expandLocalLookup(fullName, sourceFullName) {
       if (!sourceFullName) {
         return null;
       }
 
-      let [sourceType, sourceName ] = sourceFullName.split(':');
-      let [type, name ] = fullName.split(':');
+      let [sourceType, sourceName] = sourceFullName.split(':');
+      let [type, name] = fullName.split(':');
 
       sourceName = sourceName.replace('my-app/', '');
 
-      if (sourceType === 'template' && sourceName.slice(0, 21) === 'templates/components/') {
+      if (
+        sourceType === 'template' &&
+        sourceName.slice(0, 21) === 'templates/components/'
+      ) {
         sourceName = sourceName.slice(21);
       }
 
@@ -231,11 +287,14 @@ function buildResolver() {
   return resolver;
 }
 
-moduleFor('Components test: local lookup with expandLocalLookup feature', class extends LocalLookupTest {
-  getResolver() {
-    return buildResolver();
+moduleFor(
+  'Components test: local lookup with expandLocalLookup feature',
+  class extends LocalLookupTest {
+    getResolver() {
+      return buildResolver();
+    }
   }
-});
+);
 
 if (EMBER_MODULE_UNIFICATION) {
   class LocalLookupTestResolver extends ModuleBasedTestResolver {
@@ -246,7 +305,9 @@ if (EMBER_MODULE_UNIFICATION) {
         name = name.replace('components/', '');
 
         namespace = namespace.replace('.hbs', '');
-        return `${type}:${type === 'template' ? 'components/' : ''}${namespace}/${name}`;
+        return `${type}:${
+          type === 'template' ? 'components/' : ''
+        }${namespace}/${name}`;
       }
 
       return super.expandLocalLookup(specifier, source);
@@ -261,81 +322,109 @@ if (EMBER_MODULE_UNIFICATION) {
    * In theory all these tests can be ported to use the resolver instead of
    * the registry.
    */
-  moduleFor('Components test: local lookup with resolution referrer', class extends LocalLookupTest {
-    get resolver() {
-      return this.owner.__registry__.fallback.resolver;
-    }
-
-    getResolver() {
-      return new LocalLookupTestResolver();
-    }
-
-    registerComponent(name, { ComponentClass = Component, template = null }) {
-      let { resolver } = this;
-
-      if (ComponentClass) {
-        resolver.add(`component:${name}`, ComponentClass);
+  moduleFor(
+    'Components test: local lookup with resolution referrer',
+    class extends LocalLookupTest {
+      get resolver() {
+        return this.owner.__registry__.fallback.resolver;
       }
 
-      if (typeof template === 'string') {
-        resolver.add(`template:components/${name}`, this.compile(template, {
-          moduleName: `my-name/templates/components/${name}.hbs`
-        }));
+      getResolver() {
+        return new LocalLookupTestResolver();
+      }
+
+      registerComponent(name, { ComponentClass = Component, template = null }) {
+        let { resolver } = this;
+
+        if (ComponentClass) {
+          resolver.add(`component:${name}`, ComponentClass);
+        }
+
+        if (typeof template === 'string') {
+          resolver.add(
+            `template:components/${name}`,
+            this.compile(template, {
+              moduleName: `my-name/templates/components/${name}.hbs`
+            })
+          );
+        }
+      }
+
+      registerTemplate(name, template) {
+        let { resolver } = this;
+        if (typeof template === 'string') {
+          resolver.add(
+            `template:${name}`,
+            this.compile(template, {
+              moduleName: `my-name/templates/${name}.hbs`
+            })
+          );
+        } else {
+          throw new Error(`Registered template "${name}" must be a string`);
+        }
+      }
+
+      registerHelper(name, funcOrClassBody) {
+        let { resolver } = this;
+        let type = typeof funcOrClassBody;
+
+        if (type === 'function') {
+          resolver.add(`helper:${name}`, helper(funcOrClassBody));
+        } else if (type === 'object' && type !== null) {
+          resolver.add(`helper:${name}`, Helper.extend(funcOrClassBody));
+        } else {
+          throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
+        }
       }
     }
-
-    registerTemplate(name, template) {
-      let { resolver } = this;
-      if (typeof template === 'string') {
-        resolver.add(`template:${name}`, this.compile(template, {
-          moduleName: `my-name/templates/${name}.hbs`
-        }));
-      } else {
-        throw new Error(`Registered template "${name}" must be a string`);
-      }
-    }
-
-    registerHelper(name, funcOrClassBody) {
-      let { resolver } = this;
-      let type = typeof funcOrClassBody;
-
-      if (type === 'function') {
-        resolver.add(`helper:${name}`, helper(funcOrClassBody));
-      } else if (type === 'object' && type !== null) {
-        resolver.add(`helper:${name}`, Helper.extend(funcOrClassBody));
-      } else {
-        throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
-      }
-    }
-  });
+  );
 }
 
 if (EMBER_MODULE_UNIFICATION) {
-  applicationModuleFor('Components test: local lookup with resolution referrer (MU)', class extends ApplicationTestCase {
-    ['@test Ensure that the same specifier with two sources does not share a cache key'](assert) {
-      this.add({
-        specifier: 'template:components/x-not-shared',
-        source: 'template:my-app/templates/components/x-top.hbs'
-      }, compile('child-x-not-shared'));
-
-      this.add({
-        specifier: 'template:components/x-top',
-        source: 'template:my-app/templates/application.hbs'
-      }, compile('top-level-x-top ({{x-not-shared}})', { moduleName: 'my-app/templates/components/x-top.hbs' }));
-
-      this.add({
-        specifier: 'template:components/x-not-shared',
-        source: 'template:my-app/templates/application.hbs'
-      }, compile('top-level-x-not-shared'));
-
-      this.addTemplate('application', '{{x-not-shared}} {{x-top}} {{x-not-shared}} {{x-top}}');
-
-      return this.visit('/').then(() => {
-        assert.equal(
-          this.element.textContent,
-          'top-level-x-not-shared top-level-x-top (child-x-not-shared) top-level-x-not-shared top-level-x-top (child-x-not-shared)'
+  applicationModuleFor(
+    'Components test: local lookup with resolution referrer (MU)',
+    class extends ApplicationTestCase {
+      ['@test Ensure that the same specifier with two sources does not share a cache key'](
+        assert
+      ) {
+        this.add(
+          {
+            specifier: 'template:components/x-not-shared',
+            source: 'template:my-app/templates/components/x-top.hbs'
+          },
+          compile('child-x-not-shared')
         );
-      });
+
+        this.add(
+          {
+            specifier: 'template:components/x-top',
+            source: 'template:my-app/templates/application.hbs'
+          },
+          compile('top-level-x-top ({{x-not-shared}})', {
+            moduleName: 'my-app/templates/components/x-top.hbs'
+          })
+        );
+
+        this.add(
+          {
+            specifier: 'template:components/x-not-shared',
+            source: 'template:my-app/templates/application.hbs'
+          },
+          compile('top-level-x-not-shared')
+        );
+
+        this.addTemplate(
+          'application',
+          '{{x-not-shared}} {{x-top}} {{x-not-shared}} {{x-top}}'
+        );
+
+        return this.visit('/').then(() => {
+          assert.equal(
+            this.element.textContent,
+            'top-level-x-not-shared top-level-x-top (child-x-not-shared) top-level-x-not-shared top-level-x-top (child-x-not-shared)'
+          );
+        });
+      }
     }
-  });
+  );
 }

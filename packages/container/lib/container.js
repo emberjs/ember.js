@@ -10,7 +10,6 @@ import {
   HAS_NATIVE_PROXY
 } from 'ember-utils';
 
-
 /**
  A container used to instantiate and cache objects.
 
@@ -26,9 +25,9 @@ import {
  */
 export default class Container {
   constructor(registry, options = {}) {
-    this.registry        = registry;
-    this.owner           = options.owner || null;
-    this.cache           = dictionary(options.cache || null);
+    this.registry = registry;
+    this.owner = options.owner || null;
+    this.cache = dictionary(options.cache || null);
     this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
     this.isDestroyed = false;
 
@@ -89,7 +88,10 @@ export default class Container {
    @return {any}
    */
   lookup(fullName, options) {
-    assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
+    assert(
+      'fullName must be a proper full name',
+      this.registry.isValidFullName(fullName)
+    );
     return lookup(this, this.registry.normalize(fullName), options);
   }
 
@@ -145,7 +147,10 @@ export default class Container {
   factoryFor(fullName, options = {}) {
     let normalizedName = this.registry.normalize(fullName);
 
-    assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
+    assert(
+      'fullName must be a proper full name',
+      this.registry.isValidFullName(normalizedName)
+    );
     assert(
       'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to factoryFor',
       EMBER_MODULE_UNIFICATION || !options.namespace
@@ -169,7 +174,9 @@ function wrapManagerInDeprecationProxy(manager) {
   if (HAS_NATIVE_PROXY) {
     let validator = {
       set(obj, prop) {
-        throw new Error(`You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`);
+        throw new Error(
+          `You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
+        );
       }
     };
 
@@ -224,11 +231,12 @@ function lookup(container, fullName, options = {}) {
   return instantiateFactory(container, normalizedName, fullName, options);
 }
 
-
 function factoryFor(container, normalizedName, fullName) {
   let cached = container.factoryManagerCache[normalizedName];
 
-  if (cached !== undefined) { return cached; }
+  if (cached !== undefined) {
+    return cached;
+  }
 
   let factory = container.registry.resolve(normalizedName);
 
@@ -240,7 +248,12 @@ function factoryFor(container, normalizedName, fullName) {
     factory._onLookup(fullName); // What should this pass? fullname or the normalized key?
   }
 
-  let manager = new FactoryManager(container, factory, fullName, normalizedName);
+  let manager = new FactoryManager(
+    container,
+    factory,
+    fullName,
+    normalizedName
+  );
 
   if (DEBUG) {
     manager = wrapManagerInDeprecationProxy(manager);
@@ -251,19 +264,37 @@ function factoryFor(container, normalizedName, fullName) {
 }
 
 function isSingletonClass(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && !instantiate && isSingleton(container, fullName) && !isInstantiatable(container, fullName);
+  return (
+    singleton !== false &&
+    !instantiate &&
+    isSingleton(container, fullName) &&
+    !isInstantiatable(container, fullName)
+  );
 }
 
 function isSingletonInstance(container, fullName, { instantiate, singleton }) {
-  return singleton !== false && instantiate !== false && isSingleton(container, fullName) && isInstantiatable(container, fullName);
+  return (
+    singleton !== false &&
+    instantiate !== false &&
+    isSingleton(container, fullName) &&
+    isInstantiatable(container, fullName)
+  );
 }
 
 function isFactoryClass(container, fullname, { instantiate, singleton }) {
-  return instantiate === false && (singleton === false || !isSingleton(container, fullname)) && !isInstantiatable(container, fullname);
+  return (
+    instantiate === false &&
+    (singleton === false || !isSingleton(container, fullname)) &&
+    !isInstantiatable(container, fullname)
+  );
 }
 
 function isFactoryInstance(container, fullName, { instantiate, singleton }) {
-  return instantiate !== false && (singleton !== false || isSingleton(container, fullName)) && isInstantiatable(container, fullName);
+  return (
+    instantiate !== false &&
+    (singleton !== false || isSingleton(container, fullName)) &&
+    isInstantiatable(container, fullName)
+  );
 }
 
 function instantiateFactory(container, normalizedName, fullName, options) {
@@ -276,7 +307,7 @@ function instantiateFactory(container, normalizedName, fullName, options) {
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    return container.cache[normalizedName] = factoryManager.create();
+    return (container.cache[normalizedName] = factoryManager.create());
   }
 
   // SomeClass { singleton: false, instantiate: true }
@@ -285,7 +316,10 @@ function instantiateFactory(container, normalizedName, fullName, options) {
   }
 
   // SomeClass { singleton: true, instantiate: false } | { instantiate: false } | { singleton: false, instantiation: false }
-  if (isSingletonClass(container, fullName, options) || isFactoryClass(container, fullName, options)) {
+  if (
+    isSingletonClass(container, fullName, options) ||
+    isFactoryClass(container, fullName, options)
+  ) {
     return factoryManager.class;
   }
 
@@ -303,7 +337,7 @@ function processInjections(container, injections, result) {
   }
 
   for (let i = 0; i < injections.length; i++) {
-    let {property, specifier, source} = injections[i];
+    let { property, specifier, source } = injections[i];
 
     if (source) {
       hash[property] = lookup(container, specifier, { source });
@@ -320,7 +354,7 @@ function processInjections(container, injections, result) {
 function buildInjections(container, typeInjections, injections) {
   let result = {
     injections: undefined,
-    isDyanmic: false,
+    isDyanmic: false
   };
 
   if (typeInjections !== undefined) {
@@ -393,7 +427,10 @@ class FactoryManager {
 
   toString() {
     if (this.madeToString === undefined) {
-      this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
+      this.madeToString = this.container.registry.makeToString(
+        this.class,
+        this.fullName
+      );
     }
 
     return this.madeToString;
@@ -402,7 +439,10 @@ class FactoryManager {
   create(options) {
     let injectionsCache = this.injections;
     if (injectionsCache === undefined) {
-      let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
+      let { injections, isDynamic } = injectionsFor(
+        this.container,
+        this.normalizedName
+      );
       injectionsCache = injections;
       if (!isDynamic) {
         this.injections = injections;
@@ -418,9 +458,15 @@ class FactoryManager {
       let lazyInjections;
       let validationCache = this.container.validationCache;
       // Ensure that all lazy injections are valid at instantiation time
-      if (!validationCache[this.fullName] && this.class && typeof this.class._lazyInjections === 'function') {
+      if (
+        !validationCache[this.fullName] &&
+        this.class &&
+        typeof this.class._lazyInjections === 'function'
+      ) {
         lazyInjections = this.class._lazyInjections();
-        lazyInjections = this.container.registry.normalizeInjectionsHash(lazyInjections);
+        lazyInjections = this.container.registry.normalizeInjectionsHash(
+          lazyInjections
+        );
 
         this.container.registry.validateInjections(lazyInjections);
       }
@@ -429,7 +475,12 @@ class FactoryManager {
     }
 
     if (!this.class.create) {
-      throw new Error(`Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or` + ` an invalid module export.`);
+      throw new Error(
+        `Failed to create an instance of '${
+          this.normalizedName
+        }'. Most likely an improperly defined class or` +
+          ` an invalid module export.`
+      );
     }
 
     // required to allow access to things like

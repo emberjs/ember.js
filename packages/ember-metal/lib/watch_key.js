@@ -20,7 +20,8 @@ export function watchKey(obj, keyName, _meta) {
   let count = meta.peekWatching(keyName) || 0;
   meta.writeWatching(keyName, count + 1);
 
-  if (count === 0) { // activate watching first time
+  if (count === 0) {
+    // activate watching first time
     let possibleDesc = descriptorFor(obj, keyName, meta);
 
     if (possibleDesc !== undefined && possibleDesc.willWatch) {
@@ -38,10 +39,11 @@ export function watchKey(obj, keyName, _meta) {
   }
 }
 
-
 if (MANDATORY_SETTER) {
-  let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-  let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
+  let hasOwnProperty = (obj, key) =>
+    Object.prototype.hasOwnProperty.call(obj, key);
+  let propertyIsEnumerable = (obj, key) =>
+    Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
@@ -50,7 +52,9 @@ if (MANDATORY_SETTER) {
     let descriptor = lookupDescriptor(obj, keyName);
     let hasDescriptor = descriptor !== null;
     let possibleDesc = hasDescriptor && descriptor.value;
-    if (isDescriptor(possibleDesc)) { return; }
+    if (isDescriptor(possibleDesc)) {
+      return;
+    }
     let configurable = hasDescriptor ? descriptor.configurable : true;
     let isWritable = hasDescriptor ? descriptor.writable : true;
     let hasValue = hasDescriptor ? 'value' in descriptor : true;
@@ -80,7 +84,9 @@ export function unwatchKey(obj, keyName, _meta) {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   // do nothing of this object has already been destroyed
-  if (meta === undefined || meta.isSourceDestroyed()) { return; }
+  if (meta === undefined || meta.isSourceDestroyed()) {
+    return;
+  }
 
   let count = meta.peekWatching(keyName);
   if (count === 1) {
@@ -109,8 +115,14 @@ export function unwatchKey(obj, keyName, _meta) {
       if (!isDescriptor && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
-        if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
-          if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
+        if (
+          maybeMandatoryDescriptor.set &&
+          maybeMandatoryDescriptor.set.isMandatorySetter
+        ) {
+          if (
+            maybeMandatoryDescriptor.get &&
+            maybeMandatoryDescriptor.get.isInheritingGetter
+          ) {
             let possibleValue = meta.readInheritedValue('values', keyName);
             if (possibleValue === UNDEFINED) {
               delete obj[keyName];
@@ -120,7 +132,10 @@ export function unwatchKey(obj, keyName, _meta) {
 
           Object.defineProperty(obj, keyName, {
             configurable: true,
-            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
+            enumerable: Object.prototype.propertyIsEnumerable.call(
+              obj,
+              keyName
+            ),
             writable: true,
             value: meta.peekValues(keyName)
           });

@@ -11,11 +11,9 @@ import {
 } from '../../utils/shared-conditional-tests';
 
 class EachInTest extends TogglingSyntaxConditionalsTest {
-
   templateFor({ cond, truthy, falsy }) {
     return `{{#each-in ${cond} as |key|}}${truthy}{{else}}${falsy}{{/each-in}}`;
   }
-
 }
 
 function EmptyFunction() {}
@@ -30,7 +28,8 @@ NonEmptyConstructor.foo = 'bar';
 
 class BasicEachInTest extends EachInTest {}
 
-applyMixins(BasicEachInTest,
+applyMixins(
+  BasicEachInTest,
 
   new TruthyGenerator([
     { foo: 1 },
@@ -57,45 +56,49 @@ applyMixins(BasicEachInTest,
   ])
 );
 
-moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
+moduleFor(
+  'Syntax test: {{#each-in}}',
+  class extends BasicEachInTest {
+    get truthyValue() {
+      return { 'Not Empty': 1 };
+    }
 
-  get truthyValue() {
-    return { 'Not Empty': 1 };
-  }
+    get falsyValue() {
+      return {};
+    }
 
-  get falsyValue() {
-    return {};
-  }
-
-  [`@test it repeats the given block for each item in the hash`]() {
-    this.render(strip`
+    [`@test it repeats the given block for each item in the hash`]() {
+      this.render(
+        strip`
       <ul>
         {{#each-in categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
-    `, {
-      categories: {
-        'Smartphones': 8203,
-        'JavaScript Frameworks': Infinity
-      }
-    });
+    `,
+        {
+          categories: {
+            Smartphones: 8203,
+            'JavaScript Frameworks': Infinity
+          }
+        }
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
 
-    this.assertStableRerender();
+      this.assertStableRerender();
 
-    this.runTask(() => {
-      set(this.context, 'categories.Smartphones', 100);
-      set(this.context, 'categories.Tweets', 443115);
-    });
+      this.runTask(() => {
+        set(this.context, 'categories.Smartphones', 100);
+        set(this.context, 'categories.Tweets', 443115);
+      });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 100</li>
         <li>JavaScript Frameworks: Infinity</li>
@@ -103,48 +106,55 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
       </ul>
     `);
 
-    this.runTask(() => set(this.context, 'categories', {
-      'Smartphones': 8203,
-      'JavaScript Frameworks': Infinity
-    }));
+      this.runTask(() =>
+        set(this.context, 'categories', {
+          Smartphones: 8203,
+          'JavaScript Frameworks': Infinity
+        })
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
-  }
+    }
 
-  [`@test it can render sub-paths of each item`]() {
-    this.render(strip`
+    [`@test it can render sub-paths of each item`]() {
+      this.render(
+        strip`
       <ul>
         {{#each-in categories as |category data|}}
           <li>{{category}}: {{data.reports.unitsSold}}</li>
         {{/each-in}}
       </ul>
-    `, {
-      categories: {
-        'Smartphones': { reports: { unitsSold: 8203 } },
-        'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
-      }
-    });
+    `,
+        {
+          categories: {
+            Smartphones: { reports: { unitsSold: 8203 } },
+            'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
+          }
+        }
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
 
-    this.assertStableRerender();
+      this.assertStableRerender();
 
-    this.runTask(() => {
-      set(this.context, 'categories.Smartphones.reports.unitsSold', 100);
-      set(this.context, 'categories.Tweets', { reports: { unitsSold: 443115 } });
-    });
+      this.runTask(() => {
+        set(this.context, 'categories.Smartphones.reports.unitsSold', 100);
+        set(this.context, 'categories.Tweets', {
+          reports: { unitsSold: 443115 }
+        });
+      });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 100</li>
         <li>JavaScript Frameworks: Infinity</li>
@@ -152,36 +162,41 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
       </ul>
     `);
 
-    this.runTask(() => set(this.context, 'categories', {
-      'Smartphones': { reports: { unitsSold: 8203 } },
-      'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
-    }));
+      this.runTask(() =>
+        set(this.context, 'categories', {
+          Smartphones: { reports: { unitsSold: 8203 } },
+          'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
+        })
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
-  }
+    }
 
-  [`@test it can render duplicate items`]() {
-    this.render(strip`
+    [`@test it can render duplicate items`]() {
+      this.render(
+        strip`
       <ul>
         {{#each-in categories key='@identity' as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
-    `, {
-      categories: {
-        'Smartphones': 8203,
-        'Tablets': 8203,
-        'JavaScript Frameworks': Infinity,
-        'Bugs': Infinity
-      }
-    });
+    `,
+        {
+          categories: {
+            Smartphones: 8203,
+            Tablets: 8203,
+            'JavaScript Frameworks': Infinity,
+            Bugs: Infinity
+          }
+        }
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>Tablets: 8203</li>
@@ -190,14 +205,14 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
       </ul>
     `);
 
-    this.assertStableRerender();
+      this.assertStableRerender();
 
-    this.runTask(() => {
-      set(this.context, 'categories.Smartphones', 100);
-      set(this.context, 'categories.Tweets', 443115);
-    });
+      this.runTask(() => {
+        set(this.context, 'categories.Smartphones', 100);
+        set(this.context, 'categories.Tweets', 443115);
+      });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 100</li>
         <li>Tablets: 8203</li>
@@ -207,14 +222,16 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
       </ul>
     `);
 
-    this.runTask(() => set(this.context, 'categories', {
-      'Smartphones': 8203,
-      'Tablets': 8203,
-      'JavaScript Frameworks': Infinity,
-      'Bugs': Infinity
-    }));
+      this.runTask(() =>
+        set(this.context, 'categories', {
+          Smartphones: 8203,
+          Tablets: 8203,
+          'JavaScript Frameworks': Infinity,
+          Bugs: Infinity
+        })
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>Tablets: 8203</li>
@@ -222,92 +239,98 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
         <li>Bugs: Infinity</li>
       </ul>
     `);
-  }
+    }
 
-  [`@test it repeats the given block when the hash is dynamic`]() {
-    this.render(strip`
+    [`@test it repeats the given block when the hash is dynamic`]() {
+      this.render(
+        strip`
       <ul>
         {{#each-in (get collection type) as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
-    `, {
-      collection: {
-        categories: {
-          'Smartphones': 8203,
-          'JavaScript Frameworks': Infinity
-        },
-        otherCategories: {
-          'Emberinios': 533462,
-          'Tweets': 7323
+    `,
+        {
+          collection: {
+            categories: {
+              Smartphones: 8203,
+              'JavaScript Frameworks': Infinity
+            },
+            otherCategories: {
+              Emberinios: 533462,
+              Tweets: 7323
+            }
+          },
+          type: 'categories'
         }
-      },
-      type: 'categories'
-    });
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
 
-    this.assertStableRerender();
+      this.assertStableRerender();
 
-    this.runTask(() => {
-      set(this.context, 'type', 'otherCategories');
-    });
+      this.runTask(() => {
+        set(this.context, 'type', 'otherCategories');
+      });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Emberinios: 533462</li>
         <li>Tweets: 7323</li>
       </ul>
     `);
 
-    this.runTask(() => set(this.context, 'type', 'categories'));
+      this.runTask(() => set(this.context, 'type', 'categories'));
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
-  }
+    }
 
-  [`@test it only iterates over an object's own properties`]() {
-    let protoCategories = {
-      'Smartphones': 8203,
-      'JavaScript Frameworks': Infinity
-    };
+    [`@test it only iterates over an object's own properties`]() {
+      let protoCategories = {
+        Smartphones: 8203,
+        'JavaScript Frameworks': Infinity
+      };
 
-    let categories = Object.create(protoCategories);
-    categories['Televisions'] = 183;
-    categories['Alarm Clocks'] = 999;
+      let categories = Object.create(protoCategories);
+      categories['Televisions'] = 183;
+      categories['Alarm Clocks'] = 999;
 
-    this.render(strip`
+      this.render(
+        strip`
       <ul>
         {{#each-in categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
-    `, { categories });
+    `,
+        { categories }
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Televisions: 183</li>
         <li>Alarm Clocks: 999</li>
       </ul>
     `);
 
-    this.assertStableRerender();
+      this.assertStableRerender();
 
-    this.runTask(() => {
-      set(protoCategories, 'Robots', 666);
-      set(categories, 'Tweets', 443115);
-    });
+      this.runTask(() => {
+        set(protoCategories, 'Robots', 666);
+        set(categories, 'Tweets', 443115);
+      });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Televisions: 183</li>
         <li>Alarm Clocks: 999</li>
@@ -315,182 +338,192 @@ moduleFor('Syntax test: {{#each-in}}', class extends BasicEachInTest {
       </ul>
     `);
 
-    categories = Object.create(protoCategories);
-    categories['Televisions'] = 183;
-    categories['Alarm Clocks'] = 999;
+      categories = Object.create(protoCategories);
+      categories['Televisions'] = 183;
+      categories['Alarm Clocks'] = 999;
 
-    this.runTask(() => set(this.context, 'categories', categories));
+      this.runTask(() => set(this.context, 'categories', categories));
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Televisions: 183</li>
         <li>Alarm Clocks: 999</li>
       </ul>
     `);
-  }
+    }
 
-  [`@test it does not observe direct property mutations (not going through set) on the object`]() {
-    this.render(strip`
+    [`@test it does not observe direct property mutations (not going through set) on the object`]() {
+      this.render(
+        strip`
       <ul>
         {{#each-in categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
-    `, {
-      categories: {
-        'Smartphones': 8203,
-        'JavaScript Frameworks': Infinity
-      }
-    });
+    `,
+        {
+          categories: {
+            Smartphones: 8203,
+            'JavaScript Frameworks': Infinity
+          }
+        }
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
 
-    this.assertStableRerender();
+      this.assertStableRerender();
 
-    this.runTask(() => {
-      let categories = get(this.context, 'categories');
-      delete categories.Smartphones;
-    });
-
-    this.assertInvariants();
-
-    this.runTask(() => {
-      let categories = get(this.context, 'categories');
-      categories['Emberinios'] = 123456;
-    });
-
-    this.assertInvariants();
-
-    this.runTask(() => {
-      set(this.context, 'categories', {
-        Emberinios: 123456
+      this.runTask(() => {
+        let categories = get(this.context, 'categories');
+        delete categories.Smartphones;
       });
-    });
 
-    this.assertHTML(strip`
+      this.assertInvariants();
+
+      this.runTask(() => {
+        let categories = get(this.context, 'categories');
+        categories['Emberinios'] = 123456;
+      });
+
+      this.assertInvariants();
+
+      this.runTask(() => {
+        set(this.context, 'categories', {
+          Emberinios: 123456
+        });
+      });
+
+      this.assertHTML(strip`
       <ul>
         <li>Emberinios: 123456</li>
       </ul>
     `);
 
-    this.runTask(() => {
-      set(this.context, 'categories', {
-        'Smartphones': 8203,
-        'JavaScript Frameworks': Infinity
+      this.runTask(() => {
+        set(this.context, 'categories', {
+          Smartphones: 8203,
+          'JavaScript Frameworks': Infinity
+        });
       });
-    });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
-  }
+    }
 
-  ['@test keying off of `undefined` does not render']() {
-    this.render(strip`
+    ['@test keying off of `undefined` does not render']() {
+      this.render(
+        strip`
       {{#each-in foo.bar.baz as |thing|}}
         {{thing}}
-      {{/each-in}}`, { foo: {} });
+      {{/each-in}}`,
+        { foo: {} }
+      );
 
-    this.assertText('');
+      this.assertText('');
 
-    this.runTask(() => this.rerender());
+      this.runTask(() => this.rerender());
 
-    this.assertText('');
+      this.assertText('');
 
-    this.runTask(() => set(this.context, 'foo', { bar: { baz: { 'Here!': 1 } } }));
+      this.runTask(() =>
+        set(this.context, 'foo', { bar: { baz: { 'Here!': 1 } } })
+      );
 
-    this.assertText('Here!');
+      this.assertText('Here!');
 
-    this.runTask(() => set(this.context, 'foo', {}));
+      this.runTask(() => set(this.context, 'foo', {}));
 
-    this.assertText('');
-  }
+      this.assertText('');
+    }
 
-  ['@test it iterate over array with `in` instead of walking over elements']() {
-    let arr = [1, 2, 3];
-    arr.foo = 'bar';
+    ['@test it iterate over array with `in` instead of walking over elements']() {
+      let arr = [1, 2, 3];
+      arr.foo = 'bar';
 
-    this.render(strip`
+      this.render(
+        strip`
       {{#each-in arr as |key value|}}
         [{{key}}:{{value}}]
-      {{/each-in}}`, { arr });
+      {{/each-in}}`,
+        { arr }
+      );
 
-    this.assertText('[0:1][1:2][2:3][foo:bar]');
+      this.assertText('[0:1][1:2][2:3][foo:bar]');
 
-    this.runTask(() => this.rerender());
+      this.runTask(() => this.rerender());
 
-    this.assertText('[0:1][1:2][2:3][foo:bar]');
+      this.assertText('[0:1][1:2][2:3][foo:bar]');
 
-    this.runTask(() => {
-      set(arr, 'zomg', 'lol');
-    });
+      this.runTask(() => {
+        set(arr, 'zomg', 'lol');
+      });
 
-    this.assertText('[0:1][1:2][2:3][foo:bar][zomg:lol]');
+      this.assertText('[0:1][1:2][2:3][foo:bar][zomg:lol]');
 
-    arr = [1, 2, 3];
-    arr.foo = 'bar';
+      arr = [1, 2, 3];
+      arr.foo = 'bar';
 
-    this.runTask(() => set(this.context, 'arr', arr));
+      this.runTask(() => set(this.context, 'arr', arr));
 
-    this.assertText('[0:1][1:2][2:3][foo:bar]');
-  }
+      this.assertText('[0:1][1:2][2:3][foo:bar]');
+    }
 
-  ['@test it skips holes in sparse arrays']() {
-    let arr = [];
-    arr[5] = 'foo';
-    arr[6] = 'bar';
+    ['@test it skips holes in sparse arrays']() {
+      let arr = [];
+      arr[5] = 'foo';
+      arr[6] = 'bar';
 
-    this.render(strip`
+      this.render(
+        strip`
       {{#each-in arr as |key value|}}
         [{{key}}:{{value}}]
-      {{/each-in}}`, { arr });
+      {{/each-in}}`,
+        { arr }
+      );
 
-    this.assertText('[5:foo][6:bar]');
+      this.assertText('[5:foo][6:bar]');
 
-    this.assertStableRerender();
+      this.assertStableRerender();
+    }
   }
-
-});
+);
 
 class EachInEdgeCasesTest extends EachInTest {}
 
-applyMixins(EachInEdgeCasesTest,
+applyMixins(
+  EachInEdgeCasesTest,
 
-  new FalsyGenerator([
-    true,
-    1,
-    'hello'
-  ])
-
+  new FalsyGenerator([true, 1, 'hello'])
 );
 
-moduleFor('Syntax test: {{#each-in}} edge cases', class extends EachInEdgeCasesTest {
+moduleFor(
+  'Syntax test: {{#each-in}} edge cases',
+  class extends EachInEdgeCasesTest {
+    get truthyValue() {
+      return { 'Not Empty': 1 };
+    }
 
-  get truthyValue() {
-    return { 'Not Empty': 1 };
+    get falsyValue() {
+      return {};
+    }
   }
-
-  get falsyValue() {
-    return {};
-  }
-
-});
+);
 
 class EachInProxyTest extends EachInTest {}
 
-applyMixins(EachInProxyTest,
+applyMixins(
+  EachInProxyTest,
 
-  new TruthyGenerator([
-    ObjectProxy.create({ content: { 'Not empty': 1 } })
-  ]),
+  new TruthyGenerator([ObjectProxy.create({ content: { 'Not empty': 1 } })]),
 
   new FalsyGenerator([
     ObjectProxy.create(),
@@ -503,50 +536,54 @@ applyMixins(EachInProxyTest,
   ])
 );
 
-moduleFor('Syntax test: {{#each-in}} with `ObjectProxy`', class extends EachInProxyTest {
+moduleFor(
+  'Syntax test: {{#each-in}} with `ObjectProxy`',
+  class extends EachInProxyTest {
+    get truthyValue() {
+      return ObjectProxy.create({ content: { 'Not Empty': 1 } });
+    }
 
-  get truthyValue() {
-    return ObjectProxy.create({ content: { 'Not Empty': 1 } });
-  }
+    get falsyValue() {
+      return ObjectProxy.create({ content: null });
+    }
 
-  get falsyValue() {
-    return ObjectProxy.create({ content: null });
-  }
+    ['@test it iterates over the content, not the proxy']() {
+      let content = {
+        Smartphones: 8203,
+        'JavaScript Frameworks': Infinity
+      };
 
-  ['@test it iterates over the content, not the proxy']() {
-    let content = {
-      'Smartphones': 8203,
-      'JavaScript Frameworks': Infinity
-    };
+      let proxy = ObjectProxy.create({
+        content,
+        foo: 'bar'
+      });
 
-    let proxy = ObjectProxy.create({
-      content,
-      foo: 'bar'
-    });
-
-    this.render(strip`
+      this.render(
+        strip`
       <ul>
         {{#each-in categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
-    `, { categories: proxy });
+    `,
+        { categories: proxy }
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
 
-    this.assertStableRerender();
+      this.assertStableRerender();
 
-    this.runTask(() => {
-      set(proxy, 'content.Smartphones', 100);
-      set(proxy, 'content.Tweets', 443115);
-    });
+      this.runTask(() => {
+        set(proxy, 'content.Smartphones', 100);
+        set(proxy, 'content.Tweets', 443115);
+      });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 100</li>
         <li>JavaScript Frameworks: Infinity</li>
@@ -554,33 +591,39 @@ moduleFor('Syntax test: {{#each-in}} with `ObjectProxy`', class extends EachInPr
       </ul>
     `);
 
-    this.runTask(() => {
-      set(proxy, 'content', {
-        'Smartphones': 100,
-        'Tablets': 20
+      this.runTask(() => {
+        set(proxy, 'content', {
+          Smartphones: 100,
+          Tablets: 20
+        });
       });
-    });
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 100</li>
         <li>Tablets: 20</li>
       </ul>
     `);
 
-    this.runTask(() => set(this.context, 'categories', ObjectProxy.create({
-      content: {
-        'Smartphones': 8203,
-        'JavaScript Frameworks': Infinity
-      }
-    })));
+      this.runTask(() =>
+        set(
+          this.context,
+          'categories',
+          ObjectProxy.create({
+            content: {
+              Smartphones: 8203,
+              'JavaScript Frameworks': Infinity
+            }
+          })
+        )
+      );
 
-    this.assertHTML(strip`
+      this.assertHTML(strip`
       <ul>
         <li>Smartphones: 8203</li>
         <li>JavaScript Frameworks: Infinity</li>
       </ul>
     `);
+    }
   }
-
-});
+);

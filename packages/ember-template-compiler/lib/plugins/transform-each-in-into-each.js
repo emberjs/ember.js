@@ -45,7 +45,14 @@ export default function transformEachInIntoEach(env) {
 
           node.program.blockParams = blockParams;
 
-          return b.block(b.path('each'), node.params, node.hash, node.program, node.inverse, node.loc);
+          return b.block(
+            b.path('each'),
+            node.params,
+            node.hash,
+            node.program,
+            node.inverse,
+            node.loc
+          );
         }
       }
     }

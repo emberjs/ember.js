@@ -1,7 +1,4 @@
-import {
-  watch,
-  unwatch
-} from './watching';
+import { watch, unwatch } from './watching';
 
 // ..........................................................
 // DEPENDENT KEYS

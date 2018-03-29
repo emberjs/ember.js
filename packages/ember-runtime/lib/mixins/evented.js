@@ -51,7 +51,6 @@ import {
   @public
  */
 export default Mixin.create({
-
   /**
     Subscribes to a named event with given function.
 

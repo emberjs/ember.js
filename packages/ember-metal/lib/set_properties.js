@@ -28,7 +28,9 @@ import { set } from './property_set';
   @public
 */
 export default function setProperties(obj, properties) {
-  if (properties === null || typeof properties !== 'object') { return properties; }
+  if (properties === null || typeof properties !== 'object') {
+    return properties;
+  }
   changeProperties(() => {
     let props = Object.keys(properties);
     let propertyName;

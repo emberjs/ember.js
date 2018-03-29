@@ -9,7 +9,10 @@ export function extractRouteArgs(args) {
   let possibleQueryParams = args[args.length - 1];
 
   let queryParams;
-  if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+  if (
+    possibleQueryParams &&
+    possibleQueryParams.hasOwnProperty('queryParams')
+  ) {
     queryParams = args.pop().queryParams;
   } else {
     queryParams = {};
@@ -21,21 +24,25 @@ export function extractRouteArgs(args) {
 }
 
 export function getActiveTargetName(router) {
-  let handlerInfos = router.activeTransition ?
-                     router.activeTransition.state.handlerInfos :
-                     router.state.handlerInfos;
+  let handlerInfos = router.activeTransition
+    ? router.activeTransition.state.handlerInfos
+    : router.state.handlerInfos;
   return handlerInfos[handlerInfos.length - 1].name;
 }
 
 export function stashParamNames(router, handlerInfos) {
-  if (handlerInfos._namesStashed) { return; }
+  if (handlerInfos._namesStashed) {
+    return;
+  }
 
   // This helper exists because router.js/route-recognizer.js awkwardly
   // keeps separate a handlerInfo's list of parameter names depending
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
   let targetRouteName = handlerInfos[handlerInfos.length - 1].name;
-  let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
+  let recogHandlers = router._routerMicrolib.recognizer.handlersFor(
+    targetRouteName
+  );
   let dynamicParent = null;
 
   for (let i = 0; i < handlerInfos.length; ++i) {
@@ -90,7 +97,10 @@ export function calculateCacheKey(prefix, parts = [], values) {
     let value;
     if (values) {
       if (cacheValuePrefix && cacheValuePrefix in values) {
-        let partRemovedPrefix = (part.indexOf(cacheValuePrefix) === 0) ? part.substr(cacheValuePrefix.length + 1) : part;
+        let partRemovedPrefix =
+          part.indexOf(cacheValuePrefix) === 0
+            ? part.substr(cacheValuePrefix.length + 1)
+            : part;
         value = get(values[cacheValuePrefix], partRemovedPrefix);
       } else {
         value = get(values, part);
@@ -100,7 +110,6 @@ export function calculateCacheKey(prefix, parts = [], values) {
   }
   return prefix + suffixes.replace(ALL_PERIODS_REGEX, '-');
 }
-
 
 /*
   Controller-defined query parameters can come in three shapes:
@@ -154,7 +163,9 @@ function accumulateQueryParamDescriptors(_desc, accum) {
   }
 
   for (let key in desc) {
-    if (!desc.hasOwnProperty(key)) { return; }
+    if (!desc.hasOwnProperty(key)) {
+      return;
+    }
 
     let singleDesc = desc[key];
     if (typeof singleDesc === 'string') {
@@ -190,7 +201,9 @@ export function prefixRouteNameArg(route, args) {
   // only alter the routeName if it's actually referencing a route.
   if (owner.routable && typeof routeName === 'string') {
     if (resemblesURL(routeName)) {
-      throw new EmberError('Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.');
+      throw new EmberError(
+        'Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.'
+      );
     } else {
       routeName = `${prefix}.${routeName}`;
       args[0] = routeName;
@@ -206,7 +219,9 @@ export function shallowEqual(a, b) {
   let bCount = 0;
   for (k in a) {
     if (a.hasOwnProperty(k)) {
-      if (a[k] !== b[k]) { return false; }
+      if (a[k] !== b[k]) {
+        return false;
+      }
       aCount++;
     }
   }

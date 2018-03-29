@@ -2,7 +2,12 @@
 @module ember
 */
 
-import { combine, CONSTANT_TAG, DirtyableTag, UpdatableTag } from '@glimmer/reference';
+import {
+  combine,
+  CONSTANT_TAG,
+  DirtyableTag,
+  UpdatableTag
+} from '@glimmer/reference';
 import {
   get,
   set,
@@ -15,14 +20,14 @@ import {
   tagFor,
   setProxy
 } from 'ember-metal';
-import {
-  assert,
-} from 'ember-debug';
+import { assert } from 'ember-debug';
 import { bool } from '../computed/computed_macros';
 
 function contentPropertyDidChange(content, contentKey) {
   let key = contentKey.slice(8); // remove "content."
-  if (key in this) { return; } // if shadowed in proxy
+  if (key in this) {
+    return;
+  } // if shadowed in proxy
   notifyPropertyChange(this, key);
 }
 
@@ -58,7 +63,9 @@ export default Mixin.create({
     this._super(...arguments);
     setProxy(this);
     let m = meta(this);
-    m.writableTag(() => combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)]));
+    m.writableTag(() =>
+      combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)])
+    );
   },
 
   isTruthy: bool('content'),
@@ -92,7 +99,10 @@ export default Mixin.create({
 
     let content = contentFor(this, m);
 
-    assert(`Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`, content);
+    assert(
+      `Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`,
+      content
+    );
 
     return set(content, key, value);
   }

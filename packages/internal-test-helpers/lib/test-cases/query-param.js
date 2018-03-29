@@ -11,33 +11,50 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     let testCase = this;
     testCase.expectedPushURL = null;
     testCase.expectedReplaceURL = null;
-    this.add('location:test', NoneLocation.extend({
-      setURL(path) {
-        if (testCase.expectedReplaceURL) {
-          testCase.assert.ok(false, 'pushState occurred but a replaceState was expected');
+    this.add(
+      'location:test',
+      NoneLocation.extend({
+        setURL(path) {
+          if (testCase.expectedReplaceURL) {
+            testCase.assert.ok(
+              false,
+              'pushState occurred but a replaceState was expected'
+            );
+          }
+
+          if (testCase.expectedPushURL) {
+            testCase.assert.equal(
+              path,
+              testCase.expectedPushURL,
+              'an expected pushState occurred'
+            );
+            testCase.expectedPushURL = null;
+          }
+
+          this.set('path', path);
+        },
+
+        replaceURL(path) {
+          if (testCase.expectedPushURL) {
+            testCase.assert.ok(
+              false,
+              'replaceState occurred but a pushState was expected'
+            );
+          }
+
+          if (testCase.expectedReplaceURL) {
+            testCase.assert.equal(
+              path,
+              testCase.expectedReplaceURL,
+              'an expected replaceState occurred'
+            );
+            testCase.expectedReplaceURL = null;
+          }
+
+          this.set('path', path);
         }
-
-        if (testCase.expectedPushURL) {
-          testCase.assert.equal(path, testCase.expectedPushURL, 'an expected pushState occurred');
-          testCase.expectedPushURL = null;
-        }
-
-        this.set('path', path);
-      },
-
-      replaceURL(path) {
-        if (testCase.expectedPushURL) {
-          testCase.assert.ok(false, 'replaceState occurred but a pushState was expected');
-        }
-
-        if (testCase.expectedReplaceURL) {
-          testCase.assert.equal(path, testCase.expectedReplaceURL, 'an expected replaceState occurred');
-          testCase.expectedReplaceURL = null;
-        }
-
-        this.set('path', path);
-      }
-    }));
+      })
+    );
   }
 
   visitAndAssert(path) {
@@ -75,11 +92,22 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setSingleQPController
   */
-  setSingleQPController(routeName, param = 'foo', defaultValue = 'bar', options = {}) {
-    this.add(`controller:${routeName}`, Controller.extend({
-      queryParams: [param],
-      [param]: defaultValue
-    }, options));
+  setSingleQPController(
+    routeName,
+    param = 'foo',
+    defaultValue = 'bar',
+    options = {}
+  ) {
+    this.add(
+      `controller:${routeName}`,
+      Controller.extend(
+        {
+          queryParams: [param],
+          [param]: defaultValue
+        },
+        options
+      )
+    );
   }
 
   /**
@@ -88,12 +116,24 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setMappedQPController
   */
-  setMappedQPController(routeName, prop = 'page', urlKey = 'parentPage', defaultValue = 1, options = {}) {
-    this.add(`controller:${routeName}`, Controller.extend({
-      queryParams: {
-        [prop]: urlKey
-      },
-      [prop]: defaultValue
-    }, options));
+  setMappedQPController(
+    routeName,
+    prop = 'page',
+    urlKey = 'parentPage',
+    defaultValue = 1,
+    options = {}
+  ) {
+    this.add(
+      `controller:${routeName}`,
+      Controller.extend(
+        {
+          queryParams: {
+            [prop]: urlKey
+          },
+          [prop]: defaultValue
+        },
+        options
+      )
+    );
   }
 }

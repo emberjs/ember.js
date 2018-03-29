@@ -53,7 +53,9 @@ const TestArray = EmberObject.extend(EmberArray, {
 
 QUnit.module('Ember.Array');
 
-QUnit.test('the return value of slice has Ember.Array applied', function(assert) {
+QUnit.test('the return value of slice has Ember.Array applied', function(
+  assert
+) {
   let x = EmberObject.extend(EmberArray).create({
     length: 0
   });
@@ -84,7 +86,9 @@ QUnit.test('slice supports negative index arguments', function(assert) {
 
 const DummyArray = EmberObject.extend(EmberArray, {
   length: 0,
-  objectAt(idx) { return 'ITEM-' + idx; }
+  objectAt(idx) {
+    return 'ITEM-' + idx;
+  }
 });
 
 let obj, observer;
@@ -134,7 +138,9 @@ QUnit.module('notify observers of length', {
   }
 });
 
-QUnit.test('should notify observers when call with no params', function(assert) {
+QUnit.test('should notify observers when call with no params', function(
+  assert
+) {
   arrayContentWillChange(obj);
   assert.equal(obj._after, 0);
 
@@ -158,7 +164,6 @@ QUnit.test('should notify when passed lengths are different', function(assert) {
   arrayContentDidChange(obj, 0, 1, 2);
   assert.equal(obj._after, 1);
 });
-
 
 // ..........................................................
 // NOTIFY ARRAY OBSERVER
@@ -191,7 +196,9 @@ QUnit.module('notify array observers', {
   }
 });
 
-QUnit.test('should notify array observers when called with no params', function(assert) {
+QUnit.test('should notify array observers when called with no params', function(
+  assert
+) {
   arrayContentWillChange(obj);
   assert.deepEqual(observer._before, [obj, 0, -1, -1]);
 
@@ -200,7 +207,9 @@ QUnit.test('should notify array observers when called with no params', function(
 });
 
 // API variation that included items only
-QUnit.test('should notify when called with same length items', function(assert) {
+QUnit.test('should notify when called with same length items', function(
+  assert
+) {
   arrayContentWillChange(obj, 0, 1, 1);
   assert.deepEqual(observer._before, [obj, 0, 1, 1]);
 
@@ -208,7 +217,9 @@ QUnit.test('should notify when called with same length items', function(assert) 
   assert.deepEqual(observer._after, [obj, 0, 1, 1]);
 });
 
-QUnit.test('should notify when called with diff length items', function(assert) {
+QUnit.test('should notify when called with diff length items', function(
+  assert
+) {
   arrayContentWillChange(obj, 0, 2, 1);
   assert.deepEqual(observer._before, [obj, 0, 2, 1]);
 
@@ -259,10 +270,12 @@ QUnit.test('adding an object should notify (@each.isDone)', function(assert) {
 
   addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
-  ary.addObject(EmberObject.create({
-    desc: 'foo',
-    isDone: false
-  }));
+  ary.addObject(
+    EmberObject.create({
+      desc: 'foo',
+      isDone: false
+    })
+  );
 
   assert.equal(called, 1, 'calls observer when object is pushed');
 });
@@ -283,51 +296,59 @@ QUnit.test('@each is readOnly', function(assert) {
   }, /Cannot set read-only property "@each"/);
 });
 
-QUnit.test('using @each to observe arrays that does not return objects raise error', function(assert) {
-  let called = 0;
+QUnit.test(
+  'using @each to observe arrays that does not return objects raise error',
+  function(assert) {
+    let called = 0;
 
-  let observerObject = EmberObject.create({
-    wasCalled() {
-      called++;
-    }
-  });
+    let observerObject = EmberObject.create({
+      wasCalled() {
+        called++;
+      }
+    });
 
-  ary = TestArray.create({
-    objectAt(idx) {
-      return get(this._content[idx], 'desc');
-    }
-  });
+    ary = TestArray.create({
+      objectAt(idx) {
+        return get(this._content[idx], 'desc');
+      }
+    });
 
-  addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
+    addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
-  expectAssertion(() => {
-    ary.addObject(EmberObject.create({
-      desc: 'foo',
-      isDone: false
-    }));
-  }, /When using @each to observe the array/);
+    expectAssertion(() => {
+      ary.addObject(
+        EmberObject.create({
+          desc: 'foo',
+          isDone: false
+        })
+      );
+    }, /When using @each to observe the array/);
 
-  assert.equal(called, 0, 'not calls observer when object is pushed');
-});
+    assert.equal(called, 0, 'not calls observer when object is pushed');
+  }
+);
 
-QUnit.test('modifying the array should also indicate the isDone prop itself has changed', function(assert) {
-  // NOTE: we never actually get the '@each.isDone' property here.  This is
-  // important because it tests the case where we don't have an isDone
-  // EachArray materialized but just want to know when the property has
-  // changed.
-  let each;
-  expectDeprecation(() => {
-    each = get(ary, '@each');
-  });
-  let count = 0;
+QUnit.test(
+  'modifying the array should also indicate the isDone prop itself has changed',
+  function(assert) {
+    // NOTE: we never actually get the '@each.isDone' property here.  This is
+    // important because it tests the case where we don't have an isDone
+    // EachArray materialized but just want to know when the property has
+    // changed.
+    let each;
+    expectDeprecation(() => {
+      each = get(ary, '@each');
+    });
+    let count = 0;
 
-  addObserver(each, 'isDone', () => count++);
+    addObserver(each, 'isDone', () => count++);
 
-  count = 0;
-  let item = objectAt(ary, 2);
-  set(item, 'isDone', !get(item, 'isDone'));
-  assert.equal(count, 1, '@each.isDone should have notified');
-});
+    count = 0;
+    let item = objectAt(ary, 2);
+    set(item, 'isDone', !get(item, 'isDone'));
+    assert.equal(count, 1, '@each.isDone should have notified');
+  }
+);
 
 QUnit.test('`objectAt` returns correct object', function(assert) {
   let arr = ['first', 'second', 'third', 'fourth'];
@@ -335,42 +356,48 @@ QUnit.test('`objectAt` returns correct object', function(assert) {
   assert.equal(objectAt(arr, 4), undefined);
 });
 
-testBoth('should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization', function(get, set, assert) {
-  let obj = EmberObject.extend({
-    init() {
-      this._super(...arguments);
-      set(this, 'resources', emberA());
-    },
+testBoth(
+  'should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization',
+  function(get, set, assert) {
+    let obj = EmberObject.extend({
+      init() {
+        this._super(...arguments);
+        set(this, 'resources', emberA());
+      },
 
-    common: computed('resources.@each.common', function() {
-      return get(objectAt(get(this, 'resources'), 0), 'common');
-    })
-  }).create();
+      common: computed('resources.@each.common', function() {
+        return get(objectAt(get(this, 'resources'), 0), 'common');
+      })
+    }).create();
 
-  get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
-  assert.equal('HI!', get(obj, 'common'));
+    get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+    assert.equal('HI!', get(obj, 'common'));
 
-  set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
-  assert.equal('BYE!', get(obj, 'common'));
-});
+    set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
+    assert.equal('BYE!', get(obj, 'common'));
+  }
+);
 
-testBoth('observers that contain @each in the path should fire only once the first time they are accessed', function(get, set, assert) {
-  let count = 0;
+testBoth(
+  'observers that contain @each in the path should fire only once the first time they are accessed',
+  function(get, set, assert) {
+    let count = 0;
 
-  let obj = EmberObject.extend({
-    init() {
-      this._super(...arguments);
-      // Observer does not fire on init
-      set(this, 'resources', emberA());
-    },
+    let obj = EmberObject.extend({
+      init() {
+        this._super(...arguments);
+        // Observer does not fire on init
+        set(this, 'resources', emberA());
+      },
 
-    commonDidChange: emberObserver('resources.@each.common', () => count++)
-  }).create();
+      commonDidChange: emberObserver('resources.@each.common', () => count++)
+    }).create();
 
-  // Observer fires second time when new object is added
-  get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
-  // Observer fires third time when property on an object is changed
-  set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
+    // Observer fires second time when new object is added
+    get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+    // Observer fires third time when property on an object is changed
+    set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
 
-  assert.equal(count, 2, 'observers should only be called once');
-});
+    assert.equal(count, 2, 'observers should only be called once');
+  }
+);

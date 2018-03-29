@@ -13,7 +13,9 @@ function validateAction(component, actionName) {
 
   assert(
     `The default action was triggered on the component ${component.toString()}, but the action name (${actionName}) was not a string.`,
-    isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function'
+    isNone(actionName) ||
+      typeof actionName === 'string' ||
+      typeof actionName === 'function'
   );
   return actionName;
 }
@@ -124,7 +126,9 @@ export default Mixin.create({
     actionName = validateAction(this, actionName);
 
     // If no action name for that action could be found, just abort.
-    if (actionName === undefined) { return; }
+    if (actionName === undefined) {
+      return;
+    }
 
     if (typeof actionName === 'function') {
       actionName(...contexts);
@@ -146,7 +150,9 @@ export default Mixin.create({
 
     if (action) {
       let shouldBubble = action.apply(this, args) === true;
-      if (!shouldBubble) { return; }
+      if (!shouldBubble) {
+        return;
+      }
     }
 
     let target = get(this, 'target');
@@ -157,7 +163,10 @@ export default Mixin.create({
       );
       target.send(...arguments);
     } else {
-      assert(`${inspect(this)} had no action handler for: ${actionName}`, action);
+      assert(
+        `${inspect(this)} had no action handler for: ${actionName}`,
+        action
+      );
     }
   }
 });

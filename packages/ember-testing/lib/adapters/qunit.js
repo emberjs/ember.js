@@ -24,7 +24,9 @@ export default Adapter.extend({
       // very old QUnit version
       QUnit.stop();
     } else {
-      this.doneCallbacks.push(QUnit.config.current ? QUnit.config.current.assert.async() : null);
+      this.doneCallbacks.push(
+        QUnit.config.current ? QUnit.config.current.assert.async() : null
+      );
     }
   },
   asyncEnd() {

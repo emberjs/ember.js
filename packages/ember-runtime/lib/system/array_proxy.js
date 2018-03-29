@@ -11,9 +11,7 @@ import {
   addArrayObserver,
   removeArrayObserver
 } from 'ember-metal';
-import {
-  isArray
-} from '../utils';
+import { isArray } from '../utils';
 import EmberObject from './object';
 import { MutableArray } from '../mixins/array';
 import { assert } from 'ember-debug';
@@ -132,7 +130,10 @@ export default EmberObject.extend(MutableArray, {
   },
 
   replace(idx, amt, objects) {
-    assert('Mutating an arranged ArrayProxy is not allowed', get(this, 'arrangedContent') === get(this, 'content') );
+    assert(
+      'Mutating an arranged ArrayProxy is not allowed',
+      get(this, 'arrangedContent') === get(this, 'content')
+    );
     this.replaceContent(idx, amt, objects);
   },
 
@@ -164,7 +165,7 @@ export default EmberObject.extend(MutableArray, {
     if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
       let arrangedContent = get(this, 'arrangedContent');
       if (arrangedContent) {
-        let length = this._objects.length = get(arrangedContent, 'length');
+        let length = (this._objects.length = get(arrangedContent, 'length'));
 
         for (let i = this._objectsDirtyIndex; i < length; i++) {
           this._objects[i] = this.objectAtContent(i);
@@ -209,9 +210,14 @@ export default EmberObject.extend(MutableArray, {
   _addArrangedContentArrayObsever() {
     let arrangedContent = get(this, 'arrangedContent');
     if (arrangedContent) {
-      assert('Can\'t set ArrayProxy\'s content to itself', arrangedContent !== this);
-      assert(`ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
-        isArray(arrangedContent) || arrangedContent.isDestroyed);
+      assert(
+        "Can't set ArrayProxy's content to itself",
+        arrangedContent !== this
+      );
+      assert(
+        `ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
+        isArray(arrangedContent) || arrangedContent.isDestroyed
+      );
 
       addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING);
 

@@ -4,4 +4,3 @@ export {
   RenderingTestCase as RenderingTest,
   moduleFor
 } from 'internal-test-helpers';
-

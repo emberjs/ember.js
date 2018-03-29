@@ -1,8 +1,4 @@
-import {
-  computed,
-  alias,
-  defineProperty,
-} from 'ember-metal';
+import { computed, alias, defineProperty } from 'ember-metal';
 import {
   empty,
   notEmpty,
@@ -18,7 +14,7 @@ import {
   readOnly,
   deprecatingAlias,
   and,
-  or,
+  or
 } from '../../computed/computed_macros';
 import { testBoth } from 'internal-test-helpers';
 
@@ -27,7 +23,7 @@ import { A as emberA } from '../../mixins/array';
 
 QUnit.module('CP macros');
 
-testBoth('Ember.computed.empty', function (get, set, assert) {
+testBoth('Ember.computed.empty', function(get, set, assert) {
   let obj = EmberObject.extend({
     bestLannister: null,
     lannisters: null,
@@ -38,14 +34,30 @@ testBoth('Ember.computed.empty', function (get, set, assert) {
     lannisters: emberA()
   });
 
-  assert.equal(get(obj, 'bestLannisterUnspecified'), true, 'bestLannister initially empty');
-  assert.equal(get(obj, 'noLannistersKnown'), true, 'lannisters initially empty');
+  assert.equal(
+    get(obj, 'bestLannisterUnspecified'),
+    true,
+    'bestLannister initially empty'
+  );
+  assert.equal(
+    get(obj, 'noLannistersKnown'),
+    true,
+    'lannisters initially empty'
+  );
 
   get(obj, 'lannisters').pushObject('Tyrion');
   set(obj, 'bestLannister', 'Tyrion');
 
-  assert.equal(get(obj, 'bestLannisterUnspecified'), false, 'empty respects strings');
-  assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
+  assert.equal(
+    get(obj, 'bestLannisterUnspecified'),
+    false,
+    'empty respects strings'
+  );
+  assert.equal(
+    get(obj, 'noLannistersKnown'),
+    false,
+    'empty respects array mutations'
+  );
 });
 
 testBoth('Ember.computed.notEmpty', function(get, set, assert) {
@@ -59,14 +71,30 @@ testBoth('Ember.computed.notEmpty', function(get, set, assert) {
     lannisters: emberA()
   });
 
-  assert.equal(get(obj, 'bestLannisterSpecified'), false, 'bestLannister initially empty');
-  assert.equal(get(obj, 'LannistersKnown'), false, 'lannisters initially empty');
+  assert.equal(
+    get(obj, 'bestLannisterSpecified'),
+    false,
+    'bestLannister initially empty'
+  );
+  assert.equal(
+    get(obj, 'LannistersKnown'),
+    false,
+    'lannisters initially empty'
+  );
 
   get(obj, 'lannisters').pushObject('Tyrion');
   set(obj, 'bestLannister', 'Tyrion');
 
-  assert.equal(get(obj, 'bestLannisterSpecified'), true, 'empty respects strings');
-  assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
+  assert.equal(
+    get(obj, 'bestLannisterSpecified'),
+    true,
+    'empty respects strings'
+  );
+  assert.equal(
+    get(obj, 'LannistersKnown'),
+    true,
+    'empty respects array mutations'
+  );
 });
 
 testBoth('computed.not', function(get, set, assert) {
@@ -110,9 +138,13 @@ testBoth('computed.bool', function(get, set, assert) {
 
 testBoth('computed.alias', function(get, set, assert) {
   let obj = { bar: 'asdf', baz: null, quz: false };
-  defineProperty(obj, 'bay', computed(function() {
-    return 'apple';
-  }));
+  defineProperty(
+    obj,
+    'bay',
+    computed(function() {
+      return 'apple';
+    })
+  );
 
   defineProperty(obj, 'barAlias', alias('bar'));
   defineProperty(obj, 'bazAlias', alias('baz'));
@@ -141,10 +173,18 @@ testBoth('computed.alias set', function(get, set, assert) {
   let obj = {};
   let constantValue = 'always `a`';
 
-  defineProperty(obj, 'original', computed({
-    get: function() { return constantValue; },
-    set: function() { return constantValue; }
-  }));
+  defineProperty(
+    obj,
+    'original',
+    computed({
+      get: function() {
+        return constantValue;
+      },
+      set: function() {
+        return constantValue;
+      }
+    })
+  );
   defineProperty(obj, 'aliased', alias('original'));
 
   assert.equal(get(obj, 'original'), constantValue);
@@ -351,7 +391,11 @@ testBoth('computed.or three properties', function(get, set, assert) {
 
   set(obj, 'three', null);
 
-  assert.equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
+  assert.equal(
+    get(obj, 'oneTwoThree'),
+    null,
+    'returns last falsy value as in ||'
+  );
 
   set(obj, 'two', true);
 
@@ -382,7 +426,11 @@ testBoth('computed.or expand properties', function(get, set, assert) {
 
   set(obj, 'three', null);
 
-  assert.equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
+  assert.equal(
+    get(obj, 'oneTwoThree'),
+    null,
+    'returns last falsy value as in ||'
+  );
 
   set(obj, 'two', true);
 
@@ -393,16 +441,19 @@ testBoth('computed.or expand properties', function(get, set, assert) {
   assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
 });
 
-testBoth('computed.or and computed.and warn about dependent keys with spaces', function() {
-  let obj = { one: true, two: true };
-  expectAssertion(function() {
-    defineProperty(obj, 'oneOrTwo', or('one', 'two three'));
-  }, /Dependent keys passed to computed\.or\(\) can't have spaces\./);
+testBoth(
+  'computed.or and computed.and warn about dependent keys with spaces',
+  function() {
+    let obj = { one: true, two: true };
+    expectAssertion(function() {
+      defineProperty(obj, 'oneOrTwo', or('one', 'two three'));
+    }, /Dependent keys passed to computed\.or\(\) can't have spaces\./);
 
-  expectAssertion(function() {
-    defineProperty(obj, 'oneAndTwo', and('one', 'two three'));
-  }, /Dependent keys passed to computed\.and\(\) can't have spaces\./);
-});
+    expectAssertion(function() {
+      defineProperty(obj, 'oneAndTwo', and('one', 'two three'));
+    }, /Dependent keys passed to computed\.and\(\) can't have spaces\./);
+  }
+);
 
 testBoth('computed.oneWay', function(get, set, assert) {
   let obj = {
@@ -456,9 +507,13 @@ testBoth('computed.readOnly', function(get, set, assert) {
 
 testBoth('computed.deprecatingAlias', function(get, set, assert) {
   let obj = { bar: 'asdf', baz: null, quz: false };
-  defineProperty(obj, 'bay', computed(function() {
-    return 'apple';
-  }));
+  defineProperty(
+    obj,
+    'bay',
+    computed(function() {
+      return 'apple';
+    })
+  );
 
   defineProperty(obj, 'barAlias', deprecatingAlias('bar'));
   defineProperty(obj, 'bazAlias', deprecatingAlias('baz'));
@@ -492,7 +547,6 @@ testBoth('computed.deprecatingAlias', function(get, set, assert) {
   expectDeprecation(function() {
     set(obj, 'quzAlias', null);
   }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
-
 
   assert.equal(get(obj, 'barAlias'), 'newBar');
   assert.equal(get(obj, 'bazAlias'), 'newBaz');

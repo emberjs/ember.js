@@ -71,7 +71,7 @@ export {
   cancel,
   debounce,
   throttle,
-  _globalsRun,
+  _globalsRun
 } from './run_loop';
 export {
   beginPropertyChanges,

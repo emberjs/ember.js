@@ -2,16 +2,10 @@ import { inspect } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
 import { get } from './property_get';
 import { set } from './property_set';
-import {
-  Descriptor,
-  defineProperty
-} from './properties';
+import { Descriptor, defineProperty } from './properties';
 import { ComputedProperty, getCacheFor } from './computed';
 import { meta as metaFor } from './meta';
-import {
-  addDependentKeys,
-  removeDependentKeys
-} from './dependent_keys';
+import { addDependentKeys, removeDependentKeys } from './dependent_keys';
 
 const CONSUMED = {};
 
@@ -74,8 +68,11 @@ export class AliasedProperty extends Descriptor {
   }
 }
 
-function AliasedProperty_readOnlySet(obj, keyName, value) { // eslint-disable-line no-unused-vars
-  throw new EmberError(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
+function AliasedProperty_readOnlySet(obj, keyName, value) {
+  // eslint-disable-line no-unused-vars
+  throw new EmberError(
+    `Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`
+  );
 }
 
 function AliasedProperty_oneWaySet(obj, keyName, value) {

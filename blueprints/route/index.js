@@ -7,7 +7,8 @@ const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
 
 module.exports = {
-  description: 'Generates a route and a template, and registers the route with the router.',
+  description:
+    'Generates a route and a template, and registers the route with the router.',
 
   availableOptions: [
     {
@@ -28,7 +29,7 @@ module.exports = {
 
   fileMapTokens: function() {
     return {
-      __name__: function (options) {
+      __name__: function(options) {
         if (options.pod) {
           return 'route';
         }
@@ -94,9 +95,15 @@ module.exports = {
     let entityTouchesRouter = this.shouldEntityTouchRouter(name);
     let isDummy = !!options.dummy;
     let isAddon = !!options.project.isEmberCLIAddon();
-    let isAddonDummyOrApp = (isDummy === isAddon);
+    let isAddonDummyOrApp = isDummy === isAddon;
 
-    return (entityTouchesRouter && isAddonDummyOrApp && !options.dryRun && !options.inRepoAddon && !options.skipRouter);
+    return (
+      entityTouchesRouter &&
+      isAddonDummyOrApp &&
+      !options.dryRun &&
+      !options.inRepoAddon &&
+      !options.skipRouter
+    );
   },
 
   afterInstall: function(options) {
@@ -128,7 +135,12 @@ function findRouter(options) {
   let routerPathParts = [options.project.root];
 
   if (options.dummy && options.project.isEmberCLIAddon()) {
-    routerPathParts = routerPathParts.concat(['tests', 'dummy', 'app', 'router.js']);
+    routerPathParts = routerPathParts.concat([
+      'tests',
+      'dummy',
+      'app',
+      'router.js'
+    ]);
   } else {
     routerPathParts = routerPathParts.concat(['app', 'router.js']);
   }

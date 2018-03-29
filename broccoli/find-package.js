@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 const fs = require('fs');
 const path = require('path');
 const resolve = require('resolve');
@@ -51,8 +51,7 @@ class PackageInfo {
     return {
       dir: parsed.dir,
       base: parsed.base,
-      path: resolved,
+      path: resolved
     };
   }
-
 }

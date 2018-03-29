@@ -27,10 +27,14 @@ import {
   prefixRouteNameArg
 } from '../utils';
 
-function K() { return this; }
+function K() {
+  return this;
+}
 
 export function defaultSerialize(model, params) {
-  if (params.length < 1 || !model) { return; }
+  if (params.length < 1 || !model) {
+    return;
+  }
 
   let object = {};
 
@@ -121,7 +125,12 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     deprecate(
       'Route#router is an intimate API that has been renamed to Route#_router. However you might want to consider using the router service',
       false,
-      { id: 'ember-routing.route-router', until: '3.5.0', url: 'https://emberjs.com/deprecations/v3.x#toc_ember-routing-route-router' }
+      {
+        id: 'ember-routing.route-router',
+        until: '3.5.0',
+        url:
+          'https://emberjs.com/deprecations/v3.x#toc_ember-routing-route-router'
+      }
     );
     return this._router;
   }),
@@ -164,7 +173,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let owner = getOwner(this);
     let controller = owner.lookup(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
-    let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
+    let hasRouterDefinedQueryParams =
+      Object.keys(queryParameterConfiguraton).length > 0;
 
     if (controller) {
       // the developer has authored a controller class in their application for
@@ -172,9 +182,15 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       // merge in the query params for the route. As a mergedProperty,
       // Route#queryParams is always at least `{}`
 
-      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams') || {};
-      let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(controllerDefinedQueryParameterConfiguration);
-      combinedQueryParameterConfiguration = mergeEachQueryParams(normalizedControllerQueryParameterConfiguration, queryParameterConfiguraton);
+      let controllerDefinedQueryParameterConfiguration =
+        get(controller, 'queryParams') || {};
+      let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
+        controllerDefinedQueryParameterConfiguration
+      );
+      combinedQueryParameterConfiguration = mergeEachQueryParams(
+        normalizedControllerQueryParameterConfiguration,
+        queryParameterConfiguraton
+      );
     } else if (hasRouterDefinedQueryParams) {
       // the developer has not defined a controller but *has* supplied route query params.
       // Generate a class for them so we can later insert default values
@@ -187,7 +203,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let propertyNames = [];
 
     for (let propName in combinedQueryParameterConfiguration) {
-      if (!combinedQueryParameterConfiguration.hasOwnProperty(propName)) { continue; }
+      if (!combinedQueryParameterConfiguration.hasOwnProperty(propName)) {
+        continue;
+      }
 
       // to support the dubious feature of using unknownProperty
       // on queryParams configuration
@@ -213,7 +231,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
       let type = desc.type || typeOf(defaultValue);
 
-      let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
+      let defaultValueSerialized = this.serializeQueryParam(
+        defaultValue,
+        urlKey,
+        type
+      );
       let scopedPropertyName = `${controllerName}:${propName}`;
       let qp = {
         undecoratedDefaultValue: get(controller, propName),
@@ -287,12 +309,14 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @method _stashNames
   */
   _stashNames(handlerInfo, dynamicParent) {
-    if (this._names) { return; }
-    let names = this._names = handlerInfo._names;
+    if (this._names) {
+      return;
+    }
+    let names = (this._names = handlerInfo._names);
 
     if (!names.length) {
       handlerInfo = dynamicParent;
-      names = handlerInfo && handlerInfo._names || [];
+      names = (handlerInfo && handlerInfo._names) || [];
     }
 
     let qps = get(this, '_qp.qps');
@@ -388,14 +412,21 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     }
 
     let transition = this._router._routerMicrolib.activeTransition;
-    let state = transition ? transition.state : this._router._routerMicrolib.state;
+    let state = transition
+      ? transition.state
+      : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
     let params = assign({}, state.params[fullName]);
     let queryParams = getQueryParamsFor(route, state);
 
     return Object.keys(queryParams).reduce((params, key) => {
-      assert(`The route '${this.routeName}' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`, !params[key]);
+      assert(
+        `The route '${
+          this.routeName
+        }' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`,
+        !params[key]
+      );
       params[key] = queryParams[key];
       return params;
     }, params);
@@ -450,7 +481,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @property _optionsForQueryParam
   */
   _optionsForQueryParam(qp) {
-    return get(this, `queryParams.${qp.urlKey}`) || get(this, `queryParams.${qp.prop}`) || {};
+    return (
+      get(this, `queryParams.${qp.urlKey}`) ||
+      get(this, `queryParams.${qp.prop}`) ||
+      {}
+    );
   },
 
   /**
@@ -799,7 +834,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
 
   actions: {
-
     /**
       This action is called when one or more query params have changed. Bubbles.
 
@@ -816,7 +850,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let totalChanged = Object.keys(changed).concat(Object.keys(removed));
       for (let i = 0; i < totalChanged.length; ++i) {
         let qp = qpMap[totalChanged[i]];
-        if (qp && get(this._optionsForQueryParam(qp), 'refreshModel') && this._router.currentState) {
+        if (
+          qp &&
+          get(this._optionsForQueryParam(qp), 'refreshModel') &&
+          this._router.currentState
+        ) {
           this.refresh();
           break;
         }
@@ -826,10 +864,14 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     },
 
     finalizeQueryParamChange(params, finalParams, transition) {
-      if (this.fullRouteName !== 'application') { return true; }
+      if (this.fullRouteName !== 'application') {
+        return true;
+      }
 
       // Transition object is absent for intermediate transitions.
-      if (!transition) { return; }
+      if (!transition) {
+        return;
+      }
 
       let handlerInfos = transition.state.handlerInfos;
       let router = this._router;
@@ -867,10 +909,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           }
         }
 
-
         controller._qpDelegate = get(route, '_qp.states.inactive');
 
-        let thisQueryParamChanged = (svalue !== qp.serializedValue);
+        let thisQueryParamChanged = svalue !== qp.serializedValue;
         if (thisQueryParamChanged) {
           if (transition.queryParamsOnly && replaceUrl !== false) {
             let options = route._optionsForQueryParam(qp);
@@ -889,8 +930,12 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         // Stash current serialized value of controller.
         qp.serializedValue = svalue;
 
-        let thisQueryParamHasDefaultValue = (qp.serializedDefaultValue === svalue);
-        if (!thisQueryParamHasDefaultValue || transition._keepDefaultQueryParamValues) {
+        let thisQueryParamHasDefaultValue =
+          qp.serializedDefaultValue === svalue;
+        if (
+          !thisQueryParamHasDefaultValue ||
+          transition._keepDefaultQueryParamValues
+        ) {
           finalParams.push({
             value: svalue,
             visible: true,
@@ -1126,7 +1171,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  transitionTo(name, context) { // eslint-disable-line no-unused-vars
+  transitionTo(name, context) {
+    // eslint-disable-line no-unused-vars
     return this._router.transitionTo(...prefixRouteNameArg(this, arguments));
   },
 
@@ -1148,7 +1194,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @public
    */
   intermediateTransitionTo() {
-    this._router.intermediateTransitionTo(...prefixRouteNameArg(this, arguments));
+    this._router.intermediateTransitionTo(
+      ...prefixRouteNameArg(this, arguments)
+    );
   },
 
   /**
@@ -1273,7 +1321,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   send(...args) {
     assert(
-      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
+      `Attempted to call .send() with the action '${
+        args[0]
+      }' on the destroyed route '${this.routeName}'.`,
       !this.isDestroying && !this.isDestroyed
     );
     if ((this._router && this._router._routerMicrolib) || !isTesting()) {
@@ -1331,7 +1381,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let aQp = queryParams.map[prop];
         aQp.values = params;
 
-        let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
+        let cacheKey = calculateCacheKey(
+          aQp.route.fullRouteName,
+          aQp.parts,
+          aQp.values
+        );
         let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
         set(controller, prop, value);
       });
@@ -1353,11 +1407,17 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     value in the cache so if this route becomes active, the cache value has been updated.
   */
   _qpChanged(prop, value, qp) {
-    if (!qp) { return; }
+    if (!qp) {
+      return;
+    }
 
     // Update model-dep cache
     let cache = this._bucketCache;
-    let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, qp.values);
+    let cacheKey = calculateCacheKey(
+      qp.route.fullRouteName,
+      qp.parts,
+      qp.values
+    );
     cache.stash(cacheKey, prop, value);
   },
 
@@ -1570,8 +1630,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       if (sawParams) {
         return copy(params);
       } else {
-        if (transition.resolveIndex < 1) { return; }
-        return transition.state.handlerInfos[transition.resolveIndex - 1].context;
+        if (transition.resolveIndex < 1) {
+          return;
+        }
+        return transition.state.handlerInfos[transition.resolveIndex - 1]
+          .context;
       }
     }
 
@@ -1626,15 +1689,22 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let modelClass = owner.factoryFor(`model:${name}`);
 
         assert(
-          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(name)} did not exist and you did not override your route's \`model\` hook.`,
+          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(
+            name
+          )} did not exist and you did not override your route's \`model\` hook.`,
           !!modelClass
         );
 
-        if (!modelClass) { return; }
+        if (!modelClass) {
+          return;
+        }
 
         modelClass = modelClass.class;
 
-        assert(`${StringUtils.classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
+        assert(
+          `${StringUtils.classify(name)} has no method \`find\`.`,
+          typeof modelClass.find === 'function'
+        );
 
         return modelClass.find(value);
       }
@@ -1759,8 +1829,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  setupController(controller, context, transition) {  // eslint-disable-line no-unused-vars
-    if (controller && (context !== undefined)) {
+  setupController(controller, context, transition) {
+    // eslint-disable-line no-unused-vars
+    if (controller && context !== undefined) {
       set(controller, 'model', context);
     }
   },
@@ -1803,7 +1874,10 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
-    assert(`The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`, controller || _skipAssert === true);
+    assert(
+      `The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`,
+      controller || _skipAssert === true
+    );
 
     return controller;
   },
@@ -1878,7 +1952,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   modelFor(_name) {
     let name;
     let owner = getOwner(this);
-    let transition = this._router ? this._router._routerMicrolib.activeTransition : null;
+    let transition = this._router
+      ? this._router._routerMicrolib.activeTransition
+      : null;
 
     // Only change the route name when there is an active transition.
     // Otherwise, use the passed in route name.
@@ -1935,7 +2011,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  renderTemplate(controller, model) {  // eslint-disable-line no-unused-vars
+  renderTemplate(controller, model) {
+    // eslint-disable-line no-unused-vars
     this.render();
   },
 
@@ -2075,12 +2152,20 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         name = this.templateName || this.routeName;
         options = _name;
       } else {
-        assert('The name in the given arguments is undefined or empty string', !isEmpty(_name));
+        assert(
+          'The name in the given arguments is undefined or empty string',
+          !isEmpty(_name)
+        );
         name = _name;
       }
     }
 
-    let renderOptions = buildRenderOptions(this, isDefaultRender, name, options);
+    let renderOptions = buildRenderOptions(
+      this,
+      isDefaultRender,
+      name,
+      options
+    );
     this.connections.push(renderOptions);
     once(this._router, '_setOutlets');
   },
@@ -2150,7 +2235,9 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         outletName = options;
       } else {
         outletName = options.outlet;
-        parentView = options.parentView ? options.parentView.replace(/\//g, '.') : undefined;
+        parentView = options.parentView
+          ? options.parentView.replace(/\//g, '.')
+          : undefined;
 
         assert(
           'You passed undefined as the outlet name.',
@@ -2191,7 +2278,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
           outlet: connection.outlet,
           name: connection.name,
           controller: undefined,
-          template: undefined,
+          template: undefined
         };
         once(this._router, '_setOutlets');
       }
@@ -2220,24 +2307,33 @@ Route.reopenClass({
 });
 
 function parentRoute(route) {
-  let handlerInfo = handlerInfoFor(route, route._router._routerMicrolib.state.handlerInfos, -1);
+  let handlerInfo = handlerInfoFor(
+    route,
+    route._router._routerMicrolib.state.handlerInfos,
+    -1
+  );
   return handlerInfo && handlerInfo.handler;
 }
 
 function handlerInfoFor(route, handlerInfos, offset = 0) {
-  if (!handlerInfos) { return; }
+  if (!handlerInfos) {
+    return;
+  }
 
   let current;
   for (let i = 0; i < handlerInfos.length; i++) {
     current = handlerInfos[i].handler;
-    if (current === route) { return handlerInfos[i + offset]; }
+    if (current === route) {
+      return handlerInfos[i + offset];
+    }
   }
 }
 
 function buildRenderOptions(route, isDefaultRender, _name, options) {
   assert(
     'You passed undefined as the outlet name.',
-    isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
+    isDefaultRender ||
+      !(options && 'outlet' in options && options.outlet === undefined)
   );
 
   let owner = getOwner(route);
@@ -2262,7 +2358,10 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     if (isDefaultRender) {
       controller = route.controllerName || owner.lookup(`controller:${name}`);
     } else {
-      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
+      controller =
+        owner.lookup(`controller:${name}`) ||
+        route.controllerName ||
+        route.routeName;
     }
   }
 
@@ -2280,7 +2379,10 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
   }
 
   let template = owner.lookup(`template:${templateName}`);
-  assert(`Could not find "${templateName}" template, view, or component.`, isDefaultRender || template);
+  assert(
+    `Could not find "${templateName}" template, view, or component.`,
+    isDefaultRender || template
+  );
 
   let parent;
   if (into && (parent = parentRoute(route)) && into === parent.routeName) {
@@ -2293,13 +2395,15 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
     outlet,
     name,
     controller,
-    template: template || route._topLevelViewTemplate,
+    template: template || route._topLevelViewTemplate
   };
 
   if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route._router, 'namespace.LOG_VIEW_LOOKUPS');
     if (LOG_VIEW_LOOKUPS && !template) {
-      info(`Could not find "${name}" template. Nothing will be rendered`, { fullName: `template:${name}` });
+      info(`Could not find "${name}" template. Nothing will be rendered`, {
+        fullName: `template:${name}`
+      });
     }
   }
 
@@ -2307,7 +2411,9 @@ function buildRenderOptions(route, isDefaultRender, _name, options) {
 }
 
 function getFullQueryParams(router, state) {
-  if (state.fullQueryParams) { return state.fullQueryParams; }
+  if (state.fullQueryParams) {
+    return state.fullQueryParams;
+  }
 
   state.fullQueryParams = {};
   assign(state.fullQueryParams, state.queryParams);
@@ -2320,11 +2426,13 @@ function getQueryParamsFor(route, state) {
   state.queryParamsFor = state.queryParamsFor || {};
   let name = route.fullRouteName;
 
-  if (state.queryParamsFor[name]) { return state.queryParamsFor[name]; }
+  if (state.queryParamsFor[name]) {
+    return state.queryParamsFor[name];
+  }
 
   let fullQueryParams = getFullQueryParams(route._router, state);
 
-  let params = state.queryParamsFor[name] = {};
+  let params = (state.queryParamsFor[name] = {});
 
   // Copy over all the query params for this route/controller into params hash.
   let qpMeta = get(route, '_qp');
@@ -2333,10 +2441,10 @@ function getQueryParamsFor(route, state) {
     // Put deserialized qp on params hash.
     let qp = qps[i];
 
-    let qpValueWasPassedIn = (qp.prop in fullQueryParams);
-    params[qp.prop] = qpValueWasPassedIn ?
-                      fullQueryParams[qp.prop] :
-                      copyDefaultValue(qp.defaultValue);
+    let qpValueWasPassedIn = qp.prop in fullQueryParams;
+    params[qp.prop] = qpValueWasPassedIn
+      ? fullQueryParams[qp.prop]
+      : copyDefaultValue(qp.defaultValue);
   }
 
   return params;
@@ -2366,10 +2474,16 @@ function mergeEachQueryParams(controllerQP, routeQP) {
   // first loop over all controller qps, merging them with any matching route qps
   // into a new empty object to avoid mutating.
   for (let cqpName in controllerQP) {
-    if (!controllerQP.hasOwnProperty(cqpName)) { continue; }
+    if (!controllerQP.hasOwnProperty(cqpName)) {
+      continue;
+    }
 
     let newControllerParameterConfiguration = {};
-    assign(newControllerParameterConfiguration, controllerQP[cqpName], routeQP[cqpName]);
+    assign(
+      newControllerParameterConfiguration,
+      controllerQP[cqpName],
+      routeQP[cqpName]
+    );
 
     qps[cqpName] = newControllerParameterConfiguration;
 
@@ -2380,10 +2494,19 @@ function mergeEachQueryParams(controllerQP, routeQP) {
   // loop over all route qps, skipping those that were merged in the first pass
   // because they also appear in controller qps
   for (let rqpName in routeQP) {
-    if (!routeQP.hasOwnProperty(rqpName) || keysAlreadyMergedOrSkippable[rqpName]) { continue; }
+    if (
+      !routeQP.hasOwnProperty(rqpName) ||
+      keysAlreadyMergedOrSkippable[rqpName]
+    ) {
+      continue;
+    }
 
     let newRouteParameterConfiguration = {};
-    assign(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
+    assign(
+      newRouteParameterConfiguration,
+      routeQP[rqpName],
+      controllerQP[rqpName]
+    );
     qps[rqpName] = newRouteParameterConfiguration;
   }
 

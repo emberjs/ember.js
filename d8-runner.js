@@ -54,7 +54,9 @@ global.console = {
 
 global.setTimeout = function(callback) {
   // good enough
-  Promise.resolve().then(callback).catch(e => print('error' + e));
+  Promise.resolve()
+    .then(callback)
+    .catch(e => print('error' + e));
 };
 loadFile('./node_modules/simple-dom/dist/simple-dom.js');
 
@@ -67,7 +69,6 @@ global.URL = {};
 loadFile('./dist/ember.prod.js'); // prod build === no asserts and dev related code
 // loadFile('/dist/ember.min.js'); // prod build + minified
 // loadFile('/dist/ember.debug.js'); // debug build === asserts and stuff, has perf issues
-
 
 // do what you want
 

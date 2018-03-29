@@ -3,9 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import {
-  Mixin
-} from 'ember-metal';
+import { Mixin } from 'ember-metal';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -26,7 +24,10 @@ export default Mixin.create({
    @return {Function} fullName's factory
    */
   resolveRegistration(fullName, options) {
-    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+    assert(
+      'fullName must be a proper full name',
+      this.__registry__.isValidFullName(fullName)
+    );
     return this.__registry__.resolve(fullName, options);
   },
 
@@ -261,7 +262,7 @@ export default Mixin.create({
 });
 
 function registryAlias(name) {
-  return function () {
+  return function() {
     return this.__registry__[name](...arguments);
   };
 }

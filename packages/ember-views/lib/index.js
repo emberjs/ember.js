@@ -1,4 +1,3 @@
-
 export { default as jQuery, jQueryDisabled } from './system/jquery';
 export {
   addChildView,
@@ -22,13 +21,10 @@ export { default as ChildViewsSupport } from './mixins/child_views_support';
 export { default as ViewStateSupport } from './mixins/view_state_support';
 export { default as ViewMixin } from './mixins/view_support';
 export { default as ActionSupport } from './mixins/action_support';
-export {
-  MUTABLE_CELL
-} from './compat/attrs';
-export {
-  default as lookupPartial,
-  hasPartial
-} from './system/lookup_partial';
+export { MUTABLE_CELL } from './compat/attrs';
+export { default as lookupPartial, hasPartial } from './system/lookup_partial';
 export { default as lookupComponent } from './utils/lookup-component';
 export { default as ActionManager } from './system/action_manager';
-export { default as fallbackViewRegistry } from './compat/fallback-view-registry';
+export {
+  default as fallbackViewRegistry
+} from './compat/fallback-view-registry';

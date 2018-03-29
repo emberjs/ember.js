@@ -1,8 +1,4 @@
-import {
-  computed,
-  Mixin,
-  observer
-} from 'ember-metal';
+import { computed, Mixin, observer } from 'ember-metal';
 import { MANDATORY_SETTER } from 'ember/features';
 import EmberObject from '../../../system/object';
 
@@ -17,7 +13,7 @@ QUnit.test('calls computed property setters', function(assert) {
   let MyClass = EmberObject.extend({
     foo: computed({
       get() {
-        return 'this is not the value you\'re looking for';
+        return "this is not the value you're looking for";
       },
       set(key, value) {
         return value;
@@ -30,22 +26,25 @@ QUnit.test('calls computed property setters', function(assert) {
 });
 
 if (MANDATORY_SETTER) {
-  QUnit.test('sets up mandatory setters for watched simple properties', function(assert) {
-    let MyClass = EmberObject.extend({
-      foo: null,
-      bar: null,
-      fooDidChange: observer('foo', function() {})
-    });
+  QUnit.test(
+    'sets up mandatory setters for watched simple properties',
+    function(assert) {
+      let MyClass = EmberObject.extend({
+        foo: null,
+        bar: null,
+        fooDidChange: observer('foo', function() {})
+      });
 
-    let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-    assert.equal(o.get('foo'), 'bar');
+      let o = MyClass.create({ foo: 'bar', bar: 'baz' });
+      assert.equal(o.get('foo'), 'bar');
 
-    let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
-    assert.ok(descriptor.set, 'Mandatory setter was setup');
+      let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+      assert.ok(descriptor.set, 'Mandatory setter was setup');
 
-    descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
-    assert.ok(!descriptor.set, 'Mandatory setter was not setup');
-  });
+      descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
+      assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+    }
+  );
 }
 
 QUnit.test('calls setUnknownProperty if defined', function(assert) {
@@ -79,7 +78,7 @@ QUnit.test('throws if you try to call _super in a method', function() {
   }, 'EmberObject.create no longer supports defining methods that call _super.');
 });
 
-QUnit.test('throws if you try to \'mixin\' a definition', function() {
+QUnit.test("throws if you try to 'mixin' a definition", function() {
   let myMixin = Mixin.create({
     adder(arg1, arg2) {
       return arg1 + arg2;
@@ -95,16 +94,25 @@ QUnit.test('inherits properties from passed in EmberObject', function(assert) {
   let baseObj = EmberObject.create({ foo: 'bar' });
   let secondaryObj = EmberObject.create(baseObj);
 
-  assert.equal(secondaryObj.foo, baseObj.foo, 'Em.O.create inherits properties from EmberObject parameter');
+  assert.equal(
+    secondaryObj.foo,
+    baseObj.foo,
+    'Em.O.create inherits properties from EmberObject parameter'
+  );
 });
 
-QUnit.test('throws if you try to pass anything a string as a parameter', function() {
-  let expected = 'EmberObject.create only accepts objects.';
+QUnit.test(
+  'throws if you try to pass anything a string as a parameter',
+  function() {
+    let expected = 'EmberObject.create only accepts objects.';
 
-  expectAssertion(() => EmberObject.create('some-string'), expected);
-});
+    expectAssertion(() => EmberObject.create('some-string'), expected);
+  }
+);
 
-QUnit.test('EmberObject.create can take undefined as a parameter', function(assert) {
+QUnit.test('EmberObject.create can take undefined as a parameter', function(
+  assert
+) {
   let o = EmberObject.create(undefined);
   assert.deepEqual(EmberObject.create(), o);
 });

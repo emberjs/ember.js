@@ -10,19 +10,31 @@ export default function assertIfHelperWithoutArguments(env) {
     visitor: {
       BlockStatement(node) {
         if (isInvalidBlockIf(node)) {
-          assert(`${blockAssertMessage(node.path.original)} ${calculateLocationDisplay(moduleName, node.loc)}`);
+          assert(
+            `${blockAssertMessage(
+              node.path.original
+            )} ${calculateLocationDisplay(moduleName, node.loc)}`
+          );
         }
       },
 
       MustacheStatement(node) {
         if (isInvalidInlineIf(node)) {
-          assert(`${inlineAssertMessage(node.path.original)} ${calculateLocationDisplay(moduleName, node.loc)}`);
+          assert(
+            `${inlineAssertMessage(
+              node.path.original
+            )} ${calculateLocationDisplay(moduleName, node.loc)}`
+          );
         }
       },
 
       SubExpression(node) {
         if (isInvalidInlineIf(node)) {
-          assert(`${inlineAssertMessage(node.path.original)} ${calculateLocationDisplay(moduleName, node.loc)}`);
+          assert(
+            `${inlineAssertMessage(
+              node.path.original
+            )} ${calculateLocationDisplay(moduleName, node.loc)}`
+          );
         }
       }
     }
@@ -38,10 +50,14 @@ function inlineAssertMessage(original) {
 }
 
 function isInvalidInlineIf(node) {
-  return node.path.original === 'if' && (!node.params || node.params.length < 2 || node.params.length > 3);
+  return (
+    node.path.original === 'if' &&
+    (!node.params || node.params.length < 2 || node.params.length > 3)
+  );
 }
 
 function isInvalidBlockIf(node) {
-  return node.path.original === 'if' && (!node.params || node.params.length !== 1);
+  return (
+    node.path.original === 'if' && (!node.params || node.params.length !== 1)
+  );
 }
-

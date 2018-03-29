@@ -21,10 +21,14 @@ QUnit.test('Sub-subclass', function(assert) {
 QUnit.test('Overriding a method several layers deep', function(assert) {
   let SomeClass = EmberObject.extend({
     fooCnt: 0,
-    foo() { this.fooCnt++; },
+    foo() {
+      this.fooCnt++;
+    },
 
     barCnt: 0,
-    bar() { this.barCnt++; }
+    bar() {
+      this.barCnt++;
+    }
   });
 
   let AnotherClass = SomeClass.extend({
@@ -64,15 +68,30 @@ QUnit.test('Overriding a method several layers deep', function(assert) {
 });
 
 QUnit.test('With concatenatedProperties', function(assert) {
-  let SomeClass = EmberObject.extend({ things: 'foo', concatenatedProperties: ['things'] });
+  let SomeClass = EmberObject.extend({
+    things: 'foo',
+    concatenatedProperties: ['things']
+  });
   let AnotherClass = SomeClass.extend({ things: 'bar' });
   let YetAnotherClass = SomeClass.extend({ things: 'baz' });
   let some = new SomeClass();
   let another = new AnotherClass();
   let yetAnother = new YetAnotherClass();
-  assert.deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
-  assert.deepEqual(another.get('things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
-  assert.deepEqual(yetAnother.get('things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
+  assert.deepEqual(
+    some.get('things'),
+    ['foo'],
+    'base class should have just its value'
+  );
+  assert.deepEqual(
+    another.get('things'),
+    ['foo', 'bar'],
+    "subclass should have base class' and its own"
+  );
+  assert.deepEqual(
+    yetAnother.get('things'),
+    ['foo', 'baz'],
+    "subclass should have base class' and its own"
+  );
 });
 
 QUnit.test('With concatenatedProperties class properties', function(assert) {
@@ -88,9 +107,21 @@ QUnit.test('With concatenatedProperties class properties', function(assert) {
   let some = new SomeClass();
   let another = new AnotherClass();
   let yetAnother = new YetAnotherClass();
-  assert.deepEqual(get(some.constructor, 'things'), ['foo'], 'base class should have just its value');
-  assert.deepEqual(get(another.constructor, 'things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
-  assert.deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
+  assert.deepEqual(
+    get(some.constructor, 'things'),
+    ['foo'],
+    'base class should have just its value'
+  );
+  assert.deepEqual(
+    get(another.constructor, 'things'),
+    ['foo', 'bar'],
+    "subclass should have base class' and its own"
+  );
+  assert.deepEqual(
+    get(yetAnother.constructor, 'things'),
+    ['foo', 'baz'],
+    "subclass should have base class' and its own"
+  );
 });
 
 QUnit.test('Overriding a computed property with an observer', assert => {

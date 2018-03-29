@@ -1,13 +1,13 @@
 import { DEBUG } from 'ember-env-flags';
 
-export let HANDLERS = { };
+export let HANDLERS = {};
 
 let registerHandler = () => {};
 let invoke = () => {};
 
 if (DEBUG) {
   registerHandler = function registerHandler(type, callback) {
-    let nextHandler = HANDLERS[type] || (() => { });
+    let nextHandler = HANDLERS[type] || (() => {});
 
     HANDLERS[type] = (message, options) => {
       callback(message, options, nextHandler);
@@ -15,7 +15,9 @@ if (DEBUG) {
   };
 
   invoke = function invoke(type, message, test, options) {
-    if (test) { return; }
+    if (test) {
+      return;
+    }
 
     let handlerForType = HANDLERS[type];
 
@@ -25,7 +27,4 @@ if (DEBUG) {
   };
 }
 
-export {
-  registerHandler,
-  invoke
-};
+export { registerHandler, invoke };

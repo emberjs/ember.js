@@ -29,5 +29,5 @@ export function asyncEnd() {
 function adapterDispatch(error) {
   adapter.exception(error);
 
-  console.error(error.stack);// eslint-disable-line no-console
+  console.error(error.stack); // eslint-disable-line no-console
 }
