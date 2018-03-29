@@ -3,13 +3,9 @@
 */
 
 import { dictionary } from 'ember-utils';
-import { get } from 'ember-metal';
+import { get, findNamespace } from 'ember-metal';
 import { assert, info } from 'ember-debug';
-import {
-  String as StringUtils,
-  Object as EmberObject,
-  Namespace
-} from 'ember-runtime';
+import { String as StringUtils, Object as EmberObject } from 'ember-runtime';
 import validateType from '../utils/validate-type';
 import { getTemplate } from 'ember-glimmer';
 import { DEBUG } from 'ember-env-flags';
@@ -22,13 +18,13 @@ export const Resolver = EmberObject.extend({
     @property namespace
   */
   namespace: null,
-  normalize:         null, // required
-  resolve:           null, // required
-  parseName:         null, // required
+  normalize: null, // required
+  resolve: null, // required
+  parseName: null, // required
   lookupDescription: null, // required
-  makeToString:      null, // required
-  resolveOther:      null, // required
-  _logLookup:        null  // required
+  makeToString: null, // required
+  resolveOther: null, // required
+  _logLookup: null // required
 });
 
 /**
@@ -115,18 +111,17 @@ const DefaultResolver = EmberObject.extend({
   },
 
   normalize(fullName) {
-    let [ type, name ] = fullName.split(':');
+    let [type, name] = fullName.split(':');
 
     assert(
       'Tried to normalize a container name without a colon (:) in it. ' +
-      'You probably tried to lookup a name that did not contain a type, ' +
-      'a colon, and a name. A proper lookup name would be `view:post`.',
+        'You probably tried to lookup a name that did not contain a type, ' +
+        'a colon, and a name. A proper lookup name would be `view:post`.',
       fullName.split(':').length === 2
     );
 
     if (type !== 'template') {
-      let result = name
-        .replace(/(\.|_|-)./g, m => m.charAt(1).toUpperCase());
+      let result = name.replace(/(\.|_|-)./g, m => m.charAt(1).toUpperCase());
 
       return `${type}:${result}`;
     } else {
@@ -179,13 +174,14 @@ const DefaultResolver = EmberObject.extend({
   */
 
   parseName(fullName) {
-    return this._parseNameCache[fullName] || (
+    return (
+      this._parseNameCache[fullName] ||
       (this._parseNameCache[fullName] = this._parseName(fullName))
     );
   },
 
   _parseName(fullName) {
-    let [ type, fullNameWithoutType ] = fullName.split(':');
+    let [type, fullNameWithoutType] = fullName.split(':');
 
     let name = fullNameWithoutType;
     let namespace = get(this, 'namespace');
@@ -197,7 +193,7 @@ const DefaultResolver = EmberObject.extend({
       let parts = name.split('/');
       name = parts[parts.length - 1];
       let namespaceName = StringUtils.capitalize(parts.slice(0, -1).join('.'));
-      root = Namespace.byName(namespaceName);
+      root = findNamespace(namespaceName);
 
       assert(
         `You are looking for a ${name} ${type} in the ${namespaceName} namespace, but the namespace could not be found`,
@@ -205,10 +201,13 @@ const DefaultResolver = EmberObject.extend({
       );
     }
 
-    let resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : StringUtils.classify(type);
+    let resolveMethodName =
+      fullNameWithoutType === 'main' ? 'Main' : StringUtils.classify(type);
 
     if (!(name && type)) {
-      throw new TypeError(`Invalid fullName: \`${fullName}\`, must be of the form \`type:name\` `);
+      throw new TypeError(
+        `Invalid fullName: \`${fullName}\`, must be of the form \`type:name\` `
+      );
     }
 
     return {
@@ -237,10 +236,15 @@ const DefaultResolver = EmberObject.extend({
     let description;
 
     if (parsedName.type === 'template') {
-      return `template at ${parsedName.fullNameWithoutType.replace(/\./g, '/')}`;
+      return `template at ${parsedName.fullNameWithoutType.replace(
+        /\./g,
+        '/'
+      )}`;
     }
 
-    description = `${parsedName.root}.${StringUtils.classify(parsedName.name).replace(/\./g, '')}`;
+    description = `${parsedName.root}.${StringUtils.classify(
+      parsedName.name
+    ).replace(/\./g, '')}`;
 
     if (parsedName.type !== 'model') {
       description += StringUtils.classify(parsedName.type);
@@ -280,7 +284,10 @@ const DefaultResolver = EmberObject.extend({
   resolveTemplate(parsedName) {
     let templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
-    return getTemplate(templateName) || getTemplate(StringUtils.decamelize(templateName));
+    return (
+      getTemplate(templateName) ||
+      getTemplate(StringUtils.decamelize(templateName))
+    );
   },
 
   /**
@@ -357,7 +364,9 @@ const DefaultResolver = EmberObject.extend({
     @protected
   */
   resolveOther(parsedName) {
-    let className = StringUtils.classify(parsedName.name) + StringUtils.classify(parsedName.type);
+    let className =
+      StringUtils.classify(parsedName.name) +
+      StringUtils.classify(parsedName.type);
     let factory = get(parsedName.root, className);
     return factory;
   },
@@ -436,7 +445,12 @@ if (DEBUG) {
         padding = new Array(60 - parsedName.fullName.length).join('.');
       }
 
-      info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
+      info(
+        symbol,
+        parsedName.fullName,
+        padding,
+        this.lookupDescription(parsedName.fullName)
+      );
     }
   });
 }

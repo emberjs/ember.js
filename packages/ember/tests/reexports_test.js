@@ -5,7 +5,7 @@ import { DEBUG } from 'ember-env-flags';
 
 QUnit.module('ember reexports');
 
-let allExports =[
+let allExports = [
   // ember-utils
   ['getOwner', 'ember-utils', 'getOwner'],
   ['setOwner', 'ember-utils', 'setOwner'],
@@ -112,7 +112,6 @@ let allExports =[
   ['getProperties', 'ember-metal'],
   ['setProperties', 'ember-metal'],
   ['expandProperties', 'ember-metal'],
-  ['NAME_KEY', 'ember-utils'],
   ['addObserver', 'ember-metal'],
   ['removeObserver', 'ember-metal'],
   ['aliasMethod', 'ember-metal'],
@@ -126,23 +125,31 @@ let allExports =[
   ['ViewUtils.getViewElement', 'ember-views', 'getViewElement'],
   ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
   ['ViewUtils.getViewClientRects', 'ember-views', 'getViewClientRects'],
-  ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
+  [
+    'ViewUtils.getViewBoundingClientRect',
+    'ember-views',
+    'getViewBoundingClientRect'
+  ],
   ['ViewUtils.getRootViews', 'ember-views', 'getRootViews'],
   ['ViewUtils.getChildViews', 'ember-views', 'getChildViews'],
-  ['ViewUtils.isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
+  [
+    'ViewUtils.isSerializationFirstNode',
+    'ember-glimmer',
+    'isSerializationFirstNode'
+  ],
   ['TextSupport', 'ember-views'],
   ['ComponentLookup', 'ember-views'],
   ['EventDispatcher', 'ember-views'],
 
   // ember-glimmer
-  ['Component',     'ember-glimmer', 'Component'],
-  ['Helper',        'ember-glimmer', 'Helper'],
+  ['Component', 'ember-glimmer', 'Component'],
+  ['Helper', 'ember-glimmer', 'Helper'],
   ['Helper.helper', 'ember-glimmer', 'helper'],
-  ['Checkbox',      'ember-glimmer', 'Checkbox'],
+  ['Checkbox', 'ember-glimmer', 'Checkbox'],
   ['LinkComponent', 'ember-glimmer', 'LinkComponent'],
-  ['TextArea',      'ember-glimmer', 'TextArea'],
-  ['TextField',     'ember-glimmer', 'TextField'],
-  ['TEMPLATES',     'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
+  ['TextArea', 'ember-glimmer', 'TextArea'],
+  ['TextField', 'ember-glimmer', 'TextField'],
+  ['TEMPLATES', 'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
   ['Handlebars.template', 'ember-glimmer', 'template'],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
@@ -183,7 +190,11 @@ let allExports =[
   ['_ProxyMixin', 'ember-runtime'],
   ['RSVP', 'ember-runtime'],
   ['STRINGS', 'ember-runtime', { get: 'getStrings', set: 'setStrings' }],
-  ['BOOTED', 'ember-runtime', { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }],
+  [
+    'BOOTED',
+    'ember-metal',
+    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }
+  ],
 
   // ember-routing
   ['Location', 'ember-routing'],
@@ -229,20 +240,37 @@ allExports.forEach(reexport => {
 });
 
 QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
-  confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+  confirmExport(
+    Ember,
+    assert,
+    'String.isHTMLSafe',
+    'ember-glimmer',
+    'isHTMLSafe'
+  );
 });
 
 if (DEBUG) {
   QUnit.test('Ember.MODEL_FACTORY_INJECTIONS', function(assert) {
-    let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
+    let descriptor = Object.getOwnPropertyDescriptor(
+      Ember,
+      'MODEL_FACTORY_INJECTIONS'
+    );
     assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
-    assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
+    assert.equal(
+      descriptor.configurable,
+      false,
+      'descriptor is not configurable'
+    );
 
     assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false);
 
     expectDeprecation(function() {
       Ember.MODEL_FACTORY_INJECTIONS = true;
     }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required');
-    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect');
+    assert.equal(
+      Ember.MODEL_FACTORY_INJECTIONS,
+      false,
+      'writing to the property has no affect'
+    );
   });
 }
