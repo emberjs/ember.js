@@ -1,18 +1,22 @@
-import { setOnerror, getOnerror, run, schedule, next } from 'ember-metal';
+import {
+  setOnerror,
+  getOnerror,
+  run,
+  schedule,
+  next,
+} from 'ember-metal';
 import RSVP from '../../ext/rsvp';
 import { isTesting, setTesting } from 'ember-debug';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const ORIGINAL_ONERROR = getOnerror();
 
-QUnit.module('Ember.RSVP', {
+moduleFor('Ember.RSVP', class extends AbstractTestCase {
   afterEach() {
     setOnerror(ORIGINAL_ONERROR);
   }
-});
 
-QUnit.test(
-  'Ensure that errors thrown from within a promise are sent to the console',
-  function(assert) {
+  ['@test Ensure that errors thrown from within a promise are sent to the console'](assert) {
     let error = new Error('Error thrown in a promise for testing purposes.');
 
     try {
@@ -26,68 +30,57 @@ QUnit.test(
       assert.equal(e, error, 'error was re-thrown');
     }
   }
-);
 
-QUnit.test('TransitionAborted errors are not re-thrown', function(assert) {
-  assert.expect(1);
-  let fakeTransitionAbort = { name: 'TransitionAborted' };
+  ['@test TransitionAborted errors are not re-thrown'](assert) {
+    assert.expect(1);
+    let fakeTransitionAbort = { name: 'TransitionAborted' };
 
-  run(RSVP, 'reject', fakeTransitionAbort);
+    run(RSVP, 'reject', fakeTransitionAbort);
 
-  assert.ok(true, 'did not throw an error when dealing with TransitionAborted');
-});
-
-QUnit.test('Can reject with non-Error object', function(assert) {
-  let wasEmberTesting = isTesting();
-  setTesting(false);
-  assert.expect(1);
-
-  try {
-    run(RSVP, 'reject', 'foo');
-  } catch (e) {
-    assert.equal(e, 'foo', 'should throw with rejection message');
-  } finally {
-    setTesting(wasEmberTesting);
-  }
-});
-
-QUnit.test('Can reject with no arguments', function(assert) {
-  let wasEmberTesting = isTesting();
-  setTesting(false);
-  assert.expect(1);
-
-  try {
-    run(RSVP, 'reject');
-  } catch (e) {
-    assert.ok(false, 'should not throw');
-  } finally {
-    setTesting(wasEmberTesting);
+    assert.ok(true, 'did not throw an error when dealing with TransitionAborted');
   }
 
-  assert.ok(true);
-});
+  ['@test Can reject with non-Error object'](assert) {
+    let wasEmberTesting = isTesting();
+    setTesting(false);
+    assert.expect(1);
 
-QUnit.test(
-  'rejections like jqXHR which have errorThrown property work',
-  function(assert) {
+    try {
+      run(RSVP, 'reject', 'foo');
+    } catch (e) {
+      assert.equal(e, 'foo', 'should throw with rejection message');
+    } finally {
+      setTesting(wasEmberTesting);
+    }
+  }
+
+  ['@test Can reject with no arguments'](assert) {
+    let wasEmberTesting = isTesting();
+    setTesting(false);
+    assert.expect(1);
+
+    try {
+      run(RSVP, 'reject');
+    } catch (e) {
+      assert.ok(false, 'should not throw');
+    } finally {
+      setTesting(wasEmberTesting);
+    }
+
+    assert.ok(true);
+  }
+
+  ['@test rejections like jqXHR which have errorThrown property work'](assert) {
     assert.expect(2);
 
     let wasEmberTesting = isTesting();
-    let wasOnError = getOnerror();
+    let wasOnError      = getOnerror();
 
     try {
       setTesting(false);
       setOnerror(error => {
-        assert.equal(
-          error,
-          actualError,
-          'expected the real error on the jqXHR'
-        );
-        assert.equal(
-          error.__reason_with_error_thrown__,
-          jqXHR,
-          'also retains a helpful reference to the rejection reason'
-        );
+        assert.equal(error, actualError, 'expected the real error on the jqXHR');
+        assert.equal(error.__reason_with_error_thrown__, jqXHR, 'also retains a helpful reference to the rejection reason');
       });
 
       let actualError = new Error('OMG what really happened');
@@ -101,29 +94,18 @@ QUnit.test(
       setTesting(wasEmberTesting);
     }
   }
-);
 
-QUnit.test(
-  'rejections where the errorThrown is a string should wrap the sting in an error object',
-  function(assert) {
+  ['@test rejections where the errorThrown is a string should wrap the sting in an error object'](assert) {
     assert.expect(2);
 
     let wasEmberTesting = isTesting();
-    let wasOnError = getOnerror();
+    let wasOnError      = getOnerror();
 
     try {
       setTesting(false);
       setOnerror(error => {
-        assert.equal(
-          error.message,
-          actualError,
-          'expected the real error on the jqXHR'
-        );
-        assert.equal(
-          error.__reason_with_error_thrown__,
-          jqXHR,
-          'also retains a helpful reference to the rejection reason'
-        );
+        assert.equal(error.message, actualError, 'expected the real error on the jqXHR');
+        assert.equal(error.__reason_with_error_thrown__, jqXHR, 'also retains a helpful reference to the rejection reason');
       });
 
       let actualError = 'OMG what really happened';
@@ -137,102 +119,92 @@ QUnit.test(
       setTesting(wasEmberTesting);
     }
   }
-);
 
-QUnit.test('rejections can be serialized to JSON', function(assert) {
-  assert.expect(2);
+  ['@test rejections can be serialized to JSON'](assert) {
+    assert.expect(2);
 
-  let wasEmberTesting = isTesting();
-  let wasOnError = getOnerror();
+    let wasEmberTesting = isTesting();
+    let wasOnError      = getOnerror();
 
-  try {
-    setTesting(false);
-    setOnerror(error => {
-      assert.equal(error.message, 'a fail');
-      assert.ok(JSON.stringify(error), 'Error can be serialized');
-    });
+    try {
+      setTesting(false);
+      setOnerror(error => {
+        assert.equal(error.message, 'a fail');
+        assert.ok(JSON.stringify(error), 'Error can be serialized');
+      });
 
-    let jqXHR = {
-      errorThrown: new Error('a fail')
-    };
+      let jqXHR = {
+        errorThrown: new Error('a fail')
+      };
 
-    run(RSVP, 'reject', jqXHR);
-  } finally {
-    setOnerror(wasOnError);
-    setTesting(wasEmberTesting);
+      run(RSVP, 'reject', jqXHR);
+    } finally {
+      setOnerror(wasOnError);
+      setTesting(wasEmberTesting);
+    }
   }
 });
 
 const reason = 'i failed';
-QUnit.module('Ember.test: rejection assertions');
-
 function ajax() {
   return new RSVP.Promise(function(resolve) {
     setTimeout(resolve, 0); // fake true / foreign async
   });
 }
 
-QUnit.test('unambigiously unhandled rejection', function(assert) {
-  assert.throws(function() {
-    run(function() {
-      RSVP.Promise.reject(reason);
-    }); // something is funky, we should likely assert
-  }, reason);
-});
+moduleFor('Ember.test: rejection assertions', class extends AbstractTestCase {
+  ['@test unambigiously unhandled rejection'](assert) {
+    assert.throws(function() {
+      run(function() {
+        RSVP.Promise.reject(reason);
+      }); // something is funky, we should likely assert
+    }, reason);
+  }
 
-QUnit.test('sync handled', function(assert) {
-  run(function() {
-    RSVP.Promise.reject(reason).catch(function() {});
-  }); // handled, we shouldn't need to assert.
-  assert.ok(true, 'reached end of test');
-});
-
-QUnit.test(
-  'handled within the same micro-task (via Ember.RVP.Promise)',
-  function(assert) {
+  ['@test sync handled'](assert) {
     run(function() {
-      let rejection = RSVP.Promise.reject(reason);
-      RSVP.Promise.resolve(1).then(() => rejection.catch(function() {}));
+      RSVP.Promise.reject(reason).catch(function() { });
     }); // handled, we shouldn't need to assert.
     assert.ok(true, 'reached end of test');
   }
-);
 
-QUnit.test('handled within the same micro-task (via direct run-loop)', function(
-  assert
-) {
-  run(function() {
-    let rejection = RSVP.Promise.reject(reason);
-    schedule('afterRender', () => rejection.catch(function() {}));
-  }); // handled, we shouldn't need to assert.
-  assert.ok(true, 'reached end of test');
-});
-
-QUnit.test('handled in the next microTask queue flush (next)', function(
-  assert
-) {
-  assert.expect(2);
-  let done = assert.async();
-
-  assert.throws(function() {
+  ['@test handled within the same micro-task (via Ember.RVP.Promise)'](assert) {
     run(function() {
       let rejection = RSVP.Promise.reject(reason);
+      RSVP.Promise.resolve(1).then(() => rejection.catch(function() { }));
+    }); // handled, we shouldn't need to assert.
+    assert.ok(true, 'reached end of test');
+  }
 
-      next(() => {
-        rejection.catch(function() {});
-        assert.ok(true, 'reached end of test');
-        done();
+  ['@test handled within the same micro-task (via direct run-loop)'](assert) {
+    run(function() {
+      let rejection = RSVP.Promise.reject(reason);
+      schedule('afterRender', () => rejection.catch(function() { }));
+    }); // handled, we shouldn't need to assert.
+    assert.ok(true, 'reached end of test');
+  }
+
+  ['@test handled in the next microTask queue flush (next)'](assert) {
+    assert.expect(2);
+    let done = assert.async();
+
+    assert.throws(function() {
+      run(function() {
+        let rejection = RSVP.Promise.reject(reason);
+
+        next(() => {
+          rejection.catch(function() { });
+          assert.ok(true, 'reached end of test');
+          done();
+        });
       });
-    });
-  }, reason);
+    }, reason);
 
-  // a promise rejection survived a full flush of the run-loop without being handled
-  // this is very likely an issue.
-});
+    // a promise rejection survived a full flush of the run-loop without being handled
+    // this is very likely an issue.
+  }
 
-QUnit.test(
-  'handled in the same microTask Queue flush do to data locality',
-  function(assert) {
+  ['@test handled in the same microTask Queue flush do to data locality'](assert) {
     // an ambiguous scenario, this may or may not assert
     // it depends on the locality of `user#1`
     let store = {
@@ -242,16 +214,13 @@ QUnit.test(
     };
     run(function() {
       let rejection = RSVP.Promise.reject(reason);
-      store.find('user', 1).then(() => rejection.catch(function() {}));
+      store.find('user', 1).then(() => rejection.catch(function() { }));
     });
 
     assert.ok(true, 'reached end of test');
   }
-);
 
-QUnit.test(
-  'handled in a different microTask Queue flush do to data locality',
-  function(assert) {
+  ['@test handled in a different microTask Queue flush do to data locality'](assert) {
     let done = assert.async();
     // an ambiguous scenario, this may or may not assert
     // it depends on the locality of `user#1`
@@ -264,6 +233,21 @@ QUnit.test(
       run(function() {
         let rejection = RSVP.Promise.reject(reason);
         store.find('user', 1).then(() => {
+          rejection.catch(function() { });
+          assert.ok(true, 'reached end of test');
+          done();
+        });
+      });
+    }, reason);
+  }
+
+  ['@test handled in the next microTask queue flush (ajax example)'](assert) {
+    let done = assert.async();
+
+    assert.throws(function() {
+      run(function() {
+        let rejection = RSVP.Promise.reject(reason);
+        ajax().then(() => {
           rejection.catch(function() {});
           assert.ok(true, 'reached end of test');
           done();
@@ -271,21 +255,5 @@ QUnit.test(
       });
     }, reason);
   }
-);
-
-QUnit.test('handled in the next microTask queue flush (ajax example)', function(
-  assert
-) {
-  let done = assert.async();
-
-  assert.throws(function() {
-    run(function() {
-      let rejection = RSVP.Promise.reject(reason);
-      ajax().then(() => {
-        rejection.catch(function() {});
-        assert.ok(true, 'reached end of test');
-        done();
-      });
-    });
-  }, reason);
 });
+

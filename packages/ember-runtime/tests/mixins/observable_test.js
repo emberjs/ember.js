@@ -1,12 +1,9 @@
-import { computed, addObserver } from 'ember-metal';
-import { testBoth } from 'internal-test-helpers';
+import { computed, addObserver, get } from 'ember-metal';
 import EmberObject from '../../system/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('mixins/observable');
-
-QUnit.test(
-  'should be able to use getProperties to get a POJO of provided keys',
-  function(assert) {
+moduleFor('mixins/observable', class extends AbstractTestCase {
+  ['@test should be able to use getProperties to get a POJO of provided keys'](assert) {
     let obj = EmberObject.create({
       firstName: 'Steve',
       lastName: 'Jobs',
@@ -17,11 +14,8 @@ QUnit.test(
     assert.equal('Steve', pojo.firstName);
     assert.equal('Jobs', pojo.lastName);
   }
-);
 
-QUnit.test(
-  'should be able to use getProperties with array parameter to get a POJO of provided keys',
-  function(assert) {
+  ['@test should be able to use getProperties with array parameter to get a POJO of provided keys'](assert) {
     let obj = EmberObject.create({
       firstName: 'Steve',
       lastName: 'Jobs',
@@ -32,11 +26,8 @@ QUnit.test(
     assert.equal('Steve', pojo.firstName);
     assert.equal('Jobs', pojo.lastName);
   }
-);
 
-QUnit.test(
-  'should be able to use setProperties to set multiple properties at once',
-  function(assert) {
+  ['@test should be able to use setProperties to set multiple properties at once'](assert) {
     let obj = EmberObject.create({
       firstName: 'Steve',
       lastName: 'Jobs',
@@ -47,50 +38,39 @@ QUnit.test(
     assert.equal('Tim', obj.get('firstName'));
     assert.equal('Cook', obj.get('lastName'));
   }
-);
 
-testBoth('calling setProperties completes safely despite exceptions', function(
-  get,
-  set,
-  assert
-) {
-  let exc = new Error('Something unexpected happened!');
-  let obj = EmberObject.extend({
-    companyName: computed({
-      get() {
-        return 'Apple, Inc.';
-      },
-      set() {
-        throw exc;
-      }
-    })
-  }).create({
-    firstName: 'Steve',
-    lastName: 'Jobs'
-  });
-
-  let firstNameChangedCount = 0;
-
-  addObserver(obj, 'firstName', () => firstNameChangedCount++);
-
-  try {
-    obj.setProperties({
-      firstName: 'Tim',
-      lastName: 'Cook',
-      companyName: 'Fruit Co., Inc.'
+  ['@test calling setProperties completes safely despite exceptions'](assert) {
+    let exc = new Error('Something unexpected happened!');
+    let obj = EmberObject.extend({
+      companyName: computed({
+        get() { return 'Apple, Inc.'; },
+        set() { throw exc; }
+      })
+    }).create({
+      firstName: 'Steve',
+      lastName: 'Jobs'
     });
-  } catch (err) {
-    if (err !== exc) {
-      throw err;
+
+    let firstNameChangedCount = 0;
+
+    addObserver(obj, 'firstName', () => firstNameChangedCount++);
+
+    try {
+      obj.setProperties({
+        firstName: 'Tim',
+        lastName: 'Cook',
+        companyName: 'Fruit Co., Inc.'
+      });
+    } catch (err) {
+      if (err !== exc) {
+        throw err;
+      }
     }
+
+    assert.equal(firstNameChangedCount, 1, 'firstName should have fired once');
   }
 
-  assert.equal(firstNameChangedCount, 1, 'firstName should have fired once');
-});
-
-testBoth(
-  'should be able to retrieve cached values of computed properties without invoking the computed property',
-  function(get, set, assert) {
+  ['@test should be able to retrieve cached values of computed properties without invoking the computed property'](assert) {
     let obj = EmberObject.extend({
       foo: computed(function() {
         return 'foo';
@@ -99,51 +79,36 @@ testBoth(
       bar: 'bar'
     });
 
-    assert.equal(
-      obj.cacheFor('foo'),
-      undefined,
-      'should return undefined if no value has been cached'
-    );
+    assert.equal(obj.cacheFor('foo'), undefined, 'should return undefined if no value has been cached');
     get(obj, 'foo');
 
     assert.equal(get(obj, 'foo'), 'foo', 'precond - should cache the value');
-    assert.equal(
-      obj.cacheFor('foo'),
-      'foo',
-      'should return the cached value after it is invoked'
-    );
+    assert.equal(obj.cacheFor('foo'), 'foo', 'should return the cached value after it is invoked');
 
-    assert.equal(
-      obj.cacheFor('bar'),
-      undefined,
-      'returns undefined if the value is not a computed property'
-    );
+    assert.equal(obj.cacheFor('bar'), undefined, 'returns undefined if the value is not a computed property');
   }
-);
 
-QUnit.test(
-  'incrementProperty should work even if value is number in string',
-  function(assert) {
+  ['@test incrementProperty should work even if value is number in string'](assert) {
     let obj = EmberObject.create({
       age: '24'
     });
     obj.incrementProperty('age');
     assert.equal(25, obj.get('age'));
   }
-);
 
-QUnit.test('propertyWillChange triggers a deprecation warning', function() {
-  let obj = EmberObject.create();
+  ['@test propertyWillChange triggers a deprecation warning']() {
+    let obj = EmberObject.create();
 
-  expectDeprecation(() => {
-    obj.propertyWillChange('foo');
-  }, /'propertyWillChange' is deprecated and has no effect. It is safe to remove this call./);
-});
+    expectDeprecation(() => {
+      obj.propertyWillChange('foo');
+    }, /'propertyWillChange' is deprecated and has no effect. It is safe to remove this call./);
+  }
 
-QUnit.test('propertyDidChange triggers a deprecation warning', function() {
-  let obj = EmberObject.create();
+  ['@test propertyDidChange triggers a deprecation warning']() {
+    let obj = EmberObject.create();
 
-  expectDeprecation(() => {
-    obj.propertyDidChange('foo');
-  }, /'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'./);
+    expectDeprecation(() => {
+      obj.propertyDidChange('foo');
+    }, /'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'./);
+  }
 });

@@ -1,41 +1,26 @@
 import { ENV } from 'ember-environment';
 import { w } from '../../../system/string';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('EmberStringUtils.w');
-
-if (!ENV.EXTEND_PROTOTYPES.String) {
-  QUnit.test(
-    'String.prototype.w is not available without EXTEND_PROTOTYPES',
-    function(assert) {
-      assert.ok(
-        'undefined' === typeof String.prototype.w,
-        'String.prototype helper disabled'
-      );
-    }
-  );
+function test(assert, given, expected, description) {
+  assert.deepEqual(w(given), expected, description);
+  if (ENV.EXTEND_PROTOTYPES.String) {
+    assert.deepEqual(given.w(), expected, description);
+  }
 }
 
-function test(given, expected, description) {
-  QUnit.test(description, function(assert) {
-    assert.deepEqual(w(given), expected);
-    if (ENV.EXTEND_PROTOTYPES.String) {
-      assert.deepEqual(given.w(), expected);
+moduleFor('EmberStringUtils.w', class extends AbstractTestCase {
+  ['@test String.prototype.w is not available without EXTEND_PROTOTYPES'](assert) {
+    if (!ENV.EXTEND_PROTOTYPES.String) {
+      assert.ok('undefined' === typeof String.prototype.w, 'String.prototype helper disabled');
+    } else {
+      assert.expect(0);
     }
-  });
-}
+  }
 
-test(
-  'one two three',
-  ['one', 'two', 'three'],
-  `w('one two three') => ['one','two','three']`
-);
-test(
-  'one   two  three',
-  ['one', 'two', 'three'],
-  `w('one    two    three') with extra spaces between words => ['one','two','three']`
-);
-test(
-  'one\ttwo  three',
-  ['one', 'two', 'three'],
-  `w('one two three') with tabs`
-);
+  ['@test String w tests'](assert) {
+    test(assert, 'one two three',    ['one', 'two', 'three'], `w('one two three') => ['one','two','three']`);
+    test(assert, 'one   two  three', ['one', 'two', 'three'], `w('one    two    three') with extra spaces between words => ['one','two','three']`);
+    test(assert, 'one\ttwo  three',  ['one', 'two', 'three'], `w('one two three') with tabs`);
+  }
+});

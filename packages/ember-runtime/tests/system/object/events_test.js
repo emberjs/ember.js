@@ -1,33 +1,27 @@
 import EmberObject from '../../../system/object';
 import Evented from '../../../mixins/evented';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('Object events');
-
-QUnit.test('a listener can be added to an object', function(assert) {
-  let count = 0;
-  let F = function() {
-    count++;
-  };
-
-  let obj = EmberObject.extend(Evented).create();
-
-  obj.on('event!', F);
-  obj.trigger('event!');
-
-  assert.equal(count, 1, 'the event was triggered');
-
-  obj.trigger('event!');
-
-  assert.equal(count, 2, 'the event was triggered');
-});
-
-QUnit.test(
-  'a listener can be added and removed automatically the first time it is triggered',
-  function(assert) {
+moduleFor('Object events', class extends AbstractTestCase {
+  ['@test a listener can be added to an object'](assert) {
     let count = 0;
-    let F = function() {
-      count++;
-    };
+    let F = function() { count++; };
+
+    let obj = EmberObject.extend(Evented).create();
+
+    obj.on('event!', F);
+    obj.trigger('event!');
+
+    assert.equal(count, 1, 'the event was triggered');
+
+    obj.trigger('event!');
+
+    assert.equal(count, 2, 'the event was triggered');
+  }
+
+  ['@test a listener can be added and removed automatically the first time it is triggered'](assert) {
+    let count = 0;
+    let F = function() { count++; };
 
     let obj = EmberObject.extend(Evented).create();
 
@@ -40,27 +34,24 @@ QUnit.test(
 
     assert.equal(count, 1, 'the event was not triggered again');
   }
-);
 
-QUnit.test('triggering an event can have arguments', function(assert) {
-  let self, args;
+  ['@test triggering an event can have arguments'](assert) {
+    let self, args;
 
-  let obj = EmberObject.extend(Evented).create();
+    let obj = EmberObject.extend(Evented).create();
 
-  obj.on('event!', function() {
-    args = [].slice.call(arguments);
-    self = this;
-  });
+    obj.on('event!', function() {
+      args = [].slice.call(arguments);
+      self = this;
+    });
 
-  obj.trigger('event!', 'foo', 'bar');
+    obj.trigger('event!', 'foo', 'bar');
 
-  assert.deepEqual(args, ['foo', 'bar']);
-  assert.equal(self, obj);
-});
+    assert.deepEqual(args, ['foo', 'bar']);
+    assert.equal(self, obj);
+  }
 
-QUnit.test(
-  'a listener can be added and removed automatically and have arguments',
-  function(assert) {
+  ['@test a listener can be added and removed automatically and have arguments'](assert) {
     let self, args;
     let count = 0;
 
@@ -84,33 +75,28 @@ QUnit.test(
     assert.equal(count, 1, 'the event was not triggered again');
     assert.equal(self, obj);
   }
-);
 
-QUnit.test('binding an event can specify a different target', function(assert) {
-  let self, args;
+  ['@test binding an event can specify a different target'](assert) {
+    let self, args;
 
-  let obj = EmberObject.extend(Evented).create();
-  let target = {};
+    let obj = EmberObject.extend(Evented).create();
+    let target = {};
 
-  obj.on('event!', target, function() {
-    args = [].slice.call(arguments);
-    self = this;
-  });
+    obj.on('event!', target, function() {
+      args = [].slice.call(arguments);
+      self = this;
+    });
 
-  obj.trigger('event!', 'foo', 'bar');
+    obj.trigger('event!', 'foo', 'bar');
 
-  assert.deepEqual(args, ['foo', 'bar']);
-  assert.equal(self, target);
-});
+    assert.deepEqual(args, ['foo', 'bar']);
+    assert.equal(self, target);
+  }
 
-QUnit.test(
-  'a listener registered with one can take method as string and can be added with different target',
-  function(assert) {
+  ['@test a listener registered with one can take method as string and can be added with different target'](assert) {
     let count = 0;
     let target = {};
-    target.fn = function() {
-      count++;
-    };
+    target.fn = function() { count++; };
 
     let obj = EmberObject.extend(Evented).create();
 
@@ -123,39 +109,36 @@ QUnit.test(
 
     assert.equal(count, 1, 'the event was not triggered again');
   }
-);
 
-QUnit.test('a listener registered with one can be removed with off', function(
-  assert
-) {
-  let obj = EmberObject.extend(Evented, {
-    F() {}
-  }).create();
-  let F = function() {};
+  ['@test a listener registered with one can be removed with off'](assert) {
+    let obj = EmberObject.extend(Evented, {
+      F() {}
+    }).create();
+    let F = function() {};
 
-  obj.one('event!', F);
-  obj.one('event!', obj, 'F');
+    obj.one('event!', F);
+    obj.one('event!', obj, 'F');
 
-  assert.equal(obj.has('event!'), true, 'has events');
+    assert.equal(obj.has('event!'), true, 'has events');
 
-  obj.off('event!', F);
-  obj.off('event!', obj, 'F');
+    obj.off('event!', F);
+    obj.off('event!', obj, 'F');
 
-  assert.equal(obj.has('event!'), false, 'has no more events');
+    assert.equal(obj.has('event!'), false, 'has no more events');
+  }
+
+  ['@test adding and removing listeners should be chainable'](assert) {
+    let obj = EmberObject.extend(Evented).create();
+    let F = function() {};
+
+    let ret = obj.on('event!', F);
+    assert.equal(ret, obj, '#on returns self');
+
+    ret = obj.off('event!', F);
+    assert.equal(ret, obj, '#off returns self');
+
+    ret = obj.one('event!', F);
+    assert.equal(ret, obj, '#one returns self');
+  }
 });
 
-QUnit.test('adding and removing listeners should be chainable', function(
-  assert
-) {
-  let obj = EmberObject.extend(Evented).create();
-  let F = function() {};
-
-  let ret = obj.on('event!', F);
-  assert.equal(ret, obj, '#on returns self');
-
-  ret = obj.off('event!', F);
-  assert.equal(ret, obj, '#off returns self');
-
-  ret = obj.one('event!', F);
-  assert.equal(ret, obj, '#one returns self');
-});

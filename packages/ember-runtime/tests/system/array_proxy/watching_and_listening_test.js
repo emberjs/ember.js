@@ -8,65 +8,67 @@ import {
 } from 'ember-metal';
 import ArrayProxy from '../../../system/array_proxy';
 import { A } from '../../../mixins/array';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function sortedListenersFor(obj, eventName) {
   let listeners = peekMeta(obj).matchingListeners(eventName) || [];
 
   let keys = [];
   for (let i = 0; i < listeners.length; i += 3) {
-    keys.push(listeners[i + 1]);
+    keys.push(listeners[i+1]);
   }
   return keys.sort();
 }
 
-QUnit.module('ArrayProxy - watching and listening');
+moduleFor('ArrayProxy - watching and listening', class extends AbstractTestCase {
+  [`@test setting 'content' adds listeners correctly`](assert) {
+    let content = A();
+    let proxy = ArrayProxy.create();
 
-QUnit.test(`setting 'content' adds listeners correctly`, function(assert) {
-  let content = A();
-  let proxy = ArrayProxy.create();
+    assert.deepEqual(sortedListenersFor(content, '@array:before'), []);
+    assert.deepEqual(sortedListenersFor(content, '@array:change'), []);
 
-  assert.deepEqual(sortedListenersFor(content, '@array:before'), []);
-  assert.deepEqual(sortedListenersFor(content, '@array:change'), []);
+    proxy.set('content', content);
 
-  proxy.set('content', content);
+    assert.deepEqual(
+      sortedListenersFor(content, '@array:before'),
+      ['_arrangedContentArrayWillChange']
+    );
+    assert.deepEqual(
+      sortedListenersFor(content, '@array:change'),
+      ['_arrangedContentArrayDidChange']
+    );
+  }
 
-  assert.deepEqual(sortedListenersFor(content, '@array:before'), [
-    '_arrangedContentArrayWillChange'
-  ]);
-  assert.deepEqual(sortedListenersFor(content, '@array:change'), [
-    '_arrangedContentArrayDidChange'
-  ]);
-});
+  [`@test changing 'content' adds and removes listeners correctly`](assert) {
+    let content1 = A();
+    let content2 = A();
+    let proxy = ArrayProxy.create({ content: content1 });
 
-QUnit.test(`changing 'content' adds and removes listeners correctly`, function(
-  assert
-) {
-  let content1 = A();
-  let content2 = A();
-  let proxy = ArrayProxy.create({ content: content1 });
+    assert.deepEqual(
+      sortedListenersFor(content1, '@array:before'),
+      ['_arrangedContentArrayWillChange']
+    );
+    assert.deepEqual(
+      sortedListenersFor(content1, '@array:change'),
+      ['_arrangedContentArrayDidChange']
+    );
 
-  assert.deepEqual(sortedListenersFor(content1, '@array:before'), [
-    '_arrangedContentArrayWillChange'
-  ]);
-  assert.deepEqual(sortedListenersFor(content1, '@array:change'), [
-    '_arrangedContentArrayDidChange'
-  ]);
+    proxy.set('content', content2);
 
-  proxy.set('content', content2);
+    assert.deepEqual(sortedListenersFor(content1, '@array:before'), []);
+    assert.deepEqual(sortedListenersFor(content1, '@array:change'), []);
+    assert.deepEqual(
+      sortedListenersFor(content2, '@array:before'),
+      ['_arrangedContentArrayWillChange']
+    );
+    assert.deepEqual(
+      sortedListenersFor(content2, '@array:change'),
+      ['_arrangedContentArrayDidChange']
+    );
+  }
 
-  assert.deepEqual(sortedListenersFor(content1, '@array:before'), []);
-  assert.deepEqual(sortedListenersFor(content1, '@array:change'), []);
-  assert.deepEqual(sortedListenersFor(content2, '@array:before'), [
-    '_arrangedContentArrayWillChange'
-  ]);
-  assert.deepEqual(sortedListenersFor(content2, '@array:change'), [
-    '_arrangedContentArrayDidChange'
-  ]);
-});
-
-QUnit.test(
-  `regression test for https://github.com/emberjs/ember.js/issues/12475`,
-  function(assert) {
+  [`@test regression test for https://github.com/emberjs/ember.js/issues/12475`](assert) {
     let item1a = { id: 1 };
     let item1b = { id: 2 };
     let item1c = { id: 3 };
@@ -75,13 +77,9 @@ QUnit.test(
     let proxy = ArrayProxy.create({ content: content1 });
     let obj = { proxy };
 
-    defineProperty(
-      obj,
-      'ids',
-      computed('proxy.@each.id', function() {
-        return get(this, 'proxy').mapBy('id');
-      })
-    );
+    defineProperty(obj, 'ids', computed('proxy.@each.id', function() {
+      return get(this, 'proxy').mapBy('id');
+    }));
 
     // These manually added observers are to simulate the observers added by the
     // rendering process in a template like:
@@ -89,9 +87,9 @@ QUnit.test(
     // {{#each items as |item|}}
     //   {{item.id}}
     // {{/each}}
-    addObserver(item1a, 'id', function() {});
-    addObserver(item1b, 'id', function() {});
-    addObserver(item1c, 'id', function() {});
+    addObserver(item1a, 'id', function() { });
+    addObserver(item1b, 'id', function() { });
+    addObserver(item1c, 'id', function() { });
 
     // The EachProxy has not yet been consumed. Only the manually added
     // observers are watching.
@@ -131,9 +129,9 @@ QUnit.test(
     let item2c = { id: 6 };
     let content2 = A([item2a, item2b, item2c]);
 
-    addObserver(item2a, 'id', function() {});
-    addObserver(item2b, 'id', function() {});
-    addObserver(item2c, 'id', function() {});
+    addObserver(item2a, 'id', function() { });
+    addObserver(item2b, 'id', function() { });
+    addObserver(item2c, 'id', function() { });
 
     proxy.set('content', content2);
 
@@ -161,4 +159,5 @@ QUnit.test(
     assert.equal(watcherCount(item2b, 'id'), 2);
     assert.equal(watcherCount(item2c, 'id'), 2);
   }
-);
+});
+

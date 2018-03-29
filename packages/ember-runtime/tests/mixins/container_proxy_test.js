@@ -2,8 +2,9 @@ import { OWNER } from 'ember-utils';
 import { Container, Registry } from 'container';
 import ContainerProxy from '../../mixins/container_proxy';
 import EmberObject from '../../system/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('ember-runtime/mixins/container_proxy', {
+moduleFor('ember-runtime/mixins/container_proxy', class extends AbstractTestCase {
   beforeEach() {
     this.Owner = EmberObject.extend(ContainerProxy);
     this.instance = this.Owner.create();
@@ -14,14 +15,11 @@ QUnit.module('ember-runtime/mixins/container_proxy', {
       owner: this.instance
     });
   }
+
+  ['@test provides ownerInjection helper method'](assert) {
+    let result = this.instance.ownerInjection();
+
+    assert.equal(result[OWNER], this.instance, 'returns an object with the OWNER symbol');
+  }
 });
 
-QUnit.test('provides ownerInjection helper method', function(assert) {
-  let result = this.instance.ownerInjection();
-
-  assert.equal(
-    result[OWNER],
-    this.instance,
-    'returns an object with the OWNER symbol'
-  );
-});
