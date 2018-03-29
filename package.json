@@ -40,7 +40,7 @@
     "link:glimmer": "node bin/yarn-link-glimmer.js",
     "start": "ember serve",
     "pretest": "ember build",
-    "lint": "tslint -p tsconfig.json && eslint node-tests",
+    "lint": "TEST_SUITE=code-quality node bin/run-tests.js",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "test:node": "qunit tests/**/*-test.js",
