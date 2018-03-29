@@ -109,7 +109,7 @@ export function checkWaiters() {
 
 function indexOf(context, callback) {
   for (let i = 0; i < callbacks.length; i++) {
-    if (callbacks[i] = callback && contexts[i] === context) {
+    if (callbacks[i] === callback && contexts[i] === context) {
       return i;
     }
   }
