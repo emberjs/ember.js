@@ -41,6 +41,7 @@
     "start": "ember serve",
     "pretest": "ember build",
     "lint": "TEST_SUITE=code-quality node bin/run-tests.js",
+    "lint:fix": "eslint --fix .",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "test:node": "qunit tests/**/*-test.js",
