@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /* globals QUnit */
 /* eslint-disable no-console */
 

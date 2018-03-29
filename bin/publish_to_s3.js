@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
 // To invoke this from the commandline you need the following to env vars to exist:
 //
