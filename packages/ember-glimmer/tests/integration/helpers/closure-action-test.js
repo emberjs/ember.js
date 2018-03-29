@@ -390,7 +390,7 @@ moduleFor(
 
       let OuterComponent = Component.extend({
         third,
-        outerSubmit(actualFirst, actualSecond, actualThird, actualFourth) {
+        outerSubmit() {
           // eslint-disable-line no-unused-vars
           actualArgs = [...arguments];
         }

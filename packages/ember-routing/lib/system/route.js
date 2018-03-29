@@ -1171,7 +1171,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  transitionTo(name, context) {
+  transitionTo(/* name, context */) {
     // eslint-disable-line no-unused-vars
     return this._router.transitionTo(...prefixRouteNameArg(this, arguments));
   },
@@ -1829,7 +1829,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  setupController(controller, context, transition) {
+  setupController(controller, context /*, transition */) {
     // eslint-disable-line no-unused-vars
     if (controller && context !== undefined) {
       set(controller, 'model', context);
@@ -2011,7 +2011,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  renderTemplate(controller, model) {
+  renderTemplate(/* controller, model */) {
     // eslint-disable-line no-unused-vars
     this.render();
   },

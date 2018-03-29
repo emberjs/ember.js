@@ -41,7 +41,7 @@ class EachProxy {
   // ARRAY CHANGES
   // Invokes whenever the content array itself changes.
 
-  arrayWillChange(content, idx, removedCnt, addedCnt) {
+  arrayWillChange(content, idx, removedCnt /*, addedCnt */) {
     // eslint-disable-line no-unused-vars
     let keys = this._keys;
     let lim = removedCnt > 0 ? idx + removedCnt : -1;

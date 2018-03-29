@@ -157,7 +157,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '[]': computed({
-    get(key) {
+    get() {
       // eslint-disable-line no-unused-vars
       return this;
     },
@@ -635,7 +635,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} filtered array
     @public
   */
-  filterBy(key, value) {
+  filterBy() {
     // eslint-disable-line no-unused-vars
     return this.filter(iter.apply(this, arguments));
   },
@@ -717,7 +717,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object} found item or `undefined`
     @public
   */
-  findBy(key, value) {
+  findBy() {
     // eslint-disable-line no-unused-vars
     return this.find(iter.apply(this, arguments));
   },
@@ -781,7 +781,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isEvery(key, value) {
+  isEvery() {
     // eslint-disable-line no-unused-vars
     return this.every(iter.apply(this, arguments));
   },
@@ -854,7 +854,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isAny(key, value) {
+  isAny() {
     // eslint-disable-line no-unused-vars
     return this.any(iter.apply(this, arguments));
   },
