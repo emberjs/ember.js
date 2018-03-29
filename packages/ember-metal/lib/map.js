@@ -271,7 +271,7 @@ class Map {
     let guid = guidFor(key);
 
     // ensure we don't store -0
-    let k = key === -0 ? 0 : key;
+    let k = key === -0 ? 0 : key; // eslint-disable-line no-compare-neg-zero
 
     keys.add(k, guid);
 

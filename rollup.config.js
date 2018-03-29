@@ -1,7 +1,9 @@
-import * as fs from 'fs';
-import * as path from 'path';
+'use strict';
 
-export default {
+const fs = require('fs');
+const path = require('path');
+
+module.exports = {
   input: 'dist/es/ember/index.js',
   plugins: [emberPackage()],
   output: {

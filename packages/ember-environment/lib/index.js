@@ -1,4 +1,3 @@
-/* globals module */
 import global from './global';
 import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './utils';
 /**
