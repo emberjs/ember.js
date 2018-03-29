@@ -18,7 +18,7 @@ const callbacks = [];
    import { registerWaiter } from '@ember/test';
 
    registerWaiter(function() {
-     return myPendingTransactions() == 0;
+     return myPendingTransactions() === 0;
    });
    ```
    The `context` argument allows you to optionally specify the `this`
@@ -109,7 +109,8 @@ export function checkWaiters() {
 
 function indexOf(context, callback) {
   for (let i = 0; i < callbacks.length; i++) {
-    if (callbacks[i] === callback && contexts[i] === context) {
+    if (callbacks[i] =
+        callback && contexts[i] === context) {
       return i;
     }
   }
