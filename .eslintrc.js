@@ -2,15 +2,18 @@ module.exports = {
   root: true,
   extends: [
     'eslint:recommended',
+    'prettier',
   ],
   plugins: [
-    "ember-internal"
+    'ember-internal',
+    'prettier',
   ],
 
   rules: {
     'semi': 'error',
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
+    'prettier/prettier': 'error',
   },
 
   overrides: [
@@ -23,7 +26,7 @@ module.exports = {
       },
 
       globals: {
-        // A safe subset of "browser:true":
+        // A safe subset of 'browser:true':
         'window': true,
         'document': true,
         'setTimeout': true,
