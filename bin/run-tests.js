@@ -1,5 +1,6 @@
 /* globals QUnit */
 /* eslint-disable no-console */
+'use strict';
 
 var execa = require('execa');
 var RSVP  = require('rsvp');
