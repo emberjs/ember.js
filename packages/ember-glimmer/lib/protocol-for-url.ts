@@ -51,5 +51,5 @@ function nodeProtocolForURL(url: string) {
   if (typeof url === 'string') {
     protocol = nodeURL.parse(url).protocol;
   }
-  return (protocol === null) ? ':' : protocol;
+  return protocol === null ? ':' : protocol;
 }

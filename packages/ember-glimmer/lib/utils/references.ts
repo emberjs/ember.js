@@ -20,27 +20,10 @@ import {
 } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
-import {
-  didRender,
-  get,
-  set,
-  tagFor,
-  tagForProperty,
-  watchKey,
-} from 'ember-metal';
-import {
-  isProxy,
-  symbol,
-} from 'ember-utils';
-import {
-  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-  MANDATORY_SETTER,
-} from 'ember/features';
-import {
-  HelperFunction,
-  HelperInstance,
-  RECOMPUTE_TAG,
-} from '../helper';
+import { didRender, get, set, tagFor, tagForProperty, watchKey } from 'ember-metal';
+import { isProxy, symbol } from 'ember-utils';
+import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER, MANDATORY_SETTER } from 'ember/features';
+import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import emberToBool from './to-bool';
 
 export const UPDATE = symbol('UPDATE');
@@ -123,7 +106,11 @@ interface TwoWayFlushDetectionTag extends RevisionTag {
 
 let TwoWayFlushDetectionTag: {
   new (tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TwoWayFlushDetectionTag;
-  create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TagWrapper<TwoWayFlushDetectionTag>;
+  create(
+    tag: Tag,
+    key: string,
+    ref: VersionedPathReference<Opaque>
+  ): TagWrapper<TwoWayFlushDetectionTag>;
 };
 
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
@@ -133,7 +120,11 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     public key: string;
     public ref: any;
 
-    static create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TagWrapper<TwoWayFlushDetectionTag> {
+    static create(
+      tag: Tag,
+      key: string,
+      ref: VersionedPathReference<Opaque>
+    ): TagWrapper<TwoWayFlushDetectionTag> {
       return new TagWrapper((tag as any).type, new TwoWayFlushDetectionTag(tag, key, ref));
     }
 
@@ -183,7 +174,8 @@ export abstract class PropertyReference extends CachedReference {
   }
 }
 
-export class RootPropertyReference extends PropertyReference implements VersionedPathReference<Opaque> {
+export class RootPropertyReference extends PropertyReference
+  implements VersionedPathReference<Opaque> {
   public tag: Tag;
   private _parentValue: any;
   private _propertyKey: string;
@@ -195,7 +187,11 @@ export class RootPropertyReference extends PropertyReference implements Versione
     this._propertyKey = propertyKey;
 
     if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-      this.tag = TwoWayFlushDetectionTag.create(tagForProperty(parentValue, propertyKey), propertyKey, this);
+      this.tag = TwoWayFlushDetectionTag.create(
+        tagForProperty(parentValue, propertyKey),
+        propertyKey,
+        this
+      );
     } else {
       this.tag = tagForProperty(parentValue, propertyKey);
     }
@@ -257,7 +253,7 @@ export class NestedPropertyReference extends PropertyReference {
       return parentValue.length;
     }
 
-    if (parentValueType === 'object' && parentValue !== null || parentValueType === 'function') {
+    if ((parentValueType === 'object' && parentValue !== null) || parentValueType === 'function') {
       if (MANDATORY_SETTER) {
         watchKey(parentValue, _propertyKey);
       }
@@ -303,7 +299,8 @@ export class UpdatableReference extends EmberPathReference {
   }
 }
 
-export class ConditionalReference extends GlimmerConditionalReference implements VersionedReference<boolean> {
+export class ConditionalReference extends GlimmerConditionalReference
+  implements VersionedReference<boolean> {
   public objectTag: TagWrapper<UpdatableTag>;
   static create(reference: VersionedReference<Opaque>): VersionedReference<boolean> {
     if (isConst(reference)) {
@@ -447,7 +444,7 @@ export class UnboundReference<T> extends ConstReference<T> {
 export class ReadonlyReference extends CachedReference {
   constructor(private inner: VersionedPathReference<Opaque>) {
     super();
-}
+  }
 
   get tag() {
     return this.inner.tag;
@@ -466,10 +463,13 @@ export class ReadonlyReference extends CachedReference {
   }
 }
 
-export function referenceFromParts(root: VersionedPathReference<Opaque>, parts: string[]): VersionedPathReference<Opaque> {
+export function referenceFromParts(
+  root: VersionedPathReference<Opaque>,
+  parts: string[]
+): VersionedPathReference<Opaque> {
   let reference = root;
 
-  for (let i = 0; i< parts.length; i++) {
+  for (let i = 0; i < parts.length; i++) {
     reference = reference.get(parts[i]);
   }
 

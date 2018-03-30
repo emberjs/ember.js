@@ -52,7 +52,9 @@ export function escapeExpression(string: any): string {
     string = '' + string;
   }
 
-  if (!possible.test(string)) { return string; }
+  if (!possible.test(string)) {
+    return string;
+  }
   return string.replace(badChars, escapeChar);
 }
 

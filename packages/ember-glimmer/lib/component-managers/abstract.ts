@@ -7,7 +7,7 @@ import {
   DynamicScope,
   ElementOperations,
   Environment,
-  PreparedArguments
+  PreparedArguments,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
@@ -17,8 +17,7 @@ import DebugStack from '../utils/debug-stack';
 // tslint:disable-next-line:max-line-length
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
 
-export default abstract class AbstractManager<T, U>
-  implements ComponentManager<T, U> {
+export default abstract class AbstractManager<T, U> implements ComponentManager<T, U> {
   public debugStack: typeof DebugStack;
   public _pushToDebugStack!: (name: string, environment: any) => void;
   public _pushEngineToDebugStack!: (name: string, environment: any) => void;
@@ -47,11 +46,7 @@ export default abstract class AbstractManager<T, U>
   abstract getSelf(component: T): VersionedPathReference<Opaque>;
   abstract getCapabilities(state: U): ComponentCapabilities;
 
-  didCreateElement(
-    _component: T,
-    _element: Simple.Element,
-    _operations: ElementOperations
-  ): void {
+  didCreateElement(_component: T, _element: Simple.Element, _operations: ElementOperations): void {
     // noop
   }
 
@@ -90,18 +85,12 @@ export default abstract class AbstractManager<T, U>
 }
 
 if (DEBUG) {
-  AbstractManager.prototype._pushToDebugStack = function(
-    name: string,
-    environment
-  ) {
+  AbstractManager.prototype._pushToDebugStack = function(name: string, environment) {
     this.debugStack = environment.debugStack;
     this.debugStack.push(name);
   };
 
-  AbstractManager.prototype._pushEngineToDebugStack = function(
-    name: string,
-    environment
-  ) {
+  AbstractManager.prototype._pushEngineToDebugStack = function(name: string, environment) {
     this.debugStack = environment.debugStack;
     this.debugStack.pushEngine(name);
   };

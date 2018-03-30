@@ -1,15 +1,6 @@
-import {
-  ComponentCapabilities,
-} from '@glimmer/interfaces';
-import {
-  CONSTANT_TAG, Tag, VersionedPathReference
-} from '@glimmer/reference';
-import {
-  Arguments,
-  ComponentDefinition,
-  Invocation,
-  WithStaticLayout
-} from '@glimmer/runtime';
+import { ComponentCapabilities } from '@glimmer/interfaces';
+import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
+import { Arguments, ComponentDefinition, Invocation, WithStaticLayout } from '@glimmer/runtime';
 
 import { DEBUG } from 'ember-env-flags';
 import { generateController, generateControllerFactory } from 'ember-routing';
@@ -27,13 +18,15 @@ export interface RenderDefinitionState {
   template: OwnedTemplate;
 }
 
-export abstract class AbstractRenderManager<T extends RenderState> extends AbstractManager<T, RenderDefinitionState>
+export abstract class AbstractRenderManager<T extends RenderState>
+  extends AbstractManager<T, RenderDefinitionState>
   implements WithStaticLayout<T, RenderDefinitionState, OwnedTemplateMeta, any> {
-
-  create(env: Environment,
-      definition: RenderDefinitionState,
-      args: Arguments,
-      dynamicScope: DynamicScope): T {
+  create(
+    env: Environment,
+    definition: RenderDefinitionState,
+    args: Arguments,
+    dynamicScope: DynamicScope
+  ): T {
     let { name } = definition;
 
     if (DEBUG) {
@@ -53,7 +46,7 @@ export abstract class AbstractRenderManager<T extends RenderState> extends Abstr
     const layout = template!.asLayout();
     return {
       handle: layout.compile(),
-      symbolTable: layout.symbolTable
+      symbolTable: layout.symbolTable,
     };
   }
 
@@ -86,7 +79,7 @@ const CAPABILITIES = {
   createCaller: true,
   dynamicScope: true,
   updateHook: true,
-  createInstance: true
+  createInstance: true,
 };
 
 class SingletonRenderManager extends AbstractRenderManager<RenderState> {
@@ -121,13 +114,15 @@ const NONSINGLETON_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   createCaller: false,
   updateHook: true,
-  createInstance: true
+  createInstance: true,
 };
 
 class NonSingletonRenderManager extends AbstractRenderManager<RenderStateWithModel> {
   createRenderState(args: Arguments, owner: Owner, name: string) {
     let model = args.positional.at(1);
-    let factory = owner.factoryFor(`controller:${name}`) || generateControllerFactory(owner, `controller:${name}`);
+    let factory =
+      owner.factoryFor(`controller:${name}`) ||
+      generateControllerFactory(owner, `controller:${name}`);
     let controller = factory.create({ model: model.value() });
     return { controller, model };
   }
@@ -152,10 +147,13 @@ class NonSingletonRenderManager extends AbstractRenderManager<RenderStateWithMod
 export const NON_SINGLETON_RENDER_MANAGER = new NonSingletonRenderManager();
 
 export class RenderDefinition implements ComponentDefinition {
-
   public state: RenderDefinitionState;
 
-  constructor(name: string, template: OwnedTemplate, public manager: SingletonRenderManager | NonSingletonRenderManager) {
+  constructor(
+    name: string,
+    template: OwnedTemplate,
+    public manager: SingletonRenderManager | NonSingletonRenderManager
+  ) {
     this.state = {
       name,
       template,

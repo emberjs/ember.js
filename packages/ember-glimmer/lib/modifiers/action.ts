@@ -1,9 +1,5 @@
-import {
-  Simple
-} from '@glimmer/interfaces';
-import {
-  RevisionTag, TagWrapper
-} from '@glimmer/reference';
+import { Simple } from '@glimmer/interfaces';
+import { RevisionTag, TagWrapper } from '@glimmer/reference';
 import {
   Arguments,
   CapturedNamedArguments,
@@ -11,16 +7,11 @@ import {
   DynamicScope,
   ModifierManager,
 } from '@glimmer/runtime';
-import {
-  Destroyable
-} from '@glimmer/util';
+import { Destroyable } from '@glimmer/util';
 import { assert } from 'ember-debug';
 import { flaggedInstrument, join } from 'ember-metal';
 import { uuid } from 'ember-utils';
-import {
-  ActionManager,
-  isSimpleClick,
-} from 'ember-views';
+import { ActionManager, isSimpleClick } from 'ember-views';
 import { INVOKE } from '../utils/references';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
@@ -80,7 +71,17 @@ export class ActionState {
   public eventName: any;
   public tag: TagWrapper<RevisionTag | null>;
 
-  constructor(element: Simple.Element, actionId: number, actionName: any, actionArgs: any[], namedArgs: CapturedNamedArguments, positionalArgs: CapturedPositionalArguments, implicitTarget: any, dom: any, tag: TagWrapper<RevisionTag | null>) {
+  constructor(
+    element: Simple.Element,
+    actionId: number,
+    actionName: any,
+    actionArgs: any[],
+    namedArgs: CapturedNamedArguments,
+    positionalArgs: CapturedPositionalArguments,
+    implicitTarget: any,
+    dom: any,
+    tag: TagWrapper<RevisionTag | null>
+  ) {
     this.element = element;
     this.actionId = actionId;
     this.actionName = actionName;
@@ -167,7 +168,7 @@ export class ActionState {
       } else {
         assert(
           `The action '${actionName}' did not exist on ${target}`,
-          typeof target[actionName] === 'function',
+          typeof target[actionName] === 'function'
         );
         flaggedInstrument('interaction.ember-action', payload, () => {
           target[actionName].apply(target, args);
@@ -201,11 +202,15 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
         actionName = actionNameRef.value();
 
         assert(
-          'You specified a quoteless path, `' + actionLabel + '`, to the ' +
+          'You specified a quoteless path, `' +
+            actionLabel +
+            '`, to the ' +
             '{{action}} helper which did not resolve to an action name (a ' +
             'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
-            '{{action "' + actionLabel + '"}}).',
-          typeof actionName === 'string' || typeof actionName === 'function',
+            '{{action "' +
+            actionLabel +
+            '"}}).',
+          typeof actionName === 'string' || typeof actionName === 'function'
         );
       }
     }
@@ -227,7 +232,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       positional,
       implicitTarget,
       dom,
-      tag,
+      tag
     );
   }
 

@@ -75,13 +75,19 @@ export function outletHelper(vm: VM, args: Arguments) {
   return new OutletComponentReference(new OutletReference(scope.outletState, nameRef));
 }
 
-export function outletMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+export function outletMacro(
+  _name: string,
+  params: Option<WireFormat.Core.Params>,
+  hash: Option<WireFormat.Core.Hash>,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+) {
   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
   builder.dynamicComponent(expr, [], null, false, null, null);
   return true;
 }
 
-class OutletComponentReference implements VersionedPathReference<CurriedComponentDefinition | null> {
+class OutletComponentReference
+  implements VersionedPathReference<CurriedComponentDefinition | null> {
   public tag: Tag;
   private definition: CurriedComponentDefinition | null;
   private lastState: OutletDefinitionState | null;
@@ -103,7 +109,7 @@ class OutletComponentReference implements VersionedPathReference<CurriedComponen
     if (state !== null) {
       definition = curry(new OutletComponentDefinition(state));
     }
-    return this.definition = definition;
+    return (this.definition = definition);
   }
 
   get(_key: string) {
@@ -111,7 +117,9 @@ class OutletComponentReference implements VersionedPathReference<CurriedComponen
   }
 }
 
-function stateFor(ref: VersionedPathReference<OutletState | undefined>): OutletDefinitionState | null {
+function stateFor(
+  ref: VersionedPathReference<OutletState | undefined>
+): OutletDefinitionState | null {
   let outlet = ref.value();
   if (outlet === undefined) return null;
   let render = outlet.render;
@@ -134,6 +142,5 @@ function validate(state: OutletDefinitionState | null, lastState: OutletDefiniti
   if (lastState === null) {
     return false;
   }
-  return state.template === lastState.template &&
-         state.controller === lastState.controller;
+  return state.template === lastState.template && state.controller === lastState.controller;
 }

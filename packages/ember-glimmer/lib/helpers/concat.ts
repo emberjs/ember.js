@@ -1,8 +1,4 @@
-import {
-  Arguments,
-  CapturedArguments,
-  VM
-} from '@glimmer/runtime';
+import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
 import { InternalHelperReference } from '../utils/references';
 
 const isEmpty = (value: any): boolean => {
@@ -37,7 +33,10 @@ const normalizeTextValue = (value: any): string => {
   @since 1.13.0
 */
 function concat({ positional }: CapturedArguments) {
-  return positional.value().map(normalizeTextValue).join('');
+  return positional
+    .value()
+    .map(normalizeTextValue)
+    .join('');
 }
 
 export default function(_vm: VM, args: Arguments) {

@@ -1,11 +1,8 @@
 /**
 @module ember
 */
-import {
-  Arguments,
-  VM,
-} from '@glimmer/runtime';
-import { ReadonlyReference, } from '../utils/references';
+import { Arguments, VM } from '@glimmer/runtime';
+import { ReadonlyReference } from '../utils/references';
 import { unMut } from './mut';
 
 /**

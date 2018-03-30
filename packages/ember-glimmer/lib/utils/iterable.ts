@@ -6,7 +6,7 @@ import {
   OpaqueIterator,
   Tag,
   UpdatableTag,
-  VersionedReference
+  VersionedReference,
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
 import { assert } from 'ember-debug';
@@ -20,9 +20,18 @@ const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
 // FIXME: export this from Glimmer
 type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
-type EmberIterable = AbstractIterable<Opaque, Opaque, OpaqueIterationItem, UpdatableReference, UpdatableReference>;
+type EmberIterable = AbstractIterable<
+  Opaque,
+  Opaque,
+  OpaqueIterationItem,
+  UpdatableReference,
+  UpdatableReference
+>;
 
-export default function iterableFor(ref: VersionedReference, keyPath: string | null | undefined): EmberIterable {
+export default function iterableFor(
+  ref: VersionedReference,
+  keyPath: string | null | undefined
+): EmberIterable {
   if (isEachIn(ref)) {
     return new EachInIterable(ref, keyPath || '@key');
   } else {
@@ -48,7 +57,9 @@ abstract class BoundedIterator implements OpaqueIterator {
   next(): Option<OpaqueIterationItem> {
     let { length, keyFor, position } = this;
 
-    if (position >= length) { return null; }
+    if (position >= length) {
+      return null;
+    }
 
     let value = this.valueFor(position);
     let memo = this.memoFor(position);
@@ -113,13 +124,13 @@ class ObjectIterator extends BoundedIterator {
 
     let { length } = keys;
 
-    for (let i=0; i<length; i++) {
+    for (let i = 0; i < length; i++) {
       values.push(get(obj, keys[i]));
     }
 
     if (length === 0) {
       return EMPTY_ITERATOR;
-    } else{
+    } else {
       return new this(keys, values, length, keyFor);
     }
   }
@@ -167,11 +178,15 @@ class ObjectIterator extends BoundedIterator {
 }
 
 interface NativeIteratorConstructor<T = Opaque> {
-  new(iterable: Iterator<T>, result: IteratorResult<T>, keyFor: KeyFor): NativeIterator<T>;
+  new (iterable: Iterator<T>, result: IteratorResult<T>, keyFor: KeyFor): NativeIterator<T>;
 }
 
 abstract class NativeIterator<T = Opaque> implements OpaqueIterator {
-  static from<T>(this: NativeIteratorConstructor<T>, iterable: Iterable<T>, keyFor: KeyFor): OpaqueIterator {
+  static from<T>(
+    this: NativeIteratorConstructor<T>,
+    iterable: Iterable<T>,
+    keyFor: KeyFor
+  ): OpaqueIterator {
     let iterator = iterable[Symbol.iterator]();
     let result = iterator.next();
     let { value, done } = result;
@@ -187,7 +202,11 @@ abstract class NativeIterator<T = Opaque> implements OpaqueIterator {
 
   private position = 0;
 
-  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>, private keyFor: KeyFor) {}
+  constructor(
+    private iterable: Iterator<T>,
+    private result: IteratorResult<T>,
+    private keyFor: KeyFor
+  ) {}
 
   isEmpty(): false {
     return false;
@@ -199,7 +218,9 @@ abstract class NativeIterator<T = Opaque> implements OpaqueIterator {
   next(): Option<OpaqueIterationItem> {
     let { iterable, result, position, keyFor } = this;
 
-    if (result.done) { return null; }
+    if (result.done) {
+      return null;
+    }
 
     let value = this.valueFor(result, position);
     let memo = this.memoFor(result, position);
@@ -240,7 +261,7 @@ const EMPTY_ITERATOR: OpaqueIterator = {
   next(): null {
     assert('Cannot call next() on an empty iterator');
     return null;
-  }
+  },
 };
 
 class EachInIterable implements EmberIterable {

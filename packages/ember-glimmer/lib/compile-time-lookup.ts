@@ -1,10 +1,17 @@
-import { CompilableTemplate, CompileTimeLookup as ICompileTimeLookup, ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
+import {
+  CompilableTemplate,
+  CompileTimeLookup as ICompileTimeLookup,
+  ComponentCapabilities,
+  Option,
+  ProgramSymbolTable,
+} from '@glimmer/interfaces';
 import { ComponentDefinition, ComponentManager, WithStaticLayout } from '@glimmer/runtime';
 import { OwnedTemplateMeta } from 'ember-views';
 import RuntimeResolver from './resolver';
 
-interface StaticComponentManager<DefinitionState> extends WithStaticLayout<any, DefinitionState, OwnedTemplateMeta, RuntimeResolver>, ComponentManager<any, DefinitionState> {
-}
+interface StaticComponentManager<DefinitionState>
+  extends WithStaticLayout<any, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
+    ComponentManager<any, DefinitionState> {}
 
 export default class CompileTimeLookup implements ICompileTimeLookup<OwnedTemplateMeta> {
   constructor(private resolver: RuntimeResolver) {}
@@ -16,7 +23,9 @@ export default class CompileTimeLookup implements ICompileTimeLookup<OwnedTempla
   }
 
   getLayout<DefinitionState>(handle: number): Option<CompilableTemplate<ProgramSymbolTable>> {
-    const { manager, state } = this.resolver.resolve<ComponentDefinition<DefinitionState, StaticComponentManager<DefinitionState>>>(handle);
+    const { manager, state } = this.resolver.resolve<
+      ComponentDefinition<DefinitionState, StaticComponentManager<DefinitionState>>
+    >(handle);
     const capabilities = manager.getCapabilities(state);
 
     if (capabilities.dynamicLayout) {
@@ -26,8 +35,10 @@ export default class CompileTimeLookup implements ICompileTimeLookup<OwnedTempla
     const invocation = manager.getLayout(state, this.resolver);
     return {
       // TODO: this seems weird, it already is compiled
-      compile() { return invocation.handle; },
-      symbolTable: invocation.symbolTable
+      compile() {
+        return invocation.handle;
+      },
+      symbolTable: invocation.symbolTable,
     };
   }
 

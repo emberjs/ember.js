@@ -2,23 +2,10 @@
 @module ember
 */
 
-import {
-  combine,
-  CONSTANT_TAG,
-  isConst,
-  TagWrapper,
-  UpdatableTag,
-} from '@glimmer/reference';
-import {
-  Arguments,
-  PrimitiveReference,
-  VM
-} from '@glimmer/runtime';
+import { combine, CONSTANT_TAG, isConst, TagWrapper, UpdatableTag } from '@glimmer/reference';
+import { Arguments, PrimitiveReference, VM } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
-import {
-  CachedReference,
-  ConditionalReference,
-} from '../utils/references';
+import { CachedReference, ConditionalReference } from '../utils/references';
 
 class ConditionalHelperReference extends CachedReference {
   public branchTag: TagWrapper<UpdatableTag>;
@@ -27,7 +14,11 @@ class ConditionalHelperReference extends CachedReference {
   public truthy: any;
   public falsy: any;
 
-  static create(_condRef: any, truthyRef: PrimitiveReference<boolean>, falsyRef: PrimitiveReference<boolean>) {
+  static create(
+    _condRef: any,
+    truthyRef: PrimitiveReference<boolean>,
+    falsyRef: PrimitiveReference<boolean>
+  ) {
     let condRef = ConditionalReference.create(_condRef);
     if (isConst(condRef)) {
       return condRef.value() ? truthyRef : falsyRef;
@@ -141,8 +132,8 @@ class ConditionalHelperReference extends CachedReference {
 export function inlineIf(_vm: VM, { positional }: Arguments) {
   assert(
     'The inline form of the `if` helper expects two or three arguments, e.g. ' +
-    '`{{if trialExpired "Expired" expiryDate}}`.',
-    positional.length === 3 || positional.length === 2,
+      '`{{if trialExpired "Expired" expiryDate}}`.',
+    positional.length === 3 || positional.length === 2
   );
   return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
 }
@@ -170,8 +161,8 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 export function inlineUnless(_vm: VM, { positional }: Arguments) {
   assert(
     'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
-    '`{{unless isFirstLogin "Welcome back!"}}`.',
-    positional.length === 3 || positional.length === 2,
+      '`{{unless isFirstLogin "Welcome back!"}}`.',
+    positional.length === 3 || positional.length === 2
   );
   return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
 }

@@ -2,10 +2,7 @@
 @module ember
 */
 import { Tag, VersionedPathReference } from '@glimmer/reference';
-import {
-  Arguments,
-  VM
-} from '@glimmer/runtime';
+import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { symbol } from 'ember-utils';
 

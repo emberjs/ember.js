@@ -2,25 +2,16 @@ import {
   ComponentDefinition,
   Opaque,
   Option,
-  RuntimeResolver as IRuntimeResolver
+  RuntimeResolver as IRuntimeResolver,
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
-import {
-  ComponentManager,
-  getDynamicVar,
-  Helper,
-  ModifierManager,
-} from '@glimmer/runtime';
+import { ComponentManager, getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
 import { LookupOptions, Owner, setOwner } from 'ember-utils';
-import {
-  lookupComponent,
-  lookupPartial,
-  OwnedTemplateMeta,
-} from 'ember-views';
+import { lookupComponent, lookupPartial, OwnedTemplateMeta } from 'ember-views';
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
@@ -60,12 +51,12 @@ function instrumentationPayload(name: string) {
 function makeOptions(moduleName: string, namespace?: string): LookupOptions {
   return {
     source: moduleName !== undefined ? `template:${moduleName}` : undefined,
-    namespace
+    namespace,
   };
 }
 
 const BUILTINS_HELPERS = {
-  'if': inlineIf,
+  if: inlineIf,
   action,
   concat,
   get,
@@ -75,7 +66,7 @@ const BUILTINS_HELPERS = {
   'query-params': queryParams,
   readonly,
   unbound,
-  'unless': inlineUnless,
+  unless: inlineUnless,
   '-class': classHelper,
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
@@ -116,11 +107,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   constructor() {
     let macros = new Macros();
     populateMacros(macros);
-    this.compiler = new LazyCompiler<OwnedTemplateMeta>(
-      new CompileTimeLookup(this),
-      this,
-      macros
-    );
+    this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
   }
 
   /***  IRuntimeResolver ***/
@@ -131,7 +118,9 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let handle = this.lookupComponentHandle(name, meta);
     if (handle === null) {
-      assert(`Could not find component named "${name}" (no component or template with that name was found)`);
+      assert(
+        `Could not find component named "${name}" (no component or template with that name was found)`
+      );
       return null;
     }
     return this.resolve(handle);
@@ -233,7 +222,8 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     const options: LookupOptions = makeOptions(moduleName, namespace);
 
-    const factory = owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
+    const factory =
+      owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
 
     if (!isHelperFactory(factory)) {
       return null;
@@ -255,7 +245,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
     const template = lookupPartial(name, meta.owner);
-    const partial = new PartialDefinition( name, lookupPartial(name, meta.owner));
+    const partial = new PartialDefinition(name, lookupPartial(name, meta.owner));
 
     if (template) {
       return partial;
@@ -277,14 +267,17 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     let namespace = undefined;
     let namespaceDelimiterOffset = _name.indexOf('::');
     if (namespaceDelimiterOffset !== -1) {
-      name = _name.slice(namespaceDelimiterOffset+2);
+      name = _name.slice(namespaceDelimiterOffset + 2);
       namespace = _name.slice(0, namespaceDelimiterOffset);
     }
 
-    return {name, namespace};
+    return { name, namespace };
   }
 
-  private _lookupComponentDefinition(_name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
+  private _lookupComponentDefinition(
+    _name: string,
+    meta: OwnedTemplateMeta
+  ): Option<ComponentDefinition> {
     let name = _name;
     let namespace = undefined;
     if (EMBER_MODULE_UNIFICATION) {
@@ -292,27 +285,36 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       name = parsed.name;
       namespace = parsed.namespace;
     }
-    let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName, namespace));
+    let { layout, component } = lookupComponent(
+      meta.owner,
+      name,
+      makeOptions(meta.moduleName, namespace)
+    );
 
     if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       return new TemplateOnlyComponentDefinition(layout);
     }
 
-    let manager: ComponentManager<ComponentStateBucket, DefinitionState> | CustomComponentManager<CustomComponentState<any>> | undefined;
+    let manager:
+      | ComponentManager<ComponentStateBucket, DefinitionState>
+      | CustomComponentManager<CustomComponentState<any>>
+      | undefined;
 
     if (GLIMMER_CUSTOM_COMPONENT_MANAGER && component && component.class) {
       manager = getCustomComponentManager(meta.owner, component.class);
     }
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
-    let definition = (layout || component) ?
-      new CurlyComponentDefinition(
-        name,
-        manager,
-        component || meta.owner.factoryFor(P`component:-default`),
-        null,
-        layout
-      ) : null;
+    let definition =
+      layout || component
+        ? new CurlyComponentDefinition(
+            name,
+            manager,
+            component || meta.owner.factoryFor(P`component:-default`),
+            null,
+            layout
+          )
+        : null;
 
     finalizer();
     return definition;

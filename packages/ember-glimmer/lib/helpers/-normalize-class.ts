@@ -3,7 +3,10 @@ import { String as StringUtils } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
 function normalizeClass({ positional }: any) {
-  let classNameParts = positional.at(0).value().split('.');
+  let classNameParts = positional
+    .at(0)
+    .value()
+    .split('.');
   let className = classNameParts[classNameParts.length - 1];
   let value = positional.at(1).value();
 

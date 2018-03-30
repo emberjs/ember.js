@@ -268,12 +268,7 @@ export { default as LinkComponent } from './lib/components/link-to';
 export { default as Component, ROOT_REF } from './lib/component';
 export { default as Helper, helper } from './lib/helper';
 export { default as Environment } from './lib/environment';
-export {
-  SafeString,
-  escapeExpression,
-  htmlSafe,
-  isHTMLSafe
-} from './lib/utils/string';
+export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
 export {
   Renderer,
   InertRenderer,
@@ -290,7 +285,10 @@ export {
 } from './lib/template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
-export { registerMacros as _registerMacros, experimentalMacros as _experimentalMacros } from './lib/syntax';
+export {
+  registerMacros as _registerMacros,
+  experimentalMacros as _experimentalMacros,
+} from './lib/syntax';
 export { default as AbstractComponentManager } from './lib/component-managers/abstract';
 
 // needed for test

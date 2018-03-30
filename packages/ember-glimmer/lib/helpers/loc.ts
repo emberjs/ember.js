@@ -1,4 +1,3 @@
-
 /**
 @module ember
 */
@@ -38,6 +37,6 @@ import { helper } from '../helper';
   @see {String#loc}
   @public
 */
-export default helper(function (params) {
+export default helper(function(params) {
   return StringUtils.loc.apply(null, params);
 });
