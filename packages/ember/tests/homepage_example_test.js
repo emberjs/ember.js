@@ -19,7 +19,7 @@ moduleFor(
         lastName: null,
         fullName: computed('firstName', 'lastName', function() {
           return `${this.get('firstName')} ${this.get('lastName')}`;
-        })
+        }),
       });
 
       this.add(
@@ -28,9 +28,9 @@ moduleFor(
           model() {
             return emberA([
               Person.create({ firstName: 'Tom', lastName: 'Dale' }),
-              Person.create({ firstName: 'Yehuda', lastName: 'Katz' })
+              Person.create({ firstName: 'Yehuda', lastName: 'Katz' }),
             ]);
-          }
+          },
         })
       );
 
@@ -40,10 +40,7 @@ moduleFor(
         assert.equal($.findAll('h1').text(), 'People');
         assert.equal($.findAll('li').length, 2);
         assert.equal($.findAll('li:nth-of-type(1)').text(), 'Hello, Tom Dale!');
-        assert.equal(
-          $.findAll('li:nth-of-type(2)').text(),
-          'Hello, Yehuda Katz!'
-        );
+        assert.equal($.findAll('li:nth-of-type(2)').text(), 'Hello, Yehuda Katz!');
       });
     }
   }

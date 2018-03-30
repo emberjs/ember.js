@@ -22,11 +22,7 @@ moduleFor(
       assert.equal(false, isBlank(0), 'for 0');
       assert.equal(true, isBlank([]), 'for an empty Array');
       assert.equal(false, isBlank({}), 'for an empty Object');
-      assert.equal(
-        true,
-        isBlank(object),
-        "for an Object that has zero 'length'"
-      );
+      assert.equal(true, isBlank(object), "for an Object that has zero 'length'");
       assert.equal(false, isBlank([1, 2, 3]), 'for a non-empty array');
     }
   }

@@ -42,8 +42,13 @@ export default class OutletView {
   public ref: RootOutletReference;
   public state: OutletDefinitionState;
 
-  constructor(private _environment: BootEnvironment, public renderer: Renderer, public owner: Owner, public template: OwnedTemplate) {
-    let ref = this.ref = new RootOutletReference({
+  constructor(
+    private _environment: BootEnvironment,
+    public renderer: Renderer,
+    public owner: Owner,
+    public template: OwnedTemplate
+  ) {
+    let ref = (this.ref = new RootOutletReference({
       outlets: { main: undefined },
       render: {
         owner: owner,
@@ -53,13 +58,13 @@ export default class OutletView {
         controller: undefined,
         template,
       },
-    });
+    }));
     this.state = {
       ref,
       name: TOP_LEVEL_NAME,
       outlet: TOP_LEVEL_OUTLET,
       template,
-      controller: undefined
+      controller: undefined,
     };
   }
 
@@ -76,11 +81,15 @@ export default class OutletView {
     schedule('render', this.renderer, 'appendOutletView', this, target);
   }
 
-  rerender() { /**/ }
+  rerender() {
+    /**/
+  }
 
   setOutletState(state: OutletState) {
     this.ref.update(state);
   }
 
-  destroy() { /**/ }
+  destroy() {
+    /**/
+  }
 }

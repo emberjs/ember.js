@@ -12,13 +12,13 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             component = this;
-          }
+          },
         }),
-        template: '{{value}}'
+        template: '{{value}}',
       });
 
       this.render('{{foo-bar value=(readonly val)}}', {
-        val: 12
+        val: 12,
       });
 
       this.assertText('12');
@@ -29,18 +29,12 @@ moduleFor(
       this.assert.notOk(component.attrs.value.update);
 
       this.assertText('13', 'local property is updated');
-      this.assert.equal(
-        get(this.context, 'val'),
-        12,
-        'upstream attribute is not updated'
-      );
+      this.assert.equal(get(this.context, 'val'), 12, 'upstream attribute is not updated');
 
       // No U-R
     }
 
-    '@test passing an action to {{readonly}} avoids mutable cell wrapping'(
-      assert
-    ) {
+    '@test passing an action to {{readonly}} avoids mutable cell wrapping'(assert) {
       assert.expect(4);
       let outer, inner;
 
@@ -49,8 +43,8 @@ moduleFor(
           init() {
             this._super(...arguments);
             inner = this;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('x-outer', {
@@ -58,15 +52,15 @@ moduleFor(
           init() {
             this._super(...arguments);
             outer = this;
-          }
+          },
         }),
-        template: '{{x-inner onClick=(readonly onClick)}}'
+        template: '{{x-inner onClick=(readonly onClick)}}',
       });
 
       this.render('{{x-outer onClick=(action doIt)}}', {
         doIt() {
           assert.ok(true, 'action was called');
-        }
+        },
       });
 
       assert.equal(
@@ -92,13 +86,13 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
+          },
         }),
-        template: '{{value}}'
+        template: '{{value}}',
       });
 
       this.render('{{foo-bar value=(readonly thing)}}', {
-        thing: 'initial'
+        thing: 'initial',
       });
 
       this.assertText('initial');
@@ -112,16 +106,8 @@ moduleFor(
       this.runTask(() => set(this.context, 'thing', 'updated!'));
 
       this.assertText('updated!');
-      assert.strictEqual(
-        component.attrs.value,
-        'updated!',
-        'passed down value was set in attrs'
-      );
-      assert.strictEqual(
-        get(component, 'value'),
-        'updated!',
-        'passed down value was set'
-      );
+      assert.strictEqual(component.attrs.value, 'updated!', 'passed down value was set in attrs');
+      assert.strictEqual(get(component, 'value'), 'updated!', 'passed down value was set');
 
       this.runTask(() => set(this.context, 'thing', 'initial'));
 
@@ -135,15 +121,15 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             component = this;
-          }
+          },
         }),
-        template: '{{value.prop}}'
+        template: '{{value.prop}}',
       });
 
       this.render('{{foo-bar value=(readonly thing)}}', {
         thing: {
-          prop: 'initial'
-        }
+          prop: 'initial',
+        },
       });
 
       this.assertText('initial');
@@ -172,9 +158,9 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             component = this;
-          }
+          },
         }),
-        template: '{{value}}'
+        template: '{{value}}',
       });
 
       this.render('{{foo-bar value=(readonly "12")}}');
@@ -203,38 +189,30 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             bottom = this;
-          }
+          },
         }),
-        template: '{{bar}}'
+        template: '{{bar}}',
       });
 
       this.registerComponent('x-middle', {
         ComponentClass: Component.extend({
           didInsertElement() {
             middle = this;
-          }
+          },
         }),
-        template: '{{foo}} {{x-bottom bar=(mut foo)}}'
+        template: '{{foo}} {{x-bottom bar=(mut foo)}}',
       });
 
       this.render('{{x-middle foo=(readonly val)}}', {
-        val: 12
+        val: 12,
       });
 
       this.assertText('12 12');
 
       this.assertStableRerender();
 
-      this.assert.equal(
-        get(bottom, 'bar'),
-        12,
-        "bottom's local bar received the value"
-      );
-      this.assert.equal(
-        get(middle, 'foo'),
-        12,
-        "middle's local foo received the value"
-      );
+      this.assert.equal(get(bottom, 'bar'), 12, "bottom's local bar received the value");
+      this.assert.equal(get(middle, 'foo'), 12, "middle's local foo received the value");
 
       // updating the mut-cell directly
       this.runTask(() => bottom.attrs.bar.update(13));
@@ -250,11 +228,7 @@ moduleFor(
         "middle's local foo was updated after set of bottom's bar"
       );
       this.assertText('13 13');
-      this.assert.equal(
-        get(this.context, 'val'),
-        12,
-        'But context val is not updated'
-      );
+      this.assert.equal(get(this.context, 'val'), 12, 'But context val is not updated');
 
       this.runTask(() => set(bottom, 'bar', 14));
 
@@ -269,34 +243,19 @@ moduleFor(
         "middle's local foo was updated after set of bottom's bar"
       );
       this.assertText('14 14');
-      this.assert.equal(
-        get(this.context, 'val'),
-        12,
-        'But context val is not updated'
-      );
+      this.assert.equal(get(this.context, 'val'), 12, 'But context val is not updated');
 
-      this.assert.notOk(
-        middle.attrs.foo.update,
-        "middle's foo attr is not a mutable cell"
-      );
+      this.assert.notOk(middle.attrs.foo.update, "middle's foo attr is not a mutable cell");
       this.runTask(() => set(middle, 'foo', 15));
 
       this.assertText('15 15');
-      this.assert.equal(
-        get(middle, 'foo'),
-        15,
-        "set of middle's foo took effect"
-      );
+      this.assert.equal(get(middle, 'foo'), 15, "set of middle's foo took effect");
       this.assert.equal(
         get(bottom, 'bar'),
         15,
         "bottom's local bar was updated after set of middle's foo"
       );
-      this.assert.equal(
-        get(this.context, 'val'),
-        12,
-        'Context val remains unchanged'
-      );
+      this.assert.equal(get(this.context, 'val'), 12, 'Context val remains unchanged');
 
       this.runTask(() => set(this.context, 'val', 10));
 

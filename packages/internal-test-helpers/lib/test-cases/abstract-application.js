@@ -9,13 +9,13 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
       return this._applicationInstancePromise;
     }
 
-    return (this._applicationInstancePromise = this.runTask(() =>
-      this.application.boot()
-    ).then(app => {
-      this.applicationInstance = app.buildInstance();
+    return (this._applicationInstancePromise = this.runTask(() => this.application.boot()).then(
+      app => {
+        this.applicationInstance = app.buildInstance();
 
-      return this.applicationInstance.boot(bootOptions);
-    }));
+        return this.applicationInstance.boot(bootOptions);
+      }
+    ));
   }
 
   visit(url, options) {
@@ -23,9 +23,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     // the promise returned by `ApplicationInstance.protoype.visit` does **not**
     // currently guarantee rendering is completed
     return this.runTask(() => {
-      return this._ensureInstance(options).then(instance =>
-        instance.visit(url)
-      );
+      return this._ensureInstance(options).then(instance => instance.visit(url));
     });
   }
 
@@ -33,9 +31,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     if (this._element) {
       return this._element;
     } else if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
-      return (this._element = document.querySelector(
-        '#qunit-fixture > div.ember-view'
-      ));
+      return (this._element = document.querySelector('#qunit-fixture > div.ember-view'));
     } else {
       return (this._element = document.querySelector('#qunit-fixture'));
     }
@@ -54,13 +50,13 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
 
   get applicationOptions() {
     return {
-      rootElement: '#qunit-fixture'
+      rootElement: '#qunit-fixture',
     };
   }
 
   get routerOptions() {
     return {
-      location: 'none'
+      location: 'none',
     };
   }
 

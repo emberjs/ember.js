@@ -11,20 +11,20 @@ moduleFor(
       obj = {
         foo: {
           bar: {
-            baz: { biff: 'BIFF' }
-          }
+            baz: { biff: 'BIFF' },
+          },
         },
         foothis: {
           bar: {
-            baz: { biff: 'BIFF' }
-          }
+            baz: { biff: 'BIFF' },
+          },
         },
         falseValue: false,
         emptyString: '',
         Wuz: {
-          nar: 'foo'
+          nar: 'foo',
         },
-        nullValue: null
+        nullValue: null,
       };
     }
 

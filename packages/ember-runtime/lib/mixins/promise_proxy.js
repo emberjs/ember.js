@@ -9,7 +9,7 @@ import { not, or } from '../computed/computed_macros';
 function tap(proxy, promise) {
   setProperties(proxy, {
     isFulfilled: false,
-    isRejected: false
+    isRejected: false,
   });
 
   return promise.then(
@@ -17,7 +17,7 @@ function tap(proxy, promise) {
       if (!proxy.isDestroyed && !proxy.isDestroying) {
         setProperties(proxy, {
           content: value,
-          isFulfilled: true
+          isFulfilled: true,
         });
       }
       return value;
@@ -26,7 +26,7 @@ function tap(proxy, promise) {
       if (!proxy.isDestroyed && !proxy.isDestroying) {
         setProperties(proxy, {
           reason,
-          isRejected: true
+          isRejected: true,
         });
       }
       throw reason;
@@ -171,7 +171,7 @@ export default Mixin.create({
     },
     set(key, promise) {
       return tap(this, promise);
-    }
+    },
   }),
 
   /**
@@ -210,7 +210,7 @@ export default Mixin.create({
     @since 1.3.0
     @public
   */
-  finally: promiseAlias('finally')
+  finally: promiseAlias('finally'),
 });
 
 function promiseAlias(name) {

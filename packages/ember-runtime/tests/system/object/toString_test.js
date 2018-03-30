@@ -37,9 +37,7 @@ moduleFor(
       assert.equal(Foo.Bar.toString(), 'Foo.Bar');
     }
 
-    ['@test toString on a class returns a useful value when nested in a namespace'](
-      assert
-    ) {
+    ['@test toString on a class returns a useful value when nested in a namespace'](assert) {
       let obj;
 
       let Foo = Namespace.create();
@@ -81,9 +79,7 @@ moduleFor(
       assert.equal(obj.toString(), '<Foo.Bar:' + guidFor(obj) + '>');
     }
 
-    ['@test toString on a namespace falls back to modulePrefix, if defined'](
-      assert
-    ) {
+    ['@test toString on a namespace falls back to modulePrefix, if defined'](assert) {
       let Foo = Namespace.create({ modulePrefix: 'foo' });
 
       assert.equal(Foo.toString(), 'foo');
@@ -93,7 +89,7 @@ moduleFor(
       let Foo = EmberObject.extend({
         toStringExtension() {
           return 'fooey';
-        }
+        },
       });
       let foo = Foo.create();
       let Bar = EmberObject.extend({});

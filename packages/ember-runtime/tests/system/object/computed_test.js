@@ -1,12 +1,4 @@
-import {
-  alias,
-  computed,
-  set,
-  get,
-  getWithDefault,
-  observer,
-  defineProperty
-} from 'ember-metal';
+import { alias, computed, set, get, getWithDefault, observer, defineProperty } from 'ember-metal';
 import { oneWay as reads } from 'ember-runtime';
 import EmberObject from '../../../system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -28,7 +20,7 @@ moduleFor(
       let MyClass = EmberObject.extend({
         foo: computed(function() {
           return 'FOO';
-        })
+        }),
       });
 
       testWithDefault(assert, 'FOO', new MyClass(), 'foo');
@@ -38,13 +30,13 @@ moduleFor(
       let MyClass = EmberObject.extend({
         foo: computed(function() {
           return 'FOO';
-        })
+        }),
       });
 
       let Subclass = MyClass.extend({
         foo: computed(function() {
           return 'BAR';
-        })
+        }),
       });
 
       testWithDefault(assert, 'BAR', new Subclass(), 'foo');
@@ -54,11 +46,11 @@ moduleFor(
       let MyClass = EmberObject.extend({
         foo: computed(function() {
           return 'FOO';
-        })
+        }),
       });
 
       let Subclass = MyClass.extend({
-        foo: 'BAR'
+        foo: 'BAR',
       });
 
       testWithDefault(assert, 'BAR', new Subclass(), 'foo');
@@ -76,11 +68,11 @@ moduleFor(
         foo: computed(function() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
-        }).property('bar.baz')
+        }).property('bar.baz'),
       });
 
       let Subclass = MyClass.extend({
-        count: 20
+        count: 20,
       });
 
       let obj1 = new MyClass();
@@ -112,7 +104,7 @@ moduleFor(
         foo: computed(function() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
-        }).property('bar.baz')
+        }).property('bar.baz'),
       });
 
       let Subclass = MyClass.extend({
@@ -126,7 +118,7 @@ moduleFor(
         foo: computed(function() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar2'), 'baz') + ' ' + get(this, 'count');
-        }).property('bar2.baz')
+        }).property('bar2.baz'),
       });
 
       let obj2 = new Subclass();
@@ -142,7 +134,7 @@ moduleFor(
 
     ['@test can retrieve metadata for a computed property'](assert) {
       let MyClass = EmberObject.extend({
-        computedProperty: computed(function() {}).meta({ key: 'keyValue' })
+        computedProperty: computed(function() {}).meta({ key: 'keyValue' }),
       });
 
       assert.equal(
@@ -154,7 +146,7 @@ moduleFor(
       let ClassWithNoMetadata = EmberObject.extend({
         computedProperty: computed(function() {}).volatile(),
 
-        staticProperty: 12
+        staticProperty: 12,
       });
 
       assert.equal(
@@ -180,11 +172,11 @@ moduleFor(
 
         fooDidChange: observer('foo', function() {}),
 
-        bar: computed(function() {})
+        bar: computed(function() {}),
       });
 
       let SubClass = MyClass.extend({
-        foo: null
+        foo: null,
       });
 
       let list = [];
@@ -198,9 +190,7 @@ moduleFor(
       );
     }
 
-    ['@test can iterate over a list of computed properties for a class'](
-      assert
-    ) {
+    ['@test can iterate over a list of computed properties for a class'](assert) {
       let MyClass = EmberObject.extend({
         foo: computed(function() {}),
 
@@ -208,15 +198,15 @@ moduleFor(
 
         bar: computed(function() {}),
 
-        qux: alias('foo')
+        qux: alias('foo'),
       });
 
       let SubClass = MyClass.extend({
-        baz: computed(function() {})
+        baz: computed(function() {}),
       });
 
       SubClass.reopen({
-        bat: computed(function() {}).meta({ iAmBat: true })
+        bat: computed(function() {}).meta({ iAmBat: true }),
       });
 
       let list = [];
@@ -258,7 +248,7 @@ moduleFor(
 
         fooDidChange: observer('foo', function() {}),
 
-        bar: computed(K)
+        bar: computed(K),
       });
 
       let list = [];
@@ -267,14 +257,10 @@ moduleFor(
         list.push(name);
       });
 
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'foo'].sort(),
-        'expected two computed properties'
-      );
+      assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
 
       MyClass.reopen({
-        baz: computed(K)
+        baz: computed(K),
       });
 
       MyClass.create(); // force apply mixins
@@ -306,9 +292,7 @@ moduleFor(
       );
     }
 
-    ['@test Calling _super in call outside the immediate function of a CP getter works'](
-      assert
-    ) {
+    ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
       function macro(callback) {
         return computed(function() {
           return callback.call(this);
@@ -318,21 +302,19 @@ moduleFor(
       let MyClass = EmberObject.extend({
         foo: computed(function() {
           return 'FOO';
-        })
+        }),
       });
 
       let SubClass = MyClass.extend({
         foo: macro(function() {
           return this._super();
-        })
+        }),
       });
 
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
     }
 
-    ['@test Calling _super in apply outside the immediate function of a CP getter works'](
-      assert
-    ) {
+    ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
       function macro(callback) {
         return computed(function() {
           return callback.apply(this);
@@ -342,24 +324,22 @@ moduleFor(
       let MyClass = EmberObject.extend({
         foo: computed(function() {
           return 'FOO';
-        })
+        }),
       });
 
       let SubClass = MyClass.extend({
         foo: macro(function() {
           return this._super();
-        })
+        }),
       });
 
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
     }
 
-    ['@test observing computed.reads prop and overriding it in create() works'](
-      assert
-    ) {
+    ['@test observing computed.reads prop and overriding it in create() works'](assert) {
       let Obj = EmberObject.extend({
         name: reads('model.name'),
-        nameDidChange: observer('name', function() {})
+        nameDidChange: observer('name', function() {}),
       });
 
       let obj1 = Obj.create({ name: '1' });

@@ -22,13 +22,7 @@ import { fireEvent } from '../events';
  @since 1.5.0
  @public
 */
-export default function triggerEvent(
-  app,
-  selector,
-  contextOrType,
-  typeOrOptions,
-  possibleOptions
-) {
+export default function triggerEvent(app, selector, contextOrType, typeOrOptions, possibleOptions) {
   let arity = arguments.length;
   let context, type, options;
 

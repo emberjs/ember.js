@@ -161,10 +161,7 @@ class OrderedSet {
     @private
   */
   forEach(fn /*, ...thisArg*/) {
-    assert(
-      `${Object.prototype.toString.call(fn)} is not a function`,
-      typeof fn === 'function'
-    );
+    assert(`${Object.prototype.toString.call(fn)} is not a function`, typeof fn === 'function');
 
     if (this.size === 0) {
       return;
@@ -448,7 +445,7 @@ class MapWithDefault extends Map {
     return copyMap(
       this,
       new Constructor({
-        defaultValue: this.defaultValue
+        defaultValue: this.defaultValue,
       })
     );
   }

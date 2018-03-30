@@ -11,8 +11,8 @@ export default function transformQuotedBindingsIntoJustBindings(/* env */) {
         }
 
         styleAttr.value = styleAttr.value.parts[0];
-      }
-    }
+      },
+    },
   };
 }
 

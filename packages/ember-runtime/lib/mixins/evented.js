@@ -1,10 +1,4 @@
-import {
-  Mixin,
-  addListener,
-  removeListener,
-  hasListeners,
-  sendEvent
-} from 'ember-metal';
+import { Mixin, addListener, removeListener, hasListeners, sendEvent } from 'ember-metal';
 
 /**
 @module @ember/object
@@ -151,5 +145,5 @@ export default Mixin.create({
    */
   has(name) {
     return hasListeners(this, name);
-  }
+  },
 });

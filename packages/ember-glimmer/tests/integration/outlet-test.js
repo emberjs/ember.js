@@ -21,10 +21,10 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: undefined,
-          template: undefined
+          template: undefined,
         },
 
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -42,10 +42,10 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: undefined,
-          template: undefined
+          template: undefined,
         },
 
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -62,9 +62,9 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application')
+          template: this.owner.lookup('template:application'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -81,9 +81,9 @@ moduleFor(
           outlet: 'main',
           name: 'index',
           controller: {},
-          template: this.owner.lookup('template:index')
+          template: this.owner.lookup('template:index'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -100,9 +100,9 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application')
+          template: this.owner.lookup('template:application'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -121,9 +121,9 @@ moduleFor(
           outlet: 'main',
           name: 'index',
           controller: {},
-          template: this.owner.lookup('template:index')
+          template: this.owner.lookup('template:index'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -140,9 +140,9 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application')
+          template: this.owner.lookup('template:application'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -161,9 +161,9 @@ moduleFor(
           outlet: 'main',
           name: 'special',
           controller: {},
-          template: this.owner.lookup('template:special')
+          template: this.owner.lookup('template:special'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -172,10 +172,7 @@ moduleFor(
     }
 
     ['@test does not default outlet name when positional argument is present']() {
-      this.registerTemplate(
-        'application',
-        '<h1>HI</h1>{{outlet someUndefinedThing}}'
-      );
+      this.registerTemplate('application', '<h1>HI</h1>{{outlet someUndefinedThing}}');
       let outletState = {
         render: {
           owner: this.owner,
@@ -183,9 +180,9 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application')
+          template: this.owner.lookup('template:application'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -204,9 +201,9 @@ moduleFor(
           outlet: 'main',
           name: 'special',
           controller: {},
-          template: this.owner.lookup('template:special')
+          template: this.owner.lookup('template:special'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -224,9 +221,9 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller,
-          template: this.owner.lookup('template:application')
+          template: this.owner.lookup('template:application'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -245,9 +242,9 @@ moduleFor(
           outlet: 'main',
           name: 'foo',
           controller: {},
-          template: this.owner.lookup('template:foo')
+          template: this.owner.lookup('template:foo'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.registerTemplate('bar', '<p>BAR</p>');
@@ -258,9 +255,9 @@ moduleFor(
           outlet: 'main',
           name: 'bar',
           controller: {},
-          template: this.owner.lookup('template:bar')
+          template: this.owner.lookup('template:bar'),
         },
-        outlets: Object.create(null)
+        outlets: Object.create(null),
       };
 
       this.runTask(() => this.component.setOutletState(outletState));
@@ -292,7 +289,7 @@ moduleFor(
           outlet: 'main',
           name: 'outer',
           controller: {},
-          template: this.owner.lookup('template:outer')
+          template: this.owner.lookup('template:outer'),
         },
         outlets: {
           main: {
@@ -302,11 +299,11 @@ moduleFor(
               outlet: 'main',
               name: 'inner',
               controller: {},
-              template: this.owner.lookup('template:inner')
+              template: this.owner.lookup('template:inner'),
             },
-            outlets: Object.create(null)
-          }
-        }
+            outlets: Object.create(null),
+          },
+        },
       };
 
       this.runTask(() => this.component.setOutletState(outletState));

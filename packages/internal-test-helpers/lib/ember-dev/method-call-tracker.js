@@ -65,10 +65,7 @@ MethodCallTracker.prototype = {
     }
 
     if (env.runningProdBuild) {
-      assert.ok(
-        true,
-        `calls to Ember.${methodName} disabled in production builds.`
-      );
+      assert.ok(true, `calls to Ember.${methodName} disabled in production builds.`);
       return;
     }
 
@@ -81,9 +78,7 @@ MethodCallTracker.prototype = {
       }
       assert.ok(
         actualMessages.length === 0,
-        `Expected no Ember.${methodName} calls, got ${
-          actuals.length
-        }: ${actualMessages.join(', ')}`
+        `Expected no Ember.${methodName} calls, got ${actuals.length}: ${actualMessages.join(', ')}`
       );
       return;
     }
@@ -110,21 +105,13 @@ MethodCallTracker.prototype = {
       }
 
       if (!actual) {
-        assert.ok(
-          false,
-          `Received no Ember.${methodName} calls at all, expecting: ${expected}`
-        );
+        assert.ok(false, `Received no Ember.${methodName} calls at all, expecting: ${expected}`);
       } else if (match && !match[1]) {
-        assert.ok(
-          true,
-          `Received failing Ember.${methodName} call with message: ${match[0]}`
-        );
+        assert.ok(true, `Received failing Ember.${methodName} call with message: ${match[0]}`);
       } else if (match && match[1]) {
         assert.ok(
           false,
-          `Expected failing Ember.${methodName} call, got succeeding with message: ${
-            match[0]
-          }`
+          `Expected failing Ember.${methodName} call, got succeeding with message: ${match[0]}`
         );
       } else if (actual[1]) {
         assert.ok(
@@ -142,7 +129,7 @@ MethodCallTracker.prototype = {
         );
       }
     }
-  }
+  },
 };
 
 export default MethodCallTracker;

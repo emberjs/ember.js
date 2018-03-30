@@ -5,13 +5,11 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 moduleFor(
   'mixins/observable',
   class extends AbstractTestCase {
-    ['@test should be able to use getProperties to get a POJO of provided keys'](
-      assert
-    ) {
+    ['@test should be able to use getProperties to get a POJO of provided keys'](assert) {
       let obj = EmberObject.create({
         firstName: 'Steve',
         lastName: 'Jobs',
-        companyName: 'Apple, Inc.'
+        companyName: 'Apple, Inc.',
       });
 
       let pojo = obj.getProperties('firstName', 'lastName');
@@ -25,7 +23,7 @@ moduleFor(
       let obj = EmberObject.create({
         firstName: 'Steve',
         lastName: 'Jobs',
-        companyName: 'Apple, Inc.'
+        companyName: 'Apple, Inc.',
       });
 
       let pojo = obj.getProperties(['firstName', 'lastName']);
@@ -33,13 +31,11 @@ moduleFor(
       assert.equal('Jobs', pojo.lastName);
     }
 
-    ['@test should be able to use setProperties to set multiple properties at once'](
-      assert
-    ) {
+    ['@test should be able to use setProperties to set multiple properties at once'](assert) {
       let obj = EmberObject.create({
         firstName: 'Steve',
         lastName: 'Jobs',
-        companyName: 'Apple, Inc.'
+        companyName: 'Apple, Inc.',
       });
 
       obj.setProperties({ firstName: 'Tim', lastName: 'Cook' });
@@ -47,9 +43,7 @@ moduleFor(
       assert.equal('Cook', obj.get('lastName'));
     }
 
-    ['@test calling setProperties completes safely despite exceptions'](
-      assert
-    ) {
+    ['@test calling setProperties completes safely despite exceptions'](assert) {
       let exc = new Error('Something unexpected happened!');
       let obj = EmberObject.extend({
         companyName: computed({
@@ -58,11 +52,11 @@ moduleFor(
           },
           set() {
             throw exc;
-          }
-        })
+          },
+        }),
       }).create({
         firstName: 'Steve',
-        lastName: 'Jobs'
+        lastName: 'Jobs',
       });
 
       let firstNameChangedCount = 0;
@@ -73,7 +67,7 @@ moduleFor(
         obj.setProperties({
           firstName: 'Tim',
           lastName: 'Cook',
-          companyName: 'Fruit Co., Inc.'
+          companyName: 'Fruit Co., Inc.',
         });
       } catch (err) {
         if (err !== exc) {
@@ -81,11 +75,7 @@ moduleFor(
         }
       }
 
-      assert.equal(
-        firstNameChangedCount,
-        1,
-        'firstName should have fired once'
-      );
+      assert.equal(firstNameChangedCount, 1, 'firstName should have fired once');
     }
 
     ['@test should be able to retrieve cached values of computed properties without invoking the computed property'](
@@ -94,9 +84,9 @@ moduleFor(
       let obj = EmberObject.extend({
         foo: computed(function() {
           return 'foo';
-        })
+        }),
       }).create({
-        bar: 'bar'
+        bar: 'bar',
       });
 
       assert.equal(
@@ -120,11 +110,9 @@ moduleFor(
       );
     }
 
-    ['@test incrementProperty should work even if value is number in string'](
-      assert
-    ) {
+    ['@test incrementProperty should work even if value is number in string'](assert) {
       let obj = EmberObject.create({
-        age: '24'
+        age: '24',
       });
       obj.incrementProperty('age');
       assert.equal(25, obj.get('age'));

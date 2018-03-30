@@ -11,15 +11,11 @@ moduleFor(
 
         foo: observer('bar', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       });
 
       let obj = new MyClass();
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'should not invoke observer immediately'
-      );
+      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
@@ -31,28 +27,20 @@ moduleFor(
 
         foo: observer('bar', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       });
 
       let Subclass = MyClass.extend({
         foo: observer('baz', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       });
 
       let obj = new Subclass();
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'should not invoke observer immediately'
-      );
+      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'should not invoke observer after change'
-      );
+      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
       set(obj, 'baz', 'BAZ');
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
@@ -62,16 +50,12 @@ moduleFor(
       let obj = EmberObject.extend({
         foo: observer('bar', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       }).create({
-        count: 0
+        count: 0,
       });
 
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'should not invoke observer immediately'
-      );
+      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
@@ -83,28 +67,20 @@ moduleFor(
 
         foo: observer('bar', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       });
 
       let obj = MyClass.extend({
         foo: observer('baz', function() {
           // <-- change property we observe
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       }).create();
 
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'should not invoke observer immediately'
-      );
+      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'should not invoke observer after change'
-      );
+      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
       set(obj, 'baz', 'BAZ');
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
@@ -115,14 +91,10 @@ moduleFor(
         count: 0,
         foo: observer('bar', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       }).create();
 
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'precond - should not invoke observer immediately'
-      );
+      assert.equal(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
       run(() => obj.destroy());
 
@@ -130,11 +102,7 @@ moduleFor(
         set(obj, 'bar', 'BAZ');
       }, `calling set on destroyed object: ${obj}.bar = BAZ`);
 
-      assert.equal(
-        get(obj, 'count'),
-        0,
-        'should not invoke observer after change'
-      );
+      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
     }
 
     // ..........................................................
@@ -147,15 +115,15 @@ moduleFor(
 
         foo: observer('bar.baz', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       });
 
       let obj1 = MyClass.create({
-        bar: { baz: 'biff' }
+        bar: { baz: 'biff' },
       });
 
       let obj2 = MyClass.create({
-        bar: { baz: 'biff2' }
+        bar: { baz: 'biff2' },
       });
 
       assert.equal(get(obj1, 'count'), 0, 'should not invoke yet');
@@ -176,20 +144,20 @@ moduleFor(
 
         foo: observer('bar.baz', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       });
 
       let obj1 = MyClass.extend().create({
-        bar: { baz: 'biff' }
+        bar: { baz: 'biff' },
       });
 
       let obj2 = MyClass.extend({
         foo: observer('bar2.baz', function() {
           set(this, 'count', get(this, 'count') + 1);
-        })
+        }),
       }).create({
         bar: { baz: 'biff2' },
-        bar2: { baz: 'biff3' }
+        bar2: { baz: 'biff3' },
       });
 
       assert.equal(get(obj1, 'count'), 0, 'should not invoke yet');
@@ -217,18 +185,18 @@ moduleFor(
         parent: null,
         parentOneTwoDidChange: observer('parent.one.two', function() {
           changed = true;
-        })
+        }),
       });
 
       let ParentClass = EmberObject.extend({
         one: {
-          two: 'old'
+          two: 'old',
         },
         init() {
           this.child = ChildClass.create({
-            parent: this
+            parent: this,
           });
-        }
+        },
       });
 
       let parent = new ParentClass();
@@ -237,19 +205,11 @@ moduleFor(
 
       set(parent, 'one.two', 'new');
 
-      assert.equal(
-        changed,
-        true,
-        'child should have been notified of change to path'
-      );
+      assert.equal(changed, true, 'child should have been notified of change to path');
 
       set(parent, 'one', { two: 'newer' });
 
-      assert.equal(
-        changed,
-        true,
-        'child should have been notified of change to path'
-      );
+      assert.equal(changed, true, 'child should have been notified of change to path');
     }
   }
 );

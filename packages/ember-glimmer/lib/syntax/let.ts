@@ -7,7 +7,7 @@ import { OwnedTemplateMeta } from 'ember-views';
 @module ember
 */
 
-  /**
+/**
     The `let` helper receives one or more positional arguments and yields
     them out as block params.
 
@@ -42,7 +42,13 @@ import { OwnedTemplateMeta } from 'ember-views';
   @for Ember.Templates.helpers
   @public
 */
-export function blockLetMacro(params: WireFormat.Core.Params, _hash: WireFormat.Core.Hash, template: Option<CompilableBlock>, _inverse: Option<CompilableBlock>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+export function blockLetMacro(
+  params: WireFormat.Core.Params,
+  _hash: WireFormat.Core.Hash,
+  template: Option<CompilableBlock>,
+  _inverse: Option<CompilableBlock>,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+) {
   if (template !== null) {
     if (params !== null) {
       builder.compileParams(params);

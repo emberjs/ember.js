@@ -54,12 +54,12 @@ moduleFor(
         unknownProperty(key) {
           this.lastUnknownProperty = key;
           return 'unknown';
-        }
+        },
       }).create({
         normal: 'value',
         numberVal: 24,
         toggleVal: true,
-        nullProperty: null
+        nullProperty: null,
       });
     }
 
@@ -103,17 +103,17 @@ moduleFor(
         unknownProperty(key) {
           this.lastUnknownProperty = key;
           return 'unknown';
-        }
+        },
       }).create({
         normal: 'value',
         numberVal: 24,
         toggleVal: true,
-        nullProperty: null
+        nullProperty: null,
       });
 
       objectB = {
         normal: 'value',
-        nullProperty: null
+        nullProperty: null,
       };
     }
 
@@ -121,28 +121,20 @@ moduleFor(
       assert.equal(get(objectA, 'normal'), 'value');
     }
 
-    ['@test should call computed properties on Ember.Observable and return their result'](
-      assert
-    ) {
+    ['@test should call computed properties on Ember.Observable and return their result'](assert) {
       assert.equal(get(objectA, 'computed'), 'value');
     }
 
-    ['@test should return the function for a non-computed property on Ember.Observable'](
-      assert
-    ) {
+    ['@test should return the function for a non-computed property on Ember.Observable'](assert) {
       var value = get(objectA, 'method');
       assert.equal(typeof value, 'function');
     }
 
-    ['@test should return null when property value is null on Ember.Observable'](
-      assert
-    ) {
+    ['@test should return null when property value is null on Ember.Observable'](assert) {
       assert.equal(get(objectA, 'nullProperty'), null);
     }
 
-    ['@test should call unknownProperty when value is undefined on Ember.Observable'](
-      assert
-    ) {
+    ['@test should call unknownProperty when value is undefined on Ember.Observable'](assert) {
       assert.equal(get(objectA, 'unknown'), 'unknown');
       assert.equal(objectA.lastUnknownProperty, 'unknown');
     }
@@ -151,9 +143,7 @@ moduleFor(
       assert.equal(get(objectB, 'normal'), 'value');
     }
 
-    ['@test should return null when property is null on standard objects'](
-      assert
-    ) {
+    ['@test should return null when property is null on standard objects'](assert) {
       assert.equal(get(objectB, 'nullProperty'), null);
     }
 
@@ -176,15 +166,13 @@ moduleFor(
 moduleFor(
   'Ember.get() with paths',
   class extends AbstractTestCase {
-    ['@test should return a property at a given path relative to the passed object'](
-      assert
-    ) {
+    ['@test should return a property at a given path relative to the passed object'](assert) {
       var foo = ObservableObject.create({
         bar: ObservableObject.extend({
           baz: computed(function() {
             return 'blargh';
-          }).volatile()
-        }).create()
+          }).volatile(),
+        }).create(),
       });
 
       assert.equal(get(foo, 'bar.baz'), 'blargh');
@@ -195,8 +183,8 @@ moduleFor(
     ) {
       var foo = {
         bar: {
-          baz: 'blargh'
-        }
+          baz: 'blargh',
+        },
       };
 
       assert.equal(get(foo, 'bar.baz'), 'blargh');
@@ -220,7 +208,7 @@ moduleFor(
           set(key, value) {
             this._computed = value;
             return this._computed;
-          }
+          },
         }).volatile(),
 
         method(key, value) {
@@ -250,7 +238,7 @@ moduleFor(
         nullProperty: null,
 
         // unknown property
-        _unknown: 'unknown'
+        _unknown: 'unknown',
       }).create();
     }
 
@@ -260,9 +248,7 @@ moduleFor(
       assert.equal(ret, 'changed');
     }
 
-    ['@test should call computed properties passing value and return the value'](
-      assert
-    ) {
+    ['@test should call computed properties passing value and return the value'](assert) {
       var ret = object.set('computed', 'changed');
       assert.equal(object.get('_computed'), 'changed');
       assert.equal(ret, 'changed');
@@ -274,9 +260,7 @@ moduleFor(
       assert.equal(ret, undefined);
     }
 
-    ['@test should replace the function for a non-computed property and return the value'](
-      assert
-    ) {
+    ['@test should replace the function for a non-computed property and return the value'](assert) {
       var ret = object.set('method', 'changed');
       assert.equal(object.get('_method'), 'method'); // make sure this was NOT run
       assert.ok(typeof object.get('method') !== 'function');
@@ -289,9 +273,7 @@ moduleFor(
       assert.equal(ret, 'changed');
     }
 
-    ['@test should call unknownProperty with value when property is undefined'](
-      assert
-    ) {
+    ['@test should call unknownProperty with value when property is undefined'](assert) {
       var ret = object.set('unknown', 'changed');
       assert.equal(object.get('_unknown'), 'changed');
       assert.equal(ret, 'changed');
@@ -317,7 +299,7 @@ moduleFor(
           },
           set(key, value) {
             this.computedCalls.push(value);
-          }
+          },
         }).volatile(),
 
         computedCached: computed({
@@ -327,7 +309,7 @@ moduleFor(
           },
           set: function(key, value) {
             this.computedCachedCalls.push(value);
-          }
+          },
         }),
 
         dependent: computed({
@@ -337,7 +319,7 @@ moduleFor(
           },
           set(key, value) {
             this.dependentCalls.push(value);
-          }
+          },
         })
           .property('changer')
           .volatile(),
@@ -348,7 +330,7 @@ moduleFor(
           },
           set(key, value) {
             this.dependentFrontCalls.push(value);
-          }
+          },
         }).volatile(),
         dependentCached: computed({
           get() {
@@ -357,7 +339,7 @@ moduleFor(
           },
           set(key, value) {
             this.dependentCachedCalls.push(value);
-          }
+          },
         }).property('changer'),
 
         inc: computed('changer', function() {
@@ -376,7 +358,7 @@ moduleFor(
           set() {
             this.set('state', 'on');
             return this.get('state') === 'on';
-          }
+          },
         })
           .property('state')
           .volatile(),
@@ -388,10 +370,10 @@ moduleFor(
           set() {
             this.set('state', 'off');
             return this.get('state') === 'off';
-          }
+          },
         })
           .property('state')
-          .volatile()
+          .volatile(),
       }).create({
         computedCalls: [],
         computedCachedCalls: [],
@@ -401,7 +383,7 @@ moduleFor(
         dependentCachedCalls: [],
         incCallCount: 0,
         nestedIncCallCount: 0,
-        state: 'on'
+        state: 'on',
       });
     }
     afterEach() {
@@ -410,46 +392,26 @@ moduleFor(
 
     ['@test getting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      var keys = w(
-        'computed computedCached dependent dependentFront dependentCached'
-      );
+      var keys = w('computed computedCached dependent dependentFront dependentCached');
 
       keys.forEach(function(key) {
-        assert.equal(
-          object.get(key),
-          key,
-          `Try #1: object.get(${key}) should run function`
-        );
-        assert.equal(
-          object.get(key),
-          key,
-          `Try #2: object.get(${key}) should run function`
-        );
+        assert.equal(object.get(key), key, `Try #1: object.get(${key}) should run function`);
+        assert.equal(object.get(key), key, `Try #2: object.get(${key}) should run function`);
       });
 
       // verify each call count.  cached should only be called once
       w('computedCalls dependentFrontCalls dependentCalls').forEach(key => {
-        assert.equal(
-          object[key].length,
-          2,
-          `non-cached property ${key} should be called 2x`
-        );
+        assert.equal(object[key].length, 2, `non-cached property ${key} should be called 2x`);
       });
 
       w('computedCachedCalls dependentCachedCalls').forEach(key => {
-        assert.equal(
-          object[key].length,
-          1,
-          `non-cached property ${key} should be called 1x`
-        );
+        assert.equal(object[key].length, 1, `non-cached property ${key} should be called 1x`);
       });
     }
 
     ['@test setting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      var keys = w(
-        'computed dependent dependentFront computedCached dependentCached'
-      );
+      var keys = w('computed dependent dependentFront computedCached dependentCached');
       var values = w('value1 value2');
 
       keys.forEach(key => {
@@ -491,9 +453,7 @@ moduleFor(
           assert.equal(
             calls[idx],
             values[idx],
-            `call #${idx + 1} to set(${key}) should have passed value ${
-              values[idx]
-            }`
+            `call #${idx + 1} to set(${key}) should have passed value ${values[idx]}`
           );
         }
       });
@@ -507,57 +467,33 @@ moduleFor(
       object.notifyPropertyChange('computedCached');
 
       object.get('computedCached'); // should run again
-      assert.equal(
-        object.computedCachedCalls.length,
-        2,
-        'should have invoked method 2x'
-      );
+      assert.equal(object.computedCachedCalls.length, 2, 'should have invoked method 2x');
     }
 
     ['@test change dependent should clear cache'](assert) {
       // call get several times to collect call count
       var ret1 = object.get('inc'); // should run func
-      assert.equal(
-        object.get('inc'),
-        ret1,
-        'multiple calls should not run cached prop'
-      );
+      assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       object.set('changer', 'bar');
 
-      assert.equal(
-        object.get('inc'),
-        ret1 + 1,
-        'should increment after dependent key changes'
-      ); // should run again
+      assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
     }
 
     ['@test just notifying change of dependent should clear cache'](assert) {
       // call get several times to collect call count
       var ret1 = object.get('inc'); // should run func
-      assert.equal(
-        object.get('inc'),
-        ret1,
-        'multiple calls should not run cached prop'
-      );
+      assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       object.notifyPropertyChange('changer');
 
-      assert.equal(
-        object.get('inc'),
-        ret1 + 1,
-        'should increment after dependent key changes'
-      ); // should run again
+      assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
     }
 
     ['@test changing dependent should clear nested cache'](assert) {
       // call get several times to collect call count
       var ret1 = object.get('nestedInc'); // should run func
-      assert.equal(
-        object.get('nestedInc'),
-        ret1,
-        'multiple calls should not run cached prop'
-      );
+      assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
 
       object.set('changer', 'bar');
 
@@ -568,16 +504,10 @@ moduleFor(
       ); // should run again
     }
 
-    ['@test just notifying change of dependent should clear nested cache'](
-      assert
-    ) {
+    ['@test just notifying change of dependent should clear nested cache'](assert) {
       // call get several times to collect call count
       var ret1 = object.get('nestedInc'); // should run func
-      assert.equal(
-        object.get('nestedInc'),
-        ret1,
-        'multiple calls should not run cached prop'
-      );
+      assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
 
       object.notifyPropertyChange('changer');
 
@@ -590,24 +520,14 @@ moduleFor(
 
     // This verifies a specific bug encountered where observers for computed
     // properties would fire before their prop caches were cleared.
-    ['@test change dependent should clear cache when observers of dependent are called'](
-      assert
-    ) {
+    ['@test change dependent should clear cache when observers of dependent are called'](assert) {
       // call get several times to collect call count
       var ret1 = object.get('inc'); // should run func
-      assert.equal(
-        object.get('inc'),
-        ret1,
-        'multiple calls should not run cached prop'
-      );
+      assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       // add observer to verify change...
       object.addObserver('inc', this, function() {
-        assert.equal(
-          object.get('inc'),
-          ret1 + 1,
-          'should increment after dependent key changes'
-        ); // should run again
+        assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
       });
 
       // now run
@@ -627,24 +547,18 @@ moduleFor(
       assert.equal(object.get('isOn'), false, 'object.isOn should be false');
     }
 
-    ['@test dependent keys should be able to be specified as property paths'](
-      assert
-    ) {
+    ['@test dependent keys should be able to be specified as property paths'](assert) {
       var depObj = ObservableObject.extend({
         menuPrice: computed(function() {
           return this.get('menu.price');
-        }).property('menu.price')
+        }).property('menu.price'),
       }).create({
         menu: ObservableObject.create({
-          price: 5
-        })
+          price: 5,
+        }),
       });
 
-      assert.equal(
-        depObj.get('menuPrice'),
-        5,
-        'precond - initial value returns 5'
-      );
+      assert.equal(depObj.get('menuPrice'), 5, 'precond - initial value returns 5');
 
       depObj.set('menu.price', 6);
 
@@ -655,9 +569,7 @@ moduleFor(
       );
     }
 
-    ['@test cacheable nested dependent keys should clear after their dependencies update'](
-      assert
-    ) {
+    ['@test cacheable nested dependent keys should clear after their dependencies update'](assert) {
       assert.ok(true);
 
       var DepObj;
@@ -666,21 +578,17 @@ moduleFor(
         lookup.DepObj = DepObj = ObservableObject.extend({
           price: computed('restaurant.menu.price', function() {
             return this.get('restaurant.menu.price');
-          })
+          }),
         }).create({
           restaurant: ObservableObject.create({
             menu: ObservableObject.create({
-              price: 5
-            })
-          })
+              price: 5,
+            }),
+          }),
         });
       });
 
-      assert.equal(
-        DepObj.get('price'),
-        5,
-        'precond - computed property is correct'
-      );
+      assert.equal(DepObj.get('price'), 5, 'precond - computed property is correct');
 
       run(function() {
         DepObj.set('restaurant.menu.price', 10);
@@ -709,7 +617,7 @@ moduleFor(
         DepObj.set(
           'restaurant.menu',
           ObservableObject.create({
-            price: 15
+            price: 15,
           })
         );
       });
@@ -724,7 +632,7 @@ moduleFor(
         DepObj.set(
           'restaurant.menu',
           ObservableObject.create({
-            price: 25
+            price: 25,
           })
         );
       });
@@ -766,7 +674,7 @@ moduleFor(
 
         testArrayObserver: observer('normalArray.[]', function() {
           this.abnormal = 'notifiedObserver';
-        })
+        }),
       }).create({
         normal: 'value',
         abnormal: 'zeroValue',
@@ -774,7 +682,7 @@ moduleFor(
         toggleVal: true,
         observedProperty: 'beingWatched',
         testRemove: 'observerToBeRemoved',
-        normalArray: emberA([1, 2, 3, 4, 5])
+        normalArray: emberA([1, 2, 3, 4, 5]),
       });
     }
 
@@ -787,25 +695,13 @@ moduleFor(
       assert.equal(23, newValue, 'numerical value decremented');
       object.numberVal = 25;
       newValue = object.incrementProperty('numberVal', 5);
-      assert.equal(
-        30,
-        newValue,
-        'numerical value incremented by specified increment'
-      );
+      assert.equal(30, newValue, 'numerical value incremented by specified increment');
       object.numberVal = 25;
       newValue = object.incrementProperty('numberVal', -5);
-      assert.equal(
-        20,
-        newValue,
-        'minus numerical value incremented by specified increment'
-      );
+      assert.equal(20, newValue, 'minus numerical value incremented by specified increment');
       object.numberVal = 25;
       newValue = object.incrementProperty('numberVal', 0);
-      assert.equal(
-        25,
-        newValue,
-        'zero numerical value incremented by specified increment'
-      );
+      assert.equal(25, newValue, 'zero numerical value incremented by specified increment');
 
       expectAssertion(function() {
         newValue = object.incrementProperty('numberVal', 0 - void 0); // Increment by NaN
@@ -827,25 +723,13 @@ moduleFor(
 
       object.numberVal = 25;
       newValue = object.decrementProperty('numberVal', 5);
-      assert.equal(
-        20,
-        newValue,
-        'numerical value decremented by specified increment'
-      );
+      assert.equal(20, newValue, 'numerical value decremented by specified increment');
       object.numberVal = 25;
       newValue = object.decrementProperty('numberVal', -5);
-      assert.equal(
-        30,
-        newValue,
-        'minus numerical value decremented by specified increment'
-      );
+      assert.equal(30, newValue, 'minus numerical value decremented by specified increment');
       object.numberVal = 25;
       newValue = object.decrementProperty('numberVal', 0);
-      assert.equal(
-        25,
-        newValue,
-        'zero numerical value decremented by specified increment'
-      );
+      assert.equal(25, newValue, 'zero numerical value decremented by specified increment');
 
       expectAssertion(function() {
         newValue = object.decrementProperty('numberVal', 0 - void 0); // Decrement by NaN
@@ -867,14 +751,8 @@ moduleFor(
     }
 
     ['@test toggle function, should be boolean'](assert) {
-      assert.equal(
-        object.toggleProperty('toggleVal', true, false),
-        object.get('toggleVal')
-      );
-      assert.equal(
-        object.toggleProperty('toggleVal', true, false),
-        object.get('toggleVal')
-      );
+      assert.equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
+      assert.equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
       assert.equal(
         object.toggleProperty('toggleVal', undefined, undefined),
         object.get('toggleVal')
@@ -883,11 +761,7 @@ moduleFor(
 
     ['@test should notify array observer when array changes'](assert) {
       get(object, 'normalArray').replace(0, 0, [6]);
-      assert.equal(
-        object.abnormal,
-        'notifiedObserver',
-        'observer should be notified'
-      );
+      assert.equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
     }
   }
 );
@@ -898,7 +772,7 @@ moduleFor(
     beforeEach() {
       ObjectC = ObservableObject.create({
         objectE: ObservableObject.create({
-          propertyVal: 'chainedProperty'
+          propertyVal: 'chainedProperty',
         }),
 
         normal: 'value',
@@ -916,7 +790,7 @@ moduleFor(
 
         chainedObserver() {
           this.normal2 = 'chainedPropertyObserved';
-        }
+        },
       });
     }
 
@@ -945,7 +819,7 @@ moduleFor(
     beforeEach() {
       ObjectD = ObservableObject.create({
         objectF: ObservableObject.create({
-          propertyVal: 'chainedProperty'
+          propertyVal: 'chainedProperty',
         }),
 
         normal: 'value',
@@ -976,7 +850,7 @@ moduleFor(
         },
         observer3() {
           // Just an observer
-        }
+        },
       });
     }
 
@@ -995,17 +869,9 @@ moduleFor(
     ["@test should unregister an observer for a property - special case when key has a '.' in it."](
       assert
     ) {
-      ObjectD.addObserver(
-        'objectF.propertyVal',
-        ObjectD,
-        'removeChainedObserver'
-      );
+      ObjectD.addObserver('objectF.propertyVal', ObjectD, 'removeChainedObserver');
       ObjectD.objectF.set('propertyVal', 'chainedPropertyValue');
-      ObjectD.removeObserver(
-        'objectF.propertyVal',
-        ObjectD,
-        'removeChainedObserver'
-      );
+      ObjectD.removeObserver('objectF.propertyVal', ObjectD, 'removeChainedObserver');
       ObjectD.normal2 = 'dependentValue';
       ObjectD.objectF.set('propertyVal', 'removedPropertyValue');
       assert.equal('dependentValue', ObjectD.normal2);
@@ -1013,9 +879,7 @@ moduleFor(
       assert.equal('dependentValue', ObjectD.normal2);
     }
 
-    ['@test removing an observer inside of an observer shouldn’t cause any problems'](
-      assert
-    ) {
+    ['@test removing an observer inside of an observer shouldn’t cause any problems'](assert) {
       // The observable system should be protected against clients removing
       // observers in the middle of observer notification.
       var encounteredError = false;

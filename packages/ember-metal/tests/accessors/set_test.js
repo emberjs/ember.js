@@ -15,7 +15,7 @@ moduleFor(
         boolTrue: true,
         boolFalse: false,
         nullValue: null,
-        undefinedValue: undefined
+        undefinedValue: undefined,
       };
 
       let newObj = {};
@@ -25,11 +25,7 @@ moduleFor(
           continue;
         }
 
-        assert.equal(
-          set(newObj, key, obj[key]),
-          obj[key],
-          'should return value'
-        );
+        assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
         assert.ok(key in newObj, 'should have key');
         assert.ok(newObj.hasOwnProperty(key), 'should have key');
         assert.equal(get(newObj, key), obj[key], 'should set value');
@@ -50,17 +46,12 @@ moduleFor(
       assert.deepEqual(arr, ['first', 'lol']);
     }
 
-    ['@test should call setUnknownProperty if defined and value is undefined'](
-      assert
-    ) {
+    ['@test should call setUnknownProperty if defined and value is undefined'](assert) {
       let obj = {
         count: 0,
 
         unknownProperty() {
-          assert.ok(
-            false,
-            'should not invoke unknownProperty if setUnknownProperty is defined'
-          );
+          assert.ok(false, 'should not invoke unknownProperty if setUnknownProperty is defined');
         },
 
         setUnknownProperty(key, value) {
@@ -68,7 +59,7 @@ moduleFor(
           assert.equal(value, 'BAR', 'should pass key');
           this.count++;
           return 'FOO';
-        }
+        },
       };
 
       assert.equal(set(obj, 'foo', 'BAR'), 'BAR', 'should return set value');
@@ -118,9 +109,7 @@ moduleFor(
       );
     }
 
-    ['@test does not trigger auto-run assertion for objects that have not been tagged'](
-      assert
-    ) {
+    ['@test does not trigger auto-run assertion for objects that have not been tagged'](assert) {
       setHasViews(() => true);
       let obj = {};
 
@@ -129,17 +118,11 @@ moduleFor(
       assert.equal(obj.foo, 'bar');
     }
 
-    ['@test does not warn on attempts of calling set on a destroyed object with `trySet`'](
-      assert
-    ) {
+    ['@test does not warn on attempts of calling set on a destroyed object with `trySet`'](assert) {
       let obj = { isDestroyed: true };
 
       trySet(obj, 'favoriteFood', 'hot dogs');
-      assert.equal(
-        obj.favoriteFood,
-        undefined,
-        'does not set and does not error'
-      );
+      assert.equal(obj.favoriteFood, undefined, 'does not set and does not error');
     }
   }
 );

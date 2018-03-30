@@ -18,7 +18,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     let owner = (this.owner = buildOwner({
       ownerOptions: this.getOwnerOptions(),
       resolver: this.getResolver(),
-      bootOptions
+      bootOptions,
     }));
 
     this.renderer = this.owner.lookup('renderer:-dom');
@@ -26,15 +26,9 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     this.component = null;
 
     owner.register('event_dispatcher:main', EventDispatcher);
-    owner.inject(
-      'event_dispatcher:main',
-      '_viewRegistry',
-      '-view-registry:main'
-    );
+    owner.inject('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
     if (!bootOptions || bootOptions.isInteractive !== false) {
-      owner
-        .lookup('event_dispatcher:main')
-        .setup(this.getCustomDispatcherEvents(), this.element);
+      owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
     }
   }
 
@@ -66,14 +60,14 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
       this.resolver.add(
         `template:${templateName}`,
         this.compile(templateString, {
-          moduleName: templateName
+          moduleName: templateName,
         })
       );
     } else {
       this.resolver.add(
         templateName,
         this.compile(templateString, {
-          moduleName: templateName.moduleName
+          moduleName: templateName.moduleName,
         })
       );
     }
@@ -88,7 +82,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
       this.resolver.add(
         `template:components/${name}`,
         this.compile(template, {
-          moduleName: `components/${name}`
+          moduleName: `components/${name}`,
         })
       );
     }
@@ -117,13 +111,13 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     owner.register(
       'template:-top-level',
       this.compile(templateStr, {
-        moduleName: '-top-level'
+        moduleName: '-top-level',
       })
     );
 
     let attrs = assign({}, context, {
       tagName: '',
-      layoutName: '-top-level'
+      layoutName: '-top-level',
     });
 
     owner.register('component:-top-level', Component.extend(attrs));
@@ -170,7 +164,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
       owner.register(
         `template:components/${name}`,
         this.compile(template, {
-          moduleName: `my-app/templates/components/${name}.hbs`
+          moduleName: `my-app/templates/components/${name}.hbs`,
         })
       );
     }
@@ -182,7 +176,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
       owner.register(
         `template:${name}`,
         this.compile(template, {
-          moduleName: `my-app/templates/${name}.hbs`
+          moduleName: `my-app/templates/${name}.hbs`,
         })
       );
     } else {

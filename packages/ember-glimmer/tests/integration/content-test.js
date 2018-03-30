@@ -146,9 +146,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertStableRerender();
 
-    this.runTask(() =>
-      set(this.context, 'CaptializedPath', 'still no deprecation')
-    );
+    this.runTask(() => set(this.context, 'CaptializedPath', 'still no deprecation'));
 
     this.assertContent('still no deprecation');
     this.assertInvariants();
@@ -177,7 +175,7 @@ class DynamicContentTest extends RenderingTest {
 
   ['@test it can render a deeply nested dynamic path']() {
     this.renderPath('a.b.c.d.e.f', {
-      a: { b: { c: { d: { e: { f: 'hello' } } } } }
+      a: { b: { c: { d: { e: { f: 'hello' } } } } },
     });
 
     this.assertContent('hello');
@@ -206,7 +204,7 @@ class DynamicContentTest extends RenderingTest {
     let Formatter = EmberObject.extend({
       formattedMessage: computed('message', function() {
         return this.get('message').toUpperCase();
-      })
+      }),
     });
 
     let m = Formatter.create({ message: 'hello' });
@@ -222,9 +220,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('GOODBYE');
     this.assertInvariants();
 
-    this.runTask(() =>
-      set(this.context, 'm', Formatter.create({ message: 'hello' }))
-    );
+    this.runTask(() => set(this.context, 'm', Formatter.create({ message: 'hello' })));
 
     this.assertContent('HELLO');
     this.assertInvariants();
@@ -234,7 +230,7 @@ class DynamicContentTest extends RenderingTest {
     let Formatter = EmberObject.extend({
       formattedMessage: computed('messenger.message', function() {
         return this.get('messenger.message').toUpperCase();
-      })
+      }),
     });
 
     let m = Formatter.create({ messenger: { message: 'hello' } });
@@ -251,11 +247,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertInvariants();
 
     this.runTask(() =>
-      set(
-        this.context,
-        'm',
-        Formatter.create({ messenger: { message: 'hello' } })
-      )
+      set(this.context, 'm', Formatter.create({ messenger: { message: 'hello' } }))
     );
 
     this.assertContent('HELLO');
@@ -264,7 +256,7 @@ class DynamicContentTest extends RenderingTest {
 
   ['@test it can read from a proxy object']() {
     this.renderPath('proxy.name', {
-      proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } })
+      proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
     });
 
     this.assertContent('Tom Dale');
@@ -276,9 +268,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertContent('Yehuda Katz');
     this.assertInvariants();
 
-    this.runTask(() =>
-      set(this.context, 'proxy.content', { name: 'Godfrey Chan' })
-    );
+    this.runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
 
     this.assertContent('Godfrey Chan');
     this.assertInvariants();
@@ -293,11 +283,7 @@ class DynamicContentTest extends RenderingTest {
     this.assertIsEmpty();
 
     this.runTask(() =>
-      set(
-        this.context,
-        'proxy',
-        ObjectProxy.create({ content: { name: 'Tom Dale' } })
-      )
+      set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } }))
     );
 
     this.assertContent('Tom Dale');
@@ -307,8 +293,8 @@ class DynamicContentTest extends RenderingTest {
   ['@test it can read from a nested path in a proxy object']() {
     this.renderPath('proxy.name.last', {
       proxy: ObjectProxy.create({
-        content: { name: { first: 'Tom', last: 'Dale' } }
-      })
+        content: { name: { first: 'Tom', last: 'Dale' } },
+      }),
     });
 
     this.assertContent('Dale');
@@ -324,25 +310,21 @@ class DynamicContentTest extends RenderingTest {
 
     this.assertStableRerender();
 
-    this.runTask(() =>
-      set(this.context, 'proxy.content.name', { first: 'Yehuda', last: 'Katz' })
-    );
+    this.runTask(() => set(this.context, 'proxy.content.name', { first: 'Yehuda', last: 'Katz' }));
 
     this.assertContent('Katz');
     this.assertInvariants();
 
     this.runTask(() =>
       set(this.context, 'proxy.content', {
-        name: { first: 'Godfrey', last: 'Chan' }
+        name: { first: 'Godfrey', last: 'Chan' },
       })
     );
 
     this.assertContent('Chan');
     this.assertInvariants();
 
-    this.runTask(() =>
-      set(this.context, 'proxy.name', { first: 'Stefan', last: 'Penner' })
-    );
+    this.runTask(() => set(this.context, 'proxy.name', { first: 'Stefan', last: 'Penner' }));
 
     this.assertContent('Penner');
     this.assertInvariants();
@@ -356,7 +338,7 @@ class DynamicContentTest extends RenderingTest {
         this.context,
         'proxy',
         ObjectProxy.create({
-          content: { name: { first: 'Tom', last: 'Dale' } }
+          content: { name: { first: 'Tom', last: 'Dale' } },
         })
       )
     );
@@ -368,8 +350,8 @@ class DynamicContentTest extends RenderingTest {
   ['@test it can read from a path flipping between a proxy and a real object']() {
     this.renderPath('proxyOrObject.name.last', {
       proxyOrObject: ObjectProxy.create({
-        content: { name: { first: 'Tom', last: 'Dale' } }
-      })
+        content: { name: { first: 'Tom', last: 'Dale' } },
+      }),
     });
 
     this.assertContent('Dale');
@@ -378,7 +360,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.runTask(() =>
       set(this.context, 'proxyOrObject', {
-        name: { first: 'Tom', last: 'Dale' }
+        name: { first: 'Tom', last: 'Dale' },
       })
     );
 
@@ -395,7 +377,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.runTask(() =>
       set(this.context, 'proxyOrObject', {
-        name: { first: 'Yehuda', last: 'Katz' }
+        name: { first: 'Yehuda', last: 'Katz' },
       })
     );
 
@@ -407,7 +389,7 @@ class DynamicContentTest extends RenderingTest {
         this.context,
         'proxyOrObject',
         ObjectProxy.create({
-          content: { name: { first: 'Godfrey', last: 'Chan' } }
+          content: { name: { first: 'Godfrey', last: 'Chan' } },
         })
       )
     );
@@ -418,7 +400,7 @@ class DynamicContentTest extends RenderingTest {
     this.runTask(() =>
       set(this.context, 'proxyOrObject.content.name', {
         first: 'Stefan',
-        last: 'Penner'
+        last: 'Penner',
       })
     );
 
@@ -434,7 +416,7 @@ class DynamicContentTest extends RenderingTest {
         this.context,
         'proxyOrObject',
         ObjectProxy.create({
-          content: { name: { first: 'Tom', last: 'Dale' } }
+          content: { name: { first: 'Tom', last: 'Dale' } },
         })
       )
     );
@@ -445,7 +427,7 @@ class DynamicContentTest extends RenderingTest {
 
   ['@test it can read from a path flipping between a real object and a proxy']() {
     this.renderPath('objectOrProxy.name.last', {
-      objectOrProxy: { name: { first: 'Tom', last: 'Dale' } }
+      objectOrProxy: { name: { first: 'Tom', last: 'Dale' } },
     });
 
     this.assertContent('Dale');
@@ -457,29 +439,25 @@ class DynamicContentTest extends RenderingTest {
         this.context,
         'objectOrProxy',
         ObjectProxy.create({
-          content: { name: { first: 'Tom', last: 'Dale' } }
+          content: { name: { first: 'Tom', last: 'Dale' } },
         })
       )
     );
 
     this.assertStableRerender();
 
-    this.runTask(() =>
-      set(this.context, 'objectOrProxy.content.name.last', 'Cruise')
-    );
+    this.runTask(() => set(this.context, 'objectOrProxy.content.name.last', 'Cruise'));
 
     this.assertContent('Cruise');
     this.assertInvariants();
 
-    this.runTask(() =>
-      set(this.context, 'objectOrProxy.content.name.first', 'Suri')
-    );
+    this.runTask(() => set(this.context, 'objectOrProxy.content.name.first', 'Suri'));
 
     this.assertStableRerender();
 
     this.runTask(() =>
       set(this.context, 'objectOrProxy.content', {
-        name: { first: 'Yehuda', last: 'Katz' }
+        name: { first: 'Yehuda', last: 'Katz' },
       })
     );
 
@@ -488,7 +466,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.runTask(() =>
       set(this.context, 'objectOrProxy', {
-        name: { first: 'Godfrey', last: 'Chan' }
+        name: { first: 'Godfrey', last: 'Chan' },
       })
     );
 
@@ -498,7 +476,7 @@ class DynamicContentTest extends RenderingTest {
     this.runTask(() =>
       set(this.context, 'objectOrProxy.name', {
         first: 'Stefan',
-        last: 'Penner'
+        last: 'Penner',
       })
     );
 
@@ -511,7 +489,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.runTask(() =>
       set(this.context, 'objectOrProxy', {
-        name: { first: 'Tom', last: 'Dale' }
+        name: { first: 'Tom', last: 'Dale' },
       })
     );
 
@@ -545,15 +523,15 @@ class DynamicContentTest extends RenderingTest {
 
   ['@test it can render a readOnly property of a path']() {
     let Messenger = EmberObject.extend({
-      message: readOnly('a.b.c')
+      message: readOnly('a.b.c'),
     });
 
     let messenger = Messenger.create({
       a: {
         b: {
-          c: 'hello'
-        }
-      }
+          c: 'hello',
+        },
+      },
     });
 
     this.renderPath('messenger.message', { messenger });
@@ -569,7 +547,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.runTask(() =>
       set(this.context, 'messenger.a.b', {
-        c: 'goodbye'
+        c: 'goodbye',
       })
     );
 
@@ -578,7 +556,7 @@ class DynamicContentTest extends RenderingTest {
 
     this.runTask(() =>
       set(this.context, 'messenger', {
-        message: 'hello'
+        message: 'hello',
       })
     );
 
@@ -636,7 +614,7 @@ class ContentTestGenerator {
           this.runTask(() => set(this.context, 'value', value));
 
           this.assertIsEmpty();
-        }
+        },
       };
     } else {
       return {
@@ -655,7 +633,7 @@ class ContentTestGenerator {
 
           this.assertContent(expected);
           this.assertInvariants();
-        }
+        },
       };
     }
   }
@@ -682,42 +660,34 @@ const SharedContentTestCases = new ContentTestGenerator([
     {
       toString() {
         return 'foo';
-      }
+      },
     },
     'foo',
-    'an object with a custom toString function'
+    'an object with a custom toString function',
   ],
   [
     {
       valueOf() {
         return 1;
-      }
+      },
     },
     '[object Object]',
-    'an object with a custom valueOf function'
+    'an object with a custom valueOf function',
   ],
 
   // Escaping tests
-  ['<b>Max</b><b>James</b>', '<b>Max</b><b>James</b>']
+  ['<b>Max</b><b>James</b>', '<b>Max</b><b>James</b>'],
 ]);
 
 let GlimmerContentTestCases = new ContentTestGenerator([
-  [Object.create(null), EMPTY, 'an object with no toString']
+  [Object.create(null), EMPTY, 'an object with no toString'],
 ]);
 
 if (typeof Symbol !== 'undefined') {
-  GlimmerContentTestCases.cases.push([
-    Symbol('debug'),
-    'Symbol(debug)',
-    'a symbol'
-  ]);
+  GlimmerContentTestCases.cases.push([Symbol('debug'), 'Symbol(debug)', 'a symbol']);
 }
 
-applyMixins(
-  DynamicContentTest,
-  SharedContentTestCases,
-  GlimmerContentTestCases
-);
+applyMixins(DynamicContentTest, SharedContentTestCases, GlimmerContentTestCases);
 
 moduleFor(
   'Dynamic content tests (content position)',
@@ -727,11 +697,7 @@ moduleFor(
     }
 
     assertContent(content) {
-      this.assert.strictEqual(
-        this.nodesCount,
-        1,
-        'It should render exactly one text node'
-      );
+      this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one text node');
       this.assertTextNode(this.firstChild, content);
       // this.takeSnapshot();
     }
@@ -746,11 +712,7 @@ moduleFor(
     }
 
     assertContent(content) {
-      this.assert.strictEqual(
-        this.nodesCount,
-        1,
-        'It should render exactly one text node'
-      );
+      this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one text node');
       this.assertTextNode(this.firstChild, content);
     }
   }
@@ -764,21 +726,13 @@ moduleFor(
     }
 
     assertIsEmpty() {
-      this.assert.strictEqual(
-        this.nodesCount,
-        1,
-        'It should render exactly one <p> tag'
-      );
+      this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <p> tag');
       this.assertElement(this.firstChild, { tagName: 'p' });
       this.assertText('');
     }
 
     assertContent(content) {
-      this.assert.strictEqual(
-        this.nodesCount,
-        1,
-        'It should render exactly one <p> tag'
-      );
+      this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <p> tag');
       this.assertElement(this.firstChild, { tagName: 'p' });
       this.assertText(content);
     }
@@ -793,24 +747,16 @@ moduleFor(
     }
 
     assertIsEmpty() {
-      this.assert.strictEqual(
-        this.nodesCount,
-        1,
-        'It should render exactly one <div> tag'
-      );
+      this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <div> tag');
       this.assertElement(this.firstChild, { tagName: 'div', content: '' });
     }
 
     assertContent(content) {
-      this.assert.strictEqual(
-        this.nodesCount,
-        1,
-        'It should render exactly one <div> tag'
-      );
+      this.assert.strictEqual(this.nodesCount, 1, 'It should render exactly one <div> tag');
       this.assertElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': content },
-        content: ''
+        content: '',
       });
     }
   }
@@ -847,7 +793,7 @@ moduleFor(
     ['@test updating trusted curlies']() {
       this.render('{{{htmlContent}}}{{{nested.htmlContent}}}', {
         htmlContent: '<b>Max</b>',
-        nested: { htmlContent: '<b>James</b>' }
+        nested: { htmlContent: '<b>James</b>' },
       });
 
       this.assertContent('<b>Max</b><b>James</b>');
@@ -856,9 +802,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() =>
-        set(this.context, 'htmlContent', '<i>M</i><u>a</u><s>x</s>')
-      );
+      this.runTask(() => set(this.context, 'htmlContent', '<i>M</i><u>a</u><s>x</s>'));
 
       this.assertContent('<i>M</i><u>a</u><s>x</s><b>James</b>');
 
@@ -932,7 +876,7 @@ moduleFor(
     `;
 
       this.render(template, {
-        framework: 'Ember.js'
+        framework: 'Ember.js',
       });
       this.assertHTML(ember);
 
@@ -951,7 +895,7 @@ moduleFor(
 
     ['@test it should evaluate to nothing if part of the path is `undefined`']() {
       this.render('{{foo.bar.baz.bizz}}', {
-        foo: {}
+        foo: {},
       });
 
       this.assertText('');
@@ -962,7 +906,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: { baz: { bizz: 'Hey!' } }
+          bar: { baz: { bizz: 'Hey!' } },
         })
       );
 
@@ -974,7 +918,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: { baz: { bizz: 'Hello!' } }
+          bar: { baz: { bizz: 'Hello!' } },
         })
       );
 
@@ -987,7 +931,7 @@ moduleFor(
 
     ['@test it should evaluate to nothing if part of the path is a primative']() {
       this.render('{{foo.bar.baz.bizz}}', {
-        foo: { bar: true }
+        foo: { bar: true },
       });
 
       this.assertText('');
@@ -998,7 +942,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: false
+          bar: false,
         })
       );
 
@@ -1006,7 +950,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: 'Haha'
+          bar: 'Haha',
         })
       );
 
@@ -1014,7 +958,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: null
+          bar: null,
         })
       );
 
@@ -1022,7 +966,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: undefined
+          bar: undefined,
         })
       );
 
@@ -1030,7 +974,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: 1
+          bar: 1,
         })
       );
 
@@ -1038,7 +982,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: { baz: { bizz: 'Hello!' } }
+          bar: { baz: { bizz: 'Hello!' } },
         })
       );
 
@@ -1046,7 +990,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'foo', {
-          bar: true
+          bar: true,
         })
       );
 
@@ -1056,14 +1000,14 @@ moduleFor(
     ['@test can set dynamic href']() {
       this.render('<a href={{model.url}}>Example</a>', {
         model: {
-          url: 'http://example.com'
-        }
+          url: 'http://example.com',
+        },
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'a',
         content: 'Example',
-        attrs: { href: 'http://example.com' }
+        attrs: { href: 'http://example.com' },
       });
 
       this.runTask(() => this.rerender());
@@ -1071,7 +1015,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'a',
         content: 'Example',
-        attrs: { href: 'http://example.com' }
+        attrs: { href: 'http://example.com' },
       });
 
       this.runTask(() => set(this.context, 'model.url', 'http://linkedin.com'));
@@ -1079,29 +1023,27 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'a',
         content: 'Example',
-        attrs: { href: 'http://linkedin.com' }
+        attrs: { href: 'http://linkedin.com' },
       });
 
-      this.runTask(() =>
-        set(this.context, 'model', { url: 'http://example.com' })
-      );
+      this.runTask(() => set(this.context, 'model', { url: 'http://example.com' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'a',
         content: 'Example',
-        attrs: { href: 'http://example.com' }
+        attrs: { href: 'http://example.com' },
       });
     }
 
     ['@test quoteless class attributes update correctly']() {
       this.render('<div class={{if fooBar "foo-bar"}}>hello</div>', {
-        fooBar: true
+        fooBar: true,
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo-bar') }
+        attrs: { class: classes('foo-bar') },
       });
 
       this.runTask(() => this.rerender());
@@ -1109,7 +1051,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo-bar') }
+        attrs: { class: classes('foo-bar') },
       });
 
       this.runTask(() => set(this.context, 'fooBar', false));
@@ -1121,19 +1063,19 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo-bar') }
+        attrs: { class: classes('foo-bar') },
       });
     }
 
     ['@test quoted class attributes update correctly'](assert) {
       this.render('<div class="{{if fooBar "foo-bar"}}">hello</div>', {
-        fooBar: true
+        fooBar: true,
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo-bar') }
+        attrs: { class: classes('foo-bar') },
       });
 
       this.runTask(() => this.rerender());
@@ -1141,7 +1083,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo-bar') }
+        attrs: { class: classes('foo-bar') },
       });
 
       this.runTask(() => set(this.context, 'fooBar', false));
@@ -1153,21 +1095,21 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo-bar') }
+        attrs: { class: classes('foo-bar') },
       });
     }
 
     ['@test unquoted class attribute can contain multiple classes']() {
       this.render('<div class={{model.classes}}>hello</div>', {
         model: {
-          classes: 'foo bar baz'
-        }
+          classes: 'foo bar baz',
+        },
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar baz') }
+        attrs: { class: classes('foo bar baz') },
       });
 
       this.runTask(() => this.rerender());
@@ -1175,7 +1117,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar baz') }
+        attrs: { class: classes('foo bar baz') },
       });
 
       this.runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
@@ -1183,31 +1125,29 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fizz bizz') }
+        attrs: { class: classes('fizz bizz') },
       });
 
-      this.runTask(() =>
-        set(this.context, 'model', { classes: 'foo bar baz' })
-      );
+      this.runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar baz') }
+        attrs: { class: classes('foo bar baz') },
       });
     }
 
     ['@test unquoted class attribute']() {
       this.render('<div class={{model.foo}}>hello</div>', {
         model: {
-          foo: 'foo'
-        }
+          foo: 'foo',
+        },
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo') }
+        attrs: { class: classes('foo') },
       });
 
       this.runTask(() => this.rerender());
@@ -1215,7 +1155,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo') }
+        attrs: { class: classes('foo') },
       });
 
       this.runTask(() => set(this.context, 'model.foo', 'fizz'));
@@ -1223,7 +1163,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fizz') }
+        attrs: { class: classes('fizz') },
       });
 
       this.runTask(() => set(this.context, 'model', { foo: 'foo' }));
@@ -1231,21 +1171,21 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo') }
+        attrs: { class: classes('foo') },
       });
     }
 
     ['@test quoted class attribute']() {
       this.render('<div class="{{model.foo}}">hello</div>', {
         model: {
-          foo: 'foo'
-        }
+          foo: 'foo',
+        },
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo') }
+        attrs: { class: classes('foo') },
       });
 
       this.runTask(() => this.rerender());
@@ -1253,7 +1193,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo') }
+        attrs: { class: classes('foo') },
       });
 
       this.runTask(() => set(this.context, 'model.foo', 'fizz'));
@@ -1261,7 +1201,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fizz') }
+        attrs: { class: classes('fizz') },
       });
 
       this.runTask(() => set(this.context, 'model', { foo: 'foo' }));
@@ -1269,21 +1209,21 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo') }
+        attrs: { class: classes('foo') },
       });
     }
 
     ['@test quoted class attribute can contain multiple classes']() {
       this.render('<div class="{{model.classes}}">hello</div>', {
         model: {
-          classes: 'foo bar baz'
-        }
+          classes: 'foo bar baz',
+        },
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar baz') }
+        attrs: { class: classes('foo bar baz') },
       });
 
       this.runTask(() => this.rerender());
@@ -1291,7 +1231,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar baz') }
+        attrs: { class: classes('foo bar baz') },
       });
 
       this.runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
@@ -1299,36 +1239,31 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fizz bizz') }
+        attrs: { class: classes('fizz bizz') },
       });
 
-      this.runTask(() =>
-        set(this.context, 'model', { classes: 'foo bar baz' })
-      );
+      this.runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar baz') }
+        attrs: { class: classes('foo bar baz') },
       });
     }
 
     ['@test class attribute concats bound values']() {
-      this.render(
-        '<div class="{{model.foo}} {{model.bar}} {{model.bizz}}">hello</div>',
-        {
-          model: {
-            foo: 'foo',
-            bar: 'bar',
-            bizz: 'bizz'
-          }
-        }
-      );
+      this.render('<div class="{{model.foo}} {{model.bar}} {{model.bizz}}">hello</div>', {
+        model: {
+          foo: 'foo',
+          bar: 'bar',
+          bizz: 'bizz',
+        },
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar bizz') }
+        attrs: { class: classes('foo bar bizz') },
       });
 
       this.runTask(() => this.rerender());
@@ -1336,7 +1271,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar bizz') }
+        attrs: { class: classes('foo bar bizz') },
       });
 
       this.runTask(() => set(this.context, 'model.foo', 'fizz'));
@@ -1344,7 +1279,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fizz bar bizz') }
+        attrs: { class: classes('fizz bar bizz') },
       });
 
       this.runTask(() => set(this.context, 'model.bar', null));
@@ -1352,21 +1287,21 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fizz bizz') }
+        attrs: { class: classes('fizz bizz') },
       });
 
       this.runTask(() =>
         set(this.context, 'model', {
           foo: 'foo',
           bar: 'bar',
-          bizz: 'bizz'
+          bizz: 'bizz',
         })
       );
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar bizz') }
+        attrs: { class: classes('foo bar bizz') },
       });
     }
 
@@ -1378,15 +1313,15 @@ moduleFor(
             size: 'large',
             hasSize: true,
             hasShape: false,
-            shape: 'round'
-          }
+            shape: 'round',
+          },
         }
       );
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('large') }
+        attrs: { class: classes('large') },
       });
 
       this.runTask(() => this.rerender());
@@ -1394,7 +1329,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('large') }
+        attrs: { class: classes('large') },
       });
 
       this.runTask(() => set(this.context, 'model.hasShape', true));
@@ -1402,7 +1337,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('large round') }
+        attrs: { class: classes('large round') },
       });
 
       this.runTask(() => set(this.context, 'model.hasSize', false));
@@ -1410,7 +1345,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('round') }
+        attrs: { class: classes('round') },
       });
 
       this.runTask(() =>
@@ -1418,14 +1353,14 @@ moduleFor(
           size: 'large',
           hasSize: true,
           hasShape: false,
-          shape: 'round'
+          shape: 'round',
         })
       );
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('large') }
+        attrs: { class: classes('large') },
       });
     }
 
@@ -1437,15 +1372,15 @@ moduleFor(
             foo: 'foo',
             bar: 'bar',
             fizz: 'fizz',
-            baz: 'baz'
-          }
+            baz: 'baz',
+          },
         }
       );
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar fizz baz') }
+        attrs: { class: classes('foo bar fizz baz') },
       });
 
       this.runTask(() => this.rerender());
@@ -1453,7 +1388,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar fizz baz') }
+        attrs: { class: classes('foo bar fizz baz') },
       });
 
       this.runTask(() => {
@@ -1464,7 +1399,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('bar baz') }
+        attrs: { class: classes('bar baz') },
       });
 
       this.runTask(() => {
@@ -1472,32 +1407,29 @@ moduleFor(
           foo: 'foo',
           bar: 'bar',
           fizz: 'fizz',
-          baz: 'baz'
+          baz: 'baz',
         });
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo bar fizz baz') }
+        attrs: { class: classes('foo bar fizz baz') },
       });
     }
 
     ['@test classes are ordered: See issue #9912']() {
-      this.render(
-        '<div class="{{model.foo}}  static   {{model.bar}}">hello</div>',
-        {
-          model: {
-            foo: 'foo',
-            bar: 'bar'
-          }
-        }
-      );
+      this.render('<div class="{{model.foo}}  static   {{model.bar}}">hello</div>', {
+        model: {
+          foo: 'foo',
+          bar: 'bar',
+        },
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: 'foo  static   bar' }
+        attrs: { class: 'foo  static   bar' },
       });
 
       this.runTask(() => this.rerender());
@@ -1505,7 +1437,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: 'foo  static   bar' }
+        attrs: { class: 'foo  static   bar' },
       });
 
       this.runTask(() => {
@@ -1515,20 +1447,20 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: 'foo  static   ' }
+        attrs: { class: 'foo  static   ' },
       });
 
       this.runTask(() => {
         set(this.context, 'model', {
           foo: 'foo',
-          bar: 'bar'
+          bar: 'bar',
         });
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: 'foo  static   bar' }
+        attrs: { class: 'foo  static   bar' },
       });
     }
   }
@@ -1567,14 +1499,14 @@ moduleFor(
     ['@test can set dynamic style']() {
       this.render('<div style={{model.style}}></div>', {
         model: {
-          style: htmlSafe('width: 60px;')
-        }
+          style: htmlSafe('width: 60px;'),
+        },
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'width: 60px;' }
+        attrs: { style: 'width: 60px;' },
       });
 
       this.runTask(() => this.rerender());
@@ -1582,7 +1514,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'width: 60px;' }
+        attrs: { style: 'width: 60px;' },
       });
 
       this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
@@ -1590,7 +1522,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'height: 60px;' }
+        attrs: { style: 'height: 60px;' },
       });
 
       this.runTask(() => set(this.context, 'model.style', null));
@@ -1598,7 +1530,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: {}
+        attrs: {},
       });
 
       this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
@@ -1606,21 +1538,21 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'width: 60px;' }
+        attrs: { style: 'width: 60px;' },
       });
     }
 
     ['@test can set dynamic style with -html-safe']() {
       this.render('<div style={{-html-safe model.style}}></div>', {
         model: {
-          style: htmlSafe('width: 60px;')
-        }
+          style: htmlSafe('width: 60px;'),
+        },
       });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'width: 60px;' }
+        attrs: { style: 'width: 60px;' },
       });
 
       this.runTask(() => this.rerender());
@@ -1628,7 +1560,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'width: 60px;' }
+        attrs: { style: 'width: 60px;' },
       });
 
       this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
@@ -1636,7 +1568,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'height: 60px;' }
+        attrs: { style: 'height: 60px;' },
       });
 
       this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
@@ -1644,7 +1576,7 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         content: '',
-        attrs: { style: 'width: 60px;' }
+        attrs: { style: 'width: 60px;' },
       });
     }
   }
@@ -1657,7 +1589,7 @@ if (!EmberDev.runningProdBuild) {
       ['@test specifying <div style={{userValue}}></div> generates a warning']() {
         let userValue = 'width: 42px';
         this.render('<div style={{userValue}}></div>', {
-          userValue
+          userValue,
         });
 
         this.assertStyleWarning(userValue);
@@ -1665,16 +1597,16 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test specifying `attributeBindings: ["style"]` generates a warning']() {
         let FooBarComponent = Component.extend({
-          attributeBindings: ['style']
+          attributeBindings: ['style'],
         });
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: 'hello'
+          template: 'hello',
         });
         let userValue = 'width: 42px';
         this.render('{{foo-bar style=userValue}}', {
-          userValue
+          userValue,
         });
 
         this.assertStyleWarning(userValue);
@@ -1682,7 +1614,7 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test specifying `<div style={{{userValue}}}></div>` works properly without a warning']() {
         this.render('<div style={{{userValue}}}></div>', {
-          userValue: 'width: 42px'
+          userValue: 'width: 42px',
         });
 
         this.assertNoWarning();
@@ -1690,7 +1622,7 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test specifying `<div style={{userValue}}></div>` works properly with a SafeString']() {
         this.render('<div style={{userValue}}></div>', {
-          userValue: new SafeString('width: 42px')
+          userValue: new SafeString('width: 42px'),
         });
 
         this.assertNoWarning();
@@ -1698,7 +1630,7 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test null value do not generate htmlsafe warning']() {
         this.render('<div style={{userValue}}></div>', {
-          userValue: null
+          userValue: null,
         });
 
         this.assertNoWarning();
@@ -1712,7 +1644,7 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test no warnings are triggered when using `-html-safe`']() {
         this.render('<div style={{-html-safe userValue}}></div>', {
-          userValue: 'width: 42px'
+          userValue: 'width: 42px',
         });
 
         this.assertNoWarning();
@@ -1720,7 +1652,7 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test no warnings are triggered when a safe string is quoted']() {
         this.render('<div style="{{userValue}}"></div>', {
-          userValue: new SafeString('width: 42px')
+          userValue: new SafeString('width: 42px'),
         });
 
         this.assertNoWarning();
@@ -1729,7 +1661,7 @@ if (!EmberDev.runningProdBuild) {
       ['@test binding warning is triggered when an unsafe string is quoted']() {
         let userValue = 'width: 42px';
         this.render('<div style="{{userValue}}"></div>', {
-          userValue
+          userValue,
         });
 
         this.assertStyleWarning(userValue);
@@ -1738,7 +1670,7 @@ if (!EmberDev.runningProdBuild) {
       ['@test binding warning is triggered when a safe string for a complete property is concatenated in place']() {
         let userValue = 'width: 42px';
         this.render('<div style="color: green; {{userValue}}"></div>', {
-          userValue: new SafeString('width: 42px')
+          userValue: new SafeString('width: 42px'),
         });
 
         this.assertStyleWarning(`color: green; ${userValue}`);
@@ -1747,7 +1679,7 @@ if (!EmberDev.runningProdBuild) {
       ['@test binding warning is triggered when a safe string for a value is concatenated in place']() {
         let userValue = '42px';
         this.render('<div style="color: green; width: {{userValue}}"></div>', {
-          userValue: new SafeString(userValue)
+          userValue: new SafeString(userValue),
         });
 
         this.assertStyleWarning(`color: green; width: ${userValue}`);
@@ -1755,12 +1687,9 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test binding warning is triggered when a safe string for a property name is concatenated in place']() {
         let userValue = 'width';
-        this.render(
-          '<div style="color: green; {{userProperty}}: 42px"></div>',
-          {
-            userProperty: new SafeString(userValue)
-          }
-        );
+        this.render('<div style="color: green; {{userProperty}}: 42px"></div>', {
+          userProperty: new SafeString(userValue),
+        });
 
         this.assertStyleWarning(`color: green; ${userValue}: 42px`);
       }

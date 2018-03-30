@@ -12,9 +12,7 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.underscore',
   class extends AbstractTestCase {
-    ['@test String.prototype.underscore is not available without EXTEND_PROTOTYPES'](
-      assert
-    ) {
+    ['@test String.prototype.underscore is not available without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(
           'undefined' === typeof String.prototype.underscore,
@@ -26,24 +24,9 @@ moduleFor(
     }
 
     ['@test String underscore tests'](assert) {
-      test(
-        assert,
-        'my favorite items',
-        'my_favorite_items',
-        'with normal string'
-      );
-      test(
-        assert,
-        'css-class-name',
-        'css_class_name',
-        'with dasherized string'
-      );
-      test(
-        assert,
-        'action_name',
-        'action_name',
-        'does nothing with underscored string'
-      );
+      test(assert, 'my favorite items', 'my_favorite_items', 'with normal string');
+      test(assert, 'css-class-name', 'css_class_name', 'with dasherized string');
+      test(assert, 'action_name', 'action_name', 'does nothing with underscored string');
       test(assert, 'innerHTML', 'inner_html', 'with camelcased string');
       test(
         assert,

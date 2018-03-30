@@ -5,7 +5,7 @@ import { getAdapter, setAdapter } from './test/adapter';
 import {
   incrementPendingRequests,
   decrementPendingRequests,
-  clearPendingRequests
+  clearPendingRequests,
 } from './test/pending_requests';
 import Adapter from './adapters/adapter';
 import QUnitAdapter from './adapters/qunit';
@@ -30,9 +30,7 @@ export default function setupForTesting() {
   let adapter = getAdapter();
   // if adapter is not manually set default to QUnit
   if (!adapter) {
-    setAdapter(
-      typeof self.QUnit === 'undefined' ? new Adapter() : new QUnitAdapter()
-    );
+    setAdapter(typeof self.QUnit === 'undefined' ? new Adapter() : new QUnitAdapter());
   }
 
   document.removeEventListener('ajaxSend', incrementPendingRequests);

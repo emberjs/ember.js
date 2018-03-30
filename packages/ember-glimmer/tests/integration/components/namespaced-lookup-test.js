@@ -10,7 +10,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.addTemplate(
           {
             specifier: 'template:components/my-component',
-            namespace: 'my-addon'
+            namespace: 'my-addon',
           },
           'namespaced template {{myProp}}'
         );
@@ -18,15 +18,15 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           {
             specifier: 'component:my-component',
-            namespace: 'my-addon'
+            namespace: 'my-addon',
           },
           Component.extend({
-            myProp: 'My property'
+            myProp: 'My property',
           })
         );
 
         this.addComponent('x-outer', {
-          template: '{{my-addon::my-component}}'
+          template: '{{my-addon::my-component}}',
         });
 
         this.render('{{x-outer}}');
@@ -42,7 +42,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.addTemplate(
           {
             specifier: 'template:components/my-component',
-            namespace: 'second-addon'
+            namespace: 'second-addon',
           },
           'second namespaced template'
         );
@@ -50,33 +50,29 @@ if (EMBER_MODULE_UNIFICATION) {
         this.addTemplate(
           {
             specifier: 'template:components/my-component',
-            namespace: 'first-addon'
+            namespace: 'first-addon',
           },
           'first namespaced template - {{second-addon::my-component}}'
         );
 
         this.addComponent('x-outer', {
-          template: '{{first-addon::my-component}}'
+          template: '{{first-addon::my-component}}',
         });
 
         this.render('{{x-outer}}');
 
-        this.assertText(
-          'first namespaced template - second namespaced template'
-        );
+        this.assertText('first namespaced template - second namespaced template');
 
         this.runTask(() => this.rerender());
 
-        this.assertText(
-          'first namespaced template - second namespaced template'
-        );
+        this.assertText('first namespaced template - second namespaced template');
       }
 
       ['@test it can render a nested un-namespaced component']() {
         this.addTemplate(
           {
             specifier: 'template:components/addon-component',
-            source: 'template:first-addon/src/ui/components/my-component.hbs'
+            source: 'template:first-addon/src/ui/components/my-component.hbs',
           },
           'un-namespaced addon template'
         );
@@ -85,13 +81,13 @@ if (EMBER_MODULE_UNIFICATION) {
           {
             specifier: 'template:components/my-component',
             moduleName: 'first-addon/src/ui/components/my-component.hbs',
-            namespace: 'first-addon'
+            namespace: 'first-addon',
           },
           '{{addon-component}}'
         );
 
         this.addComponent('x-outer', {
-          template: '{{first-addon::my-component}}'
+          template: '{{first-addon::my-component}}',
         });
 
         this.render('{{x-outer}}');
@@ -107,7 +103,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.addTemplate(
           {
             specifier: 'template:components/addon-component',
-            soruce: 'template:first-addon/src/ui/components/main.hbs'
+            soruce: 'template:first-addon/src/ui/components/main.hbs',
           },
           'Nested namespaced component'
         );
@@ -115,7 +111,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.addTemplate(
           {
             specifier: 'template:components/first-addon',
-            moduleName: 'first-addon/src/ui/components/main.hbs'
+            moduleName: 'first-addon/src/ui/components/main.hbs',
           },
           '{{addon-component}}'
         );
@@ -135,7 +131,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.addTemplate(
           {
             specifier: 'template:components/main',
-            namespace: 'my-addon'
+            namespace: 'my-addon',
           },
           'namespaced template {{myProp}}'
         );
@@ -143,17 +139,17 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           {
             specifier: 'component:main',
-            namespace: 'my-addon'
+            namespace: 'my-addon',
           },
           Component.extend({
-            myProp: 'My property'
+            myProp: 'My property',
           })
         );
 
         this.add(
           {
             specifier: 'helper:my-addon',
-            namespace: 'empty-namespace'
+            namespace: 'empty-namespace',
           },
           helper(() => 'my helper')
         );
@@ -171,7 +167,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           {
             specifier: 'helper:my-helper',
-            namespace: 'my-namespace'
+            namespace: 'my-namespace',
           },
           helper(() => 'my helper')
         );

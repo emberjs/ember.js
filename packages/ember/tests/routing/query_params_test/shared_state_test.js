@@ -19,14 +19,14 @@ moduleFor(
       this.add(
         'service:filters',
         Service.extend({
-          shared: true
+          shared: true,
         })
       );
 
       this.add(
         'controller:home',
         Controller.extend({
-          filters: inject.service()
+          filters: inject.service(),
         })
       );
 
@@ -34,14 +34,11 @@ moduleFor(
         'controller:dashboard',
         Controller.extend({
           filters: inject.service(),
-          queryParams: [{ 'filters.shared': 'shared' }]
+          queryParams: [{ 'filters.shared': 'shared' }],
         })
       );
 
-      this.addTemplate(
-        'application',
-        `{{link-to 'Home' 'home' }} <div> {{outlet}} </div>`
-      );
+      this.addTemplate('application', `{{link-to 'Home' 'home' }} <div> {{outlet}} </div>`);
       this.addTemplate(
         'home',
         `{{link-to 'Dashboard' 'dashboard' }}{{input type="checkbox" id='filters-checkbox' checked=(mut filters.shared) }}`
@@ -67,9 +64,7 @@ moduleFor(
       });
     }
 
-    ['@test can modify shared state back to the default value before transition'](
-      assert
-    ) {
+    ['@test can modify shared state back to the default value before transition'](assert) {
       assert.expect(1);
 
       return this.boot().then(() => {

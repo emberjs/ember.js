@@ -27,14 +27,12 @@ moduleFor(
       });
     }
 
-    ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](
-      assert
-    ) {
+    ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](assert) {
       NoneTestLocation.reopen({
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/en/');
-        }
+        },
       });
 
       createLocation();
@@ -42,15 +40,13 @@ moduleFor(
       assert.equal(location.formatURL('/foo/bar'), '/en/foo/bar');
     }
 
-    ['@test NoneLocation.getURL() returns the current path minus rootURL'](
-      assert
-    ) {
+    ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
       NoneTestLocation.reopen({
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/foo/');
           set(this, 'path', '/foo/bar');
-        }
+        },
       });
 
       createLocation();
@@ -66,7 +62,7 @@ moduleFor(
           this._super(...arguments);
           set(this, 'rootURL', '/bar/');
           set(this, 'path', '/foo/bar/baz');
-        }
+        },
       });
 
       createLocation();
@@ -74,15 +70,13 @@ moduleFor(
       assert.equal(location.getURL(), '/foo/bar/baz');
     }
 
-    ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](
-      assert
-    ) {
+    ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](assert) {
       NoneTestLocation.reopen({
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/bar/');
           set(this, 'path', '/bars/baz');
-        }
+        },
       });
 
       createLocation();

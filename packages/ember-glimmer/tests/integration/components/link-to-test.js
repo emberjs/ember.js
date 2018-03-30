@@ -1,8 +1,4 @@
-import {
-  moduleFor,
-  ApplicationTest,
-  RenderingTest
-} from '../../utils/test-case';
+import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
 import { LinkComponent } from '../../utils/helpers';
@@ -22,10 +18,7 @@ moduleFor(
     }
 
     ['@test should be able to be inserted in DOM when the router is not present']() {
-      this.addTemplate(
-        'application',
-        `{{#link-to 'index'}}Go to Index{{/link-to}}`
-      );
+      this.addTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
 
       return this.visit('/').then(() => {
         this.assertText('Go to Index');
@@ -44,7 +37,7 @@ moduleFor(
             controller = this;
           },
           title: 'foo',
-          routeName: 'index'
+          routeName: 'index',
         })
       );
 
@@ -67,7 +60,7 @@ moduleFor(
             this._super(...arguments);
             controller = this;
           },
-          routeName: 'index'
+          routeName: 'index',
         })
       );
 
@@ -87,7 +80,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          title: '<b>blah</b>'
+          title: '<b>blah</b>',
         })
       );
 
@@ -96,14 +89,12 @@ moduleFor(
       });
     }
 
-    ['@test escaped inline form with (-html-safe) does not escape link title'](
-      assert
-    ) {
+    ['@test escaped inline form with (-html-safe) does not escape link title'](assert) {
       this.addTemplate('application', `{{link-to (-html-safe title) 'index'}}`);
       this.add(
         'controller:application',
         Controller.extend({
-          title: '<b>blah</b>'
+          title: '<b>blah</b>',
         })
       );
 
@@ -113,14 +104,12 @@ moduleFor(
       });
     }
 
-    ['@test unescaped inline form (triple curlies) does not escape link title'](
-      assert
-    ) {
+    ['@test unescaped inline form (triple curlies) does not escape link title'](assert) {
       this.addTemplate('application', `{{{link-to title 'index'}}}`);
       this.add(
         'controller:application',
         Controller.extend({
-          title: '<b>blah</b>'
+          title: '<b>blah</b>',
         })
       );
 
@@ -132,16 +121,13 @@ moduleFor(
 
     ['@test able to safely extend the built-in component and use the normal path']() {
       this.addComponent('custom-link-to', {
-        ComponentClass: LinkComponent.extend()
+        ComponentClass: LinkComponent.extend(),
       });
-      this.addTemplate(
-        'application',
-        `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`
-      );
+      this.addTemplate('application', `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`);
       this.add(
         'controller:application',
         Controller.extend({
-          title: 'Hello'
+          title: 'Hello',
         })
       );
 
@@ -152,13 +138,13 @@ moduleFor(
 
     ['@test [GH#13432] able to safely extend the built-in component and invoke it inline']() {
       this.addComponent('custom-link-to', {
-        ComponentClass: LinkComponent.extend()
+        ComponentClass: LinkComponent.extend(),
       });
       this.addTemplate('application', `{{custom-link-to title 'index'}}`);
       this.add(
         'controller:application',
         Controller.extend({
-          title: 'Hello'
+          title: 'Hello',
         })
       );
 
@@ -180,7 +166,7 @@ moduleFor(
         Controller.extend({
           queryParams: ['foo'],
           foo: '123',
-          bar: 'yes'
+          bar: 'yes',
         })
       );
     }
@@ -195,22 +181,19 @@ moduleFor(
         this.assertComponentElement(this.firstChild, {
           tagName: 'a',
           attrs: { href: '/?bar=NAW&foo=456' },
-          content: 'Index'
+          content: 'Index',
         });
       });
     }
 
     ['@test populates href with partially supplied query param values, but omits if value is default value']() {
-      this.addTemplate(
-        'index',
-        `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`
-      );
+      this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
 
       return this.visit('/').then(() => {
         this.assertComponentElement(this.firstChild, {
           tagName: 'a',
           attrs: { href: '/', class: classMatcher('ember-view active') },
-          content: 'Index'
+          content: 'Index',
         });
       });
     }

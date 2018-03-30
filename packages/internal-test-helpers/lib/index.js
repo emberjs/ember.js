@@ -12,26 +12,20 @@ export { runAppend, runDestroy } from './run';
 export { testBoth, testWithDefault } from './test-groups';
 
 export { default as AbstractTestCase } from './test-cases/abstract';
-export {
-  default as AbstractApplicationTestCase
-} from './test-cases/abstract-application';
+export { default as AbstractApplicationTestCase } from './test-cases/abstract-application';
 export { default as ApplicationTestCase } from './test-cases/application';
 export { default as QueryParamTestCase } from './test-cases/query-param';
-export {
-  default as AbstractRenderingTestCase
-} from './test-cases/abstract-rendering';
+export { default as AbstractRenderingTestCase } from './test-cases/abstract-rendering';
 export { default as RenderingTestCase } from './test-cases/rendering';
 export { default as RouterTestCase } from './test-cases/router';
+export { default as AutobootApplicationTestCase } from './test-cases/autoboot-application';
 export {
-  default as AutobootApplicationTestCase
-} from './test-cases/autoboot-application';
-export {
-  default as DefaultResolverApplicationTestCase
+  default as DefaultResolverApplicationTestCase,
 } from './test-cases/default-resolver-application';
 
 export {
   default as TestResolver,
-  ModuleBasedResolver as ModuleBasedTestResolver
+  ModuleBasedResolver as ModuleBasedTestResolver,
 } from './test-resolver';
 
 export { isIE11 } from './browser-detect';

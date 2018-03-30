@@ -2,13 +2,7 @@
 @module @ember/object
 */
 import { assert } from 'ember-debug';
-import {
-  get,
-  ComputedProperty,
-  addObserver,
-  removeObserver,
-  getProperties
-} from 'ember-metal';
+import { get, ComputedProperty, addObserver, removeObserver, getProperties } from 'ember-metal';
 import compare from '../compare';
 import { isArray } from '../utils';
 import { A as emberA } from '../mixins/array';
@@ -139,12 +133,7 @@ export function sum(dependentKey) {
   @public
 */
 export function max(dependentKey) {
-  return reduceMacro(
-    dependentKey,
-    (max, item) => Math.max(max, item),
-    -Infinity,
-    'max'
-  );
+  return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity, 'max');
 }
 
 /**
@@ -193,12 +182,7 @@ export function max(dependentKey) {
   @public
 */
 export function min(dependentKey) {
-  return reduceMacro(
-    dependentKey,
-    (min, item) => Math.min(min, item),
-    Infinity,
-    'min'
-  );
+  return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity, 'min');
 }
 
 /**
@@ -290,9 +274,7 @@ export function mapBy(dependentKey, propertyKey) {
     !/[\[\]\{\}]/g.test(dependentKey)
   );
 
-  return map(`${dependentKey}.@each.${propertyKey}`, item =>
-    get(item, propertyKey)
-  );
+  return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));
 }
 
 /**
@@ -672,10 +654,7 @@ export function intersect(...args) {
   @public
 */
 export function setDiff(setAProperty, setBProperty) {
-  assert(
-    '`computed.setDiff` requires exactly two dependent arrays.',
-    arguments.length === 2
-  );
+  assert('`computed.setDiff` requires exactly two dependent arrays.', arguments.length === 2);
   assert(
     `Dependent keys passed to \`computed.setDiff\` shouldn't contain brace expanding pattern.`,
     !/[\[\]\{\}]/g.test(setAProperty) && !/[\[\]\{\}]/g.test(setBProperty)
@@ -697,7 +676,7 @@ export function setDiff(setAProperty, setBProperty) {
     },
     {
       dependentKeys: [`${setAProperty}.[]`, `${setBProperty}.[]`],
-      readOnly: true
+      readOnly: true,
     }
   );
 
@@ -853,13 +832,11 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
       assert(
         `The sort definition for '${key}' on ${this} must be a function or an array of strings`,
-        isArray(sortProperties) &&
-          sortProperties.every(s => typeof s === 'string')
+        isArray(sortProperties) && sortProperties.every(s => typeof s === 'string')
       );
 
       // Add/remove property observers as required.
-      let activeObserversMap =
-        cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
+      let activeObserversMap = cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
       let activeObservers = activeObserversMap.get(this);
 
       if (activeObservers !== undefined) {
@@ -873,9 +850,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
       let itemsKeyIsAtThis = itemsKey === '@this';
       let normalizedSortProperties = normalizeSortProperties(sortProperties);
       activeObservers = normalizedSortProperties.map(([prop]) => {
-        let path = itemsKeyIsAtThis
-          ? `@each.${prop}`
-          : `${itemsKey}.@each.${prop}`;
+        let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
         addObserver(this, path, sortPropertyDidChange);
         return [this, path, sortPropertyDidChange];
       });

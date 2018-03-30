@@ -9,11 +9,7 @@ import {
   UpdatableTag,
   VersionedPathReference,
 } from '@glimmer/reference';
-import {
-  Arguments,
-  NULL_REFERENCE,
-  VM
-} from '@glimmer/runtime';
+import { Arguments, NULL_REFERENCE, VM } from '@glimmer/runtime';
 import { set } from 'ember-metal';
 import { CachedReference, referenceFromParts, UPDATE } from '../utils/references';
 
@@ -69,7 +65,10 @@ export default function(_vm: VM, args: Arguments) {
   return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
 }
 
-function referenceFromPath(source: VersionedPathReference<Opaque>, path: string): VersionedPathReference<Opaque> {
+function referenceFromPath(
+  source: VersionedPathReference<Opaque>,
+  path: string
+): VersionedPathReference<Opaque> {
   let innerReference;
   if (path === undefined || path === null || path === '') {
     innerReference = NULL_REFERENCE;
@@ -89,7 +88,10 @@ class GetHelperReference extends CachedReference {
   public innerTag: TagWrapper<UpdatableTag>;
   public tag: Tag;
 
-  static create(sourceReference: VersionedPathReference<Opaque>, pathReference: PathReference<string>) {
+  static create(
+    sourceReference: VersionedPathReference<Opaque>,
+    pathReference: PathReference<string>
+  ) {
     if (isConst(pathReference)) {
       let path = pathReference.value();
       return referenceFromPath(sourceReference, path);
@@ -98,7 +100,10 @@ class GetHelperReference extends CachedReference {
     }
   }
 
-  constructor(sourceReference: VersionedPathReference<Opaque>, pathReference: PathReference<string>) {
+  constructor(
+    sourceReference: VersionedPathReference<Opaque>,
+    pathReference: PathReference<string>
+  ) {
     super();
     this.sourceReference = sourceReference;
     this.pathReference = pathReference;
@@ -106,7 +111,7 @@ class GetHelperReference extends CachedReference {
     this.lastPath = null;
     this.innerReference = NULL_REFERENCE;
 
-    let innerTag = this.innerTag = UpdatableTag.create(CONSTANT_TAG);
+    let innerTag = (this.innerTag = UpdatableTag.create(CONSTANT_TAG));
 
     this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
   }

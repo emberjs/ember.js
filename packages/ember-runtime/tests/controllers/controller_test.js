@@ -17,24 +17,22 @@ moduleFor(
         actions: {
           poke() {
             assert.ok(true, 'poked');
-          }
-        }
+          },
+        },
       });
       let controller = TestController.create();
       controller.send('poke');
     }
 
-    ['@test A handled action can be bubbled to the target for continued processing'](
-      assert
-    ) {
+    ['@test A handled action can be bubbled to the target for continued processing'](assert) {
       assert.expect(2);
       let TestController = Controller.extend({
         actions: {
           poke() {
             assert.ok(true, 'poked 1');
             return true;
-          }
-        }
+          },
+        },
       });
 
       let controller = TestController.create({
@@ -42,9 +40,9 @@ moduleFor(
           actions: {
             poke() {
               assert.ok(true, 'poked 2');
-            }
-          }
-        }).create()
+            },
+          },
+        }).create(),
       });
       controller.send('poke');
     }
@@ -59,8 +57,8 @@ moduleFor(
           },
           bar(msg) {
             assert.equal(msg, 'HELLO');
-          }
-        }
+          },
+        },
       });
 
       let BarControllerMixin = Mixin.create({
@@ -68,16 +66,16 @@ moduleFor(
           bar(msg) {
             assert.equal(msg, 'HELLO');
             this._super(msg);
-          }
-        }
+          },
+        },
       });
 
       let IndexController = SuperController.extend(BarControllerMixin, {
         actions: {
           baz() {
             assert.ok(true, 'baz');
-          }
-        }
+          },
+        },
       });
 
       let controller = IndexController.create({});
@@ -94,7 +92,7 @@ moduleFor(
         Controller.extend({
           toString() {
             return 'controller:rip-alley';
-          }
+          },
         })
       );
 
@@ -117,20 +115,12 @@ moduleFor(
 
       ignoreDeprecation(function() {
         controller = Controller.extend({
-          content: 'foo-bar'
+          content: 'foo-bar',
         }).create();
       });
 
-      assert.notEqual(
-        controller.get('model'),
-        'foo-bar',
-        'model is set properly'
-      );
-      assert.equal(
-        controller.get('content'),
-        'foo-bar',
-        'content is not set properly'
-      );
+      assert.notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
+      assert.equal(controller.get('content'), 'foo-bar', 'content is not set properly');
     }
 
     ['@test specifying `content` (without `model` specified) does not result in deprecation'](
@@ -140,21 +130,19 @@ moduleFor(
       expectNoDeprecation();
 
       let controller = Controller.extend({
-        content: 'foo-bar'
+        content: 'foo-bar',
       }).create();
 
       assert.equal(get(controller, 'content'), 'foo-bar');
     }
 
-    ['@test specifying `content` (with `model` specified) does not result in deprecation'](
-      assert
-    ) {
+    ['@test specifying `content` (with `model` specified) does not result in deprecation'](assert) {
       assert.expect(3);
       expectNoDeprecation();
 
       let controller = Controller.extend({
         content: 'foo-bar',
-        model: 'blammo'
+        model: 'blammo',
       }).create();
 
       assert.equal(get(controller, 'content'), 'foo-bar');
@@ -166,15 +154,13 @@ moduleFor(
 moduleFor(
   'Controller deprecations -> Controller injected properties',
   class extends AbstractTestCase {
-    ['@test defining a controller on a non-controller should fail assertion'](
-      assert
-    ) {
+    ['@test defining a controller on a non-controller should fail assertion'](assert) {
       if (!EmberDev.runningProdBuild) {
         expectAssertion(function() {
           let owner = buildOwner();
 
           let AnObject = EmberObject.extend({
-            foo: inject.controller('bar')
+            foo: inject.controller('bar'),
           });
 
           owner.register('controller:bar', EmberObject.extend());
@@ -193,7 +179,7 @@ moduleFor(
       owner.register(
         'controller:post',
         Controller.extend({
-          postsController: inject.controller('posts')
+          postsController: inject.controller('posts'),
         })
       );
 
@@ -215,7 +201,7 @@ moduleFor(
       owner.register(
         'controller:application',
         Controller.extend({
-          authService: inject.service('auth')
+          authService: inject.service('auth'),
         })
       );
 
@@ -224,11 +210,7 @@ moduleFor(
       let appController = owner.lookup('controller:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(
-        authService,
-        appController.get('authService'),
-        'service.auth is injected'
-      );
+      assert.equal(authService, appController.get('authService'), 'service.auth is injected');
     }
   }
 );

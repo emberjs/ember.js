@@ -11,7 +11,7 @@ import {
   getHash,
   getQuery,
   getFullPath,
-  replacePath
+  replacePath,
 } from './util';
 
 /**
@@ -152,7 +152,7 @@ export default EmberObject.extend({
       userAgent: this.userAgent,
       rootURL,
       documentMode: this.documentMode,
-      global: this.global
+      global: this.global,
     });
 
     if (implementation === false) {
@@ -181,7 +181,7 @@ export default EmberObject.extend({
     if (concreteImplementation) {
       concreteImplementation.destroy();
     }
-  }
+  },
 });
 
 function delegateToConcreteImplementation(methodName) {
@@ -236,10 +236,7 @@ function detectImplementation(options) {
     // Be sure we're using a hashed path, otherwise let's switch over it to so
     // we start off clean and consistent. We'll count an index path with no
     // hash as "good enough" as well.
-    if (
-      currentPath === hashPath ||
-      (currentPath === '/' && hashPath === '/#/')
-    ) {
+    if (currentPath === hashPath || (currentPath === '/' && hashPath === '/#/')) {
       implementation = 'hash';
     } else {
       // Our URL isn't in the expected hash-supported format, so we want to
@@ -270,10 +267,7 @@ export function getHistoryPath(rootURL, location) {
   let rootURLIndex = path.indexOf(rootURL);
   let routeHash, hashParts;
 
-  assert(
-    `Path ${path} does not start with the provided rootURL ${rootURL}`,
-    rootURLIndex === 0
-  );
+  assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
 
   // By convention, Ember.js routes using HashLocation are required to start
   // with `#/`. Anything else should NOT be considered a route and should

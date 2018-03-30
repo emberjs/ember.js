@@ -4,13 +4,9 @@ import {
   getChildViews,
   getViewBounds,
   getViewClientRects,
-  getViewBoundingClientRect
+  getViewBoundingClientRect,
 } from 'ember-views';
-import {
-  moduleFor,
-  ApplicationTest,
-  RenderingTest
-} from '../../utils/test-case';
+import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 
 moduleFor(
@@ -21,11 +17,10 @@ moduleFor(
 
       this.addComponent('x-tagless', {
         ComponentClass: Component.extend({
-          tagName: ''
+          tagName: '',
         }),
 
-        template:
-          '<div id="{{id}}">[{{id}}] {{#if isShowing}}{{yield}}{{/if}}</div>'
+        template: '<div id="{{id}}">[{{id}}] {{#if isShowing}}{{yield}}{{/if}}</div>',
       });
 
       this.addComponent('x-toggle', {
@@ -35,10 +30,10 @@ moduleFor(
           click() {
             this.toggleProperty('isExpanded');
             return false;
-          }
+          },
         }),
 
-        template: '[{{id}}] {{#if isExpanded}}{{yield}}{{/if}}'
+        template: '[{{id}}] {{#if isExpanded}}{{yield}}{{/if}}',
       });
 
       let ToggleController = Controller.extend({
@@ -47,8 +42,8 @@ moduleFor(
         actions: {
           toggle: function() {
             this.toggleProperty('isExpanded');
-          }
-        }
+          },
+        },
       });
 
       this.add('controller:application', ToggleController);
@@ -79,7 +74,7 @@ moduleFor(
       this.add(
         'controller:index',
         ToggleController.extend({
-          isExpanded: false
+          isExpanded: false,
         })
       );
 
@@ -140,13 +135,7 @@ moduleFor(
     ['@test getRootViews']() {
       return this.visit('/')
         .then(() => {
-          this.assertRootViews([
-            'root-1',
-            'root-2',
-            'root-3',
-            'root-4',
-            'root-5'
-          ]);
+          this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5']);
 
           this.runTask(() => this.$('#toggle-application').click());
 
@@ -157,38 +146,17 @@ moduleFor(
             this.$('#toggle-index').click();
           });
 
-          this.assertRootViews([
-            'root-1',
-            'root-2',
-            'root-3',
-            'root-4',
-            'root-5',
-            'root-6'
-          ]);
+          this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5', 'root-6']);
 
           return this.visit('/zomg/lol');
         })
         .then(() => {
-          this.assertRootViews([
-            'root-1',
-            'root-2',
-            'root-3',
-            'root-7',
-            'root-8',
-            'root-9'
-          ]);
+          this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-7', 'root-8', 'root-9']);
 
           return this.visit('/');
         })
         .then(() => {
-          this.assertRootViews([
-            'root-1',
-            'root-2',
-            'root-3',
-            'root-4',
-            'root-5',
-            'root-6'
-          ]);
+          this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5', 'root-6']);
         });
     }
 
@@ -320,9 +288,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
+          },
         }),
-        template: `<p>Hi, mom!</p>`
+        template: `<p>Hi, mom!</p>`,
       });
 
       this.render(`{{hi-mom}}`);
@@ -354,9 +322,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
+          },
         }),
-        template: `<span id="start-node">Hi,</span> <em id="before-end-node">mom</em>!`
+        template: `<span id="start-node">Hi,</span> <em id="before-end-node">mom</em>!`,
       });
 
       this.render(`{{hi-mom}}`);
@@ -395,9 +363,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
+          },
         }),
-        template: `<p>Hi, mom!</p>`
+        template: `<p>Hi, mom!</p>`,
       });
 
       this.render(`{{hi-mom}}`);
@@ -420,9 +388,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
+          },
         }),
-        template: `<p>Hi, mom!</p>`
+        template: `<p>Hi, mom!</p>`,
       });
 
       this.render(`{{hi-mom}}`);

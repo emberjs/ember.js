@@ -9,7 +9,12 @@ import { OwnedTemplateMeta } from 'ember-views';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 import { hashToArgs } from './utils';
 
-function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+function buildSyntax(
+  type: string,
+  params: any[],
+  hash: any,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+) {
   let definition = builder.compiler['resolver'].lookupComponentDefinition(type, builder.referrer);
   builder.component.static(definition!, [params, hashToArgs(hash), null, null]);
   return true;
@@ -151,7 +156,12 @@ function buildSyntax(type: string, params: any[], hash: any, builder: OpcodeBuil
   @public
 */
 
-export function inputMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+export function inputMacro(
+  _name: string,
+  params: Option<WireFormat.Core.Params>,
+  hash: Option<WireFormat.Core.Hash>,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+) {
   if (params === null) {
     params = [];
   }
@@ -171,9 +181,9 @@ export function inputMacro(_name: string, params: Option<WireFormat.Core.Params>
       }
       if (typeArg === 'checkbox') {
         assert(
-          '{{input type=\'checkbox\'}} does not support setting `value=someBooleanValue`; ' +
+          "{{input type='checkbox'}} does not support setting `value=someBooleanValue`; " +
             'you must use `checked=someBooleanValue` instead.',
-          keys.indexOf('value') === -1,
+          keys.indexOf('value') === -1
         );
         wrapComponentClassAttribute(hash);
         return buildSyntax('-checkbox', params, hash, builder);

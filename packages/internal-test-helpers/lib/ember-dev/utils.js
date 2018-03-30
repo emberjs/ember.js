@@ -15,7 +15,7 @@ export function buildCompositeAssert(assertClasses) {
     reset: callForEach('asserts', 'reset'),
     inject: callForEach('asserts', 'inject'),
     assert: callForEach('asserts', 'assert'),
-    restore: callForEach('asserts', 'restore')
+    restore: callForEach('asserts', 'restore'),
   };
 
   return Composite;

@@ -38,7 +38,7 @@ export default function transformAttrsIntoArgs(env) {
         },
         exit() {
           stack.pop();
-        }
+        },
       },
 
       PathExpression(node) {
@@ -48,8 +48,8 @@ export default function transformAttrsIntoArgs(env) {
           path.data = true;
           return path;
         }
-      }
-    }
+      },
+    },
   };
 }
 

@@ -1,16 +1,10 @@
 import { getOwner } from 'ember-utils';
-import {
-  get,
-  scheduleOnce,
-  objectAt,
-  addArrayObserver,
-  removeArrayObserver
-} from 'ember-metal';
+import { get, scheduleOnce, objectAt, addArrayObserver, removeArrayObserver } from 'ember-metal';
 import {
   String as StringUtils,
   Namespace,
   Object as EmberObject,
-  A as emberA
+  A as emberA,
 } from 'ember-runtime';
 
 /**
@@ -226,7 +220,7 @@ export default EmberObject.extend({
       didChange: contentDidChange,
       willChange() {
         return this;
-      }
+      },
     };
     addArrayObserver(records, this, observer);
 
@@ -307,7 +301,7 @@ export default EmberObject.extend({
       },
       willChange() {
         return this;
-      }
+      },
     };
 
     addArrayObserver(records, this, observer);
@@ -342,7 +336,7 @@ export default EmberObject.extend({
       name,
       count: get(records, 'length'),
       columns: this.columnsForType(klass),
-      object: klass
+      object: klass,
     };
 
     return typeToSend;
@@ -369,7 +363,7 @@ export default EmberObject.extend({
     types = emberA(types).map(name => {
       return {
         klass: this._nameToClass(name),
-        name
+        name,
       };
     });
     types = emberA(types).filter(type => this.detect(type.klass));
@@ -498,5 +492,5 @@ export default EmberObject.extend({
   */
   observeRecord() {
     return function() {};
-  }
+  },
 });

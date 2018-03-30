@@ -7,13 +7,12 @@ moduleFor(
   class extends RenderingTest {
     ['@test can yield to block']() {
       this.registerComponent('yield-comp', {
-        template: '[In layout:] {{yield}}'
+        template: '[In layout:] {{yield}}',
       });
 
-      this.render(
-        '{{#yield-comp}}[In Block:] {{object.title}}{{/yield-comp}}',
-        { object: { title: 'Seattle' } }
-      );
+      this.render('{{#yield-comp}}[In Block:] {{object.title}}{{/yield-comp}}', {
+        object: { title: 'Seattle' },
+      });
       this.assertText('[In layout:] [In Block:] Seattle');
 
       this.assertStableRerender();
@@ -27,14 +26,14 @@ moduleFor(
 
     ['@test templates should yield to block inside a nested component']() {
       this.registerComponent('outer-comp', {
-        template: '<div>[In layout:] {{yield}}</div>'
+        template: '<div>[In layout:] {{yield}}</div>',
       });
       this.registerComponent('inner-comp', {
-        template: '{{#outer-comp}}[In Block:] {{object.title}}{{/outer-comp}}'
+        template: '{{#outer-comp}}[In Block:] {{object.title}}{{/outer-comp}}',
       });
 
       this.render('{{inner-comp object=object}}', {
-        object: { title: 'Seattle' }
+        object: { title: 'Seattle' },
       });
       this.assertText('[In layout:] [In Block:] Seattle');
 
@@ -51,11 +50,11 @@ moduleFor(
       let list = [1, 2, 3];
 
       this.registerComponent('outer-comp', {
-        template: '{{#each list as |item|}}{{yield}}{{/each}}'
+        template: '{{#each list as |item|}}{{yield}}{{/each}}',
       });
 
       this.render('{{#outer-comp list=list}}Hello{{/outer-comp}}', {
-        list: list
+        list: list,
       });
       this.assertText('HelloHelloHello');
 
@@ -70,11 +69,11 @@ moduleFor(
 
     ['@test templates should yield to block, when the yield is embedded in a if helper']() {
       this.registerComponent('outer-comp', {
-        template: '{{#if boolean}}{{yield}}{{/if}}'
+        template: '{{#if boolean}}{{yield}}{{/if}}',
       });
 
       this.render('{{#outer-comp boolean=boolean}}Hello{{/outer-comp}}', {
-        boolean: true
+        boolean: true,
       });
       this.assertText('Hello');
 
@@ -89,7 +88,7 @@ moduleFor(
 
     ['@test simple curlies inside of a yielded clock should work when the yield is nested inside of another view']() {
       this.registerComponent('kiwi-comp', {
-        template: '{{#if falsy}}{{else}}{{yield}}{{/if}}'
+        template: '{{#if falsy}}{{else}}{{yield}}{{/if}}',
       });
 
       this.render('{{#kiwi-comp}}{{text}}{{/kiwi-comp}}', { text: 'ohai' });
@@ -106,14 +105,14 @@ moduleFor(
 
     ['@test nested simple curlies inside of a yielded block should work when the yield is nested inside of another view']() {
       this.registerComponent('parent-comp', {
-        template: '{{#if falsy}}{{else}}{{yield}}{{/if}}'
+        template: '{{#if falsy}}{{else}}{{yield}}{{/if}}',
       });
       this.registerComponent('child-comp', {
-        template: '{{#if falsy}}{{else}}{{text}}{{/if}}'
+        template: '{{#if falsy}}{{else}}{{text}}{{/if}}',
       });
 
       this.render('{{#parent-comp}}{{child-comp text=text}}{{/parent-comp}}', {
-        text: 'ohai'
+        text: 'ohai',
       });
       this.assertText('ohai');
 
@@ -129,7 +128,7 @@ moduleFor(
     ['@test yielding to a non-existent block is not an error']() {
       this.registerComponent('yielding-comp', { template: 'Hello:{{yield}}' });
       this.registerComponent('outer-comp', {
-        template: '{{yielding-comp}} {{title}}'
+        template: '{{yielding-comp}} {{title}}',
       });
 
       this.render('{{outer-comp title=title}}', { title: 'Mr. Selden' });
@@ -150,11 +149,11 @@ moduleFor(
 
       this.registerComponent('kiwi-comp', {
         ComponentClass: KiwiCompComponent,
-        template: '<p>{{boundText}}</p><p>{{yield}}</p>'
+        template: '<p>{{boundText}}</p><p>{{yield}}</p>',
       });
 
       this.render('{{#kiwi-comp}}{{boundText}}{{/kiwi-comp}}', {
-        boundText: 'Original'
+        boundText: 'Original',
       });
       this.assertText('InnerOriginal');
 
@@ -172,13 +171,12 @@ moduleFor(
 
       this.registerComponent('kiwi-comp', {
         ComponentClass: KiwiCompComponent,
-        template: '<p>{{boundText}}</p><p>{{yield}}</p>'
+        template: '<p>{{boundText}}</p><p>{{yield}}</p>',
       });
 
-      this.render(
-        '{{#with boundText as |item|}}{{#kiwi-comp}}{{item}}{{/kiwi-comp}}{{/with}}',
-        { boundText: 'Outer' }
-      );
+      this.render('{{#with boundText as |item|}}{{#kiwi-comp}}{{item}}{{/kiwi-comp}}{{/with}}', {
+        boundText: 'Outer',
+      });
       this.assertText('InnerOuter');
 
       this.assertStableRerender();
@@ -195,8 +193,7 @@ moduleFor(
 
       this.registerComponent('kiwi-comp', {
         ComponentClass: KiwiCompComponent,
-        template:
-          '{{#with boundText as |item|}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}'
+        template: '{{#with boundText as |item|}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}',
       });
 
       this.render('{{#kiwi-comp}}{{item}}{{/kiwi-comp}}', { item: 'Outer' });
@@ -213,7 +210,7 @@ moduleFor(
 
     ['@test can bind a block param to a component and use it in yield']() {
       this.registerComponent('kiwi-comp', {
-        template: '<p>{{content}}</p><p>{{yield}}</p>'
+        template: '<p>{{content}}</p><p>{{yield}}</p>',
       });
 
       this.render(
@@ -241,15 +238,15 @@ moduleFor(
           let parentView = this.get('parentView');
 
           assert.ok(parentView.get('isParentComponent'));
-        }
+        },
       });
 
       this.registerComponent('parent-comp', {
         ComponentClass: ParentCompComponent,
-        template: '{{yield}}'
+        template: '{{yield}}',
       });
       this.registerComponent('child-comp', {
-        ComponentClass: ChildCompComponent
+        ComponentClass: ChildCompComponent,
       });
 
       this.render('{{#parent-comp}}{{child-comp}}{{/parent-comp}}');
@@ -258,14 +255,12 @@ moduleFor(
     ['@test yield with nested components (#3220)']() {
       this.registerComponent('inner-component', { template: '{{yield}}' });
       this.registerComponent('outer-component', {
-        template:
-          '{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}'
+        template: '{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}',
       });
 
-      this.render(
-        '{{#outer-component}}Hello {{boundText}}{{/outer-component}}',
-        { boundText: 'world' }
-      );
+      this.render('{{#outer-component}}Hello {{boundText}}{{/outer-component}}', {
+        boundText: 'world',
+      });
       this.assertText('Hello world');
 
       this.assertStableRerender();

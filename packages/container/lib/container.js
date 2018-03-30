@@ -2,13 +2,7 @@
 import { assert } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
-import {
-  dictionary,
-  setOwner,
-  OWNER,
-  assign,
-  HAS_NATIVE_PROXY
-} from 'ember-utils';
+import { dictionary, setOwner, OWNER, assign, HAS_NATIVE_PROXY } from 'ember-utils';
 
 /**
  A container used to instantiate and cache objects.
@@ -88,10 +82,7 @@ export default class Container {
    @return {any}
    */
   lookup(fullName, options) {
-    assert(
-      'fullName must be a proper full name',
-      this.registry.isValidFullName(fullName)
-    );
+    assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
   }
 
@@ -147,10 +138,7 @@ export default class Container {
   factoryFor(fullName, options = {}) {
     let normalizedName = this.registry.normalize(fullName);
 
-    assert(
-      'fullName must be a proper full name',
-      this.registry.isValidFullName(normalizedName)
-    );
+    assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
     assert(
       'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to factoryFor',
       EMBER_MODULE_UNIFICATION || !options.namespace
@@ -177,7 +165,7 @@ function wrapManagerInDeprecationProxy(manager) {
         throw new Error(
           `You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
         );
-      }
+      },
     };
 
     // Note:
@@ -188,7 +176,7 @@ function wrapManagerInDeprecationProxy(manager) {
       class: m.class,
       create(props) {
         return m.create(props);
-      }
+      },
     };
 
     let proxy = new Proxy(proxiedManager, validator);
@@ -248,12 +236,7 @@ function factoryFor(container, normalizedName, fullName) {
     factory._onLookup(fullName); // What should this pass? fullname or the normalized key?
   }
 
-  let manager = new FactoryManager(
-    container,
-    factory,
-    fullName,
-    normalizedName
-  );
+  let manager = new FactoryManager(container, factory, fullName, normalizedName);
 
   if (DEBUG) {
     manager = wrapManagerInDeprecationProxy(manager);
@@ -354,7 +337,7 @@ function processInjections(container, injections, result) {
 function buildInjections(container, typeInjections, injections) {
   let result = {
     injections: undefined,
-    isDyanmic: false
+    isDyanmic: false,
   };
 
   if (typeInjections !== undefined) {
@@ -427,10 +410,7 @@ class FactoryManager {
 
   toString() {
     if (this.madeToString === undefined) {
-      this.madeToString = this.container.registry.makeToString(
-        this.class,
-        this.fullName
-      );
+      this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
     }
 
     return this.madeToString;
@@ -439,10 +419,7 @@ class FactoryManager {
   create(options) {
     let injectionsCache = this.injections;
     if (injectionsCache === undefined) {
-      let { injections, isDynamic } = injectionsFor(
-        this.container,
-        this.normalizedName
-      );
+      let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
       injectionsCache = injections;
       if (!isDynamic) {
         this.injections = injections;
@@ -464,9 +441,7 @@ class FactoryManager {
         typeof this.class._lazyInjections === 'function'
       ) {
         lazyInjections = this.class._lazyInjections();
-        lazyInjections = this.container.registry.normalizeInjectionsHash(
-          lazyInjections
-        );
+        lazyInjections = this.container.registry.normalizeInjectionsHash(lazyInjections);
 
         this.container.registry.validateInjections(lazyInjections);
       }
@@ -478,8 +453,7 @@ class FactoryManager {
       throw new Error(
         `Failed to create an instance of '${
           this.normalizedName
-        }'. Most likely an improperly defined class or` +
-          ` an invalid module export.`
+        }'. Most likely an improperly defined class or` + ` an invalid module export.`
       );
     }
 

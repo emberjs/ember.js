@@ -71,7 +71,7 @@ EmberApplication.reopen({
     this.testing = true;
 
     this.resolveRegistration('router:main').reopen({
-      location: 'none'
+      location: 'none',
     });
   },
 
@@ -116,19 +116,14 @@ EmberApplication.reopen({
       willDestroy() {
         this._super(...arguments);
         this.removeTestHelpers();
-      }
+      },
     });
 
     this.testHelpers = {};
     for (let name in helpers) {
       this.originalMethods[name] = this.helperContainer[name];
       this.testHelpers[name] = this.helperContainer[name] = helper(this, name);
-      protoWrap(
-        TestPromise.prototype,
-        name,
-        helper(this, name),
-        helpers[name].meta.wait
-      );
+      protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name].meta.wait);
     }
 
     invokeInjectHelpersCallbacks(this);
@@ -158,7 +153,7 @@ EmberApplication.reopen({
       delete this.testHelpers[name];
       delete this.originalMethods[name];
     }
-  }
+  },
 });
 
 // This method is no longer needed
@@ -191,8 +186,6 @@ function helper(app, name) {
     // asynchronous here, because fn may not be invoked before we
     // return.
     asyncStart();
-    return lastPromise
-      .then(() => fn.apply(app, [app, ...args]))
-      .finally(asyncEnd);
+    return lastPromise.then(() => fn.apply(app, [app, ...args])).finally(asyncEnd);
   };
 }

@@ -15,9 +15,7 @@ import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 */
 export default function inject() {
   assert(
-    `Injected properties must be created through helpers, see '${Object.keys(
-      inject
-    )
+    `Injected properties must be created through helpers, see '${Object.keys(inject)
       .map(k => `'inject.${k}'`)
       .join(' or ')}'`
   );

@@ -8,11 +8,7 @@ class ObjectAtTests extends AbstractTestCase {
     let len = expected.length;
 
     for (let idx = 0; idx < len; idx++) {
-      this.assert.equal(
-        obj.objectAt(idx),
-        expected[idx],
-        `obj.objectAt(${idx}) should match`
-      );
+      this.assert.equal(obj.objectAt(idx), expected[idx], `obj.objectAt(${idx}) should match`);
     }
   }
 

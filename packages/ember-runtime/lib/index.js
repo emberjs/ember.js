@@ -12,7 +12,7 @@ export {
   NativeArray,
   A,
   MutableArray,
-  removeAt
+  removeAt,
 } from './mixins/array';
 export { default as Comparable } from './mixins/comparable';
 export { default as Namespace } from './system/namespace';
@@ -22,10 +22,7 @@ export { default as CoreObject } from './system/core_object';
 export { default as ActionHandler } from './mixins/action_handler';
 export { default as Copyable } from './mixins/copyable';
 export { default as Enumerable } from './mixins/enumerable';
-export {
-  default as _ProxyMixin,
-  contentFor as _contentFor
-} from './mixins/-proxy';
+export { default as _ProxyMixin, contentFor as _contentFor } from './mixins/-proxy';
 export { onLoad, runLoadHooks, _loaded } from './system/lazy_load';
 export { default as Observable } from './mixins/observable';
 export { default as MutableEnumerable } from './mixins/mutable_enumerable';
@@ -49,7 +46,7 @@ export {
   readOnly,
   deprecatingAlias,
   and,
-  or
+  or,
 } from './computed/computed_macros';
 
 export {
@@ -66,7 +63,7 @@ export {
   uniqBy,
   union,
   intersect,
-  collect
+  collect,
 } from './computed/reduce_computed_macros';
 
 export { default as Controller } from './controllers/controller';

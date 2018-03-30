@@ -21,11 +21,7 @@ moduleFor(
       assert.equal(false, isEmpty(0), 'for 0');
       assert.equal(true, isEmpty([]), 'for an empty Array');
       assert.equal(false, isEmpty({}), 'for an empty Object');
-      assert.equal(
-        true,
-        isEmpty(object),
-        "for an Object that has zero 'length'"
-      );
+      assert.equal(true, isEmpty(object), "for an Object that has zero 'length'");
     }
 
     ['@test isEmpty Map'](assert) {

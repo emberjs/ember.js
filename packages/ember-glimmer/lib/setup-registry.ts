@@ -29,19 +29,26 @@ interface Registry {
 }
 
 export function setupApplicationRegistry(registry: Registry) {
-  registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
+  registry.injection(
+    'service:-glimmer-environment',
+    'appendOperations',
+    'service:-dom-tree-construction'
+  );
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
   registry.register('service:-dom-builder', {
     create({ bootOptions }: { bootOptions: { _renderMode: string } }) {
       let { _renderMode } = bootOptions;
 
-      switch(_renderMode) {
-        case 'serialize': return serializeBuilder;
-        case 'rehydrate': return rehydrationBuilder;
-        default: return clientBuilder;
+      switch (_renderMode) {
+        case 'serialize':
+          return serializeBuilder;
+        case 'rehydrate':
+          return rehydrationBuilder;
+        default:
+          return clientBuilder;
       }
-    }
+    },
   });
   registry.injection('service:-dom-builder', 'bootOptions', '-environment:main');
   registry.injection('renderer', 'builder', 'service:-dom-builder');

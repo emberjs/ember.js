@@ -2,11 +2,7 @@ import { lookupDescriptor, symbol, toString } from 'ember-utils';
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import {
-  DESCRIPTOR_TRAP,
-  EMBER_METAL_ES5_GETTERS,
-  MANDATORY_SETTER
-} from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 import { removeChainWatcher } from './chains';
 import { ENV } from 'ember-environment';
 
@@ -19,7 +15,7 @@ if (DEBUG) {
     setCalls: 0,
     deleteCalls: 0,
     metaCalls: 0,
-    metaInstantiated: 0
+    metaInstantiated: 0,
   };
 }
 
@@ -295,9 +291,7 @@ export class Meta {
   writableTag(create) {
     assert(
       this.isMetaDestroyed() &&
-        `Cannot create a new tag for \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+        `Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`,
       !this.isMetaDestroyed()
     );
     let ret = this._tag;
@@ -333,9 +327,7 @@ export class Meta {
   writableChains(create) {
     assert(
       this.isMetaDestroyed() &&
-        `Cannot create a new chains for \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+        `Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`,
       !this.isMetaDestroyed()
     );
     let ret = this._chains;
@@ -459,9 +451,7 @@ export class Meta {
     );
     assert(
       this.isMetaDestroyed() &&
-        `Cannot clear bindings on \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+        `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`,
       !this.isMetaDestroyed()
     );
     this._bindings = undefined;
@@ -753,11 +743,7 @@ export function isDescriptorTrap(possibleDesc) {
   @private
 */
 export function isDescriptor(possibleDesc) {
-  return (
-    possibleDesc !== null &&
-    typeof possibleDesc === 'object' &&
-    possibleDesc.isDescriptor
-  );
+  return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 }
 
 export { counters };

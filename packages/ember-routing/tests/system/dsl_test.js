@@ -61,9 +61,7 @@ moduleFor(
       );
     }
 
-    ['@test should add loading and error routes if _isRouterMapResult is true'](
-      assert
-    ) {
+    ['@test should add loading and error routes if _isRouterMapResult is true'](assert) {
       Router.map(function() {
         this.route('blork');
       });
@@ -71,28 +69,20 @@ moduleFor(
       let router = Router.create({
         _hasModuleBasedResolver() {
           return true;
-        }
+        },
       });
 
       router._initRouterJs();
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['blork'],
-        'main route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['blork'], 'main route was created');
       assert.ok(
         router._routerMicrolib.recognizer.names['blork_loading'],
         'loading route was added'
       );
-      assert.ok(
-        router._routerMicrolib.recognizer.names['blork_error'],
-        'error route was added'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['blork_error'], 'error route was added');
     }
 
-    ['@test should not add loading and error routes if _isRouterMapResult is false'](
-      assert
-    ) {
+    ['@test should not add loading and error routes if _isRouterMapResult is false'](assert) {
       Router.map(function() {
         this.route('blork');
       });
@@ -100,10 +90,7 @@ moduleFor(
       let router = Router.create();
       router._initRouterJs(false);
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['blork'],
-        'main route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['blork'], 'main route was created');
       assert.ok(
         !router._routerMicrolib.recognizer.names['blork_loading'],
         'loading route was not added'
@@ -127,15 +114,12 @@ moduleFor(
       let router = Router.create({
         _hasModuleBasedResolver() {
           return true;
-        }
+        },
       });
 
       router._initRouterJs();
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['blork.blorp'],
-        'nested route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['blork.blorp'], 'nested route was created');
       assert.ok(
         router._routerMicrolib.recognizer.names['blork.blorp_loading'],
         'nested loading route was added'
@@ -145,10 +129,7 @@ moduleFor(
         'nested error route was added'
       );
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['bleep'],
-        'reset route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['bleep'], 'reset route was created');
       assert.ok(
         router._routerMicrolib.recognizer.names['bleep_loading'],
         'reset loading route was added'
@@ -172,9 +153,7 @@ moduleFor(
       );
     }
 
-    ['@test should throw an error when defining a route serializer outside an engine'](
-      assert
-    ) {
+    ['@test should throw an error when defining a route serializer outside an engine'](assert) {
       Router.map(function() {
         assert.throws(() => {
           this.route('posts', { serialize: function() {} });
@@ -210,7 +189,7 @@ moduleFor(
       });
 
       let engineInstance = buildOwner({
-        ownerOptions: { routable: true }
+        ownerOptions: { routable: true },
       });
 
       let router = Router.create();
@@ -243,7 +222,7 @@ moduleFor(
       });
 
       let engineInstance = buildOwner({
-        ownerOptions: { routable: true }
+        ownerOptions: { routable: true },
       });
 
       let router = Router.create();
@@ -271,7 +250,7 @@ moduleFor(
       });
 
       let engineInstance = buildOwner({
-        ownerOptions: { routable: true }
+        ownerOptions: { routable: true },
       });
 
       let router = Router.create();
@@ -287,37 +266,26 @@ moduleFor(
       );
     }
 
-    ['@test should add loading and error routes to a mount if _isRouterMapResult is true'](
-      assert
-    ) {
+    ['@test should add loading and error routes to a mount if _isRouterMapResult is true'](assert) {
       Router.map(function() {
         this.mount('chat');
       });
 
       let engineInstance = buildOwner({
-        ownerOptions: { routable: true }
+        ownerOptions: { routable: true },
       });
 
       let router = Router.create({
         _hasModuleBasedResolver() {
           return true;
-        }
+        },
       });
       setOwner(router, engineInstance);
       router._initRouterJs();
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['chat'],
-        'main route was created'
-      );
-      assert.ok(
-        router._routerMicrolib.recognizer.names['chat_loading'],
-        'loading route was added'
-      );
-      assert.ok(
-        router._routerMicrolib.recognizer.names['chat_error'],
-        'error route was added'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['chat'], 'main route was created');
+      assert.ok(router._routerMicrolib.recognizer.names['chat_loading'], 'loading route was added');
+      assert.ok(router._routerMicrolib.recognizer.names['chat_error'], 'error route was added');
     }
 
     ['@test should add loading and error routes to a mount alias if _isRouterMapResult is true'](
@@ -328,29 +296,23 @@ moduleFor(
       });
 
       let engineInstance = buildOwner({
-        ownerOptions: { routable: true }
+        ownerOptions: { routable: true },
       });
 
       let router = Router.create({
         _hasModuleBasedResolver() {
           return true;
-        }
+        },
       });
       setOwner(router, engineInstance);
       router._initRouterJs();
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['shoutbox'],
-        'main route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['shoutbox'], 'main route was created');
       assert.ok(
         router._routerMicrolib.recognizer.names['shoutbox_loading'],
         'loading route was added'
       );
-      assert.ok(
-        router._routerMicrolib.recognizer.names['shoutbox_error'],
-        'error route was added'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['shoutbox_error'], 'error route was added');
     }
 
     ['@test should not add loading and error routes to a mount if _isRouterMapResult is false'](
@@ -361,17 +323,14 @@ moduleFor(
       });
 
       let engineInstance = buildOwner({
-        ownerOptions: { routable: true }
+        ownerOptions: { routable: true },
       });
 
       let router = Router.create();
       setOwner(router, engineInstance);
       router._initRouterJs(false);
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['chat'],
-        'main route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['chat'], 'main route was created');
       assert.ok(
         !router._routerMicrolib.recognizer.names['chat_loading'],
         'loading route was not added'
@@ -393,21 +352,18 @@ moduleFor(
       });
 
       let engineInstance = buildOwner({
-        ownerOptions: { routable: true }
+        ownerOptions: { routable: true },
       });
 
       let router = Router.create({
         _hasModuleBasedResolver() {
           return true;
-        }
+        },
       });
       setOwner(router, engineInstance);
       router._initRouterJs();
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['news.chat'],
-        'nested route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['news.chat'], 'nested route was created');
       assert.ok(
         router._routerMicrolib.recognizer.names['news.chat_loading'],
         'nested loading route was added'
@@ -417,10 +373,7 @@ moduleFor(
         'nested error route was added'
       );
 
-      assert.ok(
-        router._routerMicrolib.recognizer.names['blog'],
-        'reset route was created'
-      );
+      assert.ok(router._routerMicrolib.recognizer.names['blog'], 'reset route was created');
       assert.ok(
         router._routerMicrolib.recognizer.names['blog_loading'],
         'reset loading route was added'

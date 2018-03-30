@@ -15,5 +15,5 @@ export default Mixin.create({
     if (currentState.enter) {
       currentState.enter(this);
     }
-  }
+  },
 });

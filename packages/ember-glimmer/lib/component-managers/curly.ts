@@ -3,13 +3,9 @@ import {
   Option,
   ProgramSymbolTable,
   Simple,
-  VMHandle
+  VMHandle,
 } from '@glimmer/interfaces';
-import {
-  combine,
-  Tag,
-  VersionedPathReference,
-} from '@glimmer/reference';
+import { combine, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
   Bounds,
@@ -25,42 +21,24 @@ import {
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
 import { privatize as P } from 'container';
-import {
-  assert,
-  deprecate,
-} from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
-import {
-  _instrumentStart, get,
-} from 'ember-metal';
+import { _instrumentStart, get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
-import {
-  assign,
-  getOwner,
-  guidFor,
-} from 'ember-utils';
+import { assign, getOwner, guidFor } from 'ember-utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
-import {
-  BOUNDS,
-  DIRTY_TAG,
-  HAS_BLOCK,
-  IS_DISPATCHING_ATTRS,
-  ROOT_REF
-} from '../component';
+import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
-import {
-  Factory as TemplateFactory,
-  OwnedTemplate
-} from '../template';
+import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
   ColonClassNameBindingReference,
   IsVisibleBinding,
-  referenceForKey
+  referenceForKey,
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
@@ -71,7 +49,10 @@ import DefinitionState from './definition-state';
 function aliasIdToElementId(args: Arguments, props: any) {
   if (args.named.has('id')) {
     // tslint:disable-next-line:max-line-length
-    assert(`You cannot invoke a component with both 'id' and 'elementId' at the same time.`, !args.named.has('elementId'));
+    assert(
+      `You cannot invoke a component with both 'id' and 'elementId' at the same time.`,
+      !args.named.has('elementId')
+    );
     props.elementId = props.id;
   }
 }
@@ -83,7 +64,12 @@ function isTemplateFactory(template: OwnedTemplate | TemplateFactory): template 
 // We must traverse the attributeBindings in reverse keeping track of
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
-function applyAttributeBindings(element: Simple.Element, attributeBindings: Array<string>, component: Component, operations: ElementOperations) {
+function applyAttributeBindings(
+  element: Simple.Element,
+  attributeBindings: Array<string>,
+  component: Component,
+  operations: ElementOperations
+) {
   let seen: string[] = [];
   let i = attributeBindings.length - 1;
 
@@ -111,16 +97,17 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: Arra
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
 
-export default class CurlyComponentManager extends AbstractManager<ComponentStateBucket, DefinitionState>
-  implements WithStaticLayout<ComponentStateBucket, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
-             WithDynamicTagName<ComponentStateBucket>,
-             WithDynamicLayout<ComponentStateBucket, OwnedTemplateMeta, RuntimeResolver> {
-
+export default class CurlyComponentManager
+  extends AbstractManager<ComponentStateBucket, DefinitionState>
+  implements
+    WithStaticLayout<ComponentStateBucket, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
+    WithDynamicTagName<ComponentStateBucket>,
+    WithDynamicLayout<ComponentStateBucket, OwnedTemplateMeta, RuntimeResolver> {
   getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
     return {
       // TODO fix
-      handle: state.handle as any as number,
-      symbolTable: state.symbolTable!
+      handle: (state.handle as any) as number,
+      symbolTable: state.symbolTable!,
     };
   }
 
@@ -171,26 +158,37 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     const { positionalParams } = state.ComponentClass.class;
 
     // early exits
-    if (positionalParams === undefined || positionalParams === null || args.positional.length === 0) {
+    if (
+      positionalParams === undefined ||
+      positionalParams === null ||
+      args.positional.length === 0
+    ) {
       return null;
     }
 
     let named: PreparedArguments['named'];
 
     if (typeof positionalParams === 'string') {
-      assert(`You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`, !args.named.has(positionalParams));
+      assert(
+        `You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`,
+        !args.named.has(positionalParams)
+      );
       named = { [positionalParams]: args.positional.capture() };
       assign(named, args.named.capture().map);
     } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
       const count = Math.min(positionalParams.length, args.positional.length);
       named = {};
       assign(named, args.named.capture().map);
-      for (let i=0; i<count; i++) {
+      for (let i = 0; i < count; i++) {
         const name = positionalParams[i];
-        deprecate(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`, !args.named.has(name), {
-          id: 'ember-glimmer.positional-param-conflict',
-          until: '3.5.0',
-        });
+        deprecate(
+          `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+          !args.named.has(name),
+          {
+            id: 'ember-glimmer.positional-param-conflict',
+            until: '3.5.0',
+          }
+        );
         named[name] = args.positional.at(i);
       }
     } else {
@@ -206,7 +204,14 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
    * features like exposed by view mixins like ChildViewSupport, ActionSupport,
    * etc.
    */
-  create(environment: Environment, state: DefinitionState, args: Arguments, dynamicScope: DynamicScope, callerSelfRef: VersionedPathReference, hasBlock: boolean): ComponentStateBucket {
+  create(
+    environment: Environment,
+    state: DefinitionState,
+    args: Arguments,
+    dynamicScope: DynamicScope,
+    callerSelfRef: VersionedPathReference,
+    hasBlock: boolean
+  ): ComponentStateBucket {
     if (DEBUG) {
       this._pushToDebugStack(`component:${state.name}`, environment);
     }
@@ -302,7 +307,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     return component[ROOT_REF];
   }
 
-  didCreateElement({ component, classRef, environment }: ComponentStateBucket, element: HTMLElement, operations: ElementOperations): void {
+  didCreateElement(
+    { component, classRef, environment }: ComponentStateBucket,
+    element: HTMLElement,
+    operations: ElementOperations
+  ): void {
     setViewElement(component, element);
 
     let { attributeBindings, classNames, classNameBindings } = component;
@@ -319,9 +328,14 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
 
     if (classRef && classRef.value()) {
-      const ref = classRef.value() === true ?
-                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(classRef['_propertyKey']), null) :
-                         classRef;
+      const ref =
+        classRef.value() === true
+          ? new ColonClassNameBindingReference(
+              classRef,
+              StringUtils.dasherize(classRef['_propertyKey']),
+              null
+            )
+          : classRef;
       operations.setAttribute('class', ref, false, null);
     }
 
@@ -360,8 +374,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 
   getTag({ args, component }: ComponentStateBucket): Tag {
-    return args ? combine([args.tag, component[DIRTY_TAG]]) :
-                  component[DIRTY_TAG];
+    return args ? combine([args.tag, component[DIRTY_TAG]]) : component[DIRTY_TAG];
   }
 
   didCreate({ component, environment }: ComponentStateBucket): void {
@@ -376,7 +389,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     let { component, args, argsRevision, environment } = bucket;
 
     if (DEBUG) {
-       this._pushToDebugStack(component._debugContainerKey, environment);
+      this._pushToDebugStack(component._debugContainerKey, environment);
     }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
@@ -420,7 +433,11 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
   }
 }
 
-export function validatePositionalParameters(named: { has(name: string): boolean }, positional: { length: number }, positionalParamsDefinition: any) {
+export function validatePositionalParameters(
+  named: { has(name: string): boolean },
+  positional: { length: number },
+  positionalParamsDefinition: any
+) {
   if (DEBUG) {
     if (!named || !positional || !positional.length) {
       return;
@@ -430,7 +447,10 @@ export function validatePositionalParameters(named: { has(name: string): boolean
 
     if (paramType === 'string') {
       // tslint:disable-next-line:max-line-length
-      assert(`You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`, !named.has(positionalParamsDefinition));
+      assert(
+        `You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`,
+        !named.has(positionalParamsDefinition)
+      );
     } else {
       if (positional.length < positionalParamsDefinition.length) {
         positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
@@ -441,7 +461,7 @@ export function validatePositionalParameters(named: { has(name: string): boolean
 
         assert(
           `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-          !named.has(name),
+          !named.has(name)
         );
       }
     }
@@ -449,38 +469,55 @@ export function validatePositionalParameters(named: { has(name: string): boolean
 }
 
 export function processComponentInitializationAssertions(component: Component, props: any) {
-  assert(`classNameBindings must be non-empty strings: ${component}`, (() => {
-    let { classNameBindings } = component;
-    for (let i = 0; i < classNameBindings.length; i++) {
-      let binding = classNameBindings[i];
+  assert(
+    `classNameBindings must be non-empty strings: ${component}`,
+    (() => {
+      let { classNameBindings } = component;
+      for (let i = 0; i < classNameBindings.length; i++) {
+        let binding = classNameBindings[i];
 
-      if (typeof binding !== 'string' || binding.length === 0) {
-        return false;
+        if (typeof binding !== 'string' || binding.length === 0) {
+          return false;
+        }
       }
-    }
-    return true;
-  })());
+      return true;
+    })()
+  );
 
-  assert(`classNameBindings must not have spaces in them: ${component}`, (() => {
-    let { classNameBindings } = component;
-    for (let i = 0; i < classNameBindings.length; i++) {
-      let binding = classNameBindings[i];
-      if (binding.split(' ').length > 1) {
-        return false;
+  assert(
+    `classNameBindings must not have spaces in them: ${component}`,
+    (() => {
+      let { classNameBindings } = component;
+      for (let i = 0; i < classNameBindings.length; i++) {
+        let binding = classNameBindings[i];
+        if (binding.split(' ').length > 1) {
+          return false;
+        }
       }
-    }
-    return true;
-  })());
+      return true;
+    })()
+  );
 
-  assert(`You cannot use \`classNameBindings\` on a tag-less component: ${component}`,
-    component.tagName !== '' || !component.classNameBindings || component.classNameBindings.length === 0);
+  assert(
+    `You cannot use \`classNameBindings\` on a tag-less component: ${component}`,
+    component.tagName !== '' ||
+      !component.classNameBindings ||
+      component.classNameBindings.length === 0
+  );
 
-  assert(`You cannot use \`elementId\` on a tag-less component: ${component}`,
-    component.tagName !== '' || props.id === component.elementId ||
-    (!component.elementId && component.elementId !== ''));
+  assert(
+    `You cannot use \`elementId\` on a tag-less component: ${component}`,
+    component.tagName !== '' ||
+      props.id === component.elementId ||
+      (!component.elementId && component.elementId !== '')
+  );
 
-  assert(`You cannot use \`attributeBindings\` on a tag-less component: ${component}`,
-    component.tagName !== '' || !component.attributeBindings || component.attributeBindings.length === 0);
+  assert(
+    `You cannot use \`attributeBindings\` on a tag-less component: ${component}`,
+    component.tagName !== '' ||
+      !component.attributeBindings ||
+      component.attributeBindings.length === 0
+  );
 }
 
 export function initialRenderInstrumentDetails(component: any): any {
@@ -509,7 +546,7 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   createCaller: true,
   dynamicScope: true,
   updateHook: true,
-  createInstance: true
+  createInstance: true,
 };
 
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
@@ -520,7 +557,16 @@ export class CurlyComponentDefinition implements ComponentDefinition {
   public symbolTable: ProgramSymbolTable | undefined;
 
   // tslint:disable-next-line:no-shadowed-variable
-  constructor(public name: string, public manager: ComponentManager<ComponentStateBucket, DefinitionState> | CustomComponentManager<CustomComponentState<any>> = CURLY_COMPONENT_MANAGER, public ComponentClass: any, public handle: Option<VMHandle>, template: OwnedTemplate, args?: CurriedArgs) {
+  constructor(
+    public name: string,
+    public manager:
+      | ComponentManager<ComponentStateBucket, DefinitionState>
+      | CustomComponentManager<CustomComponentState<any>> = CURLY_COMPONENT_MANAGER,
+    public ComponentClass: any,
+    public handle: Option<VMHandle>,
+    template: OwnedTemplate,
+    args?: CurriedArgs
+  ) {
     const layout = template && template.asLayout();
     const symbolTable = layout ? layout.symbolTable : undefined;
     this.symbolTable = symbolTable;
@@ -532,7 +578,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
       handle,
       template,
       capabilities: CURLY_CAPABILITIES,
-      symbolTable
+      symbolTable,
     };
   }
 }

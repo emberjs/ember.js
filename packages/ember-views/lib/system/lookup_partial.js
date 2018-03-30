@@ -14,11 +14,7 @@ export default function lookupPartial(templateName, owner) {
     return;
   }
 
-  let template = templateFor(
-    owner,
-    parseUnderscoredName(templateName),
-    templateName
-  );
+  let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
 
   assert(`Unable to find partial with name "${templateName}"`, !!template);
 
@@ -44,10 +40,7 @@ function templateFor(owner, underscored, name) {
   if (!name) {
     return;
   }
-  assert(
-    `templateNames are not allowed to contain periods: ${name}`,
-    name.indexOf('.') === -1
-  );
+  assert(`templateNames are not allowed to contain periods: ${name}`, name.indexOf('.') === -1);
 
   if (!owner) {
     throw new EmberError(
@@ -57,7 +50,5 @@ function templateFor(owner, underscored, name) {
     );
   }
 
-  return (
-    owner.lookup(`template:${underscored}`) || owner.lookup(`template:${name}`)
-  );
+  return owner.lookup(`template:${underscored}`) || owner.lookup(`template:${name}`);
 }

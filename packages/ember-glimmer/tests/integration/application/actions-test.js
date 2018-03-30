@@ -1,9 +1,5 @@
 import { Controller } from 'ember-runtime';
-import {
-  moduleFor,
-  ApplicationTest,
-  RenderingTest
-} from '../../utils/test-case';
+import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
@@ -33,8 +29,8 @@ moduleFor(
           actions: {
             handleIt() {
               assert.ok(true, 'controller received action properly');
-            }
-          }
+            },
+          },
         })
       );
 
@@ -48,9 +44,7 @@ moduleFor(
       });
     }
 
-    ['@test actions in nested outlet template target their controller'](
-      assert
-    ) {
+    ['@test actions in nested outlet template target their controller'](assert) {
       assert.expect(1);
 
       this.add(
@@ -58,12 +52,9 @@ moduleFor(
         Controller.extend({
           actions: {
             handleIt() {
-              assert.ok(
-                false,
-                'application controller should not have received action!'
-              );
-            }
-          }
+              assert.ok(false, 'application controller should not have received action!');
+            },
+          },
         })
       );
 
@@ -73,15 +64,12 @@ moduleFor(
           actions: {
             handleIt() {
               assert.ok(true, 'controller received action properly');
-            }
-          }
+            },
+          },
         })
       );
 
-      this.addTemplate(
-        'index',
-        '<button id="handle-it" {{action "handleIt"}}>Click!</button>'
-      );
+      this.addTemplate('index', '<button id="handle-it" {{action "handleIt"}}>Click!</button>');
 
       return this.visit('/').then(() => {
         this.runTask(() => this.$('#handle-it').click());
@@ -103,10 +91,10 @@ moduleFor(
           actions: {
             fire() {
               assert.ok(false);
-            }
-          }
+            },
+          },
         }),
-        template: `<button {{action 'fire'}}>Fire!</button>`
+        template: `<button {{action 'fire'}}>Fire!</button>`,
       });
 
       this.render('{{foo-bar tagName=""}}');

@@ -11,7 +11,7 @@ moduleFor(
 
       expectDeprecation(() => {
         compile('{{render "foo-bar"}}', {
-          moduleName: 'baz/foo-bar'
+          moduleName: 'baz/foo-bar',
         });
       }, expectedMessage);
     }

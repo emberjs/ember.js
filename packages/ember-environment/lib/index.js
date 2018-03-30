@@ -52,9 +52,7 @@ ENV.EXTEND_PROTOTYPES = normalizeExtendPrototypes(ENV.EXTEND_PROTOTYPES);
   @for EmberENV
   @public
 */
-ENV.LOG_STACKTRACE_ON_DEPRECATION = defaultTrue(
-  ENV.LOG_STACKTRACE_ON_DEPRECATION
-);
+ENV.LOG_STACKTRACE_ON_DEPRECATION = defaultTrue(ENV.LOG_STACKTRACE_ON_DEPRECATION);
 
 /**
   The `LOG_VERSION` property, when true, tells Ember to log versions of all
@@ -96,9 +94,7 @@ ENV.RAISE_ON_DEPRECATION = defaultFalse(ENV.RAISE_ON_DEPRECATION);
   @default true
   @private
 */
-ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(
-  ENV._APPLICATION_TEMPLATE_WRAPPER
-);
+ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(ENV._APPLICATION_TEMPLATE_WRAPPER);
 
 /**
   Whether to use Glimmer Component semantics (as opposed to the classic "Curly"
@@ -113,9 +109,7 @@ ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(
   @default false
   @private
 */
-ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = defaultFalse(
-  ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS
-);
+ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = defaultFalse(ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS);
 
 // check if window exists and actually is the global
 const hasDOM =
@@ -134,7 +128,7 @@ export const context = {
   // export Ember
   exports: originalContext.exports || global,
   // search for Namespaces
-  lookup: originalContext.lookup || global
+  lookup: originalContext.lookup || global,
 };
 
 // TODO: cleanup single source of truth issues with this stuff
@@ -146,7 +140,7 @@ export const environment = hasDOM
       location: window.location,
       history: window.history,
       userAgent: window.navigator.userAgent,
-      window
+      window,
     }
   : {
       hasDOM: false,
@@ -155,5 +149,5 @@ export const environment = hasDOM
       location: null,
       history: null,
       userAgent: 'Lynx (textmode)',
-      window: null
+      window: null,
     };

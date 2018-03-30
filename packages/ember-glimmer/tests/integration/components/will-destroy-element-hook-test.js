@@ -11,44 +11,28 @@ moduleFor(
       let FooBarComponent = Component.extend({
         didInsertElement() {
           didInsertElementCount++;
-          assert.notEqual(
-            this.element.parentNode,
-            null,
-            'precond component is in DOM'
-          );
+          assert.notEqual(this.element.parentNode, null, 'precond component is in DOM');
         },
         willDestroyElement() {
           willDestroyElementCount++;
-          assert.notEqual(
-            this.element.parentNode,
-            null,
-            'has not been removed from DOM yet'
-          );
-        }
+          assert.notEqual(this.element.parentNode, null, 'has not been removed from DOM yet');
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{#if switch}}{{foo-bar}}{{/if}}', { switch: true });
 
-      assert.equal(
-        didInsertElementCount,
-        1,
-        'didInsertElement was called once'
-      );
+      assert.equal(didInsertElementCount, 1, 'didInsertElement was called once');
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
       this.runTask(() => set(this.context, 'switch', false));
 
-      assert.equal(
-        willDestroyElementCount,
-        1,
-        'willDestroyElement was called once'
-      );
+      assert.equal(willDestroyElementCount, 1, 'willDestroyElement was called once');
 
       this.assertText('');
     }

@@ -72,9 +72,7 @@ function dive(prefix, pattern, start, callback) {
   while (i < arrayLength) {
     newStart = after.indexOf('{');
     if (newStart < 0) {
-      callback(
-        (prefix + tempArr[i++] + after).replace(END_WITH_EACH_REGEX, '.[]')
-      );
+      callback((prefix + tempArr[i++] + after).replace(END_WITH_EACH_REGEX, '.[]'));
     } else {
       dive(prefix + tempArr[i++], after, newStart, callback);
     }

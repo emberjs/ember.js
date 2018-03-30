@@ -6,12 +6,9 @@ class UniqByTests extends AbstractTestCase {
     let numbers = this.newObject([
       { id: 1, value: 'one' },
       { id: 2, value: 'two' },
-      { id: 1, value: 'one' }
-    ]);
-    this.assert.deepEqual(numbers.uniqBy('id'), [
       { id: 1, value: 'one' },
-      { id: 2, value: 'two' }
     ]);
+    this.assert.deepEqual(numbers.uniqBy('id'), [{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
   }
 }
 

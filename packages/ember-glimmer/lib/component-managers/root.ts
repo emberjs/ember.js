@@ -1,8 +1,5 @@
 import { ComponentCapabilities } from '@glimmer/interfaces';
-import {
-  Arguments,
-  ComponentDefinition
-} from '@glimmer/runtime';
+import { Arguments, ComponentDefinition } from '@glimmer/runtime';
 import { FACTORY_FOR } from 'container';
 import { DEBUG } from 'ember-env-flags';
 import { _instrumentStart } from 'ember-metal';
@@ -34,10 +31,12 @@ class RootComponentManager extends CurlyComponentManager {
     };
   }
 
-  create(environment: Environment,
-         _state: DefinitionState,
-         _args: Arguments | null,
-         dynamicScope: DynamicScope) {
+  create(
+    environment: Environment,
+    _state: DefinitionState,
+    _args: Arguments | null,
+    dynamicScope: DynamicScope
+  ) {
     let component = this.component;
 
     if (DEBUG) {
@@ -81,7 +80,7 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
   createCaller: true,
   dynamicScope: true,
   updateHook: true,
-  createInstance: false
+  createInstance: false,
 };
 
 export class RootComponentDefinition implements ComponentDefinition {

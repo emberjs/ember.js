@@ -66,7 +66,7 @@ moduleFor(
             Object.keys(engineRegistrations).forEach(fullName => {
               this.register(fullName, engineRegistrations[fullName]);
             });
-          }
+          },
         })
       );
 
@@ -89,14 +89,11 @@ moduleFor(
         init() {
           this._super();
           controller = this;
-        }
+        },
       });
 
       return this.visit('/').then(() => {
-        assert.ok(
-          controller,
-          "engine's application controller has been instantiated"
-        );
+        assert.ok(controller, "engine's application controller has been instantiated");
 
         let engineInstance = getOwner(controller);
         assert.strictEqual(
@@ -130,22 +127,20 @@ moduleFor(
         { moduleName: 'my-app/templates/application.hbs' }
       );
       this.engineRegistrations['controller:application'] = Controller.extend({
-        person: { name: 'Alex' }
+        person: { name: 'Alex' },
       });
 
-      this.engineRegistrations[
-        'template:components/component-with-backtracking-set'
-      ] = compile('[component {{person.name}}]', {
-        moduleName:
-          'my-app/templates/components/component-with-backtracking-set.hbs'
-      });
-      this.engineRegistrations[
-        'component:component-with-backtracking-set'
-      ] = Component.extend({
+      this.engineRegistrations['template:components/component-with-backtracking-set'] = compile(
+        '[component {{person.name}}]',
+        {
+          moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs',
+        }
+      );
+      this.engineRegistrations['component:component-with-backtracking-set'] = Component.extend({
         init() {
           this._super(...arguments);
           this.set('person.name', 'Ben');
-        }
+        },
       });
 
       let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/route-with-mount.hbs" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
@@ -169,7 +164,7 @@ moduleFor(
           init() {
             this._super();
             controller = this;
-          }
+          },
         })
       );
       this.addTemplate('bound-engine-name', '{{mount engineName}}');
@@ -183,10 +178,10 @@ moduleFor(
             this.register(
               'template:application',
               compile('<h2>Foo Engine</h2>', {
-                moduleName: 'my-app/templates/application.hbs'
+                moduleName: 'my-app/templates/application.hbs',
               })
             );
-          }
+          },
         })
       );
       this.add(
@@ -198,10 +193,10 @@ moduleFor(
             this.register(
               'template:application',
               compile('<h2>Bar Engine</h2>', {
-                moduleName: 'my-app/templates/application.hbs'
+                moduleName: 'my-app/templates/application.hbs',
               })
             );
-          }
+          },
         })
       );
 
@@ -248,7 +243,7 @@ moduleFor(
           init() {
             this._super(...arguments);
             controller = this;
-          }
+          },
         })
       );
       this.addTemplate('engine-event-dispatcher-singleton', '{{mount "foo"}}');
@@ -262,7 +257,7 @@ moduleFor(
             this.register(
               'template:application',
               compile('<h2>Foo Engine: {{tagless-component}}</h2>', {
-                moduleName: 'my-app/templates/application.hbs'
+                moduleName: 'my-app/templates/application.hbs',
               })
             );
             this.register(
@@ -272,25 +267,23 @@ moduleFor(
                 init() {
                   this._super(...arguments);
                   component = this;
-                }
+                },
               })
             );
             this.register(
               'template:components/tagless-component',
               compile('Tagless Component', {
-                moduleName: 'my-app/templates/components/tagless-component.hbs'
+                moduleName: 'my-app/templates/components/tagless-component.hbs',
               })
             );
-          }
+          },
         })
       );
 
       return this.visit('/engine-event-dispatcher-singleton').then(() => {
         this.assertInnerHTML('<h2>Foo Engine: Tagless Component</h2>');
 
-        let controllerOwnerEventDispatcher = getOwner(controller).lookup(
-          'event_dispatcher:main'
-        );
+        let controllerOwnerEventDispatcher = getOwner(controller).lookup('event_dispatcher:main');
         let taglessComponentOwnerEventDispatcher = getOwner(component).lookup(
           'event_dispatcher:main'
         );
@@ -320,10 +313,10 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
               this.register(
                 'template:application',
                 compile('<h2>Param Engine: {{model.foo}}</h2>', {
-                  moduleName: 'my-app/templates/application.hbs'
+                  moduleName: 'my-app/templates/application.hbs',
                 })
               );
-            }
+            },
           })
         );
       }
@@ -332,10 +325,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
         this.router.map(function() {
           this.route('engine-params-static');
         });
-        this.addTemplate(
-          'engine-params-static',
-          '{{mount "paramEngine" model=(hash foo="bar")}}'
-        );
+        this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
 
         return this.visit('/engine-params-static').then(() => {
           this.assertInnerHTML('<h2>Param Engine: bar</h2>');
@@ -354,7 +344,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
             init() {
               this._super();
               controller = this;
-            }
+            },
           })
         );
         this.addTemplate(
@@ -397,11 +387,11 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
         });
 
         this.addComponent('foo-component', {
-          template: `foo-component rendered! - {{app-bar-component}}`
+          template: `foo-component rendered! - {{app-bar-component}}`,
         });
         this.addComponent('app-bar-component', {
           ComponentClass: Component.extend({ tagName: '' }),
-          template: 'rendered app-bar-component from the app'
+          template: 'rendered app-bar-component from the app',
         });
         this.add(
           'engine:componentParamEngine',
@@ -412,10 +402,10 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
               this.register(
                 'template:application',
                 compile('{{model.foo}}', {
-                  moduleName: 'my-app/templates/application.hbs'
+                  moduleName: 'my-app/templates/application.hbs',
                 })
               );
-            }
+            },
           })
         );
         this.addTemplate(
@@ -425,8 +415,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
 
         return this.visit('/engine-params-contextual-component').then(() => {
           this.assertComponentElement(this.firstChild, {
-            content:
-              'foo-component rendered! - rendered app-bar-component from the app'
+            content: 'foo-component rendered! - rendered app-bar-component from the app',
           });
         });
       }

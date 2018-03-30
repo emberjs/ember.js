@@ -17,17 +17,12 @@ moduleFor(
       context.lookup = originalLookup;
     }
 
-    ['@test it should return false if no target or action are specified'](
-      assert
-    ) {
+    ['@test it should return false if no target or action are specified'](assert) {
       assert.expect(1);
 
       let obj = EmberObject.extend(TargetActionSupport).create();
 
-      assert.ok(
-        false === obj.triggerAction(),
-        'no target or action was specified'
-      );
+      assert.ok(false === obj.triggerAction(), 'no target or action was specified');
     }
 
     ['@test it should support actions specified as strings'](assert) {
@@ -37,46 +32,30 @@ moduleFor(
         target: EmberObject.create({
           anEvent() {
             assert.ok(true, 'anEvent method was called');
-          }
+          },
         }),
 
-        action: 'anEvent'
+        action: 'anEvent',
       });
 
-      assert.ok(
-        true === obj.triggerAction(),
-        'a valid target and action were specified'
-      );
+      assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
-    ['@test it should invoke the send() method on objects that implement it'](
-      assert
-    ) {
+    ['@test it should invoke the send() method on objects that implement it'](assert) {
       assert.expect(3);
 
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
           send(evt, context) {
-            assert.equal(
-              evt,
-              'anEvent',
-              'send() method was invoked with correct event name'
-            );
-            assert.equal(
-              context,
-              obj,
-              'send() method was invoked with correct context'
-            );
-          }
+            assert.equal(evt, 'anEvent', 'send() method was invoked with correct event name');
+            assert.equal(context, obj, 'send() method was invoked with correct context');
+          },
         }),
 
-        action: 'anEvent'
+        action: 'anEvent',
       });
 
-      assert.ok(
-        true === obj.triggerAction(),
-        'a valid target and action were specified'
-      );
+      assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
     ['@test it should find targets specified using a property path'](assert) {
@@ -88,23 +67,18 @@ moduleFor(
       Test.targetObj = EmberObject.create({
         anEvent() {
           assert.ok(true, 'anEvent method was called on global object');
-        }
+        },
       });
 
       let myObj = EmberObject.extend(TargetActionSupport).create({
         target: 'Test.targetObj',
-        action: 'anEvent'
+        action: 'anEvent',
       });
 
-      assert.ok(
-        true === myObj.triggerAction(),
-        'a valid target and action were specified'
-      );
+      assert.ok(true === myObj.triggerAction(), 'a valid target and action were specified');
     }
 
-    ['@test it should use an actionContext object specified as a property on the object'](
-      assert
-    ) {
+    ['@test it should use an actionContext object specified as a property on the object'](assert) {
       assert.expect(2);
       let obj = EmberObject.extend(TargetActionSupport).create({
         action: 'anEvent',
@@ -115,13 +89,10 @@ moduleFor(
               obj.actionContext === ctx,
               'anEvent method was called with the expected context'
             );
-          }
-        })
+          },
+        }),
       });
-      assert.ok(
-        true === obj.triggerAction(),
-        'a valid target and action were specified'
-      );
+      assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
     ['@test it should raise a deprecation warning when targetObject is specified and used'](
@@ -139,23 +110,18 @@ moduleFor(
                 obj.actionContext === ctx,
                 'anEvent method was called with the expected context'
               );
-            }
-          })
+            },
+          }),
         });
       }, /Usage of `targetObject` is deprecated. Please use `target` instead./);
-      assert.ok(
-        true === obj.triggerAction(),
-        'a valid targetObject and action were specified'
-      );
+      assert.ok(true === obj.triggerAction(), 'a valid targetObject and action were specified');
       expectDeprecation(
         () => obj.get('targetObject'),
         /Usage of `targetObject` is deprecated. Please use `target` instead./
       );
     }
 
-    ['@test it should find an actionContext specified as a property path'](
-      assert
-    ) {
+    ['@test it should find an actionContext specified as a property path'](assert) {
       assert.expect(2);
 
       let Test = {};
@@ -167,18 +133,12 @@ moduleFor(
         actionContext: 'Test.aContext',
         target: EmberObject.create({
           anEvent(ctx) {
-            assert.ok(
-              Test.aContext === ctx,
-              'anEvent method was called with the expected context'
-            );
-          }
-        })
+            assert.ok(Test.aContext === ctx, 'anEvent method was called with the expected context');
+          },
+        }),
       });
 
-      assert.ok(
-        true === obj.triggerAction(),
-        'a valid target and action were specified'
-      );
+      assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
     ['@test it should use the target specified in the argument'](assert) {
@@ -186,10 +146,10 @@ moduleFor(
       let targetObj = EmberObject.create({
         anEvent() {
           assert.ok(true, 'anEvent method was called');
-        }
+        },
       });
       let obj = EmberObject.extend(TargetActionSupport).create({
-        action: 'anEvent'
+        action: 'anEvent',
       });
 
       assert.ok(
@@ -205,8 +165,8 @@ moduleFor(
         target: EmberObject.create({
           anEvent() {
             assert.ok(true, 'anEvent method was called');
-          }
-        })
+          },
+        }),
       });
       assert.ok(
         true === obj.triggerAction({ action: 'anEvent' }),
@@ -214,21 +174,16 @@ moduleFor(
       );
     }
 
-    ['@test it should use the actionContext specified in the argument'](
-      assert
-    ) {
+    ['@test it should use the actionContext specified in the argument'](assert) {
       assert.expect(2);
       let context = {};
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
           anEvent(ctx) {
-            assert.ok(
-              context === ctx,
-              'anEvent method was called with the expected context'
-            );
-          }
+            assert.ok(context === ctx, 'anEvent method was called with the expected context');
+          },
         }),
-        action: 'anEvent'
+        action: 'anEvent',
       });
 
       assert.ok(
@@ -252,9 +207,9 @@ moduleFor(
               second === param2,
               'anEvent method was called with the expected second argument'
             );
-          }
+          },
         }),
-        action: 'anEvent'
+        action: 'anEvent',
       });
 
       assert.ok(
@@ -263,20 +218,15 @@ moduleFor(
       );
     }
 
-    ['@test it should use a null value specified in the actionContext argument'](
-      assert
-    ) {
+    ['@test it should use a null value specified in the actionContext argument'](assert) {
       assert.expect(2);
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
           anEvent(ctx) {
-            assert.ok(
-              null === ctx,
-              'anEvent method was called with the expected context (null)'
-            );
-          }
+            assert.ok(null === ctx, 'anEvent method was called with the expected context (null)');
+          },
         }),
-        action: 'anEvent'
+        action: 'anEvent',
       });
       assert.ok(
         true === obj.triggerAction({ actionContext: null }),

@@ -27,6 +27,6 @@ module.exports = function(tree, options) {
     footerFiles: footerFiles,
     inputFiles: ['**/*'],
     annotation: outputFile,
-    footer: footer + '\n}());'
+    footer: footer + '\n}());',
   });
 };

@@ -23,11 +23,7 @@ moduleFor(
       assert.equal(true, isPresent(0), 'for 0');
       assert.equal(false, isPresent([]), 'for an empty Array');
       assert.equal(true, isPresent({}), 'for an empty Object');
-      assert.equal(
-        false,
-        isPresent(object),
-        "for an Object that has zero 'length'"
-      );
+      assert.equal(false, isPresent(object), "for an Object that has zero 'length'");
       assert.equal(true, isPresent([1, 2, 3]), 'for a non-empty array');
     }
   }

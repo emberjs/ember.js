@@ -28,28 +28,18 @@ class RejectByTest extends AbstractTestCase {
   '@test should reject based on object'() {
     let obj, ary;
 
-    ary = [
-      { foo: 'foo', bar: 'BAZ' },
-      EmberObject.create({ foo: 'foo', bar: 'bar' })
-    ];
+    ary = [{ foo: 'foo', bar: 'BAZ' }, EmberObject.create({ foo: 'foo', bar: 'bar' })];
 
     obj = this.newObject(ary);
 
     this.assert.deepEqual(obj.rejectBy('foo', 'foo'), [], 'rejectBy(foo)');
-    this.assert.deepEqual(
-      obj.rejectBy('bar', 'bar'),
-      [ary[0]],
-      'rejectBy(bar)'
-    );
+    this.assert.deepEqual(obj.rejectBy('bar', 'bar'), [ary[0]], 'rejectBy(bar)');
   }
 
   '@test should include in result if property is false'() {
     let obj, ary;
 
-    ary = [
-      { foo: false, bar: true },
-      EmberObject.create({ foo: false, bar: false })
-    ];
+    ary = [{ foo: false, bar: true }, EmberObject.create({ foo: false, bar: false })];
 
     obj = this.newObject(ary);
 
@@ -64,16 +54,12 @@ class RejectByTest extends AbstractTestCase {
       { name: 'obj1', foo: 3 },
       EmberObject.create({ name: 'obj2', foo: 2 }),
       { name: 'obj3', foo: 2 },
-      EmberObject.create({ name: 'obj4', foo: 3 })
+      EmberObject.create({ name: 'obj4', foo: 3 }),
     ];
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(
-      obj.rejectBy('foo', 3),
-      [ary[1], ary[2]],
-      "rejectBy('foo', 3)')"
-    );
+    this.assert.deepEqual(obj.rejectBy('foo', 3), [ary[1], ary[2]], "rejectBy('foo', 3)')");
   }
 
   '@test should correctly reject null second argument'() {
@@ -83,33 +69,22 @@ class RejectByTest extends AbstractTestCase {
       { name: 'obj1', foo: 3 },
       EmberObject.create({ name: 'obj2', foo: null }),
       { name: 'obj3', foo: null },
-      EmberObject.create({ name: 'obj4', foo: 3 })
+      EmberObject.create({ name: 'obj4', foo: 3 }),
     ];
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(
-      obj.rejectBy('foo', null),
-      [ary[0], ary[3]],
-      "rejectBy('foo', null)')"
-    );
+    this.assert.deepEqual(obj.rejectBy('foo', null), [ary[0], ary[3]], "rejectBy('foo', null)')");
   }
 
   '@test should correctly reject undefined second argument'() {
     let obj, ary;
 
-    ary = [
-      { name: 'obj1', foo: 3 },
-      EmberObject.create({ name: 'obj2', foo: 2 })
-    ];
+    ary = [{ name: 'obj1', foo: 3 }, EmberObject.create({ name: 'obj2', foo: 2 })];
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(
-      obj.rejectBy('bar', undefined),
-      [],
-      "rejectBy('bar', undefined)')"
-    );
+    this.assert.deepEqual(obj.rejectBy('bar', undefined), [], "rejectBy('bar', undefined)')");
   }
 
   '@test should correctly reject explicit undefined second argument'() {
@@ -121,7 +96,7 @@ class RejectByTest extends AbstractTestCase {
       { name: 'obj3', foo: undefined },
       EmberObject.create({ name: 'obj4', foo: undefined }),
       { name: 'obj5' },
-      EmberObject.create({ name: 'obj6' })
+      EmberObject.create({ name: 'obj6' }),
     ];
 
     obj = this.newObject(ary);
@@ -146,16 +121,12 @@ class RejectByTest extends AbstractTestCase {
       { name: 'obj7', foo: null },
       EmberObject.create({ name: 'obj8', foo: null }),
       { name: 'obj9', foo: false },
-      EmberObject.create({ name: 'obj10', foo: false })
+      EmberObject.create({ name: 'obj10', foo: false }),
     ];
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(
-      obj.rejectBy('foo'),
-      ary.slice(2),
-      "rejectBy('foo')')"
-    );
+    this.assert.deepEqual(obj.rejectBy('foo'), ary.slice(2), "rejectBy('foo')')");
   }
 }
 

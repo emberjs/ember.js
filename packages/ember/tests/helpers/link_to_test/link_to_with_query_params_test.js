@@ -9,7 +9,7 @@ moduleFor(
       super();
       let indexProperties = {
         foo: '123',
-        bar: 'abc'
+        bar: 'abc',
       };
       this.add(
         'controller:index',
@@ -18,7 +18,7 @@ moduleFor(
           foo: indexProperties.foo,
           bar: indexProperties.bar,
           boundThing: 'OMG',
-          abool: true
+          abool: true,
         })
       );
       this.add(
@@ -26,7 +26,7 @@ moduleFor(
         Controller.extend({
           queryParams: ['baz', 'bat'],
           baz: 'alex',
-          bat: 'borf'
+          bat: 'borf',
         })
       );
       this.indexProperties = indexProperties;
@@ -53,9 +53,7 @@ moduleFor(
       );
     }
 
-    [`@test doesn't update controller QP properties on current route when invoked`](
-      assert
-    ) {
+    [`@test doesn't update controller QP properties on current route when invoked`](assert) {
       this.addTemplate(
         'index',
         `
@@ -119,9 +117,7 @@ moduleFor(
       });
     }
 
-    ['@test updates controller QP properties on current route when invoked'](
-      assert
-    ) {
+    ['@test updates controller QP properties on current route when invoked'](assert) {
       this.addTemplate(
         'index',
         `
@@ -299,7 +295,7 @@ moduleFor(
         'controller:cars',
         Controller.extend({
           queryParams: ['page'],
-          page: 1
+          page: 1,
         })
       );
 
@@ -313,35 +309,17 @@ moduleFor(
 
         assert.equal(router.currentRouteName, 'cars.index');
         assert.equal(router.get('url'), '/cars');
-        assert.equal(
-          carsController.get('page'),
-          1,
-          'The page query-param is 1'
-        );
+        assert.equal(carsController.get('page'), 1, 'The page query-param is 1');
 
         this.runTask(() => this.click('#page2-link'));
 
-        assert.equal(
-          router.currentRouteName,
-          'cars.index',
-          'The active route is still cars'
-        );
-        assert.equal(
-          router.get('url'),
-          '/cars?page=2',
-          'The url has been updated'
-        );
-        assert.equal(
-          carsController.get('page'),
-          2,
-          'The query params have been updated'
-        );
+        assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
+        assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
+        assert.equal(carsController.get('page'), 2, 'The query params have been updated');
       });
     }
 
-    ['@test the {{link-to}} applies activeClass when query params are not changed'](
-      assert
-    ) {
+    ['@test the {{link-to}} applies activeClass when query params are not changed'](assert) {
       this.addTemplate(
         'index',
         `
@@ -387,7 +365,7 @@ moduleFor(
         Controller.extend({
           queryParams: ['search', 'archive'],
           search: '',
-          archive: false
+          archive: false,
         })
       );
 
@@ -396,7 +374,7 @@ moduleFor(
         Controller.extend({
           queryParams: ['sort', 'showDetails'],
           sort: 'title',
-          showDetails: true
+          showDetails: true,
         })
       );
 
@@ -433,32 +411,19 @@ moduleFor(
           this.shouldBeActive(assert, '#both-same');
           this.shouldNotBeActive(assert, '#change-one');
 
-          return this.visit(
-            '/search/results?search=same&sort=title&showDetails=true'
-          );
+          return this.visit('/search/results?search=same&sort=title&showDetails=true');
         })
         .then(() => {
           this.shouldBeActive(assert, '#same-sort-child-only');
           this.shouldBeActive(assert, '#same-search-parent-only');
           this.shouldNotBeActive(assert, '#change-search-parent-only');
-          this.shouldBeActive(
-            assert,
-            '#same-search-same-sort-child-and-parent'
-          );
-          this.shouldNotBeActive(
-            assert,
-            '#same-search-different-sort-child-and-parent'
-          );
-          this.shouldNotBeActive(
-            assert,
-            '#change-search-same-sort-child-and-parent'
-          );
+          this.shouldBeActive(assert, '#same-search-same-sort-child-and-parent');
+          this.shouldNotBeActive(assert, '#same-search-different-sort-child-and-parent');
+          this.shouldNotBeActive(assert, '#change-search-same-sort-child-and-parent');
         });
     }
 
-    ['@test the {{link-to}} applies active class when query-param is a number'](
-      assert
-    ) {
+    ['@test the {{link-to}} applies active class when query-param is a number'](assert) {
       this.addTemplate(
         'index',
         `
@@ -472,7 +437,7 @@ moduleFor(
         Controller.extend({
           queryParams: ['page'],
           page: 1,
-          pageNumber: 5
+          pageNumber: 5,
         })
       );
 
@@ -486,9 +451,7 @@ moduleFor(
         });
     }
 
-    ['@test the {{link-to}} applies active class when query-param is an array'](
-      assert
-    ) {
+    ['@test the {{link-to}} applies active class when query-param is an array'](assert) {
       this.addTemplate(
         'index',
         `
@@ -505,7 +468,7 @@ moduleFor(
           pages: [],
           pagesArray: [1, 2],
           biggerArray: [1, 2, 3],
-          emptyArray: []
+          emptyArray: [],
         })
       );
 
@@ -535,9 +498,7 @@ moduleFor(
           this.shouldNotBeActive(assert, '#empty-link');
         });
     }
-    ['@test the {{link-to}} helper applies active class to the parent route'](
-      assert
-    ) {
+    ['@test the {{link-to}} helper applies active class to the parent route'](assert) {
       this.router.map(function() {
         this.route('parent', function() {
           this.route('child');
@@ -558,7 +519,7 @@ moduleFor(
         'controller:parent.child',
         Controller.extend({
           queryParams: ['foo'],
-          foo: 'bar'
+          foo: 'bar',
         })
       );
 
@@ -605,7 +566,7 @@ moduleFor(
         'controller:parent',
         Controller.extend({
           queryParams: ['page'],
-          page: 1
+          page: 1,
         })
       );
 
@@ -643,9 +604,7 @@ moduleFor(
         });
     }
 
-    ['@test link-to default query params while in active transition regression test'](
-      assert
-    ) {
+    ['@test link-to default query params while in active transition regression test'](assert) {
       this.router.map(function() {
         this.route('foos');
         this.route('bars');
@@ -665,7 +624,7 @@ moduleFor(
         'controller:foos',
         Controller.extend({
           queryParams: ['status'],
-          baz: false
+          baz: false,
         })
       );
       this.add(
@@ -673,14 +632,14 @@ moduleFor(
         Route.extend({
           model() {
             return foos.promise;
-          }
+          },
         })
       );
       this.add(
         'controller:bars',
         Controller.extend({
           queryParams: ['status'],
-          quux: false
+          quux: false,
         })
       );
       this.add(
@@ -688,7 +647,7 @@ moduleFor(
         Route.extend({
           model() {
             return bars.promise;
-          }
+          },
         })
       );
 
@@ -719,15 +678,10 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](
-      assert
-    ) {
+    [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
       assert.expect(1);
 
-      this.addTemplate(
-        'application',
-        `{{#link-to id='the-link'}}Index{{/link-to}}`
-      );
+      this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
 
       expectAssertion(() => {
         this.visit('/');

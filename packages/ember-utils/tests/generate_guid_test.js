@@ -7,10 +7,7 @@ moduleFor(
     ['@test Prefix'](assert) {
       let a = {};
 
-      assert.ok(
-        generateGuid(a, 'tyrell').indexOf('tyrell') > -1,
-        'guid can be prefixed'
-      );
+      assert.ok(generateGuid(a, 'tyrell').indexOf('tyrell') > -1, 'guid can be prefixed');
     }
   }
 );

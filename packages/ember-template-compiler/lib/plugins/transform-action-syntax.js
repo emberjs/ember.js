@@ -46,8 +46,8 @@ export default function transformActionSyntax({ syntax }) {
         if (isAction(node)) {
           insertThisAsFirstParam(node, b);
         }
-      }
-    }
+      },
+    },
   };
 }
 

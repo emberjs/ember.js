@@ -7,7 +7,7 @@ function serializeKey(specifier, source, namespace) {
   return `${type}://${[
     name,
     namespace ? '[source invalid due to namespace]' : source,
-    namespace
+    namespace,
   ].join(DELIMITER)}`;
 }
 
@@ -17,9 +17,7 @@ class Resolver {
     this.constructor.lastInstance = this;
   }
   resolve(specifier) {
-    return (
-      this._registered[specifier] || this._registered[serializeKey(specifier)]
-    );
+    return this._registered[specifier] || this._registered[serializeKey(specifier)];
   }
   expandLocalLookup(specifier, source, namespace) {
     if (specifier.indexOf('://') !== -1) {
@@ -45,9 +43,7 @@ class Resolver {
     switch (typeof lookup) {
       case 'string':
         if (lookup.indexOf(':') === -1) {
-          throw new Error(
-            'Specifiers added to the resolver must be in the format of type:name'
-          );
+          throw new Error('Specifiers added to the resolver must be in the format of type:name');
         }
         key = serializeKey(lookup);
         break;
@@ -67,10 +63,8 @@ class Resolver {
         `You called addTemplate for "${templateName}" with a template argument of type of '${templateType}'. addTemplate expects an argument of an uncompiled template as a string.`
       );
     }
-    return (this._registered[
-      serializeKey(`template:${templateName}`)
-    ] = compile(template, {
-      moduleName: `my-app/templates/${templateName}.hbs`
+    return (this._registered[serializeKey(`template:${templateName}`)] = compile(template, {
+      moduleName: `my-app/templates/${templateName}.hbs`,
     }));
   }
   static create() {

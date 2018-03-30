@@ -12,9 +12,7 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.dasherize',
   class extends AbstractTestCase {
-    ['@test String.prototype.dasherize is not modified without EXTEND_PROTOTYPES'](
-      assert
-    ) {
+    ['@test String.prototype.dasherize is not modified without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(
           'undefined' === typeof String.prototype.dasherize,
@@ -26,24 +24,9 @@ moduleFor(
     }
 
     ['@test String dasherize tests'](assert) {
-      test(
-        assert,
-        'my favorite items',
-        'my-favorite-items',
-        'dasherize normal string'
-      );
-      test(
-        assert,
-        'css-class-name',
-        'css-class-name',
-        'does nothing with dasherized string'
-      );
-      test(
-        assert,
-        'action_name',
-        'action-name',
-        'dasherize underscored string'
-      );
+      test(assert, 'my favorite items', 'my-favorite-items', 'dasherize normal string');
+      test(assert, 'css-class-name', 'css-class-name', 'does nothing with dasherized string');
+      test(assert, 'action_name', 'action-name', 'dasherize underscored string');
       test(assert, 'innerHTML', 'inner-html', 'dasherize camelcased string');
       test(
         assert,

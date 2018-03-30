@@ -1,5 +1,5 @@
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
-import { dirty,  tagFor, tagForProperty, update } from './tags';
+import { dirty, tagFor, tagForProperty, update } from './tags';
 
 type Option<T> = T | null;
 type unknown = null | undefined | void | {};
@@ -96,7 +96,11 @@ class Tracker {
 
   @param dependencies Optional dependents to be tracked.
  */
-export function tracked(_target: object, key: string, descriptor: PropertyDescriptor): PropertyDescriptor {
+export function tracked(
+  _target: object,
+  key: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor {
   if ('value' in descriptor) {
     return descriptorForDataProperty(key, descriptor);
   } else {
@@ -126,17 +130,20 @@ export function getCurrentTracker(): Option<Tracker> {
 }
 
 export function setCurrentTracker(tracker: Tracker = new Tracker()): Tracker {
-  return CURRENT_TRACKER = tracker;
+  return (CURRENT_TRACKER = tracker);
 }
 
-function descriptorForAccessor(key: string | symbol, descriptor: PropertyDescriptor): PropertyDescriptor {
+function descriptorForAccessor(
+  key: string | symbol,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor {
   let get = descriptor.get as Function;
   let set = descriptor.set as Function;
 
   function getter(this: any) {
     // Swap the parent tracker for a new tracker
     let old = CURRENT_TRACKER;
-    let tracker = CURRENT_TRACKER = new Tracker();
+    let tracker = (CURRENT_TRACKER = new Tracker());
 
     // Call the getter
     let ret = get.call(this);
@@ -164,7 +171,7 @@ function descriptorForAccessor(key: string | symbol, descriptor: PropertyDescrip
     enumerable: true,
     configurable: false,
     get: get && getter,
-    set: set && setter
+    set: set && setter,
   };
 }
 
@@ -204,7 +211,7 @@ function descriptorForDataProperty(key: string, descriptor: PropertyDescriptor) 
       dirty(tagForProperty(this, key));
       this[shadowKey] = newValue;
       propertyDidChange();
-    }
+    },
   };
 }
 
@@ -220,7 +227,11 @@ export function setPropertyDidChange(cb: () => void) {
 
 export class UntrackedPropertyError extends Error {
   static for(obj: any, key: string): UntrackedPropertyError {
-    return new UntrackedPropertyError(obj, key, `The property '${key}' on ${obj} was changed after being rendered. If you want to change a property used in a template after the component has rendered, mark the property as a tracked property with the @tracked decorator.`);
+    return new UntrackedPropertyError(
+      obj,
+      key,
+      `The property '${key}' on ${obj} was changed after being rendered. If you want to change a property used in a template after the component has rendered, mark the property as a tracked property with the @tracked decorator.`
+    );
   }
 
   constructor(public target: any, public key: string, message: string) {

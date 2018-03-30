@@ -13,7 +13,7 @@ import DefinitionState from './definition-state';
 
 export interface CustomComponentManagerDelegate<T> {
   version: 'string';
-  create(options: { ComponentClass: T, args: {} }): T;
+  create(options: { ComponentClass: T; args: {} }): T;
   getContext(instance: T): Opaque;
   update(instance: T, args: {}): void;
   destroy?(instance: T): void;
@@ -52,18 +52,26 @@ export interface ComponentArguments<T = {}> {
   * `update()` - invoked when the arguments passed to a component change
   * `getContext()` - returns the object that should be
 */
-export default class CustomComponentManager<T> extends AbstractComponentManager<CustomComponentState<T> | null, DefinitionState> {
+export default class CustomComponentManager<T> extends AbstractComponentManager<
+  CustomComponentState<T> | null,
+  DefinitionState
+> {
   constructor(private delegate: CustomComponentManagerDelegate<T>) {
     super();
   }
 
-  create(_env: Environment, definition: DefinitionState, args: Arguments, dynamicScope: DynamicScope): CustomComponentState<T> {
+  create(
+    _env: Environment,
+    definition: DefinitionState,
+    args: Arguments,
+    dynamicScope: DynamicScope
+  ): CustomComponentState<T> {
     const { delegate } = this;
     const capturedArgs = args.named.capture();
 
     const component = delegate.create({
       args: capturedArgs.value(),
-      ComponentClass: definition.ComponentClass as any as T
+      ComponentClass: (definition.ComponentClass as any) as T,
     });
 
     const { view: parentView } = dynamicScope;
@@ -94,11 +102,13 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
   getLayout(state: DefinitionState) {
     return {
       handle: state.template.asLayout().compile(),
-      symbolTable: state.symbolTable
+      symbolTable: state.symbolTable,
     };
   }
 
-  getSelf({ component }: CustomComponentState<T>): PrimitiveReference<null> | PathReference<Opaque>  {
+  getSelf({
+    component,
+  }: CustomComponentState<T>): PrimitiveReference<null> | PathReference<Opaque> {
     const context = this.delegate.getContext(component);
     return new RootReference(context);
   }
@@ -118,7 +128,7 @@ export default class CustomComponentManager<T> extends AbstractComponentManager<
       createCaller: false,
       dynamicScope: true,
       updateHook: true,
-      createInstance: true
+      createInstance: true,
     };
   }
 
@@ -151,12 +161,16 @@ export class CustomComponentState<T> {
     let renderer = getRenderer(component);
     renderer.unregister(component);
 
-    if (delegate.destroy) { delegate.destroy(component); }
+    if (delegate.destroy) {
+      delegate.destroy(component);
+    }
   }
 }
 
 function getRenderer(component: {}): Renderer {
   let renderer = component['renderer'];
-  if (!renderer) { throw new Error(`missing renderer for component ${component}`); }
+  if (!renderer) {
+    throw new Error(`missing renderer for component ${component}`);
+  }
   return renderer as Renderer;
 }

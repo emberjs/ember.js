@@ -21,13 +21,13 @@ moduleFor(
         b: observer('colors.length', () => bCalled++),
         c: observer('colors.content.length', () => cCalled++),
         d: observer('colors.[]', () => dCalled++),
-        e: observer('colors.content.[]', () => eCalled++)
+        e: observer('colors.content.[]', () => eCalled++),
       }).create();
 
       obj.set(
         'model',
         ArrayProxy.create({
-          content: a(['red', 'yellow', 'blue'])
+          content: a(['red', 'yellow', 'blue']),
         })
       );
 
@@ -36,26 +36,10 @@ moduleFor(
       assert.equal(obj.get('length'), 3);
 
       assert.equal(aCalled, 1, 'expected observer `length` to be called ONCE');
-      assert.equal(
-        bCalled,
-        1,
-        'expected observer `colors.length` to be called ONCE'
-      );
-      assert.equal(
-        cCalled,
-        1,
-        'expected observer `colors.content.length` to be called ONCE'
-      );
-      assert.equal(
-        dCalled,
-        1,
-        'expected observer `colors.[]` to be called ONCE'
-      );
-      assert.equal(
-        eCalled,
-        1,
-        'expected observer `colors.content.[]` to be called ONCE'
-      );
+      assert.equal(bCalled, 1, 'expected observer `colors.length` to be called ONCE');
+      assert.equal(cCalled, 1, 'expected observer `colors.content.length` to be called ONCE');
+      assert.equal(dCalled, 1, 'expected observer `colors.[]` to be called ONCE');
+      assert.equal(eCalled, 1, 'expected observer `colors.content.[]` to be called ONCE');
 
       obj.get('colors').pushObjects(['green', 'red']);
 
@@ -64,26 +48,10 @@ moduleFor(
       assert.equal(obj.get('length'), 5);
 
       assert.equal(aCalled, 2, 'expected observer `length` to be called TWICE');
-      assert.equal(
-        bCalled,
-        2,
-        'expected observer `colors.length` to be called TWICE'
-      );
-      assert.equal(
-        cCalled,
-        2,
-        'expected observer `colors.content.length` to be called TWICE'
-      );
-      assert.equal(
-        dCalled,
-        2,
-        'expected observer `colors.[]` to be called TWICE'
-      );
-      assert.equal(
-        eCalled,
-        2,
-        'expected observer `colors.content.[]` to be called TWICE'
-      );
+      assert.equal(bCalled, 2, 'expected observer `colors.length` to be called TWICE');
+      assert.equal(cCalled, 2, 'expected observer `colors.content.length` to be called TWICE');
+      assert.equal(dCalled, 2, 'expected observer `colors.[]` to be called TWICE');
+      assert.equal(eCalled, 2, 'expected observer `colors.content.[]` to be called TWICE');
     }
   }
 );

@@ -10,7 +10,7 @@ export {
   getViewId,
   getViewElement,
   setViewElement,
-  constructStyleDeprecationMessage
+  constructStyleDeprecationMessage,
 } from './system/utils';
 export { default as EventDispatcher } from './system/event_dispatcher';
 export { default as ComponentLookup } from './component_lookup';
@@ -25,6 +25,4 @@ export { MUTABLE_CELL } from './compat/attrs';
 export { default as lookupPartial, hasPartial } from './system/lookup_partial';
 export { default as lookupComponent } from './utils/lookup-component';
 export { default as ActionManager } from './system/action_manager';
-export {
-  default as fallbackViewRegistry
-} from './compat/fallback-view-registry';
+export { default as fallbackViewRegistry } from './compat/fallback-view-registry';

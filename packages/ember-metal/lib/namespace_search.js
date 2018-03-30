@@ -19,7 +19,7 @@ const flags = {
   set unprocessedNamespaces(v) {
     this._set++;
     this._unprocessedNamespaces = v;
-  }
+  },
 };
 
 let unprocessedMixins = false;
@@ -163,8 +163,7 @@ function tryIsNamespace(lookup, prop) {
   try {
     let obj = lookup[prop];
     return (
-      ((obj !== null && typeof obj === 'object') ||
-        typeof obj === 'function') &&
+      ((obj !== null && typeof obj === 'object') || typeof obj === 'function') &&
       obj.isNamespace &&
       obj
     );

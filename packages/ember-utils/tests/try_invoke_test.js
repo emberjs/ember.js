@@ -15,7 +15,7 @@ moduleFor(
         },
         aMethodThatTakesArguments(arg1, arg2) {
           return arg1 === arg2;
-        }
+        },
       };
     }
 
@@ -42,10 +42,7 @@ moduleFor(
     ['@test should return what the method returns when asked to perform a method that takes arguments and exists on the object'](
       assert
     ) {
-      assert.equal(
-        tryInvoke(obj, 'aMethodThatTakesArguments', [true, true]),
-        true
-      );
+      assert.equal(tryInvoke(obj, 'aMethodThatTakesArguments', [true, true]), true);
     }
   }
 );

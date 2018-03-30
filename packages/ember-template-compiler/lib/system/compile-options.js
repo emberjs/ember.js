@@ -16,9 +16,7 @@ export default function compileOptions(_options) {
     options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
   } else {
     let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
-    let providedPlugins = options.plugins.ast.map(plugin =>
-      wrapLegacyPluginIfNeeded(plugin)
-    );
+    let providedPlugins = options.plugins.ast.map(plugin => wrapLegacyPluginIfNeeded(plugin));
     let pluginsToAdd = potententialPugins.filter(plugin => {
       return options.plugins.ast.indexOf(plugin) === -1;
     });
@@ -47,8 +45,8 @@ function wrapLegacyPluginIfNeeded(_plugin) {
 
               return plugin.transform(node);
             }
-          }
-        }
+          },
+        },
       };
     };
 

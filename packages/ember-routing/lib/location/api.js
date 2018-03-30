@@ -88,10 +88,7 @@ export default {
   */
   create(options) {
     let implementation = options && options.implementation;
-    assert(
-      "Location.create: you must specify a 'implementation' option",
-      !!implementation
-    );
+    assert("Location.create: you must specify a 'implementation' option", !!implementation);
 
     let implementationClass = this.implementations[implementation];
     assert(
@@ -117,5 +114,5 @@ export default {
   */
   _getHash() {
     return getHash(this.location);
-  }
+  },
 };

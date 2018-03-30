@@ -14,7 +14,7 @@ moduleFor(
           didAppendOutletView++;
           assert.equal(view, outletView);
           assert.equal(target, expectedOutlet);
-        }
+        },
       };
 
       let outletView = new OutletView({}, renderer);
@@ -40,11 +40,7 @@ moduleFor(
           )
         );
         schedule('render', () =>
-          assert.equal(
-            didAppendOutletView,
-            1,
-            'appendOutletView should be invoked in render'
-          )
+          assert.equal(didAppendOutletView, 1, 'appendOutletView should be invoked in render')
         );
       });
     }

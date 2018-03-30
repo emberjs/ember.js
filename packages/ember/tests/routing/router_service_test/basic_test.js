@@ -8,35 +8,23 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor(
     'Router Service - main',
     class extends RouterTestCase {
-      ['@test RouterService#currentRouteName is correctly set for top level route'](
-        assert
-      ) {
+      ['@test RouterService#currentRouteName is correctly set for top level route'](assert) {
         assert.expect(1);
 
         return this.visit('/').then(() => {
-          assert.equal(
-            this.routerService.get('currentRouteName'),
-            'parent.index'
-          );
+          assert.equal(this.routerService.get('currentRouteName'), 'parent.index');
         });
       }
 
-      ['@test RouterService#currentRouteName is correctly set for child route'](
-        assert
-      ) {
+      ['@test RouterService#currentRouteName is correctly set for child route'](assert) {
         assert.expect(1);
 
         return this.visit('/child').then(() => {
-          assert.equal(
-            this.routerService.get('currentRouteName'),
-            'parent.child'
-          );
+          assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
         });
       }
 
-      ['@test RouterService#currentRouteName is correctly set after transition'](
-        assert
-      ) {
+      ['@test RouterService#currentRouteName is correctly set after transition'](assert) {
         assert.expect(1);
 
         return this.visit('/child')
@@ -44,46 +32,30 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo('parent.sister');
           })
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentRouteName'),
-              'parent.sister'
-            );
+            assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
           });
       }
 
-      ['@test RouterService#currentRouteName is correctly set on each transition'](
-        assert
-      ) {
+      ['@test RouterService#currentRouteName is correctly set on each transition'](assert) {
         assert.expect(3);
 
         return this.visit('/child')
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentRouteName'),
-              'parent.child'
-            );
+            assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
 
             return this.visit('/sister');
           })
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentRouteName'),
-              'parent.sister'
-            );
+            assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
 
             return this.visit('/brother');
           })
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentRouteName'),
-              'parent.brother'
-            );
+            assert.equal(this.routerService.get('currentRouteName'), 'parent.brother');
           });
       }
 
-      ['@test RouterService#rootURL is correctly set to the default value'](
-        assert
-      ) {
+      ['@test RouterService#rootURL is correctly set to the default value'](assert) {
         assert.expect(1);
 
         return this.visit('/').then(() => {
@@ -91,9 +63,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#rootURL is correctly set to a custom value'](
-        assert
-      ) {
+      ['@test RouterService#rootURL is correctly set to a custom value'](assert) {
         assert.expect(1);
 
         this.add(
@@ -102,7 +72,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             init() {
               this._super();
               set(this._router, 'rootURL', '/homepage');
-            }
+            },
           })
         );
 
@@ -111,9 +81,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#location is correctly delegated from router:main'](
-        assert
-      ) {
+      ['@test RouterService#location is correctly delegated from router:main'](assert) {
         assert.expect(2);
 
         return this.visit('/').then(() => {

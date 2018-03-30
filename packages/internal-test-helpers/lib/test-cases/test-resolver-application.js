@@ -6,7 +6,7 @@ import { assign } from 'ember-utils';
 export default class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
   get applicationOptions() {
     return assign(super.applicationOptions, {
-      Resolver: ModuleBasedResolver
+      Resolver: ModuleBasedResolver,
     });
   }
 
@@ -18,7 +18,7 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
     this.resolver.add(
       `template:${templateName}`,
       this.compile(templateString, {
-        moduleName: `my-app/templates/${templateName}.hbs`
+        moduleName: `my-app/templates/${templateName}.hbs`,
       })
     );
   }
@@ -32,7 +32,7 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
       this.resolver.add(
         `template:components/${name}`,
         this.compile(template, {
-          moduleName: `my-app/templates/components/${name}.hbs`
+          moduleName: `my-app/templates/components/${name}.hbs`,
         })
       );
     }

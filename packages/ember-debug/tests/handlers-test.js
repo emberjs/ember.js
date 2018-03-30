@@ -33,9 +33,7 @@ moduleFor(
       invoke('blarz', 'Foo bar', true);
     }
 
-    ['@test calling `invoke` without handlers does not throw an error'](
-      assert
-    ) {
+    ['@test calling `invoke` without handlers does not throw an error'](assert) {
       assert.expect(0);
 
       invoke('blarz', 'Foo bar', false);
@@ -59,9 +57,7 @@ moduleFor(
       invoke('blarz', 'Foo', false);
     }
 
-    ['@test invoking `next` when no other handlers exists does not error'](
-      assert
-    ) {
+    ['@test invoking `next` when no other handlers exists does not error'](assert) {
       assert.expect(1);
 
       function handler(message, options, next) {
@@ -85,16 +81,8 @@ moduleFor(
 
       function generateHandler(item) {
         return function(message, options, next) {
-          assert.equal(
-            message,
-            expectedMessage,
-            `message supplied to ${item} handler is correct`
-          );
-          assert.equal(
-            options,
-            expectedOptions,
-            `options supplied to ${item} handler is correct`
-          );
+          assert.equal(message, expectedMessage, `message supplied to ${item} handler is correct`);
+          assert.equal(options, expectedOptions, `options supplied to ${item} handler is correct`);
 
           actualCalls.push(item);
 
@@ -106,16 +94,10 @@ moduleFor(
 
       invoke('blarz', expectedMessage, false, expectedOptions);
 
-      assert.deepEqual(
-        actualCalls,
-        expected.reverse(),
-        'handlers were called in proper order'
-      );
+      assert.deepEqual(actualCalls, expected.reverse(), 'handlers were called in proper order');
     }
 
-    ['@test not invoking `next` prevents further handlers from being called'](
-      assert
-    ) {
+    ['@test not invoking `next` prevents further handlers from being called'](assert) {
       assert.expect(1);
 
       function handler1() {
@@ -132,9 +114,7 @@ moduleFor(
       invoke('blarz', 'Foo', false);
     }
 
-    ['@test handlers can call `next` with custom message and/or options'](
-      assert
-    ) {
+    ['@test handlers can call `next` with custom message and/or options'](assert) {
       assert.expect(4);
 
       let initialMessage = 'initial message';
@@ -144,29 +124,13 @@ moduleFor(
       let handler2Options = { id: 'handler-2' };
 
       function handler1(message, options) {
-        assert.equal(
-          message,
-          handler2Message,
-          'handler2 message provided to handler1'
-        );
-        assert.equal(
-          options,
-          handler2Options,
-          'handler2 options provided to handler1'
-        );
+        assert.equal(message, handler2Message, 'handler2 message provided to handler1');
+        assert.equal(options, handler2Options, 'handler2 options provided to handler1');
       }
 
       function handler2(message, options, next) {
-        assert.equal(
-          message,
-          initialMessage,
-          'initial message provided to handler2'
-        );
-        assert.equal(
-          options,
-          initialOptions,
-          'initial options proivided to handler2'
-        );
+        assert.equal(message, initialMessage, 'initial message provided to handler2');
+        assert.equal(options, initialOptions, 'initial options proivided to handler2');
 
         next(handler2Message, handler2Options);
       }

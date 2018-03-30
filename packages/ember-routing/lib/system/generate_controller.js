@@ -19,7 +19,7 @@ export function generateControllerFactory(owner, controllerName) {
   Factory = Factory.extend({
     toString() {
       return `(generated ${controllerName} controller)`;
-    }
+    },
   });
 
   let fullName = `controller:${controllerName}`;

@@ -87,9 +87,7 @@ export default Mixin.create({
   nearestOfType(klass) {
     let view = this.parentView;
     let isOfType =
-      klass instanceof Mixin
-        ? view => klass.detect(view)
-        : view => klass.detect(view.constructor);
+      klass instanceof Mixin ? view => klass.detect(view) : view => klass.detect(view.constructor);
 
     while (view) {
       if (isOfType(view)) {
@@ -156,7 +154,7 @@ export default Mixin.create({
     enumerable: false,
     get() {
       return this.renderer.getElement(this);
-    }
+    },
   }),
 
   /**
@@ -177,10 +175,7 @@ export default Mixin.create({
       "You cannot access this.$() on a component with `tagName: ''` specified.",
       this.tagName !== ''
     );
-    assert(
-      'You cannot access this.$() with `jQuery` disabled.',
-      !jQueryDisabled
-    );
+    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
     if (this.element) {
       return sel ? jQuery(sel, this.element) : jQuery(this.element);
     }
@@ -208,19 +203,10 @@ export default Mixin.create({
     let target;
 
     if (env.hasDOM) {
-      target =
-        typeof selector === 'string'
-          ? document.querySelector(selector)
-          : selector;
+      target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
-      assert(
-        `You tried to append to (${selector}) but that isn't in the DOM`,
-        target
-      );
-      assert(
-        'You cannot append to an existing Ember.View.',
-        !matches(target, '.ember-view')
-      );
+      assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
+      assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
       assert(
         'You cannot append to an existing Ember.View.',
         (() => {
@@ -452,8 +438,7 @@ export default Mixin.create({
         {
           id: 'ember-views.did-init-attrs',
           until: '3.0.0',
-          url:
-            'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+          url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs',
         }
       );
     } else {
@@ -463,10 +448,7 @@ export default Mixin.create({
       );
     }
 
-    assert(
-      'Using a custom `.render` function is no longer supported.',
-      !this.render
-    );
+    assert('Using a custom `.render` function is no longer supported.', !this.render);
   },
 
   // .......................................................
@@ -483,5 +465,5 @@ export default Mixin.create({
   */
   handleEvent(eventName, evt) {
     return this._currentState.handleEvent(this, eventName, evt);
-  }
+  },
 });

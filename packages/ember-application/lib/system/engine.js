@@ -141,16 +141,11 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
 
     for (let i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
-      graph.add(
-        initializer.name,
-        initializer,
-        initializer.before,
-        initializer.after
-      );
+      graph.add(initializer.name, initializer, initializer.before, initializer.after);
     }
 
     graph.topsort(cb);
-  }
+  },
 });
 
 Engine.reopenClass({
@@ -376,10 +371,7 @@ Engine.reopenClass({
     @param instanceInitializer
     @public
   */
-  instanceInitializer: buildInitializerMethod(
-    'instanceInitializers',
-    'instance initializer'
-  ),
+  instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer'),
 
   /**
     This creates a registry with the default Ember naming conventions.
@@ -408,7 +400,7 @@ Engine.reopenClass({
   */
   buildRegistry(namespace) {
     let registry = new Registry({
-      resolver: resolverFor(namespace)
+      resolver: resolverFor(namespace),
     });
 
     registry.set = set;
@@ -436,7 +428,7 @@ Engine.reopenClass({
     @property resolver
     @public
   */
-  Resolver: null
+  Resolver: null,
 });
 
 /**
@@ -459,7 +451,7 @@ function resolverFor(namespace) {
   let ResolverClass = namespace.get('Resolver') || DefaultResolver;
 
   return ResolverClass.create({
-    namespace
+    namespace,
   });
 }
 
@@ -503,11 +495,7 @@ function commonSetupRegistry(registry) {
 
   registry.injection('view', '_viewRegistry', '-view-registry:main');
   registry.injection('renderer', '_viewRegistry', '-view-registry:main');
-  registry.injection(
-    'event_dispatcher:main',
-    '_viewRegistry',
-    '-view-registry:main'
-  );
+  registry.injection('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
 
   registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 
@@ -528,18 +516,10 @@ function commonSetupRegistry(registry) {
 
   // DEBUGGING
   registry.register('resolver-for-debugging:main', registry.resolver, {
-    instantiate: false
+    instantiate: false,
   });
-  registry.injection(
-    'container-debug-adapter:main',
-    'resolver',
-    'resolver-for-debugging:main'
-  );
-  registry.injection(
-    'data-adapter:main',
-    'containerDebugAdapter',
-    'container-debug-adapter:main'
-  );
+  registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+  registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);

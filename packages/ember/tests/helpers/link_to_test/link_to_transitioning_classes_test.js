@@ -36,7 +36,7 @@ moduleFor(
         Route.extend({
           model() {
             return _this.aboutDefer.promise;
-          }
+          },
         })
       );
 
@@ -45,7 +45,7 @@ moduleFor(
         Route.extend({
           model() {
             return _this.otherDefer.promise;
-          }
+          },
         })
       );
 
@@ -54,7 +54,7 @@ moduleFor(
         Route.extend({
           model() {
             return _this.newsDefer.promise;
-          }
+          },
         })
       );
 
@@ -171,7 +171,7 @@ moduleFor(
         Route.extend({
           model() {
             return _this.aboutDefer.promise;
-          }
+          },
         })
       );
 
@@ -180,7 +180,7 @@ moduleFor(
         Route.extend({
           model() {
             return _this.otherDefer.promise;
-          }
+          },
         })
       );
 

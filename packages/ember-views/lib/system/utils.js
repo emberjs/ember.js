@@ -6,8 +6,7 @@ import { guidFor, symbol, getOwner } from 'ember-utils';
 */
 
 export function isSimpleClick(event) {
-  let modifier =
-    event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
+  let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
   let secondaryClick = event.which > 1; // IE9 may return undefined
 
   return !modifier && !secondaryClick;

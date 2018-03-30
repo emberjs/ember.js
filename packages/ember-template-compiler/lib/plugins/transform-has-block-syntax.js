@@ -21,7 +21,7 @@
 
 const TRANSFORMATIONS = {
   hasBlock: 'has-block',
-  hasBlockParams: 'has-block-params'
+  hasBlockParams: 'has-block-params',
 };
 
 export default function transformHasBlockSyntax(env) {
@@ -49,13 +49,9 @@ export default function transformHasBlockSyntax(env) {
       },
       SubExpression(node) {
         if (TRANSFORMATIONS[node.path.original]) {
-          return b.sexpr(
-            b.path(TRANSFORMATIONS[node.path.original]),
-            node.params,
-            node.hash
-          );
+          return b.sexpr(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash);
         }
-      }
-    }
+      },
+    },
   };
 }

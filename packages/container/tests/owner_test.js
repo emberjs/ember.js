@@ -4,9 +4,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 moduleFor(
   'Owner',
   class extends AbstractTestCase {
-    ['@test An owner can be set with `setOwner` and retrieved with `getOwner`'](
-      assert
-    ) {
+    ['@test An owner can be set with `setOwner` and retrieved with `getOwner`'](assert) {
       let owner = {};
       let obj = {};
 
@@ -16,11 +14,7 @@ moduleFor(
 
       assert.strictEqual(getOwner(obj), owner, 'owner has been set');
 
-      assert.strictEqual(
-        obj[OWNER],
-        owner,
-        'owner has been set to the OWNER symbol'
-      );
+      assert.strictEqual(obj[OWNER], owner, 'owner has been set to the OWNER symbol');
     }
   }
 );

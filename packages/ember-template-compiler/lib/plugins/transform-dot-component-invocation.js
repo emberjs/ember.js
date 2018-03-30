@@ -67,8 +67,8 @@ export default function transformDotComponentInvocation(env) {
         if (isMultipartPath(node.path)) {
           wrapInComponent(node, b);
         }
-      }
-    }
+      },
+    },
   };
 }
 

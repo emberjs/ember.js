@@ -30,7 +30,7 @@ moduleFor(
         barCnt: 0,
         bar() {
           this.barCnt++;
-        }
+        },
       });
 
       let AnotherClass = SomeClass.extend({
@@ -38,7 +38,7 @@ moduleFor(
         bar() {
           this.barCnt++;
           this._super(...arguments);
-        }
+        },
       });
 
       let FinalClass = AnotherClass.extend({
@@ -46,7 +46,7 @@ moduleFor(
         foo() {
           this.fooCnt++;
           this._super(...arguments);
-        }
+        },
       });
 
       let obj = new FinalClass();
@@ -60,7 +60,7 @@ moduleFor(
         foo() {
           this.fooCnt++;
           this._super(...arguments);
-        }
+        },
       }).create();
 
       obj.foo();
@@ -72,18 +72,14 @@ moduleFor(
     ['@test With concatenatedProperties'](assert) {
       let SomeClass = EmberObject.extend({
         things: 'foo',
-        concatenatedProperties: ['things']
+        concatenatedProperties: ['things'],
       });
       let AnotherClass = SomeClass.extend({ things: 'bar' });
       let YetAnotherClass = SomeClass.extend({ things: 'baz' });
       let some = new SomeClass();
       let another = new AnotherClass();
       let yetAnother = new YetAnotherClass();
-      assert.deepEqual(
-        some.get('things'),
-        ['foo'],
-        'base class should have just its value'
-      );
+      assert.deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
       assert.deepEqual(
         another.get('things'),
         ['foo', 'bar'],
@@ -100,7 +96,7 @@ moduleFor(
       let SomeClass = EmberObject.extend();
       SomeClass.reopenClass({
         concatenatedProperties: ['things'],
-        things: 'foo'
+        things: 'foo',
       });
       let AnotherClass = SomeClass.extend();
       AnotherClass.reopenClass({ things: 'bar' });
@@ -130,7 +126,7 @@ moduleFor(
       let Parent = EmberObject.extend({
         foo: computed(function() {
           return 'FOO';
-        })
+        }),
       });
 
       let seen = [];
@@ -138,7 +134,7 @@ moduleFor(
       let Child = Parent.extend({
         foo: observer('bar', function() {
           seen.push(this.get('bar'));
-        })
+        }),
       });
 
       let child = Child.create({ bar: 0 });

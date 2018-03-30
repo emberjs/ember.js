@@ -4,12 +4,7 @@ import HistoryLocation from '../../location/history_location';
 import AutoLocation from '../../location/auto_location';
 import NoneLocation from '../../location/none_location';
 import Router, { triggerEvent } from '../../system/router';
-import {
-  runDestroy,
-  buildOwner,
-  moduleFor,
-  AbstractTestCase
-} from 'internal-test-helpers';
+import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let owner;
 
@@ -50,10 +45,7 @@ moduleFor(
     ['@test can create a router without an owner'](assert) {
       createRouter(undefined, { disableSetup: true, skipOwner: true });
 
-      assert.ok(
-        true,
-        'no errors were thrown when creating without a container'
-      );
+      assert.ok(true, 'no errors were thrown when creating without a container');
     }
 
     ['@test [GH#15237] EmberError is imported correctly'](assert) {
@@ -71,24 +63,14 @@ moduleFor(
 
     ['@test should not reify location until setupRouter is called'](assert) {
       let router = createRouter(undefined, { disableSetup: true });
-      assert.equal(
-        typeof router.location,
-        'string',
-        'location is specified as a string'
-      );
+      assert.equal(typeof router.location, 'string', 'location is specified as a string');
 
       router.setupRouter();
 
-      assert.equal(
-        typeof router.location,
-        'object',
-        'location is reified into an object'
-      );
+      assert.equal(typeof router.location, 'object', 'location is reified into an object');
     }
 
-    ['@test should destroy its location upon destroying the routers owner.'](
-      assert
-    ) {
+    ['@test should destroy its location upon destroying the routers owner.'](assert) {
       let router = createRouter();
       let location = router.get('location');
 
@@ -99,7 +81,7 @@ moduleFor(
 
     ['@test should instantiate its location with its `rootURL`'](assert) {
       let router = createRouter({
-        rootURL: '/rootdir/'
+        rootURL: '/rootdir/',
       });
       let location = router.get('location');
 
@@ -119,7 +101,7 @@ moduleFor(
         search: '',
         replace(url) {
           assert.equal(url, 'http://test.com/rootdir/#/welcome');
-        }
+        },
       };
 
       location.location = browserLocation;
@@ -128,7 +110,7 @@ moduleFor(
 
       createRouter({
         location: 'auto',
-        rootURL: '/rootdir/'
+        rootURL: '/rootdir/',
       });
     }
 
@@ -136,11 +118,9 @@ moduleFor(
       createRouter();
 
       function routePath() {
-        let handlerInfos = Array.prototype.slice
-          .call(arguments)
-          .map(function(s) {
-            return { name: s };
-          });
+        let handlerInfos = Array.prototype.slice.call(arguments).map(function(s) {
+          return { name: s };
+        });
         handlerInfos.unshift({ name: 'ignored' });
 
         return Router._routePath(handlerInfos);
@@ -150,10 +130,7 @@ moduleFor(
       assert.equal(routePath('foo', 'bar', 'baz'), 'foo.bar.baz');
       assert.equal(routePath('foo', 'foo.bar'), 'foo.bar');
       assert.equal(routePath('foo', 'foo.bar', 'foo.bar.baz'), 'foo.bar.baz');
-      assert.equal(
-        routePath('foo', 'foo.bar', 'foo.bar.baz.wow'),
-        'foo.bar.baz.wow'
-      );
+      assert.equal(routePath('foo', 'foo.bar', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
       assert.equal(routePath('foo', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
       assert.equal(routePath('foo.bar', 'bar.baz.wow'), 'foo.bar.baz.wow');
 
@@ -172,7 +149,7 @@ moduleFor(
         cancelRouterSetup: true,
         create() {
           return this;
-        }
+        },
       };
 
       owner.register('location:fake', FakeLocation);
@@ -182,15 +159,13 @@ moduleFor(
 
         _setupRouter() {
           assert.ok(false, '_setupRouter should not be called');
-        }
+        },
       });
 
       router.startRouting();
     }
 
-    ["@test AutoLocation should replace the url when it's not in the preferred format"](
-      assert
-    ) {
+    ["@test AutoLocation should replace the url when it's not in the preferred format"](assert) {
       assert.expect(1);
 
       let location = owner.lookup('location:auto');
@@ -203,37 +178,33 @@ moduleFor(
         search: '',
         replace(url) {
           assert.equal(url, 'http://test.com/rootdir/#/welcome');
-        }
+        },
       };
       location.history = null;
       location.global = {
-        onhashchange() {}
+        onhashchange() {},
       };
 
       createRouter({
         location: 'auto',
-        rootURL: '/rootdir/'
+        rootURL: '/rootdir/',
       });
     }
 
-    ['@test Router#handleURL should remove any #hashes before doing URL transition'](
-      assert
-    ) {
+    ['@test Router#handleURL should remove any #hashes before doing URL transition'](assert) {
       assert.expect(2);
 
       let router = createRouter({
         _doURLTransition(routerJsMethod, url) {
           assert.equal(routerJsMethod, 'handleURL');
           assert.equal(url, '/foo/bar?time=morphin');
-        }
+        },
       });
 
       router.handleURL('/foo/bar?time=morphin#pink-power-ranger');
     }
 
-    ['@test Router#triggerEvent allows actions to bubble when returning true'](
-      assert
-    ) {
+    ['@test Router#triggerEvent allows actions to bubble when returning true'](assert) {
       assert.expect(2);
 
       let handlerInfos = [
@@ -243,9 +214,9 @@ moduleFor(
             actions: {
               loading() {
                 assert.ok(false, 'loading not handled by application route');
-              }
-            }
-          }
+              },
+            },
+          },
         },
         {
           name: 'about',
@@ -254,9 +225,9 @@ moduleFor(
               loading() {
                 assert.ok(true, 'loading handled by about route');
                 return false;
-              }
-            }
-          }
+              },
+            },
+          },
         },
         {
           name: 'about.me',
@@ -265,18 +236,16 @@ moduleFor(
               loading() {
                 assert.ok(true, 'loading handled by about.me route');
                 return true;
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       ];
 
       triggerEvent(handlerInfos, false, ['loading']);
     }
 
-    ['@test Router#triggerEvent ignores handlers that have not loaded yet'](
-      assert
-    ) {
+    ['@test Router#triggerEvent ignores handlers that have not loaded yet'](assert) {
       assert.expect(1);
 
       let handlerInfos = [
@@ -286,14 +255,14 @@ moduleFor(
             actions: {
               loading() {
                 assert.ok(true, 'loading handled by about route');
-              }
-            }
-          }
+              },
+            },
+          },
         },
         {
           name: 'about.me',
-          handler: undefined
-        }
+          handler: undefined,
+        },
       ];
 
       triggerEvent(handlerInfos, false, ['loading']);

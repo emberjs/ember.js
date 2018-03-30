@@ -11,9 +11,7 @@ export default class TestPromise extends RSVP.Promise {
 
   then(_onFulfillment, ...args) {
     let onFulfillment =
-      typeof _onFulfillment === 'function'
-        ? result => isolate(_onFulfillment, result)
-        : undefined;
+      typeof _onFulfillment === 'function' ? result => isolate(_onFulfillment, result) : undefined;
     return super.then(onFulfillment, ...args);
   }
 }

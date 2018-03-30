@@ -2,12 +2,7 @@
 @module ember
 */
 
-import {
-  combine,
-  CONSTANT_TAG,
-  DirtyableTag,
-  UpdatableTag
-} from '@glimmer/reference';
+import { combine, CONSTANT_TAG, DirtyableTag, UpdatableTag } from '@glimmer/reference';
 import {
   get,
   set,
@@ -17,7 +12,7 @@ import {
   notifyPropertyChange,
   defineProperty,
   Mixin,
-  tagFor
+  tagFor,
 } from 'ember-metal';
 import { setProxy } from 'ember-utils';
 import { assert } from 'ember-debug';
@@ -63,9 +58,7 @@ export default Mixin.create({
     this._super(...arguments);
     setProxy(this);
     let m = meta(this);
-    m.writableTag(() =>
-      combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)])
-    );
+    m.writableTag(() => combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)]));
   },
 
   isTruthy: bool('content'),
@@ -105,5 +98,5 @@ export default Mixin.create({
     );
 
     return set(content, key, value);
-  }
+  },
 });

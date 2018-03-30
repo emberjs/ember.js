@@ -8,22 +8,17 @@ import {
   DESCRIPTOR_TRAP,
   EMBER_METAL_ES5_GETTERS,
   EMBER_METAL_TRACKED_PROPERTIES,
-  MANDATORY_GETTER
+  MANDATORY_GETTER,
 } from 'ember/features';
 import { isPath } from './path_cache';
-import {
-  isDescriptor,
-  isDescriptorTrap,
-  DESCRIPTOR,
-  descriptorFor
-} from './meta';
+import { isDescriptor, isDescriptorTrap, DESCRIPTOR, descriptorFor } from './meta';
 import { getCurrentTracker } from './tracked';
 import { tagForProperty } from './tags';
 
 const ALLOWABLE_TYPES = {
   object: true,
   function: true,
-  string: true
+  string: true,
 };
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
@@ -91,8 +86,7 @@ export function get(obj, keyName) {
   );
   assert(
     `The key provided to get must be a string or number, you passed ${keyName}`,
-    typeof keyName === 'string' ||
-      (typeof keyName === 'number' && !isNaN(keyName))
+    typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
   );
   assert(
     `'this' in paths is not supported`,
@@ -134,7 +128,7 @@ export function get(obj, keyName) {
             id: 'ember-meta.descriptor-on-object',
             until: '3.5.0',
             url:
-              'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties'
+              'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
           }
         );
         descriptor = value;

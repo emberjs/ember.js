@@ -15,15 +15,10 @@ export default function assertReservedNamedArguments(env) {
     visitor: {
       PathExpression({ original, loc }) {
         if (isReserved(original)) {
-          assert(
-            `${assertMessage(original)} ${calculateLocationDisplay(
-              moduleName,
-              loc
-            )}`
-          );
+          assert(`${assertMessage(original)} ${calculateLocationDisplay(moduleName, loc)}`);
         }
-      }
-    }
+      },
+    },
   };
 }
 

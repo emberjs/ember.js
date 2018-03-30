@@ -11,7 +11,7 @@ const resolveModuleSource = require('amd-name-resolver').moduleResolve;
 module.exports = function toES5(tree, _options) {
   let options = Object.assign(
     {
-      environment: 'developement'
+      environment: 'developement',
     },
     _options
   );
@@ -25,24 +25,21 @@ module.exports = function toES5(tree, _options) {
       {
         debugTools: {
           source: 'ember-debug',
-          assertPredicateIndex: 1
+          assertPredicateIndex: 1,
         },
         envFlags: {
           source: 'ember-env-flags',
-          flags: { DEBUG: options.environment !== 'production' }
+          flags: { DEBUG: options.environment !== 'production' },
         },
         features: {
           name: 'ember',
           source: 'ember/features',
-          flags:
-            options.environment === 'production'
-              ? toConst(RELEASE)
-              : toConst(DEBUG)
+          flags: options.environment === 'production' ? toConst(RELEASE) : toConst(DEBUG),
         },
         externalizeHelpers: {
-          module: true
-        }
-      }
+          module: true,
+        },
+      },
     ],
     ['transform-es2015-template-literals', { loose: true }],
     ['transform-es2015-literals'],
@@ -59,7 +56,7 @@ module.exports = function toES5(tree, _options) {
     ['transform-object-assign'],
     injectNodeGlobals,
     ['transform-es2015-modules-amd', { noInterop: true, strict: true }],
-    enifed
+    enifed,
   ];
 
   if (options.transformDefine) {
@@ -89,8 +86,8 @@ function stripForProd(tree) {
   let options = {
     plugins: [
       [stripClassCallCheck, { source: 'ember-babel' }],
-      ['minify-dead-code-elimination', { optimizeRawSize: true }]
-    ]
+      ['minify-dead-code-elimination', { optimizeRawSize: true }],
+    ],
   };
 
   return new Babel(tree, options);

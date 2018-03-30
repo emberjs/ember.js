@@ -20,12 +20,12 @@ export default function deprecateRenderModel(env) {
               id: 'ember-template-compiler.deprecate-render-model',
               until: '3.0.0',
               url:
-                'https://emberjs.com/deprecations/v2.x#toc_model-param-in-code-render-code-helper'
+                'https://emberjs.com/deprecations/v2.x#toc_model-param-in-code-render-code-helper',
             });
           });
         }
-      }
-    }
+      },
+    },
   };
 }
 

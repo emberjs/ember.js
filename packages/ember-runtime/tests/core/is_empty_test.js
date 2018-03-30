@@ -9,11 +9,7 @@ moduleFor(
     ['@test Ember.isEmpty'](assert) {
       let arrayProxy = ArrayProxy.create({ content: emberA() });
 
-      assert.equal(
-        true,
-        isEmpty(arrayProxy),
-        'for an ArrayProxy that has empty content'
-      );
+      assert.equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
     }
   }
 );

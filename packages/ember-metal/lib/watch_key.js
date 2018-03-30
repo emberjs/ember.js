@@ -1,16 +1,10 @@
 import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
-import {
-  descriptorFor,
-  isDescriptor,
-  meta as metaFor,
-  peekMeta,
-  UNDEFINED
-} from './meta';
+import { descriptorFor, isDescriptor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION,
-  INHERITING_GETTER_FUNCTION
+  INHERITING_GETTER_FUNCTION,
 } from './properties';
 
 let handleMandatorySetter;
@@ -40,10 +34,8 @@ export function watchKey(obj, keyName, _meta) {
 }
 
 if (MANDATORY_SETTER) {
-  let hasOwnProperty = (obj, key) =>
-    Object.prototype.hasOwnProperty.call(obj, key);
-  let propertyIsEnumerable = (obj, key) =>
-    Object.prototype.propertyIsEnumerable.call(obj, key);
+  let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+  let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
@@ -65,7 +57,7 @@ if (MANDATORY_SETTER) {
         configurable: true,
         set: MANDATORY_SETTER_FUNCTION(keyName),
         enumerable: propertyIsEnumerable(obj, keyName),
-        get: undefined
+        get: undefined,
       };
 
       if (hasOwnProperty(obj, keyName)) {
@@ -115,14 +107,8 @@ export function unwatchKey(obj, keyName, _meta) {
       if (!isDescriptor && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
-        if (
-          maybeMandatoryDescriptor.set &&
-          maybeMandatoryDescriptor.set.isMandatorySetter
-        ) {
-          if (
-            maybeMandatoryDescriptor.get &&
-            maybeMandatoryDescriptor.get.isInheritingGetter
-          ) {
+        if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
+          if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
             let possibleValue = meta.readInheritedValue('values', keyName);
             if (possibleValue === UNDEFINED) {
               delete obj[keyName];
@@ -132,12 +118,9 @@ export function unwatchKey(obj, keyName, _meta) {
 
           Object.defineProperty(obj, keyName, {
             configurable: true,
-            enumerable: Object.prototype.propertyIsEnumerable.call(
-              obj,
-              keyName
-            ),
+            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
             writable: true,
-            value: meta.peekValues(keyName)
+            value: meta.peekValues(keyName),
           });
           meta.deleteFromValues(keyName);
         }

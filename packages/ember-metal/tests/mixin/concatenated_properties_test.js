@@ -4,31 +4,27 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 moduleFor(
   'Mixin concatenatedProperties',
   class extends AbstractTestCase {
-    ['@test defining concatenated properties should concat future version'](
-      assert
-    ) {
+    ['@test defining concatenated properties should concat future version'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
-        foo: ['a', 'b', 'c']
+        foo: ['a', 'b', 'c'],
       });
 
       let MixinB = Mixin.create({
-        foo: ['d', 'e', 'f']
+        foo: ['d', 'e', 'f'],
       });
 
       let obj = mixin({}, MixinA, MixinB);
       assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
     }
 
-    ['@test defining concatenated properties should concat future version'](
-      assert
-    ) {
+    ['@test defining concatenated properties should concat future version'](assert) {
       let MixinA = Mixin.create({
-        concatenatedProperties: null
+        concatenatedProperties: null,
       });
 
       let MixinB = Mixin.create({
-        concatenatedProperties: null
+        concatenatedProperties: null,
       });
 
       let obj = mixin({}, MixinA, MixinB);
@@ -39,17 +35,17 @@ moduleFor(
     ['@test concatenatedProperties should be concatenated'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
-        foo: ['a', 'b', 'c']
+        foo: ['a', 'b', 'c'],
       });
 
       let MixinB = Mixin.create({
         concatenatedProperties: 'bar',
         foo: ['d', 'e', 'f'],
-        bar: [1, 2, 3]
+        bar: [1, 2, 3],
       });
 
       let MixinC = Mixin.create({
-        bar: [4, 5, 6]
+        bar: [4, 5, 6],
       });
 
       let obj = mixin({}, MixinA, MixinB, MixinC);
@@ -58,22 +54,18 @@ moduleFor(
         ['foo', 'bar'],
         'get concatenatedProperties'
       );
-      assert.deepEqual(
-        get(obj, 'foo'),
-        ['a', 'b', 'c', 'd', 'e', 'f'],
-        'get foo'
-      );
+      assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
       assert.deepEqual(get(obj, 'bar'), [1, 2, 3, 4, 5, 6], 'get bar');
     }
 
     ['@test adding a prop that is not an array should make array'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
-        foo: [1, 2, 3]
+        foo: [1, 2, 3],
       });
 
       let MixinB = Mixin.create({
-        foo: 4
+        foo: 4,
       });
 
       let obj = mixin({}, MixinA, MixinB);
@@ -83,7 +75,7 @@ moduleFor(
     ['@test adding a prop that is not an array should make array'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
-        foo: 'bar'
+        foo: 'bar',
       });
 
       let obj = mixin({}, MixinA);
@@ -94,12 +86,12 @@ moduleFor(
       assert
     ) {
       let mixinA = Mixin.create({
-        foo: 1
+        foo: 1,
       });
 
       let mixinB = Mixin.create({
         concatenatedProperties: ['foo'],
-        foo: 2
+        foo: 2,
       });
 
       let obj = mixin({}, mixinA, mixinB);
@@ -110,12 +102,12 @@ moduleFor(
       assert
     ) {
       let mixinA = Mixin.create({
-        foobar: 'foo'
+        foobar: 'foo',
       });
 
       let mixinB = Mixin.create({
         concatenatedProperties: ['foobar'],
-        foobar: 'bar'
+        foobar: 'bar',
       });
 
       let obj = mixin({}, mixinA, mixinB);

@@ -33,7 +33,7 @@ export default Mixin.create({
       let options = { id: 'ember-runtime.using-targetObject', until: '3.5.0' };
       deprecate(message, false, options);
       this._targetObject = value;
-    }
+    },
   }),
   action: null,
   actionContext: null,
@@ -137,7 +137,7 @@ export default Mixin.create({
     }
 
     return false;
-  }
+  },
 });
 
 function getTarget(instance) {

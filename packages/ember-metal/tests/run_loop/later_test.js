@@ -1,13 +1,6 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { assign } from 'ember-utils';
-import {
-  run,
-  later,
-  backburner,
-  isNone,
-  hasScheduledTimers,
-  getCurrentRunLoop
-} from '../..';
+import { run, later, backburner, isNone, hasScheduledTimers, getCurrentRunLoop } from '../..';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;
@@ -49,9 +42,7 @@ moduleFor(
       Date.prototype.valueOf = originalDateValueOf;
     }
 
-    ['@test should invoke after specified period of time - function only'](
-      assert
-    ) {
+    ['@test should invoke after specified period of time - function only'](assert) {
       let done = assert.async();
       let invoked = false;
 
@@ -65,9 +56,7 @@ moduleFor(
       });
     }
 
-    ['@test should invoke after specified period of time - target/method'](
-      assert
-    ) {
+    ['@test should invoke after specified period of time - target/method'](assert) {
       let done = assert.async();
       let obj = { invoked: false };
 
@@ -87,9 +76,7 @@ moduleFor(
       });
     }
 
-    ['@test should invoke after specified period of time - target/method/args'](
-      assert
-    ) {
+    ['@test should invoke after specified period of time - target/method/args'](assert) {
       let done = assert.async();
       let obj = { invoked: 0 };
 
@@ -138,10 +125,7 @@ moduleFor(
       wait(() => {
         assert.equal(obj.invoked, 10, 'should have invoked later item');
         assert.ok(secondRunLoop, 'second run loop took place');
-        assert.ok(
-          secondRunLoop !== firstRunLoop,
-          'two different run loops took place'
-        );
+        assert.ok(secondRunLoop !== firstRunLoop, 'two different run loops took place');
         done();
       });
     }
@@ -204,9 +188,7 @@ moduleFor(
     //   });
     // });
 
-    ['@test inception calls to later should run callbacks in separate run loops'](
-      assert
-    ) {
+    ['@test inception calls to later should run callbacks in separate run loops'](assert) {
       let done = assert.async();
       let runLoop, finished;
 
@@ -253,7 +235,7 @@ moduleFor(
           assert.ok(!isNaN(wait) && wait >= 0, 'wait is a non-negative number');
 
           return originalPlatform.setTimeout.apply(originalPlatform, arguments);
-        }
+        },
       });
 
       let count = 0;

@@ -1,9 +1,4 @@
-import {
-  CONSTANT_TAG,
-  UpdatableTag,
-  DirtyableTag,
-  combine
-} from '@glimmer/reference';
+import { CONSTANT_TAG, UpdatableTag, DirtyableTag, combine } from '@glimmer/reference';
 import { isProxy } from 'ember-utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { meta as metaFor } from './meta';
@@ -19,9 +14,7 @@ function makeTag() {
   return DirtyableTag.create();
 }
 
-export const TRACKED_GETTERS = EMBER_METAL_TRACKED_PROPERTIES
-  ? new WeakMap()
-  : undefined;
+export const TRACKED_GETTERS = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : undefined;
 
 export function tagForProperty(object, propertyKey, _meta) {
   if (typeof object !== 'object' || object === null) {

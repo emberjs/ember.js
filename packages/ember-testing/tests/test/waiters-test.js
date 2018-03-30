@@ -1,8 +1,4 @@
-import {
-  registerWaiter,
-  unregisterWaiter,
-  checkWaiters
-} from '../../test/waiters';
+import { registerWaiter, unregisterWaiter, checkWaiters } from '../../test/waiters';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 class Waiters {
@@ -109,10 +105,7 @@ moduleFor(
         return true;
       });
 
-      assert.notOk(
-        this.waiters.check(),
-        'checkWaiters returns true if all waiters return true'
-      );
+      assert.notOk(this.waiters.check(), 'checkWaiters returns true if all waiters return true');
     }
 
     ['@test checkWaiters returns true if any waiters return false'](assert) {
@@ -130,10 +123,7 @@ moduleFor(
         return false;
       });
 
-      assert.ok(
-        this.waiters.check(),
-        'checkWaiters returns false if any waiters return false'
-      );
+      assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
     }
 
     ['@test checkWaiters short circuits after first falsey waiter'](assert) {
@@ -149,10 +139,7 @@ moduleFor(
         assert.notOk(true, 'waiter should not be called');
       });
 
-      assert.ok(
-        this.waiters.check(),
-        'checkWaiters returns false if any waiters return false'
-      );
+      assert.ok(this.waiters.check(), 'checkWaiters returns false if any waiters return false');
     }
   }
 );

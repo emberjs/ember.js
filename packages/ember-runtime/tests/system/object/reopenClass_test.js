@@ -11,7 +11,7 @@ moduleFor(
         foo() {
           return 'FOO';
         },
-        bar: 'BAR'
+        bar: 'BAR',
       });
 
       assert.equal(Subclass.foo(), 'FOO', 'Adds method');
@@ -24,7 +24,7 @@ moduleFor(
         foo() {
           return 'FOO';
         },
-        bar: 'BAR'
+        bar: 'BAR',
       });
 
       let SubSub = Subclass.extend();

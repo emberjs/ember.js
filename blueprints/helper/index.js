@@ -6,5 +6,5 @@ module.exports = {
   description: 'Generates a helper function.',
   normalizeEntityName: function(entityName) {
     return normalizeEntityName(entityName);
-  }
+  },
 };

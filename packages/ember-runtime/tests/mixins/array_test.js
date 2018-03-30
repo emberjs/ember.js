@@ -8,7 +8,7 @@ import {
   addArrayObserver,
   removeArrayObserver,
   arrayContentDidChange,
-  arrayContentWillChange
+  arrayContentWillChange,
 } from 'ember-metal';
 import EmberObject from '../../system/object';
 import EmberArray from '../../mixins/array';
@@ -48,7 +48,7 @@ const TestArray = EmberObject.extend(EmberArray, {
 
   length: computed(function() {
     return this._content.length;
-  })
+  }),
 });
 
 moduleFor(
@@ -56,7 +56,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test the return value of slice has Ember.Array applied'](assert) {
       let x = EmberObject.extend(EmberArray).create({
-        length: 0
+        length: 0,
       });
       let y = x.slice(1);
       assert.equal(EmberArray.detect(y), true, 'mixin should be applied');
@@ -89,7 +89,7 @@ const DummyArray = EmberObject.extend(EmberArray, {
   length: 0,
   objectAt(idx) {
     return 'ITEM-' + idx;
-  }
+  },
 });
 
 let obj, observer;
@@ -105,9 +105,9 @@ moduleFor(
       obj = DummyArray.extend({
         enumerablePropertyDidChange: emberObserver('[]', function() {
           this._count++;
-        })
+        }),
       }).create({
-        _count: 0
+        _count: 0,
       });
 
       assert.equal(obj._count, 0, 'should not have invoked yet');
@@ -131,9 +131,9 @@ moduleFor(
       obj = DummyArray.extend({
         lengthDidChange: emberObserver('length', function() {
           this._after++;
-        })
+        }),
       }).create({
-        _after: 0
+        _after: 0,
       });
 
       assert.equal(obj._after, 0, 'should not have fired yet');
@@ -189,10 +189,10 @@ moduleFor(
         arrayDidChange() {
           assert.equal(this._after, null); // should only call once
           this._after = Array.prototype.slice.call(arguments);
-        }
+        },
       }).create({
         _before: null,
-        _after: null
+        _after: null,
       });
 
       addArrayObserver(obj, observer);
@@ -253,8 +253,8 @@ moduleFor(
           { isDone: true, desc: 'Todo 1' },
           { isDone: false, desc: 'Todo 2' },
           { isDone: true, desc: 'Todo 3' },
-          { isDone: false, desc: 'Todo 4' }
-        ]
+          { isDone: false, desc: 'Todo 4' },
+        ],
       });
     }
 
@@ -268,7 +268,7 @@ moduleFor(
       let observerObject = EmberObject.create({
         wasCalled() {
           called++;
-        }
+        },
       });
 
       addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
@@ -276,7 +276,7 @@ moduleFor(
       ary.addObject(
         EmberObject.create({
           desc: 'foo',
-          isDone: false
+          isDone: false,
         })
       );
 
@@ -299,21 +299,19 @@ moduleFor(
       }, /Cannot set read-only property "@each"/);
     }
 
-    ['@test using @each to observe arrays that does not return objects raise error'](
-      assert
-    ) {
+    ['@test using @each to observe arrays that does not return objects raise error'](assert) {
       let called = 0;
 
       let observerObject = EmberObject.create({
         wasCalled() {
           called++;
-        }
+        },
       });
 
       ary = TestArray.create({
         objectAt(idx) {
           return get(this._content[idx], 'desc');
-        }
+        },
       });
 
       addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
@@ -322,7 +320,7 @@ moduleFor(
         ary.addObject(
           EmberObject.create({
             desc: 'foo',
-            isDone: false
+            isDone: false,
           })
         );
       }, /When using @each to observe the array/);
@@ -330,9 +328,7 @@ moduleFor(
       assert.equal(called, 0, 'not calls observer when object is pushed');
     }
 
-    ['@test modifying the array should also indicate the isDone prop itself has changed'](
-      assert
-    ) {
+    ['@test modifying the array should also indicate the isDone prop itself has changed'](assert) {
       // NOTE: we never actually get the '@each.isDone' property here.  This is
       // important because it tests the case where we don't have an isDone
       // EachArray materialized but just want to know when the property has
@@ -368,7 +364,7 @@ moduleFor(
 
         common: computed('resources.@each.common', function() {
           return get(objectAt(get(this, 'resources'), 0), 'common');
-        })
+        }),
       }).create();
 
       get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
@@ -390,7 +386,7 @@ moduleFor(
           set(this, 'resources', emberA());
         },
 
-        commonDidChange: emberObserver('resources.@each.common', () => count++)
+        commonDidChange: emberObserver('resources.@each.common', () => count++),
       }).create();
 
       // Observer fires second time when new object is added

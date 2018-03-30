@@ -47,8 +47,8 @@ moduleFor(
           willDestroy() {
             this._super();
             destroyedChildrenCount++;
-          }
-        })
+          },
+        }),
       });
 
       this.render(
@@ -72,11 +72,7 @@ moduleFor(
       this.runTask(() => set(this.context, 'cond', false));
 
       this.assertText('Nothing Here!');
-      assert.equal(
-        destroyedChildrenCount,
-        3,
-        'the children were properly destroyed'
-      );
+      assert.equal(destroyedChildrenCount, 3, 'the children were properly destroyed');
 
       this.runTask(() => set(this.context, 'cond', true));
 

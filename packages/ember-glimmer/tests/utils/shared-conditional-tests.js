@@ -7,7 +7,7 @@ import {
   ObjectProxy,
   A as emberA,
   ArrayProxy,
-  removeAt
+  removeAt,
 } from 'ember-runtime';
 import { Component } from './helpers';
 
@@ -80,7 +80,7 @@ export class TruthyGenerator extends AbstractGenerator {
         this.runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('T1');
-      }
+      },
     };
   }
 }
@@ -104,7 +104,7 @@ export class FalsyGenerator extends AbstractGenerator {
         this.runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('F1');
-      }
+      },
     };
   }
 }
@@ -130,7 +130,7 @@ export class StableTruthyGenerator extends TruthyGenerator {
         this.assertText('T1');
 
         this.assertInvariants();
-      }
+      },
     });
   }
 }
@@ -156,7 +156,7 @@ export class StableFalsyGenerator extends FalsyGenerator {
         this.assertText('F1');
 
         this.assertInvariants();
-      }
+      },
     });
   }
 }
@@ -178,18 +178,14 @@ class ObjectProxyGenerator extends AbstractGenerator {
 
           this.assertText('T1');
 
-          this.runTask(() =>
-            set(this.context, 'cond1.content', this.falsyValue)
-          );
+          this.runTask(() => set(this.context, 'cond1.content', this.falsyValue));
 
           this.assertText('F1');
 
-          this.runTask(() =>
-            set(this.context, 'cond1', ObjectProxy.create({ content: value }))
-          );
+          this.runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
 
           this.assertText('T1');
-        }
+        },
       };
     } else {
       return {
@@ -204,18 +200,14 @@ class ObjectProxyGenerator extends AbstractGenerator {
 
           this.assertText('F1');
 
-          this.runTask(() =>
-            set(this.context, 'cond1.content', this.truthyValue)
-          );
+          this.runTask(() => set(this.context, 'cond1.content', this.truthyValue));
 
           this.assertText('T1');
 
-          this.runTask(() =>
-            set(this.context, 'cond1', ObjectProxy.create({ content: value }))
-          );
+          this.runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
 
           this.assertText('F1');
-        }
+        },
       };
     }
   }
@@ -285,16 +277,12 @@ export const ObjectTestCases = {
 
     this.runTask(() => {
       set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
-      set(
-        this.context,
-        'cond2',
-        ObjectProxy.create({ content: EmberObject.create() })
-      );
+      set(this.context, 'cond2', ObjectProxy.create({ content: EmberObject.create() }));
       set(this.context, 'cond3', ObjectProxy.create({ content: null }));
     });
 
     this.assertText('T1T2F3');
-  }
+  },
 };
 
 // Testing behaviors related to arrays and array proxies
@@ -354,11 +342,7 @@ export const ArrayTestCases = {
     this.assertText('T1T2');
 
     this.runTask(() => {
-      set(
-        this.context,
-        'cond1',
-        ArrayProxy.create({ content: emberA(['hello']) })
-      );
+      set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
       set(this.context, 'cond2', ArrayProxy.create({ content: null }));
     });
 
@@ -389,16 +373,12 @@ export const ArrayTestCases = {
     this.assertText('T1T2');
 
     this.runTask(() => {
-      set(
-        this.context,
-        'cond1',
-        ArrayProxy.create({ content: emberA(['hello']) })
-      );
+      set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
       set(this.context, 'cond2', ArrayProxy.create({ content: emberA() }));
     });
 
     this.assertText('T1F2');
-  }
+  },
 };
 
 const IfUnlessWithTestCases = [
@@ -425,7 +405,7 @@ const IfUnlessWithTestCases = [
     new Boolean(true),
     new Boolean(false),
     /*jshint +W053 */
-    new Date()
+    new Date(),
   ]),
 
   new StableFalsyGenerator([
@@ -436,7 +416,7 @@ const IfUnlessWithTestCases = [
     0,
     [],
     emberA(),
-    ObjectProxy.create({ content: undefined })
+    ObjectProxy.create({ content: undefined }),
   ]),
 
   new ObjectProxyGenerator([
@@ -470,12 +450,12 @@ const IfUnlessWithTestCases = [
     '',
     0,
     [],
-    emberA()
+    emberA(),
   ]),
 
   ObjectTestCases,
 
-  ArrayTestCases
+  ArrayTestCases,
 ];
 
 // Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
@@ -489,9 +469,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     let context = {};
 
     for (let i = 1; i <= values.length; i++) {
-      templates.push(
-        this.templateFor({ cond: `cond${i}`, truthy: `t${i}`, falsy: `f${i}` })
-      );
+      templates.push(this.templateFor({ cond: `cond${i}`, truthy: `t${i}`, falsy: `f${i}` }));
       context[`t${i}`] = `T${i}`;
       context[`f${i}`] = `F${i}`;
       context[`cond${i}`] = values[i - 1];
@@ -504,14 +482,14 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
   ['@test it has access to the outer scope from both templates']() {
     let template = this.wrapperFor([
       this.templateFor({ cond: 'cond1', truthy: 'truthy', falsy: 'falsy' }),
-      this.templateFor({ cond: 'cond2', truthy: 'truthy', falsy: 'falsy' })
+      this.templateFor({ cond: 'cond2', truthy: 'truthy', falsy: 'falsy' }),
     ]);
 
     this.render(template, {
       cond1: this.truthyValue,
       cond2: this.falsyValue,
       truthy: 'YES',
-      falsy: 'NO'
+      falsy: 'NO',
     });
 
     this.assertText('YESNO');
@@ -549,13 +527,13 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
       this.templateFor({
         cond: '(unbound cond1)',
         truthy: '"T1"',
-        falsy: '"F1"'
+        falsy: '"F1"',
       }),
       this.templateFor({
         cond: '(unbound cond2)',
         truthy: '"T2"',
-        falsy: '"F2"'
-      })
+        falsy: '"F2"',
+      }),
     ]);
 
     this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue });
@@ -605,25 +583,23 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
       compute() {
         truthyEvaluated = true;
         return 'T';
-      }
+      },
     });
 
     this.registerHelper('x-falsy', {
       compute() {
         falsyEvaluated = true;
         return 'F';
-      }
+      },
     });
 
     let template = this.wrappedTemplateFor({
       cond: 'cond',
       truthy: '(x-truthy)',
-      falsy: '(x-falsy)'
+      falsy: '(x-falsy)',
     });
 
-    withoutEvaluatingFalsy(() =>
-      this.render(template, { cond: this.truthyValue })
-    );
+    withoutEvaluatingFalsy(() => this.render(template, { cond: this.truthyValue }));
 
     this.assertText('T');
 
@@ -631,9 +607,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('T');
 
-    withoutEvaluatingTruthy(() =>
-      this.runTask(() => set(this.context, 'cond', this.falsyValue))
-    );
+    withoutEvaluatingTruthy(() => this.runTask(() => set(this.context, 'cond', this.falsyValue)));
 
     this.assertText('F');
 
@@ -641,9 +615,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('F');
 
-    withoutEvaluatingFalsy(() =>
-      this.runTask(() => set(this.context, 'cond', this.truthyValue))
-    );
+    withoutEvaluatingFalsy(() => this.runTask(() => set(this.context, 'cond', this.truthyValue)));
 
     this.assertText('T');
   }
@@ -665,7 +637,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
         this.templateFor({
           cond: `cond${i}`,
           truthy: `{{t}}${i}`,
-          falsy: `{{f}}${i}`
+          falsy: `{{f}}${i}`,
         })
       );
       context[`cond${i}`] = values[i - 1];
@@ -679,11 +651,11 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     let template = `${this.templateFor({
       cond: '(unbound cond1)',
       truthy: 'T1',
-      falsy: 'F1'
+      falsy: 'F1',
     })}${this.templateFor({
       cond: '(unbound cond2)',
       truthy: 'T2',
-      falsy: 'F2'
+      falsy: 'F2',
     })}`;
 
     this.render(template, { cond1: this.truthyValue, cond2: this.falsyValue });
@@ -718,20 +690,20 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
       this.templateFor({
         cond: 'cond1',
         truthy: '{{truthy}}',
-        falsy: '{{falsy}}'
+        falsy: '{{falsy}}',
       }),
       this.templateFor({
         cond: 'cond2',
         truthy: '{{truthy}}',
-        falsy: '{{falsy}}'
-      })
+        falsy: '{{falsy}}',
+      }),
     ]);
 
     this.render(template, {
       cond1: this.truthyValue,
       cond2: this.falsyValue,
       truthy: 'YES',
-      falsy: 'NO'
+      falsy: 'NO',
     });
 
     this.assertText('YESNO');
@@ -769,12 +741,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     let inner = this.templateFor({
       cond: 'inner',
       truthy: 'T-inner',
-      falsy: 'F-inner'
+      falsy: 'F-inner',
     });
     let template = this.wrappedTemplateFor({
       cond: 'outer',
       truthy: inner,
-      falsy: 'F-outer'
+      falsy: 'F-outer',
     });
 
     this.render(template, { outer: this.truthyValue, inner: this.truthyValue });
@@ -801,12 +773,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     let template = this.wrappedTemplateFor({
       cond: 'outer',
       truthy: '{{#each inner as |text|}}{{text}}{{/each}}',
-      falsy: 'F-outer'
+      falsy: 'F-outer',
     });
 
     this.render(template, {
       outer: this.truthyValue,
-      inner: ['inner', '-', 'before']
+      inner: ['inner', '-', 'before'],
     });
 
     this.assertText('inner-before');
@@ -849,12 +821,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     let template = this.wrappedTemplateFor({
       cond: 'outer',
       truthy: '{{{inner}}}',
-      falsy: 'F-outer'
+      falsy: 'F-outer',
     });
 
     this.render(template, {
       outer: this.truthyValue,
-      inner: '<b>inner</b>-<b>before</b>'
+      inner: '<b>inner</b>-<b>before</b>',
     });
 
     this.assertText('inner-before');
@@ -885,24 +857,24 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
         init() {
           this._super(...arguments);
           childCreated = true;
-        }
-      })
+        },
+      }),
     });
 
     let innerTemplate = this.templateFor({
       cond: 'cond2',
       truthy: '{{foo-bar}}',
-      falsy: ''
+      falsy: '',
     });
     let wrappedTemplate = this.wrappedTemplateFor({
       cond: 'cond1',
       truthy: innerTemplate,
-      falsy: ''
+      falsy: '',
     });
 
     this.render(wrappedTemplate, {
       cond1: this.truthyValue,
-      cond2: this.falsyValue
+      cond2: this.falsyValue,
     });
 
     assert.ok(!childCreated);
@@ -950,25 +922,23 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
       compute() {
         truthyEvaluated = true;
         return 'T';
-      }
+      },
     });
 
     this.registerHelper('x-falsy', {
       compute() {
         falsyEvaluated = true;
         return 'F';
-      }
+      },
     });
 
     let template = this.wrappedTemplateFor({
       cond: 'cond',
       truthy: '{{x-truthy}}',
-      falsy: '{{x-falsy}}'
+      falsy: '{{x-falsy}}',
     });
 
-    withoutEvaluatingFalsy(() =>
-      this.render(template, { cond: this.truthyValue })
-    );
+    withoutEvaluatingFalsy(() => this.render(template, { cond: this.truthyValue }));
 
     this.assertText('T');
 
@@ -976,9 +946,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('T');
 
-    withoutEvaluatingTruthy(() =>
-      this.runTask(() => set(this.context, 'cond', this.falsyValue))
-    );
+    withoutEvaluatingTruthy(() => this.runTask(() => set(this.context, 'cond', this.falsyValue)));
 
     this.assertText('F');
 
@@ -986,9 +954,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('F');
 
-    withoutEvaluatingFalsy(() =>
-      this.runTask(() => set(this.context, 'cond', this.truthyValue))
-    );
+    withoutEvaluatingFalsy(() => this.runTask(() => set(this.context, 'cond', this.truthyValue)));
 
     this.assertText('T');
   }

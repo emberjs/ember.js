@@ -33,12 +33,7 @@ function errorFor(reason) {
   }
 
   if (reason.name === 'UnrecognizedURLError') {
-    assert(
-      `The URL '${
-        reason.message
-      }' did not match any routes in your application`,
-      false
-    );
+    assert(`The URL '${reason.message}' did not match any routes in your application`, false);
     return;
   }
 
@@ -56,7 +51,7 @@ function unwrapErrorThrown(reason) {
   }
   Object.defineProperty(error, '__reason_with_error_thrown__', {
     value: reason,
-    enumerable: false
+    enumerable: false,
   });
   return error;
 }

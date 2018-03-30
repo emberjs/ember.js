@@ -49,7 +49,7 @@ moduleFor(
 
             return enginePromise.then(() => syncHandler(name));
           };
-        }
+        },
       };
     }
 
@@ -74,7 +74,7 @@ moduleFor(
         Route.extend({
           model() {
             hooks.push('application - application');
-          }
+          },
         })
       );
 
@@ -87,44 +87,41 @@ moduleFor(
               'controller:application',
               Controller.extend({
                 queryParams: ['lang'],
-                lang: ''
+                lang: '',
               })
             );
             this.register(
               'controller:category',
               Controller.extend({
-                queryParams: ['type']
+                queryParams: ['type'],
               })
             );
             this.register(
               'controller:authorKtrl',
               Controller.extend({
-                queryParams: ['official']
+                queryParams: ['official'],
               })
             );
-            this.register(
-              'template:application',
-              compile('Engine{{lang}}{{outlet}}')
-            );
+            this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
             this.register(
               'route:application',
               Route.extend({
                 model() {
                   hooks.push('engine - application');
-                }
+                },
               })
             );
             this.register(
               'route:author',
               Route.extend({
-                controllerName: 'authorKtrl'
+                controllerName: 'authorKtrl',
               })
             );
 
             if (self._additionalEngineRegistrations) {
               self._additionalEngineRegistrations.call(this);
             }
-          }
+          },
         })
       );
     }
@@ -144,10 +141,10 @@ moduleFor(
                 init() {
                   this._super(...arguments);
                   hooks.push('engine - application');
-                }
+                },
               })
             );
-          }
+          },
         })
       );
     }
@@ -164,7 +161,7 @@ moduleFor(
         Route.extend({
           model() {
             hooks.push('application - application');
-          }
+          },
         })
       );
 
@@ -174,19 +171,16 @@ moduleFor(
           init() {
             this._super(...arguments);
             this.register('template:foo', compile('foo partial'));
-            this.register(
-              'template:application',
-              compile('Engine{{outlet}} {{partial "foo"}}')
-            );
+            this.register('template:application', compile('Engine{{outlet}} {{partial "foo"}}'));
             this.register(
               'route:application',
               Route.extend({
                 model() {
                   hooks.push('engine - application');
-                }
+                },
               })
             );
-          }
+          },
         })
       );
     }
@@ -198,7 +192,7 @@ moduleFor(
         Route.extend({
           model() {
             hooks.push('application - application');
-          }
+          },
         })
       );
     }
@@ -212,20 +206,17 @@ moduleFor(
           init() {
             this._super(...arguments);
             this.register('template:foo', compile('foo partial'));
-            this.register(
-              'template:application',
-              compile('Engine {{partial "foo"}}')
-            );
+            this.register('template:application', compile('Engine {{partial "foo"}}'));
             this.register(
               'controller:application',
               Controller.extend({
                 init() {
                   this._super(...arguments);
                   hooks.push('engine - application');
-                }
+                },
               })
             );
-          }
+          },
         })
       );
     }
@@ -242,22 +233,16 @@ moduleFor(
         Engine.extend({
           init() {
             this._super(...arguments);
-            this.register(
-              'template:components/foo-bar',
-              compile(`{{partial "troll"}}`)
-            );
+            this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
             this.register('template:troll', compile('{{attrs.wat}}'));
             this.register(
               'controller:application',
               Controller.extend({
-                contextType: 'Engine'
+                contextType: 'Engine',
               })
             );
-            this.register(
-              'template:application',
-              compile('Engine {{foo-bar wat=contextType}}')
-            );
-          }
+            this.register('template:application', compile('Engine {{foo-bar wat=contextType}}'));
+          },
         })
       );
     }
@@ -289,7 +274,7 @@ moduleFor(
         'controller:application',
         Controller.extend({
           contextType: 'Application',
-          'ambiguous-curlies': 'Controller Data!'
+          'ambiguous-curlies': 'Controller Data!',
         })
       );
 
@@ -307,7 +292,7 @@ moduleFor(
             this.register(
               'controller:application',
               Controller.extend({
-                contextType: 'Engine'
+                contextType: 'Engine',
               })
             );
             this.register('template:application', sharedTemplate);
@@ -317,7 +302,7 @@ moduleFor(
         <p>Component!</p>
       `)
             );
-          }
+          },
         })
       );
 
@@ -334,7 +319,7 @@ moduleFor(
     `);
 
       let sharedComponent = Component.extend({
-        layout: sharedLayout
+        layout: sharedLayout,
       });
 
       this.addTemplate(
@@ -373,7 +358,7 @@ moduleFor(
           <p>Component!</p>
         `)
             );
-          }
+          },
         })
       );
 
@@ -482,9 +467,7 @@ moduleFor(
       });
     }
 
-    ['@test deactivate should be called on Engine Routes before destruction'](
-      assert
-    ) {
+    ['@test deactivate should be called on Engine Routes before destruction'](assert) {
       assert.expect(3);
 
       this.setupAppAndRoutableEngine();
@@ -500,14 +483,11 @@ moduleFor(
               Route.extend({
                 deactivate() {
                   assert.notOk(this.isDestroyed, 'Route is not destroyed');
-                  assert.notOk(
-                    this.isDestroying,
-                    'Route is not being destroyed'
-                  );
-                }
+                  assert.notOk(this.isDestroying, 'Route is not being destroyed');
+                },
               })
             );
-          }
+          },
         })
       );
 
@@ -524,9 +504,7 @@ moduleFor(
       });
     }
 
-    ['@test error substate route works for the application route of an Engine'](
-      assert
-    ) {
+    ['@test error substate route works for the application route of an Engine'](assert) {
       assert.expect(2);
 
       let errorEntered = RSVP.defer();
@@ -538,19 +516,16 @@ moduleFor(
           Route.extend({
             activate() {
               next(errorEntered.resolve);
-            }
+            },
           })
         );
-        this.register(
-          'template:application_error',
-          compile('Error! {{model.message}}')
-        );
+        this.register('template:application_error', compile('Error! {{model.message}}'));
         this.register(
           'route:post',
           Route.extend({
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            }
+            },
           })
         );
       });
@@ -580,7 +555,7 @@ moduleFor(
           Route.extend({
             activate() {
               next(errorEntered.resolve);
-            }
+            },
           })
         );
         this.register('template:error', compile('Error! {{model.message}}'));
@@ -589,7 +564,7 @@ moduleFor(
           Route.extend({
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            }
+            },
           })
         );
       });
@@ -607,9 +582,7 @@ moduleFor(
         });
     }
 
-    ['@test error substate route works for a child route of an Engine'](
-      assert
-    ) {
+    ['@test error substate route works for a child route of an Engine'](assert) {
       assert.expect(2);
 
       let errorEntered = RSVP.defer();
@@ -621,19 +594,16 @@ moduleFor(
           Route.extend({
             activate() {
               next(errorEntered.resolve);
-            }
+            },
           })
         );
-        this.register(
-          'template:post_error',
-          compile('Error! {{model.message}}')
-        );
+        this.register('template:post_error', compile('Error! {{model.message}}'));
         this.register(
           'route:post',
           Route.extend({
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            }
+            },
           })
         );
       });
@@ -663,19 +633,16 @@ moduleFor(
           Route.extend({
             activate() {
               next(errorEntered.resolve);
-            }
+            },
           })
         );
-        this.register(
-          'template:post.error',
-          compile('Error! {{model.message}}')
-        );
+        this.register('template:post.error', compile('Error! {{model.message}}'));
         this.register(
           'route:post.comments',
           Route.extend({
             model() {
               return RSVP.reject(new Error('Oh, noes!'));
-            }
+            },
           })
         );
       });
@@ -693,9 +660,7 @@ moduleFor(
         });
     }
 
-    ['@test loading substate route works for the application route of an Engine'](
-      assert
-    ) {
+    ['@test loading substate route works for the application route of an Engine'](assert) {
       assert.expect(3);
       let done = assert.async();
 
@@ -709,7 +674,7 @@ moduleFor(
           Route.extend({
             activate() {
               next(loadingEntered.resolve);
-            }
+            },
           })
         );
         this.register('template:application_loading', compile('Loading'));
@@ -719,7 +684,7 @@ moduleFor(
           Route.extend({
             model() {
               return resolveLoading.promise;
-            }
+            },
           })
         );
       });
@@ -742,9 +707,7 @@ moduleFor(
       });
     }
 
-    ['@test loading route works for the application route of an Engine'](
-      assert
-    ) {
+    ['@test loading route works for the application route of an Engine'](assert) {
       assert.expect(3);
       let done = assert.async();
 
@@ -758,7 +721,7 @@ moduleFor(
           Route.extend({
             activate() {
               next(loadingEntered.resolve);
-            }
+            },
           })
         );
         this.register('template:loading', compile('Loading'));
@@ -768,7 +731,7 @@ moduleFor(
           Route.extend({
             model() {
               return resolveLoading.promise;
-            }
+            },
           })
         );
       });
@@ -791,9 +754,7 @@ moduleFor(
       });
     }
 
-    ['@test loading substate route works for a child route of an Engine'](
-      assert
-    ) {
+    ['@test loading substate route works for a child route of an Engine'](assert) {
       assert.expect(3);
 
       let resolveLoading;
@@ -811,7 +772,7 @@ moduleFor(
               return new RSVP.Promise(resolve => {
                 resolveLoading = resolve;
               });
-            }
+            },
           })
         );
       });
@@ -847,7 +808,7 @@ moduleFor(
           Route.extend({
             activate() {
               next(loadingEntered.resolve);
-            }
+            },
           })
         );
         this.register('template:post.loading', compile('Loading'));
@@ -857,7 +818,7 @@ moduleFor(
           Route.extend({
             model() {
               return resolveLoading.promise;
-            }
+            },
           })
         );
       });
@@ -880,9 +841,7 @@ moduleFor(
       });
     }
 
-    ["@test query params don't have stickiness by default between model"](
-      assert
-    ) {
+    ["@test query params don't have stickiness by default between model"](assert) {
       assert.expect(1);
       let tmpl = '{{#link-to "blog.category" 1337}}Category 1337{{/link-to}}';
       this.setupAppAndRoutableEngine();
@@ -917,14 +876,8 @@ moduleFor(
         let href1337 = this.element.querySelector('.author-1337').href;
 
         // check if link ends with the suffix
-        assert.ok(
-          this.stringsEndWith(href1, suffix1),
-          `${href1} ends with ${suffix1}`
-        );
-        assert.ok(
-          this.stringsEndWith(href1337, suffix1337),
-          `${href1337} ends with ${suffix1337}`
-        );
+        assert.ok(this.stringsEndWith(href1, suffix1), `${href1} ends with ${suffix1}`);
+        assert.ok(this.stringsEndWith(href1337, suffix1337), `${href1337} ends with ${suffix1337}`);
       });
     }
 
@@ -939,7 +892,7 @@ moduleFor(
           Route.extend({
             init() {
               throw new Error('Whoops! Something went wrong...');
-            }
+            },
           })
         );
       });

@@ -13,7 +13,7 @@ const MOUSE_EVENT_TYPES = [
   'mouseleave',
   'mousemove',
   'mouseout',
-  'mouseover'
+  'mouseover',
 ];
 
 export function focus(el) {
@@ -35,7 +35,7 @@ export function focus(el) {
         if (browserIsNotFocused) {
           // if the browser is not focused the previous `el.focus()` didn't fire an event, so we simulate it
           fireEvent(el, 'focus', {
-            bubbles: false
+            bubbles: false,
           });
 
           fireEvent(el, 'focusin');
@@ -60,7 +60,7 @@ export function fireEvent(element, type, options = {}) {
       screenX: x + 5,
       screenY: y + 95,
       clientX: x,
-      clientY: y
+      clientY: y,
     };
     event = buildMouseEvent(type, assign(simulatedCoordinates, options));
   } else {

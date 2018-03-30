@@ -22,15 +22,12 @@ QUnit.test('nested {{component}}', function(assert) {
 
   this.component('root-component', {
     location: 'World',
-    hasExistence: true
+    hasExistence: true,
   });
 
-  this.template(
-    'components/foo-bar',
-    '\
+  this.template('components/foo-bar', '\
     <p>The files are *inside* the computer?!</p>\
-'
-  );
+');
 
   return this.renderToHTML('/').then(function(html) {
     assertHTMLMatches(
@@ -42,10 +39,7 @@ QUnit.test('nested {{component}}', function(assert) {
 });
 
 QUnit.test('{{link-to}}', function(assert) {
-  this.template(
-    'application',
-    "<h1>{{#link-to 'photos'}}Go to photos{{/link-to}}</h1>"
-  );
+  this.template('application', "<h1>{{#link-to 'photos'}}Go to photos{{/link-to}}</h1>");
   this.routes(function() {
     this.route('photos');
   });
@@ -66,7 +60,7 @@ QUnit.test('non-escaped content', function(assert) {
 
   this.template('application', '<h1>{{{title}}}</h1>');
   this.controller('application', {
-    title: '<b>Hello world</b>'
+    title: '<b>Hello world</b>',
   });
 
   return this.renderToHTML('/').then(function(html) {
@@ -131,15 +125,13 @@ QUnit.test('lifecycle hooks disabled', function(assert) {
     },
     didInsertElement() {
       assert.ok(false, 'should not trigger didInsertElement hook');
-    }
+    },
   });
 
   return this.renderToHTML('/');
 });
 
-QUnit.test('Should not attempt to render element modifiers GH#14220', function(
-  assert
-) {
+QUnit.test('Should not attempt to render element modifiers GH#14220', function(assert) {
   assert.expect(1);
 
   this.template('application', "<div {{action 'foo'}}></div>");

@@ -15,13 +15,10 @@ if (!DEBUG) {
     }
   });
 
-  QUnit.test(
-    'runInDebug does not run the callback in production builds',
-    function(assert) {
-      let fired = false;
-      runInDebug(() => (fired = true));
+  QUnit.test('runInDebug does not run the callback in production builds', function(assert) {
+    let fired = false;
+    runInDebug(() => (fired = true));
 
-      assert.equal(fired, false, 'runInDebug callback should not be ran');
-    }
-  );
+    assert.equal(fired, false, 'runInDebug callback should not be ran');
+  });
 }

@@ -10,14 +10,8 @@ moduleFor(
       }, 'The third argument to replace needs to be an array.');
     }
 
-    ['@test it does not raise an assertion if third parameter is not passed'](
-      assert
-    ) {
-      assert.deepEqual(
-        A([1, 2, 3]).replace(1, 2),
-        A([1]),
-        'no assertion raised'
-      );
+    ['@test it does not raise an assertion if third parameter is not passed'](assert) {
+      assert.deepEqual(A([1, 2, 3]).replace(1, 2), A([1]), 'no assertion raised');
     }
   }
 );

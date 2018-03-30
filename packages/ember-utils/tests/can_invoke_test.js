@@ -11,7 +11,7 @@ moduleFor(
 
       obj = {
         foobar: 'foobar',
-        aMethodThatExists() {}
+        aMethodThatExists() {},
       };
     }
 
@@ -33,9 +33,7 @@ moduleFor(
       assert.equal(canInvoke(obj, 'aMethodThatExists'), true);
     }
 
-    ["@test should return false if the method doesn't exist on the object"](
-      assert
-    ) {
+    ["@test should return false if the method doesn't exist on the object"](assert) {
       assert.equal(canInvoke(obj, 'aMethodThatDoesNotExist'), false);
     }
 

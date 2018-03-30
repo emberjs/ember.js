@@ -2,12 +2,7 @@ import { privatize as P } from 'container';
 import { ENV } from 'ember-environment';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 
-function lookupModuleUnificationComponentPair(
-  componentLookup,
-  owner,
-  name,
-  options
-) {
+function lookupModuleUnificationComponentPair(componentLookup, owner, name, options) {
   let localComponent = componentLookup.componentFor(name, owner, options);
   let localLayout = componentLookup.layoutFor(name, owner, options);
 
@@ -15,12 +10,10 @@ function lookupModuleUnificationComponentPair(
   let globalLayout = componentLookup.layoutFor(name, owner);
 
   let localAndUniqueComponent =
-    !!localComponent &&
-    (!globalComponent || localComponent.class !== globalComponent.class);
+    !!localComponent && (!globalComponent || localComponent.class !== globalComponent.class);
   let localAndUniqueLayout =
     !!localLayout &&
-    (!globalLayout ||
-      localLayout.referrer.moduleName !== globalLayout.referrer.moduleName);
+    (!globalLayout || localLayout.referrer.moduleName !== globalLayout.referrer.moduleName);
 
   if (localAndUniqueComponent && localAndUniqueLayout) {
     return { layout: localLayout, component: localComponent };
@@ -46,12 +39,7 @@ function lookupModuleUnificationComponentPair(
 
 function lookupComponentPair(componentLookup, owner, name, options) {
   if (EMBER_MODULE_UNIFICATION) {
-    return lookupModuleUnificationComponentPair(
-      componentLookup,
-      owner,
-      name,
-      options
-    );
+    return lookupModuleUnificationComponentPair(componentLookup, owner, name, options);
   }
 
   let component = componentLookup.componentFor(name, owner, options);
@@ -70,12 +58,7 @@ export default function lookupComponent(owner, name, options) {
   let componentLookup = owner.lookup('component-lookup:main');
 
   if (options && (options.source || options.namespace)) {
-    let localResult = lookupComponentPair(
-      componentLookup,
-      owner,
-      name,
-      options
-    );
+    let localResult = lookupComponentPair(componentLookup, owner, name, options);
 
     if (localResult.component || localResult.layout) {
       return localResult;

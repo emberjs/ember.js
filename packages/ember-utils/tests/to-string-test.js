@@ -8,7 +8,7 @@ moduleFor(
       let obj = {
         toString() {
           return 'bob';
-        }
+        },
       };
 
       assert.strictEqual(toString(obj), 'bob');

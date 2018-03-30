@@ -54,5 +54,5 @@ export default EmberObject.extend({
   */
   exception(error) {
     throw error;
-  }
+  },
 });

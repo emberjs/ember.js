@@ -11,10 +11,7 @@ function diffGuid(assert, a, b, message) {
 
 function nanGuid(assert, obj) {
   let type = typeof obj;
-  assert.ok(
-    isNaN(parseInt(guidFor(obj), 0)),
-    'guids for ' + type + "don't parse to numbers"
-  );
+  assert.ok(isNaN(parseInt(guidFor(obj), 0)), 'guids for ' + type + "don't parse to numbers");
 }
 
 moduleFor(
@@ -35,12 +32,7 @@ moduleFor(
       let b = 'String B';
 
       sameGuid(assert, a, a, 'same string always yields same guid');
-      sameGuid(
-        assert,
-        a,
-        aprime,
-        'identical strings always yield the same guid'
-      );
+      sameGuid(assert, a, aprime, 'identical strings always yield the same guid');
       diffGuid(assert, a, b, 'different strings yield different guids');
       nanGuid(assert, a);
     }
@@ -51,12 +43,7 @@ moduleFor(
       let b = 34;
 
       sameGuid(assert, a, a, 'same numbers always yields same guid');
-      sameGuid(
-        assert,
-        a,
-        aprime,
-        'identical numbers always yield the same guid'
-      );
+      sameGuid(assert, a, aprime, 'identical numbers always yield the same guid');
       diffGuid(assert, a, b, 'different numbers yield different guids');
       nanGuid(assert, a);
     }
@@ -81,12 +68,7 @@ moduleFor(
       let b = false;
 
       sameGuid(assert, a, a, 'same booleans always yields same guid');
-      sameGuid(
-        assert,
-        a,
-        aprime,
-        'identical booleans always yield the same guid'
-      );
+      sameGuid(assert, a, aprime, 'identical booleans always yield the same guid');
       diffGuid(assert, a, b, 'different boolean yield different guids');
       nanGuid(assert, a);
       nanGuid(assert, b);
@@ -111,12 +93,7 @@ moduleFor(
       let b = ['1', '2', '3'];
 
       sameGuid(assert, a, a, 'same instance always yields same guid');
-      diffGuid(
-        assert,
-        a,
-        aprime,
-        'identical arrays always yield the same guid'
-      );
+      diffGuid(assert, a, aprime, 'identical arrays always yield the same guid');
       diffGuid(assert, a, b, 'different arrays yield different guids');
       nanGuid(assert, a);
     }

@@ -12,17 +12,13 @@ moduleFor(
 
       // test directly import template factory onto late bound layout
       let Two = Component.extend({
-        layout: this.compile('Two')
+        layout: this.compile('Two'),
       });
       this.registerComponent('component-two', { ComponentClass: Two });
 
       // inject layout onto component, share layout with component-one
       this.registerComponent('root-component', { ComponentClass: Component });
-      this.owner.inject(
-        'component:root-component',
-        'layout',
-        'template:components/component-one'
-      );
+      this.owner.inject('component:root-component', 'layout', 'template:components/component-one');
 
       // template instance shared between to template managers
       let rootFactory = this.owner.factoryFor('component:root-component');
@@ -33,7 +29,7 @@ moduleFor(
         state,
         {
           templateCacheHits: 0,
-          templateCacheMisses: 0
+          templateCacheMisses: 0,
         },
         'precondition'
       );
@@ -47,16 +43,12 @@ moduleFor(
       {{component-two}}
     {{~/if}}`,
         {
-          cond: true
+          cond: true,
         }
       );
 
       this.assertText('One');
-      state = this.expectCacheChanges(
-        {},
-        state,
-        'test case component and component-one no change'
-      );
+      state = this.expectCacheChanges({}, state, 'test case component and component-one no change');
 
       // show component-two for the first time
       this.runTask(() => set(this.context, 'cond', false));
@@ -64,7 +56,7 @@ moduleFor(
       this.assertText('Two');
       state = this.expectCacheChanges(
         {
-          templateCacheMisses: 1
+          templateCacheMisses: 1,
         },
         state,
         'component-two first render misses template cache'
@@ -74,11 +66,7 @@ moduleFor(
       this.runTask(() => set(this.context, 'cond', true));
 
       this.assertText('One');
-      state = this.expectCacheChanges(
-        {},
-        state,
-        'toggle back to component-one no change'
-      );
+      state = this.expectCacheChanges({}, state, 'toggle back to component-one no change');
 
       // show component-two again
       this.runTask(() => set(this.context, 'cond', false));
@@ -86,7 +74,7 @@ moduleFor(
       this.assertText('Two');
       state = this.expectCacheChanges(
         {
-          templateCacheHits: 1
+          templateCacheHits: 1,
         },
         state,
         'toggle back to component-two hits template cache'
@@ -98,22 +86,14 @@ moduleFor(
         runAppend(root);
         this.assertText('TwoOne');
         // roots have different capabilities so this will hit
-        state = this.expectCacheChanges(
-          {},
-          state,
-          'append root with component-one no change'
-        );
+        state = this.expectCacheChanges({}, state, 'append root with component-one no change');
 
         // render new root append
         let root2 = rootFactory.create();
         try {
           runAppend(root2);
           this.assertText('TwoOneOne');
-          state = this.expectCacheChanges(
-            {},
-            state,
-            'append another root no change'
-          );
+          state = this.expectCacheChanges({}, state, 'append another root no change');
         } finally {
           runDestroy(root2);
         }
@@ -123,12 +103,10 @@ moduleFor(
     }
 
     getCacheCounters() {
-      let {
-        runtimeResolver: { templateCacheHits, templateCacheMisses }
-      } = this;
+      let { runtimeResolver: { templateCacheHits, templateCacheMisses } } = this;
       return {
         templateCacheHits,
-        templateCacheMisses
+        templateCacheMisses,
       };
     }
 

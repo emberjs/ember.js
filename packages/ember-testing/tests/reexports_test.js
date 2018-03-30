@@ -9,7 +9,7 @@ class ReexportsTestCase extends AbstractTestCase {}
   ['Test', 'ember-testing'],
   ['Test.Adapter', 'ember-testing', 'Adapter'],
   ['Test.QUnitAdapter', 'ember-testing', 'QUnitAdapter'],
-  ['setupForTesting', 'ember-testing']
+  ['setupForTesting', 'ember-testing'],
 ].forEach(reexport => {
   let [path, moduleId, exportName] = reexport;
 
@@ -18,9 +18,7 @@ class ReexportsTestCase extends AbstractTestCase {}
     exportName = path;
   }
 
-  ReexportsTestCase.prototype[
-    `@test Ember.${path} exports correctly`
-  ] = function(assert) {
+  ReexportsTestCase.prototype[`@test Ember.${path} exports correctly`] = function(assert) {
     confirmExport(Ember, assert, path, moduleId, exportName);
   };
 });

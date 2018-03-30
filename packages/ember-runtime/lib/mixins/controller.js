@@ -38,5 +38,5 @@ export default Mixin.create(ActionHandler, {
     @property model
     @public
   */
-  model: null
+  model: null,
 });

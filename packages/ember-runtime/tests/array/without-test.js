@@ -11,11 +11,7 @@ class WithoutTests extends AbstractTestCase {
 
     ret = obj.without(before[1]);
     this.assert.deepEqual(this.toArray(ret), after, 'should have removed item');
-    this.assert.deepEqual(
-      this.toArray(obj),
-      before,
-      'should not have changed original'
-    );
+    this.assert.deepEqual(this.toArray(obj), before, 'should not have changed original');
   }
 
   '@test should remove NaN value'() {

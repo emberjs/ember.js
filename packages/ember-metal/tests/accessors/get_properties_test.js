@@ -10,25 +10,25 @@ moduleFor(
       let obj = {
         firstName: 'Steve',
         lastName: 'Jobs',
-        companyName: 'Apple, Inc.'
+        companyName: 'Apple, Inc.',
       };
 
       assert.deepEqual(getProperties(obj, 'firstName', 'lastName'), {
         firstName: 'Steve',
-        lastName: 'Jobs'
+        lastName: 'Jobs',
       });
       assert.deepEqual(getProperties(obj, 'firstName', 'lastName'), {
         firstName: 'Steve',
-        lastName: 'Jobs'
+        lastName: 'Jobs',
       });
       assert.deepEqual(getProperties(obj, 'lastName'), { lastName: 'Jobs' });
       assert.deepEqual(getProperties(obj), {});
       assert.deepEqual(getProperties(obj, ['firstName', 'lastName']), {
         firstName: 'Steve',
-        lastName: 'Jobs'
+        lastName: 'Jobs',
       });
       assert.deepEqual(getProperties(obj, ['firstName']), {
-        firstName: 'Steve'
+        firstName: 'Steve',
       });
       assert.deepEqual(getProperties(obj, []), {});
     }

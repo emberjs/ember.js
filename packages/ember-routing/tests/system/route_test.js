@@ -1,10 +1,5 @@
 import { setOwner } from 'ember-utils';
-import {
-  runDestroy,
-  buildOwner,
-  moduleFor,
-  AbstractTestCase
-} from 'internal-test-helpers';
+import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { Service, Object as EmberObject, inject } from 'ember-runtime';
 import EmberRoute from '../../system/route';
 
@@ -22,9 +17,7 @@ moduleFor(
       runDestroy(route);
     }
 
-    ['@test default store utilizes the container to acquire the model factory'](
-      assert
-    ) {
+    ['@test default store utilizes the container to acquire the model factory'](assert) {
       assert.expect(4);
 
       let Post = EmberObject.extend();
@@ -33,7 +26,7 @@ moduleFor(
       Post.reopenClass({
         find() {
           return post;
-        }
+        },
       });
 
       let ownerOptions = {
@@ -42,20 +35,16 @@ moduleFor(
             return true;
           },
           factoryFor(fullName) {
-            assert.equal(
-              fullName,
-              'model:post',
-              'correct factory was looked up'
-            );
+            assert.equal(fullName, 'model:post', 'correct factory was looked up');
 
             return {
               class: Post,
               create() {
                 return Post.create();
-              }
+              },
             };
-          }
-        }
+          },
+        },
       };
 
       setOwner(route, buildOwner(ownerOptions));
@@ -63,11 +52,7 @@ moduleFor(
       route.set('_qp', null);
 
       assert.equal(route.model({ post_id: 1 }), post);
-      assert.equal(
-        route.findModel('post', 1),
-        post,
-        '#findModel returns the correct post'
-      );
+      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
     }
 
     ["@test 'store' can be injected by data persistence frameworks"](assert) {
@@ -77,7 +62,7 @@ moduleFor(
       let owner = buildOwner();
 
       let post = {
-        id: 1
+        id: 1,
       };
 
       let Store = EmberObject.extend({
@@ -86,7 +71,7 @@ moduleFor(
           assert.equal(type, 'post', 'correct type was called');
           assert.equal(value, 1, 'correct value was called');
           return post;
-        }
+        },
       });
 
       owner.register('route:index', EmberRoute);
@@ -96,16 +81,8 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      assert.equal(
-        route.model({ post_id: 1 }),
-        post,
-        '#model returns the correct post'
-      );
-      assert.equal(
-        route.findModel('post', 1),
-        post,
-        '#findModel returns the correct post'
-      );
+      assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
+      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
     }
 
     ["@test assert if 'store.find' method is not found"]() {
@@ -160,7 +137,7 @@ moduleFor(
       let foo = { name: 'foo' };
 
       let FooRoute = EmberRoute.extend({
-        currentModel: foo
+        currentModel: foo,
       });
 
       owner.register('route:foo', FooRoute);
@@ -182,8 +159,8 @@ moduleFor(
           returnsFalse() {
             assert.ok(true, 'returnsFalse was called');
             return false;
-          }
-        }
+          },
+        },
       }).create();
 
       assert.equal(true, route.send('returnsTrue', 1, 2));
@@ -191,9 +168,7 @@ moduleFor(
       assert.equal(undefined, route.send('nonexistent', 1, 2, 3));
     }
 
-    ['@test .send just calls an action if the routers internal router property is absent'](
-      assert
-    ) {
+    ['@test .send just calls an action if the routers internal router property is absent'](assert) {
       assert.expect(7);
       let route = EmberRoute.extend({
         router: {},
@@ -208,8 +183,8 @@ moduleFor(
           returnsFalse() {
             assert.ok(true, 'returnsFalse was called');
             return false;
-          }
-        }
+          },
+        },
       }).create();
 
       assert.equal(true, route.send('returnsTrue', 1, 2));
@@ -240,9 +215,7 @@ moduleFor(
       runDestroy(route);
     }
 
-    ['@test returns the models properties if params does not include *_id'](
-      assert
-    ) {
+    ['@test returns the models properties if params does not include *_id'](assert) {
       let model = { id: 2, firstName: 'Ned', lastName: 'Ryerson' };
 
       assert.deepEqual(
@@ -255,31 +228,17 @@ moduleFor(
     ['@test returns model.id if params include *_id'](assert) {
       let model = { id: 2 };
 
-      assert.deepEqual(
-        route.serialize(model, ['post_id']),
-        { post_id: 2 },
-        'serialized correctly'
-      );
+      assert.deepEqual(route.serialize(model, ['post_id']), { post_id: 2 }, 'serialized correctly');
     }
 
-    ['@test returns checks for existence of model.post_id before trying model.id'](
-      assert
-    ) {
+    ['@test returns checks for existence of model.post_id before trying model.id'](assert) {
       let model = { post_id: 3 };
 
-      assert.deepEqual(
-        route.serialize(model, ['post_id']),
-        { post_id: 3 },
-        'serialized correctly'
-      );
+      assert.deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, 'serialized correctly');
     }
 
     ['@test returns undefined if model is not set'](assert) {
-      assert.equal(
-        route.serialize(undefined, ['post_id']),
-        undefined,
-        'serialized correctly'
-      );
+      assert.equal(route.serialize(undefined, ['post_id']), undefined, 'serialized correctly');
     }
   }
 );
@@ -293,7 +252,7 @@ moduleFor(
       let owner = {
         lookup(fullName) {
           return lookupHash[fullName];
-        }
+        },
       };
 
       routeOne = EmberRoute.create({ routeName: 'one' });
@@ -304,7 +263,7 @@ moduleFor(
 
       lookupHash = {
         'route:one': routeOne,
-        'route:two': routeTwo
+        'route:two': routeTwo,
       };
     }
 
@@ -313,9 +272,7 @@ moduleFor(
       runDestroy(routeTwo);
     }
 
-    ['@test route._qp does not crash if the controller has no QP, or setProperties'](
-      assert
-    ) {
+    ['@test route._qp does not crash if the controller has no QP, or setProperties'](assert) {
       lookupHash['controller:test'] = {};
 
       routeOne.controllerName = 'test';
@@ -346,7 +303,7 @@ moduleFor(
       owner.register(
         'route:application',
         EmberRoute.extend({
-          authService: inject.service('auth')
+          authService: inject.service('auth'),
         })
       );
 
@@ -355,11 +312,7 @@ moduleFor(
       let appRoute = owner.lookup('route:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(
-        authService,
-        appRoute.get('authService'),
-        'service.auth is injected'
-      );
+      assert.equal(authService, appRoute.get('authService'), 'service.auth is injected');
     }
   }
 );
@@ -375,10 +328,10 @@ moduleFor(
             handlerInfos: [{ name: 'posts' }],
             params: {
               'foo.bar': { a: 'b' },
-              'foo.bar.posts': { c: 'd' }
-            }
-          }
-        }
+              'foo.bar.posts': { c: 'd' },
+            },
+          },
+        },
       };
 
       let engineInstance = buildOwner({
@@ -393,19 +346,19 @@ moduleFor(
             } else if (name === 'route:application') {
               return applicationRoute;
             }
-          }
-        }
+          },
+        },
       });
 
       let applicationRoute = EmberRoute.create({
         _router: router,
         routeName: 'application',
-        fullRouteName: 'foo.bar'
+        fullRouteName: 'foo.bar',
       });
       let postsRoute = EmberRoute.create({
         _router: router,
         routeName: 'posts',
-        fullRouteName: 'foo.bar.posts'
+        fullRouteName: 'foo.bar.posts',
       });
       let route = EmberRoute.create({ _router: router });
 
@@ -434,10 +387,10 @@ moduleFor(
           activeTransition: {
             resolvedModels: {
               'foo.bar': applicationModel,
-              'foo.bar.posts': postsModel
-            }
-          }
-        }
+              'foo.bar.posts': postsModel,
+            },
+          },
+        },
       };
 
       let engineInstance = buildOwner({
@@ -452,17 +405,17 @@ moduleFor(
             } else if (name === 'route:application') {
               return applicationRoute;
             }
-          }
-        }
+          },
+        },
       });
 
       let applicationRoute = EmberRoute.create({
         _router: router,
-        routeName: 'application'
+        routeName: 'application',
       });
       let postsRoute = EmberRoute.create({
         _router: router,
-        routeName: 'posts'
+        routeName: 'posts',
       });
       let route = EmberRoute.create({ _router: router });
 
@@ -478,14 +431,14 @@ moduleFor(
       let router = {
         transitionTo(route) {
           return route;
-        }
+        },
       };
 
       let engineInstance = buildOwner({
         ownerOptions: {
           routable: true,
-          mountPoint: 'foo.bar'
-        }
+          mountPoint: 'foo.bar',
+        },
       });
 
       let route = EmberRoute.create({ _router: router });
@@ -501,10 +454,7 @@ moduleFor(
         'foo.bar.posts',
         'properly prefixes child routes'
       );
-      assert.throws(
-        () => route.transitionTo('/posts'),
-        'throws when trying to use a url'
-      );
+      assert.throws(() => route.transitionTo('/posts'), 'throws when trying to use a url');
 
       let queryParams = {};
       assert.strictEqual(
@@ -514,39 +464,29 @@ moduleFor(
       );
     }
 
-    ["@test intermediateTransitionTo considers an engine's mountPoint"](
-      assert
-    ) {
+    ["@test intermediateTransitionTo considers an engine's mountPoint"](assert) {
       let lastRoute;
       let router = {
         intermediateTransitionTo(route) {
           lastRoute = route;
-        }
+        },
       };
 
       let engineInstance = buildOwner({
         ownerOptions: {
           routable: true,
-          mountPoint: 'foo.bar'
-        }
+          mountPoint: 'foo.bar',
+        },
       });
 
       let route = EmberRoute.create({ _router: router });
       setOwner(route, engineInstance);
 
       route.intermediateTransitionTo('application');
-      assert.strictEqual(
-        lastRoute,
-        'foo.bar.application',
-        'properly prefixes application route'
-      );
+      assert.strictEqual(lastRoute, 'foo.bar.application', 'properly prefixes application route');
 
       route.intermediateTransitionTo('posts');
-      assert.strictEqual(
-        lastRoute,
-        'foo.bar.posts',
-        'properly prefixes child routes'
-      );
+      assert.strictEqual(lastRoute, 'foo.bar.posts', 'properly prefixes child routes');
 
       assert.throws(
         () => route.intermediateTransitionTo('/posts'),
@@ -555,25 +495,21 @@ moduleFor(
 
       let queryParams = {};
       route.intermediateTransitionTo(queryParams);
-      assert.strictEqual(
-        lastRoute,
-        queryParams,
-        'passes query param only transitions through'
-      );
+      assert.strictEqual(lastRoute, queryParams, 'passes query param only transitions through');
     }
 
     ["@test replaceWith considers an engine's mountPoint"](assert) {
       let router = {
         replaceWith(route) {
           return route;
-        }
+        },
       };
 
       let engineInstance = buildOwner({
         ownerOptions: {
           routable: true,
-          mountPoint: 'foo.bar'
-        }
+          mountPoint: 'foo.bar',
+        },
       });
 
       let route = EmberRoute.create({ _router: router });
@@ -589,10 +525,7 @@ moduleFor(
         'foo.bar.posts',
         'properly prefixes child routes'
       );
-      assert.throws(
-        () => route.replaceWith('/posts'),
-        'throws when trying to use a url'
-      );
+      assert.throws(() => route.replaceWith('/posts'), 'throws when trying to use a url');
 
       let queryParams = {};
       assert.strictEqual(

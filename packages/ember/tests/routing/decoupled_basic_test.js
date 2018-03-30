@@ -4,12 +4,7 @@ import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
 import { ENV } from 'ember-environment';
 import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
-import {
-  Controller,
-  Object as EmberObject,
-  A as emberA,
-  copy
-} from 'ember-runtime';
+import { Controller, Object as EmberObject, A as emberA, copy } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { Mixin, computed, run, set, addObserver, observer } from 'ember-metal';
 import { getTextOf } from 'internal-test-helpers';
@@ -26,14 +21,8 @@ moduleFor(
     constructor() {
       super();
       this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate(
-        'camelot',
-        '<section id="camelot"><h3>Is a silly place</h3></section>'
-      );
-      this.addTemplate(
-        'homepage',
-        '<h3 id="troll">Megatroll</h3><p>{{model.home}}</p>'
-      );
+      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
+      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{model.home}}</p>');
 
       this.router.map(function() {
         this.route('home', { path: '/' });
@@ -106,9 +95,7 @@ moduleFor(
       });
     }
 
-    [`@test The Homepage and the Camelot page with multiple Router.map calls`](
-      assert
-    ) {
+    [`@test The Homepage and the Camelot page with multiple Router.map calls`](assert) {
       this.router.map(function() {
         this.route('camelot', { path: '/camelot' });
       });
@@ -118,11 +105,7 @@ moduleFor(
           assert.equal(this.currentPath, 'camelot');
 
           let text = this.$('#camelot').text();
-          assert.equal(
-            text,
-            'Is a silly place',
-            'the camelot template was rendered'
-          );
+          assert.equal(text, 'Is a silly place', 'the camelot template was rendered');
 
           return this.visit('/');
         })
@@ -134,15 +117,13 @@ moduleFor(
         });
     }
 
-    [`@test The Homepage with explicit template name in renderTemplate`](
-      assert
-    ) {
+    [`@test The Homepage with explicit template name in renderTemplate`](assert) {
       this.add(
         'route:home',
         Route.extend({
           renderTemplate() {
             this.render('homepage');
-          }
+          },
         })
       );
 
@@ -152,34 +133,28 @@ moduleFor(
       });
     }
 
-    [`@test an alternate template will pull in an alternate controller`](
-      assert
-    ) {
+    [`@test an alternate template will pull in an alternate controller`](assert) {
       this.add(
         'route:home',
         Route.extend({
           renderTemplate() {
             this.render('homepage');
-          }
+          },
         })
       );
       this.add(
         'controller:homepage',
         Controller.extend({
           model: {
-            home: 'Comes from homepage'
-          }
+            home: 'Comes from homepage',
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(
-          text,
-          'Comes from homepage',
-          'the homepage template was rendered'
-        );
+        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
       });
     }
 
@@ -192,40 +167,34 @@ moduleFor(
           controllerName: 'foo',
           renderTemplate() {
             this.render('homepage');
-          }
+          },
         })
       );
       this.add(
         'controller:foo',
         Controller.extend({
           model: {
-            home: 'Comes from foo'
-          }
+            home: 'Comes from foo',
+          },
         })
       );
       this.add(
         'controller:homepage',
         Controller.extend({
           model: {
-            home: 'Comes from homepage'
-          }
+            home: 'Comes from homepage',
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(
-          text,
-          'Comes from homepage',
-          'the homepage template was rendered'
-        );
+        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
       });
     }
 
-    [`@test The template will pull in an alternate controller via key/value`](
-      assert
-    ) {
+    [`@test The template will pull in an alternate controller via key/value`](assert) {
       this.router.map(function() {
         this.route('homepage', { path: '/' });
       });
@@ -235,15 +204,15 @@ moduleFor(
         Route.extend({
           renderTemplate() {
             this.render({ controller: 'home' });
-          }
+          },
         })
       );
       this.add(
         'controller:home',
         Controller.extend({
           model: {
-            home: 'Comes from home.'
-          }
+            home: 'Comes from home.',
+          },
         })
       );
 
@@ -258,15 +227,13 @@ moduleFor(
       });
     }
 
-    [`@test The Homepage with explicit template name in renderTemplate and controller`](
-      assert
-    ) {
+    [`@test The Homepage with explicit template name in renderTemplate and controller`](assert) {
       this.add(
         'controller:home',
         Controller.extend({
           model: {
-            home: 'YES I AM HOME'
-          }
+            home: 'YES I AM HOME',
+          },
         })
       );
       this.add(
@@ -274,78 +241,56 @@ moduleFor(
         Route.extend({
           renderTemplate() {
             this.render('homepage');
-          }
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(
-          text,
-          'YES I AM HOME',
-          'The homepage template was rendered'
-        );
+        assert.equal(text, 'YES I AM HOME', 'The homepage template was rendered');
       });
     }
 
-    [`@test Model passed via renderTemplate model is set as controller's model`](
-      assert
-    ) {
+    [`@test Model passed via renderTemplate model is set as controller's model`](assert) {
       this.addTemplate('bio', '<p>{{model.name}}</p>');
       this.add(
         'route:home',
         Route.extend({
           renderTemplate() {
             this.render('bio', {
-              model: { name: 'emberjs' }
+              model: { name: 'emberjs' },
             });
-          }
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(
-          text,
-          'emberjs',
-          `Passed model was set as controller's model`
-        );
+        assert.equal(text, 'emberjs', `Passed model was set as controller's model`);
       });
     }
 
     ['@test render uses templateName from route'](assert) {
-      this.addTemplate(
-        'the_real_home_template',
-        '<p>THIS IS THE REAL HOME</p>'
-      );
+      this.addTemplate('the_real_home_template', '<p>THIS IS THE REAL HOME</p>');
       this.add(
         'route:home',
         Route.extend({
-          templateName: 'the_real_home_template'
+          templateName: 'the_real_home_template',
         })
       );
 
       return this.visit('/').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(
-          text,
-          'THIS IS THE REAL HOME',
-          'the homepage template was rendered'
-        );
+        assert.equal(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
       });
     }
 
-    ['@test defining templateName allows other templates to be rendered'](
-      assert
-    ) {
+    ['@test defining templateName allows other templates to be rendered'](assert) {
       this.addTemplate('alert', `<div class='alert-box'>Invader!</div>`);
-      this.addTemplate(
-        'the_real_home_template',
-        `<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}`
-      );
+      this.addTemplate('the_real_home_template', `<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}`);
       this.add(
         'route:home',
         Route.extend({
@@ -354,43 +299,30 @@ moduleFor(
             showAlert() {
               this.render('alert', {
                 into: 'home',
-                outlet: 'alert'
+                outlet: 'alert',
               });
-            }
-          }
+            },
+          },
         })
       );
 
       return this.visit('/')
         .then(() => {
           let text = this.$('p').text();
-          assert.equal(
-            text,
-            'THIS IS THE REAL HOME',
-            'the homepage template was rendered'
-          );
+          assert.equal(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
 
           return this.runTask(() => this.appRouter.send('showAlert'));
         })
         .then(() => {
           let text = this.$('.alert-box').text();
 
-          assert.equal(
-            text,
-            'Invader!',
-            'Template for alert was rendered into the outlet'
-          );
+          assert.equal(text, 'Invader!', 'Template for alert was rendered into the outlet');
         });
     }
 
-    ['@test templateName is still used when calling render with no name and options'](
-      assert
-    ) {
+    ['@test templateName is still used when calling render with no name and options'](assert) {
       this.addTemplate('alert', `<div class='alert-box'>Invader!</div>`);
-      this.addTemplate(
-        'home',
-        `<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}`
-      );
+      this.addTemplate('home', `<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}`);
 
       this.add(
         'route:home',
@@ -398,18 +330,14 @@ moduleFor(
           templateName: 'alert',
           renderTemplate() {
             this.render({});
-          }
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let text = this.$('.alert-box').text();
 
-        assert.equal(
-          text,
-          'Invader!',
-          'default templateName was rendered into outlet'
-        );
+        assert.equal(text, 'Invader!', 'default templateName was rendered into outlet');
       });
     }
 
@@ -430,9 +358,9 @@ moduleFor(
             controller.set('hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm'
+              'Sunday: Noon to 6pm',
             ]);
-          }
+          },
         })
       );
       return this.visit('/').then(() => {
@@ -446,16 +374,14 @@ moduleFor(
       });
     }
 
-    [`@test The route controller is still set when overriding the setupController hook`](
-      assert
-    ) {
+    [`@test The route controller is still set when overriding the setupController hook`](assert) {
       this.add(
         'route:home',
         Route.extend({
           setupController() {
             // no-op
             // importantly, we are not calling this._super
-          }
+          },
         })
       );
 
@@ -478,21 +404,19 @@ moduleFor(
       this.add(
         'route:home',
         Route.extend({
-          controllerName: 'myController'
+          controllerName: 'myController',
         })
       );
       this.add(
         'controller:myController',
         Controller.extend({
-          myValue: 'foo'
+          myValue: 'foo',
         })
       );
 
       return this.visit('/').then(() => {
         let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup(
-          'controller:myController'
-        );
+        let myController = this.applicationInstance.lookup('controller:myController');
         let text = this.$('p').text();
 
         assert.equal(
@@ -508,9 +432,7 @@ moduleFor(
       });
     }
 
-    [`@test The route controller specified via controllerName is used in render`](
-      assert
-    ) {
+    [`@test The route controller specified via controllerName is used in render`](assert) {
       this.router.map(function() {
         this.route('home', { path: '/' });
       });
@@ -521,27 +443,22 @@ moduleFor(
           controllerName: 'myController',
           renderTemplate() {
             this.render('alternative_home');
-          }
+          },
         })
       );
 
       this.add(
         'controller:myController',
         Controller.extend({
-          myValue: 'foo'
+          myValue: 'foo',
         })
       );
 
-      this.addTemplate(
-        'alternative_home',
-        '<p>alternative home: {{myValue}}</p>'
-      );
+      this.addTemplate('alternative_home', '<p>alternative home: {{myValue}}</p>');
 
       return this.visit('/').then(() => {
         let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup(
-          'controller:myController'
-        );
+        let myController = this.applicationInstance.lookup('controller:myController');
         let text = this.$('p').text();
 
         assert.equal(
@@ -570,29 +487,27 @@ moduleFor(
       this.add(
         'route:home',
         Route.extend({
-          controllerName: 'myController'
+          controllerName: 'myController',
         })
       );
 
       this.add(
         'controller:home',
         Controller.extend({
-          myValue: 'home'
+          myValue: 'home',
         })
       );
 
       this.add(
         'controller:myController',
         Controller.extend({
-          myValue: 'myController'
+          myValue: 'myController',
         })
       );
 
       return this.visit('/').then(() => {
         let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup(
-          'controller:myController'
-        );
+        let myController = this.applicationInstance.lookup('controller:myController');
         let text = this.$('p').text();
 
         assert.equal(
@@ -609,9 +524,7 @@ moduleFor(
       });
     }
 
-    [`@test The Homepage with a 'setupController' hook modifying other controllers`](
-      assert
-    ) {
+    [`@test The Homepage with a 'setupController' hook modifying other controllers`](assert) {
       this.router.map(function() {
         this.route('home', { path: '/' });
       });
@@ -623,16 +536,13 @@ moduleFor(
             this.controllerFor('home').set('hours', [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm'
+              'Sunday: Noon to 6pm',
             ]);
-          }
+          },
         })
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
-      );
+      this.addTemplate('home', '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>');
 
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
@@ -645,9 +555,7 @@ moduleFor(
       });
     }
 
-    [`@test The Homepage with a computed model that does not get overridden`](
-      assert
-    ) {
+    [`@test The Homepage with a computed model that does not get overridden`](assert) {
       this.router.map(function() {
         this.route('home', { path: '/' });
       });
@@ -659,9 +567,9 @@ moduleFor(
             return [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm'
+              'Sunday: Noon to 6pm',
             ];
-          })
+          }),
         })
       );
 
@@ -693,7 +601,7 @@ moduleFor(
             return [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm'
+              'Sunday: Noon to 6pm',
             ];
           },
 
@@ -701,14 +609,11 @@ moduleFor(
             assert.equal(this.controllerFor('home'), controller);
 
             this.controllerFor('home').set('hours', model);
-          }
+          },
         })
       );
 
-      this.addTemplate(
-        'home',
-        '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
-      );
+      this.addTemplate('home', '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>');
 
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
@@ -734,9 +639,9 @@ moduleFor(
         Route.extend({
           model(params) {
             return EmberObject.create({
-              menuItemId: params.menu_item_id
+              menuItemId: params.menu_item_id,
             });
-          }
+          },
         })
       );
 
@@ -754,7 +659,7 @@ moduleFor(
       MenuItem.reopenClass({
         find(id) {
           return MenuItem.create({ id });
-        }
+        },
       });
       this.add('model:menu_item', MenuItem);
 
@@ -786,7 +691,7 @@ moduleFor(
           return new RSVP.Promise(function(res) {
             resolve = res;
           });
-        }
+        },
       });
 
       this.add('model:menu_item', MenuItem);
@@ -816,7 +721,7 @@ moduleFor(
       MenuItem.reopenClass({
         find(id) {
           return { id: id };
-        }
+        },
       });
 
       this.add('model:menu_item', MenuItem);
@@ -826,7 +731,7 @@ moduleFor(
         Route.extend({
           enter() {
             assert.ok(false, "LoadingRoute shouldn't have been entered.");
-          }
+          },
         })
       );
 
@@ -840,9 +745,7 @@ moduleFor(
       });
     }
 
-    ["@test The Special page returning an error invokes SpecialRoute's error handler"](
-      assert
-    ) {
+    ["@test The Special page returning an error invokes SpecialRoute's error handler"](assert) {
       this.router.map(function() {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
@@ -857,7 +760,7 @@ moduleFor(
           promise = new RSVP.Promise(res => (resolve = res));
 
           return promise;
-        }
+        },
       });
 
       this.add('model:menu_item', MenuItem);
@@ -876,8 +779,8 @@ moduleFor(
                 'SpecialRoute#error received the error thrown from setup'
               );
               return true;
-            }
-          }
+            },
+          },
         })
       );
 
@@ -886,9 +789,7 @@ moduleFor(
       run(() => resolve(menuItem));
     }
 
-    ["@test ApplicationRoute's default error handler can be overridden"](
-      assert
-    ) {
+    ["@test ApplicationRoute's default error handler can be overridden"](assert) {
       assert.expect(2);
 
       this.router.map(function() {
@@ -904,7 +805,7 @@ moduleFor(
         find(id) {
           menuItem = MenuItem.create({ id: id });
           return new RSVP.Promise(res => (resolve = res));
-        }
+        },
       });
       this.add('model:menu_item', MenuItem);
 
@@ -919,8 +820,8 @@ moduleFor(
                 'error was correctly passed to custom ApplicationRoute handler'
               );
               return true;
-            }
-          }
+            },
+          },
         })
       );
 
@@ -929,7 +830,7 @@ moduleFor(
         Route.extend({
           setup() {
             throw 'Setup error';
-          }
+          },
         })
       );
 
@@ -938,9 +839,7 @@ moduleFor(
       run(() => resolve(menuItem));
     }
 
-    ['@test Moving from one page to another triggers the correct callbacks'](
-      assert
-    ) {
+    ['@test Moving from one page to another triggers the correct callbacks'](assert) {
       assert.expect(3);
 
       this.router.map(function() {
@@ -952,7 +851,7 @@ moduleFor(
       MenuItem.reopenClass({
         find(id) {
           return MenuItem.create({ id: id });
-        }
+        },
       });
       this.add('model:menu_item', MenuItem);
 
@@ -986,14 +885,14 @@ moduleFor(
         find(id) {
           menuItem = MenuItem.create({ id: id });
           return menuItem;
-        }
+        },
       });
 
       this.router.map(function() {
         this.route('root', { path: '/' }, function() {
           this.route('special', {
             path: '/specials/:menu_item_id',
-            resetNamespace: true
+            resetNamespace: true,
           });
         });
       });
@@ -1017,7 +916,7 @@ moduleFor(
           serialize() {
             rootSerialize++;
             return this._super(...arguments);
-          }
+          },
         })
       );
 
@@ -1031,7 +930,7 @@ moduleFor(
           },
           setupController(controller, model) {
             set(controller, 'model', model);
-          }
+          },
         })
       );
 
@@ -1057,11 +956,7 @@ moduleFor(
 
         return router.transitionTo('special', menuItem).then(function() {
           assert.equal(rootSetup, 1, 'The root setup was not triggered again');
-          assert.equal(
-            rootRender,
-            1,
-            'The root render was not triggered again'
-          );
+          assert.equal(rootRender, 1, 'The root render was not triggered again');
           assert.equal(rootSerialize, 0, 'The root serialize was not called');
 
           // TODO: Should this be changed?
@@ -1095,8 +990,8 @@ moduleFor(
           actions: {
             showStuff() {
               stateIsNotCalled = false;
-            }
-          }
+            },
+          },
         })
       );
 
@@ -1106,18 +1001,11 @@ moduleFor(
         Controller.extend({
           actions: {
             showStuff(context) {
-              assert.ok(
-                stateIsNotCalled,
-                'an event on the state is not triggered'
-              );
-              assert.deepEqual(
-                context,
-                { name: 'Tom Dale' },
-                'an event with context is passed'
-              );
+              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
+              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
               done();
-            }
-          }
+            },
+          },
         })
       );
 
@@ -1129,9 +1017,7 @@ moduleFor(
       });
     }
 
-    ['@test Events are triggered on the current state when defined in `actions` object'](
-      assert
-    ) {
+    ['@test Events are triggered on the current state when defined in `actions` object'](assert) {
       let done = assert.async();
 
       this.router.map(function() {
@@ -1146,26 +1032,16 @@ moduleFor(
 
         actions: {
           showStuff(obj) {
-            assert.ok(
-              this instanceof HomeRoute,
-              'the handler is an App.HomeRoute'
-            );
+            assert.ok(this instanceof HomeRoute, 'the handler is an App.HomeRoute');
             // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(
-              copy(obj, true),
-              { name: 'Tom Dale' },
-              'the context is correct'
-            );
+            assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
             done();
-          }
-        }
+          },
+        },
       });
 
       this.add('route:home', HomeRoute);
-      this.addTemplate(
-        'home',
-        '<a {{action "showStuff" model}}>{{model.name}}</a>'
-      );
+      this.addTemplate('home', '<a {{action "showStuff" model}}>{{model.name}}</a>');
 
       this.visit('/').then(() => {
         document
@@ -1191,19 +1067,12 @@ moduleFor(
       let RootRoute = Route.extend({
         actions: {
           showStuff(obj) {
-            assert.ok(
-              this instanceof RootRoute,
-              'the handler is an App.HomeRoute'
-            );
+            assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
             // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(
-              copy(obj, true),
-              { name: 'Tom Dale' },
-              'the context is correct'
-            );
+            assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
             done();
-          }
-        }
+          },
+        },
       });
       this.add('route:root', RootRoute);
       this.add(
@@ -1211,14 +1080,11 @@ moduleFor(
         Route.extend({
           model() {
             return model;
-          }
+          },
         })
       );
 
-      this.addTemplate(
-        'root.index',
-        '<a {{action "showStuff" model}}>{{model.name}}</a>'
-      );
+      this.addTemplate('root.index', '<a {{action "showStuff" model}}>{{model.name}}</a>');
 
       this.visit('/').then(() => {
         document
@@ -1238,8 +1104,8 @@ moduleFor(
           },
           bar(msg) {
             assert.equal(msg, 'HELLO', 'bar hander in super route');
-          }
-        }
+          },
+        },
       });
 
       let RouteMixin = Mixin.create({
@@ -1247,8 +1113,8 @@ moduleFor(
           bar(msg) {
             assert.equal(msg, 'HELLO', 'bar handler in mixin');
             this._super(msg);
-          }
-        }
+          },
+        },
       });
 
       this.add(
@@ -1257,8 +1123,8 @@ moduleFor(
           actions: {
             baz() {
               assert.ok(true, 'baz', 'baz hander in route');
-            }
-          }
+            },
+          },
         })
       );
       this.addTemplate(
@@ -1299,18 +1165,11 @@ moduleFor(
 
           actions: {
             showStuff(context) {
-              assert.ok(
-                stateIsNotCalled,
-                'an event on the state is not triggered'
-              );
-              assert.deepEqual(
-                context,
-                { name: 'Tom Dale' },
-                'an event with context is passed'
-              );
+              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
+              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
               done();
-            }
-          }
+            },
+          },
         })
       );
 
@@ -1321,11 +1180,8 @@ moduleFor(
         Controller.extend({
           showStuff() {
             stateIsNotCalled = false;
-            assert.ok(
-              stateIsNotCalled,
-              'an event on the state is not triggered'
-            );
-          }
+            assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
+          },
         })
       );
 
@@ -1351,24 +1207,17 @@ moduleFor(
       let RootRoute = Route.extend({
         actions: {
           showStuff(obj1, obj2) {
-            assert.ok(
-              this instanceof RootRoute,
-              'the handler is an App.HomeRoute'
-            );
+            assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
             // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(
-              copy(obj1, true),
-              { name: 'Tilde' },
-              'the first context is correct'
-            );
+            assert.deepEqual(copy(obj1, true), { name: 'Tilde' }, 'the first context is correct');
             assert.deepEqual(
               copy(obj2, true),
               { name: 'Tom Dale' },
               'the second context is correct'
             );
             done();
-          }
-        }
+          },
+        },
       });
 
       this.add('route:root', RootRoute);
@@ -1377,14 +1226,11 @@ moduleFor(
         'controller:root.index',
         Controller.extend({
           model1: model1,
-          model2: model2
+          model2: model2,
         })
       );
 
-      this.addTemplate(
-        'root.index',
-        '<a {{action "showStuff" model1 model2}}>{{model1.name}}</a>'
-      );
+      this.addTemplate('root.index', '<a {{action "showStuff" model1 model2}}>{{model1.name}}</a>');
 
       this.visit('/').then(() => {
         document
@@ -1394,9 +1240,7 @@ moduleFor(
       });
     }
 
-    ['@test transitioning multiple times in a single run loop only sets the URL once'](
-      assert
-    ) {
+    ['@test transitioning multiple times in a single run loop only sets the URL once'](assert) {
       this.router.map(function() {
         this.route('root', { path: '/' });
         this.route('foo');
@@ -1439,9 +1283,7 @@ moduleFor(
         addObserver(router, 'url', function() {
           assert.ok(true, 'url change event was fired');
         });
-        ['foo', 'bar', '/foo'].forEach(destination =>
-          run(router, 'transitionTo', destination)
-        );
+        ['foo', 'bar', '/foo'].forEach(destination => run(router, 'transitionTo', destination));
       });
     }
 
@@ -1458,8 +1300,8 @@ moduleFor(
           replaceURL(path) {
             replaceCount++;
             set(this, 'path', path);
-          }
-        })
+          },
+        }),
       });
 
       this.router.map(function() {
@@ -1480,9 +1322,7 @@ moduleFor(
       });
     }
 
-    ['@test using replaceWith calls setURL if location.replaceURL is not defined'](
-      assert
-    ) {
+    ['@test using replaceWith calls setURL if location.replaceURL is not defined'](assert) {
       let setCount = 0;
 
       this.router.reopen({
@@ -1490,8 +1330,8 @@ moduleFor(
           setURL(path) {
             setCount++;
             set(this, 'path', path);
-          }
-        })
+          },
+        }),
       });
 
       this.router.map(function() {
@@ -1516,13 +1356,9 @@ moduleFor(
         this.route('the-post', { path: '/posts/:post_id' }, function() {
           this.route('comments');
 
-          this.route(
-            'shares',
-            { path: '/shares/:share_id', resetNamespace: true },
-            function() {
-              this.route('share');
-            }
-          );
+          this.route('shares', { path: '/shares/:share_id', resetNamespace: true }, function() {
+            this.route('share');
+          });
         });
       });
 
@@ -1536,12 +1372,12 @@ moduleFor(
       let posts = {
         1: post1,
         2: post2,
-        3: post3
+        3: post3,
       };
       let shares = {
         1: share1,
         2: share2,
-        3: share3
+        3: share3,
       };
 
       this.add(
@@ -1549,7 +1385,7 @@ moduleFor(
         Route.extend({
           model(params) {
             return posts[params.post_id];
-          }
+          },
         })
       );
 
@@ -1560,7 +1396,7 @@ moduleFor(
             let parent_model = this.modelFor('the-post');
 
             assert.equal(post, parent_model);
-          }
+          },
         })
       );
 
@@ -1569,7 +1405,7 @@ moduleFor(
         Route.extend({
           model(params) {
             return shares[params.share_id];
-          }
+          },
         })
       );
 
@@ -1580,7 +1416,7 @@ moduleFor(
             let parent_model = this.modelFor('shares');
 
             assert.equal(share, parent_model);
-          }
+          },
         })
       );
 
@@ -1610,9 +1446,7 @@ moduleFor(
         });
     }
 
-    ['@test Routes with { resetNamespace: true } inherits model from parent route'](
-      assert
-    ) {
+    ['@test Routes with { resetNamespace: true } inherits model from parent route'](assert) {
       assert.expect(6);
 
       this.router.map(function() {
@@ -1628,7 +1462,7 @@ moduleFor(
       let posts = {
         1: post1,
         2: post2,
-        3: post3
+        3: post3,
       };
 
       this.add(
@@ -1636,7 +1470,7 @@ moduleFor(
         Route.extend({
           model(params) {
             return posts[params.post_id];
-          }
+          },
         })
       );
 
@@ -1647,7 +1481,7 @@ moduleFor(
             let parent_model = this.modelFor('the-post');
 
             assert.equal(post, parent_model);
-          }
+          },
         })
       );
 
@@ -1682,7 +1516,7 @@ moduleFor(
       let posts = {
         1: post1,
         2: post2,
-        3: post3
+        3: post3,
       };
 
       this.add(
@@ -1690,7 +1524,7 @@ moduleFor(
         Route.extend({
           model(params) {
             return posts[params.post_id];
-          }
+          },
         })
       );
 
@@ -1699,7 +1533,7 @@ moduleFor(
         Route.extend({
           model() {
             assert.equal(this.modelFor('the-post'), currentPost);
-          }
+          },
         })
       );
 
@@ -1740,7 +1574,7 @@ moduleFor(
 
           setupController() {
             chooseFollowed++;
-          }
+          },
         })
       );
 
@@ -1757,17 +1591,13 @@ moduleFor(
           'The home template was rendered'
         );
         assert.equal(
-          this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath'),
+          this.applicationInstance.lookup('controller:application').get('currentPath'),
           'home'
         );
       });
     }
 
-    ['@test Redirecting from the middle of a route aborts the remainder of the routes'](
-      assert
-    ) {
+    ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
       assert.expect(3);
 
       this.router.map(function() {
@@ -1787,7 +1617,7 @@ moduleFor(
           },
           setupController() {
             assert.ok(false, 'Should transition before setupController');
-          }
+          },
         })
       );
 
@@ -1796,7 +1626,7 @@ moduleFor(
         Route.extend({
           enter() {
             assert.ok(false, 'Should abort transition getting to next route');
-          }
+          },
         })
       );
 
@@ -1804,9 +1634,7 @@ moduleFor(
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
         assert.equal(
-          this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath'),
+          this.applicationInstance.lookup('controller:application').get('currentPath'),
           'home'
         );
         assert.equal(router.get('location').getURL(), '/home');
@@ -1840,7 +1668,7 @@ moduleFor(
 
           setupController() {
             assert.ok(true, "Should still invoke bar's setupController");
-          }
+          },
         })
       );
 
@@ -1849,23 +1677,17 @@ moduleFor(
         Route.extend({
           setupController() {
             assert.ok(true, "Should still invoke bar.baz's setupController");
-          }
+          },
         })
       );
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
         assert.equal(
-          this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath'),
+          this.applicationInstance.lookup('controller:application').get('currentPath'),
           'foo.bar.baz'
         );
-        assert.equal(
-          successCount,
-          1,
-          'transitionTo success handler was called once'
-        );
+        assert.equal(successCount, 1, 'transitionTo success handler was called once');
       });
     }
 
@@ -1877,13 +1699,9 @@ moduleFor(
       this.router.map(function() {
         this.route('home');
         this.route('foo', function() {
-          this.route(
-            'bar',
-            { path: 'bar/:id', resetNamespace: true },
-            function() {
-              this.route('baz');
-            }
-          );
+          this.route('bar', { path: 'bar/:id', resetNamespace: true }, function() {
+            this.route('baz');
+          });
         });
       });
 
@@ -1900,7 +1718,7 @@ moduleFor(
             } else {
               this.transitionTo('bar.baz', model);
             }
-          }
+          },
         })
       );
 
@@ -1909,16 +1727,14 @@ moduleFor(
         Route.extend({
           setupController() {
             assert.ok(true, 'Should still invoke setupController');
-          }
+          },
         })
       );
 
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
         assert.equal(
-          this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath'),
+          this.applicationInstance.lookup('controller:application').get('currentPath'),
           'foo.bar.baz'
         );
         assert.equal(
@@ -1949,16 +1765,14 @@ moduleFor(
           actions: {
             goToQux() {
               this.transitionTo('foo.qux');
-            }
-          }
+            },
+          },
         })
       );
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        let applicationController = this.applicationInstance.lookup(
-          'controller:application'
-        );
+        let applicationController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
         assert.equal(applicationController.get('currentPath'), 'foo.bar.baz');
         run(() => router.send('goToQux'));
@@ -1967,29 +1781,20 @@ moduleFor(
       });
     }
 
-    ['@test Generated names can be customized when providing routes with dot notation'](
-      assert
-    ) {
+    ['@test Generated names can be customized when providing routes with dot notation'](assert) {
       assert.expect(4);
 
       this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate(
-        'application',
-        "<h1>Home</h1><div class='main'>{{outlet}}</div>"
-      );
+      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
       this.addTemplate('foo', "<div class='middle'>{{outlet}}</div>");
       this.addTemplate('bar', "<div class='bottom'>{{outlet}}</div>");
       this.addTemplate('bar.baz', '<p>{{name}}Bottom!</p>');
 
       this.router.map(function() {
         this.route('foo', { path: '/top' }, function() {
-          this.route(
-            'bar',
-            { path: '/middle', resetNamespace: true },
-            function() {
-              this.route('baz', { path: '/bottom' });
-            }
-          );
+          this.route('bar', { path: '/middle', resetNamespace: true }, function() {
+            this.route('baz', { path: '/bottom' });
+          });
         });
       });
 
@@ -1999,7 +1804,7 @@ moduleFor(
           renderTemplate() {
             assert.ok(true, 'FooBarRoute was called');
             return this._super(...arguments);
-          }
+          },
         })
       );
 
@@ -2009,21 +1814,21 @@ moduleFor(
           renderTemplate() {
             assert.ok(true, 'BarBazRoute was called');
             return this._super(...arguments);
-          }
+          },
         })
       );
 
       this.add(
         'controller:bar',
         Controller.extend({
-          name: 'Bar'
+          name: 'Bar',
         })
       );
 
       this.add(
         'controller:bar.baz',
         Controller.extend({
-          name: 'BarBaz'
+          name: 'BarBaz',
         })
       );
 
@@ -2038,14 +1843,9 @@ moduleFor(
       });
     }
 
-    ["@test Child routes render into their parent route's template by default"](
-      assert
-    ) {
+    ["@test Child routes render into their parent route's template by default"](assert) {
       this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate(
-        'application',
-        "<h1>Home</h1><div class='main'>{{outlet}}</div>"
-      );
+      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
       this.addTemplate('top', "<div class='middle'>{{outlet}}</div>");
       this.addTemplate('middle', "<div class='bottom'>{{outlet}}</div>");
       this.addTemplate('middle.bottom', '<p>Bottom!</p>');
@@ -2071,10 +1871,7 @@ moduleFor(
 
     ['@test Child routes render into specified template'](assert) {
       this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate(
-        'application',
-        "<h1>Home</h1><div class='main'>{{outlet}}</div>"
-      );
+      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
       this.addTemplate('top', "<div class='middle'>{{outlet}}</div>");
       this.addTemplate('middle', "<div class='bottom'>{{outlet}}</div>");
       this.addTemplate('middle.bottom', '<p>Bottom!</p>');
@@ -2092,7 +1889,7 @@ moduleFor(
         Route.extend({
           renderTemplate() {
             this.render('middle/bottom', { into: 'top' });
-          }
+          },
         })
       );
 
@@ -2126,7 +1923,7 @@ moduleFor(
           renderTemplate() {
             this.render('person/profile');
             this.render('person/details', { into: 'person/profile' });
-          }
+          },
         })
       );
 
@@ -2152,13 +1949,9 @@ moduleFor(
 
       this.router.map(function() {
         this.route('posts', function() {
-          this.route(
-            'post',
-            { path: '/:postId', resetNamespace: true },
-            function() {
-              this.route('edit');
-            }
-          );
+          this.route('post', { path: '/:postId', resetNamespace: true }, function() {
+            this.route('edit');
+          });
         });
       });
 
@@ -2168,8 +1961,8 @@ moduleFor(
           actions: {
             showPost(context) {
               this.transitionTo('post', context);
-            }
-          }
+            },
+          },
         })
       );
 
@@ -2187,8 +1980,8 @@ moduleFor(
           actions: {
             editPost() {
               this.transitionTo('post.edit');
-            }
-          }
+            },
+          },
         })
       );
 
@@ -2203,7 +1996,7 @@ moduleFor(
           setup() {
             this._super(...arguments);
             editCount++;
-          }
+          },
         })
       );
 
@@ -2213,11 +2006,7 @@ moduleFor(
         run(() => router.send('editPost'));
         run(() => router.send('showPost', { id: '2' }));
         run(() => router.send('editPost'));
-        assert.equal(
-          editCount,
-          2,
-          'set up the edit route twice without failure'
-        );
+        assert.equal(editCount, 2, 'set up the edit route twice without failure');
         assert.deepEqual(
           editedPostIds,
           ['1', '2'],
@@ -2226,9 +2015,7 @@ moduleFor(
       });
     }
 
-    ['@test Router accounts for rootURL on page load when using history location'](
-      assert
-    ) {
+    ['@test Router accounts for rootURL on page load when using history location'](assert) {
       let rootURL = window.location.pathname + '/app';
       let postsTemplateRendered = false;
       let setHistory;
@@ -2246,7 +2033,7 @@ moduleFor(
             setHistory(this, path);
             this.set('location', {
               pathname: path,
-              href: 'http://localhost/' + path
+              href: 'http://localhost/' + path,
             });
           },
 
@@ -2256,9 +2043,9 @@ moduleFor(
 
           pushState(path) {
             setHistory(this, path);
-          }
+          },
         }),
-        rootURL: rootURL
+        rootURL: rootURL,
       });
 
       this.router.map(function() {
@@ -2271,21 +2058,16 @@ moduleFor(
           model() {},
           renderTemplate() {
             postsTemplateRendered = true;
-          }
+          },
         })
       );
 
       return this.visit('/').then(() => {
-        assert.ok(
-          postsTemplateRendered,
-          'Posts route successfully stripped from rootURL'
-        );
+        assert.ok(postsTemplateRendered, 'Posts route successfully stripped from rootURL');
       });
     }
 
-    ['@test The rootURL is passed properly to the location implementation'](
-      assert
-    ) {
+    ['@test The rootURL is passed properly to the location implementation'](assert) {
       assert.expect(1);
       let rootURL = '/blahzorz';
       this.add(
@@ -2293,11 +2075,11 @@ moduleFor(
         HistoryLocation.extend({
           rootURL: 'this is not the URL you are looking for',
           history: {
-            pushState() {}
+            pushState() {},
           },
           initState() {
             assert.equal(this.get('rootURL'), rootURL);
-          }
+          },
         })
       );
 
@@ -2308,15 +2090,13 @@ moduleFor(
         // if the tests are run from a static file
         _doURLTransition() {
           return RSVP.resolve('');
-        }
+        },
       });
 
       return this.visit('/');
     }
 
-    ['@test Only use route rendered into main outlet for default into property on child'](
-      assert
-    ) {
+    ['@test Only use route rendered into main outlet for default into property on child'](assert) {
       this.addTemplate('application', "{{outlet 'menu'}}{{outlet}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('posts.index', '<p class="posts-index">postsIndex</p>');
@@ -2333,9 +2113,9 @@ moduleFor(
             this.render();
             this.render('posts/menu', {
               into: 'application',
-              outlet: 'menu'
+              outlet: 'menu',
             });
-          }
+          },
         })
       );
 
@@ -2362,7 +2142,7 @@ moduleFor(
 
       let posts = {
         1: { id: 1 },
-        2: { id: 2 }
+        2: { id: 2 },
       };
 
       this.add(
@@ -2370,7 +2150,7 @@ moduleFor(
         Route.extend({
           model(params) {
             return posts[params.post_id];
-          }
+          },
         })
       );
 
@@ -2380,17 +2160,13 @@ moduleFor(
         let route = this.applicationInstance.lookup('route:post');
         assert.equal(route.modelFor('post'), posts[1]);
 
-        let url = this.applicationInstance
-          .lookup('router:main')
-          .generate('post', posts[2]);
+        let url = this.applicationInstance.lookup('router:main').generate('post', posts[2]);
         assert.equal(url, '/posts/2');
         assert.equal(route.modelFor('post'), posts[1]);
       });
     }
 
-    ["@test Nested index route is not overridden by parent's implicit index route"](
-      assert
-    ) {
+    ["@test Nested index route is not overridden by parent's implicit index route"](assert) {
       this.router.map(function() {
         this.route('posts', function() {
           this.route('index', { path: ':category' });
@@ -2409,10 +2185,7 @@ moduleFor(
     }
 
     ['@test Application template does not duplicate when re-rendered'](assert) {
-      this.addTemplate(
-        'application',
-        '<h3 class="render-once">I render once</h3>{{outlet}}'
-      );
+      this.addTemplate('application', '<h3 class="render-once">I render once</h3>{{outlet}}');
 
       this.router.map(function() {
         this.route('posts');
@@ -2423,17 +2196,14 @@ moduleFor(
         Route.extend({
           model() {
             return emberA();
-          }
+          },
         })
       );
 
       return this.visit('/posts').then(() => {
         assert.ok(true, '/posts has been handled');
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          getTextOf(rootElement.querySelector('h3.render-once')),
-          'I render once'
-        );
+        assert.equal(getTextOf(rootElement.querySelector('h3.render-once')), 'I render once');
       });
     }
 
@@ -2453,7 +2223,7 @@ moduleFor(
         Route.extend({
           afterModel() {
             this.transitionTo('posts');
-          }
+          },
         })
       );
 
@@ -2463,9 +2233,7 @@ moduleFor(
       });
     }
 
-    ["@test The template is not re-rendered when the route's context changes"](
-      assert
-    ) {
+    ["@test The template is not re-rendered when the route's context changes"](assert) {
       this.router.map(function() {
         this.route('page', { path: '/page/:name' });
       });
@@ -2475,7 +2243,7 @@ moduleFor(
         Route.extend({
           model(params) {
             return EmberObject.create({ name: params.name });
-          }
+          },
         })
       );
 
@@ -2485,7 +2253,7 @@ moduleFor(
         Component.extend({
           didInsertElement() {
             insertionCount += 1;
-          }
+          },
         })
       );
 
@@ -2502,23 +2270,13 @@ moduleFor(
         .then(() => {
           assert.ok(true, '/page/second has been handled');
           assert.equal(getTextOf(rootElement.querySelector('p')), 'second');
-          assert.equal(
-            insertionCount,
-            1,
-            'view should have inserted only once'
-          );
+          assert.equal(insertionCount, 1, 'view should have inserted only once');
           let router = this.applicationInstance.lookup('router:main');
-          return run(() =>
-            router.transitionTo('page', EmberObject.create({ name: 'third' }))
-          );
+          return run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
         })
         .then(() => {
           assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
-          assert.equal(
-            insertionCount,
-            1,
-            'view should still have inserted only once'
-          );
+          assert.equal(insertionCount, 1, 'view should still have inserted only once');
         });
     }
 
@@ -2540,21 +2298,18 @@ moduleFor(
         Component.extend({
           didInsertElement() {
             insertionCount += 1;
-          }
+          },
         })
       );
 
       let SharedRoute = Route.extend({
         setupController() {
-          this.controllerFor('shared').set(
-            'message',
-            'This is the ' + this.routeName + ' message'
-          );
+          this.controllerFor('shared').set('message', 'This is the ' + this.routeName + ' message');
         },
 
         renderTemplate() {
           this.render('shared', { controller: 'shared' });
-        }
+        },
       });
 
       this.add('route:shared', SharedRoute);
@@ -2571,19 +2326,13 @@ moduleFor(
       return this.visit('/first')
         .then(() => {
           assert.ok(true, '/first has been handled');
-          assert.equal(
-            getTextOf(rootElement.querySelector('p')),
-            'This is the first message'
-          );
+          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the first message');
           assert.equal(insertionCount, 1, 'expected one assertion');
           return this.visit('/second');
         })
         .then(() => {
           assert.ok(true, '/second has been handled');
-          assert.equal(
-            getTextOf(rootElement.querySelector('p')),
-            'This is the second message'
-          );
+          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the second message');
           assert.equal(insertionCount, 1, 'expected one assertion');
           return run(() => {
             this.applicationInstance
@@ -2594,36 +2343,24 @@ moduleFor(
                   assert.ok(true, 'expected transition');
                 },
                 function(reason) {
-                  assert.ok(
-                    false,
-                    'unexpected transition failure: ',
-                    QUnit.jsDump.parse(reason)
-                  );
+                  assert.ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
                 }
               );
           });
         })
         .then(() => {
-          assert.equal(
-            getTextOf(rootElement.querySelector('p')),
-            'This is the third message'
-          );
+          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the third message');
           assert.equal(insertionCount, 1, 'expected one assertion');
           return this.visit('fourth');
         })
         .then(() => {
           assert.ok(true, '/fourth has been handled');
           assert.equal(insertionCount, 1, 'expected one assertion');
-          assert.equal(
-            getTextOf(rootElement.querySelector('p')),
-            'This is the fourth message'
-          );
+          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the fourth message');
         });
     }
 
-    ['@test ApplicationRoute with model does not proxy the currentPath'](
-      assert
-    ) {
+    ['@test ApplicationRoute with model does not proxy the currentPath'](assert) {
       let model = {};
       let currentPath;
 
@@ -2636,7 +2373,7 @@ moduleFor(
         Route.extend({
           model() {
             return model;
-          }
+          },
         })
       );
 
@@ -2645,7 +2382,7 @@ moduleFor(
         Controller.extend({
           currentPathDidChange: observer('currentPath', function() {
             currentPath = this.currentPath;
-          })
+          }),
         })
       );
 
@@ -2659,9 +2396,7 @@ moduleFor(
       });
     }
 
-    ['@test Promises encountered on app load put app into loading state until resolved'](
-      assert
-    ) {
+    ['@test Promises encountered on app load put app into loading state until resolved'](assert) {
       assert.expect(2);
 
       let deferred = RSVP.defer();
@@ -2674,7 +2409,7 @@ moduleFor(
         Route.extend({
           model() {
             return deferred.promise;
-          }
+          },
         })
       );
 
@@ -2697,18 +2432,12 @@ moduleFor(
     }
 
     ['@test Route should tear down multiple outlets'](assert) {
-      this.addTemplate(
-        'application',
-        "{{outlet 'menu'}}{{outlet}}{{outlet 'footer'}}"
-      );
+      this.addTemplate('application', "{{outlet 'menu'}}{{outlet}}{{outlet 'footer'}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('users', 'users');
       this.addTemplate('posts.index', '<p class="posts-index">postsIndex</p>');
       this.addTemplate('posts.menu', '<div class="posts-menu">postsMenu</div>');
-      this.addTemplate(
-        'posts.footer',
-        '<div class="posts-footer">postsFooter</div>'
-      );
+      this.addTemplate('posts.footer', '<div class="posts-footer">postsFooter</div>');
 
       this.router.map(function() {
         this.route('posts', function() {});
@@ -2721,16 +2450,16 @@ moduleFor(
           renderTemplate() {
             this.render('posts/menu', {
               into: 'application',
-              outlet: 'menu'
+              outlet: 'menu',
             });
 
             this.render();
 
             this.render('posts/footer', {
               into: 'application',
-              outlet: 'footer'
+              outlet: 'footer',
             });
-          }
+          },
         })
       );
 
@@ -2790,7 +2519,7 @@ moduleFor(
         Route.extend({
           renderTemplate() {
             this.render({ into: 'nonexistent' });
-          }
+          },
         })
       );
 
@@ -2804,18 +2533,9 @@ moduleFor(
       this.addTemplate('application', "{{outlet}}{{outlet 'modal'}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('users', 'users');
-      this.addTemplate(
-        'posts.index',
-        '<div class="posts-index">postsIndex {{outlet}}</div>'
-      );
-      this.addTemplate(
-        'posts.modal',
-        '<div class="posts-modal">postsModal</div>'
-      );
-      this.addTemplate(
-        'posts.extra',
-        '<div class="posts-extra">postsExtra</div>'
-      );
+      this.addTemplate('posts.index', '<div class="posts-index">postsIndex {{outlet}}</div>');
+      this.addTemplate('posts.modal', '<div class="posts-modal">postsModal</div>');
+      this.addTemplate('posts.extra', '<div class="posts-extra">postsExtra</div>');
 
       this.router.map(function() {
         this.route('posts', function() {});
@@ -2829,16 +2549,16 @@ moduleFor(
             showModal() {
               this.render('posts/modal', {
                 into: 'application',
-                outlet: 'modal'
+                outlet: 'modal',
               });
             },
             hideModal() {
               this.disconnectOutlet({
                 outlet: 'modal',
-                parentView: 'application'
+                parentView: 'application',
               });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -2848,13 +2568,13 @@ moduleFor(
           actions: {
             showExtra() {
               this.render('posts/extra', {
-                into: 'posts/index'
+                into: 'posts/index',
               });
             },
             hideExtra() {
               this.disconnectOutlet({ parentView: 'posts/index' });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -2937,14 +2657,8 @@ moduleFor(
       this.addTemplate('application', "{{outlet}}{{outlet 'modal'}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('users', 'users');
-      this.addTemplate(
-        'posts.index',
-        '<div class="posts-index">postsIndex {{outlet}}</div>'
-      );
-      this.addTemplate(
-        'posts.modal',
-        '<div class="posts-modal">postsModal</div>'
-      );
+      this.addTemplate('posts.index', '<div class="posts-index">postsIndex {{outlet}}</div>');
+      this.addTemplate('posts.modal', '<div class="posts-modal">postsModal</div>');
 
       this.router.map(function() {
         this.route('posts', function() {});
@@ -2958,13 +2672,13 @@ moduleFor(
             showModal() {
               this.render('posts/modal', {
                 into: 'application',
-                outlet: 'modal'
+                outlet: 'modal',
               });
             },
             hideModal() {
               this.disconnectOutlet('modal');
-            }
-          }
+            },
+          },
         })
       );
 
@@ -3005,9 +2719,7 @@ moduleFor(
         });
     }
 
-    ['@test Route silently fails when cleaning an outlet from an inactive view'](
-      assert
-    ) {
+    ['@test Route silently fails when cleaning an outlet from an inactive view'](assert) {
       assert.expect(1); // handleURL
 
       this.addTemplate('application', '{{outlet}}');
@@ -3025,7 +2737,7 @@ moduleFor(
             hideSelf() {
               this.disconnectOutlet({
                 outlet: 'main',
-                parentView: 'application'
+                parentView: 'application',
               });
             },
             showModal() {
@@ -3033,8 +2745,8 @@ moduleFor(
             },
             hideModal() {
               this.disconnectOutlet({ outlet: 'modal', parentView: 'posts' });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -3047,9 +2759,7 @@ moduleFor(
       });
     }
 
-    ['@test Router `willTransition` hook passes in cancellable transition'](
-      assert
-    ) {
+    ['@test Router `willTransition` hook passes in cancellable transition'](assert) {
       // Should hit willTransition 3 times, once for the initial route, and then 2 more times
       // for the two handleURL calls below
       assert.expect(5);
@@ -3065,7 +2775,7 @@ moduleFor(
           if (transition.intent.url !== '/') {
             transition.abort();
           }
-        }
+        },
       });
 
       this.add(
@@ -3073,7 +2783,7 @@ moduleFor(
         Route.extend({
           activate() {
             assert.ok(false, 'LoadingRoute was not entered');
-          }
+          },
         })
       );
 
@@ -3082,7 +2792,7 @@ moduleFor(
         Route.extend({
           activate() {
             assert.ok(false, 'NorkRoute was not entered');
-          }
+          },
         })
       );
 
@@ -3091,7 +2801,7 @@ moduleFor(
         Route.extend({
           activate() {
             assert.ok(false, 'AboutRoute was not entered');
-          }
+          },
         })
       );
 
@@ -3126,8 +2836,8 @@ moduleFor(
               } else {
                 transition.abort();
               }
-            }
-          }
+            },
+          },
         })
       );
 
@@ -3141,7 +2851,7 @@ moduleFor(
           },
           deactivate() {
             assert.ok(true, 'LoadingRoute was exited');
-          }
+          },
         })
       );
 
@@ -3150,7 +2860,7 @@ moduleFor(
         Route.extend({
           activate() {
             assert.ok(true, 'NorkRoute was entered');
-          }
+          },
         })
       );
 
@@ -3164,7 +2874,7 @@ moduleFor(
             if (deferred) {
               return deferred.promise;
             }
-          }
+          },
         })
       );
 
@@ -3229,7 +2939,7 @@ moduleFor(
         didTransition() {
           this._super(...arguments);
           assert.ok(true, 'reopened didTransition was called');
-        }
+        },
       });
 
       return this.visit('/');
@@ -3257,7 +2967,7 @@ moduleFor(
 
           activate() {
             assert.ok(true, 'activate hook is called');
-          }
+          },
         })
       );
 
@@ -3287,7 +2997,7 @@ moduleFor(
 
           deactivate() {
             assert.ok(true, 'deactivate hook is called');
-          }
+          },
         })
       );
 
@@ -3304,8 +3014,8 @@ moduleFor(
           },
           bar(msg) {
             assert.equal(msg, 'HELLO');
-          }
-        }
+          },
+        },
       });
 
       let RouteMixin = Mixin.create({
@@ -3313,8 +3023,8 @@ moduleFor(
           bar(msg) {
             assert.equal(msg, 'HELLO');
             this._super(msg);
-          }
-        }
+          },
+        },
       });
 
       this.add(
@@ -3323,8 +3033,8 @@ moduleFor(
           actions: {
             baz() {
               assert.ok(true, 'baz');
-            }
-          }
+            },
+          },
         })
       );
 
@@ -3396,9 +3106,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let appController = this.applicationInstance.lookup(
-          'controller:application'
-        );
+        let appController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
 
         function transitionAndCheck(path, expectedPath, expectedRouteName) {
@@ -3406,29 +3114,14 @@ moduleFor(
             run(router, 'transitionTo', path);
           }
           assert.equal(appController.get('currentPath'), expectedPath);
-          assert.equal(
-            appController.get('currentRouteName'),
-            expectedRouteName
-          );
+          assert.equal(appController.get('currentRouteName'), expectedRouteName);
         }
 
         transitionAndCheck(null, 'index', 'index');
         transitionAndCheck('/be', 'be.index', 'be.index');
-        transitionAndCheck(
-          '/be/excellent',
-          'be.excellent.index',
-          'excellent.index'
-        );
-        transitionAndCheck(
-          '/be/excellent/to',
-          'be.excellent.to.index',
-          'to.index'
-        );
-        transitionAndCheck(
-          '/be/excellent/to/each',
-          'be.excellent.to.each.index',
-          'each.index'
-        );
+        transitionAndCheck('/be/excellent', 'be.excellent.index', 'excellent.index');
+        transitionAndCheck('/be/excellent/to', 'be.excellent.to.index', 'to.index');
+        transitionAndCheck('/be/excellent/to/each', 'be.excellent.to.each.index', 'each.index');
         transitionAndCheck(
           '/be/excellent/to/each/other',
           'be.excellent.to.each.other',
@@ -3437,18 +3130,10 @@ moduleFor(
 
         transitionAndCheck('index', 'index', 'index');
         transitionAndCheck('be', 'be.index', 'be.index');
-        transitionAndCheck(
-          'excellent',
-          'be.excellent.index',
-          'excellent.index'
-        );
+        transitionAndCheck('excellent', 'be.excellent.index', 'excellent.index');
         transitionAndCheck('to.index', 'be.excellent.to.index', 'to.index');
         transitionAndCheck('each', 'be.excellent.to.each.index', 'each.index');
-        transitionAndCheck(
-          'each.other',
-          'be.excellent.to.each.other',
-          'each.other'
-        );
+        transitionAndCheck('each.other', 'be.excellent.to.each.other', 'each.other');
       });
     }
 
@@ -3460,7 +3145,7 @@ moduleFor(
         find() {
           post = this;
           return {};
-        }
+        },
       });
 
       this.router.map(function() {
@@ -3472,9 +3157,7 @@ moduleFor(
       });
     }
 
-    ['@test Routes can refresh themselves causing their model hooks to be re-run'](
-      assert
-    ) {
+    ['@test Routes can refresh themselves causing their model hooks to be re-run'](assert) {
       this.router.map(function() {
         this.route('parent', { path: '/parent/:parent_id' }, function() {
           this.route('child');
@@ -3487,7 +3170,7 @@ moduleFor(
         Route.extend({
           model() {
             ++appcount;
-          }
+          },
         })
       );
 
@@ -3502,8 +3185,8 @@ moduleFor(
           actions: {
             refreshParent() {
               this.refresh();
-            }
-          }
+            },
+          },
         })
       );
 
@@ -3513,7 +3196,7 @@ moduleFor(
         Route.extend({
           model() {
             ++childcount;
-          }
+          },
         })
       );
 
@@ -3539,9 +3222,7 @@ moduleFor(
         });
     }
 
-    ['@test Specifying non-existent controller name in route#render throws'](
-      assert
-    ) {
+    ['@test Specifying non-existent controller name in route#render throws'](assert) {
       assert.expect(1);
 
       this.router.map(function() {
@@ -3554,10 +3235,10 @@ moduleFor(
           renderTemplate() {
             expectAssertion(() => {
               this.render('homepage', {
-                controller: 'stefanpenneristhemanforme'
+                controller: 'stefanpenneristhemanforme',
               });
             }, "You passed `controller: 'stefanpenneristhemanforme'` into the `render` method, but no such controller could be found.");
-          }
+          },
         })
       );
 
@@ -3577,7 +3258,7 @@ moduleFor(
             if (model === null) {
               return { hurhurhur: 'TreeklesMcGeekles' };
             }
-          }
+          },
         })
       );
 
@@ -3586,7 +3267,7 @@ moduleFor(
         Route.extend({
           beforeModel() {
             this.transitionTo('about', null);
-          }
+          },
         })
       );
 
@@ -3619,11 +3300,7 @@ moduleFor(
           rejectedMessage,
           "the rejected reason's message property is logged"
         );
-        assert.equal(
-          errorStack,
-          rejectedStack,
-          "the rejected reason's stack property is logged"
-        );
+        assert.equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
       };
 
       this.add(
@@ -3632,9 +3309,9 @@ moduleFor(
           model() {
             return RSVP.reject({
               message: rejectedMessage,
-              stack: rejectedStack
+              stack: rejectedStack,
             });
-          }
+          },
         })
       );
 
@@ -3672,11 +3349,7 @@ moduleFor(
           rejectedMessage,
           "the rejected reason's message property is logged"
         );
-        assert.equal(
-          errorStack,
-          rejectedStack,
-          "the rejected reason's stack property is logged"
-        );
+        assert.equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
       };
 
       this.add(
@@ -3684,9 +3357,9 @@ moduleFor(
         Route.extend({
           model() {
             return RSVP.reject({
-              errorThrown: { message: rejectedMessage, stack: rejectedStack }
+              errorThrown: { message: rejectedMessage, stack: rejectedStack },
             });
-          }
+          },
         })
       );
 
@@ -3700,9 +3373,7 @@ moduleFor(
       );
     }
 
-    ['@test rejecting the model hooks promise with no reason still logs error'](
-      assert
-    ) {
+    ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
       assert.expect(2);
       this.router.map(function() {
         this.route('wowzers', { path: '/' });
@@ -3721,16 +3392,14 @@ moduleFor(
         Route.extend({
           model() {
             return RSVP.reject();
-          }
+          },
         })
       );
 
       return assert.throws(() => this.visit('/'));
     }
 
-    ['@test rejecting the model hooks promise with a string shows a good error'](
-      assert
-    ) {
+    ['@test rejecting the model hooks promise with a string shows a good error'](assert) {
       assert.expect(3);
       let rejectedMessage = 'Supercalifragilisticexpialidocious';
 
@@ -3756,15 +3425,11 @@ moduleFor(
         Route.extend({
           model() {
             return RSVP.reject(rejectedMessage);
-          }
+          },
         })
       );
 
-      assert.throws(
-        () => this.visit('/'),
-        new RegExp(rejectedMessage),
-        'expected an exception'
-      );
+      assert.throws(() => this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
     }
 
     ["@test willLeave, willChangeContext, willChangeModel actions don't fire unless feature flag enabled"](
@@ -3786,8 +3451,8 @@ moduleFor(
           actions: {
             willChangeModel: shouldNotFire,
             willChangeContext: shouldNotFire,
-            willLeave: shouldNotFire
-          }
+            willLeave: shouldNotFire,
+          },
         })
       );
 
@@ -3796,7 +3461,7 @@ moduleFor(
         Route.extend({
           setupController() {
             assert.ok(true, 'about route was entered');
-          }
+          },
         })
       );
 
@@ -3817,7 +3482,7 @@ moduleFor(
         Route.extend({
           redirect() {
             this.transitionTo('stink-bomb', { something: 'goes boom' });
-          }
+          },
         })
       );
 
@@ -3829,11 +3494,7 @@ moduleFor(
       assert.throws(() => this.visit('/'), /More context objects were passed/);
 
       assert.equal(actual.length, 1, 'the error is only logged once');
-      assert.equal(
-        actual[0][0],
-        'Error while processing route: yondo',
-        'source route is printed'
-      );
+      assert.equal(actual[0][0], 'Error while processing route: yondo', 'source route is printed');
       assert.ok(
         actual[0][1].match(
           /More context objects were passed than there are dynamic segments for the route: stink-bomb/
@@ -3855,7 +3516,7 @@ moduleFor(
         Route.extend({
           redirect() {
             this.transitionTo('stink-bomb', { something: 'goes boom' });
-          }
+          },
         })
       );
 
@@ -3869,23 +3530,13 @@ moduleFor(
       });
     }
 
-    ['@test Route#resetController gets fired when changing models and exiting routes'](
-      assert
-    ) {
+    ['@test Route#resetController gets fired when changing models and exiting routes'](assert) {
       assert.expect(4);
 
       this.router.map(function() {
         this.route('a', function() {
-          this.route(
-            'b',
-            { path: '/b/:id', resetNamespace: true },
-            function() {}
-          );
-          this.route(
-            'c',
-            { path: '/c/:id', resetNamespace: true },
-            function() {}
-          );
+          this.route('b', { path: '/b/:id', resetNamespace: true }, function() {});
+          this.route('c', { path: '/c/:id', resetNamespace: true }, function() {});
         });
         this.route('out');
       });
@@ -3899,7 +3550,7 @@ moduleFor(
 
         resetController(/* controller */) {
           calls.push(['reset', this.routeName]);
-        }
+        },
       });
 
       this.add('route:a', SpyRoute.extend());
@@ -3925,17 +3576,11 @@ moduleFor(
           return run(router, 'transitionTo', 'out');
         })
         .then(() => {
-          assert.deepEqual(calls, [
-            ['reset', 'c'],
-            ['reset', 'a'],
-            ['setup', 'out']
-          ]);
+          assert.deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
         });
     }
 
-    ['@test Exception during initialization of non-initial route is not swallowed'](
-      assert
-    ) {
+    ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
       this.router.map(function() {
         this.route('boom');
       });
@@ -3944,16 +3589,14 @@ moduleFor(
         Route.extend({
           init() {
             throw new Error('boom!');
-          }
+          },
         })
       );
 
       return assert.throws(() => this.visit('/boom'), /\bboom\b/);
     }
 
-    ['@test Exception during initialization of initial route is not swallowed'](
-      assert
-    ) {
+    ['@test Exception during initialization of initial route is not swallowed'](assert) {
       this.router.map(function() {
         this.route('boom', { path: '/' });
       });
@@ -3962,7 +3605,7 @@ moduleFor(
         Route.extend({
           init() {
             throw new Error('boom!');
-          }
+          },
         })
       );
       return assert.throws(() => this.visit('/'), /\bboom\b/);
@@ -3983,31 +3626,15 @@ moduleFor(
       return this.visit('/')
         .then(() => {
           rootElement = document.getElementById('qunit-fixture');
-          assert.equal(
-            rootElement.textContent.trim(),
-            'HiBye',
-            'initial render'
-          );
+          assert.equal(rootElement.textContent.trim(), 'HiBye', 'initial render');
 
-          run(() =>
-            this.applicationInstance
-              .lookup('controller:sample')
-              .set('showTheThing', true)
-          );
+          run(() => this.applicationInstance.lookup('controller:sample').set('showTheThing', true));
 
-          assert.equal(
-            rootElement.textContent.trim(),
-            'HiYayBye',
-            'second render'
-          );
+          assert.equal(rootElement.textContent.trim(), 'HiYayBye', 'second render');
           return this.visit('/2');
         })
         .then(() => {
-          assert.equal(
-            rootElement.textContent.trim(),
-            'HiBooBye',
-            'third render'
-          );
+          assert.equal(rootElement.textContent.trim(), 'HiBooBye', 'third render');
         });
     }
 
@@ -4025,9 +3652,9 @@ moduleFor(
             this.render();
             this.render('modal', {
               into: 'application',
-              outlet: 'other'
+              outlet: 'other',
             });
-          }
+          },
         })
       );
 
@@ -4055,17 +3682,17 @@ moduleFor(
             this.render();
             this.render('modal', {
               into: 'application',
-              outlet: 'other'
+              outlet: 'other',
             });
           },
           actions: {
             banish() {
               this.disconnectOutlet({
                 parentView: 'application',
-                outlet: 'other'
+                outlet: 'other',
               });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4079,17 +3706,11 @@ moduleFor(
 
         run(this.applicationInstance.lookup('router:main'), 'send', 'banish');
 
-        assert.equal(
-          rootElement.textContent.trim(),
-          'A-The index-B--C',
-          'second render'
-        );
+        assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'second render');
       });
     }
 
-    ['@test Can render into a named outlet at the top level, with empty main outlet'](
-      assert
-    ) {
+    ['@test Can render into a named outlet at the top level, with empty main outlet'](assert) {
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
 
@@ -4104,19 +3725,15 @@ moduleFor(
             this.render();
             this.render('modal', {
               into: 'application',
-              outlet: 'other'
+              outlet: 'other',
             });
-          }
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          rootElement.textContent.trim(),
-          'A--B-Hello world-C',
-          'initial render'
-        );
+        assert.equal(rootElement.textContent.trim(), 'A--B-Hello world-C', 'initial render');
       });
     }
 
@@ -4134,20 +3751,16 @@ moduleFor(
             launch() {
               this.render('modal', {
                 into: 'application',
-                outlet: 'other'
+                outlet: 'other',
               });
-            }
-          }
+            },
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          rootElement.textContent.trim(),
-          'A-The index-B--C',
-          'initial render'
-        );
+        assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'initial render');
         run(this.applicationInstance.lookup('router:main'), 'send', 'launch');
         assert.equal(
           rootElement.textContent.trim(),
@@ -4157,13 +3770,8 @@ moduleFor(
       });
     }
 
-    ["@test Can render routes with no 'main' outlet and their children"](
-      assert
-    ) {
-      this.addTemplate(
-        'application',
-        '<div id="application">{{outlet "app"}}</div>'
-      );
+    ["@test Can render routes with no 'main' outlet and their children"](assert) {
+      this.addTemplate('application', '<div id="application">{{outlet "app"}}</div>');
       this.addTemplate(
         'app',
         '<div id="app-common">{{outlet "common"}}</div><div id="app-sub">{{outlet "sub"}}</div>'
@@ -4183,13 +3791,13 @@ moduleFor(
           renderTemplate() {
             this.render('app', {
               outlet: 'app',
-              into: 'application'
+              into: 'application',
             });
             this.render('common', {
               outlet: 'common',
-              into: 'app'
+              into: 'app',
             });
-          }
+          },
         })
       );
 
@@ -4199,9 +3807,9 @@ moduleFor(
           renderTemplate() {
             this.render('sub', {
               outlet: 'sub',
-              into: 'app'
+              into: 'app',
             });
-          }
+          },
         })
       );
 
@@ -4244,16 +3852,16 @@ moduleFor(
             openLayer() {
               this.render('layer', {
                 into: 'application',
-                outlet: 'modal'
+                outlet: 'modal',
               });
             },
             close() {
               this.disconnectOutlet({
                 outlet: 'modal',
-                parentView: 'application'
+                parentView: 'application',
               });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4284,7 +3892,7 @@ moduleFor(
         Route.extend({
           renderTemplate() {
             this.render('exports/root');
-          }
+          },
         })
       );
 
@@ -4293,7 +3901,7 @@ moduleFor(
         Route.extend({
           renderTemplate() {
             this.render('exports/index');
-          }
+          },
         })
       );
 
@@ -4303,9 +3911,7 @@ moduleFor(
       });
     }
 
-    ["@test Allows any route to disconnectOutlet another route's templates"](
-      assert
-    ) {
+    ["@test Allows any route to disconnectOutlet another route's templates"](assert) {
       this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
       this.addTemplate('index', 'hi');
       this.addTemplate('layer', 'layer');
@@ -4319,10 +3925,10 @@ moduleFor(
             openLayer() {
               this.render('layer', {
                 into: 'application',
-                outlet: 'modal'
+                outlet: 'modal',
               });
-            }
-          }
+            },
+          },
         })
       );
       this.add(
@@ -4332,10 +3938,10 @@ moduleFor(
             close() {
               this.disconnectOutlet({
                 parentView: 'application',
-                outlet: 'modal'
+                outlet: 'modal',
               });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4375,11 +3981,11 @@ moduleFor(
             changeToBar() {
               this.disconnectOutlet({
                 parentView: 'sidebar',
-                outlet: 'main'
+                outlet: 'main',
               });
               this.render('bar', { into: 'sidebar' });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4416,10 +4022,10 @@ moduleFor(
             disconnect: function() {
               this.disconnectOutlet({
                 parentView: 'sidebar',
-                outlet: 'main'
+                outlet: 'main',
               });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4459,26 +4065,20 @@ moduleFor(
             changeToBar() {
               this.disconnectOutlet({
                 parentView: 'index',
-                outlet: 'main'
+                outlet: 'main',
               });
               this.render('bar', { into: 'index' });
-            }
-          }
+            },
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let rootElement = document.getElementById('qunit-fixture');
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(
-          getTextOf(rootElement.querySelector('.sidebar .index')),
-          'other'
-        );
+        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
         run(router, 'send', 'changeToBar');
-        assert.equal(
-          getTextOf(rootElement.querySelector('.sidebar .index')),
-          'bar'
-        );
+        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'bar');
       });
     }
 
@@ -4508,25 +4108,19 @@ moduleFor(
             disconnect() {
               this.disconnectOutlet({
                 parentView: 'index',
-                outlet: 'main'
+                outlet: 'main',
               });
-            }
-          }
+            },
+          },
         })
       );
 
       return this.visit('/').then(() => {
         let rootElement = document.getElementById('qunit-fixture');
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(
-          getTextOf(rootElement.querySelector('.sidebar .index')),
-          'other'
-        );
+        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
         run(router, 'send', 'disconnect');
-        assert.equal(
-          getTextOf(rootElement.querySelector('.sidebar .index')),
-          ''
-        );
+        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), '');
       });
     }
 
@@ -4540,10 +4134,7 @@ moduleFor(
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
       expectDeprecation(() => {
-        this.addTemplate(
-          'sidebar',
-          '<div class="sidebar">{{render "cart"}}</div>'
-        );
+        this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
       }, /Please refactor [\w\{\}"` ]+ to a component/);
       this.router.map(function() {
         this.route('index', { path: '/' });
@@ -4562,11 +4153,11 @@ moduleFor(
             changeToBaz() {
               this.disconnectOutlet({
                 parentView: 'cart',
-                outlet: 'main'
+                outlet: 'main',
               });
               this.render('baz', { into: 'cart' });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4589,10 +4180,7 @@ moduleFor(
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
       expectDeprecation(() => {
-        this.addTemplate(
-          'sidebar',
-          '<div class="sidebar">{{render "cart"}}</div>'
-        );
+        this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
       }, /Please refactor [\w\{\}"` ]+ to a component/);
       this.router.map(function() {
         this.route('index', { path: '/' });
@@ -4610,10 +4198,10 @@ moduleFor(
             disconnect() {
               this.disconnectOutlet({
                 parentView: 'cart',
-                outlet: 'main'
+                outlet: 'main',
               });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4645,7 +4233,7 @@ moduleFor(
       this.add(
         'controller:index',
         Controller.extend({
-          showFirst: true
+          showFirst: true,
         })
       );
 
@@ -4654,7 +4242,7 @@ moduleFor(
         Route.extend({
           setupController(controller) {
             indexController = controller;
-          }
+          },
         })
       );
 
@@ -4663,7 +4251,7 @@ moduleFor(
         Component.extend({
           didInsertElement() {
             myComponentCounter++;
-          }
+          },
         })
       );
 
@@ -4672,7 +4260,7 @@ moduleFor(
         Component.extend({
           didInsertElement() {
             otherComponentCounter++;
-          }
+          },
         })
       );
 
@@ -4720,8 +4308,8 @@ moduleFor(
           actions: {
             willTransition() {
               throw new Error('boom');
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4744,16 +4332,16 @@ moduleFor(
             showModal() {
               this.render({
                 outlet: undefined,
-                parentView: 'application'
+                parentView: 'application',
               });
             },
             hideModal() {
               this.disconnectOutlet({
                 outlet: undefined,
-                parentView: 'application'
+                parentView: 'application',
               });
-            }
-          }
+            },
+          },
         })
       );
 
@@ -4780,13 +4368,13 @@ moduleFor(
       let postSerialize = function(params) {
         assert.ok(true, 'serialize hook runs');
         return {
-          post_id: params.id
+          post_id: params.id,
         };
       };
       let BlogMap = function() {
         this.route('post', {
           path: '/post/:post_id',
-          serialize: postSerialize
+          serialize: postSerialize,
         });
       };
       this.add('route-map:blog', BlogMap);
@@ -4805,9 +4393,7 @@ moduleFor(
       });
     }
 
-    ['@test Defining a Route#serialize method in an Engine throws an error'](
-      assert
-    ) {
+    ['@test Defining a Route#serialize method in an Engine throws an error'](assert) {
       assert.expect(1);
 
       // Register engine
@@ -4827,9 +4413,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         let PostRoute = Route.extend({ serialize() {} });
-        this.applicationInstance
-          .lookup('engine:blog')
-          .register('route:post', PostRoute);
+        this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
 
         assert.throws(
           () => router.transitionTo('blog.post'),
@@ -4838,9 +4422,7 @@ moduleFor(
       });
     }
 
-    ['@test App.destroy does not leave undestroyed views after clearing engines'](
-      assert
-    ) {
+    ['@test App.destroy does not leave undestroyed views after clearing engines'](assert) {
       assert.expect(4);
 
       let engineInstance;
@@ -4851,7 +4433,7 @@ moduleFor(
         init() {
           this._super(...arguments);
           engineInstance = getOwner(this);
-        }
+        },
       });
 
       // Register engine route map
@@ -4877,31 +4459,17 @@ moduleFor(
           let router = this.applicationInstance.lookup('router:main');
 
           run(router, 'destroy');
-          assert.equal(
-            router._toplevelView,
-            null,
-            'the toplevelView was cleared'
-          );
+          assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
 
           run(route, 'destroy');
-          assert.equal(
-            router._toplevelView,
-            null,
-            'the toplevelView was not reinitialized'
-          );
+          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
 
           run(this.applicationInstance, 'destroy');
-          assert.equal(
-            router._toplevelView,
-            null,
-            'the toplevelView was not reinitialized'
-          );
+          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
         });
     }
 
-    ["@test Generated route should be an instance of App's default route if provided"](
-      assert
-    ) {
+    ["@test Generated route should be an instance of App's default route if provided"](assert) {
       let generatedRoute;
 
       this.router.map(function() {
@@ -4914,10 +4482,7 @@ moduleFor(
       return this.visit('/posts').then(() => {
         generatedRoute = this.applicationInstance.lookup('route:posts');
 
-        assert.ok(
-          generatedRoute instanceof AppRoute,
-          'should extend the correct route'
-        );
+        assert.ok(generatedRoute instanceof AppRoute, 'should extend the correct route');
       });
     }
   }

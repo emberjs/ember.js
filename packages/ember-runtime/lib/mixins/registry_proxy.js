@@ -24,10 +24,7 @@ export default Mixin.create({
    @return {Function} fullName's factory
    */
   resolveRegistration(fullName, options) {
-    assert(
-      'fullName must be a proper full name',
-      this.__registry__.isValidFullName(fullName)
-    );
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
     return this.__registry__.resolve(fullName, options);
   },
 
@@ -258,7 +255,7 @@ export default Mixin.create({
     @param  property {String}
     @param  injectionName {String}
   **/
-  inject: registryAlias('injection')
+  inject: registryAlias('injection'),
 });
 
 function registryAlias(name) {

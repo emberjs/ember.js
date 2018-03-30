@@ -1,9 +1,5 @@
 import { assign } from 'ember-utils';
-import {
-  moduleFor,
-  RenderingTest,
-  ApplicationTest
-} from '../../utils/test-case';
+import { moduleFor, RenderingTest, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { set, Mixin } from 'ember-metal';
 import { Component } from '../../utils/helpers';
@@ -27,8 +23,8 @@ moduleFor(
             this._super();
             self.delegate = this;
             this.name = 'action-delegate';
-          }
-        })
+          },
+        }),
       });
     }
 
@@ -40,17 +36,13 @@ moduleFor(
           root.actionCounts[actionName] = root.actionCounts[actionName] || 0;
           root.actionCounts[actionName]++;
           root.actionArguments = args;
-        }
+        },
       });
       this.render(template, context);
     }
 
     assertSendCount(count) {
-      this.assert.equal(
-        this.sendCount,
-        count,
-        `Send was called ${count} time(s)`
-      );
+      this.assert.equal(this.sendCount, count, `Send was called ${count} time(s)`);
     }
 
     assertNamedSendCount(actionName, count) {
@@ -61,10 +53,7 @@ moduleFor(
       );
     }
 
-    assertSentWithArgs(
-      expected,
-      message = 'arguments were sent with the action'
-    ) {
+    assertSentWithArgs(expected, message = 'arguments were sent with the action') {
       this.assert.deepEqual(this.actionArguments, expected, message);
     }
 
@@ -94,9 +83,7 @@ moduleFor(
       this.renderDelegate();
 
       this.runTask(() => {
-        set(this.delegate, 'action', () =>
-          this.assert.ok(true, 'function is called')
-        );
+        set(this.delegate, 'action', () => this.assert.ok(true, 'function is called'));
         this.delegate.sendAction();
       });
     }
@@ -118,7 +105,7 @@ moduleFor(
     // TODO consolidate these next 2 tests
     ['@test Calling sendAction on a component with a reference attr calls the function with arguments']() {
       this.renderDelegate('{{action-delegate playing=playing}}', {
-        playing: null
+        playing: null,
       });
 
       this.runTask(() => this.delegate.sendAction());
@@ -139,7 +126,7 @@ moduleFor(
 
     ['@test Calling sendAction on a component with a {{mut}} attr calls the function with arguments']() {
       this.renderDelegate('{{action-delegate playing=(mut playing)}}', {
-        playing: null
+        playing: null,
       });
 
       this.runTask(() => this.delegate.sendAction('playing'));
@@ -206,10 +193,7 @@ moduleFor(
 
       this.assertSendCount(1);
       this.assertNamedSendCount('didStartPlaying', 1);
-      this.assertSentWithArgs(
-        [testContext],
-        'context was sent with the action'
-      );
+      this.assertSentWithArgs([testContext], 'context was sent with the action');
 
       this.runTask(() => {
         this.delegate.sendAction('playing', firstContext, secondContext);
@@ -239,20 +223,16 @@ moduleFor(
           actions: {
             derp(arg1) {
               assert.ok(true, 'action called on action-delgate');
-              assert.equal(
-                arg1,
-                'something special',
-                'argument passed through properly'
-              );
-            }
-          }
+              assert.equal(arg1, 'something special', 'argument passed through properly');
+            },
+          },
         }),
 
         template: strip`
         {{#component-a}}
           {{component-b bar="derp"}}
         {{/component-a}}
-      `
+      `,
       });
 
       this.registerComponent('component-a', {
@@ -264,9 +244,9 @@ moduleFor(
           actions: {
             derp() {
               assert.ok(false, 'no! bad scoping!');
-            }
-          }
-        })
+            },
+          },
+        }),
       });
 
       let innerChild;
@@ -276,8 +256,8 @@ moduleFor(
             this._super(...arguments);
             innerChild = this;
             this.name = 'component-b';
-          }
-        })
+          },
+        }),
       });
 
       this.renderDelegate();
@@ -297,12 +277,12 @@ moduleFor(
 
           toString() {
             return 'component:rip-alley';
-          }
-        })
+          },
+        }),
       });
 
       this.render('{{#if shouldRender}}{{rip-alley}}{{/if}}', {
-        shouldRender: true
+        shouldRender: true,
       });
 
       this.runTask(() => {
@@ -340,9 +320,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
+          },
         }),
-        template: `{{val}}`
+        template: `{{val}}`,
       });
 
       this.add(
@@ -359,7 +339,7 @@ moduleFor(
               'top',
               'action arguments were passed into the top level controller'
             );
-          }
+          },
         })
       );
       this.addTemplate('a', '{{foo-bar val="a" poke="poke"}}');
@@ -371,8 +351,8 @@ moduleFor(
             poke(actionContext) {
               assert.ok(true, 'Unhandled action sent to route');
               assert.equal(actionContext, 'top no controller');
-            }
-          }
+            },
+          },
         })
       );
       this.addTemplate('b', '{{foo-bar val="b" poke="poke"}}');
@@ -384,8 +364,8 @@ moduleFor(
             poke(actionContext) {
               assert.ok(true, 'Unhandled action sent to route');
               assert.equal(actionContext, 'top with nested no controller');
-            }
-          }
+            },
+          },
         })
       );
       this.addTemplate('c', '{{foo-bar val="c" poke="poke"}}{{outlet}}');
@@ -396,17 +376,13 @@ moduleFor(
         'controller:c.d',
         Controller.extend({
           send(actionName, actionContext) {
-            assert.equal(
-              actionName,
-              'poke',
-              'send() method was invoked from a nested controller'
-            );
+            assert.equal(actionName, 'poke', 'send() method was invoked from a nested controller');
             assert.equal(
               actionContext,
               'nested',
               'action arguments were passed into the nested controller'
             );
-          }
+          },
         })
       );
       this.addTemplate('c.d', '{{foo-bar val=".d" poke="poke"}}');
@@ -418,8 +394,8 @@ moduleFor(
             poke(actionContext) {
               assert.ok(true, 'Unhandled action sent to route');
               assert.equal(actionContext, 'nested no controller');
-            }
-          }
+            },
+          },
         })
       );
       this.addTemplate('c.e', '{{foo-bar val=".e" poke="poke"}}');
@@ -435,9 +411,7 @@ moduleFor(
           this.assertText('b');
           return this.visit('/c');
         })
-        .then(() =>
-          component.sendAction('poke', 'top with nested no controller')
-        )
+        .then(() => component.sendAction('poke', 'top with nested no controller'))
         .then(() => {
           this.assertText('c');
           return this.visit('/c/d');
@@ -463,10 +437,10 @@ moduleFor(
           actions: {
             poke() {
               assert.ok(true, 'parent component handled the aciton');
-            }
-          }
+            },
+          },
         }),
-        template: '{{x-child poke="poke"}}'
+        template: '{{x-child poke="poke"}}',
       });
 
       this.addComponent('x-child', {
@@ -474,8 +448,8 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
-        })
+          },
+        }),
       });
 
       this.addTemplate('application', '{{x-parent}}');
@@ -484,7 +458,7 @@ moduleFor(
         Controller.extend({
           send() {
             throw new Error('controller action should not be called');
-          }
+          },
         })
       );
 
@@ -505,18 +479,18 @@ moduleFor(
           init() {
             this._super(...arguments);
             component = this;
-          }
+          },
         }),
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: Component.extend({
           outerSubmit() {
             assert.ok(true, 'outerSubmit called');
-          }
+          },
         }),
-        template: '{{inner-component submitAction=(action outerSubmit)}}'
+        template: '{{inner-component submitAction=(action outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -538,9 +512,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             innerComponent = this;
-          }
+          },
         }),
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
@@ -549,10 +523,10 @@ moduleFor(
           actions: {
             outerSubmit() {
               actualArgs = [...arguments];
-            }
-          }
+            },
+          },
         }),
-        template: `{{inner-component innerSubmit=(action (action "outerSubmit" "${first}") "${second}" third)}}`
+        template: `{{inner-component innerSubmit=(action (action "outerSubmit" "${first}") "${second}" third)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -585,9 +559,9 @@ moduleFor(
           actions: {
             foo(message) {
               assert.equal('bar', message);
-            }
-          }
-        })
+            },
+          },
+        }),
       });
 
       this.render('{{foo-bar}}');
@@ -605,7 +579,7 @@ moduleFor(
         send: (message, payload) => {
           this.assert.equal('foo', message);
           this.assert.equal('baz', payload);
-        }
+        },
       };
 
       this.registerComponent('foo-bar', {
@@ -614,8 +588,8 @@ moduleFor(
             this._super();
             component = this;
           },
-          target
-        })
+          target,
+        }),
       });
 
       this.render('{{foo-bar}}');
@@ -638,16 +612,16 @@ moduleFor(
             poke: () => {
               this.assert.ok(true, 'component action called');
               return true;
-            }
+            },
           },
           target: Controller.extend({
             actions: {
               poke: () => {
                 this.assert.ok(true, 'action bubbled to controller');
-              }
-            }
-          }).create()
-        })
+              },
+            },
+          }).create(),
+        }),
       });
 
       this.render('{{foo-bar poke="poke"}}');
@@ -667,8 +641,8 @@ moduleFor(
           },
           bar(msg) {
             assert.equal(msg, 'HELLO');
-          }
-        }
+          },
+        },
       });
 
       let BarViewMixin = Mixin.create({
@@ -676,8 +650,8 @@ moduleFor(
           bar(msg) {
             assert.equal(msg, 'HELLO');
             this._super(msg);
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('x-index', {
@@ -689,9 +663,9 @@ moduleFor(
           actions: {
             baz() {
               assert.ok(true, 'baz');
-            }
-          }
-        })
+            },
+          },
+        }),
       });
 
       this.render('{{x-index}}');
@@ -712,13 +686,13 @@ moduleFor(
           actions: {
             foo() {
               assert.ok(true, 'foo');
-            }
-          }
+            },
+          },
         });
       }, /`actions` must be provided at extend time, not at create time/);
       // but should be OK on an object that doesn't mix in Ember.ActionHandler
       EmberObject.create({
-        actions: ['foo']
+        actions: ['foo'],
       });
     }
 
@@ -734,12 +708,12 @@ moduleFor(
 
           toString() {
             return 'component:rip-alley';
-          }
-        })
+          },
+        }),
       });
 
       this.render('{{#if shouldRender}}{{rip-alley}}{{/if}}', {
-        shouldRender: true
+        shouldRender: true,
       });
 
       this.runTask(() => {

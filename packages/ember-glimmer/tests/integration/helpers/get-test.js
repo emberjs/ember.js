@@ -6,12 +6,9 @@ moduleFor(
   'Helpers test: {{get}}',
   class extends RenderingTest {
     ['@test should be able to get an object value with a static key']() {
-      this.render(
-        `[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`,
-        {
-          colors: { apple: 'red' }
-        }
-      );
+      this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
+        colors: { apple: 'red' },
+      });
 
       this.assertText('[red] [red]');
 
@@ -25,7 +22,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'colors', {
-          apple: 'red'
+          apple: 'red',
         })
       );
 
@@ -33,16 +30,13 @@ moduleFor(
     }
 
     ['@test should be able to get an object value with nested static key']() {
-      this.render(
-        `[{{get colors "apple.gala"}}] [{{if true (get colors "apple.gala")}}]`,
-        {
-          colors: {
-            apple: {
-              gala: 'red and yellow'
-            }
-          }
-        }
-      );
+      this.render(`[{{get colors "apple.gala"}}] [{{if true (get colors "apple.gala")}}]`, {
+        colors: {
+          apple: {
+            gala: 'red and yellow',
+          },
+        },
+      });
 
       this.assertText('[red and yellow] [red and yellow]');
 
@@ -50,15 +44,11 @@ moduleFor(
 
       this.assertText('[red and yellow] [red and yellow]');
 
-      this.runTask(() =>
-        set(this.context, 'colors.apple.gala', 'yellow and red striped')
-      );
+      this.runTask(() => set(this.context, 'colors.apple.gala', 'yellow and red striped'));
 
       this.assertText('[yellow and red striped] [yellow and red striped]');
 
-      this.runTask(() =>
-        set(this.context, 'colors', { apple: { gala: 'red and yellow' } })
-      );
+      this.runTask(() => set(this.context, 'colors', { apple: { gala: 'red and yellow' } }));
 
       this.assertText('[red and yellow] [red and yellow]');
     }
@@ -69,8 +59,8 @@ moduleFor(
         items: {
           1: 'First',
           2: 'Second',
-          3: 'Third'
-        }
+          3: 'Third',
+        },
       });
 
       this.assertText('[First][Second][Third]');
@@ -83,16 +73,14 @@ moduleFor(
 
       this.assertText('[Qux][Second][Third]');
 
-      this.runTask(() =>
-        set(this.context, 'items', { 1: 'First', 2: 'Second', 3: 'Third' })
-      );
+      this.runTask(() => set(this.context, 'items', { 1: 'First', 2: 'Second', 3: 'Third' }));
 
       this.assertText('[First][Second][Third]');
     }
 
     ['@test should be able to get an array value with a number']() {
       this.render(`[{{get numbers 0}}][{{get numbers 1}}][{{get numbers 2}}]`, {
-        numbers: [1, 2, 3]
+        numbers: [1, 2, 3],
       });
 
       this.assertText('[1][2][3]');
@@ -111,17 +99,14 @@ moduleFor(
     }
 
     ['@test should be able to get an object value with a path evaluating to a number']() {
-      this.render(
-        `{{#each indexes as |index|}}[{{get items index}}]{{/each}}`,
-        {
-          indexes: [1, 2, 3],
-          items: {
-            1: 'First',
-            2: 'Second',
-            3: 'Third'
-          }
-        }
-      );
+      this.render(`{{#each indexes as |index|}}[{{get items index}}]{{/each}}`, {
+        indexes: [1, 2, 3],
+        items: {
+          1: 'First',
+          2: 'Second',
+          3: 'Third',
+        },
+      });
 
       this.assertText('[First][Second][Third]');
 
@@ -133,20 +118,15 @@ moduleFor(
 
       this.assertText('[Qux][Second][Third]');
 
-      this.runTask(() =>
-        set(this.context, 'items', { 1: 'First', 2: 'Second', 3: 'Third' })
-      );
+      this.runTask(() => set(this.context, 'items', { 1: 'First', 2: 'Second', 3: 'Third' }));
 
       this.assertText('[First][Second][Third]');
     }
 
     ['@test should be able to get an array value with a path evaluating to a number']() {
-      this.render(
-        `{{#each numbers as |num index|}}[{{get numbers index}}]{{/each}}`,
-        {
-          numbers: [1, 2, 3]
-        }
-      );
+      this.render(`{{#each numbers as |num index|}}[{{get numbers index}}]{{/each}}`, {
+        numbers: [1, 2, 3],
+      });
 
       this.assertText('[1][2][3]');
 
@@ -162,7 +142,7 @@ moduleFor(
     ['@test should be able to get an object value with a bound/dynamic key']() {
       this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
         colors: { apple: 'red', banana: 'yellow' },
-        key: 'apple'
+        key: 'apple',
       });
 
       this.assertText('[red] [red]');
@@ -196,11 +176,11 @@ moduleFor(
         colors: {
           apple: {
             gala: 'red and yellow',
-            mcintosh: 'red'
+            mcintosh: 'red',
           },
-          banana: 'yellow'
+          banana: 'yellow',
         },
-        key: 'apple.gala'
+        key: 'apple.gala',
       });
 
       this.assertText('[red and yellow] [red and yellow]');
@@ -229,10 +209,10 @@ moduleFor(
           colors: {
             apple: {
               gala: 'red and yellow',
-              mcintosh: 'red'
-            }
+              mcintosh: 'red',
+            },
           },
-          key: 'apple.gala'
+          key: 'apple.gala',
         }
       );
 
@@ -242,15 +222,11 @@ moduleFor(
 
       this.assertText('[red and yellow] [red and yellow]');
 
-      this.runTask(() =>
-        set(this.context, 'colors.apple.gala', 'yellow and red striped')
-      );
+      this.runTask(() => set(this.context, 'colors.apple.gala', 'yellow and red striped'));
 
       this.assertText('[yellow and red striped] [yellow and red striped]');
 
-      this.runTask(() =>
-        set(this.context, 'colors.apple.gala', 'yellow-redish')
-      );
+      this.runTask(() => set(this.context, 'colors.apple.gala', 'yellow-redish'));
 
       this.assertText('[yellow-redish] [yellow-redish]');
 
@@ -258,8 +234,8 @@ moduleFor(
         set(this.context, 'colors', {
           apple: {
             gala: 'red and yellow',
-            mcintosh: 'red'
-          }
+            mcintosh: 'red',
+          },
         })
       );
 
@@ -272,7 +248,7 @@ moduleFor(
         {
           colors: { apple: 'red', banana: 'yellow' },
           key: 'key1',
-          possibleKeys: { key1: 'apple', key2: 'banana' }
+          possibleKeys: { key1: 'apple', key2: 'banana' },
         }
       );
 
@@ -297,9 +273,7 @@ moduleFor(
 
       this.assertText('[green] [green]');
 
-      this.runTask(() =>
-        set(this.context, 'colors', { apple: 'red', banana: 'yellow' })
-      );
+      this.runTask(() => set(this.context, 'colors', { apple: 'red', banana: 'yellow' }));
 
       this.assertText('[red] [red]');
     }
@@ -310,10 +284,10 @@ moduleFor(
         {
           possibleValues: {
             colors1: { apple: 'red', banana: 'yellow' },
-            colors2: { apple: 'green', banana: 'purple' }
+            colors2: { apple: 'green', banana: 'purple' },
           },
           objectKey: 'colors1',
-          key: 'apple'
+          key: 'apple',
         }
       );
 
@@ -352,14 +326,14 @@ moduleFor(
         {
           possibleValues: {
             colors1: { apple: 'red', banana: 'yellow' },
-            colors2: { apple: 'green', banana: 'purple' }
+            colors2: { apple: 'green', banana: 'purple' },
           },
           objectKey: 'colors1',
           possibleKeys: {
             key1: 'apple',
-            key2: 'banana'
+            key2: 'banana',
           },
-          key: 'key1'
+          key: 'key1',
         }
       );
 
@@ -400,22 +374,19 @@ moduleFor(
           this._super();
           fooBarInstance = this;
           this.mcintosh = 'red';
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (get colors mcintosh)}}`
+        template: `{{yield (get colors mcintosh)}}`,
       });
 
-      this.render(
-        `{{#foo-bar colors=colors as |value|}}{{value}}{{/foo-bar}}`,
-        {
-          colors: {
-            red: 'banana'
-          }
-        }
-      );
+      this.render(`{{#foo-bar colors=colors as |value|}}{{value}}{{/foo-bar}}`, {
+        colors: {
+          red: 'banana',
+        },
+      });
 
       this.assertText('banana');
 
@@ -439,12 +410,9 @@ moduleFor(
     }
 
     ['@test should handle object values as nulls']() {
-      this.render(
-        `[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`,
-        {
-          colors: null
-        }
-      );
+      this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
+        colors: null,
+      });
 
       this.assertText('[] []');
 
@@ -452,9 +420,7 @@ moduleFor(
 
       this.assertText('[] []');
 
-      this.runTask(() =>
-        set(this.context, 'colors', { apple: 'green', banana: 'purple' })
-      );
+      this.runTask(() => set(this.context, 'colors', { apple: 'green', banana: 'purple' }));
 
       this.assertText('[green] [green]');
 
@@ -467,9 +433,9 @@ moduleFor(
       this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
         colors: {
           apple: 'red',
-          banana: 'yellow'
+          banana: 'yellow',
         },
-        key: null
+        key: null,
       });
 
       this.assertText('[] []');
@@ -490,23 +456,18 @@ moduleFor(
     ['@test should handle object values and keys as nulls']() {
       this.render(`[{{get colors 'apple'}}] [{{if true (get colors key)}}]`, {
         colors: null,
-        key: null
+        key: null,
       });
 
       this.assertText('[] []');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - static key'](
-      assert
-    ) {
-      this.render(
-        `{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`,
-        {
-          source: {
-            banana: 'banana'
-          }
-        }
-      );
+    ['@test get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
+      this.render(`{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`, {
+        source: {
+          banana: 'banana',
+        },
+      });
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
@@ -532,19 +493,14 @@ moduleFor(
       assert.strictEqual(this.$('#get-input').val(), 'banana');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - dynamic key'](
-      assert
-    ) {
-      this.render(
-        `{{input type='text' value=(mut (get source key)) id='get-input'}}`,
-        {
-          source: {
-            apple: 'apple',
-            banana: 'banana'
-          },
-          key: 'banana'
-        }
-      );
+    ['@test get helper value should be updatable using {{input}} and (mut) - dynamic key'](assert) {
+      this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
+        source: {
+          apple: 'apple',
+          banana: 'banana',
+        },
+        key: 'banana',
+      });
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
@@ -589,19 +545,16 @@ moduleFor(
     ['@test get helper value should be updatable using {{input}} and (mut) - dynamic nested key'](
       assert
     ) {
-      this.render(
-        `{{input type='text' value=(mut (get source key)) id='get-input'}}`,
-        {
-          source: {
-            apple: {
-              gala: 'gala',
-              mcintosh: 'mcintosh'
-            },
-            banana: 'banana'
+      this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
+        source: {
+          apple: {
+            gala: 'gala',
+            mcintosh: 'mcintosh',
           },
-          key: 'apple.mcintosh'
-        }
-      );
+          banana: 'banana',
+        },
+        key: 'apple.mcintosh',
+      });
 
       assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
 
@@ -620,10 +573,7 @@ moduleFor(
       );
 
       assert.strictEqual(this.$('#get-input').val(), 'some value');
-      assert.strictEqual(
-        get(this.context, 'source.apple.mcintosh'),
-        'some value'
-      );
+      assert.strictEqual(get(this.context, 'source.apple.mcintosh'), 'some value');
 
       this.runTask(() => set(this.context, 'key', 'apple.gala'));
 
@@ -636,10 +586,7 @@ moduleFor(
       );
 
       assert.strictEqual(this.$('#get-input').val(), 'some other value');
-      assert.strictEqual(
-        get(this.context, 'source.apple.gala'),
-        'some other value'
-      );
+      assert.strictEqual(get(this.context, 'source.apple.gala'), 'some other value');
 
       this.runTask(() => set(this.context, 'key', 'banana'));
 
@@ -652,19 +599,16 @@ moduleFor(
       );
 
       assert.strictEqual(this.$('#get-input').val(), 'yet another value');
-      assert.strictEqual(
-        get(this.context, 'source.banana'),
-        'yet another value'
-      );
+      assert.strictEqual(get(this.context, 'source.banana'), 'yet another value');
 
       this.runTask(() => {
         set(this.context, 'key', 'apple.mcintosh');
         set(this.context, 'source', {
           apple: {
             gala: 'gala',
-            mcintosh: 'mcintosh'
+            mcintosh: 'mcintosh',
           },
-          banana: 'banana'
+          banana: 'banana',
         });
       });
 

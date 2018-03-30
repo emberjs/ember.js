@@ -8,5 +8,5 @@ module.exports = {
   disable_watching: true,
   launch_in_dev: ['Firefox'],
   launch_in_ci: ['Firefox'],
-  reporter: FailureOnlyReporter
+  reporter: FailureOnlyReporter,
 };

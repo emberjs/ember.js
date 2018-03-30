@@ -34,5 +34,5 @@ export default Mixin.create({
     @return {Number} the result of the comparison
     @private
   */
-  compare: null
+  compare: null,
 });

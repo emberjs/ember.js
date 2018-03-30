@@ -15,14 +15,12 @@ moduleFor(
     constructor() {
       setDebugFunction('debug', noop);
       super();
-      adapter = this.application.__deprecatedInstance__.lookup(
-        'container-debug-adapter:main'
-      );
+      adapter = this.application.__deprecatedInstance__.lookup('container-debug-adapter:main');
     }
 
     get applicationOptions() {
       return assign(super.applicationOptions, {
-        autoboot: true
+        autoboot: true,
       });
     }
 
@@ -35,9 +33,7 @@ moduleFor(
       super.teardown();
     }
 
-    ['@test default ContainerDebugAdapter cannot catalog certain entries by type'](
-      assert
-    ) {
+    ['@test default ContainerDebugAdapter cannot catalog certain entries by type'](assert) {
       assert.equal(
         adapter.canCatalogEntriesByType('model'),
         false,
@@ -50,9 +46,7 @@ moduleFor(
       );
     }
 
-    ['@test default ContainerDebugAdapter can catalog typical entries by type'](
-      assert
-    ) {
+    ['@test default ContainerDebugAdapter can catalog typical entries by type'](assert) {
       assert.equal(
         adapter.canCatalogEntriesByType('controller'),
         true,
@@ -70,9 +64,7 @@ moduleFor(
       );
     }
 
-    ['@test default ContainerDebugAdapter catalogs controller entries'](
-      assert
-    ) {
+    ['@test default ContainerDebugAdapter catalogs controller entries'](assert) {
       this.application.PostController = EmberController.extend();
       let controllerClasses = adapter.catalogEntriesByType('controller');
 

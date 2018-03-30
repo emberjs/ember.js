@@ -53,9 +53,7 @@ class AbstractAppendTest extends RenderingTest {
           init() {
             this._super(...arguments);
             if (name in componentsByName) {
-              throw new TypeError(
-                'Component named: ` ' + name + ' ` already registered'
-              );
+              throw new TypeError('Component named: ` ' + name + ' ` already registered');
             }
             componentsByName[name] = this;
             pushHook('init');
@@ -109,9 +107,9 @@ class AbstractAppendTest extends RenderingTest {
           willDestroy() {
             pushHook('willDestroy');
             this._super(...arguments);
-          }
+          },
         }),
-        template: _options.template
+        template: _options.template,
       };
 
       oldRegisterComponent.call(this, name, options);
@@ -119,19 +117,18 @@ class AbstractAppendTest extends RenderingTest {
 
     this.registerComponent('x-parent', {
       ComponentClass: Component.extend({
-        layoutName: 'components/x-parent'
+        layoutName: 'components/x-parent',
       }),
 
-      template:
-        '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}'
+      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
       ComponentClass: Component.extend({
-        tagName: ''
+        tagName: '',
       }),
 
-      template: '[child: {{bar}}]{{yield}}'
+      template: '[child: {{bar}}]{{yield}}',
     });
 
     let XParent;
@@ -165,7 +162,7 @@ class AbstractAppendTest extends RenderingTest {
         ['x-child', 'didRender'],
 
         ['x-parent', 'didInsertElement'],
-        ['x-parent', 'didRender']
+        ['x-parent', 'didRender'],
       ],
       'appending of x-parent'
     );
@@ -181,7 +178,7 @@ class AbstractAppendTest extends RenderingTest {
         ['x-parent', 'willRender'],
 
         ['x-parent', 'didUpdate'],
-        ['x-parent', 'didRender']
+        ['x-parent', 'didRender'],
       ],
       'rerender x-parent'
     );
@@ -203,7 +200,7 @@ class AbstractAppendTest extends RenderingTest {
         ['x-child', 'didRender'],
 
         ['x-parent', 'didUpdate'],
-        ['x-parent', 'didRender']
+        ['x-parent', 'didRender'],
       ],
       'rerender x-child'
     );
@@ -228,7 +225,7 @@ class AbstractAppendTest extends RenderingTest {
         ['x-child', 'didRender'],
 
         ['x-parent', 'didUpdate'],
-        ['x-parent', 'didRender']
+        ['x-parent', 'didRender'],
       ],
       'set foo = wow'
     );
@@ -253,7 +250,7 @@ class AbstractAppendTest extends RenderingTest {
         ['x-child', 'didRender'],
 
         ['x-parent', 'didUpdate'],
-        ['x-parent', 'didRender']
+        ['x-parent', 'didRender'],
       ],
       'set foo = zomg'
     );
@@ -275,7 +272,7 @@ class AbstractAppendTest extends RenderingTest {
         ['x-parent', 'didDestroyElement'],
 
         ['x-parent', 'willDestroy'],
-        ['x-child', 'willDestroy']
+        ['x-child', 'willDestroy'],
       ],
       'destroy'
     );
@@ -289,19 +286,18 @@ class AbstractAppendTest extends RenderingTest {
         layoutName: 'components/x-parent',
         willDestroyElement() {
           willDestroyCalled++;
-        }
+        },
       }),
 
-      template:
-        '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}'
+      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
       ComponentClass: Component.extend({
-        tagName: ''
+        tagName: '',
       }),
 
-      template: '[child: {{bar}}]{{yield}}'
+      template: '[child: {{bar}}]{{yield}}',
     });
 
     let XParent;
@@ -317,7 +313,7 @@ class AbstractAppendTest extends RenderingTest {
     let componentElement = this.component.element;
 
     this.assertComponentElement(componentElement, {
-      content: '[parent: zomg][child: zomg][yielded: zomg]'
+      content: '[parent: zomg][child: zomg][yielded: zomg]',
     });
 
     assert.equal(
@@ -329,7 +325,7 @@ class AbstractAppendTest extends RenderingTest {
     this.runTask(() => this.rerender());
 
     this.assertComponentElement(componentElement, {
-      content: '[parent: zomg][child: zomg][yielded: zomg]'
+      content: '[parent: zomg][child: zomg][yielded: zomg]',
     });
 
     assert.equal(
@@ -341,7 +337,7 @@ class AbstractAppendTest extends RenderingTest {
     this.runTask(() => set(this.component, 'foo', 'wow'));
 
     this.assertComponentElement(componentElement, {
-      content: '[parent: wow][child: wow][yielded: wow]'
+      content: '[parent: wow][child: wow][yielded: wow]',
     });
 
     assert.equal(
@@ -353,7 +349,7 @@ class AbstractAppendTest extends RenderingTest {
     this.runTask(() => set(this.component, 'foo', 'zomg'));
 
     this.assertComponentElement(componentElement, {
-      content: '[parent: zomg][child: zomg][yielded: zomg]'
+      content: '[parent: zomg][child: zomg][yielded: zomg]',
     });
 
     assert.equal(
@@ -365,10 +361,7 @@ class AbstractAppendTest extends RenderingTest {
     this.runTask(() => this.component.destroy());
 
     assert.ok(!this.component.element, 'It should not have an element');
-    assert.ok(
-      !componentElement.parentElement,
-      'The component element should be detached'
-    );
+    assert.ok(!componentElement.parentElement, 'The component element should be detached');
 
     this.assert.equal(willDestroyCalled, 1);
   }
@@ -377,7 +370,7 @@ class AbstractAppendTest extends RenderingTest {
     let renderer = this.owner.lookup('renderer:-dom');
 
     this.registerComponent('x-component', {
-      ComponentClass: Component.extend()
+      ComponentClass: Component.extend(),
     });
 
     this.component = this.owner.factoryFor('component:x-component').create();
@@ -399,10 +392,10 @@ class AbstractAppendTest extends RenderingTest {
 
         willDestroyElement() {
           willDestroyCalled++;
-        }
+        },
       }),
 
-      template: 'x-first {{foo}}!'
+      template: 'x-first {{foo}}!',
     });
 
     this.registerComponent('x-second', {
@@ -411,10 +404,10 @@ class AbstractAppendTest extends RenderingTest {
 
         willDestroyElement() {
           willDestroyCalled++;
-        }
+        },
       }),
 
-      template: 'x-second {{bar}}!'
+      template: 'x-second {{bar}}!',
     });
 
     let First, Second;
@@ -438,7 +431,7 @@ class AbstractAppendTest extends RenderingTest {
 
     this.assertComponentElement(componentElement1, { content: 'x-first foo!' });
     this.assertComponentElement(componentElement2, {
-      content: 'x-second bar!'
+      content: 'x-second bar!',
     });
 
     assert.equal(
@@ -456,7 +449,7 @@ class AbstractAppendTest extends RenderingTest {
 
     this.assertComponentElement(componentElement1, { content: 'x-first FOO!' });
     this.assertComponentElement(componentElement2, {
-      content: 'x-second bar!'
+      content: 'x-second bar!',
     });
 
     assert.equal(
@@ -474,7 +467,7 @@ class AbstractAppendTest extends RenderingTest {
 
     this.assertComponentElement(componentElement1, { content: 'x-first FOO!' });
     this.assertComponentElement(componentElement2, {
-      content: 'x-second BAR!'
+      content: 'x-second BAR!',
     });
 
     assert.equal(
@@ -495,7 +488,7 @@ class AbstractAppendTest extends RenderingTest {
 
     this.assertComponentElement(componentElement1, { content: 'x-first foo!' });
     this.assertComponentElement(componentElement2, {
-      content: 'x-second bar!'
+      content: 'x-second bar!',
     });
 
     assert.equal(
@@ -515,19 +508,10 @@ class AbstractAppendTest extends RenderingTest {
     });
 
     assert.ok(!first.element, 'The first component should not have an element');
-    assert.ok(
-      !second.element,
-      'The second component should not have an element'
-    );
+    assert.ok(!second.element, 'The second component should not have an element');
 
-    assert.ok(
-      !componentElement1.parentElement,
-      'The first component element should be detached'
-    );
-    assert.ok(
-      !componentElement2.parentElement,
-      'The second component element should be detached'
-    );
+    assert.ok(!componentElement1.parentElement, 'The first component element should be detached');
+    assert.ok(!componentElement2.parentElement, 'The second component element should be detached');
 
     this.assert.equal(willDestroyCalled, 2);
   }
@@ -550,8 +534,8 @@ class AbstractAppendTest extends RenderingTest {
           let SecondComponent = owner.factoryFor('component:second-component');
 
           append(SecondComponent.create());
-        }
-      })
+        },
+      }),
     });
 
     this.registerComponent('second-component', {
@@ -560,8 +544,8 @@ class AbstractAppendTest extends RenderingTest {
 
         didInsertElement() {
           element2 = this.element;
-        }
-      })
+        },
+      }),
     });
 
     let FirstComponent = this.owner.factoryFor('component:first-component');
@@ -597,7 +581,7 @@ class AbstractAppendTest extends RenderingTest {
           this._instance = OtherRoot.create({
             didInsertElement() {
               element2 = this.element;
-            }
+            },
           });
 
           append(this._instance);
@@ -605,8 +589,8 @@ class AbstractAppendTest extends RenderingTest {
 
         willDestroy() {
           this._instance.destroy();
-        }
-      })
+        },
+      }),
     });
 
     this.registerComponent('baz-qux', {
@@ -626,7 +610,7 @@ class AbstractAppendTest extends RenderingTest {
           this._instance = OtherRoot.create({
             didInsertElement() {
               element4 = this.element;
-            }
+            },
           });
 
           append(this._instance);
@@ -634,8 +618,8 @@ class AbstractAppendTest extends RenderingTest {
 
         willDestroy() {
           this._instance.destroy();
-        }
-      })
+        },
+      }),
     });
 
     let instantiatedRoots = 0;
@@ -650,8 +634,8 @@ class AbstractAppendTest extends RenderingTest {
         willDestroy() {
           destroyedRoots++;
           this._super(...arguments);
-        }
-      })
+        },
+      }),
     });
 
     this.render(
@@ -709,24 +693,19 @@ moduleFor(
       return document.getElementById('qunit-fixture');
     }
 
-    ['@test raises an assertion when the target does not exist in the DOM'](
-      assert
-    ) {
+    ['@test raises an assertion when the target does not exist in the DOM'](assert) {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          layoutName: 'components/foo-bar'
+          layoutName: 'components/foo-bar',
         }),
-        template: 'FOO BAR!'
+        template: 'FOO BAR!',
       });
 
       let FooBar = this.owner.factoryFor('component:foo-bar');
 
       this.component = FooBar.create();
 
-      assert.ok(
-        !this.component.element,
-        'precond - should not have an element'
-      );
+      assert.ok(!this.component.element, 'precond - should not have an element');
 
       this.runTask(() => {
         expectAssertion(() => {
@@ -734,10 +713,7 @@ moduleFor(
         }, /You tried to append to \(#does-not-exist-in-dom\) but that isn't in the DOM/);
       });
 
-      assert.ok(
-        !this.component.element,
-        'component should not have an element'
-      );
+      assert.ok(!this.component.element, 'component should not have an element');
     }
   }
 );

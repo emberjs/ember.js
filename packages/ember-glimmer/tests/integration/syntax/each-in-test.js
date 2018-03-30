@@ -7,7 +7,7 @@ import { applyMixins } from '../../utils/abstract-test-case';
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
-  FalsyGenerator
+  FalsyGenerator,
 } from '../../utils/shared-conditional-tests';
 
 function EmptyFunction() {}
@@ -43,7 +43,7 @@ applyMixins(
     EmberObject.create({ 'Not Empty': 1 }),
     [1],
     NonEmptyFunction,
-    NonEmptyConstructor
+    NonEmptyConstructor,
   ]),
 
   new FalsyGenerator([
@@ -59,7 +59,7 @@ applyMixins(
     Object.create(null),
     Object.create({}),
     Object.create({ 'Not Empty': 1 }),
-    EmberObject.create()
+    EmberObject.create(),
   ])
 );
 
@@ -75,7 +75,7 @@ applyMixins(
     ObjectProxy.create({ content: Object.create(null) }),
     ObjectProxy.create({ content: Object.create({}) }),
     ObjectProxy.create({ content: Object.create({ 'Not Empty': 1 }) }),
-    ObjectProxy.create({ content: EmberObject.create() })
+    ObjectProxy.create({ content: EmberObject.create() }),
   ])
 );
 
@@ -114,9 +114,7 @@ class AbstractEachInTest extends RenderingTest {
   }
 
   clear() {
-    return this.runTask(() =>
-      set(this.context, 'hash', this.createHash({}).hash)
-    );
+    return this.runTask(() => set(this.context, 'hash', this.createHash({}).hash));
   }
 
   setProp(key, value) {
@@ -124,9 +122,7 @@ class AbstractEachInTest extends RenderingTest {
   }
 
   updateNestedValue(key, innerKey, value) {
-    return this.runTask(() =>
-      this.delegate.updateNestedValue(this.context, key, innerKey, value)
-    );
+    return this.runTask(() => this.delegate.updateNestedValue(this.context, key, innerKey, value));
   }
 
   render(template, context = {}) {
@@ -158,9 +154,7 @@ class EachInTest extends AbstractEachInTest {
       // Not al backing data structures allow kvo tracking. Maps and Iterables don't
       this.setProp('Tweets', 100);
 
-      this.assertText(
-        'Smartphones: 8203JavaScript Frameworks: InfinityTweets: 100'
-      );
+      this.assertText('Smartphones: 8203JavaScript Frameworks: InfinityTweets: 100');
     }
 
     this.clear();
@@ -171,7 +165,7 @@ class EachInTest extends AbstractEachInTest {
   [`@test it can render sub-paths of each item`](assert) {
     this.makeHash({
       Smartphones: { reports: { unitsSold: 8203 } },
-      'JavaScript Frameworks': { reports: { unitsSold: Infinity } }
+      'JavaScript Frameworks': { reports: { unitsSold: Infinity } },
     });
 
     this.render(
@@ -185,14 +179,10 @@ class EachInTest extends AbstractEachInTest {
     if (this.allowsSetProp) {
       this.setProp('Tweets', { reports: { unitsSold: 100 } });
 
-      this.assertText(
-        'Smartphones: 8203JavaScript Frameworks: InfinityTweets: 100'
-      );
+      this.assertText('Smartphones: 8203JavaScript Frameworks: InfinityTweets: 100');
     }
 
-    this.runTask(() =>
-      this.updateNestedValue('Smartphones', 'reports.unitsSold', 8204)
-    );
+    this.runTask(() => this.updateNestedValue('Smartphones', 'reports.unitsSold', 8204));
 
     assert.ok(this.textValue().indexOf('Smartphones: 8204') > -1);
 
@@ -206,16 +196,14 @@ class EachInTest extends AbstractEachInTest {
       Smartphones: 8203,
       Tablets: 8203,
       'JavaScript Frameworks': Infinity,
-      Bugs: Infinity
+      Bugs: Infinity,
     });
 
     this.render(
       `<ul>{{#each-in hash key='@identity' as |category count|}}<li>{{category}}: {{count}}</li>{{/each-in}}</ul>`
     );
 
-    this.assertText(
-      'Smartphones: 8203Tablets: 8203JavaScript Frameworks: InfinityBugs: Infinity'
-    );
+    this.assertText('Smartphones: 8203Tablets: 8203JavaScript Frameworks: InfinityBugs: Infinity');
 
     this.assertStableRerender();
 
@@ -235,18 +223,18 @@ class EachInTest extends AbstractEachInTest {
   [`@test it repeats the given block when the hash is dynamic`]() {
     let { hash: categories } = this.createHash({
       Smartphones: 8203,
-      'JavaScript Frameworks': Infinity
+      'JavaScript Frameworks': Infinity,
     });
     let { hash: otherCategories } = this.createHash({
       Emberinios: 533462,
-      Tweets: 7323
+      Tweets: 7323,
     });
     let context = {
       hashes: {
         categories,
         otherCategories,
-        type: 'categories'
-      }
+        type: 'categories',
+      },
     };
     this.render(
       `<ul>{{#each-in (get hashes hashes.type) as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
@@ -279,9 +267,7 @@ class EachInTest extends AbstractEachInTest {
   ['@test keying off of `undefined` does not render']() {
     this.makeHash({});
 
-    this.render(
-      `{{#each-in hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`
-    );
+    this.render(`{{#each-in hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`);
 
     this.assertText('Empty!');
 
@@ -315,15 +301,15 @@ moduleFor(
           updateNestedValue(context, key, innerKey, value) {
             let target = context.hash[key];
             set(target, innerKey, value);
-          }
-        }
+          },
+        },
       };
     }
 
     [`@test it only iterates over an object's own properties`]() {
       let protoCategories = {
         Smartphones: 8203,
-        'JavaScript Frameworks': Infinity
+        'JavaScript Frameworks': Infinity,
       };
 
       let categories = Object.create(protoCategories);
@@ -363,8 +349,8 @@ moduleFor(
         {
           categories: {
             Smartphones: 8203,
-            'JavaScript Frameworks': Infinity
-          }
+            'JavaScript Frameworks': Infinity,
+          },
         }
       );
 
@@ -393,7 +379,7 @@ moduleFor(
 
       this.runTask(() => {
         set(this.context, 'categories', {
-          Emberinios: 123456
+          Emberinios: 123456,
         });
       });
 
@@ -406,7 +392,7 @@ moduleFor(
       this.runTask(() => {
         set(this.context, 'categories', {
           Smartphones: 8203,
-          'JavaScript Frameworks': Infinity
+          'JavaScript Frameworks': Infinity,
         });
       });
 
@@ -488,8 +474,8 @@ moduleFor(
           updateNestedValue(context, key, innerKey, value) {
             let target = get(context.hash, key);
             set(target, innerKey, value);
-          }
-        }
+          },
+        },
       };
     }
   }
@@ -513,20 +499,20 @@ moduleFor(
           updateNestedValue(context, key, innerKey, value) {
             let target = get(context.hash, key);
             set(target, innerKey, value);
-          }
-        }
+          },
+        },
       };
     }
 
     ['@test it iterates over the content, not the proxy']() {
       let content = {
         Smartphones: 8203,
-        'JavaScript Frameworks': Infinity
+        'JavaScript Frameworks': Infinity,
       };
 
       let proxy = ObjectProxy.create({
         content,
-        foo: 'bar'
+        foo: 'bar',
       });
 
       this.render(
@@ -565,7 +551,7 @@ moduleFor(
       this.runTask(() => {
         set(proxy, 'content', {
           Smartphones: 100,
-          Tablets: 20
+          Tablets: 20,
         });
       });
 
@@ -583,8 +569,8 @@ moduleFor(
           ObjectProxy.create({
             content: {
               Smartphones: 8203,
-              'JavaScript Frameworks': Infinity
-            }
+              'JavaScript Frameworks': Infinity,
+            },
           })
         )
       );
@@ -613,8 +599,8 @@ moduleFor(
           updateNestedValue(context, key, innerKey, value) {
             let target = context.hash.get(key);
             set(target, innerKey, value);
-          }
-        }
+          },
+        },
       };
     }
 
@@ -666,7 +652,7 @@ if (HAS_NATIVE_SYMBOL) {
           return accum.concat([[key, pojo[key]]]);
         }, []);
         let iterable = {
-          [Symbol.iterator]: () => makeIterator(ary)
+          [Symbol.iterator]: () => makeIterator(ary),
         };
         return {
           hash: iterable,
@@ -675,8 +661,8 @@ if (HAS_NATIVE_SYMBOL) {
               let ary = Array.from(context.hash);
               let target = ary.find(([k]) => k === key)[1];
               set(target, innerKey, value);
-            }
-          }
+            },
+          },
         };
       }
     }
@@ -689,9 +675,7 @@ function makeIterator(ary) {
 
   return {
     next() {
-      return index < ary.length
-        ? { value: ary[index++], done: false }
-        : { done: true };
-    }
+      return index < ary.length ? { value: ary[index++], done: false } : { done: true };
+    },
   };
 }

@@ -14,11 +14,7 @@ class FindTests extends AbstractTestCase {
       return false;
     });
     this.assert.equal(result, undefined, 'return value of obj.find');
-    this.assert.deepEqual(
-      found,
-      ary,
-      'items passed during find() should match'
-    );
+    this.assert.deepEqual(found, ary, 'items passed during find() should match');
   }
 
   '@test every should stop invoking when you return true'() {
@@ -34,16 +30,8 @@ class FindTests extends AbstractTestCase {
       return --cnt >= 0;
     });
     this.assert.equal(result, ary[exp - 1], 'return value of obj.find');
-    this.assert.equal(
-      found.length,
-      exp,
-      'should invoke proper number of times'
-    );
-    this.assert.deepEqual(
-      found,
-      ary.slice(0, -2),
-      'items passed during find() should match'
-    );
+    this.assert.equal(found.length, exp, 'should invoke proper number of times');
+    this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during find() should match');
   }
 }
 
@@ -51,10 +39,7 @@ class FindByTests extends AbstractTestCase {
   '@test should return first object of property matches'() {
     let ary, obj;
 
-    ary = [
-      { foo: 'foo', bar: 'BAZ' },
-      EmberObject.create({ foo: 'foo', bar: 'bar' })
-    ];
+    ary = [{ foo: 'foo', bar: 'BAZ' }, EmberObject.create({ foo: 'foo', bar: 'bar' })];
 
     obj = this.newObject(ary);
 
@@ -65,10 +50,7 @@ class FindByTests extends AbstractTestCase {
   '@test should return first object with truthy prop'() {
     let ary, obj;
 
-    ary = [
-      { foo: 'foo', bar: false },
-      EmberObject.create({ foo: 'bar', bar: true })
-    ];
+    ary = [{ foo: 'foo', bar: false }, EmberObject.create({ foo: 'bar', bar: true })];
 
     obj = this.newObject(ary);
 
@@ -80,10 +62,7 @@ class FindByTests extends AbstractTestCase {
   '@test should return first null property match'() {
     let ary, obj;
 
-    ary = [
-      { foo: null, bar: 'BAZ' },
-      EmberObject.create({ foo: null, bar: null })
-    ];
+    ary = [{ foo: null, bar: 'BAZ' }, EmberObject.create({ foo: null, bar: null })];
 
     obj = this.newObject(ary);
 
@@ -98,16 +77,8 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(
-      obj.findBy('foo', undefined),
-      ary[0],
-      "findBy('foo', undefined)"
-    );
-    this.assert.equal(
-      obj.findBy('bar', undefined),
-      ary[1],
-      "findBy('bar', undefined)"
-    );
+    this.assert.equal(obj.findBy('foo', undefined), ary[0], "findBy('foo', undefined)");
+    this.assert.equal(obj.findBy('bar', undefined), ary[1], "findBy('bar', undefined)");
   }
 }
 

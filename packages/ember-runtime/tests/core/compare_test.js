@@ -10,7 +10,7 @@ let Comp = EmberObject.extend(Comparable);
 Comp.reopenClass({
   compare(obj) {
     return obj.get('val');
-  }
+  },
 });
 
 moduleFor(
@@ -43,17 +43,9 @@ moduleFor(
       for (suspectIndex = 0; suspectIndex < data.length; suspectIndex++) {
         suspect = data[suspectIndex];
 
-        assert.equal(
-          compare(suspect, suspect),
-          0,
-          suspectIndex + ' should equal itself'
-        );
+        assert.equal(compare(suspect, suspect), 0, suspectIndex + ' should equal itself');
 
-        for (
-          comparableIndex = suspectIndex + 1;
-          comparableIndex < data.length;
-          comparableIndex++
-        ) {
+        for (comparableIndex = suspectIndex + 1; comparableIndex < data.length; comparableIndex++) {
           comparable = data[comparableIndex];
 
           failureMessage =
@@ -72,52 +64,26 @@ moduleFor(
       }
     }
 
-    ['@test comparables should return values in the range of -1, 0, 1'](
-      assert
-    ) {
+    ['@test comparables should return values in the range of -1, 0, 1'](assert) {
       let negOne = Comp.create({
-        val: -1
+        val: -1,
       });
 
       let zero = Comp.create({
-        val: 0
+        val: 0,
       });
 
       let one = Comp.create({
-        val: 1
+        val: 1,
       });
 
-      assert.equal(
-        compare(negOne, 'a'),
-        -1,
-        'First item comparable - returns -1 (not negated)'
-      );
-      assert.equal(
-        compare(zero, 'b'),
-        0,
-        'First item comparable - returns  0 (not negated)'
-      );
-      assert.equal(
-        compare(one, 'c'),
-        1,
-        'First item comparable - returns  1 (not negated)'
-      );
+      assert.equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
+      assert.equal(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');
+      assert.equal(compare(one, 'c'), 1, 'First item comparable - returns  1 (not negated)');
 
-      assert.equal(
-        compare('a', negOne),
-        1,
-        'Second item comparable - returns -1 (negated)'
-      );
-      assert.equal(
-        compare('b', zero),
-        0,
-        'Second item comparable - returns  0 (negated)'
-      );
-      assert.equal(
-        compare('c', one),
-        -1,
-        'Second item comparable - returns  1 (negated)'
-      );
+      assert.equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
+      assert.equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
+      assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
     }
   }
 );

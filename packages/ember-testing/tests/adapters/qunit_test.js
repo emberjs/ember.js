@@ -34,9 +34,7 @@ moduleFor(
       }, 50);
     }
 
-    ['@test asyncStart waits for equal numbers of asyncEnd to finish a test'](
-      assert
-    ) {
+    ['@test asyncStart waits for equal numbers of asyncEnd to finish a test'](assert) {
       let adapter = QUnitAdapter.create();
 
       adapter.asyncStart();

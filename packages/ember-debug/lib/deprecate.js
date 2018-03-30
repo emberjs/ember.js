@@ -141,10 +141,8 @@ if (DEBUG) {
     'When calling `deprecate` you ' +
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include `id` and `until` properties.';
-  missingOptionsIdDeprecation =
-    'When calling `deprecate` you must provide `id` in options.';
-  missingOptionsUntilDeprecation =
-    'When calling `deprecate` you must provide `until` in options.';
+  missingOptionsIdDeprecation = 'When calling `deprecate` you must provide `id` in options.';
+  missingOptionsUntilDeprecation = 'When calling `deprecate` you must provide `until` in options.';
   /**
    @module @ember/application
    @public
@@ -175,10 +173,7 @@ if (DEBUG) {
   */
   deprecate = function deprecate(message, test, options) {
     if (ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT !== true) {
-      assert(
-        missingOptionsDeprecation,
-        options && (options.id || options.until)
-      );
+      assert(missingOptionsDeprecation, options && (options.id || options.until));
       assert(missingOptionsIdDeprecation, options.id);
       assert(missingOptionsUntilDeprecation, options.until);
     }
@@ -190,34 +185,23 @@ if (DEBUG) {
       deprecate(missingOptionsDeprecation, false, {
         id: 'ember-debug.deprecate-options-missing',
         until: '3.0.0',
-        url:
-          'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
       });
     }
 
-    if (
-      options &&
-      !options.id &&
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
-    ) {
+    if (options && !options.id && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(missingOptionsIdDeprecation, false, {
         id: 'ember-debug.deprecate-id-missing',
         until: '3.0.0',
-        url:
-          'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
       });
     }
 
-    if (
-      options &&
-      !options.until &&
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
-    ) {
+    if (options && !options.until && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
       deprecate(missingOptionsUntilDeprecation, options && options.until, {
         id: 'ember-debug.deprecate-until-missing',
         until: '3.0.0',
-        url:
-          'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
       });
     }
 
@@ -231,5 +215,5 @@ export {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation
+  missingOptionsUntilDeprecation,
 };

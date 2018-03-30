@@ -3,12 +3,7 @@ import { getDebugFunction, setDebugFunction } from 'ember-debug';
 import { _warnIfUsingStrippedFeatureFlags } from '../index';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
-let oldWarn,
-  oldRunInDebug,
-  origEnvFeatures,
-  origEnableOptional,
-  features,
-  knownFeatures;
+let oldWarn, oldRunInDebug, origEnvFeatures, origEnableOptional, features, knownFeatures;
 
 function confirmWarns(assert, expectedMsg) {
   let featuresWereStripped = true;
@@ -24,19 +19,11 @@ function confirmWarns(assert, expectedMsg) {
   });
 
   // Should trigger our 1 warning
-  _warnIfUsingStrippedFeatureFlags(
-    features,
-    knownFeatures,
-    featuresWereStripped
-  );
+  _warnIfUsingStrippedFeatureFlags(features, knownFeatures, featuresWereStripped);
 
   // Shouldn't trigger any warnings now that we're "in canary"
   featuresWereStripped = false;
-  _warnIfUsingStrippedFeatureFlags(
-    features,
-    knownFeatures,
-    featuresWereStripped
-  );
+  _warnIfUsingStrippedFeatureFlags(features, knownFeatures, featuresWereStripped);
 }
 
 moduleFor(
@@ -53,7 +40,7 @@ moduleFor(
       knownFeatures = {
         fred: null,
         barney: null,
-        wilma: null
+        wilma: null,
       };
     }
 
@@ -78,16 +65,14 @@ moduleFor(
       );
     }
 
-    ['@test Enabling a known FEATURE flag in non-canary, debug build causes a warning'](
-      assert
-    ) {
+    ['@test Enabling a known FEATURE flag in non-canary, debug build causes a warning'](assert) {
       assert.expect(1);
 
       ENV.ENABLE_OPTIONAL_FEATURES = false;
       features = {
         fred: true,
         barney: false,
-        wilma: null
+        wilma: null,
       };
 
       confirmWarns(
@@ -103,7 +88,7 @@ moduleFor(
 
       ENV.ENABLE_OPTIONAL_FEATURES = false;
       features = {
-        'some-ember-data-feature-flag': true
+        'some-ember-data-feature-flag': true,
       };
 
       confirmWarns(

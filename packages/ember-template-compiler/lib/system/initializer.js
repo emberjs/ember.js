@@ -1,11 +1,7 @@
 import require, { has } from 'require';
 
 // Globals mode template compiler
-if (
-  has('ember-application') &&
-  has('ember-environment') &&
-  has('ember-glimmer')
-) {
+if (has('ember-application') && has('ember-environment') && has('ember-glimmer')) {
   let emberEnv = require('ember-environment');
   let emberGlimmer = require('ember-glimmer');
   let emberApp = require('ember-application');
@@ -26,6 +22,6 @@ if (
       }
 
       bootstrap({ context, hasTemplate, setTemplate });
-    }
+    },
   });
 }

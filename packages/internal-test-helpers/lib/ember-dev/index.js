@@ -9,7 +9,7 @@ var EmberDevTestHelperAssert = buildCompositeAssert([
   DeprecationAssert,
   WarningAssert,
   AssertionAssert,
-  RunLoopAssert
+  RunLoopAssert,
 ]);
 
 export default EmberDevTestHelperAssert;

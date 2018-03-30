@@ -14,9 +14,7 @@ moduleFor(
       );
     }
 
-    ['@test SEMVER_REGEX properly validates and invalidates version numbers'](
-      assert
-    ) {
+    ['@test SEMVER_REGEX properly validates and invalidates version numbers'](assert) {
       function validateVersionString(versionString, expectedResult) {
         assert.equal(SEMVER_REGEX.test(versionString), expectedResult);
       }

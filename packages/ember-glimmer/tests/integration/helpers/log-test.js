@@ -38,7 +38,7 @@ moduleFor(
 
     ['@test correctly logs a property']() {
       this.render(`{{log value}}`, {
-        value: 'one'
+        value: 'one',
       });
 
       this.assertLog(['one']);
@@ -46,7 +46,7 @@ moduleFor(
 
     ['@test correctly logs multiple arguments']() {
       this.render(`{{log "my variable:" value}}`, {
-        value: 'one'
+        value: 'one',
       });
 
       this.assertLog(['my variable:', 'one']);

@@ -15,25 +15,25 @@ moduleFor(
       MixinA = Mixin.create({
         aProp: computed(function() {
           return 'A';
-        })
+        }),
       });
 
       MixinB = Mixin.create(MixinA, {
         aProp: computed(function() {
           return this._super(...arguments) + 'B';
-        })
+        }),
       });
 
       MixinC = Mixin.create(MixinA, {
         aProp: computed(function() {
           return this._super(...arguments) + 'C';
-        })
+        }),
       });
 
       MixinD = Mixin.create({
         aProp: computed(function() {
           return this._super(...arguments) + 'D';
-        })
+        }),
       });
 
       obj = {};
@@ -59,11 +59,7 @@ moduleFor(
         })
       );
       MixinD.apply(obj);
-      assert.equal(
-        get(obj, 'aProp'),
-        'objD',
-        'should preserve original computed property'
-      );
+      assert.equal(get(obj, 'aProp'), 'objD', 'should preserve original computed property');
     }
 
     ['@test calling set on overridden computed properties'](assert) {
@@ -80,8 +76,8 @@ moduleFor(
           },
           set() {
             superSetOccurred = true;
-          }
-        })
+          },
+        }),
       });
 
       SubMixin = Mixin.create(SuperMixin, {
@@ -91,8 +87,8 @@ moduleFor(
           },
           set() {
             return this._super(...arguments);
-          }
-        })
+          },
+        }),
       });
 
       obj = {};
@@ -113,15 +109,13 @@ moduleFor(
       assert.ok(superSetOccurred, 'should pass set to _super after getting');
     }
 
-    ['@test setter behavior works properly when overriding computed properties'](
-      assert
-    ) {
+    ['@test setter behavior works properly when overriding computed properties'](assert) {
       let obj = {};
 
       let MixinA = Mixin.create({
         cpWithSetter2: computed(K),
         cpWithSetter3: computed(K),
-        cpWithoutSetter: computed(K)
+        cpWithoutSetter: computed(K),
       });
 
       let cpWasCalled = false;
@@ -131,29 +125,26 @@ moduleFor(
           get: K,
           set() {
             cpWasCalled = true;
-          }
+          },
         }),
 
         cpWithSetter3: computed({
           get: K,
           set() {
             cpWasCalled = true;
-          }
+          },
         }),
 
         cpWithoutSetter: computed(function() {
           cpWasCalled = true;
-        })
+        }),
       });
 
       MixinA.apply(obj);
       MixinB.apply(obj);
 
       set(obj, 'cpWithSetter2', 'test');
-      assert.ok(
-        cpWasCalled,
-        'The computed property setter was called when defined with two args'
-      );
+      assert.ok(cpWasCalled, 'The computed property setter was called when defined with two args');
       cpWasCalled = false;
 
       set(obj, 'cpWithSetter3', 'test');
@@ -169,10 +160,7 @@ moduleFor(
         'test',
         'The default setter was called, the value is correct'
       );
-      assert.ok(
-        !cpWasCalled,
-        'The default setter was called, not the CP itself'
-      );
+      assert.ok(!cpWasCalled, 'The default setter was called, not the CP itself');
     }
   }
 );

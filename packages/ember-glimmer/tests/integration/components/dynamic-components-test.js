@@ -29,37 +29,37 @@ moduleFor(
 
     ['@test it can render a basic component with a dynamic component name argument']() {
       this.registerComponent('foo-bar', {
-        template: 'hello {{name}} from foo-bar'
+        template: 'hello {{name}} from foo-bar',
       });
       this.registerComponent('foo-bar-baz', {
-        template: 'hello {{name}} from foo-bar-baz'
+        template: 'hello {{name}} from foo-bar-baz',
       });
 
       this.render('{{component componentName name=name}}', {
         componentName: 'foo-bar',
-        name: 'Alex'
+        name: 'Alex',
       });
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar'
+        content: 'hello Alex from foo-bar',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar'
+        content: 'hello Alex from foo-bar',
       });
 
       this.runTask(() => set(this.context, 'name', 'Ben'));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben from foo-bar'
+        content: 'hello Ben from foo-bar',
       });
 
       this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben from foo-bar-baz'
+        content: 'hello Ben from foo-bar-baz',
       });
 
       this.runTask(() => {
@@ -68,7 +68,7 @@ moduleFor(
       });
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar'
+        content: 'hello Alex from foo-bar',
       });
     }
 
@@ -79,12 +79,12 @@ moduleFor(
         init() {
           this._super();
           instance = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{component "foo-bar"}}');
@@ -109,23 +109,23 @@ moduleFor(
         init() {
           this._super();
           fooBarInstance = this;
-        }
+        },
       });
 
       let FooBarBazComponent = Component.extend({
         init() {
           this._super();
           fooBarBazInstance = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'foo-bar {{foo-bar-baz}}'
+        template: 'foo-bar {{foo-bar-baz}}',
       });
       this.registerComponent('foo-bar-baz', {
         ComponentClass: FooBarBazComponent,
-        template: 'foo-bar-baz'
+        template: 'foo-bar-baz',
       });
 
       this.render('{{component "foo-bar"}}');
@@ -167,12 +167,12 @@ moduleFor(
           this._super();
           instance = this;
           this.set('message', 'hello');
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{message}}'
+        template: '{{message}}',
       });
 
       this.render('{{component "foo-bar"}}');
@@ -196,7 +196,7 @@ moduleFor(
       this.registerComponent('foo-bar', { template: '{{yield}}' });
 
       this.render('{{#component "foo-bar"}}{{message}}{{/component}}', {
-        message: 'hello'
+        message: 'hello',
       });
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
@@ -223,8 +223,8 @@ moduleFor(
           willDestroy() {
             this._super();
             destroyed[this.get('id')]++;
-          }
-        })
+          },
+        }),
       });
 
       this.render(
@@ -255,7 +255,7 @@ moduleFor(
           cond2: true,
           cond3: true,
           cond4: true,
-          cond5: true
+          cond5: true,
         }
       );
 
@@ -271,7 +271,7 @@ moduleFor(
         5: 0,
         6: 0,
         7: 0,
-        8: 0
+        8: 0,
       });
 
       this.runTask(() => set(this.context, 'cond5', false));
@@ -286,7 +286,7 @@ moduleFor(
         5: 1,
         6: 1,
         7: 1,
-        8: 0
+        8: 0,
       });
 
       this.runTask(() => {
@@ -303,7 +303,7 @@ moduleFor(
         5: 1,
         6: 1,
         7: 1,
-        8: 1
+        8: 1,
       });
 
       this.runTask(() => {
@@ -319,13 +319,11 @@ moduleFor(
         5: 1,
         6: 1,
         7: 1,
-        8: 1
+        8: 1,
       });
     }
 
-    ['@test component helper destroys underlying component when it is swapped out'](
-      assert
-    ) {
+    ['@test component helper destroys underlying component when it is swapped out'](assert) {
       let destroyed = { 'foo-bar': 0, 'foo-bar-baz': 0 };
       let testContext = this;
 
@@ -343,8 +341,8 @@ moduleFor(
           willDestroy() {
             this._super();
             destroyed['foo-bar']++;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('foo-bar-baz', {
@@ -353,12 +351,12 @@ moduleFor(
           willDestroy() {
             this._super();
             destroyed['foo-bar-baz']++;
-          }
-        })
+          },
+        }),
       });
 
       this.render('{{component componentName name=name}}', {
-        componentName: 'foo-bar'
+        componentName: 'foo-bar',
       });
 
       assert.deepEqual(destroyed, { 'foo-bar': 0, 'foo-bar-baz': 0 });
@@ -383,8 +381,8 @@ moduleFor(
           init: function() {
             this._super(...arguments);
             this.set('locationCopy', this.get('location'));
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('foo-bar-baz', {
@@ -393,13 +391,12 @@ moduleFor(
           init: function() {
             this._super(...arguments);
             this.set('locationCopy', this.get('location'));
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('outer-component', {
-        template:
-          '{{#component componentName location=location}}arepas!{{/component}}',
+        template: '{{#component componentName location=location}}arepas!{{/component}}',
         ComponentClass: Component.extend({
           componentName: computed('location', function() {
             if (this.get('location') === 'Caracas') {
@@ -407,12 +404,12 @@ moduleFor(
             } else {
               return 'foo-bar-baz';
             }
-          })
-        })
+          }),
+        }),
       });
 
       this.render('{{outer-component location=location}}', {
-        location: 'Caracas'
+        location: 'Caracas',
       });
 
       this.assertText('foo-bar Caracas Caracas arepas!');
@@ -437,14 +434,13 @@ moduleFor(
           classNames: 'inner-component',
           didInsertElement() {
             // trigger action on click in absence of app's EventDispatcher
-            let sendAction = (this.eventHandler = () =>
-              this.sendAction('somethingClicked'));
+            let sendAction = (this.eventHandler = () => this.sendAction('somethingClicked'));
             this.element.addEventListener('click', sendAction);
           },
           willDestroyElement() {
             this.element.removeEventListener('click', this.eventHandler);
-          }
-        })
+          },
+        }),
       });
 
       let actionTriggered = 0;
@@ -457,9 +453,9 @@ moduleFor(
           actions: {
             mappedAction() {
               actionTriggered++;
-            }
-          }
-        })
+            },
+          },
+        }),
       });
 
       this.render('{{outer-component}}');
@@ -475,13 +471,13 @@ moduleFor(
 
     ['@test nested component helpers']() {
       this.registerComponent('foo-bar', {
-        template: 'yippie! {{attrs.location}} {{yield}}'
+        template: 'yippie! {{attrs.location}} {{yield}}',
       });
       this.registerComponent('baz-qux', {
-        template: 'yummy {{attrs.location}} {{yield}}'
+        template: 'yummy {{attrs.location}} {{yield}}',
       });
       this.registerComponent('corge-grault', {
-        template: 'delicious {{attrs.location}} {{yield}}'
+        template: 'delicious {{attrs.location}} {{yield}}',
       });
 
       this.render(
@@ -489,7 +485,7 @@ moduleFor(
         {
           componentName1: 'foo-bar',
           componentName2: 'baz-qux',
-          location: 'Caracas'
+          location: 'Caracas',
         }
       );
 
@@ -518,7 +514,7 @@ moduleFor(
     ['@test component with dynamic name argument resolving to non-existent component']() {
       expectAssertion(() => {
         this.render('{{component componentName}}', {
-          componentName: 'does-not-exist'
+          componentName: 'does-not-exist',
         });
       }, /Could not find component named "does-not-exist"/);
     }
@@ -534,7 +530,7 @@ moduleFor(
 
       this.render('{{component componentName name=name}}', {
         componentName: 'foo-bar',
-        name: 'Alex'
+        name: 'Alex',
       });
 
       this.assertText('hello Alex');
@@ -560,16 +556,13 @@ moduleFor(
             // store internally available name to ensure that the name available in `this.attrs.name`
             // matches the template lookup name
             set(this, 'internalName', this.get('name'));
-          }
-        })
+          },
+        }),
       });
 
-      this.render(
-        '{{#each items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}',
-        {
-          items: [{ name: 'Robert' }, { name: 'Jacquie' }]
-        }
-      );
+      this.render('{{#each items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}', {
+        items: [{ name: 'Robert' }, { name: 'Jacquie' }],
+      });
 
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
 
@@ -577,15 +570,11 @@ moduleFor(
 
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
 
-      this.runTask(() =>
-        set(this.context, 'items', [{ name: 'Max' }, { name: 'James' }])
-      );
+      this.runTask(() => set(this.context, 'items', [{ name: 'Max' }, { name: 'James' }]));
 
       this.assertText('[Max - Max][James - James]');
 
-      this.runTask(() =>
-        set(this.context, 'items', [{ name: 'Robert' }, { name: 'Jacquie' }])
-      );
+      this.runTask(() => set(this.context, 'items', [{ name: 'Robert' }, { name: 'Jacquie' }]));
 
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
     }
@@ -602,49 +591,49 @@ moduleFor(
       this.registerComponent('foo-bar', {
         template: 'hello {{name}} ({{age}}) from foo-bar',
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age']
-        })
+          positionalParams: ['name', 'age'],
+        }),
       });
 
       this.registerComponent('foo-bar-baz', {
         template: 'hello {{name}} ({{age}}) from foo-bar-baz',
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age']
-        })
+          positionalParams: ['name', 'age'],
+        }),
       });
 
       this.render('{{component componentName name age}}', {
         componentName: 'foo-bar',
         name: 'Alex',
-        age: 29
+        age: 29,
       });
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex (29) from foo-bar'
+        content: 'hello Alex (29) from foo-bar',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex (29) from foo-bar'
+        content: 'hello Alex (29) from foo-bar',
       });
 
       this.runTask(() => set(this.context, 'name', 'Ben'));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben (29) from foo-bar'
+        content: 'hello Ben (29) from foo-bar',
       });
 
       this.runTask(() => set(this.context, 'age', 22));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben (22) from foo-bar'
+        content: 'hello Ben (22) from foo-bar',
       });
 
       this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben (22) from foo-bar-baz'
+        content: 'hello Ben (22) from foo-bar-baz',
       });
 
       this.runTask(() => {
@@ -654,7 +643,7 @@ moduleFor(
       });
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex (29) from foo-bar'
+        content: 'hello Alex (29) from foo-bar',
       });
     }
 
@@ -662,46 +651,44 @@ moduleFor(
       this.registerComponent('normal-message', {
         template: 'Normal: {{something}}!',
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['something']
-        })
+          positionalParams: ['something'],
+        }),
       });
 
       this.registerComponent('alternative-message', {
         template: 'Alternative: {{something}} {{somethingElse}}!',
         ComponentClass: Component.extend({
-          something: 'Another'
+          something: 'Another',
         }).reopenClass({
-          positionalParams: ['somethingElse']
-        })
+          positionalParams: ['somethingElse'],
+        }),
       });
 
       this.render('{{component componentName message}}', {
         componentName: 'normal-message',
-        message: 'Hello'
+        message: 'Hello',
       });
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Normal: Hello!'
+        content: 'Normal: Hello!',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Normal: Hello!'
+        content: 'Normal: Hello!',
       });
 
-      this.runTask(() =>
-        set(this.context, 'componentName', 'alternative-message')
-      );
+      this.runTask(() => set(this.context, 'componentName', 'alternative-message'));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Alternative: Another Hello!'
+        content: 'Alternative: Another Hello!',
       });
 
       this.runTask(() => set(this.context, 'message', 'Hi'));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Alternative: Another Hi!'
+        content: 'Alternative: Another Hi!',
       });
 
       this.runTask(() => {
@@ -710,24 +697,22 @@ moduleFor(
       });
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Normal: Hello!'
+        content: 'Normal: Hello!',
       });
     }
 
     ['@test static arbitrary number of positional parameters']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'names'
+          positionalParams: 'names',
         }),
         template: strip`
         {{#each names as |name|}}
           {{name}}
-        {{/each}}`
+        {{/each}}`,
       });
 
-      this.render(
-        `{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" elementId="helper"}}`
-      );
+      this.render(`{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" elementId="helper"}}`);
 
       this.assertText('Foo4Bar5Baz');
 
@@ -739,17 +724,17 @@ moduleFor(
     ['@test dynamic arbitrary number of positional parameters']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'n'
+          positionalParams: 'n',
         }),
         template: strip`
         {{#each n as |name|}}
           {{name}}
-        {{/each}}`
+        {{/each}}`,
       });
 
       this.render(`{{component "sample-component" user1 user2}}`, {
         user1: 'Foo',
-        user2: 4
+        user2: 4,
       });
 
       this.assertText('Foo4');
@@ -780,9 +765,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             this.set('person', { name: 'Alex' });
-          }
+          },
         }),
-        template: `Hi {{person.name}}! {{component "error-component" person=person}}`
+        template: `Hi {{person.name}}! {{component "error-component" person=person}}`,
       });
 
       this.registerComponent('error-component', {
@@ -790,16 +775,16 @@ moduleFor(
           init() {
             this._super(...arguments);
             this.set('person.name', { name: 'Ben' });
-          }
+          },
         }),
-        template: '{{person.name}}'
+        template: '{{person.name}}',
       });
 
       let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "component:outer-component" and modified in "component:error-component"/;
 
       expectAssertion(() => {
         this.render('{{component componentName}}', {
-          componentName: 'outer-component'
+          componentName: 'outer-component',
         });
       }, expectedBacktrackingMessage);
     }
@@ -817,12 +802,12 @@ if (jQueryDisabled) {
           init() {
             this._super();
             instance = this;
-          }
+          },
         });
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: 'hello'
+          template: 'hello',
         });
 
         this.render('{{component "foo-bar"}}');
@@ -844,12 +829,12 @@ if (jQueryDisabled) {
           init() {
             this._super();
             instance = this;
-          }
+          },
         });
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: 'hello'
+          template: 'hello',
         });
 
         this.render('{{component "foo-bar"}}');
@@ -874,12 +859,12 @@ if (jQueryDisabled) {
           init() {
             this._super();
             instance = this;
-          }
+          },
         });
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: '<span class="inner">inner</span>'
+          template: '<span class="inner">inner</span>',
         });
 
         this.render('<span class="outer">outer</span>{{component "foo-bar"}}');

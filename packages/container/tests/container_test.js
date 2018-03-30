@@ -54,10 +54,10 @@ moduleFor(
 
       let postController1 = container.lookup('controller:post');
       let postController2 = container.lookup('controller:post', {
-        singleton: false
+        singleton: false,
       });
       let postController3 = container.lookup('controller:post', {
-        singleton: false
+        singleton: false,
       });
       let postController4 = container.lookup('controller:post');
 
@@ -119,9 +119,7 @@ moduleFor(
       assert.equal(postController.store, store);
     }
 
-    ['@test An individual factory with a registered injection receives the injection'](
-      assert
-    ) {
+    ['@test An individual factory with a registered injection receives the injection'](assert) {
       let registry = new Registry();
       let container = registry.container();
       let PostController = factory();
@@ -135,11 +133,7 @@ moduleFor(
       let postController = container.lookup('controller:post');
       let store = container.lookup('store:main');
 
-      assert.equal(
-        postController.store,
-        store,
-        'has the correct store injected'
-      );
+      assert.equal(postController.store, store, 'has the correct store injected');
     }
 
     ['@test A factory with both type and individual injections'](assert) {
@@ -217,7 +211,7 @@ moduleFor(
         },
         extend() {
           return fooFactory;
-        }
+        },
       };
 
       registry.register('model:foo', Foo);
@@ -235,30 +229,18 @@ moduleFor(
 
       registry.register('controller:application', ApplicationController);
       registry.register('user:current', null, { instantiate: false });
-      registry.injection(
-        'controller:application',
-        'currentUser',
-        'user:current'
-      );
+      registry.injection('controller:application', 'currentUser', 'user:current');
 
-      assert.strictEqual(
-        container.lookup('controller:application').currentUser,
-        null
-      );
+      assert.strictEqual(container.lookup('controller:application').currentUser, null);
     }
 
-    ['@test The container returns same value each time even if the value is falsy'](
-      assert
-    ) {
+    ['@test The container returns same value each time even if the value is falsy'](assert) {
       let registry = new Registry();
       let container = registry.container();
 
       registry.register('falsy:value', null, { instantiate: false });
 
-      assert.strictEqual(
-        container.lookup('falsy:value'),
-        container.lookup('falsy:value')
-      );
+      assert.strictEqual(container.lookup('falsy:value'), container.lookup('falsy:value'));
     }
 
     ['@test Destroying the container destroys any cached singletons'](assert) {
@@ -285,9 +267,7 @@ moduleFor(
       assert.ok(!postView.isDestroyed, 'Non-singletons are not destroyed');
     }
 
-    ['@test The container can use a registry hook to resolve factories lazily'](
-      assert
-    ) {
+    ['@test The container can use a registry hook to resolve factories lazily'](assert) {
       let registry = new Registry();
       let container = registry.container();
       let PostController = factory();
@@ -297,15 +277,12 @@ moduleFor(
           if (fullName === 'controller:post') {
             return PostController;
           }
-        }
+        },
       };
 
       let postController = container.lookup('controller:post');
 
-      assert.ok(
-        postController instanceof PostController,
-        'The correct factory was provided'
-      );
+      assert.ok(postController instanceof PostController, 'The correct factory was provided');
     }
 
     ['@test The container normalizes names before resolving'](assert) {
@@ -320,10 +297,7 @@ moduleFor(
       registry.register('controller:post', PostController);
       let postController = container.lookup('controller:normalized');
 
-      assert.ok(
-        postController instanceof PostController,
-        'Normalizes the name before resolving'
-      );
+      assert.ok(postController instanceof PostController, 'Normalizes the name before resolving');
     }
 
     ['@test The container normalizes names when looking factory up'](assert) {
@@ -342,9 +316,7 @@ moduleFor(
       assert.ok(factInstance instanceof PostController, 'Normalizes the name');
     }
 
-    ['@test Options can be registered that should be applied to a given factory'](
-      assert
-    ) {
+    ['@test Options can be registered that should be applied to a given factory'](assert) {
       let registry = new Registry();
       let container = registry.container();
       let PostView = factory();
@@ -354,7 +326,7 @@ moduleFor(
           if (fullName === 'view:post') {
             return PostView;
           }
-        }
+        },
       };
 
       registry.options('view:post', { instantiate: true, singleton: false });
@@ -362,14 +334,8 @@ moduleFor(
       let postView1 = container.lookup('view:post');
       let postView2 = container.lookup('view:post');
 
-      assert.ok(
-        postView1 instanceof PostView,
-        'The correct factory was provided'
-      );
-      assert.ok(
-        postView2 instanceof PostView,
-        'The correct factory was provided'
-      );
+      assert.ok(postView1 instanceof PostView, 'The correct factory was provided');
+      assert.ok(postView2 instanceof PostView, 'The correct factory was provided');
 
       assert.ok(postView1 !== postView2, 'The two lookups are different');
     }
@@ -386,7 +352,7 @@ moduleFor(
           if (fullName === 'view:post') {
             return PostView;
           }
-        }
+        },
       };
 
       registry.optionsForType('view', { singleton: false });
@@ -394,14 +360,8 @@ moduleFor(
       let postView1 = container.lookup('view:post');
       let postView2 = container.lookup('view:post');
 
-      assert.ok(
-        postView1 instanceof PostView,
-        'The correct factory was provided'
-      );
-      assert.ok(
-        postView2 instanceof PostView,
-        'The correct factory was provided'
-      );
+      assert.ok(postView1 instanceof PostView, 'The correct factory was provided');
+      assert.ok(postView2 instanceof PostView, 'The correct factory was provided');
 
       assert.ok(postView1 !== postView2, 'The two lookups are different');
     }
@@ -414,7 +374,7 @@ moduleFor(
 
       registry.register('view:post', PostView, { singleton: false });
       registry.register('view_helper:post', PostViewHelper, {
-        singleton: false
+        singleton: false,
       });
       registry.injection('view:post', 'viewHelper', 'view_helper:post');
 
@@ -482,9 +442,7 @@ moduleFor(
       assert.deepEqual(resolveWasCalled, ['foo:post']);
     }
 
-    [`@test A factory's lazy injections are validated when first instantiated`](
-      assert
-    ) {
+    [`@test A factory's lazy injections are validated when first instantiated`](assert) {
       let registry = new Registry();
       let container = registry.container();
       let Apple = factory();
@@ -493,7 +451,7 @@ moduleFor(
       Apple.reopenClass({
         _lazyInjections() {
           return [{ specifier: 'orange:main' }, { specifier: 'banana:main' }];
-        }
+        },
       });
 
       registry.register('apple:main', Apple);
@@ -516,7 +474,7 @@ moduleFor(
         _lazyInjections: () => {
           assert.ok(true, 'should call lazy injection method');
           return [{ specifier: 'orange:main' }];
-        }
+        },
       });
 
       registry.register('apple:main', Apple);
@@ -526,9 +484,7 @@ moduleFor(
       container.lookup('apple:main');
     }
 
-    ['@test An object with its owner pre-set should be returned from ownerInjection'](
-      assert
-    ) {
+    ['@test An object with its owner pre-set should be returned from ownerInjection'](assert) {
       let owner = {};
       let registry = new Registry();
       let container = registry.container({ owner });
@@ -553,7 +509,7 @@ moduleFor(
       };
 
       let PostControllerLookupResult = container.lookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.ok(PostControllerLookupResult instanceof PostController);
@@ -590,9 +546,7 @@ moduleFor(
       assert.ok(factoryManager.class);
     }
 
-    ['@test #factoryFor returns a cached factory manager for the same type'](
-      assert
-    ) {
+    ['@test #factoryFor returns a cached factory manager for the same type'](assert) {
       let registry = new Registry();
       let container = registry.container();
 
@@ -659,9 +613,7 @@ moduleFor(
       assert.notEqual(factory1, factory3);
     }
 
-    ['@test #factoryFor created instances come with instance injections'](
-      assert
-    ) {
+    ['@test #factoryFor created instances come with instance injections'](assert) {
       let registry = new Registry();
       let container = registry.container();
 
@@ -720,9 +672,7 @@ moduleFor(
 
     // this is skipped until templates and the glimmer environment do not require `OWNER` to be
     // passed in as constructor args
-    ['@skip #factoryFor does not add properties to the object being instantiated'](
-      assert
-    ) {
+    ['@skip #factoryFor does not add properties to the object being instantiated'](assert) {
       let registry = new Registry();
       let container = registry.container();
 
@@ -749,9 +699,7 @@ if (EMBER_MODULE_UNIFICATION) {
   moduleFor(
     'Container module unification',
     class extends AbstractTestCase {
-      ['@test The container can expand and resolve a source to factoryFor'](
-        assert
-      ) {
+      ['@test The container can expand and resolve a source to factoryFor'](assert) {
         let PrivateComponent = factory();
         let lookup = 'component:my-input';
         let expectedSource = 'template:routes/application';
@@ -760,11 +708,7 @@ if (EMBER_MODULE_UNIFICATION) {
         let expandedKey = 'boom, special expanded key';
         registry.expandLocalLookup = (specifier, options) => {
           this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(
-            options.source,
-            expectedSource,
-            'source is expanded'
-          );
+          this.assert.strictEqual(options.source, expectedSource, 'source is expanded');
           return expandedKey;
         };
         registry.resolve = function(fullName) {
@@ -801,11 +745,7 @@ if (EMBER_MODULE_UNIFICATION) {
         let expandedKey = 'boom, special expanded key';
         registry.expandLocalLookup = (specifier, options) => {
           this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(
-            options.source,
-            expectedSource,
-            'source is expanded'
-          );
+          this.assert.strictEqual(options.source, expectedSource, 'source is expanded');
           return expandedKey;
         };
         registry.resolve = function(fullName) {
@@ -817,10 +757,7 @@ if (EMBER_MODULE_UNIFICATION) {
         let container = registry.container();
 
         let result = container.lookup(lookup, { source: expectedSource });
-        this.assert.ok(
-          result instanceof PrivateComponent,
-          'The correct factory was provided'
-        );
+        this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
 
         this.assert.ok(
           container.cache[expandedKey] instanceof PrivateComponent,
@@ -828,9 +765,7 @@ if (EMBER_MODULE_UNIFICATION) {
         );
       }
 
-      ['@test The container can expand and resolve a namespace to factoryFor'](
-        assert
-      ) {
+      ['@test The container can expand and resolve a namespace to factoryFor'](assert) {
         let PrivateComponent = factory();
         let lookup = 'component:my-input';
         let expectedNamespace = 'my-addon';
@@ -839,11 +774,7 @@ if (EMBER_MODULE_UNIFICATION) {
         let expandedKey = 'boom, special expanded key';
         registry.expandLocalLookup = (specifier, options) => {
           this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(
-            options.namespace,
-            expectedNamespace,
-            'namespace is expanded'
-          );
+          this.assert.strictEqual(options.namespace, expectedNamespace, 'namespace is expanded');
           return expandedKey;
         };
         registry.resolve = function(fullName) {
@@ -880,11 +811,7 @@ if (EMBER_MODULE_UNIFICATION) {
         let expandedKey = 'boom, special expanded key';
         registry.expandLocalLookup = (specifier, options) => {
           this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(
-            options.namespace,
-            expectedNamespace,
-            'namespace is expanded'
-          );
+          this.assert.strictEqual(options.namespace, expectedNamespace, 'namespace is expanded');
           return expandedKey;
         };
         registry.resolve = function(fullName) {
@@ -896,10 +823,7 @@ if (EMBER_MODULE_UNIFICATION) {
         let container = registry.container();
 
         let result = container.lookup(lookup, { namespace: expectedNamespace });
-        this.assert.ok(
-          result instanceof PrivateComponent,
-          'The correct factory was provided'
-        );
+        this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
 
         this.assert.ok(
           container.cache[expandedKey] instanceof PrivateComponent,

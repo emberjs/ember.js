@@ -29,7 +29,7 @@ const EmberObject = CoreObject.extend(Observable, {
       let factory = FACTORY_FOR.get(this);
 
       return factory !== undefined && factory.fullName;
-    }
+    },
   }),
 
   [OWNER]: descriptor({
@@ -48,8 +48,8 @@ const EmberObject = CoreObject.extend(Observable, {
     // folks calling `owner.ownerInjection()` API
     set(value) {
       this[OVERRIDE_OWNER] = value;
-    }
-  })
+    },
+  }),
 });
 
 setName(EmberObject, 'Ember.Object');
@@ -71,7 +71,7 @@ if (DEBUG) {
         `You must call \`this._super(...arguments);\` when overriding \`init\` on a framework object. Please update ${this} to call \`this._super(...arguments);\` from \`init\`.`,
         this[INIT_WAS_CALLED]
       );
-    })
+    }),
   });
 }
 

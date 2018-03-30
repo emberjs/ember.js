@@ -10,10 +10,8 @@ function setupController(app, name) {
 
   Object.defineProperty(app, controllerName, {
     get() {
-      throw new Error(
-        `Generating a URL should not require instantiation of a ${controllerName}.`
-      );
-    }
+      throw new Error(`Generating a URL should not require instantiation of a ${controllerName}.`);
+    },
   });
 }
 
@@ -31,9 +29,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#urlFor returns URL for simple route with dynamic segments'](
-        assert
-      ) {
+      ['@test RouterService#urlFor returns URL for simple route with dynamic segments'](assert) {
         assert.expect(1);
 
         setupController(this.application, 'dynamic');
@@ -47,18 +43,13 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#urlFor returns URL for simple route with basic query params'](
-        assert
-      ) {
+      ['@test RouterService#urlFor returns URL for simple route with basic query params'](assert) {
         assert.expect(1);
 
         let queryParams = this.buildQueryParams({ foo: 'bar' });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'parent.child',
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
           assert.equal('/child?foo=bar', expectedURL);
         });
@@ -73,17 +64,14 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           'controller:parent.child',
           Controller.extend({
             queryParams: ['sort'],
-            sort: 'ASC'
+            sort: 'ASC',
           })
         );
 
         let queryParams = this.buildQueryParams({ sort: 'ASC' });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'parent.child',
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
           assert.equal('/child?sort=ASC', expectedURL);
         });
@@ -98,14 +86,12 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           'controller:parent.child',
           Controller.extend({
             queryParams: ['sort', 'foo'],
-            sort: 'ASC'
+            sort: 'ASC',
           })
         );
 
         return this.visit('/child/?sort=DESC').then(() => {
-          let controller = this.applicationInstance.lookup(
-            'controller:parent.child'
-          );
+          let controller = this.applicationInstance.lookup('controller:parent.child');
           assert.equal(get(controller, 'sort'), 'DESC', 'sticky is set');
 
           let queryParams = this.buildQueryParams({ foo: 'derp' });
@@ -121,34 +107,23 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         assert.expect(1);
 
         let queryParams = this.buildQueryParams({
-          selectedItems: ['a', 'b', 'c']
+          selectedItems: ['a', 'b', 'c'],
         });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'parent.child',
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
-          assert.equal(
-            '/child?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c',
-            expectedURL
-          );
+          assert.equal('/child?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c', expectedURL);
         });
       }
 
-      ['@test RouterService#urlFor returns URL for simple route with null query params'](
-        assert
-      ) {
+      ['@test RouterService#urlFor returns URL for simple route with null query params'](assert) {
         assert.expect(1);
 
         let queryParams = this.buildQueryParams({ foo: null });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'parent.child',
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
           assert.equal('/child', expectedURL);
         });
@@ -162,10 +137,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         let queryParams = this.buildQueryParams({ foo: undefined });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'parent.child',
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
           assert.equal('/child', expectedURL);
         });
@@ -179,11 +151,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         let queryParams = this.buildQueryParams({ foo: 'bar' });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'dynamic',
-            { id: 1 },
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
           assert.equal('/dynamic/1?foo=bar', expectedURL);
         });
@@ -195,15 +163,11 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         assert.expect(1);
 
         let queryParams = this.buildQueryParams({
-          selectedItems: ['a', 'b', 'c']
+          selectedItems: ['a', 'b', 'c'],
         });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'dynamic',
-            { id: 1 },
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
           assert.equal(
             '/dynamic/1?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c',
@@ -220,11 +184,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         let queryParams = this.buildQueryParams({ foo: null });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'dynamic',
-            { id: 1 },
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
           assert.equal('/dynamic/1', expectedURL);
         });
@@ -238,19 +198,13 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         let queryParams = this.buildQueryParams({ foo: undefined });
 
         return this.visit('/').then(() => {
-          let expectedURL = this.routerService.urlFor(
-            'dynamic',
-            { id: 1 },
-            queryParams
-          );
+          let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
           assert.equal('/dynamic/1', expectedURL);
         });
       }
 
-      ['@test RouterService#urlFor correctly transitions to route via generated path'](
-        assert
-      ) {
+      ['@test RouterService#urlFor correctly transitions to route via generated path'](assert) {
         assert.expect(1);
 
         let expectedURL;
@@ -279,7 +233,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           Route.extend({
             model() {
               return dynamicModel;
-            }
+            },
           })
         );
 
@@ -305,10 +259,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
         return this.visit('/')
           .then(() => {
-            expectedURL = this.routerService.urlFor(
-              'parent.child',
-              queryParams
-            );
+            expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
             return this.routerService.transitionTo(expectedURL);
           })
@@ -334,17 +285,13 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           Route.extend({
             model() {
               return dynamicModel;
-            }
+            },
           })
         );
 
         return this.visit('/')
           .then(() => {
-            expectedURL = this.routerService.urlFor(
-              'dynamic',
-              dynamicModel,
-              queryParams
-            );
+            expectedURL = this.routerService.urlFor('dynamic', dynamicModel, queryParams);
 
             return this.routerService.transitionTo(expectedURL);
           })

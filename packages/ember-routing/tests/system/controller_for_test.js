@@ -51,34 +51,24 @@ moduleFor(
       });
     }
 
-    ['@test generateController should return controller:basic if resolved'](
-      assert
-    ) {
+    ['@test generateController should return controller:basic if resolved'](assert) {
       let BasicController = Controller.extend();
       this.add('controller:basic', BasicController);
 
       return this.visit('/').then(() => {
         let controller = generateController(this.applicationInstance, 'home');
-        assert.ok(
-          controller instanceof BasicController,
-          'should return controller'
-        );
+        assert.ok(controller instanceof BasicController, 'should return controller');
       });
     }
 
-    ['@test generateController should return controller:basic if registered'](
-      assert
-    ) {
+    ['@test generateController should return controller:basic if registered'](assert) {
       let BasicController = Controller.extend();
       this.application.register('controller:basic', BasicController);
 
       return this.visit('/').then(() => {
         let controller = generateController(this.applicationInstance, 'home');
 
-        assert.ok(
-          controller instanceof BasicController,
-          'should return base class of controller'
-        );
+        assert.ok(controller instanceof BasicController, 'should return base class of controller');
       });
     }
   }

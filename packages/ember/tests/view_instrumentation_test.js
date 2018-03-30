@@ -1,7 +1,4 @@
-import {
-  instrumentationSubscribe as subscribe,
-  instrumentationReset as reset
-} from 'ember-metal';
+import { instrumentationSubscribe as subscribe, instrumentationReset as reset } from 'ember-metal';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -29,16 +26,12 @@ moduleFor(
         before() {
           called = true;
         },
-        after() {}
+        after() {},
       });
 
       return this.visit('/')
         .then(() => {
-          assert.equal(
-            this.textValue(),
-            'Index',
-            'It rendered the correct template'
-          );
+          assert.equal(this.textValue(), 'Index', 'It rendered the correct template');
 
           assert.ok(called, 'Instrumentation called on first render');
           called = false;
@@ -46,15 +39,8 @@ moduleFor(
           return this.visit('/posts');
         })
         .then(() => {
-          assert.equal(
-            this.textValue(),
-            'Posts',
-            'It rendered the correct template'
-          );
-          assert.ok(
-            called,
-            'Instrumentation called on transition to non-view backed route'
-          );
+          assert.equal(this.textValue(), 'Posts', 'It rendered the correct template');
+          assert.ok(called, 'Instrumentation called on transition to non-view backed route');
         });
     }
   }

@@ -18,7 +18,7 @@ import {
   addObserver,
   removeObserver,
   getCachedValueFor,
-  isNone
+  isNone,
 } from 'ember-metal';
 import { assert } from 'ember-debug';
 
@@ -427,11 +427,7 @@ export default Mixin.create({
       'Must pass a numeric value to incrementProperty',
       !isNaN(parseFloat(increment)) && isFinite(increment)
     );
-    return set(
-      this,
-      keyName,
-      (parseFloat(get(this, keyName)) || 0) + increment
-    );
+    return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
   },
 
   /**
@@ -489,5 +485,5 @@ export default Mixin.create({
   */
   cacheFor(keyName) {
     return getCachedValueFor(this, keyName);
-  }
+  },
 });

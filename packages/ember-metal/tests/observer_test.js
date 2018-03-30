@@ -13,7 +13,7 @@ import {
   endPropertyChanges,
   changeProperties,
   get,
-  set
+  set,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -41,11 +41,7 @@ moduleFor(
       let count = 0;
 
       addObserver(obj, 'foo', function() {
-        assert.equal(
-          get(obj, 'foo'),
-          'bar',
-          'should invoke AFTER value changed'
-        );
+        assert.equal(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
         count++;
       });
 
@@ -67,11 +63,7 @@ moduleFor(
 
       let count = 0;
       addObserver(obj, 'foo', function() {
-        assert.equal(
-          get(obj, 'foo'),
-          'BAZ',
-          'should have invoked after prop change'
-        );
+        assert.equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
         count++;
       });
 
@@ -79,9 +71,7 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked observer');
     }
 
-    ['@test observer should continue to fire after dependent properties are accessed'](
-      assert
-    ) {
+    ['@test observer should continue to fire after dependent properties are accessed'](assert) {
       let observerCount = 0;
       let obj = {};
 
@@ -123,22 +113,14 @@ moduleFor(
         mixin(obj, {
           observeFooAndBar: function() {
             count++;
-          }.observes('{foo,bar}')
+          }.observes('{foo,bar}'),
         });
 
         set(obj, 'foo', 'foo');
-        assert.equal(
-          count,
-          1,
-          'observer specified via brace expansion invoked on property change'
-        );
+        assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
 
         set(obj, 'bar', 'bar');
-        assert.equal(
-          count,
-          2,
-          'observer specified via brace expansion invoked on property change'
-        );
+        assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
 
         set(obj, 'baz', 'baz');
         assert.equal(count, 2, 'observer not invoked on unspecified property');
@@ -173,7 +155,7 @@ moduleFor(
         mixin(obj, {
           fooAndBarWatcher: function() {
             count++;
-          }.observes('{foo,bar}')
+          }.observes('{foo,bar}'),
         });
 
         get(obj, 'foo');
@@ -201,22 +183,14 @@ moduleFor(
       mixin(obj, {
         observeFooAndBar: observer('{foo,bar}', function() {
           count++;
-        })
+        }),
       });
 
       set(obj, 'foo', 'foo');
-      assert.equal(
-        count,
-        1,
-        'observer specified via brace expansion invoked on property change'
-      );
+      assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
 
       set(obj, 'bar', 'bar');
-      assert.equal(
-        count,
-        2,
-        'observer specified via brace expansion invoked on property change'
-      );
+      assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
 
       set(obj, 'baz', 'baz');
       assert.equal(count, 2, 'observer not invoked on unspecified property');
@@ -247,7 +221,7 @@ moduleFor(
       mixin(obj, {
         fooAndBarWatcher: observer('{foo,bar}', function() {
           count++;
-        })
+        }),
       });
 
       get(obj, 'foo');
@@ -338,9 +312,7 @@ moduleFor(
       assert.equal(fooCount, 1, 'foo should have fired once');
     }
 
-    ['@test deferring property change notifications safely despite exceptions'](
-      assert
-    ) {
+    ['@test deferring property change notifications safely despite exceptions'](assert) {
       let obj = { foo: 'foo' };
       let fooCount = 0;
       let exc = new Error('Something unexpected happened!');
@@ -389,11 +361,7 @@ moduleFor(
       obj2.count = 0;
       set(obj, 'foo', 'baz');
       assert.equal(obj.count, 1, 'should have invoked observer on parent');
-      assert.equal(
-        obj2.count,
-        0,
-        'should not have invoked observer on inherited'
-      );
+      assert.equal(obj2.count, 0, 'should not have invoked observer on inherited');
     }
 
     ['@test addObserver should respect targets with methods'](assert) {
@@ -409,7 +377,7 @@ moduleFor(
           assert.equal(keyName, 'foo', 'param2 should be keyName');
           assert.equal(value, 'BAZ', 'param3 should new value');
           this.count++;
-        }
+        },
       };
 
       let target2 = {
@@ -422,7 +390,7 @@ moduleFor(
           assert.equal(keyName, 'foo', 'param2 should be keyName');
           assert.equal(value, 'BAZ', 'param3 should new value');
           this.count++;
-        }
+        },
       };
 
       addObserver(observed, 'foo', target1, 'didChange');
@@ -433,9 +401,7 @@ moduleFor(
       assert.equal(target2.count, 1, 'target2 observer should have fired');
     }
 
-    ['@test addObserver should allow multiple objects to observe a property'](
-      assert
-    ) {
+    ['@test addObserver should allow multiple objects to observe a property'](assert) {
       let observed = { foo: 'foo' };
 
       let target1 = {
@@ -443,7 +409,7 @@ moduleFor(
 
         didChange() {
           this.count++;
-        }
+        },
       };
 
       let target2 = {
@@ -451,7 +417,7 @@ moduleFor(
 
         didChange() {
           this.count++;
-        }
+        },
       };
 
       addObserver(observed, 'foo', target1, 'didChange');
@@ -498,7 +464,7 @@ moduleFor(
 
         foo2: observer('bar', function() {
           barObserved++;
-        })
+        }),
       });
 
       let obj = {};
@@ -523,7 +489,7 @@ moduleFor(
 
         didChange() {
           this.count++;
-        }
+        },
       };
 
       let target2 = {
@@ -531,7 +497,7 @@ moduleFor(
 
         didChange() {
           this.count++;
-        }
+        },
       };
 
       addObserver(observed, 'foo', target1, 'didChange');
@@ -566,19 +532,19 @@ moduleFor(
         foo: {
           bar: {
             baz: {
-              biff: 'BIFF'
-            }
-          }
+              biff: 'BIFF',
+            },
+          },
         },
         Capital: {
           foo: {
             bar: {
               baz: {
-                biff: 'BIFF'
-              }
-            }
-          }
-        }
+                biff: 'BIFF',
+              },
+            },
+          },
+        },
       };
 
       count = 0;
@@ -718,9 +684,7 @@ moduleFor(
     // The issue here is when a computed property is directly set with a value, then has a
     // dependent key change (which triggers a cache expiration and recomputation), observers will
     // not be fired if the CP setter is called with the last set value.
-    ['@test setting a cached computed property whose value has changed should trigger'](
-      assert
-    ) {
+    ['@test setting a cached computed property whose value has changed should trigger'](assert) {
       let obj = {};
 
       defineProperty(
@@ -732,7 +696,7 @@ moduleFor(
           },
           set: function(key, value) {
             return value;
-          }
+          },
         }).property('baz')
       );
 
@@ -761,11 +725,9 @@ moduleFor(
 moduleFor(
   'changeProperties',
   class extends AbstractTestCase {
-    ['@test observers added/removed during changeProperties should do the right thing.'](
-      assert
-    ) {
+    ['@test observers added/removed during changeProperties should do the right thing.'](assert) {
       let obj = {
-        foo: 0
+        foo: 0,
       };
       function Observer() {
         this.didChangeCount = 0;
@@ -779,7 +741,7 @@ moduleFor(
         },
         didChange() {
           this.didChangeCount++;
-        }
+        },
       };
       let addedBeforeFirstChangeObserver = new Observer();
       let addedAfterFirstChangeObserver = new Observer();
@@ -849,9 +811,7 @@ moduleFor(
       );
     }
 
-    ['@test calling changeProperties while executing deferred observers works correctly'](
-      assert
-    ) {
+    ['@test calling changeProperties while executing deferred observers works correctly'](assert) {
       let obj = { foo: 0 };
       let fooDidChange = 0;
 
@@ -964,11 +924,7 @@ moduleFor(
       let itsMyLastBeer = new Beer();
       set(itsMyLastBeer, 'type', 'ale');
       removeObserver(beer, 'type', K);
-      assert.deepEqual(
-        Object.keys(itsMyLastBeer),
-        ['type'],
-        'set -> removeObserver'
-      );
+      assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
     }
 
     ['@test observers switched on and off with setter in between (observed property is shadowing one on the prototype)'](
@@ -999,11 +955,7 @@ moduleFor(
       let itsMyLastBeer = new Beer();
       set(itsMyLastBeer, 'type', 'ale');
       removeObserver(beer, 'type', K);
-      assert.deepEqual(
-        Object.keys(itsMyLastBeer),
-        ['type'],
-        'set -> removeObserver'
-      );
+      assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
     }
   }
 );

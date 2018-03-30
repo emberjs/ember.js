@@ -35,20 +35,13 @@ moduleFor(
       assert.equal(typeOf(arr), 'array', 'item of type array');
       assert.equal(typeOf(obj), 'object', 'item of type object');
       assert.equal(typeOf(instance), 'instance', 'item of type instance');
-      assert.equal(
-        typeOf(instance.method),
-        'function',
-        'item of type function'
-      );
+      assert.equal(typeOf(instance.method), 'function', 'item of type function');
       assert.equal(typeOf(EmberObject.extend()), 'class', 'item of type class');
       assert.equal(typeOf(new Error()), 'error', 'item of type error');
     }
 
     ['@test Ember.typeOf(fileList)'](assert) {
-      if (
-        environment.window &&
-        typeof environment.window.FileList === 'function'
-      ) {
+      if (environment.window && typeof environment.window.FileList === 'function') {
         let fileListElement = document.createElement('input');
         fileListElement.type = 'file';
         let fileList = fileListElement.files;

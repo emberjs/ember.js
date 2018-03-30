@@ -10,6 +10,6 @@ module.exports = function rename(tree, mappings) {
       }
 
       return relativePath;
-    }
+    },
   });
 };

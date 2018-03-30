@@ -5,14 +5,7 @@ class ReplaceTests extends AbstractTestCase {
   "@test [].replace(0,0,'X') => ['X'] + notify"() {
     let exp = newFixture(1);
     let obj = this.newObject([]);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -20,21 +13,9 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), exp, 'post item results');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
     this.assert.equal(
       observer.timesCalled('firstObject'),
       1,
@@ -82,14 +63,7 @@ class ReplaceTests extends AbstractTestCase {
     let after = [before[0], replace[0], before[3]];
 
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -97,21 +71,9 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
     this.assert.equal(
       observer.validate('firstObject'),
@@ -131,14 +93,7 @@ class ReplaceTests extends AbstractTestCase {
     let after = [before[0], replace[0], replace[1], before[3]];
 
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -146,21 +101,9 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.validate('length'),
-      false,
-      'should NOT have notified length'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.validate('length'), false, 'should NOT have notified length');
 
     this.assert.equal(
       observer.validate('firstObject'),
@@ -180,14 +123,7 @@ class ReplaceTests extends AbstractTestCase {
     let after = [before[0], replace[0], replace[1], before[1]];
 
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -195,21 +131,9 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
     this.assert.equal(
       observer.validate('firstObject'),
@@ -228,14 +152,7 @@ class ReplaceTests extends AbstractTestCase {
     let after = [before[0], before[1]];
 
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -243,21 +160,9 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
     this.assert.equal(
       observer.timesCalled('lastObject'),
       1,
@@ -276,14 +181,7 @@ class ReplaceTests extends AbstractTestCase {
     let after = [before[0], before[1], before[2]];
 
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -291,21 +189,9 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
     this.assert.equal(
       observer.timesCalled('lastObject'),
       1,
@@ -332,10 +218,4 @@ class ReplaceTests extends AbstractTestCase {
   }
 }
 
-runArrayTests(
-  'replace',
-  ReplaceTests,
-  'MutableArray',
-  'NativeArray',
-  'ArrayProxy'
-);
+runArrayTests('replace', ReplaceTests, 'MutableArray', 'NativeArray', 'ArrayProxy');

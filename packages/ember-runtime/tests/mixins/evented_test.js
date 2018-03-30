@@ -9,7 +9,7 @@ moduleFor(
       let eventedProxyObj = CoreObject.extend(EventedMixin, {
         unknownProperty() {
           return true;
-        }
+        },
       }).create();
 
       let noop = function() {};

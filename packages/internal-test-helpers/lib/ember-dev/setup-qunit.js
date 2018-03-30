@@ -10,8 +10,7 @@ export default function setupQUnit(assertion, _qunitGlobal) {
   qunitGlobal.module = function(name, _options) {
     var options = _options || {};
     var originalSetup = options.setup || options.beforeEach || function() {};
-    var originalTeardown =
-      options.teardown || options.afterEach || function() {};
+    var originalTeardown = options.teardown || options.afterEach || function() {};
 
     delete options.setup;
     delete options.teardown;

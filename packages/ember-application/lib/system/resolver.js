@@ -24,7 +24,7 @@ export const Resolver = EmberObject.extend({
   lookupDescription: null, // required
   makeToString: null, // required
   resolveOther: null, // required
-  _logLookup: null // required
+  _logLookup: null, // required
 });
 
 /**
@@ -175,8 +175,7 @@ const DefaultResolver = EmberObject.extend({
 
   parseName(fullName) {
     return (
-      this._parseNameCache[fullName] ||
-      (this._parseNameCache[fullName] = this._parseName(fullName))
+      this._parseNameCache[fullName] || (this._parseNameCache[fullName] = this._parseName(fullName))
     );
   },
 
@@ -201,13 +200,10 @@ const DefaultResolver = EmberObject.extend({
       );
     }
 
-    let resolveMethodName =
-      fullNameWithoutType === 'main' ? 'Main' : StringUtils.classify(type);
+    let resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : StringUtils.classify(type);
 
     if (!(name && type)) {
-      throw new TypeError(
-        `Invalid fullName: \`${fullName}\`, must be of the form \`type:name\` `
-      );
+      throw new TypeError(`Invalid fullName: \`${fullName}\`, must be of the form \`type:name\` `);
     }
 
     return {
@@ -217,7 +213,7 @@ const DefaultResolver = EmberObject.extend({
       dirname,
       name,
       root,
-      resolveMethodName: `resolve${resolveMethodName}`
+      resolveMethodName: `resolve${resolveMethodName}`,
     };
   },
 
@@ -236,15 +232,10 @@ const DefaultResolver = EmberObject.extend({
     let description;
 
     if (parsedName.type === 'template') {
-      return `template at ${parsedName.fullNameWithoutType.replace(
-        /\./g,
-        '/'
-      )}`;
+      return `template at ${parsedName.fullNameWithoutType.replace(/\./g, '/')}`;
     }
 
-    description = `${parsedName.root}.${StringUtils.classify(
-      parsedName.name
-    ).replace(/\./g, '')}`;
+    description = `${parsedName.root}.${StringUtils.classify(parsedName.name).replace(/\./g, '')}`;
 
     if (parsedName.type !== 'model') {
       description += StringUtils.classify(parsedName.type);
@@ -284,10 +275,7 @@ const DefaultResolver = EmberObject.extend({
   resolveTemplate(parsedName) {
     let templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
-    return (
-      getTemplate(templateName) ||
-      getTemplate(StringUtils.decamelize(templateName))
-    );
+    return getTemplate(templateName) || getTemplate(StringUtils.decamelize(templateName));
   },
 
   /**
@@ -364,9 +352,7 @@ const DefaultResolver = EmberObject.extend({
     @protected
   */
   resolveOther(parsedName) {
-    let className =
-      StringUtils.classify(parsedName.name) +
-      StringUtils.classify(parsedName.type);
+    let className = StringUtils.classify(parsedName.name) + StringUtils.classify(parsedName.type);
     let factory = get(parsedName.root, className);
     return factory;
   },
@@ -422,7 +408,7 @@ const DefaultResolver = EmberObject.extend({
     let dasherizedName = StringUtils.dasherize(namePrefix);
 
     return `${type}:${dasherizedName}`;
-  }
+  },
 });
 
 export default DefaultResolver;
@@ -445,12 +431,7 @@ if (DEBUG) {
         padding = new Array(60 - parsedName.fullName.length).join('.');
       }
 
-      info(
-        symbol,
-        parsedName.fullName,
-        padding,
-        this.lookupDescription(parsedName.fullName)
-      );
-    }
+      info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
+    },
   });
 }

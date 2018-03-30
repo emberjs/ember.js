@@ -80,8 +80,8 @@ export default function transformInElement(env) {
             hash.pairs.push(nextSibling);
           }
         }
-      }
-    }
+      },
+    },
   };
 }
 

@@ -42,19 +42,19 @@ export const queues = [
 
   // used to re-throw unhandled RSVP rejection errors specifically in this
   // position to avoid breaking anything rendered in the other sections
-  P`rsvpAfter`
+  P`rsvpAfter`,
 ];
 
 export const backburner = new Backburner(queues, {
   sync: {
     before: beginPropertyChanges,
-    after: endPropertyChanges
+    after: endPropertyChanges,
   },
   defaultQueue: 'actions',
   onBegin,
   onEnd,
   onErrorTarget,
-  onErrorMethod: 'onerror'
+  onErrorMethod: 'onerror',
 });
 
 /**
@@ -301,11 +301,10 @@ export function schedule(queue /*, target, method */) {
       `You will need to wrap any code with asynchronous side-effects in a run`,
     currentRunLoop || !isTesting()
   );
-  deprecate(
-    `Scheduling into the '${queue}' run loop queue is deprecated.`,
-    queue !== 'sync',
-    { id: 'ember-metal.run.sync', until: '3.5.0' }
-  );
+  deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
+    id: 'ember-metal.run.sync',
+    until: '3.5.0',
+  });
 
   return backburner.schedule(...arguments);
 }
@@ -457,11 +456,10 @@ export function scheduleOnce(queue /*, target, method*/) {
       `You will need to wrap any code with asynchronous side-effects in a run`,
     currentRunLoop || !isTesting()
   );
-  deprecate(
-    `Scheduling into the '${queue}' run loop queue is deprecated.`,
-    queue !== 'sync',
-    { id: 'ember-metal.run.sync', until: '3.5.0' }
-  );
+  deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
+    id: 'ember-metal.run.sync',
+    until: '3.5.0',
+  });
   return backburner.scheduleOnce(...arguments);
 }
 

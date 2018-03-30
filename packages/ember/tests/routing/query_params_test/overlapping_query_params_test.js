@@ -54,9 +54,7 @@ moduleFor(
       });
     }
 
-    ['@test query params can be either controller property or url key'](
-      assert
-    ) {
+    ['@test query params can be either controller property or url key'](assert) {
       assert.expect(3);
 
       this.setMappedQPController('parent');
@@ -86,7 +84,7 @@ moduleFor(
         this.assertCurrentPath('/parent/child?parentPage=3');
 
         this.transitionTo('parent.child', {
-          queryParams: { index: 2, page: 2 }
+          queryParams: { index: 2, page: 2 },
         });
         this.assertCurrentPath('/parent/child?page=2&parentPage=2');
       });
@@ -108,12 +106,12 @@ moduleFor(
         this.assertCurrentPath('/parent/child?parentPage=3');
 
         this.transitionTo('parent.child', {
-          queryParams: { childPage: 2, page: 2 }
+          queryParams: { childPage: 2, page: 2 },
         });
         this.assertCurrentPath('/parent/child?childPage=2&parentPage=2');
 
         this.transitionTo('parent.child', {
-          queryParams: { childPage: 3, parentPage: 4 }
+          queryParams: { childPage: 3, parentPage: 4 },
         });
         this.assertCurrentPath('/parent/child?childPage=3&parentPage=4');
       });
@@ -125,13 +123,10 @@ moduleFor(
       assert.expect(1);
 
       let parentController = Controller.extend({
-        queryParams: { page: 'page' }
+        queryParams: { page: 'page' },
       });
       this.add('controller:parent', parentController);
-      this.add(
-        'route:parent.child',
-        Route.extend({ controllerName: 'parent' })
-      );
+      this.add('route:parent.child', Route.extend({ controllerName: 'parent' }));
 
       return this.setupBase('/parent').then(() => {
         this.transitionTo('parent.child', { queryParams: { page: 2 } });
@@ -156,13 +151,13 @@ moduleFor(
 
       let HasPage = Mixin.create({
         queryParams: 'page',
-        page: 1
+        page: 1,
       });
 
       this.add(
         'controller:parent',
         Controller.extend(HasPage, {
-          queryParams: { page: 'yespage' }
+          queryParams: { page: 'yespage' },
         })
       );
 

@@ -204,11 +204,7 @@ const ApplicationInstance = EngineInstance.extend({
     let applicationCustomEvents = get(this.application, 'customEvents');
     let instanceCustomEvents = get(this, 'customEvents');
 
-    let customEvents = assign(
-      {},
-      applicationCustomEvents,
-      instanceCustomEvents
-    );
+    let customEvents = assign({}, applicationCustomEvents, instanceCustomEvents);
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
@@ -259,10 +255,7 @@ const ApplicationInstance = EngineInstance.extend({
     let handleTransitionReject = error => {
       if (error.error) {
         throw error.error;
-      } else if (
-        error.name === 'TransitionAborted' &&
-        router._routerMicrolib.activeTransition
-      ) {
+      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
         return router._routerMicrolib.activeTransition.then(
           handleTransitionResolve,
           handleTransitionReject
@@ -288,7 +281,7 @@ const ApplicationInstance = EngineInstance.extend({
   willDestroy() {
     this._super(...arguments);
     this.application._unwatchInstance(this);
-  }
+  },
 });
 
 ApplicationInstance.reopenClass({
@@ -304,14 +297,14 @@ ApplicationInstance.reopenClass({
     }
 
     registry.register('-environment:main', options.toEnvironment(), {
-      instantiate: false
+      instantiate: false,
     });
     registry.register('service:-document', options.document, {
-      instantiate: false
+      instantiate: false,
     });
 
     this._super(registry, options);
-  }
+  },
 });
 
 /**

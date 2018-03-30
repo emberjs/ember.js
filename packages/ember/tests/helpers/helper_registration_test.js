@@ -5,13 +5,8 @@ import { Helper, helper } from 'ember-glimmer';
 moduleFor(
   'Application Lifecycle - Helper Registration',
   class extends ApplicationTestCase {
-    ['@test Unbound dashed helpers registered on the container can be late-invoked'](
-      assert
-    ) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`
-      );
+    ['@test Unbound dashed helpers registered on the container can be late-invoked'](assert) {
+      this.addTemplate('application', `<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`);
 
       let myHelper = helper(params => params[0] || 'BORF');
       this.application.register('helper:x-borf', myHelper);
@@ -25,18 +20,13 @@ moduleFor(
       });
     }
 
-    ['@test Bound helpers registered on the container can be late-invoked'](
-      assert
-    ) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>`
-      );
+    ['@test Bound helpers registered on the container can be late-invoked'](assert) {
+      this.addTemplate('application', `<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>`);
 
       this.add(
         'controller:application',
         Controller.extend({
-          foo: 'alex'
+          foo: 'alex',
         })
       );
 
@@ -61,9 +51,7 @@ moduleFor(
       });
     }
 
-    ['@test Undashed helpers registered on the container can be invoked'](
-      assert
-    ) {
+    ['@test Undashed helpers registered on the container can be invoked'](assert) {
       this.addTemplate(
         'application',
         `<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`
@@ -92,7 +80,7 @@ moduleFor(
         Service.extend({
           build() {
             serviceCalled = true;
-          }
+          },
         })
       );
 
@@ -102,7 +90,7 @@ moduleFor(
           nameBuilder: inject.service('name-builder'),
           compute() {
             this.get('nameBuilder').build();
-          }
+          },
         })
       );
 

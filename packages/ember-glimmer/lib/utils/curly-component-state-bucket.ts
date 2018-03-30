@@ -16,9 +16,7 @@ export interface Component {
   appendChild(view: {}): void;
   trigger(event: string): void;
   destroy(): void;
-  setProperties(props: {
-    [key: string]: any;
-  }): void;
+  setProperties(props: { [key: string]: any }): void;
 }
 
 type Finalizer = () => void;
@@ -39,7 +37,12 @@ export default class ComponentStateBucket {
   public classRef: VersionedReference<Opaque> | null = null;
   public argsRevision: Revision;
 
-  constructor(public environment: Environment, public component: Component, public args: CapturedNamedArguments | null, public finalizer: Finalizer) {
+  constructor(
+    public environment: Environment,
+    public component: Component,
+    public args: CapturedNamedArguments | null,
+    public finalizer: Finalizer
+  ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : args.tag.value();
   }

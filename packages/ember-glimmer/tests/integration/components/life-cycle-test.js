@@ -31,7 +31,7 @@ class LifeCycleHooksTest extends RenderingTest {
 
   getBootOptions() {
     return {
-      isInteractive: this.isInteractive
+      isInteractive: this.isInteractive,
     };
   }
 
@@ -53,7 +53,7 @@ class LifeCycleHooksTest extends RenderingTest {
   get boundHelpers() {
     return {
       invoke: bind(this.invocationFor, this),
-      attr: bind(this.attrFor, this)
+      attr: bind(this.attrFor, this),
     };
   }
 
@@ -69,11 +69,7 @@ class LifeCycleHooksTest extends RenderingTest {
 
       this.assert.deepEqual(actual, expected, 'registered views - ' + label);
     } else {
-      this.assert.deepEqual(
-        actual,
-        [],
-        'no views should be registered for non-interactive mode'
-      );
+      this.assert.deepEqual(actual, [], 'no views should be registered for non-interactive mode');
     }
   }
 
@@ -95,10 +91,7 @@ class LifeCycleHooksTest extends RenderingTest {
     };
 
     let assertParentView = (hookName, instance) => {
-      this.assert.ok(
-        instance.parentView,
-        `parentView should be present in ${hookName}`
-      );
+      this.assert.ok(instance.parentView, `parentView should be present in ${hookName}`);
 
       if (hookName === 'willDestroyElement') {
         this.assert.ok(
@@ -290,7 +283,7 @@ class LifeCycleHooksTest extends RenderingTest {
         removeComponent(this);
 
         this._super(...arguments);
-      }
+      },
     });
 
     super.registerComponent(name, { ComponentClass, template });
@@ -311,7 +304,7 @@ class LifeCycleHooksTest extends RenderingTest {
       <div>
         Twitter: {{${attr('twitter')}}}|
         ${invoke('the-middle', { name: string('Tom Dale') })}
-      </div>`
+      </div>`,
     });
 
     this.registerComponent('the-middle', {
@@ -319,18 +312,18 @@ class LifeCycleHooksTest extends RenderingTest {
       <div>
         Name: {{${attr('name')}}}|
         ${invoke('the-bottom', { website: string('tomdale.net') })}
-      </div>`
+      </div>`,
     });
 
     this.registerComponent('the-bottom', {
       template: strip`
       <div>
         Website: {{${attr('website')}}}
-      </div>`
+      </div>`,
     });
 
     this.render(invoke('the-top', { twitter: expr('twitter') }), {
-      twitter: '@tomdale'
+      twitter: '@tomdale',
     });
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
@@ -369,7 +362,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-middle', 'didRender'],
 
         ['the-top', 'didInsertElement'],
-        ['the-top', 'didRender']
+        ['the-top', 'didRender'],
       ],
 
       nonInteractive: [
@@ -384,8 +377,8 @@ class LifeCycleHooksTest extends RenderingTest {
 
         ['the-bottom', 'init'],
         ['the-bottom', 'on(init)'],
-        ['the-bottom', 'didReceiveAttrs']
-      ]
+        ['the-bottom', 'didReceiveAttrs'],
+      ],
     });
 
     this.runTask(() => this.components['the-bottom'].rerender());
@@ -415,10 +408,10 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-middle', 'didRender'],
 
         ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
+        ['the-top', 'didRender'],
       ],
 
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.runTask(() => this.components['the-middle'].rerender());
@@ -443,10 +436,10 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-middle', 'didRender'],
 
         ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
+        ['the-top', 'didRender'],
       ],
 
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.runTask(() => this.components['the-top'].rerender());
@@ -465,17 +458,15 @@ class LifeCycleHooksTest extends RenderingTest {
         // Async hooks
 
         ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
+        ['the-top', 'didRender'],
       ],
 
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
 
-    this.assertText(
-      'Twitter: @horsetomdale|Name: Tom Dale|Website: tomdale.net'
-    );
+    this.assertText('Twitter: @horsetomdale|Name: Tom Dale|Website: tomdale.net');
 
     // Because the `twitter` attr is only used by the topmost component,
     // and not passed down, we do not expect to see lifecycle hooks
@@ -498,14 +489,14 @@ class LifeCycleHooksTest extends RenderingTest {
         // Async hooks
 
         ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
+        ['the-top', 'didRender'],
       ],
 
       nonInteractive: [
         // Sync hooks
         ['the-top', 'didUpdateAttrs'],
-        ['the-top', 'didReceiveAttrs']
-      ]
+        ['the-top', 'didReceiveAttrs'],
+      ],
     });
 
     this.teardownAssertions.push(() => {
@@ -524,14 +515,14 @@ class LifeCycleHooksTest extends RenderingTest {
           ['the-bottom', 'didDestroyElement'],
           ['the-top', 'willDestroy'],
           ['the-middle', 'willDestroy'],
-          ['the-bottom', 'willDestroy']
+          ['the-bottom', 'willDestroy'],
         ],
 
         nonInteractive: [
           ['the-top', 'willDestroy'],
           ['the-middle', 'willDestroy'],
-          ['the-bottom', 'willDestroy']
-        ]
+          ['the-bottom', 'willDestroy'],
+        ],
       });
 
       this.assertRegisteredViews('after destroy');
@@ -547,31 +538,31 @@ class LifeCycleHooksTest extends RenderingTest {
         ${invoke('the-first-child', { twitter: expr(attr('twitter')) })}|
         ${invoke('the-second-child', { name: expr(attr('name')) })}|
         ${invoke('the-last-child', { website: expr(attr('website')) })}
-      </div>`
+      </div>`,
     });
 
     this.registerComponent('the-first-child', {
-      template: `Twitter: {{${attr('twitter')}}}`
+      template: `Twitter: {{${attr('twitter')}}}`,
     });
 
     this.registerComponent('the-second-child', {
-      template: `Name: {{${attr('name')}}}`
+      template: `Name: {{${attr('name')}}}`,
     });
 
     this.registerComponent('the-last-child', {
-      template: `Website: {{${attr('website')}}}`
+      template: `Website: {{${attr('website')}}}`,
     });
 
     this.render(
       invoke('the-parent', {
         twitter: expr('twitter'),
         name: expr('name'),
-        website: expr('website')
+        website: expr('website'),
       }),
       {
         twitter: '@tomdale',
         name: 'Tom Dale',
-        website: 'tomdale.net'
+        website: 'tomdale.net',
       }
     );
 
@@ -620,7 +611,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-last-child', 'didRender'],
 
         ['the-parent', 'didInsertElement'],
-        ['the-parent', 'didRender']
+        ['the-parent', 'didRender'],
       ],
 
       nonInteractive: [
@@ -640,8 +631,8 @@ class LifeCycleHooksTest extends RenderingTest {
 
         ['the-last-child', 'init'],
         ['the-last-child', 'on(init)'],
-        ['the-last-child', 'didReceiveAttrs']
-      ]
+        ['the-last-child', 'didReceiveAttrs'],
+      ],
     });
 
     this.runTask(() => this.components['the-first-child'].rerender());
@@ -666,10 +657,10 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-first-child', 'didRender'],
 
         ['the-parent', 'didUpdate'],
-        ['the-parent', 'didRender']
+        ['the-parent', 'didRender'],
       ],
 
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.runTask(() => this.components['the-second-child'].rerender());
@@ -694,10 +685,10 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-second-child', 'didRender'],
 
         ['the-parent', 'didUpdate'],
-        ['the-parent', 'didRender']
+        ['the-parent', 'didRender'],
       ],
 
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.runTask(() => this.components['the-last-child'].rerender());
@@ -722,10 +713,10 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-last-child', 'didRender'],
 
         ['the-parent', 'didUpdate'],
-        ['the-parent', 'didRender']
+        ['the-parent', 'didRender'],
       ],
 
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.runTask(() => this.components['the-parent'].rerender());
@@ -744,23 +735,21 @@ class LifeCycleHooksTest extends RenderingTest {
         // Async hooks
 
         ['the-parent', 'didUpdate'],
-        ['the-parent', 'didRender']
+        ['the-parent', 'didRender'],
       ],
 
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.runTask(() =>
       setProperties(this.context, {
         twitter: '@horsetomdale',
         name: 'Horse Tom Dale',
-        website: 'horsetomdale.net'
+        website: 'horsetomdale.net',
       })
     );
 
-    this.assertText(
-      'Twitter: @horsetomdale|Name: Horse Tom Dale|Website: horsetomdale.net'
-    );
+    this.assertText('Twitter: @horsetomdale|Name: Horse Tom Dale|Website: horsetomdale.net');
 
     this.assertHooks({
       label: 'after update',
@@ -804,7 +793,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-last-child', 'didRender'],
 
         ['the-parent', 'didUpdate'],
-        ['the-parent', 'didRender']
+        ['the-parent', 'didRender'],
       ],
 
       nonInteractive: [
@@ -820,8 +809,8 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-second-child', 'didReceiveAttrs'],
 
         ['the-last-child', 'didUpdateAttrs'],
-        ['the-last-child', 'didReceiveAttrs']
-      ]
+        ['the-last-child', 'didReceiveAttrs'],
+      ],
     });
 
     this.teardownAssertions.push(() => {
@@ -846,15 +835,15 @@ class LifeCycleHooksTest extends RenderingTest {
           ['the-parent', 'willDestroy'],
           ['the-first-child', 'willDestroy'],
           ['the-second-child', 'willDestroy'],
-          ['the-last-child', 'willDestroy']
+          ['the-last-child', 'willDestroy'],
         ],
 
         nonInteractive: [
           ['the-parent', 'willDestroy'],
           ['the-first-child', 'willDestroy'],
           ['the-second-child', 'willDestroy'],
-          ['the-last-child', 'willDestroy']
-        ]
+          ['the-last-child', 'willDestroy'],
+        ],
       });
 
       this.assertRegisteredViews('after destroy');
@@ -868,27 +857,27 @@ class LifeCycleHooksTest extends RenderingTest {
       template: strip`
       <div>
         Top: ${invoke('the-middle', { twitterTop: expr(attr('twitter')) })}
-      </div>`
+      </div>`,
     });
 
     this.registerComponent('the-middle', {
       template: strip`
       <div>
         Middle: ${invoke('the-bottom', {
-          twitterMiddle: expr(attr('twitterTop'))
+          twitterMiddle: expr(attr('twitterTop')),
         })}
-      </div>`
+      </div>`,
     });
 
     this.registerComponent('the-bottom', {
       template: strip`
       <div>
         Bottom: {{${attr('twitterMiddle')}}}
-      </div>`
+      </div>`,
     });
 
     this.render(invoke('the-top', { twitter: expr('twitter') }), {
-      twitter: '@tomdale'
+      twitter: '@tomdale',
     });
 
     this.assertText('Top: Middle: Bottom: @tomdale');
@@ -927,7 +916,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-middle', 'didRender'],
 
         ['the-top', 'didInsertElement'],
-        ['the-top', 'didRender']
+        ['the-top', 'didRender'],
       ],
 
       nonInteractive: [
@@ -943,8 +932,8 @@ class LifeCycleHooksTest extends RenderingTest {
 
         ['the-bottom', 'init'],
         ['the-bottom', 'on(init)'],
-        ['the-bottom', 'didReceiveAttrs']
-      ]
+        ['the-bottom', 'didReceiveAttrs'],
+      ],
     });
 
     this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
@@ -987,7 +976,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-middle', 'didRender'],
 
         ['the-top', 'didUpdate'],
-        ['the-top', 'didRender']
+        ['the-top', 'didRender'],
       ],
 
       nonInteractive: [
@@ -1000,8 +989,8 @@ class LifeCycleHooksTest extends RenderingTest {
         ['the-middle', 'didReceiveAttrs'],
 
         ['the-bottom', 'didUpdateAttrs'],
-        ['the-bottom', 'didReceiveAttrs']
-      ]
+        ['the-bottom', 'didReceiveAttrs'],
+      ],
     });
 
     this.runTask(() => this.rerender());
@@ -1013,7 +1002,7 @@ class LifeCycleHooksTest extends RenderingTest {
     this.assertHooks({
       label: 'after no-op rernder (root)',
       interactive: [],
-      nonInteractive: []
+      nonInteractive: [],
     });
 
     this.teardownAssertions.push(() => {
@@ -1032,14 +1021,14 @@ class LifeCycleHooksTest extends RenderingTest {
           ['the-bottom', 'didDestroyElement'],
           ['the-top', 'willDestroy'],
           ['the-middle', 'willDestroy'],
-          ['the-bottom', 'willDestroy']
+          ['the-bottom', 'willDestroy'],
         ],
 
         nonInteractive: [
           ['the-top', 'willDestroy'],
           ['the-middle', 'willDestroy'],
-          ['the-bottom', 'willDestroy']
-        ]
+          ['the-bottom', 'willDestroy'],
+        ],
       });
 
       this.assertRegisteredViews('after destroy');
@@ -1054,13 +1043,13 @@ class LifeCycleHooksTest extends RenderingTest {
     this.registerComponent('an-item', {
       template: strip`
       {{#nested-item}}Item: {{count}}{{/nested-item}}
-    `
+    `,
     });
 
     this.registerComponent('no-items', {
       template: strip`
       {{#nested-item}}Nothing to see here{{/nested-item}}
-    `
+    `,
     });
 
     this.render(
@@ -1072,7 +1061,7 @@ class LifeCycleHooksTest extends RenderingTest {
       {{/each}}
     `,
       {
-        items: [1, 2, 3, 4, 5]
+        items: [1, 2, 3, 4, 5],
       }
     );
 
@@ -1080,11 +1069,7 @@ class LifeCycleHooksTest extends RenderingTest {
     this.assertRegisteredViews('intial render');
 
     let initialHooks = () => {
-      let ret = [
-        ['an-item', 'init'],
-        ['an-item', 'on(init)'],
-        ['an-item', 'didReceiveAttrs']
-      ];
+      let ret = [['an-item', 'init'], ['an-item', 'on(init)'], ['an-item', 'didReceiveAttrs']];
       if (this.isInteractive) {
         ret.push(['an-item', 'willRender'], ['an-item', 'willInsertElement']);
       }
@@ -1094,10 +1079,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['nested-item', 'didReceiveAttrs']
       );
       if (this.isInteractive) {
-        ret.push(
-          ['nested-item', 'willRender'],
-          ['nested-item', 'willInsertElement']
-        );
+        ret.push(['nested-item', 'willRender'], ['nested-item', 'willInsertElement']);
       }
       return ret;
     };
@@ -1108,7 +1090,7 @@ class LifeCycleHooksTest extends RenderingTest {
           ['nested-item', 'didInsertElement'],
           ['nested-item', 'didRender'],
           ['an-item', 'didInsertElement'],
-          ['an-item', 'didRender']
+          ['an-item', 'didRender'],
         ];
       } else {
         return [];
@@ -1131,7 +1113,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ...initialAfterRenderHooks(4),
         ...initialAfterRenderHooks(3),
         ...initialAfterRenderHooks(2),
-        ...initialAfterRenderHooks(1)
+        ...initialAfterRenderHooks(1),
       ],
 
       nonInteractive: [
@@ -1147,28 +1129,20 @@ class LifeCycleHooksTest extends RenderingTest {
         ...initialAfterRenderHooks(4),
         ...initialAfterRenderHooks(3),
         ...initialAfterRenderHooks(2),
-        ...initialAfterRenderHooks(1)
-      ]
+        ...initialAfterRenderHooks(1),
+      ],
     });
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(
-        this.component.childViews.length,
-        5,
-        'childViews precond'
-      );
+      this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
     }
 
     this.runTask(() => set(this.context, 'items', []));
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(
-        this.component.childViews.length,
-        1,
-        'childViews updated'
-      );
+      this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
     }
 
     this.assertText('Nothing to see here');
@@ -1235,7 +1209,7 @@ class LifeCycleHooksTest extends RenderingTest {
         ['an-item', 'willDestroy'],
         ['nested-item', 'willDestroy'],
         ['an-item', 'willDestroy'],
-        ['nested-item', 'willDestroy']
+        ['nested-item', 'willDestroy'],
       ],
 
       nonInteractive: [
@@ -1256,8 +1230,8 @@ class LifeCycleHooksTest extends RenderingTest {
         ['an-item', 'willDestroy'],
         ['nested-item', 'willDestroy'],
         ['an-item', 'willDestroy'],
-        ['nested-item', 'willDestroy']
-      ]
+        ['nested-item', 'willDestroy'],
+      ],
     });
 
     this.teardownAssertions.push(() => {
@@ -1274,13 +1248,10 @@ class LifeCycleHooksTest extends RenderingTest {
           ['nested-item', 'didDestroyElement'],
 
           ['no-items', 'willDestroy'],
-          ['nested-item', 'willDestroy']
+          ['nested-item', 'willDestroy'],
         ],
 
-        nonInteractive: [
-          ['no-items', 'willDestroy'],
-          ['nested-item', 'willDestroy']
-        ]
+        nonInteractive: [['no-items', 'willDestroy'], ['nested-item', 'willDestroy']],
       });
 
       this.assertRegisteredViews('after destroy');
@@ -1370,7 +1341,7 @@ moduleFor(
           schedule('afterRender', () => {
             this.set('width', '10');
           });
-        }
+        },
       });
 
       let template = `{{width}}`;
@@ -1392,7 +1363,7 @@ moduleFor(
             let parent = this.get('parent');
             parent.set('foo', 'wat');
           });
-        }
+        },
       });
 
       let template = `{{foo}}`;
@@ -1415,7 +1386,7 @@ moduleFor(
         attributeBindings: ['customHref:href'],
         willRender() {
           this.set('customHref', 'http://willRender.com');
-        }
+        },
       });
 
       let template = `Hello World`;
@@ -1429,8 +1400,8 @@ moduleFor(
         attrs: {
           id: 'foo',
           href: 'http://willRender.com',
-          class: classes('ember-view')
-        }
+          class: classes('ember-view'),
+        },
       });
     }
 
@@ -1445,9 +1416,9 @@ moduleFor(
             name: 'parent-component',
             hasParent: !!this.element.parentNode,
             nextSibling: !!this.element.nextSibling,
-            previousSibling: !!this.element.previousSibling
+            previousSibling: !!this.element.previousSibling,
           });
-        }
+        },
       });
 
       let PartentTemplate = strip`
@@ -1465,30 +1436,24 @@ moduleFor(
             name: 'nested-component',
             hasParent: !!this.element.parentNode,
             nextSibling: !!this.element.nextSibling,
-            previousSibling: !!this.element.previousSibling
+            previousSibling: !!this.element.previousSibling,
           });
-        }
+        },
       });
 
       let NestedTemplate = `{{yield}}`;
 
       this.registerComponent('parent-component', {
         ComponentClass: ParentComponent,
-        template: PartentTemplate
+        template: PartentTemplate,
       });
 
       this.registerComponent('nested-component', {
         ComponentClass: NestedComponent,
-        template: NestedTemplate
+        template: NestedTemplate,
       });
 
-      let array = emberA([
-        { id: 1 },
-        { id: 2 },
-        { id: 3 },
-        { id: 4 },
-        { id: 5 }
-      ]);
+      let array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 
       this.render(
         strip`
@@ -1504,7 +1469,7 @@ moduleFor(
     `,
         {
           items: array,
-          model: { shouldShow: true }
+          model: { shouldShow: true },
         }
       );
 
@@ -1526,26 +1491,26 @@ moduleFor(
             id: 3,
             hasParent: true,
             nextSibling: true,
-            previousSibling: true
+            previousSibling: true,
           },
           {
             id: 4,
             hasParent: true,
             nextSibling: true,
-            previousSibling: true
+            previousSibling: true,
           },
           {
             id: 6,
             hasParent: true,
             nextSibling: true,
-            previousSibling: true
+            previousSibling: true,
           },
           {
             id: 7,
             hasParent: true,
             nextSibling: false,
-            previousSibling: true
-          }
+            previousSibling: true,
+          },
         ]
       );
 
@@ -1557,50 +1522,50 @@ moduleFor(
             id: '3-A',
             hasParent: true,
             nextSibling: true,
-            previousSibling: false
+            previousSibling: false,
           },
           {
             id: '3-B',
             hasParent: true,
             nextSibling: false,
-            previousSibling: true
+            previousSibling: true,
           },
           {
             id: '4-A',
             hasParent: true,
             nextSibling: true,
-            previousSibling: false
+            previousSibling: false,
           },
           {
             id: '4-B',
             hasParent: true,
             nextSibling: false,
-            previousSibling: true
+            previousSibling: true,
           },
           {
             id: '6-A',
             hasParent: true,
             nextSibling: true,
-            previousSibling: false
+            previousSibling: false,
           },
           {
             id: '6-B',
             hasParent: true,
             nextSibling: false,
-            previousSibling: true
+            previousSibling: true,
           },
           {
             id: '7-A',
             hasParent: true,
             nextSibling: true,
-            previousSibling: false
+            previousSibling: false,
           },
           {
             id: '7-B',
             hasParent: true,
             nextSibling: false,
-            previousSibling: true
-          }
+            previousSibling: true,
+          },
         ]
       );
     }
@@ -1617,45 +1582,30 @@ if (!jQueryDisabled) {
         let FooBarComponent = Component.extend({
           tagName: 'div',
           init() {
-            assert.notOk(
-              this.$(),
-              'no access to element via this.$() on init() enter'
-            );
+            assert.notOk(this.$(), 'no access to element via this.$() on init() enter');
             this._super(...arguments);
-            assert.notOk(
-              this.$(),
-              'no access to element via this.$() after init() finished'
-            );
+            assert.notOk(this.$(), 'no access to element via this.$() after init() finished');
           },
           willInsertElement() {
             component = this;
-            assert.ok(
-              this.$(),
-              'willInsertElement has access to element via this.$()'
-            );
+            assert.ok(this.$(), 'willInsertElement has access to element via this.$()');
           },
           didInsertElement() {
-            assert.ok(
-              this.$(),
-              'didInsertElement has access to element via this.$()'
-            );
+            assert.ok(this.$(), 'didInsertElement has access to element via this.$()');
           },
           willDestroyElement() {
-            assert.ok(
-              this.$(),
-              'willDestroyElement has access to element via this.$()'
-            );
+            assert.ok(this.$(), 'willDestroyElement has access to element via this.$()');
           },
           didDestroyElement() {
             assert.notOk(
               this.$(),
               'didDestroyElement does not have access to element via this.$()'
             );
-          }
+          },
         });
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: 'hello'
+          template: 'hello',
         });
         let { owner } = this;
         let comp = owner.lookup('component:foo-bar');
@@ -1670,16 +1620,8 @@ function assertDestroyHooks(assert, _actual, _expected) {
   _expected.forEach((expected, i) => {
     let name = expected.name;
     assert.equal(expected.id, _actual[i].id, `${name} id is the same`);
-    assert.equal(
-      expected.hasParent,
-      _actual[i].hasParent,
-      `${name} has parent node`
-    );
-    assert.equal(
-      expected.nextSibling,
-      _actual[i].nextSibling,
-      `${name} has next sibling node`
-    );
+    assert.equal(expected.hasParent, _actual[i].hasParent, `${name} has parent node`);
+    assert.equal(expected.nextSibling, _actual[i].nextSibling, `${name} has next sibling node`);
     assert.equal(
       expected.previousSibling,
       _actual[i].previousSibling,

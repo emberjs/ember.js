@@ -19,7 +19,7 @@ moduleFor(
       let obj = {};
       mixin(obj, {
         foo: 'FOO',
-        baz: K
+        baz: K,
       });
 
       assert.equal(get(obj, 'foo'), 'FOO', 'should apply foo');

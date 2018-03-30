@@ -37,12 +37,9 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
       }
 
       ['@test it renders the block if arguments are falsey']() {
-        this.render(
-          `{{#let cond1 cond2 as |cond|}}value: "{{cond1}}"{{/let}}`,
-          {
-            cond1: false
-          }
-        );
+        this.render(`{{#let cond1 cond2 as |cond|}}value: "{{cond1}}"{{/let}}`, {
+          cond1: false,
+        });
 
         this.assertText('value: "false"');
 
@@ -60,14 +57,11 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
       }
 
       ['@test it yields multiple arguments in order']() {
-        this.render(
-          `{{#let foo bar baz.name as |a b c|}}{{a}} {{b}} {{c}}{{/let}}`,
-          {
-            foo: 'Señor Engineer',
-            bar: '',
-            baz: { name: 'Dale' }
-          }
-        );
+        this.render(`{{#let foo bar baz.name as |a b c|}}{{a}} {{b}} {{c}}{{/let}}`, {
+          foo: 'Señor Engineer',
+          bar: '',
+          baz: { name: 'Dale' },
+        });
 
         this.assertText('Señor Engineer  Dale');
 
@@ -79,7 +73,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
       ['@test can access alias and original scope']() {
         this.render(`{{#let person as |tom|}}{{title}}: {{tom.name}}{{/let}}`, {
           title: 'Señor Engineer',
-          person: { name: 'Tom Dale' }
+          person: { name: 'Tom Dale' },
         });
 
         this.assertText('Señor Engineer: Tom Dale');
@@ -104,13 +98,10 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
       }
 
       ['@test the scoped variable is not available outside the {{#let}} block.']() {
-        this.render(
-          `{{name}}-{{#let other as |name|}}{{name}}{{/let}}-{{name}}`,
-          {
-            name: 'Stef',
-            other: 'Yehuda'
-          }
-        );
+        this.render(`{{name}}-{{#let other as |name|}}{{name}}{{/let}}-{{name}}`, {
+          name: 'Stef',
+          other: 'Yehuda',
+        });
 
         this.assertText('Stef-Yehuda-Stef');
 
@@ -136,7 +127,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
 
       ['@test can access alias of a proxy']() {
         this.render(`{{#let proxy as |person|}}{{person.name}}{{/let}}`, {
-          proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } })
+          proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
         });
 
         this.assertText('Tom Dale');
@@ -149,15 +140,11 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
 
         this.assertText('Yehuda Katz');
 
-        this.runTask(() =>
-          set(this.context, 'proxy.content', { name: 'Godfrey Chan' })
-        );
+        this.runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
 
         this.assertText('Godfrey Chan');
 
-        this.runTask(() =>
-          set(this.context, 'proxy.content.name', 'Stefan Penner')
-        );
+        this.runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
 
         this.assertText('Stefan Penner');
 
@@ -166,11 +153,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
         this.assertText('');
 
         this.runTask(() =>
-          set(
-            this.context,
-            'proxy',
-            ObjectProxy.create({ content: { name: 'Tom Dale' } })
-          )
+          set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } }))
         );
 
         this.assertText('Tom Dale');
@@ -180,7 +163,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
         this.render(
           `{{#let arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/let}}`,
           {
-            arrayThing: emberA(['Hello', ' ', 'world'])
+            arrayThing: emberA(['Hello', ' ', 'world']),
           }
         );
 
@@ -200,20 +183,15 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
 
         this.assertText('Goodbye, world!');
 
-        this.runTask(() =>
-          set(this.context, 'arrayThing', ['Hello', ' ', 'world'])
-        );
+        this.runTask(() => set(this.context, 'arrayThing', ['Hello', ' ', 'world']));
 
         this.assertText('Hello world');
       }
 
       ['@test `attrs` can be used as a block param [GH#14678]']() {
-        this.render(
-          '{{#let hash as |attrs|}}[{{hash.foo}}-{{attrs.foo}}]{{/let}}',
-          {
-            hash: { foo: 'foo' }
-          }
-        );
+        this.render('{{#let hash as |attrs|}}[{{hash.foo}}-{{attrs.foo}}]{{/let}}', {
+          hash: { foo: 'foo' },
+        });
 
         this.assertText('[foo-foo]');
 
@@ -240,7 +218,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
           `Admin: {{#let admin as |person|}}{{person.name}}{{/let}} User: {{#let user as |person|}}{{person.name}}{{/let}}`,
           {
             admin: { name: 'Tom Dale' },
-            user: { name: 'Yehuda Katz' }
+            user: { name: 'Yehuda Katz' },
           }
         );
 
@@ -272,7 +250,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
             ring: 'Greed',
             first: 'Limbo',
             fifth: 'Wrath',
-            ninth: 'Treachery'
+            ninth: 'Treachery',
           }
         );
 
@@ -307,12 +285,9 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
       }
 
       ['@test it should support {{#let name as |foo|}}, then {{#let foo as |bar|}}']() {
-        this.render(
-          `{{#let name as |foo|}}{{#let foo as |bar|}}{{bar}}{{/let}}{{/let}}`,
-          {
-            name: 'caterpillar'
-          }
-        );
+        this.render(`{{#let name as |foo|}}{{#let foo as |bar|}}{{bar}}{{/let}}{{/let}}`, {
+          name: 'caterpillar',
+        });
 
         this.assertText('caterpillar');
 
@@ -331,7 +306,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
 
       ['@test updating the context should update the alias']() {
         this.render(`{{#let this as |person|}}{{person.name}}{{/let}}`, {
-          name: 'Los Pivots'
+          name: 'Los Pivots',
         });
 
         this.assertText('Los Pivots');
@@ -373,29 +348,21 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
           {
             name: 'ebryn',
             committer1: { name: 'trek' },
-            committer2: { name: 'machty' }
+            committer2: { name: 'machty' },
           }
         );
 
-        this.assertText(
-          'ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn'
-        );
+        this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
 
         this.runTask(() => this.rerender());
 
-        this.assertText(
-          'ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn'
-        );
+        this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
 
         this.runTask(() => set(this.context, 'name', 'chancancode'));
 
-        this.assertText(
-          'chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode'
-        );
+        this.assertText('chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode');
 
-        this.runTask(() =>
-          set(this.context, 'committer1', { name: 'krisselden' })
-        );
+        this.runTask(() => set(this.context, 'committer1', { name: 'krisselden' }));
 
         this.assertText(
           'chancancode[krisselden[machty]krisselden]chancancode[machty[krisselden]machty]chancancode'
@@ -416,9 +383,7 @@ if (EMBER_TEMPLATE_BLOCK_LET_HELPER) {
           set(this.context, 'committer2', { name: 'machty' });
         });
 
-        this.assertText(
-          'ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn'
-        );
+        this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
       }
     }
   );

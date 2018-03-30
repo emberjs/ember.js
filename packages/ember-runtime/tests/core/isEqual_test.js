@@ -5,10 +5,7 @@ moduleFor(
   'isEqual',
   class extends AbstractTestCase {
     ['@test undefined and null'](assert) {
-      assert.ok(
-        isEqual(undefined, undefined),
-        'undefined is equal to undefined'
-      );
+      assert.ok(isEqual(undefined, undefined), 'undefined is equal to undefined');
       assert.ok(!isEqual(undefined, null), 'undefined is not equal to null');
       assert.ok(isEqual(null, null), 'null is equal to null');
       assert.ok(!isEqual(null, undefined), 'null is not equal to undefined');
@@ -25,10 +22,7 @@ moduleFor(
     }
 
     ['@test dates should be equal'](assert) {
-      assert.ok(
-        isEqual(new Date(1985, 7, 22), new Date(1985, 7, 22)),
-        'same dates are equal'
-      );
+      assert.ok(isEqual(new Date(1985, 7, 22), new Date(1985, 7, 22)), 'same dates are equal');
       assert.ok(
         !isEqual(new Date(2014, 7, 22), new Date(1985, 7, 22)),
         'different dates are not equal'
@@ -53,7 +47,7 @@ moduleFor(
           {
             isEqual() {
               return true;
-            }
+            },
           },
           null
         ),
@@ -63,13 +57,9 @@ moduleFor(
       let obj = {
         isEqual() {
           return false;
-        }
+        },
       };
-      assert.equal(
-        isEqual(obj, obj),
-        false,
-        'should return false because isEqual returns false'
-      );
+      assert.equal(isEqual(obj, obj), false, 'should return false because isEqual returns false');
     }
   }
 );

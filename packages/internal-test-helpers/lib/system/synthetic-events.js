@@ -13,7 +13,7 @@ const MOUSE_EVENT_TYPES = [
   'mouseleave',
   'mousemove',
   'mouseout',
-  'mouseover'
+  'mouseover',
 ];
 
 export const elMatches =
@@ -109,7 +109,7 @@ export function fireEvent(element, type, options = {}) {
       screenX: x + 5,
       screenY: y + 95,
       clientX: x,
-      clientY: y
+      clientY: y,
     };
     event = buildMouseEvent(type, merge(simulatedCoordinates, options));
   } else {

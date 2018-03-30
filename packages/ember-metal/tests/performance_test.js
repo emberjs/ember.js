@@ -6,7 +6,7 @@ import {
   notifyPropertyChange,
   beginPropertyChanges,
   endPropertyChanges,
-  addObserver
+  addObserver,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

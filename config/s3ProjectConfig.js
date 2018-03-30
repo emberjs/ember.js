@@ -4,14 +4,7 @@ const semver = require('semver');
 
 function fileMap(revision, tag, date) {
   let filesToPublish = {
-    '../docs/data.json': fileObject(
-      'ember-docs',
-      '.json',
-      'application/json',
-      revision,
-      tag,
-      date
-    )
+    '../docs/data.json': fileObject('ember-docs', '.json', 'application/json', revision, tag, date),
   };
 
   let version = require('../package').version;
@@ -23,8 +16,8 @@ function fileMap(revision, tag, date) {
       alpha: [`alpha/daily/${date}.tgz`, `alpha/shas/${revision}.tgz`],
       canary: [`canary/daily/${date}.tgz`, `canary/shas/${revision}.tgz`],
       beta: [`beta/daily/${date}.tgz`, `beta/shas/${revision}.tgz`],
-      release: [`release/daily/${date}.tgz`, `release/shas/${revision}.tgz`]
-    }
+      release: [`release/daily/${date}.tgz`, `release/shas/${revision}.tgz`],
+    },
   };
   filesToPublish['../build-metadata.json'] = {
     contentType: 'application/json',
@@ -32,21 +25,14 @@ function fileMap(revision, tag, date) {
       alpha: ['alpha.json'],
       canary: ['canary.json'],
       beta: ['beta.json'],
-      release: ['release.json']
-    }
+      release: ['release.json'],
+    },
   };
 
   return filesToPublish;
 }
 
-function fileObject(
-  baseName,
-  extension,
-  contentType,
-  currentRevision,
-  tag,
-  date
-) {
+function fileObject(baseName, extension, contentType, currentRevision, tag, date) {
   var fullName = '/' + baseName + extension;
   var obj = {
     contentType: contentType,
@@ -54,27 +40,27 @@ function fileObject(
       alpha: [
         'alpha' + fullName,
         'alpha/daily/' + date + fullName,
-        'alpha/shas/' + currentRevision + fullName
+        'alpha/shas/' + currentRevision + fullName,
       ],
       canary: [
         'latest' + fullName,
         'canary' + fullName,
         'canary/daily/' + date + fullName,
-        'canary/shas/' + currentRevision + fullName
+        'canary/shas/' + currentRevision + fullName,
       ],
       release: [
         'stable' + fullName,
         'release' + fullName,
         'release/daily/' + date + fullName,
-        'release/shas/' + currentRevision + fullName
+        'release/shas/' + currentRevision + fullName,
       ],
       beta: [
         'beta' + fullName,
         'beta/daily/' + date + fullName,
-        'beta/shas/' + currentRevision + fullName
+        'beta/shas/' + currentRevision + fullName,
       ],
-      wildcard: []
-    }
+      wildcard: [],
+    },
   };
 
   if (tag) {

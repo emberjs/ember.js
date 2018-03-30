@@ -9,17 +9,14 @@ import { jQuery } from 'ember-views';
 import { Controller, Object as EmberObject, _loaded } from 'ember-runtime';
 import { setTemplates } from 'ember-glimmer';
 import { privatize as P } from 'container';
-import {
-  verifyInjection,
-  verifyRegistration
-} from '../test-helpers/registry-check';
+import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
 import { assign } from 'ember-utils';
 import {
   moduleFor,
   ApplicationTestCase,
   AbstractTestCase,
   AutobootApplicationTestCase,
-  DefaultResolverApplicationTestCase
+  DefaultResolverApplicationTestCase,
 } from 'internal-test-helpers';
 import { run } from 'ember-metal';
 
@@ -39,7 +36,7 @@ moduleFor(
       return assign(super.applicationOptions, {
         rootElement: '#one',
         router: null,
-        autoboot: true
+        autoboot: true,
       });
     }
 
@@ -56,12 +53,10 @@ moduleFor(
       }
     }
 
-    [`@test you can make a new application in a non-overlapping element`](
-      assert
-    ) {
+    [`@test you can make a new application in a non-overlapping element`](assert) {
       let app = this.runTask(() =>
         this.createSecondApplication({
-          rootElement: '#two'
+          rootElement: '#two',
         })
       );
 
@@ -73,7 +68,7 @@ moduleFor(
       expectAssertion(() => {
         this.runTask(() =>
           this.createSecondApplication({
-            rootElement: this.applicationOptions.rootElement
+            rootElement: this.applicationOptions.rootElement,
           })
         );
       });
@@ -83,7 +78,7 @@ moduleFor(
       expectAssertion(() => {
         this.runTask(() =>
           this.createSecondApplication({
-            rootElement: '#one-child'
+            rootElement: '#one-child',
           })
         );
       });
@@ -93,7 +88,7 @@ moduleFor(
       expectAssertion(() => {
         this.runTask(() =>
           this.createSecondApplication({
-            rootElement: '#one'
+            rootElement: '#one',
           })
         );
       });
@@ -130,72 +125,24 @@ moduleFor(
 
       verifyRegistration(assert, application, 'controller:basic');
       verifyRegistration(assert, application, '-view-registry:main');
-      verifyInjection(
-        assert,
-        application,
-        'view',
-        '_viewRegistry',
-        '-view-registry:main'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'route',
-        '_topLevelViewTemplate',
-        'template:-outlet'
-      );
+      verifyInjection(assert, application, 'view', '_viewRegistry', '-view-registry:main');
+      verifyInjection(assert, application, 'route', '_topLevelViewTemplate', 'template:-outlet');
       verifyRegistration(assert, application, 'route:basic');
       verifyRegistration(assert, application, 'event_dispatcher:main');
-      verifyInjection(
-        assert,
-        application,
-        'router:main',
-        'namespace',
-        'application:main'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'view:-outlet',
-        'namespace',
-        'application:main'
-      );
+      verifyInjection(assert, application, 'router:main', 'namespace', 'application:main');
+      verifyInjection(assert, application, 'view:-outlet', 'namespace', 'application:main');
 
       verifyRegistration(assert, application, 'location:auto');
       verifyRegistration(assert, application, 'location:hash');
       verifyRegistration(assert, application, 'location:history');
       verifyRegistration(assert, application, 'location:none');
 
-      verifyInjection(
-        assert,
-        application,
-        'controller',
-        'target',
-        'router:main'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'controller',
-        'namespace',
-        'application:main'
-      );
+      verifyInjection(assert, application, 'controller', 'target', 'router:main');
+      verifyInjection(assert, application, 'controller', 'namespace', 'application:main');
 
       verifyRegistration(assert, application, P`-bucket-cache:main`);
-      verifyInjection(
-        assert,
-        application,
-        'router',
-        '_bucketCache',
-        P`-bucket-cache:main`
-      );
-      verifyInjection(
-        assert,
-        application,
-        'route',
-        '_bucketCache',
-        P`-bucket-cache:main`
-      );
+      verifyInjection(assert, application, 'router', '_bucketCache', P`-bucket-cache:main`);
+      verifyInjection(assert, application, 'route', '_bucketCache', P`-bucket-cache:main`);
 
       verifyInjection(assert, application, 'route', '_router', 'router:main');
 
@@ -205,13 +152,7 @@ moduleFor(
       verifyRegistration(assert, application, 'component:link-to');
 
       verifyRegistration(assert, application, 'service:-routing');
-      verifyInjection(
-        assert,
-        application,
-        'service:-routing',
-        'router',
-        'router:main'
-      );
+      verifyInjection(assert, application, 'service:-routing', 'router', 'router:main');
 
       // DEBUGGING
       verifyRegistration(assert, application, 'resolver-for-debugging:main');
@@ -249,32 +190,14 @@ moduleFor(
         'updateOperations',
         'service:-dom-changes'
       );
-      verifyInjection(
-        assert,
-        application,
-        'renderer',
-        'env',
-        'service:-glimmer-environment'
-      );
+      verifyInjection(assert, application, 'renderer', 'env', 'service:-glimmer-environment');
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
       verifyRegistration(assert, application, 'renderer:-inert');
       verifyRegistration(assert, application, P`template:components/-default`);
       verifyRegistration(assert, application, 'template:-outlet');
-      verifyInjection(
-        assert,
-        application,
-        'view:-outlet',
-        'template',
-        'template:-outlet'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'template',
-        'compiler',
-        P`template-compiler:main`
-      );
+      verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
+      verifyInjection(assert, application, 'template', 'compiler', P`template-compiler:main`);
 
       assert.deepEqual(
         application.registeredOptionsForType('helper'),
@@ -301,7 +224,7 @@ moduleFor(
 
     get applicationOptions() {
       return assign(super.applicationOptions, {
-        autoboot: true
+        autoboot: true,
       });
     }
 
@@ -312,11 +235,7 @@ moduleFor(
 
       setNamespaceSearchDisabled(false);
       let Foo = (this.application.Foo = EmberObject.extend());
-      assert.equal(
-        Foo.toString(),
-        'TestApp.Foo',
-        'Classes pick up their parent namespace'
-      );
+      assert.equal(Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
     }
 
     [`@test can specify custom router`](assert) {
@@ -327,16 +246,13 @@ moduleFor(
       });
 
       assert.ok(
-        this.application.__deprecatedInstance__.lookup('router:main') instanceof
-          MyRouter,
+        this.application.__deprecatedInstance__.lookup('router:main') instanceof MyRouter,
         'application resolved the correct router'
       );
     }
 
     [`@test Minimal Application initialized with just an application template`]() {
-      this.setupFixture(
-        '<script type="text/x-handlebars">Hello World</script>'
-      );
+      this.setupFixture('<script type="text/x-handlebars">Hello World</script>');
       this.runTask(() => this.createApplication());
       this.assertInnerHTML('Hello World');
     }
@@ -376,7 +292,7 @@ moduleFor(
       this.runTask(() => {
         function registerRoute(application, name, callback) {
           let route = EmberRoute.extend({
-            activate: callback
+            activate: callback,
           });
 
           application.register('route:' + name, route);
@@ -387,14 +303,12 @@ moduleFor(
             registerRoute(this, 'index', () => {
               assert.ok(true, 'last-minute route is activated');
             });
-          }
+          },
         });
 
         let app = this.createApplication({}, MyApplication);
 
-        registerRoute(app, 'application', () =>
-          assert.ok(true, 'normal route is activated')
-        );
+        registerRoute(app, 'application', () => assert.ok(true, 'normal route is activated'));
       });
     }
 
@@ -403,11 +317,7 @@ moduleFor(
       // This is not a public way to access the container; we just
       // need to make some assertions about the created router
       let router = this.applicationInstance.lookup('router:main');
-      assert.equal(
-        router instanceof Router,
-        true,
-        'Router was set from initialize call'
-      );
+      assert.equal(router instanceof Router, true, 'Router was set from initialize call');
       assert.equal(
         router.location instanceof NoneLocation,
         true,
@@ -424,14 +334,8 @@ moduleFor(
       });
       // This is not a public way to access the container; we just
       // need to make some assertions about the created router
-      let router = this.application.__deprecatedInstance__.lookup(
-        'router:main'
-      );
-      assert.equal(
-        router instanceof Router,
-        true,
-        'Router was set from initialize call'
-      );
+      let router = this.application.__deprecatedInstance__.lookup('router:main');
+      assert.equal(router instanceof Router, true, 'Router was set from initialize call');
       this.assertText('Hello!');
     }
 
@@ -442,7 +346,7 @@ moduleFor(
         this.add(
           'controller:application',
           Controller.extend({
-            greeting: 'Hello!'
+            greeting: 'Hello!',
           })
         );
       });
@@ -497,8 +401,7 @@ moduleFor(
       });
 
       assert.ok(
-        this.application.__deprecatedInstance__.lookup('router:main') instanceof
-          CustomRouter,
+        this.application.__deprecatedInstance__.lookup('router:main') instanceof CustomRouter,
         'application resolved the correct router'
       );
     }
@@ -515,7 +418,7 @@ moduleFor(
       assert
     ) {
       let namespace = EmberObject.create({
-        Resolver: { create: function() {} }
+        Resolver: { create: function() {} },
       });
 
       let registry = Application.buildRegistry(namespace);
@@ -532,7 +435,7 @@ moduleFor(
       assert
     ) {
       let namespace = EmberObject.create({
-        Resolver: { create() {} }
+        Resolver: { create() {} },
       });
 
       let registry = Application.buildRegistry(namespace);

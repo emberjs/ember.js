@@ -8,7 +8,7 @@ import {
   addListener,
   watch,
   unwatch,
-  deleteMeta
+  deleteMeta,
 } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -50,7 +50,7 @@ moduleFor(
               this.__foo = value;
             }
             return this.__foo;
-          }
+          },
         })
       );
       addListeners(obj, 'foo');
@@ -155,27 +155,17 @@ moduleFor(
       assert.equal(didCount, 2, 'should have invoked didChange twice');
     }
 
-    ['@test watching an object value then unwatching should restore old value'](
-      assert
-    ) {
+    ['@test watching an object value then unwatching should restore old value'](assert) {
       let obj = { foo: { bar: { baz: { biff: 'BIFF' } } } };
       addListeners(obj, 'foo.bar.baz.biff');
 
       watch(obj, 'foo.bar.baz.biff');
 
       let foo = get(obj, 'foo');
-      assert.equal(
-        get(get(get(foo, 'bar'), 'baz'), 'biff'),
-        'BIFF',
-        'biff should exist'
-      );
+      assert.equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
 
       unwatch(obj, 'foo.bar.baz.biff');
-      assert.equal(
-        get(get(get(foo, 'bar'), 'baz'), 'biff'),
-        'BIFF',
-        'biff should exist'
-      );
+      assert.equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
     }
 
     ['@test when watching another object, destroy should remove chain watchers from the other object'](
@@ -200,11 +190,7 @@ moduleFor(
 
       deleteMeta(objA);
 
-      assert.equal(
-        meta_objB.peekWatching('foo'),
-        0,
-        'should not be watching foo'
-      );
+      assert.equal(meta_objB.peekWatching('foo'), 0, 'should not be watching foo');
       assert.equal(
         meta_objB.readableChainWatchers().has('foo', chainNode),
         false,
@@ -219,11 +205,7 @@ moduleFor(
       addListeners(obj, 'length');
 
       watch(obj, 'length');
-      assert.equal(
-        get(obj, 'length'),
-        '26.2 miles',
-        'should have original prop'
-      );
+      assert.equal(get(obj, 'length'), '26.2 miles', 'should have original prop');
 
       set(obj, 'length', '10k');
       assert.equal(didCount, 1, 'should have invoked didCount');
@@ -251,7 +233,7 @@ moduleFor(
       let child = {
         get b() {
           return parent.b;
-        }
+        },
       };
 
       assert.equal(parent.b, 1, 'parent.b should be 1');
@@ -263,11 +245,7 @@ moduleFor(
       assert.equal(parent.b, 1, 'parent.b should be 1 (after watch)');
       assert.equal(child.b, 1, 'child.b should be 1  (after watch)');
 
-      assert.equal(
-        get(child, 'b'),
-        1,
-        'get(child, "b") should be 1 (after watch)'
-      );
+      assert.equal(get(child, 'b'), 1, 'get(child, "b") should be 1 (after watch)');
     }
 
     ['@test watch + set + no-descriptor'](assert) {

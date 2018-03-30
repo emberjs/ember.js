@@ -20,7 +20,7 @@ moduleFor(
         arrayDidChange(proxy, startIndex, removeCount, addCount) {
           assert.deepEqual([startIndex, removeCount, addCount], [1, 1, 3]);
           assert.deepEqual(proxy.toArray(), ['x', 'a', 'b', 'c', 'z']);
-        }
+        },
       });
 
       proxy.toArray();
@@ -41,7 +41,7 @@ moduleFor(
         arrayDidChange(proxy, startIndex, removeCount, addCount) {
           assert.deepEqual([startIndex, removeCount, addCount], [0, 3, 5]);
           assert.deepEqual(proxy.toArray(), ['a', 'b', 'c', 'd', 'e']);
-        }
+        },
       });
 
       proxy.toArray();

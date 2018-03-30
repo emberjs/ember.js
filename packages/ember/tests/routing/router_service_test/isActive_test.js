@@ -22,9 +22,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           });
       }
 
-      ['@test RouterService#isActive returns true for simple route with dynamic segments'](
-        assert
-      ) {
+      ['@test RouterService#isActive returns true for simple route with dynamic segments'](assert) {
         assert.expect(1);
 
         let dynamicModel = { id: 1 };
@@ -54,7 +52,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             init() {
               assert.ok(false, 'should never create');
               this._super(...arguments);
-            }
+            },
           })
         );
 
@@ -63,15 +61,11 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo('parent.brother');
           })
           .then(() => {
-            assert.notOk(
-              this.routerService.isActive('parent.sister', queryParams)
-            );
+            assert.notOk(this.routerService.isActive('parent.sister', queryParams));
           });
       }
 
-      ['@test RouterService#isActive is correct for simple route with basic query params'](
-        assert
-      ) {
+      ['@test RouterService#isActive is correct for simple route with basic query params'](assert) {
         assert.expect(2);
 
         let queryParams = this.buildQueryParams({ sort: 'ASC' });
@@ -80,7 +74,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           'controller:parent.child',
           Controller.extend({
             queryParams: ['sort'],
-            sort: 'ASC'
+            sort: 'ASC',
           })
         );
 
@@ -91,17 +85,12 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           .then(() => {
             assert.ok(this.routerService.isActive('parent.child', queryParams));
             assert.notOk(
-              this.routerService.isActive(
-                'parent.child',
-                this.buildQueryParams({ sort: 'DESC' })
-              )
+              this.routerService.isActive('parent.child', this.buildQueryParams({ sort: 'DESC' }))
             );
           });
       }
 
-      ['@test RouterService#isActive for simple route with array as query params'](
-        assert
-      ) {
+      ['@test RouterService#isActive for simple route with array as query params'](assert) {
         assert.expect(1);
 
         let queryParams = this.buildQueryParams({ sort: ['ascending'] });

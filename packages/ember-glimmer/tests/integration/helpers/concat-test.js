@@ -11,7 +11,7 @@ moduleFor(
 
     ['@test it updates for bound arguments']() {
       this.render(`{{concat model.first model.second}}`, {
-        model: { first: 'one', second: 'two' }
+        model: { first: 'one', second: 'two' },
       });
 
       this.assertText('onetwo');
@@ -28,9 +28,7 @@ moduleFor(
 
       this.assertText('threefour');
 
-      this.runTask(() =>
-        set(this.context, 'model', { first: 'one', second: 'two' })
-      );
+      this.runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
 
       this.assertText('onetwo');
     }
@@ -43,8 +41,8 @@ moduleFor(
             first: 'one',
             second: 'two',
             third: 'three',
-            fourth: 'four'
-          }
+            fourth: 'four',
+          },
         }
       );
 
@@ -70,7 +68,7 @@ moduleFor(
           first: 'one',
           second: 'two',
           third: 'three',
-          fourth: 'four'
+          fourth: 'four',
         });
       });
 
@@ -85,8 +83,8 @@ moduleFor(
         {
           model: {
             first: 'one',
-            second: 'two'
-          }
+            second: 'two',
+          },
         }
       );
 
@@ -100,9 +98,7 @@ moduleFor(
 
       this.assertText('False');
 
-      this.runTask(() =>
-        set(this.context, 'model', { first: 'one', second: 'two' })
-      );
+      this.runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
 
       this.assertText('Truthy!');
     }

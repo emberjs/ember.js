@@ -7,7 +7,7 @@ import { TargetActionSupport } from 'ember-runtime';
 
 const KEY_EVENTS = {
   13: 'insertNewline',
-  27: 'cancel'
+  27: 'cancel',
 };
 
 /**
@@ -127,7 +127,7 @@ export default Mixin.create(TargetActionSupport, {
     'selectionDirection',
     'spellcheck',
     'tabindex',
-    'title'
+    'title',
   ],
   placeholder: null,
   disabled: false,
@@ -298,7 +298,7 @@ export default Mixin.create(TargetActionSupport, {
   */
   keyDown(event) {
     this.sendAction('key-down', get(this, 'value'), event);
-  }
+  },
 });
 
 // In principle, this shouldn't be necessary, but the legacy

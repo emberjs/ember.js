@@ -43,9 +43,7 @@ moduleFor(
       assert.equal(cnt, 2, 'should flush actions now');
     }
 
-    ['@test prior queues should be flushed before moving on to next queue'](
-      assert
-    ) {
+    ['@test prior queues should be flushed before moving on to next queue'](assert) {
       let order = [];
 
       run(() => {
@@ -82,13 +80,7 @@ moduleFor(
         });
       });
 
-      assert.deepEqual(order, [
-        'sync',
-        'actions',
-        'sync',
-        'actions',
-        'destroy'
-      ]);
+      assert.deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'destroy']);
     }
 
     ['@test makes sure it does not trigger an autorun during testing']() {

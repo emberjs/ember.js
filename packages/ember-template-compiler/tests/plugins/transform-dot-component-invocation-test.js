@@ -18,7 +18,7 @@ moduleFor(
         '{{#my-component as |c|}}{{c.a "Chad"}}{{/my-component}}',
         '{{#my-component as |c|}}{{#c.a}}{{/c.a}}{{/my-component}}',
         '<input disabled={{true}}>', // GH#15740
-        '<td colspan={{3}}></td>' // GH#15217
+        '<td colspan={{3}}></td>', // GH#15217
       ].forEach((layout, i) => {
         compile(layout, { moduleName: `example-${i}` });
       });

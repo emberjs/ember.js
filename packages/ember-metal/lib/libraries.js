@@ -41,7 +41,7 @@ export class Libraries {
       this._registry.splice(index, 0, { name, version });
     } else {
       warn(`Library "${name}" is already registered with Ember.`, false, {
-        id: 'ember-metal.libraries-register'
+        id: 'ember-metal.libraries-register',
       });
     }
   }

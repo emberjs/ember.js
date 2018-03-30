@@ -11,9 +11,9 @@ function commonSetup() {
   obj = {
     foo: {
       bar: {
-        baz: { biff: 'BIFF' }
-      }
-    }
+        baz: { biff: 'BIFF' },
+      },
+    },
   };
 }
 
@@ -38,7 +38,7 @@ moduleFor(
       lookup.Foo = {
         toString() {
           return 'Foo';
-        }
+        },
       }; // Behave like an Ember.Namespace
 
       set(lookup.Foo, 'bar', 'baz');

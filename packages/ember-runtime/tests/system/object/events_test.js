@@ -59,9 +59,7 @@ moduleFor(
       assert.equal(self, obj);
     }
 
-    ['@test a listener can be added and removed automatically and have arguments'](
-      assert
-    ) {
+    ['@test a listener can be added and removed automatically and have arguments'](assert) {
       let self, args;
       let count = 0;
 
@@ -126,7 +124,7 @@ moduleFor(
 
     ['@test a listener registered with one can be removed with off'](assert) {
       let obj = EmberObject.extend(Evented, {
-        F() {}
+        F() {},
       }).create();
       let F = function() {};
 

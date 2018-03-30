@@ -4,7 +4,7 @@ import {
   instrumentationSubscribe,
   instrumentationReset,
   run,
-  getCurrentRunLoop
+  getCurrentRunLoop,
 } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
@@ -27,9 +27,9 @@ moduleFor(
         ComponentClass: Component.extend({
           change(event) {
             receivedEvent = event;
-          }
+          },
         }),
-        template: `<input id="is-done" type="checkbox">`
+        template: `<input id="is-done" type="checkbox">`,
       });
 
       this.render(`{{x-foo}}`);
@@ -46,16 +46,16 @@ moduleFor(
         ComponentClass: Component.extend({
           change(event) {
             receivedEvent = event;
-          }
+          },
         }),
-        template: `{{yield}}`
+        template: `{{yield}}`,
       });
 
       this.registerComponent('x-bar', {
         ComponentClass: Component.extend({
-          change() {}
+          change() {},
         }),
-        template: `<input id="is-done" type="checkbox">`
+        template: `<input id="is-done" type="checkbox">`,
       });
 
       this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
@@ -72,18 +72,18 @@ moduleFor(
         ComponentClass: Component.extend({
           change() {
             hasReceivedEvent = true;
-          }
+          },
         }),
-        template: `{{yield}}`
+        template: `{{yield}}`,
       });
 
       this.registerComponent('x-bar', {
         ComponentClass: Component.extend({
           change() {
             return false;
-          }
+          },
         }),
-        template: `<input id="is-done" type="checkbox">`
+        template: `<input id="is-done" type="checkbox">`,
       });
 
       this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
@@ -97,9 +97,9 @@ moduleFor(
         ComponentClass: Component.extend({
           change() {
             assert.ok(getCurrentRunLoop(), 'a run loop should have started');
-          }
+          },
         }),
-        template: `<input id="is-done" type="checkbox">`
+        template: `<input id="is-done" type="checkbox">`,
       });
 
       this.render(`{{x-foo}}`);
@@ -128,9 +128,9 @@ moduleFor(
         ComponentClass: Component.extend({
           myEvent() {
             assert.ok(true, 'custom event was triggered');
-          }
+          },
         }),
-        template: `<p>Hello!</p>`
+        template: `<p>Hello!</p>`,
       });
 
       this.render(`{{x-foo}}`);
@@ -143,15 +143,8 @@ moduleFor(
       // this.$().append('<div id="app"></div>');
       this.dispatcher.setup({ myevent: 'myEvent' }, '#app');
 
-      assert.ok(
-        this.$('#app').hasClass('ember-application'),
-        'custom rootElement was used'
-      );
-      assert.equal(
-        this.dispatcher.rootElement,
-        '#app',
-        'the dispatchers rootElement was updated'
-      );
+      assert.ok(this.$('#app').hasClass('ember-application'), 'custom rootElement was used');
+      assert.equal(this.dispatcher.rootElement, '#app', 'the dispatchers rootElement was updated');
     }
 
     ['@test default events can be disabled via `customEvents`'](assert) {
@@ -169,10 +162,10 @@ moduleFor(
 
           doubleClick() {
             assert.ok(true, 'a non-disabled event is still handled properly');
-          }
+          },
         }),
 
-        template: `<p>Hello!</p>`
+        template: `<p>Hello!</p>`,
       });
 
       this.render(`{{x-foo}}`);
@@ -205,9 +198,9 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           ComponentClass: Component.extend({
             click() {
               clicked++;
-            }
+            },
           }),
-          template: `<p>hello</p>`
+          template: `<p>hello</p>`,
         });
 
         this.render(`{{x-foo}}`);
@@ -225,7 +218,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           after() {
             clickInstrumented++;
             assert.equal(clicked, 2, 'invoked after event is handled');
-          }
+          },
         });
 
         let keypressInstrumented = 0;
@@ -235,18 +228,14 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           },
           after() {
             keypressInstrumented++;
-          }
+          },
         });
 
         this.$('div').trigger('click');
         this.$('div').trigger('change');
         assert.equal(clicked, 2, 'precond - The click handler was invoked');
         assert.equal(clickInstrumented, 2, 'The click was instrumented');
-        assert.strictEqual(
-          keypressInstrumented,
-          0,
-          'The keypress was not instrumented'
-        );
+        assert.strictEqual(keypressInstrumented, 0, 'The keypress was not instrumented');
       }
     }
   );
@@ -262,8 +251,8 @@ if (canDataTransfer) {
           ComponentClass: Component.extend({
             drop(event) {
               receivedEvent = event;
-            }
-          })
+            },
+          }),
         });
 
         this.render(`{{x-foo}}`);

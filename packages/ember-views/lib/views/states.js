@@ -44,5 +44,5 @@ export let states = {
   preRender,
   inDOM,
   hasElement,
-  destroying
+  destroying,
 };

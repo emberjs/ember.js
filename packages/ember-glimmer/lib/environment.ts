@@ -1,27 +1,17 @@
-import {
-  OpaqueIterable, VersionedReference,
-} from '@glimmer/reference';
+import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
   ElementBuilder,
   Environment as GlimmerEnvironment,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
-import {
-  Destroyable, Opaque,
-} from '@glimmer/util';
+import { Destroyable, Opaque } from '@glimmer/util';
 import { warn } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { OWNER, Owner } from 'ember-utils';
-import {
-  constructStyleDeprecationMessage,
-  lookupComponent,
-} from 'ember-views';
+import { constructStyleDeprecationMessage, lookupComponent } from 'ember-views';
 import DebugStack from './utils/debug-stack';
 import createIterable from './utils/iterable';
-import {
-  ConditionalReference,
-  UpdatableReference,
-} from './utils/references';
+import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
@@ -121,30 +111,49 @@ export default class Environment extends GlimmerEnvironment {
 if (DEBUG) {
   class StyleAttributeManager extends SimpleDynamicAttribute {
     set(dom: ElementBuilder, value: Opaque, env: GlimmerEnvironment): void {
-      warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isHTMLSafe(value)) {
-          return true;
-        }
-        return false;
-      })(), { id: 'ember-htmlbars.style-xss-warning' });
+      warn(
+        constructStyleDeprecationMessage(value),
+        (() => {
+          if (value === null || value === undefined || isHTMLSafe(value)) {
+            return true;
+          }
+          return false;
+        })(),
+        { id: 'ember-htmlbars.style-xss-warning' }
+      );
       super.set(dom, value, env);
     }
     update(value: Opaque, env: GlimmerEnvironment): void {
-      warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isHTMLSafe(value)) {
-          return true;
-        }
-        return false;
-      })(), { id: 'ember-htmlbars.style-xss-warning' });
+      warn(
+        constructStyleDeprecationMessage(value),
+        (() => {
+          if (value === null || value === undefined || isHTMLSafe(value)) {
+            return true;
+          }
+          return false;
+        })(),
+        { id: 'ember-htmlbars.style-xss-warning' }
+      );
       super.update(value, env);
     }
   }
 
-  Environment.prototype.attributeFor = function (element, attribute: string, isTrusting: boolean, _namespace?) {
+  Environment.prototype.attributeFor = function(
+    element,
+    attribute: string,
+    isTrusting: boolean,
+    _namespace?
+  ) {
     if (attribute === 'style' && !isTrusting) {
       return StyleAttributeManager;
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting, _namespace);
+    return GlimmerEnvironment.prototype.attributeFor.call(
+      this,
+      element,
+      attribute,
+      isTrusting,
+      _namespace
+    );
   };
 }

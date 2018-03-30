@@ -9,7 +9,7 @@ function injectBabelHelpers() {
         }
         return file.addImport('ember-babel', name, name);
       });
-    }
+    },
   };
 }
 

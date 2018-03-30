@@ -8,12 +8,12 @@ moduleFor(
   class extends RenderingTest {
     ['@test it can have attribute bindings']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['foo:data-foo', 'bar:data-bar']
+        attributeBindings: ['foo:data-foo', 'bar:data-bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar foo=foo bar=bar}}', { foo: 'foo', bar: 'bar' });
@@ -21,7 +21,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -29,7 +29,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -40,7 +40,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': 'FOO' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -51,28 +51,28 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test it can have attribute bindings with attrs']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar']
+        attributeBindings: ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar foo=model.foo baz=model.baz}}', {
-        model: { foo: undefined, baz: { bar: 'bar' } }
+        model: { foo: undefined, baz: { bar: 'bar' } },
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { 'data-bar': 'bar' }
+        attrs: { 'data-bar': 'bar' },
       });
 
       this.runTask(() => this.rerender());
@@ -80,7 +80,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { 'data-bar': 'bar' }
+        attrs: { 'data-bar': 'bar' },
       });
 
       this.runTask(() => {
@@ -91,31 +91,31 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': 'foo' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() =>
         set(this.context, 'model', {
           foo: undefined,
-          baz: { bar: 'bar' }
+          baz: { bar: 'bar' },
         })
       );
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { 'data-bar': 'bar' }
+        attrs: { 'data-bar': 'bar' },
       });
     }
 
     ['@test it can have attribute bindings with a nested path']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['foo.bar:data-foo-bar']
+        attributeBindings: ['foo.bar:data-foo-bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar foo=foo}}', { foo: { bar: 'foo-bar' } });
@@ -123,7 +123,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo-bar': 'foo-bar' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -131,7 +131,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo-bar': 'foo-bar' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'foo.bar', 'FOO-BAR'));
@@ -139,7 +139,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo-bar': 'FOO-BAR' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'foo.bar', undefined));
@@ -147,7 +147,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'foo', undefined));
@@ -155,7 +155,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'foo', { bar: 'foo-bar' }));
@@ -163,28 +163,28 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo-bar': 'foo-bar' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test handles non-microsyntax attributeBindings']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['type']
+        attributeBindings: ['type'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar type=submit}}', {
-        submit: 'submit'
+        submit: 'submit',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'submit' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -192,7 +192,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'submit' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'submit', 'password'));
@@ -200,7 +200,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'password' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'submit', null));
@@ -208,7 +208,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'submit', 'submit'));
@@ -216,18 +216,18 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'submit' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test non-microsyntax attributeBindings cannot contain nested paths']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['foo.bar']
+        attributeBindings: ['foo.bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       expectAssertion(() => {
@@ -237,22 +237,22 @@ moduleFor(
 
     ['@test normalizes attributeBindings for property names']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['tiTLe']
+        attributeBindings: ['tiTLe'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar tiTLe=name}}', {
-        name: 'qux'
+        name: 'qux',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { title: 'qux' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.assertStableRerender();
@@ -262,7 +262,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'name', 'qux'));
@@ -270,28 +270,28 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { title: 'qux' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test normalizes attributeBindings for attribute names']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['foo:data-FOO']
+        attributeBindings: ['foo:data-FOO'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar foo=foo}}', {
-        foo: 'qux'
+        foo: 'qux',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': 'qux' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.assertStableRerender();
@@ -301,7 +301,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'foo', 'qux'));
@@ -309,29 +309,29 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'data-foo': 'qux' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test attributeBindings handles null/undefined']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['fizz', 'bar']
+        attributeBindings: ['fizz', 'bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar fizz=fizz bar=bar}}', {
         fizz: null,
-        bar: undefined
+        bar: undefined,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -339,7 +339,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -350,7 +350,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { fizz: 'fizz', bar: 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -361,28 +361,28 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test attributeBindings handles number value']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['size']
+        attributeBindings: ['size'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar size=size}}', {
-        size: 21
+        size: 21,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { size: '21' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -390,7 +390,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { size: '21' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'size', 0));
@@ -398,7 +398,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { size: '0' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'size', 21));
@@ -406,7 +406,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { size: '21' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -418,12 +418,12 @@ moduleFor(
         init() {
           this._super(...arguments);
           component = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar}}');
@@ -431,7 +431,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'password' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -439,7 +439,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'password' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(component, 'type', 'checkbox'));
@@ -447,7 +447,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'checkbox' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(component, 'type', 'password'));
@@ -455,33 +455,33 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { type: 'password' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test can set attributeBindings on component with a different tagName']() {
       let FooBarComponent = Component.extend({
         tagName: 'input',
-        attributeBindings: ['type', 'isDisabled:disabled']
+        attributeBindings: ['type', 'isDisabled:disabled'],
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
       this.render('{{foo-bar type=type isDisabled=disabled}}', {
         type: 'password',
-        disabled: false
+        disabled: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'input',
-        attrs: { type: 'password' }
+        attrs: { type: 'password' },
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'input',
-        attrs: { type: 'password' }
+        attrs: { type: 'password' },
       });
 
       this.runTask(() => {
@@ -491,7 +491,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'input',
-        attrs: { type: 'checkbox', disabled: '' }
+        attrs: { type: 'checkbox', disabled: '' },
       });
 
       this.runTask(() => {
@@ -501,45 +501,45 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'input',
-        attrs: { type: 'password' }
+        attrs: { type: 'password' },
       });
     }
 
     ['@test should allow namespaced attributes in micro syntax']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['xlinkHref:xlink:href']
+        attributeBindings: ['xlinkHref:xlink:href'],
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
       this.render('{{foo-bar type=type xlinkHref=xlinkHref}}', {
-        xlinkHref: '/foo.png'
+        xlinkHref: '/foo.png',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { 'xlink:href': '/foo.png' }
+        attrs: { 'xlink:href': '/foo.png' },
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { 'xlink:href': '/foo.png' }
+        attrs: { 'xlink:href': '/foo.png' },
       });
 
       this.runTask(() => set(this.context, 'xlinkHref', '/lol.png'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { 'xlink:href': '/lol.png' }
+        attrs: { 'xlink:href': '/lol.png' },
       });
 
       this.runTask(() => set(this.context, 'xlinkHref', '/foo.png'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { 'xlink:href': '/foo.png' }
+        attrs: { 'xlink:href': '/foo.png' },
       });
     }
 
@@ -548,7 +548,7 @@ moduleFor(
     // String object instead of a normal string.
     ['@test should allow for String objects']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['foo']
+        attributeBindings: ['foo'],
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
@@ -556,19 +556,19 @@ moduleFor(
       this.render('{{foo-bar foo=foo}}', {
         foo: function() {
           return this;
-        }.call('bar')
+        }.call('bar'),
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { foo: 'bar' }
+        attrs: { foo: 'bar' },
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { foo: 'bar' }
+        attrs: { foo: 'bar' },
       });
 
       this.runTask(() =>
@@ -583,7 +583,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { foo: 'baz' }
+        attrs: { foo: 'baz' },
       });
 
       this.runTask(() =>
@@ -598,81 +598,81 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { foo: 'bar' }
+        attrs: { foo: 'bar' },
       });
     }
 
     ['@test can set id initially via attributeBindings ']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['specialSauce:id']
+        attributeBindings: ['specialSauce:id'],
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
       this.render('{{foo-bar specialSauce=sauce}}', {
-        sauce: 'special-sauce'
+        sauce: 'special-sauce',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { id: 'special-sauce' }
+        attrs: { id: 'special-sauce' },
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { id: 'special-sauce' }
+        attrs: { id: 'special-sauce' },
       });
 
       this.runTask(() => set(this.context, 'sauce', 'foo'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { id: 'special-sauce' }
+        attrs: { id: 'special-sauce' },
       });
 
       this.runTask(() => set(this.context, 'sauce', 'special-sauce'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { id: 'special-sauce' }
+        attrs: { id: 'special-sauce' },
       });
     }
 
     ['@test attributeBindings are overwritten']() {
       let FooBarComponent = Component.extend({
         attributeBindings: ['href'],
-        href: 'a href'
+        href: 'a href',
       });
 
       let FizzBarComponent = FooBarComponent.extend({
-        attributeBindings: ['newHref:href']
+        attributeBindings: ['newHref:href'],
       });
 
       this.registerComponent('fizz-bar', { ComponentClass: FizzBarComponent });
 
       this.render('{{fizz-bar newHref=href}}', {
-        href: 'dog.html'
+        href: 'dog.html',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { href: 'dog.html' }
+        attrs: { href: 'dog.html' },
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { href: 'dog.html' }
+        attrs: { href: 'dog.html' },
       });
 
       this.runTask(() => set(this.context, 'href', 'cat.html'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { href: 'cat.html' }
+        attrs: { href: 'cat.html' },
       });
     }
 
@@ -692,12 +692,12 @@ moduleFor(
           }
 
           this.attributeBindings = bindings;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render(
@@ -713,22 +713,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { 'data-foo': 'foo' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -736,22 +736,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { 'data-foo': 'foo' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -762,22 +762,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { 'data-foo': 'FOO' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { 'data-foo': 'FOO' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'bar', 'BAR'));
@@ -785,22 +785,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { 'data-foo': 'FOO' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { 'data-bar': 'BAR' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { 'data-foo': 'FOO', 'data-bar': 'BAR' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -811,22 +811,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { 'data-foo': 'foo' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: {},
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -840,12 +840,12 @@ moduleFor(
 
     ['@test asserts if an attributeBinding is setup on class']() {
       let FooBarComponent = Component.extend({
-        attributeBindings: ['class']
+        attributeBindings: ['class'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       expectAssertion(() => {
@@ -858,21 +858,21 @@ moduleFor(
 
       let FooBarComponent = Component.extend({
         tagName: 'a',
-        attributeBindings: ['href']
+        attributeBindings: ['href'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar href=xss}}', {
-        xss: "javascript:alert('foo')"
+        xss: "javascript:alert('foo')",
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'a',
-        attrs: { href: "unsafe:javascript:alert('foo')" }
+        attrs: { href: "unsafe:javascript:alert('foo')" },
       });
     }
 
@@ -881,28 +881,28 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar role=role}}', { role: 'button' });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { role: 'button' }
+        attrs: { role: 'button' },
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { role: 'button' }
+        attrs: { role: 'button' },
       });
 
       this.runTask(() => set(this.context, 'role', 'combobox'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { role: 'combobox' }
+        attrs: { role: 'combobox' },
       });
 
       this.runTask(() => set(this.context, 'role', null));
@@ -915,30 +915,24 @@ moduleFor(
         ComponentClass: Component.extend({
           attributeBindings: ['id'],
 
-          id: undefined
-        })
+          id: undefined,
+        }),
       });
 
       this.registerComponent('baz-qux', {
         ComponentClass: Component.extend({
           attributeBindings: ['somethingUndefined:id'],
 
-          somethingUndefined: undefined
-        })
+          somethingUndefined: undefined,
+        }),
       });
       this.render(`{{foo-bar}}{{baz-qux}}`);
 
       this.assertComponentElement(this.nthChild(0), { content: '' });
       this.assertComponentElement(this.nthChild(1), { content: '' });
 
-      this.assert.ok(
-        this.nthChild(0).id.match(/ember\d+/),
-        'a valid `id` was used'
-      );
-      this.assert.ok(
-        this.nthChild(1).id.match(/ember\d+/),
-        'a valid `id` was used'
-      );
+      this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+      this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
     }
 
     ['@test component with an `id` attribute binding of null']() {
@@ -946,30 +940,24 @@ moduleFor(
         ComponentClass: Component.extend({
           attributeBindings: ['id'],
 
-          id: null
-        })
+          id: null,
+        }),
       });
 
       this.registerComponent('baz-qux', {
         ComponentClass: Component.extend({
           attributeBindings: ['somethingNull:id'],
 
-          somethingNull: null
-        })
+          somethingNull: null,
+        }),
       });
       this.render(`{{foo-bar}}{{baz-qux}}`);
 
       this.assertComponentElement(this.nthChild(0), { content: '' });
       this.assertComponentElement(this.nthChild(1), { content: '' });
 
-      this.assert.ok(
-        this.nthChild(0).id.match(/ember\d+/),
-        'a valid `id` was used'
-      );
-      this.assert.ok(
-        this.nthChild(1).id.match(/ember\d+/),
-        'a valid `id` was used'
-      );
+      this.assert.ok(this.nthChild(0).id.match(/ember\d+/), 'a valid `id` was used');
+      this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
     }
   }
 );

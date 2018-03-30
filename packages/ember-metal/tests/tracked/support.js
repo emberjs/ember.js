@@ -15,7 +15,7 @@ export function createTracked(values, proto = {}) {
         enumerable: true,
         configurable: true,
         writable: true,
-        value: values[prop]
+        value: values[prop],
       })
     );
   }
@@ -30,11 +30,7 @@ export function createWithDescriptors(values) {
 
   for (let prop in values) {
     let descriptor = Object.getOwnPropertyDescriptor(values, prop);
-    Object.defineProperty(
-      Class.prototype,
-      prop,
-      tracked(Class.prototype, prop, descriptor)
-    );
+    Object.defineProperty(Class.prototype, prop, tracked(Class.prototype, prop, descriptor));
   }
 
   return new Class();

@@ -35,7 +35,7 @@ function propertyWillChange() {
       id: 'ember-metal.deprecate-propertyWillChange',
       until: '3.5.0',
       url:
-        'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange'
+        'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange',
     }
   );
 }
@@ -53,7 +53,7 @@ function propertyDidChange(obj, keyName, _meta) {
       id: 'ember-metal.deprecate-propertyDidChange',
       until: '3.5.0',
       url:
-        'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange'
+        'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange',
     }
   );
 
@@ -242,5 +242,5 @@ export {
   overrideChains,
   beginPropertyChanges,
   endPropertyChanges,
-  changeProperties
+  changeProperties,
 };

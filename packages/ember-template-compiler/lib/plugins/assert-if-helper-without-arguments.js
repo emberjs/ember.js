@@ -11,9 +11,10 @@ export default function assertIfHelperWithoutArguments(env) {
       BlockStatement(node) {
         if (isInvalidBlockIf(node)) {
           assert(
-            `${blockAssertMessage(
-              node.path.original
-            )} ${calculateLocationDisplay(moduleName, node.loc)}`
+            `${blockAssertMessage(node.path.original)} ${calculateLocationDisplay(
+              moduleName,
+              node.loc
+            )}`
           );
         }
       },
@@ -21,9 +22,10 @@ export default function assertIfHelperWithoutArguments(env) {
       MustacheStatement(node) {
         if (isInvalidInlineIf(node)) {
           assert(
-            `${inlineAssertMessage(
-              node.path.original
-            )} ${calculateLocationDisplay(moduleName, node.loc)}`
+            `${inlineAssertMessage(node.path.original)} ${calculateLocationDisplay(
+              moduleName,
+              node.loc
+            )}`
           );
         }
       },
@@ -31,13 +33,14 @@ export default function assertIfHelperWithoutArguments(env) {
       SubExpression(node) {
         if (isInvalidInlineIf(node)) {
           assert(
-            `${inlineAssertMessage(
-              node.path.original
-            )} ${calculateLocationDisplay(moduleName, node.loc)}`
+            `${inlineAssertMessage(node.path.original)} ${calculateLocationDisplay(
+              moduleName,
+              node.loc
+            )}`
           );
         }
-      }
-    }
+      },
+    },
   };
 }
 
@@ -57,7 +60,5 @@ function isInvalidInlineIf(node) {
 }
 
 function isInvalidBlockIf(node) {
-  return (
-    node.path.original === 'if' && (!node.params || node.params.length !== 1)
-  );
+  return node.path.original === 'if' && (!node.params || node.params.length !== 1);
 }

@@ -12,7 +12,7 @@ moduleFor(
       let expectedText = 'Hodi';
 
       this.registerComponent('-looked-up', {
-        template: expectedText
+        template: expectedText,
       });
 
       this.render('{{component (component "-looked-up")}}');
@@ -27,9 +27,9 @@ moduleFor(
     ['@test renders with component helper with invocation params, hash']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name']
+          positionalParams: ['name'],
         }),
-        template: '{{greeting}} {{name}}'
+        template: '{{greeting}} {{name}}',
       });
 
       this.render(strip`
@@ -45,20 +45,17 @@ moduleFor(
     ['@test GH#13742 keeps nested rest positional parameters if rendered with no positional parameters']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params'
+          positionalParams: 'params',
         }),
-        template: '{{#each params as |p|}}{{p}}{{/each}}'
+        template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
-      this.render(
-        '{{component (component "-looked-up" model.greeting model.name)}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack'
-          }
-        }
-      );
+      this.render('{{component (component "-looked-up" model.greeting model.name)}}', {
+        model: {
+          greeting: 'Gabon ',
+          name: 'Zack',
+        },
+      });
 
       this.assertText('Gabon Zack');
 
@@ -74,9 +71,7 @@ moduleFor(
 
       this.assertText('Good morning Matthew');
 
-      this.runTask(() =>
-        this.context.set('model', { greeting: 'Gabon ', name: 'Zack' })
-      );
+      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
 
       this.assertText('Gabon Zack');
     }
@@ -85,9 +80,9 @@ moduleFor(
     ['@test overwrites nested rest positional parameters if rendered with positional parameters']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params'
+          positionalParams: 'params',
         }),
-        template: '{{#each params as |p|}}{{p}}{{/each}}'
+        template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
       this.render(
@@ -95,8 +90,8 @@ moduleFor(
         {
           model: {
             greeting: 'Gabon ',
-            name: 'Zack '
-          }
+            name: 'Zack ',
+          },
         }
       );
 
@@ -114,9 +109,7 @@ moduleFor(
 
       this.assertText('Good morning Matthew Matthew Good morning ');
 
-      this.runTask(() =>
-        this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' })
-      );
+      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
 
       this.assertText('Gabon Zack Zack Gabon ');
     }
@@ -124,20 +117,17 @@ moduleFor(
     ['@test GH#13742  keeps nested rest positional parameters if nested and rendered with no positional parameters']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params'
+          positionalParams: 'params',
         }),
-        template: '{{#each params as |p|}}{{p}}{{/each}}'
+        template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
-      this.render(
-        '{{component (component (component "-looked-up" model.greeting model.name))}}',
-        {
-          model: {
-            greeting: 'Gabon ',
-            name: 'Zack'
-          }
-        }
-      );
+      this.render('{{component (component (component "-looked-up" model.greeting model.name))}}', {
+        model: {
+          greeting: 'Gabon ',
+          name: 'Zack',
+        },
+      });
 
       this.assertText('Gabon Zack');
 
@@ -153,9 +143,7 @@ moduleFor(
 
       this.assertText('Good morning Matthew');
 
-      this.runTask(() =>
-        this.context.set('model', { greeting: 'Gabon ', name: 'Zack' })
-      );
+      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
 
       this.assertText('Gabon Zack');
     }
@@ -163,9 +151,9 @@ moduleFor(
     ['@test overwrites nested rest positional parameters if nested with new pos params and rendered with no positional parameters']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params'
+          positionalParams: 'params',
         }),
-        template: '{{#each params as |p|}}{{p}}{{/each}}'
+        template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
       this.render(
@@ -173,8 +161,8 @@ moduleFor(
         {
           model: {
             greeting: 'Gabon ',
-            name: 'Zack '
-          }
+            name: 'Zack ',
+          },
         }
       );
 
@@ -192,9 +180,7 @@ moduleFor(
 
       this.assertText('Good morning Matthew Matthew Good morning ');
 
-      this.runTask(() =>
-        this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' })
-      );
+      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
 
       this.assertText('Gabon Zack Zack Gabon ');
     }
@@ -202,9 +188,9 @@ moduleFor(
     ['@test renders with component helper with curried params, hash']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name']
+          positionalParams: ['name'],
         }),
-        template: '{{greeting}} {{name}}'
+        template: '{{greeting}} {{name}}',
       });
 
       this.render(strip`
@@ -220,17 +206,17 @@ moduleFor(
 
     ['@test updates when component path is bound']() {
       this.registerComponent('-mandarin', {
-        template: 'ni hao'
+        template: 'ni hao',
       });
 
       this.registerComponent('-hindi', {
-        template: 'Namaste'
+        template: 'Namaste',
       });
 
       this.render('{{component (component model.lookupComponent)}}', {
         model: {
-          lookupComponent: '-mandarin'
-        }
+          lookupComponent: '-mandarin',
+        },
       });
 
       this.assertText('ni hao');
@@ -243,26 +229,21 @@ moduleFor(
 
       this.assertText('Namaste');
 
-      this.runTask(() =>
-        this.context.set('model', { lookupComponent: '-mandarin' })
-      );
+      this.runTask(() => this.context.set('model', { lookupComponent: '-mandarin' }));
 
       this.assertText('ni hao');
     }
 
     ['@test updates when curried hash argument is bound']() {
       this.registerComponent('-looked-up', {
-        template: '{{greeting}}'
+        template: '{{greeting}}',
       });
 
-      this.render(
-        `{{component (component "-looked-up" greeting=model.greeting)}}`,
-        {
-          model: {
-            greeting: 'Hodi'
-          }
-        }
-      );
+      this.render(`{{component (component "-looked-up" greeting=model.greeting)}}`, {
+        model: {
+          greeting: 'Hodi',
+        },
+      });
 
       this.assertText('Hodi');
 
@@ -281,7 +262,7 @@ moduleFor(
 
     ['@test updates when curried hash arguments is bound in block form']() {
       this.registerComponent('-looked-up', {
-        template: '{{greeting}}'
+        template: '{{greeting}}',
       });
 
       this.render(
@@ -291,8 +272,8 @@ moduleFor(
       {{/with}}`,
         {
           model: {
-            greeting: 'Hodi'
-          }
+            greeting: 'Hodi',
+          },
         }
       );
 
@@ -314,9 +295,9 @@ moduleFor(
     ['@test nested components do not overwrite positional parameters']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age']
+          positionalParams: ['name', 'age'],
         }),
-        template: '{{name}} {{age}}'
+        template: '{{name}} {{age}}',
       });
 
       this.render(
@@ -333,14 +314,12 @@ moduleFor(
     ['@test positional parameters are combined not clobbered']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['greeting', 'name', 'age']
+          positionalParams: ['greeting', 'name', 'age'],
         }),
-        template: '{{greeting}} {{name}} {{age}}'
+        template: '{{greeting}} {{name}} {{age}}',
       });
 
-      this.render(
-        '{{component (component (component "-looked-up" "Hi") "Max") 9}}'
-      );
+      this.render('{{component (component (component "-looked-up" "Hi") "Max") 9}}');
 
       this.assertText('Hi Max 9');
 
@@ -352,9 +331,9 @@ moduleFor(
     ['@test nested components positional parameters override named parameters [DEPRECATED]']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age']
+          positionalParams: ['name', 'age'],
         }),
-        template: '{{name}} {{age}}'
+        template: '{{name}} {{age}}',
       });
 
       expectDeprecation(() => {
@@ -373,9 +352,9 @@ moduleFor(
     ['@test nested components with positional params at outer layer are override hash parameters [DEPRECATED]']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['greeting', 'name', 'age']
+          positionalParams: ['greeting', 'name', 'age'],
         }),
-        template: '{{greeting}} {{name}} {{age}}'
+        template: '{{greeting}} {{name}} {{age}}',
       });
 
       expectDeprecation(() => {
@@ -388,8 +367,8 @@ moduleFor(
         {{/with}}`,
           {
             model: {
-              greeting: 'Hodi'
-            }
+              greeting: 'Hodi',
+            },
           }
         );
       }, 'You cannot specify both a positional param (at position 1) and the hash argument `name`.');
@@ -404,10 +383,10 @@ moduleFor(
     ['@test nested components with positional params at middle layer partially override hash parameters [DEPRECATED]']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['greeting', 'name', 'age']
+          positionalParams: ['greeting', 'name', 'age'],
         }),
 
-        template: '{{greeting}} {{name}} {{age}}'
+        template: '{{greeting}} {{name}} {{age}}',
       });
 
       expectDeprecation(() => {
@@ -420,8 +399,8 @@ moduleFor(
           {{/with}}`,
           {
             model: {
-              greeting: 'Hodi'
-            }
+              greeting: 'Hodi',
+            },
           }
         );
       }, 'You cannot specify both a positional param (at position 0) and the hash argument `greeting`.');
@@ -436,10 +415,10 @@ moduleFor(
     ['@test nested components with positional params at invocation override earlier hash parameters [DEPRECATED]']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['greeting', 'name', 'age']
+          positionalParams: ['greeting', 'name', 'age'],
         }),
 
-        template: '{{greeting}} {{name}} {{age}}'
+        template: '{{greeting}} {{name}} {{age}}',
       });
 
       expectDeprecation(() => {
@@ -452,8 +431,8 @@ moduleFor(
           {{/with}}`,
           {
             model: {
-              greeting: 'Hodi'
-            }
+              greeting: 'Hodi',
+            },
           }
         );
       }, 'You cannot specify both a positional param (at position 0) and the hash argument `greeting`.');
@@ -475,7 +454,7 @@ moduleFor(
 
     ['@test nested components overwrite hash parameters']() {
       this.registerComponent('-looked-up', {
-        template: '{{greeting}} {{name}} {{age}}'
+        template: '{{greeting}} {{name}} {{age}}',
       });
 
       this.render(
@@ -487,8 +466,8 @@ moduleFor(
       {{/with}}`,
         {
           model: {
-            greeting: 'Hodi'
-          }
+            greeting: 'Hodi',
+          },
         }
       );
 
@@ -510,16 +489,16 @@ moduleFor(
     ['@test bound outer named parameters get updated in the right scope']() {
       this.registerComponent('-inner-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['comp']
+          positionalParams: ['comp'],
         }),
-        template: '{{component comp "Inner"}}'
+        template: '{{component comp "Inner"}}',
       });
 
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age']
+          positionalParams: ['name', 'age'],
         }),
-        template: '{{name}} {{age}}'
+        template: '{{name}} {{age}}',
       });
 
       this.render(
@@ -527,8 +506,8 @@ moduleFor(
         {
           model: {
             outerName: 'Outer',
-            outerAge: 28
-          }
+            outerAge: 28,
+          },
         }
       );
 
@@ -549,7 +528,7 @@ moduleFor(
       this.runTask(() => {
         this.context.set('model', {
           outerName: 'Outer',
-          outerAge: 28
+          outerAge: 28,
         });
       });
 
@@ -559,13 +538,13 @@ moduleFor(
     ['@test bound outer hash parameters get updated in the right scope']() {
       this.registerComponent('-inner-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['comp']
+          positionalParams: ['comp'],
         }),
-        template: '{{component comp name="Inner"}}'
+        template: '{{component comp name="Inner"}}',
       });
 
       this.registerComponent('-looked-up', {
-        template: '{{name}} {{age}}'
+        template: '{{name}} {{age}}',
       });
 
       this.render(
@@ -573,8 +552,8 @@ moduleFor(
         {
           model: {
             outerName: 'Outer',
-            outerAge: 28
-          }
+            outerAge: 28,
+          },
         }
       );
 
@@ -595,7 +574,7 @@ moduleFor(
       this.runTask(() => {
         this.context.set('model', {
           outerName: 'Outer',
-          outerAge: 28
+          outerAge: 28,
         });
       });
 
@@ -605,9 +584,9 @@ moduleFor(
     ['@test conflicting positional and hash parameters trigger a deprecation if in the same component context [DEPRECATED]']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name']
+          positionalParams: ['name'],
         }),
-        template: '{{greeting}} {{name}}'
+        template: '{{greeting}} {{name}}',
       });
 
       expectDeprecation(() => {
@@ -622,19 +601,16 @@ moduleFor(
       // assertion. This test checks it does not.
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name']
+          positionalParams: ['name'],
         }),
-        template: '{{greeting}} {{name}}'
+        template: '{{greeting}} {{name}}',
       });
 
-      this.render(
-        '{{component (component "-looked-up" model.name greeting="Hodi")}}',
-        {
-          model: {
-            name: 'Hodari'
-          }
-        }
-      );
+      this.render('{{component (component "-looked-up" model.name greeting="Hodi")}}', {
+        model: {
+          name: 'Hodari',
+        },
+      });
 
       this.assertText('Hodi Hodari');
 
@@ -654,9 +630,9 @@ moduleFor(
     ['@test conflicting positional and hash parameters trigger a deprecation [DEPRECATED]']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name']
+          positionalParams: ['name'],
         }),
-        template: '{{greeting}} {{name}}'
+        template: '{{greeting}} {{name}}',
       });
 
       expectDeprecation(() => {
@@ -677,7 +653,7 @@ moduleFor(
 
       this.render('{{component (component componentName name=name)}}', {
         componentName: undefined,
-        name: 'Alex'
+        name: 'Alex',
       });
 
       this.assertText('');
@@ -700,7 +676,7 @@ moduleFor(
 
       this.render('{{component (component componentName name=name)}}', {
         componentName: 'foo-bar',
-        name: 'Alex'
+        name: 'Alex',
       });
 
       this.assertText('hello Alex');
@@ -723,7 +699,7 @@ moduleFor(
 
       this.render('{{component (component componentName name=name)}}', {
         componentName: null,
-        name: 'Alex'
+        name: 'Alex',
       });
 
       this.assertText('');
@@ -746,7 +722,7 @@ moduleFor(
 
       this.render('{{component (component componentName name=name)}}', {
         componentName: 'foo-bar',
-        name: 'Alex'
+        name: 'Alex',
       });
 
       this.assertText('hello Alex');
@@ -773,7 +749,7 @@ moduleFor(
     ['@test raises an assertion when component path is not a component name (dynamic)']() {
       expectAssertion(() => {
         this.render('{{component (component compName)}}', {
-          compName: 'not-a-component'
+          compName: 'not-a-component',
         });
       }, 'Could not find component named "not-a-component" (no component or template with that name was found)');
     }
@@ -781,7 +757,7 @@ moduleFor(
     ['@test renders with dot path']() {
       let expectedText = 'Hodi';
       this.registerComponent('-looked-up', {
-        template: expectedText
+        template: expectedText,
       });
 
       this.render(strip`
@@ -799,7 +775,7 @@ moduleFor(
     ['@test renders with dot path and attr']() {
       let expectedText = 'Hodi';
       this.registerComponent('-looked-up', {
-        template: '{{expectedText}}'
+        template: '{{expectedText}}',
       });
 
       this.render(
@@ -809,8 +785,8 @@ moduleFor(
       {{/with}}`,
         {
           model: {
-            expectedText
-          }
+            expectedText,
+          },
         }
       );
 
@@ -832,7 +808,7 @@ moduleFor(
     ['@test renders with dot path and curried over attr']() {
       let expectedText = 'Hodi';
       this.registerComponent('-looked-up', {
-        template: '{{expectedText}}'
+        template: '{{expectedText}}',
       });
 
       this.render(
@@ -842,8 +818,8 @@ moduleFor(
       {{/with}}`,
         {
           model: {
-            expectedText
-          }
+            expectedText,
+          },
         }
       );
 
@@ -865,9 +841,9 @@ moduleFor(
     ['@test renders with dot path and with rest positional parameters']() {
       this.registerComponent('-looked-up', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params'
+          positionalParams: 'params',
         }),
-        template: '{{params}}'
+        template: '{{params}}',
       });
 
       let expectedText = 'Hodi';
@@ -879,8 +855,8 @@ moduleFor(
       {{/with}}`,
         {
           model: {
-            expectedText
-          }
+            expectedText,
+          },
         }
       );
 
@@ -909,10 +885,10 @@ moduleFor(
         ComponentClass: Component.extend({
           didReceiveAttrs() {
             value = this.getAttr('value');
-          }
+          },
         }).reopenClass({
-          positionalParams: ['value']
-        })
+          positionalParams: ['value'],
+        }),
       });
 
       this.render(
@@ -931,14 +907,14 @@ moduleFor(
         ComponentClass: Component.extend({
           didReceiveAttrs() {
             this.set('myProp', this.getAttr('my-parent-attr'));
-          }
+          },
         }),
-        template: '<span id="nested-prop">{{myProp}}</span>'
+        template: '<span id="nested-prop">{{myProp}}</span>',
       });
 
       this.registerComponent('my-component', {
         template:
-          '{{yield (hash my-nested-component=(component "my-nested-component" my-parent-attr=my-attr))}}'
+          '{{yield (hash my-nested-component=(component "my-nested-component" my-parent-attr=my-attr))}}',
       });
 
       this.registerComponent('my-action-component', {
@@ -946,21 +922,21 @@ moduleFor(
           actions: {
             changeValue() {
               this.incrementProperty('myProp');
-            }
-          }
+            },
+          },
         }),
         template: strip`
         {{#my-component my-attr=myProp as |api|}}
           {{api.my-nested-component}}
         {{/my-component}}
         <br>
-        <button onclick={{action 'changeValue'}}>Change value</button>`
+        <button onclick={{action 'changeValue'}}>Change value</button>`,
       });
 
       this.render('{{my-action-component myProp=model.myProp}}', {
         model: {
-          myProp: 1
-        }
+          myProp: 1,
+        },
       });
 
       assert.equal(this.$('#nested-prop').text(), '1');
@@ -986,11 +962,11 @@ moduleFor(
       // If parameters and attributes are not handled correctly, setting a value
       // in an invokation can leak to others invocation.
       this.registerComponent('select-box', {
-        template: '{{yield (hash option=(component "select-box-option"))}}'
+        template: '{{yield (hash option=(component "select-box-option"))}}',
       });
 
       this.registerComponent('select-box-option', {
-        template: '{{label}}'
+        template: '{{label}}',
       });
 
       this.render(strip`
@@ -1006,20 +982,18 @@ moduleFor(
       this.assertText('Foo');
     }
 
-    ['@test parameters in a contextual component are mutable when value is a param'](
-      assert
-    ) {
+    ['@test parameters in a contextual component are mutable when value is a param'](assert) {
       // This checks that a `(mut)` is added to parameters and attributes to
       // contextual components when it is a param.
 
       this.registerComponent('change-button', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['val']
+          positionalParams: ['val'],
         }),
         template: strip`
         <button {{action (action (mut val) 10)}} class="my-button">
           Change to 10
-        </button>`
+        </button>`,
       });
 
       this.render(
@@ -1028,8 +1002,8 @@ moduleFor(
       <span class="value">{{model.val2}}</span>`,
         {
           model: {
-            val2: 8
-          }
+            val2: 8,
+          },
         }
       );
 
@@ -1050,7 +1024,7 @@ moduleFor(
 
     ['@test tagless blockless components render'](assert) {
       this.registerComponent('my-comp', {
-        ComponentClass: Component.extend({ tagName: '' })
+        ComponentClass: Component.extend({ tagName: '' }),
       });
 
       this.render(`{{my-comp}}`);
@@ -1060,27 +1034,25 @@ moduleFor(
       assert.equal(this.$().text(), '');
     }
 
-    ['@test GH#13494 tagless blockless component with property binding'](
-      assert
-    ) {
+    ['@test GH#13494 tagless blockless component with property binding'](assert) {
       this.registerComponent('outer-component', {
         ComponentClass: Component.extend({
           message: 'hello',
           actions: {
             change() {
               this.set('message', 'goodbye');
-            }
-          }
+            },
+          },
         }),
         template: strip`
         message: {{message}}{{inner-component message=message}}
-        <button onclick={{action "change"}} />`
+        <button onclick={{action "change"}} />`,
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: Component.extend({
-          tagName: ''
-        })
+          tagName: '',
+        }),
       });
 
       this.render(`{{outer-component}}`);
@@ -1100,9 +1072,7 @@ moduleFor(
       assert.equal(this.$().text(), 'message: goodbye');
     }
 
-    ['@test GH#13982 contextual component ref is stable even when bound params change'](
-      assert
-    ) {
+    ['@test GH#13982 contextual component ref is stable even when bound params change'](assert) {
       let instance, previousInstance;
       let initCount = 0;
 
@@ -1114,9 +1084,9 @@ moduleFor(
             instance = this;
             initCount++;
           },
-          isOpen: undefined
+          isOpen: undefined,
         }),
-        template: '{{if isOpen "open" "closed"}}'
+        template: '{{if isOpen "open" "closed"}}',
       });
 
       this.render(
@@ -1126,61 +1096,41 @@ moduleFor(
       {{/with}}
     `,
         {
-          isOpen: true
+          isOpen: true,
         }
       );
 
       assert.ok(!isEmpty(instance), 'a instance was created');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       this.runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       this.runTask(() => this.context.set('isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       this.runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       this.runTask(() => this.context.set('isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
     }
 
@@ -1198,9 +1148,9 @@ moduleFor(
             instance = this;
             initCount++;
           },
-          isOpen: undefined
+          isOpen: undefined,
         }),
-        template: '{{if isOpen "open" "closed"}}'
+        template: '{{if isOpen "open" "closed"}}',
       });
 
       this.render(
@@ -1211,61 +1161,41 @@ moduleFor(
     `,
         {
           compName: 'my-comp',
-          isOpen: true
+          isOpen: true,
         }
       );
 
       assert.ok(!isEmpty(instance), 'a instance was created');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       this.runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
       this.runTask(() => this.context.set('isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       this.runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
       this.runTask(() => this.context.set('isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
     }
 
@@ -1283,9 +1213,9 @@ moduleFor(
             instance = this;
             initCount++;
           },
-          isOpen: undefined
+          isOpen: undefined,
         }),
-        template: 'my-comp: {{if isOpen "open" "closed"}}'
+        template: 'my-comp: {{if isOpen "open" "closed"}}',
       });
 
       this.registerComponent('your-comp', {
@@ -1296,9 +1226,9 @@ moduleFor(
             instance = this;
             initCount++;
           },
-          isOpen: undefined
+          isOpen: undefined,
         }),
-        template: 'your-comp: {{if isOpen "open" "closed"}}'
+        template: 'your-comp: {{if isOpen "open" "closed"}}',
       });
 
       this.render(
@@ -1309,55 +1239,32 @@ moduleFor(
     `,
         {
           compName: 'my-comp',
-          isOpen: true
+          isOpen: true,
         }
       );
 
       assert.ok(!isEmpty(instance), 'a instance was created');
-      assert.equal(
-        previousInstance,
-        undefined,
-        'there is no previous instance'
-      );
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(previousInstance, undefined, 'there is no previous instance');
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
       this.runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'a instance exists after rerender');
-      assert.equal(
-        previousInstance,
-        undefined,
-        'there is no previous instance after rerender'
-      );
-      assert.equal(
-        initCount,
-        1,
-        'the component was constructed exactly 1 time'
-      );
+      assert.equal(previousInstance, undefined, 'there is no previous instance after rerender');
+      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
       this.runTask(() => this.context.set('compName', 'your-comp'));
 
-      assert.ok(
-        !isEmpty(instance),
-        'an instance was created after component name changed'
-      );
+      assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
       assert.ok(!isEmpty(previousInstance), 'a previous instance now exists');
       assert.notEqual(
         instance,
         previousInstance,
         'the instance and previous instance are not the same object'
       );
-      assert.equal(
-        initCount,
-        2,
-        'the component was constructed exactly 2 times'
-      );
+      assert.equal(initCount, 2, 'the component was constructed exactly 2 times');
       assert.equal(this.$().text(), 'your-comp: open');
 
       this.runTask(() => this.rerender());
@@ -1366,52 +1273,38 @@ moduleFor(
         !isEmpty(instance),
         'an instance was created after component name changed (rerender)'
       );
-      assert.ok(
-        !isEmpty(previousInstance),
-        'a previous instance now exists (rerender)'
-      );
+      assert.ok(!isEmpty(previousInstance), 'a previous instance now exists (rerender)');
       assert.notEqual(
         instance,
         previousInstance,
         'the instance and previous instance are not the same object (rerender)'
       );
-      assert.equal(
-        initCount,
-        2,
-        'the component was constructed exactly 2 times (rerender)'
-      );
+      assert.equal(initCount, 2, 'the component was constructed exactly 2 times (rerender)');
       assert.equal(this.$().text(), 'your-comp: open');
 
       this.runTask(() => this.context.set('compName', 'my-comp'));
 
-      assert.ok(
-        !isEmpty(instance),
-        'an instance was created after component name changed'
-      );
+      assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
       assert.ok(!isEmpty(previousInstance), 'a previous instance still exists');
       assert.notEqual(
         instance,
         previousInstance,
         'the instance and previous instance are not the same object'
       );
-      assert.equal(
-        initCount,
-        3,
-        'the component was constructed exactly 3 times (rerender)'
-      );
+      assert.equal(initCount, 3, 'the component was constructed exactly 3 times (rerender)');
       assert.equal(this.$().text(), 'my-comp: open');
     }
 
     ['@test GH#14508 rest positional params are received when passed as named parameter']() {
       this.registerComponent('my-link', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params'
+          positionalParams: 'params',
         }),
-        template: '{{#each params as |p|}}{{p}}{{/each}}'
+        template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
       this.render('{{component (component "my-link") params=allParams}}', {
-        allParams: emberA(['a', 'b'])
+        allParams: emberA(['a', 'b']),
       });
 
       this.assertText('ab');
@@ -1444,15 +1337,15 @@ moduleFor(
     ['@test GH#14508 rest positional params are received when passed as named parameter with dot notation']() {
       this.registerComponent('my-link', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'params'
+          positionalParams: 'params',
         }),
-        template: '{{#each params as |p|}}{{p}}{{/each}}'
+        template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
       this.render(
         '{{#with (hash link=(component "my-link")) as |c|}}{{c.link params=allParams}}{{/with}}',
         {
-          allParams: emberA(['a', 'b'])
+          allParams: emberA(['a', 'b']),
         }
       );
 
@@ -1513,17 +1406,15 @@ class MutableParamTestGenerator {
 
   generate({ title, setup }) {
     return {
-      [`@test parameters in a contextual component are mutable when value is a ${title}`](
-        assert
-      ) {
+      [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
         this.registerComponent('change-button', {
           ComponentClass: Component.extend().reopenClass({
-            positionalParams: ['val']
+            positionalParams: ['val'],
           }),
           template: strip`
           <button {{action (action (mut val) 10)}} class="my-button">
             Change to 10
-          </button>`
+          </button>`,
         });
 
         setup.call(this, assert);
@@ -1541,7 +1432,7 @@ class MutableParamTestGenerator {
         this.runTask(() => this.context.set('model', { val2: 8 }));
 
         assert.equal(this.$('.value').text(), '8');
-      }
+      },
     };
   }
 }
@@ -1553,7 +1444,7 @@ applyMixins(
       title: 'param',
       setup() {
         this.render('{{component (component "change-button" model.val2)}}');
-      }
+      },
     },
 
     {
@@ -1561,42 +1452,38 @@ applyMixins(
       setup() {
         this.registerComponent('my-comp', {
           ComponentClass: Component.extend().reopenClass({
-            positionalParams: ['components']
+            positionalParams: ['components'],
           }),
-          template: '{{component components.comp}}'
+          template: '{{component components.comp}}',
         });
 
-        this.render(
-          '{{my-comp (hash comp=(component "change-button" model.val2))}}'
-        );
-      }
+        this.render('{{my-comp (hash comp=(component "change-button" model.val2))}}');
+      },
     },
 
     {
       title: 'hash value',
       setup() {
         this.registerComponent('my-comp', {
-          template: '{{component component}}'
+          template: '{{component component}}',
         });
 
-        this.render(
-          '{{my-comp component=(component "change-button" val=model.val2)}}'
-        );
-      }
+        this.render('{{my-comp component=(component "change-button" val=model.val2)}}');
+      },
     },
 
     {
       title: 'nested hash value',
       setup() {
         this.registerComponent('my-comp', {
-          template: '{{component components.button}}'
+          template: '{{component components.button}}',
         });
 
         this.render(
           '{{my-comp components=(hash button=(component "change-button" val=model.val2))}}'
         );
-      }
-    }
+      },
+    },
   ])
 );
 

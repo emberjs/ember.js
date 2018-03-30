@@ -25,14 +25,11 @@ describe('Blueprint: initializer-addon', function() {
     });
 
     it('initializer-addon foo --pod', function() {
-      return emberGenerateDestroy(
-        ['initializer-addon', 'foo', '--pod'],
-        _file => {
-          expect(_file('app/initializers/foo.js')).to.contain(
-            "export { default, initialize } from 'my-addon/initializers/foo';"
-          );
-        }
-      );
+      return emberGenerateDestroy(['initializer-addon', 'foo', '--pod'], _file => {
+        expect(_file('app/initializers/foo.js')).to.contain(
+          "export { default, initialize } from 'my-addon/initializers/foo';"
+        );
+      });
     });
   });
 });

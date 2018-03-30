@@ -1,11 +1,5 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import {
-  Checkbox,
-  Component,
-  LinkComponent,
-  TextArea,
-  TextField
-} from 'ember-glimmer';
+import { Checkbox, Component, LinkComponent, TextArea, TextField } from 'ember-glimmer';
 
 moduleFor(
   'built-in component toString',
@@ -27,10 +21,7 @@ moduleFor(
     }
 
     '@test LinkTo has the correct toString value'(assert) {
-      assert.strictEqual(
-        LinkComponent.toString(),
-        '@ember/routing/link-component'
-      );
+      assert.strictEqual(LinkComponent.toString(), '@ember/routing/link-component');
     }
   }
 );

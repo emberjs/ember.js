@@ -8,40 +8,21 @@ moduleFor(
     ['@test htmlSafe should return an instance of SafeString']() {
       let safeString = htmlSafe('you need to be more <b>bold</b>');
 
-      this.assert.ok(
-        safeString instanceof SafeString,
-        'should be a SafeString'
-      );
+      this.assert.ok(safeString instanceof SafeString, 'should be a SafeString');
     }
 
     ['@test htmlSafe should return an empty string for null']() {
       let safeString = htmlSafe(null);
 
-      this.assert.equal(
-        safeString instanceof SafeString,
-        true,
-        'should be a SafeString'
-      );
-      this.assert.equal(
-        safeString.toString(),
-        '',
-        'should return an empty string'
-      );
+      this.assert.equal(safeString instanceof SafeString, true, 'should be a SafeString');
+      this.assert.equal(safeString.toString(), '', 'should return an empty string');
     }
 
     ['@test htmlSafe should return an instance of SafeString']() {
       let safeString = htmlSafe();
 
-      this.assert.equal(
-        safeString instanceof SafeString,
-        true,
-        'should be a SafeString'
-      );
-      this.assert.equal(
-        safeString.toString(),
-        '',
-        'should return an empty string'
-      );
+      this.assert.equal(safeString instanceof SafeString, true, 'should be a SafeString');
+      this.assert.equal(safeString.toString(), '', 'should return an empty string');
     }
   }
 );

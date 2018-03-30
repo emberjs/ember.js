@@ -10,7 +10,7 @@ module.exports = function generateFakePackageManifest(name, version) {
   fs.writeFileSync(
     'node_modules/' + name + '/package.json',
     JSON.stringify({
-      version: version
+      version: version,
     })
   );
 };

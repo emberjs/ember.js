@@ -8,7 +8,7 @@ moduleFor(
   class extends RenderingTest {
     getCustomDispatcherEvents() {
       return {
-        hitDem: 'folks'
+        hitDem: 'folks',
       };
     }
 
@@ -21,14 +21,14 @@ moduleFor(
           instance = this;
           this.foo = true;
           this.bar = 'bar';
-        }
+        },
       });
 
       let template = `{{#if foo}}<div>Hey</div>{{/if}}{{yield bar}}`;
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
 
       this.render(`{{#foo-bar as |bar|}}{{bar}}{{/foo-bar}}`);
@@ -55,12 +55,12 @@ moduleFor(
       let template = `hit dem folks`;
       let FooBarComponent = Component.extend({
         tagName: '',
-        click() {}
+        click() {},
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
 
       expectAssertion(() => {
@@ -72,12 +72,12 @@ moduleFor(
       let template = `hit dem folks`;
       let FooBarComponent = Component.extend({
         tagName: '',
-        folks() {}
+        folks() {},
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
 
       expectAssertion(() => {
@@ -90,12 +90,12 @@ moduleFor(
       let FooBarComponent = Component.extend({
         tagName: '',
         foo: true,
-        classNameBindings: ['foo:is-foo:is-bar']
+        classNameBindings: ['foo:is-foo:is-bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
 
       expectAssertion(() => {
@@ -107,12 +107,12 @@ moduleFor(
       let template = `hit dem folks`;
       let FooBarComponent = Component.extend({
         tagName: '',
-        attributeBindings: ['href']
+        attributeBindings: ['href'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
@@ -123,12 +123,12 @@ moduleFor(
       let template = `hit dem folks`;
       let FooBarComponent = Component.extend({
         tagName: '',
-        elementId: 'turntUp'
+        elementId: 'turntUp',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
@@ -138,12 +138,12 @@ moduleFor(
     ['@test throws an error if `tagName` is an empty string and `elementId` is specified via template']() {
       let template = `hit dem folks`;
       let FooBarComponent = Component.extend({
-        tagName: ''
+        tagName: '',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
       expectAssertion(() => {
         this.render(`{{#foo-bar elementId='turntUp'}}{{/foo-bar}}`);
@@ -154,12 +154,12 @@ moduleFor(
       let template = `{{id}}`;
       let FooBarComponent = Component.extend({
         tagName: '',
-        id: 'baz'
+        id: 'baz',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
       this.render(`{{#foo-bar}}{{/foo-bar}}`);
       this.assertText('baz');
@@ -168,12 +168,12 @@ moduleFor(
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template']() {
       let template = `{{id}}`;
       let FooBarComponent = Component.extend({
-        tagName: ''
+        tagName: '',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
       this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
       this.assertText('baz');
@@ -182,12 +182,12 @@ moduleFor(
     ['@test does not throw an error if `tagName` is an empty string and `id` is bound property specified via template']() {
       let template = `{{id}}`;
       let FooBarComponent = Component.extend({
-        tagName: ''
+        tagName: '',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
 
       this.render(`{{#foo-bar id=fooBarId}}{{/foo-bar}}`, { fooBarId: 'baz' });
@@ -208,18 +208,18 @@ moduleFor(
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template and passed to child component']() {
       let fooBarTemplate = `{{#baz-child id=id}}{{/baz-child}}`;
       let FooBarComponent = Component.extend({
-        tagName: ''
+        tagName: '',
       });
       let BazChildComponent = Component.extend();
       let bazChildTemplate = `{{id}}`;
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: fooBarTemplate
+        template: fooBarTemplate,
       });
       this.registerComponent('baz-child', {
         ComponentClass: BazChildComponent,
-        template: bazChildTemplate
+        template: bazChildTemplate,
       });
       this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
       this.assertText('baz');
@@ -232,12 +232,12 @@ moduleFor(
         init() {
           this._super();
           this.$();
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template
+        template,
       });
 
       expectAssertion(() => {
@@ -248,37 +248,37 @@ moduleFor(
     ['@test renders a contained view with omitted start tag and tagless parent view context']() {
       this.registerComponent('root-component', {
         ComponentClass: Component.extend({
-          tagName: 'section'
+          tagName: 'section',
         }),
-        template: '{{frag-ment}}'
+        template: '{{frag-ment}}',
       });
 
       this.registerComponent('frag-ment', {
         ComponentClass: Component.extend({
-          tagName: ''
+          tagName: '',
         }),
-        template: '{{my-span}}'
+        template: '{{my-span}}',
       });
 
       this.registerComponent('my-span', {
         ComponentClass: Component.extend({
-          tagName: 'span'
+          tagName: 'span',
         }),
-        template: 'dab'
+        template: 'dab',
       });
 
       this.render(`{{root-component}}`);
 
       this.assertElement(this.firstChild, { tagName: 'section' });
       this.assertElement(this.firstChild.firstElementChild, {
-        tagName: 'span'
+        tagName: 'span',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, { tagName: 'section' });
       this.assertElement(this.firstChild.firstElementChild, {
-        tagName: 'span'
+        tagName: 'span',
       });
     }
   }

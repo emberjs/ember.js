@@ -3,7 +3,7 @@ import {
   set,
   computed,
   instrumentationSubscribe,
-  instrumentationUnsubscribe
+  instrumentationUnsubscribe,
 } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
@@ -35,23 +35,22 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           actions: {
             fireAction() {
               this.attrs.submit(actionParam);
-            }
-          }
+            },
+          },
         });
 
         let OuterComponent = Component.extend({
-          outerSubmit() {}
+          outerSubmit() {},
         });
 
         this.registerComponent('inner-component', {
           ComponentClass: InnerComponent,
-          template:
-            '<button id="instrument-button" {{action "fireAction"}}>What it do</button>'
+          template: '<button id="instrument-button" {{action "fireAction"}}>What it do</button>',
         });
 
         this.registerComponent('outer-component', {
           ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action outerSubmit)}}'
+          template: '{{inner-component submit=(action outerSubmit)}}',
         });
 
         this.subscribe('interaction.ember-action', {
@@ -60,7 +59,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           },
           after(name, timestamp, payload) {
             afterParameters.push(payload.args);
-          }
+          },
         });
 
         this.render(`{{outer-component}}`);
@@ -90,24 +89,23 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           actions: {
             fireAction() {
               this.attrs.submit();
-            }
-          }
+            },
+          },
         });
 
         let OuterComponent = Component.extend({
           myProperty: 'outer-thing',
-          outerSubmit() {}
+          outerSubmit() {},
         });
 
         this.registerComponent('inner-component', {
           ComponentClass: InnerComponent,
-          template:
-            '<button id="instrument-button" {{action "fireAction"}}>What it do</button>'
+          template: '<button id="instrument-button" {{action "fireAction"}}>What it do</button>',
         });
 
         this.registerComponent('outer-component', {
           ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action outerSubmit)}}'
+          template: '{{inner-component submit=(action outerSubmit)}}',
         });
 
         this.subscribe('interaction.ember-action', {
@@ -116,7 +114,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           },
           after(name, timestamp, payload) {
             afterParameters.push(payload.target.get('myProperty'));
-          }
+          },
         });
 
         this.render(`{{outer-component}}`);
@@ -145,30 +143,29 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           actions: {
             fireAction() {
               actualReturnedValue = this.attrs.submit();
-            }
-          }
+            },
+          },
         });
 
         let OuterComponent = Component.extend({
           outerSubmit() {
             return returnedValue;
-          }
+          },
         });
 
         this.registerComponent('inner-component', {
           ComponentClass: InnerComponent,
-          template:
-            '<button id="instrument-button" {{action "fireAction"}}>What it do</button>'
+          template: '<button id="instrument-button" {{action "fireAction"}}>What it do</button>',
         });
 
         this.registerComponent('outer-component', {
           ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action outerSubmit)}}'
+          template: '{{inner-component submit=(action outerSubmit)}}',
         });
 
         this.subscribe('interaction.ember-action', {
           before() {},
-          after() {}
+          after() {},
         });
 
         this.render(`{{outer-component}}`);
@@ -177,11 +174,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           this.$('#instrument-button').trigger('click');
         });
 
-        this.assert.equal(
-          actualReturnedValue,
-          returnedValue,
-          'action can return to caller'
-        );
+        this.assert.equal(actualReturnedValue, returnedValue, 'action can return to caller');
       }
     }
   );
@@ -201,22 +194,22 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
         outerSubmit() {
           outerActionCalled = true;
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action outerSubmit)}}'
+        template: '{{inner-component submit=(action outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -230,10 +223,10 @@ moduleFor(
 
     ['@test an error is triggered when bound action function is undefined']() {
       this.registerComponent('inner-component', {
-        template: 'inner'
+        template: 'inner',
       });
       this.registerComponent('outer-component', {
-        template: '{{inner-component submit=(action somethingThatIsUndefined)}}'
+        template: '{{inner-component submit=(action somethingThatIsUndefined)}}',
       });
 
       expectAssertion(() => {
@@ -243,13 +236,13 @@ moduleFor(
 
     ['@test an error is triggered when bound action being passed in is a non-function']() {
       this.registerComponent('inner-component', {
-        template: 'inner'
+        template: 'inner',
       });
       this.registerComponent('outer-component', {
         ComponentClass: Component.extend({
-          nonFunctionThing: {}
+          nonFunctionThing: {},
         }),
-        template: '{{inner-component submit=(action nonFunctionThing)}}'
+        template: '{{inner-component submit=(action nonFunctionThing)}}',
       });
 
       expectAssertion(() => {
@@ -260,11 +253,11 @@ moduleFor(
     ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
       this.registerComponent('inner-component', {
         template:
-          '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>'
+          '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>',
       });
 
       this.registerComponent('outer-component', {
-        template: '{{inner-component}}'
+        template: '{{inner-component}}',
       });
 
       expectAssertion(() => {
@@ -284,23 +277,23 @@ moduleFor(
         },
         fireAction() {
           returnedValue = this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
         outerSubmit() {
           return expectedValue;
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action outerSubmit)}}'
+        template: '{{inner-component submit=(action outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -309,11 +302,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(
-        returnedValue,
-        expectedValue,
-        'action can return to caller'
-      );
+      this.assert.equal(returnedValue, expectedValue, 'action can return to caller');
     }
 
     ['@test action should be called on the correct scope']() {
@@ -328,7 +317,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -339,17 +328,17 @@ moduleFor(
         isOuterComponent: true,
         outerSubmit() {
           actualComponent = this;
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action outerSubmit)}}'
+        template: '{{inner-component submit=(action outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -358,15 +347,8 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(
-        actualComponent,
-        outerComponent,
-        'action has the correct context'
-      );
-      this.assert.ok(
-        actualComponent.isOuterComponent,
-        'action has the correct context'
-      );
+      this.assert.equal(actualComponent, outerComponent, 'action has the correct context');
+      this.assert.ok(actualComponent.isOuterComponent, 'action has the correct context');
     }
 
     ['@test arguments to action are passed, curry']() {
@@ -385,7 +367,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit(fourth);
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -393,17 +375,17 @@ moduleFor(
         outerSubmit() {
           // eslint-disable-line no-unused-vars
           actualArgs = [...arguments];
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action (action outerSubmit "${first}") "${second}" third)}}`
+        template: `{{inner-component submit=(action (action outerSubmit "${first}") "${second}" third)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -431,7 +413,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -442,17 +424,17 @@ moduleFor(
         actions: {
           outerAction(incomingValue) {
             value = incomingValue;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action "outerAction" this)}}'
+        template: '{{inner-component submit=(action "outerAction" this)}}',
       });
 
       this.render('{{outer-component}}');
@@ -461,11 +443,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.strictEqual(
-        value,
-        component,
-        'the component is passed at `this`'
-      );
+      this.assert.strictEqual(value, component, 'the component is passed at `this`');
     }
 
     ['@test arguments to action are bound']() {
@@ -482,7 +460,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -493,17 +471,17 @@ moduleFor(
         value: '',
         outerSubmit(incomingValue) {
           actualArg = incomingValue;
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerSubmit value)}}`
+        template: `{{inner-component submit=(action outerSubmit value)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -512,11 +490,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.strictEqual(
-        actualArg,
-        '',
-        'action has the correct first arg'
-      );
+      this.assert.strictEqual(actualArg, '', 'action has the correct first arg');
 
       this.runTask(() => {
         outerComponent.set('value', value);
@@ -526,11 +500,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.strictEqual(
-        actualArg,
-        value,
-        'action has the correct first arg'
-      );
+      this.assert.strictEqual(actualArg, value, 'action has the correct first arg');
     }
 
     ['@test array arguments are passed correctly to action']() {
@@ -552,7 +522,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit(second, third);
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -564,17 +534,17 @@ moduleFor(
           actualFirst = incomingFirst;
           actualSecond = incomingSecond;
           actualThird = incomingThird;
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerSubmit first)}}`
+        template: `{{inner-component submit=(action outerSubmit first)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -589,11 +559,7 @@ moduleFor(
       });
 
       this.assert.equal(actualFirst, first, 'action has the correct first arg');
-      this.assert.equal(
-        actualSecond,
-        second,
-        'action has the correct second arg'
-      );
+      this.assert.equal(actualSecond, second, 'action has the correct second arg');
       this.assert.equal(actualThird, third, 'action has the correct third arg');
     }
 
@@ -610,7 +576,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit(newValue);
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -618,17 +584,17 @@ moduleFor(
           this._super(...arguments);
           outerComponent = this;
         },
-        outerMut: 'patient peter'
+        outerMut: 'patient peter',
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action (mut outerMut))}}`
+        template: `{{inner-component submit=(action (mut outerMut))}}`,
       });
 
       this.render('{{outer-component}}');
@@ -637,11 +603,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(
-        outerComponent.get('outerMut'),
-        newValue,
-        'mut value is set'
-      );
+      this.assert.equal(outerComponent.get('outerMut'), newValue, 'mut value is set');
     }
 
     ['@test mut values can be wrapped in actions, are settable with a curry']() {
@@ -657,7 +619,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -665,17 +627,17 @@ moduleFor(
           this._super(...arguments);
           outerComponent = this;
         },
-        outerMut: 'patient peter'
+        outerMut: 'patient peter',
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action (mut outerMut) '${newValue}')}}`
+        template: `{{inner-component submit=(action (mut outerMut) '${newValue}')}}`,
       });
 
       this.render('{{outer-component}}');
@@ -684,11 +646,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(
-        outerComponent.get('outerMut'),
-        newValue,
-        'mut value is set'
-      );
+      this.assert.equal(outerComponent.get('outerMut'), newValue, 'mut value is set');
     }
 
     ['@test action can create closures over actions']() {
@@ -709,7 +667,7 @@ moduleFor(
         },
         fireAction() {
           actualReturnedValue = this.attrs.submit(second);
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -718,18 +676,18 @@ moduleFor(
             actualFirst = incomingFirst;
             actualSecond = incomingSecond;
             return returnValue;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action 'outerAction' '${first}')}}`
+        template: `{{inner-component submit=(action 'outerAction' '${first}')}}`,
       });
 
       this.render('{{outer-component}}');
@@ -738,11 +696,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(
-        actualReturnedValue,
-        returnValue,
-        'return value is present'
-      );
+      this.assert.equal(actualReturnedValue, returnValue, 'return value is present');
       this.assert.equal(actualFirst, first, 'first argument is correct');
       this.assert.equal(actualSecond, second, 'second argument is correct');
     }
@@ -756,18 +710,18 @@ moduleFor(
             // this is present to ensure `actions` hash is present
             // a different error is triggered if `actions` is missing
             // completely
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action 'doesNotExist')}}`
+        template: `{{inner-component submit=(action 'doesNotExist')}}`,
       });
 
       expectAssertion(() => {
@@ -782,12 +736,12 @@ moduleFor(
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action 'doesNotExist')}}`
+        template: `{{inner-component submit=(action 'doesNotExist')}}`,
       });
 
       expectAssertion(() => {
@@ -806,7 +760,7 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -815,20 +769,20 @@ moduleFor(
             actions: {
               outerAction() {
                 actionCalled = true;
-              }
-            }
+              },
+            },
           };
-        })
+        }),
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action 'outerAction' target=otherComponent)}}`
+        template: `{{inner-component submit=(action 'outerAction' target=otherComponent)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -853,30 +807,30 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit({
-            readProp: newValue
+            readProp: newValue,
           });
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
         outerContent: {
-          readProp: newValue
+          readProp: newValue,
         },
         actions: {
           outerAction(incomingValue) {
             actualValue = incomingValue;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action 'outerAction' value="readProp")}}`
+        template: `{{inner-component submit=(action 'outerAction' value="readProp")}}`,
       });
 
       this.render('{{outer-component}}');
@@ -901,25 +855,25 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit({
-            readProp: newValue
+            readProp: newValue,
           });
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
         outerAction(incomingValue) {
           actualValue = incomingValue;
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerAction value="readProp")}}`
+        template: `{{inner-component submit=(action outerAction value="readProp")}}`,
       });
 
       this.render('{{outer-component}}');
@@ -944,26 +898,26 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
         objectArgument: {
-          readProp: newValue
+          readProp: newValue,
         },
         outerAction(incomingValue) {
           actualValue = incomingValue;
-        }
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerAction objectArgument value="readProp")}}`
+        template: `{{inner-component submit=(action outerAction objectArgument value="readProp")}}`,
       });
 
       this.render('{{outer-component}}');
@@ -1003,7 +957,7 @@ moduleFor(
           );
 
           return submitReturnValue;
-        }
+        },
       });
 
       let MiddleComponent = Component.extend({});
@@ -1014,23 +968,23 @@ moduleFor(
             actualFirst = incomingFirst;
             actualSecond = incomingSecond;
             return returnValue;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('middle-component', {
         ComponentClass: MiddleComponent,
-        template: `{{inner-component attrs-submit=attrs.submit submit=submit}}`
+        template: `{{inner-component attrs-submit=attrs.submit submit=submit}}`,
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{middle-component submit=(action 'outerAction' '${first}')}}`
+        template: `{{middle-component submit=(action 'outerAction' '${first}')}}`,
       });
 
       this.render('{{outer-component}}');
@@ -1041,11 +995,7 @@ moduleFor(
 
       this.assert.equal(actualFirst, first, 'first argument is correct');
       this.assert.equal(actualSecond, second, 'second argument is correct');
-      this.assert.equal(
-        actualReturnedValue,
-        returnValue,
-        'return value is present'
-      );
+      this.assert.equal(actualReturnedValue, returnValue, 'return value is present');
     }
 
     ['@test action should be called within a run loop']() {
@@ -1059,25 +1009,25 @@ moduleFor(
         },
         fireAction() {
           this.attrs.submit();
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
         actions: {
           submit() {
             capturedRunLoop = getCurrentRunLoop();
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action 'submit')}}`
+        template: `{{inner-component submit=(action 'submit')}}`,
       });
 
       this.render('{{outer-component}}');
@@ -1101,7 +1051,7 @@ moduleFor(
         },
         fireAction() {
           actionArgs = this.attrs.submit(4, 5, 6);
-        }
+        },
       });
 
       let OuterComponent = Component.extend({
@@ -1111,19 +1061,19 @@ moduleFor(
             [INVOKE]: (...args) => {
               invokableArgs = args;
               return this.foo;
-            }
+            },
           };
-        })
+        }),
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: 'inner'
+        template: 'inner',
       });
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action submitTask 1 2 3)}}`
+        template: `{{inner-component submit=(action submitTask 1 2 3)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -1144,13 +1094,13 @@ moduleFor(
         init() {
           this._super(...arguments);
           component = this;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<button onclick={{action (mut label) "Clicked!"}}>{{if label label "Click me"}}</button>'
+          '<button onclick={{action (mut label) "Clicked!"}}>{{if label label "Click me"}}</button>',
       });
 
       this.render('{{example-component}}');
@@ -1199,11 +1149,11 @@ moduleFor(
 
         didReceiveAttrs() {
           didReceiveAttrsFired++;
-        }
+        },
       });
 
       this.registerComponent('click-me', {
-        ComponentClass: ClickMeComponent
+        ComponentClass: ClickMeComponent,
       });
 
       let outer;
@@ -1214,14 +1164,14 @@ moduleFor(
         actions: {
           'on-click': function() {
             this.incrementProperty('clicked');
-          }
+          },
         },
 
         init() {
           this._super();
           outer = this;
           this.set('onClick', () => this.incrementProperty('clicked'));
-        }
+        },
       });
 
       this.registerComponent('outer-component', {
@@ -1232,7 +1182,7 @@ moduleFor(
         {{click-me id="string-action" onClick=(action "on-click")}}
         {{click-me id="function-action" onClick=(action onClick)}}
         {{click-me id="mut-action" onClick=(action (mut clicked))}}
-      `
+      `,
       });
 
       this.render('{{outer-component foo=foo}}', { foo: 1 });

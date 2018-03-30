@@ -42,7 +42,7 @@ function stripClassCallCheck({ traverse }) {
             this.binding.remove();
             elements[this.index].remove();
           }
-        }
+        },
       },
 
       CallExpression(path) {
@@ -71,8 +71,8 @@ function stripClassCallCheck({ traverse }) {
             path.remove();
           }
         }
-      }
-    }
+      },
+    },
   };
 }
 

@@ -41,13 +41,13 @@ moduleFor(
     ['@test fulfillment'](assert) {
       let value = {
         firstName: 'stef',
-        lastName: 'penner'
+        lastName: 'penner',
       };
 
       let deferred = RSVP.defer();
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       let didFulfillCount = 0;
@@ -55,16 +55,8 @@ moduleFor(
 
       proxy.then(() => didFulfillCount++, () => didRejectCount++);
 
-      assert.equal(
-        get(proxy, 'content'),
-        undefined,
-        'expects the proxy to have no content'
-      );
-      assert.equal(
-        get(proxy, 'reason'),
-        undefined,
-        'expects the proxy to have no reason'
-      );
+      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
       assert.equal(
         get(proxy, 'isPending'),
         true,
@@ -94,16 +86,8 @@ moduleFor(
       assert.equal(didFulfillCount, 1, 'should have been fulfilled');
       assert.equal(didRejectCount, 0, 'should not have been rejected');
 
-      assert.equal(
-        get(proxy, 'content'),
-        value,
-        'expects the proxy to have content'
-      );
-      assert.equal(
-        get(proxy, 'reason'),
-        undefined,
-        'expects the proxy to still have no reason'
-      );
+      assert.equal(get(proxy, 'content'), value, 'expects the proxy to have content');
+      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to still have no reason');
       assert.equal(
         get(proxy, 'isPending'),
         false,
@@ -127,20 +111,12 @@ moduleFor(
 
       run(deferred, 'resolve', value);
 
-      assert.equal(
-        didFulfillCount,
-        1,
-        'should still have been only fulfilled once'
-      );
+      assert.equal(didFulfillCount, 1, 'should still have been only fulfilled once');
       assert.equal(didRejectCount, 0, 'should still not have been rejected');
 
       run(deferred, 'reject', value);
 
-      assert.equal(
-        didFulfillCount,
-        1,
-        'should still have been only fulfilled once'
-      );
+      assert.equal(didFulfillCount, 1, 'should still have been only fulfilled once');
       assert.equal(didRejectCount, 0, 'should still not have been rejected');
 
       assert.equal(
@@ -148,11 +124,7 @@ moduleFor(
         value,
         'expects the proxy to have still have same content'
       );
-      assert.equal(
-        get(proxy, 'reason'),
-        undefined,
-        'expects the proxy still to have no reason'
-      );
+      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy still to have no reason');
       assert.equal(
         get(proxy, 'isPending'),
         false,
@@ -181,7 +153,7 @@ moduleFor(
       let reason = new Error('failure');
       let deferred = RSVP.defer();
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       let didFulfillCount = 0;
@@ -189,16 +161,8 @@ moduleFor(
 
       proxy.then(() => didFulfillCount++, () => didRejectCount++);
 
-      assert.equal(
-        get(proxy, 'content'),
-        undefined,
-        'expects the proxy to have no content'
-      );
-      assert.equal(
-        get(proxy, 'reason'),
-        undefined,
-        'expects the proxy to have no reason'
-      );
+      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
       assert.equal(
         get(proxy, 'isPending'),
         true,
@@ -228,16 +192,8 @@ moduleFor(
       assert.equal(didFulfillCount, 0, 'should not yet have been fulfilled');
       assert.equal(didRejectCount, 1, 'should have been rejected');
 
-      assert.equal(
-        get(proxy, 'content'),
-        undefined,
-        'expects the proxy to have no content'
-      );
-      assert.equal(
-        get(proxy, 'reason'),
-        reason,
-        'expects the proxy to have a reason'
-      );
+      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.equal(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
       assert.equal(
         get(proxy, 'isPending'),
         false,
@@ -261,32 +217,16 @@ moduleFor(
 
       run(deferred, 'reject', reason);
 
-      assert.equal(
-        didFulfillCount,
-        0,
-        'should stll not yet have been fulfilled'
-      );
+      assert.equal(didFulfillCount, 0, 'should stll not yet have been fulfilled');
       assert.equal(didRejectCount, 1, 'should still remain rejected');
 
       run(deferred, 'resolve', 1);
 
-      assert.equal(
-        didFulfillCount,
-        0,
-        'should stll not yet have been fulfilled'
-      );
+      assert.equal(didFulfillCount, 0, 'should stll not yet have been fulfilled');
       assert.equal(didRejectCount, 1, 'should still remain rejected');
 
-      assert.equal(
-        get(proxy, 'content'),
-        undefined,
-        'expects the proxy to have no content'
-      );
-      assert.equal(
-        get(proxy, 'reason'),
-        reason,
-        'expects the proxy to have a reason'
-      );
+      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.equal(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
       assert.equal(
         get(proxy, 'isPending'),
         false,
@@ -313,7 +253,7 @@ moduleFor(
     ['@test rejection without specifying reason'](assert) {
       let deferred = RSVP.defer();
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       let didFulfillCount = 0;
@@ -321,16 +261,8 @@ moduleFor(
 
       proxy.then(() => didFulfillCount++, () => didRejectCount++);
 
-      assert.equal(
-        get(proxy, 'content'),
-        undefined,
-        'expects the proxy to have no content'
-      );
-      assert.equal(
-        get(proxy, 'reason'),
-        undefined,
-        'expects the proxy to have no reason'
-      );
+      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
       assert.equal(
         get(proxy, 'isPending'),
         true,
@@ -360,16 +292,8 @@ moduleFor(
       assert.equal(didFulfillCount, 0, 'should not yet have been fulfilled');
       assert.equal(didRejectCount, 1, 'should have been rejected');
 
-      assert.equal(
-        get(proxy, 'content'),
-        undefined,
-        'expects the proxy to have no content'
-      );
-      assert.equal(
-        get(proxy, 'reason'),
-        undefined,
-        'expects the proxy to have a reason'
-      );
+      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have a reason');
       assert.equal(
         get(proxy, 'isPending'),
         false,
@@ -392,9 +316,7 @@ moduleFor(
       );
     }
 
-    ["@test unhandled rejects still propagate to RSVP.on('error', ...) "](
-      assert
-    ) {
+    ["@test unhandled rejects still propagate to RSVP.on('error', ...) "](assert) {
       assert.expect(1);
 
       RSVP.on('error', onerror);
@@ -404,7 +326,7 @@ moduleFor(
       let deferred = RSVP.defer();
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       proxy.get('promise');
@@ -431,22 +353,17 @@ moduleFor(
       class PromiseSubclass extends RSVP.Promise {}
 
       let proxy = ObjectPromiseProxy.create({
-        promise: new PromiseSubclass(() => {})
+        promise: new PromiseSubclass(() => {}),
       });
 
-      assert.ok(
-        proxy.then() instanceof PromiseSubclass,
-        'promise proxy respected inheritance'
-      );
+      assert.ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritance');
     }
 
-    ['@test should reset isFulfilled and isRejected when promise is reset'](
-      assert
-    ) {
+    ['@test should reset isFulfilled and isRejected when promise is reset'](assert) {
       let deferred = EmberRSVP.defer();
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       assert.equal(
@@ -545,12 +462,10 @@ moduleFor(
       let deferred = EmberRSVP.defer();
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
-      proxy.addObserver('isFulfilled', () =>
-        assert.equal(get(proxy, 'content'), true)
-      );
+      proxy.addObserver('isFulfilled', () => assert.equal(get(proxy, 'content'), true));
 
       run(deferred, 'resolve', true);
     }
@@ -560,12 +475,10 @@ moduleFor(
       let deferred = EmberRSVP.defer();
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
-      proxy.addObserver('isRejected', () =>
-        assert.equal(get(proxy, 'reason'), error)
-      );
+      proxy.addObserver('isRejected', () => assert.equal(get(proxy, 'reason'), error));
 
       try {
         run(deferred, 'reject', error);
@@ -574,13 +487,11 @@ moduleFor(
       }
     }
 
-    ['@test should not error if promise is resolved after proxy has been destroyed'](
-      assert
-    ) {
+    ['@test should not error if promise is resolved after proxy has been destroyed'](assert) {
       let deferred = EmberRSVP.defer();
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       proxy.then(() => {}, () => {});
@@ -595,13 +506,11 @@ moduleFor(
       );
     }
 
-    ['@test should not error if promise is rejected after proxy has been destroyed'](
-      assert
-    ) {
+    ['@test should not error if promise is rejected after proxy has been destroyed'](assert) {
       let deferred = EmberRSVP.defer();
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       proxy.then(() => {}, () => {});
@@ -625,7 +534,7 @@ moduleFor(
       let didResolveCount = 0;
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       proxy.then(
@@ -657,7 +566,7 @@ moduleFor(
       let didRejectCount = 0;
 
       let proxy = ObjectPromiseProxy.create({
-        promise: deferred.promise
+        promise: deferred.promise,
       });
 
       proxy.then(

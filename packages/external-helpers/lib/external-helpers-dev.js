@@ -7,8 +7,7 @@ export function classCallCheck(instance, Constructor) {
 export function inherits(subClass, superClass) {
   if (typeof superClass !== 'function' && superClass !== null) {
     throw new TypeError(
-      'Super expression must either be null or a function, not ' +
-        typeof superClass
+      'Super expression must either be null or a function, not ' + typeof superClass
     );
   }
 
@@ -17,8 +16,8 @@ export function inherits(subClass, superClass) {
       value: subClass,
       enumerable: false,
       writable: true,
-      configurable: true
-    }
+      configurable: true,
+    },
   });
 
   if (superClass)
@@ -62,13 +61,9 @@ export function defaults(obj, defaults) {
 
 export const possibleConstructorReturn = function(self, call) {
   if (!self) {
-    throw new ReferenceError(
-      `this hasn't been initialized - super() hasn't been called`
-    );
+    throw new ReferenceError(`this hasn't been initialized - super() hasn't been called`);
   }
-  return call && (typeof call === 'object' || typeof call === 'function')
-    ? call
-    : self;
+  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
 };
 
 export const slice = Array.prototype.slice;

@@ -10,7 +10,7 @@ import {
   set,
   isWatching,
   addObserver,
-  meta as metaFor
+  meta as metaFor,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -40,7 +40,7 @@ moduleFor(
         computed({
           get() {},
           set() {},
-          other() {}
+          other() {},
         });
       }, 'Config object passed to computed can only contain `get` and `set` keys.');
     }
@@ -72,7 +72,7 @@ moduleFor(
         let obj = {
           toString() {
             return 'obj';
-          }
+          },
         };
         let count = 0;
         defineProperty(
@@ -88,15 +88,8 @@ moduleFor(
           () => obj.foo.isDescriptor,
           /You attempted to access `foo\.isDescriptor` \(on `obj`\)/
         );
-        expectAssertion(
-          () => obj.foo.get(),
-          /You attempted to access `foo\.get` \(on `obj`\)/
-        );
-        assert.strictEqual(
-          count,
-          0,
-          'should not have invoked computed property'
-        );
+        expectAssertion(() => obj.foo.get(), /You attempted to access `foo\.get` \(on `obj`\)/);
+        assert.strictEqual(count, 0, 'should not have invoked computed property');
       } else {
         assert.expect(0);
       }
@@ -132,7 +125,7 @@ moduleFor(
             count++;
             this['__' + key] = 'computed ' + value;
             return this['__' + key];
-          }
+          },
         })
       );
 
@@ -189,7 +182,7 @@ moduleFor(
           set(key, value) {
             this['__' + key] = 'computed ' + value;
             return this['__' + key];
-          }
+          },
         })
       );
 
@@ -235,7 +228,7 @@ moduleFor(
           set(key, value) {
             this['__' + key] = 'computed ' + value;
             return this['__' + key];
-          }
+          },
         })
       );
 
@@ -281,7 +274,7 @@ moduleFor(
           set(key, value) {
             this['__' + key] = 'A ' + value;
             return this['__' + key];
-          }
+          },
         })
       );
 
@@ -297,7 +290,7 @@ moduleFor(
           set(key, value) {
             this['__' + key] = 'B ' + value;
             return this['__' + key];
-          }
+          },
         })
       );
     }
@@ -341,11 +334,7 @@ moduleFor(
 
     ['@test meta should return an empty hash if no meta is set'](assert) {
       let computedProperty = computed(function() {});
-      assert.deepEqual(
-        computedProperty.meta(),
-        {},
-        'returned value is an empty hash'
-      );
+      assert.deepEqual(computedProperty.meta(), {}, 'returned value is an empty hash');
     }
   }
 );
@@ -400,19 +389,11 @@ moduleFor(
     }
 
     ['@test getCachedValueFor should return the cached value'](assert) {
-      assert.equal(
-        getCachedValueFor(obj, 'foo'),
-        undefined,
-        'should not yet be a cached value'
-      );
+      assert.equal(getCachedValueFor(obj, 'foo'), undefined, 'should not yet be a cached value');
 
       get(obj, 'foo');
 
-      assert.equal(
-        getCachedValueFor(obj, 'foo'),
-        'bar 1',
-        'should retrieve cached value'
-      );
+      assert.equal(getCachedValueFor(obj, 'foo'), 'bar 1', 'should retrieve cached value');
     }
 
     ['@test getCachedValueFor should return falsy cached values'](assert) {
@@ -424,26 +405,18 @@ moduleFor(
         })
       );
 
-      assert.equal(
-        getCachedValueFor(obj, 'falsy'),
-        undefined,
-        'should not yet be a cached value'
-      );
+      assert.equal(getCachedValueFor(obj, 'falsy'), undefined, 'should not yet be a cached value');
 
       get(obj, 'falsy');
 
-      assert.equal(
-        getCachedValueFor(obj, 'falsy'),
-        false,
-        'should retrieve cached value'
-      );
+      assert.equal(getCachedValueFor(obj, 'falsy'), false, 'should retrieve cached value');
     }
 
     ['@test setting a cached computed property passes the old value as the third argument'](
       assert
     ) {
       let obj = {
-        foo: 0
+        foo: 0,
       };
 
       let receivedOldValue;
@@ -456,16 +429,12 @@ moduleFor(
           set(key, value, oldValue) {
             receivedOldValue = oldValue;
             return value;
-          }
+          },
         }).property('foo')
       );
 
       set(obj, 'plusOne', 1);
-      assert.strictEqual(
-        receivedOldValue,
-        undefined,
-        'oldValue should be undefined'
-      );
+      assert.strictEqual(receivedOldValue, undefined, 'oldValue should be undefined');
 
       set(obj, 'plusOne', 2);
       assert.strictEqual(receivedOldValue, 1, 'oldValue should be 1');
@@ -496,7 +465,7 @@ moduleFor(
         'foo',
         computed({
           get: getterAndSetter,
-          set: getterAndSetter
+          set: getterAndSetter,
         }).property('bar')
       );
     }
@@ -506,45 +475,21 @@ moduleFor(
     }
 
     ['@test should lazily watch dependent keys on set'](assert) {
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'precond not watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
       set(obj, 'foo', 'bar');
-      assert.equal(
-        isWatching(obj, 'bar'),
-        true,
-        'lazily watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
     }
 
     ['@test should lazily watch dependent keys on get'](assert) {
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'precond not watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
       get(obj, 'foo');
-      assert.equal(
-        isWatching(obj, 'bar'),
-        true,
-        'lazily watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
     }
 
     ['@test local dependent key should invalidate cache'](assert) {
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'precond not watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
       assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
-      assert.equal(
-        isWatching(obj, 'bar'),
-        true,
-        'lazily setup watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
       assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
 
       set(obj, 'bar', 'BIFF'); // should invalidate foo
@@ -565,27 +510,11 @@ moduleFor(
         }).property('baz')
       );
 
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'precond not watching dependent key'
-      );
-      assert.equal(
-        isWatching(obj, 'baz'),
-        false,
-        'precond not watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+      assert.equal(isWatching(obj, 'baz'), false, 'precond not watching dependent key');
       assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
-      assert.equal(
-        isWatching(obj, 'bar'),
-        true,
-        'lazily setup watching dependent key'
-      );
-      assert.equal(
-        isWatching(obj, 'baz'),
-        true,
-        'lazily setup watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
+      assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
       assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
 
       set(obj, 'baz', 'BIFF'); // should invalidate bar -> foo
@@ -602,16 +531,8 @@ moduleFor(
 
       assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
       assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
-      assert.equal(
-        isWatching(obj, 'bar'),
-        true,
-        'lazily setup watching dependent key'
-      );
-      assert.equal(
-        isWatching(obj, 'baz'),
-        true,
-        'lazily setup watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
+      assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
     }
 
     ['@test circular keys should not blow up'](assert) {
@@ -619,11 +540,7 @@ moduleFor(
         count++;
         return 'bar ' + count;
       };
-      defineProperty(
-        obj,
-        'bar',
-        computed({ get: func, set: func }).property('foo')
-      );
+      defineProperty(obj, 'bar', computed({ get: func, set: func }).property('foo'));
 
       defineProperty(
         obj,
@@ -644,17 +561,9 @@ moduleFor(
     }
 
     ['@test redefining a property should undo old dependent keys'](assert) {
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'precond not watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
       assert.equal(get(obj, 'foo'), 'bar 1');
-      assert.equal(
-        isWatching(obj, 'bar'),
-        true,
-        'lazily watching dependent key'
-      );
+      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
 
       defineProperty(
         obj,
@@ -722,14 +631,8 @@ moduleFor(
       }, /cannot contain spaces/);
     }
 
-    ['@test throws an assertion if an uncached `get` is called after object is destroyed'](
-      assert
-    ) {
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'precond not watching dependent key'
-      );
+    ['@test throws an assertion if an uncached `get` is called after object is destroyed'](assert) {
+      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
 
       let meta = metaFor(obj);
       meta.destroy();
@@ -759,10 +662,10 @@ moduleFor(
         foo: {
           bar: {
             baz: {
-              biff: 'BIFF'
-            }
-          }
-        }
+              biff: 'BIFF',
+            },
+          },
+        },
       };
 
       count = 0;
@@ -819,9 +722,7 @@ moduleFor(
       assert.equal(count, 8, 'should be not have invoked computed again');
     }
 
-    ['@test chained dependent keys should evaluate computed properties lazily'](
-      assert
-    ) {
+    ['@test chained dependent keys should evaluate computed properties lazily'](assert) {
       defineProperty(obj.foo.bar, 'b', computed(func));
       defineProperty(obj.foo, 'c', computed(function() {}).property('bar.b'));
       assert.equal(count, 0, 'b should not run');
@@ -851,8 +752,8 @@ moduleFor(
             assert.equal(oldValue, 1, 'setter receives the old value');
             this.set('a', '' + value); // side effect
             return parseInt(this.get('a'));
-          }
-        })
+          },
+        }),
       }).create();
 
       assert.ok(testObj.get('aInt') === 1, 'getter works');
@@ -869,8 +770,8 @@ moduleFor(
           get(keyName) {
             assert.equal(keyName, 'aInt', 'getter receives the keyName');
             return parseInt(this.get('a'));
-          }
-        })
+          },
+        }),
       }).create();
 
       assert.ok(testObj.get('aInt') === 1, 'getter works');
@@ -884,8 +785,8 @@ moduleFor(
         com: computed({
           set(key, value) {
             return value;
-          }
-        })
+          },
+        }),
       }).create();
 
       assert.ok(testObj.get('com') === undefined);
@@ -903,15 +804,12 @@ moduleFor(
           },
           set() {
             return 'set-value';
-          }
-        })
+          },
+        }),
       }).create();
 
       testObj.set('sampleCP', 'abcd');
-      assert.ok(
-        testObj.get('sampleCP') === 'set-value',
-        'The return value of the CP was cached'
-      );
+      assert.ok(testObj.get('sampleCP') === 'set-value', 'The return value of the CP was cached');
     }
   }
 );
@@ -923,9 +821,7 @@ moduleFor(
 moduleFor(
   'computed edge cases',
   class extends AbstractTestCase {
-    ['@test adding a computed property should show up in key iteration'](
-      assert
-    ) {
+    ['@test adding a computed property should show up in key iteration'](assert) {
       let obj = {};
       defineProperty(obj, 'foo', computed(function() {}));
 
@@ -956,7 +852,7 @@ moduleFor(
               oldValueIsNoFunction = false;
             }
             return undefined;
-          }
+          },
         })
       );
 
@@ -974,7 +870,7 @@ moduleFor(
     ['@test setting a watched computed property'](assert) {
       let obj = {
         firstName: 'Yehuda',
-        lastName: 'Katz'
+        lastName: 'Katz',
       };
 
       defineProperty(
@@ -989,7 +885,7 @@ moduleFor(
             set(this, 'firstName', values[0]);
             set(this, 'lastName', values[1]);
             return value;
-          }
+          },
         }).property('firstName', 'lastName')
       );
 
@@ -1021,11 +917,9 @@ moduleFor(
       assert.equal(lastNameDidChange, 1);
     }
 
-    ['@test setting a cached computed property that modifies the value you give it'](
-      assert
-    ) {
+    ['@test setting a cached computed property that modifies the value you give it'](assert) {
       let obj = {
-        foo: 0
+        foo: 0,
       };
 
       defineProperty(
@@ -1038,7 +932,7 @@ moduleFor(
           set(key, value) {
             set(this, 'foo', value);
             return value + 1;
-          }
+          },
         }).property('foo')
       );
 
@@ -1066,9 +960,7 @@ moduleFor(
 moduleFor(
   'computed - default setter',
   class extends AbstractTestCase {
-    ["@test when setting a value on a computed property that doesn't handle sets"](
-      assert
-    ) {
+    ["@test when setting a value on a computed property that doesn't handle sets"](assert) {
       let obj = {};
       let observerFired = false;
 
@@ -1084,15 +976,8 @@ moduleFor(
 
       set(obj, 'foo', 'bar');
 
-      assert.equal(
-        get(obj, 'foo'),
-        'bar',
-        'The set value is properly returned'
-      );
-      assert.ok(
-        typeof obj.foo === 'string',
-        'The computed property was removed'
-      );
+      assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
+      assert.ok(typeof obj.foo === 'string', 'The computed property was removed');
       assert.ok(observerFired, 'The observer was still notified');
     }
   }
@@ -1112,7 +997,7 @@ moduleFor(
       expectAssertion(() => {
         computed({
           get() {},
-          set() {}
+          set() {},
         }).readOnly();
       }, /Computed properties that define a setter using the new syntax cannot be read-only/);
     }

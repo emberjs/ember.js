@@ -13,8 +13,7 @@ moduleFor(
   class extends TemplateOnlyComponentsTest {
     constructor() {
       super();
-      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS =
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
       ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
     }
 
@@ -38,7 +37,7 @@ moduleFor(
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
-        bar: 'bar'
+        bar: 'bar',
       });
 
       this.assertInnerHTML('|foo|bar|');
@@ -53,9 +52,7 @@ moduleFor(
 
       this.assertInnerHTML('|FOO|BAR|');
 
-      this.runTask(() =>
-        this.context.setProperties({ foo: 'foo', bar: 'bar' })
-      );
+      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|foo|bar|');
     }
@@ -65,7 +62,7 @@ moduleFor(
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
-        bar: 'bar'
+        bar: 'bar',
       });
 
       this.assertInnerHTML('|||');
@@ -80,9 +77,7 @@ moduleFor(
 
       this.assertInnerHTML('|||');
 
-      this.runTask(() =>
-        this.context.setProperties({ foo: 'foo', bar: 'bar' })
-      );
+      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|||');
     }
@@ -91,7 +86,7 @@ moduleFor(
       this.registerComponent('foo-bar', 'hello');
 
       this.render('{{foo-bar tagName="p" class=class}}', {
-        class: 'foo bar'
+        class: 'foo bar',
       });
 
       this.assertInnerHTML('hello');
@@ -118,8 +113,7 @@ moduleFor(
   class extends TemplateOnlyComponentsTest {
     constructor() {
       super();
-      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS =
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
       ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = false;
     }
 
@@ -143,7 +137,7 @@ moduleFor(
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
-        bar: 'bar'
+        bar: 'bar',
       });
 
       this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
@@ -158,9 +152,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: '|FOO|BAR|' });
 
-      this.runTask(() =>
-        this.context.setProperties({ foo: 'foo', bar: 'bar' })
-      );
+      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
     }
@@ -170,7 +162,7 @@ moduleFor(
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
-        bar: 'bar'
+        bar: 'bar',
       });
 
       this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
@@ -185,9 +177,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: '|FOO||' });
 
-      this.runTask(() =>
-        this.context.setProperties({ foo: 'foo', bar: 'bar' })
-      );
+      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
     }
@@ -196,13 +186,13 @@ moduleFor(
       this.registerComponent('foo-bar', 'hello');
 
       this.render('{{foo-bar tagName="p" class=class}}', {
-        class: 'foo bar'
+        class: 'foo bar',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'p',
         attrs: { class: classes('foo bar ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.assertStableRerender();
@@ -212,7 +202,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'p',
         attrs: { class: classes('foo ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.context.set('class', null));
@@ -220,7 +210,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'p',
         attrs: { class: classes('ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.context.set('class', 'foo bar'));
@@ -228,7 +218,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'p',
         attrs: { class: classes('foo bar ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
     }
   }

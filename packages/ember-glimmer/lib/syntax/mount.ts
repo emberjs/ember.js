@@ -9,7 +9,7 @@ import {
   CurriedComponentDefinition,
   curry,
   UNDEFINED_REFERENCE,
-  VM
+  VM,
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
@@ -18,8 +18,11 @@ import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import { MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 
-export function mountHelper(vm: VM, args: Arguments): VersionedPathReference<CurriedComponentDefinition | null> {
-  let env     = vm.env as Environment;
+export function mountHelper(
+  vm: VM,
+  args: Arguments
+): VersionedPathReference<CurriedComponentDefinition | null> {
+  let env = vm.env as Environment;
   let nameRef = args.positional.at(0);
   let modelRef = args.named.has('model') ? args.named.get('model') : undefined;
   return new DynamicEngineReference(nameRef, env, modelRef);
@@ -66,16 +69,21 @@ export function mountHelper(vm: VM, args: Arguments): VersionedPathReference<Cur
   @category ember-application-engines
   @public
 */
-export function mountMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+export function mountMacro(
+  _name: string,
+  params: Option<WireFormat.Core.Params>,
+  hash: Option<WireFormat.Core.Hash>,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+) {
   if (EMBER_ENGINES_MOUNT_PARAMS) {
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params!.length === 1,
+      params!.length === 1
     );
   } else {
     assert(
       'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params!.length === 1 && hash === null,
+      params!.length === 1 && hash === null
     );
   }
 
@@ -91,7 +99,11 @@ class DynamicEngineReference {
   public env: Environment;
   private _lastName: string | null;
   private _lastDef: CurriedComponentDefinition | null;
-  constructor(nameRef: VersionedPathReference<any | undefined | null>, env: Environment, modelRef: VersionedPathReference<Opaque> | undefined) {
+  constructor(
+    nameRef: VersionedPathReference<any | undefined | null>,
+    env: Environment,
+    modelRef: VersionedPathReference<Opaque> | undefined
+  ) {
     this.tag = nameRef.tag;
     this.nameRef = nameRef;
     this.modelRef = modelRef;
@@ -111,7 +123,7 @@ class DynamicEngineReference {
 
       assert(
         `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-        env.owner.hasRegistration(`engine:${name}`),
+        env.owner.hasRegistration(`engine:${name}`)
       );
 
       if (!env.owner.hasRegistration(`engine:${name}`)) {
@@ -125,7 +137,7 @@ class DynamicEngineReference {
     } else {
       assert(
         `Invalid engine name '${name}' specified, engine name must be either a string, null or undefined.`,
-        name === null || name === undefined,
+        name === null || name === undefined
       );
       this._lastDef = null;
       this._lastName = null;

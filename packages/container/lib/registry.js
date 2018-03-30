@@ -27,16 +27,10 @@ export default class Registry {
     this.resolver = options.resolver || null;
 
     if (ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT !== true) {
-      assert(
-        missingResolverFunctionsDeprecation,
-        typeof this.resolver !== 'function'
-      );
+      assert(missingResolverFunctionsDeprecation, typeof this.resolver !== 'function');
     }
 
-    if (
-      typeof this.resolver === 'function' &&
-      ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT === true
-    ) {
+    if (typeof this.resolver === 'function' && ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT === true) {
       deprecateResolverFunction(this);
     }
 
@@ -150,14 +144,8 @@ export default class Registry {
    @param {Object} options
    */
   register(fullName, factory, options = {}) {
-    assert(
-      'fullName must be a proper full name',
-      this.isValidFullName(fullName)
-    );
-    assert(
-      `Attempting to register an unknown factory: '${fullName}'`,
-      factory !== undefined
-    );
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
     assert(
@@ -188,10 +176,7 @@ export default class Registry {
    @param {String} fullName
    */
   unregister(fullName) {
-    assert(
-      'fullName must be a proper full name',
-      this.isValidFullName(fullName)
-    );
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
 
@@ -458,19 +443,12 @@ export default class Registry {
    @param {String} fullName
    */
   typeInjection(type, property, fullName) {
-    assert(
-      'fullName must be a proper full name',
-      this.isValidFullName(fullName)
-    );
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let fullNameType = fullName.split(':')[0];
-    assert(
-      `Cannot inject a '${fullName}' on other ${type}(s).`,
-      fullNameType !== type
-    );
+    assert(`Cannot inject a '${fullName}' on other ${type}(s).`, fullNameType !== type);
 
-    let injections =
-      this._typeInjections[type] || (this._typeInjections[type] = []);
+    let injections = this._typeInjections[type] || (this._typeInjections[type] = []);
 
     injections.push({ property, specifier: fullName });
   }
@@ -533,15 +511,10 @@ export default class Registry {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
-    assert(
-      'fullName must be a proper full name',
-      this.isValidFullName(fullName)
-    );
+    assert('fullName must be a proper full name', this.isValidFullName(fullName));
     let normalizedName = this.normalize(fullName);
 
-    let injections =
-      this._injections[normalizedName] ||
-      (this._injections[normalizedName] = []);
+    let injections = this._injections[normalizedName] || (this._injections[normalizedName] = []);
 
     injections.push({ property, specifier: normalizedInjectionName });
   }
@@ -586,9 +559,7 @@ export default class Registry {
 
       if (fallbackInjections !== undefined) {
         injections =
-          injections === undefined
-            ? fallbackInjections
-            : injections.concat(fallbackInjections);
+          injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
       }
     }
 
@@ -602,9 +573,7 @@ export default class Registry {
 
       if (fallbackInjections !== undefined) {
         injections =
-          injections === undefined
-            ? fallbackInjections
-            : injections.concat(fallbackInjections);
+          injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
       }
     }
 
@@ -631,10 +600,7 @@ export default class Registry {
    */
   expandLocalLookup(fullName, options) {
     if (this.resolver !== null && this.resolver.expandLocalLookup) {
-      assert(
-        'fullName must be a proper full name',
-        this.isValidFullName(fullName)
-      );
+      assert('fullName must be a proper full name', this.isValidFullName(fullName));
       assert(
         'options.source must be a proper full name',
         !options.source || this.isValidFullName(options.source)
@@ -643,12 +609,7 @@ export default class Registry {
       let normalizedFullName = this.normalize(fullName);
       let normalizedSource = this.normalize(options.source);
 
-      return expandLocalLookup(
-        this,
-        normalizedFullName,
-        normalizedSource,
-        options.namespace
-      );
+      return expandLocalLookup(this, normalizedFullName, normalizedSource, options.namespace);
     } else if (this.fallback !== null) {
       return this.fallback.expandLocalLookup(fullName, options);
     } else {
@@ -661,8 +622,7 @@ function deprecateResolverFunction(registry) {
   deprecate(missingResolverFunctionsDeprecation, false, {
     id: 'ember-application.registry-resolver-as-function',
     until: '3.0.0',
-    url:
-      'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function'
+    url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function',
   });
   registry.resolver = { resolve: registry.resolver };
 }
@@ -683,7 +643,7 @@ if (DEBUG) {
           property: key,
           specifier,
           source,
-          namespace
+          namespace,
         });
       }
     }
@@ -707,12 +667,7 @@ if (DEBUG) {
   };
 }
 
-function expandLocalLookup(
-  registry,
-  normalizedName,
-  normalizedSource,
-  namespace
-) {
+function expandLocalLookup(registry, normalizedName, normalizedSource, namespace) {
   let cache = registry._localLookupCache;
   let normalizedNameCache = cache[normalizedName];
 
@@ -728,11 +683,7 @@ function expandLocalLookup(
     return cached;
   }
 
-  let expanded = registry.resolver.expandLocalLookup(
-    normalizedName,
-    normalizedSource,
-    namespace
-  );
+  let expanded = registry.resolver.expandLocalLookup(normalizedName, normalizedSource, namespace);
 
   return (normalizedNameCache[cacheKey] = expanded);
 }
@@ -789,7 +740,5 @@ export function privatize([fullName]) {
   }
 
   let [type, rawName] = fullName.split(':');
-  return (privateNames[fullName] = intern(
-    `${type}:${rawName}-${privateSuffix}`
-  ));
+  return (privateNames[fullName] = intern(`${type}:${rawName}-${privateSuffix}`));
 }

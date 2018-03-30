@@ -166,44 +166,35 @@ describe('Blueprint: mixin', function() {
     });
 
     it('mixin foo --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(
-        ['mixin', 'foo', '--in-repo-addon=my-addon'],
-        _file => {
-          expect(_file('lib/my-addon/addon/mixins/foo.js'))
-            .to.contain("import Mixin from '@ember/object/mixin';")
-            .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(['mixin', 'foo', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/mixins/foo.js'))
+          .to.contain("import Mixin from '@ember/object/mixin';")
+          .to.contain('export default Mixin.create({\n});');
 
-          expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
-            "import FooMixin from 'my-addon/mixins/foo';"
-          );
-        }
-      );
+        expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
+          "import FooMixin from 'my-addon/mixins/foo';"
+        );
+      });
     });
 
     it('mixin foo/bar --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(
-        ['mixin', 'foo/bar', '--in-repo-addon=my-addon'],
-        _file => {
-          expect(_file('lib/my-addon/addon/mixins/foo/bar.js'))
-            .to.contain("import Mixin from '@ember/object/mixin';")
-            .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(['mixin', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/mixins/foo/bar.js'))
+          .to.contain("import Mixin from '@ember/object/mixin';")
+          .to.contain('export default Mixin.create({\n});');
 
-          expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
-            "import FooBarMixin from 'my-addon/mixins/foo/bar';"
-          );
-        }
-      );
+        expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
+          "import FooBarMixin from 'my-addon/mixins/foo/bar';"
+        );
+      });
     });
 
     it('mixin foo/bar/baz --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(
-        ['mixin', 'foo/bar/baz', '--in-repo-addon=my-addon'],
-        _file => {
-          expect(_file('tests/unit/mixins/foo/bar/baz-test.js')).to.contain(
-            "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
-          );
-        }
-      );
+      return emberGenerateDestroy(['mixin', 'foo/bar/baz', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('tests/unit/mixins/foo/bar/baz-test.js')).to.contain(
+          "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
+        );
+      });
     });
   });
 });

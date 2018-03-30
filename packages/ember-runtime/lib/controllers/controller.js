@@ -17,8 +17,7 @@ const Controller = EmberObject.extend(Mixin);
 
 function controllerInjectionHelper(factory) {
   assert(
-    'Defining an injected controller property on a ' +
-      'non-controller is not allowed.',
+    'Defining an injected controller property on a ' + 'non-controller is not allowed.',
     Mixin.detect(factory.PrototypeMixin)
   );
 }

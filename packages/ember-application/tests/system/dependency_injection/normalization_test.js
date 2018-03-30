@@ -24,50 +24,17 @@ moduleFor(
       assert.equal(registry.normalize('foo:bar'), 'foo:bar');
 
       assert.equal(registry.normalize('controller:posts'), 'controller:posts');
-      assert.equal(
-        registry.normalize('controller:posts_index'),
-        'controller:postsIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:posts.index'),
-        'controller:postsIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:posts-index'),
-        'controller:postsIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:posts.post.index'),
-        'controller:postsPostIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:posts_post.index'),
-        'controller:postsPostIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:posts.post_index'),
-        'controller:postsPostIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:posts.post-index'),
-        'controller:postsPostIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:postsIndex'),
-        'controller:postsIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:blogPosts.index'),
-        'controller:blogPostsIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:blog/posts.index'),
-        'controller:blog/postsIndex'
-      );
-      assert.equal(
-        registry.normalize('controller:blog/posts-index'),
-        'controller:blog/postsIndex'
-      );
+      assert.equal(registry.normalize('controller:posts_index'), 'controller:postsIndex');
+      assert.equal(registry.normalize('controller:posts.index'), 'controller:postsIndex');
+      assert.equal(registry.normalize('controller:posts-index'), 'controller:postsIndex');
+      assert.equal(registry.normalize('controller:posts.post.index'), 'controller:postsPostIndex');
+      assert.equal(registry.normalize('controller:posts_post.index'), 'controller:postsPostIndex');
+      assert.equal(registry.normalize('controller:posts.post_index'), 'controller:postsPostIndex');
+      assert.equal(registry.normalize('controller:posts.post-index'), 'controller:postsPostIndex');
+      assert.equal(registry.normalize('controller:postsIndex'), 'controller:postsIndex');
+      assert.equal(registry.normalize('controller:blogPosts.index'), 'controller:blogPostsIndex');
+      assert.equal(registry.normalize('controller:blog/posts.index'), 'controller:blog/postsIndex');
+      assert.equal(registry.normalize('controller:blog/posts-index'), 'controller:blog/postsIndex');
       assert.equal(
         registry.normalize('controller:blog/posts.post.index'),
         'controller:blog/postsPostIndex'
@@ -81,10 +48,7 @@ moduleFor(
         'controller:blog/postsPostIndex'
       );
 
-      assert.equal(
-        registry.normalize('template:blog/posts_index'),
-        'template:blog/posts_index'
-      );
+      assert.equal(registry.normalize('template:blog/posts_index'), 'template:blog/posts_index');
     }
 
     ['@test normalization is indempotent'](assert) {
@@ -92,14 +56,11 @@ moduleFor(
         'controller:posts',
         'controller:posts.post.index',
         'controller:blog/posts.post_index',
-        'template:foo_bar'
+        'template:foo_bar',
       ];
 
       examples.forEach(example => {
-        assert.equal(
-          registry.normalize(registry.normalize(example)),
-          registry.normalize(example)
-        );
+        assert.equal(registry.normalize(registry.normalize(example)), registry.normalize(example));
       });
     }
   }

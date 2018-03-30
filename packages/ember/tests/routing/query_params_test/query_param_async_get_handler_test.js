@@ -50,7 +50,7 @@ moduleFor(
               }))
             );
           };
-        }
+        },
       };
     }
 
@@ -97,9 +97,7 @@ moduleFor(
       });
     }
 
-    ['@test can transitionTo to an asynchronously loaded route with simple query params'](
-      assert
-    ) {
+    ['@test can transitionTo to an asynchronously loaded route with simple query params'](assert) {
       assert.expect(6);
 
       this.router.map(function() {
@@ -120,7 +118,7 @@ moduleFor(
         })
         .then(() => {
           return this.transitionTo('post', 1337, {
-            queryParams: { foo: 'boo' }
+            queryParams: { foo: 'boo' },
           }).then(() => {
             assert.equal(
               postController.get('foo'),
@@ -132,7 +130,7 @@ moduleFor(
         })
         .then(() => {
           return this.transitionTo('post', 1337, {
-            queryParams: { foo: 'bar' }
+            queryParams: { foo: 'bar' },
           }).then(() => {
             assert.equal(
               postController.get('foo'),
@@ -144,9 +142,7 @@ moduleFor(
         });
     }
 
-    ['@test can transitionTo to an asynchronously loaded route with array query params'](
-      assert
-    ) {
+    ['@test can transitionTo to an asynchronously loaded route with array query params'](assert) {
       assert.expect(5);
 
       this.router.map(function() {
@@ -160,7 +156,7 @@ moduleFor(
         .then(() => {
           postController = this.getController('post');
           return this.transitionTo('post', 1337, {
-            queryParams: { comments: [1, 2] }
+            queryParams: { comments: [1, 2] },
           }).then(() => {
             assert.deepEqual(
               postController.get('comments'),
@@ -182,9 +178,7 @@ moduleFor(
         });
     }
 
-    ['@test can transitionTo to an asynchronously loaded route with mapped query params'](
-      assert
-    ) {
+    ['@test can transitionTo to an asynchronously loaded route with mapped query params'](assert) {
       assert.expect(7);
 
       this.router.map(function() {
@@ -205,7 +199,7 @@ moduleFor(
           postIndexController = this.getController('post.index');
 
           return this.transitionTo('post.index', 1337, {
-            queryParams: { note: 6, foo: 'boo' }
+            queryParams: { note: 6, foo: 'boo' },
           }).then(() => {
             assert.equal(
               postController.get('foo'),
@@ -222,7 +216,7 @@ moduleFor(
         })
         .then(() => {
           return this.transitionTo('post', 1337, {
-            queryParams: { foo: 'bar' }
+            queryParams: { foo: 'bar' },
           }).then(() => {
             assert.equal(
               postController.get('foo'),
@@ -303,7 +297,7 @@ moduleFor(
       );
 
       this.setSingleQPController('example', 'foo', undefined, {
-        foo: undefined
+        foo: undefined,
       });
 
       this.add(
@@ -311,7 +305,7 @@ moduleFor(
         Route.extend({
           model(params) {
             assert.deepEqual(params, { foo: undefined });
-          }
+          },
         })
       );
 
@@ -323,7 +317,7 @@ moduleFor(
         );
 
         return this.transitionTo('example', {
-          queryParams: { foo: undefined }
+          queryParams: { foo: undefined },
         }).then(() => {
           this.assertCurrentPath('/example');
         });

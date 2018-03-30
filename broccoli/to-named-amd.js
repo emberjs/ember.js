@@ -10,11 +10,11 @@ module.exports = function processModulesOnly(tree, annotation) {
       // in both browser and node-land
       injectNodeGlobals,
       ['transform-es2015-modules-amd', { loose: true, noInterop: true }],
-      enifed
+      enifed,
     ],
     moduleIds: true,
     resolveModuleSource,
-    annotation
+    annotation,
   };
 
   return new Babel(tree, options);

@@ -4,19 +4,9 @@
 
 import { assert } from 'ember-debug';
 import { HAS_NATIVE_PROXY, HAS_NATIVE_SYMBOL } from 'ember-utils';
-import {
-  descriptorFor,
-  meta as metaFor,
-  peekMeta,
-  DESCRIPTOR,
-  UNDEFINED
-} from './meta';
+import { descriptorFor, meta as metaFor, peekMeta, DESCRIPTOR, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
-import {
-  DESCRIPTOR_TRAP,
-  EMBER_METAL_ES5_GETTERS,
-  MANDATORY_SETTER
-} from 'ember/features';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 // ..........................................................
 // DESCRIPTOR
 //
@@ -149,7 +139,7 @@ if (EMBER_METAL_ES5_GETTERS) {
           }
 
           assert(messageFor(obj, keyName, property, descriptor[property]));
-        }
+        },
       });
     };
   } else {
@@ -160,30 +150,23 @@ if (EMBER_METAL_ES5_GETTERS) {
         configurable: false,
         enumerable: false,
         writable: false,
-        value: descriptor
+        value: descriptor,
       });
 
       trap.toString = trap.toJSON = trap.valueOf = () => '[COMPUTED PROPERTY]';
 
       // Without a proxy, we can only trap the "likely" properties
-      [
-        'isDescriptor',
-        'setup',
-        'teardown',
-        'get',
-        '_getter',
-        'set',
-        '_setter',
-        'meta'
-      ].forEach(property => {
-        Object.defineProperty(trap, property, {
-          configurable: false,
-          enumerable: false,
-          get() {
-            assert(messageFor(obj, keyName, property, descriptor[property]));
-          }
-        });
-      });
+      ['isDescriptor', 'setup', 'teardown', 'get', '_getter', 'set', '_setter', 'meta'].forEach(
+        property => {
+          Object.defineProperty(trap, property, {
+            configurable: false,
+            enumerable: false,
+            get() {
+              assert(messageFor(obj, keyName, property, descriptor[property]));
+            },
+          });
+        }
+      );
 
       return trap;
     };
@@ -287,21 +270,21 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
-        get: DESCRIPTOR_GETTER_FUNCTION(keyName, value)
+        get: DESCRIPTOR_GETTER_FUNCTION(keyName, value),
       });
     } else if (MANDATORY_SETTER && watching) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
         writable: true,
-        value
+        value,
       });
     } else if (enumerable === false) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         writable: true,
         enumerable,
-        value
+        value,
       });
     } else {
       obj[keyName] = value;
@@ -324,7 +307,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
         configurable: true,
         enumerable,
         set: MANDATORY_SETTER_FUNCTION(keyName),
-        get: DEFAULT_GETTER_FUNCTION(keyName)
+        get: DEFAULT_GETTER_FUNCTION(keyName),
       };
 
       Object.defineProperty(obj, keyName, defaultDescriptor);
@@ -333,14 +316,14 @@ export function defineProperty(obj, keyName, desc, data, meta) {
         configurable: true,
         enumerable,
         writable: true,
-        value
+        value,
       });
     } else if (enumerable === false) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
         writable: true,
-        value
+        value,
       });
     } else {
       obj[keyName] = data;

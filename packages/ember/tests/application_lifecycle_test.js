@@ -15,7 +15,7 @@ moduleFor(
       this.add(
         'router:main',
         Router.extend({
-          location: 'none'
+          location: 'none',
         })
       );
       return application;
@@ -35,7 +35,7 @@ moduleFor(
           },
           deactivate() {
             this.controller.set('selectedMenuItem', null);
-          }
+          },
         });
         this.add('route:index', SettingRoute);
         this.add('route:application', SettingRoute);
@@ -59,10 +59,7 @@ moduleFor(
     ) {
       let { indexController, applicationController } = this;
       assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(
-        applicationController.get('selectedMenuItem'),
-        this.menuItem
-      );
+      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
 
       this.application.reset();
 
@@ -75,10 +72,7 @@ moduleFor(
     ) {
       let { indexController, applicationController } = this;
       assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(
-        applicationController.get('selectedMenuItem'),
-        this.menuItem
-      );
+      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
 
       this.runTask(() => {
         this.application.destroy();
@@ -98,7 +92,7 @@ moduleFor(
       this.add(
         'router:main',
         Router.extend({
-          location: 'none'
+          location: 'none',
         })
       );
       return application;
@@ -120,23 +114,13 @@ moduleFor(
       assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
 
       this.runTask(() => route.destroy());
-      assert.equal(
-        router._toplevelView,
-        null,
-        'the toplevelView was not reinitialized'
-      );
+      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
 
       this.runTask(() => this.application.destroy());
-      assert.equal(
-        router._toplevelView,
-        null,
-        'the toplevelView was not reinitialized'
-      );
+      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
     }
 
-    [`@test initializers can augment an applications customEvents hash`](
-      assert
-    ) {
+    [`@test initializers can augment an applications customEvents hash`](assert) {
       assert.expect(1);
 
       let MyApplication = Application.extend();
@@ -145,9 +129,9 @@ moduleFor(
         name: 'customize-things',
         initialize(application) {
           application.customEvents = {
-            wowza: 'wowza'
+            wowza: 'wowza',
           };
-        }
+        },
       });
 
       this.runTask(() => {
@@ -158,7 +142,7 @@ moduleFor(
           Component.extend({
             wowza() {
               assert.ok(true, 'fired the event!');
-            }
+            },
           })
         );
 
@@ -169,9 +153,7 @@ moduleFor(
       this.$('#wowza-thingy').trigger('wowza');
     }
 
-    [`@test instanceInitializers can augment an the customEvents hash`](
-      assert
-    ) {
+    [`@test instanceInitializers can augment an the customEvents hash`](assert) {
       assert.expect(1);
 
       let MyApplication = Application.extend();
@@ -180,9 +162,9 @@ moduleFor(
         name: 'customize-things',
         initialize(application) {
           application.customEvents = {
-            herky: 'jerky'
+            herky: 'jerky',
           };
-        }
+        },
       });
       this.runTask(() => {
         this.createApplication({}, MyApplication);
@@ -192,7 +174,7 @@ moduleFor(
           Component.extend({
             jerky() {
               assert.ok(true, 'fired the event!');
-            }
+            },
           })
         );
 

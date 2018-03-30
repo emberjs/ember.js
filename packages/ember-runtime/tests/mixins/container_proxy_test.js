@@ -14,18 +14,14 @@ moduleFor(
       let registry = new Registry();
 
       this.instance.__container__ = new Container(registry, {
-        owner: this.instance
+        owner: this.instance,
       });
     }
 
     ['@test provides ownerInjection helper method'](assert) {
       let result = this.instance.ownerInjection();
 
-      assert.equal(
-        result[OWNER],
-        this.instance,
-        'returns an object with the OWNER symbol'
-      );
+      assert.equal(result[OWNER], this.instance, 'returns an object with the OWNER symbol');
     }
   }
 );

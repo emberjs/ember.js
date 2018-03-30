@@ -1,21 +1,7 @@
-import {
-  ComponentCapabilities,
-} from '@glimmer/interfaces';
-import {
-  CONSTANT_TAG,
-  Tag,
-  VersionedPathReference,
-} from '@glimmer/reference';
-import {
-  ComponentDefinition,
-  Invocation,
-  WithDynamicLayout,
-} from '@glimmer/runtime';
-import {
-  Destroyable,
-  Opaque,
-  Option
-} from '@glimmer/util';
+import { ComponentCapabilities } from '@glimmer/interfaces';
+import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
+import { ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
+import { Destroyable, Opaque, Option } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 
 import { generateControllerFactory } from 'ember-routing';
@@ -52,7 +38,7 @@ interface EngineDefinitionState {
   modelRef: VersionedPathReference<Opaque> | undefined;
 }
 
-const CAPABILITIES =  {
+const CAPABILITIES = {
   dynamicLayout: true,
   dynamicTag: false,
   prepareArgs: false,
@@ -62,18 +48,19 @@ const CAPABILITIES =  {
   createCaller: true,
   dynamicScope: true,
   updateHook: true,
-  createInstance: true
+  createInstance: true,
 };
 
-class MountManager extends AbstractManager<EngineState | EngineWithModelState, EngineDefinitionState>
-    implements WithDynamicLayout<EngineState | EngineWithModelState, OwnedTemplateMeta, RuntimeResolver> {
-
+class MountManager
+  extends AbstractManager<EngineState | EngineWithModelState, EngineDefinitionState>
+  implements
+    WithDynamicLayout<EngineState | EngineWithModelState, OwnedTemplateMeta, RuntimeResolver> {
   getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
     let template = state.engine.lookup('template:application') as OwnedTemplate;
     let layout = template.asLayout();
     return {
       handle: layout.compile(),
-      symbolTable: layout.symbolTable
+      symbolTable: layout.symbolTable,
     };
   }
 

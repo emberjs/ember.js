@@ -2,7 +2,7 @@ let onerror;
 export const onErrorTarget = {
   get onerror() {
     return onerror;
-  }
+  },
 };
 
 // Ember.onerror getter

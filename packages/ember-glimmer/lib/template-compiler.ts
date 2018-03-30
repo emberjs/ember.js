@@ -5,5 +5,5 @@ import RuntimeResolver from './resolver';
 export default {
   create(): Compiler {
     return new RuntimeResolver().compiler;
-  }
+  },
 };

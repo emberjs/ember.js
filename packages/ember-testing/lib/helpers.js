@@ -1,7 +1,4 @@
-import {
-  registerHelper as helper,
-  registerAsyncHelper as asyncHelper
-} from './test/helpers';
+import { registerHelper as helper, registerAsyncHelper as asyncHelper } from './test/helpers';
 import andThen from './helpers/and_then';
 import click from './helpers/click';
 import currentPath from './helpers/current_path';
