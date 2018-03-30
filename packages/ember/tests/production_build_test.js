@@ -1,8 +1,5 @@
 import { DEBUG } from 'ember-env-flags';
-import {
-  assert as emberAssert,
-  runInDebug
-} from 'ember-debug';
+import { assert as emberAssert, runInDebug } from 'ember-debug';
 
 QUnit.module('production builds');
 
@@ -18,10 +15,13 @@ if (!DEBUG) {
     }
   });
 
-  QUnit.test('runInDebug does not run the callback in production builds', function(assert) {
-    let fired = false;
-    runInDebug(() => fired = true);
+  QUnit.test(
+    'runInDebug does not run the callback in production builds',
+    function(assert) {
+      let fired = false;
+      runInDebug(() => (fired = true));
 
-    assert.equal(fired, false, 'runInDebug callback should not be ran');
-  });
+      assert.equal(fired, false, 'runInDebug callback should not be ran');
+    }
+  );
 }

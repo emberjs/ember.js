@@ -28,7 +28,7 @@ class DebugAssert {
 
   // Run an expectation callback within the context of a new tracker, optionally
   // accepting a function to run, which asserts immediately
-  runExpectation(func, callback)  {
+  runExpectation(func, callback) {
     let originalTracker;
 
     // When helpers are passed a callback, they get a new tracker context

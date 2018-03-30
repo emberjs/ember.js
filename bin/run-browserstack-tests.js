@@ -1,8 +1,6 @@
-#!/usr/bin/env node
-
 /* eslint-disable no-console */
 
-var RSVP  = require('rsvp');
+var RSVP = require('rsvp');
 var spawn = require('child_process').spawn;
 
 function run(command, _args) {
@@ -37,13 +35,21 @@ function run(command, _args) {
 
 RSVP.resolve()
   .then(function() {
-    return run('./node_modules/.bin/ember', [ 'browserstack:connect' ]);
+    return run('./node_modules/.bin/ember', ['browserstack:connect']);
   })
   .then(function() {
     // Calling testem directly here instead of `ember test` so that
     // we do not have to do a double build (by the time this is run
     // we have already ran `ember build`).
-    return run('./node_modules/.bin/testem', [ 'ci', '-f', 'testem.dist.js', '--host', '127.0.0.1', '--port', '7774' ]);
+    return run('./node_modules/.bin/testem', [
+      'ci',
+      '-f',
+      'testem.dist.js',
+      '--host',
+      '127.0.0.1',
+      '--port',
+      '7774'
+    ]);
   })
   .finally(function() {
     var promise = RSVP.resolve();
@@ -58,7 +64,8 @@ RSVP.resolve()
     console.log('error');
     console.log(error);
     process.exit(1);
-  }).then(function() {
+  })
+  .then(function() {
     console.log('success');
     process.exit(0);
   });

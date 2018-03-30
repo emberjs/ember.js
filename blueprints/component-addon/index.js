@@ -13,7 +13,11 @@ module.exports = {
     return {
       __path__: function(options) {
         if (options.pod) {
-          return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
+          return path.join(
+            options.podPath,
+            options.locals.path,
+            options.dasherizedModuleName
+          );
         }
         return 'components';
       },
@@ -39,13 +43,17 @@ module.exports = {
   },
 
   locals: function(options) {
-    let addonRawName   = options.inRepoAddon ? options.inRepoAddon : options.project.name();
-    let addonName      = stringUtil.dasherize(addonRawName);
-    let fileName       = stringUtil.dasherize(options.entity.name);
-    let importPathName       = [addonName, 'components', fileName].join('/');
+    let addonRawName = options.inRepoAddon
+      ? options.inRepoAddon
+      : options.project.name();
+    let addonName = stringUtil.dasherize(addonRawName);
+    let fileName = stringUtil.dasherize(options.entity.name);
+    let importPathName = [addonName, 'components', fileName].join('/');
 
     if (options.pod) {
-      importPathName = [addonName, 'components', fileName, 'component'].join('/');
+      importPathName = [addonName, 'components', fileName, 'component'].join(
+        '/'
+      );
     }
 
     return {

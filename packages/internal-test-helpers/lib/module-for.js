@@ -1,15 +1,16 @@
 import { isFeatureEnabled } from 'ember-debug';
 import applyMixins from './apply-mixins';
+import getAllPropertyNames from './get-all-property-names';
 import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
   let context;
 
   QUnit.module(description, {
-    beforeEach() {
-      context = new TestClass();
+    beforeEach(...args) {
+      context = new TestClass(...args);
       if (context.beforeEach) {
-        return context.beforeEach();
+        return context.beforeEach(...args);
       }
     },
 
@@ -42,12 +43,8 @@ export default function moduleFor(description, TestClass, ...mixins) {
     applyMixins(TestClass, ...mixins);
   }
 
-  let proto = TestClass.prototype;
-
-  while (proto !== Object.prototype) {
-    Object.keys(proto).forEach(generateTest);
-    proto = Object.getPrototypeOf(proto);
-  }
+  let properties = getAllPropertyNames(TestClass);
+  properties.forEach(generateTest);
 
   function shouldTest(features) {
     return features.every(feature => {
@@ -75,7 +72,9 @@ export default function moduleFor(description, TestClass, ...mixins) {
         let features = match[1].replace(/ /g, '').split(',');
 
         if (shouldTest(features)) {
-          QUnit.test(name.slice(match[0].length), assert => context[name](assert));
+          QUnit.test(name.slice(match[0].length), assert =>
+            context[name](assert)
+          );
         }
       }
     }

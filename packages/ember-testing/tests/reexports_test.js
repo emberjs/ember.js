@@ -18,7 +18,9 @@ class ReexportsTestCase extends AbstractTestCase {}
     exportName = path;
   }
 
-  ReexportsTestCase.prototype[`@test Ember.${path} exports correctly`] = function(assert) {
+  ReexportsTestCase.prototype[
+    `@test Ember.${path} exports correctly`
+  ] = function(assert) {
     confirmExport(Ember, assert, path, moduleId, exportName);
   };
 });

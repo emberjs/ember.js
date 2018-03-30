@@ -6,19 +6,24 @@ import { guidFor, symbol, getOwner } from 'ember-utils';
 */
 
 export function isSimpleClick(event) {
-  let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
+  let modifier =
+    event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
   let secondaryClick = event.which > 1; // IE9 may return undefined
 
   return !modifier && !secondaryClick;
 }
 
 export function constructStyleDeprecationMessage(affectedStyle) {
-  return '' +
+  return (
+    '' +
     'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
     'please ensure that values being bound are properly escaped. For more information, ' +
     'including how to disable this warning, see ' +
     'https://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes. ' +
-    'Style affected: "' + affectedStyle + '"';
+    'Style affected: "' +
+    affectedStyle +
+    '"'
+  );
 }
 
 /**
@@ -71,7 +76,7 @@ export function initViewElement(view) {
 }
 
 export function setViewElement(view, element) {
-  return view[VIEW_ELEMENT] = element;
+  return (view[VIEW_ELEMENT] = element);
 }
 
 const CHILD_VIEW_IDS = new WeakMap();
@@ -182,13 +187,14 @@ export function getViewBoundingClientRect(view) {
   @param {DOMElement} el
   @param {String} selector
 */
-export const elMatches = typeof Element !== 'undefined' &&
+export const elMatches =
+  typeof Element !== 'undefined' &&
   (Element.prototype.matches ||
-   Element.prototype.matchesSelector ||
-   Element.prototype.mozMatchesSelector ||
-   Element.prototype.msMatchesSelector ||
-   Element.prototype.oMatchesSelector ||
-   Element.prototype.webkitMatchesSelector);
+    Element.prototype.matchesSelector ||
+    Element.prototype.mozMatchesSelector ||
+    Element.prototype.msMatchesSelector ||
+    Element.prototype.oMatchesSelector ||
+    Element.prototype.webkitMatchesSelector);
 
 export function matches(el, selector) {
   return elMatches.call(el, selector);

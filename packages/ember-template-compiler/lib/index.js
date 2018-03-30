@@ -4,9 +4,15 @@ import { ENV } from 'ember-environment';
 import VERSION from 'ember/version';
 
 // private API used by ember-cli-htmlbars to setup ENV and FEATURES
-if (!_Ember.ENV) { _Ember.ENV = ENV; }
-if (!_Ember.FEATURES) { _Ember.FEATURES = FLAGS.FEATURES; }
-if (!_Ember.VERSION) { _Ember.VERSION = VERSION; }
+if (!_Ember.ENV) {
+  _Ember.ENV = ENV;
+}
+if (!_Ember.FEATURES) {
+  _Ember.FEATURES = FLAGS.FEATURES;
+}
+if (!_Ember.VERSION) {
+  _Ember.VERSION = VERSION;
+}
 
 export { _Ember };
 
@@ -17,7 +23,7 @@ export {
   registerPlugin,
   unregisterPlugin
 } from './system/compile-options';
-export { default as defaultPlugins } from './plugins';
+export { default as defaultPlugins } from './plugins/index';
 
 // used for adding Ember.Handlebars.compile for backwards compat
 import './compat';

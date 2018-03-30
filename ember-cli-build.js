@@ -4,18 +4,21 @@ const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
-const concat = require('./broccoli/concat-bundle');
+const concatBundle = require('./broccoli/concat-bundle');
+const concat = require('broccoli-concat');
 const testIndexHTML = require('./broccoli/test-index-html');
 const toES5 = require('./broccoli/to-es5');
+const toNamedAMD = require('./broccoli/to-named-amd');
 const stripForProd = toES5.stripForProd;
 const minify = require('./broccoli/minify');
+const rename = require('./broccoli/rename');
 const { stripIndent } = require('common-tags');
 const {
   routerES,
   jquery,
   internalLoader,
   qunit,
-  emberGlimmerES,
+  rollupEmberGlimmerES,
   handlebarsES,
   rsvpES,
   simpleHTMLTokenizerES,
@@ -23,14 +26,16 @@ const {
   dagES,
   routeRecognizerES,
   emberPkgES,
+  emberTypescriptPkgES,
   glimmerTrees,
-  emberTestsES,
+  emberTestsES: emberPkgTestsES,
   nodeModuleUtils,
   emberVersionES,
   emberLicense,
   emberFeaturesES,
   nodeTests,
-  rollupEmberMetal
+  rollupEmberMetal,
+  buildEmberEnvFlagsES
 } = require('./broccoli/packages');
 const SHOULD_ROLLUP = true;
 const ENV = process.env.EMBER_ENV || 'development';
@@ -39,6 +44,61 @@ module.exports = function() {
   let loader = internalLoader();
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
+  let emberGlimmerES = emberTypescriptPkgES('ember-glimmer');
+
+  // generate "loose" ES<latest> modules...
+  let combinedES = new MergeTrees([
+    emberVersionES(),
+    emberFeaturesES(),
+    backburnerES(),
+    handlebarsES(),
+    simpleHTMLTokenizerES(),
+    rsvpES(),
+    emberPkgES('container'),
+    emberPkgES('ember-application'),
+    emberPkgES('ember-console'),
+    emberPkgES('ember-debug'),
+    emberPkgES('ember-environment'),
+    emberPkgES('ember-extension-support'),
+    emberGlimmerES,
+    emberPkgES('ember-metal'),
+    emberPkgES('ember-routing'),
+    emberPkgES('ember-runtime'),
+    emberPkgES('ember-template-compiler'),
+    emberPkgES('ember-testing'),
+    emberPkgES('ember-utils'),
+    emberPkgES('ember-views'),
+    emberPkgES('ember'),
+    ...dependenciesES({ includeGlimmerCompiler: true })
+  ]);
+
+  let es = new Funnel(combinedES, {
+    destDir: 'es'
+  });
+
+  let esMin = minify(
+    new Funnel(combinedES, {
+      destDir: 'es-min'
+    })
+  );
+
+  let emberTestsES = buildEmberTestsES();
+  let pkgAndTestES = new MergeTrees([combinedES, ...emberTestsES], {
+    overwrite: true
+  });
+
+  let pkgAndTestESInAMD = toNamedAMD(pkgAndTestES);
+  let emberEnvFlagsDebug = toNamedAMD(buildEmberEnvFlagsES({ DEBUG: true }));
+
+  let pkgAndTestESBundleDebug = concat(
+    new MergeTrees([pkgAndTestESInAMD, loader, nodeModule, emberEnvFlagsDebug]),
+    {
+      headerFiles: ['loader.js'],
+      inputFiles: ['**/*.js'],
+      outputFile: 'ember-all.debug.js'
+    }
+  );
+
   let debugFeatures = toES5(emberFeaturesES());
   let version = toES5(emberVersionES());
   let emberTesting = emberPkgES('ember-testing');
@@ -46,8 +106,12 @@ module.exports = function() {
   let emberDebug = emberPkgES('ember-debug');
   let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
   let emberTemplateCompiler = emberPkgES('ember-template-compiler');
-  let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, { annotation: 'ember-template-compiler' });
-  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), { annotation: 'babel helpers debug' });
+  let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, {
+    annotation: 'ember-template-compiler'
+  });
+  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), {
+    annotation: 'babel helpers debug'
+  });
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
   let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
   let rsvp = toES5(rsvpES(), { annotation: 'rsvp' });
@@ -56,10 +120,14 @@ module.exports = function() {
     include: ['**/*.js']
   });
   let emberMetalES5 = rollupEmberMetal(emberMetal);
-  let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);
+  let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, [
+    'ember-environment'
+  ]);
   let emberConsoleES5 = toES5(emberConsole, { annotation: 'ember-console' });
   let emberEnvironment = emberPkgES('ember-environment', SHOULD_ROLLUP);
-  let emberEnvironmentES5 = toES5(emberEnvironment, { annotation: 'ember-environment' });
+  let emberEnvironmentES5 = toES5(emberEnvironment, {
+    annotation: 'ember-environment'
+  });
   let emberUtils = emberPkgES('ember-utils', SHOULD_ROLLUP);
   let emberUtilsES5 = toES5(emberUtils, { annotation: 'ember-utils' });
   let container = emberPkgES('container', SHOULD_ROLLUP, [
@@ -70,15 +138,14 @@ module.exports = function() {
     'ember/features'
   ]);
   let containerES5 = toES5(container, { annotation: 'container' });
-  let emberCoreES6 = emberES6();
-  let emberTests = emberTestsES6();
+  let emberCoreES = emberES().concat(rollupEmberGlimmerES(emberGlimmerES));
   let testHarness = testHarnessFiles();
   let backburner = toES5(backburnerES());
 
   // ES5
-  let dependenciesES5 = dependenciesES6().map(toES5);
-  let emberES5 = emberCoreES6.map(toES5);
-  let emberTestsES5 = emberTests.map(toES5);
+  let dependenciesES5 = dependenciesES().map(toES5);
+  let emberES5 = emberCoreES.map(toES5);
+  let emberTestsES5 = emberTestsES.map(toES5);
 
   // Bundling
   let emberTestsBundle = new MergeTrees([
@@ -86,7 +153,7 @@ module.exports = function() {
     loader,
     nodeModule,
     license,
-    babelDebugHelpersES5,
+    babelDebugHelpersES5
   ]);
 
   let emberDebugBase = [
@@ -107,7 +174,7 @@ module.exports = function() {
     bootstrapModule('ember')
   ];
 
-  emberTestsBundle = concat(emberTestsBundle, {
+  emberTestsBundle = concatBundle(emberTestsBundle, {
     outputFile: 'ember-tests.js',
     hasBootstrap: false
   });
@@ -117,11 +184,10 @@ module.exports = function() {
     emberTestingES5,
     babelDebugHelpersES5,
     inlineParser,
-    debugFeatures,
-    emberTemplateCompilerES5
+    debugFeatures
   ]);
 
-  emberDebugBundle = concat(emberDebugBundle, {
+  emberDebugBundle = concatBundle(emberDebugBundle, {
     outputFile: 'ember.debug.js'
   });
 
@@ -134,7 +200,7 @@ module.exports = function() {
     nodeModule
   ]);
 
-  emberTestingBundle = concat(emberTestingBundle, {
+  emberTestingBundle = concatBundle(emberTestingBundle, {
     outputFile: 'ember-testing.js',
     hasBootstrap: false,
     footer: stripIndent`
@@ -169,28 +235,31 @@ module.exports = function() {
   let trees = [];
 
   if (ENV === 'production') {
-    let babelProdHelpersES5 = toES5(babelHelpers('prod'), { environment: 'production' });
-    let productionFeatures = toES5(emberFeaturesES(true), { environment: 'production' });
-    let emberMetalProd = stripForProd(rollupEmberMetal(emberMetal, { environment: 'production' }));
+    let babelProdHelpersES5 = toES5(babelHelpers('prod'), {
+      environment: 'production'
+    });
+    let productionFeatures = toES5(emberFeaturesES(true), {
+      environment: 'production'
+    });
+    let emberMetalProd = stripForProd(
+      rollupEmberMetal(emberMetal, { environment: 'production' })
+    );
 
     let emberProdES5 = [
-      ...emberCoreES6,
-      ...dependenciesES6(),
+      ...emberCoreES,
+      ...dependenciesES(),
       container,
       emberUtils,
       emberEnvironment,
       emberConsole,
       emberDebug
-    ].map((tree) => {
+    ].map(tree => {
       return stripForProd(toES5(tree, { environment: 'production' }));
     });
 
-    let depsProd = [
-      backburner,
-      rsvp
-    ].map(stripForProd);
+    let depsProd = [backburner, rsvp].map(stripForProd);
 
-    let emberProdTestES5 = emberTests.map((tree) => {
+    let emberProdTestES5 = emberTestsES.map(tree => {
       return stripForProd(toES5(tree, { environment: 'production' }));
     });
 
@@ -222,7 +291,9 @@ module.exports = function() {
     // Note:
     // We have to build custom production template compiler
     // because we strip babel helpers in the prod build
-    let prodTemplateCompiler = new MergeTrees(templateCompiler(babelProdHelpersES5));
+    let prodTemplateCompiler = new MergeTrees(
+      templateCompiler(babelProdHelpersES5)
+    );
 
     prodTemplateCompiler = stripForProd(prodTemplateCompiler);
 
@@ -234,46 +305,58 @@ module.exports = function() {
       loader
     ]);
 
-    prodTemplateCompiler = concat(prodTemplateCompiler, {
+    prodTemplateCompiler = concatBundle(prodTemplateCompiler, {
       outputFile: 'ember-template-compiler.js'
     });
 
     let emberProdTestsBundle = new MergeTrees([
       ...emberProdTestES5,
       tokenizer,
-      emberTemplateCompilerES5,
       babelProdHelpersES5,
       license,
       loader,
       nodeModule
     ]);
 
-    emberRuntimeBundle = concat(emberRuntimeBundle, {
+    emberRuntimeBundle = concatBundle(emberRuntimeBundle, {
       outputFile: 'ember-runtime.js'
     });
 
-    emberProdBundle = concat(emberProdBundle, {
+    emberProdBundle = concatBundle(emberProdBundle, {
       outputFile: 'ember.prod.js'
     });
 
-    emberProdTestsBundle = concat(emberProdTestsBundle, {
+    emberProdTestsBundle = concatBundle(emberProdTestsBundle, {
       outputFile: 'ember-tests.prod.js',
       hasBootstrap: false
     });
 
-    let emberMinBundle = minify(emberProdBundle, 'ember.min');
+    let emberProdMinRename = rename(emberProdBundle, {
+      'ember.prod.js': 'ember.min.js'
+    });
+    let emberMinBundle = minify(emberProdMinRename);
 
-    trees.push(emberRuntimeBundle, emberProdBundle, emberMinBundle, emberProdTestsBundle, prodTemplateCompiler);
+    trees.push(
+      emberRuntimeBundle,
+      emberProdBundle,
+      emberMinBundle,
+      emberProdTestsBundle,
+      prodTemplateCompiler
+    );
+
+    if (process.env.INCLUDE_ES_MIN) {
+      trees.push(esMin);
+    }
   } else {
     let emberTemplateCompilerBundle = new MergeTrees([
       ...templateCompiler(babelDebugHelpersES5),
-        version,
-        license,
-        loader,
-        nodeModule
+      version,
+      license,
+      loader,
+      nodeModule
     ]);
 
-    emberTemplateCompilerBundle = concat(emberTemplateCompilerBundle, {
+    emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {
       outputFile: 'ember-template-compiler.js'
     });
 
@@ -281,6 +364,8 @@ module.exports = function() {
   }
 
   return new MergeTrees([
+    es,
+    pkgAndTestESBundleDebug,
     ...trees,
     ...testHarness,
     emberTestsBundle,
@@ -290,12 +375,21 @@ module.exports = function() {
   ]);
 };
 
-function dependenciesES6() {
-  let glimmerEntries = ['@glimmer/node', '@glimmer/opcode-compiler', '@glimmer/runtime'];
+function dependenciesES(options = {}) {
+  let glimmerEntries = [
+    '@glimmer/node',
+    '@glimmer/opcode-compiler',
+    '@glimmer/runtime'
+  ];
+
+  if (options.includeGlimmerCompiler) {
+    glimmerEntries.push('@glimmer/compiler');
+  }
+
   if (ENV === 'development') {
     let hasGlimmerDebug = true;
     try {
-      require('@glimmer/debug');
+      require('@glimmer/debug'); // eslint-disable-line node/no-missing-require
     } catch (e) {
       hasGlimmerDebug = false;
     }
@@ -307,45 +401,40 @@ function dependenciesES6() {
     dagES(),
     routerES(),
     routeRecognizerES(),
-    ...glimmerTrees(glimmerEntries),
+    ...glimmerTrees(glimmerEntries)
   ];
 }
 
-function emberTestsES6() {
+function buildEmberTestsES() {
   return [
     emberPkgES('internal-test-helpers'),
-    emberTestsES('container'),
-    emberTestsES('ember'),
-    emberTestsES('ember-metal'),
-    emberTestsES('ember-template-compiler'),
-    emberTestsES('ember-glimmer'),
-    emberTestsES('ember-application'),
-    emberTestsES('ember-debug'),
-    emberTestsES('ember-runtime'),
-    emberTestsES('ember-extension-support'),
-    emberTestsES('ember-routing'),
-    emberTestsES('ember-utils'),
-    emberTestsES('ember-testing'),
-    emberTestsES('internal-test-helpers')
+    emberPkgTestsES('container'),
+    emberPkgTestsES('ember'),
+    emberPkgTestsES('ember-metal'),
+    emberPkgTestsES('ember-template-compiler'),
+    emberPkgTestsES('ember-glimmer'),
+    emberPkgTestsES('ember-application'),
+    emberPkgTestsES('ember-debug'),
+    emberPkgTestsES('ember-runtime'),
+    emberPkgTestsES('ember-extension-support'),
+    emberPkgTestsES('ember-routing'),
+    emberPkgTestsES('ember-utils'),
+    emberPkgTestsES('ember-testing'),
+    emberPkgTestsES('internal-test-helpers')
   ];
 }
 
-function emberES6() {
+function emberES() {
   return [
     emberPkgES('ember-views'),
     emberPkgES('ember'),
     emberPkgES('ember-application'),
     emberPkgES('ember-runtime'),
     emberPkgES('ember-extension-support'),
-    emberPkgES('ember-routing'),
-    emberGlimmerES()
+    emberPkgES('ember-routing')
   ];
 }
 
 function testHarnessFiles() {
-  return [
-    testIndexHTML(),
-    jquery(),
-    qunit()
-  ];
+  return [testIndexHTML(), jquery(), qunit()];
 }

@@ -1,352 +1,412 @@
 import { run } from 'ember-metal';
 import Engine from '../../system/engine';
-import {
-  moduleFor,
-  AbstractTestCase as TestCase
-} from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 let MyEngine, myEngine, myEngineInstance;
 
-moduleFor('Engine initializers', class extends TestCase {
-  teardown() {
-    run(() => {
-      if (myEngineInstance) {
-        myEngineInstance.destroy();
-      }
-
-      if (myEngine) {
-        myEngine.destroy();
-      }
-    });
-  }
-
-  ['@test initializers require proper \'name\' and \'initialize\' properties']() {
-    MyEngine = Engine.extend();
-
-    expectAssertion(() => {
+moduleFor(
+  'Engine initializers',
+  class extends TestCase {
+    teardown() {
       run(() => {
-        MyEngine.initializer({ name: 'initializer' });
+        if (myEngineInstance) {
+          myEngineInstance.destroy();
+        }
+
+        if (myEngine) {
+          myEngine.destroy();
+        }
       });
-    });
+    }
 
-    expectAssertion(() => {
-      run(() => {
-        MyEngine.initializer({ initialize() {} });
+    ["@test initializers require proper 'name' and 'initialize' properties"]() {
+      MyEngine = Engine.extend();
+
+      expectAssertion(() => {
+        run(() => {
+          MyEngine.initializer({ name: 'initializer' });
+        });
       });
-    });
-  }
 
-  ['@test initializers are passed an Engine'](assert) {
-    MyEngine = Engine.extend();
+      expectAssertion(() => {
+        run(() => {
+          MyEngine.initializer({ initialize() {} });
+        });
+      });
+    }
 
-    MyEngine.initializer({
-      name: 'initializer',
-      initialize(engine) {
-        assert.ok(engine instanceof Engine, 'initialize is passed an Engine');
-      }
-    });
+    ['@test initializers are passed an Engine'](assert) {
+      MyEngine = Engine.extend();
 
-    myEngine = MyEngine.create();
-    myEngineInstance = myEngine.buildInstance();
-  }
+      MyEngine.initializer({
+        name: 'initializer',
+        initialize(engine) {
+          assert.ok(engine instanceof Engine, 'initialize is passed an Engine');
+        }
+      });
 
-  ['@test initializers can be registered in a specified order'](assert) {
-    let order = [];
+      myEngine = MyEngine.create();
+      myEngineInstance = myEngine.buildInstance();
+    }
 
-    MyEngine = Engine.extend();
-    MyEngine.initializer({
-      name: 'fourth',
-      after: 'third',
-      initialize() {
-        order.push('fourth');
-      }
-    });
+    ['@test initializers can be registered in a specified order'](assert) {
+      let order = [];
 
-    MyEngine.initializer({
-      name: 'second',
-      after: 'first',
-      before: 'third',
-      initialize() {
-        order.push('second');
-      }
-    });
+      MyEngine = Engine.extend();
+      MyEngine.initializer({
+        name: 'fourth',
+        after: 'third',
+        initialize() {
+          order.push('fourth');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'fifth',
-      after: 'fourth',
-      before: 'sixth',
-      initialize() {
-        order.push('fifth');
-      }
-    });
+      MyEngine.initializer({
+        name: 'second',
+        after: 'first',
+        before: 'third',
+        initialize() {
+          order.push('second');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'first',
-      before: 'second',
-      initialize() {
-        order.push('first');
-      }
-    });
+      MyEngine.initializer({
+        name: 'fifth',
+        after: 'fourth',
+        before: 'sixth',
+        initialize() {
+          order.push('fifth');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'third',
-      initialize() {
-        order.push('third');
-      }
-    });
+      MyEngine.initializer({
+        name: 'first',
+        before: 'second',
+        initialize() {
+          order.push('first');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'sixth',
-      initialize() {
-        order.push('sixth');
-      }
-    });
+      MyEngine.initializer({
+        name: 'third',
+        initialize() {
+          order.push('third');
+        }
+      });
 
-    myEngine = MyEngine.create();
-    myEngineInstance = myEngine.buildInstance();
+      MyEngine.initializer({
+        name: 'sixth',
+        initialize() {
+          order.push('sixth');
+        }
+      });
 
-    assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
-  }
+      myEngine = MyEngine.create();
+      myEngineInstance = myEngine.buildInstance();
 
-  ['@test initializers can be registered in a specified order as an array'](assert) {
-    let order = [];
+      assert.deepEqual(order, [
+        'first',
+        'second',
+        'third',
+        'fourth',
+        'fifth',
+        'sixth'
+      ]);
+    }
 
-    MyEngine = Engine.extend();
+    ['@test initializers can be registered in a specified order as an array'](
+      assert
+    ) {
+      let order = [];
 
-    MyEngine.initializer({
-      name: 'third',
-      initialize() {
-        order.push('third');
-      }
-    });
+      MyEngine = Engine.extend();
 
-    MyEngine.initializer({
-      name: 'second',
-      after: 'first',
-      before: ['third', 'fourth'],
-      initialize() {
-        order.push('second');
-      }
-    });
+      MyEngine.initializer({
+        name: 'third',
+        initialize() {
+          order.push('third');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'fourth',
-      after: ['second', 'third'],
-      initialize() {
-        order.push('fourth');
-      }
-    });
+      MyEngine.initializer({
+        name: 'second',
+        after: 'first',
+        before: ['third', 'fourth'],
+        initialize() {
+          order.push('second');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'fifth',
-      after: 'fourth',
-      before: 'sixth',
-      initialize() {
-        order.push('fifth');
-      }
-    });
+      MyEngine.initializer({
+        name: 'fourth',
+        after: ['second', 'third'],
+        initialize() {
+          order.push('fourth');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'first',
-      before: ['second'],
-      initialize() {
-        order.push('first');
-      }
-    });
+      MyEngine.initializer({
+        name: 'fifth',
+        after: 'fourth',
+        before: 'sixth',
+        initialize() {
+          order.push('fifth');
+        }
+      });
 
-    MyEngine.initializer({
-      name: 'sixth',
-      initialize() {
-        order.push('sixth');
-      }
-    });
+      MyEngine.initializer({
+        name: 'first',
+        before: ['second'],
+        initialize() {
+          order.push('first');
+        }
+      });
 
-    myEngine = MyEngine.create();
-    myEngineInstance = myEngine.buildInstance();
+      MyEngine.initializer({
+        name: 'sixth',
+        initialize() {
+          order.push('sixth');
+        }
+      });
 
-    assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
-  }
+      myEngine = MyEngine.create();
+      myEngineInstance = myEngine.buildInstance();
 
-  ['@test initializers can have multiple dependencies'](assert) {
-    let order = [];
+      assert.deepEqual(order, [
+        'first',
+        'second',
+        'third',
+        'fourth',
+        'fifth',
+        'sixth'
+      ]);
+    }
 
-    MyEngine = Engine.extend();
+    ['@test initializers can have multiple dependencies'](assert) {
+      let order = [];
 
-    let a = {
-      name: 'a',
-      before: 'b',
-      initialize() {
-        order.push('a');
-      }
-    };
-    let b = {
-      name: 'b',
-      initialize() {
-        order.push('b');
-      }
-    };
-    let c = {
-      name: 'c',
-      after: 'b',
-      initialize() {
-        order.push('c');
-      }
-    };
-    let afterB = {
-      name: 'after b',
-      after: 'b',
-      initialize() {
-        order.push('after b');
-      }
-    };
-    let afterC = {
-      name: 'after c',
-      after: 'c',
-      initialize() {
-        order.push('after c');
-      }
-    };
+      MyEngine = Engine.extend();
 
-    MyEngine.initializer(b);
-    MyEngine.initializer(a);
-    MyEngine.initializer(afterC);
-    MyEngine.initializer(afterB);
-    MyEngine.initializer(c);
+      let a = {
+        name: 'a',
+        before: 'b',
+        initialize() {
+          order.push('a');
+        }
+      };
+      let b = {
+        name: 'b',
+        initialize() {
+          order.push('b');
+        }
+      };
+      let c = {
+        name: 'c',
+        after: 'b',
+        initialize() {
+          order.push('c');
+        }
+      };
+      let afterB = {
+        name: 'after b',
+        after: 'b',
+        initialize() {
+          order.push('after b');
+        }
+      };
+      let afterC = {
+        name: 'after c',
+        after: 'c',
+        initialize() {
+          order.push('after c');
+        }
+      };
 
-    myEngine = MyEngine.create();
-    myEngineInstance = myEngine.buildInstance();
+      MyEngine.initializer(b);
+      MyEngine.initializer(a);
+      MyEngine.initializer(afterC);
+      MyEngine.initializer(afterB);
+      MyEngine.initializer(c);
 
-    assert.ok(order.indexOf(a.name) < order.indexOf(b.name), 'a < b');
-    assert.ok(order.indexOf(b.name) < order.indexOf(c.name), 'b < c');
-    assert.ok(order.indexOf(b.name) < order.indexOf(afterB.name), 'b < afterB');
-    assert.ok(order.indexOf(c.name) < order.indexOf(afterC.name), 'c < afterC');
-  }
+      myEngine = MyEngine.create();
+      myEngineInstance = myEngine.buildInstance();
 
-  ['@test initializers set on Engine subclasses are not shared between engines'](assert) {
-    let firstInitializerRunCount = 0;
-    let secondInitializerRunCount = 0;
-    let FirstEngine = Engine.extend();
+      assert.ok(order.indexOf(a.name) < order.indexOf(b.name), 'a < b');
+      assert.ok(order.indexOf(b.name) < order.indexOf(c.name), 'b < c');
+      assert.ok(
+        order.indexOf(b.name) < order.indexOf(afterB.name),
+        'b < afterB'
+      );
+      assert.ok(
+        order.indexOf(c.name) < order.indexOf(afterC.name),
+        'c < afterC'
+      );
+    }
 
-    FirstEngine.initializer({
-      name: 'first',
-      initialize() {
-        firstInitializerRunCount++;
-      }
-    });
+    ['@test initializers set on Engine subclasses are not shared between engines'](
+      assert
+    ) {
+      let firstInitializerRunCount = 0;
+      let secondInitializerRunCount = 0;
+      let FirstEngine = Engine.extend();
 
-    let SecondEngine = Engine.extend();
+      FirstEngine.initializer({
+        name: 'first',
+        initialize() {
+          firstInitializerRunCount++;
+        }
+      });
 
-    SecondEngine.initializer({
-      name: 'second',
-      initialize() {
-        secondInitializerRunCount++;
-      }
-    });
+      let SecondEngine = Engine.extend();
 
-    let firstEngine = FirstEngine.create();
-    let firstEngineInstance = firstEngine.buildInstance();
+      SecondEngine.initializer({
+        name: 'second',
+        initialize() {
+          secondInitializerRunCount++;
+        }
+      });
 
-    assert.equal(firstInitializerRunCount, 1, 'first initializer only was run');
-    assert.equal(secondInitializerRunCount, 0, 'first initializer only was run');
+      let firstEngine = FirstEngine.create();
+      let firstEngineInstance = firstEngine.buildInstance();
 
-    let secondEngine = SecondEngine.create();
-    let secondEngineInstance = secondEngine.buildInstance();
+      assert.equal(
+        firstInitializerRunCount,
+        1,
+        'first initializer only was run'
+      );
+      assert.equal(
+        secondInitializerRunCount,
+        0,
+        'first initializer only was run'
+      );
 
-    assert.equal(firstInitializerRunCount, 1, 'second initializer only was run');
-    assert.equal(secondInitializerRunCount, 1, 'second initializer only was run');
+      let secondEngine = SecondEngine.create();
+      let secondEngineInstance = secondEngine.buildInstance();
 
-    run(function() {
-      firstEngineInstance.destroy();
-      secondEngineInstance.destroy();
+      assert.equal(
+        firstInitializerRunCount,
+        1,
+        'second initializer only was run'
+      );
+      assert.equal(
+        secondInitializerRunCount,
+        1,
+        'second initializer only was run'
+      );
 
-      firstEngine.destroy();
-      secondEngine.destroy();
-    });
-  }
+      run(function() {
+        firstEngineInstance.destroy();
+        secondEngineInstance.destroy();
 
-  ['@test initializers are concatenated'](assert) {
-    let firstInitializerRunCount = 0;
-    let secondInitializerRunCount = 0;
-    let FirstEngine = Engine.extend();
+        firstEngine.destroy();
+        secondEngine.destroy();
+      });
+    }
 
-    FirstEngine.initializer({
-      name: 'first',
-      initialize() {
-        firstInitializerRunCount++;
-      }
-    });
+    ['@test initializers are concatenated'](assert) {
+      let firstInitializerRunCount = 0;
+      let secondInitializerRunCount = 0;
+      let FirstEngine = Engine.extend();
 
-    let SecondEngine = FirstEngine.extend();
+      FirstEngine.initializer({
+        name: 'first',
+        initialize() {
+          firstInitializerRunCount++;
+        }
+      });
 
-    SecondEngine.initializer({
-      name: 'second',
-      initialize() {
-        secondInitializerRunCount++;
-      }
-    });
+      let SecondEngine = FirstEngine.extend();
 
-    let firstEngine = FirstEngine.create();
-    let firstEngineInstance = firstEngine.buildInstance();
+      SecondEngine.initializer({
+        name: 'second',
+        initialize() {
+          secondInitializerRunCount++;
+        }
+      });
 
-    assert.equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
-    assert.equal(secondInitializerRunCount, 0, 'second initializer was not run when first base class created');
-    firstInitializerRunCount = 0;
+      let firstEngine = FirstEngine.create();
+      let firstEngineInstance = firstEngine.buildInstance();
 
-    let secondEngine = SecondEngine.create();
-    let secondEngineInstance = secondEngine.buildInstance();
+      assert.equal(
+        firstInitializerRunCount,
+        1,
+        'first initializer only was run when base class created'
+      );
+      assert.equal(
+        secondInitializerRunCount,
+        0,
+        'second initializer was not run when first base class created'
+      );
+      firstInitializerRunCount = 0;
 
-    assert.equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
-    assert.equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
+      let secondEngine = SecondEngine.create();
+      let secondEngineInstance = secondEngine.buildInstance();
 
-    run(function() {
-      firstEngineInstance.destroy();
-      secondEngineInstance.destroy();
+      assert.equal(
+        firstInitializerRunCount,
+        1,
+        'first initializer was run when subclass created'
+      );
+      assert.equal(
+        secondInitializerRunCount,
+        1,
+        'second initializers was run when subclass created'
+      );
 
-      firstEngine.destroy();
-      secondEngine.destroy();
-    });
-  }
+      run(function() {
+        firstEngineInstance.destroy();
+        secondEngineInstance.destroy();
 
-  ['@test initializers are per-engine'](assert) {
-    assert.expect(2);
+        firstEngine.destroy();
+        secondEngine.destroy();
+      });
+    }
 
-    let FirstEngine = Engine.extend();
+    ['@test initializers are per-engine'](assert) {
+      assert.expect(2);
 
-    FirstEngine.initializer({
-      name: 'abc',
-      initialize() {}
-    });
+      let FirstEngine = Engine.extend();
 
-    expectAssertion(function() {
       FirstEngine.initializer({
         name: 'abc',
         initialize() {}
       });
-    });
 
-    let SecondEngine = Engine.extend();
-    SecondEngine.instanceInitializer({
-      name: 'abc',
-      initialize() {}
-    });
+      expectAssertion(function() {
+        FirstEngine.initializer({
+          name: 'abc',
+          initialize() {}
+        });
+      });
 
-    assert.ok(true, 'Two engines can have initializers named the same.');
+      let SecondEngine = Engine.extend();
+      SecondEngine.instanceInitializer({
+        name: 'abc',
+        initialize() {}
+      });
+
+      assert.ok(true, 'Two engines can have initializers named the same.');
+    }
+
+    ['@test initializers are executed in their own context'](assert) {
+      assert.expect(1);
+
+      MyEngine = Engine.extend();
+
+      MyEngine.initializer({
+        name: 'coolInitializer',
+        myProperty: 'cool',
+        initialize() {
+          assert.equal(
+            this.myProperty,
+            'cool',
+            'should have access to its own context'
+          );
+        }
+      });
+
+      myEngine = MyEngine.create();
+      myEngineInstance = myEngine.buildInstance();
+    }
   }
-
-  ['@test initializers are executed in their own context'](assert) {
-    assert.expect(1);
-
-    MyEngine = Engine.extend();
-
-    MyEngine.initializer({
-      name: 'coolInitializer',
-      myProperty: 'cool',
-      initialize() {
-        assert.equal(this.myProperty, 'cool', 'should have access to its own context');
-      }
-    });
-
-    myEngine = MyEngine.create();
-    myEngineInstance = myEngine.buildInstance();
-  }
-});
+);

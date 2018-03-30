@@ -5,7 +5,10 @@ import { fireEvent, focus, matches } from '../system/synthetic-events';
 
 export default class NodeQuery {
   static query(selector, context = document) {
-    assert(`Invalid second parameter to NodeQuery.query`, context && context instanceof Node);
+    assert(
+      `Invalid second parameter to NodeQuery.query`,
+      context && context instanceof Node
+    );
     return new NodeQuery(toArray(context.querySelectorAll(selector)));
   }
 
@@ -14,10 +17,13 @@ export default class NodeQuery {
   }
 
   constructor(nodes) {
-    assert('NodeQuery must be initialized with a literal array', Array.isArray(nodes));
+    assert(
+      'NodeQuery must be initialized with a literal array',
+      Array.isArray(nodes)
+    );
     this.nodes = nodes;
 
-    for (let i=0; i<nodes.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
       this[i] = nodes[i];
     }
 
@@ -79,7 +85,7 @@ export default class NodeQuery {
   }
 
   setProp(name, value) {
-    this.nodes.forEach(node => node[name] = value);
+    this.nodes.forEach(node => (node[name] = value));
 
     return this;
   }
@@ -103,14 +109,18 @@ export default class NodeQuery {
 
 function assertSingle(nodeQuery) {
   if (nodeQuery.length !== 1) {
-    throw new Error(`attr(name) called on a NodeQuery with ${this.nodes.length} elements. Expected one element.`);
+    throw new Error(
+      `attr(name) called on a NodeQuery with ${
+        this.nodes.length
+      } elements. Expected one element.`
+    );
   }
 }
 
 function toArray(nodes) {
   let out = [];
 
-  for (let i=0; i<nodes.length; i++) {
+  for (let i = 0; i < nodes.length; i++) {
     out.push(nodes[i]);
   }
 

@@ -10,8 +10,10 @@ export default class TestPromise extends RSVP.Promise {
   }
 
   then(_onFulfillment, ...args) {
-    let onFulfillment = typeof _onFulfillment === 'function' ?
-      result => isolate(_onFulfillment, result) : undefined;
+    let onFulfillment =
+      typeof _onFulfillment === 'function'
+        ? result => isolate(_onFulfillment, result)
+        : undefined;
     return super.then(onFulfillment, ...args);
   }
 }
@@ -53,7 +55,6 @@ export function getLastPromise() {
   return lastPromise;
 }
 
-
 // This method isolates nested async methods
 // so that they don't conflict with other last promises.
 //
@@ -72,7 +73,7 @@ function isolate(onFulfillment, result) {
   // If the method returned a promise
   // return that promise. If not,
   // return the last async helper's promise
-  if ((value && (value instanceof TestPromise)) || !promise) {
+  if ((value && value instanceof TestPromise) || !promise) {
     return value;
   } else {
     return run(() => resolve(promise).then(() => value));

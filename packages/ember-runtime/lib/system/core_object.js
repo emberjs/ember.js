@@ -8,10 +8,11 @@ import { FACTORY_FOR } from 'container';
 import {
   assign,
   guidFor,
+  getName,
+  setName,
   makeArray,
-  NAME_KEY,
   HAS_NATIVE_PROXY,
-  isInternalSymbol,
+  isInternalSymbol
 } from 'ember-utils';
 import {
   PROXY_CONTENT,
@@ -25,212 +26,258 @@ import {
   defineProperty,
   ComputedProperty,
   InjectedProperty,
-  run,
+  schedule,
   deleteMeta,
-  descriptor
+  descriptor,
+  classToString
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
-import { MANDATORY_GETTER, MANDATORY_SETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
+import {
+  MANDATORY_GETTER,
+  MANDATORY_SETTER,
+  EMBER_METAL_ES5_GETTERS
+} from 'ember/features';
 
-const schedule = run.schedule;
 const applyMixin = Mixin._apply;
 const reopen = Mixin.prototype.reopen;
 
-function makeCtor() {
+function makeCtor(base) {
   // Note: avoid accessing any properties on the object since it makes the
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
 
   let wasApplied = false;
-  let initFactory;
+  let Class;
 
-  class Class {
-    constructor(properties) {
-      let self = this;
+  if (base) {
+    Class = class extends base {
+      constructor(properties) {
+        if (!wasApplied) {
+          Class.proto(); // prepare prototype...
+        }
 
-      if (!wasApplied) {
-        Class.proto(); // prepare prototype...
+        super(properties);
       }
+    };
+  } else {
+    let initFactory;
+    Class = class {
+      constructor(properties) {
+        if (!wasApplied) {
+          Class.proto(); // prepare prototype...
+        }
 
-      let beforeInitCalled; // only used in debug builds to enable the proxy trap
+        let self = this;
 
-      // using DEBUG here to avoid the extraneous variable when not needed
-      if (DEBUG) {
-        beforeInitCalled = true;
-      }
+        if (initFactory !== void 0) {
+          FACTORY_FOR.set(this, initFactory);
+          initFactory = void 0;
+        }
 
-      if (DEBUG && MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
-        let messageFor = (obj, property) => {
-          return `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
-            `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
-            `to access computed properties. However, in this case, the object in question\n` +
-            `is a special kind of Ember object (a proxy). Therefore, it is still necessary\n` +
-            `to use \`.get('${String(property)}')\` in this case.\n\n` +
-            `If you encountered this error because of third-party code that you don't control,\n` +
-            `there is more information at https://github.com/emberjs/ember.js/issues/16148, and\n` +
-            `you can help us improve this error message by telling us more about what happened in\n` +
-            `this situation.`;
+        let beforeInitCalled; // only used in debug builds to enable the proxy trap
+
+        // using DEBUG here to avoid the extraneous variable when not needed
+        if (DEBUG) {
+          beforeInitCalled = true;
+        }
+
+        if (
+          DEBUG &&
+          MANDATORY_GETTER &&
+          EMBER_METAL_ES5_GETTERS &&
+          HAS_NATIVE_PROXY &&
+          typeof self.unknownProperty === 'function'
+        ) {
+          let messageFor = (obj, property) => {
+            return (
+              `You attempted to access the \`${String(
+                property
+              )}\` property (of ${obj}).\n` +
+              `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
+              `to access computed properties. However, in this case, the object in question\n` +
+              `is a special kind of Ember object (a proxy). Therefore, it is still necessary\n` +
+              `to use \`.get('${String(property)}')\` in this case.\n\n` +
+              `If you encountered this error because of third-party code that you don't control,\n` +
+              `there is more information at https://github.com/emberjs/ember.js/issues/16148, and\n` +
+              `you can help us improve this error message by telling us more about what happened in\n` +
+              `this situation.`
+            );
           };
 
-        /* globals Proxy Reflect */
-        self = new Proxy(this, {
-          get(target, property, receiver) {
-            if (property === PROXY_CONTENT) {
-              return target;
-            } else if (
-              beforeInitCalled ||
-              typeof property === 'symbol' ||
-              isInternalSymbol(property) ||
-              property === 'toJSON' ||
-              property === 'toString' ||
-              property === 'toStringExtension' ||
-              property === 'didDefineProperty' ||
-              property === 'willWatchProperty' ||
-              property === 'didUnwatchProperty' ||
-              property === '__DESCRIPTOR__' ||
-              property === 'isDescriptor' ||
-              property in target
-            ) {
-              return Reflect.get(target, property, receiver);
+          /* globals Proxy Reflect */
+          self = new Proxy(this, {
+            get(target, property, receiver) {
+              if (property === PROXY_CONTENT) {
+                return target;
+              } else if (
+                beforeInitCalled ||
+                typeof property === 'symbol' ||
+                isInternalSymbol(property) ||
+                property === 'toJSON' ||
+                property === 'toString' ||
+                property === 'toStringExtension' ||
+                property === 'didDefineProperty' ||
+                property === 'willWatchProperty' ||
+                property === 'didUnwatchProperty' ||
+                property === 'didAddListener' ||
+                property === 'didRemoveListener' ||
+                property === '__DESCRIPTOR__' ||
+                property === 'isDescriptor' ||
+                property in target
+              ) {
+                return Reflect.get(target, property, receiver);
+              }
+
+              let value = target.unknownProperty.call(receiver, property);
+
+              assert(messageFor(receiver, property), value === undefined);
+            }
+          });
+        }
+
+        let m = meta(self);
+        let proto = m.proto;
+        m.proto = self;
+
+        if (properties !== undefined) {
+          assert(
+            'EmberObject.create only accepts objects.',
+            typeof properties === 'object' && properties !== null
+          );
+
+          assert(
+            'EmberObject.create no longer supports mixing in other ' +
+              'definitions, use .extend & .create separately instead.',
+            !(properties instanceof Mixin)
+          );
+
+          let concatenatedProperties = self.concatenatedProperties;
+          let mergedProperties = self.mergedProperties;
+          let hasConcatenatedProps =
+            concatenatedProperties !== undefined &&
+            concatenatedProperties.length > 0;
+          let hasMergedProps =
+            mergedProperties !== undefined && mergedProperties.length > 0;
+
+          let keyNames = Object.keys(properties);
+
+          for (let i = 0; i < keyNames.length; i++) {
+            let keyName = keyNames[i];
+            let value = properties[keyName];
+
+            if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
+              m.writeBindings(keyName, value);
             }
 
-            let value = target.unknownProperty.call(receiver, property);
+            assert(
+              'EmberObject.create no longer supports defining computed ' +
+                'properties. Define computed properties using extend() or reopen() ' +
+                'before calling create().',
+              !(value instanceof ComputedProperty)
+            );
+            assert(
+              'EmberObject.create no longer supports defining methods that call _super.',
+              !(
+                typeof value === 'function' &&
+                value.toString().indexOf('._super') !== -1
+              )
+            );
+            assert(
+              '`actions` must be provided at extend time, not at create time, ' +
+                'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+              !(keyName === 'actions' && ActionHandler.detect(this))
+            );
 
-            assert(messageFor(receiver, property), value === undefined);
-          }
-        });
-      }
+            let possibleDesc = descriptorFor(self, keyName, m);
+            let isDescriptor = possibleDesc !== undefined;
 
-      let m = meta(self);
-      let proto = m.proto;
-      m.proto = self;
+            if (!isDescriptor) {
+              let baseValue = self[keyName];
 
-      if (initFactory) {
-        FACTORY_FOR.set(this, initFactory);
-        initFactory = null;
-      }
+              if (
+                hasConcatenatedProps &&
+                concatenatedProperties.indexOf(keyName) > -1
+              ) {
+                if (baseValue) {
+                  value = makeArray(baseValue).concat(value);
+                } else {
+                  value = makeArray(value);
+                }
+              }
 
-      if (properties !== undefined) {
-        assert('EmberObject.create only accepts objects.', typeof properties === 'object' && properties !== null);
-
-        assert(
-          'EmberObject.create no longer supports mixing in other ' +
-          'definitions, use .extend & .create separately instead.',
-          !(properties instanceof Mixin)
-        );
-
-        let concatenatedProperties = self.concatenatedProperties;
-        let mergedProperties = self.mergedProperties;
-        let hasConcatenatedProps = concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-        let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
-
-        let keyNames = Object.keys(properties);
-
-        for (let i = 0; i < keyNames.length; i++) {
-          let keyName = keyNames[i];
-          let value = properties[keyName];
-
-          if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
-            m.writeBindings(keyName, value);
-          }
-
-          assert(
-            'EmberObject.create no longer supports defining computed ' +
-            'properties. Define computed properties using extend() or reopen() ' +
-            'before calling create().',
-            !(value instanceof ComputedProperty)
-          );
-          assert(
-            'EmberObject.create no longer supports defining methods that call _super.',
-            !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
-          );
-          assert(
-            '`actions` must be provided at extend time, not at create time, ' +
-            'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
-            !((keyName === 'actions') && ActionHandler.detect(this))
-          );
-
-          let possibleDesc = descriptorFor(self, keyName, m);
-          let isDescriptor = possibleDesc !== undefined;
-
-          if (!isDescriptor) {
-            let baseValue = self[keyName];
-
-            if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
-              if (baseValue) {
-                value = makeArray(baseValue).concat(value);
-              } else {
-                value = makeArray(value);
+              if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+                value = assign({}, baseValue, value);
               }
             }
 
-            if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
-              value = assign({}, baseValue, value);
-            }
-          }
-
-          if (isDescriptor) {
-            possibleDesc.set(self, keyName, value);
-          } else if (typeof self.setUnknownProperty === 'function' && !(keyName in self)) {
-            self.setUnknownProperty(keyName, value);
-          } else {
-            if (MANDATORY_SETTER) {
-              defineProperty(self, keyName, null, value); // setup mandatory setter
+            if (isDescriptor) {
+              possibleDesc.set(self, keyName, value);
+            } else if (
+              typeof self.setUnknownProperty === 'function' &&
+              !(keyName in self)
+            ) {
+              self.setUnknownProperty(keyName, value);
             } else {
-              self[keyName] = value;
+              if (MANDATORY_SETTER) {
+                defineProperty(self, keyName, null, value); // setup mandatory setter
+              } else {
+                self[keyName] = value;
+              }
             }
           }
         }
+
+        if (ENV._ENABLE_BINDING_SUPPORT) {
+          Mixin.finishPartial(self, m);
+        }
+
+        // using DEBUG here to avoid the extraneous variable when not needed
+        if (DEBUG) {
+          beforeInitCalled = false;
+        }
+        self.init(...arguments);
+
+        m.proto = proto;
+        finishChains(m);
+        sendEvent(self, 'init', undefined, undefined, undefined, m);
+
+        // only return when in debug builds and `self` is the proxy created above
+        if (DEBUG && self !== this) {
+          return self;
+        }
       }
 
-      if (ENV._ENABLE_BINDING_SUPPORT) {
-        Mixin.finishPartial(self, m);
+      static _initFactory(factory) {
+        initFactory = factory;
       }
-
-      // using DEBUG here to avoid the extraneous variable when not needed
-      if (DEBUG) {
-        beforeInitCalled = false;
-      }
-      self.init(...arguments);
-
-      m.proto = proto;
-      finishChains(m);
-      sendEvent(self, 'init', undefined, undefined, undefined, m);
-
-      // only return when in debug builds and `self` is the proxy created above
-      if (DEBUG && self !== this) {
-        return self;
-      }
-    }
-
-    static willReopen() {
-      if (wasApplied) {
-        Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
-      }
-
-      wasApplied = false;
-    }
-
-    static _initFactory(factory) { initFactory = factory; }
-
-    static proto() {
-      let superclass = Class.superclass;
-      if (superclass) { superclass.proto(); }
-
-      if (!wasApplied) {
-        wasApplied = true;
-        Class.PrototypeMixin.applyPartial(Class.prototype);
-      }
-
-      return this.prototype;
-    }
+    };
   }
 
-  Class.toString = Mixin.prototype.toString;
+  Class.willReopen = () => {
+    if (wasApplied) {
+      Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
+    }
+
+    wasApplied = false;
+  };
+
+  Class.proto = () => {
+    let superclass = Class.superclass;
+    if (superclass) {
+      superclass.proto();
+    }
+
+    if (!wasApplied) {
+      wasApplied = true;
+      Class.PrototypeMixin.applyPartial(Class.prototype);
+    }
+
+    return Class.prototype;
+  };
 
   return Class;
 }
@@ -244,7 +291,10 @@ const IS_DESTROYED = descriptor({
   },
 
   set(value) {
-    assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, value === IS_DESTROYED);
+    assert(
+      `You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`,
+      value === IS_DESTROYED
+    );
   }
 });
 
@@ -257,7 +307,10 @@ const IS_DESTROYING = descriptor({
   },
 
   set(value) {
-    assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, value === IS_DESTROYING);
+    assert(
+      `You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`,
+      value === IS_DESTROYING
+    );
   }
 });
 
@@ -266,7 +319,10 @@ const IS_DESTROYING = descriptor({
   @public
 */
 let CoreObject = makeCtor();
-CoreObject.toString = () => 'Ember.CoreObject';
+CoreObject.prototype.toString = classToString;
+CoreObject.toString = classToString;
+setName(CoreObject, 'Ember.CoreObject');
+
 CoreObject.PrototypeMixin = Mixin.create({
   reopen(...args) {
     applyMixin(this, args, true);
@@ -497,7 +553,9 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   destroy() {
     let m = peekMeta(this);
-    if (m.isSourceDestroying()) { return; }
+    if (m.isSourceDestroying()) {
+      return;
+    }
 
     m.setSourceDestroying();
 
@@ -523,7 +581,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method _scheduledDestroy
   */
   _scheduledDestroy(m) {
-    if (m.isSourceDestroyed()) { return; }
+    if (m.isSourceDestroyed()) {
+      return;
+    }
     deleteMeta(this);
     m.setSourceDestroyed();
   },
@@ -571,7 +631,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${this[NAME_KEY] || FACTORY_FOR.get(this) || this.constructor.toString()}:${guidFor(this)}${extension}>`;
+    let ret = `<${getName(this) ||
+      FACTORY_FOR.get(this) ||
+      this.constructor.toString()}:${guidFor(this)}${extension}>`;
 
     return ret;
   }
@@ -582,11 +644,9 @@ CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
 CoreObject.__super__ = null;
 
 let ClassMixinProps = {
-
   isClass: true,
 
   isMethod: false,
-  [NAME_KEY]: null,
   /**
     Creates a new subclass.
 
@@ -682,8 +742,8 @@ let ClassMixinProps = {
     @public
   */
   extend() {
-    let Class = makeCtor();
-    let proto;
+    let Class = makeCtor(this);
+
     Class.ClassMixin = Mixin.create(this.ClassMixin);
     Class.PrototypeMixin = Mixin.create(this.PrototypeMixin);
 
@@ -693,10 +753,9 @@ let ClassMixinProps = {
     reopen.apply(Class.PrototypeMixin, arguments);
 
     Class.superclass = this;
-    Class.__super__  = this.prototype;
+    Class.__super__ = this.prototype;
 
-    proto = Class.prototype = Object.create(this.prototype);
-    proto.constructor = Class;
+    let proto = Class.prototype;
     meta(proto).proto = proto; // this will disable observers on prototype
 
     Class.ClassMixin.apply(Class);
@@ -862,9 +921,13 @@ let ClassMixinProps = {
   },
 
   detect(obj) {
-    if ('function' !== typeof obj) { return false; }
+    if ('function' !== typeof obj) {
+      return false;
+    }
     while (obj) {
-      if (obj === this) { return true; }
+      if (obj === this) {
+        return true;
+      }
       obj = obj.superclass;
     }
     return false;
@@ -949,10 +1012,12 @@ function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));
 }
 
-function flattenProps(... props) {
+function flattenProps(...props) {
   let { concatenatedProperties, mergedProperties } = this;
-  let hasConcatenatedProps = concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-  let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+  let hasConcatenatedProps =
+    concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+  let hasMergedProps =
+    mergedProperties !== undefined && mergedProperties.length > 0;
 
   let initProperties = {};
 
@@ -961,7 +1026,7 @@ function flattenProps(... props) {
 
     assert(
       'EmberObject.create no longer supports mixing in other ' +
-      'definitions, use .extend & .create separately instead.',
+        'definitions, use .extend & .create separately instead.',
       !(properties instanceof Mixin)
     );
 
@@ -971,7 +1036,10 @@ function flattenProps(... props) {
       let keyName = keyNames[j];
       let value = properties[keyName];
 
-      if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+      if (
+        hasConcatenatedProps &&
+        concatenatedProperties.indexOf(keyName) > -1
+      ) {
         let baseValue = initProperties[keyName];
 
         if (baseValue) {
@@ -1030,7 +1098,6 @@ if (DEBUG) {
     return injections;
   };
 }
-
 
 let ClassMixin = Mixin.create(ClassMixinProps);
 

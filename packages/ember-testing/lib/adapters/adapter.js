@@ -1,6 +1,8 @@
 import { Object as EmberObject } from 'ember-runtime';
 
-function K() { return this; }
+function K() {
+  return this;
+}
 
 /**
  @module @ember/test

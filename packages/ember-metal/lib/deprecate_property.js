@@ -6,7 +6,6 @@ import { deprecate } from 'ember-debug';
 import { get } from './property_get';
 import { set } from './property_set';
 
-
 /**
   Used internally to allow changing properties in a backwards compatible way, and print a helpful
   deprecation warning.

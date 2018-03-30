@@ -1,10 +1,7 @@
 /* global self */
 
 import { setTesting } from 'ember-debug';
-import {
-  getAdapter,
-  setAdapter
-} from './test/adapter';
+import { getAdapter, setAdapter } from './test/adapter';
 import {
   incrementPendingRequests,
   decrementPendingRequests,
@@ -33,7 +30,9 @@ export default function setupForTesting() {
   let adapter = getAdapter();
   // if adapter is not manually set default to QUnit
   if (!adapter) {
-    setAdapter((typeof self.QUnit === 'undefined') ? new Adapter() : new QUnitAdapter());
+    setAdapter(
+      typeof self.QUnit === 'undefined' ? new Adapter() : new QUnitAdapter()
+    );
   }
 
   document.removeEventListener('ajaxSend', incrementPendingRequests);

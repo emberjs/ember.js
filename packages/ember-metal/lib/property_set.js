@@ -1,13 +1,12 @@
 import { toString } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
-import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 import {
-  notifyPropertyChange
-} from './property_events';
+  getPossibleMandatoryProxyValue,
+  _getPath as getPath
+} from './property_get';
+import { notifyPropertyChange } from './property_events';
 
-import {
-  isPath
-} from './path_cache';
+import { isPath } from './path_cache';
 import {
   isDescriptor,
   isDescriptorTrap,
@@ -15,7 +14,11 @@ import {
   DESCRIPTOR,
   descriptorFor
 } from './meta';
-import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
+import {
+  DESCRIPTOR_TRAP,
+  EMBER_METAL_ES5_GETTERS,
+  MANDATORY_SETTER
+} from 'ember/features';
 /**
  @module @ember/object
 */
@@ -44,12 +47,27 @@ export function set(obj, keyName, value, tolerant) {
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
   );
-  assert(`Cannot call set with '${keyName}' on an undefined object.`, obj && typeof obj === 'object' || typeof obj === 'function');
-  assert(`The key provided to set must be a string or number, you passed ${keyName}`, typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName)));
-  assert(`'this' in paths is not supported`, typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0);
+  assert(
+    `Cannot call set with '${keyName}' on an undefined object.`,
+    (obj && typeof obj === 'object') || typeof obj === 'function'
+  );
+  assert(
+    `The key provided to set must be a string or number, you passed ${keyName}`,
+    typeof keyName === 'string' ||
+      (typeof keyName === 'number' && !isNaN(keyName))
+  );
+  assert(
+    `'this' in paths is not supported`,
+    typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
+  );
 
   if (obj.isDestroyed) {
-    assert(`calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`, tolerant);
+    assert(
+      `calling set on destroyed object: ${toString(
+        obj
+      )}.${keyName} = ${toString(value)}`,
+      tolerant
+    );
     return;
   }
 
@@ -60,7 +78,8 @@ export function set(obj, keyName, value, tolerant) {
   if (EMBER_METAL_ES5_GETTERS) {
     let possibleDesc = descriptorFor(obj, keyName);
 
-    if (possibleDesc !== undefined) { /* computed property */
+    if (possibleDesc !== undefined) {
+      /* computed property */
       possibleDesc.set(obj, keyName, value);
       return value;
     }
@@ -72,10 +91,16 @@ export function set(obj, keyName, value, tolerant) {
     currentValue = currentValue[DESCRIPTOR];
   }
 
-  if (isDescriptor(currentValue)) { /* computed property */
+  if (isDescriptor(currentValue)) {
+    /* computed property */
     currentValue.set(obj, keyName, value);
-  } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
-    typeof obj.setUnknownProperty === 'function') { /* unknown property */
+  } else if (
+    currentValue === undefined &&
+    'object' === typeof obj &&
+    !(keyName in obj) &&
+    typeof obj.setUnknownProperty === 'function'
+  ) {
+    /* unknown property */
     obj.setUnknownProperty(keyName, value);
   } else {
     let meta = peekMeta(obj);
@@ -118,7 +143,10 @@ function setPath(root, path, value, tolerant) {
   let parts = path.split('.');
   let keyName = parts.pop();
 
-  assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
+  assert(
+    'Property set failed: You passed an empty path',
+    keyName.trim().length > 0
+  );
 
   let newPath = parts.join('.');
 
@@ -127,7 +155,9 @@ function setPath(root, path, value, tolerant) {
   if (newRoot) {
     return set(newRoot, keyName, value);
   } else if (!tolerant) {
-    throw new EmberError(`Property set failed: object in path "${newPath}" could not be found or was destroyed.`);
+    throw new EmberError(
+      `Property set failed: object in path "${newPath}" could not be found or was destroyed.`
+    );
   }
 }
 

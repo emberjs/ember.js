@@ -41,9 +41,9 @@ export function isEmberArray(obj) {
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
-  return valueProvided ?
-    (item)=> value === get(item, key) :
-    (item)=> !!get(item, key);
+  return valueProvided
+    ? item => value === get(item, key)
+    : item => !!get(item, key);
 }
 
 // ..........................................................
@@ -83,7 +83,6 @@ function iter(key, value) {
   @public
 */
 const ArrayMixin = Mixin.create(Enumerable, {
-
   [EMBER_ARRAY]: true,
 
   /**
@@ -158,7 +157,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '[]': computed({
-    get(key) {   // eslint-disable-line no-unused-vars
+    get() {
+      // eslint-disable-line no-unused-vars
       return this;
     },
     set(key, value) {
@@ -219,7 +219,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
       beginIndex = length + beginIndex;
     }
 
-    if (isNone(endIndex) || (endIndex > length)) {
+    if (isNone(endIndex) || endIndex > length) {
       endIndex = length;
     } else if (endIndex < 0) {
       endIndex = length + endIndex;
@@ -376,7 +376,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   hasArrayObservers: computed(function() {
-    return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
+    return (
+      hasListeners(this, '@array:change') || hasListeners(this, '@array:before')
+    );
   }),
 
   /**
@@ -444,7 +446,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   forEach(callback, target = null) {
-    assert('forEach expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'forEach expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     let length = get(this, 'length');
 
@@ -510,11 +515,14 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   map(callback, target) {
-    assert('map expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'map expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     let ret = A();
 
-    this.forEach((x, idx, i) => ret[idx] = callback.call(target, x, idx, i));
+    this.forEach((x, idx, i) => (ret[idx] = callback.call(target, x, idx, i)));
 
     return ret;
   },
@@ -562,7 +570,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   filter(callback, target) {
-    assert('filter expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'filter expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     let ret = A();
 
@@ -603,10 +614,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reject(callback, target) {
-    assert('reject expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'reject expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     return this.filter(function() {
-      return !(callback.apply(target, arguments));
+      return !callback.apply(target, arguments);
     });
   },
 
@@ -621,7 +635,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} filtered array
     @public
   */
-  filterBy(key, value) { // eslint-disable-line no-unused-vars
+  filterBy() {
+    // eslint-disable-line no-unused-vars
     return this.filter(iter.apply(this, arguments));
   },
 
@@ -638,8 +653,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
   */
   rejectBy(key, value) {
     let exactValue = item => get(item, key) === value;
-    let hasValue = item  => !!get(item, key);
-    let use = (arguments.length === 2 ? exactValue : hasValue);
+    let hasValue = item => !!get(item, key);
+    let use = arguments.length === 2 ? exactValue : hasValue;
 
     return this.reject(use);
   },
@@ -673,7 +688,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   find(callback, target = null) {
-    assert('find expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'find expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     let length = get(this, 'length');
 
@@ -699,7 +717,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object} found item or `undefined`
     @public
   */
-  findBy(key, value) {  // eslint-disable-line no-unused-vars
+  findBy() {
+    // eslint-disable-line no-unused-vars
     return this.find(iter.apply(this, arguments));
   },
 
@@ -739,7 +758,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   every(callback, target) {
-    assert('every expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'every expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
   },
@@ -759,7 +781,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isEvery(key, value) {  // eslint-disable-line no-unused-vars
+  isEvery() {
+    // eslint-disable-line no-unused-vars
     return this.every(iter.apply(this, arguments));
   },
 
@@ -801,7 +824,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   any(callback, target = null) {
-    assert('any expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'any expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     let length = get(this, 'length');
 
@@ -828,7 +854,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isAny(key, value) {  // eslint-disable-line no-unused-vars
+  isAny() {
+    // eslint-disable-line no-unused-vars
     return this.any(iter.apply(this, arguments));
   },
 
@@ -867,7 +894,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reduce(callback, initialValue, reducerProperty) {
-    assert('reduce expects a function as first argument.', typeof callback === 'function');
+    assert(
+      'reduce expects a function as first argument.',
+      typeof callback === 'function'
+    );
 
     let ret = initialValue;
 
@@ -914,7 +944,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   toArray() {
     let ret = A();
 
-    this.forEach((o, idx) => ret[idx] = o);
+    this.forEach((o, idx) => (ret[idx] = o));
 
     return ret;
   },
@@ -1060,7 +1090,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     let ret = A();
     let seen = new Set();
 
-    this.forEach((item) => {
+    this.forEach(item => {
       let val = get(item, key);
       if (!seen.has(val)) {
         seen.add(val);
@@ -1095,7 +1125,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     this.forEach(k => {
       // SameValueZero comparison (NaN !== NaN)
-      if (!(k === value || k !== k && value !== value)) {
+      if (!(k === value || (k !== k && value !== value))) {
         ret[ret.length] = k;
       }
     });
@@ -1136,7 +1166,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
       {
         id: 'ember-metal.getting-each',
         until: '3.5.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property'
+        url:
+          'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property'
       }
     );
 
@@ -1144,13 +1175,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
   }).readOnly()
 });
 
-
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
-    if ((start < 0) || (start >= get(array, 'length'))) {
+    if (start < 0 || start >= get(array, 'length')) {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
 
@@ -1187,7 +1217,6 @@ export function removeAt(array, start, len) {
 */
 
 const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
-
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1609,7 +1638,6 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
   @public
 */
 let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
-
   // because length is a built-in property we need to know to just get the
   // original property.
   get(key) {
@@ -1626,7 +1654,10 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // primitive for array support.
   replace(start, deleteCount, items = EMPTY_ARRAY) {
-    assert('The third argument to replace needs to be an array.', Array.isArray(items));
+    assert(
+      'The third argument to replace needs to be an array.',
+      Array.isArray(items)
+    );
 
     replaceInNativeArray(this, start, deleteCount, items);
 
@@ -1636,7 +1667,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // If you ask for an unknown property, then try to collect the value
   // from member items.
   unknownProperty(key, value) {
-    let ret;// = this.reducedProperty(key, value);
+    let ret; // = this.reducedProperty(key, value);
     if (value !== undefined && ret === undefined) {
       ret = this[key] = value;
     }
@@ -1648,7 +1679,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   copy(deep) {
     if (deep) {
-      return this.map((item) => copy(item, true));
+      return this.map(item => copy(item, true));
     }
 
     return this.slice();
@@ -1657,7 +1688,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
 // Remove any methods implemented natively so we don't override them
 const ignore = ['length'];
-NativeArray.keys().forEach((methodName) => {
+NativeArray.keys().forEach(methodName => {
   if (Array.prototype[methodName]) {
     ignore.push(methodName);
   }
@@ -1672,15 +1703,13 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
   A = arr => arr || [];
 } else {
   A = arr => {
-    if (!arr) { arr = []; }
+    if (!arr) {
+      arr = [];
+    }
     return ArrayMixin.detect(arr) ? arr : NativeArray.apply(arr);
   };
 }
 
-export {
-  A,
-  NativeArray,
-  MutableArray
-};
+export { A, NativeArray, MutableArray };
 
 export default ArrayMixin;

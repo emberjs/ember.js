@@ -7,15 +7,15 @@ import { assert, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {
   libraries,
-  run
+  run,
+  join,
+  schedule,
+  bind,
+  once,
+  processAllNamespaces,
+  setNamespaceSearchDisabled
 } from 'ember-metal';
-import {
-  Namespace,
-  setNamespaceSearchDisabled,
-  runLoadHooks,
-  _loaded,
-  RSVP
-} from 'ember-runtime';
+import { runLoadHooks, _loaded, RSVP } from 'ember-runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
 import {
   Route,
@@ -361,7 +361,8 @@ const Application = Engine.extend({
   */
   _applicationInstances: null,
 
-  init(options) { // eslint-disable-line no-unused-vars
+  init() {
+    // eslint-disable-line no-unused-vars
     this._super(...arguments);
 
     if (!this.$) {
@@ -493,9 +494,9 @@ const Application = Engine.extend({
   */
   waitForDOMReady() {
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', this, 'domReady');
+      schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(run.bind(this, 'domReady'));
+      this.$().ready(bind(this, 'domReady'));
     }
   },
 
@@ -575,8 +576,14 @@ const Application = Engine.extend({
     @public
   */
   deferReadiness() {
-    assert('You must call deferReadiness on an instance of Application', this instanceof Application);
-    assert('You cannot defer readiness since the `ready()` hook has already been called.', this._readinessDeferrals > 0);
+    assert(
+      'You must call deferReadiness on an instance of Application',
+      this instanceof Application
+    );
+    assert(
+      'You cannot defer readiness since the `ready()` hook has already been called.',
+      this._readinessDeferrals > 0
+    );
     this._readinessDeferrals++;
   },
 
@@ -590,11 +597,14 @@ const Application = Engine.extend({
     @public
   */
   advanceReadiness() {
-    assert('You must call advanceReadiness on an instance of Application', this instanceof Application);
+    assert(
+      'You must call advanceReadiness on an instance of Application',
+      this instanceof Application
+    );
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
-      run.once(this, this.didBecomeReady);
+      once(this, this.didBecomeReady);
     }
   },
 
@@ -615,7 +625,9 @@ const Application = Engine.extend({
     @return {Promise<Application,Error>}
   */
   boot() {
-    if (this._bootPromise) { return this._bootPromise; }
+    if (this._bootPromise) {
+      return this._bootPromise;
+    }
 
     try {
       this._bootSync();
@@ -641,13 +653,15 @@ const Application = Engine.extend({
     @private
   */
   _bootSync() {
-    if (this._booted) { return; }
+    if (this._booted) {
+      return;
+    }
 
     // Even though this returns synchronously, we still need to make sure the
     // boot promise exists for book-keeping purposes: if anything went wrong in
     // the boot process, we need to store the error as a rejection on the boot
     // promise so that a future caller of `boot()` can tell what failed.
-    let defer = this._bootResolver = RSVP.defer();
+    let defer = (this._bootResolver = RSVP.defer());
     this._bootPromise = defer.promise;
 
     try {
@@ -736,10 +750,13 @@ const Application = Engine.extend({
     @public
   */
   reset() {
-    assert(`Calling reset() on instances of \`Application\` is not
+    assert(
+      `Calling reset() on instances of \`Application\` is not
             supported when globals mode is disabled; call \`visit()\` to
             create new \`ApplicationInstance\`s and dispose them
-            via their \`destroy()\` method instead.`, this._globalsMode && this.autoboot);
+            via their \`destroy()\` method instead.`,
+      this._globalsMode && this.autoboot
+    );
 
     let instance = this.__deprecatedInstance__;
 
@@ -751,10 +768,10 @@ const Application = Engine.extend({
     function handleReset() {
       run(instance, 'destroy');
       this._buildDeprecatedInstance();
-      run.schedule('actions', this, '_bootSync');
+      schedule('actions', this, '_bootSync');
     }
 
-    run.join(this, handleReset);
+    join(this, handleReset);
   },
 
   /**
@@ -766,7 +783,7 @@ const Application = Engine.extend({
       // TODO: Is this still needed for _globalsMode = false?
       if (!isTesting()) {
         // Eagerly name all classes that are already loaded
-        Namespace.processAll();
+        processAllNamespaces();
         setNamespaceSearchDisabled(true);
       }
 
@@ -815,7 +832,9 @@ const Application = Engine.extend({
     @event ready
     @public
   */
-  ready() { return this; },
+  ready() {
+    return this;
+  },
 
   // This method must be moved to the application instance object
   willDestroy() {
@@ -1036,7 +1055,8 @@ const Application = Engine.extend({
     return this.boot().then(() => {
       let instance = this.buildInstance();
 
-      return instance.boot(options)
+      return instance
+        .boot(options)
         .then(() => instance.visit(url))
         .catch(error => {
           run(instance, 'destroy');
@@ -1072,7 +1092,8 @@ Application.reopenClass({
     @return {Ember.Registry} the built registry
     @private
   */
-  buildRegistry(application, options = {}) { // eslint-disable-line no-unused-vars
+  buildRegistry() {
+    // eslint-disable-line no-unused-vars
     let registry = this._super(...arguments);
 
     commonSetupRegistry(registry);
@@ -1085,7 +1106,11 @@ Application.reopenClass({
 
 function commonSetupRegistry(registry) {
   registry.register('router:main', Router.extend());
-  registry.register('-view-registry:main', { create() { return dictionary(null); } });
+  registry.register('-view-registry:main', {
+    create() {
+      return dictionary(null);
+    }
+  });
 
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
@@ -1097,7 +1122,11 @@ function commonSetupRegistry(registry) {
   registry.register('location:history', HistoryLocation);
   registry.register('location:none', NoneLocation);
 
-  registry.register(P`-bucket-cache:main`, { create() { return new BucketCache(); } });
+  registry.register(P`-bucket-cache:main`, {
+    create() {
+      return new BucketCache();
+    }
+  });
 
   if (EMBER_ROUTING_ROUTER_SERVICE) {
     registry.register('service:router', RouterService);

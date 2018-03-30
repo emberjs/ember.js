@@ -18,15 +18,23 @@ function normalizeTokens(tokens) {
   tokens.forEach(token => {
     if (token.type === 'StartTag') {
       token.attributes = token.attributes.sort((a, b) => {
-        if (a[0] > b[0]) { return 1; }
-        if (a[0] < b[0]) { return -1; }
+        if (a[0] > b[0]) {
+          return 1;
+        }
+        if (a[0] < b[0]) {
+          return -1;
+        }
         return 0;
       });
     }
   });
 }
 
-export default function equalTokens(actualContainer, expectedHTML, message = null) {
+export default function equalTokens(
+  actualContainer,
+  expectedHTML,
+  message = null
+) {
   let actual = generateTokens(actualContainer);
   let expected = generateTokens(expectedHTML);
 

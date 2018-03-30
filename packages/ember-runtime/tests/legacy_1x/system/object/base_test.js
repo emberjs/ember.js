@@ -26,62 +26,81 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj, obj1; // global variables
 
-moduleFor('A new EmberObject instance', class extends AbstractTestCase {
+moduleFor(
+  'A new EmberObject instance',
+  class extends AbstractTestCase {
+    beforeEach() {
+      obj = EmberObject.create({
+        foo: 'bar',
+        total: 12345,
+        aMethodThatExists() {},
+        aMethodThatReturnsTrue() {
+          return true;
+        },
+        aMethodThatReturnsFoobar() {
+          return 'Foobar';
+        },
+        aMethodThatReturnsFalse() {
+          return false;
+        }
+      });
+    }
 
-  beforeEach() {
-    obj = EmberObject.create({
-      foo: 'bar',
-      total: 12345,
-      aMethodThatExists() {},
-      aMethodThatReturnsTrue() { return true; },
-      aMethodThatReturnsFoobar() { return 'Foobar'; },
-      aMethodThatReturnsFalse() { return false; }
-    });
+    afterEach() {
+      obj = undefined;
+    }
+
+    ['@test Should return its properties when requested using EmberObject#get'](
+      assert
+    ) {
+      assert.equal(get(obj, 'foo'), 'bar');
+      assert.equal(get(obj, 'total'), 12345);
+    }
+
+    ['@test Should allow changing of those properties by calling EmberObject#set'](
+      assert
+    ) {
+      assert.equal(get(obj, 'foo'), 'bar');
+      assert.equal(get(obj, 'total'), 12345);
+
+      set(obj, 'foo', 'Chunky Bacon');
+      set(obj, 'total', 12);
+
+      assert.equal(get(obj, 'foo'), 'Chunky Bacon');
+      assert.equal(get(obj, 'total'), 12);
+    }
   }
+);
 
-  afterEach() {
-    obj = undefined;
+moduleFor(
+  'EmberObject superclass and subclasses',
+  class extends AbstractTestCase {
+    beforeEach() {
+      obj = EmberObject.extend({
+        method1() {
+          return 'hello';
+        }
+      });
+      obj1 = obj.extend();
+    }
+
+    afterEach() {
+      obj = undefined;
+      obj1 = undefined;
+    }
+
+    ['@test Checking the detect() function on an object and its subclass'](
+      assert
+    ) {
+      assert.equal(obj.detect(obj1), true);
+      assert.equal(obj1.detect(obj), false);
+    }
+
+    ['@test Checking the detectInstance() function on an object and its subclass'](
+      assert
+    ) {
+      assert.ok(EmberObject.detectInstance(obj.create()));
+      assert.ok(obj.detectInstance(obj.create()));
+    }
   }
-
-  ['@test Should return its properties when requested using EmberObject#get'](assert) {
-    assert.equal(get(obj, 'foo'), 'bar');
-    assert.equal(get(obj, 'total'), 12345);
-  }
-
-  ['@test Should allow changing of those properties by calling EmberObject#set'](assert) {
-    assert.equal(get(obj, 'foo'), 'bar');
-    assert.equal(get(obj, 'total'), 12345);
-
-    set(obj, 'foo', 'Chunky Bacon');
-    set(obj, 'total', 12);
-
-    assert.equal(get(obj, 'foo'), 'Chunky Bacon');
-    assert.equal(get(obj, 'total'), 12);
-  }
-});
-
-moduleFor('EmberObject superclass and subclasses', class extends AbstractTestCase {
-  beforeEach() {
-    obj = EmberObject.extend({
-      method1() {
-        return 'hello';
-      }
-    });
-    obj1 = obj.extend();
-  }
-
-  afterEach() {
-    obj = undefined;
-    obj1 = undefined;
-  }
-
-  ['@test Checking the detect() function on an object and its subclass'](assert) {
-    assert.equal(obj.detect(obj1), true);
-    assert.equal(obj1.detect(obj), false);
-  }
-
-  ['@test Checking the detectInstance() function on an object and its subclass'](assert) {
-    assert.ok(EmberObject.detectInstance(obj.create()));
-    assert.ok(obj.detectInstance(obj.create()));
-  }
-});
+);

@@ -1,8 +1,13 @@
-import { CONSTANT_TAG, UpdatableTag, DirtyableTag, combine } from '@glimmer/reference';
+import {
+  CONSTANT_TAG,
+  UpdatableTag,
+  DirtyableTag,
+  combine
+} from '@glimmer/reference';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { meta as metaFor } from './meta';
 import { isProxy } from './is_proxy';
-import run from './run_loop';
+import { backburner } from './run_loop';
 
 let hasViews = () => false;
 
@@ -14,10 +19,14 @@ function makeTag() {
   return DirtyableTag.create();
 }
 
-export const TRACKED_GETTERS = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : undefined;
+export const TRACKED_GETTERS = EMBER_METAL_TRACKED_PROPERTIES
+  ? new WeakMap()
+  : undefined;
 
 export function tagForProperty(object, propertyKey, _meta) {
-  if (typeof object !== 'object' || object === null) { return CONSTANT_TAG; }
+  if (typeof object !== 'object' || object === null) {
+    return CONSTANT_TAG;
+  }
   let meta = _meta === undefined ? metaFor(object) : _meta;
 
   if (isProxy(object)) {
@@ -26,13 +35,15 @@ export function tagForProperty(object, propertyKey, _meta) {
 
   let tags = meta.writableTags();
   let tag = tags[propertyKey];
-  if (tag) { return tag; }
+  if (tag) {
+    return tag;
+  }
 
   if (EMBER_METAL_TRACKED_PROPERTIES) {
     let pair = combine([makeTag(), UpdatableTag.create(CONSTANT_TAG)]);
-    return tags[propertyKey] = pair;
+    return (tags[propertyKey] = pair);
   } else {
-    return tags[propertyKey] = makeTag();
+    return (tags[propertyKey] = makeTag());
   }
 }
 
@@ -49,7 +60,7 @@ export let dirty;
 export let update;
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
-  dirty = (tag) => {
+  dirty = tag => {
     tag.inner.first.inner.dirty();
   };
 
@@ -57,7 +68,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
     outer.inner.second.inner.update(inner);
   };
 } else {
-  dirty = (tag) => {
+  dirty = tag => {
     tag.inner.dirty();
   };
 }
@@ -85,12 +96,7 @@ export function markObjectAsDirty(obj, propertyKey, meta) {
   }
 }
 
-let backburner;
 function ensureRunloop() {
-  if (backburner === undefined) {
-    backburner = run.backburner;
-  }
-
   if (hasViews()) {
     backburner.ensureInstance();
   }

@@ -28,34 +28,54 @@ let runInDebug = noop;
 let setDebugFunction = noop;
 let getDebugFunction = noop;
 
-let deprecateFunc = function() { return arguments[arguments.length - 1]; };
+let deprecateFunc = function() {
+  return arguments[arguments.length - 1];
+};
 
 if (DEBUG) {
   setDebugFunction = function(type, callback) {
     switch (type) {
-    case 'assert': return assert = callback;
-    case 'info': return info = callback;
-    case 'warn': return warn = callback;
-    case 'debug': return debug = callback;
-    case 'deprecate': return deprecate = callback;
-    case 'debugSeal': return debugSeal = callback;
-    case 'debugFreeze': return debugFreeze = callback;
-    case 'runInDebug': return runInDebug = callback;
-    case 'deprecateFunc': return deprecateFunc = callback;
+      case 'assert':
+        return (assert = callback);
+      case 'info':
+        return (info = callback);
+      case 'warn':
+        return (warn = callback);
+      case 'debug':
+        return (debug = callback);
+      case 'deprecate':
+        return (deprecate = callback);
+      case 'debugSeal':
+        return (debugSeal = callback);
+      case 'debugFreeze':
+        return (debugFreeze = callback);
+      case 'runInDebug':
+        return (runInDebug = callback);
+      case 'deprecateFunc':
+        return (deprecateFunc = callback);
     }
   };
 
   getDebugFunction = function(type) {
     switch (type) {
-    case 'assert': return assert;
-    case 'info': return info;
-    case 'warn': return warn;
-    case 'debug': return debug;
-    case 'deprecate': return deprecate;
-    case 'debugSeal': return debugSeal;
-    case 'debugFreeze': return debugFreeze;
-    case 'runInDebug': return runInDebug;
-    case 'deprecateFunc': return deprecateFunc;
+      case 'assert':
+        return assert;
+      case 'info':
+        return info;
+      case 'warn':
+        return warn;
+      case 'debug':
+        return debug;
+      case 'deprecate':
+        return deprecate;
+      case 'debugSeal':
+        return debugSeal;
+      case 'debugFreeze':
+        return debugFreeze;
+      case 'runInDebug':
+        return runInDebug;
+      case 'deprecateFunc':
+        return deprecateFunc;
     }
   };
 }
@@ -131,9 +151,8 @@ if (DEBUG) {
     } else {
       console.log(`DEBUG: ${message}`);
     }
-    /* eslint-ensable no-console */  
+    /* eslint-ensable no-console */
   });
-
 
   /**
     Display an info notice.
@@ -145,7 +164,7 @@ if (DEBUG) {
     @method info
     @private
   */
-  setDebugFunction('info', function info() {    
+  setDebugFunction('info', function info() {
     console.info(...arguments); /* eslint-disable-line no-console */
   });
 
@@ -194,7 +213,6 @@ if (DEBUG) {
       };
     }
   });
-
 
   /**
    @module @ember/debug
@@ -257,9 +275,17 @@ if (DEBUG && !isTesting()) {
      @method _warnIfUsingStrippedFeatureFlags
      @return {void}
   */
-  _warnIfUsingStrippedFeatureFlags = function _warnIfUsingStrippedFeatureFlags(FEATURES, knownFeatures, featuresWereStripped) {
+  _warnIfUsingStrippedFeatureFlags = function _warnIfUsingStrippedFeatureFlags(
+    FEATURES,
+    knownFeatures,
+    featuresWereStripped
+  ) {
     if (featuresWereStripped) {
-      warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !ENV.ENABLE_OPTIONAL_FEATURES, { id: 'ember-debug.feature-flag-with-features-stripped' });
+      warn(
+        'Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.',
+        !ENV.ENABLE_OPTIONAL_FEATURES,
+        { id: 'ember-debug.feature-flag-with-features-stripped' }
+      );
 
       let keys = Object.keys(FEATURES || {});
       for (let i = 0; i < keys.length; i++) {
@@ -268,7 +294,11 @@ if (DEBUG && !isTesting()) {
           continue;
         }
 
-        warn(`FEATURE["${key}"] is set as enabled, but FEATURE flags are only available in canary builds.`, !FEATURES[key], { id: 'ember-debug.feature-flag-with-features-stripped' });
+        warn(
+          `FEATURE["${key}"] is set as enabled, but FEATURE flags are only available in canary builds.`,
+          !FEATURES[key],
+          { id: 'ember-debug.feature-flag-with-features-stripped' }
+        );
       }
     }
   };
@@ -282,26 +312,46 @@ if (DEBUG && !isTesting()) {
   }
 
   delete FEATURES['features-stripped-test'];
-  _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, DEFAULT_FEATURES, featuresWereStripped);
+  _warnIfUsingStrippedFeatureFlags(
+    ENV.FEATURES,
+    DEFAULT_FEATURES,
+    featuresWereStripped
+  );
 
   // Inform the developer about the Ember Inspector if not installed.
   let isFirefox = environment.isFirefox;
   let isChrome = environment.isChrome;
 
-  if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
-    window.addEventListener('load', () => {
-      if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
-        let downloadURL;
+  if (
+    typeof window !== 'undefined' &&
+    (isFirefox || isChrome) &&
+    window.addEventListener
+  ) {
+    window.addEventListener(
+      'load',
+      () => {
+        if (
+          document.documentElement &&
+          document.documentElement.dataset &&
+          !document.documentElement.dataset.emberExtension
+        ) {
+          let downloadURL;
 
-        if (isChrome) {
-          downloadURL = 'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
-        } else if (isFirefox) {
-          downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
+          if (isChrome) {
+            downloadURL =
+              'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
+          } else if (isFirefox) {
+            downloadURL =
+              'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
+          }
+
+          debug(
+            `For more advanced debugging, install the Ember Inspector from ${downloadURL}`
+          );
         }
-
-        debug(`For more advanced debugging, install the Ember Inspector from ${downloadURL}`);
-      }
-    }, false);
+      },
+      false
+    );
   }
 }
 

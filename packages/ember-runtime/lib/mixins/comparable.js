@@ -16,7 +16,6 @@ import { Mixin } from 'ember-metal';
   @private
 */
 export default Mixin.create({
-
   /**
     __Required.__ You must implement this method to apply this mixin.
 

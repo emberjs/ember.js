@@ -1,12 +1,7 @@
 import * as RSVP from 'rsvp';
-import {
-  run,
-  getDispatchOverride
-} from 'ember-metal';
+import { backburner, getDispatchOverride } from 'ember-metal';
 import { assert } from 'ember-debug';
 import { privatize as P } from 'container';
-
-const backburner = run.backburner;
 
 RSVP.configure('async', (callback, promise) => {
   backburner.schedule('actions', null, callback, promise);
@@ -38,7 +33,12 @@ function errorFor(reason) {
   }
 
   if (reason.name === 'UnrecognizedURLError') {
-    assert(`The URL '${reason.message}' did not match any routes in your application`, false);
+    assert(
+      `The URL '${
+        reason.message
+      }' did not match any routes in your application`,
+      false
+    );
     return;
   }
 

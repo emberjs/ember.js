@@ -6,7 +6,7 @@ export const environment: {
   history: History | null;
   userAgent: string;
   window: Window | null;
-}
+};
 
 export const ENV: {
   _ENABLE_DID_INIT_ATTRS_SUPPORT: boolean;

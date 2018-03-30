@@ -31,7 +31,7 @@ function getFeatures(isDebug) {
 
 function toConst(features) {
   let consted = {};
-  Object.keys(features).forEach((feature) => {
+  Object.keys(features).forEach(feature => {
     consted[feature.toUpperCase().replace(/-/g, '_')] = features[feature];
   });
 

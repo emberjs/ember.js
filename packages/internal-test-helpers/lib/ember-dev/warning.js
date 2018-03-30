@@ -17,14 +17,16 @@ class WarningAssert extends DebugAssert {
     // expectNoWarning();
     // Ember.warn("Oh snap, didn't expect that");
     //
-    let expectNoWarning = (func) => {
+    let expectNoWarning = func => {
       if (typeof func !== 'function') {
         func = null;
       }
 
-      this.runExpectation(func, (tracker) => {
+      this.runExpectation(func, tracker => {
         if (tracker.isExpectingCalls()) {
-          throw new Error("expectNoWarning was called after expectWarning was called!");
+          throw new Error(
+            'expectNoWarning was called after expectWarning was called!'
+          );
         }
 
         tracker.expectNoCalls();
@@ -49,16 +51,18 @@ class WarningAssert extends DebugAssert {
         fn = null;
       }
 
-      this.runExpectation(fn, (tracker) => {
+      this.runExpectation(fn, tracker => {
         if (tracker.isExpectingNoCalls()) {
-          throw new Error("expectWarning was called after expectNoWarning was called!");
+          throw new Error(
+            'expectWarning was called after expectNoWarning was called!'
+          );
         }
 
         tracker.expectCall(message);
       });
     };
 
-    let ignoreWarning = (func) => {
+    let ignoreWarning = func => {
       callWithStub(this.env, 'warn', func);
     };
 

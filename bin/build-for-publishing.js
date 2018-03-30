@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 'use strict';
 /* eslint-env node, es6 */
 
@@ -27,7 +26,9 @@ function updatePackageJSONVersion() {
   pkg._versionPreviouslyCalculated = true;
   pkg._originalVersion = pkg.version;
   pkg.version = VERSION;
-  fs.writeFileSync(packageJSONPath, JSON.stringify(pkg, null, 2), { encoding: 'utf-8' });
+  fs.writeFileSync(packageJSONPath, JSON.stringify(pkg, null, 2), {
+    encoding: 'utf-8'
+  });
 }
 
 /*
@@ -44,11 +45,12 @@ function updateDocumentationVersion() {
   let contents = fs.readFileSync(docsPath, { encoding: 'utf-8' });
   let docs = JSON.parse(contents);
   docs.project.version = VERSION;
-  fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2), { encoding: 'utf-8' });
+  fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2), {
+    encoding: 'utf-8'
+  });
 }
 
-Promise
-  .resolve()
+Promise.resolve()
   .then(() => {
     updatePackageJSONVersion();
     // ensures that we tag this correctly
@@ -70,9 +72,13 @@ Promise
       version: VERSION,
       buildType: process.env.BUILD_TYPE,
       SHA: process.env.TRAVIS_COMMIT,
-      assetPath: `/${process.env.BUILD_TYPE}/shas/${process.env.TRAVIS_COMMIT}.tgz`,
+      assetPath: `/${process.env.BUILD_TYPE}/shas/${
+        process.env.TRAVIS_COMMIT
+      }.tgz`
     };
-    fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), { encoding: 'utf-8' });
+    fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), {
+      encoding: 'utf-8'
+    });
 
     // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
     // property properly, and therefore the tarball generated is quite large (~7MB).
@@ -81,7 +87,7 @@ Promise
   .then(
     // eslint-disable-next-line
     () => console.log('build-for-publishing completed succesfully!'),
-    (error) => {
+    error => {
       // eslint-disable-next-line
       console.error(error);
       // eslint-disable-next-line

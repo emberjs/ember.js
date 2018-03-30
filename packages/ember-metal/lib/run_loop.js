@@ -1,49 +1,60 @@
 import { privatize as P } from 'container';
 import { assert, deprecate, isTesting } from 'ember-debug';
-import {
-  onErrorTarget
-} from './error_handler';
-import {
-  beginPropertyChanges,
-  endPropertyChanges
-} from './property_events';
+import { onErrorTarget } from './error_handler';
+import { beginPropertyChanges, endPropertyChanges } from './property_events';
 import Backburner from 'backburner';
 
+let currentRunLoop = null;
+export function getCurrentRunLoop() {
+  return currentRunLoop;
+}
+
 function onBegin(current) {
-  run.currentRunLoop = current;
+  currentRunLoop = current;
 }
 
 function onEnd(current, next) {
-  run.currentRunLoop = next;
+  currentRunLoop = next;
 }
 
-const backburner = new Backburner(
-  [
-    'sync',
-    'actions',
+/**
+  Array of named queues. This array determines the order in which queues
+  are flushed at the end of the RunLoop. You can define your own queues by
+  simply adding the queue name to this array. Normally you should not need
+  to inspect or modify this property.
 
-    // used in router transitions to prevent unnecessary loading state entry
-    // if all context promises resolve on the 'actions' queue first
-    'routerTransitions',
+  @property queues
+  @type Array
+  @default ['actions', 'destroy']
+  @private
+*/
+export const queues = [
+  'sync',
+  'actions',
 
-    'render',
-    'afterRender',
-    'destroy',
+  // used in router transitions to prevent unnecessary loading state entry
+  // if all context promises resolve on the 'actions' queue first
+  'routerTransitions',
 
-    // used to re-throw unhandled RSVP rejection errors specifically in this
-    // position to avoid breaking anything rendered in the other sections
-    P`rsvpAfter`
-  ],
-  {
-    sync: {
-      before: beginPropertyChanges,
-      after: endPropertyChanges
-    },
-    defaultQueue: 'actions',
-    onBegin,
-    onEnd,
-    onErrorTarget,
-    onErrorMethod: 'onerror'
+  'render',
+  'afterRender',
+  'destroy',
+
+  // used to re-throw unhandled RSVP rejection errors specifically in this
+  // position to avoid breaking anything rendered in the other sections
+  P`rsvpAfter`
+];
+
+export const backburner = new Backburner(queues, {
+  sync: {
+    before: beginPropertyChanges,
+    after: endPropertyChanges
+  },
+  defaultQueue: 'actions',
+  onBegin,
+  onEnd,
+  onErrorTarget,
+  onErrorMethod: 'onerror'
 });
 
 /**
@@ -81,7 +92,12 @@ const backburner = new Backburner(
   @return {Object} return value from invoking the passed function.
   @public
 */
-export default function run() {
+export function run() {
+  return backburner.run(...arguments);
+}
+
+// used for the Ember.run global only
+export function _globalsRun() {
   return backburner.run(...arguments);
 }
 
@@ -129,9 +145,9 @@ export default function run() {
   when called within an existing loop, no return value is possible.
   @public
 */
-run.join = function() {
+export function join() {
   return backburner.join(...arguments);
-};
+}
 
 /**
   Allows you to specify which context to call the specified function in while
@@ -195,15 +211,11 @@ run.join = function() {
   @since 1.4.0
   @public
 */
-run.bind = (...curried) => (...args) => run.join(...curried.concat(args));
-
-run.backburner = backburner;
-run.currentRunLoop = null;
-run.queues = backburner.queueNames;
+export const bind = (...curried) => (...args) => join(...curried.concat(args));
 
 /**
   Begins a new RunLoop. Any deferred actions invoked after the begin will
-  be buffered until you invoke a matching call to `run.end()`. This is
+  be buffered until you invoke a matching call to `end()`. This is
   a lower-level way to use a RunLoop instead of using `run()`.
 
   ```javascript
@@ -220,13 +232,13 @@ run.queues = backburner.queueNames;
   @return {void}
   @public
 */
-run.begin = function() {
+export function begin() {
   backburner.begin();
-};
+}
 
 /**
   Ends a RunLoop. This must be called sometime after you call
-  `run.begin()` to flush any deferred actions. This is a lower-level way
+  `begin()` to flush any deferred actions. This is a lower-level way
   to use a RunLoop instead of using `run()`.
 
   ```javascript
@@ -243,21 +255,9 @@ run.begin = function() {
   @return {void}
   @public
 */
-run.end = function() {
+export function end() {
   backburner.end();
-};
-
-/**
-  Array of named queues. This array determines the order in which queues
-  are flushed at the end of the RunLoop. You can define your own queues by
-  simply adding the queue name to this array. Normally you should not need
-  to inspect or modify this property.
-
-  @property queues
-  @type Array
-  @default ['actions', 'destroy']
-  @private
-*/
+}
 
 /**
   Adds the passed target/method and any optional arguments to the named
@@ -267,7 +267,7 @@ run.end = function() {
 
   At the end of a RunLoop, any methods scheduled in this way will be invoked.
   Methods will be invoked in an order matching the named queues defined in
-  the `run.queues` property.
+  the `queues` property.
 
   ```javascript
   import { schedule } from '@ember/runloop';
@@ -292,33 +292,33 @@ run.end = function() {
     will be resolved on the target object at the time the scheduled item is
     invoked allowing you to change the target function.
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
-  @return {*} Timer information for use in canceling, see `run.cancel`.
+  @return {*} Timer information for use in canceling, see `cancel`.
   @public
 */
-run.schedule = function(queue /*, target, method */) {
+export function schedule(queue /*, target, method */) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-    `You will need to wrap any code with asynchronous side-effects in a run`,
-    run.currentRunLoop || !isTesting()
+      `You will need to wrap any code with asynchronous side-effects in a run`,
+    currentRunLoop || !isTesting()
   );
   deprecate(
-   `Scheduling into the '${queue}' run loop queue is deprecated.`,
-   queue !== 'sync',
-   { id: 'ember-metal.run.sync', until: '3.5.0' }
+    `Scheduling into the '${queue}' run loop queue is deprecated.`,
+    queue !== 'sync',
+    { id: 'ember-metal.run.sync', until: '3.5.0' }
   );
 
   return backburner.schedule(...arguments);
-};
+}
 
 // Used by global test teardown
-run.hasScheduledTimers = function() {
+export function hasScheduledTimers() {
   return backburner.hasTimers();
-};
+}
 
 // Used by global test teardown
-run.cancelTimers = function() {
+export function cancelTimers() {
   backburner.cancelTimers();
-};
+}
 
 /**
   Invokes the passed target/method and optional arguments after a specified
@@ -347,15 +347,15 @@ run.cancelTimers = function() {
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
-  @return {*} Timer information for use in canceling, see `run.cancel`.
+  @return {*} Timer information for use in canceling, see `cancel`.
   @public
 */
-run.later = function(/*target, method*/) {
+export function later(/*target, method*/) {
   return backburner.later(...arguments);
-};
+}
 
 /**
-  Schedule a function to run one time during the current RunLoop. This is equivalent
+ Schedule a function to run one time during the current RunLoop. This is equivalent
   to calling `scheduleOnce` with the "actions" queue.
 
   @method once
@@ -366,18 +366,18 @@ run.later = function(/*target, method*/) {
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in canceling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-run.once = function(...args) {
+export function once(...args) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-    `You will need to wrap any code with asynchronous side-effects in a run`,
-    run.currentRunLoop || !isTesting()
+      `You will need to wrap any code with asynchronous side-effects in a run`,
+    currentRunLoop || !isTesting()
   );
   args.unshift('actions');
   return backburner.scheduleOnce(...args);
-};
+}
 
 /**
   Schedules a function to run one time in a given queue of the current RunLoop.
@@ -402,7 +402,7 @@ run.once = function(...args) {
   });
   ```
 
-  Also note that for `run.scheduleOnce` to prevent additional calls, you need to
+  Also note that for `scheduleOnce` to prevent additional calls, you need to
   pass the same function instance. The following case works as expected:
 
   ```javascript
@@ -432,12 +432,12 @@ run.once = function(...args) {
   scheduleIt();
   scheduleIt();
 
-  // "Closure" will print twice, even though we're using `run.scheduleOnce`,
+  // "Closure" will print twice, even though we're using `scheduleOnce`,
   // because the function we pass to it won't match the
   // previously scheduled operation.
   ```
 
-  Available queues, and their order, can be found at `run.queues`
+  Available queues, and their order, can be found at `queues`
 
   @method scheduleOnce
   @static
@@ -448,27 +448,27 @@ run.once = function(...args) {
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in canceling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-run.scheduleOnce = function(queue /*, target, method*/) {
+export function scheduleOnce(queue /*, target, method*/) {
   assert(
     `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-    `You will need to wrap any code with asynchronous side-effects in a run`,
-    run.currentRunLoop || !isTesting()
+      `You will need to wrap any code with asynchronous side-effects in a run`,
+    currentRunLoop || !isTesting()
   );
   deprecate(
-   `Scheduling into the '${queue}' run loop queue is deprecated.`,
-   queue !== 'sync',
-   { id: 'ember-metal.run.sync', until: '3.5.0' }
+    `Scheduling into the '${queue}' run loop queue is deprecated.`,
+    queue !== 'sync',
+    { id: 'ember-metal.run.sync', until: '3.5.0' }
   );
   return backburner.scheduleOnce(...arguments);
-};
+}
 
 /**
   Schedules an item to run from within a separate run loop, after
   control has been returned to the system. This is equivalent to calling
-  `run.later` with a wait time of 1ms.
+  `later` with a wait time of 1ms.
 
   ```javascript
   import { next } from '@ember/runloop';
@@ -479,12 +479,12 @@ run.scheduleOnce = function(queue /*, target, method*/) {
   });
   ```
 
-  Multiple operations scheduled with `run.next` will coalesce
+  Multiple operations scheduled with `next` will coalesce
   into the same later run loop, along with any other operations
-  scheduled by `run.later` that expire right around the same
-  time that `run.next` operations will fire.
+  scheduled by `later` that expire right around the same
+  time that `next` operations will fire.
 
-  Note that there are often alternatives to using `run.next`.
+  Note that there are often alternatives to using `next`.
   For instance, if you'd like to schedule an operation to happen
   after all DOM element operations have completed within the current
   run loop, you can make use of the `afterRender` run loop queue (added
@@ -513,16 +513,16 @@ run.scheduleOnce = function(queue /*, target, method*/) {
   });
   ```
 
-  One benefit of the above approach compared to using `run.next` is
+  One benefit of the above approach compared to using `next` is
   that you will be able to perform DOM/CSS operations before unprocessed
   elements are rendered to the screen, which may prevent flickering or
   other artifacts caused by delaying processing until after rendering.
 
-  The other major benefit to the above approach is that `run.next`
+  The other major benefit to the above approach is that `next`
   introduces an element of non-determinism, which can make things much
   harder to test, due to its reliance on `setTimeout`; it's much harder
   to guarantee the order of scheduled operations when they are scheduled
-  outside of the current run loop, i.e. with `run.next`.
+  outside of the current run loop, i.e. with `next`.
 
   @method next
   @static
@@ -532,13 +532,13 @@ run.scheduleOnce = function(queue /*, target, method*/) {
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @return {Object} Timer information for use in canceling, see `run.cancel`.
+  @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-run.next = function(...args) {
+export function next(...args) {
   args.push(1);
   return backburner.later(...args);
-};
+}
 
 /**
   Cancels a scheduled item. Must be a value returned by `later()`,
@@ -607,9 +607,9 @@ run.next = function(...args) {
   @return {Boolean} true if canceled or false/undefined if it wasn't found
   @public
 */
-run.cancel = function(timer) {
+export function cancel(timer) {
   return backburner.cancel(timer);
-};
+}
 
 /**
   Delay calling the target method until the debounce period has elapsed
@@ -682,12 +682,12 @@ run.cancel = function(timer) {
   @param {Number} wait Number of milliseconds to wait.
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to false.
-  @return {Array} Timer information for use in canceling, see `run.cancel`.
+  @return {Array} Timer information for use in canceling, see `cancel`.
   @public
 */
-run.debounce = function() {
+export function debounce() {
   return backburner.debounce(...arguments);
-};
+}
 
 /**
   Ensure that the target method is never called more frequently than
@@ -729,9 +729,9 @@ run.debounce = function() {
   @param {Number} spacing Number of milliseconds to space out requests.
   @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to true.
-  @return {Array} Timer information for use in canceling, see `run.cancel`.
+  @return {Array} Timer information for use in canceling, see `cancel`.
   @public
 */
-run.throttle = function() {
+export function throttle() {
   return backburner.throttle(...arguments);
-};
+}

@@ -96,7 +96,9 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   _bootSync(options) {
-    if (this._booted) { return this; }
+    if (this._booted) {
+      return this;
+    }
 
     options = new BootOptions(options);
 
@@ -171,7 +173,9 @@ const ApplicationInstance = EngineInstance.extend({
     beyond the first call have no effect.
   */
   setupRouter() {
-    if (this._didSetupRouter) { return; }
+    if (this._didSetupRouter) {
+      return;
+    }
     this._didSetupRouter = true;
 
     let router = get(this, 'router');
@@ -200,7 +204,11 @@ const ApplicationInstance = EngineInstance.extend({
     let applicationCustomEvents = get(this.application, 'customEvents');
     let instanceCustomEvents = get(this, 'customEvents');
 
-    let customEvents = assign({}, applicationCustomEvents, instanceCustomEvents);
+    let customEvents = assign(
+      {},
+      applicationCustomEvents,
+      instanceCustomEvents
+    );
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
@@ -248,11 +256,17 @@ const ApplicationInstance = EngineInstance.extend({
       }
     };
 
-    let handleTransitionReject = (error) => {
+    let handleTransitionReject = error => {
       if (error.error) {
         throw error.error;
-      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
-        return router._routerMicrolib.activeTransition.then(handleTransitionResolve, handleTransitionReject);
+      } else if (
+        error.name === 'TransitionAborted' &&
+        router._routerMicrolib.activeTransition
+      ) {
+        return router._routerMicrolib.activeTransition.then(
+          handleTransitionResolve,
+          handleTransitionReject
+        );
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -266,7 +280,9 @@ const ApplicationInstance = EngineInstance.extend({
     location.setURL(url);
 
     // getURL returns the set url with the rootURL stripped off
-    return router.handleURL(location.getURL()).then(handleTransitionResolve, handleTransitionReject);
+    return router
+      .handleURL(location.getURL())
+      .then(handleTransitionResolve, handleTransitionReject);
   },
 
   willDestroy() {
@@ -287,8 +303,12 @@ ApplicationInstance.reopenClass({
       options = new BootOptions(options);
     }
 
-    registry.register('-environment:main', options.toEnvironment(), { instantiate: false });
-    registry.register('service:-document', options.document, { instantiate: false });
+    registry.register('-environment:main', options.toEnvironment(), {
+      instantiate: false
+    });
+    registry.register('service:-document', options.document, {
+      instantiate: false
+    });
 
     this._super(registry, options);
   }
@@ -342,7 +362,6 @@ class BootOptions {
       @private
     */
     this.isInteractive = environment.hasDOM; // This default is overridable below
-
 
     /**
       @property _renderMode
@@ -435,7 +454,7 @@ class BootOptions {
     if (options.document) {
       this.document = options.document;
     } else {
-      this.document = (typeof document !== 'undefined') ? document : null;
+      this.document = typeof document !== 'undefined' ? document : null;
     }
 
     /**

@@ -203,7 +203,9 @@ const ActionHandler = Mixin.create({
     );
     if (this.actions && this.actions[actionName]) {
       let shouldBubble = this.actions[actionName].apply(this, args) === true;
-      if (!shouldBubble) { return; }
+      if (!shouldBubble) {
+        return;
+      }
     }
 
     let target = get(this, 'target');

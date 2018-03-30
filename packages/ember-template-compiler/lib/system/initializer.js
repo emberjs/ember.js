@@ -1,7 +1,11 @@
 import require, { has } from 'require';
 
 // Globals mode template compiler
-if (has('ember-application') && has('ember-environment') && has('ember-glimmer')) {
+if (
+  has('ember-application') &&
+  has('ember-environment') &&
+  has('ember-glimmer')
+) {
   let emberEnv = require('ember-environment');
   let emberGlimmer = require('ember-glimmer');
   let emberApp = require('ember-application');
@@ -9,7 +13,7 @@ if (has('ember-application') && has('ember-environment') && has('ember-glimmer')
   let { hasTemplate, setTemplate } = emberGlimmer;
   let { environment } = emberEnv;
 
-  let bootstrap = function() { };
+  let bootstrap = function() {};
 
   Application.initializer({
     name: 'domTemplates',
@@ -25,4 +29,3 @@ if (has('ember-application') && has('ember-environment') && has('ember-glimmer')
     }
   });
 }
-

@@ -3,7 +3,7 @@
 */
 
 import { FACTORY_FOR } from 'container';
-import { symbol, OWNER } from 'ember-utils';
+import { symbol, OWNER, setName } from 'ember-utils';
 import { on, descriptor } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
@@ -52,7 +52,7 @@ const EmberObject = CoreObject.extend(Observable, {
   })
 });
 
-EmberObject.toString = () => 'Ember.Object';
+setName(EmberObject, 'Ember.Object');
 
 export let FrameworkObject = EmberObject;
 

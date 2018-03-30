@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pure ES</title>
+  <script type="text/javascript">
+    mainContext = this;
+    emberEnvFlags = {};
+    require$1 = function () {
+    }
+    require$1.has = function () {
+      return false;
+    }
+    nodeModule = {
+      require: null,
+      module: null,
+      IS_NODE: false }
+  </script>
+  <script src="rollup-bundle.es.js"></script>
+</head>
+<body>
+  <script type="text/javascript">
+    Ember = __Ember.default;
+    class MyApp extends Ember.Application {}
+    new MyApp();
+  </script>
+</body>
+</html>

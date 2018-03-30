@@ -1,4 +1,6 @@
 blueprints/*/*files/**/*.js
+node-tests/fixtures/**/*.js
+docs/
 dist/
 tmp/
 **/*.ts

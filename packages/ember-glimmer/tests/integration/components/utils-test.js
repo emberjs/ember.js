@@ -13,45 +13,49 @@ import {
 } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 
-moduleFor('View tree tests', class extends ApplicationTest {
+moduleFor(
+  'View tree tests',
+  class extends ApplicationTest {
+    constructor() {
+      super();
 
-  constructor() {
-    super();
+      this.addComponent('x-tagless', {
+        ComponentClass: Component.extend({
+          tagName: ''
+        }),
 
-    this.addComponent('x-tagless', {
-      ComponentClass: Component.extend({
-        tagName: ''
-      }),
+        template:
+          '<div id="{{id}}">[{{id}}] {{#if isShowing}}{{yield}}{{/if}}</div>'
+      });
 
-      template: '<div id="{{id}}">[{{id}}] {{#if isShowing}}{{yield}}{{/if}}</div>'
-    });
+      this.addComponent('x-toggle', {
+        ComponentClass: Component.extend({
+          isExpanded: true,
 
-    this.addComponent('x-toggle', {
-      ComponentClass: Component.extend({
+          click() {
+            this.toggleProperty('isExpanded');
+            return false;
+          }
+        }),
+
+        template: '[{{id}}] {{#if isExpanded}}{{yield}}{{/if}}'
+      });
+
+      let ToggleController = Controller.extend({
         isExpanded: true,
 
-        click() {
-          this.toggleProperty('isExpanded');
-          return false;
+        actions: {
+          toggle: function() {
+            this.toggleProperty('isExpanded');
+          }
         }
-      }),
+      });
 
-      template: '[{{id}}] {{#if isExpanded}}{{yield}}{{/if}}'
-    });
+      this.add('controller:application', ToggleController);
 
-    let ToggleController = Controller.extend({
-      isExpanded: true,
-
-      actions: {
-        toggle: function() {
-          this.toggleProperty('isExpanded');
-        }
-      }
-    });
-
-    this.add('controller:application', ToggleController);
-
-    this.addTemplate('application', `
+      this.addTemplate(
+        'application',
+        `
       {{x-tagless id="root-1"}}
 
       {{#x-toggle id="root-2"}}
@@ -69,13 +73,19 @@ moduleFor('View tree tests', class extends ApplicationTest {
       {{/if}}
 
       {{outlet}}
-    `);
+    `
+      );
 
-    this.add('controller:index', ToggleController.extend({
-      isExpanded: false
-    }));
+      this.add(
+        'controller:index',
+        ToggleController.extend({
+          isExpanded: false
+        })
+      );
 
-    this.addTemplate('index', `
+      this.addTemplate(
+        'index',
+        `
       {{x-tagless id="root-4"}}
 
       {{#x-toggle id="root-5" isExpanded=false}}
@@ -91,9 +101,12 @@ moduleFor('View tree tests', class extends ApplicationTest {
       {{#if isExpanded}}
         {{x-toggle id="root-6"}}
       {{/if}}
-    `);
+    `
+      );
 
-    this.addTemplate('zomg', `
+      this.addTemplate(
+        'zomg',
+        `
       {{x-tagless id="root-7"}}
 
       {{#x-toggle id="root-8"}}
@@ -107,133 +120,174 @@ moduleFor('View tree tests', class extends ApplicationTest {
       {{#x-toggle id="root-9"}}
         {{outlet}}
       {{/x-toggle}}
-    `);
+    `
+      );
 
-    this.addTemplate('zomg.lol', `
+      this.addTemplate(
+        'zomg.lol',
+        `
       {{x-toggle id="inner-10"}}
-    `);
+    `
+      );
 
-    this.router.map(function() {
-      this.route('zomg', function() {
-        this.route('lol');
+      this.router.map(function() {
+        this.route('zomg', function() {
+          this.route('lol');
+        });
       });
-    });
-  }
+    }
 
-  ['@test getRootViews']() {
-    return this.visit('/').then(() => {
-      this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5']);
+    ['@test getRootViews']() {
+      return this.visit('/')
+        .then(() => {
+          this.assertRootViews([
+            'root-1',
+            'root-2',
+            'root-3',
+            'root-4',
+            'root-5'
+          ]);
 
-      this.runTask(() => this.$('#toggle-application').click());
+          this.runTask(() => this.$('#toggle-application').click());
 
-      this.assertRootViews(['root-1', 'root-2', 'root-4', 'root-5']);
+          this.assertRootViews(['root-1', 'root-2', 'root-4', 'root-5']);
 
-      this.runTask(() => {
-        this.$('#toggle-application').click();
-        this.$('#toggle-index').click();
+          this.runTask(() => {
+            this.$('#toggle-application').click();
+            this.$('#toggle-index').click();
+          });
+
+          this.assertRootViews([
+            'root-1',
+            'root-2',
+            'root-3',
+            'root-4',
+            'root-5',
+            'root-6'
+          ]);
+
+          return this.visit('/zomg/lol');
+        })
+        .then(() => {
+          this.assertRootViews([
+            'root-1',
+            'root-2',
+            'root-3',
+            'root-7',
+            'root-8',
+            'root-9'
+          ]);
+
+          return this.visit('/');
+        })
+        .then(() => {
+          this.assertRootViews([
+            'root-1',
+            'root-2',
+            'root-3',
+            'root-4',
+            'root-5',
+            'root-6'
+          ]);
+        });
+    }
+
+    assertRootViews(ids) {
+      let owner = this.applicationInstance;
+
+      let actual = getRootViews(owner)
+        .map(view => view.id)
+        .sort();
+      let expected = ids.sort();
+
+      this.assert.deepEqual(actual, expected, 'root views');
+    }
+
+    ['@test getChildViews']() {
+      return this.visit('/')
+        .then(() => {
+          this.assertChildViews('root-2', ['inner-1', 'inner-2']);
+          this.assertChildViews('root-5', []);
+          this.assertChildViews('inner-2', ['inner-3']);
+
+          this.runTask(() => this.$('#root-2').click());
+
+          this.assertChildViews('root-2', []);
+
+          this.runTask(() => this.$('#root-5').click());
+
+          this.assertChildViews('root-5', ['inner-4', 'inner-5']);
+          this.assertChildViews('inner-5', ['inner-6']);
+
+          return this.visit('/zomg');
+        })
+        .then(() => {
+          this.assertChildViews('root-2', []);
+          this.assertChildViews('root-8', ['inner-7', 'inner-8']);
+          this.assertChildViews('inner-8', ['inner-9']);
+          this.assertChildViews('root-9', []);
+
+          this.runTask(() => this.$('#root-8').click());
+
+          this.assertChildViews('root-8', []);
+
+          return this.visit('/zomg/lol');
+        })
+        .then(() => {
+          this.assertChildViews('root-2', []);
+          this.assertChildViews('root-8', []);
+          this.assertChildViews('root-9', ['inner-10']);
+
+          return this.visit('/');
+        })
+        .then(() => {
+          this.assertChildViews('root-2', []);
+          this.assertChildViews('root-5', []);
+
+          this.runTask(() => this.$('#root-2').click());
+          this.runTask(() => this.$('#inner-2').click());
+
+          this.assertChildViews('root-2', ['inner-1', 'inner-2']);
+          this.assertChildViews('inner-2', []);
+        });
+    }
+
+    ['@test getChildViews does not return duplicates']() {
+      return this.visit('/').then(() => {
+        this.assertChildViews('root-2', ['inner-1', 'inner-2']);
+
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+        this.runTask(() => this.$('#root-2').click());
+
+        this.assertChildViews('root-2', ['inner-1', 'inner-2']);
       });
+    }
 
-      this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5', 'root-6']);
+    assertChildViews(parentId, childIds) {
+      let parentView = this.viewFor(parentId);
+      let childViews = getChildViews(parentView);
 
-      return this.visit('/zomg/lol');
-    }).then(() => {
-      this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-7', 'root-8', 'root-9']);
+      let actual = childViews.map(view => view.id).sort();
+      let expected = childIds.sort();
 
-      return this.visit('/');
-    }).then(() => {
-      this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5', 'root-6']);
-    });
+      this.assert.deepEqual(actual, expected, `child views for #${parentId}`);
+    }
+
+    viewFor(id) {
+      let owner = this.applicationInstance;
+      let registry = owner.lookup('-view-registry:main');
+      return registry[id];
+    }
   }
-
-  assertRootViews(ids) {
-    let owner = this.applicationInstance;
-
-    let actual = getRootViews(owner).map(view => view.id).sort();
-    let expected = ids.sort();
-
-    this.assert.deepEqual(actual, expected, 'root views');
-  }
-
-  ['@test getChildViews']() {
-    return this.visit('/').then(() => {
-      this.assertChildViews('root-2', ['inner-1', 'inner-2']);
-      this.assertChildViews('root-5', []);
-      this.assertChildViews('inner-2', ['inner-3']);
-
-      this.runTask(() => this.$('#root-2').click());
-
-      this.assertChildViews('root-2', []);
-
-      this.runTask(() => this.$('#root-5').click());
-
-      this.assertChildViews('root-5', ['inner-4', 'inner-5']);
-      this.assertChildViews('inner-5', ['inner-6']);
-
-      return this.visit('/zomg');
-    }).then(() => {
-      this.assertChildViews('root-2', []);
-      this.assertChildViews('root-8', ['inner-7', 'inner-8']);
-      this.assertChildViews('inner-8', ['inner-9']);
-      this.assertChildViews('root-9', []);
-
-      this.runTask(() => this.$('#root-8').click());
-
-      this.assertChildViews('root-8', []);
-
-      return this.visit('/zomg/lol');
-    }).then(() => {
-      this.assertChildViews('root-2', []);
-      this.assertChildViews('root-8', []);
-      this.assertChildViews('root-9', ['inner-10']);
-
-      return this.visit('/');
-    }).then(() => {
-      this.assertChildViews('root-2', []);
-      this.assertChildViews('root-5', []);
-
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#inner-2').click());
-
-      this.assertChildViews('root-2', ['inner-1', 'inner-2']);
-      this.assertChildViews('inner-2', []);
-    });
-  }
-
-  ['@test getChildViews does not return duplicates']() {
-    return this.visit('/').then(() => {
-      this.assertChildViews('root-2', ['inner-1', 'inner-2']);
-
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-      this.runTask(() => this.$('#root-2').click());
-
-      this.assertChildViews('root-2', ['inner-1', 'inner-2']);
-    });
-  }
-
-  assertChildViews(parentId, childIds) {
-    let parentView = this.viewFor(parentId);
-    let childViews = getChildViews(parentView);
-
-    let actual = childViews.map(view => view.id).sort();
-    let expected = childIds.sort();
-
-    this.assert.deepEqual(actual, expected, `child views for #${parentId}`);
-  }
-
-  viewFor(id) {
-    let owner = this.applicationInstance;
-    let registry = owner.lookup('-view-registry:main');
-    return registry[id];
-  }
-});
+);
 
 let hasGetClientRects, hasGetBoundingClientRect;
 let ClientRectListCtor, ClientRectCtor;
@@ -256,91 +310,124 @@ let ClientRectListCtor, ClientRectCtor;
   }
 })();
 
-moduleFor('Bounds tests', class extends RenderingTest {
-  ['@test getViewBounds on a regular component'](assert) {
-    let component;
-    this.registerComponent('hi-mom', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          component = this;
-        }
-      }),
-      template: `<p>Hi, mom!</p>`
-    });
+moduleFor(
+  'Bounds tests',
+  class extends RenderingTest {
+    ['@test getViewBounds on a regular component'](assert) {
+      let component;
+      this.registerComponent('hi-mom', {
+        ComponentClass: Component.extend({
+          init() {
+            this._super(...arguments);
+            component = this;
+          }
+        }),
+        template: `<p>Hi, mom!</p>`
+      });
 
-    this.render(`{{hi-mom}}`);
+      this.render(`{{hi-mom}}`);
 
-    let { parentElement, firstNode, lastNode } = getViewBounds(component);
+      let { parentElement, firstNode, lastNode } = getViewBounds(component);
 
-    assert.equal(parentElement, this.element, 'a regular component should have the right parentElement');
-    assert.equal(firstNode, component.element, 'a regular component should have a single node that is its element');
-    assert.equal(lastNode, component.element, 'a regular component should have a single node that is its element');
-  }
-
-  ['@test getViewBounds on a tagless component'](assert) {
-    let component;
-    this.registerComponent('hi-mom', {
-      ComponentClass: Component.extend({
-        tagName: '',
-        init() {
-          this._super(...arguments);
-          component = this;
-        }
-      }),
-      template: `<span id="start-node">Hi,</span> <em id="before-end-node">mom</em>!`
-    });
-
-    this.render(`{{hi-mom}}`);
-
-    let { parentElement, firstNode, lastNode } = getViewBounds(component);
-
-    assert.equal(parentElement, this.element, 'a tagless component should have the right parentElement');
-    assert.equal(firstNode, this.$('#start-node')[0], 'a tagless component should have a range enclosing all of its nodes');
-    assert.equal(lastNode, this.$('#before-end-node')[0].nextSibling, 'a tagless component should have a range enclosing all of its nodes');
-  }
-
-  ['@test getViewClientRects'](assert) {
-    if (!hasGetClientRects || !ClientRectListCtor) {
-      assert.ok(true, 'The test environment does not support the DOM API required to run this test.');
-      return;
+      assert.equal(
+        parentElement,
+        this.element,
+        'a regular component should have the right parentElement'
+      );
+      assert.equal(
+        firstNode,
+        component.element,
+        'a regular component should have a single node that is its element'
+      );
+      assert.equal(
+        lastNode,
+        component.element,
+        'a regular component should have a single node that is its element'
+      );
     }
 
-    let component;
-    this.registerComponent('hi-mom', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          component = this;
-        }
-      }),
-      template: `<p>Hi, mom!</p>`
-    });
+    ['@test getViewBounds on a tagless component'](assert) {
+      let component;
+      this.registerComponent('hi-mom', {
+        ComponentClass: Component.extend({
+          tagName: '',
+          init() {
+            this._super(...arguments);
+            component = this;
+          }
+        }),
+        template: `<span id="start-node">Hi,</span> <em id="before-end-node">mom</em>!`
+      });
 
-    this.render(`{{hi-mom}}`);
+      this.render(`{{hi-mom}}`);
 
-    assert.ok(getViewClientRects(component) instanceof ClientRectListCtor);
-  }
+      let { parentElement, firstNode, lastNode } = getViewBounds(component);
 
-  ['@test getViewBoundingClientRect'](assert) {
-    if (!hasGetBoundingClientRect || !ClientRectCtor) {
-      assert.ok(true, 'The test environment does not support the DOM API required to run this test.');
-      return;
+      assert.equal(
+        parentElement,
+        this.element,
+        'a tagless component should have the right parentElement'
+      );
+      assert.equal(
+        firstNode,
+        this.$('#start-node')[0],
+        'a tagless component should have a range enclosing all of its nodes'
+      );
+      assert.equal(
+        lastNode,
+        this.$('#before-end-node')[0].nextSibling,
+        'a tagless component should have a range enclosing all of its nodes'
+      );
     }
 
-    let component;
-    this.registerComponent('hi-mom', {
-      ComponentClass: Component.extend({
-        init() {
-          this._super(...arguments);
-          component = this;
-        }
-      }),
-      template: `<p>Hi, mom!</p>`
-    });
+    ['@test getViewClientRects'](assert) {
+      if (!hasGetClientRects || !ClientRectListCtor) {
+        assert.ok(
+          true,
+          'The test environment does not support the DOM API required to run this test.'
+        );
+        return;
+      }
 
-    this.render(`{{hi-mom}}`);
+      let component;
+      this.registerComponent('hi-mom', {
+        ComponentClass: Component.extend({
+          init() {
+            this._super(...arguments);
+            component = this;
+          }
+        }),
+        template: `<p>Hi, mom!</p>`
+      });
 
-    assert.ok(getViewBoundingClientRect(component) instanceof ClientRectCtor);
+      this.render(`{{hi-mom}}`);
+
+      assert.ok(getViewClientRects(component) instanceof ClientRectListCtor);
+    }
+
+    ['@test getViewBoundingClientRect'](assert) {
+      if (!hasGetBoundingClientRect || !ClientRectCtor) {
+        assert.ok(
+          true,
+          'The test environment does not support the DOM API required to run this test.'
+        );
+        return;
+      }
+
+      let component;
+      this.registerComponent('hi-mom', {
+        ComponentClass: Component.extend({
+          init() {
+            this._super(...arguments);
+            component = this;
+          }
+        }),
+        template: `<p>Hi, mom!</p>`
+      });
+
+      this.render(`{{hi-mom}}`);
+
+      assert.ok(getViewBoundingClientRect(component) instanceof ClientRectCtor);
+    }
   }
-});
+);

@@ -4,9 +4,19 @@
 
 import { assert, deprecate } from 'ember-debug';
 import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
-import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, EMBER_METAL_TRACKED_PROPERTIES, MANDATORY_GETTER } from 'ember/features';
+import {
+  DESCRIPTOR_TRAP,
+  EMBER_METAL_ES5_GETTERS,
+  EMBER_METAL_TRACKED_PROPERTIES,
+  MANDATORY_GETTER
+} from 'ember/features';
 import { isPath } from './path_cache';
-import { isDescriptor, isDescriptorTrap, DESCRIPTOR, descriptorFor } from './meta';
+import {
+  isDescriptor,
+  isDescriptorTrap,
+  DESCRIPTOR,
+  descriptorFor
+} from './meta';
 import { getCurrentTracker } from './tracked';
 import { tagForProperty } from './tags';
 
@@ -31,7 +41,6 @@ export function getPossibleMandatoryProxyValue(obj, keyName) {
     return obj[keyName];
   }
 }
-
 
 // ..........................................................
 // GET AND SET
@@ -72,10 +81,23 @@ export function getPossibleMandatoryProxyValue(obj, keyName) {
   @public
 */
 export function get(obj, keyName) {
-  assert(`Get must be called with two arguments; an object and a property key`, arguments.length === 2);
-  assert(`Cannot call get with '${keyName}' on an undefined object.`, obj !== undefined && obj !== null);
-  assert(`The key provided to get must be a string or number, you passed ${keyName}`, typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName)));
-  assert(`'this' in paths is not supported`, typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0);
+  assert(
+    `Get must be called with two arguments; an object and a property key`,
+    arguments.length === 2
+  );
+  assert(
+    `Cannot call get with '${keyName}' on an undefined object.`,
+    obj !== undefined && obj !== null
+  );
+  assert(
+    `The key provided to get must be a string or number, you passed ${keyName}`,
+    typeof keyName === 'string' ||
+      (typeof keyName === 'number' && !isNaN(keyName))
+  );
+  assert(
+    `'this' in paths is not supported`,
+    typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
+  );
   assert('Cannot call `get` with an empty string', keyName !== '');
 
   let type = typeof obj;
@@ -104,12 +126,15 @@ export function get(obj, keyName) {
         descriptor = value[DESCRIPTOR];
       } else if (isDescriptor(value)) {
         deprecate(
-          `[DEPRECATED] computed property '${keyName}' was not set on object '${obj && obj.toString && obj.toString()}' via 'defineProperty'`,
+          `[DEPRECATED] computed property '${keyName}' was not set on object '${obj &&
+            obj.toString &&
+            obj.toString()}' via 'defineProperty'`,
           !EMBER_METAL_ES5_GETTERS,
           {
             id: 'ember-meta.descriptor-on-object',
             until: '3.5.0',
-            url: 'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties'
+            url:
+              'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties'
           }
         );
         descriptor = value;
@@ -125,8 +150,12 @@ export function get(obj, keyName) {
 
   if (isPath(keyName)) {
     return _getPath(obj, keyName);
-  } else if (value === undefined && isObject && !(keyName in obj) &&
-    typeof obj.unknownProperty === 'function') {
+  } else if (
+    value === undefined &&
+    isObject &&
+    !(keyName in obj) &&
+    typeof obj.unknownProperty === 'function'
+  ) {
     return obj.unknownProperty(keyName);
   } else {
     return value;
@@ -177,7 +206,9 @@ function isGettable(obj) {
 export function getWithDefault(root, key, defaultValue) {
   let value = get(root, key);
 
-  if (value === undefined) { return defaultValue; }
+  if (value === undefined) {
+    return defaultValue;
+  }
   return value;
 }
 

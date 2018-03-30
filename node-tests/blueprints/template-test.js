@@ -105,15 +105,23 @@ describe('Blueprint: template', function() {
     });
 
     it('template foo --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['template', 'foo', '--in-repo-addon=my-addon'], _file => {
-        expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal('');
-      });
+      return emberGenerateDestroy(
+        ['template', 'foo', '--in-repo-addon=my-addon'],
+        _file => {
+          expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal('');
+        }
+      );
     });
 
     it('template foo/bar --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['template', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
-        expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal('');
-      });
+      return emberGenerateDestroy(
+        ['template', 'foo/bar', '--in-repo-addon=my-addon'],
+        _file => {
+          expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal(
+            ''
+          );
+        }
+      );
     });
   });
 });

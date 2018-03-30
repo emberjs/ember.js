@@ -3,7 +3,7 @@
 function injectBabelHelpers() {
   return {
     pre(file) {
-      file.set('helperGenerator', function (name) {
+      file.set('helperGenerator', function(name) {
         if (name === 'extends') {
           return file.addImport('ember-utils', 'assign', name);
         }

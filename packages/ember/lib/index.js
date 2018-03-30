@@ -85,7 +85,29 @@ Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
-Ember.run = metal.run;
+// Using _globalsRun here so that mutating the function (adding `next`,
+// `later`, etc to it) does not appear available throughout the rest of the
+// codebase. This is specifically to ensure that we do not accidentally
+// regress and write `run.next`, etc...
+Ember.run = metal._globalsRun;
+Ember.run.backburner = metal.backburner;
+Ember.run.begin = metal.begin;
+Ember.run.bind = metal.bind;
+Ember.run.cancel = metal.cancel;
+Ember.run.debounce = metal.debounce;
+Ember.run.end = metal.end;
+Ember.run.hasScheduledTimers = metal.hasScheduledTimers;
+Ember.run.join = metal.join;
+Ember.run.later = metal.later;
+Ember.run.next = metal.next;
+Ember.run.once = metal.once;
+Ember.run.schedule = metal.schedule;
+Ember.run.scheduleOnce = metal.scheduleOnce;
+Ember.run.throttle = metal.throttle;
+Object.defineProperty(Ember.run, 'currentRunLoop', {
+  get: metal.getCurrentRunLoop,
+  enumerable: false
+});
 Ember.propertyWillChange = metal.propertyWillChange;
 Ember.propertyDidChange = metal.propertyDidChange;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
@@ -279,8 +301,6 @@ import {
   CoreObject,
   NativeArray,
   A,
-  isNamespaceSearchDisabled,
-  setNamespaceSearchDisabled,
   getStrings,
   setStrings,
 
@@ -423,8 +443,8 @@ Object.defineProperty(Ember, 'STRINGS', {
 Object.defineProperty(Ember, 'BOOTED', {
   configurable: false,
   enumerable: false,
-  get: isNamespaceSearchDisabled,
-  set: setNamespaceSearchDisabled
+  get: metal.isNamespaceSearchDisabled,
+  set: metal.setNamespaceSearchDisabled
 });
 
 import {
@@ -581,7 +601,6 @@ runLoadHooks('Ember');
 */
 export default Ember;
 
-/* globals module */
 if (IS_NODE) {
   module.exports = Ember;
 } else {

@@ -1,4 +1,3 @@
-/* globals module */
 import global from './global';
 import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './utils';
 /**
@@ -12,8 +11,10 @@ import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './utils';
   @type Object
   @public
 */
-export const ENV = (typeof global.EmberENV === 'object' && global.EmberENV) ||
-                   (typeof global.ENV === 'object' && global.ENV) || {};
+export const ENV =
+  (typeof global.EmberENV === 'object' && global.EmberENV) ||
+  (typeof global.ENV === 'object' && global.ENV) ||
+  {};
 
 // ENABLE_ALL_FEATURES was documented, but you can't actually enable non optional features.
 if (ENV.ENABLE_ALL_FEATURES) {
@@ -51,7 +52,9 @@ ENV.EXTEND_PROTOTYPES = normalizeExtendPrototypes(ENV.EXTEND_PROTOTYPES);
   @for EmberENV
   @public
 */
-ENV.LOG_STACKTRACE_ON_DEPRECATION = defaultTrue(ENV.LOG_STACKTRACE_ON_DEPRECATION);
+ENV.LOG_STACKTRACE_ON_DEPRECATION = defaultTrue(
+  ENV.LOG_STACKTRACE_ON_DEPRECATION
+);
 
 /**
   The `LOG_VERSION` property, when true, tells Ember to log versions of all
@@ -93,7 +96,9 @@ ENV.RAISE_ON_DEPRECATION = defaultFalse(ENV.RAISE_ON_DEPRECATION);
   @default true
   @private
 */
-ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(ENV._APPLICATION_TEMPLATE_WRAPPER);
+ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(
+  ENV._APPLICATION_TEMPLATE_WRAPPER
+);
 
 /**
   Whether to use Glimmer Component semantics (as opposed to the classic "Curly"
@@ -108,12 +113,17 @@ ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(ENV._APPLICATION_TEMPLATE_WRAPPE
   @default false
   @private
 */
-ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = defaultFalse(ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS);
+ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = defaultFalse(
+  ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS
+);
 
 // check if window exists and actually is the global
-const hasDOM = typeof window !== 'undefined' && window === global &&
-               window.document && window.document.createElement &&
-               !ENV.disableBrowserEnvironment; // is this a public thing?
+const hasDOM =
+  typeof window !== 'undefined' &&
+  window === global &&
+  window.document &&
+  window.document.createElement &&
+  !ENV.disableBrowserEnvironment; // is this a public thing?
 
 // legacy imports/exports/lookup stuff (should we keep this??)
 const originalContext = global.Ember || {};
@@ -128,20 +138,22 @@ export const context = {
 };
 
 // TODO: cleanup single source of truth issues with this stuff
-export const environment = hasDOM ? {
-  hasDOM: true,
-  isChrome: !!window.chrome && !window.opera,
-  isFirefox: typeof InstallTrigger !== 'undefined',
-  location: window.location,
-  history: window.history,
-  userAgent: window.navigator.userAgent,
-  window
-} : {
-  hasDOM: false,
-  isChrome: false,
-  isFirefox: false,
-  location: null,
-  history: null,
-  userAgent: 'Lynx (textmode)',
-  window: null
-};
+export const environment = hasDOM
+  ? {
+      hasDOM: true,
+      isChrome: !!window.chrome && !window.opera,
+      isFirefox: typeof InstallTrigger !== 'undefined',
+      location: window.location,
+      history: window.history,
+      userAgent: window.navigator.userAgent,
+      window
+    }
+  : {
+      hasDOM: false,
+      isChrome: false,
+      isFirefox: false,
+      location: null,
+      history: null,
+      userAgent: 'Lynx (textmode)',
+      window: null
+    };

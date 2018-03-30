@@ -14,7 +14,11 @@ class EveryTest extends AbstractTestCase {
       return true;
     });
     this.assert.equal(result, true, 'return value of obj.every');
-    this.assert.deepEqual(found, ary, 'items passed during every() should match');
+    this.assert.deepEqual(
+      found,
+      ary,
+      'items passed during every() should match'
+    );
   }
 
   '@test every should stop invoking when you return false'() {
@@ -30,8 +34,16 @@ class EveryTest extends AbstractTestCase {
       return --cnt > 0;
     });
     this.assert.equal(result, false, 'return value of obj.every');
-    this.assert.equal(found.length, exp, 'should invoke proper number of times');
-    this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during every() should match');
+    this.assert.equal(
+      found.length,
+      exp,
+      'should invoke proper number of times'
+    );
+    this.assert.deepEqual(
+      found,
+      ary.slice(0, -2),
+      'items passed during every() should match'
+    );
   }
 }
 
@@ -63,8 +75,8 @@ class IsEveryTest extends AbstractTestCase {
       EmberObject.create({ foo: null, bar: null })
     ]);
 
-    this.assert.equal(obj.isEvery('foo', null), true, 'isEvery(\'foo\', null)');
-    this.assert.equal(obj.isEvery('bar', null), false, 'isEvery(\'bar\', null)');
+    this.assert.equal(obj.isEvery('foo', null), true, "isEvery('foo', null)");
+    this.assert.equal(obj.isEvery('bar', null), false, "isEvery('bar', null)");
   }
 
   '@test should return true if every property is undefined'() {
@@ -73,8 +85,16 @@ class IsEveryTest extends AbstractTestCase {
       EmberObject.create({ bar: undefined })
     ]);
 
-    this.assert.equal(obj.isEvery('foo', undefined), true, 'isEvery(\'foo\', undefined)');
-    this.assert.equal(obj.isEvery('bar', undefined), false, 'isEvery(\'bar\', undefined)');
+    this.assert.equal(
+      obj.isEvery('foo', undefined),
+      true,
+      "isEvery('foo', undefined)"
+    );
+    this.assert.equal(
+      obj.isEvery('bar', undefined),
+      false,
+      "isEvery('bar', undefined)"
+    );
   }
 }
 

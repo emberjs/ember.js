@@ -8,7 +8,9 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     super();
 
     let { applicationOptions } = this;
-    this.application = this.runTask(() => this.createApplication(applicationOptions));
+    this.application = this.runTask(() =>
+      this.createApplication(applicationOptions)
+    );
 
     this.resolver = applicationOptions.Resolver.lastInstance;
 
@@ -17,7 +19,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     }
   }
 
-  createApplication(myOptions={}, MyApplication=Application) {
+  createApplication(myOptions = {}, MyApplication = Application) {
     return MyApplication.create(myOptions);
   }
 
@@ -32,9 +34,8 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
   }
 
   transitionTo() {
-    return this.runTask(() =>{
+    return this.runTask(() => {
       return this.appRouter.transitionTo(...arguments);
     });
   }
-
 }

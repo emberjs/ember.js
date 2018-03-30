@@ -7,10 +7,18 @@ import {
 
 // used by unit tests to test both accessor mode and non-accessor mode
 export function testBoth(testname, callback) {
-  function emberget(x, y) { return getFromEmberMetal(x, y); }
-  function emberset(x, y, z) { return setFromEmberMetal(x, y, z); }
-  function aget(x, y) { return x[y]; }
-  function aset(x, y, z) { return (x[y] = z); }
+  function emberget(x, y) {
+    return getFromEmberMetal(x, y);
+  }
+  function emberset(x, y, z) {
+    return setFromEmberMetal(x, y, z);
+  }
+  function aget(x, y) {
+    return x[y];
+  }
+  function aset(x, y, z) {
+    return (x[y] = z);
+  }
 
   QUnit.test(`${testname} using getFromEmberMetal()/set()`, function(assert) {
     callback(emberget, emberset, assert);
@@ -26,12 +34,24 @@ export function testBoth(testname, callback) {
 }
 
 export function testWithDefault(testname, callback) {
-  function emberget(x, y) { return getFromEmberMetal(x, y); }
-  function embergetwithdefault(x, y, z) { return getWithDefaultFromEmberMetal(x, y, z); }
-  function getwithdefault(x, y, z) { return x.getWithDefault(y, z); }
-  function emberset(x, y, z) { return setFromEmberMetal(x, y, z); }
-  function aget(x, y) { return x[y]; }
-  function aset(x, y, z) { return (x[y] = z); }
+  function emberget(x, y) {
+    return getFromEmberMetal(x, y);
+  }
+  function embergetwithdefault(x, y, z) {
+    return getWithDefaultFromEmberMetal(x, y, z);
+  }
+  function getwithdefault(x, y, z) {
+    return x.getWithDefault(y, z);
+  }
+  function emberset(x, y, z) {
+    return setFromEmberMetal(x, y, z);
+  }
+  function aget(x, y) {
+    return x[y];
+  }
+  function aset(x, y, z) {
+    return (x[y] = z);
+  }
 
   QUnit.test(`${testname} using obj.get()`, function(assert) {
     callback(emberget, emberset, assert);

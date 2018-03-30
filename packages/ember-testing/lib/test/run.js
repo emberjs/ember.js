@@ -1,7 +1,7 @@
-import { run as emberRun } from 'ember-metal';
+import { run as emberRun, getCurrentRunLoop } from 'ember-metal';
 
 export default function run(fn) {
-  if (!emberRun.currentRunLoop) {
+  if (!getCurrentRunLoop()) {
     return emberRun(fn);
   } else {
     return fn();

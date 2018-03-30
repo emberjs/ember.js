@@ -1,16 +1,10 @@
 import { Application as EmberApplication } from 'ember-application';
 import setupForTesting from '../setup_for_testing';
 import { helpers } from '../test/helpers';
-import TestPromise, {
-  resolve,
-  getLastPromise
-} from '../test/promise';
+import TestPromise, { resolve, getLastPromise } from '../test/promise';
 import run from '../test/run';
 import { invokeInjectHelpersCallbacks } from '../test/on_inject_helpers';
-import {
-  asyncStart,
-  asyncEnd
-} from '../test/adapter';
+import { asyncStart, asyncEnd } from '../test/adapter';
 
 EmberApplication.reopen({
   /**
@@ -40,7 +34,6 @@ EmberApplication.reopen({
     @since 1.3.0
   */
   originalMethods: {},
-
 
   /**
   This property indicates whether or not this application is currently in
@@ -130,7 +123,12 @@ EmberApplication.reopen({
     for (let name in helpers) {
       this.originalMethods[name] = this.helperContainer[name];
       this.testHelpers[name] = this.helperContainer[name] = helper(this, name);
-      protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name].meta.wait);
+      protoWrap(
+        TestPromise.prototype,
+        name,
+        helper(this, name),
+        helpers[name].meta.wait
+      );
     }
 
     invokeInjectHelpersCallbacks(this);
@@ -150,7 +148,9 @@ EmberApplication.reopen({
     @method removeTestHelpers
   */
   removeTestHelpers() {
-    if (!this.helperContainer) { return; }
+    if (!this.helperContainer) {
+      return;
+    }
 
     for (let name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
@@ -191,6 +191,8 @@ function helper(app, name) {
     // asynchronous here, because fn may not be invoked before we
     // return.
     asyncStart();
-    return lastPromise.then(() => fn.apply(app, [app, ...args])).finally(asyncEnd);
+    return lastPromise
+      .then(() => fn.apply(app, [app, ...args]))
+      .finally(asyncEnd);
   };
 }

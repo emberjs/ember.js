@@ -21,7 +21,7 @@ module.exports = {
         }
         return options.dasherizedModuleName;
       },
-      __name__: function (options) {
+      __name__: function(options) {
         if (options.pod) {
           return 'route';
         }
@@ -45,14 +45,18 @@ module.exports = {
     };
   },
 
-  locals: function (options) {
+  locals: function(options) {
     let locals = {};
-    let addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
+    let addonRawName = options.inRepoAddon
+      ? options.inRepoAddon
+      : options.project.name();
     let addonName = stringUtil.dasherize(addonRawName);
     let fileName = stringUtil.dasherize(options.entity.name);
 
-    ['route', 'template'].forEach(function (blueprint) {
-      let pathName = [addonName, inflector.pluralize(blueprint), fileName].join('/');
+    ['route', 'template'].forEach(function(blueprint) {
+      let pathName = [addonName, inflector.pluralize(blueprint), fileName].join(
+        '/'
+      );
 
       if (options.pod) {
         pathName = [addonName, fileName, blueprint].join('/');

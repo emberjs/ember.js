@@ -41,7 +41,11 @@ let { FEATURES } = FLAGS;
 export default function isEnabled(feature) {
   let featureValue = FEATURES[feature];
 
-  if (featureValue === true || featureValue === false || featureValue === undefined) {
+  if (
+    featureValue === true ||
+    featureValue === false ||
+    featureValue === undefined
+  ) {
     return featureValue;
   } else if (ENV.ENABLE_OPTIONAL_FEATURES) {
     return true;

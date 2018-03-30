@@ -21,10 +21,14 @@ describe('Blueprint: instance-initializer-test', function() {
     });
 
     it('instance-initializer-test foo', function() {
-      return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-        expect(_file('tests/unit/instance-initializers/foo-test.js'))
-          .to.equal(fixture('instance-initializer-test/default.js'));
-      });
+      return emberGenerateDestroy(
+        ['instance-initializer-test', 'foo'],
+        _file => {
+          expect(
+            _file('tests/unit/instance-initializers/foo-test.js')
+          ).to.equal(fixture('instance-initializer-test/default.js'));
+        }
+      );
     });
 
     describe('with ember-cli-qunit@4.2.0', function() {
@@ -33,10 +37,14 @@ describe('Blueprint: instance-initializer-test', function() {
       });
 
       it('instance-initializer-test foo', function() {
-        return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-          expect(_file('tests/unit/instance-initializers/foo-test.js'))
-            .to.equal(fixture('instance-initializer-test/rfc232.js'));
-        });
+        return emberGenerateDestroy(
+          ['instance-initializer-test', 'foo'],
+          _file => {
+            expect(
+              _file('tests/unit/instance-initializers/foo-test.js')
+            ).to.equal(fixture('instance-initializer-test/rfc232.js'));
+          }
+        );
       });
     });
 
@@ -49,10 +57,14 @@ describe('Blueprint: instance-initializer-test', function() {
       });
 
       it('instance-initializer-test foo for mocha', function() {
-        return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-          expect(_file('tests/unit/instance-initializers/foo-test.js'))
-            .to.equal(fixture('instance-initializer-test/mocha.js'));
-        });
+        return emberGenerateDestroy(
+          ['instance-initializer-test', 'foo'],
+          _file => {
+            expect(
+              _file('tests/unit/instance-initializers/foo-test.js')
+            ).to.equal(fixture('instance-initializer-test/mocha.js'));
+          }
+        );
       });
     });
   });
@@ -63,10 +75,14 @@ describe('Blueprint: instance-initializer-test', function() {
     });
 
     it('instance-initializer-test foo', function() {
-      return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-        expect(_file('tests/unit/instance-initializers/foo-test.js'))
-          .to.equal(fixture('instance-initializer-test/dummy.js'));
-      });
+      return emberGenerateDestroy(
+        ['instance-initializer-test', 'foo'],
+        _file => {
+          expect(
+            _file('tests/unit/instance-initializers/foo-test.js')
+          ).to.equal(fixture('instance-initializer-test/dummy.js'));
+        }
+      );
     });
   });
 });

@@ -1,9 +1,6 @@
 import { Registry } from 'container';
 import { Router } from 'ember-routing';
-import {
-  Application,
-  ApplicationInstance
-} from 'ember-application';
+import { Application, ApplicationInstance } from 'ember-application';
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -18,7 +15,11 @@ export default function buildOwner(options = {}) {
   let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
 
   let namespace = EmberObject.create({
-    Resolver: { create() { return resolver; } }
+    Resolver: {
+      create() {
+        return resolver;
+      }
+    }
   });
 
   let fallbackRegistry = Application.buildRegistry(namespace);
@@ -30,10 +31,13 @@ export default function buildOwner(options = {}) {
 
   ApplicationInstance.setupRegistry(registry, bootOptions);
 
-  let owner = Owner.create({
-    __registry__: registry,
-    __container__: null
-  }, ownerOptions);
+  let owner = Owner.create(
+    {
+      __registry__: registry,
+      __container__: null
+    },
+    ownerOptions
+  );
 
   let container = registry.container({ owner });
   owner.__container__ = container;

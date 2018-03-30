@@ -3,10 +3,7 @@
 // current impl doesn't care about the differences as much...
 
 import { guidFor } from 'ember-utils';
-import {
-  mixin,
-  Mixin
-} from '../..';
+import { mixin, Mixin } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const PrivateProperty = Mixin.create({
@@ -34,18 +31,39 @@ const Combined = Mixin.create(BarProperties, BarMethods);
 
 let obj;
 
-moduleFor('Basic introspection', class extends AbstractTestCase {
-  beforeEach() {
-    obj = {};
-    mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
-  }
-
-  ['@test Ember.mixins()'](assert) {
-    function mapGuids(ary) {
-      return ary.map(x => guidFor(x));
+moduleFor(
+  'Basic introspection',
+  class extends AbstractTestCase {
+    beforeEach() {
+      obj = {};
+      mixin(
+        obj,
+        PrivateProperty,
+        PublicProperty,
+        PrivateMethod,
+        PublicMethod,
+        Combined
+      );
     }
 
-    assert.deepEqual(mapGuids(Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
-  }
-});
+    ['@test Ember.mixins()'](assert) {
+      function mapGuids(ary) {
+        return ary.map(x => guidFor(x));
+      }
 
+      assert.deepEqual(
+        mapGuids(Mixin.mixins(obj)),
+        mapGuids([
+          PrivateProperty,
+          PublicProperty,
+          PrivateMethod,
+          PublicMethod,
+          Combined,
+          BarProperties,
+          BarMethods
+        ]),
+        'should return included mixins'
+      );
+    }
+  }
+);

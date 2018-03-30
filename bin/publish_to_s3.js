@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // To invoke this from the commandline you need the following to env vars to exist:
 //
 // S3_BUCKET_NAME
@@ -15,17 +13,23 @@
 // ./bin/publish_to_s3.js
 // ```
 var S3Publisher = require('ember-publisher');
-var configPath = require('path').join(__dirname, '../config/s3ProjectConfig.js');
+var configPath = require('path').join(
+  __dirname,
+  '../config/s3ProjectConfig.js'
+);
 
 var publisher = new S3Publisher({ projectConfigPath: configPath });
 
 publisher.currentBranch = function() {
-  return process.env.BUILD_TYPE || {
-    master: 'canary',
-    beta: 'beta',
-    release: 'release',
-    'lts-2-4': 'lts-2-4',
-  }[this.CURRENT_BRANCH];
+  return (
+    process.env.BUILD_TYPE ||
+    {
+      master: 'canary',
+      beta: 'beta',
+      release: 'release',
+      'lts-2-4': 'lts-2-4'
+    }[this.CURRENT_BRANCH]
+  );
 };
 
 publisher.publish();

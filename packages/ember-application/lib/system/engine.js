@@ -2,15 +2,8 @@
 @module @ember/engine
 */
 import { canInvoke } from 'ember-utils';
-import {
-  Namespace,
-  RegistryProxyMixin,
-  Controller
-} from 'ember-runtime';
-import {
-  Registry,
-  privatize as P
-} from 'container';
+import { Namespace, RegistryProxyMixin, Controller } from 'ember-runtime';
+import { Registry, privatize as P } from 'container';
 import DAG from 'dag-map';
 import { assert } from 'ember-debug';
 import { get, set } from 'ember-metal';
@@ -96,7 +89,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry() {
-    let registry = this.__registry__ = this.constructor.buildRegistry(this);
+    let registry = (this.__registry__ = this.constructor.buildRegistry(this));
 
     return registry;
   },
@@ -148,7 +141,12 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
 
     for (let i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
-      graph.add(initializer.name, initializer, initializer.before, initializer.after);
+      graph.add(
+        initializer.name,
+        initializer,
+        initializer.before,
+        initializer.after
+      );
     }
 
     graph.topsort(cb);
@@ -378,7 +376,10 @@ Engine.reopenClass({
     @param instanceInitializer
     @public
   */
-  instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer'),
+  instanceInitializer: buildInitializerMethod(
+    'instanceInitializers',
+    'instance initializer'
+  ),
 
   /**
     This creates a registry with the default Ember naming conventions.
@@ -463,20 +464,32 @@ function resolverFor(namespace) {
 }
 
 function buildInitializerMethod(bucketName, humanName) {
-  return function (initializer) {
+  return function(initializer) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would
     // pollute the parent class as well as other subclasses.
-    if (this.superclass[bucketName] !== undefined && this.superclass[bucketName] === this[bucketName]) {
+    if (
+      this.superclass[bucketName] !== undefined &&
+      this.superclass[bucketName] === this[bucketName]
+    ) {
       let attrs = {};
       attrs[bucketName] = Object.create(this[bucketName]);
       this.reopenClass(attrs);
     }
 
-    assert(`The ${humanName} '${initializer.name}' has already been registered`, !this[bucketName][initializer.name]);
-    assert(`An ${humanName} cannot be registered without an initialize function`, canInvoke(initializer, 'initialize'));
-    assert(`An ${humanName} cannot be registered without a name property`, initializer.name !== undefined);
+    assert(
+      `The ${humanName} '${initializer.name}' has already been registered`,
+      !this[bucketName][initializer.name]
+    );
+    assert(
+      `An ${humanName} cannot be registered without an initialize function`,
+      canInvoke(initializer, 'initialize')
+    );
+    assert(
+      `An ${humanName} cannot be registered without a name property`,
+      initializer.name !== undefined
+    );
 
     this[bucketName][initializer.name] = initializer;
   };
@@ -490,7 +503,11 @@ function commonSetupRegistry(registry) {
 
   registry.injection('view', '_viewRegistry', '-view-registry:main');
   registry.injection('renderer', '_viewRegistry', '-view-registry:main');
-  registry.injection('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
+  registry.injection(
+    'event_dispatcher:main',
+    '_viewRegistry',
+    '-view-registry:main'
+  );
 
   registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 
@@ -510,9 +527,19 @@ function commonSetupRegistry(registry) {
   registry.injection('service:-routing', 'router', 'router:main');
 
   // DEBUGGING
-  registry.register('resolver-for-debugging:main', registry.resolver, { instantiate: false });
-  registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-  registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+  registry.register('resolver-for-debugging:main', registry.resolver, {
+    instantiate: false
+  });
+  registry.injection(
+    'container-debug-adapter:main',
+    'resolver',
+    'resolver-for-debugging:main'
+  );
+  registry.injection(
+    'data-adapter:main',
+    'containerDebugAdapter',
+    'container-debug-adapter:main'
+  );
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);

@@ -1,9 +1,9 @@
-#!/usr/bin/env node
-
+/* globals QUnit */
 /* eslint-disable no-console */
+'use strict';
 
 var execa = require('execa');
-var RSVP  = require('rsvp');
+var RSVP = require('rsvp');
 var execFile = require('child_process').execFile;
 var chalk = require('chalk');
 var FEATURES = require('../broccoli/features');
@@ -16,7 +16,7 @@ var http = require('http');
 var serveStatic = require('serve-static');
 
 // Serve up public/ftp folder.
-var serve = serveStatic('./dist/', { 'index': ['index.html', 'index.htm'] });
+var serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
 
 // Create server.
 var server = http.createServer(function(req, res) {
@@ -36,7 +36,7 @@ function run(queryString) {
 }
 
 function runInBrowser(url, retries, resolve, reject) {
-  var result = {output: [], errors: [], code: null};
+  var result = { output: [], errors: [], code: null };
 
   console.log('Running Chrome headless: ' + url);
 
@@ -71,7 +71,7 @@ function runInBrowser(url, retries, resolve, reject) {
           var testsFailed = 0;
           var currentTestAssertions = [];
 
-          QUnit.log(function (details) {
+          QUnit.log(function(details) {
             var response;
 
             // Ignore passing assertions
@@ -86,7 +86,11 @@ function runInBrowser(url, retries, resolve, reject) {
                 response += ', ';
               }
 
-              response += 'expected: ' + details.expected + ', but was: ' + details.actual;
+              response +=
+                'expected: ' +
+                details.expected +
+                ', but was: ' +
+                details.actual;
             }
 
             if (details.source) {
@@ -96,10 +100,10 @@ function runInBrowser(url, retries, resolve, reject) {
             currentTestAssertions.push('Failed assertion: ' + response);
           });
 
-          QUnit.testDone(function (result) {
+          QUnit.testDone(function(result) {
             var i,
-                len,
-                name = '';
+              len,
+              name = '';
 
             if (result.module) {
               name += result.module + ': ';
@@ -122,13 +126,24 @@ function runInBrowser(url, retries, resolve, reject) {
             currentTestAssertions.length = 0;
           });
 
-          QUnit.done(function (result) {
-            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
+          QUnit.done(function(result) {
+            console.log(
+              '\n' +
+                'Took ' +
+                result.runtime +
+                'ms to run ' +
+                testsTotal +
+                ' tests. ' +
+                testsPassed +
+                ' passed, ' +
+                testsFailed +
+                ' failed.'
+            );
 
             if (typeof window.callPhantom === 'function') {
               window.callPhantom({
-                'name': 'QUnit.done',
-                'data': result
+                name: 'QUnit.done',
+                data: result
               });
             }
           });
@@ -141,7 +156,9 @@ function runInBrowser(url, retries, resolve, reject) {
           var failed = !result || !result.total || result.failed;
 
           if (!result.total) {
-            console.error('No tests were executed. Are you loading tests asynchronously?');
+            console.error(
+              'No tests were executed. Are you loading tests asynchronously?'
+            );
           }
 
           var code = failed ? 1 : 0;
@@ -153,11 +170,15 @@ function runInBrowser(url, retries, resolve, reject) {
             console.log(chalk.red('Browser crashed with exit code ' + code));
 
             if (retries > 1) {
-              console.log(chalk.yellow('Retrying... ¯\_(ツ)_/¯'));
+              console.log(chalk.yellow('Retrying... ¯_(ツ)_/¯'));
               runInBrowser(url, retries - 1, resolve, reject);
             } else {
               console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
-              console.log(chalk.yellow('This might be a known issue with Chrome headless, skipping for now'));
+              console.log(
+                chalk.yellow(
+                  'This might be a known issue with Chrome headless, skipping for now'
+                )
+              );
               resolve(result);
             }
           } else {
@@ -180,10 +201,15 @@ function generateEachPackageTests() {
   var packages = getPackages(features);
 
   Object.keys(packages).forEach(function(packageName) {
-    if (packages[packageName].skipTests) { return; }
+    if (packages[packageName].skipTests) {
+      return;
+    }
 
     testFunctions.push(function() {
       return run('package=' + packageName);
+    });
+    testFunctions.push(function() {
+      return run('package=' + packageName + '&dist=es');
     });
     if (packages[packageName].requiresJQuery === false) {
       testFunctions.push(function() {
@@ -193,7 +219,6 @@ function generateEachPackageTests() {
     testFunctions.push(function() {
       return run('package=' + packageName + '&enableoptionalfeatures=true');
     });
-
   });
 }
 
@@ -250,19 +275,13 @@ function runChecker(bin, args) {
 
 function codeQualityChecks() {
   var checkers = [
-    runChecker('node', [
-      require.resolve('typescript/bin/tsc'),
-      '--noEmit'
-    ]),
+    runChecker('node', [require.resolve('typescript/bin/tsc'), '--noEmit']),
     runChecker('node', [
       require.resolve('tslint/bin/tslint'),
       '-p',
       'tsconfig.json'
     ]),
-    runChecker('node', [
-      require.resolve('eslint/bin/eslint'),
-      '.'
-    ])
+    runChecker('node', [require.resolve('eslint/bin/eslint'), '.'])
   ];
   return RSVP.Promise.all(checkers).then(function(results) {
     results.forEach(result => {
@@ -273,7 +292,7 @@ function codeQualityChecks() {
       }
     });
     if (!results.every(result => result.ok)) {
-      throw new Error("Some quality checks failed");
+      throw new Error('Some quality checks failed');
     }
   });
 }
@@ -289,7 +308,6 @@ function runAndExit() {
       process.exit(1);
     });
 }
-
 
 switch (process.env.TEST_SUITE) {
   case 'built-tests':

@@ -36,7 +36,11 @@ class RejectByTest extends AbstractTestCase {
     obj = this.newObject(ary);
 
     this.assert.deepEqual(obj.rejectBy('foo', 'foo'), [], 'rejectBy(foo)');
-    this.assert.deepEqual(obj.rejectBy('bar', 'bar'), [ary[0]], 'rejectBy(bar)');
+    this.assert.deepEqual(
+      obj.rejectBy('bar', 'bar'),
+      [ary[0]],
+      'rejectBy(bar)'
+    );
   }
 
   '@test should include in result if property is false'() {
@@ -65,7 +69,11 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo', 3), [ary[1], ary[2]], 'rejectBy(\'foo\', 3)\')');
+    this.assert.deepEqual(
+      obj.rejectBy('foo', 3),
+      [ary[1], ary[2]],
+      "rejectBy('foo', 3)')"
+    );
   }
 
   '@test should correctly reject null second argument'() {
@@ -80,7 +88,11 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo', null), [ary[0], ary[3]], 'rejectBy(\'foo\', null)\')');
+    this.assert.deepEqual(
+      obj.rejectBy('foo', null),
+      [ary[0], ary[3]],
+      "rejectBy('foo', null)')"
+    );
   }
 
   '@test should correctly reject undefined second argument'() {
@@ -93,7 +105,11 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('bar', undefined), [], 'rejectBy(\'bar\', undefined)\')');
+    this.assert.deepEqual(
+      obj.rejectBy('bar', undefined),
+      [],
+      "rejectBy('bar', undefined)')"
+    );
   }
 
   '@test should correctly reject explicit undefined second argument'() {
@@ -110,7 +126,11 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo', undefined), ary.slice(0, 2), 'rejectBy(\'foo\', undefined)\')');
+    this.assert.deepEqual(
+      obj.rejectBy('foo', undefined),
+      ary.slice(0, 2),
+      "rejectBy('foo', undefined)')"
+    );
   }
 
   '@test should match undefined, null, or false properties without second argument'() {
@@ -131,7 +151,11 @@ class RejectByTest extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.deepEqual(obj.rejectBy('foo'), ary.slice(2), 'rejectBy(\'foo\')\')');
+    this.assert.deepEqual(
+      obj.rejectBy('foo'),
+      ary.slice(2),
+      "rejectBy('foo')')"
+    );
   }
 }
 

@@ -107,8 +107,9 @@ describe('Blueprint: service', function() {
           .to.contain("import Service from '@ember/service';")
           .to.contain('export default Service.extend({\n});');
 
-        expect(_file('app/services/foo.js'))
-          .to.contain("export { default } from 'my-addon/services/foo';");
+        expect(_file('app/services/foo.js')).to.contain(
+          "export { default } from 'my-addon/services/foo';"
+        );
 
         expect(_file('tests/unit/services/foo-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
@@ -122,8 +123,9 @@ describe('Blueprint: service', function() {
           .to.contain("import Service from '@ember/service';")
           .to.contain('export default Service.extend({\n});');
 
-        expect(_file('app/services/foo/bar.js'))
-          .to.contain("export { default } from 'my-addon/services/foo/bar';");
+        expect(_file('app/services/foo/bar.js')).to.contain(
+          "export { default } from 'my-addon/services/foo/bar';"
+        );
 
         expect(_file('tests/unit/services/foo/bar-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")

@@ -8,10 +8,7 @@ import {
   alias,
   expandProperties
 } from 'ember-metal';
-import {
-  assert,
-  deprecate
-} from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 
 /**
 @module @ember/object
@@ -26,7 +23,10 @@ function expandPropertiesToArray(predicateName, properties) {
 
   for (let i = 0; i < properties.length; i++) {
     let property = properties[i];
-    assert(`Dependent keys passed to computed.${predicateName}() can\'t have spaces.`, property.indexOf(' ') < 0);
+    assert(
+      `Dependent keys passed to computed.${predicateName}() can\'t have spaces.`,
+      property.indexOf(' ') < 0
+    );
 
     expandProperties(property, extractProperty);
   }
@@ -38,18 +38,21 @@ function generateComputedWithPredicate(name, predicate) {
   return (...properties) => {
     let dependentKeys = expandPropertiesToArray(name, properties);
 
-    let computedFunc = new ComputedProperty(function() {
-      let lastIdx = dependentKeys.length - 1;
+    let computedFunc = new ComputedProperty(
+      function() {
+        let lastIdx = dependentKeys.length - 1;
 
-      for (let i = 0; i < lastIdx; i++) {
-        let value = get(this, dependentKeys[i]);
-        if (!predicate(value)) {
-          return value;
+        for (let i = 0; i < lastIdx; i++) {
+          let value = get(this, dependentKeys[i]);
+          if (!predicate(value)) {
+            return value;
+          }
         }
-      }
 
-      return get(this, dependentKeys[lastIdx]);
-    }, { dependentKeys });
+        return get(this, dependentKeys[lastIdx]);
+      },
+      { dependentKeys }
+    );
 
     return computedFunc;
   };
@@ -719,11 +722,19 @@ export function readOnly(dependentKey) {
 export function deprecatingAlias(dependentKey, options) {
   return computed(dependentKey, {
     get(key) {
-      deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`, false, options);
+      deprecate(
+        `Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`,
+        false,
+        options
+      );
       return get(this, dependentKey);
     },
     set(key, value) {
-      deprecate(`Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`, false, options);
+      deprecate(
+        `Usage of \`${key}\` is deprecated, use \`${dependentKey}\` instead.`,
+        false,
+        options
+      );
       set(this, dependentKey, value);
       return value;
     }

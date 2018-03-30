@@ -1,6 +1,6 @@
 import { Simple } from '@glimmer/interfaces';
 import { environment } from 'ember-environment';
-import { run } from 'ember-metal';
+import { schedule } from 'ember-metal';
 import { assign, OWNER, Owner } from 'ember-utils';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
@@ -73,7 +73,7 @@ export default class OutletView {
       target = selector;
     }
 
-    run.schedule('render', this.renderer, 'appendOutletView', this, target);
+    schedule('render', this.renderer, 'appendOutletView', this, target);
   }
 
   rerender() { /**/ }

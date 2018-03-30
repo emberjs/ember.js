@@ -22,8 +22,9 @@ describe('Blueprint: util-test', function() {
 
     it('util-test foo-bar', function() {
       return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('tests/unit/utils/foo-bar-test.js'))
-          .to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
+          fixture('util-test/default.js')
+        );
       });
     });
 
@@ -34,8 +35,9 @@ describe('Blueprint: util-test', function() {
 
       it('util-test foo-bar', function() {
         return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-          expect(_file('tests/unit/utils/foo-bar-test.js'))
-            .to.equal(fixture('util-test/rfc232.js'));
+          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
+            fixture('util-test/rfc232.js')
+          );
         });
       });
     });
@@ -50,8 +52,9 @@ describe('Blueprint: util-test', function() {
 
       it('util-test foo-bar', function() {
         return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-          expect(_file('tests/unit/utils/foo-bar-test.js'))
-            .to.equal(fixture('util-test/mocha.js'));
+          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
+            fixture('util-test/mocha.js')
+          );
         });
       });
     });
@@ -64,8 +67,9 @@ describe('Blueprint: util-test', function() {
 
     it('util-test foo-bar', function() {
       return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('tests/unit/utils/foo-bar-test.js'))
-          .to.equal(fixture('util-test/dummy.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
+          fixture('util-test/dummy.js')
+        );
       });
     });
   });

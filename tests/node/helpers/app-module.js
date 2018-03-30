@@ -61,7 +61,7 @@ var SimpleDOM = require('simple-dom');
 module.exports = function(moduleName) {
   QUnit.module(moduleName, {
     beforeEach: function() {
-      var Ember = this.Ember = require(emberPath);
+      var Ember = (this.Ember = require(emberPath));
 
       Ember.testing = true;
 
@@ -138,8 +138,7 @@ function visit(url) {
     isBrowser: false,
     document: dom,
     rootElement: dom.body
-  })
-  .catch(function(error) {
+  }).catch(function(error) {
     console.error(error.stack);
   });
 }

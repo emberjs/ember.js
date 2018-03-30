@@ -10,16 +10,21 @@ export default class RouterState {
 
   isActiveIntent(routeName, models, queryParams, queryParamsMustMatch) {
     let state = this.routerJsState;
-    if (!this.routerJs.isActiveIntent(routeName, models, null, state)) { return false; }
+    if (!this.routerJs.isActiveIntent(routeName, models, null, state)) {
+      return false;
+    }
 
     if (queryParamsMustMatch && Object.keys(queryParams).length > 0) {
       let visibleQueryParams = assign({}, queryParams);
 
-      this.emberRouter._prepareQueryParams(routeName, models, visibleQueryParams);
+      this.emberRouter._prepareQueryParams(
+        routeName,
+        models,
+        visibleQueryParams
+      );
       return shallowEqual(visibleQueryParams, state.queryParams);
     }
 
     return true;
   }
-
 }

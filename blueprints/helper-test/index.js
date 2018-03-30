@@ -14,10 +14,10 @@ module.exports = useTestFrameworkDetector({
       type: ['integration', 'unit'],
       default: 'integration',
       aliases: [
-        { 'i': 'integration' },
-        { 'u': 'unit' },
-        { 'integration': 'integration' },
-        { 'unit': 'unit' }
+        { i: 'integration' },
+        { u: 'unit' },
+        { integration: 'integration' },
+        { unit: 'unit' }
       ]
     }
   ],
@@ -33,17 +33,25 @@ module.exports = useTestFrameworkDetector({
   locals: function(options) {
     let testType = options.testType || 'integration';
     let testName = testType === 'integration' ? 'Integration' : 'Unit';
-    let friendlyTestName = [testName, 'Helper', options.entity.name].join(' | ');
+    let friendlyTestName = [testName, 'Helper', options.entity.name].join(
+      ' | '
+    );
 
     return {
       friendlyTestName: friendlyTestName,
-      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
+      dasherizedModulePrefix: stringUtils.dasherize(
+        options.project.config().modulePrefix
+      ),
       testType: testType
     };
   },
 
   afterInstall: function(options) {
-    if (!options.dryRun && options.testType === 'integration' && isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')) {
+    if (
+      !options.dryRun &&
+      options.testType === 'integration' &&
+      isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
+    ) {
       return this.addPackagesToProject([
         { name: 'ember-cli-htmlbars-inline-precompile', target: '^0.3.1' }
       ]);

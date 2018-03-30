@@ -1,4 +1,3 @@
-
 /**
   Transforms dot invocation of closure components to be wrapped
   with the component helper. This allows for a more static invocation
@@ -59,12 +58,12 @@ export default function transformDotComponentInvocation(env) {
     name: 'transform-dot-component-invocation',
 
     visitor: {
-      MustacheStatement: (node) => {
+      MustacheStatement: node => {
         if (isInlineInvocation(node.path, node.params, node.hash)) {
           wrapInComponent(node, b);
         }
       },
-      BlockStatement: (node) => {
+      BlockStatement: node => {
         if (isMultipartPath(node.path)) {
           wrapInComponent(node, b);
         }
@@ -73,7 +72,7 @@ export default function transformDotComponentInvocation(env) {
   };
 }
 
-function isMultipartPath(path)  {
+function isMultipartPath(path) {
   return path.parts && path.parts.length > 1;
 }
 
