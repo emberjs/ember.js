@@ -18,7 +18,7 @@ const callbacks = [];
    import { registerWaiter } from '@ember/test';
 
    registerWaiter(function() {
-     return myPendingTransactions() == 0;
+     return myPendingTransactions() === 0;
    });
    ```
    The `context` argument allows you to optionally specify the `this`
