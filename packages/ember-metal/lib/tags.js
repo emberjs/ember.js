@@ -4,9 +4,9 @@ import {
   DirtyableTag,
   combine
 } from '@glimmer/reference';
+import { isProxy } from 'ember-utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { meta as metaFor } from './meta';
-import { isProxy } from './is_proxy';
 import { backburner } from './run_loop';
 
 let hasViews = () => false;

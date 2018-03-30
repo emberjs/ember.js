@@ -17,9 +17,9 @@ import {
   notifyPropertyChange,
   defineProperty,
   Mixin,
-  tagFor,
-  setProxy
+  tagFor
 } from 'ember-metal';
+import { setProxy } from 'ember-utils';
 import { assert } from 'ember-debug';
 import { bool } from '../computed/computed_macros';
 

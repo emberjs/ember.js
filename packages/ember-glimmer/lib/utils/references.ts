@@ -23,13 +23,13 @@ import { DEBUG } from 'ember-env-flags';
 import {
   didRender,
   get,
-  isProxy,
   set,
   tagFor,
   tagForProperty,
   watchKey,
 } from 'ember-metal';
 import {
+  isProxy,
   symbol,
 } from 'ember-utils';
 import {
