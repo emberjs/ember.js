@@ -35,7 +35,7 @@ const transforms = [
   TransformHasBlockSyntax,
   AssertInputHelperWithoutBlock,
   TransformInElement,
-  AssertIfHelperWithoutArguments
+  AssertIfHelperWithoutArguments,
 ];
 
 export default Object.freeze(transforms);

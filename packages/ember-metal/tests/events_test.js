@@ -1,11 +1,4 @@
-import {
-  Mixin,
-  on,
-  addListener,
-  removeListener,
-  sendEvent,
-  hasListeners
-} from '..';
+import { Mixin, on, addListener, removeListener, sendEvent, hasListeners } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -71,9 +64,7 @@ moduleFor(
       assert.equal(count, 1, 'should only invoke once');
     }
 
-    ['@test adding a listener with a target should invoke with target'](
-      assert
-    ) {
+    ['@test adding a listener with a target should invoke with target'](assert) {
       let obj = {};
       let target;
 
@@ -81,7 +72,7 @@ moduleFor(
         count: 0,
         method() {
           this.count++;
-        }
+        },
       };
 
       addListener(obj, 'event!', target, target.method);
@@ -89,15 +80,13 @@ moduleFor(
       assert.equal(target.count, 1, 'should invoke');
     }
 
-    ['@test adding a listener with string method should lookup method on event delivery'](
-      assert
-    ) {
+    ['@test adding a listener with string method should lookup method on event delivery'](assert) {
       let obj = {};
       let target;
 
       target = {
         count: 0,
-        method() {}
+        method() {},
       };
 
       addListener(obj, 'event!', target, 'method');
@@ -111,9 +100,7 @@ moduleFor(
       assert.equal(target.count, 1, 'should invoke now');
     }
 
-    ['@test calling sendEvent with extra params should be passed to listeners'](
-      assert
-    ) {
+    ['@test calling sendEvent with extra params should be passed to listeners'](assert) {
       let obj = {};
       let params = null;
       addListener(obj, 'event!', function() {
@@ -124,9 +111,7 @@ moduleFor(
       assert.deepEqual(params, ['foo', 'bar'], 'params should be saved');
     }
 
-    ['@test hasListeners tells you if there are listeners for a given event'](
-      assert
-    ) {
+    ['@test hasListeners tells you if there are listeners for a given event'](assert) {
       let obj = {};
 
       function F() {}
@@ -149,9 +134,7 @@ moduleFor(
       assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
     }
 
-    ['@test calling removeListener without method should remove all listeners'](
-      assert
-    ) {
+    ['@test calling removeListener without method should remove all listeners'](assert) {
       let obj = {};
       function F() {}
       function F2() {}
@@ -176,7 +159,7 @@ moduleFor(
 
         foo2: on('bar', function() {
           triggered++;
-        })
+        }),
       });
 
       let obj = {};
@@ -189,13 +172,13 @@ moduleFor(
     [`@test 'on' asserts for invalid arguments`]() {
       expectAssertion(() => {
         Mixin.create({
-          foo1: on('bar')
+          foo1: on('bar'),
         });
       }, 'on expects function as last argument');
 
       expectAssertion(() => {
         Mixin.create({
-          foo1: on(function() {})
+          foo1: on(function() {}),
         });
       }, 'on called without valid event names');
     }
@@ -205,12 +188,12 @@ moduleFor(
       let FirstMixin = Mixin.create({
         foo: on('bar', function() {
           triggered++;
-        })
+        }),
       });
       let SecondMixin = Mixin.create({
         foo: on('baz', function() {
           triggered++;
-        })
+        }),
       });
 
       let obj = {};

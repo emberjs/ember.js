@@ -6,9 +6,7 @@ moduleFor(
   'Helpers test: {{hash}}',
   class extends RenderingTest {
     ['@test returns a hash with the right key-value']() {
-      this.render(
-        `{{#with (hash name=\"Sergio\") as |person|}}{{person.name}}{{/with}}`
-      );
+      this.render(`{{#with (hash name=\"Sergio\") as |person|}}{{person.name}}{{/with}}`);
 
       this.assertText('Sergio');
 
@@ -34,8 +32,8 @@ moduleFor(
         `{{#with (hash name=model.firstName lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/with}}`,
         {
           model: {
-            firstName: 'Marisa'
-          }
+            firstName: 'Marisa',
+          },
         }
       );
 
@@ -60,8 +58,8 @@ moduleFor(
         {
           model: {
             firstName: 'Marisa',
-            lastName: 'Arbeo'
-          }
+            lastName: 'Arbeo',
+          },
         }
       );
 
@@ -82,7 +80,7 @@ moduleFor(
       this.runTask(() =>
         set(this.context, 'model', {
           firstName: 'Marisa',
-          lastName: 'Arbeo'
+          lastName: 'Arbeo',
         })
       );
 
@@ -93,7 +91,7 @@ moduleFor(
       this.render(
         `{{#with (hash person=(hash name=model.firstName)) as |ctx|}}{{ctx.person.name}}{{/with}}`,
         {
-          model: { firstName: 'Balint' }
+          model: { firstName: 'Balint' },
         }
       );
 
@@ -119,12 +117,12 @@ moduleFor(
           this._super();
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash firstName=model.firstName)}}`
+        template: `{{yield (hash firstName=model.firstName)}}`,
       });
 
       this.render(`{{#foo-bar as |values|}}{{values.firstName}}{{/foo-bar}}`);
@@ -151,18 +149,18 @@ moduleFor(
           this._super();
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash firstName=model.firstName lastName=lastName)}}`
+        template: `{{yield (hash firstName=model.firstName lastName=lastName)}}`,
       });
 
       this.render(
         `{{#foo-bar lastName=model.lastName as |values|}}{{values.firstName}} {{values.lastName}}{{/foo-bar}}`,
         {
-          model: { lastName: 'Hietala' }
+          model: { lastName: 'Hietala' },
         }
       );
 

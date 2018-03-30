@@ -26,13 +26,13 @@ moduleFor(
           // used to end in an infinite call loop
           this._super(...arguments);
           return 'Breakfast!';
-        }
+        },
       });
 
       Taco.reopen({
         createBreakfast() {
           return this._super(...arguments);
-        }
+        },
       });
 
       let taco = Taco.create();

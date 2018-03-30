@@ -43,26 +43,20 @@ if (environment.hasDOM && !jQueryDisabled) {
         $.event.special.click = {
           // For checkbox, fire native event so checked state will be right
           trigger() {
-            if (
-              this.nodeName === 'INPUT' &&
-              this.type === 'checkbox' &&
-              this.click
-            ) {
+            if (this.nodeName === 'INPUT' && this.type === 'checkbox' && this.click) {
               this.click();
               return false;
             }
-          }
+          },
         };
       }
     });
 
     // Try again to verify that the patch took effect or blow up.
     testCheckboxClick(function() {
-      warn(
-        "clicked checkboxes should be checked! the jQuery patch didn't work",
-        this.checked,
-        { id: 'ember-testing.test-checkbox-click' }
-      );
+      warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked, {
+        id: 'ember-testing.test-checkbox-click',
+      });
     });
   });
 }

@@ -15,30 +15,18 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
     beforeModel() {
       let service = get(this, 'routerService');
-      results.push([
-        service.get('currentRouteName'),
-        'beforeModel',
-        service.get('currentURL')
-      ]);
+      results.push([service.get('currentRouteName'), 'beforeModel', service.get('currentURL')]);
     },
 
     model() {
       let service = get(this, 'routerService');
-      results.push([
-        service.get('currentRouteName'),
-        'model',
-        service.get('currentURL')
-      ]);
+      results.push([service.get('currentRouteName'), 'model', service.get('currentURL')]);
     },
 
     afterModel() {
       let service = get(this, 'routerService');
-      results.push([
-        service.get('currentRouteName'),
-        'afterModel',
-        service.get('currentURL')
-      ]);
-    }
+      results.push([service.get('currentRouteName'), 'afterModel', service.get('currentURL')]);
+    },
   });
 
   moduleFor(
@@ -58,15 +46,13 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         this.addComponent('current-url', {
           ComponentClass: Component.extend({
             routerService: inject.service('router'),
-            currentURL: readOnly('routerService.currentURL')
+            currentURL: readOnly('routerService.currentURL'),
           }),
-          template: '{{currentURL}}'
+          template: '{{currentURL}}',
         });
       }
 
-      ['@test RouterService#currentURL is correctly set for top level route'](
-        assert
-      ) {
+      ['@test RouterService#currentURL is correctly set for top level route'](assert) {
         assert.expect(1);
 
         return this.visit('/').then(() => {
@@ -74,9 +60,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#currentURL is correctly set for child route'](
-        assert
-      ) {
+      ['@test RouterService#currentURL is correctly set for child route'](assert) {
         assert.expect(1);
 
         return this.visit('/child').then(() => {
@@ -84,9 +68,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#currentURL is correctly set after transition'](
-        assert
-      ) {
+      ['@test RouterService#currentURL is correctly set after transition'](assert) {
         assert.expect(1);
 
         return this.visit('/child')
@@ -98,9 +80,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           });
       }
 
-      ['@test RouterService#currentURL is correctly set on each transition'](
-        assert
-      ) {
+      ['@test RouterService#currentURL is correctly set on each transition'](assert) {
         assert.expect(3);
 
         return this.visit('/child')
@@ -119,9 +99,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           });
       }
 
-      ['@test RouterService#currentURL is not set during lifecycle hooks'](
-        assert
-      ) {
+      ['@test RouterService#currentURL is not set during lifecycle hooks'](assert) {
         assert.expect(2);
 
         return this.visit('/')
@@ -129,7 +107,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             assert.deepEqual(results, [
               [null, 'beforeModel', null],
               [null, 'model', null],
-              [null, 'afterModel', null]
+              [null, 'afterModel', null],
             ]);
 
             results = [];
@@ -140,7 +118,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             assert.deepEqual(results, [
               ['parent.index', 'beforeModel', '/'],
               ['parent.index', 'model', '/'],
-              ['parent.index', 'afterModel', '/']
+              ['parent.index', 'afterModel', '/'],
             ]);
           });
       }

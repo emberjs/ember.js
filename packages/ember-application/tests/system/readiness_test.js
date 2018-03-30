@@ -24,7 +24,7 @@ moduleFor(
           if (jQuery.isReady) {
             domReady();
           }
-        }
+        },
       };
 
       jQuery = function() {
@@ -48,7 +48,7 @@ moduleFor(
 
         ready() {
           readyWasCalled++;
-        }
+        },
       });
     }
 
@@ -62,9 +62,7 @@ moduleFor(
     // synchronously during the application's initialization, we get the same behavior as if
     // it was triggered after initialization.
 
-    ["@test Application's ready event is called right away if jQuery is already ready"](
-      assert
-    ) {
+    ["@test Application's ready event is called right away if jQuery is already ready"](assert) {
       jQuery.isReady = true;
 
       run(() => {
@@ -77,16 +75,10 @@ moduleFor(
 
       domReady();
 
-      assert.equal(
-        readyWasCalled,
-        1,
-        "application's ready was not called again"
-      );
+      assert.equal(readyWasCalled, 1, "application's ready was not called again");
     }
 
-    ["@test Application's ready event is called after the document becomes ready"](
-      assert
-    ) {
+    ["@test Application's ready event is called after the document becomes ready"](assert) {
       run(() => {
         application = Application.create({ router: false });
       });
@@ -98,9 +90,7 @@ moduleFor(
       assert.equal(readyWasCalled, 1, 'ready was called now that DOM is ready');
     }
 
-    ["@test Application's ready event can be deferred by other components"](
-      assert
-    ) {
+    ["@test Application's ready event can be deferred by other components"](assert) {
       run(() => {
         application = Application.create({ router: false });
         application.deferReadiness();
@@ -117,16 +107,10 @@ moduleFor(
         assert.equal(readyWasCalled, 0);
       });
 
-      assert.equal(
-        readyWasCalled,
-        1,
-        'ready was called now all readiness deferrals are advanced'
-      );
+      assert.equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
     }
 
-    ["@test Application's ready event can be deferred by other components"](
-      assert
-    ) {
+    ["@test Application's ready event can be deferred by other components"](assert) {
       jQuery.isReady = false;
 
       run(() => {
@@ -143,11 +127,7 @@ moduleFor(
         application.advanceReadiness();
       });
 
-      assert.equal(
-        readyWasCalled,
-        1,
-        'ready was called now all readiness deferrals are advanced'
-      );
+      assert.equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
 
       expectAssertion(() => {
         application.deferReadiness();

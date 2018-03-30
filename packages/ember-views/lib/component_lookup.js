@@ -19,5 +19,5 @@ export default EmberObject.extend({
 
     let templateFullName = `template:components/${name}`;
     return owner.lookup(templateFullName, options);
-  }
+  },
 });

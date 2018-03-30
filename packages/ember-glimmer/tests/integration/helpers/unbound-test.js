@@ -10,8 +10,8 @@ moduleFor(
     ['@test should be able to output a property without binding']() {
       this.render(`<div id="first">{{unbound content.anUnboundString}}</div>`, {
         content: {
-          anUnboundString: 'No spans here, son.'
-        }
+          anUnboundString: 'No spans here, son.',
+        },
       });
 
       this.assertText('No spans here, son.');
@@ -26,7 +26,7 @@ moduleFor(
 
       this.runTask(() =>
         set(this.context, 'content', {
-          anUnboundString: 'No spans here, son.'
+          anUnboundString: 'No spans here, son.',
         })
       );
 
@@ -34,12 +34,9 @@ moduleFor(
     }
 
     ['@test should be able to use unbound helper in #each helper']() {
-      this.render(
-        `<ul>{{#each items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`,
-        {
-          items: emberA(['a', 'b', 'c', 1, 2, 3])
-        }
-      );
+      this.render(`<ul>{{#each items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`, {
+        items: emberA(['a', 'b', 'c', 1, 2, 3]),
+      });
 
       this.assertText('abc123');
 
@@ -49,12 +46,9 @@ moduleFor(
     }
 
     ['@test should be able to use unbound helper in #each helper (with objects)']() {
-      this.render(
-        `<ul>{{#each items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`,
-        {
-          items: emberA([{ wham: 'bam' }, { wham: 1 }])
-        }
-      );
+      this.render(`<ul>{{#each items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`, {
+        items: emberA([{ wham: 'bam' }, { wham: 1 }]),
+      });
 
       this.assertText('bam1');
 
@@ -66,9 +60,7 @@ moduleFor(
 
       this.assertText('bam1');
 
-      this.runTask(() =>
-        set(this.context, 'items', emberA([{ wham: 'bam' }, { wham: 1 }]))
-      );
+      this.runTask(() => set(this.context, 'items', emberA([{ wham: 'bam' }, { wham: 1 }])));
 
       this.assertText('bam1');
     }
@@ -77,7 +69,7 @@ moduleFor(
       let willThrow = () => {
         this.render(`{{unbound foo bar}}`, {
           foo: 'BORK',
-          bar: 'BLOOP'
+          bar: 'BLOOP',
         });
       };
 
@@ -89,7 +81,7 @@ moduleFor(
 
     ['@test should render on attributes']() {
       this.render(`<a href="{{unbound model.foo}}"></a>`, {
-        model: { foo: 'BORK' }
+        model: { foo: 'BORK' },
       });
 
       this.assertHTML('<a href="BORK"></a>');
@@ -111,22 +103,22 @@ moduleFor(
       let unsafeUrls = emberA([
         {
           name: 'Bob',
-          url: 'javascript:bob-is-cool' // jshint ignore:line
+          url: 'javascript:bob-is-cool', // jshint ignore:line
         },
         {
           name: 'James',
-          url: 'vbscript:james-is-cool' // jshint ignore:line
+          url: 'vbscript:james-is-cool', // jshint ignore:line
         },
         {
           name: 'Richard',
-          url: 'javascript:richard-is-cool' // jshint ignore:line
-        }
+          url: 'javascript:richard-is-cool', // jshint ignore:line
+        },
       ]);
 
       this.render(
         `<ul>{{#each people as |person|}}<li><a href="{{unbound person.url}}">{{person.name}}</a></li>{{/each}}</ul>`,
         {
-          people: unsafeUrls
+          people: unsafeUrls,
         }
       );
 
@@ -150,9 +142,7 @@ moduleFor(
 
       this.assertHTML(escapedHtml);
 
-      this.runTask(() =>
-        this.context.people.setEach('url', 'http://google.com')
-      );
+      this.runTask(() => this.context.people.setEach('url', 'http://google.com'));
 
       this.assertHTML(escapedHtml);
 
@@ -163,7 +153,7 @@ moduleFor(
 
     ['@skip helper form updates on parent re-render']() {
       this.render(`{{unbound foo}}`, {
-        foo: 'BORK'
+        foo: 'BORK',
       });
 
       this.assertText('BORK');
@@ -196,7 +186,7 @@ moduleFor(
       this.registerHelper('capitalize', args => args[0].toUpperCase());
 
       this.render(`{{capitalize (unbound foo)}}`, {
-        foo: 'bork'
+        foo: 'bork',
       });
 
       this.assertText('BORK');
@@ -230,7 +220,7 @@ moduleFor(
       this.registerHelper('doublize', params => `${params[0]} ${params[0]}`);
 
       this.render(`{{capitalize (unbound (doublize foo))}}`, {
-        foo: 'bork'
+        foo: 'bork',
       });
 
       this.assertText('BORK BORK');
@@ -271,7 +261,7 @@ moduleFor(
         `{{unbound (repeat foo count=bar)}} {{repeat foo count=bar}} {{unbound (repeat foo count=2)}} {{repeat foo count=4}}`,
         {
           foo: 'X',
-          bar: 5
+          bar: 5,
         }
       );
 
@@ -291,10 +281,7 @@ moduleFor(
     }
 
     ['@test should be able to render an bound helper invocation mixed with static values']() {
-      this.registerHelper(
-        'surround',
-        ([prefix, value, suffix]) => `${prefix}-${value}-${suffix}`
-      );
+      this.registerHelper('surround', ([prefix, value, suffix]) => `${prefix}-${value}-${suffix}`);
 
       this.render(
         strip`
@@ -303,26 +290,22 @@ moduleFor(
           model: {
             prefix: 'before',
             value: 'core',
-            suffix: 'after'
-          }
+            suffix: 'after',
+          },
         }
       );
 
-      this.assertText(
-        'before-core-bar before-core-bar bar-core-after bar-core-after'
-      );
+      this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
 
       this.runTask(() => this.rerender());
 
-      this.assertText(
-        'before-core-bar before-core-bar bar-core-after bar-core-after'
-      );
+      this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
 
       this.runTask(() => {
         setProperties(this.context.model, {
           prefix: 'beforeChanged',
           value: 'coreChanged',
-          suffix: 'afterChanged'
+          suffix: 'afterChanged',
         });
       });
 
@@ -334,13 +317,11 @@ moduleFor(
         set(this.context, 'model', {
           prefix: 'before',
           value: 'core',
-          suffix: 'after'
+          suffix: 'after',
         });
       });
 
-      this.assertText(
-        'before-core-bar before-core-bar bar-core-after bar-core-after'
-      );
+      this.assertText('before-core-bar before-core-bar bar-core-after bar-core-after');
     }
 
     ['@test should be able to render unbound forms of multi-arg helpers']() {
@@ -352,8 +333,8 @@ moduleFor(
           model: {
             foo: 'a',
             bar: 'b',
-            bing: 'c'
-          }
+            bing: 'c',
+          },
         }
       );
 
@@ -371,7 +352,7 @@ moduleFor(
         set(this.context, 'model', {
           foo: 'a',
           bar: 'b',
-          bing: 'c'
+          bing: 'c',
         })
       );
 
@@ -392,7 +373,7 @@ moduleFor(
           this.set('value', value);
           this.addObserver('value.firstName', this, this.recompute);
           return value ? get(value, 'firstName').toUpperCase() : '';
-        }
+        },
       });
 
       this.registerHelper('concatNames', {
@@ -411,11 +392,8 @@ moduleFor(
           this.set('value', value);
           this.addObserver('value.firstName', this, this.recompute);
           this.addObserver('value.lastName', this, this.recompute);
-          return (
-            (value ? get(value, 'firstName') : '') +
-            (value ? get(value, 'lastName') : '')
-          );
-        }
+          return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
+        },
       });
 
       this.render(
@@ -423,8 +401,8 @@ moduleFor(
         {
           person: {
             firstName: 'shooby',
-            lastName: 'taylor'
-          }
+            lastName: 'taylor',
+          },
         }
       );
 
@@ -441,7 +419,7 @@ moduleFor(
       this.runTask(() =>
         set(this.context, 'person', {
           firstName: 'shooby',
-          lastName: 'taylor'
+          lastName: 'taylor',
         })
       );
 
@@ -457,13 +435,13 @@ moduleFor(
           people: emberA([
             {
               firstName: 'shooby',
-              lastName: 'taylor'
+              lastName: 'taylor',
             },
             {
               firstName: 'cindy',
-              lastName: 'taylor'
-            }
-          ])
+              lastName: 'taylor',
+            },
+          ]),
         }
       );
 
@@ -484,12 +462,12 @@ moduleFor(
           emberA([
             {
               firstName: 'shooby',
-              lastName: 'taylor'
+              lastName: 'taylor',
             },
             {
               firstName: 'cindy',
-              lastName: 'taylor'
-            }
+              lastName: 'taylor',
+            },
           ])
         )
       );
@@ -511,7 +489,7 @@ moduleFor(
           this.set('value', value);
           this.addObserver('value.firstName', this, this.recompute);
           return value ? get(value, 'firstName').toUpperCase() : '';
-        }
+        },
       });
 
       this.registerHelper('concatNames', {
@@ -530,11 +508,8 @@ moduleFor(
           this.set('value', value);
           this.addObserver('value.firstName', this, this.recompute);
           this.addObserver('value.lastName', this, this.recompute);
-          return (
-            (value ? get(value, 'firstName') : '') +
-            (value ? get(value, 'lastName') : '')
-          );
-        }
+          return (value ? get(value, 'firstName') : '') + (value ? get(value, 'lastName') : '');
+        },
       });
 
       this.render(
@@ -542,8 +517,8 @@ moduleFor(
         {
           person: {
             firstName: 'shooby',
-            lastName: 'taylor'
-          }
+            lastName: 'taylor',
+          },
         }
       );
 
@@ -560,7 +535,7 @@ moduleFor(
       this.runTask(() =>
         set(this.context, 'person', {
           firstName: 'shooby',
-          lastName: 'taylor'
+          lastName: 'taylor',
         })
       );
 
@@ -582,8 +557,8 @@ moduleFor(
           model: {
             foo: true,
             notfoo: false,
-            bar: true
-          }
+            bar: true,
+          },
         }
       );
 
@@ -601,7 +576,7 @@ moduleFor(
         set(this.context, 'model', {
           foo: true,
           notfoo: false,
-          bar: true
+          bar: true,
         })
       );
 
@@ -615,12 +590,12 @@ moduleFor(
           this._super(...arguments);
           fooBarInstance = this;
         },
-        model: { foo: 'bork' }
+        model: { foo: 'bork' },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (unbound model.foo)}}`
+        template: `{{yield (unbound model.foo)}}`,
       });
 
       this.render(`{{#foo-bar as |value|}}{{value}}{{/foo-bar}}`);
@@ -647,12 +622,12 @@ moduleFor(
           this._super(...arguments);
           fooBarInstance = this;
         },
-        model: { foo: 'bork' }
+        model: { foo: 'bork' },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (unbound (hash foo=model.foo))}}`
+        template: `{{yield (unbound (hash foo=model.foo))}}`,
       });
 
       this.render(`{{#foo-bar as |value|}}{{value.foo}}{{/foo-bar}}`);

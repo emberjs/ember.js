@@ -8,11 +8,11 @@ moduleFor(
     ['@test defining mergedProperties should merge future version'](assert) {
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
-        foo: { a: true, b: true, c: true }
+        foo: { a: true, b: true, c: true },
       });
 
       let MixinB = Mixin.create({
-        foo: { d: true, e: true, f: true }
+        foo: { d: true, e: true, f: true },
       });
 
       let obj = mixin({}, MixinA, MixinB);
@@ -22,20 +22,18 @@ moduleFor(
         c: true,
         d: true,
         e: true,
-        f: true
+        f: true,
       });
     }
 
-    ['@test defining mergedProperties on future mixin should merged into past'](
-      assert
-    ) {
+    ['@test defining mergedProperties on future mixin should merged into past'](assert) {
       let MixinA = Mixin.create({
-        foo: { a: true, b: true, c: true }
+        foo: { a: true, b: true, c: true },
       });
 
       let MixinB = Mixin.create({
         mergedProperties: ['foo'],
-        foo: { d: true, e: true, f: true }
+        foo: { d: true, e: true, f: true },
       });
 
       let obj = mixin({}, MixinA, MixinB);
@@ -45,20 +43,18 @@ moduleFor(
         c: true,
         d: true,
         e: true,
-        f: true
+        f: true,
       });
     }
 
-    ['@test defining mergedProperties with null properties should keep properties null'](
-      assert
-    ) {
+    ['@test defining mergedProperties with null properties should keep properties null'](assert) {
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
-        foo: null
+        foo: null,
       });
 
       let MixinB = Mixin.create({
-        foo: null
+        foo: null,
       });
 
       let obj = mixin({}, MixinA, MixinB);
@@ -68,11 +64,11 @@ moduleFor(
     ["@test mergedProperties' properties can get overwritten"](assert) {
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
-        foo: { a: 1 }
+        foo: { a: 1 },
       });
 
       let MixinB = Mixin.create({
-        foo: { a: 2 }
+        foo: { a: 2 },
       });
 
       let obj = mixin({}, MixinA, MixinB);
@@ -82,79 +78,67 @@ moduleFor(
     ['@test mergedProperties should be concatenated'](assert) {
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
-        foo: { a: true, b: true, c: true }
+        foo: { a: true, b: true, c: true },
       });
 
       let MixinB = Mixin.create({
         mergedProperties: 'bar',
         foo: { d: true, e: true, f: true },
-        bar: { a: true, l: true }
+        bar: { a: true, l: true },
       });
 
       let MixinC = Mixin.create({
-        bar: { e: true, x: true }
+        bar: { e: true, x: true },
       });
 
       let obj = mixin({}, MixinA, MixinB, MixinC);
-      assert.deepEqual(
-        get(obj, 'mergedProperties'),
-        ['foo', 'bar'],
-        'get mergedProperties'
-      );
+      assert.deepEqual(get(obj, 'mergedProperties'), ['foo', 'bar'], 'get mergedProperties');
       assert.deepEqual(
         get(obj, 'foo'),
         { a: true, b: true, c: true, d: true, e: true, f: true },
         'get foo'
       );
-      assert.deepEqual(
-        get(obj, 'bar'),
-        { a: true, l: true, e: true, x: true },
-        'get bar'
-      );
+      assert.deepEqual(get(obj, 'bar'), { a: true, l: true, e: true, x: true }, 'get bar');
     }
 
-    ['@test mergedProperties should exist even if not explicitly set on create'](
-      assert
-    ) {
+    ['@test mergedProperties should exist even if not explicitly set on create'](assert) {
       let AnObj = EmberObject.extend({
         mergedProperties: ['options'],
         options: {
           a: 'a',
           b: {
-            c: 'ccc'
-          }
-        }
+            c: 'ccc',
+          },
+        },
       });
 
       let obj = AnObj.create({
         options: {
-          a: 'A'
-        }
+          a: 'A',
+        },
       });
 
       assert.equal(get(obj, 'options').a, 'A');
       assert.equal(get(obj, 'options').b.c, 'ccc');
     }
 
-    ['@test defining mergedProperties at create time should not modify the prototype'](
-      assert
-    ) {
+    ['@test defining mergedProperties at create time should not modify the prototype'](assert) {
       let AnObj = EmberObject.extend({
         mergedProperties: ['options'],
         options: {
-          a: 1
-        }
+          a: 1,
+        },
       });
 
       let objA = AnObj.create({
         options: {
-          a: 2
-        }
+          a: 2,
+        },
       });
       let objB = AnObj.create({
         options: {
-          a: 3
-        }
+          a: 3,
+        },
       });
 
       assert.equal(get(objA, 'options').a, 2);
@@ -168,14 +152,10 @@ moduleFor(
         mergedProperties: ['foo'],
         foo: {
           meth(a) {
-            assert.equal(
-              a,
-              'WOOT',
-              "_super successfully called MixinA's `foo.meth` method"
-            );
+            assert.equal(a, 'WOOT', "_super successfully called MixinA's `foo.meth` method");
             return 'WAT';
-          }
-        }
+          },
+        },
       });
 
       let MixinB = Mixin.create({
@@ -183,8 +163,8 @@ moduleFor(
           meth() {
             assert.ok(true, "MixinB's `foo.meth` method called");
             return this._super(...arguments);
-          }
-        }
+          },
+        },
       });
 
       let MixinC = Mixin.create({
@@ -192,8 +172,8 @@ moduleFor(
           meth(a) {
             assert.ok(true, "MixinC's `foo.meth` method called");
             return this._super(a);
-          }
-        }
+          },
+        },
       });
 
       let obj = mixin({}, MixinA, MixinB, MixinC);
@@ -205,11 +185,11 @@ moduleFor(
 
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
-        foo: { a: true, b: true, c: true }
+        foo: { a: true, b: true, c: true },
       });
 
       let MixinB = Mixin.create({
-        foo: ['a']
+        foo: ['a'],
       });
 
       expectAssertion(() => {

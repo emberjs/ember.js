@@ -24,11 +24,7 @@ moduleFor(
 
       let myObject = MyObject.create({ passedProperty: 'passed-property' });
 
-      assert.deepEqual(
-        calls,
-        ['constructor', 'init'],
-        'constructor then init called (create)'
-      );
+      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
       assert.equal(
         myObject.postInitProperty,
         'post-init-property',
@@ -48,11 +44,7 @@ moduleFor(
       calls = [];
       myObject = new MyObject({ passedProperty: 'passed-property' });
 
-      assert.deepEqual(
-        calls,
-        ['constructor', 'init'],
-        'constructor then init called (new)'
-      );
+      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
       assert.equal(
         myObject.postInitProperty,
         'post-init-property',
@@ -76,14 +68,14 @@ moduleFor(
       let SuperSuperObject = EmberObject.extend({
         method() {
           calls.push('super-super-method');
-        }
+        },
       });
 
       let SuperObject = SuperSuperObject.extend({
         method() {
           this._super();
           calls.push('super-method');
-        }
+        },
       });
 
       class MyObject extends SuperObject {
@@ -105,11 +97,11 @@ moduleFor(
 
     ['@test using mixins'](assert) {
       let Mixin1 = Mixin.create({
-        property1: 'data-1'
+        property1: 'data-1',
       });
 
       let Mixin2 = Mixin.create({
-        property2: 'data-2'
+        property2: 'data-2',
       });
 
       class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
@@ -150,19 +142,11 @@ moduleFor(
       class MyObject extends SubEmberObject {}
 
       MyObject.create();
-      assert.deepEqual(
-        calls,
-        ['constructor', 'init'],
-        'constructor then init called (create)'
-      );
+      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
 
       calls = [];
       new MyObject();
-      assert.deepEqual(
-        calls,
-        ['constructor', 'init'],
-        'constructor then init called (new)'
-      );
+      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
     }
 
     // TODO: Needs to be fixed. Currently only `init` is called.
@@ -184,19 +168,11 @@ moduleFor(
       let MyObject = SubEmberObject.extend({});
 
       MyObject.create();
-      assert.deepEqual(
-        calls,
-        ['constructor', 'init'],
-        'constructor then init called (create)'
-      );
+      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
 
       calls = [];
       new MyObject();
-      assert.deepEqual(
-        calls,
-        ['constructor', 'init'],
-        'constructor then init called (new)'
-      );
+      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
     }
   }
 );

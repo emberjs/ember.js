@@ -347,10 +347,7 @@ class ComputedProperty extends Descriptor {
       if (cache.has(keyName)) {
         // special-case for computed with no dependent keys used to
         // trigger cacheable behavior.
-        if (
-          !this._auto &&
-          (!this._dependentKeys || this._dependentKeys.length === 0)
-        ) {
+        if (!this._auto && (!this._dependentKeys || this._dependentKeys.length === 0)) {
           return cache.get(keyName);
         }
 
@@ -413,9 +410,7 @@ class ComputedProperty extends Descriptor {
   }
 
   _throwReadOnlyError(obj, keyName) {
-    throw new EmberError(
-      `Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`
-    );
+    throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
   }
 
   clobberSet(obj, keyName, value) {
@@ -588,9 +583,7 @@ export default function computed(...args) {
 }
 
 const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap();
-const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
-  ? new WeakMap()
-  : undefined;
+const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : undefined;
 
 /**
   Returns the cached value for a property, if one exists.

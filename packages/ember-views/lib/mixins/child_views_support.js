@@ -18,10 +18,10 @@ export default Mixin.create({
     enumerable: false,
     get() {
       return getChildViews(this);
-    }
+    },
   }),
 
   appendChild(view) {
     addChildView(this, view);
-  }
+  },
 });

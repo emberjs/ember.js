@@ -11,7 +11,7 @@ import {
   dasherize,
   underscore,
   capitalize,
-  classify
+  classify,
 } from '../system/string';
 
 const StringPrototype = String.prototype;
@@ -31,7 +31,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function() {
       return w(this);
-    }
+    },
   });
 
   /**
@@ -48,7 +48,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function(...args) {
       return loc(this, args);
-    }
+    },
   });
 
   /**
@@ -65,7 +65,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function() {
       return camelize(this);
-    }
+    },
   });
 
   /**
@@ -82,7 +82,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function() {
       return decamelize(this);
-    }
+    },
   });
 
   /**
@@ -99,7 +99,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function() {
       return dasherize(this);
-    }
+    },
   });
 
   /**
@@ -116,7 +116,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function() {
       return underscore(this);
-    }
+    },
   });
 
   /**
@@ -133,7 +133,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function() {
       return classify(this);
-    }
+    },
   });
 
   /**
@@ -150,6 +150,6 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     writeable: true,
     value: function() {
       return capitalize(this);
-    }
+    },
   });
 }

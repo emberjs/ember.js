@@ -22,10 +22,7 @@ moduleFor(
       expandProperties('a.b.[]', addProperty);
       expandProperties('a.b.@each.c', addProperty);
 
-      assert.deepEqual(
-        ['a', 'a.b', 'a.b.[]', 'a.b.@each.c'].sort(),
-        foundProperties.sort()
-      );
+      assert.deepEqual(['a', 'a.b', 'a.b.[]', 'a.b.@each.c'].sort(), foundProperties.sort());
     }
 
     ['@test A single expansion at the end expands properly'](assert) {
@@ -67,14 +64,7 @@ moduleFor(
 
       expandProperties('{a,b,c}.d.{e,f}.g', addProperty);
 
-      let expected = [
-        'a.d.e.g',
-        'a.d.f.g',
-        'b.d.e.g',
-        'b.d.f.g',
-        'c.d.e.g',
-        'c.d.f.g'
-      ];
+      let expected = ['a.d.e.g', 'a.d.f.g', 'b.d.e.g', 'b.d.f.g', 'c.d.e.g', 'c.d.f.g'];
       assert.deepEqual(expected.sort(), foundProperties.sort());
     }
 
@@ -94,7 +84,7 @@ moduleFor(
         'a.{b,c}.{d.{e,f}.g',
         'a.{b.{c}',
         'a.{b,c}}',
-        'model.{bar,baz'
+        'model.{bar,baz',
       ];
 
       nestedBraceProperties.forEach(invalidProperties => {

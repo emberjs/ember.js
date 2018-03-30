@@ -72,9 +72,7 @@ export function getOrigin(location) {
   @function supportsHashChange
 */
 export function supportsHashChange(documentMode, global) {
-  return (
-    'onhashchange' in global && (documentMode === undefined || documentMode > 7)
-  );
+  return 'onhashchange' in global && (documentMode === undefined || documentMode > 7);
 }
 
 /*
@@ -94,8 +92,7 @@ export function supportsHistory(userAgent, history) {
   // We only want Android 2 and 4.0, stock browser, and not Chrome which identifies
   // itself as 'Mobile Safari' as well, nor Windows Phone.
   if (
-    (userAgent.indexOf('Android 2.') !== -1 ||
-      userAgent.indexOf('Android 4.0') !== -1) &&
+    (userAgent.indexOf('Android 2.') !== -1 || userAgent.indexOf('Android 4.0') !== -1) &&
     userAgent.indexOf('Mobile Safari') !== -1 &&
     userAgent.indexOf('Chrome') === -1 &&
     userAgent.indexOf('Windows Phone') === -1

@@ -6,7 +6,7 @@ import {
   isEmpty,
   isNone,
   alias,
-  expandProperties
+  expandProperties,
 } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
 
@@ -737,6 +737,6 @@ export function deprecatingAlias(dependentKey, options) {
       );
       set(this, dependentKey, value);
       return value;
-    }
+    },
   });
 }

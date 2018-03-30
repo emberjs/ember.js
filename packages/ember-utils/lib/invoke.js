@@ -17,9 +17,7 @@
   @private
 */
 export function canInvoke(obj, methodName) {
-  return (
-    obj !== null && obj !== undefined && typeof obj[methodName] === 'function'
-  );
+  return obj !== null && obj !== undefined && typeof obj[methodName] === 'function';
 }
 
 /**

@@ -7,24 +7,18 @@ moduleFor(
     testParamlessLinks(assert, routeName) {
       assert.expect(1);
 
-      this.addTemplate(
-        routeName,
-        "{{link-to 'index' 'index' id='index-link'}}"
-      );
+      this.addTemplate(routeName, "{{link-to 'index' 'index' id='index-link'}}");
 
       this.add(
         `controller:${routeName}`,
         Controller.extend({
           queryParams: ['foo'],
-          foo: 'wat'
+          foo: 'wat',
         })
       );
 
       return this.visit('/?foo=YEAH').then(() => {
-        assert.equal(
-          document.getElementById('index-link').getAttribute('href'),
-          '/?foo=YEAH'
-        );
+        assert.equal(document.getElementById('index-link').getAttribute('href'), '/?foo=YEAH');
       });
     }
 

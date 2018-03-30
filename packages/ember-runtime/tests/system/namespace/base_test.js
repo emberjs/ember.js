@@ -33,10 +33,7 @@ moduleFor(
     }
 
     ['@test Namespace should be duck typed'](assert) {
-      assert.ok(
-        get(Namespace.create(), 'isNamespace'),
-        'isNamespace property is true'
-      );
+      assert.ok(get(Namespace.create(), 'isNamespace'), 'isNamespace property is true');
     }
 
     ['@test Namespace is found and named'](assert) {
@@ -58,11 +55,7 @@ moduleFor(
     ['@test Classes under an Namespace are properly named'](assert) {
       let nsA = (lookup.NamespaceA = Namespace.create());
       nsA.Foo = EmberObject.extend();
-      assert.equal(
-        nsA.Foo.toString(),
-        'NamespaceA.Foo',
-        'Classes pick up their parent namespace'
-      );
+      assert.equal(nsA.Foo.toString(), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
 
       nsA.Bar = EmberObject.extend();
       assert.equal(
@@ -93,11 +86,11 @@ moduleFor(
 
     ['@test A namespace can be assigned a custom name'](assert) {
       let nsA = Namespace.create({
-        name: 'NamespaceA'
+        name: 'NamespaceA',
       });
 
       let nsB = (lookup.NamespaceB = Namespace.create({
-        name: 'CustomNamespaceB'
+        name: 'CustomNamespaceB',
       }));
 
       nsA.Foo = EmberObject.extend();
@@ -115,9 +108,7 @@ moduleFor(
       );
     }
 
-    ['@test Calling namespace.nameClasses() eagerly names all classes'](
-      assert
-    ) {
+    ['@test Calling namespace.nameClasses() eagerly names all classes'](assert) {
       setNamespaceSearchDisabled(true);
 
       let namespace = (lookup.NS = Namespace.create());
@@ -154,11 +145,7 @@ moduleFor(
       let CF = (lookup.CF = Namespace.create());
 
       run(CF, 'destroy');
-      assert.equal(
-        Namespace.byName('CF'),
-        undefined,
-        'namespace can not be found after destroyed'
-      );
+      assert.equal(Namespace.byName('CF'), undefined, 'namespace can not be found after destroyed');
     }
 
     ['@test Destroying a namespace after looking up removes it from the list of namespaces'](
@@ -166,18 +153,10 @@ moduleFor(
     ) {
       let CF = (lookup.CF = Namespace.create());
 
-      assert.equal(
-        Namespace.byName('CF'),
-        CF,
-        'precondition - namespace can be looked up by name'
-      );
+      assert.equal(Namespace.byName('CF'), CF, 'precondition - namespace can be looked up by name');
 
       run(CF, 'destroy');
-      assert.equal(
-        Namespace.byName('CF'),
-        undefined,
-        'namespace can not be found after destroyed'
-      );
+      assert.equal(Namespace.byName('CF'), undefined, 'namespace can not be found after destroyed');
     }
   }
 );

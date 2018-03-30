@@ -45,12 +45,9 @@ moduleFor(
     }
 
     ['@test it renders and hides the given block based on the conditional']() {
-      this.render(
-        `{{#with cond1 as |cond|}}{{cond.greeting}}{{else}}False{{/with}}`,
-        {
-          cond1: { greeting: 'Hello' }
-        }
-      );
+      this.render(`{{#with cond1 as |cond|}}{{cond.greeting}}{{else}}False{{/with}}`, {
+        cond1: { greeting: 'Hello' },
+      });
 
       this.assertText('Hello');
 
@@ -74,7 +71,7 @@ moduleFor(
     ['@test can access alias and original scope']() {
       this.render(`{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}`, {
         title: 'Señor Engineer',
-        person: { name: 'Tom Dale' }
+        person: { name: 'Tom Dale' },
       });
 
       this.assertText('Señor Engineer: Tom Dale');
@@ -99,13 +96,10 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#with}} block.']() {
-      this.render(
-        `{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}`,
-        {
-          name: 'Stef',
-          other: 'Yehuda'
-        }
-      );
+      this.render(`{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}`, {
+        name: 'Stef',
+        other: 'Yehuda',
+      });
 
       this.assertText('Stef-Yehuda-Stef');
 
@@ -134,7 +128,7 @@ moduleFor(
         `{{#with falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/with}}`,
         {
           falsyThing: null,
-          otherThing: 'bar'
+          otherThing: 'bar',
         }
       );
 
@@ -166,7 +160,7 @@ moduleFor(
 
     ['@test can access alias of a proxy']() {
       this.render(`{{#with proxy as |person|}}{{person.name}}{{/with}}`, {
-        proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } })
+        proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
       });
 
       this.assertText('Tom Dale');
@@ -179,15 +173,11 @@ moduleFor(
 
       this.assertText('Yehuda Katz');
 
-      this.runTask(() =>
-        set(this.context, 'proxy.content', { name: 'Godfrey Chan' })
-      );
+      this.runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
 
       this.assertText('Godfrey Chan');
 
-      this.runTask(() =>
-        set(this.context, 'proxy.content.name', 'Stefan Penner')
-      );
+      this.runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
 
       this.assertText('Stefan Penner');
 
@@ -196,11 +186,7 @@ moduleFor(
       this.assertText('');
 
       this.runTask(() =>
-        set(
-          this.context,
-          'proxy',
-          ObjectProxy.create({ content: { name: 'Tom Dale' } })
-        )
+        set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } }))
       );
 
       this.assertText('Tom Dale');
@@ -210,7 +196,7 @@ moduleFor(
       this.render(
         `{{#with arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/with}}`,
         {
-          arrayThing: emberA(['Hello', ' ', 'world'])
+          arrayThing: emberA(['Hello', ' ', 'world']),
         }
       );
 
@@ -230,20 +216,15 @@ moduleFor(
 
       this.assertText('Goodbye, world!');
 
-      this.runTask(() =>
-        set(this.context, 'arrayThing', ['Hello', ' ', 'world'])
-      );
+      this.runTask(() => set(this.context, 'arrayThing', ['Hello', ' ', 'world']));
 
       this.assertText('Hello world');
     }
 
     ['@test `attrs` can be used as a block param [GH#14678]']() {
-      this.render(
-        '{{#with hash as |attrs|}}[{{hash.foo}}-{{attrs.foo}}]{{/with}}',
-        {
-          hash: { foo: 'foo' }
-        }
-      );
+      this.render('{{#with hash as |attrs|}}[{{hash.foo}}-{{attrs.foo}}]{{/with}}', {
+        hash: { foo: 'foo' },
+      });
 
       this.assertText('[foo-foo]');
 
@@ -270,7 +251,7 @@ moduleFor(
         `Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`,
         {
           admin: { name: 'Tom Dale' },
-          user: { name: 'Yehuda Katz' }
+          user: { name: 'Yehuda Katz' },
         }
       );
 
@@ -302,7 +283,7 @@ moduleFor(
           ring: 'Greed',
           first: 'Limbo',
           fifth: 'Wrath',
-          ninth: 'Treachery'
+          ninth: 'Treachery',
         }
       );
 
@@ -337,12 +318,9 @@ moduleFor(
     }
 
     ['@test it should support {{#with name as |foo|}}, then {{#with foo as |bar|}}']() {
-      this.render(
-        `{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}`,
-        {
-          name: 'caterpillar'
-        }
-      );
+      this.render(`{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}`, {
+        name: 'caterpillar',
+      });
 
       this.assertText('caterpillar');
 
@@ -361,7 +339,7 @@ moduleFor(
 
     ['@test updating the context should update the alias']() {
       this.render(`{{#with this as |person|}}{{person.name}}{{/with}}`, {
-        name: 'Los Pivots'
+        name: 'Los Pivots',
       });
 
       this.assertText('Los Pivots');
@@ -403,7 +381,7 @@ moduleFor(
         {
           name: 'ebryn',
           committer1: { name: 'trek' },
-          committer2: { name: 'machty' }
+          committer2: { name: 'machty' },
         }
       );
 
@@ -415,13 +393,9 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'name', 'chancancode'));
 
-      this.assertText(
-        'chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode'
-      );
+      this.assertText('chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode');
 
-      this.runTask(() =>
-        set(this.context, 'committer1', { name: 'krisselden' })
-      );
+      this.runTask(() => set(this.context, 'committer1', { name: 'krisselden' }));
 
       this.assertText(
         'chancancode[krisselden[machty]krisselden]chancancode[machty[krisselden]machty]chancancode'

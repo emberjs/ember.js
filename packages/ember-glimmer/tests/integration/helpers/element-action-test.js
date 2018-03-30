@@ -1,11 +1,7 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Component } from '../../utils/helpers';
-import {
-  set,
-  instrumentationSubscribe,
-  instrumentationReset
-} from 'ember-metal';
+import { set, instrumentationSubscribe, instrumentationReset } from 'ember-metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
@@ -50,13 +46,13 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         let ExampleComponent = Component.extend({
           actions: {
-            foo() {}
-          }
+            foo() {},
+          },
         });
 
         this.registerComponent('example-component', {
           ComponentClass: ExampleComponent,
-          template: '<button {{action "foo" "bar"}}>Click me</button>'
+          template: '<button {{action "foo" "bar"}}>Click me</button>',
         });
 
         instrumentationSubscribe('interaction.ember-action', {
@@ -65,44 +61,24 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           },
           after(name, time, payload) {
             subscriberPayload = payload;
-          }
+          },
         });
 
         this.render('{{example-component}}');
 
-        this.assert.equal(
-          subscriberCallCount,
-          0,
-          'subscriber has not been called'
-        );
+        this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
 
         this.runTask(() => this.rerender());
 
-        this.assert.equal(
-          subscriberCallCount,
-          0,
-          'subscriber has not been called'
-        );
+        this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
 
         this.runTask(() => {
           this.$('button').click();
         });
 
-        this.assert.equal(
-          subscriberCallCount,
-          1,
-          'subscriber has been called 1 time'
-        );
-        this.assert.equal(
-          subscriberPayload.name,
-          'foo',
-          'subscriber called with correct name'
-        );
-        this.assert.equal(
-          subscriberPayload.args[0],
-          'bar',
-          'subscriber called with correct args'
-        );
+        this.assert.equal(subscriberCallCount, 1, 'subscriber has been called 1 time');
+        this.assert.equal(subscriberPayload.name, 'foo', 'subscriber called with correct name');
+        this.assert.equal(subscriberPayload.args[0], 'bar', 'subscriber called with correct args');
       }
     }
   );
@@ -118,13 +94,13 @@ moduleFor(
         actions: {
           foo() {
             fooCallCount++;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<button {{action "foo"}}>Click me</button>'
+        template: '<button {{action "foo"}}>Click me</button>',
       });
 
       this.render('{{example-component}}');
@@ -161,13 +137,13 @@ moduleFor(
         actions: {
           foo(thing) {
             fooArgs.push(thing);
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<button {{action "foo" member}}>Click me</button>'
+        template: '<button {{action "foo" member}}>Click me</button>',
       });
 
       this.render('{{example-component}}');
@@ -192,11 +168,7 @@ moduleFor(
         this.$('button').click();
       });
 
-      this.assert.deepEqual(
-        fooArgs,
-        ['a', 'b'],
-        'foo has been called with an updated value'
-      );
+      this.assert.deepEqual(fooArgs, ['a', 'b'], 'foo has been called with an updated value');
     }
 
     ['@test it should output a marker attribute with a guid']() {
@@ -223,13 +195,13 @@ moduleFor(
         actions: {
           show() {
             showCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<div id="show" {{action "show" on="mouseUp"}}></div>'
+        template: '<div id="show" {{action "show" on="mouseUp"}}></div>',
       });
 
       this.render('{{example-component}}');
@@ -249,21 +221,21 @@ moduleFor(
         actions: {
           wat() {
             targetWatted = true;
-          }
-        }
+          },
+        },
       });
 
       let InnerComponent = Component.extend({
         actions: {
           wat() {
             innerWatted = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('inner-component', {
         ComponentClass: InnerComponent,
-        template: '{{yield}}'
+        template: '{{yield}}',
       });
 
       this.registerComponent('target-component', {
@@ -272,7 +244,7 @@ moduleFor(
         {{#inner-component}}
           <button {{action "wat"}}>Wat me!</button>
         {{/inner-component}}
-      `
+      `,
       });
 
       this.render('{{target-component}}');
@@ -292,20 +264,20 @@ moduleFor(
         actions: {
           wat() {
             targetWatted = true;
-          }
-        }
+          },
+        },
       });
 
       let OtherComponent = Component.extend({});
 
       this.registerComponent('target-component', {
         ComponentClass: TargetComponent,
-        template: '{{yield this}}'
+        template: '{{yield this}}',
       });
 
       this.registerComponent('other-component', {
         ComponentClass: OtherComponent,
-        template: '<a {{action "wat" target=anotherTarget}}>Wat?</a>'
+        template: '<a {{action "wat" target=anotherTarget}}>Wat?</a>',
       });
 
       this.render(strip`
@@ -329,13 +301,13 @@ moduleFor(
       let first = {
         edit() {
           firstEdit++;
-        }
+        },
       };
 
       let second = {
         edit() {
           secondEdit++;
-        }
+        },
       };
 
       let ExampleComponent = Component.extend({
@@ -343,12 +315,12 @@ moduleFor(
           this._super(...arguments);
           component = this;
         },
-        theTarget: first
+        theTarget: first,
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<a {{action "edit" target=theTarget}}>Edit</a>'
+        template: '<a {{action "edit" target=theTarget}}>Edit</a>',
       });
 
       this.render('{{example-component}}');
@@ -382,14 +354,14 @@ moduleFor(
           },
           shortcut() {
             shortcutHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a> <div {{action "shortcut" allowedKeys="any"}}>click me too</div>'
+          '<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a> <div {{action "shortcut" allowedKeys="any"}}>click me too</div>',
       });
 
       this.render('{{example-component}}');
@@ -398,11 +370,7 @@ moduleFor(
         this.$('a[data-ember-action]').trigger('click', { altKey: true });
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the event handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
 
       this.runTask(() => {
         this.$('div[data-ember-action]').trigger('click', { ctrlKey: true });
@@ -428,14 +396,14 @@ moduleFor(
           },
           shortcut() {
             shortcutHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<a href="#" {{action "edit" allowedKeys=altKey}}>click me</a> <div {{action "shortcut" allowedKeys=anyKey}}>click me too</div>'
+          '<a href="#" {{action "edit" allowedKeys=altKey}}>click me</a> <div {{action "shortcut" allowedKeys=anyKey}}>click me too</div>',
       });
 
       this.render('{{example-component}}');
@@ -444,11 +412,7 @@ moduleFor(
         this.$('a[data-ember-action]').trigger('click', { altKey: true });
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the event handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
 
       this.runTask(() => {
         this.$('div[data-ember-action]').trigger('click', { ctrlKey: true });
@@ -474,14 +438,13 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template:
-          '<a href="#" {{action "edit" allowedKeys=acceptedKeys}}>click me</a>'
+        template: '<a href="#" {{action "edit" allowedKeys=acceptedKeys}}>click me</a>',
       });
 
       this.render('{{example-component}}');
@@ -490,11 +453,7 @@ moduleFor(
         this.$('a[data-ember-action]').trigger('click', { altKey: true });
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the event handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
 
       editHandlerWasCalled = false;
 
@@ -506,11 +465,7 @@ moduleFor(
         this.$('div[data-ember-action]').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        false,
-        'the event handler was not called'
-      );
+      this.assert.equal(editHandlerWasCalled, false, 'the event handler was not called');
     }
 
     ['@test should be able to use action more than once for the same event within a view']() {
@@ -530,17 +485,17 @@ moduleFor(
           },
           delete() {
             deleteHandlerWasCalled = true;
-          }
+          },
         },
         click() {
           originalHandlerWasCalled = true;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<a id="edit" href="#" {{action "edit"}}>edit</a><a id="delete" href="#" {{action "delete"}}>delete</a>'
+          '<a id="edit" href="#" {{action "edit"}}>edit</a><a id="delete" href="#" {{action "delete"}}>delete</a>',
       });
 
       this.render('{{example-component}}');
@@ -549,16 +504,8 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the edit action was called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        false,
-        'the delete action was not called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
       this.assert.equal(
         originalHandlerWasCalled,
         true,
@@ -571,16 +518,8 @@ moduleFor(
         this.$('#delete').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        false,
-        'the edit action was not called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        true,
-        'the delete action was called'
-      );
+      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.equal(deleteHandlerWasCalled, true, 'the delete action was called');
       this.assert.equal(
         originalHandlerWasCalled,
         true,
@@ -593,21 +532,9 @@ moduleFor(
         this.wrap(component.element).click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        false,
-        'the edit action was not called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        false,
-        'the delete action was not called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        true,
-        'the click handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test the event should not bubble if `bubbles=false` is passed']() {
@@ -627,17 +554,17 @@ moduleFor(
           },
           delete() {
             deleteHandlerWasCalled = true;
-          }
+          },
         },
         click() {
           originalHandlerWasCalled = true;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<a id="edit" href="#" {{action "edit" bubbles=false}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=false}}>delete</a>'
+          '<a id="edit" href="#" {{action "edit" bubbles=false}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=false}}>delete</a>',
       });
 
       this.render('{{example-component}}');
@@ -646,21 +573,9 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the edit action was called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        false,
-        'the delete action was not called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        false,
-        'the click handler was not called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -668,21 +583,9 @@ moduleFor(
         this.$('#delete').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        false,
-        'the edit action was not called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        true,
-        'the delete action was called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        false,
-        'the click handler was not called'
-      );
+      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.equal(deleteHandlerWasCalled, true, 'the delete action was called');
+      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -690,21 +593,9 @@ moduleFor(
         this.wrap(component.element).click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        false,
-        'the edit action was not called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        false,
-        'the delete action was not called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        true,
-        'the click handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test the event should not bubble if `bubbles=false` is passed bound']() {
@@ -725,17 +616,17 @@ moduleFor(
           },
           delete() {
             deleteHandlerWasCalled = true;
-          }
+          },
         },
         click() {
           originalHandlerWasCalled = true;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<a id="edit" href="#" {{action "edit" bubbles=isFalse}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=isFalse}}>delete</a>'
+          '<a id="edit" href="#" {{action "edit" bubbles=isFalse}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=isFalse}}>delete</a>',
       });
 
       this.render('{{example-component}}');
@@ -744,21 +635,9 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the edit action was called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        false,
-        'the delete action was not called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        false,
-        'the click handler was not called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -766,21 +645,9 @@ moduleFor(
         this.$('#delete').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        false,
-        'the edit action was not called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        true,
-        'the delete action was called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        false,
-        'the click handler was not called'
-      );
+      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.equal(deleteHandlerWasCalled, true, 'the delete action was called');
+      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -788,21 +655,9 @@ moduleFor(
         this.wrap(component.element).click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        false,
-        'the edit action was not called'
-      );
-      this.assert.equal(
-        deleteHandlerWasCalled,
-        false,
-        'the delete action was not called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        true,
-        'the click handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test the bubbling depends on the bound parameter']() {
@@ -819,17 +674,16 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
+          },
         },
         click() {
           originalHandlerWasCalled = true;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template:
-          '<a id="edit" href="#" {{action "edit" bubbles=shouldBubble}}>edit</a>'
+        template: '<a id="edit" href="#" {{action "edit" bubbles=shouldBubble}}>edit</a>',
       });
 
       this.render('{{example-component}}');
@@ -838,16 +692,8 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the edit action was called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        false,
-        'the click handler was not called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -859,16 +705,8 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the edit action was called'
-      );
-      this.assert.equal(
-        originalHandlerWasCalled,
-        true,
-        'the click handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test it should work properly in an #each block']() {
@@ -879,14 +717,13 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template:
-          '{{#each items as |item|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'
+        template: '{{#each items as |item|}}<a href="#" {{action "edit"}}>click me</a>{{/each}}',
       });
 
       this.render('{{example-component}}');
@@ -895,11 +732,7 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the event handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
     }
 
     ['@test it should work properly in a {{#with foo as |bar|}} block']() {
@@ -910,14 +743,14 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '{{#with something as |somethingElse|}}<a href="#" {{action "edit"}}>click me</a>{{/with}}'
+          '{{#with something as |somethingElse|}}<a href="#" {{action "edit"}}>click me</a>{{/with}}',
       });
 
       this.render('{{example-component}}');
@@ -926,87 +759,52 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.equal(
-        editHandlerWasCalled,
-        true,
-        'the event handler was called'
-      );
+      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
     }
 
-    ['@test it should unregister event handlers when an element action is removed'](
-      assert
-    ) {
+    ['@test it should unregister event handlers when an element action is removed'](assert) {
       let ExampleComponent = Component.extend({
         actions: {
-          edit() {}
-        }
+          edit() {},
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template:
-          '{{#if isActive}}<a href="#" {{action "edit"}}>click me</a>{{/if}}'
+        template: '{{#if isActive}}<a href="#" {{action "edit"}}>click me</a>{{/if}}',
       });
 
       this.render('{{example-component isActive=isActive}}', {
-        isActive: true
+        isActive: true,
       });
 
-      assert.equal(
-        this.$('a[data-ember-action]').length,
-        1,
-        'The element is rendered'
-      );
+      assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
       let actionId;
 
       actionId = getActionIds(this.$('a[data-ember-action]')[0])[0];
 
-      assert.ok(
-        ActionManager.registeredActions[actionId],
-        'An action is registered'
-      );
+      assert.ok(ActionManager.registeredActions[actionId], 'An action is registered');
 
       this.runTask(() => this.rerender());
 
-      assert.equal(
-        this.$('a[data-ember-action]').length,
-        1,
-        'The element is still present'
-      );
+      assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is still present');
 
-      assert.ok(
-        ActionManager.registeredActions[actionId],
-        'The action is still registered'
-      );
+      assert.ok(ActionManager.registeredActions[actionId], 'The action is still registered');
 
       this.runTask(() => set(this.context, 'isActive', false));
 
-      assert.strictEqual(
-        this.$('a[data-ember-action]').length,
-        0,
-        'The element is removed'
-      );
+      assert.strictEqual(this.$('a[data-ember-action]').length, 0, 'The element is removed');
 
-      assert.ok(
-        !ActionManager.registeredActions[actionId],
-        'The action is unregistered'
-      );
+      assert.ok(!ActionManager.registeredActions[actionId], 'The action is unregistered');
 
       this.runTask(() => set(this.context, 'isActive', true));
 
-      assert.equal(
-        this.$('a[data-ember-action]').length,
-        1,
-        'The element is rendered'
-      );
+      assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
       actionId = getActionIds(this.$('a[data-ember-action]')[0])[0];
 
-      assert.ok(
-        ActionManager.registeredActions[actionId],
-        'A new action is registered'
-      );
+      assert.ok(ActionManager.registeredActions[actionId], 'A new action is registered');
     }
 
     ['@test it should capture events from child elements and allow them to trigger the action']() {
@@ -1016,13 +814,13 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<div {{action "edit"}}><button>click me</button></div>'
+        template: '<div {{action "edit"}}><button>click me</button></div>',
       });
 
       this.render('{{example-component}}');
@@ -1045,16 +843,16 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
+          },
         },
         click() {
           originalHandlerWasCalled = true;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<a href="#" {{action "edit"}}>click me</a>'
+        template: '<a href="#" {{action "edit"}}>click me</a>',
       });
 
       this.render('{{example-component}}');
@@ -1077,16 +875,16 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
+          },
         },
         click() {
           originalHandlerWasCalled = true;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<a href="#" {{action "edit" bubbles=false}}>click me</a>'
+        template: '<a href="#" {{action "edit" bubbles=false}}>click me</a>',
       });
 
       this.render('{{example-component}}');
@@ -1095,14 +893,8 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.ok(
-        editHandlerWasCalled,
-        'the child event handler was called'
-      );
-      this.assert.notOk(
-        originalHandlerWasCalled,
-        'the parent handler was not called'
-      );
+      this.assert.ok(editHandlerWasCalled, 'the child event handler was called');
+      this.assert.notOk(originalHandlerWasCalled, 'the parent handler was not called');
     }
 
     ['@test it should allow "send" as the action name (#594)']() {
@@ -1112,13 +904,13 @@ moduleFor(
         actions: {
           send() {
             sendHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<a href="#" {{action "send"}}>click me</a>'
+        template: '<a href="#" {{action "send"}}>click me</a>',
       });
 
       this.render('{{example-component}}');
@@ -1144,8 +936,8 @@ moduleFor(
           edit(context) {
             passedTarget = this === targetThis;
             passedContext = context;
-          }
-        }
+          },
+        },
       });
 
       let aContext;
@@ -1154,12 +946,12 @@ moduleFor(
         init() {
           this._super(...arguments);
           aContext = this;
-        }
+        },
       });
 
       this.registerComponent('target-component', {
         ComponentClass: TargetComponent,
-        template: '{{yield this}}'
+        template: '{{yield this}}',
       });
 
       this.registerComponent('example-component', {
@@ -1168,7 +960,7 @@ moduleFor(
         {{#target-component as |aTarget|}}
           <a id="edit" href="#" {{action "edit" this target=aTarget}}>click me</a>
         {{/target-component}}
-        `
+        `,
       });
 
       this.render('{{example-component}}');
@@ -1177,15 +969,8 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.ok(
-        passedTarget,
-        'the action is called with the target as this'
-      );
-      this.assert.strictEqual(
-        passedContext,
-        aContext,
-        'the parameter is passed along'
-      );
+      this.assert.ok(passedTarget, 'the action is called with the target as this');
+      this.assert.strictEqual(passedContext, aContext, 'the parameter is passed along');
     }
 
     ['@test it should only trigger actions for the event they were registered on']() {
@@ -1195,13 +980,13 @@ moduleFor(
         actions: {
           edit() {
             editHandlerWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<a href="#" {{action "edit"}}>click me</a>'
+        template: '<a href="#" {{action "edit"}}>click me</a>',
       });
 
       this.render('{{example-component}}');
@@ -1210,10 +995,7 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.ok(
-        editHandlerWasCalled,
-        'the event handler was called on click'
-      );
+      this.assert.ok(editHandlerWasCalled, 'the event handler was called on click');
 
       editHandlerWasCalled = false;
 
@@ -1221,10 +1003,7 @@ moduleFor(
         this.$('a').trigger('mouseover');
       });
 
-      this.assert.notOk(
-        editHandlerWasCalled,
-        'the event handler was not called on mouseover'
-      );
+      this.assert.notOk(editHandlerWasCalled, 'the event handler was not called on mouseover');
     }
 
     ['@test it should allow multiple contexts to be specified']() {
@@ -1237,13 +1016,13 @@ moduleFor(
         actions: {
           edit(...args) {
             passedContexts = args;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<button {{action "edit" modelA modelB}}>click me</button>'
+        template: '<button {{action "edit" modelA modelB}}>click me</button>',
       });
 
       this.render('{{example-component}}');
@@ -1268,13 +1047,13 @@ moduleFor(
         actions: {
           edit(...args) {
             passedContexts = args;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<button {{action "edit" "herp" model}}>click me</button>'
+        template: '<button {{action "edit" "herp" model}}>click me</button>',
       });
 
       this.render('{{example-component}}');
@@ -1302,13 +1081,13 @@ moduleFor(
         actions: {
           show() {
             showCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<button {{action "show" href=true}}>Howdy</button>'
+        template: '<button {{action "show" href=true}}>Howdy</button>',
       });
 
       this.render('{{example-component}}');
@@ -1328,10 +1107,7 @@ moduleFor(
             assert.ok(event.defaultPrevented, 'should prevent default');
           }
         } else {
-          assert.notOk(
-            showCalled,
-            `should not call action with ${prop}:${value}`
-          );
+          assert.notOk(showCalled, `should not call action with ${prop}:${value}`);
           assert.notOk(event.defaultPrevented, 'should not prevent default');
         }
       };
@@ -1355,13 +1131,13 @@ moduleFor(
         actions: {
           show() {
             showCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<input type="text" {{action "show" on="keyUp"}}>'
+        template: '<input type="text" {{action "show" on="keyUp"}}>',
       });
 
       this.render('{{example-component}}');
@@ -1396,14 +1172,13 @@ moduleFor(
           scissors() {
             lastAction = 'scissors';
             actionOrder.push('scissors');
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template:
-          '<a id="bound-param" {{action hookMeUp}}>Whistle tips go woop woooop</a>'
+        template: '<a id="bound-param" {{action hookMeUp}}>Whistle tips go woop woooop</a>',
       });
 
       this.render('{{example-component}}');
@@ -1421,11 +1196,7 @@ moduleFor(
             .click();
         });
 
-        test.assert.ok(
-          lastAction,
-          propertyValue,
-          `lastAction set to ${propertyValue}`
-        );
+        test.assert.ok(lastAction, propertyValue, `lastAction set to ${propertyValue}`);
       };
 
       testBoundAction('rock');
@@ -1452,7 +1223,7 @@ moduleFor(
         allactions: emberA([
           { title: 'Rock', name: 'rock' },
           { title: 'Paper', name: 'paper' },
-          { title: 'Scissors', name: 'scissors' }
+          { title: 'Scissors', name: 'scissors' },
         ]),
         actions: {
           rock() {
@@ -1466,14 +1237,14 @@ moduleFor(
           scissors() {
             lastAction = 'scissors';
             actionOrder.push('scissors');
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '{{#each allactions as |allaction|}}<a id="{{allaction.name}}" {{action allaction.name}}>{{allaction.title}}</a>{{/each}}'
+          '{{#each allactions as |allaction|}}<a id="{{allaction.name}}" {{action allaction.name}}>{{allaction.title}}</a>{{/each}}',
       });
 
       this.render('{{example-component}}');
@@ -1487,11 +1258,7 @@ moduleFor(
             .click();
         });
 
-        test.assert.ok(
-          lastAction,
-          propertyValue,
-          `lastAction set to ${propertyValue}`
-        );
+        test.assert.ok(lastAction, propertyValue, `lastAction set to ${propertyValue}`);
       };
 
       testBoundAction('rock');
@@ -1515,12 +1282,12 @@ moduleFor(
         submit(actualArg) {
           incomingArg = actualArg;
           submitCalled = true;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: `<a {{action submit '${arg}'}}>Hi</a>`
+        template: `<a {{action submit '${arg}'}}>Hi</a>`,
       });
 
       this.render('{{example-component}}');
@@ -1536,13 +1303,13 @@ moduleFor(
     ['@test a quoteless parameter that does not resolve to a value asserts']() {
       let ExampleComponent = Component.extend({
         actions: {
-          ohNoeNotValid() {}
-        }
+          ohNoeNotValid() {},
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<a id="oops-bound-param" {{action ohNoeNotValid}}>Hi</a>'
+        template: '<a id="oops-bound-param" {{action ohNoeNotValid}}>Hi</a>',
       });
 
       expectAssertion(() => {
@@ -1561,8 +1328,8 @@ moduleFor(
           },
           doubleClicked() {
             doubleClickActionWasCalled = true;
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
@@ -1571,7 +1338,7 @@ moduleFor(
         <a href="#"
           {{action "clicked" on="click"}}
           {{action "doubleClicked" on="doubleClick"}}
-        >click me</a>`
+        >click me</a>`,
       });
 
       this.render('{{example-component}}');
@@ -1586,22 +1353,19 @@ moduleFor(
         this.$('a').trigger('dblclick');
       });
 
-      this.assert.ok(
-        doubleClickActionWasCalled,
-        'the doubleClicked action was called'
-      );
+      this.assert.ok(doubleClickActionWasCalled, 'the doubleClicked action was called');
     }
 
     ['@test it should respect preventDefault option if provided']() {
       let ExampleComponent = Component.extend({
         actions: {
-          show() {}
-        }
+          show() {},
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<a {{action "show" preventDefault=false}}>Hi</a>'
+        template: '<a {{action "show" preventDefault=false}}>Hi</a>',
       });
 
       this.render('{{example-component}}');
@@ -1612,11 +1376,7 @@ moduleFor(
         event = this.$('a').click()[0];
       });
 
-      this.assert.equal(
-        event.defaultPrevented,
-        false,
-        'should not preventDefault'
-      );
+      this.assert.equal(event.defaultPrevented, false, 'should not preventDefault');
     }
 
     ['@test it should respect preventDefault option if provided bound']() {
@@ -1629,14 +1389,13 @@ moduleFor(
           component = this;
         },
         actions: {
-          show() {}
-        }
+          show() {},
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template:
-          '<a {{action "show" preventDefault=shouldPreventDefault}}>Hi</a>'
+        template: '<a {{action "show" preventDefault=shouldPreventDefault}}>Hi</a>',
       });
 
       this.render('{{example-component}}');
@@ -1647,11 +1406,7 @@ moduleFor(
         event = this.$('a').trigger(event)[0];
       });
 
-      this.assert.equal(
-        event.defaultPrevented,
-        false,
-        'should not preventDefault'
-      );
+      this.assert.equal(event.defaultPrevented, false, 'should not preventDefault');
 
       this.runTask(() => {
         component.set('shouldPreventDefault', true);
@@ -1660,11 +1415,7 @@ moduleFor(
 
       // IE11 does not allow simulated events to have a valid `defaultPrevented`
       if (!isIE11) {
-        this.assert.equal(
-          event.defaultPrevented,
-          true,
-          'should preventDefault'
-        );
+        this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
       }
     }
 
@@ -1676,8 +1427,8 @@ moduleFor(
         actions: {
           hey() {
             outerActionCalled = true;
-          }
-        }
+          },
+        },
       });
 
       let MiddleComponent = Component.extend({});
@@ -1686,7 +1437,7 @@ moduleFor(
         click() {
           innerClickCalled = true;
           this.sendAction();
-        }
+        },
       });
 
       this.registerComponent('outer-component', {
@@ -1695,12 +1446,12 @@ moduleFor(
         {{#middle-component}}
           {{inner-component action="hey"}}
         {{/middle-component}}
-      `
+      `,
       });
 
       this.registerComponent('middle-component', {
         ComponentClass: MiddleComponent,
-        template: '{{yield}}'
+        template: '{{yield}}',
       });
 
       this.registerComponent('inner-component', {
@@ -1708,7 +1459,7 @@ moduleFor(
         template: strip`
         <button>Click Me</button>
         {{yield}}
-      `
+      `,
       });
 
       this.render('{{outer-component}}');
@@ -1717,10 +1468,7 @@ moduleFor(
         this.$('button').click();
       });
 
-      this.assert.ok(
-        outerActionCalled,
-        'the action fired on the proper target'
-      );
+      this.assert.ok(outerActionCalled, 'the action fired on the proper target');
       this.assert.ok(innerClickCalled, 'the click was triggered');
     }
 
@@ -1732,13 +1480,13 @@ moduleFor(
         init() {
           this._super(...arguments);
           component = this;
-        }
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<button {{action (mut label) "Clicked!"}}>{{if label label "Click me"}}</button>'
+          '<button {{action (mut label) "Clicked!"}}>{{if label label "Click me"}}</button>',
       });
 
       this.render('{{example-component}}');
@@ -1805,14 +1553,14 @@ moduleFor(
           toggleSelected() {
             actionCount++;
             this.toggleProperty('selected');
-          }
-        }
+          },
+        },
       });
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<button class="{{if selected \'selected\'}}" {{action "toggleSelected"}}>Toggle Selected</button>'
+          '<button class="{{if selected \'selected\'}}" {{action "toggleSelected"}}>Toggle Selected</button>',
       });
 
       this.render('{{example-component}}');

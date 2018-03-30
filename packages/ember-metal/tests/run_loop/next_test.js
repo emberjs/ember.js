@@ -36,9 +36,7 @@ moduleFor(
       }, 20);
     }
 
-    ['@test multiple calls to next share coalesce callbacks into same run loop'](
-      assert
-    ) {
+    ['@test multiple calls to next share coalesce callbacks into same run loop'](assert) {
       let done = assert.async();
       let secondRunLoop, thirdRunLoop;
       run(() => {

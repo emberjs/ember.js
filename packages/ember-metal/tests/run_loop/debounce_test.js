@@ -11,7 +11,7 @@ moduleFor(
       let target = {
         someFunc(...args) {
           calledWith.push(args);
-        }
+        },
       };
 
       debounce(target, target.someFunc, 10);
@@ -19,11 +19,7 @@ moduleFor(
       debounce(target, target.someFunc, 10);
 
       setTimeout(() => {
-        assert.deepEqual(
-          calledWith,
-          [[]],
-          'someFunc called once with correct arguments'
-        );
+        assert.deepEqual(calledWith, [[]], 'someFunc called once with correct arguments');
         done();
       }, 20);
     }
@@ -35,7 +31,7 @@ moduleFor(
       let target = {
         someFunc(...args) {
           calledWith.push(args);
-        }
+        },
       };
 
       debounce(target, 'someFunc', 10);
@@ -43,11 +39,7 @@ moduleFor(
       debounce(target, 'someFunc', 10);
 
       setTimeout(() => {
-        assert.deepEqual(
-          calledWith,
-          [[]],
-          'someFunc called once with correct arguments'
-        );
+        assert.deepEqual(calledWith, [[]], 'someFunc called once with correct arguments');
         done();
       }, 20);
     }
@@ -65,11 +57,7 @@ moduleFor(
       debounce(someFunc, 10);
 
       setTimeout(() => {
-        assert.deepEqual(
-          calledWith,
-          [[]],
-          'someFunc called once with correct arguments'
-        );
+        assert.deepEqual(calledWith, [[]], 'someFunc called once with correct arguments');
         done();
       }, 20);
     }

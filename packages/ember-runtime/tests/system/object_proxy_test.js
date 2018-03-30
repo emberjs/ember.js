@@ -1,11 +1,4 @@
-import {
-  addObserver,
-  computed,
-  get,
-  set,
-  isWatching,
-  removeObserver
-} from 'ember-metal';
+import { addObserver, computed, get, set, isWatching, removeObserver } from 'ember-metal';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { MANDATORY_GETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import ObjectProxy from '../../system/object_proxy';
@@ -23,19 +16,15 @@ moduleFor(
           set(key, value) {
             this._cp = value;
             return this._cp;
-          }
-        })
+          },
+        }),
       });
       let proxy = Proxy.create({
         prop: 'Foo',
-        cp: 'Bar'
+        cp: 'Bar',
       });
 
-      assert.equal(
-        get(proxy, 'prop'),
-        'Foo',
-        'should not have tried to proxy set'
-      );
+      assert.equal(get(proxy, 'prop'), 'Foo', 'should not have tried to proxy set');
       assert.equal(proxy._cp, 'Bar', 'should use CP setter');
     }
 
@@ -45,7 +34,7 @@ moduleFor(
         lastName: 'Dale',
         unknownProperty(key) {
           return key + ' unknown';
-        }
+        },
       };
       let proxy = ObjectProxy.create();
 
@@ -83,31 +72,19 @@ moduleFor(
         'Huda',
         'content should have new value from set on proxy'
       );
-      assert.equal(
-        get(proxy, 'lastName'),
-        'Huda',
-        'proxy should have new value from set on proxy'
-      );
+      assert.equal(get(proxy, 'lastName'), 'Huda', 'proxy should have new value from set on proxy');
 
       set(proxy, 'content', { firstName: 'Yehuda', lastName: 'Katz' });
 
-      assert.equal(
-        get(proxy, 'firstName'),
-        'Yehuda',
-        'proxy should reflect updated content'
-      );
-      assert.equal(
-        get(proxy, 'lastName'),
-        'Katz',
-        'proxy should reflect updated content'
-      );
+      assert.equal(get(proxy, 'firstName'), 'Yehuda', 'proxy should reflect updated content');
+      assert.equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
     }
 
     ['@test getting proxied properties with Ember.get should work'](assert) {
       let proxy = ObjectProxy.create({
         content: {
-          foo: 'FOO'
-        }
+          foo: 'FOO',
+        },
       });
 
       assert.equal(get(proxy, 'foo'), 'FOO');
@@ -116,14 +93,11 @@ moduleFor(
     [`@test JSON.stringify doens't assert`](assert) {
       let proxy = ObjectProxy.create({
         content: {
-          foo: 'FOO'
-        }
+          foo: 'FOO',
+        },
       });
 
-      assert.equal(
-        JSON.stringify(proxy),
-        JSON.stringify({ content: { foo: 'FOO' } })
-      );
+      assert.equal(JSON.stringify(proxy), JSON.stringify({ content: { foo: 'FOO' } }));
     }
 
     [`@test setting a property on the proxy avoids the assertion`](assert) {
@@ -132,24 +106,22 @@ moduleFor(
         content: {
           toJSON() {
             return 'hello';
-          }
-        }
+          },
+        },
       });
 
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
     }
 
-    [`@test setting a property on the proxy's prototype avoids the assertion`](
-      assert
-    ) {
+    [`@test setting a property on the proxy's prototype avoids the assertion`](assert) {
       let proxy = ObjectProxy.extend({
-        toJSON: null
+        toJSON: null,
       }).create({
         content: {
           toJSON() {
             return 'hello';
-          }
-        }
+          },
+        },
       });
 
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
@@ -159,8 +131,8 @@ moduleFor(
       if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY) {
         let proxy = ObjectProxy.create({
           content: {
-            foo: 'FOO'
-          }
+            foo: 'FOO',
+          },
         });
 
         expectAssertion(() => proxy.foo, /\.get\('foo'\)/);
@@ -184,7 +156,7 @@ moduleFor(
             return firstName + ' ' + lastName;
           }
           return firstName || lastName;
-        }).property('firstName', 'lastName')
+        }).property('firstName', 'lastName'),
       });
 
       let proxy = Proxy.create();
@@ -250,9 +222,7 @@ moduleFor(
       assert.equal(proxy.get('content.foo.bar'), 'bye');
     }
 
-    ['@test should transition between watched and unwatched strategies'](
-      assert
-    ) {
+    ['@test should transition between watched and unwatched strategies'](assert) {
       let content = { foo: 'foo' };
       let proxy = ObjectProxy.create({ content: content });
       let count = 0;
@@ -305,8 +275,8 @@ moduleFor(
     ) {
       let proxyObject = ObjectProxy.create({
         content: {
-          prop: 'emberjs'
-        }
+          prop: 'emberjs',
+        },
       });
       set(proxyObject, 'prop', undefined);
       assert.equal(

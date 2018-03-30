@@ -21,18 +21,14 @@ moduleFor(
     get applicationOptions() {
       return assign(super.applicationOptions, {
         rootElement: '#one',
-        router: null
+        router: null,
       });
     }
 
     createSecondApplication(options) {
       let { applicationOptions } = this;
       let secondApplicationOptions = { rootElement: '#two' };
-      let myOptions = assign(
-        applicationOptions,
-        secondApplicationOptions,
-        options
-      );
+      let myOptions = assign(applicationOptions, secondApplicationOptions, options);
       this.secondApp = Application.create(myOptions);
       this.secondResolver = myOptions.Resolver.lastInstance;
       return this.secondApp;
@@ -56,8 +52,8 @@ moduleFor(
             doStuff() {
               let rootElement = getOwner(this).application.rootElement;
               actions.push(rootElement);
-            }
-          }
+            },
+          },
         })
       );
 
@@ -68,7 +64,7 @@ moduleFor(
         <h1>Node 1</h1>{{special-button}}
       `,
           {
-            moduleName: 'my-app/templates/index.hbs'
+            moduleName: 'my-app/templates/index.hbs',
           }
         )
       );
@@ -79,7 +75,7 @@ moduleFor(
         <button class='do-stuff' {{action 'doStuff'}}>Button</button>
       `,
           {
-            moduleName: 'my-app/templates/components/special-button.hbs'
+            moduleName: 'my-app/templates/components/special-button.hbs',
           }
         )
       );

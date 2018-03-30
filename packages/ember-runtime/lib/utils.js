@@ -13,7 +13,7 @@ const TYPE_MAP = {
   '[object Date]': 'date',
   '[object RegExp]': 'regexp',
   '[object Object]': 'object',
-  '[object FileList]': 'filelist'
+  '[object FileList]': 'filelist',
 };
 
 const { toString } = Object.prototype;

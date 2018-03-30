@@ -13,7 +13,7 @@ import {
   bind,
   once,
   processAllNamespaces,
-  setNamespaceSearchDisabled
+  setNamespaceSearchDisabled,
 } from 'ember-metal';
 import { runLoadHooks, _loaded, RSVP } from 'ember-runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
@@ -24,7 +24,7 @@ import {
   HistoryLocation,
   AutoLocation,
   NoneLocation,
-  BucketCache
+  BucketCache,
 } from 'ember-routing';
 import ApplicationInstance from './application-instance';
 import { privatize as P } from 'container';
@@ -1063,7 +1063,7 @@ const Application = Engine.extend({
           throw error;
         });
     });
-  }
+  },
 });
 
 Application.reopenClass({
@@ -1101,7 +1101,7 @@ Application.reopenClass({
     setupApplicationRegistry(registry);
 
     return registry;
-  }
+  },
 });
 
 function commonSetupRegistry(registry) {
@@ -1109,7 +1109,7 @@ function commonSetupRegistry(registry) {
   registry.register('-view-registry:main', {
     create() {
       return dictionary(null);
-    }
+    },
   });
 
   registry.register('route:basic', Route);
@@ -1125,7 +1125,7 @@ function commonSetupRegistry(registry) {
   registry.register(P`-bucket-cache:main`, {
     create() {
       return new BucketCache();
-    }
+    },
   });
 
   if (EMBER_ROUTING_ROUTER_SERVICE) {

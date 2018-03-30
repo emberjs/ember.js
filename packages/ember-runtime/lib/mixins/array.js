@@ -19,7 +19,7 @@ import {
   addArrayObserver,
   removeArrayObserver,
   arrayContentWillChange,
-  arrayContentDidChange
+  arrayContentDidChange,
 } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
 import Enumerable from './enumerable';
@@ -41,9 +41,7 @@ export function isEmberArray(obj) {
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
-  return valueProvided
-    ? item => value === get(item, key)
-    : item => !!get(item, key);
+  return valueProvided ? item => value === get(item, key) : item => !!get(item, key);
 }
 
 // ..........................................................
@@ -164,7 +162,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     set(key, value) {
       this.replace(0, get(this, 'length'), value);
       return this;
-    }
+    },
   }),
 
   /**
@@ -376,9 +374,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   hasArrayObservers: computed(function() {
-    return (
-      hasListeners(this, '@array:change') || hasListeners(this, '@array:before')
-    );
+    return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
   }),
 
   /**
@@ -446,10 +442,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   forEach(callback, target = null) {
-    assert(
-      'forEach expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('forEach expects a function as first argument.', typeof callback === 'function');
 
     let length = get(this, 'length');
 
@@ -515,10 +508,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   map(callback, target) {
-    assert(
-      'map expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('map expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
 
@@ -570,10 +560,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   filter(callback, target) {
-    assert(
-      'filter expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('filter expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
 
@@ -614,10 +601,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reject(callback, target) {
-    assert(
-      'reject expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('reject expects a function as first argument.', typeof callback === 'function');
 
     return this.filter(function() {
       return !callback.apply(target, arguments);
@@ -688,10 +672,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   find(callback, target = null) {
-    assert(
-      'find expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('find expects a function as first argument.', typeof callback === 'function');
 
     let length = get(this, 'length');
 
@@ -758,10 +739,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   every(callback, target) {
-    assert(
-      'every expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('every expects a function as first argument.', typeof callback === 'function');
 
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
   },
@@ -824,10 +802,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   any(callback, target = null) {
-    assert(
-      'any expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('any expects a function as first argument.', typeof callback === 'function');
 
     let length = get(this, 'length');
 
@@ -894,10 +869,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reduce(callback, initialValue, reducerProperty) {
-    assert(
-      'reduce expects a function as first argument.',
-      typeof callback === 'function'
-    );
+    assert('reduce expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 
@@ -1160,19 +1132,14 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '@each': computed(function() {
-    deprecate(
-      `Getting the '@each' property on object ${toString(this)} is deprecated`,
-      false,
-      {
-        id: 'ember-metal.getting-each',
-        until: '3.5.0',
-        url:
-          'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property'
-      }
-    );
+    deprecate(`Getting the '@each' property on object ${toString(this)} is deprecated`, false, {
+      id: 'ember-metal.getting-each',
+      until: '3.5.0',
+      url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property',
+    });
 
     return eachProxyFor(this);
-  }).readOnly()
+  }).readOnly(),
 });
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
@@ -1579,7 +1546,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     objects.forEach(obj => this.addObject(obj));
     endPropertyChanges(this);
     return this;
-  }
+  },
 });
 
 /**
@@ -1654,10 +1621,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // primitive for array support.
   replace(start, deleteCount, items = EMPTY_ARRAY) {
-    assert(
-      'The third argument to replace needs to be an array.',
-      Array.isArray(items)
-    );
+    assert('The third argument to replace needs to be an array.', Array.isArray(items));
 
     replaceInNativeArray(this, start, deleteCount, items);
 
@@ -1683,7 +1647,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     }
 
     return this.slice();
-  }
+  },
 });
 
 // Remove any methods implemented natively so we don't override them

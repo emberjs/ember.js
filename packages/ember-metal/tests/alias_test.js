@@ -7,7 +7,7 @@ import {
   isWatching,
   addObserver,
   removeObserver,
-  tagFor
+  tagFor,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -81,9 +81,7 @@ moduleFor(
       assert.equal(count, 1);
     }
 
-    ['@test an observer of the alias works if added after defining the alias'](
-      assert
-    ) {
+    ['@test an observer of the alias works if added after defining the alias'](assert) {
       defineProperty(obj, 'bar', alias('foo.faz'));
       addObserver(obj, 'bar', incrementCount);
       assert.ok(isWatching(obj, 'foo.faz'));
@@ -91,9 +89,7 @@ moduleFor(
       assert.equal(count, 1);
     }
 
-    ['@test an observer of the alias works if added before defining the alias'](
-      assert
-    ) {
+    ['@test an observer of the alias works if added before defining the alias'](assert) {
       addObserver(obj, 'bar', incrementCount);
       defineProperty(obj, 'bar', alias('foo.faz'));
       assert.ok(isWatching(obj, 'foo.faz'));
@@ -111,10 +107,7 @@ moduleFor(
       let tagValue = tag.value();
       set(obj, 'foo.faz', 'BAR');
 
-      assert.ok(
-        !tag.validate(tagValue),
-        'setting the aliased key should dirty the object'
-      );
+      assert.ok(!tag.validate(tagValue), 'setting the aliased key should dirty the object');
     }
 
     ['@test setting alias on self should fail assertion']() {

@@ -1,12 +1,4 @@
-import {
-  isWatching,
-  defineProperty,
-  alias,
-  PROPERTY_DID_CHANGE,
-  computed,
-  get,
-  set
-} from '..';
+import { isWatching, defineProperty, alias, PROPERTY_DID_CHANGE, computed, get, set } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -18,7 +10,7 @@ moduleFor(
         child: {},
         [PROPERTY_DID_CHANGE](keyName) {
           counts[keyName] = (counts[keyName] || 0) + 1;
-        }
+        },
       };
 
       defineProperty(obj, 'cost', alias('child.cost'));
@@ -30,14 +22,11 @@ moduleFor(
         computed('cost', 'tax', {
           get() {
             return get(this, 'cost') + get(this, 'tax');
-          }
+          },
         })
       );
 
-      assert.ok(
-        !isWatching(obj, 'child.cost'),
-        'precond alias target `child.cost` is not watched'
-      );
+      assert.ok(!isWatching(obj, 'child.cost'), 'precond alias target `child.cost` is not watched');
       assert.equal(get(obj, 'cost'), undefined);
       // this is how PROPERTY_DID_CHANGE will get notified
       assert.ok(
@@ -45,10 +34,7 @@ moduleFor(
         'alias target `child.cost` is watched after consumption'
       );
 
-      assert.ok(
-        !isWatching(obj, 'child.tax'),
-        'precond alias target `child.tax` is not watched'
-      );
+      assert.ok(!isWatching(obj, 'child.tax'), 'precond alias target `child.tax` is not watched');
       assert.equal(get(obj, 'tax'), undefined);
       // this is how PROPERTY_DID_CHANGE will get notified
       assert.ok(
@@ -62,7 +48,7 @@ moduleFor(
       // decrements the watching count on the alias itself to 0
       set(obj, 'child', {
         cost: 399.0,
-        tax: 32.93
+        tax: 32.93,
       });
 
       // this should have called PROPERTY_DID_CHANGE for all of them
@@ -76,7 +62,7 @@ moduleFor(
 
       set(obj, 'child', {
         cost: 100.0,
-        tax: 10.0
+        tax: 10.0,
       });
 
       assert.equal(counts['cost'], 2, 'PROPERTY_DID_CHANGE called with cost');

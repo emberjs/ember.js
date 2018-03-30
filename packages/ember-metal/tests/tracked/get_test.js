@@ -16,7 +16,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           number: 23,
           boolTrue: true,
           boolFalse: false,
-          nullValue: null
+          nullValue: null,
         });
 
         for (let key in obj) {
@@ -39,11 +39,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           }
         }
 
-        tracked(
-          Count.prototype,
-          'id',
-          Object.getOwnPropertyDescriptor(Count.prototype, 'id')
-        );
+        tracked(Count.prototype, 'id', Object.getOwnPropertyDescriptor(Count.prototype, 'id'));
 
         let obj = new Count();
 
@@ -63,7 +59,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           number: 23,
           boolTrue: true,
           boolFalse: false,
-          nullValue: null
+          nullValue: null,
         });
 
         for (let key in obj) {
@@ -71,7 +67,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         }
 
         obj = createTracked({
-          undef: undefined
+          undef: undefined,
         });
 
         assert.equal(

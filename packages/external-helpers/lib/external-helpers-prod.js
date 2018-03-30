@@ -4,8 +4,8 @@ export function inherits(subClass, superClass) {
       value: subClass,
       enumerable: false,
       writable: true,
-      configurable: true
-    }
+      configurable: true,
+    },
   });
 
   if (superClass)
@@ -48,9 +48,7 @@ export function defaults(obj, defaults) {
 }
 
 export const possibleConstructorReturn = function(self, call) {
-  return call && (typeof call === 'object' || typeof call === 'function')
-    ? call
-    : self;
+  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
 };
 
 export const slice = Array.prototype.slice;

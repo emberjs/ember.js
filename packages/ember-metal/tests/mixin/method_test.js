@@ -13,7 +13,7 @@ moduleFor(
         },
         _privateMethod() {
           return 'privateMethod';
-        }
+        },
       };
 
       MixinA = Mixin.create(props);
@@ -21,16 +21,8 @@ moduleFor(
       MixinA.apply(obj);
 
       // but should be defined
-      assert.equal(
-        props.publicMethod(),
-        'publicMethod',
-        'publicMethod is func'
-      );
-      assert.equal(
-        props._privateMethod(),
-        'privateMethod',
-        'privateMethod is func'
-      );
+      assert.equal(props.publicMethod(), 'publicMethod', 'publicMethod is func');
+      assert.equal(props._privateMethod(), 'privateMethod', 'privateMethod is func');
     }
 
     ['@test overriding public methods'](assert) {
@@ -39,25 +31,25 @@ moduleFor(
       MixinA = Mixin.create({
         publicMethod() {
           return 'A';
-        }
+        },
       });
 
       MixinB = Mixin.create(MixinA, {
         publicMethod() {
           return this._super(...arguments) + 'B';
-        }
+        },
       });
 
       MixinD = Mixin.create(MixinA, {
         publicMethod() {
           return this._super(...arguments) + 'D';
-        }
+        },
       });
 
       MixinF = Mixin.create({
         publicMethod() {
           return this._super(...arguments) + 'F';
-        }
+        },
       });
 
       obj = {};
@@ -76,7 +68,7 @@ moduleFor(
       obj = {
         publicMethod() {
           return 'obj';
-        }
+        },
       };
       MixinF.apply(obj);
       assert.equal(obj.publicMethod(), 'objF', 'should define super for F');
@@ -87,14 +79,14 @@ moduleFor(
       let MixinA = Mixin.create({
         foo() {
           cnt++;
-        }
+        },
       });
 
       let MixinB = Mixin.create({
         foo() {
           this._super(...arguments);
           cnt++;
-        }
+        },
       });
 
       let objA = {};
@@ -112,32 +104,30 @@ moduleFor(
       assert.equal(cnt, 1, 'should not screw w/ parent obj');
     }
 
-    ['@test Including the same mixin more than once will only run once'](
-      assert
-    ) {
+    ['@test Including the same mixin more than once will only run once'](assert) {
       let cnt = 0;
       let MixinA = Mixin.create({
         foo() {
           cnt++;
-        }
+        },
       });
 
       let MixinB = Mixin.create(MixinA, {
         foo() {
           this._super(...arguments);
-        }
+        },
       });
 
       let MixinC = Mixin.create(MixinA, {
         foo() {
           this._super(...arguments);
-        }
+        },
       });
 
       let MixinD = Mixin.create(MixinB, MixinC, MixinA, {
         foo() {
           this._super(...arguments);
-        }
+        },
       });
 
       let obj = {};
@@ -150,13 +140,11 @@ moduleFor(
       assert.equal(cnt, 1, 'should invoke MixinA.foo one time');
     }
 
-    ['@test _super from a single mixin with no superclass does not error'](
-      assert
-    ) {
+    ['@test _super from a single mixin with no superclass does not error'](assert) {
       let MixinA = Mixin.create({
         foo() {
           this._super(...arguments);
-        }
+        },
       });
 
       let obj = {};
@@ -166,9 +154,7 @@ moduleFor(
       assert.ok(true);
     }
 
-    ['@test _super from a first-of-two mixins with no superclass function does not error'](
-      assert
-    ) {
+    ['@test _super from a first-of-two mixins with no superclass function does not error'](assert) {
       // _super was previously calling itself in the second assertion.
       // Use remaining count of calls to ensure it doesn't loop indefinitely.
       let remaining = 3;
@@ -177,13 +163,13 @@ moduleFor(
           if (remaining-- > 0) {
             this._super(...arguments);
           }
-        }
+        },
       });
 
       let MixinB = Mixin.create({
         foo() {
           this._super(...arguments);
-        }
+        },
       });
 
       let obj = {};
@@ -206,7 +192,7 @@ moduleFor(
       let MixinA = Mixin.create({
         toString() {
           return 'FOO';
-        }
+        },
       });
 
       let obj = {};
@@ -217,7 +203,7 @@ moduleFor(
       mixin(obj, {
         toString() {
           return 'FOO';
-        }
+        },
       });
       assert.equal(obj.toString(), 'FOO', 'should override toString w/o error');
     }
@@ -237,21 +223,21 @@ moduleFor(
       let MixinA = Mixin.create({
         foo() {
           cnt++;
-        }
+        },
       });
 
       let MixinB = Mixin.create({
         foo() {
           this._super(...arguments);
           cnt++;
-        }
+        },
       });
 
       let MixinC = Mixin.create({
         foo() {
           this._super(...arguments);
           cnt++;
-        }
+        },
       });
 
       let obj = {};

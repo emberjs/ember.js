@@ -29,14 +29,14 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             replaceURL(path) {
               testCase.state.splice(testCase.state.length - 1, 1, path);
               this.set('path', path);
-            }
+            },
           })
         );
       }
 
       get routerOptions() {
         return {
-          location: 'test'
+          location: 'test',
         };
       }
 
@@ -54,9 +54,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#transitionTo with basic route updates location'](
-        assert
-      ) {
+      ['@test RouterService#transitionTo with basic route updates location'](assert) {
         assert.expect(1);
 
         return this.visit('/')
@@ -70,12 +68,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo('parent.brother');
           })
           .then(() => {
-            assert.deepEqual(this.state, [
-              '/',
-              '/child',
-              '/sister',
-              '/brother'
-            ]);
+            assert.deepEqual(this.state, ['/', '/child', '/sister', '/brother']);
           });
       }
 
@@ -98,13 +91,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo('parent.sister');
           })
           .then(() => {
-            assert.deepEqual(this.state, [
-              '/',
-              '/child',
-              '/sister',
-              '/brother',
-              '/sister'
-            ]);
+            assert.deepEqual(this.state, ['/', '/child', '/sister', '/brother', '/sister']);
           });
       }
 
@@ -125,10 +112,10 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             actions: {
               transitionToSister() {
                 get(this, 'routerService').transitionTo('parent.sister');
-              }
-            }
+              },
+            },
           }),
-          template: `foo-bar`
+          template: `foo-bar`,
         });
 
         return this.visit('/').then(() => {
@@ -136,10 +123,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             componentInstance.send('transitionToSister');
           });
 
-          assert.equal(
-            this.routerService.get('currentRouteName'),
-            'parent.sister'
-          );
+          assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
         });
       }
 
@@ -160,10 +144,10 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             actions: {
               transitionToSister() {
                 get(this, 'routerService').transitionTo('/sister');
-              }
-            }
+              },
+            },
           }),
-          template: `foo-bar`
+          template: `foo-bar`,
         });
 
         return this.visit('/').then(() => {
@@ -171,10 +155,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             componentInstance.send('transitionToSister');
           });
 
-          assert.equal(
-            this.routerService.get('currentRouteName'),
-            'parent.sister'
-          );
+          assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
         });
       }
 
@@ -196,14 +177,11 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             },
             actions: {
               transitionToDynamic() {
-                get(this, 'routerService').transitionTo(
-                  'dynamic',
-                  dynamicModel
-                );
-              }
-            }
+                get(this, 'routerService').transitionTo('dynamic', dynamicModel);
+              },
+            },
           }),
-          template: `foo-bar`
+          template: `foo-bar`,
         });
 
         return this.visit('/').then(() => {
@@ -217,9 +195,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#transitionTo with dynamic segment and model hook'](
-        assert
-      ) {
+      ['@test RouterService#transitionTo with dynamic segment and model hook'](assert) {
         assert.expect(3);
 
         let componentInstance;
@@ -230,7 +206,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           Route.extend({
             model() {
               return dynamicModel;
-            }
+            },
           })
         );
 
@@ -247,10 +223,10 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             actions: {
               transitionToDynamic() {
                 get(this, 'routerService').transitionTo('dynamic', 1);
-              }
-            }
+              },
+            },
           }),
-          template: `foo-bar`
+          template: `foo-bar`,
         });
 
         return this.visit('/').then(() => {
@@ -273,7 +249,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           'controller:parent.child',
           Controller.extend({
             queryParams: ['sort'],
-            sort: 'ASC'
+            sort: 'ASC',
           })
         );
 
@@ -284,22 +260,17 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo('parent.child', queryParams);
           })
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentURL'),
-              '/child?sort=ASC'
-            );
+            assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
           });
       }
 
-      ['@test RouterService#transitionTo passing only queryParams works'](
-        assert
-      ) {
+      ['@test RouterService#transitionTo passing only queryParams works'](assert) {
         assert.expect(2);
 
         this.add(
           'controller:parent.child',
           Controller.extend({
-            queryParams: ['sort']
+            queryParams: ['sort'],
           })
         );
 
@@ -316,16 +287,11 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo(queryParams);
           })
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentURL'),
-              '/child?sort=DESC'
-            );
+            assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
           });
       }
 
-      ['@test RouterService#transitionTo with unspecified query params'](
-        assert
-      ) {
+      ['@test RouterService#transitionTo with unspecified query params'](assert) {
         assert.expect(1);
 
         this.add(
@@ -334,7 +300,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             queryParams: ['sort', 'page', 'category', 'extra'],
             sort: 'ASC',
             page: null,
-            category: undefined
+            category: undefined,
           })
         );
 
@@ -345,10 +311,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo('parent.child', queryParams);
           })
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentURL'),
-              '/child?sort=ASC'
-            );
+            assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
           });
       }
 
@@ -361,9 +324,9 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           'controller:parent.child',
           Controller.extend({
             queryParams: {
-              cont_sort: 'url_sort'
+              cont_sort: 'url_sort',
             },
-            cont_sort: 'ASC'
+            cont_sort: 'ASC',
           })
         );
 
@@ -374,10 +337,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             return this.routerService.transitionTo('parent.child', queryParams);
           })
           .then(() => {
-            assert.equal(
-              this.routerService.get('currentURL'),
-              '/child?url_sort=ASC'
-            );
+            assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
           });
       }
 
@@ -390,9 +350,9 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           'controller:parent.child',
           Controller.extend({
             queryParams: {
-              cont_sort: 'url_sort'
+              cont_sort: 'url_sort',
             },
-            cont_sort: 'ASC'
+            cont_sort: 'ASC',
           })
         );
 

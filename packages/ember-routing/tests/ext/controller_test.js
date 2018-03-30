@@ -9,14 +9,14 @@ moduleFor(
       let router = {
         transitionTo(route) {
           return route;
-        }
+        },
       };
 
       let engineInstance = buildOwner({
         ownerOptions: {
           routable: true,
-          mountPoint: 'foo.bar'
-        }
+          mountPoint: 'foo.bar',
+        },
       });
 
       let controller = Controller.create({ target: router });
@@ -49,14 +49,14 @@ moduleFor(
       let router = {
         replaceWith(route) {
           return route;
-        }
+        },
       };
 
       let engineInstance = buildOwner({
         ownerOptions: {
           routable: true,
-          mountPoint: 'foo.bar'
-        }
+          mountPoint: 'foo.bar',
+        },
       });
 
       let controller = Controller.create({ target: router });
@@ -72,10 +72,7 @@ moduleFor(
         'foo.bar.posts',
         'properly prefixes child routes'
       );
-      assert.throws(
-        () => controller.replaceRoute('/posts'),
-        'throws when trying to use a url'
-      );
+      assert.throws(() => controller.replaceRoute('/posts'), 'throws when trying to use a url');
 
       let queryParams = {};
       assert.strictEqual(

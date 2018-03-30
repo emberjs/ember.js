@@ -32,6 +32,6 @@ export default function equalInnerHTML(assert, fragment, html) {
   assert.pushResult({
     result: actualHTML === html,
     actual: actualHTML,
-    expected: html
+    expected: html,
   });
 }

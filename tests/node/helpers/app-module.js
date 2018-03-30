@@ -97,7 +97,7 @@ module.exports = function(moduleName) {
       // clear the previously cached version of this module
       delete require.cache[emberPath + '.js'];
       delete require.cache[templateCompilerPath + '.js'];
-    }
+    },
   });
 };
 
@@ -105,11 +105,11 @@ function createApplication() {
   if (this.app) return this.app;
 
   var app = this.Ember.Application.extend().create({
-    autoboot: false
+    autoboot: false,
   });
 
   app.Router = this.Ember.Router.extend({
-    location: 'none'
+    location: 'none',
   });
 
   if (this.routesCallback) {
@@ -137,7 +137,7 @@ function visit(url) {
   return this.run(app, 'visit', url, {
     isBrowser: false,
     document: dom,
-    rootElement: dom.body
+    rootElement: dom.body,
   }).catch(function(error) {
     console.error(error.stack);
   });
@@ -151,7 +151,7 @@ function renderToHTML(url) {
   return this.run(app, 'visit', url, {
     isBrowser: false,
     document: dom,
-    rootElement: root
+    rootElement: root,
   }).then(function() {
     var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
     return serializer.serialize(root);
@@ -165,7 +165,7 @@ function registerApplicationClasses(app, registry) {
       for (var key in registry) {
         app.register(key, registry[key]);
       }
-    }
+    },
   });
 }
 

@@ -166,5 +166,5 @@ export default EmberObject.extend({
     if (this._hashchangeHandler) {
       window.removeEventListener('hashchange', this._hashchangeHandler);
     }
-  }
+  },
 });

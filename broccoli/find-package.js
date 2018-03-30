@@ -11,7 +11,7 @@ module.exports = function findPackage(name, from) {
   if (info === undefined) {
     let basedir = from === void 0 ? __dirname : findPackage(from).dir;
     let resolved = resolve.sync(name + '/package.json', {
-      basedir: basedir
+      basedir: basedir,
     });
     info = new PackageInfo(fs.realpathSync(resolved));
     cache.set(key, info);
@@ -51,7 +51,7 @@ class PackageInfo {
     return {
       dir: parsed.dir,
       base: parsed.base,
-      path: resolved
+      path: resolved,
     };
   }
 }

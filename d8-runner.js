@@ -49,7 +49,7 @@ function loadFile(file) {
 global.console = {
   log(...args) {
     print(...args);
-  }
+  },
 };
 
 global.setTimeout = function(callback) {

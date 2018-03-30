@@ -24,9 +24,7 @@ class DeprecationAssert extends DebugAssert {
 
       this.runExpectation(func, tracker => {
         if (tracker.isExpectingCalls()) {
-          throw new Error(
-            'expectNoDeprecation was called after expectDeprecation was called!'
-          );
+          throw new Error('expectNoDeprecation was called after expectDeprecation was called!');
         }
 
         tracker.expectNoCalls();
@@ -53,9 +51,7 @@ class DeprecationAssert extends DebugAssert {
 
       this.runExpectation(func, tracker => {
         if (tracker.isExpectingNoCalls()) {
-          throw new Error(
-            'expectDeprecation was called after expectNoDeprecation was called!'
-          );
+          throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
         }
 
         tracker.expectCall(message);

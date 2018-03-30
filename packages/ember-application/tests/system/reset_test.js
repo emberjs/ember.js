@@ -12,9 +12,7 @@ moduleFor(
       this.application.reset();
     }
 
-    ['@test Does not bring its own run loop if one is already provided'](
-      assert
-    ) {
+    ['@test Does not bring its own run loop if one is already provided'](assert) {
       assert.expect(3);
 
       let didBecomeReady = false;
@@ -37,26 +35,18 @@ moduleFor(
       assert.ok(didBecomeReady, 'app is ready');
     }
 
-    ['@test When an application is reset, new instances of controllers are generated'](
-      assert
-    ) {
+    ['@test When an application is reset, new instances of controllers are generated'](assert) {
       run(() => {
         this.createApplication();
         this.add('controller:academic', Controller.extend());
       });
 
-      let firstController = this.applicationInstance.lookup(
-        'controller:academic'
-      );
-      let secondController = this.applicationInstance.lookup(
-        'controller:academic'
-      );
+      let firstController = this.applicationInstance.lookup('controller:academic');
+      let secondController = this.applicationInstance.lookup('controller:academic');
 
       this.application.reset();
 
-      let thirdController = this.applicationInstance.lookup(
-        'controller:academic'
-      );
+      let thirdController = this.applicationInstance.lookup('controller:academic');
 
       assert.strictEqual(
         firstController,
@@ -76,9 +66,7 @@ moduleFor(
       );
     }
 
-    ['@test When an application is reset, the eventDispatcher is destroyed and recreated'](
-      assert
-    ) {
+    ['@test When an application is reset, the eventDispatcher is destroyed and recreated'](assert) {
       let eventDispatcherWasSetup = 0;
       let eventDispatcherWasDestroyed = 0;
 
@@ -88,13 +76,13 @@ moduleFor(
         },
         destroy() {
           eventDispatcherWasDestroyed++;
-        }
+        },
       };
 
       run(() => {
         this.createApplication();
         this.add('event_dispatcher:main', {
-          create: () => mockEventDispatcher
+          create: () => mockEventDispatcher,
         });
 
         assert.equal(eventDispatcherWasSetup, 0);
@@ -110,16 +98,14 @@ moduleFor(
       assert.equal(eventDispatcherWasSetup, 2, 'setup called after reset');
     }
 
-    ['@test When an application is reset, the router URL is reset to `/`'](
-      assert
-    ) {
+    ['@test When an application is reset, the router URL is reset to `/`'](assert) {
       run(() => {
         this.createApplication();
 
         this.add(
           'router:main',
           Router.extend({
-            location: 'none'
+            location: 'none',
           })
         );
 
@@ -132,9 +118,7 @@ moduleFor(
       let initialRouter, initialApplicationController;
       return this.visit('/one')
         .then(() => {
-          initialApplicationController = this.applicationInstance.lookup(
-            'controller:application'
-          );
+          initialApplicationController = this.applicationInstance.lookup('controller:application');
           initialRouter = this.applicationInstance.lookup('router:main');
           let location = initialRouter.get('location');
 
@@ -146,9 +130,7 @@ moduleFor(
           return this.application._bootPromise;
         })
         .then(() => {
-          let applicationController = this.applicationInstance.lookup(
-            'controller:application'
-          );
+          let applicationController = this.applicationInstance.lookup('controller:application');
           assert.strictEqual(
             applicationController,
             undefined,
@@ -158,17 +140,11 @@ moduleFor(
           return this.visit('/one');
         })
         .then(() => {
-          let applicationController = this.applicationInstance.lookup(
-            'controller:application'
-          );
+          let applicationController = this.applicationInstance.lookup('controller:application');
           let router = this.applicationInstance.lookup('router:main');
           let location = router.get('location');
 
-          assert.notEqual(
-            initialRouter,
-            router,
-            'a different router instance was created'
-          );
+          assert.notEqual(initialRouter, router, 'a different router instance was created');
           assert.notEqual(
             initialApplicationController,
             applicationController,
@@ -189,7 +165,7 @@ moduleFor(
         this.createApplication({
           ready() {
             readyCallCount++;
-          }
+          },
         });
 
         this.application.deferReadiness();

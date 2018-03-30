@@ -145,7 +145,7 @@ let containerProxyMixin = {
   */
   factoryFor(fullName, options = {}) {
     return this.__container__.factoryFor(fullName, options);
-  }
+  },
 };
 
 export default Mixin.create(containerProxyMixin);

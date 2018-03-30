@@ -48,9 +48,7 @@ function concatenatedMixinProperties(concatProp, props, values, base) {
   // reset before adding each new mixin to pickup concats from previous
   let concats = values[concatProp] || base[concatProp];
   if (props[concatProp]) {
-    concats = concats
-      ? a_concat.call(concats, props[concatProp])
-      : props[concatProp];
+    concats = concats ? a_concat.call(concats, props[concatProp]) : props[concatProp];
   }
   return concats;
 }
@@ -70,10 +68,7 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
     superProperty = descriptorFor(base, key, meta);
   }
 
-  if (
-    superProperty === undefined ||
-    !(superProperty instanceof ComputedProperty)
-  ) {
+  if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
     return property;
   }
 
@@ -174,22 +169,9 @@ function applyMergedProperties(obj, key, value, values) {
   return newBase;
 }
 
-function addNormalizedProperty(
-  base,
-  key,
-  value,
-  meta,
-  descs,
-  values,
-  concats,
-  mergings
-) {
+function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
   if (value instanceof Descriptor) {
-    if (
-      ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT &&
-      value === REQUIRED &&
-      descs[key]
-    ) {
+    if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT && value === REQUIRED && descs[key]) {
       return CONTINUE;
     }
 
@@ -230,9 +212,7 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
   for (let i = 0; i < mixins.length; i++) {
     currentMixin = mixins[i];
     assert(
-      `Expected hash or Mixin instance, got ${Object.prototype.toString.call(
-        currentMixin
-      )}`,
+      `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
       typeof currentMixin === 'object' &&
         currentMixin !== null &&
         Object.prototype.toString.call(currentMixin) !== '[object Array]'
@@ -248,34 +228,15 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
       if (base.willMergeMixin) {
         base.willMergeMixin(props);
       }
-      concats = concatenatedMixinProperties(
-        'concatenatedProperties',
-        props,
-        values,
-        base
-      );
-      mergings = concatenatedMixinProperties(
-        'mergedProperties',
-        props,
-        values,
-        base
-      );
+      concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
+      mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
       for (key in props) {
         if (!props.hasOwnProperty(key)) {
           continue;
         }
         keys.push(key);
-        addNormalizedProperty(
-          base,
-          key,
-          props[key],
-          meta,
-          descs,
-          values,
-          concats,
-          mergings
-        );
+        addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
       }
 
       // manually copy toString() because some JS engines do not enumerate it
@@ -319,18 +280,8 @@ function updateObserversAndListeners(obj, key, paths, updateMethod) {
 
 function replaceObserversAndListeners(obj, key, prev, next) {
   if (typeof prev === 'function') {
-    updateObserversAndListeners(
-      obj,
-      key,
-      prev.__ember_observes__,
-      removeObserver
-    );
-    updateObserversAndListeners(
-      obj,
-      key,
-      prev.__ember_listens__,
-      removeListener
-    );
+    updateObserversAndListeners(obj, key, prev.__ember_observes__, removeObserver);
+    updateObserversAndListeners(obj, key, prev.__ember_listens__, removeListener);
   }
 
   if (typeof next === 'function') {
@@ -397,11 +348,7 @@ function applyMixin(obj, mixins, partial) {
     defineProperty(obj, key, desc, value, meta);
   }
 
-  if (
-    ENV._ENABLE_BINDING_SUPPORT &&
-    !partial &&
-    typeof Mixin.finishProtype === 'function'
-  ) {
+  if (ENV._ENABLE_BINDING_SUPPORT && !partial && typeof Mixin.finishProtype === 'function') {
     Mixin.finishPartial(obj, meta);
   }
 
@@ -643,9 +590,7 @@ function buildMixinsArray(mixins) {
     for (let i = 0; i < length; i++) {
       let x = mixins[i];
       assert(
-        `Expected hash or Mixin instance, got ${Object.prototype.toString.call(
-          x
-        )}`,
+        `Expected hash or Mixin instance, got ${Object.prototype.toString.call(x)}`,
         typeof x === 'object' &&
           x !== null &&
           Object.prototype.toString.call(x) !== '[object Array]'
@@ -721,11 +666,10 @@ REQUIRED.toString = () => '(Required Property)';
   @private
 */
 export function required() {
-  deprecate(
-    'Ember.required is deprecated as its behavior is inconsistent and unreliable.',
-    false,
-    { id: 'ember-metal.required', until: '3.0.0' }
-  );
+  deprecate('Ember.required is deprecated as its behavior is inconsistent and unreliable.', false, {
+    id: 'ember-metal.required',
+    until: '3.0.0',
+  });
   return REQUIRED;
 }
 

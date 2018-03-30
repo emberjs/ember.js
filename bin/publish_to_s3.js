@@ -13,10 +13,7 @@
 // ./bin/publish_to_s3.js
 // ```
 var S3Publisher = require('ember-publisher');
-var configPath = require('path').join(
-  __dirname,
-  '../config/s3ProjectConfig.js'
-);
+var configPath = require('path').join(__dirname, '../config/s3ProjectConfig.js');
 
 var publisher = new S3Publisher({ projectConfigPath: configPath });
 
@@ -27,7 +24,7 @@ publisher.currentBranch = function() {
       master: 'canary',
       beta: 'beta',
       release: 'release',
-      'lts-2-4': 'lts-2-4'
+      'lts-2-4': 'lts-2-4',
     }[this.CURRENT_BRANCH]
   );
 };

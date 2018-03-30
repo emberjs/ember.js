@@ -10,8 +10,8 @@ moduleFor(
 
       this.render('<div><svg viewBox={{model.viewBoxString}}></svg></div>', {
         model: {
-          viewBoxString
-        }
+          viewBoxString,
+        },
       });
 
       this.assertInnerHTML(strip`
@@ -46,8 +46,8 @@ moduleFor(
 
       this.render('<div><svg viewBox="{{model.viewBoxString}}"></svg></div>', {
         model: {
-          viewBoxString
-        }
+          viewBoxString,
+        },
       });
 
       this.assertInnerHTML(strip`
@@ -80,14 +80,11 @@ moduleFor(
     ['@test quoted viewBox property is concat']() {
       let viewBoxString = '100 100';
 
-      this.render(
-        '<div><svg viewBox="0 0 {{model.viewBoxString}}"></svg></div>',
-        {
-          model: {
-            viewBoxString
-          }
-        }
-      );
+      this.render('<div><svg viewBox="0 0 {{model.viewBoxString}}"></svg></div>', {
+        model: {
+          viewBoxString,
+        },
+      });
 
       this.assertInnerHTML(strip`
       <div>
@@ -123,8 +120,8 @@ moduleFor(
     ['@test class is output']() {
       this.render("<div><svg class='{{model.color}} tall'></svg></div>", {
         model: {
-          color: 'blue'
-        }
+          color: 'blue',
+        },
       });
 
       this.assertInnerHTML(strip`

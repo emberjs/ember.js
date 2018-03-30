@@ -15,8 +15,8 @@ export default function transformOldBindingSyntax(env) {
 
       MustacheStatement(node) {
         processHash(b, node, moduleName);
-      }
-    }
+      },
+    },
   };
 }
 
@@ -42,13 +42,11 @@ function processHash(b, node, moduleName) {
       deprecate(
         `You're using legacy binding syntax: ${key}=${exprToString(
           value
-        )} ${sourceInformation}. Please replace with ${newKey}=${
-          value.original
-        }`,
+        )} ${sourceInformation}. Please replace with ${newKey}=${value.original}`,
         false,
         {
           id: 'ember-template-compiler.transform-old-binding-syntax',
-          until: '3.0.0'
+          until: '3.0.0',
         }
       );
 

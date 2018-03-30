@@ -6,13 +6,10 @@ import { applyMixins } from '../../utils/abstract-test-case';
 
 class TextAreaRenderingTest extends RenderingTest {
   assertTextArea({ attrs, value } = {}) {
-    let mergedAttrs = assign(
-      { class: classes('ember-view ember-text-area') },
-      attrs
-    );
+    let mergedAttrs = assign({ class: classes('ember-view ember-text-area') }, attrs);
     this.assertComponentElement(this.firstChild, {
       tagName: 'textarea',
-      attrs: mergedAttrs
+      attrs: mergedAttrs,
     });
 
     if (value) {
@@ -38,7 +35,7 @@ class BoundTextAreaAttributes {
     return {
       [`@test ${attribute}`]() {
         this.render(`{{textarea ${attribute}=value}}`, {
-          value: first
+          value: first,
         });
         this.assertTextArea({ attrs: { [attribute]: first } });
 
@@ -49,7 +46,7 @@ class BoundTextAreaAttributes {
 
         this.runTask(() => set(this.context, 'value', first));
         this.assertTextArea({ attrs: { [attribute]: first } });
-      }
+      },
     };
   }
 }
@@ -63,7 +60,7 @@ applyMixins(
     { attribute: 'maxlength', first: '1', second: '2' },
     { attribute: 'rows', first: '1', second: '2' },
     { attribute: 'cols', first: '1', second: '2' },
-    { attribute: 'tabindex', first: '1', second: '2' }
+    { attribute: 'tabindex', first: '1', second: '2' },
   ])
 );
 
@@ -80,14 +77,14 @@ moduleFor(
 
     ['@test Should respect disabled'](assert) {
       this.render('{{textarea disabled=disabled}}', {
-        disabled: true
+        disabled: true,
       });
       assert.ok(this.$('textarea').is(':disabled'));
     }
 
     ['@test Should respect disabled when false'](assert) {
       this.render('{{textarea disabled=disabled}}', {
-        disabled: false
+        disabled: false,
       });
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
@@ -107,7 +104,7 @@ moduleFor(
 
     ['@test Should bind its contents to the specified value']() {
       this.render('{{textarea value=model.val}}', {
-        model: { val: 'A beautiful day in Seattle' }
+        model: { val: 'A beautiful day in Seattle' },
       });
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
 
@@ -116,9 +113,7 @@ moduleFor(
       this.runTask(() => set(this.context, 'model.val', 'Auckland'));
       this.assertTextArea({ value: 'Auckland' });
 
-      this.runTask(() =>
-        set(this.context, 'model', { val: 'A beautiful day in Seattle' })
-      );
+      this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
     }
 
@@ -140,7 +135,7 @@ moduleFor(
 
     ['@test should update the value for `cut` / `input` / `change` events']() {
       this.render('{{textarea value=model.val}}', {
-        model: { val: 'A beautiful day in Seattle' }
+        model: { val: 'A beautiful day in Seattle' },
       });
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
 
@@ -164,9 +159,7 @@ moduleFor(
       });
       this.assertTextArea({ value: 'Boston' });
 
-      this.runTask(() =>
-        set(this.context, 'model', { val: 'A beautiful day in Seattle' })
-      );
+      this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
     }
   }

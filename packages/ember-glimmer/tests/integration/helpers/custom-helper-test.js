@@ -33,8 +33,8 @@ moduleFor(
 
       this.render('{{hello.world}}', {
         hello: {
-          world: ''
-        }
+          world: '',
+        },
       });
 
       this.assertText('');
@@ -49,7 +49,7 @@ moduleFor(
 
       this.runTask(() => {
         set(this.context, 'hello', {
-          world: ''
+          world: '',
         });
       });
 
@@ -60,13 +60,13 @@ moduleFor(
       this.registerHelper('hello', {
         compute() {
           return 'hello';
-        }
+        },
       });
 
       this.registerHelper('hello-world', {
         compute() {
           return 'hello world';
-        }
+        },
       });
 
       this.render('{{hello}} | {{hello-world}}');
@@ -80,7 +80,7 @@ moduleFor(
 
     ['@test throws if `this._super` is not called from `init`']() {
       this.registerHelper('hello-world', {
-        init() {}
+        init() {},
       });
 
       expectAssertion(() => {
@@ -104,7 +104,7 @@ moduleFor(
         destroy() {
           destroyCount++;
           this._super();
-        }
+        },
       });
 
       this.render('{{hello-world}}');
@@ -119,11 +119,7 @@ moduleFor(
 
       this.assertText('2');
 
-      assert.strictEqual(
-        destroyCount,
-        0,
-        'destroy is not called on recomputation'
-      );
+      assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
     }
 
     ['@test class-based helper with static arguments can recompute a new value']() {
@@ -142,7 +138,7 @@ moduleFor(
         destroy() {
           destroyCount++;
           this._super();
-        }
+        },
       });
 
       this.render('{{hello-world "whut"}}');
@@ -157,11 +153,7 @@ moduleFor(
 
       this.assertText('2');
 
-      assert.strictEqual(
-        destroyCount,
-        0,
-        'destroy is not called on recomputation'
-      );
+      assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
     }
 
     ['@test helper params can be returned']() {
@@ -169,12 +161,9 @@ moduleFor(
         return values;
       });
 
-      this.render(
-        '{{#each (hello-world model) as |item|}}({{item}}){{/each}}',
-        {
-          model: ['bob']
-        }
-      );
+      this.render('{{#each (hello-world model) as |item|}}({{item}}){{/each}}', {
+        model: ['bob'],
+      });
 
       this.assertText('(bob)');
     }
@@ -185,7 +174,7 @@ moduleFor(
       });
 
       this.render(`{{get (hello-world model=model) 'name'}}`, {
-        model: { name: 'bob' }
+        model: { name: 'bob' },
       });
 
       this.assertText('bob');
@@ -200,7 +189,7 @@ moduleFor(
       });
 
       this.render('{{hello-world model.name}}', {
-        model: { name: 'bob' }
+        model: { name: 'bob' },
       });
 
       this.assertText('bob-value');
@@ -238,11 +227,11 @@ moduleFor(
         compute([value]) {
           computeCount++;
           return `${value}-value`;
-        }
+        },
       });
 
       this.render('{{hello-world model.name}}', {
-        model: { name: 'bob' }
+        model: { name: 'bob' },
       });
 
       this.assertText('bob-value');
@@ -271,103 +260,73 @@ moduleFor(
 
     ['@test simple helper receives params, hash']() {
       this.registerHelper('hello-world', (_params, _hash) => {
-        return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(
-          _hash
-        )}`;
+        return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
       });
 
-      this.render(
-        '{{hello-world model.name "rich" first=model.age last="sam"}}',
-        {
-          model: {
-            name: 'bob',
-            age: 42
-          }
-        }
-      );
+      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+        model: {
+          name: 'bob',
+          age: 42,
+        },
+      });
 
-      this.assertText(
-        'params: ["bob","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
       this.runTask(() => this.rerender());
 
-      this.assertText(
-        'params: ["bob","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
       this.runTask(() => set(this.context, 'model.name', 'sal'));
 
-      this.assertText(
-        'params: ["sal","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["sal","rich"], hash: {"first":42,"last":"sam"}');
 
       this.runTask(() => set(this.context, 'model.age', 28));
 
-      this.assertText(
-        'params: ["sal","rich"], hash: {"first":28,"last":"sam"}'
-      );
+      this.assertText('params: ["sal","rich"], hash: {"first":28,"last":"sam"}');
 
       this.runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
 
-      this.assertText(
-        'params: ["bob","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
     }
 
     ['@test class-based helper receives params, hash']() {
       this.registerHelper('hello-world', {
         compute(_params, _hash) {
-          return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(
-            _hash
-          )}`;
-        }
+          return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
+        },
       });
 
-      this.render(
-        '{{hello-world model.name "rich" first=model.age last="sam"}}',
-        {
-          model: {
-            name: 'bob',
-            age: 42
-          }
-        }
-      );
+      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+        model: {
+          name: 'bob',
+          age: 42,
+        },
+      });
 
-      this.assertText(
-        'params: ["bob","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
       this.runTask(() => this.rerender());
 
-      this.assertText(
-        'params: ["bob","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
       this.runTask(() => set(this.context, 'model.name', 'sal'));
 
-      this.assertText(
-        'params: ["sal","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["sal","rich"], hash: {"first":42,"last":"sam"}');
 
       this.runTask(() => set(this.context, 'model.age', 28));
 
-      this.assertText(
-        'params: ["sal","rich"], hash: {"first":28,"last":"sam"}'
-      );
+      this.assertText('params: ["sal","rich"], hash: {"first":28,"last":"sam"}');
 
       this.runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
 
-      this.assertText(
-        'params: ["bob","rich"], hash: {"first":42,"last":"sam"}'
-      );
+      this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
     }
 
     ['@test class-based helper usable in subexpressions']() {
       this.registerHelper('join-words', {
         compute(params) {
           return params.join(' ');
-        }
+        },
       });
 
       this.render(
@@ -387,9 +346,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'model.reason', 'Nickleback'));
 
-      this.assertText(
-        'Who overcomes by Nickleback hath overcome but half his foe'
-      );
+      this.assertText('Who overcomes by Nickleback hath overcome but half his foe');
 
       this.runTask(() => set(this.context, 'model', { reason: 'force' }));
 
@@ -434,7 +391,7 @@ moduleFor(
 
     ['@test class-based helper not usable with a block']() {
       this.registerHelper('some-helper', {
-        compute() {}
+        compute() {},
       });
 
       expectAssertion(() => {
@@ -452,7 +409,7 @@ moduleFor(
 
     ['@test class-based helper not usable within element']() {
       this.registerHelper('some-helper', {
-        compute() {}
+        compute() {},
       });
 
       this.assert.throws(() => {
@@ -470,7 +427,7 @@ moduleFor(
         },
         compute() {
           return 'must define a compute';
-        }
+        },
       });
 
       this.render(`{{some-helper}}`);
@@ -491,13 +448,13 @@ moduleFor(
         },
         compute() {
           return phrase;
-        }
+        },
       });
 
       this.registerHelper('join-words', {
         compute(params) {
           return params.join(' ');
-        }
+        },
       });
 
       this.render(
@@ -538,17 +495,17 @@ moduleFor(
         },
         compute() {
           return phrase;
-        }
+        },
       });
 
       this.registerHelper('join-words', {
         compute(params) {
           return params.join(' ');
-        }
+        },
       });
 
       this.registerComponent('some-component', {
-        template: '{{first}} {{second}} {{third}} {{fourth}} {{fifth}}'
+        template: '{{first}} {{second}} {{third}} {{fourth}} {{fifth}}',
       });
 
       this.render(
@@ -592,13 +549,13 @@ moduleFor(
         destroy() {
           destroyCount++;
           this._super(...arguments);
-        }
+        },
       });
 
       this.registerHelper('join-words', {
         compute(params) {
           return params.join(' ');
-        }
+        },
       });
 
       this.render(
@@ -611,11 +568,7 @@ moduleFor(
 
       runDestroy(this.component);
 
-      assert.equal(
-        destroyCount,
-        1,
-        'destroy is called after a view is destroyed'
-      );
+      assert.equal(destroyCount, 1, 'destroy is called after a view is destroyed');
     }
 
     ['@test simple helper can be invoked manually via `owner.factoryFor(...).create().compute()'](
@@ -628,11 +581,7 @@ moduleFor(
 
       let instance = this.owner.factoryFor('helper:some-helper').create();
 
-      assert.equal(
-        typeof instance.compute,
-        'function',
-        'expected instance.compute to be present'
-      );
+      assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
       assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
     }
 
@@ -641,16 +590,12 @@ moduleFor(
         compute() {
           assert.ok(true, 'some-helper helper invoked');
           return 'lolol';
-        }
+        },
       });
 
       let instance = this.owner.factoryFor('helper:some-helper').create();
 
-      assert.equal(
-        typeof instance.compute,
-        'function',
-        'expected instance.compute to be present'
-      );
+      assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
       assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
     }
   }
@@ -706,7 +651,7 @@ if (!EmberDev.runningProdBuild) {
         let compute = this.buildCompute();
 
         this.registerHelper('test-helper', {
-          compute
+          compute,
         });
       }
     }

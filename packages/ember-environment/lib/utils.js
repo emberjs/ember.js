@@ -15,7 +15,7 @@ export function normalizeExtendPrototypes(obj) {
     return {
       String: defaultTrue(obj.String),
       Array: defaultTrue(obj.Array),
-      Function: defaultTrue(obj.Function)
+      Function: defaultTrue(obj.Function),
     };
   }
 }

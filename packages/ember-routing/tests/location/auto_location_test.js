@@ -16,11 +16,8 @@ function mockBrowserLocation(overrides, assert) {
       hash: '',
       search: '',
       replace() {
-        assert.ok(
-          false,
-          'location.replace should not be called during testing'
-        );
-      }
+        assert.ok(false, 'location.replace should not be called during testing');
+      },
     },
     overrides
   );
@@ -30,17 +27,11 @@ function mockBrowserHistory(overrides, assert) {
   return assign(
     {
       pushState() {
-        assert.ok(
-          false,
-          'history.pushState should not be called during testing'
-        );
+        assert.ok(false, 'history.pushState should not be called during testing');
       },
       replaceState() {
-        assert.ok(
-          false,
-          'history.replaceState should not be called during testing'
-        );
-      }
+        assert.ok(false, 'history.replaceState should not be called during testing');
+      },
     },
     overrides
   );
@@ -57,7 +48,7 @@ function createLocation(location, history) {
     [OWNER]: owner,
     location: location,
     history: history,
-    global: {}
+    global: {},
   });
 
   return autolocation;
@@ -78,16 +69,10 @@ moduleFor(
       let location = AutoLocation.create();
 
       assert.ok(location.global, 'has a global defined');
-      assert.strictEqual(
-        location.global,
-        environment.window,
-        'has the environments window global'
-      );
+      assert.strictEqual(location.global, environment.window, 'has the environments window global');
     }
 
-    ["@test AutoLocation should return concrete implementation's value for `getURL`"](
-      assert
-    ) {
+    ["@test AutoLocation should return concrete implementation's value for `getURL`"](assert) {
       let browserLocation = mockBrowserLocation({}, assert);
       let browserHistory = mockBrowserHistory({}, assert);
 
@@ -112,9 +97,7 @@ moduleFor(
       location = createLocation(browserLocation, browserHistory);
       location.detect();
 
-      assert.ok(
-        get(location, 'concreteImplementation') instanceof HistoryLocation
-      );
+      assert.ok(get(location, 'concreteImplementation') instanceof HistoryLocation);
     }
 
     ['@test AutoLocation should use a HashLocation instance when pushStates are not supported, but hashchange events are and the URL is already in the HashLocation format'](
@@ -122,20 +105,18 @@ moduleFor(
     ) {
       let browserLocation = mockBrowserLocation(
         {
-          hash: '#/testd'
+          hash: '#/testd',
         },
         assert
       );
 
       location = createLocation(browserLocation);
       location.global = {
-        onhashchange() {}
+        onhashchange() {},
       };
 
       location.detect();
-      assert.ok(
-        get(location, 'concreteImplementation') instanceof HashLocation
-      );
+      assert.ok(get(location, 'concreteImplementation') instanceof HashLocation);
     }
 
     ['@test AutoLocation should use a NoneLocation instance when neither history nor hashchange are supported.'](
@@ -144,9 +125,7 @@ moduleFor(
       location = createLocation(mockBrowserLocation({}, assert));
       location.detect();
 
-      assert.ok(
-        get(location, 'concreteImplementation') instanceof NoneLocation
-      );
+      assert.ok(get(location, 'concreteImplementation') instanceof NoneLocation);
     }
 
     ["@test AutoLocation should use an index path (i.e. '/') without any location.hash as OK for HashLocation"](
@@ -160,14 +139,14 @@ moduleFor(
           search: '',
           replace() {
             assert.ok(false, 'location.replace should not be called');
-          }
+          },
         },
         assert
       );
 
       location = createLocation(browserLocation);
       location.global = {
-        onhashchange() {}
+        onhashchange() {},
       };
 
       location.detect();
@@ -198,14 +177,14 @@ moduleFor(
               'http://test.com/#/test',
               'location.replace should be called with normalized HashLocation path'
             );
-          }
+          },
         },
         assert
       );
 
       let location = createLocation(browserLocation);
       location.global = {
-        onhashchange() {}
+        onhashchange() {},
       };
 
       location.detect();
@@ -233,7 +212,7 @@ moduleFor(
           pathname: '/',
           protocol: 'http:',
           port: '',
-          search: ''
+          search: '',
         },
         assert
       );
@@ -246,7 +225,7 @@ moduleFor(
               '/test',
               'history.replaceState should be called with normalized HistoryLocation url'
             );
-          }
+          },
         },
         assert
       );
@@ -257,9 +236,7 @@ moduleFor(
       assert.ok(get(location, 'concreteImplementation'), HistoryLocation);
     }
 
-    ['@test AutoLocation requires any rootURL given to end in a trailing forward slash'](
-      assert
-    ) {
+    ['@test AutoLocation requires any rootURL given to end in a trailing forward slash'](assert) {
       let browserLocation = mockBrowserLocation({}, assert);
       let expectedMsg = /rootURL must end with a trailing forward slash e.g. "\/app\/"/;
 
@@ -282,12 +259,10 @@ moduleFor(
       }, expectedMsg);
     }
 
-    ['@test AutoLocation provides its rootURL to the concreteImplementation'](
-      assert
-    ) {
+    ['@test AutoLocation provides its rootURL to the concreteImplementation'](assert) {
       let browserLocation = mockBrowserLocation(
         {
-          pathname: '/some/subdir/derp'
+          pathname: '/some/subdir/derp',
         },
         assert
       );
@@ -302,15 +277,13 @@ moduleFor(
       assert.equal(location.rootURL, concreteLocation.rootURL);
     }
 
-    ['@test getHistoryPath() should return a normalized, HistoryLocation-supported path'](
-      assert
-    ) {
+    ['@test getHistoryPath() should return a normalized, HistoryLocation-supported path'](assert) {
       let browserLocation = mockBrowserLocation(
         {
           href: 'http://test.com/app/about?foo=bar#foo',
           pathname: '/app/about',
           search: '?foo=bar',
-          hash: '#foo'
+          hash: '#foo',
         },
         assert
       );
@@ -326,7 +299,7 @@ moduleFor(
           href: 'http://test.com/app/#/about?foo=bar#foo',
           pathname: '/app/',
           search: '',
-          hash: '#/about?foo=bar#foo'
+          hash: '#/about?foo=bar#foo',
         },
         assert
       );
@@ -341,7 +314,7 @@ moduleFor(
           href: 'http://test.com/app/#about?foo=bar#foo',
           pathname: '/app/',
           search: '',
-          hash: '#about?foo=bar#foo'
+          hash: '#about?foo=bar#foo',
         },
         assert
       );
@@ -352,15 +325,13 @@ moduleFor(
       );
     }
 
-    ['@test getHashPath() should return a normalized, HashLocation-supported path'](
-      assert
-    ) {
+    ['@test getHashPath() should return a normalized, HashLocation-supported path'](assert) {
       let browserLocation = mockBrowserLocation(
         {
           href: 'http://test.com/app/#/about?foo=bar#foo',
           pathname: '/app/',
           search: '',
-          hash: '#/about?foo=bar#foo'
+          hash: '#/about?foo=bar#foo',
         },
         assert
       );
@@ -375,7 +346,7 @@ moduleFor(
           href: 'http://test.com/app/about?foo=bar#foo',
           pathname: '/app/about',
           search: '?foo=bar',
-          hash: '#foo'
+          hash: '#foo',
         },
         assert
       );
@@ -390,7 +361,7 @@ moduleFor(
           href: 'http://test.com/app/#about?foo=bar#foo',
           pathname: '/app/',
           search: '',
-          hash: '#about?foo=bar#foo'
+          hash: '#about?foo=bar#foo',
         },
         assert
       );

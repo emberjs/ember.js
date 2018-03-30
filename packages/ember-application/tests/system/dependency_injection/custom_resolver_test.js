@@ -1,9 +1,6 @@
 import DefaultResolver from '../../../system/resolver';
 import { assign } from 'ember-utils';
-import {
-  moduleFor,
-  DefaultResolverApplicationTestCase
-} from 'internal-test-helpers';
+import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Application with extended default resolver and autoboot',
@@ -18,12 +15,12 @@ moduleFor(
           } else {
             return this._super(resolvable);
           }
-        }
+        },
       });
 
       return assign(super.applicationOptions, {
         Resolver,
-        autoboot: true
+        autoboot: true,
       });
     }
 

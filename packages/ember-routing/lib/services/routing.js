@@ -58,25 +58,16 @@ export default Service.extend({
     }
 
     return router.generate(routeName, ...models, {
-      queryParams: visibleQueryParams
+      queryParams: visibleQueryParams,
     });
   },
 
-  isActiveForRoute(
-    contexts,
-    queryParams,
-    routeName,
-    routerState,
-    isCurrentWhenSpecified
-  ) {
+  isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
     let router = get(this, 'router');
 
     let handlers = router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
-    let maximumContexts = numberOfContextsAcceptedByHandler(
-      routeName,
-      handlers
-    );
+    let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
     // NOTE: any ugliness in the calculation of activeness is largely
     // due to the fact that we support automatic normalizing of
@@ -92,13 +83,8 @@ export default Service.extend({
       routeName = leafName;
     }
 
-    return routerState.isActiveIntent(
-      routeName,
-      contexts,
-      queryParams,
-      !isCurrentWhenSpecified
-    );
-  }
+    return routerState.isActiveIntent(routeName, contexts, queryParams, !isCurrentWhenSpecified);
+  },
 });
 
 function numberOfContextsAcceptedByHandler(handler, handlerInfos) {

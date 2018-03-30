@@ -14,6 +14,6 @@ module.exports = function(env) {
     files: [file],
     getDestinationPath() {
       return 'ember-babel.js';
-    }
+    },
   });
 };

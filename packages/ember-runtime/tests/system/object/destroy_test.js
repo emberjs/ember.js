@@ -5,7 +5,7 @@ import {
   set,
   beginPropertyChanges,
   endPropertyChanges,
-  peekMeta
+  peekMeta,
 } from 'ember-metal';
 import EmberObject from '../../../system/object';
 import { MANDATORY_SETTER } from 'ember/features';
@@ -14,9 +14,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 moduleFor(
   'ember-runtime/system/object/destroy_test',
   class extends AbstractTestCase {
-    ['@test should schedule objects to be destroyed at the end of the run loop'](
-      assert
-    ) {
+    ['@test should schedule objects to be destroyed at the end of the run loop'](assert) {
       let obj = EmberObject.create();
       let meta;
 
@@ -24,21 +22,12 @@ moduleFor(
         obj.destroy();
         meta = peekMeta(obj);
         assert.ok(meta, 'meta is not destroyed immediately');
-        assert.ok(
-          get(obj, 'isDestroying'),
-          'object is marked as destroying immediately'
-        );
-        assert.ok(
-          !get(obj, 'isDestroyed'),
-          'object is not destroyed immediately'
-        );
+        assert.ok(get(obj, 'isDestroying'), 'object is marked as destroying immediately');
+        assert.ok(!get(obj, 'isDestroyed'), 'object is not destroyed immediately');
       });
 
       meta = peekMeta(obj);
-      assert.ok(
-        get(obj, 'isDestroyed'),
-        'object is destroyed after run loop finishes'
-      );
+      assert.ok(get(obj, 'isDestroyed'), 'object is destroyed after run loop finishes');
     }
 
     // MANDATORY_SETTER moves value to meta.values
@@ -49,31 +38,25 @@ moduleFor(
     ) {
       if (MANDATORY_SETTER) {
         let obj = EmberObject.extend({
-          fooDidChange: observer('foo', function() {})
+          fooDidChange: observer('foo', function() {}),
         }).create({
-          foo: 'bar'
+          foo: 'bar',
         });
 
         run(() => obj.destroy());
 
-        assert.throws(
-          () => set(obj, 'foo', 'baz'),
-          Error,
-          'raises an exception'
-        );
+        assert.throws(() => set(obj, 'foo', 'baz'), Error, 'raises an exception');
       } else {
         assert.expect(0);
       }
     }
 
-    ['@test observers should not fire after an object has been destroyed'](
-      assert
-    ) {
+    ['@test observers should not fire after an object has been destroyed'](assert) {
       let count = 0;
       let obj = EmberObject.extend({
         fooDidChange: observer('foo', function() {
           count++;
-        })
+        }),
       }).create();
 
       obj.set('foo', 'bar');
@@ -87,11 +70,7 @@ moduleFor(
         endPropertyChanges();
       });
 
-      assert.equal(
-        count,
-        1,
-        'observer was not called after object was destroyed'
-      );
+      assert.equal(count, 1, 'observer was not called after object was destroyed');
     }
 
     ['@test destroyed objects should not see each others changes during teardown but a long lived object should'](
@@ -113,7 +92,7 @@ moduleFor(
         }),
         cDidChange: observer('objs.c.isAlive', function() {
           shouldNotChange++;
-        })
+        }),
       });
 
       let B = EmberObject.extend({
@@ -127,7 +106,7 @@ moduleFor(
         }),
         cDidChange: observer('objs.c.isAlive', function() {
           shouldNotChange++;
-        })
+        }),
       });
 
       let C = EmberObject.extend({
@@ -141,14 +120,14 @@ moduleFor(
         }),
         bDidChange: observer('objs.b.isAlive', function() {
           shouldNotChange++;
-        })
+        }),
       });
 
       let LongLivedObject = EmberObject.extend({
         objs: objs,
         isAliveDidChange: observer('objs.a.isAlive', function() {
           shouldChange++;
-        })
+        }),
       });
 
       objs.a = new A();
@@ -166,16 +145,8 @@ moduleFor(
         }
       });
 
-      assert.equal(
-        shouldNotChange,
-        0,
-        'destroyed graph objs should not see change in willDestroy'
-      );
-      assert.equal(
-        shouldChange,
-        1,
-        'long lived should see change in willDestroy'
-      );
+      assert.equal(shouldNotChange, 0, 'destroyed graph objs should not see change in willDestroy');
+      assert.equal(shouldChange, 1, 'long lived should see change in willDestroy');
     }
   }
 );

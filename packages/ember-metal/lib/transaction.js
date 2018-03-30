@@ -45,7 +45,7 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
       if (DEBUG) {
         this.setKey(object, key, {
           lastRef: reference,
-          lastRenderedIn: this.debugStack.peek()
+          lastRenderedIn: this.debugStack.peek(),
         });
       } else {
         this.setKey(object, key, this.transactionId);

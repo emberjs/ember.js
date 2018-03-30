@@ -20,8 +20,8 @@ moduleFor(
           actions: {
             componentAction() {
               assert.ok(true, 'controller received the action');
-            }
-          }
+            },
+          },
         })
       );
 
@@ -30,14 +30,11 @@ moduleFor(
           classNames: ['component-with-action'],
           click() {
             this.sendAction();
-          }
-        })
+          },
+        }),
       });
 
-      this.addTemplate(
-        'index',
-        '{{component-with-action action="componentAction"}}'
-      );
+      this.addTemplate('index', '{{component-with-action action="componentAction"}}');
 
       return this.visit('/').then(() => {
         this.runTask(() => this.$('.component-with-action').click());

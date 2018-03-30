@@ -20,7 +20,7 @@ export default class RouterTestCase extends ApplicationTestCase {
 
   buildQueryParams(queryParams) {
     return {
-      queryParams
+      queryParams,
     };
   }
 }

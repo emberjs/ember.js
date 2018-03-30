@@ -8,9 +8,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     super();
 
     let { applicationOptions } = this;
-    this.application = this.runTask(() =>
-      this.createApplication(applicationOptions)
-    );
+    this.application = this.runTask(() => this.createApplication(applicationOptions));
 
     this.resolver = applicationOptions.Resolver.lastInstance;
 
@@ -25,7 +23,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
-      autoboot: false
+      autoboot: false,
     });
   }
 

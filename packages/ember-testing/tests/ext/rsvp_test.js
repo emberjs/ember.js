@@ -23,7 +23,7 @@ moduleFor(
         },
         asyncEnd() {
           asyncEnded++;
-        }
+        },
       });
     }
 

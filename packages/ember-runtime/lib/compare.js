@@ -12,7 +12,7 @@ const TYPE_ORDER = {
   instance: 7,
   function: 8,
   class: 9,
-  date: 10
+  date: 10,
 };
 
 //

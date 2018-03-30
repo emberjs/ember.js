@@ -12,7 +12,7 @@ import {
   setName,
   makeArray,
   HAS_NATIVE_PROXY,
-  isInternalSymbol
+  isInternalSymbol,
 } from 'ember-utils';
 import {
   PROXY_CONTENT,
@@ -29,18 +29,14 @@ import {
   schedule,
   deleteMeta,
   descriptor,
-  classToString
+  classToString,
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
-import {
-  MANDATORY_GETTER,
-  MANDATORY_SETTER,
-  EMBER_METAL_ES5_GETTERS
-} from 'ember/features';
+import { MANDATORY_GETTER, MANDATORY_SETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 
 const applyMixin = Mixin._apply;
 const reopen = Mixin.prototype.reopen;
@@ -94,9 +90,7 @@ function makeCtor(base) {
         ) {
           let messageFor = (obj, property) => {
             return (
-              `You attempted to access the \`${String(
-                property
-              )}\` property (of ${obj}).\n` +
+              `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
               `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
               `to access computed properties. However, in this case, the object in question\n` +
               `is a special kind of Ember object (a proxy). Therefore, it is still necessary\n` +
@@ -135,7 +129,7 @@ function makeCtor(base) {
               let value = target.unknownProperty.call(receiver, property);
 
               assert(messageFor(receiver, property), value === undefined);
-            }
+            },
           });
         }
 
@@ -158,10 +152,8 @@ function makeCtor(base) {
           let concatenatedProperties = self.concatenatedProperties;
           let mergedProperties = self.mergedProperties;
           let hasConcatenatedProps =
-            concatenatedProperties !== undefined &&
-            concatenatedProperties.length > 0;
-          let hasMergedProps =
-            mergedProperties !== undefined && mergedProperties.length > 0;
+            concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+          let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
 
           let keyNames = Object.keys(properties);
 
@@ -181,10 +173,7 @@ function makeCtor(base) {
             );
             assert(
               'EmberObject.create no longer supports defining methods that call _super.',
-              !(
-                typeof value === 'function' &&
-                value.toString().indexOf('._super') !== -1
-              )
+              !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
             );
             assert(
               '`actions` must be provided at extend time, not at create time, ' +
@@ -198,10 +187,7 @@ function makeCtor(base) {
             if (!isDescriptor) {
               let baseValue = self[keyName];
 
-              if (
-                hasConcatenatedProps &&
-                concatenatedProperties.indexOf(keyName) > -1
-              ) {
+              if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
                 if (baseValue) {
                   value = makeArray(baseValue).concat(value);
                 } else {
@@ -216,10 +202,7 @@ function makeCtor(base) {
 
             if (isDescriptor) {
               possibleDesc.set(self, keyName, value);
-            } else if (
-              typeof self.setUnknownProperty === 'function' &&
-              !(keyName in self)
-            ) {
+            } else if (typeof self.setUnknownProperty === 'function' && !(keyName in self)) {
               self.setUnknownProperty(keyName, value);
             } else {
               if (MANDATORY_SETTER) {
@@ -295,7 +278,7 @@ const IS_DESTROYED = descriptor({
       `You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`,
       value === IS_DESTROYED
     );
-  }
+  },
 });
 
 const IS_DESTROYING = descriptor({
@@ -311,7 +294,7 @@ const IS_DESTROYING = descriptor({
       `You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`,
       value === IS_DESTROYING
     );
-  }
+  },
 });
 
 /**
@@ -631,12 +614,12 @@ CoreObject.PrototypeMixin = Mixin.create({
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${getName(this) ||
-      FACTORY_FOR.get(this) ||
-      this.constructor.toString()}:${guidFor(this)}${extension}>`;
+    let ret = `<${getName(this) || FACTORY_FOR.get(this) || this.constructor.toString()}:${guidFor(
+      this
+    )}${extension}>`;
 
     return ret;
-  }
+  },
 });
 
 CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
@@ -1000,7 +983,7 @@ let ClassMixinProps = {
         callback.call(binding, name, meta);
       }
     });
-  }
+  },
 };
 
 if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
@@ -1016,8 +999,7 @@ function flattenProps(...props) {
   let { concatenatedProperties, mergedProperties } = this;
   let hasConcatenatedProps =
     concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-  let hasMergedProps =
-    mergedProperties !== undefined && mergedProperties.length > 0;
+  let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
 
   let initProperties = {};
 
@@ -1036,10 +1018,7 @@ function flattenProps(...props) {
       let keyName = keyNames[j];
       let value = properties[keyName];
 
-      if (
-        hasConcatenatedProps &&
-        concatenatedProperties.indexOf(keyName) > -1
-      ) {
+      if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
         let baseValue = initProperties[keyName];
 
         if (baseValue) {
@@ -1090,7 +1069,7 @@ if (DEBUG) {
         injections[key] = {
           namespace: desc.namespace,
           source: desc.source,
-          specifier: `${desc.type}:${desc.name || key}`
+          specifier: `${desc.type}:${desc.name || key}`,
         };
       }
     }

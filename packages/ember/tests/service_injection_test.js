@@ -2,10 +2,7 @@ import { Controller } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { inject, Service } from 'ember-runtime';
 import { computed } from 'ember-metal';
-import {
-  EMBER_METAL_ES5_GETTERS,
-  EMBER_MODULE_UNIFICATION
-} from 'ember/features';
+import { EMBER_METAL_ES5_GETTERS, EMBER_MODULE_UNIFICATION } from 'ember/features';
 
 moduleFor(
   'Service Injection',
@@ -14,7 +11,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          myService: inject.service('my-service')
+          myService: inject.service('my-service'),
         })
       );
       let MyService = Service.extend();
@@ -22,9 +19,7 @@ moduleFor(
       this.addTemplate('application', '');
 
       this.visit('/').then(() => {
-        let controller = this.applicationInstance.lookup(
-          'controller:application'
-        );
+        let controller = this.applicationInstance.lookup('controller:application');
         assert.ok(controller.get('myService') instanceof MyService);
       });
     }
@@ -35,27 +30,23 @@ if (EMBER_METAL_ES5_GETTERS) {
   moduleFor(
     'Service Injection with ES5 Getters',
     class extends ApplicationTestCase {
-      ['@test Service can be injected and is resolved without calling `get`'](
-        assert
-      ) {
+      ['@test Service can be injected and is resolved without calling `get`'](assert) {
         this.add(
           'controller:application',
           Controller.extend({
-            myService: inject.service('my-service')
+            myService: inject.service('my-service'),
           })
         );
         let MyService = Service.extend({
           name: computed(function() {
             return 'The service name';
-          })
+          }),
         });
         this.add('service:my-service', MyService);
         this.addTemplate('application', '');
 
         this.visit('/').then(() => {
-          let controller = this.applicationInstance.lookup(
-            'controller:application'
-          );
+          let controller = this.applicationInstance.lookup('controller:application');
           assert.ok(controller.myService instanceof MyService);
           assert.equal(
             controller.myService.name,
@@ -77,22 +68,20 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:application',
           Controller.extend({
-            myService: inject.service('my-service', { source })
+            myService: inject.service('my-service', { source }),
           })
         );
         let MyService = Service.extend();
         this.add(
           {
             specifier: 'service:my-service',
-            source
+            source,
           },
           MyService
         );
 
         return this.visit('/').then(() => {
-          let controller = this.applicationInstance.lookup(
-            'controller:application'
-          );
+          let controller = this.applicationInstance.lookup('controller:application');
 
           assert.ok(controller.get('myService') instanceof MyService);
         });
@@ -109,14 +98,14 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:route-a',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeASource })
+            myService: inject.service('my-service', { source: routeASource }),
           })
         );
 
         this.add(
           'controller:route-b',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeBSource })
+            myService: inject.service('my-service', { source: routeBSource }),
           })
         );
 
@@ -124,7 +113,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           {
             specifier: 'service:my-service',
-            source: routeASource
+            source: routeASource,
           },
           LocalLookupService
         );
@@ -133,29 +122,22 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           {
             specifier: 'service:my-service',
-            source: routeBSource
+            source: routeBSource,
           },
           MyService
         );
 
         return this.visit('/').then(() => {
-          let controllerA = this.applicationInstance.lookup(
-            'controller:route-a'
-          );
+          let controllerA = this.applicationInstance.lookup('controller:route-a');
           let serviceFromControllerA = controllerA.get('myService');
           assert.ok(
             serviceFromControllerA instanceof LocalLookupService,
             'local lookup service is returned'
           );
 
-          let controllerB = this.applicationInstance.lookup(
-            'controller:route-b'
-          );
+          let controllerB = this.applicationInstance.lookup('controller:route-b');
           let serviceFromControllerB = controllerB.get('myService');
-          assert.ok(
-            serviceFromControllerB instanceof MyService,
-            'global service is returned'
-          );
+          assert.ok(serviceFromControllerB instanceof MyService, 'global service is returned');
 
           assert.notStrictEqual(serviceFromControllerA, serviceFromControllerB);
         });
@@ -170,39 +152,32 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:route-a',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeASource })
+            myService: inject.service('my-service', { source: routeASource }),
           })
         );
 
         this.add(
           'controller:route-b',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeBSource })
+            myService: inject.service('my-service', { source: routeBSource }),
           })
         );
 
         let MyService = Service.extend();
         this.add(
           {
-            specifier: 'service:my-service'
+            specifier: 'service:my-service',
           },
           MyService
         );
 
         return this.visit('/').then(() => {
-          let controllerA = this.applicationInstance.lookup(
-            'controller:route-a'
-          );
+          let controllerA = this.applicationInstance.lookup('controller:route-a');
           let serviceFromControllerA = controllerA.get('myService');
           assert.ok(serviceFromControllerA instanceof MyService);
 
-          let controllerB = this.applicationInstance.lookup(
-            'controller:route-b'
-          );
-          assert.strictEqual(
-            serviceFromControllerA,
-            controllerB.get('myService')
-          );
+          let controllerB = this.applicationInstance.lookup('controller:route-b');
+          assert.strictEqual(serviceFromControllerA, controllerB.get('myService'));
         });
       }
 
@@ -223,43 +198,33 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:route-a',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeASource })
+            myService: inject.service('my-service', { source: routeASource }),
           })
         );
 
         this.add(
           'controller:route-b',
           Controller.extend({
-            myService: inject.service('my-service')
+            myService: inject.service('my-service'),
           })
         );
 
         let MyService = Service.extend();
         this.add(
           {
-            specifier: 'service:my-service'
+            specifier: 'service:my-service',
           },
           MyService
         );
 
         return this.visit('/').then(() => {
-          let controllerA = this.applicationInstance.lookup(
-            'controller:route-a'
-          );
+          let controllerA = this.applicationInstance.lookup('controller:route-a');
           let serviceFromControllerA = controllerA.get('myService');
-          assert.ok(
-            serviceFromControllerA instanceof MyService,
-            'global service is returned'
-          );
+          assert.ok(serviceFromControllerA instanceof MyService, 'global service is returned');
 
-          let controllerB = this.applicationInstance.lookup(
-            'controller:route-b'
-          );
+          let controllerB = this.applicationInstance.lookup('controller:route-b');
           let serviceFromControllerB = controllerB.get('myService');
-          assert.ok(
-            serviceFromControllerB instanceof MyService,
-            'global service is returned'
-          );
+          assert.ok(serviceFromControllerB instanceof MyService, 'global service is returned');
 
           assert.strictEqual(serviceFromControllerA, serviceFromControllerB);
         });
@@ -269,22 +234,20 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:application',
           Controller.extend({
-            myService: inject.service('my-namespace::my-service')
+            myService: inject.service('my-namespace::my-service'),
           })
         );
         let MyService = Service.extend();
         this.add(
           {
             specifier: 'service:my-service',
-            namespace: 'my-namespace'
+            namespace: 'my-namespace',
           },
           MyService
         );
 
         this.visit('/').then(() => {
-          let controller = this.applicationInstance.lookup(
-            'controller:application'
-          );
+          let controller = this.applicationInstance.lookup('controller:application');
           assert.ok(controller.get('myService') instanceof MyService);
         });
       }

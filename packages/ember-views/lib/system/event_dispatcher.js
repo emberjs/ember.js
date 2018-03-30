@@ -86,7 +86,7 @@ export default EmberObject.extend({
     dragleave: 'dragLeave',
     dragover: 'dragOver',
     drop: 'drop',
-    dragend: 'dragEnd'
+    dragend: 'dragEnd',
   },
 
   /**
@@ -135,11 +135,7 @@ export default EmberObject.extend({
   */
   setup(addedEvents, _rootElement) {
     let event, rootElement;
-    let events = (this._finalEvents = assign(
-      {},
-      get(this, 'events'),
-      addedEvents
-    ));
+    let events = (this._finalEvents = assign({}, get(this, 'events'), addedEvents));
 
     if (!isNone(_rootElement)) {
       set(this, 'rootElement', _rootElement);
@@ -206,10 +202,7 @@ export default EmberObject.extend({
       rootElement.classList.add(ROOT_ELEMENT_CLASS);
 
       assert(
-        `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${get(
-          this,
-          'rootElement'
-        ) ||
+        `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${get(this, 'rootElement') ||
           rootElement.tagName}). Make sure you set rootElement to the body or an element in the body.`,
         rootElement.classList.contains(ROOT_ELEMENT_CLASS)
       );
@@ -270,11 +263,7 @@ export default EmberObject.extend({
             // We have to check for action here since in some cases, jQuery will trigger
             // an event on `removeChild` (i.e. focusout) after we've already torn down the
             // action handlers for the view.
-            if (
-              action &&
-              action.eventName === eventName &&
-              handledActions.indexOf(action) === -1
-            ) {
+            if (action && action.eventName === eventName && handledActions.indexOf(action) === -1) {
               action.handler(evt);
               // Action handlers can mutate state which in turn creates new attributes on the element.
               // This effect could cause the `data-ember-action` attribute to shift down and be invoked twice.
@@ -315,9 +304,7 @@ export default EmberObject.extend({
             let attrName = attr.name;
 
             if (attrName.indexOf('data-ember-action-') === 0) {
-              actions = actions.concat(
-                ActionManager.registeredActions[attr.value]
-              );
+              actions = actions.concat(ActionManager.registeredActions[attr.value]);
             }
           }
         }
@@ -364,8 +351,7 @@ export default EmberObject.extend({
 
   _getViewRegistry() {
     let owner = getOwner(this);
-    let viewRegistry =
-      (owner && owner.lookup('-view-registry:main')) || fallbackViewRegistry;
+    let viewRegistry = (owner && owner.lookup('-view-registry:main')) || fallbackViewRegistry;
 
     return viewRegistry;
   },
@@ -398,5 +384,5 @@ export default EmberObject.extend({
 
   toString() {
     return '(EventDispatcher)';
-  }
+  },
 });

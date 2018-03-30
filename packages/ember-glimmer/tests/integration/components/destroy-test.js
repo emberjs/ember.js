@@ -10,11 +10,11 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
-        switch: true
+        switch: true,
       });
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });

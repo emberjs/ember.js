@@ -29,7 +29,7 @@ moduleFor(
 
         let AnObject = EmberObject.extend({
           bar: inject.foo(),
-          baz: inject.foo()
+          baz: inject.foo(),
         });
 
         owner.register('foo:main', AnObject);
@@ -43,13 +43,11 @@ moduleFor(
       }
     }
 
-    ['@test attempting to inject a nonexistent container key should error'](
-      assert
-    ) {
+    ['@test attempting to inject a nonexistent container key should error'](assert) {
       if (!EmberDev.runningProdBuild) {
         let owner = buildOwner();
         let AnObject = EmberObject.extend({
-          foo: new InjectedProperty('bar', 'baz')
+          foo: new InjectedProperty('bar', 'baz'),
         });
 
         owner.register('foo:main', AnObject);
@@ -62,13 +60,11 @@ moduleFor(
       }
     }
 
-    ['@test factories should return a list of lazy injection full names'](
-      assert
-    ) {
+    ['@test factories should return a list of lazy injection full names'](assert) {
       if (DEBUG) {
         let AnObject = EmberObject.extend({
           foo: new InjectedProperty('foo', 'bar'),
-          bar: new InjectedProperty('quux')
+          bar: new InjectedProperty('quux'),
         });
 
         assert.deepEqual(
@@ -77,13 +73,13 @@ moduleFor(
             foo: {
               specifier: 'foo:bar',
               source: undefined,
-              namespace: undefined
+              namespace: undefined,
             },
             bar: {
               specifier: 'quux:bar',
               source: undefined,
-              namespace: undefined
-            }
+              namespace: undefined,
+            },
           },
           'should return injected container keys'
         );

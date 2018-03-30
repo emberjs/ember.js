@@ -312,21 +312,13 @@ if (DEBUG && !isTesting()) {
   }
 
   delete FEATURES['features-stripped-test'];
-  _warnIfUsingStrippedFeatureFlags(
-    ENV.FEATURES,
-    DEFAULT_FEATURES,
-    featuresWereStripped
-  );
+  _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, DEFAULT_FEATURES, featuresWereStripped);
 
   // Inform the developer about the Ember Inspector if not installed.
   let isFirefox = environment.isFirefox;
   let isChrome = environment.isChrome;
 
-  if (
-    typeof window !== 'undefined' &&
-    (isFirefox || isChrome) &&
-    window.addEventListener
-  ) {
+  if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener(
       'load',
       () => {
@@ -341,13 +333,10 @@ if (DEBUG && !isTesting()) {
             downloadURL =
               'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
           } else if (isFirefox) {
-            downloadURL =
-              'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
+            downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
           }
 
-          debug(
-            `For more advanced debugging, install the Ember Inspector from ${downloadURL}`
-          );
+          debug(`For more advanced debugging, install the Ember Inspector from ${downloadURL}`);
         }
       },
       false
@@ -367,5 +356,5 @@ export {
   deprecateFunc,
   setDebugFunction,
   getDebugFunction,
-  _warnIfUsingStrippedFeatureFlags
+  _warnIfUsingStrippedFeatureFlags,
 };

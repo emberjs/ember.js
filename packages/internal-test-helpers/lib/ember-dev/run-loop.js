@@ -1,9 +1,4 @@
-import {
-  getCurrentRunLoop,
-  hasScheduledTimers,
-  cancelTimers,
-  end
-} from 'ember-metal';
+import { getCurrentRunLoop, hasScheduledTimers, cancelTimers, end } from 'ember-metal';
 
 function RunLoopAssertion(env) {
   this.env = env;
@@ -23,14 +18,11 @@ RunLoopAssertion.prototype = {
     }
 
     if (hasScheduledTimers()) {
-      assert.ok(
-        false,
-        'Ember run should not have scheduled timers at end of test'
-      );
+      assert.ok(false, 'Ember run should not have scheduled timers at end of test');
       cancelTimers();
     }
   },
-  restore: function() {}
+  restore: function() {},
 };
 
 export default RunLoopAssertion;

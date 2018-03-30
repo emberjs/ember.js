@@ -18,7 +18,7 @@ module.exports = function bootstrapModule(moduleExport, type = 'sideeffects') {
   let moduleType = {
     default: defaultExport,
     umd,
-    sideeffects
+    sideeffects,
   };
 
   return new WriteFile('bootstrap', moduleType[type](moduleExport));

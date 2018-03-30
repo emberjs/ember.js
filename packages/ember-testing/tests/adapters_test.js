@@ -64,7 +64,7 @@ moduleFor(
       CustomAdapter = Adapter.extend({
         asyncStart() {
           assert.ok(true, 'Correct adapter was used');
-        }
+        },
       });
 
       run(function() {
@@ -105,16 +105,14 @@ moduleFor(
       assert.ok(!(Test.adapter instanceof QUnitAdapter));
     }
 
-    ['@test With Ember.Test.adapter set, errors in synchronous Ember.run are bubbled out'](
-      assert
-    ) {
+    ['@test With Ember.Test.adapter set, errors in synchronous Ember.run are bubbled out'](assert) {
       let thrown = new Error('Boom!');
 
       let caughtInAdapter, caughtInCatch;
       Test.adapter = QUnitAdapter.create({
         exception(error) {
           caughtInAdapter = error;
-        }
+        },
       });
 
       try {
@@ -130,11 +128,7 @@ moduleFor(
         undefined,
         'test adapter should never receive synchronous errors'
       );
-      assert.equal(
-        caughtInCatch,
-        thrown,
-        'a "normal" try/catch should catch errors in sync run'
-      );
+      assert.equal(caughtInCatch, thrown, 'a "normal" try/catch should catch errors in sync run');
     }
 
     ['@test when both Ember.onerror (which rethrows) and TestAdapter are registered - sync run'](
@@ -144,18 +138,12 @@ moduleFor(
 
       Test.adapter = {
         exception() {
-          assert.notOk(
-            true,
-            'adapter is not called for errors thrown in sync run loops'
-          );
-        }
+          assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
+        },
       };
 
       setOnerror(function(error) {
-        assert.ok(
-          true,
-          'onerror is called for sync errors even if TestAdapter is setup'
-        );
+        assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
         throw error;
       });
 
@@ -169,30 +157,19 @@ moduleFor(
 
       Test.adapter = {
         exception() {
-          assert.notOk(
-            true,
-            'adapter is not called for errors thrown in sync run loops'
-          );
-        }
+          assert.notOk(true, 'adapter is not called for errors thrown in sync run loops');
+        },
       };
 
       setOnerror(function() {
-        assert.ok(
-          true,
-          'onerror is called for sync errors even if TestAdapter is setup'
-        );
+        assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
       });
 
       runThatThrowsSync();
-      assert.ok(
-        true,
-        'no error was thrown, Ember.onerror can intercept errors'
-      );
+      assert.ok(true, 'no error was thrown, Ember.onerror can intercept errors');
     }
 
-    ['@test when TestAdapter is registered and error is thrown - async run'](
-      assert
-    ) {
+    ['@test when TestAdapter is registered and error is thrown - async run'](assert) {
       assert.expect(3);
       let done = assert.async();
 
@@ -200,7 +177,7 @@ moduleFor(
       Test.adapter = {
         exception(error) {
           caughtInAdapter = error;
-        }
+        },
       };
 
       window.onerror = function(message) {
@@ -228,32 +205,25 @@ moduleFor(
         );
 
         assert.pushResult({
-          result: /Error for testing error handling/.test(
-            caughtByWindowOnerror
-          ),
+          result: /Error for testing error handling/.test(caughtByWindowOnerror),
           actual: caughtByWindowOnerror,
           expected: 'to include `Error for testing error handling`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         done();
       }, 20);
     }
 
-    ['@test when both Ember.onerror and TestAdapter are registered - async run'](
-      assert
-    ) {
+    ['@test when both Ember.onerror and TestAdapter are registered - async run'](assert) {
       assert.expect(1);
       let done = assert.async();
 
       Test.adapter = {
         exception() {
-          assert.notOk(
-            true,
-            'Adapter.exception is not called for errors thrown in next'
-          );
-        }
+          assert.notOk(true, 'Adapter.exception is not called for errors thrown in next');
+        },
       };
 
       setOnerror(function() {
@@ -268,14 +238,12 @@ moduleFor(
 
 function testAdapter(message, generatePromise, timeout = 10) {
   return class PromiseFailureTests extends AdapterSetupAndTearDown {
-    [`@test ${message} when TestAdapter without \`exception\` method is present - rsvp`](
-      assert
-    ) {
+    [`@test ${message} when TestAdapter without \`exception\` method is present - rsvp`](assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
       Test.adapter = QUnitAdapter.create({
-        exception: undefined
+        exception: undefined,
       });
 
       window.onerror = function(message) {
@@ -284,7 +252,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
           actual: message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         // prevent "bubbling" and therefore failing the test
@@ -305,7 +273,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       let thrown = new Error('the error');
       Test.adapter = QUnitAdapter.create({
-        exception: undefined
+        exception: undefined,
       });
 
       setOnerror(function(error) {
@@ -314,7 +282,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
           actual: error.message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
       });
 
@@ -337,7 +305,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
             thrown,
             'Adapter.exception is called for errors thrown in RSVP promises'
           );
-        }
+        },
       });
 
       generatePromise(thrown);
@@ -347,9 +315,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
       return new RSVP.Promise(resolve => setTimeout(resolve, timeout));
     }
 
-    [`@test ${message} when both Ember.onerror and TestAdapter are present - rsvp`](
-      assert
-    ) {
+    [`@test ${message} when both Ember.onerror and TestAdapter are present - rsvp`](assert) {
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -360,14 +326,11 @@ function testAdapter(message, generatePromise, timeout = 10) {
             thrown,
             'Adapter.exception is called for errors thrown in RSVP promises'
           );
-        }
+        },
       });
 
       setOnerror(function() {
-        assert.notOk(
-          true,
-          'Ember.onerror is not called if Test.adapter does not rethrow'
-        );
+        assert.notOk(true, 'Ember.onerror is not called if Test.adapter does not rethrow');
       });
 
       generatePromise(thrown);
@@ -377,9 +340,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
       return new RSVP.Promise(resolve => setTimeout(resolve, timeout));
     }
 
-    [`@test ${message} when both Ember.onerror and TestAdapter are present - rsvp`](
-      assert
-    ) {
+    [`@test ${message} when both Ember.onerror and TestAdapter are present - rsvp`](assert) {
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -391,7 +352,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
             'Adapter.exception is called for errors thrown in RSVP promises'
           );
           throw error;
-        }
+        },
       });
 
       setOnerror(function(error) {

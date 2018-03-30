@@ -4,7 +4,7 @@ export {
   getCacheFor,
   getCachedValueFor,
   peekCacheFor,
-  ComputedProperty
+  ComputedProperty,
 } from './computed';
 export { default as alias } from './alias';
 export { default as merge } from './merge';
@@ -15,14 +15,9 @@ export {
   _instrumentStart,
   reset as instrumentationReset,
   subscribe as instrumentationSubscribe,
-  unsubscribe as instrumentationUnsubscribe
+  unsubscribe as instrumentationUnsubscribe,
 } from './instrumentation';
-export {
-  getOnerror,
-  setOnerror,
-  setDispatchOverride,
-  getDispatchOverride
-} from './error_handler';
+export { getOnerror, setOnerror, setDispatchOverride, getDispatchOverride } from './error_handler';
 export { descriptorFor, meta, peekMeta, deleteMeta } from './meta';
 export { default as Cache } from './cache';
 export { PROXY_CONTENT, _getPath, get, getWithDefault } from './property_get';
@@ -34,20 +29,10 @@ export {
   addArrayObserver,
   removeArrayObserver,
   arrayContentWillChange,
-  arrayContentDidChange
+  arrayContentDidChange,
 } from './array';
-export {
-  eachProxyFor,
-  eachProxyArrayWillChange,
-  eachProxyArrayDidChange
-} from './each_proxy';
-export {
-  addListener,
-  hasListeners,
-  on,
-  removeListener,
-  sendEvent
-} from './events';
+export { eachProxyFor, eachProxyArrayWillChange, eachProxyArrayDidChange } from './each_proxy';
+export { addListener, hasListeners, on, removeListener, sendEvent } from './events';
 
 export { default as isNone } from './is_none';
 export { default as isEmpty } from './is_empty';
@@ -71,7 +56,7 @@ export {
   cancel,
   debounce,
   throttle,
-  _globalsRun
+  _globalsRun,
 } from './run_loop';
 export {
   beginPropertyChanges,
@@ -81,7 +66,7 @@ export {
   overrideChains,
   propertyDidChange,
   propertyWillChange,
-  PROPERTY_DID_CHANGE
+  PROPERTY_DID_CHANGE,
 } from './property_events';
 export { defineProperty, Descriptor } from './properties';
 export { watchKey, unwatchKey } from './watch_key';
@@ -95,21 +80,10 @@ export { default as setProperties } from './set_properties';
 export { default as expandProperties } from './expand_properties';
 
 export { addObserver, removeObserver } from './observer';
-export {
-  Mixin,
-  aliasMethod,
-  mixin,
-  observer,
-  required,
-  REQUIRED
-} from './mixin';
+export { Mixin, aliasMethod, mixin, observer, required, REQUIRED } from './mixin';
 export { default as InjectedProperty } from './injected_property';
 export { setHasViews, tagForProperty, tagFor, markObjectAsDirty } from './tags';
-export {
-  default as runInTransaction,
-  didRender,
-  assertNotRendered
-} from './transaction';
+export { default as runInTransaction, didRender, assertNotRendered } from './transaction';
 export { default as descriptor } from './descriptor';
 export { tracked } from './tracked';
 
@@ -124,5 +98,5 @@ export {
   processAllNamespaces,
   removeNamespace,
   isSearchDisabled as isNamespaceSearchDisabled,
-  setSearchDisabled as setNamespaceSearchDisabled
+  setSearchDisabled as setNamespaceSearchDisabled,
 } from './namespace_search';

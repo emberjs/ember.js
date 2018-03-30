@@ -147,7 +147,7 @@ function descriptorForAccessor(key, descriptor) {
     enumerable: true,
     configurable: false,
     get: get && getter,
-    set: set && setter
+    set: set && setter,
   };
 }
 /**
@@ -178,7 +178,7 @@ function descriptorForDataProperty(key, descriptor) {
       dirty(tagForProperty(this, key));
       this[shadowKey] = newValue;
       propertyDidChange();
-    }
+    },
   };
 }
 let propertyDidChange = function() {};

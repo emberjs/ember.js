@@ -3,13 +3,9 @@ import {
   compileOptions,
   defaultPlugins,
   registerPlugin,
-  unregisterPlugin
+  unregisterPlugin,
 } from '../../index';
-import {
-  moduleFor,
-  AbstractTestCase,
-  RenderingTestCase
-} from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'ember-template-compiler: default compile options',
@@ -71,17 +67,13 @@ class CustomPluginsTests extends RenderingTestCase {
     this.assertElement(this.firstChild, {
       tagName: 'div',
       attrs: { class: 'hahaha', 'data-blah': 'derp' },
-      content: ''
+      content: '',
     });
   }
 
   ['@test wrapped plugins are only invoked once per template'](assert) {
     this.render('<div>{{#if falsey}}nope{{/if}}</div>');
-    assert.equal(
-      customTransformCounter,
-      1,
-      'transform should only be instantiated once'
-    );
+    assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
   }
 }
 
@@ -103,11 +95,7 @@ moduleFor(
         'application',
         '<div data-test="foo" data-blah="derp" class="hahaha"></div>'
       );
-      assert.equal(
-        customTransformCounter,
-        1,
-        'transform should only be instantiated once'
-      );
+      assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
     }
   }
 );
@@ -119,8 +107,8 @@ moduleFor(
     compile(templateString) {
       return compile(templateString, {
         plugins: {
-          ast: [CustomTransform]
-        }
+          ast: [CustomTransform],
+        },
       });
     }
   }

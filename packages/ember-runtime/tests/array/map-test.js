@@ -26,20 +26,12 @@ class MapTests extends AbstractTestCase {
     let found;
 
     found = obj.map(mapFunc);
-    this.assert.deepEqual(
-      found,
-      ary,
-      'items passed during forEach should match'
-    );
+    this.assert.deepEqual(found, ary, 'items passed during forEach should match');
 
     this.mutate(obj);
     ary = this.toArray(obj).map(mapFunc);
     found = obj.map(mapFunc);
-    this.assert.deepEqual(
-      found,
-      ary,
-      'items passed during forEach should match'
-    );
+    this.assert.deepEqual(found, ary, 'items passed during forEach should match');
   }
 
   '@test 2nd target parameter'() {
@@ -55,11 +47,7 @@ class MapTests extends AbstractTestCase {
     });
 
     obj.map(() => {
-      this.assert.equal(
-        guidFor(this),
-        guidFor(target),
-        'should pass target as this if context'
-      );
+      this.assert.equal(guidFor(this), guidFor(target), 'should pass target as this if context');
     }, target);
   }
 

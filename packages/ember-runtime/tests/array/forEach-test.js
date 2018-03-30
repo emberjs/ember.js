@@ -10,11 +10,7 @@ class ForEachTests extends AbstractTestCase {
     let found = [];
 
     obj.forEach(i => found.push(i));
-    this.assert.deepEqual(
-      found,
-      ary,
-      'items passed during forEach should match'
-    );
+    this.assert.deepEqual(found, ary, 'items passed during forEach should match');
   }
 
   '@test forEach should iterate over list after mutation'() {
@@ -28,22 +24,14 @@ class ForEachTests extends AbstractTestCase {
     let found = [];
 
     obj.forEach(i => found.push(i));
-    this.assert.deepEqual(
-      found,
-      ary,
-      'items passed during forEach should match'
-    );
+    this.assert.deepEqual(found, ary, 'items passed during forEach should match');
 
     this.mutate(obj);
     ary = this.toArray(obj);
     found = [];
 
     obj.forEach(i => found.push(i));
-    this.assert.deepEqual(
-      found,
-      ary,
-      'items passed during forEach should match'
-    );
+    this.assert.deepEqual(found, ary, 'items passed during forEach should match');
   }
 
   '@test 2nd target parameter'() {
@@ -59,11 +47,7 @@ class ForEachTests extends AbstractTestCase {
     });
 
     obj.forEach(() => {
-      this.assert.equal(
-        guidFor(this),
-        guidFor(target),
-        'should pass target as this if context'
-      );
+      this.assert.equal(guidFor(this), guidFor(target), 'should pass target as this if context');
     }, target);
   }
 

@@ -1,10 +1,6 @@
 import { Controller } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
-import {
-  moduleFor,
-  ApplicationTestCase,
-  getTextOf
-} from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 
 moduleFor(
   'Application Lifecycle - Component Context',
@@ -24,23 +20,19 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          text: 'outer'
+          text: 'outer',
         })
       );
       this.addComponent('my-component', {
         ComponentClass: Component.extend({
-          text: 'inner'
+          text: 'inner',
         }),
-        template: `{{text}}-{{yield}}`
+        template: `{{text}}-{{yield}}`,
       });
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(
-          text,
-          'inner-outer',
-          'The component is composed correctly'
-        );
+        assert.equal(text, 'inner-outer', 'The component is composed correctly');
       });
     }
 
@@ -59,13 +51,13 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          text: 'outer'
+          text: 'outer',
         })
       );
       this.addComponent('my-component', {
         ComponentClass: Component.extend({
-          text: 'inner'
-        })
+          text: 'inner',
+        }),
       });
 
       return this.visit('/').then(() => {
@@ -86,14 +78,14 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          text: 'outer'
+          text: 'outer',
         })
       );
       this.addComponent('my-component', {
         ComponentClass: Component.extend({
-          text: 'inner'
+          text: 'inner',
         }),
-        template: '{{text}}'
+        template: '{{text}}',
       });
 
       return this.visit('/').then(() => {
@@ -102,9 +94,7 @@ moduleFor(
       });
     }
 
-    ['@test Components without a block should have the proper content'](
-      assert
-    ) {
+    ['@test Components without a block should have the proper content'](assert) {
       this.addTemplate(
         'application',
         `
@@ -115,24 +105,20 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          text: 'outer'
+          text: 'outer',
         })
       );
       this.addComponent('my-component', {
         ComponentClass: Component.extend({
           didInsertElement() {
             this.element.innerHTML = 'Some text inserted';
-          }
-        })
+          },
+        }),
       });
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(
-          text,
-          'Some text inserted',
-          'The component is composed correctly'
-        );
+        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
       });
     }
 
@@ -149,24 +135,20 @@ moduleFor(
         'controller:application',
         Controller.extend({
           text: 'outer',
-          foo: 'Some text inserted'
+          foo: 'Some text inserted',
         })
       );
       this.addComponent('my-component', {
         ComponentClass: Component.extend({
           didInsertElement() {
             this.element.innerHTML = this.get('data');
-          }
-        })
+          },
+        }),
       });
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(
-          text,
-          'Some text inserted',
-          'The component is composed correctly'
-        );
+        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
       });
     }
 
@@ -184,24 +166,20 @@ moduleFor(
         'controller:application',
         Controller.extend({
           text: 'outer',
-          foo: 'Some text inserted'
+          foo: 'Some text inserted',
         })
       );
       this.addComponent('my-component', {
         ComponentClass: Component.extend({
           didInsertElement() {
             this.element.innerHTML = this.get('attrs.attrs.value');
-          }
-        })
+          },
+        }),
       });
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(
-          text,
-          'Some text inserted',
-          'The component is composed correctly'
-        );
+        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
       });
     }
 
@@ -225,12 +203,12 @@ moduleFor(
           actions: {
             fizzbuzz() {
               assert.ok(true, 'action triggered on parent');
-            }
-          }
+            },
+          },
         })
       );
       this.addComponent('my-component', {
-        ComponentClass: Component.extend({})
+        ComponentClass: Component.extend({}),
       });
 
       return this.visit('/').then(() => {
@@ -254,8 +232,8 @@ moduleFor(
           actions: {
             fizzbuzz() {
               assert.ok(false, 'action on the wrong context');
-            }
-          }
+            },
+          },
         })
       );
       this.addComponent('my-component', {
@@ -263,10 +241,10 @@ moduleFor(
           actions: {
             fizzbuzz() {
               assert.ok(true, 'action triggered on component');
-            }
-          }
+            },
+          },
         }),
-        template: `<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>`
+        template: `<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>`,
       });
 
       return this.visit('/').then(() => {

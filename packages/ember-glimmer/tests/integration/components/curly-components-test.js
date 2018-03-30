@@ -1,22 +1,12 @@
 /* globals EmberDev */
 import { set, get, observer, on, computed, run } from 'ember-metal';
-import {
-  Object as EmberObject,
-  A as emberA,
-  inject,
-  Service
-} from 'ember-runtime';
+import { Object as EmberObject, A as emberA, inject, Service } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views/system/jquery';
 import { ENV } from 'ember-environment';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import {
-  classes,
-  equalTokens,
-  equalsElement,
-  styles
-} from '../../utils/test-helpers';
+import { classes, equalTokens, equalsElement, styles } from '../../utils/test-helpers';
 import { MANDATORY_SETTER } from 'ember/features';
 
 moduleFor(
@@ -48,13 +38,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: '{{id}} {{elementId}}' });
 
       this.render('{{foo-bar id=customId}}', {
-        customId: 'bizz'
+        customId: 'bizz',
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'bizz' },
-        content: 'bizz bizz'
+        content: 'bizz bizz',
       });
 
       this.runTask(() => this.rerender());
@@ -62,7 +52,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'bizz' },
-        content: 'bizz bizz'
+        content: 'bizz bizz',
       });
 
       this.runTask(() => set(this.context, 'customId', 'bar'));
@@ -70,7 +60,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'bizz' },
-        content: 'bar bizz'
+        content: 'bar bizz',
       });
 
       this.runTask(() => set(this.context, 'customId', 'bizz'));
@@ -78,7 +68,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'bizz' },
-        content: 'bizz bizz'
+        content: 'bizz bizz',
       });
     }
 
@@ -89,12 +79,12 @@ moduleFor(
         init() {
           this._super(...arguments);
           component = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{elementId}}'
+        template: '{{elementId}}',
       });
 
       this.render('{{foo-bar}}');
@@ -102,22 +92,18 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'blahzorz' },
-        content: 'blahzorz'
+        content: 'blahzorz',
       });
 
       if (EmberDev && !EmberDev.runningProdBuild) {
-        let willThrow = () =>
-          run(null, set, component, 'elementId', 'herpyderpy');
+        let willThrow = () => run(null, set, component, 'elementId', 'herpyderpy');
 
-        assert.throws(
-          willThrow,
-          /Changing a view's elementId after creation is not allowed/
-        );
+        assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'div',
           attrs: { id: 'blahzorz' },
-          content: 'blahzorz'
+          content: 'blahzorz',
         });
       }
     }
@@ -129,7 +115,7 @@ moduleFor(
         init() {
           this._super(...arguments);
           this.local = 'hey';
-        }
+        },
       });
 
       this.registerTemplate('fizz-bar', `FIZZ BAR {{local}}`);
@@ -150,7 +136,7 @@ moduleFor(
         init() {
           this._super(...arguments);
           this.lulz = 'heyo';
-        }
+        },
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
@@ -160,16 +146,14 @@ moduleFor(
       this.assertText('so much layout wat heyo');
     }
 
-    ['@test passing undefined elementId results in a default elementId'](
-      assert
-    ) {
+    ['@test passing undefined elementId results in a default elementId'](assert) {
       let FooBarComponent = Component.extend({
-        tagName: 'h1'
+        tagName: 'h1',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'something'
+        template: 'something',
       });
 
       this.render('{{foo-bar id=somethingUndefined}}');
@@ -193,12 +177,12 @@ moduleFor(
 
     ['@test id is an alias for elementId'](assert) {
       let FooBarComponent = Component.extend({
-        tagName: 'h1'
+        tagName: 'h1',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'something'
+        template: 'something',
       });
 
       this.render('{{foo-bar id="custom-id"}}');
@@ -224,26 +208,26 @@ moduleFor(
 
     ['@test it can have a custom tagName']() {
       let FooBarComponent = Component.extend({
-        tagName: 'foo-bar'
+        tagName: 'foo-bar',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar}}');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -252,26 +236,26 @@ moduleFor(
         init() {
           this._super();
           this.tagName = 'foo-bar';
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar}}');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -282,14 +266,14 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -297,12 +281,12 @@ moduleFor(
       let FooBarComponent = Component.extend({
         tagName: computed(function() {
           return 'foo-bar';
-        })
+        }),
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       expectAssertion(() => {
@@ -315,12 +299,12 @@ moduleFor(
       let FooBarComponent = Component.extend({
         didInsertElement() {
           componentClass = this.element.className;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar class="foo-bar"}}');
@@ -330,12 +314,12 @@ moduleFor(
 
     ['@test it can have custom classNames']() {
       let FooBarComponent = Component.extend({
-        classNames: ['foo', 'bar']
+        classNames: ['foo', 'bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar}}');
@@ -343,7 +327,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -351,7 +335,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -359,13 +343,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar class=somethingFalsy}}', {
-        somethingFalsy: false
+        somethingFalsy: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: 'ember-view' },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -373,7 +357,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: 'ember-view' },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -381,13 +365,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar class=model.someTruth}}', {
-        model: { someTruth: true }
+        model: { someTruth: true },
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view some-truth') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -395,7 +379,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view some-truth') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'model.someTruth', false));
@@ -403,7 +387,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'model', { someTruth: true }));
@@ -411,7 +395,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view some-truth') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -419,33 +403,33 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar class=(if fooBar "foo-bar")}}', {
-        fooBar: true
+        fooBar: true,
       });
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') }
+        attrs: { class: classes('ember-view foo-bar') },
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') }
+        attrs: { class: classes('ember-view foo-bar') },
       });
 
       this.runTask(() => set(this.context, 'fooBar', false));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello',
-        attrs: { class: classes('ember-view') }
+        attrs: { class: classes('ember-view') },
       });
 
       this.runTask(() => set(this.context, 'fooBar', true));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello',
-        attrs: { class: classes('ember-view foo-bar') }
+        attrs: { class: classes('ember-view foo-bar') },
       });
     }
 
@@ -454,17 +438,13 @@ moduleFor(
         init() {
           this._super();
           this.classNames = this.classNames.slice();
-          this.classNames.push(
-            'foo',
-            'bar',
-            `outside-${this.get('extraClass')}`
-          );
-        }
+          this.classNames.push('foo', 'bar', `outside-${this.get('extraClass')}`);
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar extraClass="baz"}}');
@@ -472,7 +452,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar outside-baz') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -480,18 +460,18 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar outside-baz') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test it can set custom classNames from the invocation']() {
       let FooBarComponent = Component.extend({
-        classNames: ['foo']
+        classNames: ['foo'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render(strip`
@@ -503,17 +483,17 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -521,17 +501,17 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo bar baz') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -542,12 +522,12 @@ moduleFor(
         init() {
           this._super();
           instance = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar}}');
@@ -572,12 +552,12 @@ moduleFor(
         init() {
           this._super();
           fooBarInstance = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: ''
+        template: '',
       });
 
       this.render('{{foo-bar}}');
@@ -600,23 +580,23 @@ moduleFor(
         init() {
           this._super();
           fooBarInstance = this;
-        }
+        },
       });
 
       let FooBarBazComponent = Component.extend({
         init() {
           this._super();
           fooBarBazInstance = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'foo-bar {{foo-bar-baz}}'
+        template: 'foo-bar {{foo-bar-baz}}',
       });
       this.registerComponent('foo-bar-baz', {
         ComponentClass: FooBarBazComponent,
-        template: 'foo-bar-baz'
+        template: 'foo-bar-baz',
       });
 
       this.render('{{foo-bar}}');
@@ -640,13 +620,13 @@ moduleFor(
 
     ['@feature(ember-glimmer-named-arguments) it renders passed named arguments']() {
       this.registerComponent('foo-bar', {
-        template: '{{@foo}}'
+        template: '{{@foo}}',
       });
 
       this.render('{{foo-bar foo=model.bar}}', {
         model: {
-          bar: 'Hola'
-        }
+          bar: 'Hola',
+        },
       });
 
       this.assertText('Hola');
@@ -666,13 +646,13 @@ moduleFor(
 
     ['@test it reflects named arguments as properties']() {
       this.registerComponent('foo-bar', {
-        template: '{{foo}}'
+        template: '{{foo}}',
       });
 
       this.render('{{foo-bar foo=model.bar}}', {
         model: {
-          bar: 'Hola'
-        }
+          bar: 'Hola',
+        },
       });
 
       this.assertText('Hola');
@@ -692,19 +672,19 @@ moduleFor(
 
     ['@test it can render a basic component with a block']() {
       this.registerComponent('foo-bar', {
-        template: '{{yield}} - In component'
+        template: '{{yield}} - In component',
       });
 
       this.render('{{#foo-bar}}hello{{/foo-bar}}');
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component'
+        content: 'hello - In component',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component'
+        content: 'hello - In component',
       });
     }
 
@@ -712,19 +692,19 @@ moduleFor(
       this.registerPartial('_partialWithYield', 'yielded: [{{yield}}]');
 
       this.registerComponent('foo-bar', {
-        template: '{{partial "partialWithYield"}} - In component'
+        template: '{{partial "partialWithYield"}} - In component',
       });
 
       this.render('{{#foo-bar}}hello{{/foo-bar}}');
 
       this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component'
+        content: 'yielded: [hello] - In component',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component'
+        content: 'yielded: [hello] - In component',
       });
     }
 
@@ -732,19 +712,19 @@ moduleFor(
       this.registerPartial('_partialWithYield', 'yielded: [{{yield "hello"}}]');
 
       this.registerComponent('foo-bar', {
-        template: '{{partial "partialWithYield"}} - In component'
+        template: '{{partial "partialWithYield"}} - In component',
       });
 
       this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
 
       this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component'
+        content: 'yielded: [hello] - In component',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component'
+        content: 'yielded: [hello] - In component',
       });
     }
 
@@ -756,12 +736,12 @@ moduleFor(
           this._super();
           instance = this;
           this.set('message', 'hello');
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{message}}'
+        template: '{{message}}',
       });
 
       this.render('{{foo-bar}}');
@@ -810,12 +790,12 @@ moduleFor(
           instance = this;
         },
 
-        name: 'foo-bar'
+        name: 'foo-bar',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{yield this}}'
+        template: '{{yield this}}',
       });
 
       this.render('{{#foo-bar as |component|}}{{component.name}}{{/foo-bar}}');
@@ -841,12 +821,12 @@ moduleFor(
           this._super(...arguments);
           instance = this;
         },
-        greeting: 'hello'
+        greeting: 'hello',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{yield greeting greetee.firstName}}'
+        template: '{{yield greeting greetee.firstName}}',
       });
 
       this.render(
@@ -854,48 +834,48 @@ moduleFor(
         {
           person: {
             firstName: 'Joel',
-            lastName: 'Kang'
-          }
+            lastName: 'Kang',
+          },
         }
       );
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello'
+        content: 'Joel Kang, hello',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello'
+        content: 'Joel Kang, hello',
       });
 
       this.runTask(() =>
         set(this.context, 'person', {
           firstName: 'Dora',
-          lastName: 'the Explorer'
+          lastName: 'the Explorer',
         })
       );
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hello'
+        content: 'Dora the Explorer, hello',
       });
 
       this.runTask(() => set(instance, 'greeting', 'hola'));
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hola'
+        content: 'Dora the Explorer, hola',
       });
 
       this.runTask(() => {
         set(instance, 'greeting', 'hello');
         set(this.context, 'person', {
           firstName: 'Joel',
-          lastName: 'Kang'
+          lastName: 'Kang',
         });
       });
 
       this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello'
+        content: 'Joel Kang, hello',
       });
     }
 
@@ -906,12 +886,12 @@ moduleFor(
           this._super(...arguments);
           instance = this;
         },
-        danger: 0
+        danger: 0,
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{danger}}{{yield danger}}'
+        template: '{{danger}}{{yield danger}}',
       });
 
       // On initial render, create streams. The bug will not have manifested yet, but at this point
@@ -948,8 +928,8 @@ moduleFor(
           willDestroy() {
             this._super();
             destroyed[this.get('id')]++;
-          }
-        })
+          },
+        }),
       });
 
       this.render(
@@ -980,7 +960,7 @@ moduleFor(
           cond2: true,
           cond3: true,
           cond4: true,
-          cond5: true
+          cond5: true,
         }
       );
 
@@ -996,7 +976,7 @@ moduleFor(
         5: 0,
         6: 0,
         7: 0,
-        8: 0
+        8: 0,
       });
 
       this.runTask(() => set(this.context, 'cond5', false));
@@ -1011,7 +991,7 @@ moduleFor(
         5: 1,
         6: 1,
         7: 1,
-        8: 0
+        8: 0,
       });
 
       this.runTask(() => {
@@ -1028,7 +1008,7 @@ moduleFor(
         5: 1,
         6: 1,
         7: 1,
-        8: 1
+        8: 1,
       });
 
       this.runTask(() => {
@@ -1044,7 +1024,7 @@ moduleFor(
         5: 1,
         6: 1,
         7: 1,
-        8: 1
+        8: 1,
       });
     }
 
@@ -1055,12 +1035,12 @@ moduleFor(
           this._super(...arguments);
           component = this;
         },
-        output: 'you need to be more <b>bold</b>'
+        output: 'you need to be more <b>bold</b>',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{output}}'
+        template: '{{output}}',
       });
 
       this.render('{{foo-bar}}');
@@ -1075,9 +1055,7 @@ moduleFor(
 
       this.assertText('you are so <i>super</i>');
 
-      this.runTask(() =>
-        set(component, 'output', 'you need to be more <b>bold</b>')
-      );
+      this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
     }
 
     ['@test should not escape HTML in triple mustaches']() {
@@ -1089,12 +1067,12 @@ moduleFor(
           this._super(...arguments);
           component = this;
         },
-        output: expectedHtmlBold
+        output: expectedHtmlBold,
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{{output}}}'
+        template: '{{{output}}}',
       });
 
       this.render('{{foo-bar}}');
@@ -1123,12 +1101,12 @@ moduleFor(
           this._super(...arguments);
           component = this;
         },
-        output: htmlSafe(expectedHtmlBold)
+        output: htmlSafe(expectedHtmlBold),
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{output}}'
+        template: '{{output}}',
       });
 
       this.render('{{foo-bar}}');
@@ -1139,9 +1117,7 @@ moduleFor(
 
       equalTokens(this.firstChild, expectedHtmlBold);
 
-      this.runTask(() =>
-        set(component, 'output', htmlSafe(expectedHtmlItalic))
-      );
+      this.runTask(() => set(component, 'output', htmlSafe(expectedHtmlItalic)));
 
       equalTokens(this.firstChild, expectedHtmlItalic);
 
@@ -1170,7 +1146,7 @@ moduleFor(
           this._super(...arguments);
           this.layout = this.cond ? hello : bye;
           templateIds.push(this.layout.id);
-        }
+        },
       });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
@@ -1192,7 +1168,7 @@ moduleFor(
         init() {
           this._super(...arguments);
           component = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
@@ -1204,7 +1180,7 @@ moduleFor(
         {{else}}
           false
         {{/if}}
-      `
+      `,
       });
 
       this.render('{{foo-bar}}');
@@ -1225,12 +1201,12 @@ moduleFor(
     }
     ['@test lookup of component takes priority over property']() {
       this.registerComponent('some-component', {
-        template: 'some-component'
+        template: 'some-component',
       });
 
       this.render('{{some-prop}} {{some-component}}', {
         'some-component': 'not-some-component',
-        'some-prop': 'some-prop'
+        'some-prop': 'some-prop',
       });
 
       this.assertText('some-prop some-component');
@@ -1242,11 +1218,11 @@ moduleFor(
 
     ['@test component without dash is not looked up']() {
       this.registerComponent('somecomponent', {
-        template: 'somecomponent'
+        template: 'somecomponent',
       });
 
       this.render('{{somecomponent}}', {
-        somecomponent: 'notsomecomponent'
+        somecomponent: 'notsomecomponent',
       });
 
       this.assertText('notsomecomponent');
@@ -1255,9 +1231,7 @@ moduleFor(
 
       this.assertText('notsomecomponent');
 
-      this.runTask(() =>
-        this.context.set('somecomponent', 'not not notsomecomponent')
-      );
+      this.runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
 
       this.assertText('not not notsomecomponent');
 
@@ -1268,11 +1242,11 @@ moduleFor(
 
     ['@test non-block with properties on attrs']() {
       this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{attrs.someProp}}'
+        template: 'In layout - someProp: {{attrs.someProp}}',
       });
 
       this.render('{{non-block someProp=prop}}', {
-        prop: 'something here'
+        prop: 'something here',
       });
 
       this.assertText('In layout - someProp: something here');
@@ -1292,11 +1266,11 @@ moduleFor(
 
     ['@feature(ember-glimmer-named-arguments) non-block with named argument']() {
       this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{@someProp}}'
+        template: 'In layout - someProp: {{@someProp}}',
       });
 
       this.render('{{non-block someProp=prop}}', {
-        prop: 'something here'
+        prop: 'something here',
       });
 
       this.assertText('In layout - someProp: something here');
@@ -1322,13 +1296,13 @@ moduleFor(
             this._super(...arguments);
             instance = this;
             this.someProp = 'value set in instance';
-          }
+          },
         }),
-        template: 'In layout - someProp: {{someProp}}'
+        template: 'In layout - someProp: {{someProp}}',
       });
 
       this.render('{{non-block someProp=prop}}', {
-        prop: 'something passed when invoked'
+        prop: 'something passed when invoked',
       });
 
       this.assertText('In layout - someProp: value set in instance');
@@ -1337,23 +1311,15 @@ moduleFor(
 
       this.assertText('In layout - someProp: value set in instance');
 
-      this.runTask(() =>
-        this.context.set('prop', 'updated something passed when invoked')
-      );
+      this.runTask(() => this.context.set('prop', 'updated something passed when invoked'));
 
-      this.assertText(
-        'In layout - someProp: updated something passed when invoked'
-      );
+      this.assertText('In layout - someProp: updated something passed when invoked');
 
-      this.runTask(() =>
-        instance.set('someProp', 'update value set in instance')
-      );
+      this.runTask(() => instance.set('someProp', 'update value set in instance'));
 
       this.assertText('In layout - someProp: update value set in instance');
 
-      this.runTask(() =>
-        this.context.set('prop', 'something passed when invoked')
-      );
+      this.runTask(() => this.context.set('prop', 'something passed when invoked'));
       this.runTask(() => instance.set('someProp', 'value set in instance'));
 
       this.assertText('In layout - someProp: value set in instance');
@@ -1370,31 +1336,15 @@ moduleFor(
         callback();
 
         if (willUpdate) {
-          assert.strictEqual(
-            willUpdateCount,
-            1,
-            'The willUpdate hook was fired'
-          );
+          assert.strictEqual(willUpdateCount, 1, 'The willUpdate hook was fired');
         } else {
-          assert.strictEqual(
-            willUpdateCount,
-            0,
-            'The willUpdate hook was not fired'
-          );
+          assert.strictEqual(willUpdateCount, 0, 'The willUpdate hook was not fired');
         }
 
         if (didReceiveAttrs) {
-          assert.strictEqual(
-            didReceiveAttrsCount,
-            1,
-            'The didReceiveAttrs hook was fired'
-          );
+          assert.strictEqual(didReceiveAttrsCount, 1, 'The didReceiveAttrs hook was fired');
         } else {
-          assert.strictEqual(
-            didReceiveAttrsCount,
-            0,
-            'The didReceiveAttrs hook was not fired'
-          );
+          assert.strictEqual(didReceiveAttrsCount, 0, 'The didReceiveAttrs hook was not fired');
         }
       }
 
@@ -1406,14 +1356,14 @@ moduleFor(
 
           willUpdate() {
             willUpdateCount++;
-          }
+          },
         }),
-        template: 'In layout - someProp: {{someProp}}'
+        template: 'In layout - someProp: {{someProp}}',
       });
 
       expectHooks({ willUpdate: false, didReceiveAttrs: true }, () => {
         this.render('{{non-block someProp=someProp}}', {
-          someProp: 'wycats'
+          someProp: 'wycats',
         });
       });
 
@@ -1459,14 +1409,14 @@ moduleFor(
         {{#each items as |item|}}
           {{item}}
         {{/each}}
-      `
+      `,
       });
 
       this.render('{{foo-bar value=model.value items=model.items}}', {
         model: {
           value: 'wat',
-          items: [1, 2, 3]
-        }
+          items: [1, 2, 3],
+        },
       });
 
       this.assertStableRerender();
@@ -1478,9 +1428,7 @@ moduleFor(
 
       this.assertText(strip`Args: lul | lul | lul111`);
 
-      this.runTask(() =>
-        this.context.set('model', { value: 'wat', items: [1, 2, 3] })
-      );
+      this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
       this.assertText('Args: wat | wat | wat123123123');
     }
@@ -1501,14 +1449,14 @@ moduleFor(
         {{#each items as |item|}}
           {{item}}
         {{/each}}
-      `
+      `,
       });
 
       this.render('{{foo-bar value=model.value items=model.items}}', {
         model: {
           value: 'wat',
-          items: [1, 2, 3]
-        }
+          items: [1, 2, 3],
+        },
       });
 
       this.assertStableRerender();
@@ -1520,20 +1468,18 @@ moduleFor(
 
       this.assertText(strip`Args: lul | lul | lul | lul1111`);
 
-      this.runTask(() =>
-        this.context.set('model', { value: 'wat', items: [1, 2, 3] })
-      );
+      this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
       this.assertText('Args: wat | wat | wat | wat123123123123');
     }
 
     ['@test non-block with properties on self']() {
       this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{someProp}}'
+        template: 'In layout - someProp: {{someProp}}',
       });
 
       this.render('{{non-block someProp=prop}}', {
-        prop: 'something here'
+        prop: 'something here',
       });
 
       this.assertText('In layout - someProp: something here');
@@ -1553,7 +1499,7 @@ moduleFor(
 
     ['@test block with properties on self']() {
       this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{someProp}} - {{yield}}'
+        template: 'In layout - someProp: {{someProp}} - {{yield}}',
       });
 
       this.render(
@@ -1562,7 +1508,7 @@ moduleFor(
         In template
       {{/with-block}}`,
         {
-          prop: 'something here'
+          prop: 'something here',
         }
       );
 
@@ -1583,7 +1529,7 @@ moduleFor(
 
     ['@test block with properties on attrs']() {
       this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}'
+        template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
       });
 
       this.render(
@@ -1592,7 +1538,7 @@ moduleFor(
         In template
       {{/with-block}}`,
         {
-          prop: 'something here'
+          prop: 'something here',
         }
       );
 
@@ -1613,7 +1559,7 @@ moduleFor(
 
     ['@feature(ember-glimmer-named-arguments) block with named argument']() {
       this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{@someProp}} - {{yield}}'
+        template: 'In layout - someProp: {{@someProp}} - {{yield}}',
       });
 
       this.render(
@@ -1622,7 +1568,7 @@ moduleFor(
         In template
       {{/with-block}}`,
         {
-          prop: 'something here'
+          prop: 'something here',
         }
       );
 
@@ -1644,12 +1590,12 @@ moduleFor(
     ['@test static arbitrary number of positional parameters'](assert) {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'names'
+          positionalParams: 'names',
         }),
         template: strip`
         {{#each names as |name|}}
           {{name}}
-        {{/each}}`
+        {{/each}}`,
       });
 
       this.render(strip`
@@ -1668,37 +1614,34 @@ moduleFor(
     ['@test arbitrary positional parameter conflict with hash parameter is reported']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'names'
+          positionalParams: 'names',
         }),
         template: strip`
         {{#each names as |name|}}
           {{name}}
-        {{/each}}`
+        {{/each}}`,
       });
 
       expectAssertion(() => {
-        this.render(
-          `{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}`,
-          {
-            numbers: [1, 2, 3]
-          }
-        );
+        this.render(`{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}`, {
+          numbers: [1, 2, 3],
+        });
       }, 'You cannot specify positional parameters and the hash argument `names`.');
     }
 
     ['@test can use hash parameter instead of arbitrary positional param [GH #12444]']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'names'
+          positionalParams: 'names',
         }),
         template: strip`
         {{#each names as |name|}}
           {{name}}
-        {{/each}}`
+        {{/each}}`,
       });
 
       this.render('{{sample-component names=things}}', {
-        things: emberA(['Foo', 4, 'Bar'])
+        things: emberA(['Foo', 4, 'Bar']),
       });
 
       this.assertText('Foo4Bar');
@@ -1727,9 +1670,9 @@ moduleFor(
     ['@test can use hash parameter instead of positional param'](assert) {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['first', 'second']
+          positionalParams: ['first', 'second'],
         }),
-        template: '{{first}} - {{second}}'
+        template: '{{first}} - {{second}}',
       });
 
       // TODO: Fix when id is implemented
@@ -1752,17 +1695,17 @@ moduleFor(
     ['@test dynamic arbitrary number of positional parameters']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'n'
+          positionalParams: 'n',
         }),
         template: strip`
         {{#each n as |name|}}
           {{name}}
-        {{/each}}`
+        {{/each}}`,
       });
 
       this.render(`{{sample-component user1 user2}}`, {
         user1: 'Foo',
-        user2: 4
+        user2: 4,
       });
 
       this.assertText('Foo4');
@@ -1789,11 +1732,11 @@ moduleFor(
 
     ['@test with ariaRole specified']() {
       this.registerComponent('aria-test', {
-        template: 'Here!'
+        template: 'Here!',
       });
 
       this.render('{{aria-test ariaRole=role}}', {
-        role: 'main'
+        role: 'main',
       });
 
       this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
@@ -1805,7 +1748,7 @@ moduleFor(
       this.runTask(() => this.context.set('role', 'input'));
 
       this.assertComponentElement(this.firstChild, {
-        attrs: { role: 'input' }
+        attrs: { role: 'input' },
       });
 
       this.runTask(() => this.context.set('role', 'main'));
@@ -1816,9 +1759,9 @@ moduleFor(
     ['@test `template` specified in component is overridden by block']() {
       this.registerComponent('with-template', {
         ComponentClass: Component.extend({
-          template: compile('Should not be used')
+          template: compile('Should not be used'),
         }),
-        template: '[In layout - {{name}}] {{yield}}'
+        template: '[In layout - {{name}}] {{yield}}',
       });
 
       this.render(
@@ -1828,7 +1771,7 @@ moduleFor(
       {{/with-template}}
       {{with-template name="without-block"}}`,
         {
-          name: 'Whoop, whoop!'
+          name: 'Whoop, whoop!',
         }
       );
 
@@ -1844,9 +1787,7 @@ moduleFor(
 
       this.runTask(() => this.context.set('name', 'Ole, ole'));
 
-      this.assertText(
-        '[In layout - with-block] [In block - Ole, ole][In layout - without-block] '
-      );
+      this.assertText('[In layout - with-block] [In block - Ole, ole][In layout - without-block] ');
 
       this.runTask(() => this.context.set('name', 'Whoop, whoop!'));
 
@@ -1862,7 +1803,7 @@ moduleFor(
           {{yield}}
         {{else}}
           No Block!
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -1884,7 +1825,7 @@ moduleFor(
           {{yield}}
         {{else}}
           No Block!
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render('{{with-block}}');
@@ -1903,7 +1844,7 @@ moduleFor(
           {{yield this}} - In Component
         {{else}}
           {{yield}} No Block!
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -1925,7 +1866,7 @@ moduleFor(
           {{yield this}}
         {{else}}
           {{yield}} No Block Param!
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -1943,9 +1884,9 @@ moduleFor(
     ['@test static named positional parameters']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age']
+          positionalParams: ['name', 'age'],
         }),
-        template: '{{name}}{{age}}'
+        template: '{{name}}{{age}}',
       });
 
       this.render('{{sample-component "Quint" 4}}');
@@ -1960,14 +1901,14 @@ moduleFor(
     ['@test dynamic named positional parameters']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name', 'age']
+          positionalParams: ['name', 'age'],
         }),
-        template: '{{name}}{{age}}'
+        template: '{{name}}{{age}}',
       });
 
       this.render('{{sample-component myName myAge}}', {
         myName: 'Quint',
-        myAge: 4
+        myAge: 4,
       });
 
       this.assertText('Quint4');
@@ -1995,15 +1936,15 @@ moduleFor(
     ['@test if a value is passed as a non-positional parameter, it raises an assertion']() {
       this.registerComponent('sample-component', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['name']
+          positionalParams: ['name'],
         }),
-        template: '{{name}}'
+        template: '{{name}}',
       });
 
       expectDeprecation(() => {
         this.render('{{sample-component notMyName name=myName}}', {
           myName: 'Quint',
-          notMyName: 'Sergio'
+          notMyName: 'Sergio',
         });
       }, 'You cannot specify both a positional param (at position 0) and the hash argument `name`.');
     }
@@ -2015,7 +1956,7 @@ moduleFor(
           Yes:{{yield someValue}}
         {{else}}
           No:{{yield to="inverse"}}
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(
@@ -2026,7 +1967,7 @@ moduleFor(
         Goodbye
       {{/my-if}}`,
         {
-          activated: true
+          activated: true,
         }
       );
 
@@ -2052,7 +1993,7 @@ moduleFor(
           Yes
         {{else}}
           No
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -2072,7 +2013,7 @@ moduleFor(
           Yes
         {{else}}
           No
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -2092,7 +2033,7 @@ moduleFor(
           Yes
         {{else}}
           No
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -2112,7 +2053,7 @@ moduleFor(
           Yes
         {{else}}
           No
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -2132,7 +2073,7 @@ moduleFor(
           Yes
         {{else}}
           No
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -2152,7 +2093,7 @@ moduleFor(
           Yes
         {{else}}
           No
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -2172,7 +2113,7 @@ moduleFor(
           Yes
         {{else}}
           No
-        {{/if}}`
+        {{/if}}`,
       });
 
       this.render(strip`
@@ -2187,27 +2128,15 @@ moduleFor(
 
     ['@test hasBlock expression in an attribute'](assert) {
       this.registerComponent('check-attr', {
-        template: '<button name={{hasBlock}}></button>'
+        template: '<button name={{hasBlock}}></button>',
       });
 
       this.render(strip`
       {{check-attr}}
       {{#check-attr}}{{/check-attr}}`);
 
-      equalsElement(
-        assert,
-        this.$('button')[0],
-        'button',
-        { name: 'false' },
-        ''
-      );
-      equalsElement(
-        assert,
-        this.$('button')[1],
-        'button',
-        { name: 'true' },
-        ''
-      );
+      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+      equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
       this.assertStableRerender();
     }
@@ -2216,7 +2145,7 @@ moduleFor(
       this.registerComponent(
         'check-attr',
         {
-          template: '<button name={{hasBlock "inverse"}}></button>'
+          template: '<button name={{hasBlock "inverse"}}></button>',
         },
         ''
       );
@@ -2225,47 +2154,23 @@ moduleFor(
       {{#check-attr}}{{/check-attr}}
       {{#check-attr}}{{else}}{{/check-attr}}`);
 
-      equalsElement(
-        assert,
-        this.$('button')[0],
-        'button',
-        { name: 'false' },
-        ''
-      );
-      equalsElement(
-        assert,
-        this.$('button')[1],
-        'button',
-        { name: 'true' },
-        ''
-      );
+      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+      equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
       this.assertStableRerender();
     }
 
     ['@test hasBlockParams expression in an attribute'](assert) {
       this.registerComponent('check-attr', {
-        template: '<button name={{hasBlockParams}}></button>'
+        template: '<button name={{hasBlockParams}}></button>',
       });
 
       this.render(strip`
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-      equalsElement(
-        assert,
-        this.$('button')[0],
-        'button',
-        { name: 'false' },
-        ''
-      );
-      equalsElement(
-        assert,
-        this.$('button')[1],
-        'button',
-        { name: 'true' },
-        ''
-      );
+      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+      equalsElement(assert, this.$('button')[1], 'button', { name: 'true' }, '');
 
       this.assertStableRerender();
     }
@@ -2274,7 +2179,7 @@ moduleFor(
       this.registerComponent(
         'check-attr',
         {
-          template: '<button name={{hasBlockParams "inverse"}}></button>'
+          template: '<button name={{hasBlockParams "inverse"}}></button>',
         },
         ''
       );
@@ -2283,27 +2188,15 @@ moduleFor(
       {{#check-attr}}{{/check-attr}}
       {{#check-attr as |something|}}{{/check-attr}}`);
 
-      equalsElement(
-        assert,
-        this.$('button')[0],
-        'button',
-        { name: 'false' },
-        ''
-      );
-      equalsElement(
-        assert,
-        this.$('button')[1],
-        'button',
-        { name: 'false' },
-        ''
-      );
+      equalsElement(assert, this.$('button')[0], 'button', { name: 'false' }, '');
+      equalsElement(assert, this.$('button')[1], 'button', { name: 'false' }, '');
 
       this.assertStableRerender();
     }
 
     ['@test hasBlock as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if hasBlock "true" "false"}}'
+        template: '{{if hasBlock "true" "false"}}',
       });
 
       this.render(strip`
@@ -2318,7 +2211,7 @@ moduleFor(
 
     ['@test hasBlock as an expression param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlock) "true" "false"}}'
+        template: '{{if (hasBlock) "true" "false"}}',
       });
 
       this.render(strip`
@@ -2333,7 +2226,7 @@ moduleFor(
 
     ['@test hasBlock inverse as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlock "inverse") "true" "false"}}'
+        template: '{{if (hasBlock "inverse") "true" "false"}}',
       });
 
       this.render(strip`
@@ -2348,7 +2241,7 @@ moduleFor(
 
     ['@test hasBlockParams as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if hasBlockParams "true" "false"}}'
+        template: '{{if hasBlockParams "true" "false"}}',
       });
 
       this.render(strip`
@@ -2363,7 +2256,7 @@ moduleFor(
 
     ['@test hasBlockParams as an expression param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlockParams) "true" "false"}}'
+        template: '{{if (hasBlockParams) "true" "false"}}',
       });
 
       this.render(strip`
@@ -2378,7 +2271,7 @@ moduleFor(
 
     ['@test hasBlockParams inverse as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlockParams "inverse") "true" "false"}}'
+        template: '{{if (hasBlockParams "inverse") "true" "false"}}',
       });
 
       this.render(strip`
@@ -2401,9 +2294,9 @@ moduleFor(
           init() {
             this._super(...arguments);
             outer = this;
-          }
+          },
         }),
-        template: '{{x-inner-in-layout}}{{yield}}'
+        template: '{{x-inner-in-layout}}{{yield}}',
       });
 
       this.registerComponent('x-inner-in-template', {
@@ -2411,8 +2304,8 @@ moduleFor(
           init() {
             this._super(...arguments);
             innerTemplate = this;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('x-inner-in-layout', {
@@ -2420,8 +2313,8 @@ moduleFor(
           init() {
             this._super(...arguments);
             innerLayout = this;
-          }
-        })
+          },
+        }),
       });
 
       this.render('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}');
@@ -2469,8 +2362,8 @@ moduleFor(
           init() {
             this._super(...arguments);
             outer = this;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('x-inner', {
@@ -2478,8 +2371,8 @@ moduleFor(
           init() {
             this._super(...arguments);
             inner = this;
-          }
-        })
+          },
+        }),
       });
 
       this.render(
@@ -2490,7 +2383,7 @@ moduleFor(
         {{/if}}
       {{/x-outer}}`,
         {
-          showInner: false
+          showInner: false,
         }
       );
 
@@ -2539,9 +2432,9 @@ moduleFor(
             this._super(...arguments);
             outer = this;
           },
-          value: 1
+          value: 1,
         }),
-        template: '{{#x-middle}}{{x-inner value=value}}{{/x-middle}}'
+        template: '{{#x-middle}}{{x-inner value=value}}{{/x-middle}}',
       });
 
       this.registerComponent('x-middle', {
@@ -2550,9 +2443,9 @@ moduleFor(
             this._super(...arguments);
             middle = this;
           },
-          value: null
+          value: null,
         }),
-        template: '<div id="middle-value">{{value}}</div>{{yield}}'
+        template: '<div id="middle-value">{{value}}</div>{{yield}}',
       });
 
       this.registerComponent('x-inner', {
@@ -2560,18 +2453,14 @@ moduleFor(
           value: null,
           pushDataUp: observer('value', function() {
             middle.set('value', this.get('value'));
-          })
+          }),
         }),
-        template: '<div id="inner-value">{{value}}</div>'
+        template: '<div id="inner-value">{{value}}</div>',
       });
 
       this.render('{{x-outer}}');
 
-      assert.equal(
-        this.$('#inner-value').text(),
-        '1',
-        'initial render of inner'
-      );
+      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
       assert.equal(
         this.$('#middle-value').text(),
         '',
@@ -2580,11 +2469,7 @@ moduleFor(
 
       this.runTask(() => this.rerender());
 
-      assert.equal(
-        this.$('#inner-value').text(),
-        '1',
-        'initial render of inner'
-      );
+      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
       assert.equal(
         this.$('#middle-value').text(),
         '',
@@ -2602,10 +2487,10 @@ moduleFor(
       this.registerComponent('x-outer', {
         ComponentClass: Component.extend({
           value: 1,
-          wrapper: EmberObject.create({ content: null })
+          wrapper: EmberObject.create({ content: null }),
         }),
         template:
-          '<div id="outer-value">{{wrapper.content}}</div> {{x-inner value=value wrapper=wrapper}}'
+          '<div id="outer-value">{{wrapper.content}}</div> {{x-inner value=value wrapper=wrapper}}',
       });
 
       this.registerComponent('x-inner', {
@@ -2613,9 +2498,9 @@ moduleFor(
           didReceiveAttrs() {
             this.get('wrapper').set('content', this.get('value'));
           },
-          value: null
+          value: null,
         }),
-        template: '<div id="inner-value">{{wrapper.content}}</div>'
+        template: '<div id="inner-value">{{wrapper.content}}</div>',
       });
 
       let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <.+?> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
@@ -2630,11 +2515,11 @@ moduleFor(
         template: strip`
         In layout. {{#each items as |item|}}
           [{{child-non-block item=item}}]
-        {{/each}}`
+        {{/each}}`,
       });
 
       this.registerComponent('child-non-block', {
-        template: 'Child: {{item}}.'
+        template: 'Child: {{item}}.',
       });
 
       let items = emberA(['Tom', 'Dick', 'Harry']);
@@ -2649,19 +2534,13 @@ moduleFor(
 
       this.runTask(() => this.context.get('items').pushObject('Sergio'));
 
-      this.assertText(
-        'In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]'
-      );
+      this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
       this.runTask(() => this.context.get('items').shiftObject());
 
-      this.assertText(
-        'In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]'
-      );
+      this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      this.runTask(() =>
-        this.context.set('items', emberA(['Tom', 'Dick', 'Harry']))
-      );
+      this.runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
     }
@@ -2670,8 +2549,8 @@ moduleFor(
       this.registerComponent('some-clicky-thing', {
         ComponentClass: Component.extend({
           tagName: 'button',
-          classNames: ['foo', 'bar']
-        })
+          classNames: ['foo', 'bar'],
+        }),
       });
 
       this.render(strip`
@@ -2691,22 +2570,20 @@ moduleFor(
       // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined');
       this.assertComponentElement(this.firstChild, {
         tagName: 'button',
-        attrs: { class: classes(expectedClassNames.join(' ')) }
+        attrs: { class: classes(expectedClassNames.join(' ')) },
       });
 
       this.runTask(() => this.rerender());
 
       assert.ok(
         this.$('button').is('.foo.bar.baz.ember-view'),
-        `the element has the correct classes: ${this.$('button').attr(
-          'class'
-        )} (rerender)`
+        `the element has the correct classes: ${this.$('button').attr('class')} (rerender)`
       );
       // `ember-view` is no longer in classNames.
       // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined (rerender)');
       this.assertComponentElement(this.firstChild, {
         tagName: 'button',
-        attrs: { class: classes(expectedClassNames.join(' ')) }
+        attrs: { class: classes(expectedClassNames.join(' ')) },
       });
     }
 
@@ -2714,13 +2591,13 @@ moduleFor(
       this.registerComponent('some-clicky-thing', {
         ComponentClass: Component.extend({
           concatenatedProperties: ['blahzz'],
-          blahzz: ['blark', 'pory']
+          blahzz: ['blark', 'pory'],
         }),
         template: strip`
         {{#each blahzz as |p|}}
           {{p}}
         {{/each}}
-        - {{yield}}`
+        - {{yield}}`,
       });
 
       this.render(strip`
@@ -2741,17 +2618,17 @@ moduleFor(
         init() {
           this._super(...arguments);
           component = this;
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
 
-        template: '{{bar}}'
+        template: '{{bar}}',
       });
 
       this.render('{{localBar}} - {{foo-bar bar=localBar}}', {
-        localBar: 'initial value'
+        localBar: 'initial value',
       });
 
       this.assertText('initial value - initial value');
@@ -2803,18 +2680,18 @@ moduleFor(
           set(key, value) {
             this._bar = value;
             return this._bar;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
 
-        template: '{{bar}}'
+        template: '{{bar}}',
       });
 
       this.render('{{localBar}} - {{foo-bar bar=localBar}}', {
-        localBar: 'initial value'
+        localBar: 'initial value',
       });
 
       this.assertText('initial value - initial value');
@@ -2852,17 +2729,17 @@ moduleFor(
           set(key, value) {
             this._bar = value;
             return this._bar;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: ''
+        template: '',
       });
 
       this.render('{{localBar}}{{foo-bar bar=localBar}}', {
-        localBar: 'initial value'
+        localBar: 'initial value',
       });
 
       this.assertText('initial value');
@@ -2893,15 +2770,15 @@ moduleFor(
             this._super(...arguments);
             service = this;
           },
-          last: 'Jackson'
+          last: 'Jackson',
         })
       );
 
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          name: inject.service()
+          name: inject.service(),
         }),
-        template: '{{name.last}}'
+        template: '{{name.last}}',
       });
 
       this.render('{{foo-bar}}');
@@ -2928,8 +2805,8 @@ moduleFor(
     ['@test injecting an unknown service raises an exception']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          missingService: inject.service()
-        })
+          missingService: inject.service(),
+        }),
       });
 
       expectAssertion(() => {
@@ -2940,8 +2817,8 @@ moduleFor(
     ['@test throws if `this._super` is not called from `init`']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          init() {}
-        })
+          init() {},
+        }),
       });
 
       expectAssertion(() => {
@@ -2958,16 +2835,16 @@ moduleFor(
           result: matcher.match(actual),
           message: matcher.message(),
           actual,
-          expected
+          expected,
         });
       };
 
       this.registerComponent('foo-bar', {
-        template: `<p>foo</p>`
+        template: `<p>foo</p>`,
       });
 
       this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false
+        visible: false,
       });
 
       assertStyle('display: none;');
@@ -2989,19 +2866,19 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
           attributeBindings: ['style'],
-          style: htmlSafe('color: blue;')
+          style: htmlSafe('color: blue;'),
         }),
 
-        template: `<p>foo</p>`
+        template: `<p>foo</p>`,
       });
 
       this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false
+        visible: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') }
+        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') },
       });
 
       this.assertStableRerender();
@@ -3012,7 +2889,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue;') }
+        attrs: { id: 'foo-bar', style: styles('color: blue;') },
       });
 
       this.runTask(() => {
@@ -3021,7 +2898,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') }
+        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') },
       });
     }
 
@@ -3036,21 +2913,21 @@ moduleFor(
           result: matcher.match(actual),
           message: matcher.message(),
           actual,
-          expected
+          expected,
         });
       };
 
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
           attributeBindings: ['foo'],
-          foo: 'bar'
+          foo: 'bar',
         }),
-        template: `<p>foo</p>`
+        template: `<p>foo</p>`,
       });
 
       this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
         visible: false,
-        foo: 'baz'
+        foo: 'baz',
       });
 
       assertStyle('display: none;');
@@ -3076,14 +2953,8 @@ moduleFor(
       let component;
       let assertElement = expectedValue => {
         // value is a property, not an attribute
-        this.assertHTML(
-          `<input class="ember-view" id="${component.elementId}">`
-        );
-        this.assert.equal(
-          this.firstChild.value,
-          expectedValue,
-          'value property is correct'
-        );
+        this.assertHTML(`<input class="ember-view" id="${component.elementId}">`);
+        this.assert.equal(this.firstChild.value, expectedValue, 'value property is correct');
         this.assert.equal(
           get(component, 'value'),
           expectedValue,
@@ -3104,12 +2975,12 @@ moduleFor(
           change() {
             let value = this.readDOMAttr('value');
             this.set('value', value);
-          }
-        })
+          },
+        }),
       });
 
       this.render('{{one-way-input value=value}}', {
-        value: 'foo'
+        value: 'foo',
       });
 
       assertElement('foo');
@@ -3169,10 +3040,10 @@ moduleFor(
             this.get('options').removeObject(option);
 
             this.updateValue();
-          }
+          },
         }),
 
-        template: '{{yield this}}'
+        template: '{{yield this}}',
       });
 
       this.registerComponent('x-option', {
@@ -3193,8 +3064,8 @@ moduleFor(
           willDestroyElement() {
             this._super(...arguments);
             this.get('select').unregisterOption(this);
-          }
-        })
+          },
+        }),
       });
 
       this.render(strip`
@@ -3209,9 +3080,7 @@ moduleFor(
       this.assert.ok(true, 'no errors during teardown');
     }
 
-    ['@test setting a property in willDestroyElement does not assert (GH#14273)'](
-      assert
-    ) {
+    ['@test setting a property in willDestroyElement does not assert (GH#14273)'](assert) {
       assert.expect(2);
 
       this.registerComponent('foo-bar', {
@@ -3225,10 +3094,10 @@ moduleFor(
             this.set('showFoo', false);
             assert.ok(true, 'willDestroyElement was fired');
             this._super(...arguments);
-          }
+          },
         }),
 
-        template: `{{#if showFoo}}things{{/if}}`
+        template: `{{#if showFoo}}things{{/if}}`,
       });
 
       this.render(`{{foo-bar}}`);
@@ -3243,8 +3112,8 @@ moduleFor(
         ComponentClass: Component.extend({
           foo: on('didInitAttrs', function() {
             assert.ok(true, 'should fire `didInitAttrs` event');
-          })
-        })
+          }),
+        }),
       });
 
       expectDeprecation(() => {
@@ -3257,8 +3126,8 @@ moduleFor(
         ComponentClass: Component.extend({
           foo: on('didInitAttrs', function() {
             assert.ok(true, 'should fire `didInitAttrs` event');
-          })
-        })
+          }),
+        }),
       });
 
       expectAssertion(() => {
@@ -3266,9 +3135,7 @@ moduleFor(
       }, /didInitAttrs called/);
     }
 
-    ['@test didReceiveAttrs fires after .init() but before observers become active'](
-      assert
-    ) {
+    ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
       let barCopyDidChangeCount = 0;
 
       this.registerComponent('foo-bar', {
@@ -3279,55 +3146,40 @@ moduleFor(
           },
 
           didReceiveAttrs() {
-            assert.ok(
-              this.didInit,
-              'expected init to have run before didReceiveAttrs'
-            );
+            assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
             this.set('barCopy', this.attrs.bar.value + 1);
           },
 
           barCopyDidChange: observer('barCopy', () => {
             barCopyDidChangeCount++;
-          })
+          }),
         }),
 
-        template: '{{bar}}-{{barCopy}}'
+        template: '{{bar}}-{{barCopy}}',
       });
 
       this.render(`{{foo-bar bar=bar}}`, { bar: 3 });
 
       this.assertText('3-4');
 
-      assert.strictEqual(
-        barCopyDidChangeCount,
-        1,
-        'expected observer firing for: barCopy'
-      );
+      assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
 
       this.runTask(() => set(this.context, 'bar', 7));
 
       this.assertText('7-8');
 
-      assert.strictEqual(
-        barCopyDidChangeCount,
-        2,
-        'expected observer firing for: barCopy'
-      );
+      assert.strictEqual(barCopyDidChangeCount, 2, 'expected observer firing for: barCopy');
     }
 
     ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
           didReceiveAttrs() {
-            assert.equal(
-              1,
-              this.get('foo'),
-              'expected attrs to have correct value'
-            );
-          }
+            assert.equal(1, this.get('foo'), 'expected attrs to have correct value');
+          },
         }),
 
-        template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+        template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}',
       });
 
       this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
@@ -3337,15 +3189,11 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
           didUpdateAttrs() {
-            assert.equal(
-              5,
-              this.get('foo'),
-              'expected newAttrs to have new value'
-            );
-          }
+            assert.equal(5, this.get('foo'), 'expected newAttrs to have new value');
+          },
         }),
 
-        template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}'
+        template: '{{foo}}-{{fooCopy}}-{{bar}}-{{barCopy}}',
       });
 
       this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
@@ -3362,20 +3210,17 @@ moduleFor(
             show() {
               assert.ok(true, 'display-toggle show action was called');
               return true;
-            }
-          }
+            },
+          },
         }),
 
-        template: `<button {{action 'show'}}>Show</button>`
+        template: `<button {{action 'show'}}>Show</button>`,
       });
 
       this.render(`{{display-toggle}}`, {
         send() {
-          assert.notOk(
-            true,
-            'send should not be called when action is not "subscribed" to'
-          );
-        }
+          assert.notOk(true, 'send should not be called when action is not "subscribed" to');
+        },
       });
 
       this.assertText('Show');
@@ -3383,9 +3228,7 @@ moduleFor(
       this.runTask(() => this.$('button').click());
     }
 
-    ['@test returning `true` from an action bubbles to the `target` if specified'](
-      assert
-    ) {
+    ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
       assert.expect(4);
 
       this.registerComponent('display-toggle', {
@@ -3394,21 +3237,18 @@ moduleFor(
             show() {
               assert.ok(true, 'display-toggle show action was called');
               return true;
-            }
-          }
+            },
+          },
         }),
 
-        template: `<button {{action 'show'}}>Show</button>`
+        template: `<button {{action 'show'}}>Show</button>`,
       });
 
       this.render(`{{display-toggle target=this}}`, {
         send(actionName) {
-          assert.ok(
-            true,
-            'send should be called when action is "subscribed" to'
-          );
+          assert.ok(true, 'send should be called when action is "subscribed" to');
           assert.equal(actionName, 'show');
-        }
+        },
       });
 
       this.assertText('Show');
@@ -3449,16 +3289,14 @@ moduleFor(
             );
           }),
 
-          listenerForSomeTruthyProperty: on('someTruthyProperty', function(
-            ...data
-          ) {
+          listenerForSomeTruthyProperty: on('someTruthyProperty', function(...data) {
             assert.deepEqual(
               data,
               payload,
               'the listener `listenerForSomeTruthyProperty` should be called, when `someTruthyProperty` is triggered'
             );
-          })
-        })
+          }),
+        }),
       });
 
       this.render(`{{evented-component}}`);
@@ -3466,7 +3304,7 @@ moduleFor(
 
     ['@test component yielding in an {{#each}} has correct block values after rerendering (GH#14284)']() {
       this.registerComponent('list-items', {
-        template: `{{#each items as |item|}}{{yield item}}{{/each}}`
+        template: `{{#each items as |item|}}{{yield item}}{{/each}}`,
       });
 
       this.render(
@@ -3481,7 +3319,7 @@ moduleFor(
     `,
         {
           editMode: false,
-          items: ['foo', 'bar', 'qux', 'baz']
+          items: ['foo', 'bar', 'qux', 'baz'],
         }
       );
 
@@ -3491,9 +3329,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'editMode', true));
 
-      this.assertText(
-        '|foo|Remove foo|bar|Remove bar|qux|Remove qux|baz|Remove baz'
-      );
+      this.assertText('|foo|Remove foo|bar|Remove bar|qux|Remove qux|baz|Remove baz');
 
       this.runTask(() => set(this.context, 'editMode', false));
 
@@ -3502,7 +3338,7 @@ moduleFor(
 
     ['@test unimplimented positionalParams do not cause an error GH#14416']() {
       this.registerComponent('foo-bar', {
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar wat}}');
@@ -3514,10 +3350,9 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: MyComponent.reopenClass({
-          positionalParams: ['myVar']
+          positionalParams: ['myVar'],
         }),
-        template:
-          'MyVar1: {{attrs.myVar}} {{myVar}} MyVar2: {{myVar2}} {{attrs.myVar2}}'
+        template: 'MyVar1: {{attrs.myVar}} {{myVar}} MyVar2: {{myVar2}} {{attrs.myVar2}}',
       });
 
       this.render('{{foo-bar 1 myVar2=2}}');
@@ -3530,9 +3365,9 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: MyComponent.reopenClass({
-          positionalParams: ['myVar']
+          positionalParams: ['myVar'],
         }),
-        template: 'MyVar1: {{@myVar}} {{myVar}} MyVar2: {{myVar2}} {{@myVar2}}'
+        template: 'MyVar1: {{@myVar}} {{myVar}} MyVar2: {{myVar2}} {{@myVar2}}',
       });
 
       this.render('{{foo-bar 1 myVar2=2}}');
@@ -3545,9 +3380,9 @@ moduleFor(
         ComponentClass: Component.extend({
           toString() {
             return 'special sauce goes here!';
-          }
+          },
         }),
-        template: '{{this}}'
+        template: '{{this}}',
       });
 
       this.render('{{foo-bar}}');
@@ -3567,11 +3402,11 @@ moduleFor(
 
           foo: {
             bar: {
-              baz: 'huzzah!'
-            }
-          }
+              baz: 'huzzah!',
+            },
+          },
         }),
-        template: '{{this.foo.bar.baz}}'
+        template: '{{this.foo.bar.baz}}',
       });
 
       this.render('{{foo-bar}}');
@@ -3591,7 +3426,7 @@ moduleFor(
 
     ['@test can use custom element in component layout']() {
       this.registerComponent('foo-bar', {
-        template: '<blah-zorz>Hi!</blah-zorz>'
+        template: '<blah-zorz>Hi!</blah-zorz>',
       });
 
       this.render('{{foo-bar}}');
@@ -3601,7 +3436,7 @@ moduleFor(
 
     ['@test can use nested custom element in component layout']() {
       this.registerComponent('foo-bar', {
-        template: '<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>'
+        template: '<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>',
       });
 
       this.render('{{foo-bar}}');
@@ -3612,10 +3447,10 @@ moduleFor(
     ['@feature(!ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'things'
+          positionalParams: 'things',
         }),
         // using `attrs` here to simulate `@things.length`
-        template: `{{attrs.things.length}}`
+        template: `{{attrs.things.length}}`,
       });
 
       this.render('{{foo-bar "foo" "bar" "baz"}}');
@@ -3626,9 +3461,9 @@ moduleFor(
     ['@feature(ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'things'
+          positionalParams: 'things',
         }),
-        template: `{{@things.length}}`
+        template: `{{@things.length}}`,
       });
 
       this.render('{{foo-bar "foo" "bar" "baz"}}');
@@ -3667,12 +3502,12 @@ if (jQueryDisabled) {
           init() {
             this._super();
             instance = this;
-          }
+          },
         });
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: 'hello'
+          template: 'hello',
         });
 
         this.render('{{foo-bar}}');
@@ -3694,12 +3529,12 @@ if (jQueryDisabled) {
           init() {
             this._super();
             instance = this;
-          }
+          },
         });
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: 'hello'
+          template: 'hello',
         });
 
         this.render('{{foo-bar}}');
@@ -3724,12 +3559,12 @@ if (jQueryDisabled) {
           init() {
             this._super();
             instance = this;
-          }
+          },
         });
 
         this.registerComponent('foo-bar', {
           ComponentClass: FooBarComponent,
-          template: '<span class="inner">inner</span>'
+          template: '<span class="inner">inner</span>',
         });
 
         this.render('<span class="outer">outer</span>{{foo-bar}}');

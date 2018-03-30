@@ -31,7 +31,7 @@ moduleFor(
       this.owner.register(
         'controller:basic',
         Controller.extend({
-          isBasicController: true
+          isBasicController: true,
         })
       );
       this.registerTemplate('home', '{{isBasicController}}');
@@ -54,10 +54,7 @@ moduleFor(
     }
 
     ['@test should use controller with the same name as template if present']() {
-      this.owner.register(
-        'controller:home',
-        Controller.extend({ name: 'home' })
-      );
+      this.owner.register('controller:home', Controller.extend({ name: 'home' }));
       this.registerTemplate('home', '{{name}}<p>BYE</p>');
 
       expectDeprecation(() => {
@@ -101,7 +98,7 @@ moduleFor(
         Controller.extend({
           init() {
             this.set('title', `It's Simple Made Easy`);
-          }
+          },
         })
       );
       this.registerTemplate('post', '<p>{{title}}</p>');
@@ -140,56 +137,39 @@ moduleFor(
           willDestroy() {
             this._super(...arguments);
             willDestroyFired++;
-          }
+          },
         })
       );
 
       this.registerTemplate('post', '<p>{{title}}</p>');
 
       expectDeprecation(() => {
-        this.render(
-          `{{#if showPost}}{{render 'post'}}{{else}}Nothing here{{/if}}`,
-          { showPost: false }
-        );
+        this.render(`{{#if showPost}}{{render 'post'}}{{else}}Nothing here{{/if}}`, {
+          showPost: false,
+        });
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
       this.assertText(`Nothing here`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        0,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
 
       this.runTask(() => this.rerender());
 
       this.assertText(`Nothing here`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        0,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
 
       this.runTask(() => set(this.context, 'showPost', true));
 
       this.assertText(`It's Simple Made Easy`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        0,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
 
       this.runTask(() => set(this.context, 'showPost', false));
 
       this.assertText(`Nothing here`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        0,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
     }
 
     ['@test should render given template with a supplied model']() {
@@ -199,8 +179,8 @@ moduleFor(
       expectDeprecation(() => {
         this.render(`<h1>HI</h1>{{render 'post' post}}`, {
           post: {
-            title: `It's Simple Made Easy`
-          }
+            title: `It's Simple Made Easy`,
+          },
         });
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -214,9 +194,7 @@ moduleFor(
 
       this.assertText(`HIRails is omakase`);
 
-      this.runTask(() =>
-        set(this.context, 'post', { title: `It's Simple Made Easy` })
-      );
+      this.runTask(() => set(this.context, 'post', { title: `It's Simple Made Easy` }));
 
       this.assertText(`HIIt's Simple Made Easy`);
     }
@@ -230,51 +208,36 @@ moduleFor(
           willDestroy() {
             this._super(...arguments);
             willDestroyFired++;
-          }
+          },
         })
       );
 
       this.registerTemplate('post', '<p>{{model.title}}</p>');
 
       expectDeprecation(() => {
-        this.render(
-          `{{#if showPost}}{{render 'post' post}}{{else}}Nothing here{{/if}}`,
-          {
-            showPost: false,
-            post: {
-              title: `It's Simple Made Easy`
-            }
-          }
-        );
+        this.render(`{{#if showPost}}{{render 'post' post}}{{else}}Nothing here{{/if}}`, {
+          showPost: false,
+          post: {
+            title: `It's Simple Made Easy`,
+          },
+        });
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
       this.assertText(`Nothing here`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        0,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
 
       this.runTask(() => this.rerender());
 
       this.assertText(`Nothing here`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        0,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
 
       this.runTask(() => set(this.context, 'showPost', true));
 
       this.assertText(`It's Simple Made Easy`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        0,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 0, 'it did not destroy the controller');
 
       this.runTask(() => set(this.context, 'showPost', false));
 
@@ -286,11 +249,7 @@ moduleFor(
 
       this.assertText(`It's Simple Made Easy`);
 
-      assert.strictEqual(
-        willDestroyFired,
-        1,
-        'it did not destroy the controller'
-      );
+      assert.strictEqual(willDestroyFired, 1, 'it did not destroy the controller');
 
       this.runTask(() => set(this.context, 'showPost', false));
 
@@ -299,9 +258,7 @@ moduleFor(
       assert.strictEqual(willDestroyFired, 2, 'it did destroy the controller');
     }
 
-    ['@test with a supplied model should not fire observers on the controller'](
-      assert
-    ) {
+    ['@test with a supplied model should not fire observers on the controller'](assert) {
       this.owner.register('controller:post', Controller.extend());
       this.registerTemplate('post', '<p>{{model.title}}</p>');
 
@@ -312,8 +269,8 @@ moduleFor(
             postDidChange++;
           }),
           post: {
-            title: `It's Simple Made Easy`
-          }
+            title: `It's Simple Made Easy`,
+          },
         });
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -349,7 +306,7 @@ moduleFor(
             this._super(...arguments);
             this.uniqueId = id++;
             this.set('model', model);
-          }
+          },
         })
       );
 
@@ -377,17 +334,14 @@ moduleFor(
 
       this.registerTemplate('post', '<p>{{model.title}}</p>');
       expectDeprecation(() => {
-        this.render(
-          `<h1>HI</h1> {{render 'post' post1}} {{render 'post' post2}}`,
-          {
-            post1: {
-              title: 'Me First'
-            },
-            post2: {
-              title: 'Then me'
-            }
-          }
-        );
+        this.render(`<h1>HI</h1> {{render 'post' post1}} {{render 'post' post2}}`, {
+          post1: {
+            title: 'Me First',
+          },
+          post2: {
+            title: 'Then me',
+          },
+        });
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
       this.assertText('HI Me First Then me');
@@ -405,24 +359,16 @@ moduleFor(
       this.assertText('HI Me First Then me');
     }
 
-    ['@test should not treat invocations with falsy contexts as context-less'](
-      assert
-    ) {
-      this.registerTemplate(
-        'post',
-        '<p>{{#unless model.zero}}NOTHING{{/unless}}</p>'
-      );
+    ['@test should not treat invocations with falsy contexts as context-less'](assert) {
+      this.registerTemplate('post', '<p>{{#unless model.zero}}NOTHING{{/unless}}</p>');
       this.owner.register('controller:post', Controller.extend());
 
       expectDeprecation(() => {
-        this.render(
-          `<h1>HI</h1> {{render 'post' zero}} {{render 'post' nonexistent}}`,
-          {
-            model: {
-              zero: false
-            }
-          }
-        );
+        this.render(`<h1>HI</h1> {{render 'post' zero}} {{render 'post' nonexistent}}`, {
+          model: {
+            zero: false,
+          },
+        });
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
       assert.ok(
@@ -437,11 +383,11 @@ moduleFor(
       this.owner.register('controller:post', Controller.extend());
 
       let post = {
-        title: 'Rails is omakase'
+        title: 'Rails is omakase',
       };
       expectDeprecation(() => {
         this.render(`<h1>HI</h1> {{render 'post'}} {{render 'post' post}}`, {
-          post
+          post,
         });
       }, /Please refactor [\w\{\}"` ]+ to a component/);
 
@@ -467,9 +413,7 @@ moduleFor(
           .match(/^HI ?Title: ?Title:Simple Made Easy$/)
       );
 
-      this.runTask(() =>
-        set(this.context, 'post', { title: 'Rails is omakase' })
-      );
+      this.runTask(() => set(this.context, 'post', { title: 'Rails is omakase' }));
 
       assert.ok(
         this.$()
@@ -488,7 +432,7 @@ moduleFor(
           init() {
             this._super(...arguments);
             this.uniqueId = id++;
-          }
+          },
         })
       );
 
@@ -512,8 +456,8 @@ moduleFor(
       expectAssertion(() => {
         this.render('<h1>HI</h1>{{render "home" "model"}}', {
           model: {
-            title: 'Simple Made Easy'
-          }
+            title: 'Simple Made Easy',
+          },
         });
       }, 'The second argument of {{render}} must be a path, e.g. {{render "post" post}}.');
     }
@@ -529,7 +473,7 @@ moduleFor(
           init() {
             this._super(...arguments);
             postController = this;
-          }
+          },
         })
       );
 
@@ -537,7 +481,7 @@ moduleFor(
         send(actionName) {
           assert.equal(actionName, 'someAction');
           assert.ok(true, 'routerStub#send called');
-        }
+        },
       };
 
       this.owner.register('router:main', routerStub, { instantiate: false });
@@ -557,7 +501,7 @@ moduleFor(
           propertyWithError: computed(function() {
             this.set('model.name', 'this will cause a backtracking error');
             return 'foo';
-          })
+          }),
         })
       );
 
@@ -566,10 +510,7 @@ moduleFor(
       expectDeprecation(() => {
         let person = { name: 'Ben' };
 
-        this.registerTemplate(
-          'outer',
-          `Hi {{model.name}} | {{render 'inner' model}}`
-        );
+        this.registerTemplate('outer', `Hi {{model.name}} | {{render 'inner' model}}`);
         this.registerTemplate('inner', `Hi {{propertyWithError}}`);
 
         expectAssertion(() => {

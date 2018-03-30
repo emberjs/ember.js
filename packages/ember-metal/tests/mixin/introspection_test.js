@@ -7,24 +7,24 @@ import { mixin, Mixin } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const PrivateProperty = Mixin.create({
-  _foo: '_FOO'
+  _foo: '_FOO',
 });
 const PublicProperty = Mixin.create({
-  foo: 'FOO'
+  foo: 'FOO',
 });
 const PrivateMethod = Mixin.create({
-  _fooMethod() {}
+  _fooMethod() {},
 });
 const PublicMethod = Mixin.create({
-  fooMethod() {}
+  fooMethod() {},
 });
 const BarProperties = Mixin.create({
   _bar: '_BAR',
-  bar: 'bar'
+  bar: 'bar',
 });
 const BarMethods = Mixin.create({
   _barMethod() {},
-  barMethod() {}
+  barMethod() {},
 });
 
 const Combined = Mixin.create(BarProperties, BarMethods);
@@ -36,14 +36,7 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       obj = {};
-      mixin(
-        obj,
-        PrivateProperty,
-        PublicProperty,
-        PrivateMethod,
-        PublicMethod,
-        Combined
-      );
+      mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
     }
 
     ['@test Ember.mixins()'](assert) {
@@ -60,7 +53,7 @@ moduleFor(
           PublicMethod,
           Combined,
           BarProperties,
-          BarMethods
+          BarMethods,
         ]),
         'should return included mixins'
       );

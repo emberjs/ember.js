@@ -11,8 +11,8 @@ export default function transformOldClassBindingSyntax(env) {
 
       BlockStatement(node) {
         process(b, node);
-      }
-    }
+      },
+    },
   };
 }
 

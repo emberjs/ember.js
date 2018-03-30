@@ -23,32 +23,16 @@ function testMap(nameAndFunc) {
         map.set(number, 'winning');
         map.set(string, 'winning');
 
-        mapHasEntries(assert, [
-          [object, 'winning'],
-          [number, 'winning'],
-          [string, 'winning']
-        ]);
+        mapHasEntries(assert, [[object, 'winning'], [number, 'winning'], [string, 'winning']]);
 
         map.set(object, 'losing');
         map.set(number, 'losing');
         map.set(string, 'losing');
 
-        mapHasEntries(assert, [
-          [object, 'losing'],
-          [number, 'losing'],
-          [string, 'losing']
-        ]);
+        mapHasEntries(assert, [[object, 'losing'], [number, 'losing'], [string, 'losing']]);
 
-        assert.equal(
-          map.has('nope'),
-          false,
-          'expected the key `nope` to not be present'
-        );
-        assert.equal(
-          map.has({}),
-          false,
-          'expected they key `{}` to not be present'
-        );
+        assert.equal(map.has('nope'), false, 'expected the key `nope` to not be present');
+        assert.equal(map.has({}), false, 'expected they key `{}` to not be present');
       }
 
       ['@test set chaining'](assert) {
@@ -57,33 +41,17 @@ function testMap(nameAndFunc) {
           .set(number, 'winning')
           .set(string, 'winning');
 
-        mapHasEntries(assert, [
-          [object, 'winning'],
-          [number, 'winning'],
-          [string, 'winning']
-        ]);
+        mapHasEntries(assert, [[object, 'winning'], [number, 'winning'], [string, 'winning']]);
 
         map
           .set(object, 'losing')
           .set(number, 'losing')
           .set(string, 'losing');
 
-        mapHasEntries(assert, [
-          [object, 'losing'],
-          [number, 'losing'],
-          [string, 'losing']
-        ]);
+        mapHasEntries(assert, [[object, 'losing'], [number, 'losing'], [string, 'losing']]);
 
-        assert.equal(
-          map.has('nope'),
-          false,
-          'expected the key `nope` to not be present'
-        );
-        assert.equal(
-          map.has({}),
-          false,
-          'expected they key `{}` to not be present'
-        );
+        assert.equal(map.has('nope'), false, 'expected the key `nope` to not be present');
+        assert.equal(map.has({}), false, 'expected they key `{}` to not be present');
       }
 
       ['@test with key with undefined value'](assert) {
@@ -100,21 +68,11 @@ function testMap(nameAndFunc) {
       }
 
       ['@test arity of forEach is 1 – es6 23.1.3.5'](assert) {
-        assert.equal(
-          map.forEach.length,
-          1,
-          'expected arity for map.forEach is 1'
-        );
+        assert.equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
       }
 
-      ['@test forEach throws without a callback as the first argument'](
-        assert
-      ) {
-        assert.equal(
-          map.forEach.length,
-          1,
-          'expected arity for map.forEach is 1'
-        );
+      ['@test forEach throws without a callback as the first argument'](assert) {
+        assert.equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
       }
 
       ['@test has empty collection'](assert) {
@@ -150,17 +108,9 @@ function testMap(nameAndFunc) {
         map2.set(number, 'losing');
         map2.set(string, 'losing');
 
-        mapHasEntries(assert, [
-          [object, 'winning'],
-          [number, 'winning'],
-          [string, 'winning']
-        ]);
+        mapHasEntries(assert, [[object, 'winning'], [number, 'winning'], [string, 'winning']]);
 
-        mapHasEntries(
-          assert,
-          [[object, 'losing'], [number, 'losing'], [string, 'losing']],
-          map2
-        );
+        mapHasEntries(assert, [[object, 'losing'], [number, 'losing'], [string, 'losing']], map2);
       }
 
       ['@test copy and then delete'](assert) {
@@ -174,11 +124,7 @@ function testMap(nameAndFunc) {
         map2.delete(number);
         map2.delete(string);
 
-        mapHasEntries(assert, [
-          [object, 'winning'],
-          [number, 'winning'],
-          [string, 'winning']
-        ]);
+        mapHasEntries(assert, [[object, 'winning'], [number, 'winning'], [string, 'winning']]);
 
         mapHasEntries(assert, [], map2);
       }
@@ -253,7 +199,7 @@ function testMap(nameAndFunc) {
         let expectations = [
           { value: 1, key: 'a', context: unboundThis },
           { value: 2, key: 'b', context: unboundThis },
-          { value: 3, key: 'c', context: unboundThis }
+          { value: 3, key: 'c', context: unboundThis },
         ];
 
         map.forEach(function(value, key, theMap) {
@@ -261,16 +207,8 @@ function testMap(nameAndFunc) {
 
           assert.equal(value, expectation.value, 'value should be correct');
           assert.equal(key, expectation.key, 'key should be correct');
-          assert.equal(
-            this,
-            expectation.context,
-            'context should be as if it was unbound'
-          );
-          assert.equal(
-            map,
-            theMap,
-            'map being iterated over should be passed in'
-          );
+          assert.equal(this, expectation.context, 'context should be as if it was unbound');
+          assert.equal(map, theMap, 'map being iterated over should be passed in');
 
           iteration++;
         });
@@ -288,7 +226,7 @@ function testMap(nameAndFunc) {
         let expectations = [
           { value: 1, key: 'a', context: context },
           { value: 2, key: 'b', context: context },
-          { value: 3, key: 'c', context: context }
+          { value: 3, key: 'c', context: context },
         ];
 
         map.forEach(function(value, key, theMap) {
@@ -296,16 +234,8 @@ function testMap(nameAndFunc) {
 
           assert.equal(value, expectation.value, 'value should be correct');
           assert.equal(key, expectation.key, 'key should be correct');
-          assert.equal(
-            this,
-            expectation.context,
-            'context should be as if it was unbound'
-          );
-          assert.equal(
-            map,
-            theMap,
-            'map being iterated over should be passed in'
-          );
+          assert.equal(this, expectation.context, 'context should be as if it was unbound');
+          assert.equal(map, theMap, 'map being iterated over should be passed in');
 
           iteration++;
         }, context);
@@ -322,7 +252,7 @@ function testMap(nameAndFunc) {
 
         let expectations = [
           { value: 1, key: 'a', context: unboundThis },
-          { value: 2, key: 'b', context: unboundThis }
+          { value: 2, key: 'b', context: unboundThis },
         ];
 
         map.forEach(function(value, key, theMap) {
@@ -334,16 +264,8 @@ function testMap(nameAndFunc) {
 
           assert.equal(value, expectation.value, 'value should be correct');
           assert.equal(key, expectation.key, 'key should be correct');
-          assert.equal(
-            this,
-            expectation.context,
-            'context should be as if it was unbound'
-          );
-          assert.equal(
-            map,
-            theMap,
-            'map being iterated over should be passed in'
-          );
+          assert.equal(this, expectation.context, 'context should be as if it was unbound');
+          assert.equal(map, theMap, 'map being iterated over should be passed in');
 
           iteration++;
         });
@@ -362,7 +284,7 @@ function testMap(nameAndFunc) {
           { value: 1, key: 'a', context: unboundThis },
           { value: 2, key: 'b', context: unboundThis },
           { value: 3, key: 'c', context: unboundThis },
-          { value: 4, key: 'd', context: unboundThis }
+          { value: 4, key: 'd', context: unboundThis },
         ];
 
         map.forEach(function(value, key, theMap) {
@@ -374,16 +296,8 @@ function testMap(nameAndFunc) {
 
           assert.equal(value, expectation.value, 'value should be correct');
           assert.equal(key, expectation.key, 'key should be correct');
-          assert.equal(
-            this,
-            expectation.context,
-            'context should be as if it was unbound'
-          );
-          assert.equal(
-            map,
-            theMap,
-            'map being iterated over should be passed in'
-          );
+          assert.equal(this, expectation.context, 'context should be as if it was unbound');
+          assert.equal(map, theMap, 'map being iterated over should be passed in');
 
           iteration++;
         });
@@ -428,11 +342,7 @@ function testMap(nameAndFunc) {
         assert.equal(map.get(-0), 'zero');
 
         map.forEach(function(value, key) {
-          assert.equal(
-            1 / key,
-            Infinity,
-            'spec says key should be positive zero'
-          );
+          assert.equal(1 / key, Infinity, 'spec says key should be positive zero');
         });
       }
 
@@ -515,13 +425,11 @@ for (let i = 0; i < varieties.length; i++) {
 moduleFor(
   'MapWithDefault - default values',
   class extends AbstractTestCase {
-    ['@test Retrieving a value that has not been set returns and sets a default value'](
-      assert
-    ) {
+    ['@test Retrieving a value that has not been set returns and sets a default value'](assert) {
       let map = MapWithDefault.create({
         defaultValue(key) {
           return [key];
-        }
+        },
       });
 
       let value = map.get('ohai');
@@ -539,7 +447,7 @@ moduleFor(
       let map = new MapWithDefault({
         defaultValue(key) {
           return key;
-        }
+        },
       });
       assert.equal(map.constructor, MapWithDefault);
     }
@@ -548,7 +456,7 @@ moduleFor(
       let map = MapWithDefault.create({
         defaultValue(key) {
           return [key];
-        }
+        },
       });
 
       map.set('ohai', 1);

@@ -215,7 +215,7 @@ ControllerMixin.reopen({
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;
     return method.apply(target, prefixRouteNameArg(this, args));
-  }
+  },
 });
 
 export default ControllerMixin;

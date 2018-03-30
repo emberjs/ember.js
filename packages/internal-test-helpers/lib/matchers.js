@@ -19,7 +19,7 @@ function equalsAttr(expected) {
 
     message() {
       return `should equal ${this.expected()}`;
-    }
+    },
   };
 }
 
@@ -37,7 +37,7 @@ export function regex(r) {
 
     message() {
       return `should match ${this.expected()}`;
-    }
+    },
   };
 }
 
@@ -67,7 +67,7 @@ export function classes(expected) {
 
     message() {
       return `should match ${this.expected()}`;
-    }
+    },
   };
 }
 
@@ -103,7 +103,7 @@ export function styles(expected) {
 
     message() {
       return `should match ${this.expected()}`;
-    }
+    },
   };
 }
 
@@ -112,7 +112,7 @@ export function equalsElement(assert, element, tagName, attributes, content) {
     result: element.tagName === tagName.toUpperCase(),
     actual: element.tagName.toLowerCase(),
     expected: tagName,
-    message: `expect tagName to be ${tagName}`
+    message: `expect tagName to be ${tagName}`,
   });
 
   let expectedAttrs = {};
@@ -132,7 +132,7 @@ export function equalsElement(assert, element, tagName, attributes, content) {
       result: expectedAttrs[name].match(element.getAttribute(name)),
       actual: element.getAttribute(name),
       expected: matcher.expected(),
-      message: `Element's ${name} attribute ${matcher.message()}`
+      message: `Element's ${name} attribute ${matcher.message()}`,
     });
   }
 
@@ -145,14 +145,14 @@ export function equalsElement(assert, element, tagName, attributes, content) {
   if (!(element instanceof HTMLElement)) {
     assert.pushResult({
       result: element instanceof HTMLElement,
-      message: 'Element must be an HTML Element, not an SVG Element'
+      message: 'Element must be an HTML Element, not an SVG Element',
     });
   } else {
     assert.pushResult({
       result: element.attributes.length === expectedCount || !attributes,
       actual: element.attributes.length,
       expected: expectedCount,
-      message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`
+      message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`,
     });
 
     if (content !== null) {
@@ -160,7 +160,7 @@ export function equalsElement(assert, element, tagName, attributes, content) {
         result: element.innerHTML === content,
         actual: element.innerHTML,
         expected: content,
-        message: `The element had '${content}' as its content`
+        message: `The element had '${content}' as its content`,
       });
     }
   }

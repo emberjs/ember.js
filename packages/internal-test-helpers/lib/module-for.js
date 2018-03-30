@@ -36,7 +36,7 @@ export default function moduleFor(description, TestClass, ...mixins) {
       if (filteredPromises.length > 0) {
         return all(filteredPromises);
       }
-    }
+    },
   });
 
   if (mixins.length > 0) {
@@ -72,9 +72,7 @@ export default function moduleFor(description, TestClass, ...mixins) {
         let features = match[1].replace(/ /g, '').split(',');
 
         if (shouldTest(features)) {
-          QUnit.test(name.slice(match[0].length), assert =>
-            context[name](assert)
-          );
+          QUnit.test(name.slice(match[0].length), assert => context[name](assert));
         }
       }
     }

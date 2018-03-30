@@ -1,8 +1,4 @@
-import {
-  moduleFor,
-  AutobootApplicationTestCase,
-  isIE11
-} from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, isIE11 } from 'internal-test-helpers';
 
 import { Route } from 'ember-routing';
 import { Controller, RSVP } from 'ember-runtime';
@@ -17,7 +13,7 @@ import {
   pendingRequests,
   incrementPendingRequests,
   decrementPendingRequests,
-  clearPendingRequests
+  clearPendingRequests,
 } from '../test/pending_requests';
 import { setAdapter, getAdapter } from '../test/adapter';
 import { registerWaiter, unregisterWaiter } from '../test/waiters';
@@ -50,9 +46,7 @@ function assertHelpers(assert, application, helperContainer, expected) {
 
     assert.ok(
       presentInHelperContainer === expected,
-      "Expected '" +
-        helper +
-        "' to be present in the helper container (defaults to window)."
+      "Expected '" + helper + "' to be present in the helper container (defaults to window)."
     );
     assert.ok(
       presentInTestHelpers === expected,
@@ -118,10 +112,7 @@ if (!jQueryDisabled) {
 
         assertHelpers(assert, this.application);
 
-        assert.ok(
-          Test.Promise.prototype.LeakyMcLeakLeak,
-          'helper in question SHOULD be present'
-        );
+        assert.ok(Test.Promise.prototype.LeakyMcLeakLeak, 'helper in question SHOULD be present');
 
         this.application.removeTestHelpers();
 
@@ -144,24 +135,16 @@ if (!jQueryDisabled) {
         assert.equal(routerInstance.location, 'none');
       }
 
-      [`@test Ember.Application.setupForTesting sets the application to 'testing'`](
-        assert
-      ) {
+      [`@test Ember.Application.setupForTesting sets the application to 'testing'`](assert) {
         this.runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
 
-        assert.equal(
-          this.application.testing,
-          true,
-          'Application instance is set to testing.'
-        );
+        assert.equal(this.application.testing, true, 'Application instance is set to testing.');
       }
 
-      [`@test Ember.Application.setupForTesting leaves the system in a deferred state.`](
-        assert
-      ) {
+      [`@test Ember.Application.setupForTesting leaves the system in a deferred state.`](assert) {
         this.runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
@@ -211,24 +194,14 @@ if (!jQueryDisabled) {
           this.application.setupForTesting();
         });
 
-        assert.equal(
-          injected,
-          0,
-          'onInjectHelpers are not called before injectTestHelpers'
-        );
+        assert.equal(injected, 0, 'onInjectHelpers are not called before injectTestHelpers');
 
         this.application.injectTestHelpers();
 
-        assert.equal(
-          injected,
-          1,
-          'onInjectHelpers are called after injectTestHelpers'
-        );
+        assert.equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
       }
 
-      [`@test Ember.Application#injectTestHelpers adds helpers to provided object.`](
-        assert
-      ) {
+      [`@test Ember.Application#injectTestHelpers adds helpers to provided object.`](assert) {
         let helpers = {};
 
         this.runTask(() => {
@@ -257,18 +230,10 @@ if (!jQueryDisabled) {
 
         this.application.injectTestHelpers(helpers);
 
-        assert.notEqual(
-          helpers.visit,
-          'snazzleflabber',
-          'helper added to container'
-        );
+        assert.notEqual(helpers.visit, 'snazzleflabber', 'helper added to container');
         this.application.removeTestHelpers();
 
-        assert.equal(
-          helpers.visit,
-          'snazzleflabber',
-          'original value added back to container'
-        );
+        assert.equal(helpers.visit, 'snazzleflabber', 'original value added back to container');
       }
     }
   );
@@ -300,22 +265,14 @@ if (!jQueryDisabled) {
         return testHelpers
           .wait()
           .then(() => {
-            assert.equal(
-              waiter(),
-              true,
-              'should not resolve until our waiter is ready'
-            );
+            assert.equal(waiter(), true, 'should not resolve until our waiter is ready');
             unregisterWaiter(waiter);
             counter = 0;
             return testHelpers.wait();
           })
           .then(() => {
             assert.equal(counter, 0, 'unregistered waiter was not checked');
-            assert.equal(
-              otherWaiter(),
-              true,
-              'other waiter is still registered'
-            );
+            assert.equal(otherWaiter(), true, 'other waiter is still registered');
           })
           .finally(() => {
             unregisterWaiter(otherWaiter);
@@ -365,11 +322,7 @@ if (!jQueryDisabled) {
             return testHelpers.wait(RSVP.resolve(promiseObjectValue));
           })
           .then(val => {
-            assert.equal(
-              val,
-              promiseObjectValue,
-              'can resolve to a promise resolution value'
-            );
+            assert.equal(val, promiseObjectValue, 'can resolve to a promise resolution value');
           });
       }
 
@@ -400,7 +353,7 @@ if (!jQueryDisabled) {
                   events.push(e.type);
                 }
               });
-            }
+            },
           })
         );
 
@@ -415,7 +368,7 @@ if (!jQueryDisabled) {
             },
             change() {
               events.push('change:' + this.get('checked'));
-            }
+            },
           })
         );
 
@@ -444,11 +397,7 @@ if (!jQueryDisabled) {
             return testHelpers.click('.index-wrapper');
           })
           .then(() => {
-            assert.deepEqual(
-              events,
-              ['mousedown', 'mouseup', 'click'],
-              'fires events in order'
-            );
+            assert.deepEqual(events, ['mousedown', 'mouseup', 'click'], 'fires events in order');
           })
           .then(() => {
             events = [];
@@ -491,17 +440,11 @@ if (!jQueryDisabled) {
             // i.e. mousedown, mouseup, change:true, click, click:true
             // Firefox differs so we can't assert the exact ordering here.
             // See https://bugzilla.mozilla.org/show_bug.cgi?id=843554.
-            assert.equal(
-              events.length,
-              5,
-              'fires click and change on checkboxes'
-            );
+            assert.equal(events.length, 5, 'fires click and change on checkboxes');
           });
       }
 
-      [`@test 'click' triggers native events with simulated X/Y coordinates`](
-        assert
-      ) {
+      [`@test 'click' triggers native events with simulated X/Y coordinates`](assert) {
         assert.expect(15);
 
         this.add(
@@ -514,7 +457,7 @@ if (!jQueryDisabled) {
               this.element.addEventListener('mousedown', pushEvent);
               this.element.addEventListener('mouseup', pushEvent);
               this.element.addEventListener('click', pushEvent);
-            }
+            },
           })
         );
 
@@ -538,10 +481,7 @@ if (!jQueryDisabled) {
           })
           .then(() => {
             events.forEach(e => {
-              assert.ok(
-                e instanceof window.Event,
-                'The event is an instance of MouseEvent'
-              );
+              assert.ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
               assert.ok(typeof e.screenX === 'number', 'screenX is correct');
               assert.ok(typeof e.screenY === 'number', 'screenY is correct');
               assert.ok(typeof e.clientX === 'number', 'clientX is correct');
@@ -562,14 +502,11 @@ if (!jQueryDisabled) {
             classNames: 'index-wrapper',
             didInsertElement() {
               this.element.addEventListener('mouseenter', e => (evt = e));
-            }
+            },
           })
         );
 
-        this.addTemplate(
-          'index',
-          `{{#index-wrapper}}some text{{/index-wrapper}}`
-        );
+        this.addTemplate('index', `{{#index-wrapper}}some text{{/index-wrapper}}`);
 
         this.runTask(() => {
           this.application.advanceReadiness();
@@ -581,10 +518,7 @@ if (!jQueryDisabled) {
             return triggerEvent('.index-wrapper', 'mouseenter');
           })
           .then(() => {
-            assert.ok(
-              evt instanceof window.Event,
-              'The event is an instance of MouseEvent'
-            );
+            assert.ok(evt instanceof window.Event, 'The event is an instance of MouseEvent');
             assert.ok(typeof evt.screenX === 'number', 'screenX is correct');
             assert.ok(typeof evt.screenY === 'number', 'screenY is correct');
             assert.ok(typeof evt.clientX === 'number', 'clientX is correct');
@@ -605,11 +539,7 @@ if (!jQueryDisabled) {
         }, 20);
 
         return this.application.testHelpers.wait().then(() => {
-          assert.equal(
-            waitDone,
-            true,
-            'should wait for the timer to be fired.'
-          );
+          assert.equal(waitDone, true, 'should wait for the timer to be fired.');
         });
       }
 
@@ -620,7 +550,7 @@ if (!jQueryDisabled) {
           counter: 0,
           ready() {
             return ++this.counter > 2;
-          }
+          },
         };
 
         let other = 0;
@@ -638,26 +568,14 @@ if (!jQueryDisabled) {
         let { application: { testHelpers: { wait } } } = this;
         return wait()
           .then(() => {
-            assert.equal(
-              obj.ready(),
-              true,
-              'should not resolve until our waiter is ready'
-            );
+            assert.equal(obj.ready(), true, 'should not resolve until our waiter is ready');
             unregisterWaiter(obj, obj.ready);
             obj.counter = 0;
             return wait();
           })
           .then(() => {
-            assert.equal(
-              obj.counter,
-              0,
-              'the unregistered waiter should still be at 0'
-            );
-            assert.equal(
-              otherWaiter(),
-              true,
-              'other waiter should still be registered'
-            );
+            assert.equal(obj.counter, 0, 'the unregistered waiter should still be at 0');
+            assert.equal(otherWaiter(), true, 'other waiter should still be registered');
           })
           .finally(() => {
             unregisterWaiter(otherWaiter);
@@ -672,9 +590,7 @@ if (!jQueryDisabled) {
         });
       }
 
-      [`@test 'triggerEvent' accepts an optional options hash without context`](
-        assert
-      ) {
+      [`@test 'triggerEvent' accepts an optional options hash without context`](assert) {
         assert.expect(3);
 
         let event;
@@ -685,7 +601,7 @@ if (!jQueryDisabled) {
               let domElem = document.querySelector('.input');
               domElem.addEventListener('change', e => (event = e));
               domElem.addEventListener('keydown', e => (event = e));
-            }
+            },
           })
         );
 
@@ -717,9 +633,7 @@ if (!jQueryDisabled) {
           });
       }
 
-      [`@test 'triggerEvent' can limit searching for a selector to a scope`](
-        assert
-      ) {
+      [`@test 'triggerEvent' can limit searching for a selector to a scope`](assert) {
         assert.expect(2);
 
         let event;
@@ -733,7 +647,7 @@ if (!jQueryDisabled) {
               let secondInput = document.querySelector('#limited .input');
               secondInput.addEventListener('blur', e => (event = e));
               secondInput.addEventListener('change', e => (event = e));
-            }
+            },
           })
         );
 
@@ -778,7 +692,7 @@ if (!jQueryDisabled) {
               let foo = document.getElementById('foo');
               foo.addEventListener('blur', e => (event = e));
               foo.addEventListener('change', e => (event = e));
-            }
+            },
           })
         );
 
@@ -826,9 +740,7 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let {
-          application: { testHelpers: { visit, fillIn, andThen, find } }
-        } = this;
+        let { application: { testHelpers: { visit, fillIn, andThen, find } } } = this;
         visit('/');
         fillIn('.current', '#parent', 'current value');
 
@@ -847,8 +759,8 @@ if (!jQueryDisabled) {
             actions: {
               wasFocused() {
                 wasFocused = true;
-              }
-            }
+              },
+            },
           })
         );
 
@@ -865,9 +777,7 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let {
-          application: { testHelpers: { visit, fillIn, andThen, find, wait } }
-        } = this;
+        let { application: { testHelpers: { visit, fillIn, andThen, find, wait } } } = this;
         visit('/');
         fillIn('#first', 'current value');
         andThen(() => {
@@ -879,9 +789,7 @@ if (!jQueryDisabled) {
         return wait();
       }
 
-      [`@test 'fillIn' fires 'input' and 'change' events in the proper order`](
-        assert
-      ) {
+      [`@test 'fillIn' fires 'input' and 'change' events in the proper order`](assert) {
         assert.expect(1);
 
         let events = [];
@@ -894,8 +802,8 @@ if (!jQueryDisabled) {
               },
               onchangeHandler(e) {
                 events.push(e.type);
-              }
-            }
+              },
+            },
           })
         );
 
@@ -912,9 +820,7 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let {
-          application: { testHelpers: { visit, fillIn, andThen, wait } }
-        } = this;
+        let { application: { testHelpers: { visit, fillIn, andThen, wait } } } = this;
 
         visit('/');
         fillIn('#first', 'current value');
@@ -929,9 +835,7 @@ if (!jQueryDisabled) {
         return wait();
       }
 
-      [`@test 'fillIn' only sets the value in the first matched element`](
-        assert
-      ) {
+      [`@test 'fillIn' only sets the value in the first matched element`](assert) {
         this.addTemplate(
           'index',
           `
@@ -944,9 +848,7 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let {
-          application: { testHelpers: { visit, fillIn, find, andThen, wait } }
-        } = this;
+        let { application: { testHelpers: { visit, fillIn, find, andThen, wait } } } = this;
 
         visit('/');
         fillIn('input.in-test', 'new value');
@@ -958,9 +860,7 @@ if (!jQueryDisabled) {
         return wait();
       }
 
-      [`@test 'triggerEvent' accepts an optional options hash and context`](
-        assert
-      ) {
+      [`@test 'triggerEvent' accepts an optional options hash and context`](assert) {
         assert.expect(3);
 
         let event;
@@ -974,7 +874,7 @@ if (!jQueryDisabled) {
               let secondInput = document.querySelector('#limited .input');
               secondInput.addEventListener('keydown', e => (event = e), false);
               secondInput.addEventListener('change', e => (event = e), false);
-            }
+            },
           })
         );
 
@@ -997,7 +897,7 @@ if (!jQueryDisabled) {
         return wait()
           .then(() => {
             return triggerEvent('.input', '#limited', 'keydown', {
-              keyCode: 13
+              keyCode: 13,
             });
           })
           .then(() => {
@@ -1036,10 +936,7 @@ if (!jQueryDisabled) {
 
         andThen(() => {
           Test.adapter.asyncStart = () => {
-            assert.ok(
-              true,
-              'Async start should be called after waiting for other helpers'
-            );
+            assert.ok(true, 'Async start should be called after waiting for other helpers');
           };
         });
 
@@ -1095,16 +992,8 @@ if (!jQueryDisabled) {
 
         let { application: { testHelpers } } = this;
         return testHelpers.visit('/').then(() => {
-          assert.equal(
-            testHelpers.currentRouteName(),
-            'index',
-            `should equal 'index'.`
-          );
-          assert.equal(
-            testHelpers.currentPath(),
-            'index',
-            `should equal 'index'.`
-          );
+          assert.equal(testHelpers.currentRouteName(), 'index', `should equal 'index'.`);
+          assert.equal(testHelpers.currentPath(), 'index', `should equal 'index'.`);
           assert.equal(testHelpers.currentURL(), '/', `should equal '/'.`);
         });
       }
@@ -1119,16 +1008,8 @@ if (!jQueryDisabled) {
             'posts.index',
             `should equal 'posts.index'.`
           );
-          assert.equal(
-            testHelpers.currentPath(),
-            'posts.index',
-            `should equal 'posts.index'.`
-          );
-          assert.equal(
-            testHelpers.currentURL(),
-            '/posts',
-            `should equal '/posts'.`
-          );
+          assert.equal(testHelpers.currentPath(), 'posts.index', `should equal 'posts.index'.`);
+          assert.equal(testHelpers.currentURL(), '/posts', `should equal '/posts'.`);
         });
       }
 
@@ -1137,21 +1018,9 @@ if (!jQueryDisabled) {
 
         let { application: { testHelpers } } = this;
         return testHelpers.visit('/posts/new').then(() => {
-          assert.equal(
-            testHelpers.currentRouteName(),
-            'posts.new',
-            `should equal 'posts.new'.`
-          );
-          assert.equal(
-            testHelpers.currentPath(),
-            'posts.new',
-            `should equal 'posts.new'.`
-          );
-          assert.equal(
-            testHelpers.currentURL(),
-            '/posts/new',
-            `should equal '/posts/new'.`
-          );
+          assert.equal(testHelpers.currentRouteName(), 'posts.new', `should equal 'posts.new'.`);
+          assert.equal(testHelpers.currentPath(), 'posts.new', `should equal 'posts.new'.`);
+          assert.equal(testHelpers.currentURL(), '/posts/new', `should equal '/posts/new'.`);
         });
       }
 
@@ -1160,21 +1029,9 @@ if (!jQueryDisabled) {
 
         let { application: { testHelpers } } = this;
         return testHelpers.visit('/posts/edit').then(() => {
-          assert.equal(
-            testHelpers.currentRouteName(),
-            'edit',
-            `should equal 'edit'.`
-          );
-          assert.equal(
-            testHelpers.currentPath(),
-            'posts.edit',
-            `should equal 'posts.edit'.`
-          );
-          assert.equal(
-            testHelpers.currentURL(),
-            '/posts/edit',
-            `should equal '/posts/edit'.`
-          );
+          assert.equal(testHelpers.currentRouteName(), 'edit', `should equal 'edit'.`);
+          assert.equal(testHelpers.currentPath(), 'posts.edit', `should equal 'posts.edit'.`);
+          assert.equal(testHelpers.currentURL(), '/posts/edit', `should equal '/posts/edit'.`);
         });
       }
     }
@@ -1183,26 +1040,16 @@ if (!jQueryDisabled) {
   moduleFor(
     'ember-testing: pendingRequests',
     class extends HelpersApplicationTestCase {
-      [`@test pendingRequests is maintained for ajaxSend and ajaxComplete events`](
-        assert
-      ) {
+      [`@test pendingRequests is maintained for ajaxSend and ajaxComplete events`](assert) {
         assert.equal(pendingRequests(), 0);
 
         let xhr = { some: 'xhr' };
 
         customEvent('ajaxSend', xhr);
-        assert.equal(
-          pendingRequests(),
-          1,
-          'Ember.Test.pendingRequests was incremented'
-        );
+        assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
         customEvent('ajaxComplete', xhr);
-        assert.equal(
-          pendingRequests(),
-          0,
-          'Ember.Test.pendingRequests was decremented'
-        );
+        assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
       }
 
       [`@test pendingRequests is ignores ajaxComplete events from past setupForTesting calls`](
@@ -1213,28 +1060,16 @@ if (!jQueryDisabled) {
         let xhr = { some: 'xhr' };
 
         customEvent('ajaxSend', xhr);
-        assert.equal(
-          pendingRequests(),
-          1,
-          'Ember.Test.pendingRequests was incremented'
-        );
+        assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
         setupForTesting();
 
-        assert.equal(
-          pendingRequests(),
-          0,
-          'Ember.Test.pendingRequests was reset'
-        );
+        assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was reset');
 
         let altXhr = { some: 'more xhr' };
 
         customEvent('ajaxSend', altXhr);
-        assert.equal(
-          pendingRequests(),
-          1,
-          'Ember.Test.pendingRequests was incremented'
-        );
+        assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
         customEvent('ajaxComplete', xhr);
         assert.equal(
@@ -1286,7 +1121,7 @@ if (!jQueryDisabled) {
             Route.extend({
               model() {
                 return resolveLater();
-              }
+              },
             })
           );
 
@@ -1294,10 +1129,8 @@ if (!jQueryDisabled) {
             'route:user.profile',
             Route.extend({
               beforeModel() {
-                return resolveLater().then(() =>
-                  this.transitionTo('user.edit')
-                );
-              }
+                return resolveLater().then(() => this.transitionTo('user.edit'));
+              },
             })
           );
 
@@ -1315,27 +1148,11 @@ if (!jQueryDisabled) {
 
         let { application: { testHelpers } } = this;
         return testHelpers.visit('/user').then(() => {
-          assert.equal(
-            testHelpers.currentRouteName(),
-            'user.index',
-            `should equal 'user.index'.`
-          );
-          assert.equal(
-            testHelpers.currentPath(),
-            'user.index',
-            `should equal 'user.index'.`
-          );
-          assert.equal(
-            testHelpers.currentURL(),
-            '/user',
-            `should equal '/user'.`
-          );
+          assert.equal(testHelpers.currentRouteName(), 'user.index', `should equal 'user.index'.`);
+          assert.equal(testHelpers.currentPath(), 'user.index', `should equal 'user.index'.`);
+          assert.equal(testHelpers.currentURL(), '/user', `should equal '/user'.`);
           let userRoute = this.applicationInstance.lookup('route:user');
-          assert.equal(
-            userRoute.get('controller.model.firstName'),
-            'Tom',
-            `should equal 'Tom'.`
-          );
+          assert.equal(userRoute.get('controller.model.firstName'), 'Tom', `should equal 'Tom'.`);
         });
       }
 
@@ -1344,27 +1161,11 @@ if (!jQueryDisabled) {
 
         let { application: { testHelpers } } = this;
         return testHelpers.visit('/user/profile').then(() => {
-          assert.equal(
-            testHelpers.currentRouteName(),
-            'user.edit',
-            `should equal 'user.edit'.`
-          );
-          assert.equal(
-            testHelpers.currentPath(),
-            'user.edit',
-            `should equal 'user.edit'.`
-          );
-          assert.equal(
-            testHelpers.currentURL(),
-            '/user/edit',
-            `should equal '/user/edit'.`
-          );
+          assert.equal(testHelpers.currentRouteName(), 'user.edit', `should equal 'user.edit'.`);
+          assert.equal(testHelpers.currentPath(), 'user.edit', `should equal 'user.edit'.`);
+          assert.equal(testHelpers.currentURL(), '/user/edit', `should equal '/user/edit'.`);
           let userRoute = this.applicationInstance.lookup('route:user');
-          assert.equal(
-            userRoute.get('controller.model.firstName'),
-            'Tom',
-            `should equal 'Tom'.`
-          );
+          assert.equal(userRoute.get('controller.model.firstName'), 'Tom', `should equal 'Tom'.`);
         });
       }
     }

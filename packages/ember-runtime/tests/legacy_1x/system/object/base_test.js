@@ -42,7 +42,7 @@ moduleFor(
         },
         aMethodThatReturnsFalse() {
           return false;
-        }
+        },
       });
     }
 
@@ -50,16 +50,12 @@ moduleFor(
       obj = undefined;
     }
 
-    ['@test Should return its properties when requested using EmberObject#get'](
-      assert
-    ) {
+    ['@test Should return its properties when requested using EmberObject#get'](assert) {
       assert.equal(get(obj, 'foo'), 'bar');
       assert.equal(get(obj, 'total'), 12345);
     }
 
-    ['@test Should allow changing of those properties by calling EmberObject#set'](
-      assert
-    ) {
+    ['@test Should allow changing of those properties by calling EmberObject#set'](assert) {
       assert.equal(get(obj, 'foo'), 'bar');
       assert.equal(get(obj, 'total'), 12345);
 
@@ -79,7 +75,7 @@ moduleFor(
       obj = EmberObject.extend({
         method1() {
           return 'hello';
-        }
+        },
       });
       obj1 = obj.extend();
     }
@@ -89,16 +85,12 @@ moduleFor(
       obj1 = undefined;
     }
 
-    ['@test Checking the detect() function on an object and its subclass'](
-      assert
-    ) {
+    ['@test Checking the detect() function on an object and its subclass'](assert) {
       assert.equal(obj.detect(obj1), true);
       assert.equal(obj1.detect(obj), false);
     }
 
-    ['@test Checking the detectInstance() function on an object and its subclass'](
-      assert
-    ) {
+    ['@test Checking the detectInstance() function on an object and its subclass'](assert) {
       assert.ok(EmberObject.detectInstance(obj.create()));
       assert.ok(obj.detectInstance(obj.create()));
     }

@@ -44,7 +44,7 @@ moduleFor(
 
         starObserver(target, key) {
           this.starProp = key;
-        }
+        },
       }).create({
         starProp: null,
 
@@ -52,13 +52,11 @@ moduleFor(
         prop: 'propValue',
 
         newFoo: 'newFooValue',
-        newProp: 'newPropValue'
+        newProp: 'newPropValue',
       });
     }
 
-    ['@test should observe the changes within the nested begin / end property changes'](
-      assert
-    ) {
+    ['@test should observe the changes within the nested begin / end property changes'](assert) {
       //start the outer nest
       ObjectA.beginPropertyChanges();
 
@@ -80,9 +78,7 @@ moduleFor(
       assert.equal(ObjectA.newFoo, 'changedNewFooValue');
     }
 
-    ['@test should observe the changes within the begin and end property changes'](
-      assert
-    ) {
+    ['@test should observe the changes within the begin and end property changes'](assert) {
       ObjectA.beginPropertyChanges();
       ObjectA.set('foo', 'changeFooValue');
 
@@ -92,9 +88,7 @@ moduleFor(
       assert.equal(ObjectA.prop, 'changedPropValue');
     }
 
-    ['@test should indicate that the property of an object has just changed'](
-      assert
-    ) {
+    ['@test should indicate that the property of an object has just changed'](assert) {
       //change the value of foo.
       ObjectA.set('foo', 'changeFooValue');
 
@@ -126,18 +120,14 @@ moduleFor(
           set(key, value) {
             this._b = value;
             return this;
-          }
-        }).volatile()
+          },
+        }).volatile(),
       }).create({
-        _b: null
+        _b: null,
       });
 
       a.set('b', 'foo');
-      assert.equal(
-        a.get('b'),
-        'foo',
-        'should have set the correct value for property b'
-      );
+      assert.equal(a.get('b'), 'foo', 'should have set the correct value for property b');
 
       a._b = 'bar';
       a.notifyPropertyChange('b');

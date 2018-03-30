@@ -14,11 +14,7 @@ moduleFor(
       let date = new Date(2014, 7, 22);
       let dateCopy = copy(date);
 
-      assert.equal(
-        date.getTime(),
-        dateCopy.getTime(),
-        'dates should be equivalent'
-      );
+      assert.equal(date.getTime(), dateCopy.getTime(), 'dates should be equivalent');
     }
 
     ['@test Ember.copy null prototype object'](assert) {
@@ -33,11 +29,7 @@ moduleFor(
       let array = [1, null, new Date(2015, 9, 9), 'four'];
       let arrayCopy = copy(array);
 
-      assert.deepEqual(
-        array,
-        arrayCopy,
-        'array content cloned successfully in new array'
-      );
+      assert.deepEqual(array, arrayCopy, 'array content cloned successfully in new array');
     }
   }
 );

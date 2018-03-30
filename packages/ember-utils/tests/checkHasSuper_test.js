@@ -10,10 +10,7 @@ if (environment.isChrome || environment.isFirefox) {
     'checkHasSuper',
     class extends TestCase {
       ['@test does not super wrap needlessly [GH #12462]'](assert) {
-        assert.notOk(
-          checkHasSuper(function() {}),
-          'empty function does not have super'
-        );
+        assert.notOk(checkHasSuper(function() {}), 'empty function does not have super');
       }
     }
   );

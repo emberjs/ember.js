@@ -7,9 +7,7 @@ mainContext = this; // eslint-disable-line no-undef
 (function() {
   function missingModule(name, referrerName) {
     if (referrerName) {
-      throw new Error(
-        'Could not find module ' + name + ' required by: ' + referrerName
-      );
+      throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
     } else {
       throw new Error('Could not find module ' + name);
     }
@@ -102,7 +100,7 @@ mainContext = this; // eslint-disable-line no-undef
     Ember.__loader = {
       define: enifed,
       require: requireModule,
-      registry: registry
+      registry: registry,
     };
   } else {
     enifed = Ember.__loader.define;

@@ -12,16 +12,14 @@ moduleFor(
       assert.equal(obj.toString(), 'FOO', 'should replace toString');
     }
 
-    ['@test for data properties, didDefineProperty hook should be called if implemented'](
-      assert
-    ) {
+    ['@test for data properties, didDefineProperty hook should be called if implemented'](assert) {
       assert.expect(2);
 
       let obj = {
         didDefineProperty(obj, keyName, value) {
           assert.equal(keyName, 'foo', 'key name should be foo');
           assert.equal(value, 'bar', 'value should be bar');
-        }
+        },
       };
 
       defineProperty(obj, 'foo', undefined, 'bar');
@@ -44,7 +42,7 @@ moduleFor(
             computedProperty,
             'value should be passed as computed property'
           );
-        }
+        },
       };
 
       defineProperty(obj, 'foo', computedProperty);
@@ -59,18 +57,14 @@ moduleFor(
         writable: true,
         configurable: false,
         enumerable: true,
-        value: 42
+        value: 42,
       };
 
       let obj = {
         didDefineProperty(obj, keyName, value) {
           assert.equal(keyName, 'answer', 'key name should be answer');
-          assert.strictEqual(
-            value,
-            descriptor,
-            'value should be passed as descriptor'
-          );
-        }
+          assert.strictEqual(value, descriptor, 'value should be passed as descriptor');
+        },
       };
 
       defineProperty(obj, 'answer', descriptor);

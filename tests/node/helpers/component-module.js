@@ -53,7 +53,7 @@ module.exports = function(moduleName) {
       this.Ember = null;
 
       clearEmber();
-    }
+    },
   });
 };
 
@@ -63,7 +63,7 @@ function setupComponentTest() {
   module.element = new SimpleDOM.Document();
   module.owner = buildOwner(this.Ember, { resolve: function() {} });
   module.owner.register('service:-document', new SimpleDOM.Document(), {
-    instantiate: false
+    instantiate: false,
   });
 
   this._hasRendered = false;
@@ -77,10 +77,10 @@ function setupComponentTest() {
       outlet: 'main',
       name: 'application',
       controller: module,
-      template: OutletTemplate
+      template: OutletTemplate,
     },
 
-    outlets: {}
+    outlets: {},
   };
 
   templateId = 0;
@@ -110,7 +110,7 @@ function render(_template) {
     outlet: 'main',
     name: 'index',
     controller: this,
-    template: this.owner.lookup(templateFullName)
+    template: this.owner.lookup(templateFullName),
   };
 
   stateToRender.name = 'index';

@@ -53,7 +53,7 @@ Ember.runInDebug = EmberDebug.runInDebug;
 */
 Ember.Debug = {
   registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
-  registerWarnHandler: EmberDebug.registerWarnHandler
+  registerWarnHandler: EmberDebug.registerWarnHandler,
 };
 Ember.merge = metal.merge;
 
@@ -63,7 +63,7 @@ Ember.Instrumentation = {
   instrument: metal.instrument,
   subscribe: metal.instrumentationSubscribe,
   unsubscribe: metal.instrumentationUnsubscribe,
-  reset: metal.instrumentationReset
+  reset: metal.instrumentationReset,
 };
 
 Ember.Error = EmberDebug.Error;
@@ -106,7 +106,7 @@ Ember.run.scheduleOnce = metal.scheduleOnce;
 Ember.run.throttle = metal.throttle;
 Object.defineProperty(Ember.run, 'currentRunLoop', {
   get: metal.getCurrentRunLoop,
-  enumerable: false
+  enumerable: false,
 });
 Ember.propertyWillChange = metal.propertyWillChange;
 Ember.propertyDidChange = metal.propertyDidChange;
@@ -117,7 +117,7 @@ Ember.endPropertyChanges = metal.endPropertyChanges;
 Ember.changeProperties = metal.changeProperties;
 Ember.platform = {
   defineProperty: true,
-  hasPropertyAccessors: true
+  hasPropertyAccessors: true,
 };
 Ember.defineProperty = metal.defineProperty;
 Ember.watchKey = metal.watchKey;
@@ -153,7 +153,7 @@ Object.defineProperty(Ember, 'ENV', {
   get() {
     return ENV;
   },
-  enumerable: false
+  enumerable: false,
 });
 
 /**
@@ -168,7 +168,7 @@ Object.defineProperty(Ember, 'lookup', {
   set(value) {
     context.lookup = value;
   },
-  enumerable: false
+  enumerable: false,
 });
 
 Ember.EXTEND_PROTOTYPES = ENV.EXTEND_PROTOTYPES;
@@ -181,7 +181,7 @@ Object.defineProperty(Ember, 'LOG_STACKTRACE_ON_DEPRECATION', {
   set(value) {
     ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value;
   },
-  enumerable: false
+  enumerable: false,
 });
 
 Object.defineProperty(Ember, 'LOG_VERSION', {
@@ -191,7 +191,7 @@ Object.defineProperty(Ember, 'LOG_VERSION', {
   set(value) {
     ENV.LOG_VERSION = !!value;
   },
-  enumerable: false
+  enumerable: false,
 });
 
 if (DEBUG) {
@@ -203,11 +203,10 @@ if (DEBUG) {
       deprecate('Ember.MODEL_FACTORY_INJECTIONS is no longer required', false, {
         id: 'ember-metal.model_factory_injections',
         until: '2.17.0',
-        url:
-          'https://emberjs.com/deprecations/v2.x/#toc_id-ember-metal-model_factory_injections'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_id-ember-metal-model_factory_injections',
       });
     },
-    enumerable: false
+    enumerable: false,
   });
 }
 
@@ -218,7 +217,7 @@ Object.defineProperty(Ember, 'LOG_BINDINGS', {
   set(value) {
     ENV.LOG_BINDINGS = !!value;
   },
-  enumerable: false
+  enumerable: false,
 });
 
 /**
@@ -247,13 +246,13 @@ Object.defineProperty(Ember, 'LOG_BINDINGS', {
 Object.defineProperty(Ember, 'onerror', {
   get: metal.getOnerror,
   set: metal.setOnerror,
-  enumerable: false
+  enumerable: false,
 });
 
 Object.defineProperty(Ember, 'testing', {
   get: EmberDebug.isTesting,
   set: EmberDebug.setTesting,
-  enumerable: false
+  enumerable: false,
 });
 
 import Backburner from 'backburner';
@@ -336,7 +335,7 @@ import {
   uniqBy,
   union,
   intersect,
-  collect
+  collect,
 } from 'ember-runtime';
 
 Ember.A = A;
@@ -423,7 +422,7 @@ computed.collect = collect;
 Object.defineProperty(Ember, 'STRINGS', {
   configurable: false,
   get: getStrings,
-  set: setStrings
+  set: setStrings,
 });
 
 /**
@@ -444,7 +443,7 @@ Object.defineProperty(Ember, 'BOOTED', {
   configurable: false,
   enumerable: false,
   get: metal.isNamespaceSearchDisabled,
-  set: metal.setNamespaceSearchDisabled
+  set: metal.setNamespaceSearchDisabled,
 });
 
 import {
@@ -462,7 +461,7 @@ import {
   template,
   TextField,
   TextArea,
-  isSerializationFirstNode
+  isSerializationFirstNode,
 } from 'ember-glimmer';
 
 Ember.Component = Component;
@@ -477,7 +476,7 @@ Object.defineProperty(Ember, '_setComponentManager', {
   enumerable: false,
   get() {
     return componentManager;
-  }
+  },
 });
 
 if (ENV.EXTEND_PROTOTYPES.String) {
@@ -488,8 +487,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
 
 let EmberHandlebars = (Ember.Handlebars = Ember.Handlebars || {});
 let EmberHTMLBars = (Ember.HTMLBars = Ember.HTMLBars || {});
-let EmberHandleBarsUtils = (EmberHandlebars.Utils =
-  EmberHandlebars.Utils || {});
+let EmberHandleBarsUtils = (EmberHandlebars.Utils = EmberHandlebars.Utils || {});
 
 EmberHTMLBars.template = EmberHandlebars.template = template;
 EmberHandleBarsUtils.escapeExpression = escapeExpression;
@@ -511,7 +509,7 @@ Object.defineProperty(Ember, 'TEMPLATES', {
   get: getTemplates,
   set: setTemplates,
   configurable: false,
-  enumerable: false
+  enumerable: false,
 });
 
 import VERSION from './version';
@@ -542,7 +540,7 @@ Ember.ViewUtils = {
   getViewBoundingClientRect: views.getViewBoundingClientRect,
   getRootViews: views.getRootViews,
   getChildViews: views.getChildViews,
-  isSerializationFirstNode: isSerializationFirstNode
+  isSerializationFirstNode: isSerializationFirstNode,
 };
 
 Ember.TextSupport = views.TextSupport;

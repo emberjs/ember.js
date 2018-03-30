@@ -8,7 +8,7 @@ moduleFor(
       assert.expect(0);
 
       compile(`{{link-to 'foo' 'index'}}`, {
-        moduleName: 'foo/bar/baz'
+        moduleName: 'foo/bar/baz',
       });
     }
   }

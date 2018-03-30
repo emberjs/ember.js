@@ -49,7 +49,7 @@ createInjectionHelper('service');
 const Service = EmberObject.extend();
 
 Service.reopenClass({
-  isServiceFactory: true
+  isServiceFactory: true,
 });
 
 export default Service;

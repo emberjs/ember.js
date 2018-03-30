@@ -28,9 +28,7 @@ moduleFor(
       }
     }
 
-    ['@test an engine instance can be created based upon a base engine'](
-      assert
-    ) {
+    ['@test an engine instance can be created based upon a base engine'](assert) {
       run(() => {
         engineInstance = EngineInstance.create({ base: engine });
       });
@@ -39,9 +37,7 @@ moduleFor(
       assert.equal(engineInstance.base, engine, 'base should be set to engine');
     }
 
-    ['@test unregistering a factory clears all cached instances of that factory'](
-      assert
-    ) {
+    ['@test unregistering a factory clears all cached instances of that factory'](assert) {
       assert.expect(3);
 
       engineInstance = run(() => EngineInstance.create({ base: engine }));
@@ -106,10 +102,7 @@ moduleFor(
         chatEngineInstance = engineInstance.buildChildEngineInstance('chat');
       });
 
-      assert.ok(
-        chatEngineInstance,
-        'child engine instance successfully created'
-      );
+      assert.ok(chatEngineInstance, 'child engine instance successfully created');
 
       assert.strictEqual(
         getEngineParent(chatEngineInstance),

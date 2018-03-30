@@ -35,7 +35,7 @@ moduleFor(
         inspect({
           foo() {
             return this;
-          }
+          },
         }),
         '{foo: function() { ... }}'
       );
@@ -43,10 +43,7 @@ moduleFor(
 
     ['@test objects without a prototype'](assert) {
       let prototypelessObj = Object.create(null);
-      assert.equal(
-        inspect({ foo: prototypelessObj }),
-        '{foo: [object Object]}'
-      );
+      assert.equal(inspect({ foo: prototypelessObj }), '{foo: [object Object]}');
     }
 
     ['@test array'](assert) {
@@ -59,10 +56,7 @@ moduleFor(
 
     ['@test date'](assert) {
       let inspected = inspect(new Date('Sat Apr 30 2011 13:24:11'));
-      assert.ok(
-        inspected.match(/Sat Apr 30/),
-        'The inspected date has its date'
-      );
+      assert.ok(inspected.match(/Sat Apr 30/), 'The inspected date has its date');
       assert.ok(inspected.match(/2011/), 'The inspected date has its year');
       assert.ok(inspected.match(/13:24:11/), 'The inspected date has its time');
     }

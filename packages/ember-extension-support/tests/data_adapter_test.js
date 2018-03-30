@@ -20,9 +20,9 @@ const DataAdapter = EmberDataAdapter.extend({
       },
       catalogEntriesByType() {
         return emberA(['post']);
-      }
+      },
     });
-  }
+  },
 });
 
 moduleFor(
@@ -37,7 +37,7 @@ moduleFor(
           },
           columnsForType() {
             return [{ name: 'title', desc: 'Title' }];
-          }
+          },
         })
       );
       this.add('model:post', PostClass);
@@ -50,11 +50,7 @@ moduleFor(
           let postType = types[0];
           assert.equal(postType.name, 'post', 'Correctly sets the name');
           assert.equal(postType.count, 3, 'Correctly sets the record count');
-          assert.strictEqual(
-            postType.object,
-            PostClass,
-            'Correctly sets the object'
-          );
+          assert.strictEqual(postType.object, PostClass, 'Correctly sets the object');
           assert.deepEqual(
             postType.columns,
             [{ name: 'title', desc: 'Title' }],
@@ -73,7 +69,7 @@ moduleFor(
           getRecords(klass, name) {
             assert.equal(name, 'post');
             return emberA();
-          }
+          },
         })
       );
       this.add('model:post', PostClass);
@@ -91,7 +87,7 @@ moduleFor(
         },
         catalogEntriesByType() {
           return emberA(['post']);
-        }
+        },
       });
       this.add('container-debug-adapter:main', StubContainerDebugAdapter);
       this.add(
@@ -102,7 +98,7 @@ moduleFor(
           },
           columnsForType() {
             return [{ name: 'title', desc: 'Title' }];
-          }
+          },
         })
       );
       this.add('model:post', PostClass);
@@ -115,11 +111,7 @@ moduleFor(
           let postType = types[0];
           assert.equal(postType.name, 'post', 'Correctly sets the name');
           assert.equal(postType.count, 3, 'Correctly sets the record count');
-          assert.strictEqual(
-            postType.object,
-            PostClass,
-            'Correctly sets the object'
-          );
+          assert.strictEqual(postType.object, PostClass, 'Correctly sets the object');
           assert.deepEqual(
             postType.columns,
             [{ name: 'title', desc: 'Title' }],
@@ -138,7 +130,7 @@ moduleFor(
         DataAdapter.extend({
           getRecords() {
             return records;
-          }
+          },
         })
       );
       this.add('model:post', PostClass);
@@ -161,9 +153,7 @@ moduleFor(
       });
     }
 
-    ['@test Model Types Updated but Unchanged Do not Trigger Callbacks'](
-      assert
-    ) {
+    ['@test Model Types Updated but Unchanged Do not Trigger Callbacks'](assert) {
       assert.expect(0);
       let records = emberA([1, 2, 3]);
       this.add(
@@ -171,7 +161,7 @@ moduleFor(
         DataAdapter.extend({
           getRecords() {
             return records;
-          }
+          },
         })
       );
       this.add('model:post', PostClass);
@@ -186,10 +176,7 @@ moduleFor(
         }
 
         function modelTypesUpdated() {
-          assert.ok(
-            false,
-            "modelTypesUpdated should not be triggered if the array didn't change"
-          );
+          assert.ok(false, "modelTypesUpdated should not be triggered if the array didn't change");
         }
 
         adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
@@ -215,7 +202,7 @@ moduleFor(
           },
           getRecordKeywords() {
             return ['Post ' + countAdded];
-          }
+          },
         })
       );
       this.add('model:post', PostClass);
@@ -236,11 +223,7 @@ moduleFor(
             ['Post ' + countAdded],
             'Sets search keywords correctly'
           );
-          assert.strictEqual(
-            record.object,
-            post,
-            'Sets the object to the record instance'
-          );
+          assert.strictEqual(record.object, post, 'Sets the object to the record instance');
         }
 
         adapter.watchRecords('post', recordsAdded);
@@ -273,7 +256,7 @@ moduleFor(
           },
           getRecordColumnValues(record) {
             return { title: get(record, 'title') };
-          }
+          },
         })
       );
       this.add('model:post', PostClass);
@@ -290,11 +273,7 @@ moduleFor(
           assert.equal(records[0].columnValues.title, 'Post Modified');
         }
 
-        let release = adapter.watchRecords(
-          'post',
-          recordsAdded,
-          recordsUpdated
-        );
+        let release = adapter.watchRecords('post', recordsAdded, recordsUpdated);
         release();
         set(post, 'title', 'New Title');
         assert.equal(updatesCalled, 1, 'Release function removes observers');

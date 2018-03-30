@@ -16,18 +16,11 @@ export default class QueryParamTestCase extends ApplicationTestCase {
       NoneLocation.extend({
         setURL(path) {
           if (testCase.expectedReplaceURL) {
-            testCase.assert.ok(
-              false,
-              'pushState occurred but a replaceState was expected'
-            );
+            testCase.assert.ok(false, 'pushState occurred but a replaceState was expected');
           }
 
           if (testCase.expectedPushURL) {
-            testCase.assert.equal(
-              path,
-              testCase.expectedPushURL,
-              'an expected pushState occurred'
-            );
+            testCase.assert.equal(path, testCase.expectedPushURL, 'an expected pushState occurred');
             testCase.expectedPushURL = null;
           }
 
@@ -36,10 +29,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
 
         replaceURL(path) {
           if (testCase.expectedPushURL) {
-            testCase.assert.ok(
-              false,
-              'replaceState occurred but a pushState was expected'
-            );
+            testCase.assert.ok(false, 'replaceState occurred but a pushState was expected');
           }
 
           if (testCase.expectedReplaceURL) {
@@ -52,7 +42,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
           }
 
           this.set('path', path);
-        }
+        },
       })
     );
   }
@@ -73,7 +63,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
 
   get routerOptions() {
     return {
-      location: 'test'
+      location: 'test',
     };
   }
 
@@ -92,18 +82,13 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setSingleQPController
   */
-  setSingleQPController(
-    routeName,
-    param = 'foo',
-    defaultValue = 'bar',
-    options = {}
-  ) {
+  setSingleQPController(routeName, param = 'foo', defaultValue = 'bar', options = {}) {
     this.add(
       `controller:${routeName}`,
       Controller.extend(
         {
           queryParams: [param],
-          [param]: defaultValue
+          [param]: defaultValue,
         },
         options
       )
@@ -128,9 +113,9 @@ export default class QueryParamTestCase extends ApplicationTestCase {
       Controller.extend(
         {
           queryParams: {
-            [prop]: urlKey
+            [prop]: urlKey,
           },
-          [prop]: defaultValue
+          [prop]: defaultValue,
         },
         options
       )

@@ -169,7 +169,7 @@ let classes = [
     source() {
       return this.superklass.prototype;
     }
-  }
+  },
 ];
 
 classes.forEach(TestClass => {
@@ -193,10 +193,7 @@ classes.forEach(TestClass => {
     assert.equal(obj.foo, 'baz');
   });
 
-  TestClass.test('defining a non-configurable property', function(
-    assert,
-    factory
-  ) {
+  TestClass.test('defining a non-configurable property', function(assert, factory) {
     factory.install('foo', descriptor({ configurable: false, value: 'bar' }));
 
     let obj = factory.finalize();
@@ -211,7 +208,7 @@ classes.forEach(TestClass => {
       () =>
         Object.defineProperty(source, 'foo', {
           configurable: true,
-          value: 'baz'
+          value: 'baz',
         }),
       TypeError
     );
@@ -231,10 +228,7 @@ classes.forEach(TestClass => {
     assert.ok(Object.keys(source).indexOf('foo') !== -1);
   });
 
-  TestClass.test('defining a non-enumerable property', function(
-    assert,
-    factory
-  ) {
+  TestClass.test('defining a non-enumerable property', function(assert, factory) {
     factory.install('foo', descriptor({ enumerable: false, value: 'bar' }));
 
     let obj = factory.finalize();
@@ -285,7 +279,7 @@ classes.forEach(TestClass => {
       descriptor({
         get: function() {
           return this.__foo__;
-        }
+        },
       })
     );
 
@@ -306,7 +300,7 @@ classes.forEach(TestClass => {
       descriptor({
         set: function(value) {
           this.__foo__ = value;
-        }
+        },
       })
     );
 
@@ -321,10 +315,7 @@ classes.forEach(TestClass => {
     assert.equal(obj.__foo__, 'baz');
   });
 
-  TestClass.test('combining multiple setter and getters', function(
-    assert,
-    factory
-  ) {
+  TestClass.test('combining multiple setter and getters', function(assert, factory) {
     factory.install(
       'foo',
       descriptor({
@@ -334,7 +325,7 @@ classes.forEach(TestClass => {
 
         set: function(value) {
           this.__foo__ = value;
-        }
+        },
       })
     );
 
@@ -349,7 +340,7 @@ classes.forEach(TestClass => {
 
         set: function(value) {
           this.__bar__ = value;
-        }
+        },
       })
     );
 
@@ -360,7 +351,7 @@ classes.forEach(TestClass => {
       descriptor({
         get: function() {
           return this.foo + '-' + this.bar;
-        }
+        },
       })
     );
 

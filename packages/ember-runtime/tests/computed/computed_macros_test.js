@@ -14,7 +14,7 @@ import {
   readOnly,
   deprecatingAlias,
   and,
-  or
+  or,
 } from '../../computed/computed_macros';
 
 import EmberObject from '../../system/object';
@@ -30,35 +30,19 @@ moduleFor(
         lannisters: null,
 
         bestLannisterUnspecified: empty('bestLannister'),
-        noLannistersKnown: empty('lannisters')
+        noLannistersKnown: empty('lannisters'),
       }).create({
-        lannisters: emberA()
+        lannisters: emberA(),
       });
 
-      assert.equal(
-        get(obj, 'bestLannisterUnspecified'),
-        true,
-        'bestLannister initially empty'
-      );
-      assert.equal(
-        get(obj, 'noLannistersKnown'),
-        true,
-        'lannisters initially empty'
-      );
+      assert.equal(get(obj, 'bestLannisterUnspecified'), true, 'bestLannister initially empty');
+      assert.equal(get(obj, 'noLannistersKnown'), true, 'lannisters initially empty');
 
       get(obj, 'lannisters').pushObject('Tyrion');
       set(obj, 'bestLannister', 'Tyrion');
 
-      assert.equal(
-        get(obj, 'bestLannisterUnspecified'),
-        false,
-        'empty respects strings'
-      );
-      assert.equal(
-        get(obj, 'noLannistersKnown'),
-        false,
-        'empty respects array mutations'
-      );
+      assert.equal(get(obj, 'bestLannisterUnspecified'), false, 'empty respects strings');
+      assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
     ['@test Ember.computed.notEmpty'](assert) {
@@ -67,35 +51,19 @@ moduleFor(
         lannisters: null,
 
         bestLannisterSpecified: notEmpty('bestLannister'),
-        LannistersKnown: notEmpty('lannisters')
+        LannistersKnown: notEmpty('lannisters'),
       }).create({
-        lannisters: emberA()
+        lannisters: emberA(),
       });
 
-      assert.equal(
-        get(obj, 'bestLannisterSpecified'),
-        false,
-        'bestLannister initially empty'
-      );
-      assert.equal(
-        get(obj, 'LannistersKnown'),
-        false,
-        'lannisters initially empty'
-      );
+      assert.equal(get(obj, 'bestLannisterSpecified'), false, 'bestLannister initially empty');
+      assert.equal(get(obj, 'LannistersKnown'), false, 'lannisters initially empty');
 
       get(obj, 'lannisters').pushObject('Tyrion');
       set(obj, 'bestLannister', 'Tyrion');
 
-      assert.equal(
-        get(obj, 'bestLannisterSpecified'),
-        true,
-        'empty respects strings'
-      );
-      assert.equal(
-        get(obj, 'LannistersKnown'),
-        true,
-        'empty respects array mutations'
-      );
+      assert.equal(get(obj, 'bestLannisterSpecified'), true, 'empty respects strings');
+      assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
     }
 
     ['@test computed.not'](assert) {
@@ -183,7 +151,7 @@ moduleFor(
           },
           set: function() {
             return constantValue;
-          }
+          },
         })
       );
       defineProperty(obj, 'aliased', alias('original'));
@@ -319,11 +287,7 @@ moduleFor(
 
       set(obj, 'one', false);
 
-      assert.equal(
-        get(obj, 'oneTwoThree'),
-        false,
-        'one and not two and not three'
-      );
+      assert.equal(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
 
       set(obj, 'one', true);
       set(obj, 'two', 2);
@@ -340,11 +304,7 @@ moduleFor(
 
       set(obj, 'one', false);
 
-      assert.equal(
-        get(obj, 'oneTwoThree'),
-        false,
-        'one and not two and not three'
-      );
+      assert.equal(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
 
       set(obj, 'one', true);
       set(obj, 'two', 2);
@@ -369,11 +329,7 @@ moduleFor(
 
       set(obj, 'two', null);
 
-      assert.equal(
-        get(obj, 'oneOrTwo'),
-        null,
-        'returns last falsy value as in ||'
-      );
+      assert.equal(get(obj, 'oneOrTwo'), null, 'returns last falsy value as in ||');
 
       set(obj, 'two', true);
 
@@ -404,11 +360,7 @@ moduleFor(
 
       set(obj, 'three', null);
 
-      assert.equal(
-        get(obj, 'oneTwoThree'),
-        null,
-        'returns last falsy value as in ||'
-      );
+      assert.equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
 
       set(obj, 'two', true);
 
@@ -439,11 +391,7 @@ moduleFor(
 
       set(obj, 'three', null);
 
-      assert.equal(
-        get(obj, 'oneTwoThree'),
-        null,
-        'returns last falsy value as in ||'
-      );
+      assert.equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
 
       set(obj, 'two', true);
 
@@ -468,7 +416,7 @@ moduleFor(
     ['@test computed.oneWay'](assert) {
       let obj = {
         firstName: 'Teddy',
-        lastName: 'Zeenny'
+        lastName: 'Zeenny',
       };
 
       defineProperty(obj, 'nickName', oneWay('firstName'));
@@ -492,7 +440,7 @@ moduleFor(
     ['@test computed.readOnly'](assert) {
       let obj = {
         firstName: 'Teddy',
-        lastName: 'Zeenny'
+        lastName: 'Zeenny',
       };
 
       defineProperty(obj, 'nickName', readOnly('firstName'));

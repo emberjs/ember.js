@@ -12,12 +12,9 @@ function createLocation(options, assert) {
       hash: '',
       search: '',
       replace() {
-        assert.ok(
-          false,
-          'location.replace should not be called during testing'
-        );
-      }
-    }
+        assert.ok(false, 'location.replace should not be called during testing');
+      },
+    },
   });
 
   if (!options) {
@@ -43,7 +40,7 @@ function mockBrowserLocation(path) {
     pathname: pathname,
     port: tmp.port || '',
     protocol: protocol,
-    search: tmp.search
+    search: tmp.search,
   };
 }
 
@@ -67,7 +64,7 @@ moduleFor(
     ['@test HashLocation.getURL() returns the current url'](assert) {
       createLocation(
         {
-          _location: mockBrowserLocation('/#/foo/bar')
+          _location: mockBrowserLocation('/#/foo/bar'),
         },
         assert
       );
@@ -78,7 +75,7 @@ moduleFor(
     ['@test HashLocation.getURL() includes extra hashes'](assert) {
       createLocation(
         {
-          _location: mockBrowserLocation('/#/foo#bar#car')
+          _location: mockBrowserLocation('/#/foo#bar#car'),
         },
         assert
       );
@@ -91,7 +88,7 @@ moduleFor(
     ) {
       createLocation(
         {
-          _location: mockBrowserLocation('/#foo#bar')
+          _location: mockBrowserLocation('/#foo#bar'),
         },
         assert
       );
@@ -104,7 +101,7 @@ moduleFor(
     ) {
       createLocation(
         {
-          _location: mockBrowserLocation('/')
+          _location: mockBrowserLocation('/'),
         },
         assert
       );
@@ -121,9 +118,7 @@ moduleFor(
       assert.equal(get(location, 'lastSetURL'), '/bar');
     }
 
-    ['@test HashLocation.replaceURL() correctly replaces to the path with a page reload'](
-      assert
-    ) {
+    ['@test HashLocation.replaceURL() correctly replaces to the path with a page reload'](assert) {
       assert.expect(2);
 
       createLocation(
@@ -131,8 +126,8 @@ moduleFor(
           _location: {
             replace(path) {
               assert.equal(path, '#/foo');
-            }
-          }
+            },
+          },
         },
         assert
       );
@@ -147,7 +142,7 @@ moduleFor(
 
       createLocation(
         {
-          _location: mockBrowserLocation('/#/foo/bar')
+          _location: mockBrowserLocation('/#/foo/bar'),
         },
         assert
       );
@@ -161,17 +156,15 @@ moduleFor(
       triggerHashchange();
     }
 
-    ["@test HashLocation.onUpdateURL doesn't execute callback if lastSetURL === path"](
-      assert
-    ) {
+    ["@test HashLocation.onUpdateURL doesn't execute callback if lastSetURL === path"](assert) {
       assert.expect(0);
 
       createLocation(
         {
           _location: {
-            href: '/#/foo/bar'
+            href: '/#/foo/bar',
           },
-          lastSetURL: '/foo/bar'
+          lastSetURL: '/foo/bar',
         },
         assert
       );
@@ -185,17 +178,13 @@ moduleFor(
       triggerHashchange();
     }
 
-    ['@test HashLocation.formatURL() prepends a # to the provided string'](
-      assert
-    ) {
+    ['@test HashLocation.formatURL() prepends a # to the provided string'](assert) {
       createLocation({}, assert);
 
       assert.equal(location.formatURL('/foo#bar'), '#/foo#bar');
     }
 
-    ['@test HashLocation.willDestroy() cleans up hashchange event listener'](
-      assert
-    ) {
+    ['@test HashLocation.willDestroy() cleans up hashchange event listener'](assert) {
       assert.expect(1);
 
       createLocation({}, assert);

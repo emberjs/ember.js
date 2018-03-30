@@ -3,10 +3,7 @@ import { run } from 'ember-metal';
 import Engine from '../../system/engine';
 import { Object as EmberObject } from 'ember-runtime';
 import { privatize as P } from 'container';
-import {
-  verifyInjection,
-  verifyRegistration
-} from '../test-helpers/registry-check';
+import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 let engine;
@@ -58,51 +55,15 @@ moduleFor(
         `optionsForType 'view'`
       );
       verifyRegistration(assert, engine, 'controller:basic');
-      verifyInjection(
-        assert,
-        engine,
-        'view',
-        '_viewRegistry',
-        '-view-registry:main'
-      );
-      verifyInjection(
-        assert,
-        engine,
-        'route',
-        '_topLevelViewTemplate',
-        'template:-outlet'
-      );
-      verifyInjection(
-        assert,
-        engine,
-        'view:-outlet',
-        'namespace',
-        'application:main'
-      );
+      verifyInjection(assert, engine, 'view', '_viewRegistry', '-view-registry:main');
+      verifyInjection(assert, engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
+      verifyInjection(assert, engine, 'view:-outlet', 'namespace', 'application:main');
 
       verifyInjection(assert, engine, 'controller', 'target', 'router:main');
-      verifyInjection(
-        assert,
-        engine,
-        'controller',
-        'namespace',
-        'application:main'
-      );
+      verifyInjection(assert, engine, 'controller', 'namespace', 'application:main');
 
-      verifyInjection(
-        assert,
-        engine,
-        'router',
-        '_bucketCache',
-        P`-bucket-cache:main`
-      );
-      verifyInjection(
-        assert,
-        engine,
-        'route',
-        '_bucketCache',
-        P`-bucket-cache:main`
-      );
+      verifyInjection(assert, engine, 'router', '_bucketCache', P`-bucket-cache:main`);
+      verifyInjection(assert, engine, 'route', '_bucketCache', P`-bucket-cache:main`);
 
       verifyInjection(assert, engine, 'route', '_router', 'router:main');
 
@@ -112,13 +73,7 @@ moduleFor(
       verifyRegistration(assert, engine, 'component:link-to');
 
       verifyRegistration(assert, engine, 'service:-routing');
-      verifyInjection(
-        assert,
-        engine,
-        'service:-routing',
-        'router',
-        'router:main'
-      );
+      verifyInjection(assert, engine, 'service:-routing', 'router', 'router:main');
 
       // DEBUGGING
       verifyRegistration(assert, engine, 'resolver-for-debugging:main');
@@ -139,13 +94,7 @@ moduleFor(
       verifyRegistration(assert, engine, 'container-debug-adapter:main');
       verifyRegistration(assert, engine, 'component-lookup:main');
 
-      verifyInjection(
-        assert,
-        engine,
-        'service:-dom-changes',
-        'document',
-        'service:-document'
-      );
+      verifyInjection(assert, engine, 'service:-dom-changes', 'document', 'service:-document');
       verifyInjection(
         assert,
         engine,
@@ -156,20 +105,8 @@ moduleFor(
       verifyRegistration(assert, engine, 'view:-outlet');
       verifyRegistration(assert, engine, P`template:components/-default`);
       verifyRegistration(assert, engine, 'template:-outlet');
-      verifyInjection(
-        assert,
-        engine,
-        'view:-outlet',
-        'template',
-        'template:-outlet'
-      );
-      verifyInjection(
-        assert,
-        engine,
-        'template',
-        'compiler',
-        P`template-compiler:main`
-      );
+      verifyInjection(assert, engine, 'view:-outlet', 'template', 'template:-outlet');
+      verifyInjection(assert, engine, 'template', 'compiler', P`template-compiler:main`);
       assert.deepEqual(
         engine.registeredOptionsForType('helper'),
         { instantiate: false },

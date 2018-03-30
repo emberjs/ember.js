@@ -80,7 +80,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     writable: true,
     value: function() {
       return computed(...arguments, this);
-    }
+    },
   });
 
   /**
@@ -116,7 +116,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     writable: true,
     value: function() {
       return observer(...arguments, this);
-    }
+    },
   });
 
   Object.defineProperty(FunctionPrototype, '_observesImmediately', {
@@ -139,7 +139,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 
       // observes handles property expansion
       return this.observes(...arguments);
-    }
+    },
   });
 
   /**
@@ -173,6 +173,6 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     writable: true,
     value: function() {
       return on(...arguments, this);
-    }
+    },
   });
 }

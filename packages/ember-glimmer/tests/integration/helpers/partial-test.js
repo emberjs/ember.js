@@ -9,9 +9,7 @@ moduleFor(
     ['@test should render other templates registered with the container']() {
       this.registerPartial('_subTemplateFromContainer', 'sub-template');
 
-      this.render(
-        `This {{partial "subTemplateFromContainer"}} is pretty great.`
-      );
+      this.render(`This {{partial "subTemplateFromContainer"}} is pretty great.`);
 
       this.assertStableRerender();
 
@@ -21,9 +19,7 @@ moduleFor(
     ['@test should render other slash-separated templates registered with the container']() {
       this.registerPartial('child/_subTemplateFromContainer', 'sub-template');
 
-      this.render(
-        `This {{partial "child/subTemplateFromContainer"}} is pretty great.`
-      );
+      this.render(`This {{partial "child/subTemplateFromContainer"}} is pretty great.`);
 
       this.assertStableRerender();
 
@@ -31,16 +27,13 @@ moduleFor(
     }
 
     ['@test should use the current context']() {
-      this.registerPartial(
-        '_person_name',
-        '{{model.firstName}} {{model.lastName}}'
-      );
+      this.registerPartial('_person_name', '{{model.firstName}} {{model.lastName}}');
 
       this.render('Who is {{partial "person_name"}}?', {
         model: {
           firstName: 'Kris',
-          lastName: 'Selden'
-        }
+          lastName: 'Selden',
+        },
       });
 
       this.assertStableRerender();
@@ -51,9 +44,7 @@ moduleFor(
 
       this.assertText('Who is Kelly Selden?');
 
-      this.runTask(() =>
-        set(this.context, 'model', { firstName: 'Kris', lastName: 'Selden' })
-      );
+      this.runTask(() => set(this.context, 'model', { firstName: 'Kris', lastName: 'Selden' }));
 
       this.assertText('Who is Kris Selden?');
     }
@@ -65,7 +56,7 @@ moduleFor(
       this.render(
         'This {{partial templates.partialName}} is pretty {{partial nonexistent}}great.',
         {
-          templates: { partialName: 'subTemplate' }
+          templates: { partialName: 'subTemplate' },
         }
       );
 
@@ -73,9 +64,7 @@ moduleFor(
 
       this.assertText('This sub-template is pretty great.');
 
-      this.runTask(() =>
-        set(this.context, 'templates.partialName', 'otherTemplate')
-      );
+      this.runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
 
       this.assertText('This other-template is pretty great.');
 
@@ -83,9 +72,7 @@ moduleFor(
 
       this.assertText('This  is pretty great.');
 
-      this.runTask(() =>
-        set(this.context, 'templates', { partialName: 'subTemplate' })
-      );
+      this.runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
 
       this.assertText('This sub-template is pretty great.');
     }
@@ -100,8 +87,8 @@ moduleFor(
       {{/each}}`,
         {
           model: {
-            items: emberA(['apple', 'orange', 'banana'])
-          }
+            items: emberA(['apple', 'orange', 'banana']),
+          },
         }
       );
 
@@ -111,13 +98,11 @@ moduleFor(
 
       this.runTask(() => this.context.model.items.pushObject('strawberry'));
 
-      this.assertText(
-        'apple: apple |orange: orange |banana: banana |strawberry: strawberry |'
-      );
+      this.assertText('apple: apple |orange: orange |banana: banana |strawberry: strawberry |');
 
       this.runTask(() =>
         set(this.context, 'model', {
-          items: emberA(['apple', 'orange', 'banana'])
+          items: emberA(['apple', 'orange', 'banana']),
         })
       );
 
@@ -133,7 +118,7 @@ moduleFor(
         {{item.name}}: {{partial 'show-id'}}
       {{/with}}`,
         {
-          model: { id: 1, name: 'foo' }
+          model: { id: 1, name: 'foo' },
         }
       );
 
@@ -163,7 +148,7 @@ moduleFor(
         {{item.id}}: {{partial 'show-item'}} |
       {{/each}}`,
         {
-          items: emberA([{ id: 1 }, { id: 2 }, { id: 3 }])
+          items: emberA([{ id: 1 }, { id: 2 }, { id: 3 }]),
         }
       );
 
@@ -175,9 +160,7 @@ moduleFor(
 
       this.assertText('1: 1 |2: 2 |3: 3 |4: 4 |');
 
-      this.runTask(() =>
-        set(this.context, 'items', emberA([{ id: 1 }, { id: 2 }, { id: 3 }]))
-      );
+      this.runTask(() => set(this.context, 'items', emberA([{ id: 1 }, { id: 2 }, { id: 3 }])));
 
       this.assertText('1: 1 |2: 2 |3: 3 |');
     }
@@ -191,7 +174,7 @@ moduleFor(
         {{item}}: {{partial 'show-item'}} |
       {{/each}}`,
         {
-          items: emberA(['apple', null, 'orange', 'banana'])
+          items: emberA(['apple', null, 'orange', 'banana']),
         }
       );
 
@@ -201,13 +184,9 @@ moduleFor(
 
       this.runTask(() => this.context.items.pushObject('strawberry'));
 
-      this.assertText(
-        'apple: apple |:  |orange: orange |banana: banana |strawberry: strawberry |'
-      );
+      this.assertText('apple: apple |:  |orange: orange |banana: banana |strawberry: strawberry |');
 
-      this.runTask(() =>
-        set(this.context, 'items', emberA(['apple', null, 'orange', 'banana']))
-      );
+      this.runTask(() => set(this.context, 'items', emberA(['apple', null, 'orange', 'banana'])));
 
       this.assertText('apple: apple |:  |orange: orange |banana: banana |');
     }
@@ -228,15 +207,13 @@ moduleFor(
         {{i}}: {{partial 'outer-partial'}}
       {{/each}}`,
         {
-          names: emberA(['Alex', 'Ben'])
+          names: emberA(['Alex', 'Ben']),
         }
       );
 
       this.assertStableRerender();
 
-      this.assertText(
-        '0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]'
-      );
+      this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
 
       this.runTask(() => this.context.names.pushObject('Sophie'));
 
@@ -246,9 +223,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'names', emberA(['Alex', 'Ben'])));
 
-      this.assertText(
-        '0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]'
-      );
+      this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
     }
 
     ['@test nested partials within nested `{{#with}}` blocks']() {
@@ -318,8 +293,8 @@ moduleFor(
         {
           model: {
             items: ['even', 'odd', 'even', 'odd'],
-            type: 'number'
-          }
+            type: 'number',
+          },
         }
       );
 
@@ -334,7 +309,7 @@ moduleFor(
       this.runTask(() =>
         set(this.context, 'model', {
           items: ['even', 'odd', 'even', 'odd'],
-          type: 'number'
+          type: 'number',
         })
       );
 
@@ -352,7 +327,7 @@ moduleFor(
         Nothing!
       {{/with}}`,
         {
-          item: { thing: false }
+          item: { thing: false },
         }
       );
 
@@ -371,12 +346,11 @@ moduleFor(
 
     ['@test partials which contain contextual components']() {
       this.registerComponent('outer-component', {
-        template:
-          '{{yield (hash inner=(component "inner-component" name=name))}}'
+        template: '{{yield (hash inner=(component "inner-component" name=name))}}',
       });
 
       this.registerComponent('inner-component', {
-        template: '{{yield (hash name=name)}}'
+        template: '{{yield (hash name=name)}}',
       });
 
       this.registerPartial(

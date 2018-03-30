@@ -8,7 +8,7 @@ moduleFor(
       let Foo = EmberObject.extend({
         blah() {
           return 'foo';
-        }
+        },
       });
 
       let Bar = Foo.extend({
@@ -20,16 +20,12 @@ moduleFor(
           let blah = this.blah;
 
           return blah();
-        }
+        },
       });
 
       let bar = Bar.create();
 
-      assert.equal(
-        bar.callBlah(),
-        'bar',
-        'can call local function without call/apply'
-      );
+      assert.equal(bar.callBlah(), 'bar', 'can call local function without call/apply');
     }
   }
 );

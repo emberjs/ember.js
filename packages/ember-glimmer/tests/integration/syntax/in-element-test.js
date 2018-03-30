@@ -28,7 +28,7 @@ moduleFor(
     `,
         {
           someElement,
-          text: 'Whoop!'
+          text: 'Whoop!',
         }
       );
 
@@ -61,10 +61,10 @@ moduleFor(
 
           willDestroyElement() {
             hooks.push('willDestroyElement');
-          }
+          },
         }),
 
-        template: `{{text}}`
+        template: `{{text}}`,
       });
 
       this.render(
@@ -78,7 +78,7 @@ moduleFor(
         {
           someElement,
           text: 'Whoop!',
-          showModal: false
+          showModal: false,
         }
       );
 
@@ -91,21 +91,21 @@ moduleFor(
 
       equalTokens(this.element, '<!---->');
       this.assertComponentElement(someElement.firstChild, {
-        content: 'Whoop!'
+        content: 'Whoop!',
       });
 
       this.runTask(() => set(this.context, 'text', 'Huzzah!'));
 
       equalTokens(this.element, '<!---->');
       this.assertComponentElement(someElement.firstChild, {
-        content: 'Huzzah!'
+        content: 'Huzzah!',
       });
 
       this.runTask(() => set(this.context, 'text', 'Whoop!'));
 
       equalTokens(this.element, '<!---->');
       this.assertComponentElement(someElement.firstChild, {
-        content: 'Whoop!'
+        content: 'Whoop!',
       });
 
       this.runTask(() => set(this.context, 'showModal', false));

@@ -12,9 +12,7 @@ moduleFor(
       }
     }
 
-    ['@test if a load hook is registered, it is executed when runLoadHooks are exected'](
-      assert
-    ) {
+    ['@test if a load hook is registered, it is executed when runLoadHooks are exected'](assert) {
       let count = 0;
 
       run(function() {
@@ -30,9 +28,7 @@ moduleFor(
       assert.equal(count, 1, 'the object was passed into the load hook');
     }
 
-    ['@test if runLoadHooks was already run, it executes newly added hooks immediately'](
-      assert
-    ) {
+    ['@test if runLoadHooks was already run, it executes newly added hooks immediately'](assert) {
       let count = 0;
       run(() => {
         onLoad('__test_hook__', object => (count += object));
@@ -45,11 +41,7 @@ moduleFor(
         onLoad('__test_hook__', object => (count += object));
       });
 
-      assert.equal(
-        count,
-        1,
-        'the original object was passed into the load hook'
-      );
+      assert.equal(count, 1, 'the original object was passed into the load hook');
     }
 
     ["@test hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"](assert) {
@@ -60,11 +52,7 @@ moduleFor(
         runLoadHooks('__before_ember_test_hook__', 1);
       });
 
-      assert.equal(
-        window.ENV.__test_hook_count__,
-        1,
-        'the object was passed into the load hook'
-      );
+      assert.equal(window.ENV.__test_hook_count__, 1, 'the object was passed into the load hook');
     }
 
     ['@test load hooks trigger a custom event'](assert) {
@@ -77,11 +65,7 @@ moduleFor(
 
         window.addEventListener('__test_hook_for_events__', function(e) {
           assert.ok(true, 'custom event was fired');
-          assert.equal(
-            e.detail,
-            eventObject,
-            'event details are provided properly'
-          );
+          assert.equal(e.detail, eventObject, 'event details are provided properly');
         });
 
         run(() => {

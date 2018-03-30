@@ -9,7 +9,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test should update length for null content'](assert) {
       let proxy = ArrayProxy.create({
-        content: emberA([1, 2, 3])
+        content: emberA([1, 2, 3]),
       });
 
       assert.equal(proxy.get('length'), 3, 'precond - length is 3');
@@ -23,9 +23,9 @@ moduleFor(
       assert
     ) {
       let proxy = ArrayProxy.extend({
-        isEmpty: not('length')
+        isEmpty: not('length'),
       }).create({
-        content: emberA([1, 2, 3])
+        content: emberA([1, 2, 3]),
       });
 
       assert.equal(proxy.get('length'), 3, 'precond - length is 3');
@@ -39,9 +39,7 @@ moduleFor(
       assert.equal(proxy.get('length'), 0, 'length updates');
     }
 
-    ["@test The ArrayProxy doesn't explode when assigned a destroyed object"](
-      assert
-    ) {
+    ["@test The ArrayProxy doesn't explode when assigned a destroyed object"](assert) {
       let proxy1 = ArrayProxy.create();
       let proxy2 = ArrayProxy.create();
 
@@ -52,9 +50,7 @@ moduleFor(
       assert.ok(true, 'No exception was raised');
     }
 
-    ['@test should update if content changes while change events are deferred'](
-      assert
-    ) {
+    ['@test should update if content changes while change events are deferred'](assert) {
       let proxy = ArrayProxy.create();
 
       assert.deepEqual(proxy.toArray(), []);
@@ -72,9 +68,9 @@ moduleFor(
         objectAtContent(index) {
           indexes.push(index);
           return this.content[index];
-        }
+        },
       }).create({
-        content: emberA([1, 2, 3, 4, 5])
+        content: emberA([1, 2, 3, 4, 5]),
       });
 
       assert.deepEqual(indexes, []);
@@ -102,9 +98,9 @@ moduleFor(
         objectAtContent(index) {
           indexes.push(index);
           return this.content[index];
-        }
+        },
       }).create({
-        content: emberA([1, 2, 3, 4, 5])
+        content: emberA([1, 2, 3, 4, 5]),
       });
 
       assert.equal(get(proxy, 'length'), 5);
@@ -128,9 +124,9 @@ moduleFor(
         objectAtContent(index) {
           indexes.push(index);
           return this.content[index];
-        }
+        },
       }).create({
-        content: emberA([1, 2, 3, 4, 5])
+        content: emberA([1, 2, 3, 4, 5]),
       });
 
       assert.deepEqual(proxy.toArray(), [1, 2, 3, 4, 5]);

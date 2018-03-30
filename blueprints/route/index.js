@@ -7,24 +7,23 @@ const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
 
 module.exports = {
-  description:
-    'Generates a route and a template, and registers the route with the router.',
+  description: 'Generates a route and a template, and registers the route with the router.',
 
   availableOptions: [
     {
       name: 'path',
       type: String,
-      default: ''
+      default: '',
     },
     {
       name: 'skip-router',
       type: Boolean,
-      default: false
+      default: false,
     },
     {
       name: 'reset-namespace',
-      type: Boolean
-    }
+      type: Boolean,
+    },
   ],
 
   fileMapTokens: function() {
@@ -67,7 +66,7 @@ module.exports = {
         }
 
         return 'app';
-      }
+      },
     };
   },
 
@@ -79,7 +78,7 @@ module.exports = {
     }
 
     return {
-      moduleName: stringUtil.dasherize(moduleName)
+      moduleName: stringUtil.dasherize(moduleName),
     };
   },
 
@@ -112,14 +111,14 @@ module.exports = {
 
   afterUninstall: function(options) {
     updateRouter.call(this, 'remove', options);
-  }
+  },
 };
 
 function updateRouter(action, options) {
   let entity = options.entity;
   let actionColorMap = {
     add: 'green',
-    remove: 'red'
+    remove: 'red',
   };
   let color = actionColorMap[action] || 'gray';
 
@@ -135,12 +134,7 @@ function findRouter(options) {
   let routerPathParts = [options.project.root];
 
   if (options.dummy && options.project.isEmberCLIAddon()) {
-    routerPathParts = routerPathParts.concat([
-      'tests',
-      'dummy',
-      'app',
-      'router.js'
-    ]);
+    routerPathParts = routerPathParts.concat(['tests', 'dummy', 'app', 'router.js']);
   } else {
     routerPathParts = routerPathParts.concat(['app', 'router.js']);
   }

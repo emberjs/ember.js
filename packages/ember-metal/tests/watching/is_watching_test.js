@@ -6,7 +6,7 @@ import {
   observer,
   addObserver,
   removeObserver,
-  isWatching
+  isWatching,
 } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -14,23 +14,11 @@ function testObserver(assert, setup, teardown, key = 'key') {
   let obj = {};
   function fn() {}
 
-  assert.equal(
-    isWatching(obj, key),
-    false,
-    'precond - isWatching is false by default'
-  );
+  assert.equal(isWatching(obj, key), false, 'precond - isWatching is false by default');
   setup(obj, key, fn);
-  assert.equal(
-    isWatching(obj, key),
-    true,
-    'isWatching is true when observers are added'
-  );
+  assert.equal(isWatching(obj, key), true, 'isWatching is true when observers are added');
   teardown(obj, key, fn);
-  assert.equal(
-    isWatching(obj, key),
-    false,
-    'isWatching is false after observers are removed'
-  );
+  assert.equal(isWatching(obj, key), false, 'isWatching is false after observers are removed');
 }
 
 moduleFor(
@@ -41,7 +29,7 @@ moduleFor(
         assert,
         (obj, key, fn) => {
           Mixin.create({
-            didChange: observer(key, fn)
+            didChange: observer(key, fn),
           }).apply(obj);
         },
         (obj, key, fn) => removeObserver(obj, key, obj, fn)

@@ -294,5 +294,5 @@ export default EmberObject.extend({
     if (this._popstateHandler) {
       window.removeEventListener('popstate', this._popstateHandler);
     }
-  }
+  },
 });

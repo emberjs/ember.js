@@ -26,14 +26,14 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             replaceURL(path) {
               testCase.state.splice(testCase.state.length - 1, 1, path);
               this.set('path', path);
-            }
+            },
           })
         );
       }
 
       get routerOptions() {
         return {
-          location: 'test'
+          location: 'test',
         };
       }
 
@@ -51,9 +51,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      ['@test RouterService#replaceWith with basic route replaces location'](
-        assert
-      ) {
+      ['@test RouterService#replaceWith with basic route replaces location'](assert) {
         assert.expect(1);
 
         return this.visit('/')
@@ -71,9 +69,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           });
       }
 
-      ['@test RouterService#replaceWith with basic route using URLs replaces location'](
-        assert
-      ) {
+      ['@test RouterService#replaceWith with basic route using URLs replaces location'](assert) {
         assert.expect(1);
 
         return this.visit('/')
@@ -123,7 +119,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           'controller:parent.child',
           Controller.extend({
             queryParams: ['sort'],
-            sort: 'ASC'
+            sort: 'ASC',
           })
         );
 

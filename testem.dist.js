@@ -5,9 +5,7 @@ function FailureOnlyPerBrowserReporter() {
   this._resultsByBrowser = {};
 }
 
-FailureOnlyPerBrowserReporter.prototype = Object.create(
-  FailureOnlyReporter.prototype
-);
+FailureOnlyPerBrowserReporter.prototype = Object.create(FailureOnlyReporter.prototype);
 FailureOnlyPerBrowserReporter.prototype.constructor = FailureOnlyPerBrowserReporter;
 
 FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
@@ -15,7 +13,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
     this._resultsByBrowser[prefix] = {
       total: 0,
       pass: 0,
-      skipped: 0
+      skipped: 0,
     };
   }
 
@@ -30,10 +28,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
 };
 
 FailureOnlyPerBrowserReporter.prototype.summaryDisplay = function() {
-  var originalSummary = FailureOnlyReporter.prototype.summaryDisplay.apply(
-    this,
-    arguments
-  );
+  var originalSummary = FailureOnlyReporter.prototype.summaryDisplay.apply(this, arguments);
   var lines = [];
   var resultsByBrowser = this._resultsByBrowser;
   Object.keys(resultsByBrowser).forEach(function(browser) {
@@ -73,9 +68,9 @@ module.exports = {
         '-t',
         '1200',
         '--u',
-        '<url>'
+        '<url>',
       ],
-      protocol: 'browser'
+      protocol: 'browser',
     },
     BS_Firefox_Current: {
       exe: 'node_modules/.bin/browserstack-launch',
@@ -91,9 +86,9 @@ module.exports = {
         '-t',
         '1200',
         '--u',
-        '<url>'
+        '<url>',
       ],
-      protocol: 'browser'
+      protocol: 'browser',
     },
     BS_Safari_Current: {
       exe: 'node_modules/.bin/browserstack-launch',
@@ -109,9 +104,9 @@ module.exports = {
         '-t',
         '1200',
         '--u',
-        '<url>'
+        '<url>',
       ],
-      protocol: 'browser'
+      protocol: 'browser',
     },
     BS_Safari_Last: {
       exe: 'node_modules/.bin/browserstack-launch',
@@ -127,9 +122,9 @@ module.exports = {
         '-t',
         '1200',
         '--u',
-        '<url>'
+        '<url>',
       ],
-      protocol: 'browser'
+      protocol: 'browser',
     },
     BS_MS_Edge: {
       exe: 'node_modules/.bin/browserstack-launch',
@@ -145,9 +140,9 @@ module.exports = {
         '-t',
         '1200',
         '--u',
-        '<url>'
+        '<url>',
       ],
-      protocol: 'browser'
+      protocol: 'browser',
     },
     BS_IE_11: {
       exe: 'node_modules/.bin/browserstack-launch',
@@ -163,11 +158,11 @@ module.exports = {
         '-t',
         '1500',
         '--u',
-        '<url>'
+        '<url>',
       ],
-      protocol: 'browser'
-    }
+      protocol: 'browser',
+    },
   },
   launch_in_dev: [],
-  launch_in_ci: ['BS_Safari_Current', 'BS_MS_Edge', 'BS_IE_11']
+  launch_in_ci: ['BS_Safari_Current', 'BS_MS_Edge', 'BS_IE_11'],
 };

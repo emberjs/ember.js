@@ -14,11 +14,7 @@ module.exports = useTestFrameworkDetector({
     let testFolderRoot = stringUtils.dasherize(options.project.name());
 
     if (options.project.isEmberCLIAddon()) {
-      testFolderRoot = pathUtil.getRelativeParentPath(
-        options.entity.name,
-        -1,
-        false
-      );
+      testFolderRoot = pathUtil.getRelativeParentPath(options.entity.name, -1, false);
     }
 
     let destroyAppExists = fs.existsSync(
@@ -27,13 +23,13 @@ module.exports = useTestFrameworkDetector({
 
     let friendlyTestName = [
       'Acceptance',
-      stringUtils.dasherize(options.entity.name).replace(/[-]/g, ' ')
+      stringUtils.dasherize(options.entity.name).replace(/[-]/g, ' '),
     ].join(' | ');
 
     return {
       testFolderRoot: testFolderRoot,
       friendlyTestName,
-      destroyAppExists
+      destroyAppExists,
     };
-  }
+  },
 });

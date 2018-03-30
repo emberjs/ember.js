@@ -44,7 +44,7 @@ RSVP.resolve()
       '--file',
       'testem.travis-browsers.js',
       '--port',
-      '7000'
+      '7000',
     ]);
   })
   .catch(function(error) {

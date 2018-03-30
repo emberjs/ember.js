@@ -21,7 +21,7 @@ moduleFor(
         '_Hello World': 'Bonjour le monde',
         '_Hello %@': 'Bonjour %@',
         '_Hello %@ %@': 'Bonjour %@ %@',
-        '_Hello %@# %@#': 'Bonjour %@2 %@1'
+        '_Hello %@# %@#': 'Bonjour %@2 %@1',
       });
     }
 
@@ -29,14 +29,9 @@ moduleFor(
       setStrings(oldString);
     }
 
-    ['@test String.prototype.loc is not available without EXTEND_PROTOTYPES'](
-      assert
-    ) {
+    ['@test String.prototype.loc is not available without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
-        assert.ok(
-          'undefined' === typeof String.prototype.loc,
-          'String.prototype helper disabled'
-        );
+        assert.ok('undefined' === typeof String.prototype.loc, 'String.prototype helper disabled');
       } else {
         assert.expect(0);
       }

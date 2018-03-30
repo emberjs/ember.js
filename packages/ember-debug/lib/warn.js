@@ -62,8 +62,7 @@ if (DEBUG) {
     'When calling `warn` you ' +
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include an `id` property.';
-  missingOptionsIdDeprecation =
-    'When calling `warn` you must provide `id` in options.';
+  missingOptionsIdDeprecation = 'When calling `warn` you must provide `id` in options.';
 
   /**
     Display a warning with the provided message.
@@ -99,8 +98,7 @@ if (DEBUG) {
       deprecate(missingOptionsDeprecation, false, {
         id: 'ember-debug.warn-options-missing',
         until: '3.0.0',
-        url:
-          'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
       });
     }
 
@@ -108,8 +106,7 @@ if (DEBUG) {
       deprecate(missingOptionsIdDeprecation, false, {
         id: 'ember-debug.warn-id-missing',
         until: '3.0.0',
-        url:
-          'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
       });
     }
 
@@ -118,8 +115,4 @@ if (DEBUG) {
 }
 
 export default warn;
-export {
-  registerHandler,
-  missingOptionsIdDeprecation,
-  missingOptionsDeprecation
-};
+export { registerHandler, missingOptionsIdDeprecation, missingOptionsDeprecation };

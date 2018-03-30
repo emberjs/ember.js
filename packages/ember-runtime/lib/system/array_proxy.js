@@ -9,7 +9,7 @@ import {
   alias,
   PROPERTY_DID_CHANGE,
   addArrayObserver,
-  removeArrayObserver
+  removeArrayObserver,
 } from 'ember-metal';
 import { isArray } from '../utils';
 import EmberObject from './object';
@@ -18,7 +18,7 @@ import { assert } from 'ember-debug';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
-  didChange: '_arrangedContentArrayDidChange'
+  didChange: '_arrangedContentArrayDidChange',
 };
 
 /**
@@ -210,10 +210,7 @@ export default EmberObject.extend(MutableArray, {
   _addArrangedContentArrayObsever() {
     let arrangedContent = get(this, 'arrangedContent');
     if (arrangedContent) {
-      assert(
-        "Can't set ArrayProxy's content to itself",
-        arrangedContent !== this
-      );
+      assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
       assert(
         `ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
         isArray(arrangedContent) || arrangedContent.isDestroyed
@@ -253,5 +250,5 @@ export default EmberObject.extend(MutableArray, {
     this._lengthDirty = true;
 
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
-  }
+  },
 });

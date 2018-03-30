@@ -29,9 +29,7 @@ export default function transformInlineLinkTo(env) {
     visitor: {
       MustacheStatement(node) {
         if (node.path.original === 'link-to') {
-          let content = node.escaped
-            ? node.params[0]
-            : unsafeHtml(b, node.params[0]);
+          let content = node.escaped ? node.params[0] : unsafeHtml(b, node.params[0]);
           return b.block(
             'link-to',
             node.params.slice(1),
@@ -41,7 +39,7 @@ export default function transformInlineLinkTo(env) {
             node.loc
           );
         }
-      }
-    }
+      },
+    },
   };
 }

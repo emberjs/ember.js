@@ -12,9 +12,7 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.capitalize',
   class extends AbstractTestCase {
-    ['@test String.prototype.capitalize is not modified without EXTEND_PROTOTYPES'](
-      assert
-    ) {
+    ['@test String.prototype.capitalize is not modified without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(
           'undefined' === typeof String.prototype.capitalize,
@@ -26,24 +24,9 @@ moduleFor(
     }
 
     ['@test String capitalize tests'](assert) {
-      test(
-        assert,
-        'my favorite items',
-        'My favorite items',
-        'capitalize normal string'
-      );
-      test(
-        assert,
-        'css-class-name',
-        'Css-class-name',
-        'capitalize dasherized string'
-      );
-      test(
-        assert,
-        'action_name',
-        'Action_name',
-        'capitalize underscored string'
-      );
+      test(assert, 'my favorite items', 'My favorite items', 'capitalize normal string');
+      test(assert, 'css-class-name', 'Css-class-name', 'capitalize dasherized string');
+      test(assert, 'action_name', 'Action_name', 'capitalize underscored string');
       test(assert, 'innerHTML', 'InnerHTML', 'capitalize camelcased string');
       test(
         assert,

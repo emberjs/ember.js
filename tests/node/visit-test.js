@@ -3,10 +3,7 @@ var SimpleDOM = require('simple-dom');
 var appModule = require('./helpers/app-module');
 
 function assertHTMLMatches(assert, actualHTML, expectedHTML) {
-  assert.ok(
-    actualHTML.match(expectedHTML),
-    actualHTML + ' matches ' + expectedHTML
-  );
+  assert.ok(actualHTML.match(expectedHTML), actualHTML + ' matches ' + expectedHTML);
 }
 
 function handleError(assert) {
@@ -28,7 +25,7 @@ function fastbootVisit(App, url) {
       return {
         url: instance.getURL(),
         title: doc.title,
-        body: HTMLSerializer.serialize(rootElement)
+        body: HTMLSerializer.serialize(rootElement),
       };
     } finally {
       instance.destroy();
@@ -67,7 +64,7 @@ QUnit.test('FastBoot: basic', function(assert) {
     },
     didInsertElement: function() {
       didInsertElementCalled = true;
-    }
+    },
   });
 
   var App = this.createApplication();
@@ -77,24 +74,20 @@ QUnit.test('FastBoot: basic', function(assert) {
       assertFastbootResult(assert, {
         url: '/a',
         body:
-          '<h1>Hello world</h1>\n<h2>Welcome to <span id=".+" class="ember-view">Page A</span></h2>'
+          '<h1>Hello world</h1>\n<h2>Welcome to <span id=".+" class="ember-view">Page A</span></h2>',
       }),
       handleError(assert)
     ),
     fastbootVisit(App, '/b').then(
       assertFastbootResult(assert, {
         url: '/b',
-        body:
-          '<h1>Hello world</h1>\n<h2><span id=".+" class="ember-view">Page B</span></h2>'
+        body: '<h1>Hello world</h1>\n<h2><span id=".+" class="ember-view">Page B</span></h2>',
       }),
       handleError
-    )
+    ),
   ]).then(function() {
     assert.ok(initCalled, 'Component#init should be called');
-    assert.ok(
-      !didInsertElementCalled,
-      'Component#didInsertElement should not be called'
-    );
+    assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
   });
 });
 
@@ -112,13 +105,13 @@ QUnit.test('FastBoot: redirect', function(assert) {
   this.route('a', {
     beforeModel: function() {
       this.replaceWith('b');
-    }
+    },
   });
 
   this.route('b', {
     afterModel: function() {
       this.transitionTo('c');
-    }
+    },
   });
 
   var App = this.createApplication();
@@ -127,17 +120,17 @@ QUnit.test('FastBoot: redirect', function(assert) {
     fastbootVisit(App, '/a').then(
       assertFastbootResult(assert, {
         url: '/c',
-        body: '<h1>Hello from C</h1>'
+        body: '<h1>Hello from C</h1>',
       }),
       handleError(assert)
     ),
     fastbootVisit(App, '/b').then(
       assertFastbootResult(assert, {
         url: '/c',
-        body: '<h1>Hello from C</h1>'
+        body: '<h1>Hello from C</h1>',
       }),
       handleError(assert)
-    )
+    ),
   ]);
 });
 
@@ -146,7 +139,7 @@ QUnit.test('FastBoot: attributes are sanitized', function(assert) {
 
   this.controller('application', {
     /*jshint scripturl:true*/
-    test: 'javascript:alert("hello")'
+    test: 'javascript:alert("hello")',
   });
 
   var App = this.createApplication();
@@ -155,10 +148,10 @@ QUnit.test('FastBoot: attributes are sanitized', function(assert) {
     fastbootVisit(App, '/').then(
       assertFastbootResult(assert, {
         url: '/',
-        body: '<a href="unsafe:javascript:alert\\(&quot;hello&quot;\\)"></a>'
+        body: '<a href="unsafe:javascript:alert\\(&quot;hello&quot;\\)"></a>',
       }),
       handleError(assert)
-    )
+    ),
   ]);
 });
 
@@ -174,13 +167,13 @@ QUnit.test('FastBoot: route error', function(assert) {
   this.route('a', {
     beforeModel: function() {
       throw new Error('Error from A');
-    }
+    },
   });
 
   this.route('b', {
     afterModel: function() {
       throw new Error('Error from B');
-    }
+    },
   });
 
   var App = this.createApplication();
@@ -203,7 +196,7 @@ QUnit.test('FastBoot: route error', function(assert) {
       function(error) {
         assert.equal(error.message, 'Error from B');
       }
-    )
+    ),
   ]);
 });
 
@@ -218,7 +211,7 @@ QUnit.test('FastBoot: route error template', function(assert) {
   this.route('a', {
     model: function() {
       throw new Error('Error from A');
-    }
+    },
   });
 
   var App = this.createApplication();
@@ -227,10 +220,10 @@ QUnit.test('FastBoot: route error template', function(assert) {
     fastbootVisit(App, '/a').then(
       assertFastbootResult(assert, {
         url: '/a',
-        body: '<p>Error template rendered!</p>'
+        body: '<p>Error template rendered!</p>',
       }),
       handleError(assert)
-    )
+    ),
   ]);
 });
 
@@ -243,7 +236,7 @@ QUnit.test('Resource-discovery setup', function(assert) {
     fetch: function(url) {
       this.get('requests').push(url);
       return RSVP.resolve();
-    }
+    },
   });
 
   this.routes(function() {
@@ -260,7 +253,7 @@ QUnit.test('Resource-discovery setup', function(assert) {
     },
     afterModel: function() {
       this.replaceWith('b');
-    }
+    },
   });
 
   this.route('b', {
@@ -269,13 +262,13 @@ QUnit.test('Resource-discovery setup', function(assert) {
     },
     afterModel: function() {
       this.replaceWith('c');
-    }
+    },
   });
 
   this.route('c', {
     model: function() {
       return this.network.fetch('/c');
-    }
+    },
   });
 
   this.route('d', {
@@ -284,13 +277,13 @@ QUnit.test('Resource-discovery setup', function(assert) {
     },
     afterModel: function() {
       this.replaceWith('e');
-    }
+    },
   });
 
   this.route('e', {
     model: function() {
       return this.network.fetch('/e');
-    }
+    },
   });
 
   this.template('a', '{{x-foo}}');
@@ -305,7 +298,7 @@ QUnit.test('Resource-discovery setup', function(assert) {
     init: function() {
       this._super();
       xFooInstances++;
-    }
+    },
   });
 
   var App = this.createApplication();
@@ -313,24 +306,17 @@ QUnit.test('Resource-discovery setup', function(assert) {
   App.inject('route', 'network', 'service:network');
 
   function assertResources(url, resources) {
-    return App.visit(url, { isBrowser: false, shouldRender: false }).then(
-      function(instance) {
-        try {
-          var viewRegistry = instance.lookup('-view-registry:main');
-          assert.strictEqual(
-            Object.keys(viewRegistry).length,
-            0,
-            'did not create any views'
-          );
+    return App.visit(url, { isBrowser: false, shouldRender: false }).then(function(instance) {
+      try {
+        var viewRegistry = instance.lookup('-view-registry:main');
+        assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
 
-          var networkService = instance.lookup('service:network');
-          assert.deepEqual(networkService.get('requests'), resources);
-        } finally {
-          instance.destroy();
-        }
-      },
-      handleError(assert)
-    );
+        var networkService = instance.lookup('service:network');
+        assert.deepEqual(networkService.get('requests'), resources);
+      } finally {
+        instance.destroy();
+      }
+    }, handleError(assert));
   }
 
   return RSVP.all([
@@ -338,21 +324,14 @@ QUnit.test('Resource-discovery setup', function(assert) {
     assertResources('/b', ['/b', '/c']),
     assertResources('/c', ['/c']),
     assertResources('/d', ['/d', '/e']),
-    assertResources('/e', ['/e'])
+    assertResources('/e', ['/e']),
   ]).then(function() {
-    assert.strictEqual(
-      xFooInstances,
-      0,
-      'it should not create any x-foo components'
-    );
+    assert.strictEqual(xFooInstances, 0, 'it should not create any x-foo components');
   });
 });
 
 QUnit.test('FastBoot: tagless components can render', function(assert) {
-  this.template(
-    'application',
-    "<div class='my-context'>{{my-component}}</div>"
-  );
+  this.template('application', "<div class='my-context'>{{my-component}}</div>");
   this.component('my-component', { tagName: '' });
   this.template('components/my-component', '<h1>hello world</h1>');
 
@@ -362,9 +341,9 @@ QUnit.test('FastBoot: tagless components can render', function(assert) {
     fastbootVisit(App, '/').then(
       assertFastbootResult(assert, {
         url: '/',
-        body: /<div class="my-context"><h1>hello world<\/h1><\/div>/
+        body: /<div class="my-context"><h1>hello world<\/h1><\/div>/,
       }),
       handleError(assert)
-    )
+    ),
   ]);
 });

@@ -3,7 +3,7 @@ import {
   typeOf,
   String as StringUtils,
   Namespace,
-  Object as EmberObject
+  Object as EmberObject,
 } from 'ember-runtime';
 
 /**
@@ -100,5 +100,5 @@ export default EmberObject.extend({
       }
     });
     return types;
-  }
+  },
 });

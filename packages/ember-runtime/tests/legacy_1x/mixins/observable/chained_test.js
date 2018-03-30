@@ -38,27 +38,15 @@ moduleFor(
 
       observerFiredCount = 0;
       run(() => get(momma, 'children').setEach('name', 'Juan'));
-      assert.equal(
-        observerFiredCount,
-        3,
-        'observer fired after changing child names'
-      );
+      assert.equal(observerFiredCount, 3, 'observer fired after changing child names');
 
       observerFiredCount = 0;
       run(() => get(momma, 'children').pushObject(child4));
-      assert.equal(
-        observerFiredCount,
-        1,
-        'observer fired after adding a new item'
-      );
+      assert.equal(observerFiredCount, 1, 'observer fired after adding a new item');
 
       observerFiredCount = 0;
       run(() => set(child4, 'name', 'Herbert'));
-      assert.equal(
-        observerFiredCount,
-        1,
-        'observer fired after changing property on new object'
-      );
+      assert.equal(observerFiredCount, 1, 'observer fired after changing property on new object');
 
       set(momma, 'children', []);
 

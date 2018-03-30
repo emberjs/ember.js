@@ -20,33 +20,25 @@ moduleFor(
           if (payload.view !== this.component) {
             this.actual.after.push(payload);
           }
-        }
+        },
       });
     }
 
     resetEvents() {
       this.expected = {
         before: [],
-        after: []
+        after: [],
       };
 
       this.actual = {
         before: [],
-        after: []
+        after: [],
       };
     }
 
     teardown() {
-      this.assert.deepEqual(
-        this.actual.before,
-        [],
-        'No unexpected events (before)'
-      );
-      this.assert.deepEqual(
-        this.actual.after,
-        [],
-        'No unexpected events (after)'
-      );
+      this.assert.deepEqual(this.actual.before, [], 'No unexpected events (before)');
+      this.assert.deepEqual(this.actual.after, [], 'No unexpected events (after)');
       super.teardown();
       instrumentationReset();
     }
@@ -60,17 +52,17 @@ moduleFor(
         willRender() {
           testCase.expected.before.push(this);
           testCase.expected.after.unshift(this);
-        }
+        },
       });
 
       this.registerComponent('x-bar', {
         template: '[x-bar: {{bar}}]',
-        ComponentClass: BaseClass.extend()
+        ComponentClass: BaseClass.extend(),
       });
 
       this.render(`[-top-level: {{foo}}] {{x-bar bar=bar}}`, {
         foo: 'foo',
-        bar: 'bar'
+        bar: 'bar',
       });
 
       this.assertText('[-top-level: foo] [x-bar: bar]');
@@ -107,11 +99,7 @@ moduleFor(
     }
 
     assertPayload(payload, component) {
-      this.assert.equal(
-        payload.object,
-        component._debugContainerKey,
-        'payload.object'
-      );
+      this.assert.equal(payload.object, component._debugContainerKey, 'payload.object');
     }
   }
 );

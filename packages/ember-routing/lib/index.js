@@ -9,7 +9,7 @@ export { default as AutoLocation } from './location/auto_location';
 
 export {
   default as generateController,
-  generateControllerFactory
+  generateControllerFactory,
 } from './system/generate_controller';
 export { default as controllerFor } from './system/controller_for';
 export { default as RouterDSL } from './system/dsl';

@@ -47,9 +47,7 @@ export const protoMethods = {
         for (let index = listeners.length - 4; index >= 0; index -= 4) {
           if (
             listeners[index] === eventName &&
-            (!method ||
-              (listeners[index + 1] === target &&
-                listeners[index + 2] === method))
+            (!method || (listeners[index + 1] === target && listeners[index + 2] === method))
           ) {
             if (pointer === this) {
               listeners.splice(index, 4); // we are modifying our own list, so we edit directly
@@ -89,21 +87,14 @@ export const protoMethods = {
       pointer = pointer.parent;
     }
     return result;
-  }
+  },
 };
 
 function pushUniqueListener(destination, source, index) {
   let target = source[index + 1];
   let method = source[index + 2];
-  for (
-    let destinationIndex = 0;
-    destinationIndex < destination.length;
-    destinationIndex += 3
-  ) {
-    if (
-      destination[destinationIndex] === target &&
-      destination[destinationIndex + 1] === method
-    ) {
+  for (let destinationIndex = 0; destinationIndex < destination.length; destinationIndex += 3) {
+    if (destination[destinationIndex] === target && destination[destinationIndex + 1] === method) {
       return;
     }
   }

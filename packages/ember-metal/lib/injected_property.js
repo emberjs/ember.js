@@ -57,6 +57,6 @@ function injectedPropertyGet(keyName) {
   let specifier = `${desc.type}:${desc.name || keyName}`;
   return owner.lookup(specifier, {
     source: desc.source,
-    namespace: desc.namespace
+    namespace: desc.namespace,
   });
 }

@@ -14,7 +14,7 @@ const Rectangle = EmberObject.extend(Comparable, {
 
   compare(a, b) {
     return compare(a.area(), b.area());
-  }
+  },
 });
 
 let r1, r2;

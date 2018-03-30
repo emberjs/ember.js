@@ -14,8 +14,8 @@ export default function errorOnInputWithContent(env) {
         }
 
         assert(assertMessage(moduleName, node));
-      }
-    }
+      },
+    },
   };
 }
 

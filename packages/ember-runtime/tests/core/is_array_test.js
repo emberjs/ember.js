@@ -33,10 +33,7 @@ moduleFor(
     }
 
     ['@test Ember.isArray(fileList)'](assert) {
-      if (
-        environment.window &&
-        typeof environment.window.FileList === 'function'
-      ) {
+      if (environment.window && typeof environment.window.FileList === 'function') {
         let fileListElement = document.createElement('input');
         fileListElement.type = 'file';
         let fileList = fileListElement.files;

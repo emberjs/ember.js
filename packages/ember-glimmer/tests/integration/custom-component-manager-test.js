@@ -34,14 +34,14 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               return component;
             },
 
-            update() {}
+            update() {},
           },
           overrides
         );
 
         this.owner.register(`component-manager:${MANAGER_ID}`, options, {
           singleton: true,
-          instantiate: false
+          instantiate: false,
         });
       }
 
@@ -52,12 +52,12 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         this.registerCustomComponentManager();
 
         let ComponentClass = CustomComponent.extend({
-          greeting: 'hello'
+          greeting: 'hello',
         });
 
         this.registerComponent('foo-bar', {
           template: `<p>{{greeting}} world</p>`,
-          ComponentClass
+          ComponentClass,
         });
 
         this.render('{{foo-bar}}');
@@ -71,23 +71,23 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
       // not the component instance.
       ['@test it can customize the template context']() {
         let customContext = {
-          greeting: 'goodbye'
+          greeting: 'goodbye',
         };
 
         this.registerCustomComponentManager({
           getContext() {
             return customContext;
-          }
+          },
         });
 
         let ComponentClass = CustomComponent.extend({
           greeting: 'hello',
-          count: 1234
+          count: 1234,
         });
 
         this.registerComponent('foo-bar', {
           template: `<p>{{greeting}} world {{count}}</p>`,
-          ComponentClass
+          ComponentClass,
         });
 
         this.render('{{foo-bar}}');
@@ -103,18 +103,18 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         this.registerCustomComponentManager({
           create({ ComponentClass, args }) {
             return ComponentClass.create({ args });
-          }
+          },
         });
 
         let ComponentClass = CustomComponent.extend({
           salutation: computed('args.firstName', 'args.lastName', function() {
             return this.get('args.firstName') + ' ' + this.get('args.lastName');
-          })
+          }),
         });
 
         this.registerComponent('foo-bar', {
           template: `<p>{{salutation}}</p>`,
-          ComponentClass
+          ComponentClass,
         });
 
         this.render('{{foo-bar firstName="Yehuda" lastName="Katz"}}');
@@ -130,23 +130,23 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
           update(component, args) {
             set(component, 'args', args);
-          }
+          },
         });
 
         let ComponentClass = CustomComponent.extend({
           salutation: computed('args.firstName', 'args.lastName', function() {
             return this.get('args.firstName') + ' ' + this.get('args.lastName');
-          })
+          }),
         });
 
         this.registerComponent('foo-bar', {
           template: `<p>{{salutation}}</p>`,
-          ComponentClass
+          ComponentClass,
         });
 
         this.render('{{foo-bar firstName=firstName lastName=lastName}}', {
           firstName: 'Yehuda',
-          lastName: 'Katz'
+          lastName: 'Katz',
         });
 
         this.assertHTML(strip`<p>Yehuda Katz</p>`);
@@ -154,56 +154,41 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         this.runTask(() =>
           setProperties(this.context, {
             firstName: 'Chad',
-            lastName: 'Hietala'
+            lastName: 'Hietala',
           })
         );
 
         this.assertHTML(strip`<p>Chad Hietala</p>`);
       }
 
-      [`@test custom components appear in parent view's childViews array`](
-        assert
-      ) {
+      [`@test custom components appear in parent view's childViews array`](assert) {
         this.registerCustomComponentManager();
 
         let ComponentClass = CustomComponent.extend({
-          isCustomComponent: true
+          isCustomComponent: true,
         });
 
         this.registerComponent('turbo-component', {
           template: `<p>turbo</p>`,
-          ComponentClass
+          ComponentClass,
         });
 
         this.registerComponent('curly-component', {
           template: `<div>curly</div>`,
           ComponentClass: Component.extend({
-            isClassicComponent: true
-          })
+            isClassicComponent: true,
+          }),
         });
 
-        this.render(
-          '{{#if showTurbo}}{{turbo-component}}{{/if}} {{curly-component}}',
-          {
-            showTurbo: true
-          }
-        );
+        this.render('{{#if showTurbo}}{{turbo-component}}{{/if}} {{curly-component}}', {
+          showTurbo: true,
+        });
 
         let { childViews } = this.context;
 
-        assert.equal(
-          childViews.length,
-          2,
-          'root component has two child views'
-        );
-        assert.ok(
-          childViews[0].isCustomComponent,
-          'first child view is custom component'
-        );
-        assert.ok(
-          childViews[1].isClassicComponent,
-          'second child view is classic component'
-        );
+        assert.equal(childViews.length, 2, 'root component has two child views');
+        assert.ok(childViews[0].isCustomComponent, 'first child view is custom component');
+        assert.ok(childViews[1].isClassicComponent, 'second child view is classic component');
 
         this.runTask(() => set(this.context, 'showTurbo', false));
 
@@ -215,39 +200,26 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           1,
           "turbo component is removed from parent's child views array"
         );
-        assert.ok(
-          childViews[0].isClassicComponent,
-          'first child view is classic component'
-        );
+        assert.ok(childViews[0].isClassicComponent, 'first child view is classic component');
 
         this.runTask(() => set(this.context, 'showTurbo', true));
 
         childViews = this.context.childViews;
-        assert.equal(
-          childViews.length,
-          2,
-          'root component has two child views'
-        );
-        assert.ok(
-          childViews[0].isClassicComponent,
-          'first child view is classic component'
-        );
-        assert.ok(
-          childViews[1].isCustomComponent,
-          'second child view is custom component'
-        );
+        assert.equal(childViews.length, 2, 'root component has two child views');
+        assert.ok(childViews[0].isClassicComponent, 'first child view is classic component');
+        assert.ok(childViews[1].isCustomComponent, 'second child view is custom component');
       }
 
       ['@test can invoke classic components in custom components'](assert) {
         this.registerCustomComponentManager();
 
         let ComponentClass = CustomComponent.extend({
-          isCustomComponent: true
+          isCustomComponent: true,
         });
 
         this.registerComponent('turbo-component', {
           template: `<p>turbo</p>{{curly-component}}`,
-          ComponentClass
+          ComponentClass,
         });
 
         let classicComponent;
@@ -260,29 +232,26 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               classicComponent = this;
             },
 
-            isClassicComponent: true
-          })
+            isClassicComponent: true,
+          }),
         });
 
         this.render('{{turbo-component}}');
 
         this.assertElement(this.firstChild, {
           tagName: 'P',
-          content: 'turbo'
+          content: 'turbo',
         });
 
         this.assertComponentElement(this.firstChild.nextSibling, {
           tagName: 'DIV',
-          content: '<div>curly</div>'
+          content: '<div>curly</div>',
         });
 
         let { childViews } = this.context;
 
         assert.equal(childViews.length, 1, 'root component has one child view');
-        assert.ok(
-          childViews[0].isCustomComponent,
-          'root child view is custom component'
-        );
+        assert.ok(childViews[0].isCustomComponent, 'root child view is custom component');
 
         let customComponent = childViews[0];
 
@@ -293,11 +262,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         );
 
         childViews = getChildViews(customComponent);
-        assert.equal(
-          childViews.length,
-          1,
-          'custom component has one child view'
-        );
+        assert.equal(childViews.length, 1, 'custom component has one child view');
         assert.ok(
           childViews[0].isClassicComponent,
           'custom component child view is classic component'

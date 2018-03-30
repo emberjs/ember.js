@@ -6,8 +6,7 @@ const pathUtil = require('ember-cli-path-utils');
 const validComponentName = require('ember-cli-valid-component-name');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const isModuleUnificationProject = require('../module-unification')
-  .isModuleUnificationProject;
+const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
 module.exports = {
   description: 'Generates a component. Name must contain a hyphen.',
@@ -17,8 +16,8 @@ module.exports = {
       name: 'path',
       type: String,
       default: 'components',
-      aliases: [{ 'no-path': '' }]
-    }
+      aliases: [{ 'no-path': '' }],
+    },
   ],
 
   filesPath: function() {
@@ -45,28 +44,20 @@ module.exports = {
         },
         __path__(options) {
           return path.join('ui', 'components', options.dasherizedModuleName);
-        }
+        },
       };
     } else {
       return {
         __path__: function(options) {
           if (options.pod) {
-            return path.join(
-              options.podPath,
-              options.locals.path,
-              options.dasherizedModuleName
-            );
+            return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
           } else {
             return 'components';
           }
         },
         __templatepath__: function(options) {
           if (options.pod) {
-            return path.join(
-              options.podPath,
-              options.locals.path,
-              options.dasherizedModuleName
-            );
+            return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
           }
           return 'templates/components';
         },
@@ -75,7 +66,7 @@ module.exports = {
             return 'template';
           }
           return options.dasherizedModuleName;
-        }
+        },
       };
     }
   },
@@ -92,10 +83,7 @@ module.exports = {
     let contents = '';
 
     // if we're in an addon, build import statement
-    if (
-      options.project.isEmberCLIAddon() ||
-      (options.inRepoAddon && !options.inDummy)
-    ) {
+    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
       if (options.pod) {
         templatePath = './template';
       } else {
@@ -111,7 +99,7 @@ module.exports = {
     return {
       importTemplate: importTemplate,
       contents: contents,
-      path: getPathOption(options)
+      path: getPathOption(options),
     };
-  }
+  },
 };

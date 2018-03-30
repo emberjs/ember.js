@@ -86,11 +86,7 @@ function runInBrowser(url, retries, resolve, reject) {
                 response += ', ';
               }
 
-              response +=
-                'expected: ' +
-                details.expected +
-                ', but was: ' +
-                details.actual;
+              response += 'expected: ' + details.expected + ', but was: ' + details.actual;
             }
 
             if (details.source) {
@@ -143,7 +139,7 @@ function runInBrowser(url, retries, resolve, reject) {
             if (typeof window.callPhantom === 'function') {
               window.callPhantom({
                 name: 'QUnit.done',
-                data: result
+                data: result,
               });
             }
           });
@@ -156,9 +152,7 @@ function runInBrowser(url, retries, resolve, reject) {
           var failed = !result || !result.total || result.failed;
 
           if (!result.total) {
-            console.error(
-              'No tests were executed. Are you loading tests asynchronously?'
-            );
+            console.error('No tests were executed. Are you loading tests asynchronously?');
           }
 
           var code = failed ? 1 : 0;
@@ -175,9 +169,7 @@ function runInBrowser(url, retries, resolve, reject) {
             } else {
               console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
               console.log(
-                chalk.yellow(
-                  'This might be a known issue with Chrome headless, skipping for now'
-                )
+                chalk.yellow('This might be a known issue with Chrome headless, skipping for now')
               );
               resolve(result);
             }
@@ -276,12 +268,8 @@ function runChecker(bin, args) {
 function codeQualityChecks() {
   var checkers = [
     runChecker('node', [require.resolve('typescript/bin/tsc'), '--noEmit']),
-    runChecker('node', [
-      require.resolve('tslint/bin/tslint'),
-      '-p',
-      'tsconfig.json'
-    ]),
-    runChecker('node', [require.resolve('eslint/bin/eslint'), '.'])
+    runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
+    runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
   ];
   return RSVP.Promise.all(checkers).then(function(results) {
     results.forEach(result => {

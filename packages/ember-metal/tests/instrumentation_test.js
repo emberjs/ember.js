@@ -2,7 +2,7 @@ import {
   instrument,
   instrumentationSubscribe as subscribe,
   instrumentationUnsubscribe as unsubscribe,
-  instrumentationReset as reset
+  instrumentationReset as reset,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -49,7 +49,7 @@ moduleFor(
           assert.strictEqual(payload, sentPayload);
 
           count++;
-        }
+        },
       });
 
       instrument('render', sentPayload, function() {});
@@ -57,9 +57,7 @@ moduleFor(
       instrument('render.handlebars', sentPayload, function() {});
     }
 
-    ['@test returning a value from the before callback passes it to the after callback'](
-      assert
-    ) {
+    ['@test returning a value from the before callback passes it to the after callback'](assert) {
       assert.expect(2);
 
       let passthru1 = {};
@@ -71,7 +69,7 @@ moduleFor(
         },
         after(name, timestamp, payload, beforeValue) {
           assert.strictEqual(beforeValue, passthru1);
-        }
+        },
       });
 
       subscribe('render', {
@@ -80,7 +78,7 @@ moduleFor(
         },
         after(name, timestamp, payload, beforeValue) {
           assert.strictEqual(beforeValue, passthru2);
-        }
+        },
       });
 
       instrument('render', null, function() {});
@@ -93,15 +91,13 @@ moduleFor(
         before(name, timestamp, payload) {
           assert.deepEqual(payload, {});
         },
-        after() {}
+        after() {},
       });
 
       instrument('render', function() {});
     }
 
-    ['@test instrument with 3 args (name, callback, binding) no payload'](
-      assert
-    ) {
+    ['@test instrument with 3 args (name, callback, binding) no payload'](assert) {
       assert.expect(2);
 
       let binding = {};
@@ -109,7 +105,7 @@ moduleFor(
         before(name, timestamp, payload) {
           assert.deepEqual(payload, {});
         },
-        after() {}
+        after() {},
       });
 
       instrument(
@@ -121,9 +117,7 @@ moduleFor(
       );
     }
 
-    ['@test instrument with 3 args (name, payload, callback) with payload'](
-      assert
-    ) {
+    ['@test instrument with 3 args (name, payload, callback) with payload'](assert) {
       assert.expect(1);
 
       let expectedPayload = { hi: 1 };
@@ -131,15 +125,13 @@ moduleFor(
         before(name, timestamp, payload) {
           assert.deepEqual(payload, expectedPayload);
         },
-        after() {}
+        after() {},
       });
 
       instrument('render', expectedPayload, function() {});
     }
 
-    ['@test instrument with 4 args (name, payload, callback, binding) with payload'](
-      assert
-    ) {
+    ['@test instrument with 4 args (name, payload, callback, binding) with payload'](assert) {
       assert.expect(2);
 
       let expectedPayload = { hi: 1 };
@@ -148,7 +140,7 @@ moduleFor(
         before(name, timestamp, payload) {
           assert.deepEqual(payload, expectedPayload);
         },
-        after() {}
+        after() {},
       });
 
       instrument(
@@ -161,9 +153,7 @@ moduleFor(
       );
     }
 
-    ['@test raising an exception in the instrumentation attaches it to the payload'](
-      assert
-    ) {
+    ['@test raising an exception in the instrumentation attaches it to the payload'](assert) {
       assert.expect(2);
 
       let error = new Error('Instrumentation');
@@ -172,14 +162,14 @@ moduleFor(
         before() {},
         after(name, timestamp, payload) {
           assert.strictEqual(payload.exception, error);
-        }
+        },
       });
 
       subscribe('render', {
         before() {},
         after(name, timestamp, payload) {
           assert.strictEqual(payload.exception, error);
-        }
+        },
       });
 
       instrument('render.handlebars', null, function() {
@@ -187,9 +177,7 @@ moduleFor(
       });
     }
 
-    ['@test it is possible to add a new subscriber after the first instrument'](
-      assert
-    ) {
+    ['@test it is possible to add a new subscriber after the first instrument'](assert) {
       instrument('render.handlebars', null, function() {});
 
       subscribe('render', {
@@ -198,7 +186,7 @@ moduleFor(
         },
         after() {
           assert.ok(true, 'After callback was called');
-        }
+        },
       });
 
       instrument('render.handlebars', null, function() {});
@@ -218,7 +206,7 @@ moduleFor(
           assert.equal(count, 0);
           assert.ok(true, 'After callback was called');
           count++;
-        }
+        },
       });
 
       instrument('render.handlebars', null, function() {});

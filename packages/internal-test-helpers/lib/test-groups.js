@@ -2,7 +2,7 @@ import { ENV } from 'ember-environment';
 import {
   get as getFromEmberMetal,
   getWithDefault as getWithDefaultFromEmberMetal,
-  set as setFromEmberMetal
+  set as setFromEmberMetal,
 } from 'ember-metal';
 
 // used by unit tests to test both accessor mode and non-accessor mode

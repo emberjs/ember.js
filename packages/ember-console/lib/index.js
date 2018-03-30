@@ -2,8 +2,7 @@ import { deprecate } from 'ember-debug';
 
 // Deliver message that the function is deprecated
 
-const DEPRECATION_MESSAGE =
-  'Use of Ember.Logger is deprecated. Please use `console` for logging.';
+const DEPRECATION_MESSAGE = 'Use of Ember.Logger is deprecated. Please use `console` for logging.';
 const DEPRECATION_ID = 'ember-console.deprecate-logger';
 const DEPRECATION_URL =
   'https://emberjs.com/deprecations/v3.x#toc_use-console-rather-than-ember-logger';
@@ -40,7 +39,7 @@ export default {
     deprecate(DEPRECATION_MESSAGE, false, {
       id: DEPRECATION_ID,
       until: '4.0.0',
-      url: DEPRECATION_URL
+      url: DEPRECATION_URL,
     });
     return console.log(...arguments); // eslint-disable-line no-console
   },
@@ -63,7 +62,7 @@ export default {
     deprecate(DEPRECATION_MESSAGE, false, {
       id: DEPRECATION_ID,
       until: '4.0.0',
-      url: DEPRECATION_URL
+      url: DEPRECATION_URL,
     });
     return console.warn(...arguments); // eslint-disable-line no-console
   },
@@ -86,7 +85,7 @@ export default {
     deprecate(DEPRECATION_MESSAGE, false, {
       id: DEPRECATION_ID,
       until: '4.0.0',
-      url: DEPRECATION_URL
+      url: DEPRECATION_URL,
     });
     return console.error(...arguments); // eslint-disable-line no-console
   },
@@ -110,7 +109,7 @@ export default {
     deprecate(DEPRECATION_MESSAGE, false, {
       id: DEPRECATION_ID,
       until: '4.0.0',
-      url: DEPRECATION_URL
+      url: DEPRECATION_URL,
     });
     return console.info(...arguments); // eslint-disable-line no-console
   },
@@ -134,7 +133,7 @@ export default {
     deprecate(DEPRECATION_MESSAGE, false, {
       id: DEPRECATION_ID,
       until: '4.0.0',
-      url: DEPRECATION_URL
+      url: DEPRECATION_URL,
     });
     /* eslint-disable no-console */
     if (console.debug) {
@@ -163,8 +162,8 @@ export default {
     deprecate(DEPRECATION_MESSAGE, false, {
       id: DEPRECATION_ID,
       until: '4.0.0',
-      url: DEPRECATION_URL
+      url: DEPRECATION_URL,
     });
     return console.assert(...arguments); // eslint-disable-line no-console
-  }
+  },
 };

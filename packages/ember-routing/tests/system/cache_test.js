@@ -25,9 +25,7 @@ moduleFor(
       assert.strictEqual(this.cache.has('constructor'), true);
     }
 
-    ['@test lookup - returns stashed value if key does exist in bucket'](
-      assert
-    ) {
+    ['@test lookup - returns stashed value if key does exist in bucket'](assert) {
       let token = {};
       let defaultValue = {};
 
@@ -36,35 +34,21 @@ moduleFor(
       assert.strictEqual(this.cache.lookup('foo', 'bar', defaultValue), token);
     }
 
-    ['@test lookup - returns default value if key does not exist in bucket'](
-      assert
-    ) {
+    ['@test lookup - returns default value if key does not exist in bucket'](assert) {
       let token = {};
       let defaultValue = {};
 
       this.cache.stash('foo', 'bar', token);
 
-      assert.strictEqual(
-        this.cache.lookup('foo', 'boo', defaultValue),
-        defaultValue
-      );
-      assert.strictEqual(
-        this.cache.lookup('foo', 'constructor', defaultValue),
-        defaultValue
-      );
+      assert.strictEqual(this.cache.lookup('foo', 'boo', defaultValue), defaultValue);
+      assert.strictEqual(this.cache.lookup('foo', 'constructor', defaultValue), defaultValue);
     }
 
     ['@test lookup - returns default value if bucket does not exist'](assert) {
       let defaultValue = {};
 
-      assert.strictEqual(
-        this.cache.lookup('boo', 'bar', defaultValue),
-        defaultValue
-      );
-      assert.strictEqual(
-        this.cache.lookup('constructor', 'bar', defaultValue),
-        defaultValue
-      );
+      assert.strictEqual(this.cache.lookup('boo', 'bar', defaultValue), defaultValue);
+      assert.strictEqual(this.cache.lookup('constructor', 'bar', defaultValue), defaultValue);
     }
   }
 );

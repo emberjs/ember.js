@@ -14,12 +14,12 @@ moduleFor(
       expectDeprecation(() => {
         PartialMixin = Mixin.create({
           foo: required(),
-          bar: 'BAR'
+          bar: 'BAR',
         });
       }, 'Ember.required is deprecated as its behavior is inconsistent and unreliable.');
 
       FinalMixin = Mixin.create({
-        foo: 'FOO'
+        foo: 'FOO',
       });
 
       obj = {};

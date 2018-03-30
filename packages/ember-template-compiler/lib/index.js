@@ -21,7 +21,7 @@ export { default as compile } from './system/compile';
 export {
   default as compileOptions,
   registerPlugin,
-  unregisterPlugin
+  unregisterPlugin,
 } from './system/compile-options';
 export { default as defaultPlugins } from './plugins/index';
 

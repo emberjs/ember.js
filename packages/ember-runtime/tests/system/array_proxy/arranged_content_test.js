@@ -27,9 +27,9 @@ moduleFor(
                 })
               )
             );
-          })
+          }),
         }).create({
-          content: emberA([1, 2, 4, 5])
+          content: emberA([1, 2, 4, 5]),
         });
       });
     }
@@ -38,9 +38,7 @@ moduleFor(
       run(() => array.destroy());
     }
 
-    ['@test compact - returns arrangedContent without nulls and undefined'](
-      assert
-    ) {
+    ['@test compact - returns arrangedContent without nulls and undefined'](assert) {
       run(() => array.set('content', emberA([1, 3, null, 2, undefined])));
 
       assert.deepEqual(array.compact(), [3, 2, 1]);
@@ -50,9 +48,7 @@ moduleFor(
       assert.equal(array.indexOf(4), 1, 'returns arranged index');
     }
 
-    ['@test lastIndexOf - returns last index of object in arrangedContent'](
-      assert
-    ) {
+    ['@test lastIndexOf - returns last index of object in arrangedContent'](assert) {
       array.get('content').pushObject(4);
       assert.equal(array.lastIndexOf(4), 2, 'returns last arranged index');
     }
@@ -62,20 +58,12 @@ moduleFor(
     }
 
     // Not sure if we need a specific test for it, since it's internal
-    ['@test objectAtContent - returns object at index in arrangedContent'](
-      assert
-    ) {
+    ['@test objectAtContent - returns object at index in arrangedContent'](assert) {
       assert.equal(array.objectAtContent(1), 4, 'returns object at index');
     }
 
-    ['@test objectsAt - returns objects at indices in arrangedContent'](
-      assert
-    ) {
-      assert.deepEqual(
-        array.objectsAt([0, 2, 4]),
-        [5, 2, undefined],
-        'returns objects at indices'
-      );
+    ['@test objectsAt - returns objects at indices in arrangedContent'](assert) {
+      assert.deepEqual(array.objectsAt([0, 2, 4]), [5, 2, undefined], 'returns objects at indices');
     }
 
     ['@test replace - mutating an arranged ArrayProxy is not allowed']() {
@@ -84,19 +72,13 @@ moduleFor(
       }, /Mutating an arranged ArrayProxy is not allowed/);
     }
 
-    ['@test replaceContent - does a standard array replace on content'](
-      assert
-    ) {
+    ['@test replaceContent - does a standard array replace on content'](assert) {
       run(() => array.replaceContent(1, 2, [3]));
       assert.deepEqual(array.get('content'), [1, 3, 5]);
     }
 
     ['@test slice - returns a slice of the arrangedContent'](assert) {
-      assert.deepEqual(
-        array.slice(1, 3),
-        [4, 2],
-        'returns sliced arrangedContent'
-      );
+      assert.deepEqual(array.slice(1, 3), [4, 2], 'returns sliced arrangedContent');
     }
 
     ['@test toArray - returns copy of arrangedContent'](assert) {
@@ -104,11 +86,7 @@ moduleFor(
     }
 
     ['@test without - returns arrangedContent without object'](assert) {
-      assert.deepEqual(
-        array.without(2),
-        [5, 4, 1],
-        'returns arranged without object'
-      );
+      assert.deepEqual(array.without(2), [5, 4, 1], 'returns arranged without object');
     }
 
     ['@test lastObject - returns last arranged object'](assert) {
@@ -116,11 +94,7 @@ moduleFor(
     }
 
     ['@test firstObject - returns first arranged object'](assert) {
-      assert.equal(
-        array.get('firstObject'),
-        5,
-        'returns first arranged object'
-      );
+      assert.equal(array.get('firstObject'), 5, 'returns first arranged object');
     }
   }
 );
@@ -131,7 +105,7 @@ moduleFor(
     beforeEach() {
       run(function() {
         array = ArrayProxy.create({
-          content: emberA([1, 2, 4, 5])
+          content: emberA([1, 2, 4, 5]),
         });
       });
     }
@@ -192,9 +166,9 @@ moduleFor(
           objectAtContent(idx) {
             let obj = objectAt(this.get('arrangedContent'), idx);
             return obj && obj.toString();
-          }
+          },
         }).create({
-          content: emberA([1, 2, 4, 5])
+          content: emberA([1, 2, 4, 5]),
         });
       });
     }
@@ -209,9 +183,7 @@ moduleFor(
       assert.equal(array.indexOf('4'), 1, 'returns arranged index');
     }
 
-    ['@test lastIndexOf - returns last index of object in arrangedContent'](
-      assert
-    ) {
+    ['@test lastIndexOf - returns last index of object in arrangedContent'](assert) {
       array.get('content').pushObject(4);
       assert.equal(array.lastIndexOf('4'), 2, 'returns last arranged index');
     }
@@ -221,15 +193,11 @@ moduleFor(
     }
 
     // Not sure if we need a specific test for it, since it's internal
-    ['@test objectAtContent - returns object at index in arrangedContent'](
-      assert
-    ) {
+    ['@test objectAtContent - returns object at index in arrangedContent'](assert) {
       assert.equal(array.objectAtContent(1), '4', 'returns object at index');
     }
 
-    ['@test objectsAt - returns objects at indices in arrangedContent'](
-      assert
-    ) {
+    ['@test objectsAt - returns objects at indices in arrangedContent'](assert) {
       assert.deepEqual(
         array.objectsAt([0, 2, 4]),
         ['5', '2', undefined],
@@ -238,11 +206,7 @@ moduleFor(
     }
 
     ['@test slice - returns a slice of the arrangedContent'](assert) {
-      assert.deepEqual(
-        array.slice(1, 3),
-        ['4', '2'],
-        'returns sliced arrangedContent'
-      );
+      assert.deepEqual(array.slice(1, 3), ['4', '2'], 'returns sliced arrangedContent');
     }
 
     ['@test toArray - returns copy of arrangedContent'](assert) {
@@ -250,27 +214,15 @@ moduleFor(
     }
 
     ['@test without - returns arrangedContent without object'](assert) {
-      assert.deepEqual(
-        array.without('2'),
-        ['5', '4', '1'],
-        'returns arranged without object'
-      );
+      assert.deepEqual(array.without('2'), ['5', '4', '1'], 'returns arranged without object');
     }
 
     ['@test lastObject - returns last arranged object'](assert) {
-      assert.equal(
-        array.get('lastObject'),
-        '1',
-        'returns last arranged object'
-      );
+      assert.equal(array.get('lastObject'), '1', 'returns last arranged object');
     }
 
     ['@test firstObject - returns first arranged object'](assert) {
-      assert.equal(
-        array.get('firstObject'),
-        '5',
-        'returns first arranged object'
-      );
+      assert.equal(array.get('firstObject'), '5', 'returns first arranged object');
     }
   }
 );
@@ -284,9 +236,9 @@ moduleFor(
           objectAtContent(idx) {
             let obj = objectAt(this.get('arrangedContent'), idx);
             return obj && obj.toString();
-          }
+          },
         }).create({
-          content: emberA([1, 2, 4, 5])
+          content: emberA([1, 2, 4, 5]),
         });
       });
     }
@@ -300,11 +252,7 @@ moduleFor(
     ['@test popObject - removes last object in arrangedContent'](assert) {
       let popped = array.popObject();
       assert.equal(popped, '5', 'returns last object');
-      assert.deepEqual(
-        array.toArray(),
-        ['1', '2', '4'],
-        'removes from content'
-      );
+      assert.deepEqual(array.toArray(), ['1', '2', '4'], 'removes from content');
     }
 
     ['@test removeObject - removes object from content'](assert) {
@@ -320,11 +268,7 @@ moduleFor(
     ['@test shiftObject - removes from start of arrangedContent'](assert) {
       let shifted = array.shiftObject();
       assert.equal(shifted, '1', 'returns first object');
-      assert.deepEqual(
-        array.toArray(),
-        ['2', '4', '5'],
-        'removes object from content'
-      );
+      assert.deepEqual(array.toArray(), ['2', '4', '5'], 'removes object from content');
     }
   }
 );

@@ -10,16 +10,14 @@ import {
   meta,
   watch,
   unwatch,
-  watcherCount
+  watcherCount,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Chains',
   class extends AbstractTestCase {
-    ['@test finishChains should properly copy chains from prototypes to instances'](
-      assert
-    ) {
+    ['@test finishChains should properly copy chains from prototypes to instances'](assert) {
       function didChange() {}
 
       let obj = {};
@@ -40,7 +38,7 @@ moduleFor(
 
     ['@test does not observe primitive values'](assert) {
       let obj = {
-        foo: { bar: 'STRING' }
+        foo: { bar: 'STRING' },
       };
 
       addObserver(obj, 'foo.bar.baz', null, function() {});

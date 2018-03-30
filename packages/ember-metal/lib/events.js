@@ -37,10 +37,7 @@ import { meta as metaFor, peekMeta } from './meta';
   @public
 */
 export function addListener(obj, eventName, target, method, once) {
-  assert(
-    'You must pass at least an object and event name to addListener',
-    !!obj && !!eventName
-  );
+  assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
 
   if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
     deprecate(
@@ -49,15 +46,12 @@ export function addListener(obj, eventName, target, method, once) {
       {
         id: 'ember-views.did-init-attrs',
         until: '3.0.0',
-        url:
-          'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs',
       }
     );
   } else {
     assert(
-      `didInitAttrs called in ${obj &&
-        obj.toString &&
-        obj.toString()} is no longer supported.`,
+      `didInitAttrs called in ${obj && obj.toString && obj.toString()} is no longer supported.`,
       eventName !== 'didInitAttrs'
     );
   }
@@ -85,10 +79,7 @@ export function addListener(obj, eventName, target, method, once) {
   @public
 */
 export function removeListener(obj, eventName, target, method) {
-  assert(
-    'You must pass at least an object and event name to removeListener',
-    !!obj && !!eventName
-  );
+  assert('You must pass at least an object and event name to removeListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
     method = target;
@@ -118,10 +109,7 @@ export function removeListener(obj, eventName, target, method) {
 export function sendEvent(obj, eventName, params, actions, _meta) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
-    actions =
-      typeof meta === 'object' &&
-      meta !== null &&
-      meta.matchingListeners(eventName);
+    actions = typeof meta === 'object' && meta !== null && meta.matchingListeners(eventName);
   }
 
   if (actions === undefined || actions.length === 0) {

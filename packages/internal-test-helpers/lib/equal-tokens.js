@@ -4,12 +4,12 @@ function generateTokens(containerOrHTML) {
   if (typeof containerOrHTML === 'string') {
     return {
       tokens: tokenize(containerOrHTML),
-      html: containerOrHTML
+      html: containerOrHTML,
     };
   } else {
     return {
       tokens: tokenize(containerOrHTML.innerHTML),
-      html: containerOrHTML.innerHTML
+      html: containerOrHTML.innerHTML,
     };
   }
 }
@@ -30,11 +30,7 @@ function normalizeTokens(tokens) {
   });
 }
 
-export default function equalTokens(
-  actualContainer,
-  expectedHTML,
-  message = null
-) {
+export default function equalTokens(actualContainer, expectedHTML, message = null) {
   let actual = generateTokens(actualContainer);
   let expected = generateTokens(expectedHTML);
 
@@ -51,7 +47,7 @@ export default function equalTokens(
       result: QUnit.equiv(actual.tokens, expected.tokens),
       actual: actual.html,
       expected: expected.html,
-      message
+      message,
     });
   }
 }

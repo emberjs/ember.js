@@ -1,10 +1,5 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import {
-  Object as EmberObject,
-  inject,
-  RSVP,
-  onerrorDefault
-} from 'ember-runtime';
+import { Object as EmberObject, inject, RSVP, onerrorDefault } from 'ember-runtime';
 import { later } from 'ember-metal';
 import Application from '../../system/application';
 import ApplicationInstance from '../../system/application-instance';
@@ -46,7 +41,7 @@ moduleFor(
 
       let bootOptions = {
         isBrowser: false,
-        rootElement
+        rootElement,
       };
 
       ENV._APPLICATION_TEMPLATE_WRAPPER = false;
@@ -69,7 +64,7 @@ moduleFor(
       let bootOptions = {
         isBrowser: false,
         rootElement,
-        _renderMode: 'serialize'
+        _renderMode: 'serialize',
       };
 
       ENV._APPLICATION_TEMPLATE_WRAPPER = false;
@@ -91,7 +86,7 @@ moduleFor(
           bootOptions = {
             isBrowser: false,
             rootElement,
-            _renderMode: 'rehydrate'
+            _renderMode: 'rehydrate',
           };
 
           this.application.visit('/', bootOptions).then(instance => {
@@ -122,14 +117,14 @@ moduleFor(
         name: 'assert-no-autoboot',
         initialize() {
           appBooted++;
-        }
+        },
       });
 
       this.application.instanceInitializer({
         name: 'assert-no-autoboot',
         initialize() {
           instanceBooted++;
-        }
+        },
       });
 
       assert.ok(!this.applicationInstance, 'precond - no instance');
@@ -140,18 +135,12 @@ moduleFor(
       return delay(500)
         .then(() => {
           assert.ok(appBooted === 0, '500ms elapsed without app being booted');
-          assert.ok(
-            instanceBooted === 0,
-            '500ms elapsed without instances being booted'
-          );
+          assert.ok(instanceBooted === 0, '500ms elapsed without instances being booted');
 
           return this.runTask(() => this.application.boot());
         })
         .then(() => {
-          assert.ok(
-            appBooted === 1,
-            'app should boot when manually calling `app.boot()`'
-          );
+          assert.ok(appBooted === 1, 'app should boot when manually calling `app.boot()`');
           assert.ok(
             instanceBooted === 0,
             'no instances should be booted automatically when manually calling `app.boot()'
@@ -159,9 +148,7 @@ moduleFor(
         });
     }
 
-    [`@test calling visit() on an app without first calling boot() should boot the app`](
-      assert
-    ) {
+    [`@test calling visit() on an app without first calling boot() should boot the app`](assert) {
       let appBooted = 0;
       let instanceBooted = 0;
 
@@ -169,14 +156,14 @@ moduleFor(
         name: 'assert-no-autoboot',
         initialize() {
           appBooted++;
-        }
+        },
       });
 
       this.application.instanceInitializer({
         name: 'assert-no-autoboot',
         initialize() {
           instanceBooted++;
-        }
+        },
       });
 
       return this.visit('/').then(() => {
@@ -185,9 +172,7 @@ moduleFor(
       });
     }
 
-    [`@test calling visit() on an already booted app should not boot it again`](
-      assert
-    ) {
+    [`@test calling visit() on an already booted app should not boot it again`](assert) {
       let appBooted = 0;
       let instanceBooted = 0;
 
@@ -195,14 +180,14 @@ moduleFor(
         name: 'assert-no-autoboot',
         initialize() {
           appBooted++;
-        }
+        },
       });
 
       this.application.instanceInitializer({
         name: 'assert-no-autoboot',
         initialize() {
           instanceBooted++;
-        }
+        },
       });
 
       return this.runTask(() => this.application.boot())
@@ -244,7 +229,7 @@ moduleFor(
         name: 'error',
         initialize() {
           throw new Error('boot failure');
-        }
+        },
       });
 
       expectAsyncError();
@@ -254,10 +239,7 @@ moduleFor(
           assert.ok(false, 'It should not resolve the promise');
         },
         error => {
-          assert.ok(
-            error instanceof Error,
-            'It should reject the promise with the boot error'
-          );
+          assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'boot failure');
         }
       );
@@ -268,7 +250,7 @@ moduleFor(
         name: 'error',
         initialize() {
           throw new Error('boot failure');
-        }
+        },
       });
 
       expectAsyncError();
@@ -278,10 +260,7 @@ moduleFor(
           assert.ok(false, 'It should not resolve the promise');
         },
         error => {
-          assert.ok(
-            error instanceof Error,
-            'It should reject the promise with the boot error'
-          );
+          assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'boot failure');
         }
       );
@@ -299,7 +278,7 @@ moduleFor(
         Route.extend({
           afterModel() {
             this.replaceWith('b', 'zomg');
-          }
+          },
         })
       );
 
@@ -308,7 +287,7 @@ moduleFor(
         Route.extend({
           afterModel(params) {
             this.transitionTo('c', params.b);
-          }
+          },
         })
       );
 
@@ -321,11 +300,7 @@ moduleFor(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
         );
-        assert.equal(
-          instance.getURL(),
-          '/c/zomg',
-          'It should follow all redirects'
-        );
+        assert.equal(instance.getURL(), '/c/zomg', 'It should follow all redirects');
       });
     }
 
@@ -341,7 +316,7 @@ moduleFor(
         Route.extend({
           afterModel() {
             this.replaceWith('b', 'zomg');
-          }
+          },
         })
       );
 
@@ -350,7 +325,7 @@ moduleFor(
         Route.extend({
           afterModel(params) {
             this.transitionTo('c', params.b);
-          }
+          },
         })
       );
 
@@ -359,7 +334,7 @@ moduleFor(
         Route.extend({
           afterModel() {
             throw new Error('transition failure');
-          }
+          },
         })
       );
 
@@ -370,10 +345,7 @@ moduleFor(
           assert.ok(false, 'It should not resolve the promise');
         },
         error => {
-          assert.ok(
-            error instanceof Error,
-            'It should reject the promise with the boot error'
-          );
+          assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'transition failure');
         }
       );
@@ -423,9 +395,7 @@ moduleFor(
         });
     }
 
-    [`@test visit() returns a promise that resolves when the view has rendered`](
-      assert
-    ) {
+    [`@test visit() returns a promise that resolves when the view has rendered`](assert) {
       this.addTemplate('application', `<h1>Hello world</h1>`);
 
       this.assertEmptyFixture();
@@ -462,9 +432,7 @@ moduleFor(
       });
     }
 
-    [`@test visit() renders a template when shouldRender is set to true`](
-      assert
-    ) {
+    [`@test visit() renders a template when shouldRender is set to true`](assert) {
       assert.expect(3);
 
       this.addTemplate('application', '<h1>Hello world</h1>');
@@ -528,7 +496,7 @@ moduleFor(
       this.add('event_dispatcher:main', {
         create() {
           throw new Error('should not happen!');
-        }
+        },
       });
 
       // Register engine
@@ -543,7 +511,7 @@ moduleFor(
         `)
           );
           this.register('component:cache-money', Component.extend({}));
-        }
+        },
       });
       this.add('engine:blog', BlogEngine);
 
@@ -585,7 +553,7 @@ moduleFor(
         `)
           );
           this.register('component:cache-money', Component.extend({}));
-        }
+        },
       });
       this.add('engine:blog', BlogEngine);
 
@@ -622,7 +590,7 @@ moduleFor(
               return 'turnt up';
             })
           );
-        }
+        },
       });
       this.add('engine:blog', BlogEngine);
 
@@ -633,11 +601,7 @@ moduleFor(
       this.assertEmptyFixture();
 
       return this.visit('/blog', { shouldRender: true }).then(() => {
-        assert.strictEqual(
-          this.element.textContent,
-          'turnt up',
-          'Engine component is resolved'
-        );
+        assert.strictEqual(this.element.textContent, 'turnt up', 'Engine component is resolved');
       });
     }
 
@@ -656,15 +620,15 @@ moduleFor(
         'route:show',
         Route.extend({
           queryParams: {
-            data: { refreshModel: true }
+            data: { refreshModel: true },
           },
 
           model(params) {
             return {
               componentName: params.component_name,
-              componentData: params.data ? JSON.parse(params.data) : undefined
+              componentData: params.data ? JSON.parse(params.data) : undefined,
             };
-          }
+          },
         })
       );
 
@@ -673,19 +637,16 @@ moduleFor(
 
         increment() {
           this.incrementProperty('value');
-        }
+        },
       });
 
       this.add('service:isolatedCounter', Counter);
       this.add('service:sharedCounter', Counter.create());
       this.application.registerOptions('service:sharedCounter', {
-        instantiate: false
+        instantiate: false,
       });
 
-      this.addTemplate(
-        'show',
-        '{{component model.componentName model=model.componentData}}'
-      );
+      this.addTemplate('show', '{{component model.componentName model=model.componentData}}');
 
       this.addTemplate(
         'components/x-foo',
@@ -715,7 +676,7 @@ moduleFor(
           click() {
             this.get('isolatedCounter').increment();
             this.get('sharedCounter').increment();
-          }
+          },
         })
       );
 
@@ -735,7 +696,7 @@ moduleFor(
           actions: {
             incrementCounter() {
               this.get('counter').increment();
-            }
+            },
           },
 
           init() {
@@ -745,7 +706,7 @@ moduleFor(
 
           didInsertElement() {
             xBarDidInsertElementCalled = true;
-          }
+          },
         })
       );
 
@@ -761,12 +722,12 @@ moduleFor(
       return RSVP.all([
         this.runTask(() => {
           return this.application.visit(`/x-foo?data=${data}`, {
-            rootElement: foo
+            rootElement: foo,
           });
         }),
         this.runTask(() => {
           return this.application.visit('/x-bar', { rootElement: bar });
-        })
+        }),
       ])
         .then(_instances => {
           instances = _instances;
@@ -785,10 +746,7 @@ moduleFor(
           assert.ok(foo.textContent.indexOf('X-Bar') === -1);
 
           assert.equal(bar.querySelector('h1').textContent, 'X-Bar');
-          assert.equal(
-            bar.querySelector('button').textContent,
-            'Join 0 others in clicking me!'
-          );
+          assert.equal(bar.querySelector('button').textContent, 'Join 0 others in clicking me!');
           assert.ok(bar.textContent.indexOf('X-Foo') === -1);
 
           this.runTask(() => {
@@ -799,10 +757,7 @@ moduleFor(
             foo.querySelector('p').textContent,
             'Hello Godfrey, I have been clicked 1 times (1 times combined)!'
           );
-          assert.equal(
-            bar.querySelector('button').textContent,
-            'Join 1 others in clicking me!'
-          );
+          assert.equal(bar.querySelector('button').textContent, 'Join 1 others in clicking me!');
 
           this.runTask(() => {
             this.click(bar.querySelector('button'));
@@ -813,10 +768,7 @@ moduleFor(
             foo.querySelector('p').textContent,
             'Hello Godfrey, I have been clicked 1 times (3 times combined)!'
           );
-          assert.equal(
-            bar.querySelector('button').textContent,
-            'Join 3 others in clicking me!'
-          );
+          assert.equal(bar.querySelector('button').textContent, 'Join 3 others in clicking me!');
         })
         .finally(() => {
           this.runTask(() => {

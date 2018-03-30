@@ -45,7 +45,7 @@ export const helpers = {};
 export function registerHelper(name, helperMethod) {
   helpers[name] = {
     method: helperMethod,
-    meta: { wait: false }
+    meta: { wait: false },
   };
 }
 
@@ -98,7 +98,7 @@ export function registerHelper(name, helperMethod) {
 export function registerAsyncHelper(name, helperMethod) {
   helpers[name] = {
     method: helperMethod,
-    meta: { wait: true }
+    meta: { wait: true },
   };
 }
 

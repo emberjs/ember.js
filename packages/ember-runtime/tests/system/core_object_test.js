@@ -9,7 +9,7 @@ moduleFor(
     ['@test works with new (one arg)'](assert) {
       let obj = new CoreObject({
         firstName: 'Stef',
-        lastName: 'Penner'
+        lastName: 'Penner',
       });
 
       assert.equal(obj.firstName, 'Stef');
@@ -20,10 +20,10 @@ moduleFor(
       let obj = new CoreObject(
         {
           firstName: 'Stef',
-          lastName: 'Penner'
+          lastName: 'Penner',
         },
         {
-          other: 'name'
+          other: 'name',
         }
       );
 
@@ -33,12 +33,10 @@ moduleFor(
       assert.equal(obj.other, undefined); // doesn't support multiple pojo' to the constructor
     }
 
-    ['@test toString should be not be added as a property when calling toString()'](
-      assert
-    ) {
+    ['@test toString should be not be added as a property when calling toString()'](assert) {
       let obj = new CoreObject({
         firstName: 'Foo',
-        lastName: 'Bar'
+        lastName: 'Bar',
       });
 
       obj.toString();
@@ -49,41 +47,29 @@ moduleFor(
       );
     }
 
-    ['@test should not trigger proxy assertion when retrieving a proxy with (GH#16263)'](
-      assert
-    ) {
+    ['@test should not trigger proxy assertion when retrieving a proxy with (GH#16263)'](assert) {
       let someProxyishThing = CoreObject.extend({
         unknownProperty() {
           return true;
-        }
+        },
       }).create();
 
       let obj = new CoreObject({
-        someProxyishThing
+        someProxyishThing,
       });
 
       let proxy = get(obj, 'someProxyishThing');
-      assert.equal(
-        get(proxy, 'lolol'),
-        true,
-        'should be able to get data from a proxy'
-      );
+      assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
     }
 
-    ['@test should not trigger proxy assertion when probing for a "symbol"'](
-      assert
-    ) {
+    ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {
       let proxy = CoreObject.extend({
         unknownProperty() {
           return true;
-        }
+        },
       }).create();
 
-      assert.equal(
-        get(proxy, 'lolol'),
-        true,
-        'should be able to get data from a proxy'
-      );
+      assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
 
       // should not trigger an assertion
       getOwner(proxy);

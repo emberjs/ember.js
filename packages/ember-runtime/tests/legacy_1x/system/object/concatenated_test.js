@@ -27,13 +27,13 @@ moduleFor(
       klass = EmberObject.extend({
         concatenatedProperties: ['values', 'functions'],
         values: ['a', 'b', 'c'],
-        functions: [K]
+        functions: [K],
       });
     }
 
     ['@test concatenates instances'](assert) {
       let obj = klass.create({
-        values: ['d', 'e', 'f']
+        values: ['d', 'e', 'f'],
       });
 
       let values = get(obj, 'values');
@@ -48,7 +48,7 @@ moduleFor(
 
     ['@test concatenates subclasses'](assert) {
       let subKlass = klass.extend({
-        values: ['d', 'e', 'f']
+        values: ['d', 'e', 'f'],
       });
       let obj = subKlass.create();
 
@@ -64,7 +64,7 @@ moduleFor(
 
     ['@test concatenates reopen'](assert) {
       klass.reopen({
-        values: ['d', 'e', 'f']
+        values: ['d', 'e', 'f'],
       });
       let obj = klass.create();
 
@@ -80,10 +80,10 @@ moduleFor(
 
     ['@test concatenates mixin'](assert) {
       let mixin = {
-        values: ['d', 'e']
+        values: ['d', 'e'],
       };
       let subKlass = klass.extend(mixin, {
-        values: ['f']
+        values: ['f'],
       });
       let obj = subKlass.create();
 
@@ -114,7 +114,7 @@ moduleFor(
 
     ['@test concatenates subclasses when the values are functions'](assert) {
       let subKlass = klass.extend({
-        functions: K
+        functions: K,
       });
       let obj = subKlass.create();
 

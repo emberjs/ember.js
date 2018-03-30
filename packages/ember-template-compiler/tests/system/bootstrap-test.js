@@ -1,18 +1,12 @@
 import { run } from 'ember-metal';
-import {
-  Component,
-  getTemplate,
-  setTemplates,
-  hasTemplate,
-  setTemplate
-} from 'ember-glimmer';
+import { Component, getTemplate, setTemplates, hasTemplate, setTemplate } from 'ember-glimmer';
 import bootstrap from '../../system/bootstrap';
 import {
   runAppend,
   runDestroy,
   buildOwner,
   moduleFor,
-  AbstractTestCase
+  AbstractTestCase,
 } from 'internal-test-helpers';
 
 let component, fixture;
@@ -33,18 +27,14 @@ function checkTemplate(templateName, assert) {
     Component.extend({
       layoutName: '-top-level',
       firstName: 'Tobias',
-      drug: 'teamocil'
+      drug: 'teamocil',
     })
   );
 
   component = owner.lookup('component:-top-level');
   runAppend(component);
 
-  assert.equal(
-    qunitFixture.textContent.trim(),
-    'Tobias takes teamocil',
-    'template works'
-  );
+  assert.equal(qunitFixture.textContent.trim(), 'Tobias takes teamocil', 'template works');
   runDestroy(component);
 }
 
@@ -80,11 +70,8 @@ moduleFor(
       checkTemplate('funkyTemplate', assert);
     }
 
-    ['@test template without data-template-name or id should default to application'](
-      assert
-    ) {
-      fixture.innerHTML =
-        '<script type="text/x-handlebars">{{firstName}} takes {{drug}}</script>';
+    ['@test template without data-template-name or id should default to application'](assert) {
+      fixture.innerHTML = '<script type="text/x-handlebars">{{firstName}} takes {{drug}}</script>';
 
       checkTemplate('application', assert);
     }
@@ -106,9 +93,7 @@ moduleFor(
       assert.equal(template({ name: 'Tobias' }).trim(), 'Tobias');
     }
 
-    ['@test duplicated default application templates should throw exception'](
-      assert
-    ) {
+    ['@test duplicated default application templates should throw exception'](assert) {
       fixture.innerHTML =
         '<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>';
 
@@ -156,9 +141,7 @@ moduleFor(
       );
     }
 
-    ['@test duplicated template data-template-name should throw exception'](
-      assert
-    ) {
+    ['@test duplicated template data-template-name should throw exception'](assert) {
       fixture.innerHTML =
         '<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>';
 

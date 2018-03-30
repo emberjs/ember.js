@@ -3,7 +3,7 @@ import {
   factory,
   moduleFor,
   AbstractTestCase,
-  ModuleBasedTestResolver
+  ModuleBasedTestResolver,
 } from 'internal-test-helpers';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { ENV } from 'ember-environment';
@@ -14,8 +14,7 @@ moduleFor(
     constructor() {
       super();
 
-      this.originalResolverFunctionSupport =
-        ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT;
+      this.originalResolverFunctionSupport = ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT;
       ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT = true;
     }
 
@@ -38,9 +37,7 @@ moduleFor(
       );
     }
 
-    ['@test The registered factory returned from resolve is the same factory each time'](
-      assert
-    ) {
+    ['@test The registered factory returned from resolve is the same factory each time'](assert) {
       let registry = new Registry();
       let PostController = factory();
 
@@ -75,16 +72,14 @@ moduleFor(
           if (fullName === 'falsy:value') {
             return null;
           }
-        }
+        },
       };
       let registry = new Registry({ resolver });
 
       assert.strictEqual(registry.resolve('falsy:value'), null);
     }
 
-    ['@test A registered factory returns true for `has` if an item is registered'](
-      assert
-    ) {
+    ['@test A registered factory returns true for `has` if an item is registered'](assert) {
       let registry = new Registry();
       let PostController = factory();
 
@@ -120,7 +115,7 @@ moduleFor(
           if (fullName === 'controller:post') {
             return PostController;
           }
-        }
+        },
       };
       let registry = new Registry({ resolver });
 
@@ -138,14 +133,11 @@ moduleFor(
           if (fullName === 'controller:post') {
             return PostController;
           }
-        }
+        },
       };
       let registry = new Registry({ resolver });
 
-      assert.ok(
-        registry.has('controller:post'),
-        'the `has` method uses the resolver hook'
-      );
+      assert.ok(registry.has('controller:post'), 'the `has` method uses the resolver hook');
     }
 
     ['@test The registry normalizes names when resolving'](assert) {
@@ -159,23 +151,15 @@ moduleFor(
       registry.register('controller:post', PostController);
       let type = registry.resolve('controller:normalized');
 
-      assert.strictEqual(
-        type,
-        PostController,
-        'Normalizes the name when resolving'
-      );
+      assert.strictEqual(type, PostController, 'Normalizes the name when resolving');
     }
 
-    ['@test The registry normalizes names when checking if the factory is registered'](
-      assert
-    ) {
+    ['@test The registry normalizes names when checking if the factory is registered'](assert) {
       let registry = new Registry();
       let PostController = factory();
 
       registry.normalizeFullName = function(fullName) {
-        return fullName === 'controller:normalized'
-          ? 'controller:post'
-          : fullName;
+        return fullName === 'controller:normalized' ? 'controller:post' : fullName;
       };
 
       registry.register('controller:post', PostController);
@@ -224,9 +208,7 @@ moduleFor(
       registry.register('controller:apple', FirstApple);
       registry.register('controller:apple', SecondApple);
 
-      assert.ok(
-        registry.resolve('controller:apple').create() instanceof SecondApple
-      );
+      assert.ok(registry.resolve('controller:apple').create() instanceof SecondApple);
     }
 
     ['@test cannot re-register a factory if it has been resolved'](assert) {
@@ -262,11 +244,7 @@ moduleFor(
 
       registry.register('controller:apple', FirstApple);
       registry.register('controller:second-apple', SecondApple);
-      registry.injection(
-        'controller:apple',
-        'badApple',
-        'controller:second-apple'
-      );
+      registry.injection('controller:apple', 'badApple', 'controller:second-apple');
 
       assert.ok(registry.has('controller:apple'));
     }
@@ -283,7 +261,7 @@ moduleFor(
       registry.resolver = {
         resolve() {
           return 'bar';
-        }
+        },
       };
 
       let Bar = registry.resolve('models:bar');
@@ -291,7 +269,7 @@ moduleFor(
       registry.resolver = {
         resolve() {
           return 'not bar';
-        }
+        },
       };
 
       assert.equal(registry.resolve('models:bar'), Bar);
@@ -306,7 +284,7 @@ moduleFor(
         resolve(fullName) {
           resolveWasCalled.push(fullName);
           return PostController;
-        }
+        },
       };
 
       assert.deepEqual(resolveWasCalled, []);
@@ -326,7 +304,7 @@ moduleFor(
         resolve(fullName) {
           resolveWasCalled.push(fullName);
           return PostController;
-        }
+        },
       };
 
       assert.deepEqual(resolveWasCalled, []);
@@ -346,7 +324,7 @@ moduleFor(
         resolve(fullName) {
           resolveWasCalled.push(fullName);
           return PostController;
-        }
+        },
       };
 
       assert.deepEqual(resolveWasCalled, []);
@@ -377,13 +355,13 @@ moduleFor(
       let fallback = {
         describe(fullName) {
           return `${fullName}-fallback`;
-        }
+        },
       };
 
       let resolver = {
         lookupDescription(fullName) {
           return `${fullName}-resolver`;
-        }
+        },
       };
 
       let registry = new Registry({ fallback, resolver });
@@ -417,13 +395,13 @@ moduleFor(
       let fallback = {
         normalizeFullName(fullName) {
           return `${fullName}-fallback`;
-        }
+        },
       };
 
       let resolver = {
         normalize(fullName) {
           return `${fullName}-resolver`;
-        }
+        },
       };
 
       let registry = new Registry({ fallback, resolver });
@@ -457,13 +435,13 @@ moduleFor(
       let fallback = {
         makeToString(fullName) {
           return `${fullName}-fallback`;
-        }
+        },
       };
 
       let resolver = {
         makeToString(fullName) {
           return `${fullName}-resolver`;
-        }
+        },
       };
 
       let registry = new Registry({ fallback, resolver });
@@ -523,9 +501,7 @@ moduleFor(
       );
     }
 
-    ['@test `getInjections` includes injections from a fallback registry'](
-      assert
-    ) {
+    ['@test `getInjections` includes injections from a fallback registry'](assert) {
       let fallback = new Registry();
       let registry = new Registry({ fallback: fallback });
 
@@ -544,9 +520,7 @@ moduleFor(
       );
     }
 
-    ['@test `getTypeInjections` includes type injections from a fallback registry'](
-      assert
-    ) {
+    ['@test `getTypeInjections` includes type injections from a fallback registry'](assert) {
       let fallback = new Registry();
       let registry = new Registry({ fallback: fallback });
 
@@ -565,9 +539,7 @@ moduleFor(
       );
     }
 
-    ['@test `knownForType` contains keys for each item of a given type'](
-      assert
-    ) {
+    ['@test `knownForType` contains keys for each item of a given type'](assert) {
       let registry = new Registry();
 
       registry.register('foo:bar-baz', 'baz');
@@ -577,7 +549,7 @@ moduleFor(
 
       assert.deepEqual(found, {
         'foo:bar-baz': true,
-        'foo:qux-fez': true
+        'foo:qux-fez': true,
       });
     }
 
@@ -594,7 +566,7 @@ moduleFor(
       assert.deepEqual(found, {
         'foo:bar-baz': true,
         'foo:qux-fez': true,
-        'foo:zurp-zorp': true
+        'foo:zurp-zorp': true,
       });
     }
 
@@ -607,11 +579,11 @@ moduleFor(
           assert.equal(type, 'foo', 'the type was passed through');
 
           return { 'foo:yorp': true };
-        }
+        },
       };
 
       let registry = new Registry({
-        resolver
+        resolver,
       });
       registry.register('foo:bar-baz', 'baz');
 
@@ -619,7 +591,7 @@ moduleFor(
 
       assert.deepEqual(found, {
         'foo:yorp': true,
-        'foo:bar-baz': true
+        'foo:bar-baz': true,
       });
     }
 
@@ -636,7 +608,7 @@ moduleFor(
         registry = new Registry({
           resolver(fullName) {
             return `${fullName}-resolved`;
-          }
+          },
         });
       }, 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.');
 
@@ -658,18 +630,18 @@ moduleFor(
         new Registry({
           resolver(fullName) {
             return `${fullName}-resolved`;
-          }
+          },
         });
       }, /Passing a \`resolver\` function into a Registry is deprecated\. Please pass in a Resolver object with a \`resolve\` method\./);
     }
 
     ['@test resolver.expandLocalLookup is not required'](assert) {
       let registry = new Registry({
-        resolver: {}
+        resolver: {},
       });
 
       let result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(result, null);
@@ -681,27 +653,19 @@ moduleFor(
       let resolver = {
         expandLocalLookup: (targetFullName, sourceFullName) => {
           assert.ok(true, 'expandLocalLookup is called on the resolver');
-          assert.equal(
-            targetFullName,
-            'foo:bar',
-            'the targetFullName was passed through'
-          );
-          assert.equal(
-            sourceFullName,
-            'baz:qux',
-            'the sourceFullName was passed through'
-          );
+          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
 
           return 'foo:qux/bar';
-        }
+        },
       };
 
       let registry = new Registry({
-        resolver
+        resolver,
       });
 
       let result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(result, 'foo:qux/bar');
@@ -714,54 +678,35 @@ moduleFor(
 
       let fallbackResolver = {
         expandLocalLookup: (targetFullName, sourceFullName) => {
-          assert.ok(
-            true,
-            'expandLocalLookup is called on the fallback resolver'
-          );
-          assert.equal(
-            targetFullName,
-            'foo:bar',
-            'the targetFullName was passed through'
-          );
-          assert.equal(
-            sourceFullName,
-            'baz:qux',
-            'the sourceFullName was passed through'
-          );
+          assert.ok(true, 'expandLocalLookup is called on the fallback resolver');
+          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
 
           return 'foo:qux/bar-fallback';
-        }
+        },
       };
 
       let resolver = {
         expandLocalLookup: (targetFullName, sourceFullName) => {
           assert.ok(true, 'expandLocalLookup is called on the resolver');
-          assert.equal(
-            targetFullName,
-            'foo:bar',
-            'the targetFullName was passed through'
-          );
-          assert.equal(
-            sourceFullName,
-            'baz:qux',
-            'the sourceFullName was passed through'
-          );
+          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
 
           return 'foo:qux/bar-resolver';
-        }
+        },
       };
 
       let fallbackRegistry = new Registry({
-        resolver: fallbackResolver
+        resolver: fallbackResolver,
       });
 
       let registry = new Registry({
         fallback: fallbackRegistry,
-        resolver
+        resolver,
       });
 
       let result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(result, 'foo:qux/bar-resolver', 'handled by the resolver');
@@ -769,19 +714,15 @@ moduleFor(
       registry.resolver = null;
 
       result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
-      assert.equal(
-        result,
-        'foo:qux/bar-fallback',
-        'handled by the fallback registry'
-      );
+      assert.equal(result, 'foo:qux/bar-fallback', 'handled by the fallback registry');
 
       registry.fallback = null;
 
       result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(
@@ -800,29 +741,27 @@ moduleFor(
           assert.ok(true, 'expandLocalLookup is called on the resolver');
 
           return 'foo:qux/bar';
-        }
+        },
       };
 
       let registry = new Registry({
-        resolver
+        resolver,
       });
 
       result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(result, 'foo:qux/bar');
 
       result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(result, 'foo:qux/bar');
     }
 
-    ['@test resolver.expandLocalLookup cache is busted when any unregister is called'](
-      assert
-    ) {
+    ['@test resolver.expandLocalLookup cache is busted when any unregister is called'](assert) {
       assert.expect(4);
       let result;
 
@@ -831,15 +770,15 @@ moduleFor(
           assert.ok(true, 'expandLocalLookup is called on the resolver');
 
           return 'foo:qux/bar';
-        }
+        },
       };
 
       let registry = new Registry({
-        resolver
+        resolver,
       });
 
       result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(result, 'foo:qux/bar');
@@ -847,42 +786,32 @@ moduleFor(
       registry.unregister('foo:bar');
 
       result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.equal(result, 'foo:qux/bar');
     }
 
-    ['@test resolve calls expandLocallookup when it receives options.source'](
-      assert
-    ) {
+    ['@test resolve calls expandLocallookup when it receives options.source'](assert) {
       assert.expect(3);
 
       let resolver = {
         resolve() {},
         expandLocalLookup: (targetFullName, sourceFullName) => {
           assert.ok(true, 'expandLocalLookup is called on the resolver');
-          assert.equal(
-            targetFullName,
-            'foo:bar',
-            'the targetFullName was passed through'
-          );
-          assert.equal(
-            sourceFullName,
-            'baz:qux',
-            'the sourceFullName was passed through'
-          );
+          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
+          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
 
           return 'foo:qux/bar';
-        }
+        },
       };
 
       let registry = new Registry({
-        resolver
+        resolver,
       });
 
       registry.resolve('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
     }
 
@@ -905,21 +834,21 @@ moduleFor(
           } else {
             return null;
           }
-        }
+        },
       };
 
       let registry = new Registry({
-        resolver
+        resolver,
       });
 
       result = registry.has('foo:bar', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.ok(result, 'found foo:bar/qux');
 
       result = registry.has('foo:baz', {
-        source: 'baz:qux'
+        source: 'baz:qux',
       });
 
       assert.ok(!result, 'foo:baz/qux not found');

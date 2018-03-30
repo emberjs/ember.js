@@ -11,7 +11,7 @@ moduleFor(
         foo() {
           return 'FOO';
         },
-        bar: 'BAR'
+        bar: 'BAR',
       });
 
       assert.equal(new Subclass().foo(), 'FOO', 'Adds method');
@@ -26,7 +26,7 @@ moduleFor(
         foo() {
           return 'FOO';
         },
-        bar: 'BAR'
+        bar: 'BAR',
       });
 
       assert.equal(new SubSub().foo(), 'FOO', 'Adds method');
@@ -39,7 +39,7 @@ moduleFor(
       Subclass.create();
 
       Subclass.reopen({
-        trololol: true
+        trololol: true,
       });
 
       assert.equal(Subclass.create().get('trololol'), true, 'reopen works');

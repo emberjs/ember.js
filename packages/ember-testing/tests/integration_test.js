@@ -35,7 +35,7 @@ moduleFor(
         this.add(
           'route:people',
           Route.extend({
-            model: () => this.modelContent
+            model: () => this.modelContent,
           })
         );
 
@@ -59,11 +59,7 @@ moduleFor(
         this.runTask(() => this.application.advanceReadiness());
         window.visit('/').then(() => {
           let rows = window.find('.name').length;
-          assert.equal(
-            rows,
-            0,
-            'successfully stubbed an empty array of people'
-          );
+          assert.equal(rows, 0, 'successfully stubbed an empty array of people');
         });
       } else {
         this.runTask(() => this.application.advanceReadiness());
@@ -85,11 +81,7 @@ moduleFor(
         this.runTask(() => this.application.advanceReadiness());
         window.visit('/').then(() => {
           let rows = window.find('.name').length;
-          assert.equal(
-            rows,
-            2,
-            'successfully stubbed a non empty array of people'
-          );
+          assert.equal(rows, 2, 'successfully stubbed a non empty array of people');
         });
       } else {
         assert.expect(0);

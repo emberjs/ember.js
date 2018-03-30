@@ -32,11 +32,11 @@ class DSL {
 
     if (this.enableLoadingSubstates) {
       createRoute(this, `${name}_loading`, {
-        resetNamespace: options.resetNamespace
+        resetNamespace: options.resetNamespace,
       });
       createRoute(this, `${name}_error`, {
         resetNamespace: options.resetNamespace,
-        path: dummyErrorRoute
+        path: dummyErrorRoute,
       });
     }
 
@@ -59,9 +59,7 @@ class DSL {
     let parts = name.split('.');
 
     if (this.options.engineInfo) {
-      let localFullName = name.slice(
-        this.options.engineInfo.fullName.length + 1
-      );
+      let localFullName = name.slice(this.options.engineInfo.fullName.length + 1);
       let routeInfo = assign({ localFullName }, this.options.engineInfo);
 
       if (serialize) {
@@ -110,7 +108,7 @@ class DSL {
       name: _name,
       instanceId: uuid++,
       mountPoint: fullName,
-      fullName
+      fullName,
     };
 
     let path = options.path;
@@ -154,7 +152,7 @@ class DSL {
       let localFullName = `application_loading`;
       let routeInfo = assign({ localFullName }, engineInfo);
       createRoute(this, substateName, {
-        resetNamespace: options.resetNamespace
+        resetNamespace: options.resetNamespace,
       });
       this.options.addRouteForEngine(substateName, routeInfo);
 
@@ -163,7 +161,7 @@ class DSL {
       routeInfo = assign({ localFullName }, engineInfo);
       createRoute(this, substateName, {
         resetNamespace: options.resetNamespace,
-        path: dummyErrorRoute
+        path: dummyErrorRoute,
       });
       this.options.addRouteForEngine(substateName, routeInfo);
     }

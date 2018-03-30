@@ -4,10 +4,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function hasMandatorySetter(object, property) {
   try {
-    return (
-      Object.getOwnPropertyDescriptor(object, property).set
-        .isMandatorySetter === true
-    );
+    return Object.getOwnPropertyDescriptor(object, property).set.isMandatorySetter === true;
   } catch (e) {
     return false;
   }
@@ -26,16 +23,14 @@ if (MANDATORY_SETTER) {
           someProp: null,
           toString() {
             return 'custom-object';
-          }
+          },
         };
 
         obj.someProp = 'blastix';
         assert.equal(get(obj, 'someProp'), 'blastix');
       }
 
-      ['@test should not setup mandatory-setter if property is not writable'](
-        assert
-      ) {
+      ['@test should not setup mandatory-setter if property is not writable'](assert) {
         assert.expect(6);
 
         let obj = {};
@@ -46,11 +41,11 @@ if (MANDATORY_SETTER) {
         Object.defineProperty(obj, 'd', { value: undefined, writable: false });
         Object.defineProperty(obj, 'e', {
           value: undefined,
-          configurable: false
+          configurable: false,
         });
         Object.defineProperty(obj, 'f', {
           value: undefined,
-          configurable: true
+          configurable: true,
         });
 
         watch(obj, 'a');
@@ -60,30 +55,12 @@ if (MANDATORY_SETTER) {
         watch(obj, 'e');
         watch(obj, 'f');
 
-        assert.ok(
-          !hasMandatorySetter(obj, 'a'),
-          'mandatory-setter should not be installed'
-        );
-        assert.ok(
-          !hasMandatorySetter(obj, 'b'),
-          'mandatory-setter should not be installed'
-        );
-        assert.ok(
-          !hasMandatorySetter(obj, 'c'),
-          'mandatory-setter should not be installed'
-        );
-        assert.ok(
-          !hasMandatorySetter(obj, 'd'),
-          'mandatory-setter should not be installed'
-        );
-        assert.ok(
-          !hasMandatorySetter(obj, 'e'),
-          'mandatory-setter should not be installed'
-        );
-        assert.ok(
-          !hasMandatorySetter(obj, 'f'),
-          'mandatory-setter should not be installed'
-        );
+        assert.ok(!hasMandatorySetter(obj, 'a'), 'mandatory-setter should not be installed');
+        assert.ok(!hasMandatorySetter(obj, 'b'), 'mandatory-setter should not be installed');
+        assert.ok(!hasMandatorySetter(obj, 'c'), 'mandatory-setter should not be installed');
+        assert.ok(!hasMandatorySetter(obj, 'd'), 'mandatory-setter should not be installed');
+        assert.ok(!hasMandatorySetter(obj, 'e'), 'mandatory-setter should not be installed');
+        assert.ok(!hasMandatorySetter(obj, 'f'), 'mandatory-setter should not be installed');
       }
 
       ['@test should not teardown non mandatory-setter descriptor'](assert) {
@@ -92,7 +69,7 @@ if (MANDATORY_SETTER) {
         let obj = {
           get a() {
             return 'hi';
-          }
+          },
         };
 
         watch(obj, 'a');
@@ -107,7 +84,7 @@ if (MANDATORY_SETTER) {
         let obj = {
           get a() {
             return 'hi';
-          }
+          },
         };
 
         watch(obj, 'a');
@@ -115,9 +92,7 @@ if (MANDATORY_SETTER) {
         assert.equal(obj.a, 'hi');
       }
 
-      ['@test should not setup mandatory-setter if setter is already setup on property'](
-        assert
-      ) {
+      ['@test should not setup mandatory-setter if setter is already setup on property'](assert) {
         assert.expect(2);
 
         let obj = { someProp: null };
@@ -129,27 +104,22 @@ if (MANDATORY_SETTER) {
 
           set(value) {
             assert.equal(value, 'foo-bar', 'custom setter was called');
-          }
+          },
         });
 
         watch(obj, 'someProp');
-        assert.ok(
-          !hasMandatorySetter(obj, 'someProp'),
-          'mandatory-setter should not be installed'
-        );
+        assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
         obj.someProp = 'foo-bar';
       }
 
-      ['@test watched ES5 setter should not be smashed by mandatory setter'](
-        assert
-      ) {
+      ['@test watched ES5 setter should not be smashed by mandatory setter'](assert) {
         let value;
         let obj = {
           get foo() {},
           set foo(_value) {
             value = _value;
-          }
+          },
         };
 
         watch(obj, 'foo');
@@ -172,16 +142,13 @@ if (MANDATORY_SETTER) {
 
           set(value) {
             assert.equal(value, 'foo-bar', 'custom setter was called');
-          }
+          },
         });
 
         let obj = new Foo();
 
         watch(obj, 'someProp');
-        assert.ok(
-          !hasMandatorySetter(obj, 'someProp'),
-          'mandatory-setter should not be installed'
-        );
+        assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
         obj.someProp = 'foo-bar';
       }
@@ -200,7 +167,7 @@ if (MANDATORY_SETTER) {
 
           set(value) {
             assert.equal(value, 'foo-bar', 'custom setter was called');
-          }
+          },
         });
 
         function Bar() {}
@@ -210,10 +177,7 @@ if (MANDATORY_SETTER) {
         let obj = new Bar();
 
         watch(obj, 'someProp');
-        assert.ok(
-          !hasMandatorySetter(obj, 'someProp'),
-          'mandatory-setter should not be installed'
-        );
+        assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
         obj.someProp = 'foo-bar';
       }
@@ -232,7 +196,7 @@ if (MANDATORY_SETTER) {
 
           set(value) {
             assert.equal(value, 'foo-bar', 'custom setter was called');
-          }
+          },
         });
 
         function Bar() {}
@@ -246,10 +210,7 @@ if (MANDATORY_SETTER) {
         let obj = new Qux();
 
         watch(obj, 'someProp');
-        assert.ok(
-          !hasMandatorySetter(obj, 'someProp'),
-          'mandatory-setter should not be installed'
-        );
+        assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
         obj.someProp = 'foo-bar';
       }
@@ -259,7 +220,7 @@ if (MANDATORY_SETTER) {
           someProp: null,
           toString() {
             return 'custom-object';
-          }
+          },
         };
 
         watch(obj, 'someProp');
@@ -269,14 +230,12 @@ if (MANDATORY_SETTER) {
         }, 'You must use set() to set the `someProp` property (of custom-object) to `foo-bar`.');
       }
 
-      ['@test should not assert if set with set when property is being watched'](
-        assert
-      ) {
+      ['@test should not assert if set with set when property is being watched'](assert) {
         let obj = {
           someProp: null,
           toString() {
             return 'custom-object';
-          }
+          },
         };
 
         watch(obj, 'someProp');
@@ -290,13 +249,13 @@ if (MANDATORY_SETTER) {
           someProp: null,
           toString() {
             return 'custom-object';
-          }
+          },
         };
 
         Object.defineProperty(obj, 'someProp', {
           configurable: false,
           enumerable: true,
-          value: 'blastix'
+          value: 'blastix',
         });
 
         watch(obj, 'someProp');
@@ -310,57 +269,31 @@ if (MANDATORY_SETTER) {
           someProp: null,
           toString() {
             return 'custom-object';
-          }
+          },
         };
 
         Object.defineProperty(obj, 'someProp', {
           configurable: true,
           enumerable: false,
-          value: 'blastix'
+          value: 'blastix',
         });
 
         watch(obj, 'someProp');
-        assert.equal(
-          hasMandatorySetter(obj, 'someProp'),
-          true,
-          'should have a mandatory setter'
-        );
+        assert.equal(hasMandatorySetter(obj, 'someProp'), true, 'should have a mandatory setter');
 
         let descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
 
-        assert.equal(
-          descriptor.enumerable,
-          false,
-          'property should remain non-enumerable'
-        );
-        assert.equal(
-          descriptor.configurable,
-          true,
-          'property should remain configurable'
-        );
-        assert.equal(
-          obj.someProp,
-          'blastix',
-          'expected value to be the getter'
-        );
+        assert.equal(descriptor.enumerable, false, 'property should remain non-enumerable');
+        assert.equal(descriptor.configurable, true, 'property should remain configurable');
+        assert.equal(obj.someProp, 'blastix', 'expected value to be the getter');
 
-        assert.equal(
-          descriptor.value,
-          undefined,
-          'expected existing value to NOT remain'
-        );
+        assert.equal(descriptor.value, undefined, 'expected existing value to NOT remain');
 
-        assert.ok(
-          hasMetaValue(obj, 'someProp'),
-          'someProp is stored in meta.values'
-        );
+        assert.ok(hasMetaValue(obj, 'someProp'), 'someProp is stored in meta.values');
 
         unwatch(obj, 'someProp');
 
-        assert.ok(
-          !hasMetaValue(obj, 'someProp'),
-          'someProp is no longer stored in meta.values'
-        );
+        assert.ok(!hasMetaValue(obj, 'someProp'), 'someProp is no longer stored in meta.values');
 
         descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
 
@@ -370,52 +303,20 @@ if (MANDATORY_SETTER) {
           'should no longer have a mandatory setter'
         );
 
-        assert.equal(
-          descriptor.enumerable,
-          false,
-          'property should remain non-enumerable'
-        );
-        assert.equal(
-          descriptor.configurable,
-          true,
-          'property should remain configurable'
-        );
-        assert.equal(
-          obj.someProp,
-          'blastix',
-          'expected value to be the getter'
-        );
-        assert.equal(
-          descriptor.value,
-          'blastix',
-          'expected existing value to remain'
-        );
+        assert.equal(descriptor.enumerable, false, 'property should remain non-enumerable');
+        assert.equal(descriptor.configurable, true, 'property should remain configurable');
+        assert.equal(obj.someProp, 'blastix', 'expected value to be the getter');
+        assert.equal(descriptor.value, 'blastix', 'expected existing value to remain');
 
         obj.someProp = 'new value';
 
         // make sure the descriptor remains correct (nothing funky, like a redefined, happened in the setter);
         descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
 
-        assert.equal(
-          descriptor.enumerable,
-          false,
-          'property should remain non-enumerable'
-        );
-        assert.equal(
-          descriptor.configurable,
-          true,
-          'property should remain configurable'
-        );
-        assert.equal(
-          descriptor.value,
-          'new value',
-          'expected existing value to NOT remain'
-        );
-        assert.equal(
-          obj.someProp,
-          'new value',
-          'expected value to be the getter'
-        );
+        assert.equal(descriptor.enumerable, false, 'property should remain non-enumerable');
+        assert.equal(descriptor.configurable, true, 'property should remain configurable');
+        assert.equal(descriptor.value, 'new value', 'expected existing value to NOT remain');
+        assert.equal(obj.someProp, 'new value', 'expected value to be the getter');
         assert.equal(obj.someProp, 'new value');
       }
 
@@ -426,57 +327,31 @@ if (MANDATORY_SETTER) {
           someProp: null,
           toString() {
             return 'custom-object';
-          }
+          },
         };
 
         Object.defineProperty(obj, 'someProp', {
           configurable: true,
           enumerable: true,
-          value: 'blastix'
+          value: 'blastix',
         });
 
         watch(obj, 'someProp');
-        assert.equal(
-          hasMandatorySetter(obj, 'someProp'),
-          true,
-          'should have a mandatory setter'
-        );
+        assert.equal(hasMandatorySetter(obj, 'someProp'), true, 'should have a mandatory setter');
 
         let descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
 
-        assert.equal(
-          descriptor.enumerable,
-          true,
-          'property should remain enumerable'
-        );
-        assert.equal(
-          descriptor.configurable,
-          true,
-          'property should remain configurable'
-        );
-        assert.equal(
-          obj.someProp,
-          'blastix',
-          'expected value to be the getter'
-        );
+        assert.equal(descriptor.enumerable, true, 'property should remain enumerable');
+        assert.equal(descriptor.configurable, true, 'property should remain configurable');
+        assert.equal(obj.someProp, 'blastix', 'expected value to be the getter');
 
-        assert.equal(
-          descriptor.value,
-          undefined,
-          'expected existing value to NOT remain'
-        );
+        assert.equal(descriptor.value, undefined, 'expected existing value to NOT remain');
 
-        assert.ok(
-          hasMetaValue(obj, 'someProp'),
-          'someProp is stored in meta.values'
-        );
+        assert.ok(hasMetaValue(obj, 'someProp'), 'someProp is stored in meta.values');
 
         unwatch(obj, 'someProp');
 
-        assert.ok(
-          !hasMetaValue(obj, 'someProp'),
-          'someProp is no longer stored in meta.values'
-        );
+        assert.ok(!hasMetaValue(obj, 'someProp'), 'someProp is no longer stored in meta.values');
 
         descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
 
@@ -486,70 +361,37 @@ if (MANDATORY_SETTER) {
           'should no longer have a mandatory setter'
         );
 
-        assert.equal(
-          descriptor.enumerable,
-          true,
-          'property should remain enumerable'
-        );
-        assert.equal(
-          descriptor.configurable,
-          true,
-          'property should remain configurable'
-        );
-        assert.equal(
-          obj.someProp,
-          'blastix',
-          'expected value to be the getter'
-        );
-        assert.equal(
-          descriptor.value,
-          'blastix',
-          'expected existing value to remain'
-        );
+        assert.equal(descriptor.enumerable, true, 'property should remain enumerable');
+        assert.equal(descriptor.configurable, true, 'property should remain configurable');
+        assert.equal(obj.someProp, 'blastix', 'expected value to be the getter');
+        assert.equal(descriptor.value, 'blastix', 'expected existing value to remain');
 
         obj.someProp = 'new value';
 
         // make sure the descriptor remains correct (nothing funky, like a redefined, happened in the setter);
         descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
 
-        assert.equal(
-          descriptor.enumerable,
-          true,
-          'property should remain enumerable'
-        );
-        assert.equal(
-          descriptor.configurable,
-          true,
-          'property should remain configurable'
-        );
-        assert.equal(
-          descriptor.value,
-          'new value',
-          'expected existing value to NOT remain'
-        );
+        assert.equal(descriptor.enumerable, true, 'property should remain enumerable');
+        assert.equal(descriptor.configurable, true, 'property should remain configurable');
+        assert.equal(descriptor.value, 'new value', 'expected existing value to NOT remain');
         assert.equal(obj.someProp, 'new value');
       }
 
-      ['@test sets up mandatory-setter if property comes from prototype'](
-        assert
-      ) {
+      ['@test sets up mandatory-setter if property comes from prototype'](assert) {
         assert.expect(2);
 
         let obj = {
           someProp: null,
           toString() {
             return 'custom-object';
-          }
+          },
         };
 
         let obj2 = Object.create(obj);
 
         watch(obj2, 'someProp');
 
-        assert.ok(
-          hasMandatorySetter(obj2, 'someProp'),
-          'mandatory setter has been setup'
-        );
+        assert.ok(hasMandatorySetter(obj2, 'someProp'), 'mandatory setter has been setup');
 
         expectAssertion(function() {
           obj2.someProp = 'foo-bar';
@@ -589,7 +431,7 @@ if (MANDATORY_SETTER) {
         Object.defineProperty(Parent.prototype, 'food', {
           get() {
             return this._food;
-          }
+          },
         });
 
         let child = new Parent('chips');
@@ -608,22 +450,13 @@ if (MANDATORY_SETTER) {
 
         assert.equal(child.food, 'icecreame');
 
-        let foodDesc = Object.getOwnPropertyDescriptor(
-          Parent.prototype,
-          'food'
-        );
-        assert.ok(
-          !foodDesc.configurable,
-          'Parent.prototype.food desc should be non configable'
-        );
-        assert.ok(
-          !foodDesc.enumerable,
-          'Parent.prototype.food desc should be non enumerable'
-        );
+        let foodDesc = Object.getOwnPropertyDescriptor(Parent.prototype, 'food');
+        assert.ok(!foodDesc.configurable, 'Parent.prototype.food desc should be non configable');
+        assert.ok(!foodDesc.enumerable, 'Parent.prototype.food desc should be non enumerable');
 
         assert.equal(
           foodDesc.get.call({
-            _food: 'hi'
+            _food: 'hi',
           }),
           'hi'
         );

@@ -23,9 +23,7 @@ moduleFor(
       document.getElementById('qunit-fixture').innerHTML = `
       <div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>
     `;
-      application = run(() =>
-        Application.create({ rootElement: '#one', router: null })
-      );
+      application = run(() => Application.create({ rootElement: '#one', router: null }));
     }
 
     teardown() {
@@ -41,29 +39,21 @@ moduleFor(
       document.getElementById('qunit-fixture').innerHTML = '';
     }
 
-    ['@test an application instance can be created based upon an application'](
-      assert
-    ) {
+    ['@test an application instance can be created based upon an application'](assert) {
       appInstance = run(() => ApplicationInstance.create({ application }));
 
       assert.ok(appInstance, 'instance should be created');
-      assert.equal(
-        appInstance.application,
-        application,
-        'application should be set to parent'
-      );
+      assert.equal(appInstance.application, application, 'application should be set to parent');
     }
 
-    ['@test customEvents added to the application before setupEventDispatcher'](
-      assert
-    ) {
+    ['@test customEvents added to the application before setupEventDispatcher'](assert) {
       assert.expect(1);
 
       appInstance = run(() => ApplicationInstance.create({ application }));
       appInstance.setupRegistry();
 
       application.customEvents = {
-        awesome: 'sauce'
+        awesome: 'sauce',
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
@@ -74,16 +64,14 @@ moduleFor(
       appInstance.setupEventDispatcher();
     }
 
-    ['@test customEvents added to the application before setupEventDispatcher'](
-      assert
-    ) {
+    ['@test customEvents added to the application before setupEventDispatcher'](assert) {
       assert.expect(1);
 
       appInstance = run(() => ApplicationInstance.create({ application }));
       appInstance.setupRegistry();
 
       application.customEvents = {
-        awesome: 'sauce'
+        awesome: 'sauce',
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
@@ -94,16 +82,14 @@ moduleFor(
       appInstance.setupEventDispatcher();
     }
 
-    ['@test customEvents added to the application instance before setupEventDispatcher'](
-      assert
-    ) {
+    ['@test customEvents added to the application instance before setupEventDispatcher'](assert) {
       assert.expect(1);
 
       appInstance = run(() => ApplicationInstance.create({ application }));
       appInstance.setupRegistry();
 
       appInstance.customEvents = {
-        awesome: 'sauce'
+        awesome: 'sauce',
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
@@ -114,9 +100,7 @@ moduleFor(
       appInstance.setupEventDispatcher();
     }
 
-    ['@test unregistering a factory clears all cached instances of that factory'](
-      assert
-    ) {
+    ['@test unregistering a factory clears all cached instances of that factory'](assert) {
       assert.expect(5);
 
       appInstance = run(() => ApplicationInstance.create({ application }));
@@ -128,10 +112,7 @@ moduleFor(
 
       let postController1 = appInstance.lookup('controller:post');
       let postController1Factory = appInstance.factoryFor('controller:post');
-      assert.ok(
-        postController1 instanceof PostController1,
-        'precond - lookup creates instance'
-      );
+      assert.ok(postController1 instanceof PostController1, 'precond - lookup creates instance');
       assert.equal(
         PostController1,
         postController1Factory.class,
@@ -143,15 +124,8 @@ moduleFor(
 
       let postController2 = appInstance.lookup('controller:post');
       let postController2Factory = appInstance.factoryFor('controller:post');
-      assert.ok(
-        postController2 instanceof PostController2,
-        'lookup creates instance'
-      );
-      assert.equal(
-        PostController2,
-        postController2Factory.class,
-        'factoryFor().class matches'
-      );
+      assert.ok(postController2 instanceof PostController2, 'lookup creates instance');
+      assert.equal(PostController2, postController2Factory.class, 'factoryFor().class matches');
 
       assert.notStrictEqual(
         postController1,
@@ -160,9 +134,7 @@ moduleFor(
       );
     }
 
-    ['@skip unregistering a factory clears caches with source of that factory'](
-      assert
-    ) {
+    ['@skip unregistering a factory clears caches with source of that factory'](assert) {
       assert.expect(1);
 
       appInstance = run(() => ApplicationInstance.create({ application }));
@@ -173,10 +145,9 @@ moduleFor(
       appInstance.register('controller:post', PostController1);
 
       appInstance.lookup('controller:post');
-      let postControllerLookupWithSource = appInstance.lookup(
-        'controller:post',
-        { source: 'doesnt-even-matter' }
-      );
+      let postControllerLookupWithSource = appInstance.lookup('controller:post', {
+        source: 'doesnt-even-matter',
+      });
 
       appInstance.unregister('controller:post');
       appInstance.register('controller:post', PostController2);
@@ -185,7 +156,7 @@ moduleFor(
       assert.ok(
         postControllerLookupWithSource !==
           appInstance.lookup('controller:post', {
-            source: 'doesnt-even-matter'
+            source: 'doesnt-even-matter',
           }),
         'lookup with source creates a new instance'
       );
@@ -208,11 +179,7 @@ moduleFor(
       return chatEngineInstance.boot().then(() => {
         assert.ok(true, 'boot successful');
 
-        let registrations = [
-          'route:basic',
-          'service:-routing',
-          'service:-glimmer-environment'
-        ];
+        let registrations = ['route:basic', 'service:-routing', 'service:-glimmer-environment'];
 
         registrations.forEach(key => {
           assert.strictEqual(
@@ -228,13 +195,11 @@ moduleFor(
           '-view-registry:main',
           '-environment:main',
           'service:-document',
-          'event_dispatcher:main'
+          'event_dispatcher:main',
         ];
 
         let env = appInstance.lookup('-environment:main');
-        singletons.push(
-          env.isInteractive ? 'renderer:-dom' : 'renderer:-inert'
-        );
+        singletons.push(env.isInteractive ? 'renderer:-dom' : 'renderer:-inert');
 
         singletons.forEach(key => {
           assert.strictEqual(
@@ -250,7 +215,7 @@ moduleFor(
       assert
     ) {
       let namespace = EmberObject.create({
-        Resolver: { create: function() {} }
+        Resolver: { create: function() {} },
       });
 
       let registry = Application.buildRegistry(namespace);

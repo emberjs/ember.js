@@ -12,9 +12,7 @@ moduleFor(
       setOnerror(ORIGINAL_ONERROR);
     }
 
-    ['@test Ensure that errors thrown from within a promise are sent to the console'](
-      assert
-    ) {
+    ['@test Ensure that errors thrown from within a promise are sent to the console'](assert) {
       let error = new Error('Error thrown in a promise for testing purposes.');
 
       try {
@@ -35,10 +33,7 @@ moduleFor(
 
       run(RSVP, 'reject', fakeTransitionAbort);
 
-      assert.ok(
-        true,
-        'did not throw an error when dealing with TransitionAborted'
-      );
+      assert.ok(true, 'did not throw an error when dealing with TransitionAborted');
     }
 
     ['@test Can reject with non-Error object'](assert) {
@@ -71,9 +66,7 @@ moduleFor(
       assert.ok(true);
     }
 
-    ['@test rejections like jqXHR which have errorThrown property work'](
-      assert
-    ) {
+    ['@test rejections like jqXHR which have errorThrown property work'](assert) {
       assert.expect(2);
 
       let wasEmberTesting = isTesting();
@@ -82,11 +75,7 @@ moduleFor(
       try {
         setTesting(false);
         setOnerror(error => {
-          assert.equal(
-            error,
-            actualError,
-            'expected the real error on the jqXHR'
-          );
+          assert.equal(error, actualError, 'expected the real error on the jqXHR');
           assert.equal(
             error.__reason_with_error_thrown__,
             jqXHR,
@@ -96,7 +85,7 @@ moduleFor(
 
         let actualError = new Error('OMG what really happened');
         let jqXHR = {
-          errorThrown: actualError
+          errorThrown: actualError,
         };
 
         run(RSVP, 'reject', jqXHR);
@@ -117,11 +106,7 @@ moduleFor(
       try {
         setTesting(false);
         setOnerror(error => {
-          assert.equal(
-            error.message,
-            actualError,
-            'expected the real error on the jqXHR'
-          );
+          assert.equal(error.message, actualError, 'expected the real error on the jqXHR');
           assert.equal(
             error.__reason_with_error_thrown__,
             jqXHR,
@@ -131,7 +116,7 @@ moduleFor(
 
         let actualError = 'OMG what really happened';
         let jqXHR = {
-          errorThrown: actualError
+          errorThrown: actualError,
         };
 
         run(RSVP, 'reject', jqXHR);
@@ -155,7 +140,7 @@ moduleFor(
         });
 
         let jqXHR = {
-          errorThrown: new Error('a fail')
+          errorThrown: new Error('a fail'),
         };
 
         run(RSVP, 'reject', jqXHR);
@@ -192,9 +177,7 @@ moduleFor(
       assert.ok(true, 'reached end of test');
     }
 
-    ['@test handled within the same micro-task (via Ember.RVP.Promise)'](
-      assert
-    ) {
+    ['@test handled within the same micro-task (via Ember.RVP.Promise)'](assert) {
       run(function() {
         let rejection = RSVP.Promise.reject(reason);
         RSVP.Promise.resolve(1).then(() => rejection.catch(function() {}));
@@ -230,15 +213,13 @@ moduleFor(
       // this is very likely an issue.
     }
 
-    ['@test handled in the same microTask Queue flush do to data locality'](
-      assert
-    ) {
+    ['@test handled in the same microTask Queue flush do to data locality'](assert) {
       // an ambiguous scenario, this may or may not assert
       // it depends on the locality of `user#1`
       let store = {
         find() {
           return RSVP.Promise.resolve(1);
-        }
+        },
       };
       run(function() {
         let rejection = RSVP.Promise.reject(reason);
@@ -248,16 +229,14 @@ moduleFor(
       assert.ok(true, 'reached end of test');
     }
 
-    ['@test handled in a different microTask Queue flush do to data locality'](
-      assert
-    ) {
+    ['@test handled in a different microTask Queue flush do to data locality'](assert) {
       let done = assert.async();
       // an ambiguous scenario, this may or may not assert
       // it depends on the locality of `user#1`
       let store = {
         find() {
           return ajax();
-        }
+        },
       };
       assert.throws(function() {
         run(function() {

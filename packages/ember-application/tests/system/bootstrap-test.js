@@ -1,8 +1,5 @@
 import { assign } from 'ember-utils';
-import {
-  moduleFor,
-  DefaultResolverApplicationTestCase
-} from 'internal-test-helpers';
+import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Application with default resolver and autoboot',
@@ -19,13 +16,11 @@ moduleFor(
     get applicationOptions() {
       return assign(super.applicationOptions, {
         autoboot: true,
-        rootElement: '#app'
+        rootElement: '#app',
       });
     }
 
-    ['@test templates in script tags are extracted at application creation'](
-      assert
-    ) {
+    ['@test templates in script tags are extracted at application creation'](assert) {
       this.runTask(() => this.createApplication());
       assert.equal(document.getElementById('app').textContent, 'Hello World!');
     }

@@ -27,7 +27,7 @@ function updatePackageJSONVersion() {
   pkg._originalVersion = pkg.version;
   pkg.version = VERSION;
   fs.writeFileSync(packageJSONPath, JSON.stringify(pkg, null, 2), {
-    encoding: 'utf-8'
+    encoding: 'utf-8',
   });
 }
 
@@ -46,7 +46,7 @@ function updateDocumentationVersion() {
   let docs = JSON.parse(contents);
   docs.project.version = VERSION;
   fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2), {
-    encoding: 'utf-8'
+    encoding: 'utf-8',
   });
 }
 
@@ -72,12 +72,10 @@ Promise.resolve()
       version: VERSION,
       buildType: process.env.BUILD_TYPE,
       SHA: process.env.TRAVIS_COMMIT,
-      assetPath: `/${process.env.BUILD_TYPE}/shas/${
-        process.env.TRAVIS_COMMIT
-      }.tgz`
+      assetPath: `/${process.env.BUILD_TYPE}/shas/${process.env.TRAVIS_COMMIT}.tgz`,
     };
     fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), {
-      encoding: 'utf-8'
+      encoding: 'utf-8',
     });
 
     // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`

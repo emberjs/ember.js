@@ -21,11 +21,7 @@ moduleFor(
       );
 
       this.setComponentValue(values[1]);
-      this.assertAttributeHasValue(
-        attributeName,
-        values[1],
-        `${attributeName} is set on rerender`
-      );
+      this.assertAttributeHasValue(attributeName, values[1], `${attributeName} is set on rerender`);
 
       this.setComponentValue(values[0]);
       this.assertAttributeHasValue(
@@ -53,11 +49,7 @@ moduleFor(
       );
 
       this.setComponentValue(values[1]);
-      this.assertPropertyHasValue(
-        propertyName,
-        values[1],
-        `${propertyName} is set on rerender`
-      );
+      this.assertPropertyHasValue(propertyName, values[1], `${propertyName} is set on rerender`);
 
       this.setComponentValue(values[0]);
       this.assertPropertyHasValue(
@@ -71,32 +63,16 @@ moduleFor(
       let value = 'value';
       let template = `<input value={{value}}>`;
       this.render(template, { value: values[0] });
-      this.assertPropertyHasValue(
-        value,
-        '',
-        `${value} is set on initial render`
-      );
+      this.assertPropertyHasValue(value, '', `${value} is set on initial render`);
 
       this.runTask(() => this.rerender());
-      this.assertPropertyHasValue(
-        value,
-        '',
-        `${value} is set on noop rerender`
-      );
+      this.assertPropertyHasValue(value, '', `${value} is set on noop rerender`);
       this.setComponentValue(values[1]);
 
-      this.assertPropertyHasValue(
-        value,
-        values[1],
-        `${value} is set on rerender`
-      );
+      this.assertPropertyHasValue(value, values[1], `${value} is set on rerender`);
 
       this.setComponentValue(values[0]);
-      this.assertPropertyHasValue(
-        value,
-        '',
-        `${value} can be set back to the initial value`
-      );
+      this.assertPropertyHasValue(value, '', `${value} can be set back to the initial value`);
     }
 
     ['@test input disabled attribute']() {
@@ -251,19 +227,11 @@ moduleFor(
     }
 
     assertAttributeHasValue(attribute, value, message) {
-      this.assert.equal(
-        this.$inputElement().attr(attribute),
-        value,
-        `${attribute} ${message}`
-      );
+      this.assert.equal(this.$inputElement().attr(attribute), value, `${attribute} ${message}`);
     }
 
     assertPropertyHasValue(property, value, message) {
-      this.assert.equal(
-        this.$inputElement().prop(property),
-        value,
-        `${property} ${message}`
-      );
+      this.assert.equal(this.$inputElement().prop(property), value, `${property} ${message}`);
     }
 
     assertSelectionRange(start, end) {

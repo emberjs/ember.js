@@ -224,7 +224,7 @@ export function subscribe(pattern, object) {
   let subscriber = {
     pattern,
     regex: new RegExp(`^${regex}$`),
-    object
+    object,
   };
 
   subscribers.push(subscriber);

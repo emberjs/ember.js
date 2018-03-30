@@ -4,7 +4,7 @@ const VALIDATED_TYPES = {
   route: ['assert', 'isRouteFactory', 'Ember.Route'],
   component: ['deprecate', 'isComponentFactory', 'Ember.Component'],
   view: ['deprecate', 'isViewFactory', 'Ember.View'],
-  service: ['deprecate', 'isServiceFactory', 'Ember.Service']
+  service: ['deprecate', 'isServiceFactory', 'Ember.Service'],
 };
 
 export default function validateType(resolvedType, parsedName) {

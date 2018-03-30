@@ -6,9 +6,7 @@ module.exports = useTestFrameworkDetector({
   description: 'Generates a service unit test.',
   locals: function(options) {
     return {
-      friendlyTestDescription: ['Unit', 'Service', options.entity.name].join(
-        ' | '
-      )
+      friendlyTestDescription: ['Unit', 'Service', options.entity.name].join(' | '),
     };
-  }
+  },
 });

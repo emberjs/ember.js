@@ -37,6 +37,6 @@ export function deprecateProperty(object, deprecatedKey, newKey, options) {
     get() {
       _deprecate();
       return get(this, newKey);
-    }
+    },
   });
 }

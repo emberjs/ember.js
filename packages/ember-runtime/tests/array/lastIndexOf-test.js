@@ -49,11 +49,7 @@ class LastIndexOfTests extends AbstractTestCase {
     let obj = this.newObject(newFixture(3));
     let foo = {};
 
-    this.assert.equal(
-      obj.lastIndexOf(foo),
-      -1,
-      'obj.lastIndexOf(foo) should be -1'
-    );
+    this.assert.equal(obj.lastIndexOf(foo), -1, 'obj.lastIndexOf(foo) should be -1');
   }
 
   '@test should return -1 when no match is found even startAt search location is equal to length'() {

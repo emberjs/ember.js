@@ -46,7 +46,7 @@ describe('Blueprint: acceptance-test', function() {
       beforeEach(function() {
         return modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
       });
 

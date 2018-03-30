@@ -73,11 +73,11 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
 
   has(name) {
     return typeof this[name] === 'function' || this._super(name);
-  }
+  },
 });
 
 CoreView.reopenClass({
-  isViewFactory: true
+  isViewFactory: true,
 });
 
 export default CoreView;

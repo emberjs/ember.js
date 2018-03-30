@@ -22,7 +22,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         track(Tracked, ['first', 'last'], {
           get full() {
             return `${this.first} ${this.last}`;
-          }
+          },
         });
 
         let obj = new Tracked('Tom', 'Dale');
@@ -58,7 +58,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         track(Tracked, ['name'], {
           get full() {
             return `${get(this.name, 'first')} ${get(this.name, 'last')}`;
-          }
+          },
         });
 
         let tom = { first: 'Tom', last: 'Dale' };
@@ -76,11 +76,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert.equal(tag.validate(snapshot), true);
 
         set(tom, 'first', 'Thomas');
-        assert.equal(
-          tag.validate(snapshot),
-          false,
-          'invalid after setting with Ember set'
-        );
+        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember set');
 
         assert.equal(obj.full, 'Thomas Dale');
         snapshot = tag.value();
@@ -189,31 +185,19 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert.equal(tag.validate(snapshot), true);
 
         set(tom, 'first', 'Thomas');
-        assert.equal(
-          tag.validate(snapshot),
-          false,
-          'invalid after setting with Ember.set'
-        );
+        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember.set');
 
         assert.equal(get(obj, 'full'), 'Thomas Dale');
         snapshot = tag.value();
 
         tom = contact.name = new EmberName('T', 'Dale');
-        assert.equal(
-          tag.validate(snapshot),
-          false,
-          'invalid after setting with Ember.set'
-        );
+        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember.set');
 
         assert.equal(get(obj, 'full'), 'T Dale');
         snapshot = tag.value();
 
         set(tom, 'first', 'Tizzle');
-        assert.equal(
-          tag.validate(snapshot),
-          false,
-          'invalid after setting with Ember.set'
-        );
+        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember.set');
 
         assert.equal(get(obj, 'full'), 'Tizzle Dale');
       }
@@ -228,9 +212,7 @@ function track(Class, properties, accessors = {}) {
 
   let keys = Object.getOwnPropertyNames(accessors);
 
-  keys.forEach(key =>
-    defineAccessor(proto, key, Object.getOwnPropertyDescriptor(accessors, key))
-  );
+  keys.forEach(key => defineAccessor(proto, key, Object.getOwnPropertyDescriptor(accessors, key)));
 }
 
 function defineData(prototype, property) {
@@ -241,15 +223,11 @@ function defineData(prototype, property) {
       enumerable: true,
       configurable: true,
       writable: true,
-      value: undefined
+      value: undefined,
     })
   );
 }
 
 function defineAccessor(prototype, property, descriptor) {
-  Object.defineProperty(
-    prototype,
-    property,
-    tracked(prototype, property, descriptor)
-  );
+  Object.defineProperty(prototype, property, tracked(prototype, property, descriptor));
 }

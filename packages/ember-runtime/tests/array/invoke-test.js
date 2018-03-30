@@ -17,7 +17,7 @@ class InvokeTests extends AbstractTestCase {
       // NOTE: does not impl foo - invoke should just skip
       EmberObject.create({ bar: F }),
 
-      { foo: F }
+      { foo: F },
     ];
 
     obj = this.newObject(ary);

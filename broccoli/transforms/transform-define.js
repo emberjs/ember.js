@@ -16,9 +16,9 @@ function transformDefine(babel) {
           ) {
             expressionStatement.expression.callee.name = 'enifed';
           }
-        }
-      }
-    }
+        },
+      },
+    },
   };
 }
 

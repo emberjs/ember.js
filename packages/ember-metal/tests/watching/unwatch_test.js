@@ -1,11 +1,4 @@
-import {
-  watch,
-  unwatch,
-  defineProperty,
-  addListener,
-  computed,
-  set
-} from '../..';
+import { watch, unwatch, defineProperty, addListener, computed, set } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let didCount;
@@ -34,7 +27,7 @@ moduleFor(
           set(keyName, value) {
             this.__foo = value;
             return this.__foo;
-          }
+          },
         })
       );
       addListeners(obj, 'foo');
@@ -99,13 +92,11 @@ moduleFor(
       assert.equal(didCount, 0, 'should NOT have invoked didCount');
     }
 
-    ['@test unwatching should not destroy non MANDATORY_SETTER descriptor'](
-      assert
-    ) {
+    ['@test unwatching should not destroy non MANDATORY_SETTER descriptor'](assert) {
       let obj = {
         get foo() {
           return 'RUN';
-        }
+        },
       };
 
       assert.equal(obj.foo, 'RUN', 'obj.foo');

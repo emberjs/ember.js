@@ -8,8 +8,8 @@ export default function transformTopLevelComponent(/* env */) {
           component.tag = `@${component.tag}`;
           component.isStatic = true;
         });
-      }
-    }
+      },
+    },
   };
 }
 

@@ -11,19 +11,13 @@ if (environment.hasDOM) {
       jQuery.event.addProp('dataTransfer');
     } else {
       // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dndevents
-      [
-        'dragstart',
-        'drag',
-        'dragenter',
-        'dragleave',
-        'dragover',
-        'drop',
-        'dragend'
-      ].forEach(eventName => {
-        jQuery.event.fixHooks[eventName] = {
-          props: ['dataTransfer']
-        };
-      });
+      ['dragstart', 'drag', 'dragenter', 'dragleave', 'dragover', 'drop', 'dragend'].forEach(
+        eventName => {
+          jQuery.event.fixHooks[eventName] = {
+            props: ['dataTransfer'],
+          };
+        }
+      );
     }
   } else {
     jQueryDisabled = true;

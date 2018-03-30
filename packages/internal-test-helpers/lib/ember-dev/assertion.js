@@ -70,16 +70,13 @@ AssertionAssert.prototype = {
   restore() {
     window.expectAssertion = null;
     window.ignoreAssertion = null;
-  }
+  },
 };
 
 function check(assert, sawCall, actualMessage, expectedMessage) {
   // Run assertions in an order that is useful when debugging a test failure.
   if (!sawCall) {
-    assert.ok(
-      false,
-      `Expected Ember.assert to be called (Not called with any value).`
-    );
+    assert.ok(false, `Expected Ember.assert to be called (Not called with any value).`);
   } else if (!actualMessage) {
     assert.ok(
       false,

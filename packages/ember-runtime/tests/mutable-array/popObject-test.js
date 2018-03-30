@@ -5,14 +5,7 @@ import { runArrayTests, newFixture } from '../helpers/array';
 class PopObjectTests extends AbstractTestCase {
   '@test [].popObject() => [] + returns undefined + NO notify'() {
     let obj = this.newObject([]);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -20,21 +13,9 @@ class PopObjectTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), [], 'post item results');
 
-    this.assert.equal(
-      observer.validate('[]'),
-      false,
-      'should NOT have notified []'
-    );
-    this.assert.equal(
-      observer.validate('@each'),
-      false,
-      'should NOT have notified @each'
-    );
-    this.assert.equal(
-      observer.validate('length'),
-      false,
-      'should NOT have notified length'
-    );
+    this.assert.equal(observer.validate('[]'), false, 'should NOT have notified []');
+    this.assert.equal(observer.validate('@each'), false, 'should NOT have notified @each');
+    this.assert.equal(observer.validate('length'), false, 'should NOT have notified length');
     this.assert.equal(
       observer.validate('firstObject'),
       false,
@@ -51,14 +32,7 @@ class PopObjectTests extends AbstractTestCase {
     let before = newFixture(1);
     let after = [];
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -68,21 +42,9 @@ class PopObjectTests extends AbstractTestCase {
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
     this.assert.equal(
       observer.timesCalled('firstObject'),
       1,
@@ -99,14 +61,7 @@ class PopObjectTests extends AbstractTestCase {
     let before = newFixture(3);
     let after = [before[0], before[1]];
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -116,21 +71,9 @@ class PopObjectTests extends AbstractTestCase {
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
     this.assert.equal(
       observer.timesCalled('lastObject'),
       1,
@@ -145,10 +88,4 @@ class PopObjectTests extends AbstractTestCase {
   }
 }
 
-runArrayTests(
-  'popObject',
-  PopObjectTests,
-  'MutableArray',
-  'NativeArray',
-  'ArrayProxy'
-);
+runArrayTests('popObject', PopObjectTests, 'MutableArray', 'NativeArray', 'ArrayProxy');

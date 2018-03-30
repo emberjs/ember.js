@@ -10,7 +10,7 @@ import {
   get,
   processNamespace,
   processAllNamespaces,
-  removeNamespace
+  removeNamespace,
 } from 'ember-metal'; // Preloaded into namespaces
 import { getName } from 'ember-utils';
 import EmberObject from './object';
@@ -57,14 +57,14 @@ const Namespace = EmberObject.extend({
   destroy() {
     removeNamespace(this);
     this._super(...arguments);
-  }
+  },
 });
 
 Namespace.reopenClass({
   NAMESPACES,
   NAMESPACES_BY_ID,
   processAll: processAllNamespaces,
-  byName: findNamespace
+  byName: findNamespace,
 });
 
 export default Namespace;

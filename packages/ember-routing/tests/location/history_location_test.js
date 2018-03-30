@@ -28,7 +28,7 @@ function mockBrowserLocation(path) {
     pathname: pathname,
     port: tmp.port || '',
     protocol: protocol,
-    search: tmp.search
+    search: tmp.search,
   };
 }
 
@@ -48,11 +48,11 @@ moduleFor(
         pushState(state) {
           this.state = state;
           this._states.unshift(state);
-        }
+        },
       };
 
       HistoryTestLocation = HistoryLocation.extend({
-        history: FakeHistory
+        history: FakeHistory,
       });
     }
 
@@ -74,7 +74,7 @@ moduleFor(
         },
         initState() {
           assert.ok(false, 'initState() should not be called automatically');
-        }
+        },
       });
 
       createLocation();
@@ -89,7 +89,7 @@ moduleFor(
           // these two should be equal to be able
           // to successfully detect webkit initial popstate
           assert.equal(this._previousURL, this.getURL());
-        }
+        },
       });
 
       createLocation();
@@ -111,7 +111,7 @@ moduleFor(
           this._super(...arguments);
 
           assert.equal(this.getURL(), '/foo/bar');
-        }
+        },
       });
 
       createLocation();
@@ -127,7 +127,7 @@ moduleFor(
 
           set(this, 'location', mockBrowserLocation('/base/foo/bar'));
           set(this, 'baseURL', '/base/');
-        }
+        },
       });
 
       createLocation();
@@ -138,9 +138,7 @@ moduleFor(
       assert.ok(location._historyState.uuid);
     }
 
-    ['@test setURL continues to set even with a null state (iframes may set this)'](
-      assert
-    ) {
+    ['@test setURL continues to set even with a null state (iframes may set this)'](assert) {
       createLocation();
       location.initState();
 
@@ -151,9 +149,7 @@ moduleFor(
       assert.ok(location._historyState.uuid);
     }
 
-    ['@test replaceURL continues to set even with a null state (iframes may set this)'](
-      assert
-    ) {
+    ['@test replaceURL continues to set even with a null state (iframes may set this)'](assert) {
       createLocation();
       location.initState();
 
@@ -174,7 +170,7 @@ moduleFor(
           set(this, 'location', mockBrowserLocation('/base/foo/bar'));
           set(this, 'rootURL', '/app/');
           set(this, 'baseURL', '/base/');
-        }
+        },
       });
 
       createLocation();
@@ -191,7 +187,7 @@ moduleFor(
 
           set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
           set(this, 'rootURL', '/bar/');
-        }
+        },
       });
 
       createLocation();
@@ -207,7 +203,7 @@ moduleFor(
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/bars/baz'));
           set(this, 'rootURL', '/bar/');
-        }
+        },
       });
 
       createLocation();
@@ -224,7 +220,7 @@ moduleFor(
 
           set(this, 'location', mockBrowserLocation('/foo/bar/baz'));
           set(this, 'baseURL', '/bar/');
-        }
+        },
       });
 
       createLocation();
@@ -240,7 +236,7 @@ moduleFor(
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/bars/baz'));
           set(this, 'baseURL', '/bar/');
-        }
+        },
       });
 
       createLocation();
@@ -253,7 +249,7 @@ moduleFor(
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
-        }
+        },
       });
 
       createLocation();
@@ -265,12 +261,8 @@ moduleFor(
       HistoryTestLocation.reopen({
         init() {
           this._super(...arguments);
-          set(
-            this,
-            'location',
-            mockBrowserLocation('/foo/bar#pink-power-ranger')
-          );
-        }
+          set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
+        },
       });
 
       createLocation();
@@ -278,26 +270,17 @@ moduleFor(
       assert.equal(location.getURL(), '/foo/bar#pink-power-ranger');
     }
 
-    ['@test HistoryLocation.getURL() includes location.hash and location.search'](
-      assert
-    ) {
+    ['@test HistoryLocation.getURL() includes location.hash and location.search'](assert) {
       HistoryTestLocation.reopen({
         init() {
           this._super(...arguments);
-          set(
-            this,
-            'location',
-            mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger')
-          );
-        }
+          set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
+        },
       });
 
       createLocation();
 
-      assert.equal(
-        location.getURL(),
-        '/foo/bar?time=morphin#pink-power-ranger'
-      );
+      assert.equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
     }
 
     ['@test HistoryLocation.getURL() drops duplicate slashes'](assert) {
@@ -307,7 +290,7 @@ moduleFor(
           let location = mockBrowserLocation('//');
           location.pathname = '//'; // mockBrowserLocation does not allow for `//`, so force it
           set(this, 'location', location);
-        }
+        },
       });
 
       createLocation();
@@ -318,7 +301,7 @@ moduleFor(
     ['@test Existing state is preserved on init'](assert) {
       let existingState = {
         path: '/route/path',
-        uuid: 'abcd'
+        uuid: 'abcd',
       };
 
       FakeHistory.state = existingState;
@@ -327,7 +310,7 @@ moduleFor(
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/route/path'));
-        }
+        },
       });
 
       createLocation();

@@ -15,19 +15,16 @@ moduleFor(
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       assert.throws(() => {
-        this.render(
-          '{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}',
-          { switch: true }
-        );
+        this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
       }, /silly mistake in init/);
 
       assert.equal(
@@ -57,16 +54,16 @@ moduleFor(
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
-        switch: true
+        switch: true,
       });
 
       this.assertText('hello');
@@ -105,19 +102,16 @@ moduleFor(
           if (shouldThrow) {
             throw new Error('silly mistake!');
           }
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       assert.throws(() => {
-        this.render(
-          '{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}',
-          { switch: true }
-        );
+        this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
       }, /silly mistake/);
 
       assert.equal(
@@ -133,9 +127,7 @@ moduleFor(
       this.assertText('');
     }
 
-    ['@test it can recover resets the transaction when an error is thrown during destroy'](
-      assert
-    ) {
+    ['@test it can recover resets the transaction when an error is thrown during destroy'](assert) {
       let shouldThrow = true;
       let FooBarComponent = Component.extend({
         destroy() {
@@ -143,16 +135,16 @@ moduleFor(
           if (shouldThrow) {
             throw new Error('silly mistake!');
           }
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
-        switch: true
+        switch: true,
       });
 
       this.assertText('hello');

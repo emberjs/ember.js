@@ -5,7 +5,7 @@ export default function transformAngleBracketComponents(/* env */) {
     visitor: {
       ComponentNode(node) {
         node.tag = `<${node.tag}>`;
-      }
-    }
+      },
+    },
   };
 }

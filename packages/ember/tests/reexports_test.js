@@ -125,18 +125,10 @@ let allExports = [
   ['ViewUtils.getViewElement', 'ember-views', 'getViewElement'],
   ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
   ['ViewUtils.getViewClientRects', 'ember-views', 'getViewClientRects'],
-  [
-    'ViewUtils.getViewBoundingClientRect',
-    'ember-views',
-    'getViewBoundingClientRect'
-  ],
+  ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
   ['ViewUtils.getRootViews', 'ember-views', 'getRootViews'],
   ['ViewUtils.getChildViews', 'ember-views', 'getChildViews'],
-  [
-    'ViewUtils.isSerializationFirstNode',
-    'ember-glimmer',
-    'isSerializationFirstNode'
-  ],
+  ['ViewUtils.isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
   ['TextSupport', 'ember-views'],
   ['ComponentLookup', 'ember-views'],
   ['EventDispatcher', 'ember-views'],
@@ -193,7 +185,7 @@ let allExports = [
   [
     'BOOTED',
     'ember-metal',
-    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }
+    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
   ],
 
   // ember-routing
@@ -219,7 +211,7 @@ let allExports = [
 
   // ember-extension-support
   ['DataAdapter', 'ember-extension-support'],
-  ['ContainerDebugAdapter', 'ember-extension-support']
+  ['ContainerDebugAdapter', 'ember-extension-support'],
 ];
 
 if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
@@ -240,37 +232,20 @@ allExports.forEach(reexport => {
 });
 
 QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
-  confirmExport(
-    Ember,
-    assert,
-    'String.isHTMLSafe',
-    'ember-glimmer',
-    'isHTMLSafe'
-  );
+  confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
 });
 
 if (DEBUG) {
   QUnit.test('Ember.MODEL_FACTORY_INJECTIONS', function(assert) {
-    let descriptor = Object.getOwnPropertyDescriptor(
-      Ember,
-      'MODEL_FACTORY_INJECTIONS'
-    );
+    let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
     assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
-    assert.equal(
-      descriptor.configurable,
-      false,
-      'descriptor is not configurable'
-    );
+    assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
 
     assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false);
 
     expectDeprecation(function() {
       Ember.MODEL_FACTORY_INJECTIONS = true;
     }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required');
-    assert.equal(
-      Ember.MODEL_FACTORY_INJECTIONS,
-      false,
-      'writing to the property has no affect'
-    );
+    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect');
   });
 }

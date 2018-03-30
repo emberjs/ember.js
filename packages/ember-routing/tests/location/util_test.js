@@ -1,10 +1,5 @@
 import { assign } from 'ember-utils';
-import {
-  replacePath,
-  getPath,
-  getQuery,
-  getFullPath
-} from '../../location/util';
+import { replacePath, getPath, getQuery, getFullPath } from '../../location/util';
 import { supportsHistory, supportsHashChange } from '../../location/util';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -16,11 +11,8 @@ function mockBrowserLocation(overrides, assert) {
       hash: '',
       search: '',
       replace() {
-        assert.ok(
-          false,
-          'location.replace should not be called during testing'
-        );
-      }
+        assert.ok(false, 'location.replace should not be called during testing');
+      },
     },
     overrides
   );
@@ -29,9 +21,7 @@ function mockBrowserLocation(overrides, assert) {
 moduleFor(
   'Location Utilities',
   class extends AbstractTestCase {
-    ['@test replacePath cannot be used to redirect to a different origin'](
-      assert
-    ) {
+    ['@test replacePath cannot be used to redirect to a different origin'](assert) {
       assert.expect(1);
 
       let expectedURL;
@@ -43,7 +33,7 @@ moduleFor(
 
         replace(url) {
           assert.equal(url, expectedURL);
-        }
+        },
       };
 
       expectedURL = 'http://emberjs.com:1337//google.com';
@@ -54,11 +44,7 @@ moduleFor(
       assert
     ) {
       let location = mockBrowserLocation({ pathname: 'test' }, assert);
-      assert.equal(
-        getPath(location),
-        '/test',
-        'When there is no leading slash, one is added.'
-      );
+      assert.equal(getPath(location), '/test', 'When there is no leading slash, one is added.');
 
       location = mockBrowserLocation({ pathname: '/test' }, assert);
       assert.equal(
@@ -73,15 +59,13 @@ moduleFor(
       assert.equal(getQuery(location), '?foo=bar');
     }
 
-    ['@test getFullPath() should return full pathname including query and hash'](
-      assert
-    ) {
+    ['@test getFullPath() should return full pathname including query and hash'](assert) {
       let location = mockBrowserLocation(
         {
           href: 'http://test.com/about?foo=bar#foo',
           pathname: '/about',
           search: '?foo=bar',
-          hash: '#foo'
+          hash: '#foo',
         },
         assert
       );
@@ -123,11 +107,7 @@ moduleFor(
         false,
         "returns false if history.pushState doesn't exist"
       );
-      assert.equal(
-        supportsHistory('', undefined),
-        false,
-        "returns false if history doesn't exist"
-      );
+      assert.equal(supportsHistory('', undefined), false, "returns false if history doesn't exist");
 
       assert.equal(
         supportsHistory(

@@ -9,11 +9,7 @@ moduleFor(
 
       meta(obj).foo = 'bar';
 
-      assert.equal(
-        meta(obj).foo,
-        'bar',
-        'returns same hash with multiple calls to Ember.meta()'
-      );
+      assert.equal(meta(obj).foo, 'bar', 'returns same hash with multiple calls to Ember.meta()');
     }
 
     ['@test meta is not enumerable'](assert) {
@@ -84,7 +80,7 @@ moduleFor(
       let target = {
         toString() {
           return '<special-sauce:123>';
-        }
+        },
       };
       let targetMeta = meta(target);
 
@@ -99,7 +95,7 @@ moduleFor(
       let target = {
         toString() {
           return '<special-sauce:123>';
-        }
+        },
       };
       let targetMeta = meta(target);
 
@@ -114,7 +110,7 @@ moduleFor(
       let target = {
         toString() {
           return '<special-sauce:123>';
-        }
+        },
       };
       let targetMeta = meta(target);
 
@@ -129,7 +125,7 @@ moduleFor(
       let target = {
         toString() {
           return '<special-sauce:123>';
-        }
+        },
       };
       let targetMeta = meta(target);
 
@@ -144,7 +140,7 @@ moduleFor(
       let target = {
         toString() {
           return '<special-sauce:123>';
-        }
+        },
       };
       let targetMeta = meta(target);
 
@@ -159,7 +155,7 @@ moduleFor(
       let target = {
         toString() {
           return '<special-sauce:123>';
-        }
+        },
       };
       let targetMeta = meta(target);
 

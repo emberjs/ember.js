@@ -141,12 +141,7 @@ const RouterService = Service.extend({
 
     let { routeName, models, queryParams } = extractRouteArgs(args);
 
-    let transition = this._router._doTransition(
-      routeName,
-      models,
-      queryParams,
-      true
-    );
+    let transition = this._router._doTransition(routeName, models, queryParams, true);
     transition._keepDefaultQueryParamValues = true;
 
     return transition;
@@ -223,7 +218,7 @@ const RouterService = Service.extend({
     }
 
     return true;
-  }
+  },
 });
 
 export default RouterService;

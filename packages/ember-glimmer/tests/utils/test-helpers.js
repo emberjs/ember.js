@@ -1,6 +1,1 @@
-export {
-  styles,
-  classes,
-  equalTokens,
-  equalsElement
-} from 'internal-test-helpers';
+export { styles, classes, equalTokens, equalsElement } from 'internal-test-helpers';

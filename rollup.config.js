@@ -11,8 +11,8 @@ module.exports = {
     format: 'iife',
     name: '__Ember',
     named: true,
-    sourcemap: true
-  }
+    sourcemap: true,
+  },
 };
 
 function emberPackage() {
@@ -21,7 +21,7 @@ function emberPackage() {
       if (importee[0] === '.' || importee[0] === '/') return;
       let resolved = [
         path.resolve('dist', `es/${importee}.js`),
-        path.resolve('dist', `es/${importee}/index.js`)
+        path.resolve('dist', `es/${importee}/index.js`),
       ].find(fs.existsSync);
       if (resolved) {
         // console.log('resolved ' + resolved);
@@ -30,6 +30,6 @@ function emberPackage() {
         // eslint-disable-next-line no-console
         console.log('could not resolve ' + importee + ' from ' + importer);
       }
-    }
+    },
   };
 }

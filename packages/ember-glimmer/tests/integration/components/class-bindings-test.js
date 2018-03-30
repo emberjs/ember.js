@@ -9,24 +9,24 @@ moduleFor(
   class extends RenderingTest {
     ['@test it can have class name bindings on the class definition']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: ['foo', 'isEnabled:enabled', 'isHappy:happy:sad']
+        classNameBindings: ['foo', 'isEnabled:enabled', 'isHappy:happy:sad'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar foo=foo isEnabled=isEnabled isHappy=isHappy}}', {
         foo: 'foo',
         isEnabled: true,
-        isHappy: false
+        isHappy: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -34,7 +34,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -45,7 +45,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO sad') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -56,7 +56,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view happy') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -68,31 +68,28 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test attrs in classNameBindings']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: [
-          'attrs.joker:purple:green',
-          'attrs.batman.robin:black:red'
-        ]
+        classNameBindings: ['attrs.joker:purple:green', 'attrs.batman.robin:black:red'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar joker=model.wat batman=model.super}}', {
-        model: { wat: false, super: { robin: true } }
+        model: { wat: false, super: { robin: true } },
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view green black') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -100,7 +97,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view green black') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -111,20 +108,20 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view purple red') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() =>
         set(this.context, 'model', {
           wat: false,
-          super: { robin: true }
+          super: { robin: true },
         })
       );
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view green black') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -140,29 +137,25 @@ moduleFor(
             isBig: true,
             isOpen: false,
             isUp: true,
-            bar: true
-          }
+            bar: true,
+          },
         }
       );
 
       this.assertComponentElement(this.firstChild, {
         attrs: {
-          class: classes(
-            'ember-view some-initially-true-property static big closed isTruthy'
-          )
+          class: classes('ember-view some-initially-true-property static big closed isTruthy'),
         },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         attrs: {
-          class: classes(
-            'ember-view some-initially-true-property static big closed isTruthy'
-          )
+          class: classes('ember-view some-initially-true-property static big closed isTruthy'),
         },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -179,9 +172,9 @@ moduleFor(
         attrs: {
           class: classes(
             'ember-view some-initially-false-property some-initially-undefined-property static open down isFalsy'
-          )
+          ),
         },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -192,43 +185,37 @@ moduleFor(
           isBig: true,
           isOpen: false,
           isUp: true,
-          bar: true
+          bar: true,
         });
       });
 
       this.assertComponentElement(this.firstChild, {
         attrs: {
-          class: classes(
-            'ember-view some-initially-true-property static big closed isTruthy'
-          )
+          class: classes('ember-view some-initially-true-property static big closed isTruthy'),
         },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test it can have class name bindings with nested paths']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: [
-          'foo.bar',
-          'is.enabled:enabled',
-          'is.happy:happy:sad'
-        ]
+        classNameBindings: ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar foo=foo is=is}}', {
         foo: { bar: 'foo-bar' },
-        is: { enabled: true, happy: false }
+        is: { enabled: true, happy: false },
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo-bar enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -236,7 +223,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo-bar enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -247,7 +234,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO-BAR sad') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -258,7 +245,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view happy') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -269,7 +256,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view sad') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -280,29 +267,29 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo-bar enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test it should dasherize the path when the it resolves to true']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: ['fooBar', 'nested.fooBarBaz']
+        classNameBindings: ['fooBar', 'nested.fooBarBaz'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar fooBar=fooBar nested=nested}}', {
         fooBar: true,
-        nested: { fooBarBaz: false }
+        nested: { fooBarBaz: false },
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo-bar') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -310,7 +297,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo-bar') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -321,7 +308,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo-bar-baz') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -332,7 +319,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO-BAR') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'nested', null));
@@ -340,7 +327,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO-BAR') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -351,20 +338,20 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view foo-bar') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test const bindings can be set as attrs']() {
       this.registerComponent('foo-bar', { template: 'hello' });
       this.render('{{foo-bar classNameBindings="foo:enabled:disabled"}}', {
-        foo: true
+        foo: true,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view enabled') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -372,7 +359,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view enabled') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'foo', false));
@@ -380,7 +367,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view disabled') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'foo', true));
@@ -388,28 +375,28 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view enabled') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test :: class name syntax works with an empty true class']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: ['isEnabled::not-enabled']
+        classNameBindings: ['isEnabled::not-enabled'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar isEnabled=enabled}}', {
-        enabled: false
+        enabled: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view not-enabled') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'enabled', true));
@@ -417,7 +404,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'enabled', false));
@@ -425,28 +412,28 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view not-enabled') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test uses all provided static class names (issue #11193)']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: [':class-one', ':class-two']
+        classNameBindings: [':class-one', ':class-two'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render('{{foo-bar}}', {
-        enabled: false
+        enabled: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view class-one class-two') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => set(this.context, 'enabled', true));
@@ -454,18 +441,18 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view class-one class-two') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
     ['@test Providing a binding with a space in it asserts']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: 'i:think:i am:so:clever'
+        classNameBindings: 'i:think:i am:so:clever',
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       expectAssertion(() => {
@@ -477,12 +464,12 @@ moduleFor(
       let FooBarComponent = Component.extend({
         foo: 'foo',
         bar: 'bar',
-        classNameBindings: ['foo', , 'bar'] // eslint-disable-line no-sparse-arrays
+        classNameBindings: ['foo', , 'bar'], // eslint-disable-line no-sparse-arrays
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       expectAssertion(() => {
@@ -494,12 +481,12 @@ moduleFor(
       let FooBarComponent = Component.extend({
         foo: 'foo',
         bar: 'bar',
-        classNameBindings: ['foo', '', 'bar']
+        classNameBindings: ['foo', '', 'bar'],
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       expectAssertion(() => {
@@ -523,12 +510,12 @@ moduleFor(
           if (this.get('bindIsHappy')) {
             bindings.push('isHappy:happy:sad');
           }
-        }
+        },
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       this.render(
@@ -544,22 +531,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => this.rerender());
@@ -567,22 +554,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -593,22 +580,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: { class: classes('ember-view FOO') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -619,22 +606,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { class: classes('ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { class: classes('ember-view happy') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { class: classes('ember-view happy') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: { class: classes('ember-view') },
-        content: 'hello'
+        content: 'hello',
       });
 
       this.runTask(() => {
@@ -646,22 +633,22 @@ moduleFor(
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(1), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(2), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo enabled sad') },
-        content: 'hello'
+        content: 'hello',
       });
       this.assertComponentElement(this.nthChild(3), {
         tagName: 'div',
         attrs: { class: classes('ember-view foo') },
-        content: 'hello'
+        content: 'hello',
       });
     }
 
@@ -669,12 +656,12 @@ moduleFor(
       let FooBarComponent = Component.extend({
         classNameBindings: computed(function() {
           return ['isHappy:happy:sad'];
-        })
+        }),
       });
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: 'hello'
+        template: 'hello',
       });
 
       expectAssertion(() => {
@@ -695,7 +682,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo  ember-view') }
+        attrs: { class: classes('foo  ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -703,7 +690,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('foo  ember-view') }
+        attrs: { class: classes('foo  ember-view') },
       });
     }
 
@@ -711,13 +698,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="birdman:respeck" class="myName"}}', {
-        birdman: true
+        birdman: true,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('respeck myName ember-view') }
+        attrs: { class: classes('respeck myName ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -725,7 +712,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('respeck myName ember-view') }
+        attrs: { class: classes('respeck myName ember-view') },
       });
     }
 
@@ -733,13 +720,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="myName:respeck"}}', {
-        myName: true
+        myName: true,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('respeck  ember-view') }
+        attrs: { class: classes('respeck  ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -747,7 +734,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('respeck  ember-view') }
+        attrs: { class: classes('respeck  ember-view') },
       });
     }
 
@@ -755,13 +742,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="myName::shade"}}', {
-        myName: false
+        myName: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('shade  ember-view') }
+        attrs: { class: classes('shade  ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -769,7 +756,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('shade  ember-view') }
+        attrs: { class: classes('shade  ember-view') },
       });
     }
 
@@ -777,13 +764,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="myName:respeck"}}', {
-        myName: false
+        myName: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('ember-view') }
+        attrs: { class: classes('ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -791,7 +778,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('ember-view') }
+        attrs: { class: classes('ember-view') },
       });
     }
 
@@ -803,7 +790,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('ember-view') }
+        attrs: { class: classes('ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -811,7 +798,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('ember-view') }
+        attrs: { class: classes('ember-view') },
       });
     }
 
@@ -819,13 +806,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', {
-        swag: false
+        swag: false,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('scrub  ember-view') }
+        attrs: { class: classes('scrub  ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -833,7 +820,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('scrub  ember-view') }
+        attrs: { class: classes('scrub  ember-view') },
       });
     }
 
@@ -841,13 +828,13 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', {
-        swag: true
+        swag: true,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fresh  ember-view') }
+        attrs: { class: classes('fresh  ember-view') },
       });
 
       this.runTask(() => this.rerender());
@@ -855,7 +842,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         content: 'hello',
-        attrs: { class: classes('fresh  ember-view') }
+        attrs: { class: classes('fresh  ember-view') },
       });
     }
   }

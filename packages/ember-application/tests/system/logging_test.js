@@ -41,7 +41,7 @@ moduleFor(
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
       return assign(super.applicationOptions, {
-        LOG_ACTIVE_GENERATION: true
+        LOG_ACTIVE_GENERATION: true,
       });
     }
 
@@ -68,22 +68,10 @@ moduleFor(
           1,
           'expected: ApplicationController was generated'
         );
-        assert.equal(
-          this.logs['controller:posts'],
-          1,
-          'expected: PostsController was generated'
-        );
+        assert.equal(this.logs['controller:posts'], 1, 'expected: PostsController was generated');
 
-        assert.equal(
-          this.logs['route:application'],
-          1,
-          'expected: ApplicationRoute was generated'
-        );
-        assert.equal(
-          this.logs['route:posts'],
-          1,
-          'expected: PostsRoute was generated'
-        );
+        assert.equal(this.logs['route:application'], 1, 'expected: ApplicationRoute was generated');
+        assert.equal(this.logs['route:posts'], 1, 'expected: PostsRoute was generated');
       });
     }
 
@@ -98,19 +86,13 @@ moduleFor(
           !this.logs['controller:application'],
           'did not expect: ApplicationController was generated'
         );
-        assert.ok(
-          !this.logs['controller:posts'],
-          'did not expect: PostsController was generated'
-        );
+        assert.ok(!this.logs['controller:posts'], 'did not expect: PostsController was generated');
 
         assert.ok(
           !this.logs['route:application'],
           'did not expect: ApplicationRoute was generated'
         );
-        assert.ok(
-          !this.logs['route:posts'],
-          'did not expect: PostsRoute was generated'
-        );
+        assert.ok(!this.logs['route:posts'], 'did not expect: PostsRoute was generated');
       });
     }
   }
@@ -121,7 +103,7 @@ moduleFor(
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
       return assign(super.applicationOptions, {
-        LOG_ACTIVE_GENERATION: false
+        LOG_ACTIVE_GENERATION: false,
       });
     }
 
@@ -138,13 +120,11 @@ moduleFor(
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
       return assign(super.applicationOptions, {
-        LOG_VIEW_LOOKUPS: true
+        LOG_VIEW_LOOKUPS: true,
       });
     }
 
-    [`@test log when template and view are missing when flag is active`](
-      assert
-    ) {
+    [`@test log when template and view are missing when flag is active`](assert) {
       if (EmberDev && EmberDev.runningProdBuild) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
@@ -180,21 +160,17 @@ moduleFor(
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
       return assign(super.applicationOptions, {
-        LOG_VIEW_LOOKUPS: false
+        LOG_VIEW_LOOKUPS: false,
       });
     }
 
-    [`@test do not log when template and view are missing when flag is not true`](
-      assert
-    ) {
+    [`@test do not log when template and view are missing when flag is not true`](assert) {
       return this.visit('/posts').then(() => {
         assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
       });
     }
 
-    [`@test do not log which views are used with templates when flag is not true`](
-      assert
-    ) {
+    [`@test do not log which views are used with templates when flag is not true`](assert) {
       return this.visit('/posts').then(() => {
         assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
       });

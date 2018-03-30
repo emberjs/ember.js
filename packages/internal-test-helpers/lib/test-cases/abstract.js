@@ -176,17 +176,10 @@ export default class AbstractTestCase {
   }
 
   assertHTML(html) {
-    equalTokens(
-      this.element,
-      html,
-      `#qunit-fixture content should be: \`${html}\``
-    );
+    equalTokens(this.element, html, `#qunit-fixture content should be: \`${html}\``);
   }
 
-  assertElement(
-    node,
-    { ElementType = HTMLElement, tagName, attrs = null, content = null }
-  ) {
+  assertElement(node, { ElementType = HTMLElement, tagName, attrs = null, content = null }) {
     if (!(node instanceof ElementType)) {
       throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
     }
@@ -198,11 +191,7 @@ export default class AbstractTestCase {
     node,
     { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }
   ) {
-    attrs = assign(
-      {},
-      { id: regex(/^ember\d*$/), class: classes('ember-view') },
-      attrs || {}
-    );
+    attrs = assign({}, { id: regex(/^ember\d*$/), class: classes('ember-view') }, attrs || {});
     this.assertElement(node, { ElementType, tagName, attrs, content });
   }
 
@@ -214,11 +203,7 @@ export default class AbstractTestCase {
     oldSnapshot = oldSnapshot || this.snapshot;
     newSnapshot = newSnapshot || this.takeSnapshot();
 
-    this.assert.strictEqual(
-      newSnapshot.length,
-      oldSnapshot.length,
-      'Same number of nodes'
-    );
+    this.assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
 
     for (let i = 0; i < oldSnapshot.length; i++) {
       this.assertSameNode(newSnapshot[i], oldSnapshot[i]);

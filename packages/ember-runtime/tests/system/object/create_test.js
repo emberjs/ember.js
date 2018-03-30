@@ -19,8 +19,8 @@ moduleFor(
           },
           set(key, value) {
             return value;
-          }
-        })
+          },
+        }),
       });
 
       let o = MyClass.create({ foo: 'bar' });
@@ -32,7 +32,7 @@ moduleFor(
         let MyClass = EmberObject.extend({
           foo: null,
           bar: null,
-          fooDidChange: observer('foo', function() {})
+          fooDidChange: observer('foo', function() {}),
         });
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
@@ -54,7 +54,7 @@ moduleFor(
       let MyClass = EmberObject.extend({
         setUnknownProperty(/* key, value */) {
           setUnknownPropertyCalled = true;
-        }
+        },
       });
 
       MyClass.create({ foo: 'bar' });
@@ -64,7 +64,7 @@ moduleFor(
     ['@test throws if you try to define a computed property']() {
       expectAssertion(function() {
         EmberObject.create({
-          foo: computed(function() {})
+          foo: computed(function() {}),
         });
       }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
     }
@@ -74,7 +74,7 @@ moduleFor(
         EmberObject.create({
           foo() {
             this._super(...arguments);
-          }
+          },
         });
       }, 'EmberObject.create no longer supports defining methods that call _super.');
     }
@@ -83,7 +83,7 @@ moduleFor(
       let myMixin = Mixin.create({
         adder(arg1, arg2) {
           return arg1 + arg2;
-        }
+        },
       });
 
       expectAssertion(function() {

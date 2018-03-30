@@ -62,9 +62,7 @@ moduleFor(
       }
     }
 
-    ['@test attempting to register a library that is already registered warns you'](
-      assert
-    ) {
+    ['@test attempting to register a library that is already registered warns you'](assert) {
       if (EmberDev && EmberDev.runningProdBuild) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
@@ -76,10 +74,7 @@ moduleFor(
 
       setDebugFunction('warn', function(msg, test) {
         if (!test) {
-          assert.equal(
-            msg,
-            'Library "magic" is already registered with Ember.'
-          );
+          assert.equal(msg, 'Library "magic" is already registered with Ember.');
         }
       });
 

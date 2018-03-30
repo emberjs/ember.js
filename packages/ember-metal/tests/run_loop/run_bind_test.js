@@ -12,7 +12,7 @@ moduleFor(
         increment(increment) {
           assert.ok(getCurrentRunLoop(), 'expected a run-loop');
           return (this.value += increment);
-        }
+        },
       };
 
       let proxiedFunction = bind(obj, obj.increment, 1);

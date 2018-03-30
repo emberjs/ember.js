@@ -7,11 +7,7 @@ class UnshiftObjectTests extends AbstractTestCase {
     let obj = this.newObject([]);
     let item = newFixture(1)[0];
 
-    this.assert.equal(
-      obj.unshiftObject(item),
-      item,
-      'should return unshifted object'
-    );
+    this.assert.equal(obj.unshiftObject(item), item, 'should return unshifted object');
   }
 
   '@test [].unshiftObject(X) => [X] + notify'() {
@@ -19,14 +15,7 @@ class UnshiftObjectTests extends AbstractTestCase {
     let item = newFixture(1)[0];
     let after = [item];
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -35,21 +24,9 @@ class UnshiftObjectTests extends AbstractTestCase {
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
     this.assert.equal(
       observer.timesCalled('firstObject'),
       1,
@@ -67,14 +44,7 @@ class UnshiftObjectTests extends AbstractTestCase {
     let item = newFixture(1)[0];
     let after = [item, before[0], before[1], before[2]];
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -83,21 +53,9 @@ class UnshiftObjectTests extends AbstractTestCase {
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
     this.assert.equal(
       observer.timesCalled('firstObject'),
       1,
@@ -116,14 +74,7 @@ class UnshiftObjectTests extends AbstractTestCase {
     let item = before[0]; // note same object as current head. should end up twice
     let after = [item, before[0], before[1], before[2]];
     let obj = this.newObject(before);
-    let observer = this.newObserver(
-      obj,
-      '[]',
-      '@each',
-      'length',
-      'firstObject',
-      'lastObject'
-    );
+    let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -132,27 +83,11 @@ class UnshiftObjectTests extends AbstractTestCase {
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(
-      observer.timesCalled('[]'),
-      1,
-      'should have notified [] once'
-    );
-    this.assert.equal(
-      observer.timesCalled('@each'),
-      0,
-      'should not have notified @each once'
-    );
-    this.assert.equal(
-      observer.timesCalled('length'),
-      1,
-      'should have notified length once'
-    );
+    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
+    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
-    this.assert.equal(
-      observer.validate('firstObject'),
-      true,
-      'should have notified firstObject'
-    );
+    this.assert.equal(observer.validate('firstObject'), true, 'should have notified firstObject');
     this.assert.equal(
       observer.validate('lastObject'),
       false,
@@ -161,10 +96,4 @@ class UnshiftObjectTests extends AbstractTestCase {
   }
 }
 
-runArrayTests(
-  'unshiftObject',
-  UnshiftObjectTests,
-  'MutableArray',
-  'NativeArray',
-  'ArrayProxy'
-);
+runArrayTests('unshiftObject', UnshiftObjectTests, 'MutableArray', 'NativeArray', 'ArrayProxy');

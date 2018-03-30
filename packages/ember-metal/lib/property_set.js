@@ -1,24 +1,11 @@
 import { toString } from 'ember-utils';
 import { assert, Error as EmberError } from 'ember-debug';
-import {
-  getPossibleMandatoryProxyValue,
-  _getPath as getPath
-} from './property_get';
+import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 import { notifyPropertyChange } from './property_events';
 
 import { isPath } from './path_cache';
-import {
-  isDescriptor,
-  isDescriptorTrap,
-  peekMeta,
-  DESCRIPTOR,
-  descriptorFor
-} from './meta';
-import {
-  DESCRIPTOR_TRAP,
-  EMBER_METAL_ES5_GETTERS,
-  MANDATORY_SETTER
-} from 'ember/features';
+import { isDescriptor, isDescriptorTrap, peekMeta, DESCRIPTOR, descriptorFor } from './meta';
+import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 /**
  @module @ember/object
 */
@@ -53,8 +40,7 @@ export function set(obj, keyName, value, tolerant) {
   );
   assert(
     `The key provided to set must be a string or number, you passed ${keyName}`,
-    typeof keyName === 'string' ||
-      (typeof keyName === 'number' && !isNaN(keyName))
+    typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
   );
   assert(
     `'this' in paths is not supported`,
@@ -63,9 +49,7 @@ export function set(obj, keyName, value, tolerant) {
 
   if (obj.isDestroyed) {
     assert(
-      `calling set on destroyed object: ${toString(
-        obj
-      )}.${keyName} = ${toString(value)}`,
+      `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
     );
     return;
@@ -143,10 +127,7 @@ function setPath(root, path, value, tolerant) {
   let parts = path.split('.');
   let keyName = parts.pop();
 
-  assert(
-    'Property set failed: You passed an empty path',
-    keyName.trim().length > 0
-  );
+  assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
 
   let newPath = parts.join('.');
 

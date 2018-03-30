@@ -42,7 +42,7 @@ if (!jQueryDisabled) {
             Route.extend({
               model() {
                 testContext.indexHitCount += 1;
-              }
+              },
             })
           );
 
@@ -52,7 +52,7 @@ if (!jQueryDisabled) {
               renderTemplate() {
                 testContext.currentRoute = 'posts';
                 this._super(...arguments);
-              }
+              },
             })
           );
 
@@ -74,7 +74,7 @@ if (!jQueryDisabled) {
               renderTemplate() {
                 testContext.currentRoute = 'comments';
                 this._super(...arguments);
-              }
+              },
             })
           );
 
@@ -85,7 +85,7 @@ if (!jQueryDisabled) {
             Route.extend({
               beforeModel(transition) {
                 transition.abort();
-              }
+              },
             })
           );
 
@@ -94,7 +94,7 @@ if (!jQueryDisabled) {
             Route.extend({
               beforeModel() {
                 this.transitionTo('comments');
-              }
+              },
             })
           );
 
@@ -124,20 +124,12 @@ if (!jQueryDisabled) {
         window
           .visit('/posts')
           .then(() => {
-            assert.equal(
-              this.currentRoute,
-              'posts',
-              'Successfully visited posts route'
-            );
+            assert.equal(this.currentRoute, 'posts', 'Successfully visited posts route');
             assert.equal(window.currentURL(), '/posts', 'posts URL is correct');
             return window.click('a:contains("Comments")');
           })
           .then(() => {
-            assert.equal(
-              this.currentRoute,
-              'comments',
-              'visit chained with click'
-            );
+            assert.equal(this.currentRoute, 'comments', 'visit chained with click');
             return window.fillIn('.ember-text-field', 'yeah');
           })
           .then(() => {
@@ -146,11 +138,7 @@ if (!jQueryDisabled) {
               'yeah',
               'chained with fillIn'
             );
-            return window.fillIn(
-              '.ember-text-field',
-              '#qunit-fixture',
-              'context working'
-            );
+            return window.fillIn('.ember-text-field', '#qunit-fixture', 'context working');
           })
           .then(() => {
             assert.equal(
@@ -177,43 +165,23 @@ if (!jQueryDisabled) {
           .click('a:first', '#comments-link')
           .fillIn('.ember-text-field', 'hello')
           .then(() => {
-            assert.equal(
-              this.currentRoute,
-              'comments',
-              'Successfully visited comments route'
-            );
-            assert.equal(
-              window.currentURL(),
-              '/comments',
-              'Comments URL is correct'
-            );
+            assert.equal(this.currentRoute, 'comments', 'Successfully visited comments route');
+            assert.equal(window.currentURL(), '/comments', 'Comments URL is correct');
             assert.equal(
               document.querySelector('.ember-text-field').value,
               'hello',
               'Fillin successfully works'
             );
             window.find('.ember-text-field').one('keypress', e => {
-              assert.equal(
-                e.keyCode,
-                13,
-                'keyevent chained with correct keyCode.'
-              );
+              assert.equal(e.keyCode, 13, 'keyevent chained with correct keyCode.');
               assert.equal(e.which, 13, 'keyevent chained with correct which.');
             });
           })
           .keyEvent('.ember-text-field', 'keypress', 13)
           .visit('/posts')
           .then(() => {
-            assert.equal(
-              this.currentRoute,
-              'posts',
-              'Thens can also be chained to helpers'
-            );
-            assert.equal(
-              window.currentURL(),
-              '/posts',
-              'URL is set correct on chained helpers'
-            );
+            assert.equal(this.currentRoute, 'posts', 'Thens can also be chained to helpers');
+            assert.equal(window.currentURL(), '/posts', 'URL is set correct on chained helpers');
           });
       }
 
@@ -227,16 +195,8 @@ if (!jQueryDisabled) {
         window.fillIn('.ember-text-field', 'hello');
 
         window.andThen(() => {
-          assert.equal(
-            this.currentRoute,
-            'comments',
-            'Successfully visited comments route'
-          );
-          assert.equal(
-            window.currentURL(),
-            '/comments',
-            'Comments URL is correct'
-          );
+          assert.equal(this.currentRoute, 'comments', 'Successfully visited comments route');
+          assert.equal(window.currentURL(), '/comments', 'Comments URL is correct');
           assert.equal(
             window.find('.ember-text-field').val(),
             'hello',
@@ -263,16 +223,8 @@ if (!jQueryDisabled) {
         });
 
         window.andThen(() => {
-          assert.equal(
-            this.currentRoute,
-            'comments',
-            'Successfully visited comments route'
-          );
-          assert.equal(
-            window.currentURL(),
-            '/comments',
-            'Comments URL is correct'
-          );
+          assert.equal(this.currentRoute, 'comments', 'Successfully visited comments route');
+          assert.equal(window.currentURL(), '/comments', 'Comments URL is correct');
           assert.equal(
             window.find('.ember-text-field').val(),
             'hello',
@@ -306,16 +258,8 @@ if (!jQueryDisabled) {
             'goodbye',
             'Fillin successfully works'
           );
-          assert.equal(
-            this.currentRoute,
-            'comments',
-            'Successfully visited comments route'
-          );
-          assert.equal(
-            window.currentURL(),
-            '/comments',
-            'Comments URL is correct'
-          );
+          assert.equal(this.currentRoute, 'comments', 'Successfully visited comments route');
+          assert.equal(window.currentURL(), '/comments', 'Comments URL is correct');
         });
       }
 
@@ -331,16 +275,8 @@ if (!jQueryDisabled) {
         });
 
         window.andThen(() => {
-          assert.equal(
-            this.currentRoute,
-            'comments',
-            'Successfully visited comments route'
-          );
-          assert.equal(
-            window.currentURL(),
-            '/comments',
-            'Comments URL is correct'
-          );
+          assert.equal(this.currentRoute, 'comments', 'Successfully visited comments route');
+          assert.equal(window.currentURL(), '/comments', 'Comments URL is correct');
           assert.equal(
             window.find('.ember-text-field').val(),
             'hello',
@@ -356,23 +292,19 @@ if (!jQueryDisabled) {
         });
       }
 
-      [`@test Aborted transitions are not logged via Ember.Test.adapter#exception`](
-        assert
-      ) {
+      [`@test Aborted transitions are not logged via Ember.Test.adapter#exception`](assert) {
         assert.expect(0);
 
         Test.adapter = QUnitAdapter.create({
           exception() {
             assert.ok(false, 'aborted transitions are not logged');
-          }
+          },
         });
 
         window.visit('/abort_transition');
       }
 
-      [`@test Unhandled exceptions are logged via Ember.Test.adapter#exception`](
-        assert
-      ) {
+      [`@test Unhandled exceptions are logged via Ember.Test.adapter#exception`](assert) {
         assert.expect(2);
 
         console.error = () => {}; // eslint-disable-line no-console
@@ -386,7 +318,7 @@ if (!jQueryDisabled) {
             );
             // handle the rejection so it doesn't leak later.
             asyncHandled.catch(() => {});
-          }
+          },
         });
 
         window.visit('/posts');
@@ -415,7 +347,7 @@ if (!jQueryDisabled) {
               'Catch me',
               'Exception successfully caught and passed to Ember.Test.adapter.exception'
             );
-          }
+          },
         });
 
         window.visit('/posts');
@@ -425,20 +357,14 @@ if (!jQueryDisabled) {
         });
       }
 
-      [`@test should not start routing on the root URL when visiting another`](
-        assert
-      ) {
+      [`@test should not start routing on the root URL when visiting another`](assert) {
         assert.expect(4);
 
         window.visit('/posts');
 
         window.andThen(() => {
           assert.ok(window.find('#comments-link'), 'found comments-link');
-          assert.equal(
-            this.currentRoute,
-            'posts',
-            'Successfully visited posts route'
-          );
+          assert.equal(this.currentRoute, 'posts', 'Successfully visited posts route');
           assert.equal(window.currentURL(), '/posts', 'Posts URL is correct');
           assert.equal(
             this.indexHitCount,
@@ -454,11 +380,7 @@ if (!jQueryDisabled) {
         window.visit('/');
 
         window.andThen(() => {
-          assert.equal(
-            this.indexHitCount,
-            1,
-            'should hit index once when visiting /'
-          );
+          assert.equal(this.indexHitCount, 1, 'should hit index once when visiting /');
         });
       }
 
@@ -476,7 +398,7 @@ if (!jQueryDisabled) {
           asyncEnd() {
             async--;
             this._super();
-          }
+          },
         }).create();
 
         this.application.testHelpers.slowHelper();
@@ -498,19 +420,13 @@ if (!jQueryDisabled) {
         }
       }
 
-      [`@test visiting a URL that causes another transition should yield the correct URL`](
-        assert
-      ) {
+      [`@test visiting a URL that causes another transition should yield the correct URL`](assert) {
         assert.expect(1);
 
         window.visit('/redirect');
 
         window.andThen(() => {
-          assert.equal(
-            window.currentURL(),
-            '/comments',
-            'Redirected to Comments URL'
-          );
+          assert.equal(window.currentURL(), '/comments', 'Redirected to Comments URL');
         });
       }
 
@@ -522,21 +438,13 @@ if (!jQueryDisabled) {
         window.visit('/posts');
 
         window.andThen(function() {
-          assert.equal(
-            window.currentURL(),
-            '/posts',
-            'First visited URL is correct'
-          );
+          assert.equal(window.currentURL(), '/posts', 'First visited URL is correct');
         });
 
         window.visit('/redirect');
 
         window.andThen(() => {
-          assert.equal(
-            window.currentURL(),
-            '/comments',
-            'Redirected to Comments URL'
-          );
+          assert.equal(window.currentURL(), '/comments', 'Redirected to Comments URL');
         });
       }
     }

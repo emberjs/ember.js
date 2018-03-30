@@ -18,58 +18,31 @@ class InputRenderingTest extends RenderingTest {
   }
 
   assertNotDisabled() {
-    this.assert.ok(
-      this.$('input').is(':not(:disabled)'),
-      'The input is not disabled'
-    );
+    this.assert.ok(this.$('input').is(':not(:disabled)'), 'The input is not disabled');
   }
 
   assertInputId(expectedId) {
-    this.assert.equal(
-      this.inputID(),
-      expectedId,
-      'the input id should be `expectedId`'
-    );
+    this.assert.equal(this.inputID(), expectedId, 'the input id should be `expectedId`');
   }
 
   assertSingleInput() {
-    this.assert.equal(
-      this.$('input').length,
-      1,
-      'A single text field was inserted'
-    );
+    this.assert.equal(this.$('input').length, 1, 'A single text field was inserted');
   }
 
   assertSingleCheckbox() {
-    this.assert.equal(
-      this.$('input[type=checkbox]').length,
-      1,
-      'A single checkbox is added'
-    );
+    this.assert.equal(this.$('input[type=checkbox]').length, 1, 'A single checkbox is added');
   }
 
   assertCheckboxIsChecked() {
-    this.assert.equal(
-      this.$input().prop('checked'),
-      true,
-      'the checkbox is checked'
-    );
+    this.assert.equal(this.$input().prop('checked'), true, 'the checkbox is checked');
   }
 
   assertCheckboxIsNotChecked() {
-    this.assert.equal(
-      this.$input().prop('checked'),
-      false,
-      'the checkbox is not checked'
-    );
+    this.assert.equal(this.$input().prop('checked'), false, 'the checkbox is not checked');
   }
 
   assertValue(expected) {
-    this.assert.equal(
-      this.$input().val(),
-      expected,
-      `the input value should be ${expected}`
-    );
+    this.assert.equal(this.$input().val(), expected, `the input value should be ${expected}`);
   }
 
   assertAttr(name, expected) {
@@ -86,16 +59,8 @@ class InputRenderingTest extends RenderingTest {
 
   assertSelectionRange(start, end) {
     let input = this.$input()[0];
-    this.assert.equal(
-      input.selectionStart,
-      start,
-      `the cursor start position should be ${start}`
-    );
-    this.assert.equal(
-      input.selectionEnd,
-      end,
-      `the cursor end position should be ${end}`
-    );
+    this.assert.equal(input.selectionStart, start, `the cursor start position should be ${start}`);
+    this.assert.equal(input.selectionEnd, end, `the cursor end position should be ${end}`);
   }
 
   triggerEvent(type, options) {
@@ -171,7 +136,7 @@ moduleFor(
           maxlength: 10,
           minlength: 5,
           size: 20,
-          tabindex: 30
+          tabindex: 30,
         }
       );
 
@@ -306,27 +271,23 @@ moduleFor(
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
 
-    ['@test sends an action with `{{input enter="foo"}}` when <enter> is pressed'](
-      assert
-    ) {
+    ['@test sends an action with `{{input enter="foo"}}` when <enter> is pressed'](assert) {
       assert.expect(1);
 
       this.render(`{{input enter='foo'}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
-          }
-        }
+          },
+        },
       });
 
       this.triggerEvent('keyup', {
-        keyCode: 13
+        keyCode: 13,
       });
     }
 
-    ['@test sends an action with `{{input key-press="foo"}}` is pressed'](
-      assert
-    ) {
+    ['@test sends an action with `{{input key-press="foo"}}` is pressed'](assert) {
       assert.expect(1);
 
       this.render(`{{input value=value key-press='foo'}}`, {
@@ -335,29 +296,27 @@ moduleFor(
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
-          }
-        }
+          },
+        },
       });
 
       this.triggerEvent('keypress', {
-        keyCode: 65
+        keyCode: 65,
       });
     }
 
-    ['@test sends an action to the parent level when `bubbles=true` is provided'](
-      assert
-    ) {
+    ['@test sends an action to the parent level when `bubbles=true` is provided'](assert) {
       assert.expect(1);
 
       let ParentComponent = Component.extend({
         change() {
           assert.ok(true, 'bubbled upwards');
-        }
+        },
       });
 
       this.registerComponent('x-parent', {
         ComponentClass: ParentComponent,
-        template: `{{input bubbles=true}}`
+        template: `{{input bubbles=true}}`,
       });
       this.render(`{{x-parent}}`);
 
@@ -371,8 +330,8 @@ moduleFor(
         actions: {
           foo() {
             wasFocused = true;
-          }
-        }
+          },
+        },
       });
 
       this.runTask(() => {
@@ -389,66 +348,60 @@ moduleFor(
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
-          }
-        }
+          },
+        },
       });
 
       this.triggerEvent('keyup', {
-        keyCode: 13
+        keyCode: 13,
       });
     }
 
-    ['@test sends an action with `{{input escape-press="foo"}}` when <escape> is pressed'](
-      assert
-    ) {
+    ['@test sends an action with `{{input escape-press="foo"}}` when <escape> is pressed'](assert) {
       assert.expect(1);
 
       this.render(`{{input escape-press='foo'}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
-          }
-        }
+          },
+        },
       });
 
       this.triggerEvent('keyup', {
-        keyCode: 27
+        keyCode: 27,
       });
     }
 
-    ['@test sends an action with `{{input key-down="foo"}}` when a key is pressed'](
-      assert
-    ) {
+    ['@test sends an action with `{{input key-down="foo"}}` when a key is pressed'](assert) {
       assert.expect(1);
 
       this.render(`{{input key-down='foo'}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
-          }
-        }
+          },
+        },
       });
 
       this.triggerEvent('keydown', {
-        keyCode: 65
+        keyCode: 65,
       });
     }
 
-    ['@test sends an action with `{{input key-up="foo"}}` when a key is pressed'](
-      assert
-    ) {
+    ['@test sends an action with `{{input key-up="foo"}}` when a key is pressed'](assert) {
       assert.expect(1);
 
       this.render(`{{input key-up='foo'}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
-          }
-        }
+          },
+        },
       });
 
       this.triggerEvent('keyup', {
-        keyCode: 65
+        keyCode: 65,
       });
     }
 
@@ -486,7 +439,7 @@ moduleFor(
       this.render(`{{input type=(if isTruthy trueType falseType)}}`, {
         isTruthy: true,
         trueType: 'text',
-        falseType: 'password'
+        falseType: 'password',
       });
 
       this.assertAttr('type', 'text');
@@ -506,16 +459,13 @@ moduleFor(
 
     ['@test GH16256 input macro does not modify params in place']() {
       this.registerComponent('my-input', {
-        template: `{{input type=inputType}}`
+        template: `{{input type=inputType}}`,
       });
 
-      this.render(
-        `{{my-input inputType=firstType}}{{my-input inputType=secondType}}`,
-        {
-          firstType: 'password',
-          secondType: 'email'
-        }
-      );
+      this.render(`{{my-input inputType=firstType}}{{my-input inputType=secondType}}`, {
+        firstType: 'password',
+        secondType: 'email',
+      });
 
       let inputs = this.element.querySelectorAll('input');
       this.assert.equal(inputs.length, 2, 'there are two inputs');
@@ -541,7 +491,7 @@ moduleFor(
           disabled: false,
           name: 'original-name',
           checked: false,
-          tabindex: 10
+          tabindex: 10,
         }
       );
 
@@ -583,7 +533,7 @@ moduleFor(
     ['@test `value` property assertion']() {
       expectAssertion(() => {
         this.render(`{{input type="checkbox" value=value}}`, {
-          value: 'value'
+          value: 'value',
         });
       }, /you must use `checked=/);
     }
@@ -591,7 +541,7 @@ moduleFor(
     ['@test with a bound type']() {
       this.render(`{{input type=inputType checked=isChecked}}`, {
         inputType: 'checkbox',
-        isChecked: true
+        isChecked: true,
       });
 
       this.assertSingleCheckbox();
@@ -647,14 +597,7 @@ moduleFor(
   `Helpers test: {{input type='text'}}`,
   class extends InputRenderingTest {
     ['@test null values']() {
-      let attributes = [
-        'disabled',
-        'placeholder',
-        'name',
-        'maxlength',
-        'size',
-        'tabindex'
-      ];
+      let attributes = ['disabled', 'placeholder', 'name', 'maxlength', 'size', 'tabindex'];
 
       this.render(
         `
@@ -674,7 +617,7 @@ moduleFor(
           name: null,
           maxlength: null,
           size: null,
-          tabindex: null
+          tabindex: null,
         }
       );
 
@@ -733,7 +676,7 @@ moduleFor(
   'min="-5" max="50" type="range" value="%x"',
   'min="-5" max="50" value="%x" type="range"',
   'value="%x" min="-5" max="50" type="range"',
-  'value="%x" type="range" min="-5" max="50"'
+  'value="%x" type="range" min="-5" max="50"',
 ].forEach(attrs => {
   moduleFor(
     `[GH#15675] Helpers test: {{input ${attrs}}}`,

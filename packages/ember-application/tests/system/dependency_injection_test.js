@@ -24,20 +24,18 @@ moduleFor(
       application.PostIndexController = EmberObject.extend({});
 
       application.register('model:person', application.Person, {
-        singleton: false
+        singleton: false,
       });
       application.register('model:user', application.User, {
-        singleton: false
+        singleton: false,
       });
       application.register('fruit:favorite', application.Orange);
       application.register('communication:main', application.Email, {
-        singleton: false
+        singleton: false,
       });
-      application.register(
-        'controller:postIndex',
-        application.PostIndexController,
-        { singleton: true }
-      );
+      application.register('controller:postIndex', application.PostIndexController, {
+        singleton: true,
+      });
 
       registry = application.__registry__;
       locator = application.__container__;
@@ -55,9 +53,7 @@ moduleFor(
       let dotNotationController = locator.lookup('controller:post.index');
       let camelCaseController = locator.lookup('controller:postIndex');
 
-      assert.ok(
-        dotNotationController instanceof application.PostIndexController
-      );
+      assert.ok(dotNotationController instanceof application.PostIndexController);
       assert.ok(camelCaseController instanceof application.PostIndexController);
 
       assert.equal(dotNotationController, camelCaseController);
@@ -68,10 +64,7 @@ moduleFor(
       assert.equal(registry.resolve('model:user'), application.User);
       assert.equal(registry.resolve('fruit:favorite'), application.Orange);
       assert.equal(registry.resolve('communication:main'), application.Email);
-      assert.equal(
-        registry.resolve('controller:postIndex'),
-        application.PostIndexController
-      );
+      assert.equal(registry.resolve('controller:postIndex'), application.PostIndexController);
 
       assert.equal(
         locator.lookup('fruit:favorite'),

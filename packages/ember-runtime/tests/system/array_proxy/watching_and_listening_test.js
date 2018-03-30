@@ -1,11 +1,4 @@
-import {
-  get,
-  addObserver,
-  defineProperty,
-  watcherCount,
-  computed,
-  peekMeta
-} from 'ember-metal';
+import { get, addObserver, defineProperty, watcherCount, computed, peekMeta } from 'ember-metal';
 import ArrayProxy from '../../../system/array_proxy';
 import { A } from '../../../mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -33,10 +26,10 @@ moduleFor(
       proxy.set('content', content);
 
       assert.deepEqual(sortedListenersFor(content, '@array:before'), [
-        '_arrangedContentArrayWillChange'
+        '_arrangedContentArrayWillChange',
       ]);
       assert.deepEqual(sortedListenersFor(content, '@array:change'), [
-        '_arrangedContentArrayDidChange'
+        '_arrangedContentArrayDidChange',
       ]);
     }
 
@@ -46,10 +39,10 @@ moduleFor(
       let proxy = ArrayProxy.create({ content: content1 });
 
       assert.deepEqual(sortedListenersFor(content1, '@array:before'), [
-        '_arrangedContentArrayWillChange'
+        '_arrangedContentArrayWillChange',
       ]);
       assert.deepEqual(sortedListenersFor(content1, '@array:change'), [
-        '_arrangedContentArrayDidChange'
+        '_arrangedContentArrayDidChange',
       ]);
 
       proxy.set('content', content2);
@@ -57,16 +50,14 @@ moduleFor(
       assert.deepEqual(sortedListenersFor(content1, '@array:before'), []);
       assert.deepEqual(sortedListenersFor(content1, '@array:change'), []);
       assert.deepEqual(sortedListenersFor(content2, '@array:before'), [
-        '_arrangedContentArrayWillChange'
+        '_arrangedContentArrayWillChange',
       ]);
       assert.deepEqual(sortedListenersFor(content2, '@array:change'), [
-        '_arrangedContentArrayDidChange'
+        '_arrangedContentArrayDidChange',
       ]);
     }
 
-    [`@test regression test for https://github.com/emberjs/ember.js/issues/12475`](
-      assert
-    ) {
+    [`@test regression test for https://github.com/emberjs/ember.js/issues/12475`](assert) {
       let item1a = { id: 1 };
       let item1b = { id: 2 };
       let item1c = { id: 3 };

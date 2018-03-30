@@ -14,26 +14,20 @@ moduleFor(
 
     ['@feature(!ember-glimmer-template-only-components) The helper becomes the body of the component']() {
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
-      this.addTemplate(
-        'application',
-        'Hello world {{#expand-it}}world{{/expand-it}}'
-      );
+      this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
       return this.visit('/').then(() => {
         this.assertText('Hello world hello world');
         this.assertComponentElement(this.element.firstElementChild, {
           tagName: 'div',
-          content: '<p>hello world</p>'
+          content: '<p>hello world</p>',
         });
       });
     }
 
     ['@feature(ember-glimmer-template-only-components) The helper becomes the body of the component']() {
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
-      this.addTemplate(
-        'application',
-        'Hello world {{#expand-it}}world{{/expand-it}}'
-      );
+      this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
       return this.visit('/').then(() => {
         this.assertInnerHTML('Hello world <p>hello world</p>');
@@ -42,10 +36,7 @@ moduleFor(
 
     ['@test If a component is registered, it is used'](assert) {
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
-      this.addTemplate(
-        'application',
-        `Hello world {{#expand-it}}world{{/expand-it}}`
-      );
+      this.addTemplate('application', `Hello world {{#expand-it}}world{{/expand-it}}`);
 
       this.application.instanceInitializer({
         name: 'expand-it-component',
@@ -53,31 +44,22 @@ moduleFor(
           applicationInstance.register(
             'component:expand-it',
             Component.extend({
-              classNames: 'testing123'
+              classNames: 'testing123',
             })
           );
-        }
+        },
       });
 
       return this.visit('/').then(() => {
         let text = this.$('div.testing123')
           .text()
           .trim();
-        assert.equal(
-          text,
-          'hello world',
-          'The component is composed correctly'
-        );
+        assert.equal(text, 'hello world', 'The component is composed correctly');
       });
     }
 
-    ['@test Late-registered components can be rendered with custom `layout` property'](
-      assert
-    ) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>there goes {{my-hero}}</div>`
-      );
+    ['@test Late-registered components can be rendered with custom `layout` property'](assert) {
+      this.addTemplate('application', `<div id='wrapper'>there goes {{my-hero}}</div>`);
 
       this.application.instanceInitializer({
         name: 'my-hero-component',
@@ -86,10 +68,10 @@ moduleFor(
             'component:my-hero',
             Component.extend({
               classNames: 'testing123',
-              layout: compile('watch him as he GOES')
+              layout: compile('watch him as he GOES'),
             })
           );
-        }
+        },
       });
 
       return this.visit('/').then(() => {
@@ -119,13 +101,13 @@ moduleFor(
             'template:components/sally-rutherford',
             compile('funkytowny{{yield}}')
           );
-        }
+        },
       });
       this.application.instanceInitializer({
         name: 'sally-rutherford-component',
         initialize(applicationInstance) {
           applicationInstance.register('component:sally-rutherford', Component);
-        }
+        },
       });
 
       return this.visit('/').then(() => {
@@ -155,7 +137,7 @@ moduleFor(
             'template:components/borf-snorlax',
             compile('goodfreakingTIMES{{yield}}')
           );
-        }
+        },
       });
 
       return this.visit('/').then(() => {
@@ -170,9 +152,7 @@ moduleFor(
       });
     }
 
-    ['@test Assigning layoutName to a component should setup the template as a layout'](
-      assert
-    ) {
+    ['@test Assigning layoutName to a component should setup the template as a layout'](assert) {
       assert.expect(1);
 
       this.addTemplate(
@@ -187,10 +167,10 @@ moduleFor(
           applicationInstance.register(
             'controller:application',
             Controller.extend({
-              text: 'outer'
+              text: 'outer',
             })
           );
-        }
+        },
       });
       this.application.instanceInitializer({
         name: 'my-component-component',
@@ -199,27 +179,21 @@ moduleFor(
             'component:my-component',
             Component.extend({
               text: 'inner',
-              layoutName: 'foo-bar-baz'
+              layoutName: 'foo-bar-baz',
             })
           );
-        }
+        },
       });
 
       return this.visit('/').then(() => {
         let text = this.$('#wrapper')
           .text()
           .trim();
-        assert.equal(
-          text,
-          'inner-outer',
-          'The component is composed correctly'
-        );
+        assert.equal(text, 'inner-outer', 'The component is composed correctly');
       });
     }
 
-    ['@test Assigning layoutName and layout to a component should use the `layout` value'](
-      assert
-    ) {
+    ['@test Assigning layoutName and layout to a component should use the `layout` value'](assert) {
       assert.expect(1);
 
       this.addTemplate(
@@ -234,10 +208,10 @@ moduleFor(
           applicationInstance.register(
             'controller:application',
             Controller.extend({
-              text: 'outer'
+              text: 'outer',
             })
           );
-        }
+        },
       });
       this.application.instanceInitializer({
         name: 'my-component-component-layout',
@@ -247,29 +221,22 @@ moduleFor(
             Component.extend({
               text: 'inner',
               layoutName: 'foo-bar-baz',
-              layout: compile('{{text}}-{{yield}}')
+              layout: compile('{{text}}-{{yield}}'),
             })
           );
-        }
+        },
       });
 
       return this.visit('/').then(() => {
         let text = this.$('#wrapper')
           .text()
           .trim();
-        assert.equal(
-          text,
-          'inner-outer',
-          'The component is composed correctly'
-        );
+        assert.equal(text, 'inner-outer', 'The component is composed correctly');
       });
     }
 
     ['@test Using name of component that does not exist']() {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{#no-good}} {{/no-good}}</div>`
-      );
+      this.addTemplate('application', `<div id='wrapper'>{{#no-good}} {{/no-good}}</div>`);
 
       // TODO: Use the async form of expectAssertion here when it is available
       expectAssertion(() => {

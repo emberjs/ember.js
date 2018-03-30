@@ -54,7 +54,7 @@ export default function transformEachInIntoEach(env) {
             node.loc
           );
         }
-      }
-    }
+      },
+    },
   };
 }

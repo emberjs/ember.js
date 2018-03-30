@@ -6,9 +6,7 @@ import { Component } from '../utils/helpers';
 moduleFor(
   'Template factory test',
   class extends RenderingTest {
-    ['@test the template factory returned from precompile is the same as compile'](
-      assert
-    ) {
+    ['@test the template factory returned from precompile is the same as compile'](assert) {
       let { owner } = this;
       let { runtimeResolver } = this;
 
@@ -24,11 +22,7 @@ moduleFor(
 
       let Compiled = compile(templateStr, options);
 
-      assert.equal(
-        typeof Precompiled.create,
-        'function',
-        'precompiled is a factory'
-      );
+      assert.equal(typeof Precompiled.create, 'function', 'precompiled is a factory');
       assert.ok(Precompiled.id, 'precompiled has id');
 
       assert.equal(typeof Compiled.create, 'function', 'compiled is a factory');
@@ -52,19 +46,17 @@ moduleFor(
 
       this.registerComponent('x-precompiled', {
         ComponentClass: Component.extend({
-          layout: Precompiled
-        })
+          layout: Precompiled,
+        }),
       });
 
       this.registerComponent('x-compiled', {
         ComponentClass: Component.extend({
-          layout: Compiled
-        })
+          layout: Compiled,
+        }),
       });
 
-      this.render(
-        '{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}'
-      );
+      this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');
 
       assert.equal(runtimeResolver.templateCacheMisses, 2, 'misses 2');
       assert.equal(runtimeResolver.templateCacheHits, 2, 'hits 2');

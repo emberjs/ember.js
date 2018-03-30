@@ -4,12 +4,10 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 moduleFor(
   'without',
   class extends AbstractTestCase {
-    ['@test without should create a new mixin excluding named properties'](
-      assert
-    ) {
+    ['@test without should create a new mixin excluding named properties'](assert) {
       let MixinA = Mixin.create({
         foo: 'FOO',
-        bar: 'BAR'
+        bar: 'BAR',
       });
 
       let MixinB = MixinA.without('bar');

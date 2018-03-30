@@ -8,7 +8,7 @@ import {
   addArrayObserver,
   removeArrayObserver,
   arrayContentWillChange,
-  arrayContentDidChange
+  arrayContentDidChange,
 } from 'ember-metal';
 import EmberObject from '../../system/object';
 import Copyable from '../../mixins/copyable';
@@ -81,20 +81,12 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   arrayWillChange() {
-    QUnit.config.current.assert.equal(
-      this._before,
-      null,
-      'should only call once'
-    );
+    QUnit.config.current.assert.equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
   arrayDidChange() {
-    QUnit.config.current.assert.equal(
-      this._after,
-      null,
-      'should only call once'
-    );
+    QUnit.config.current.assert.equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   },
 
@@ -116,7 +108,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
 
   timesCalled(key) {
     return this._keys[key] || 0;
-  }
+  },
 });
 
 class AbstractArrayHelper {
@@ -232,7 +224,7 @@ const TestArray = EmberObject.extend(EmberArray, {
 
   length: computed(function() {
     return this._content.length;
-  })
+  }),
 });
 
 /*
@@ -270,7 +262,7 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
 
   slice() {
     return this._content.slice();
-  }
+  },
 });
 
 const CopyableObject = EmberObject.extend(Copyable, {
@@ -285,7 +277,7 @@ const CopyableObject = EmberObject.extend(Copyable, {
     let ret = new CopyableObject();
     set(ret, 'id', get(this, 'id'));
     return ret;
-  }
+  },
 });
 
 class MutableArrayHelpers extends NativeArrayHelpers {

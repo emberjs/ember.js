@@ -15,16 +15,8 @@ moduleFor(
         { a: 1, b: 2, c: 3 },
         'assign copies values from one or more source objects to a target object'
       );
-      assert.deepEqual(
-        src1,
-        { b: 2 },
-        'assign does not change source object 1'
-      );
-      assert.deepEqual(
-        src2,
-        { c: 3 },
-        'assign does not change source object 2'
-      );
+      assert.deepEqual(src1, { b: 2 }, 'assign does not change source object 1');
+      assert.deepEqual(src2, { c: 3 }, 'assign does not change source object 2');
     }
 
     ['@test merging objects with same property'](assert) {
@@ -51,11 +43,7 @@ moduleFor(
       let trgt = { a: 1 };
       assign(trgt, null);
 
-      assert.deepEqual(
-        trgt,
-        { a: 1 },
-        'undefined as a source parameter is ignored'
-      );
+      assert.deepEqual(trgt, { a: 1 }, 'undefined as a source parameter is ignored');
     }
   }
 );

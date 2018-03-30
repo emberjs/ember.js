@@ -42,14 +42,11 @@ describe('Blueprint: component-test', function() {
     });
 
     it('component-test x-foo --unit', function() {
-      return emberGenerateDestroy(
-        ['component-test', 'x-foo', '--unit'],
-        _file => {
-          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-            fixture('component-test/unit.js')
-          );
-        }
-      );
+      return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+        expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+          fixture('component-test/unit.js')
+        );
+      });
     });
 
     describe('with usePods=true', function() {
@@ -65,9 +62,9 @@ describe('Blueprint: component-test', function() {
 
       it('component-test x-foo', function() {
         return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
-          expect(
-            _file('tests/integration/components/x-foo/component-test.js')
-          ).to.equal(fixture('component-test/default.js'));
+          expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/default.js')
+          );
         });
       });
     });
@@ -86,14 +83,11 @@ describe('Blueprint: component-test', function() {
       });
 
       it('component-test x-foo --unit', function() {
-        return emberGenerateDestroy(
-          ['component-test', 'x-foo', '--unit'],
-          _file => {
-            expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-              fixture('component-test/rfc232-unit.js')
-            );
-          }
-        );
+        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/rfc232-unit.js')
+          );
+        });
       });
     });
 
@@ -101,7 +95,7 @@ describe('Blueprint: component-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
       });
@@ -115,14 +109,11 @@ describe('Blueprint: component-test', function() {
       });
 
       it('component-test x-foo --unit', function() {
-        return emberGenerateDestroy(
-          ['component-test', 'x-foo', '--unit'],
-          _file => {
-            expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-              fixture('component-test/mocha-unit.js')
-            );
-          }
-        );
+        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/mocha-unit.js')
+          );
+        });
       });
     });
 
@@ -130,7 +121,7 @@ describe('Blueprint: component-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
       });
@@ -144,14 +135,11 @@ describe('Blueprint: component-test', function() {
       });
 
       it('component-test x-foo --unit', function() {
-        return emberGenerateDestroy(
-          ['component-test', 'x-foo', '--unit'],
-          _file => {
-            expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-              fixture('component-test/mocha-0.12-unit.js')
-            );
-          }
-        );
+        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/mocha-0.12-unit.js')
+          );
+        });
       });
     });
   });
@@ -175,9 +163,7 @@ describe('Blueprint: component-test', function() {
           throw 'the command should raise an exception';
         })
         .catch(error => {
-          expect(error).to.equal(
-            "The --unit flag isn't supported within a module unification app"
-          );
+          expect(error).to.equal("The --unit flag isn't supported within a module unification app");
         });
     });
 
@@ -225,7 +211,7 @@ describe('Blueprint: component-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
       });
@@ -250,7 +236,7 @@ describe('Blueprint: component-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
       });
@@ -288,29 +274,23 @@ describe('Blueprint: component-test', function() {
     });
 
     it('component-test x-foo --unit', function() {
-      return emberGenerateDestroy(
-        ['component-test', 'x-foo', '--unit'],
-        _file => {
-          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-            fixture('component-test/unit.js')
-          );
+      return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+        expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+          fixture('component-test/unit.js')
+        );
 
-          expect(_file('app/component-test/x-foo.js')).to.not.exist;
-        }
-      );
+        expect(_file('app/component-test/x-foo.js')).to.not.exist;
+      });
     });
 
     it('component-test x-foo --dummy', function() {
-      return emberGenerateDestroy(
-        ['component-test', 'x-foo', '--dummy'],
-        _file => {
-          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-            fixture('component-test/default.js')
-          );
+      return emberGenerateDestroy(['component-test', 'x-foo', '--dummy'], _file => {
+        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+          fixture('component-test/default.js')
+        );
 
-          expect(_file('app/component-test/x-foo.js')).to.not.exist;
-        }
-      );
+        expect(_file('app/component-test/x-foo.js')).to.not.exist;
+      });
     });
   });
 

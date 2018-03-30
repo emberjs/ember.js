@@ -44,7 +44,7 @@ moduleFor(
         Route.extend({
           model() {
             return ['red', 'yellow', 'blue'];
-          }
+          },
         })
       );
 
@@ -85,7 +85,7 @@ moduleFor(
         Route.extend({
           model() {
             return ['red', 'yellow', 'blue'];
-          }
+          },
         })
       );
 
@@ -138,9 +138,9 @@ moduleFor(
             this.render();
             this.render('nav', {
               into: 'application',
-              outlet: 'nav'
+              outlet: 'nav',
             });
-          }
+          },
         })
       );
 
@@ -149,7 +149,7 @@ moduleFor(
         Route.extend({
           model() {
             return ['red', 'yellow', 'blue'];
-          }
+          },
         })
       );
 
@@ -207,9 +207,9 @@ moduleFor(
             this.render();
             this.render('nav', {
               into: 'application',
-              outlet: 'nav'
+              outlet: 'nav',
             });
-          }
+          },
         })
       );
 
@@ -218,7 +218,7 @@ moduleFor(
         Route.extend({
           model() {
             return ['red', 'yellow', 'blue'];
-          }
+          },
         })
       );
 
@@ -290,7 +290,7 @@ moduleFor(
         Route.extend({
           model(params) {
             return params.color;
-          }
+          },
         })
       );
 
@@ -317,14 +317,14 @@ moduleFor(
       this.add(
         'controller:a',
         Controller.extend({
-          value: 'a'
+          value: 'a',
         })
       );
 
       this.add(
         'controller:b',
         Controller.extend({
-          value: 'b'
+          value: 'b',
         })
       );
 
@@ -353,28 +353,25 @@ moduleFor(
 
           renderTemplate(controller, model) {
             this.render({ controller: model.color, model });
-          }
+          },
         })
       );
 
       this.add(
         'controller:red',
         Controller.extend({
-          color: 'red'
+          color: 'red',
         })
       );
 
       this.add(
         'controller:green',
         Controller.extend({
-          color: 'green'
+          color: 'green',
         })
       );
 
-      this.addTemplate(
-        'color',
-        'model color: {{model.color}}, controller color: {{color}}'
-      );
+      this.addTemplate('color', 'model color: {{model.color}}, controller color: {{color}}');
 
       return this.visit('/colors/red')
         .then(() => {
@@ -401,7 +398,7 @@ moduleFor(
 
           renderTemplate(controller, model) {
             this.render('common', { controller: 'common', model });
-          }
+          },
         })
       );
 
@@ -414,14 +411,14 @@ moduleFor(
 
           renderTemplate(controller, model) {
             this.render('common', { controller: 'common', model });
-          }
+          },
         })
       );
 
       this.add(
         'controller:common',
         Controller.extend({
-          prefix: 'common'
+          prefix: 'common',
         })
       );
 
@@ -461,7 +458,7 @@ moduleFor(
         Route.extend({
           activate() {
             this.transitionTo('a');
-          }
+          },
         })
       );
 
@@ -482,23 +479,20 @@ moduleFor(
         Route.extend({
           model() {
             return { name: 'Alex' };
-          }
+          },
         })
       );
 
-      this.addTemplate(
-        'routeWithError',
-        'Hi {{model.name}} {{x-foo person=model}}'
-      );
+      this.addTemplate('routeWithError', 'Hi {{model.name}} {{x-foo person=model}}');
 
       this.addComponent('x-foo', {
         ComponentClass: Component.extend({
           init() {
             this._super(...arguments);
             this.set('person.name', 'Ben');
-          }
+          },
         }),
-        template: 'Hi {{person.name}} from component'
+        template: 'Hi {{person.name}} from component',
       });
 
       let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/routeWithError.hbs" and modified in "component:x-foo"/;

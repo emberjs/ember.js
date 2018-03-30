@@ -13,17 +13,17 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             bottom = this;
-          }
+          },
         }),
-        template: '{{setMe}}'
+        template: '{{setMe}}',
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{bottom-mut setMe=value}}'
+        template: '{{bottom-mut setMe=value}}',
       });
 
       this.render('{{middle-mut value=(mut val)}}', {
-        val: 12
+        val: 12,
       });
 
       this.assertText('12', 'the data propagated downwards');
@@ -33,40 +33,16 @@ moduleFor(
       this.runTask(() => bottom.attrs.setMe.update(13));
 
       this.assertText('13', 'the set took effect');
-      this.assert.strictEqual(
-        get(bottom, 'setMe'),
-        13,
-        "the set took effect on bottom's prop"
-      );
-      this.assert.strictEqual(
-        bottom.attrs.setMe.value,
-        13,
-        "the set took effect on bottom's attr"
-      );
-      this.assert.strictEqual(
-        get(this.context, 'val'),
-        13,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(bottom, 'setMe'), 13, "the set took effect on bottom's prop");
+      this.assert.strictEqual(bottom.attrs.setMe.value, 13, "the set took effect on bottom's attr");
+      this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
 
       this.runTask(() => set(bottom, 'setMe', 14));
 
       this.assertText('14', 'the set took effect');
-      this.assert.strictEqual(
-        get(bottom, 'setMe'),
-        14,
-        "the set took effect on bottom's prop"
-      );
-      this.assert.strictEqual(
-        bottom.attrs.setMe.value,
-        14,
-        "the set took effect on bottom's attr"
-      );
-      this.assert.strictEqual(
-        get(this.context, 'val'),
-        14,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(bottom, 'setMe'), 14, "the set took effect on bottom's prop");
+      this.assert.strictEqual(bottom.attrs.setMe.value, 14, "the set took effect on bottom's attr");
+      this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
       this.runTask(() => set(this.context, 'val', 12));
 
@@ -80,22 +56,22 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             bottom = this;
-          }
+          },
         }),
-        template: '{{setMe}}'
+        template: '{{setMe}}',
       });
 
       this.registerComponent('middle-mut', {
         ComponentClass: Component.extend({
           didInsertElement() {
             middle = this;
-          }
+          },
         }),
-        template: '{{bottom-mut setMe=(mut value)}}'
+        template: '{{bottom-mut setMe=(mut value)}}',
       });
 
       this.render('{{middle-mut value=(mut val)}}', {
-        val: 12
+        val: 12,
       });
 
       this.assertText('12', 'the data propagated downwards');
@@ -105,60 +81,20 @@ moduleFor(
       this.runTask(() => bottom.attrs.setMe.update(13));
 
       this.assertText('13', 'the set took effect');
-      this.assert.strictEqual(
-        get(bottom, 'setMe'),
-        13,
-        "the set took effect on bottom's prop"
-      );
-      this.assert.strictEqual(
-        bottom.attrs.setMe.value,
-        13,
-        "the set took effect on bottom's attr"
-      );
-      this.assert.strictEqual(
-        get(middle, 'value'),
-        13,
-        "the set propagated to middle's prop"
-      );
-      this.assert.strictEqual(
-        middle.attrs.value.value,
-        13,
-        "the set propagated to middle's attr"
-      );
-      this.assert.strictEqual(
-        get(this.context, 'val'),
-        13,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(bottom, 'setMe'), 13, "the set took effect on bottom's prop");
+      this.assert.strictEqual(bottom.attrs.setMe.value, 13, "the set took effect on bottom's attr");
+      this.assert.strictEqual(get(middle, 'value'), 13, "the set propagated to middle's prop");
+      this.assert.strictEqual(middle.attrs.value.value, 13, "the set propagated to middle's attr");
+      this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
 
       this.runTask(() => set(bottom, 'setMe', 14));
 
       this.assertText('14', 'the set took effect');
-      this.assert.strictEqual(
-        get(bottom, 'setMe'),
-        14,
-        "the set took effect on bottom's prop"
-      );
-      this.assert.strictEqual(
-        bottom.attrs.setMe.value,
-        14,
-        "the set took effect on bottom's attr"
-      );
-      this.assert.strictEqual(
-        get(middle, 'value'),
-        14,
-        "the set propagated to middle's prop"
-      );
-      this.assert.strictEqual(
-        middle.attrs.value.value,
-        14,
-        "the set propagated to middle's attr"
-      );
-      this.assert.strictEqual(
-        get(this.context, 'val'),
-        14,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(bottom, 'setMe'), 14, "the set took effect on bottom's prop");
+      this.assert.strictEqual(bottom.attrs.setMe.value, 14, "the set took effect on bottom's attr");
+      this.assert.strictEqual(get(middle, 'value'), 14, "the set propagated to middle's prop");
+      this.assert.strictEqual(middle.attrs.value.value, 14, "the set propagated to middle's attr");
+      this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
       this.runTask(() => set(this.context, 'val', 12));
 
@@ -189,13 +125,13 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             bottom = this;
-          }
+          },
         }),
-        template: '{{stuff}}'
+        template: '{{stuff}}',
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{bottom-mut stuff=value}}'
+        template: '{{bottom-mut stuff=value}}',
       });
 
       this.render('{{middle-mut value="foo"}}');
@@ -215,22 +151,22 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             bottom = this;
-          }
+          },
         }),
-        template: '{{setMe}}'
+        template: '{{setMe}}',
       });
 
       this.registerComponent('middle-mut', {
         ComponentClass: Component.extend({
           didInsertElement() {
             middle = this;
-          }
+          },
         }),
-        template: '{{bottom-mut setMe=(readonly value)}}'
+        template: '{{bottom-mut setMe=(readonly value)}}',
       });
 
       this.render('{{middle-mut value=(mut val)}}', {
-        val: 12
+        val: 12,
       });
 
       this.assertText('12');
@@ -239,40 +175,20 @@ moduleFor(
 
       this.runTask(() => middle.attrs.value.update(13));
 
-      this.assert.strictEqual(
-        get(middle, 'value'),
-        13,
-        "the set took effect on middle's prop"
-      );
-      this.assert.strictEqual(
-        middle.attrs.value.value,
-        13,
-        "the set took effect on middle's attr"
-      );
+      this.assert.strictEqual(get(middle, 'value'), 13, "the set took effect on middle's prop");
+      this.assert.strictEqual(middle.attrs.value.value, 13, "the set took effect on middle's attr");
 
       this.runTask(() => set(middle, 'value', 14));
 
-      this.assert.strictEqual(
-        get(middle, 'value'),
-        14,
-        "the set took effect on middle's prop"
-      );
-      this.assert.strictEqual(
-        middle.attrs.value.value,
-        14,
-        "the set took effect on middle's attr"
-      );
+      this.assert.strictEqual(get(middle, 'value'), 14, "the set took effect on middle's prop");
+      this.assert.strictEqual(middle.attrs.value.value, 14, "the set took effect on middle's attr");
       this.assert.strictEqual(
         bottom.attrs.setMe,
         14,
         'the mutable binding has been converted to an immutable cell'
       );
       this.assertText('14');
-      this.assert.strictEqual(
-        get(this.context, 'val'),
-        14,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
       this.runTask(() => set(this.context, 'val', 12));
 
@@ -281,15 +197,15 @@ moduleFor(
 
     ['@test mutable bindings work inside of yielded content']() {
       this.registerComponent('bottom-mut', {
-        template: '{{yield}}'
+        template: '{{yield}}',
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{#bottom-mut}}{{model.name}}{{/bottom-mut}}'
+        template: '{{#bottom-mut}}{{model.name}}{{/bottom-mut}}',
       });
 
       this.render('{{middle-mut model=(mut model)}}', {
-        model: { name: 'Matthew Beale' }
+        model: { name: 'Matthew Beale' },
       });
 
       this.assertText('Matthew Beale');
@@ -318,17 +234,17 @@ moduleFor(
           didInsertElement() {
             didInsert.push(get(this, 'setMe'));
             bottom = this;
-          }
+          },
         }),
-        template: '{{setMe}}'
+        template: '{{setMe}}',
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{bottom-mut setMe=(mut value)}}'
+        template: '{{bottom-mut setMe=(mut value)}}',
       });
 
       this.render('{{middle-mut value=(mut val)}}', {
-        val: 12
+        val: 12,
       });
 
       this.assert.deepEqual(willRender, [12], 'willReceive is [12]');
@@ -343,39 +259,15 @@ moduleFor(
 
       this.runTask(() => bottom.attrs.setMe.update(13));
 
-      this.assert.strictEqual(
-        get(bottom, 'setMe'),
-        13,
-        "the set took effect on bottom's prop"
-      );
-      this.assert.strictEqual(
-        bottom.attrs.setMe.value,
-        13,
-        "the set took effect on bottom's attr"
-      );
-      this.assert.strictEqual(
-        get(this.context, 'val'),
-        13,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(bottom, 'setMe'), 13, "the set took effect on bottom's prop");
+      this.assert.strictEqual(bottom.attrs.setMe.value, 13, "the set took effect on bottom's attr");
+      this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
 
       this.runTask(() => set(bottom, 'setMe', 14));
 
-      this.assert.strictEqual(
-        get(bottom, 'setMe'),
-        14,
-        "the set took effect on bottom's prop"
-      );
-      this.assert.strictEqual(
-        bottom.attrs.setMe.value,
-        14,
-        "the set took effect on bottom's attr"
-      );
-      this.assert.strictEqual(
-        get(this.context, 'val'),
-        14,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(bottom, 'setMe'), 14, "the set took effect on bottom's prop");
+      this.assert.strictEqual(bottom.attrs.setMe.value, 14, "the set took effect on bottom's attr");
+      this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
       this.runTask(() => set(this.context, 'val', 12));
 
@@ -390,9 +282,9 @@ moduleFor(
           thingy: null,
           didInsertElement() {
             bottom = this;
-          }
+          },
         }),
-        template: '{{thingy}}'
+        template: '{{thingy}}',
       });
 
       this.registerComponent('middle-mut', {
@@ -403,9 +295,9 @@ moduleFor(
           }),
           didInsertElement() {
             middle = this;
-          }
+          },
         }),
-        template: '{{bottom-mut thingy=(mut val)}}'
+        template: '{{bottom-mut thingy=(mut val)}}',
       });
 
       this.render('{{middle-mut}}');
@@ -442,13 +334,13 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             inner = this;
-          }
+          },
         }),
-        template: '{{foo}}'
+        template: '{{foo}}',
       });
 
       this.registerComponent('x-outer', {
-        template: '{{x-inner foo=bar}}'
+        template: '{{x-inner foo=bar}}',
       });
 
       this.render('{{x-outer bar=baz}}', { baz: 'foo' });
@@ -475,13 +367,13 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             inner = this;
-          }
+          },
         }),
-        template: '{{model}}'
+        template: '{{model}}',
       });
 
       this.registerComponent('x-outer', {
-        template: '{{x-inner model=nonexistent}}'
+        template: '{{x-inner model=nonexistent}}',
       });
 
       this.render('{{x-outer}}');
@@ -508,13 +400,13 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             inner = this;
-          }
+          },
         }),
-        template: 'hello{{model}}'
+        template: 'hello{{model}}',
       });
 
       this.registerComponent('x-outer', {
-        template: '{{x-inner model=x}}'
+        template: '{{x-inner model=x}}',
       });
 
       this.render('{{x-outer x="foo"}}');
@@ -546,8 +438,8 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             input = this;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('x-output', {
@@ -560,19 +452,19 @@ moduleFor(
             let height = this.get('height');
             return htmlSafe(`height: ${height}px;`);
           }),
-          height: 20
+          height: 20,
         }),
-        template: '{{height}}'
+        template: '{{height}}',
       });
 
       this.render('{{x-output height=height}}{{x-input height=(mut height)}}', {
-        height: 60
+        height: 60,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 60px;') },
-        content: '60'
+        content: '60',
       });
 
       this.assertStableRerender();
@@ -580,29 +472,21 @@ moduleFor(
       this.runTask(() => input.attrs.height.update(35));
 
       this.assert.strictEqual(get(output, 'height'), 35, 'the set took effect');
-      this.assert.strictEqual(
-        get(this.context, 'height'),
-        35,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(this.context, 'height'), 35, 'the set propagated back up');
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 35px;') },
-        content: '35'
+        content: '35',
       });
 
       this.runTask(() => set(input, 'height', 36));
 
       this.assert.strictEqual(get(output, 'height'), 36, 'the set took effect');
-      this.assert.strictEqual(
-        get(this.context, 'height'),
-        36,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(this.context, 'height'), 36, 'the set propagated back up');
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 36px;') },
-        content: '36'
+        content: '36',
       });
 
       this.runTask(() => set(this.context, 'height', 60));
@@ -610,7 +494,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 60px;') },
-        content: '60'
+        content: '60',
       });
       this.assert.strictEqual(get(input, 'height'), 60);
     }
@@ -622,8 +506,8 @@ moduleFor(
         ComponentClass: Component.extend({
           didInsertElement() {
             input = this;
-          }
-        })
+          },
+        }),
       });
 
       this.registerComponent('x-output', {
@@ -645,20 +529,20 @@ moduleFor(
             set(keyName, width) {
               this.set('height', width / 2);
               return width;
-            }
-          })
+            },
+          }),
         }),
-        template: '{{width}}x{{height}}'
+        template: '{{width}}x{{height}}',
       });
 
       this.render('{{x-output width=width}}{{x-input width=(mut width)}}', {
-        width: 70
+        width: 70,
       });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 35px; width: 70px;') },
-        content: '70x35'
+        content: '70x35',
       });
 
       this.assertStableRerender();
@@ -666,29 +550,21 @@ moduleFor(
       this.runTask(() => set(input, 'width', 80));
 
       this.assert.strictEqual(get(output, 'width'), 80, 'the set took effect');
-      this.assert.strictEqual(
-        get(this.context, 'width'),
-        80,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(this.context, 'width'), 80, 'the set propagated back up');
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 40px; width: 80px;') },
-        content: '80x40'
+        content: '80x40',
       });
 
       this.runTask(() => input.attrs.width.update(90));
 
       this.assert.strictEqual(get(output, 'width'), 90, 'the set took effect');
-      this.assert.strictEqual(
-        get(this.context, 'width'),
-        90,
-        'the set propagated back up'
-      );
+      this.assert.strictEqual(get(this.context, 'width'), 90, 'the set propagated back up');
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 45px; width: 90px;') },
-        content: '90x45'
+        content: '90x45',
       });
 
       this.runTask(() => set(this.context, 'width', 70));
@@ -696,7 +572,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { style: styles('height: 35px; width: 70px;') },
-        content: '70x35'
+        content: '70x35',
       });
       this.assert.strictEqual(get(input, 'width'), 70);
     }

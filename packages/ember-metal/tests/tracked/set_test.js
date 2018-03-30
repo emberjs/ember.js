@@ -20,19 +20,15 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           boolTrue: true,
           boolFalse: false,
           nullValue: null,
-          undefinedValue: undefined
+          undefinedValue: undefined,
         });
 
         let newObj = createTracked({
-          undefinedValue: 'emberjs'
+          undefinedValue: 'emberjs',
         });
 
         for (let key in obj) {
-          assert.equal(
-            set(newObj, key, obj[key]),
-            obj[key],
-            'should return value'
-          );
+          assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
           assert.equal(get(newObj, key), obj[key], 'should set value');
         }
       }

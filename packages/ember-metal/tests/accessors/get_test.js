@@ -15,7 +15,7 @@ moduleFor(
         number: 23,
         boolTrue: true,
         boolFalse: false,
-        nullValue: null
+        nullValue: null,
       };
 
       for (let key in obj) {
@@ -26,15 +26,13 @@ moduleFor(
       }
     }
 
-    ['@test implicitly computing the values of descriptors on properties is deprecated'](
-      assert
-    ) {
+    ['@test implicitly computing the values of descriptors on properties is deprecated'](assert) {
       let cp = computed(() => 'value');
       let obj = {
         cp,
         toString() {
           return 'myobject';
-        }
+        },
       };
 
       let result;
@@ -64,7 +62,7 @@ moduleFor(
       let obj = {
         get id() {
           return ++count;
-        }
+        },
       };
 
       get(obj, 'id');
@@ -79,7 +77,7 @@ moduleFor(
         unknownProperty(key) {
           assert.equal(key, 'foo', 'should pass key');
           return 'FOO';
-        }
+        },
       };
       assert.equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
     }
@@ -92,13 +90,9 @@ moduleFor(
           unknownProperty(key) {
             assert.equal(key, 'foo', 'should pass key');
             return 'FOO';
-          }
+          },
         };
-        assert.equal(
-          aget(obj, 'foo'),
-          'FOO',
-          'should return value from unknown'
-        );
+        assert.equal(aget(obj, 'foo'), 'FOO', 'should return value from unknown');
       } else {
         assert.ok('SKIPPING ACCESSORS');
       }
@@ -164,10 +158,7 @@ moduleFor(
         () => get(obj, false),
         /The key provided to get must be a string or number, you passed false/
       );
-      expectAssertion(
-        () => get(obj, ''),
-        /Cannot call `get` with an empty string/
-      );
+      expectAssertion(() => get(obj, ''), /Cannot call `get` with an empty string/);
     }
 
     // ..........................................................
@@ -179,7 +170,7 @@ moduleFor(
     ) {
       let MyMixin = Mixin.create({
         someProperty: 'foo',
-        propertyDidChange: observer('someProperty', () => {})
+        propertyDidChange: observer('someProperty', () => {}),
       });
 
       let baseObject = MyMixin.apply({});
@@ -203,7 +194,7 @@ moduleFor(
         number: 23,
         boolTrue: true,
         boolFalse: false,
-        nullValue: null
+        nullValue: null,
       };
 
       for (let key in obj) {
@@ -214,7 +205,7 @@ moduleFor(
       }
 
       obj = {
-        undef: undefined
+        undef: undefined,
       };
 
       assert.equal(
@@ -229,32 +220,28 @@ moduleFor(
       );
     }
 
-    ['@test should call unknownProperty if defined and value is undefined'](
-      assert
-    ) {
+    ['@test should call unknownProperty if defined and value is undefined'](assert) {
       let obj = {
         count: 0,
         unknownProperty(key) {
           assert.equal(key, 'foo', 'should pass key');
           this.count++;
           return 'FOO';
-        }
+        },
       };
 
       assert.equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
       assert.equal(obj.count, 1, 'should have invoked');
     }
 
-    ['@test if unknownProperty is present, it is called using getFromEmberMetal()/set()'](
-      assert
-    ) {
+    ['@test if unknownProperty is present, it is called using getFromEmberMetal()/set()'](assert) {
       let obj = {
         unknownProperty(key) {
           if (key === 'foo') {
             assert.equal(key, 'foo', 'should pass key');
             return 'FOO';
           }
-        }
+        },
       };
       assert.equal(
         getWithDefault(obj, 'foo', 'fail'),
@@ -268,9 +255,7 @@ moduleFor(
       );
     }
 
-    ['@test if unknownProperty is present, it is called using accessors'](
-      assert
-    ) {
+    ['@test if unknownProperty is present, it is called using accessors'](assert) {
       if (ENV.USES_ACCESSORS) {
         let obj = {
           unknownProperty(key) {
@@ -278,13 +263,9 @@ moduleFor(
               assert.equal(key, 'foo', 'should pass key');
               return 'FOO';
             }
-          }
+          },
         };
-        assert.equal(
-          aget(obj, 'foo', 'fail'),
-          'FOO',
-          'should return value from unknownProperty'
-        );
+        assert.equal(aget(obj, 'foo', 'fail'), 'FOO', 'should return value from unknownProperty');
         assert.equal(
           aget(obj, 'bar', 'default'),
           'default',
@@ -306,7 +287,7 @@ moduleFor(
         someProperty: 'foo',
         propertyDidChange: observer('someProperty', () => {
           /* nothing to do */
-        })
+        }),
       });
 
       let baseObject = MyMixin.apply({});

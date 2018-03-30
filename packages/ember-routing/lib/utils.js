@@ -9,10 +9,7 @@ export function extractRouteArgs(args) {
   let possibleQueryParams = args[args.length - 1];
 
   let queryParams;
-  if (
-    possibleQueryParams &&
-    possibleQueryParams.hasOwnProperty('queryParams')
-  ) {
+  if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
     queryParams = args.pop().queryParams;
   } else {
     queryParams = {};
@@ -40,9 +37,7 @@ export function stashParamNames(router, handlerInfos) {
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
   let targetRouteName = handlerInfos[handlerInfos.length - 1].name;
-  let recogHandlers = router._routerMicrolib.recognizer.handlersFor(
-    targetRouteName
-  );
+  let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
   let dynamicParent = null;
 
   for (let i = 0; i < handlerInfos.length; ++i) {
@@ -98,9 +93,7 @@ export function calculateCacheKey(prefix, parts = [], values) {
     if (values) {
       if (cacheValuePrefix && cacheValuePrefix in values) {
         let partRemovedPrefix =
-          part.indexOf(cacheValuePrefix) === 0
-            ? part.substr(cacheValuePrefix.length + 1)
-            : part;
+          part.indexOf(cacheValuePrefix) === 0 ? part.substr(cacheValuePrefix.length + 1) : part;
         value = get(values[cacheValuePrefix], partRemovedPrefix);
       } else {
         value = get(values, part);

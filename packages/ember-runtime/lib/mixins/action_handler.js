@@ -216,7 +216,7 @@ const ActionHandler = Mixin.create({
       );
       target.send(...arguments);
     }
-  }
+  },
 });
 
 export default ActionHandler;

@@ -118,5 +118,5 @@ export default EmberObject.extend({
     }
 
     return rootURL + url;
-  }
+  },
 });
