@@ -1,44 +1,48 @@
 import { get } from 'ember-metal';
 import EmberObject from '../../../system/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('system/core_object/reopen');
+moduleFor(
+  'system/core_object/reopen',
+  class extends AbstractTestCase {
+    ['@test adds new properties to subclass instance'](assert) {
+      let Subclass = EmberObject.extend();
+      Subclass.reopen({
+        foo() {
+          return 'FOO';
+        },
+        bar: 'BAR'
+      });
 
-QUnit.test('adds new properties to subclass instance', function(assert) {
-  let Subclass = EmberObject.extend();
-  Subclass.reopen({
-    foo() {
-      return 'FOO';
-    },
-    bar: 'BAR'
-  });
+      assert.equal(new Subclass().foo(), 'FOO', 'Adds method');
+      assert.equal(get(new Subclass(), 'bar'), 'BAR', 'Adds property');
+    }
 
-  assert.equal(new Subclass().foo(), 'FOO', 'Adds method');
-  assert.equal(get(new Subclass(), 'bar'), 'BAR', 'Adds property');
-});
+    ['@test reopened properties inherited by subclasses'](assert) {
+      let Subclass = EmberObject.extend();
+      let SubSub = Subclass.extend();
 
-QUnit.test('reopened properties inherited by subclasses', function(assert) {
-  let Subclass = EmberObject.extend();
-  let SubSub = Subclass.extend();
+      Subclass.reopen({
+        foo() {
+          return 'FOO';
+        },
+        bar: 'BAR'
+      });
 
-  Subclass.reopen({
-    foo() {
-      return 'FOO';
-    },
-    bar: 'BAR'
-  });
+      assert.equal(new SubSub().foo(), 'FOO', 'Adds method');
+      assert.equal(get(new SubSub(), 'bar'), 'BAR', 'Adds property');
+    }
 
-  assert.equal(new SubSub().foo(), 'FOO', 'Adds method');
-  assert.equal(get(new SubSub(), 'bar'), 'BAR', 'Adds property');
-});
+    ['@test allows reopening already instantiated classes'](assert) {
+      let Subclass = EmberObject.extend();
 
-QUnit.test('allows reopening already instantiated classes', function(assert) {
-  let Subclass = EmberObject.extend();
+      Subclass.create();
 
-  Subclass.create();
+      Subclass.reopen({
+        trololol: true
+      });
 
-  Subclass.reopen({
-    trololol: true
-  });
-
-  assert.equal(Subclass.create().get('trololol'), true, 'reopen works');
-});
+      assert.equal(Subclass.create().get('trololol'), true, 'reopen works');
+    }
+  }
+);
