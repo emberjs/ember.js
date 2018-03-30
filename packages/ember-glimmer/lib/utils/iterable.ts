@@ -10,9 +10,9 @@ import {
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
 import { assert } from 'ember-debug';
-import { get, isProxy, objectAt, tagFor, tagForProperty } from 'ember-metal';
+import { get, objectAt, tagFor, tagForProperty } from 'ember-metal';
 import { _contentFor, isEmberArray } from 'ember-runtime';
-import { guidFor, HAS_NATIVE_SYMBOL } from 'ember-utils';
+import { guidFor, HAS_NATIVE_SYMBOL, isProxy } from 'ember-utils';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';
 

@@ -39,3 +39,8 @@ export function uuid(): number;
 
 export const HAS_NATIVE_SYMBOL: boolean;
 export const HAS_NATIVE_PROXY: boolean;
+
+export function isProxy(value: any | null | undefined): boolean;
+export function setProxy(value: object): void;
+
+export const WeakSet: WeakSetConstructor;

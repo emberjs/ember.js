@@ -110,8 +110,6 @@ export {
   didRender,
   assertNotRendered
 } from './transaction';
-export { default as WeakSet } from './weak_set';
-export { isProxy, setProxy } from './is_proxy';
 export { default as descriptor } from './descriptor';
 export { tracked } from './tracked';
 

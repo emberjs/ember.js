@@ -26,3 +26,5 @@ export { getName, setName } from './name';
 export { default as toString } from './to-string';
 export { HAS_NATIVE_SYMBOL } from './symbol-utils';
 export { HAS_NATIVE_PROXY } from './proxy-utils';
+export { default as WeakSet } from './weak_set';
+export { isProxy, setProxy } from './is_proxy';
