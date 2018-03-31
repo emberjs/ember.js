@@ -334,10 +334,6 @@ moduleFor(
         throw new Error(error);
       };
 
-      Route.reopen({
-        outerTestPromise: this
-      });
-
       this.router.map(function() {
         this.route('a');
         this.route('b', { path: '/b/:b' });
@@ -365,12 +361,13 @@ moduleFor(
       this.add(
         'route:c',
         Route.extend({
+          outerTestPromise: this,
           afterModel() {
             throw new Error('transition failure');
           },
           actions: {
             error(error) {
-              this.outerTestPromise.throwError(error);
+              this.outerTestPromise.throwError(error.message);
             }
           }
         })
@@ -387,7 +384,7 @@ moduleFor(
             error instanceof Error,
             'It should reject the promise with the boot error'
           );
-          assert.equal(error.message, 'Error: transition failure');
+          assert.equal(error.message, 'transition failure');
         }
       );
     }
