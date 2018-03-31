@@ -89,6 +89,10 @@ moduleFor(
         });
     }
 
+    throwError(reason) {
+      throw reason;
+    }
+
     ['@test warn on URLs not included in the route set']() {
       return this.visit('/').then(() => {
         expectAssertion(() => {
@@ -865,6 +869,7 @@ moduleFor(
       this.add(
         'route:special',
         Route.extend({
+          outerTestPromise: this,
           setup() {
             throw 'Setup error';
           },
@@ -875,6 +880,7 @@ moduleFor(
                 'Setup error',
                 'SpecialRoute#error received the error thrown from setup'
               );
+              this.outerTestPromise.throwError(reason);
               return true;
             }
           }
@@ -911,6 +917,7 @@ moduleFor(
       this.add(
         'route:application',
         Route.extend({
+          outerTestPromise: this,
           actions: {
             error(reason) {
               assert.equal(
@@ -918,6 +925,7 @@ moduleFor(
                 'Setup error',
                 'error was correctly passed to custom ApplicationRoute handler'
               );
+              this.outerTestPromise.throwError(reason);
               return true;
             }
           }
