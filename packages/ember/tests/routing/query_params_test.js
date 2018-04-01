@@ -354,11 +354,20 @@ moduleFor(
     ['@test error is thrown if dynamic segment and query param have same name'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.router.map(function() {
         this.route('index', { path: '/:foo' });
       });
+
+      this.add(
+        'route:index',
+        Route.extend({
+          actions: {
+            error() {}
+          }
+        })
+      );
 
       this.setSingleQPController('index');
 
