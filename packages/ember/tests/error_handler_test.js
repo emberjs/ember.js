@@ -33,16 +33,10 @@ moduleFor(
         undefined,
         'precond - there should be no Ember.onerror set by default'
       );
-      assert.throws(
-        runThatThrowsSync,
-        Error,
-        'errors thrown sync are catchable'
-      );
+      assert.throws(runThatThrowsSync, Error, 'errors thrown sync are catchable');
     }
 
-    ['@test when Ember.onerror (which rethrows) is registered - sync run'](
-      assert
-    ) {
+    ['@test when Ember.onerror (which rethrows) is registered - sync run'](assert) {
       assert.expect(2);
       setOnerror(function(error) {
         assert.ok(true, 'onerror called');
@@ -51,18 +45,13 @@ moduleFor(
       assert.throws(runThatThrowsSync, Error, 'error is thrown');
     }
 
-    ['@test when Ember.onerror (which does not rethrow) is registered - sync run'](
-      assert
-    ) {
+    ['@test when Ember.onerror (which does not rethrow) is registered - sync run'](assert) {
       assert.expect(2);
       setOnerror(function() {
         assert.ok(true, 'onerror called');
       });
       runThatThrowsSync();
-      assert.ok(
-        true,
-        'no error was thrown, Ember.onerror can intercept errors'
-      );
+      assert.ok(true, 'no error was thrown, Ember.onerror can intercept errors');
     }
 
     ['@test does not swallow exceptions by default (Ember.testing = true, no Ember.onerror) - sync run'](
@@ -156,7 +145,7 @@ moduleFor(
           actual: caughtByWindowOnerror,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         done();
@@ -187,7 +176,7 @@ moduleFor(
           actual: caughtByWindowOnerror,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         done();
@@ -212,11 +201,7 @@ moduleFor(
 
       let thrown = new Error('the error');
       setOnerror(function(error) {
-        assert.strictEqual(
-          error,
-          thrown,
-          'Ember.onerror is called with the error'
-        );
+        assert.strictEqual(error, thrown, 'Ember.onerror is called with the error');
       });
 
       later(() => {
@@ -270,7 +255,7 @@ moduleFor(
           actual: message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         // prevent "bubbling" and therefore failing the test
@@ -332,7 +317,7 @@ moduleFor(
           actual: message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         // prevent "bubbling" and therefore failing the test
@@ -392,7 +377,7 @@ moduleFor(
           actual: message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         // prevent "bubbling" and therefore failing the test
@@ -454,7 +439,7 @@ moduleFor(
           actual: message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         // prevent "bubbling" and therefore failing the test
@@ -514,7 +499,7 @@ moduleFor(
           actual: message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         // prevent "bubbling" and therefore failing the test
@@ -576,7 +561,7 @@ moduleFor(
           actual: message,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)'
+            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
         });
 
         // prevent "bubbling" and therefore failing the test

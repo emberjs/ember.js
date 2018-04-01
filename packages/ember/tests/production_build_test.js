@@ -13,19 +13,14 @@ moduleFor(
           emberAssert('Should not throw');
           assert.ok(true, 'Ember.assert did not throw');
         } catch (e) {
-          assert.ok(
-            false,
-            `Expected assert not to throw but it did: ${e.message}`
-          );
+          assert.ok(false, `Expected assert not to throw but it did: ${e.message}`);
         }
       } else {
         assert.expect(0);
       }
     }
 
-    ['@test runInDebug does not run the callback in production builds'](
-      assert
-    ) {
+    ['@test runInDebug does not run the callback in production builds'](assert) {
       if (!DEBUG) {
         let fired = false;
         runInDebug(() => (fired = true));

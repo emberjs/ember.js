@@ -16,43 +16,19 @@ moduleFor(
           exportName = path;
         }
 
-        confirmExport(
-          Ember,
-          assert,
-          path,
-          moduleId,
-          exportName,
-          `Ember.${path} exports correctly`
-        );
+        confirmExport(Ember, assert, path, moduleId, exportName, `Ember.${path} exports correctly`);
       });
     }
 
     ['@test Ember.String.isHTMLSafe exports correctly'](assert) {
-      confirmExport(
-        Ember,
-        assert,
-        'String.isHTMLSafe',
-        'ember-glimmer',
-        'isHTMLSafe'
-      );
+      confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
     }
 
     ['@test Ember.MODEL_FACTORY_INJECTIONS'](assert) {
       if (DEBUG) {
-        let descriptor = Object.getOwnPropertyDescriptor(
-          Ember,
-          'MODEL_FACTORY_INJECTIONS'
-        );
-        assert.equal(
-          descriptor.enumerable,
-          false,
-          'descriptor is not enumerable'
-        );
-        assert.equal(
-          descriptor.configurable,
-          false,
-          'descriptor is not configurable'
-        );
+        let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
+        assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
+        assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
 
         assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false);
 
@@ -191,18 +167,10 @@ let allExports = [
   ['ViewUtils.getViewElement', 'ember-views', 'getViewElement'],
   ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
   ['ViewUtils.getViewClientRects', 'ember-views', 'getViewClientRects'],
-  [
-    'ViewUtils.getViewBoundingClientRect',
-    'ember-views',
-    'getViewBoundingClientRect'
-  ],
+  ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
   ['ViewUtils.getRootViews', 'ember-views', 'getRootViews'],
   ['ViewUtils.getChildViews', 'ember-views', 'getChildViews'],
-  [
-    'ViewUtils.isSerializationFirstNode',
-    'ember-glimmer',
-    'isSerializationFirstNode'
-  ],
+  ['ViewUtils.isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
   ['TextSupport', 'ember-views'],
   ['ComponentLookup', 'ember-views'],
   ['EventDispatcher', 'ember-views'],
@@ -259,7 +227,7 @@ let allExports = [
   [
     'BOOTED',
     'ember-metal',
-    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }
+    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
   ],
 
   // ember-routing
@@ -285,7 +253,7 @@ let allExports = [
 
   // ember-extension-support
   ['DataAdapter', 'ember-extension-support'],
-  ['ContainerDebugAdapter', 'ember-extension-support']
+  ['ContainerDebugAdapter', 'ember-extension-support'],
 ];
 
 if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
