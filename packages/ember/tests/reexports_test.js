@@ -25,6 +25,10 @@ moduleFor(
 );
 
 let allExports = [
+  // ember-environment
+  ['ENV', 'ember-environment', { get: 'getENV' }],
+  ['lookup', 'ember-environment', { get: 'getLookup', set: 'setLookup' }],
+
   // ember-utils
   ['getOwner', 'ember-utils', 'getOwner'],
   ['setOwner', 'ember-utils', 'setOwner'],
@@ -38,9 +42,7 @@ let allExports = [
   ['canInvoke', 'ember-utils'],
   ['tryInvoke', 'ember-utils'],
   ['wrap', 'ember-utils'],
-
-  // ember-environment
-  // ['ENV', 'ember-environment', 'ENV'], TODO: fix this, its failing because we are hitting the getter
+  ['NAME_KEY', 'ember-utils'],
 
   // container
   ['Registry', 'container', 'Registry'],
@@ -53,6 +55,9 @@ let allExports = [
   ['warn', 'ember-debug'],
   ['debug', 'ember-debug'],
   ['runInDebug', 'ember-debug'],
+  ['Debug.registerDeprecationHandler', 'ember-debug', 'registerDeprecationHandler'],
+  ['Debug.registerWarnHandler', 'ember-debug', 'registerWarnHandler'],
+  ['Error', 'ember-debug'],
 
   // ember-metal
   ['computed', 'ember-metal', '_globalsComputed'],
@@ -61,17 +66,15 @@ let allExports = [
   ['cacheFor', 'ember-metal', 'getCachedValueFor'],
   ['merge', 'ember-metal'],
   ['instrument', 'ember-metal'],
+  ['subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],
   ['Instrumentation.subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
   ['Instrumentation.reset', 'ember-metal', 'instrumentationReset'],
   ['testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
   ['onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
-  // ['create'], TODO: figure out what to do here
-  // ['keys'], TODO: figure out what to do here
   ['FEATURES', 'ember/features'],
   ['FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
-  ['Error', 'ember-debug'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],
   ['set', 'ember-metal'],
@@ -112,6 +115,8 @@ let allExports = [
   ['beginPropertyChanges', 'ember-metal'],
   ['endPropertyChanges', 'ember-metal'],
   ['changeProperties', 'ember-metal'],
+  ['platform.defineProperty', null, { value: true }],
+  ['platform.hasPropertyAccessors', null, { value: true }],
   ['defineProperty', 'ember-metal'],
   ['watchKey', 'ember-metal'],
   ['unwatchKey', 'ember-metal'],
@@ -138,6 +143,9 @@ let allExports = [
   ['mixin', 'ember-metal'],
   ['Mixin', 'ember-metal'],
 
+  // ember-console
+  ['Logger', 'ember-console', 'default'],
+
   // ember-views
   ['$', 'ember-views', 'jQuery'],
   ['ViewUtils.isSimpleClick', 'ember-views', 'isSimpleClick'],
@@ -162,10 +170,13 @@ let allExports = [
   ['TextField', 'ember-glimmer', 'TextField'],
   ['TEMPLATES', 'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
   ['Handlebars.template', 'ember-glimmer', 'template'],
+  ['HTMLBars.template', 'ember-glimmer', 'template'],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
+  ['_setComponentManager', 'ember-glimmer', 'componentManager'],
 
   // ember-runtime
+  ['A', 'ember-runtime'],
   ['_RegistryProxyMixin', 'ember-runtime', 'RegistryProxyMixin'],
   ['_ContainerProxyMixin', 'ember-runtime', 'ContainerProxyMixin'],
   ['Object', 'ember-runtime'],
@@ -206,6 +217,37 @@ let allExports = [
     'ember-metal',
     { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
   ],
+  ['computed.empty', 'ember-runtime', 'empty'],
+  ['computed.notEmpty', 'ember-runtime', 'notEmpty'],
+  ['computed.none', 'ember-runtime', 'none'],
+  ['computed.not', 'ember-runtime', 'not'],
+  ['computed.bool', 'ember-runtime', 'bool'],
+  ['computed.match', 'ember-runtime', 'match'],
+  ['computed.equal', 'ember-runtime', 'equal'],
+  ['computed.gt', 'ember-runtime', 'gt'],
+  ['computed.gte', 'ember-runtime', 'gte'],
+  ['computed.lt', 'ember-runtime', 'lt'],
+  ['computed.lte', 'ember-runtime', 'lte'],
+  ['computed.oneWay', 'ember-runtime', 'oneWay'],
+  ['computed.reads', 'ember-runtime', 'oneWay'],
+  ['computed.readOnly', 'ember-runtime', 'readOnly'],
+  ['computed.deprecatingAlias', 'ember-runtime', 'deprecatingAlias'],
+  ['computed.and', 'ember-runtime', 'and'],
+  ['computed.or', 'ember-runtime', 'or'],
+  ['computed.sum', 'ember-runtime', 'sum'],
+  ['computed.min', 'ember-runtime', 'min'],
+  ['computed.max', 'ember-runtime', 'max'],
+  ['computed.map', 'ember-runtime', 'map'],
+  ['computed.sort', 'ember-runtime', 'sort'],
+  ['computed.setDiff', 'ember-runtime', 'setDiff'],
+  ['computed.mapBy', 'ember-runtime', 'mapBy'],
+  ['computed.filter', 'ember-runtime', 'filter'],
+  ['computed.filterBy', 'ember-runtime', 'filterBy'],
+  ['computed.uniq', 'ember-runtime', 'uniq'],
+  ['computed.uniqBy', 'ember-runtime', 'uniqBy'],
+  ['computed.union', 'ember-runtime', 'union'],
+  ['computed.intersect', 'ember-runtime', 'intersect'],
+  ['computed.collect', 'ember-runtime', 'collect'],
 
   // ember-routing
   ['Location', 'ember-routing'],

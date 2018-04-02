@@ -1,256 +1,14 @@
 import require, { has } from 'require';
 
-// ****ember-environment****
-import { ENV, context } from 'ember-environment';
+import { getENV, getLookup, setLookup, ENV, context } from 'ember-environment';
 import { IS_NODE, module } from 'node-module';
 import * as utils from 'ember-utils';
-
-const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
-
-Ember.isNamespace = true;
-Ember.toString = function() {
-  return 'Ember';
-};
-
 import { Registry, Container } from 'container';
-
-// container exports
-Ember.Container = Container;
-Ember.Registry = Registry;
-
-// ****ember-metal****
 import * as metal from 'ember-metal';
 import * as FLAGS from 'ember/features';
-
-// ember-utils exports
-Ember.getOwner = utils.getOwner;
-Ember.setOwner = utils.setOwner;
-Ember.generateGuid = utils.generateGuid;
-Ember.GUID_KEY = utils.GUID_KEY;
-Ember.guidFor = utils.guidFor;
-Ember.inspect = utils.inspect;
-Ember.makeArray = utils.makeArray;
-Ember.canInvoke = utils.canInvoke;
-Ember.tryInvoke = utils.tryInvoke;
-Ember.wrap = utils.wrap;
-Ember.uuid = utils.uuid;
-Ember.assign = utils.assign;
-
-// need to import this directly, to ensure the babel feature
-// flag plugin works properly
 import * as EmberDebug from 'ember-debug';
-
-// Using _globalsComputed here so that mutating the function is only available
-// in globals builds
-const computed = metal._globalsComputed;
-Ember.computed = computed;
-computed.alias = metal.alias;
-Ember.ComputedProperty = metal.ComputedProperty;
-Ember.cacheFor = metal.getCachedValueFor;
-
-Ember.assert = EmberDebug.assert;
-Ember.warn = EmberDebug.warn;
-Ember.debug = EmberDebug.debug;
-Ember.deprecate = EmberDebug.deprecate;
-Ember.deprecateFunc = EmberDebug.deprecateFunc;
-Ember.runInDebug = EmberDebug.runInDebug;
-/**
-  @public
-  @class Ember.Debug
-*/
-Ember.Debug = {
-  registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
-  registerWarnHandler: EmberDebug.registerWarnHandler,
-};
-Ember.merge = metal.merge;
-
-Ember.instrument = metal.instrument;
-Ember.subscribe = metal.instrumentationSubscribe;
-Ember.Instrumentation = {
-  instrument: metal.instrument,
-  subscribe: metal.instrumentationSubscribe,
-  unsubscribe: metal.instrumentationUnsubscribe,
-  reset: metal.instrumentationReset,
-};
-
-Ember.Error = EmberDebug.Error;
-Ember.meta = metal.meta;
-Ember.get = metal.get;
-Ember.getWithDefault = metal.getWithDefault;
-Ember._getPath = metal._getPath;
-Ember.set = metal.set;
-Ember.trySet = metal.trySet;
-Ember.FEATURES = FLAGS.FEATURES;
-Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
-Ember._Cache = metal.Cache;
-Ember.on = metal.on;
-Ember.addListener = metal.addListener;
-Ember.removeListener = metal.removeListener;
-Ember.sendEvent = metal.sendEvent;
-Ember.hasListeners = metal.hasListeners;
-Ember.isNone = metal.isNone;
-Ember.isEmpty = metal.isEmpty;
-Ember.isBlank = metal.isBlank;
-Ember.isPresent = metal.isPresent;
-// Using _globalsRun here so that mutating the function (adding
-// `next`, `later`, etc to it) is only available in globals builds
-Ember.run = metal._globalsRun;
-Ember.run.backburner = metal.backburner;
-Ember.run.begin = metal.begin;
-Ember.run.bind = metal.bind;
-Ember.run.cancel = metal.cancel;
-Ember.run.debounce = metal.debounce;
-Ember.run.end = metal.end;
-Ember.run.hasScheduledTimers = metal.hasScheduledTimers;
-Ember.run.join = metal.join;
-Ember.run.later = metal.later;
-Ember.run.next = metal.next;
-Ember.run.once = metal.once;
-Ember.run.schedule = metal.schedule;
-Ember.run.scheduleOnce = metal.scheduleOnce;
-Ember.run.throttle = metal.throttle;
-Object.defineProperty(Ember.run, 'currentRunLoop', {
-  get: metal.getCurrentRunLoop,
-  enumerable: false,
-});
-Ember.propertyWillChange = metal.propertyWillChange;
-Ember.propertyDidChange = metal.propertyDidChange;
-Ember.notifyPropertyChange = metal.notifyPropertyChange;
-Ember.overrideChains = metal.overrideChains;
-Ember.beginPropertyChanges = metal.beginPropertyChanges;
-Ember.endPropertyChanges = metal.endPropertyChanges;
-Ember.changeProperties = metal.changeProperties;
-Ember.platform = {
-  defineProperty: true,
-  hasPropertyAccessors: true,
-};
-Ember.defineProperty = metal.defineProperty;
-Ember.watchKey = metal.watchKey;
-Ember.unwatchKey = metal.unwatchKey;
-Ember.removeChainWatcher = metal.removeChainWatcher;
-Ember._ChainNode = metal.ChainNode;
-Ember.finishChains = metal.finishChains;
-Ember.watchPath = metal.watchPath;
-Ember.unwatchPath = metal.unwatchPath;
-Ember.watch = metal.watch;
-Ember.isWatching = metal.isWatching;
-Ember.unwatch = metal.unwatch;
-Ember.destroy = metal.deleteMeta;
-Ember.libraries = metal.libraries;
-Ember.OrderedSet = metal.OrderedSet;
-Ember.Map = metal.Map;
-Ember.MapWithDefault = metal.MapWithDefault;
-Ember.getProperties = metal.getProperties;
-Ember.setProperties = metal.setProperties;
-Ember.expandProperties = metal.expandProperties;
-Ember.NAME_KEY = utils.NAME_KEY;
-Ember.addObserver = metal.addObserver;
-Ember.removeObserver = metal.removeObserver;
-Ember.aliasMethod = metal.aliasMethod;
-Ember.observer = metal.observer;
-Ember.mixin = metal.mixin;
-Ember.Mixin = metal.Mixin;
-
-Object.defineProperty(Ember, 'ENV', {
-  get() {
-    return ENV;
-  },
-  enumerable: false,
-});
-
-/**
- The context that Ember searches for namespace instances on.
-
- @private
- */
-Object.defineProperty(Ember, 'lookup', {
-  get() {
-    return context.lookup;
-  },
-  set(value) {
-    context.lookup = value;
-  },
-  enumerable: false,
-});
-
-Ember.EXTEND_PROTOTYPES = ENV.EXTEND_PROTOTYPES;
-
-// BACKWARDS COMPAT ACCESSORS FOR ENV FLAGS
-Object.defineProperty(Ember, 'LOG_STACKTRACE_ON_DEPRECATION', {
-  get() {
-    return ENV.LOG_STACKTRACE_ON_DEPRECATION;
-  },
-  set(value) {
-    ENV.LOG_STACKTRACE_ON_DEPRECATION = !!value;
-  },
-  enumerable: false,
-});
-
-Object.defineProperty(Ember, 'LOG_VERSION', {
-  get() {
-    return ENV.LOG_VERSION;
-  },
-  set(value) {
-    ENV.LOG_VERSION = !!value;
-  },
-  enumerable: false,
-});
-
-Object.defineProperty(Ember, 'LOG_BINDINGS', {
-  get() {
-    return ENV.LOG_BINDINGS;
-  },
-  set(value) {
-    ENV.LOG_BINDINGS = !!value;
-  },
-  enumerable: false,
-});
-
-/**
-  A function may be assigned to `Ember.onerror` to be called when Ember
-  internals encounter an error. This is useful for specialized error handling
-  and reporting code.
-
-  ```javascript
-  import $ from 'jquery';
-
-  Ember.onerror = function(error) {
-    $.ajax('/report-error', 'POST', {
-      stack: error.stack,
-      otherInformation: 'whatever app state you want to provide'
-    });
-  };
-  ```
-
-  Internally, `Ember.onerror` is used as Backburner's error handler.
-
-  @event onerror
-  @for Ember
-  @param {Exception} error the error object
-  @public
-*/
-Object.defineProperty(Ember, 'onerror', {
-  get: metal.getOnerror,
-  set: metal.setOnerror,
-  enumerable: false,
-});
-
-Object.defineProperty(Ember, 'testing', {
-  get: EmberDebug.isTesting,
-  set: EmberDebug.setTesting,
-  enumerable: false,
-});
-
 import Backburner from 'backburner';
-
-Ember._Backburner = Backburner;
-
 import Logger from 'ember-console';
-
-Ember.Logger = Logger;
-
-// ****ember-runtime****
-
 import {
   String as EmberString,
   Object as EmberObject,
@@ -323,7 +81,221 @@ import {
   intersect,
   collect,
 } from 'ember-runtime';
+import {
+  Checkbox,
+  Component,
+  componentManager,
+  escapeExpression,
+  getTemplates,
+  Helper,
+  helper,
+  htmlSafe,
+  isHTMLSafe,
+  LinkComponent,
+  setTemplates,
+  template,
+  TextField,
+  TextArea,
+  isSerializationFirstNode,
+} from 'ember-glimmer';
+import VERSION from './version';
+import * as views from 'ember-views';
+import * as routing from 'ember-routing';
+import * as application from 'ember-application';
+import * as extensionSupport from 'ember-extension-support';
 
+// ****ember-environment****
+
+const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
+
+Ember.isNamespace = true;
+Ember.toString = function() {
+  return 'Ember';
+};
+
+Object.defineProperty(Ember, 'ENV', {
+  get: getENV,
+  enumerable: false,
+});
+
+Object.defineProperty(Ember, 'lookup', {
+  get: getLookup,
+  set: setLookup,
+  enumerable: false,
+});
+
+// ****ember-utils****
+Ember.getOwner = utils.getOwner;
+Ember.setOwner = utils.setOwner;
+Ember.generateGuid = utils.generateGuid;
+Ember.GUID_KEY = utils.GUID_KEY;
+Ember.guidFor = utils.guidFor;
+Ember.inspect = utils.inspect;
+Ember.makeArray = utils.makeArray;
+Ember.canInvoke = utils.canInvoke;
+Ember.tryInvoke = utils.tryInvoke;
+Ember.wrap = utils.wrap;
+Ember.uuid = utils.uuid;
+Ember.assign = utils.assign;
+Ember.NAME_KEY = utils.NAME_KEY;
+
+// ****container****
+Ember.Container = Container;
+Ember.Registry = Registry;
+
+// ****ember-debug****
+Ember.assert = EmberDebug.assert;
+Ember.warn = EmberDebug.warn;
+Ember.debug = EmberDebug.debug;
+Ember.deprecate = EmberDebug.deprecate;
+Ember.deprecateFunc = EmberDebug.deprecateFunc;
+Ember.runInDebug = EmberDebug.runInDebug;
+Ember.Error = EmberDebug.Error;
+
+/**
+  @public
+  @class Ember.Debug
+*/
+Ember.Debug = {
+  registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
+  registerWarnHandler: EmberDebug.registerWarnHandler,
+};
+
+// ****ember-metal****
+
+// Using _globalsComputed here so that mutating the function is only available
+// in globals builds
+const computed = metal._globalsComputed;
+Ember.computed = computed;
+computed.alias = metal.alias;
+Ember.ComputedProperty = metal.ComputedProperty;
+Ember.cacheFor = metal.getCachedValueFor;
+Ember.merge = metal.merge;
+Ember.instrument = metal.instrument;
+Ember.subscribe = metal.instrumentationSubscribe;
+Ember.Instrumentation = {
+  instrument: metal.instrument,
+  subscribe: metal.instrumentationSubscribe,
+  unsubscribe: metal.instrumentationUnsubscribe,
+  reset: metal.instrumentationReset,
+};
+Ember.meta = metal.meta;
+Ember.get = metal.get;
+Ember.getWithDefault = metal.getWithDefault;
+Ember._getPath = metal._getPath;
+Ember.set = metal.set;
+Ember.trySet = metal.trySet;
+Ember.FEATURES = FLAGS.FEATURES;
+Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
+Ember._Cache = metal.Cache;
+Ember.on = metal.on;
+Ember.addListener = metal.addListener;
+Ember.removeListener = metal.removeListener;
+Ember.sendEvent = metal.sendEvent;
+Ember.hasListeners = metal.hasListeners;
+Ember.isNone = metal.isNone;
+Ember.isEmpty = metal.isEmpty;
+Ember.isBlank = metal.isBlank;
+Ember.isPresent = metal.isPresent;
+// Using _globalsRun here so that mutating the function (adding
+// `next`, `later`, etc to it) is only available in globals builds
+Ember.run = metal._globalsRun;
+Ember.run.backburner = metal.backburner;
+Ember.run.begin = metal.begin;
+Ember.run.bind = metal.bind;
+Ember.run.cancel = metal.cancel;
+Ember.run.debounce = metal.debounce;
+Ember.run.end = metal.end;
+Ember.run.hasScheduledTimers = metal.hasScheduledTimers;
+Ember.run.join = metal.join;
+Ember.run.later = metal.later;
+Ember.run.next = metal.next;
+Ember.run.once = metal.once;
+Ember.run.schedule = metal.schedule;
+Ember.run.scheduleOnce = metal.scheduleOnce;
+Ember.run.throttle = metal.throttle;
+Object.defineProperty(Ember.run, 'currentRunLoop', {
+  get: metal.getCurrentRunLoop,
+  enumerable: false,
+});
+Ember.propertyWillChange = metal.propertyWillChange;
+Ember.propertyDidChange = metal.propertyDidChange;
+Ember.notifyPropertyChange = metal.notifyPropertyChange;
+Ember.overrideChains = metal.overrideChains;
+Ember.beginPropertyChanges = metal.beginPropertyChanges;
+Ember.endPropertyChanges = metal.endPropertyChanges;
+Ember.changeProperties = metal.changeProperties;
+Ember.platform = {
+  defineProperty: true,
+  hasPropertyAccessors: true,
+};
+Ember.defineProperty = metal.defineProperty;
+Ember.watchKey = metal.watchKey;
+Ember.unwatchKey = metal.unwatchKey;
+Ember.removeChainWatcher = metal.removeChainWatcher;
+Ember._ChainNode = metal.ChainNode;
+Ember.finishChains = metal.finishChains;
+Ember.watchPath = metal.watchPath;
+Ember.unwatchPath = metal.unwatchPath;
+Ember.watch = metal.watch;
+Ember.isWatching = metal.isWatching;
+Ember.unwatch = metal.unwatch;
+Ember.destroy = metal.deleteMeta;
+Ember.libraries = metal.libraries;
+Ember.OrderedSet = metal.OrderedSet;
+Ember.Map = metal.Map;
+Ember.MapWithDefault = metal.MapWithDefault;
+Ember.getProperties = metal.getProperties;
+Ember.setProperties = metal.setProperties;
+Ember.expandProperties = metal.expandProperties;
+Ember.addObserver = metal.addObserver;
+Ember.removeObserver = metal.removeObserver;
+Ember.aliasMethod = metal.aliasMethod;
+Ember.observer = metal.observer;
+Ember.mixin = metal.mixin;
+Ember.Mixin = metal.Mixin;
+
+/**
+  A function may be assigned to `Ember.onerror` to be called when Ember
+  internals encounter an error. This is useful for specialized error handling
+  and reporting code.
+
+  ```javascript
+  import $ from 'jquery';
+
+  Ember.onerror = function(error) {
+    $.ajax('/report-error', 'POST', {
+      stack: error.stack,
+      otherInformation: 'whatever app state you want to provide'
+    });
+  };
+  ```
+
+  Internally, `Ember.onerror` is used as Backburner's error handler.
+
+  @event onerror
+  @for Ember
+  @param {Exception} error the error object
+  @public
+*/
+Object.defineProperty(Ember, 'onerror', {
+  get: metal.getOnerror,
+  set: metal.setOnerror,
+  enumerable: false,
+});
+
+Object.defineProperty(Ember, 'testing', {
+  get: EmberDebug.isTesting,
+  set: EmberDebug.setTesting,
+  enumerable: false,
+});
+
+Ember._Backburner = Backburner;
+
+// ****ember-console****
+Ember.Logger = Logger;
+
+// ****ember-runtime****
 Ember.A = A;
 Ember.String = EmberString;
 Ember.Object = EmberObject;
@@ -360,7 +332,6 @@ Ember._ProxyMixin = _ProxyMixin;
 Ember.RSVP = RSVP;
 Ember.Namespace = Namespace;
 
-// ES6TODO: this seems a less than ideal way/place to add properties to Ember.computed
 computed.empty = empty;
 computed.notEmpty = notEmpty;
 computed.none = none;
@@ -432,24 +403,7 @@ Object.defineProperty(Ember, 'BOOTED', {
   set: metal.setNamespaceSearchDisabled,
 });
 
-import {
-  Checkbox,
-  Component,
-  componentManager,
-  escapeExpression,
-  getTemplates,
-  Helper,
-  helper,
-  htmlSafe,
-  isHTMLSafe,
-  LinkComponent,
-  setTemplates,
-  template,
-  TextField,
-  TextArea,
-  isSerializationFirstNode,
-} from 'ember-glimmer';
-
+// ****ember-glimmer****
 Ember.Component = Component;
 Helper.helper = helper;
 Ember.Helper = Helper;
@@ -457,28 +411,23 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 Ember.LinkComponent = LinkComponent;
-
-Object.defineProperty(Ember, '_setComponentManager', {
-  enumerable: false,
-  get() {
-    return componentManager;
+Ember._setComponentManager = componentManager;
+Ember.Handlebars = {
+  template,
+  Utils: {
+    escapeExpression,
   },
-});
+};
+Ember.HTMLBars = {
+  template,
+};
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {
     return htmlSafe(this);
   };
 }
-
-let EmberHandlebars = (Ember.Handlebars = Ember.Handlebars || {});
-let EmberHTMLBars = (Ember.HTMLBars = Ember.HTMLBars || {});
-let EmberHandleBarsUtils = (EmberHandlebars.Utils = EmberHandlebars.Utils || {});
-
-EmberHTMLBars.template = EmberHandlebars.template = template;
-EmberHandleBarsUtils.escapeExpression = escapeExpression;
 EmberString.htmlSafe = htmlSafe;
-
 EmberString.isHTMLSafe = isHTMLSafe;
 
 /**
@@ -498,9 +447,6 @@ Object.defineProperty(Ember, 'TEMPLATES', {
   enumerable: false,
 });
 
-import VERSION from './version';
-export { VERSION };
-
 /**
   The semantic version
 
@@ -512,12 +458,8 @@ Ember.VERSION = VERSION;
 
 metal.libraries.registerCoreLibrary('Ember', VERSION);
 
-// require the main entry points for each of these packages
-// this is so that the global exports occur properly
-import * as views from 'ember-views';
-
+// ****ember-views****
 Ember.$ = views.jQuery;
-
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
   getViewElement: views.getViewElement,
@@ -528,13 +470,11 @@ Ember.ViewUtils = {
   getChildViews: views.getChildViews,
   isSerializationFirstNode: isSerializationFirstNode,
 };
-
 Ember.TextSupport = views.TextSupport;
 Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
-import * as routing from 'ember-routing';
-
+// ****ember-routing****
 Ember.Location = routing.Location;
 Ember.AutoLocation = routing.AutoLocation;
 Ember.HashLocation = routing.HashLocation;
@@ -547,8 +487,7 @@ Ember.RouterDSL = routing.RouterDSL;
 Ember.Router = routing.Router;
 Ember.Route = routing.Route;
 
-import * as application from 'ember-application';
-
+// ****ember-application****
 Ember.Application = application.Application;
 Ember.ApplicationInstance = application.ApplicationInstance;
 Ember.Engine = application.Engine;
@@ -556,8 +495,6 @@ Ember.EngineInstance = application.EngineInstance;
 Ember.DefaultResolver = Ember.Resolver = application.Resolver;
 
 runLoadHooks('Ember.Application', application.Application);
-
-import * as extensionSupport from 'ember-extension-support';
 
 Ember.DataAdapter = extensionSupport.DataAdapter;
 Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
@@ -579,10 +516,6 @@ if (has('ember-testing')) {
 
 runLoadHooks('Ember');
 
-/**
-  @module ember
-  @private
-*/
 export default Ember;
 
 if (IS_NODE) {

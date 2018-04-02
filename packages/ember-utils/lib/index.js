@@ -28,3 +28,6 @@ export { HAS_NATIVE_SYMBOL } from './symbol-utils';
 export { HAS_NATIVE_PROXY } from './proxy-utils';
 export { default as WeakSet } from './weak_set';
 export { isProxy, setProxy } from './is_proxy';
+
+import symbol from './symbol';
+export const NAME_KEY = symbol('NAME_KEY');
