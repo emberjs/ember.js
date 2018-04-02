@@ -97,9 +97,7 @@ export function run() {
 }
 
 // used for the Ember.run global only
-export function _globalsRun() {
-  return backburner.run(...arguments);
-}
+export const _globalsRun = run.bind(null);
 
 /**
   If no run-loop is present, it creates a new one. If a run loop is

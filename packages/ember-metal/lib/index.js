@@ -5,6 +5,7 @@ export {
   getCachedValueFor,
   peekCacheFor,
   ComputedProperty,
+  _globalsComputed,
 } from './computed';
 export { default as alias } from './alias';
 export { default as merge } from './merge';
