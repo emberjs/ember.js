@@ -563,7 +563,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     The name of the controller to associate with this route.
 
     By default, Ember will lookup a route's controller that matches the name
-    of the route (i.e. `App.PostController` for `App.PostRoute`). However,
+    of the route (i.e. `posts.new`). However,
     if you would like to define a specific controller to use, you can do so
     using this property.
 
