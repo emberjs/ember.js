@@ -147,14 +147,6 @@ moduleFor(
       assert.equal(get(objectB, 'nullProperty'), null);
     }
 
-    /*
-  QUnit.test("raise if the provided object is null", function() {
-    throws(function() {
-      get(null, 'key');
-    });
-  });
-  */
-
     ['@test raise if the provided object is undefined']() {
       expectAssertion(function() {
         get(undefined, 'key');
