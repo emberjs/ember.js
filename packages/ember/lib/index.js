@@ -35,9 +35,11 @@ Ember.Registry = Registry;
 import * as EmberDebug from 'ember-debug';
 import { deprecate } from 'ember-debug';
 
-const computed = metal.computed;
-computed.alias = metal.alias;
+// Using _globalsComputed here so that mutating the function is only available
+// in globals builds
+const computed = metal._globalsComputed;
 Ember.computed = computed;
+computed.alias = metal.alias;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.getCachedValueFor;
 
@@ -85,10 +87,8 @@ Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
-// Using _globalsRun here so that mutating the function (adding `next`,
-// `later`, etc to it) does not appear available throughout the rest of the
-// codebase. This is specifically to ensure that we do not accidentally
-// regress and write `run.next`, etc...
+// Using _globalsRun here so that mutating the function (adding
+// `next`, `later`, etc to it) is only available in globals builds
 Ember.run = metal._globalsRun;
 Ember.run.backburner = metal.backburner;
 Ember.run.begin = metal.begin;

@@ -581,6 +581,8 @@ export default function computed(...args) {
 
   return cp;
 }
+// used for the Ember.computed global only
+export const _globalsComputed = computed.bind(null);
 
 const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap();
 const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : undefined;

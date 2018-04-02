@@ -78,7 +78,7 @@ let allExports = [
   ['runInDebug', 'ember-debug'],
 
   // ember-metal
-  ['computed', 'ember-metal'],
+  ['computed', 'ember-metal', '_globalsComputed'],
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal', 'getCachedValueFor'],
