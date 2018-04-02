@@ -1,5 +1,5 @@
 /*globals EmberDev */
-import { VERSION } from 'ember';
+import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
 import { libraries, setNamespaceSearchDisabled } from 'ember-metal';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';

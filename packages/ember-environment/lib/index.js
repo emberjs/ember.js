@@ -16,6 +16,10 @@ export const ENV =
   (typeof global.ENV === 'object' && global.ENV) ||
   {};
 
+export function getENV() {
+  return ENV;
+}
+
 // ENABLE_ALL_FEATURES was documented, but you can't actually enable non optional features.
 if (ENV.ENABLE_ALL_FEATURES) {
   ENV.ENABLE_OPTIONAL_FEATURES = true;
@@ -65,19 +69,6 @@ ENV.LOG_STACKTRACE_ON_DEPRECATION = defaultTrue(ENV.LOG_STACKTRACE_ON_DEPRECATIO
   @public
 */
 ENV.LOG_VERSION = defaultTrue(ENV.LOG_VERSION);
-
-/**
-  Debug parameter you can turn on. This will log all bindings that fire to
-  the console. This should be disabled in production code. Note that you
-  can also enable this from the console or temporarily.
-
-  @property LOG_BINDINGS
-  @for EmberENV
-  @type Boolean
-  @default false
-  @public
-*/
-ENV.LOG_BINDINGS = defaultFalse(ENV.LOG_BINDINGS);
 
 ENV.RAISE_ON_DEPRECATION = defaultFalse(ENV.RAISE_ON_DEPRECATION);
 
@@ -130,6 +121,14 @@ export const context = {
   // search for Namespaces
   lookup: originalContext.lookup || global,
 };
+
+export function getLookup() {
+  return context.lookup;
+}
+
+export function setLookup(value) {
+  context.lookup = value;
+}
 
 // TODO: cleanup single source of truth issues with this stuff
 export const environment = hasDOM

@@ -2,6 +2,8 @@ import { warn, debug } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { get } from './property_get';
 import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
+import VERSION from 'ember/version';
+
 /**
  @module ember
 */
@@ -82,5 +84,7 @@ if (DEBUG) {
     debug('-------------------------------');
   };
 }
+const LIBRARIES = new Libraries();
+LIBRARIES.registerCoreLibrary('Ember', VERSION);
 
-export default new Libraries();
+export default LIBRARIES;
