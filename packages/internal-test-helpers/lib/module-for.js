@@ -4,23 +4,24 @@ import getAllPropertyNames from './get-all-property-names';
 import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
-  let context;
-
   QUnit.module(description, {
-    beforeEach(...args) {
-      context = new TestClass(...args);
-      if (context.beforeEach) {
-        return context.beforeEach(...args);
+    beforeEach: function(...args) {
+      let instance = new TestClass(...args);
+      this.instance = instance;
+      if (instance.beforeEach) {
+        return instance.beforeEach(...args);
       }
     },
 
-    afterEach() {
+    afterEach: function() {
       let promises = [];
-      if (context.teardown) {
-        promises.push(context.teardown());
+      let instance = this.instance;
+      this.instance = null;
+      if (instance.teardown) {
+        promises.push(instance.teardown());
       }
-      if (context.afterEach) {
-        promises.push(context.afterEach());
+      if (instance.afterEach) {
+        promises.push(instance.afterEach());
       }
 
       // this seems odd, but actually saves significant time
@@ -60,11 +61,17 @@ export default function moduleFor(description, TestClass, ...mixins) {
 
   function generateTest(name) {
     if (name.indexOf('@test ') === 0) {
-      QUnit.test(name.slice(5), assert => context[name](assert));
+      QUnit.test(name.slice(5), function(assert) {
+        return this.instance[name](assert);
+      });
     } else if (name.indexOf('@only ') === 0) {
-      QUnit.only(name.slice(5), assert => context[name](assert));
+      QUnit.only(name.slice(5), function(assert) {
+        return this.instance[name](assert);
+      });
     } else if (name.indexOf('@skip ') === 0) {
-      QUnit.skip(name.slice(5), assert => context[name](assert));
+      QUnit.skip(name.slice(5), function(assert) {
+        return this.instance[name](assert);
+      });
     } else {
       let match = /^@feature\(([a-z-!]+)\) /.exec(name);
 
@@ -72,7 +79,9 @@ export default function moduleFor(description, TestClass, ...mixins) {
         let features = match[1].replace(/ /g, '').split(',');
 
         if (shouldTest(features)) {
-          QUnit.test(name.slice(match[0].length), assert => context[name](assert));
+          QUnit.test(name.slice(match[0].length), function(assert) {
+            return this.instance[name](assert);
+          });
         }
       }
     }

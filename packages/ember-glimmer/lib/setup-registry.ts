@@ -36,17 +36,20 @@ export function setupApplicationRegistry(registry: Registry) {
   );
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
+  // because we are using injections we can't use instantiate false
+  // we need to use bind() to copy the function so factory for
+  // association won't leak
   registry.register('service:-dom-builder', {
     create({ bootOptions }: { bootOptions: { _renderMode: string } }) {
       let { _renderMode } = bootOptions;
 
       switch (_renderMode) {
         case 'serialize':
-          return serializeBuilder;
+          return serializeBuilder.bind(null);
         case 'rehydrate':
-          return rehydrationBuilder;
+          return rehydrationBuilder.bind(null);
         default:
-          return clientBuilder;
+          return clientBuilder.bind(null);
       }
     },
   });
