@@ -107,7 +107,7 @@
     "broccoli-uglify-sourcemap": "^2.0.2",
     "common-tags": "^1.7.2",
     "dag-map": "^2.0.2",
-    "ember-cli": "github:ember-cli/ember-cli#ab84e8356bd8b94fa37114d180842a5cbc2e5d8b",
+    "ember-cli": "github:ember-cli/ember-cli#ec12c757fab32d4207f35e4ddd048a4cfba2289a",
     "ember-cli-blueprint-test-helpers": "^0.18.3",
     "ember-cli-browserstack": "^0.0.6",
     "ember-cli-dependency-checker": "^2.1.0",

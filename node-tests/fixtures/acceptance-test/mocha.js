@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import { expect } from 'chai';
 import startApp from 'my-app/tests/helpers/start-app';
-import destroyApp from 'my-app/tests/helpers/destroy-app';
+import { run } from '@ember/runloop';
 
 describe('Acceptance | foo', function() {
   let application;
@@ -11,7 +11,7 @@ describe('Acceptance | foo', function() {
   });
 
   afterEach(function() {
-    destroyApp(application);
+    run(application, 'destroy');
   });
 
   it('can visit /foo', function() {

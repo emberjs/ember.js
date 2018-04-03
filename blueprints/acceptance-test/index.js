@@ -17,10 +17,6 @@ module.exports = useTestFrameworkDetector({
       testFolderRoot = pathUtil.getRelativeParentPath(options.entity.name, -1, false);
     }
 
-    let destroyAppExists = fs.existsSync(
-      path.join(this.project.root, '/tests/helpers/destroy-app.js')
-    );
-
     let friendlyTestName = [
       'Acceptance',
       stringUtils.dasherize(options.entity.name).replace(/[-]/g, ' '),
@@ -29,7 +25,6 @@ module.exports = useTestFrameworkDetector({
     return {
       testFolderRoot: testFolderRoot,
       friendlyTestName,
-      destroyAppExists,
     };
   },
 });

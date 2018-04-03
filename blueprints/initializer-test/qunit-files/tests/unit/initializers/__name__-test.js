@@ -3,7 +3,7 @@ import { run } from '@ember/runloop';
 
 import { initialize } from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
-<% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } else { %>import { run } from '@ember/runloop'; <% } %>
+import { run } from '@ember/runloop';
 
 module('<%= friendlyTestName %>', {
   beforeEach() {
@@ -13,7 +13,7 @@ module('<%= friendlyTestName %>', {
     });
   },
   afterEach() {
-    <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
+    run(this.application, 'destroy');
   }
 });
 
