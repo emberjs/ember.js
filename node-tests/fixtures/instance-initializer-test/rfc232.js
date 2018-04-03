@@ -3,7 +3,6 @@ import Application from '@ember/application';
 import { initialize } from 'my-app/instance-initializers/foo';
 import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
-import destroyApp from '../../helpers/destroy-app';
 
 module('Unit | Instance Initializer | foo', function(hooks) {
   setupTest(hooks);
@@ -18,8 +17,8 @@ module('Unit | Instance Initializer | foo', function(hooks) {
     this.instance = this.application.buildInstance();
   });
   hooks.afterEach(function() {
-    destroyApp(this.application);
-    destroyApp(this.instance);
+    run(this.application, 'destroy');
+    run(this.instance, 'destroy');
   });
 
   // Replace this with your real tests.
