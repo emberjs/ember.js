@@ -40,7 +40,6 @@ moduleFor(
         'passed-property',
         'passed property available on instance (create)'
       );
-
       calls = [];
       myObject = new MyObject({ passedProperty: 'passed-property' });
 
@@ -62,37 +61,124 @@ moduleFor(
       );
     }
 
-    ['@test using super'](assert) {
+    ['@test normal method super'](assert) {
       let calls = [];
 
-      let SuperSuperObject = EmberObject.extend({
+      let Foo = EmberObject.extend({
         method() {
-          calls.push('super-super-method');
+          calls.push('foo');
         },
       });
 
-      let SuperObject = SuperSuperObject.extend({
+      let Bar = Foo.extend({
         method() {
           this._super();
-          calls.push('super-method');
+          calls.push('bar');
         },
       });
 
-      class MyObject extends SuperObject {
+      class Baz extends Bar {
         method() {
           super.method();
-          calls.push('method');
+          calls.push('baz');
         }
       }
 
-      let myObject = new MyObject();
-      myObject.method();
+      let Qux = Baz.extend({
+        method() {
+          this._super();
+          calls.push('qux');
+        },
+      });
 
-      assert.deepEqual(
-        calls,
-        ['super-super-method', 'super-method', 'method'],
-        'chain of prototype methods called with super'
-      );
+      let Quux = Qux.extend({
+        method() {
+          this._super();
+          calls.push('quux');
+        },
+      });
+
+      class Corge extends Quux {
+        method() {
+          super.method();
+          calls.push('corge');
+        }
+      }
+
+      let callValues = ['foo', 'bar', 'baz', 'qux', 'quux', 'corge'];
+
+      [Foo, Bar, Baz, Qux, Quux, Corge].forEach((Class, index) => {
+        calls = [];
+        new Class().method();
+
+        assert.deepEqual(
+          calls,
+          callValues.slice(0, index + 1),
+          'chain of static methods called with super'
+        );
+      });
+    }
+
+    ['@test static method super'](assert) {
+      let calls;
+
+      let Foo = EmberObject.extend();
+      Foo.reopenClass({
+        method() {
+          calls.push('foo');
+        },
+      });
+
+      let Bar = Foo.extend();
+      Bar.reopenClass({
+        method() {
+          this._super();
+          calls.push('bar');
+        },
+      });
+
+      class Baz extends Bar {
+        static method() {
+          super.method();
+          calls.push('baz');
+        }
+      }
+
+      let Qux = Baz.extend();
+      Qux.reopenClass({
+        method() {
+          this._super();
+          calls.push('qux');
+        },
+      });
+
+      let Quux = Qux.extend();
+      Quux.reopenClass({
+        method() {
+          this._super();
+          calls.push('quux');
+        },
+      });
+
+      class Corge extends Quux {
+        static method() {
+          super.method();
+          calls.push('corge');
+        }
+      }
+
+      let callValues = ['foo', 'bar', 'baz', 'qux', 'quux', 'corge'];
+
+      [Foo, Bar, Baz, Qux, Quux, Corge].forEach((Class, index) => {
+        calls = [];
+        Class.method();
+
+        assert.deepEqual(
+          calls,
+          callValues.slice(0, index + 1),
+          'chain of static methods called with super'
+        );
+      });
     }
 
     ['@test using mixins'](assert) {
@@ -149,14 +235,15 @@ moduleFor(
       assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
     }
 
-    // TODO: Needs to be fixed. Currently only `init` is called.
-    ['@skip calling extend on an ES subclass of EmberObject'](assert) {
+    ['@test calling extend on an ES subclass of EmberObject'](assert) {
       let calls = [];
 
       class SubEmberObject extends EmberObject {
         constructor() {
-          calls.push('constructor');
+          calls.push('before constructor');
           super(...arguments);
+          calls.push('after constructor');
+          this.foo = 123;
         }
 
         init() {
@@ -168,11 +255,27 @@ moduleFor(
       let MyObject = SubEmberObject.extend({});
 
       MyObject.create();
-      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
+      assert.deepEqual(
+        calls,
+        ['before constructor', 'init', 'after constructor'],
+        'constructor then init called (create)'
+      );
 
       calls = [];
       new MyObject();
-      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
+      assert.deepEqual(
+        calls,
+        ['before constructor', 'init', 'after constructor'],
+        'constructor then init called (new)'
+      );
+
+      let obj = MyObject.create({
+        foo: 456,
+        bar: 789,
+      });
+
+      assert.equal(obj.foo, 123, 'sets class fields on instance correctly');
+      assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
     }
   }
 );
