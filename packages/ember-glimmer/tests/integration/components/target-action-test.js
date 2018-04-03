@@ -10,7 +10,7 @@ moduleFor(
   'Components test: sendAction',
   class extends RenderingTest {
     constructor() {
-      super();
+      super(...arguments);
       this.actionCounts = {};
       this.sendCount = 0;
       this.actionArguments = null;

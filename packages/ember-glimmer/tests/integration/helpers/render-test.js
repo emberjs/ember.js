@@ -7,7 +7,7 @@ moduleFor(
   'Helpers test: {{render}}',
   class extends RenderingTest {
     constructor() {
-      super();
+      super(...arguments);
       this.originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
       ENV._ENABLE_RENDER_SUPPORT = true;
     }

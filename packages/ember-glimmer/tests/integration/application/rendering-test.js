@@ -9,7 +9,7 @@ moduleFor(
   'Application test: rendering',
   class extends ApplicationTest {
     constructor() {
-      super();
+      super(...arguments);
       this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;
     }
 

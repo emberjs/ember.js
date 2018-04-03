@@ -6,7 +6,7 @@ import ApplicationTestCase from './application';
 
 export default class QueryParamTestCase extends ApplicationTestCase {
   constructor() {
-    super();
+    super(...arguments);
 
     let testCase = this;
     testCase.expectedPushURL = null;

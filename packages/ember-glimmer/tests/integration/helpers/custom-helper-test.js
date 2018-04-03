@@ -3,8 +3,6 @@ import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 import { set } from 'ember-metal';
 
-let assert = QUnit.assert;
-
 moduleFor(
   'Helpers test: custom helpers',
   class extends RenderingTest {
@@ -88,7 +86,7 @@ moduleFor(
       }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
     }
 
-    ['@test class-based helper can recompute a new value']() {
+    ['@test class-based helper can recompute a new value'](assert) {
       let destroyCount = 0;
       let computeCount = 0;
       let helper;
@@ -122,7 +120,7 @@ moduleFor(
       assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
     }
 
-    ['@test class-based helper with static arguments can recompute a new value']() {
+    ['@test class-based helper with static arguments can recompute a new value'](assert) {
       let destroyCount = 0;
       let computeCount = 0;
       let helper;
@@ -180,7 +178,7 @@ moduleFor(
       this.assertText('bob');
     }
 
-    ['@test simple helper is called for param changes']() {
+    ['@test simple helper is called for param changes'](assert) {
       let computeCount = 0;
 
       this.registerHelper('hello-world', ([value]) => {
@@ -215,7 +213,7 @@ moduleFor(
       assert.strictEqual(computeCount, 3, 'compute is called exactly 3 times');
     }
 
-    ['@test class-based helper compute is called for param changes']() {
+    ['@test class-based helper compute is called for param changes'](assert) {
       let createCount = 0;
       let computeCount = 0;
 
@@ -417,7 +415,7 @@ moduleFor(
       }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
     }
 
-    ['@test class-based helper is torn down']() {
+    ['@test class-based helper is torn down'](assert) {
       let destroyCalled = 0;
 
       this.registerHelper('some-helper', {
@@ -585,7 +583,9 @@ moduleFor(
       assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
     }
 
-    ['@test class-based helper can be invoked manually via `owner.factoryFor(...).create().compute()']() {
+    ['@test class-based helper can be invoked manually via `owner.factoryFor(...).create().compute()'](
+      assert
+    ) {
       this.registerHelper('some-helper', {
         compute() {
           assert.ok(true, 'some-helper helper invoked');
@@ -646,7 +646,7 @@ if (!EmberDev.runningProdBuild) {
     'Helpers test: mutation triggers errors - class based helper',
     class extends HelperMutatingArgsTests {
       constructor() {
-        super();
+        super(...arguments);
 
         let compute = this.buildCompute();
 
@@ -661,7 +661,7 @@ if (!EmberDev.runningProdBuild) {
     'Helpers test: mutation triggers errors - simple helper',
     class extends HelperMutatingArgsTests {
       constructor() {
-        super();
+        super(...arguments);
 
         let compute = this.buildCompute();
 

@@ -3,7 +3,7 @@ import { privatize as P } from 'container';
 
 export default class RenderingTestCase extends AbstractRenderingTestCase {
   constructor() {
-    super();
+    super(...arguments);
     let { owner } = this;
 
     this.env = owner.lookup('service:-glimmer-environment');

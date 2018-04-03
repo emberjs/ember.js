@@ -13,7 +13,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     'Router Service - transitionTo',
     class extends RouterTestCase {
       constructor() {
-        super();
+        super(...arguments);
 
         let testCase = this;
         testCase.state = [];

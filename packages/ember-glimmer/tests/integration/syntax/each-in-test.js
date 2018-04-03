@@ -287,7 +287,7 @@ moduleFor(
   'Syntax test: {{#each-in}} with POJOs',
   class extends EachInTest {
     constructor() {
-      super();
+      super(...arguments);
       this.allowsSetProp = true;
     }
 
@@ -460,7 +460,7 @@ moduleFor(
   'Syntax test: {{#each-in}} with EmberObjects',
   class extends EachInTest {
     constructor() {
-      super();
+      super(...arguments);
       this.allowsSetProp = true;
     }
     createHash(pojo) {
@@ -485,7 +485,7 @@ moduleFor(
   'Syntax test: {{#each-in}} with object proxies',
   class extends EachInTest {
     constructor() {
-      super();
+      super(...arguments);
       this.allowsSetProp = true;
     }
     createHash(pojo) {

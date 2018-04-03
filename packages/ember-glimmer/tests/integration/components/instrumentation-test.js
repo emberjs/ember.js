@@ -6,7 +6,7 @@ moduleFor(
   'Components instrumentation',
   class extends RenderingTest {
     constructor() {
-      super();
+      super(...arguments);
 
       this.resetEvents();
 

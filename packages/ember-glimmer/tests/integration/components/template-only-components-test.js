@@ -12,7 +12,7 @@ moduleFor(
   'Components test: template-only components (glimmer components)',
   class extends TemplateOnlyComponentsTest {
     constructor() {
-      super();
+      super(...arguments);
       this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
       ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
     }
@@ -112,7 +112,7 @@ moduleFor(
   'Components test: template-only components (curly components)',
   class extends TemplateOnlyComponentsTest {
     constructor() {
-      super();
+      super(...arguments);
       this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
       ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = false;
     }

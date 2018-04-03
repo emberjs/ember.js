@@ -2,7 +2,7 @@ import ApplicationTestCase from './application';
 
 export default class RouterTestCase extends ApplicationTestCase {
   constructor() {
-    super();
+    super(...arguments);
 
     this.router.map(function() {
       this.route('parent', { path: '/' }, function() {

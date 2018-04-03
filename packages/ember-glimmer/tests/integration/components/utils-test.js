@@ -13,7 +13,7 @@ moduleFor(
   'View tree tests',
   class extends ApplicationTest {
     constructor() {
-      super();
+      super(...arguments);
 
       this.addComponent('x-tagless', {
         ComponentClass: Component.extend({

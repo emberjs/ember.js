@@ -1074,7 +1074,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper calls preventDefault`]() {
+    [`@test the {{link-to}} helper calls preventDefault`](assert) {
       this.router.map(function() {
         this.route('about');
       });
@@ -1087,11 +1087,13 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assertNav({ prevented: true }, () => this.$('#about-link').click());
+        assertNav({ prevented: true }, () => this.$('#about-link').click(), assert);
       });
     }
 
-    [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=false' is passed as an option`]() {
+    [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=false' is passed as an option`](
+      assert
+    ) {
       this.router.map(function() {
         this.route('about');
       });
@@ -1104,11 +1106,13 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'));
+        assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'), assert);
       });
     }
 
-    [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`]() {
+    [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](
+      assert
+    ) {
       this.router.map(function() {
         this.route('about');
       });
@@ -1128,11 +1132,13 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'));
+        assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'), assert);
       });
     }
 
-    [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`]() {
+    [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`](
+      assert
+    ) {
       this.addTemplate(
         'index',
         `
@@ -1142,11 +1148,11 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assertNav({ prevented: false }, () => this.$('#self-link').click());
+        assertNav({ prevented: false }, () => this.$('#self-link').click(), assert);
       });
     }
 
-    [`@test The {{link-to}} helper should preventDefault when 'target = _self'`]() {
+    [`@test The {{link-to}} helper should preventDefault when 'target = _self'`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1156,7 +1162,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assertNav({ prevented: true }, () => this.$('#self-link').click());
+        assertNav({ prevented: true }, () => this.$('#self-link').click(), assert);
       });
     }
 
@@ -2077,11 +2083,11 @@ moduleFor(
   }
 );
 
-function assertNav(options, callback) {
+function assertNav(options, callback, assert) {
   let nav = false;
 
   function check(event) {
-    QUnit.assert.equal(
+    assert.equal(
       event.defaultPrevented,
       options.prevented,
       `expected defaultPrevented=${options.prevented}`
@@ -2095,6 +2101,6 @@ function assertNav(options, callback) {
     callback();
   } finally {
     document.removeEventListener('click', check);
-    QUnit.assert.ok(nav, 'Expected a link to be clicked');
+    assert.ok(nav, 'Expected a link to be clicked');
   }
 }

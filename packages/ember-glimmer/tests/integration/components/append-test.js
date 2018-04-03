@@ -5,7 +5,7 @@ import { strip } from '../../utils/abstract-test-case';
 
 class AbstractAppendTest extends RenderingTest {
   constructor() {
-    super();
+    super(...arguments);
 
     this.components = [];
     this.ids = [];

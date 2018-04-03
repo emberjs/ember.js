@@ -51,7 +51,7 @@ moduleFor(
   '{{mount}} test',
   class extends ApplicationTest {
     constructor() {
-      super();
+      super(...arguments);
 
       let engineRegistrations = (this.engineRegistrations = {});
 
@@ -302,7 +302,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
     '{{mount}} params tests',
     class extends ApplicationTest {
       constructor() {
-        super();
+        super(...arguments);
 
         this.add(
           'engine:paramEngine',

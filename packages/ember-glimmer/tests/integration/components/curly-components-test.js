@@ -13,7 +13,7 @@ moduleFor(
   'Components test: curly components',
   class extends RenderingTest {
     constructor() {
-      super();
+      super(...arguments);
       this.originalDidInitAttrsSupport = ENV._ENABLE_DID_INIT_ATTRS_SUPPORT;
     }
 

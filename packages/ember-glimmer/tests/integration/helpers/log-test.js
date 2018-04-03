@@ -4,7 +4,7 @@ moduleFor(
   'Helpers test: {{log}}',
   class extends RenderingTest {
     constructor() {
-      super();
+      super(...arguments);
       /* eslint-disable no-console */
       this.originalLog = console.log;
       this.logCalls = [];
