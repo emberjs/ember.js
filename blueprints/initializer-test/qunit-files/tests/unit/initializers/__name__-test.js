@@ -1,5 +1,4 @@
 import Application from '@ember/application';
-import { run } from '@ember/runloop';
 
 import { initialize } from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';

@@ -1,8 +1,8 @@
 import Application from '@ember/application';
-import { run } from '@ember/runloop';
 
 import { initialize } from 'my-app/initializers/foo';
 import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
 module('Unit | Initializer | foo', {
   beforeEach() {
@@ -12,7 +12,7 @@ module('Unit | Initializer | foo', {
     });
   },
   afterEach() {
-    run(application, 'destroy');
+    run(this.application, 'destroy');
   }
 });
 

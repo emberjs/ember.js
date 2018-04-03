@@ -1,8 +1,8 @@
 import Application from '@ember/application';
-import { run } from '@ember/runloop';
 
 import { initialize } from 'dummy/initializers/foo';
 import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
 module('Unit | Initializer | foo', {
   beforeEach() {
