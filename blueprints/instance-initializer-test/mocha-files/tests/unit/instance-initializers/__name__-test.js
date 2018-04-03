@@ -3,7 +3,6 @@ import { describe, it, beforeEach } from 'mocha';
 import Application from '@ember/application';
 import { run } from '@ember/runloop';
 import { initialize } from '<%= dasherizedModulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
-import destroyApp from '../../helpers/destroy-app';
 
 describe('<%= friendlyTestName %>', function() {
   let application, appInstance;
@@ -17,7 +16,7 @@ describe('<%= friendlyTestName %>', function() {
 
   afterEach(function() {
     run(appInstance, 'destroy');
-    destroyApp(application);
+    run(application, 'destroy');
   });
 
   // Replace this with your real tests.
