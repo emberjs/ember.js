@@ -1,4 +1,4 @@
-import { assign, symbol, getOwner } from 'ember-utils';
+import { assign, getOwner } from 'ember-utils';
 import { get, set, getProperties, setProperties, computed, once, isEmpty } from 'ember-metal';
 import { assert, info, isTesting, deprecate } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
@@ -29,9 +29,8 @@ export function defaultSerialize(model, params) {
   }
 
   let object = {};
-
   if (params.length === 1) {
-    let name = params[0];
+    let [name] = params;
     if (name in model) {
       object[name] = get(model, name);
     } else if (/_id$/.test(name)) {
@@ -44,12 +43,8 @@ export function defaultSerialize(model, params) {
   return object;
 }
 
-const DEFAULT_SERIALIZE = symbol('DEFAULT_SERIALIZE');
-
-defaultSerialize[DEFAULT_SERIALIZE] = true;
-
 export function hasDefaultSerialize(route) {
-  return !!route.serialize[DEFAULT_SERIALIZE];
+  return route.serialize === defaultSerialize;
 }
 
 /**
