@@ -1,4 +1,4 @@
-import Ember from '..'; // testing reexports
+import VERSION from 'ember/version';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 // From https://github.com/semver/semver.org/issues/59 & https://regex101.com/r/vW1jA8/6
@@ -8,10 +8,7 @@ moduleFor(
   'ember-metal/core/main',
   class extends AbstractTestCase {
     ['@test Ember.VERSION is in alignment with SemVer v2.0.0'](assert) {
-      assert.ok(
-        SEMVER_REGEX.test(Ember.VERSION),
-        `Ember.VERSION (${Ember.VERSION})is valid SemVer v2.0.0`
-      );
+      assert.ok(SEMVER_REGEX.test(VERSION), `Ember.VERSION (${VERSION})is valid SemVer v2.0.0`);
     }
 
     ['@test SEMVER_REGEX properly validates and invalidates version numbers'](assert) {

@@ -6,10 +6,21 @@ import { ENV, context } from 'ember-environment';
 import { IS_NODE, module } from 'node-module';
 import * as utils from 'ember-utils';
 
+const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
+
+Ember.isNamespace = true;
+Ember.toString = function() {
+  return 'Ember';
+};
+
 import { Registry, Container } from 'container';
 
+// container exports
+Ember.Container = Container;
+Ember.Registry = Registry;
+
 // ****ember-metal****
-import Ember, * as metal from 'ember-metal';
+import * as metal from 'ember-metal';
 import * as FLAGS from 'ember/features';
 
 // ember-utils exports
@@ -25,10 +36,6 @@ Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
 Ember.assign = utils.assign;
-
-// container exports
-Ember.Container = Container;
-Ember.Registry = Registry;
 
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
