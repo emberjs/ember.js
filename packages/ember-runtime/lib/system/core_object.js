@@ -22,7 +22,6 @@ import {
   finishChains,
   sendEvent,
   Mixin,
-  REQUIRED,
   defineProperty,
   ComputedProperty,
   InjectedProperty,
@@ -985,11 +984,6 @@ let ClassMixinProps = {
     });
   },
 };
-
-if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
-  ClassMixinProps.ClassMixin = REQUIRED;
-  ClassMixinProps.PrototypeMixin = REQUIRED;
-}
 
 function injectedPropertyAssertion() {
   assert('Injected properties are invalid', validatePropertyInjections(this));
