@@ -5,15 +5,10 @@ import {
 } from 'internal-test-helpers';
 
 import { Route } from 'ember-routing';
-import {
-  Controller,
-  RSVP
-} from 'ember-runtime';
+import { Controller, RSVP } from 'ember-runtime';
 import { run } from 'ember-metal';
-import {
-  Component,
-} from 'ember-glimmer';
-import { jQueryDisabled } from 'ember-views';
+import { Component } from 'ember-glimmer';
+import { jQueryDisabled, jQuery } from 'ember-views';
 
 import Test from '../test';
 import setupForTesting from '../setup_for_testing';
@@ -35,12 +30,6 @@ import {
 
 function registerHelper() {
   Test.registerHelper('LeakyMcLeakLeak', () => {});
-}
-
-function customEvent(name, xhr) {
-  let event = document.createEvent('CustomEvent');
-  event.initCustomEvent(name, true, true, { xhr });
-  document.dispatchEvent(event);
 }
 
 function assertHelpers(assert, application, helperContainer, expected) {
@@ -1033,78 +1022,63 @@ if (!jQueryDisabled) {
         );
       });
     }
-
   });
 
-  moduleFor('ember-testing: pendingRequests', class extends HelpersApplicationTestCase {
+  moduleFor(
+    'ember-testing: pendingRequests',
+    class extends HelpersApplicationTestCase {
+      trigger(type, xhr) {
+        jQuery(document).trigger(type, xhr);
+      }
 
-    [`@test pendingRequests is maintained for ajaxSend and ajaxComplete events`](assert) {
-      assert.equal(
-        pendingRequests(), 0
-      );
+      [`@test pendingRequests is maintained for ajaxSend and ajaxComplete events`](assert) {
+        assert.equal(pendingRequests(), 0);
 
-      let xhr = { some: 'xhr' };
+        let xhr = { some: 'xhr' };
 
-      customEvent('ajaxSend', xhr);
-      assert.equal(
-        pendingRequests(), 1,
-        'Ember.Test.pendingRequests was incremented'
-      );
+        this.trigger('ajaxSend', xhr);
+        assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
-      customEvent('ajaxComplete', xhr);
-      assert.equal(
-        pendingRequests(), 0,
-        'Ember.Test.pendingRequests was decremented'
-      );
+        this.trigger('ajaxComplete', xhr);
+        assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
+      }
+
+      [`@test pendingRequests is ignores ajaxComplete events from past setupForTesting calls`](
+        assert
+      ) {
+        assert.equal(pendingRequests(), 0);
+
+        let xhr = { some: 'xhr' };
+
+        this.trigger('ajaxSend', xhr);
+        assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+
+        setupForTesting();
+
+        assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was reset');
+
+        let altXhr = { some: 'more xhr' };
+
+        this.trigger('ajaxSend', altXhr);
+        assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
+
+        this.trigger('ajaxComplete', xhr);
+        assert.equal(
+          pendingRequests(),
+          1,
+          'Ember.Test.pendingRequests is not impressed with your unexpected complete'
+        );
+      }
+
+      [`@test pendingRequests is reset by setupForTesting`](assert) {
+        incrementPendingRequests();
+
+        setupForTesting();
+
+        assert.equal(pendingRequests(), 0, 'pendingRequests is reset');
+      }
     }
-
-    [`@test pendingRequests is ignores ajaxComplete events from past setupForTesting calls`](assert) {
-      assert.equal(
-        pendingRequests(), 0
-      );
-
-      let xhr = { some: 'xhr' };
-
-      customEvent('ajaxSend', xhr);
-      assert.equal(
-        pendingRequests(), 1,
-        'Ember.Test.pendingRequests was incremented'
-      );
-
-      setupForTesting();
-
-      assert.equal(
-        pendingRequests(), 0,
-        'Ember.Test.pendingRequests was reset'
-      );
-
-      let altXhr = { some: 'more xhr' };
-
-      customEvent('ajaxSend', altXhr);
-      assert.equal(
-        pendingRequests(), 1,
-        'Ember.Test.pendingRequests was incremented'
-      );
-
-      customEvent('ajaxComplete', xhr);
-      assert.equal(
-        pendingRequests(), 1,
-        'Ember.Test.pendingRequests is not impressed with your unexpected complete'
-      );
-    }
-
-    [`@test pendingRequests is reset by setupForTesting`](assert) {
-      incrementPendingRequests();
-
-      setupForTesting();
-
-      assert.equal(
-        pendingRequests(), 0,
-        'pendingRequests is reset'
-      );
-    }
-
-  });
+  );
 
   moduleFor('ember-testing: async router', class extends HelpersTestCase {
     constructor() {
