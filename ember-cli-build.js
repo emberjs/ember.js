@@ -215,13 +215,11 @@ module.exports = function() {
       containerES5,
       emberUtilsES5,
       emberEnvironmentES5,
-      emberMetalES5,
       emberConsoleES5,
       emberTemplateCompilerES5,
       emberDebugES5,
       // metal depends on @glimmer/reference
       ...glimmerTrees(['@glimmer/compiler', '@glimmer/reference']).map(toES5),
-      backburner,
       debugFeatures,
       tokenizer,
       inlineParser,

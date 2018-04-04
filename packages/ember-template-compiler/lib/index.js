@@ -1,7 +1,8 @@
-import _Ember from 'ember-metal';
 import * as FLAGS from 'ember/features';
-import { ENV } from 'ember-environment';
+import { ENV, context } from 'ember-environment';
 import VERSION from 'ember/version';
+
+export const _Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
 
 // private API used by ember-cli-htmlbars to setup ENV and FEATURES
 if (!_Ember.ENV) {
@@ -14,7 +15,9 @@ if (!_Ember.VERSION) {
   _Ember.VERSION = VERSION;
 }
 
-export { _Ember };
+// used for adding Ember.Handlebars.compile for backwards compat
+import setupGlobal from './compat';
+setupGlobal(_Ember);
 
 export { default as precompile } from './system/precompile';
 export { default as compile } from './system/compile';
@@ -24,9 +27,6 @@ export {
   unregisterPlugin,
 } from './system/compile-options';
 export { default as defaultPlugins } from './plugins/index';
-
-// used for adding Ember.Handlebars.compile for backwards compat
-import './compat';
 
 // used to bootstrap templates
 import './system/bootstrap';

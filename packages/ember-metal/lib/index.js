@@ -1,4 +1,3 @@
-export { default } from './core'; // reexports
 export {
   default as computed,
   getCacheFor,
