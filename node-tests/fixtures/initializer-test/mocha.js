@@ -3,7 +3,7 @@ import { describe, it, beforeEach, afterEach } from 'mocha';
 import { run } from '@ember/runloop';
 import Application from '@ember/application';
 import { initialize } from 'my-app/initializers/foo';
-import destroyApp from '../../helpers/destroy-app';
+
 
 describe('Unit | Initializer | foo', function() {
   let application;
@@ -16,7 +16,7 @@ describe('Unit | Initializer | foo', function() {
   });
 
   afterEach(function() {
-    destroyApp(application);
+    run(application, 'destroy');
   });
 
   // Replace this with your real tests.

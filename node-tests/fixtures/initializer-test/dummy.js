@@ -3,7 +3,7 @@ import { run } from '@ember/runloop';
 
 import { initialize } from 'dummy/initializers/foo';
 import { module, test } from 'qunit';
-import destroyApp from '../../helpers/destroy-app';
+
 
 module('Unit | Initializer | foo', {
   beforeEach() {
@@ -13,7 +13,7 @@ module('Unit | Initializer | foo', {
     });
   },
   afterEach() {
-    destroyApp(this.application);
+    run(this.application, 'destroy');
   }
 });
 
