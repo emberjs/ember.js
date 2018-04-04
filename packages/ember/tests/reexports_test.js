@@ -1,7 +1,6 @@
 import Ember from '../index';
 import { ENV } from 'ember-environment';
 import { confirmExport } from 'internal-test-helpers';
-import { DEBUG } from 'ember-env-flags';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -22,27 +21,6 @@ moduleFor(
 
     ['@test Ember.String.isHTMLSafe exports correctly'](assert) {
       confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
-    }
-
-    ['@test Ember.MODEL_FACTORY_INJECTIONS'](assert) {
-      if (DEBUG) {
-        let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
-        assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
-        assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
-
-        assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false);
-
-        expectDeprecation(function() {
-          Ember.MODEL_FACTORY_INJECTIONS = true;
-        }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required');
-        assert.equal(
-          Ember.MODEL_FACTORY_INJECTIONS,
-          false,
-          'writing to the property has no affect'
-        );
-      } else {
-        assert.expect(0);
-      }
     }
   }
 );

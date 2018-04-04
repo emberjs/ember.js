@@ -1,5 +1,4 @@
 import require, { has } from 'require';
-import { DEBUG } from 'ember-env-flags';
 
 // ****ember-environment****
 import { ENV, context } from 'ember-environment';
@@ -33,7 +32,6 @@ Ember.Registry = Registry;
 // need to import this directly, to ensure the babel feature
 // flag plugin works properly
 import * as EmberDebug from 'ember-debug';
-import { deprecate } from 'ember-debug';
 
 // Using _globalsComputed here so that mutating the function is only available
 // in globals builds
@@ -193,22 +191,6 @@ Object.defineProperty(Ember, 'LOG_VERSION', {
   },
   enumerable: false,
 });
-
-if (DEBUG) {
-  Object.defineProperty(Ember, 'MODEL_FACTORY_INJECTIONS', {
-    get() {
-      return false;
-    },
-    set() {
-      deprecate('Ember.MODEL_FACTORY_INJECTIONS is no longer required', false, {
-        id: 'ember-metal.model_factory_injections',
-        until: '2.17.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_id-ember-metal-model_factory_injections',
-      });
-    },
-    enumerable: false,
-  });
-}
 
 Object.defineProperty(Ember, 'LOG_BINDINGS', {
   get() {
