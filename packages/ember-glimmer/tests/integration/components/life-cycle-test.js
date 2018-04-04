@@ -10,7 +10,7 @@ import { runAppend } from 'internal-test-helpers';
 
 class LifeCycleHooksTest extends RenderingTest {
   constructor() {
-    super();
+    super(...arguments);
     this.hooks = [];
     this.components = {};
     this.componentRegistry = [];

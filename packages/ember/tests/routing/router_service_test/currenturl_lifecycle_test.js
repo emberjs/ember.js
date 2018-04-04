@@ -33,7 +33,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     'Router Service - currentURL',
     class extends RouterTestCase {
       constructor() {
-        super();
+        super(...arguments);
 
         results = [];
 

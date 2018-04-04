@@ -5,7 +5,7 @@ import { assign } from 'ember-utils';
 
 export default class ApplicationTestCase extends TestResolverApplicationTestCase {
   constructor() {
-    super();
+    super(...arguments);
 
     let { applicationOptions } = this;
     this.application = this.runTask(() => this.createApplication(applicationOptions));

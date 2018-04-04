@@ -19,7 +19,7 @@ moduleFor(
   'Basic Routing - Decoupled from global resolver',
   class extends ApplicationTestCase {
     constructor() {
-      super();
+      super(...arguments);
       this.addTemplate('home', '<h3 class="hours">Hours</h3>');
       this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
       this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{model.home}}</p>');

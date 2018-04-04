@@ -1128,7 +1128,7 @@ if (typeof MutationObserver === 'function') {
     'Syntax test: {{#each as}} DOM mutation test',
     class extends RenderingTest {
       constructor() {
-        super();
+        super(...arguments);
         this.observer = null;
       }
 

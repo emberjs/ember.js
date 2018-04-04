@@ -212,7 +212,7 @@ moduleFor(
   'Application, default resolver with autoboot',
   class extends DefaultResolverApplicationTestCase {
     constructor() {
-      super();
+      super(...arguments);
       this.originalLookup = context.lookup;
     }
 
@@ -263,7 +263,7 @@ moduleFor(
   'Application, autobooting',
   class extends AutobootApplicationTestCase {
     constructor() {
-      super();
+      super(...arguments);
       this.originalLogVersion = ENV.LOG_VERSION;
       this.originalDebug = getDebugFunction('debug');
       this.originalWarn = getDebugFunction('warn');

@@ -15,7 +15,7 @@ moduleFor(
         });
       });
 
-      super();
+      super(...arguments);
       this.originalMacros = originalMacros;
     }
 

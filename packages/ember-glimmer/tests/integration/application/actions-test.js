@@ -11,7 +11,7 @@ moduleFor(
   class extends ApplicationTest {
     constructor() {
       setDebugFunction('debug', noop);
-      super();
+      super(...arguments);
     }
 
     teardown() {

@@ -6,7 +6,7 @@ moduleFor(
   'Helpers test: {{loc}}',
   class extends RenderingTest {
     constructor() {
-      super();
+      super(...arguments);
       setStrings({
         'Hello Friend': 'Hallo Freund',
         Hello: 'Hallo, %@',

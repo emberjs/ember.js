@@ -12,7 +12,7 @@ const TextNode = window.Text;
 
 export default class AbstractRenderingTestCase extends AbstractTestCase {
   constructor() {
-    super();
+    super(...arguments);
     let bootOptions = this.getBootOptions();
 
     let owner = (this.owner = buildOwner({

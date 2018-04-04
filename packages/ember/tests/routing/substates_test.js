@@ -13,7 +13,7 @@ moduleFor(
   'Loading/Error Substates',
   class extends ApplicationTestCase {
     constructor() {
-      super();
+      super(...arguments);
       counter = 1;
 
       this.addTemplate('application', `<div id="app">{{outlet}}</div>`);
@@ -539,7 +539,7 @@ moduleFor(
   'Loading/Error Substates - nested routes',
   class extends ApplicationTestCase {
     constructor() {
-      super();
+      super(...arguments);
 
       counter = 1;
 

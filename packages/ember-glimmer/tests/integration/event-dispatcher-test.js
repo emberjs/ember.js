@@ -113,7 +113,7 @@ moduleFor(
   'EventDispatcher#setup',
   class extends RenderingTest {
     constructor() {
-      super();
+      super(...arguments);
 
       let dispatcher = this.owner.lookup('event_dispatcher:main');
       run(dispatcher, 'destroy');

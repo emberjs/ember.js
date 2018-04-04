@@ -26,10 +26,10 @@ function isMarker(node) {
 }
 
 export default class AbstractTestCase {
-  constructor() {
+  constructor(assert) {
     this.element = null;
     this.snapshot = null;
-    this.assert = QUnit.config.current.assert;
+    this.assert = assert;
 
     let { fixture } = this;
     if (fixture) {
