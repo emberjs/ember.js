@@ -4,7 +4,7 @@ import { Route } from 'ember-routing';
 import { Controller, RSVP } from 'ember-runtime';
 import { later } from 'ember-metal';
 import { Component } from 'ember-glimmer';
-import { jQueryDisabled } from 'ember-views';
+import { jQueryDisabled, jQuery } from 'ember-views';
 
 import Test from '../test';
 import setupForTesting from '../setup_for_testing';
@@ -24,12 +24,6 @@ var noop = function() {};
 
 function registerHelper() {
   Test.registerHelper('LeakyMcLeakLeak', () => {});
-}
-
-function customEvent(name, xhr) {
-  let event = document.createEvent('CustomEvent');
-  event.initCustomEvent(name, true, true, { xhr });
-  document.dispatchEvent(event);
 }
 
 function assertHelpers(assert, application, helperContainer, expected) {
@@ -1040,15 +1034,19 @@ if (!jQueryDisabled) {
   moduleFor(
     'ember-testing: pendingRequests',
     class extends HelpersApplicationTestCase {
+      trigger(type, xhr) {
+        jQuery(document).trigger(type, xhr);
+      }
+
       [`@test pendingRequests is maintained for ajaxSend and ajaxComplete events`](assert) {
         assert.equal(pendingRequests(), 0);
 
         let xhr = { some: 'xhr' };
 
-        customEvent('ajaxSend', xhr);
+        this.trigger('ajaxSend', xhr);
         assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
-        customEvent('ajaxComplete', xhr);
+        this.trigger('ajaxComplete', xhr);
         assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
       }
 
@@ -1059,7 +1057,7 @@ if (!jQueryDisabled) {
 
         let xhr = { some: 'xhr' };
 
-        customEvent('ajaxSend', xhr);
+        this.trigger('ajaxSend', xhr);
         assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
         setupForTesting();
@@ -1068,10 +1066,10 @@ if (!jQueryDisabled) {
 
         let altXhr = { some: 'more xhr' };
 
-        customEvent('ajaxSend', altXhr);
+        this.trigger('ajaxSend', altXhr);
         assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
-        customEvent('ajaxComplete', xhr);
+        this.trigger('ajaxComplete', xhr);
         assert.equal(
           pendingRequests(),
           1,
