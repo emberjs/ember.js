@@ -2,7 +2,6 @@ import Application from '@ember/application';
 import { run } from '@ember/runloop';
 import { initialize } from 'my-app/instance-initializers/foo';
 import { module, test } from 'qunit';
-import destroyApp from '../../helpers/destroy-app';
 
 module('Unit | Instance Initializer | foo', {
   beforeEach() {
@@ -13,7 +12,7 @@ module('Unit | Instance Initializer | foo', {
   },
   afterEach() {
     run(this.appInstance, 'destroy');
-    destroyApp(this.application);
+    run(this.application, 'destroy');
   }
 });
 
