@@ -3519,6 +3519,7 @@ moduleFor(
           },
         })
       );
+      console.error = () => {};
 
       this.visit('/').then(() => {
         let rootElement = document.querySelector('#qunit-fixture');
