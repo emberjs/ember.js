@@ -15,20 +15,31 @@ function getDescriptor(obj, path) {
 }
 
 export default function confirmExport(Ember, assert, path, moduleId, exportName) {
-  let desc = getDescriptor(Ember, path);
-  assert.ok(desc, 'the property exists on the global');
+  try {
+    let desc = getDescriptor(Ember, path);
+    assert.ok(desc, `the ${path} property exists on the Ember global`);
 
-  let mod = require(moduleId);
-  if (typeof exportName === 'string') {
-    assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
-    assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
-  } else {
-    assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
-    assert.notEqual(desc.get, undefined, `Ember.${path} getter is not undefined`);
+    if (typeof exportName === 'string') {
+      let mod = require(moduleId);
+      assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
+      assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
+    } else if ('value' in desc) {
+      assert.equal(desc.value, exportName.value, `Ember.${path} is exported correctly`);
+    } else {
+      let mod = require(moduleId);
+      assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
+      assert.notEqual(desc.get, undefined, `Ember.${path} getter is not undefined`);
 
-    if (exportName.set) {
-      assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
-      assert.notEqual(desc.set, undefined, `Ember.${path} setter is not undefined`);
+      if (exportName.set) {
+        assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
+        assert.notEqual(desc.set, undefined, `Ember.${path} setter is not undefined`);
+      }
     }
+  } catch (error) {
+    assert.pushResult({
+      result: false,
+      message: `An error occured while testing ${path} is exported from ${moduleId}.`,
+      source: error,
+    });
   }
 }
