@@ -21,7 +21,11 @@ export default function confirmExport(Ember, assert, path, moduleId, exportName)
 
     if (typeof exportName === 'string') {
       let mod = require(moduleId);
-      assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
+      if (desc.value) {
+        assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
+      } else {
+        assert.equal(desc.get(), mod[exportName], `Ember.${path} is exported correctly`);
+      }
       assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
     } else if ('value' in desc) {
       assert.equal(desc.value, exportName.value, `Ember.${path} is exported correctly`);

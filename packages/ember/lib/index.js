@@ -1,259 +1,314 @@
 import require, { has } from 'require';
 
-import { getENV, getLookup, setLookup, ENV, context } from 'ember-environment';
+import { ENV, context } from 'ember-environment';
 import { IS_NODE, module } from 'node-module';
-import * as utils from 'ember-utils';
-import { Registry, Container } from 'container';
 import * as metal from 'ember-metal';
-import * as FLAGS from 'ember/features';
-import * as EmberDebug from 'ember-debug';
-import Backburner from 'backburner';
-import Logger from 'ember-console';
-import {
-  String as EmberString,
-  Object as EmberObject,
-  RegistryProxyMixin,
-  ContainerProxyMixin,
-  compare,
-  copy,
-  isEqual,
-  inject,
-  Array as EmberArray,
-  Copyable,
-  MutableEnumerable,
-  MutableArray,
-  TargetActionSupport,
-  Evented,
-  PromiseProxyMixin,
-  Observable,
-  typeOf,
-  isArray,
-  onLoad,
-  runLoadHooks,
-  Controller,
-  ControllerMixin,
-  Service,
-  _ProxyMixin,
-  RSVP,
-  Comparable,
-  Namespace,
-  Enumerable,
-  ArrayProxy,
-  ObjectProxy,
-  ActionHandler,
-  CoreObject,
-  NativeArray,
-  A,
-  getStrings,
-  setStrings,
-
-  // computed macros
-  empty,
-  notEmpty,
-  none,
-  not,
-  bool,
-  match,
-  equal,
-  gt,
-  gte,
-  lt,
-  lte,
-  oneWay,
-  readOnly,
-  deprecatingAlias,
-  and,
-  or,
-
-  // reduced computed macros
-  sum,
-  min,
-  max,
-  map,
-  sort,
-  setDiff,
-  mapBy,
-  filter,
-  filterBy,
-  uniq,
-  uniqBy,
-  union,
-  intersect,
-  collect,
-} from 'ember-runtime';
-import {
-  Checkbox,
-  Component,
-  componentManager,
-  escapeExpression,
-  getTemplates,
-  Helper,
-  helper,
-  htmlSafe,
-  isHTMLSafe,
-  LinkComponent,
-  setTemplates,
-  template,
-  TextField,
-  TextArea,
-  isSerializationFirstNode,
-} from 'ember-glimmer';
+import { runLoadHooks } from 'ember-runtime';
+import { htmlSafe } from 'ember-glimmer';
 import VERSION from './version';
-import * as views from 'ember-views';
-import * as routing from 'ember-routing';
 import * as application from 'ember-application';
-import * as extensionSupport from 'ember-extension-support';
-
-// ****ember-environment****
 
 const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
+Ember.Debug = {};
+Ember.platform = {
+  defineProperty: true,
+  hasPropertyAccessors: true,
+};
+Ember.Instrumentation = {};
+Ember.ViewUtils = {};
+Ember.Handlebars = { Utils: {} };
+Ember.HTMLBars = {};
+
+function setupSimpleExport(object, name, moduleName, exportName) {
+  let value;
+  Object.defineProperty(object, name, {
+    get() {
+      if (value === undefined) {
+        value = require(moduleName)[exportName || name];
+      }
+
+      return value;
+    },
+  });
+}
+
+function setupDynamicExport(object, name, moduleName, exportNames) {
+  let module = require(moduleName);
+
+  let descriptor = {
+    get: module[exportNames.get],
+  };
+
+  if (exportNames.set) {
+    descriptor.set = module[exportNames.set];
+  }
+
+  Object.defineProperty(object, name, descriptor);
+}
+
+let topLevelExports = [
+  [Ember, 'ENV', 'ember-environment', { get: 'getENV' }],
+  [Ember, 'lookup', 'ember-environment', { get: 'getLookup', set: 'setLookup' }],
+
+  [Ember, 'getOwner', 'ember-utils'],
+  [Ember, 'setOwner', 'ember-utils'],
+  [Ember, 'assign', 'ember-utils'],
+  [Ember, 'GUID_KEY', 'ember-utils'],
+  [Ember, 'uuid', 'ember-utils'],
+  [Ember, 'generateGuid', 'ember-utils'],
+  [Ember, 'guidFor', 'ember-utils'],
+  [Ember, 'inspect', 'ember-utils'],
+  [Ember, 'makeArray', 'ember-utils'],
+  [Ember, 'canInvoke', 'ember-utils'],
+  [Ember, 'tryInvoke', 'ember-utils'],
+  [Ember, 'wrap', 'ember-utils'],
+  [Ember, 'NAME_KEY', 'ember-utils'],
+
+  [Ember, 'Registry', 'container'],
+  [Ember, 'Container', 'container'],
+
+  [Ember, 'deprecateFunc', 'ember-debug'],
+  [Ember, 'deprecate', 'ember-debug'],
+  [Ember, 'assert', 'ember-debug'],
+  [Ember, 'warn', 'ember-debug'],
+  [Ember, 'debug', 'ember-debug'],
+  [Ember, 'runInDebug', 'ember-debug'],
+  [Ember, 'Error', 'ember-debug'],
+  [Ember.Debug, 'registerDeprecationHandler', 'ember-debug', 'registerDeprecationHandler'],
+  [Ember.Debug, 'registerWarnHandler', 'ember-debug', 'registerWarnHandler'],
+
+  [Ember, 'computed', 'ember-metal', '_globalsComputed'],
+  [Ember, 'ComputedProperty', 'ember-metal'],
+  [Ember, 'cacheFor', 'ember-metal', 'getCachedValueFor'],
+  [Ember, 'merge', 'ember-metal'],
+  [Ember, 'instrument', 'ember-metal'],
+  [Ember, 'subscribe', 'ember-metal', 'instrumentationSubscribe'],
+  [Ember.Instrumentation, 'instrument', 'ember-metal', 'instrument'],
+  [Ember.Instrumentation, 'subscribe', 'ember-metal', 'instrumentationSubscribe'],
+  [Ember.Instrumentation, 'unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
+  [Ember.Instrumentation, 'reset', 'ember-metal', 'instrumentationReset'],
+
+  [Ember, 'testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
+  [Ember, 'onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
+  [Ember, 'FEATURES', 'ember/features'],
+  [Ember, 'meta', 'ember-metal'],
+  [Ember, 'get', 'ember-metal'],
+  [Ember, 'set', 'ember-metal'],
+  [Ember, '_getPath', 'ember-metal'],
+  [Ember, 'getWithDefault', 'ember-metal'],
+  [Ember, 'trySet', 'ember-metal'],
+  [Ember, '_Cache', 'ember-metal', 'Cache'],
+  [Ember, 'on', 'ember-metal'],
+  [Ember, 'addListener', 'ember-metal'],
+  [Ember, 'removeListener', 'ember-metal'],
+  [Ember, 'sendEvent', 'ember-metal'],
+  [Ember, 'hasListeners', 'ember-metal'],
+  [Ember, 'isNone', 'ember-metal'],
+  [Ember, 'isEmpty', 'ember-metal'],
+  [Ember, 'isBlank', 'ember-metal'],
+  [Ember, 'isPresent', 'ember-metal'],
+  [Ember, '_Backburner', 'backburner', 'default'],
+  [Ember, 'run', 'ember-metal', '_globalsRun'],
+  [Ember, 'propertyWillChange', 'ember-metal'],
+  [Ember, 'propertyDidChange', 'ember-metal'],
+  [Ember, 'notifyPropertyChange', 'ember-metal'],
+  [Ember, 'overrideChains', 'ember-metal'],
+  [Ember, 'beginPropertyChanges', 'ember-metal'],
+  [Ember, 'endPropertyChanges', 'ember-metal'],
+  [Ember, 'changeProperties', 'ember-metal'],
+  [Ember, 'defineProperty', 'ember-metal'],
+  [Ember, 'watchKey', 'ember-metal'],
+  [Ember, 'unwatchKey', 'ember-metal'],
+  [Ember, 'removeChainWatcher', 'ember-metal'],
+  [Ember, '_ChainNode', 'ember-metal', 'ChainNode'],
+  [Ember, 'finishChains', 'ember-metal'],
+  [Ember, 'watchPath', 'ember-metal'],
+  [Ember, 'unwatchPath', 'ember-metal'],
+  [Ember, 'watch', 'ember-metal'],
+  [Ember, 'isWatching', 'ember-metal'],
+  [Ember, 'unwatch', 'ember-metal'],
+  [Ember, 'destroy', 'ember-metal', 'deleteMeta'],
+  [Ember, 'libraries', 'ember-metal'],
+  [Ember, 'OrderedSet', 'ember-metal'],
+  [Ember, 'Map', 'ember-metal'],
+  [Ember, 'MapWithDefault', 'ember-metal'],
+  [Ember, 'getProperties', 'ember-metal'],
+  [Ember, 'setProperties', 'ember-metal'],
+  [Ember, 'expandProperties', 'ember-metal'],
+  [Ember, 'addObserver', 'ember-metal'],
+  [Ember, 'removeObserver', 'ember-metal'],
+  [Ember, 'aliasMethod', 'ember-metal'],
+  [Ember, 'observer', 'ember-metal'],
+  [Ember, 'mixin', 'ember-metal'],
+  [Ember, 'Mixin', 'ember-metal'],
+
+  [Ember, 'Logger', 'ember-console', 'default'],
+
+  [Ember, '$', 'ember-views', 'jQuery'],
+  [Ember.ViewUtils, 'isSimpleClick', 'ember-views', 'isSimpleClick'],
+  [Ember.ViewUtils, 'getViewElement', 'ember-views', 'getViewElement'],
+  [Ember.ViewUtils, 'getViewBounds', 'ember-views', 'getViewBounds'],
+  [Ember.ViewUtils, 'getViewClientRects', 'ember-views', 'getViewClientRects'],
+  [Ember.ViewUtils, 'getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
+  [Ember.ViewUtils, 'getRootViews', 'ember-views', 'getRootViews'],
+  [Ember.ViewUtils, 'getChildViews', 'ember-views', 'getChildViews'],
+  [Ember.ViewUtils, 'isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
+  [Ember, 'TextSupport', 'ember-views'],
+  [Ember, 'ComponentLookup', 'ember-views'],
+  [Ember, 'EventDispatcher', 'ember-views'],
+
+  [Ember, 'A', 'ember-runtime'],
+  [Ember, '_RegistryProxyMixin', 'ember-runtime', 'RegistryProxyMixin'],
+  [Ember, '_ContainerProxyMixin', 'ember-runtime', 'ContainerProxyMixin'],
+  [Ember, 'Object', 'ember-runtime'],
+  [Ember, 'String', 'ember-runtime'],
+  [Ember, 'compare', 'ember-runtime'],
+  [Ember, 'copy', 'ember-runtime'],
+  [Ember, 'isEqual', 'ember-runtime'],
+  [Ember, 'inject', 'ember-runtime'],
+  [Ember, 'Array', 'ember-runtime'],
+  [Ember, 'Comparable', 'ember-runtime'],
+  [Ember, 'Namespace', 'ember-runtime'],
+  [Ember, 'Enumerable', 'ember-runtime'],
+  [Ember, 'ArrayProxy', 'ember-runtime'],
+  [Ember, 'ObjectProxy', 'ember-runtime'],
+  [Ember, 'ActionHandler', 'ember-runtime'],
+  [Ember, 'CoreObject', 'ember-runtime'],
+  [Ember, 'NativeArray', 'ember-runtime'],
+  [Ember, 'Copyable', 'ember-runtime'],
+  [Ember, 'MutableEnumerable', 'ember-runtime'],
+  [Ember, 'MutableArray', 'ember-runtime'],
+  [Ember, 'TargetActionSupport', 'ember-runtime'],
+  [Ember, 'Evented', 'ember-runtime'],
+  [Ember, 'PromiseProxyMixin', 'ember-runtime'],
+  [Ember, 'Observable', 'ember-runtime'],
+  [Ember, 'typeOf', 'ember-runtime'],
+  [Ember, 'isArray', 'ember-runtime'],
+  [Ember, 'onLoad', 'ember-runtime'],
+  [Ember, 'runLoadHooks', 'ember-runtime'],
+  [Ember, 'Controller', 'ember-runtime'],
+  [Ember, 'ControllerMixin', 'ember-runtime'],
+  [Ember, 'Service', 'ember-runtime'],
+  [Ember, '_ProxyMixin', 'ember-runtime'],
+  [Ember, 'RSVP', 'ember-runtime'],
+  [Ember, 'STRINGS', 'ember-runtime', { get: 'getStrings', set: 'setStrings' }],
+  [
+    Ember,
+    'BOOTED',
+    'ember-metal',
+    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
+  ],
+
+  [Ember, 'Component', 'ember-glimmer'],
+  [Ember, 'Helper', 'ember-glimmer'],
+  [Ember, 'Checkbox', 'ember-glimmer'],
+  [Ember, 'LinkComponent', 'ember-glimmer'],
+  [Ember, 'TextArea', 'ember-glimmer'],
+  [Ember, 'TextField', 'ember-glimmer'],
+  [Ember, 'TEMPLATES', 'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
+  [Ember, '_setComponentManager', 'ember-glimmer', 'componentManager'],
+
+  [Ember, 'Location', 'ember-routing'],
+  [Ember, 'AutoLocation', 'ember-routing'],
+  [Ember, 'HashLocation', 'ember-routing'],
+  [Ember, 'HistoryLocation', 'ember-routing'],
+  [Ember, 'NoneLocation', 'ember-routing'],
+  [Ember, 'controllerFor', 'ember-routing'],
+  [Ember, 'generateControllerFactory', 'ember-routing'],
+  [Ember, 'generateController', 'ember-routing'],
+  [Ember, 'RouterDSL', 'ember-routing'],
+  [Ember, 'Router', 'ember-routing'],
+  [Ember, 'Route', 'ember-routing'],
+
+  [Ember, 'Application', 'ember-application'],
+  [Ember, 'ApplicationInstance', 'ember-application'],
+  [Ember, 'Engine', 'ember-application'],
+  [Ember, 'EngineInstance', 'ember-application'],
+  [Ember, 'Resolver', 'ember-application'],
+  [Ember, 'DefaultResolver', 'ember-application', 'Resolver'],
+
+  [Ember, 'DataAdapter', 'ember-extension-support'],
+  [Ember, 'ContainerDebugAdapter', 'ember-extension-support'],
+];
+for (let i = 0; i < topLevelExports.length; i++) {
+  if (typeof topLevelExports[i][3] === 'object') {
+    setupDynamicExport(...topLevelExports[i]);
+  } else {
+    setupSimpleExport(...topLevelExports[i]);
+  }
+}
+
+setupSimpleExport(Ember.FEATURES, 'isEnabled', 'ember-debug', 'isFeatureEnabled');
+setupSimpleExport(Ember.Helper, 'helper', 'ember-glimmer');
+setupSimpleExport(Ember.Handlebars.Utils, 'escapeExpression', 'ember-glimmer');
+setupSimpleExport(Ember.Handlebars, 'template', 'ember-glimmer');
+setupSimpleExport(Ember.HTMLBars, 'template', 'ember-glimmer');
+setupSimpleExport(Ember.String, 'htmlSafe', 'ember-glimmer');
+setupSimpleExport(Ember.String, 'isHTMLSafe', 'ember-glimmer');
+
+let runExports = [
+  ['backburner', 'ember-metal', 'backburner'],
+  ['begin', 'ember-metal', 'begin'],
+  ['bind', 'ember-metal', 'bind'],
+  ['cancel', 'ember-metal', 'cancel'],
+  ['debounce', 'ember-metal', 'debounce'],
+  ['end', 'ember-metal', 'end'],
+  ['hasScheduledTimers', 'ember-metal', 'hasScheduledTimers'],
+  ['join', 'ember-metal', 'join'],
+  ['later', 'ember-metal', 'later'],
+  ['next', 'ember-metal', 'next'],
+  ['once', 'ember-metal', 'once'],
+  ['schedule', 'ember-metal', 'schedule'],
+  ['scheduleOnce', 'ember-metal', 'scheduleOnce'],
+  ['throttle', 'ember-metal', 'throttle'],
+];
+for (let i = 0; i < runExports.length; i++) {
+  setupSimpleExport(Ember.run, ...runExports[i]);
+}
+setupDynamicExport(Ember.run, 'currentRunLoop', 'ember-metal', { get: 'getCurrentRunLoop' });
+
+let computedExports = [
+  ['alias', 'ember-metal'],
+  ['empty', 'ember-runtime'],
+  ['notEmpty', 'ember-runtime'],
+  ['none', 'ember-runtime'],
+  ['not', 'ember-runtime'],
+  ['bool', 'ember-runtime'],
+  ['match', 'ember-runtime'],
+  ['equal', 'ember-runtime'],
+  ['gt', 'ember-runtime'],
+  ['gte', 'ember-runtime'],
+  ['lt', 'ember-runtime'],
+  ['lte', 'ember-runtime'],
+  ['oneWay', 'ember-runtime'],
+  ['reads', 'ember-runtime', 'oneWay'],
+  ['readOnly', 'ember-runtime'],
+  ['deprecatingAlias', 'ember-runtime'],
+  ['and', 'ember-runtime'],
+  ['or', 'ember-runtime'],
+  ['sum', 'ember-runtime'],
+  ['min', 'ember-runtime'],
+  ['max', 'ember-runtime'],
+  ['map', 'ember-runtime'],
+  ['sort', 'ember-runtime'],
+  ['setDiff', 'ember-runtime'],
+  ['mapBy', 'ember-runtime'],
+  ['filter', 'ember-runtime'],
+  ['filterBy', 'ember-runtime'],
+  ['uniq', 'ember-runtime'],
+  ['uniqBy', 'ember-runtime'],
+  ['union', 'ember-runtime'],
+  ['intersect', 'ember-runtime'],
+  ['collect', 'ember-runtime'],
+];
+for (let i = 0; i < computedExports.length; i++) {
+  setupSimpleExport(Ember.computed, ...computedExports[i]);
+}
 
 Ember.isNamespace = true;
 Ember.toString = function() {
   return 'Ember';
 };
-
-Object.defineProperty(Ember, 'ENV', {
-  get: getENV,
-  enumerable: false,
-});
-
-Object.defineProperty(Ember, 'lookup', {
-  get: getLookup,
-  set: setLookup,
-  enumerable: false,
-});
-
-// ****ember-utils****
-Ember.getOwner = utils.getOwner;
-Ember.setOwner = utils.setOwner;
-Ember.generateGuid = utils.generateGuid;
-Ember.GUID_KEY = utils.GUID_KEY;
-Ember.guidFor = utils.guidFor;
-Ember.inspect = utils.inspect;
-Ember.makeArray = utils.makeArray;
-Ember.canInvoke = utils.canInvoke;
-Ember.tryInvoke = utils.tryInvoke;
-Ember.wrap = utils.wrap;
-Ember.uuid = utils.uuid;
-Ember.assign = utils.assign;
-Ember.NAME_KEY = utils.NAME_KEY;
-
-// ****container****
-Ember.Container = Container;
-Ember.Registry = Registry;
-
-// ****ember-debug****
-Ember.assert = EmberDebug.assert;
-Ember.warn = EmberDebug.warn;
-Ember.debug = EmberDebug.debug;
-Ember.deprecate = EmberDebug.deprecate;
-Ember.deprecateFunc = EmberDebug.deprecateFunc;
-Ember.runInDebug = EmberDebug.runInDebug;
-Ember.Error = EmberDebug.Error;
-
-/**
-  @public
-  @class Ember.Debug
-*/
-Ember.Debug = {
-  registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
-  registerWarnHandler: EmberDebug.registerWarnHandler,
-};
-
-// ****ember-metal****
-
-// Using _globalsComputed here so that mutating the function is only available
-// in globals builds
-const computed = metal._globalsComputed;
-Ember.computed = computed;
-computed.alias = metal.alias;
-Ember.ComputedProperty = metal.ComputedProperty;
-Ember.cacheFor = metal.getCachedValueFor;
-Ember.merge = metal.merge;
-Ember.instrument = metal.instrument;
-Ember.subscribe = metal.instrumentationSubscribe;
-Ember.Instrumentation = {
-  instrument: metal.instrument,
-  subscribe: metal.instrumentationSubscribe,
-  unsubscribe: metal.instrumentationUnsubscribe,
-  reset: metal.instrumentationReset,
-};
-Ember.meta = metal.meta;
-Ember.get = metal.get;
-Ember.getWithDefault = metal.getWithDefault;
-Ember._getPath = metal._getPath;
-Ember.set = metal.set;
-Ember.trySet = metal.trySet;
-Ember.FEATURES = FLAGS.FEATURES;
-Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
-Ember._Cache = metal.Cache;
-Ember.on = metal.on;
-Ember.addListener = metal.addListener;
-Ember.removeListener = metal.removeListener;
-Ember.sendEvent = metal.sendEvent;
-Ember.hasListeners = metal.hasListeners;
-Ember.isNone = metal.isNone;
-Ember.isEmpty = metal.isEmpty;
-Ember.isBlank = metal.isBlank;
-Ember.isPresent = metal.isPresent;
-// Using _globalsRun here so that mutating the function (adding
-// `next`, `later`, etc to it) is only available in globals builds
-Ember.run = metal._globalsRun;
-Ember.run.backburner = metal.backburner;
-Ember.run.begin = metal.begin;
-Ember.run.bind = metal.bind;
-Ember.run.cancel = metal.cancel;
-Ember.run.debounce = metal.debounce;
-Ember.run.end = metal.end;
-Ember.run.hasScheduledTimers = metal.hasScheduledTimers;
-Ember.run.join = metal.join;
-Ember.run.later = metal.later;
-Ember.run.next = metal.next;
-Ember.run.once = metal.once;
-Ember.run.schedule = metal.schedule;
-Ember.run.scheduleOnce = metal.scheduleOnce;
-Ember.run.throttle = metal.throttle;
-Object.defineProperty(Ember.run, 'currentRunLoop', {
-  get: metal.getCurrentRunLoop,
-  enumerable: false,
-});
-Ember.propertyWillChange = metal.propertyWillChange;
-Ember.propertyDidChange = metal.propertyDidChange;
-Ember.notifyPropertyChange = metal.notifyPropertyChange;
-Ember.overrideChains = metal.overrideChains;
-Ember.beginPropertyChanges = metal.beginPropertyChanges;
-Ember.endPropertyChanges = metal.endPropertyChanges;
-Ember.changeProperties = metal.changeProperties;
-Ember.platform = {
-  defineProperty: true,
-  hasPropertyAccessors: true,
-};
-Ember.defineProperty = metal.defineProperty;
-Ember.watchKey = metal.watchKey;
-Ember.unwatchKey = metal.unwatchKey;
-Ember.removeChainWatcher = metal.removeChainWatcher;
-Ember._ChainNode = metal.ChainNode;
-Ember.finishChains = metal.finishChains;
-Ember.watchPath = metal.watchPath;
-Ember.unwatchPath = metal.unwatchPath;
-Ember.watch = metal.watch;
-Ember.isWatching = metal.isWatching;
-Ember.unwatch = metal.unwatch;
-Ember.destroy = metal.deleteMeta;
-Ember.libraries = metal.libraries;
-Ember.OrderedSet = metal.OrderedSet;
-Ember.Map = metal.Map;
-Ember.MapWithDefault = metal.MapWithDefault;
-Ember.getProperties = metal.getProperties;
-Ember.setProperties = metal.setProperties;
-Ember.expandProperties = metal.expandProperties;
-Ember.addObserver = metal.addObserver;
-Ember.removeObserver = metal.removeObserver;
-Ember.aliasMethod = metal.aliasMethod;
-Ember.observer = metal.observer;
-Ember.mixin = metal.mixin;
-Ember.Mixin = metal.Mixin;
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
@@ -278,93 +333,6 @@ Ember.Mixin = metal.Mixin;
   @param {Exception} error the error object
   @public
 */
-Object.defineProperty(Ember, 'onerror', {
-  get: metal.getOnerror,
-  set: metal.setOnerror,
-  enumerable: false,
-});
-
-Object.defineProperty(Ember, 'testing', {
-  get: EmberDebug.isTesting,
-  set: EmberDebug.setTesting,
-  enumerable: false,
-});
-
-Ember._Backburner = Backburner;
-
-// ****ember-console****
-Ember.Logger = Logger;
-
-// ****ember-runtime****
-Ember.A = A;
-Ember.String = EmberString;
-Ember.Object = EmberObject;
-Ember._RegistryProxyMixin = RegistryProxyMixin;
-Ember._ContainerProxyMixin = ContainerProxyMixin;
-Ember.compare = compare;
-Ember.copy = copy;
-Ember.isEqual = isEqual;
-Ember.inject = inject;
-Ember.Array = EmberArray;
-Ember.Comparable = Comparable;
-Ember.Enumerable = Enumerable;
-Ember.ArrayProxy = ArrayProxy;
-Ember.ObjectProxy = ObjectProxy;
-Ember.ActionHandler = ActionHandler;
-Ember.CoreObject = CoreObject;
-Ember.NativeArray = NativeArray;
-Ember.Copyable = Copyable;
-Ember.MutableEnumerable = MutableEnumerable;
-Ember.MutableArray = MutableArray;
-Ember.TargetActionSupport = TargetActionSupport;
-Ember.Evented = Evented;
-Ember.PromiseProxyMixin = PromiseProxyMixin;
-Ember.Observable = Observable;
-Ember.typeOf = typeOf;
-Ember.isArray = isArray;
-Ember.Object = EmberObject;
-Ember.onLoad = onLoad;
-Ember.runLoadHooks = runLoadHooks;
-Ember.Controller = Controller;
-Ember.ControllerMixin = ControllerMixin;
-Ember.Service = Service;
-Ember._ProxyMixin = _ProxyMixin;
-Ember.RSVP = RSVP;
-Ember.Namespace = Namespace;
-
-computed.empty = empty;
-computed.notEmpty = notEmpty;
-computed.none = none;
-computed.not = not;
-computed.bool = bool;
-computed.match = match;
-computed.equal = equal;
-computed.gt = gt;
-computed.gte = gte;
-computed.lt = lt;
-computed.lte = lte;
-computed.oneWay = oneWay;
-computed.reads = oneWay;
-computed.readOnly = readOnly;
-computed.deprecatingAlias = deprecatingAlias;
-computed.and = and;
-computed.or = or;
-
-computed.sum = sum;
-computed.min = min;
-computed.max = max;
-computed.map = map;
-computed.sort = sort;
-computed.setDiff = setDiff;
-computed.mapBy = mapBy;
-computed.filter = filter;
-computed.filterBy = filterBy;
-computed.uniq = uniq;
-
-computed.uniqBy = uniqBy;
-computed.union = union;
-computed.intersect = intersect;
-computed.collect = collect;
 
 /**
   Defines the hash of localized strings for the current language. Used by
@@ -376,11 +344,6 @@ computed.collect = collect;
   @type Object
   @private
 */
-Object.defineProperty(Ember, 'STRINGS', {
-  configurable: false,
-  get: getStrings,
-  set: setStrings,
-});
 
 /**
   Whether searching on the global for new Namespace instances is enabled.
@@ -396,39 +359,12 @@ Object.defineProperty(Ember, 'STRINGS', {
   @type Boolean
   @private
 */
-Object.defineProperty(Ember, 'BOOTED', {
-  configurable: false,
-  enumerable: false,
-  get: metal.isNamespaceSearchDisabled,
-  set: metal.setNamespaceSearchDisabled,
-});
-
-// ****ember-glimmer****
-Ember.Component = Component;
-Helper.helper = helper;
-Ember.Helper = Helper;
-Ember.Checkbox = Checkbox;
-Ember.TextField = TextField;
-Ember.TextArea = TextArea;
-Ember.LinkComponent = LinkComponent;
-Ember._setComponentManager = componentManager;
-Ember.Handlebars = {
-  template,
-  Utils: {
-    escapeExpression,
-  },
-};
-Ember.HTMLBars = {
-  template,
-};
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {
     return htmlSafe(this);
   };
 }
-EmberString.htmlSafe = htmlSafe;
-EmberString.isHTMLSafe = isHTMLSafe;
 
 /**
   Global hash of shared templates. This will automatically be populated
@@ -440,12 +376,6 @@ EmberString.isHTMLSafe = isHTMLSafe;
   @type Object
   @private
 */
-Object.defineProperty(Ember, 'TEMPLATES', {
-  get: getTemplates,
-  set: setTemplates,
-  configurable: false,
-  enumerable: false,
-});
 
 /**
   The semantic version
@@ -458,46 +388,7 @@ Ember.VERSION = VERSION;
 
 metal.libraries.registerCoreLibrary('Ember', VERSION);
 
-// ****ember-views****
-Ember.$ = views.jQuery;
-Ember.ViewUtils = {
-  isSimpleClick: views.isSimpleClick,
-  getViewElement: views.getViewElement,
-  getViewBounds: views.getViewBounds,
-  getViewClientRects: views.getViewClientRects,
-  getViewBoundingClientRect: views.getViewBoundingClientRect,
-  getRootViews: views.getRootViews,
-  getChildViews: views.getChildViews,
-  isSerializationFirstNode: isSerializationFirstNode,
-};
-Ember.TextSupport = views.TextSupport;
-Ember.ComponentLookup = views.ComponentLookup;
-Ember.EventDispatcher = views.EventDispatcher;
-
-// ****ember-routing****
-Ember.Location = routing.Location;
-Ember.AutoLocation = routing.AutoLocation;
-Ember.HashLocation = routing.HashLocation;
-Ember.HistoryLocation = routing.HistoryLocation;
-Ember.NoneLocation = routing.NoneLocation;
-Ember.controllerFor = routing.controllerFor;
-Ember.generateControllerFactory = routing.generateControllerFactory;
-Ember.generateController = routing.generateController;
-Ember.RouterDSL = routing.RouterDSL;
-Ember.Router = routing.Router;
-Ember.Route = routing.Route;
-
-// ****ember-application****
-Ember.Application = application.Application;
-Ember.ApplicationInstance = application.ApplicationInstance;
-Ember.Engine = application.Engine;
-Ember.EngineInstance = application.EngineInstance;
-Ember.DefaultResolver = Ember.Resolver = application.Resolver;
-
 runLoadHooks('Ember.Application', application.Application);
-
-Ember.DataAdapter = extensionSupport.DataAdapter;
-Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
 
 if (has('ember-template-compiler')) {
   require('ember-template-compiler');
@@ -523,23 +414,3 @@ if (IS_NODE) {
 } else {
   context.exports.Ember = context.exports.Em = Ember;
 }
-
-/**
- @module jquery
- @public
- */
-
-/**
- @class jquery
- @public
- @static
- */
-
-/**
-  Alias for jQuery
-
-  @for jquery
-  @method $
-  @static
-  @public
-*/
