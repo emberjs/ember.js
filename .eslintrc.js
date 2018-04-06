@@ -83,6 +83,7 @@ module.exports = {
         'broccoli/**/*.js',
         'ember-cli-build.js',
         'rollup.config.js',
+        'generate-modules-api.js',
       ],
 
       parserOptions: {

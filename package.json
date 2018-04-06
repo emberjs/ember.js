@@ -113,6 +113,7 @@
     "ember-cli-dependency-checker": "^2.1.0",
     "ember-cli-yuidoc": "^0.8.8",
     "ember-publisher": "0.0.7",
+    "ember-rfc176-data": "^0.3.2",
     "eslint": "^4.9.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-ember-internal": "^1.1.1",
