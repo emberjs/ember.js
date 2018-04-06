@@ -3,7 +3,7 @@ import { describe, it, beforeEach, afterEach } from 'mocha';
 import { run } from '@ember/runloop';
 import Application from '@ember/application';
 import { initialize } from '<%= dasherizedModulePrefix %>/initializers/<%= dasherizedModuleName %>';
-import destroyApp from '../../helpers/destroy-app';
+<% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } %>
 
 describe('<%= friendlyTestName %>', function() {
   let application;
@@ -16,7 +16,7 @@ describe('<%= friendlyTestName %>', function() {
   });
 
   afterEach(function() {
-    destroyApp(application);
+    <% if (destroyAppExists) { %>destroyApp(application);<% } else { %>run(application, 'destroy');<% } %>
   });
 
   // Replace this with your real tests.
