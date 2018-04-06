@@ -367,7 +367,7 @@ class BootOptions {
     /**
       Run in a full browser environment.
 
-      When this flag is set to `false`, it will disable most browser-specific
+      When this flag is set to `true`, it will disable most browser-specific
       and interactive features. Specifically:
 
       * It does not use `jQuery` to append the root view; the `rootElement`
