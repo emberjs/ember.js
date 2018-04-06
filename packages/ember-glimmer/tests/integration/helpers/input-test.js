@@ -472,6 +472,19 @@ moduleFor(
       this.assert.equal(inputs[0].getAttribute('type'), 'password');
       this.assert.equal(inputs[1].getAttribute('type'), 'email');
     }
+
+    ['@todo [GH#16256] input can be rendered twice'](assert) {
+      this.registerComponent('input-wrapper', {
+        template: '<label>My label</label>{{input type=type}}',
+      });
+      this.render(`{{input-wrapper type=firstType}}{{input-wrapper type=secondType}}`, {
+        firstType: 'email',
+        secondType: 'password',
+      });
+
+      let input = this.element.querySelectorAll('input');
+      assert.equal(input.length, 3, 'there are two inputs');
+    }
   }
 );
 

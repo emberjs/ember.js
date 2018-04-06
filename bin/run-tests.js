@@ -75,7 +75,7 @@ function runInBrowser(url, retries, resolve, reject) {
             var response;
 
             // Ignore passing assertions
-            if (details.result) {
+            if (details.result === details.todo) {
               return;
             }
 
@@ -108,7 +108,7 @@ function runInBrowser(url, retries, resolve, reject) {
 
             testsTotal++;
 
-            if (result.failed) {
+            if (result.failed > 0 && !result.todo) {
               testsFailed++;
               console.log('\n' + 'Test failed: ' + name);
 

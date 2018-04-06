@@ -72,6 +72,10 @@ export default function moduleFor(description, TestClass, ...mixins) {
       QUnit.skip(name.slice(5), function(assert) {
         return this.instance[name](assert);
       });
+    } else if (name.indexOf('@todo') === 0) {
+      QUnit.todo(name.slice(5), function(assert) {
+        return this.instance[name](assert);
+      });
     } else {
       let match = /^@feature\(([a-z-!]+)\) /.exec(name);
 
