@@ -6,10 +6,17 @@ const walkSync = require('walk-sync');
 
 let entryPoints = walkSync('dist/es', { directories: false })
   .filter(path => path.startsWith('@ember') && path.endsWith('.js'))
-  .map(relativePath => relativePath.slice(0, -3));
+  .map(ep => ep.slice(0, -3));
+
+let entryPointMapping = {};
+entryPoints.forEach(ep => (entryPointMapping[ep] = ep));
 
 module.exports = {
-  input: [...entryPoints, 'dist/es/ember-template-compiler/index', 'dist/es/ember/index'],
+  input: {
+    ...entryPointMapping,
+    'ember-template-compiler': 'ember-template-compiler/index',
+    'ember.debug': 'ember/index',
+  },
   plugins: [emberPackage()],
 
   experimentalCodeSplitting: true,
@@ -17,6 +24,7 @@ module.exports = {
     dir: 'rollup-dist',
     format: 'es',
     sourcemap: true,
+    chunkNames: '@ember/-private/[hash].js',
   },
 };
 
