@@ -14,6 +14,7 @@ var path = require('path');
 var finalhandler = require('finalhandler');
 var http = require('http');
 var serveStatic = require('serve-static');
+var puppeteer = require('puppeteer');
 
 // Serve up public/ftp folder.
 var serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
@@ -28,6 +29,9 @@ var PORT = 13141;
 // Listen.
 server.listen(PORT);
 
+// Cache the Chrome browser instance when launched for new pages.
+var browserPromise;
+
 function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
     var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
@@ -40,9 +44,11 @@ function runInBrowser(url, retries, resolve, reject) {
 
   console.log('Running Chrome headless: ' + url);
 
-  var puppeteer = require('puppeteer');
+  if (!browserPromise) {
+    browserPromise = puppeteer.launch();
+  }
 
-  puppeteer.launch().then(function(browser) {
+  browserPromise.then(function(browser) {
     browser.newPage().then(function(page) {
       /* globals window */
       var crashed;
@@ -136,52 +142,55 @@ function runInBrowser(url, retries, resolve, reject) {
                 ' failed.'
             );
 
-            if (typeof window.callPhantom === 'function') {
-              window.callPhantom({
-                name: 'QUnit.done',
-                data: result,
-              });
-            }
+            window.callPhantom({
+              name: 'QUnit.done',
+              data: result,
+            });
           });
         });
       };
 
-      page.exposeFunction('callPhantom', function(message) {
-        if (message && message.name === 'QUnit.done') {
-          result = message.data;
-          var failed = !result || !result.total || result.failed;
+      return page
+        .exposeFunction('callPhantom', function(message) {
+          page.close();
 
-          if (!result.total) {
-            console.error('No tests were executed. Are you loading tests asynchronously?');
-          }
+          if (message && message.name === 'QUnit.done') {
+            result = message.data;
+            var failed = !result || !result.total || result.failed;
 
-          var code = failed ? 1 : 0;
-          result.code = code;
-
-          if (!crashed && code === 0) {
-            resolve(result);
-          } else if (crashed) {
-            console.log(chalk.red('Browser crashed with exit code ' + code));
-
-            if (retries > 1) {
-              console.log(chalk.yellow('Retrying... ¯\\_(ツ)_/¯'));
-              runInBrowser(url, retries - 1, resolve, reject);
-            } else {
-              console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
-              console.log(
-                chalk.yellow('This might be a known issue with Chrome headless, skipping for now')
-              );
-              resolve(result);
+            if (!result.total) {
+              console.error('No tests were executed. Are you loading tests asynchronously?');
             }
-          } else {
-            reject(result);
+
+            var code = failed ? 1 : 0;
+            result.code = code;
+
+            if (!crashed && code === 0) {
+              resolve(result);
+            } else if (crashed) {
+              console.log(chalk.red('Browser crashed with exit code ' + code));
+
+              if (retries > 1) {
+                console.log(chalk.yellow('Retrying... ¯\\_(ツ)_/¯'));
+                runInBrowser(url, retries - 1, resolve, reject);
+              } else {
+                console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
+                console.log(
+                  chalk.yellow('This might be a known issue with Chrome headless, skipping for now')
+                );
+                resolve(result);
+              }
+            } else {
+              reject(result);
+            }
           }
-        }
-      });
-
-      page.evaluateOnNewDocument(addLogging);
-
-      page.goto(url, { timeout: 900 });
+        })
+        .then(function() {
+          return page.evaluateOnNewDocument(addLogging);
+        })
+        .then(function() {
+          return page.goto(url, { timeout: 900 });
+        });
     });
   });
 }
