@@ -5,7 +5,7 @@
 import { dictionary } from 'ember-utils';
 import { get, findNamespace } from 'ember-metal';
 import { assert, info } from 'ember-debug';
-import { String as StringUtils, Object as EmberObject } from 'ember-runtime';
+import { StringUtils, Object as EmberObject } from 'ember-runtime';
 import validateType from '../utils/validate-type';
 import { getTemplate } from 'ember-glimmer';
 import { DEBUG } from 'ember-env-flags';

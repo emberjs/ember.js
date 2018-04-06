@@ -19,7 +19,7 @@ moduleFor(
     }
 
     ['@test Ember.String.isHTMLSafe exports correctly'](assert) {
-      confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+      confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'deprecatedIsHTMLSafe');
     }
   }
 );
@@ -172,7 +172,9 @@ let allExports = [
   ['Handlebars.template', 'ember-glimmer', 'template'],
   ['HTMLBars.template', 'ember-glimmer', 'template'],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
-  ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
+  ['String.htmlSafe', 'ember-glimmer', 'deprecatedHTMLSafe'],
+  ['_Template.htmlSafe', 'ember-glimmer', 'htmlSafe'],
+  ['_Template.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe'],
   ['_setComponentManager', 'ember-glimmer', 'componentManager'],
 
   // ember-runtime

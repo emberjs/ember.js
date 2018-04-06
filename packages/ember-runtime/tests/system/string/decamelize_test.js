@@ -1,10 +1,11 @@
 import { ENV } from 'ember-environment';
-import { decamelize } from '../../../system/string';
+import { decamelize, default as EmberString } from '../../../system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
   assert.deepEqual(decamelize(given), expected, description);
   if (ENV.EXTEND_PROTOTYPES.String) {
+    expectDeprecation(/@ember\/string/);
     assert.deepEqual(given.decamelize(), expected, description);
   }
 }
@@ -12,6 +13,11 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.decamelize',
   class extends AbstractTestCase {
+    ['@test Ember.String.decamelize is deprecated']() {
+      expectDeprecation(/Ember.String namespace is deprecated/);
+      EmberString.decamelize('hello world');
+    }
+
     ['@test String.prototype.decamelize is not modified without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(

@@ -1,10 +1,11 @@
 import { ENV } from 'ember-environment';
-import { underscore } from '../../../system/string';
+import { underscore, default as EmberString } from '../../../system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
   assert.deepEqual(underscore(given), expected, description);
   if (ENV.EXTEND_PROTOTYPES.String) {
+    expectDeprecation(/@ember\/string/);
     assert.deepEqual(given.underscore(), expected, description);
   }
 }
@@ -12,6 +13,11 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.underscore',
   class extends AbstractTestCase {
+    ['@test Ember.String.underscore is deprecated']() {
+      expectDeprecation(/Ember.String namespace is deprecated/);
+      EmberString.underscore('hello world');
+    }
+
     ['@test String.prototype.underscore is not available without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(

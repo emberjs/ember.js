@@ -25,7 +25,7 @@ import { assert, deprecate } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 import { _instrumentStart, get } from 'ember-metal';
-import { String as StringUtils } from 'ember-runtime';
+import { StringUtils } from 'ember-runtime';
 import { assign, getOwner, guidFor } from 'ember-utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';

@@ -1,6 +1,7 @@
 /**
 @module @ember/string
 */
+import { deprecate } from 'ember-debug';
 import { Cache } from 'ember-metal';
 import { inspect } from 'ember-utils';
 import { isArray } from '../utils';
@@ -82,6 +83,22 @@ function _fmt(str, formats) {
   });
 }
 
+export function deprecateEmberStringUtil(name, fn, opts = {}) {
+  return function() {
+    deprecate(
+      opts.message ||
+        `Ember.String namespace is deprecated. Please, use ${name} from '@ember/string' instead.`,
+      false,
+      opts.options || {
+        id: 'ember-string.namespace',
+        until: '3.5.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-string-namespace',
+      }
+    );
+    return fn(...arguments);
+  };
+}
+
 function loc(str, formats) {
   if (!isArray(formats) || arguments.length > 2) {
     formats = Array.prototype.slice.call(arguments, 1);
@@ -153,8 +170,9 @@ export default {
     @param {Array} formats Optional array of parameters to interpolate into string.
     @return {String} formatted string
     @public
+    @deprecated Use @ember/string addon instead
   */
-  loc,
+  loc: deprecateEmberStringUtil('loc', loc),
 
   /**
     Splits a string into separate units separated by spaces, eliminating any
@@ -177,8 +195,9 @@ export default {
     @param {String} str The string to split
     @return {Array} array containing the split strings
     @public
+    @deprecated Use @ember/string addon instead
   */
-  w,
+  w: deprecateEmberStringUtil('w', w),
 
   /**
     Converts a camelized string into all lower case separated by underscores.
@@ -194,8 +213,9 @@ export default {
     @param {String} str The string to decamelize.
     @return {String} the decamelized string.
     @public
+    @deprecated Use @ember/string addon instead
   */
-  decamelize,
+  decamelize: deprecateEmberStringUtil('decamelize', decamelize),
 
   /**
     Replaces underscores, spaces, or camelCase with dashes.
@@ -212,8 +232,9 @@ export default {
     @param {String} str The string to dasherize.
     @return {String} the dasherized string.
     @public
+    @deprecated Use @ember/string addon instead
   */
-  dasherize,
+  dasherize: deprecateEmberStringUtil('dasherize', dasherize),
 
   /**
     Returns the lowerCamelCase form of a string.
@@ -231,8 +252,9 @@ export default {
     @param {String} str The string to camelize.
     @return {String} the camelized string.
     @public
+    @deprecated Use @ember/string addon instead
   */
-  camelize,
+  camelize: deprecateEmberStringUtil('camelize', camelize),
 
   /**
     Returns the UpperCamelCase form of a string.
@@ -249,8 +271,9 @@ export default {
     @param {String} str the string to classify
     @return {String} the classified string
     @public
+    @deprecated Use @ember/string addon instead
   */
-  classify,
+  classify: deprecateEmberStringUtil('classify', classify),
 
   /**
     More general than decamelize. Returns the lower\_case\_and\_underscored
@@ -268,8 +291,9 @@ export default {
     @param {String} str The string to underscore.
     @return {String} the underscored string.
     @public
+    @deprecated Use @ember/string addon instead
   */
-  underscore,
+  underscore: deprecateEmberStringUtil('underscore', underscore),
 
   /**
     Returns the Capitalized form of a string
@@ -286,8 +310,20 @@ export default {
     @param {String} str The string to capitalize.
     @return {String} The capitalized string.
     @public
+    @deprecated Use @ember/string addon instead
   */
-  capitalize,
+  capitalize: deprecateEmberStringUtil('capitalize', capitalize),
 };
 
 export { loc, w, decamelize, dasherize, camelize, classify, underscore, capitalize };
+
+export const StringUtils = {
+  loc,
+  w,
+  decamelize,
+  dasherize,
+  camelize,
+  classify,
+  underscore,
+  capitalize,
+};

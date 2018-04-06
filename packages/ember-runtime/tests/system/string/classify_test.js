@@ -1,10 +1,11 @@
 import { ENV } from 'ember-environment';
-import { classify } from '../../../system/string';
+import { classify, default as EmberString } from '../../../system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
   assert.deepEqual(classify(given), expected, description);
   if (ENV.EXTEND_PROTOTYPES.String) {
+    expectDeprecation(/@ember\/string/);
     assert.deepEqual(given.classify(), expected, description);
   }
 }
@@ -12,6 +13,11 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.classify',
   class extends AbstractTestCase {
+    ['@test Ember.String.classify is deprecated']() {
+      expectDeprecation(/Ember.String namespace is deprecated/);
+      EmberString.classify('hello world');
+    }
+
     ['@test String.prototype.classify is not modified without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(

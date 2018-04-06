@@ -268,7 +268,14 @@ export { default as LinkComponent } from './lib/components/link-to';
 export { default as Component, ROOT_REF } from './lib/component';
 export { default as Helper, helper } from './lib/helper';
 export { default as Environment } from './lib/environment';
-export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
+export {
+  SafeString,
+  deprecatedHTMLSafe,
+  deprecatedIsHTMLSafe,
+  escapeExpression,
+  htmlSafe,
+  isHTMLSafe,
+} from './lib/utils/string';
 export {
   Renderer,
   InertRenderer,
