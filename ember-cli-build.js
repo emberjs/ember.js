@@ -48,6 +48,7 @@ module.exports = function() {
 
   // generate "loose" ES<latest> modules...
   let combinedES = new MergeTrees([
+    new Funnel('packages/@ember', { destDir: '@ember' }),
     emberVersionES(),
     emberFeaturesES(),
     backburnerES(),
