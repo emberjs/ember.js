@@ -33,8 +33,6 @@
 */
 const mappings = require('ember-rfc176-data');
 let allExports = [
-  ['Ember.ENV', 'ember-environment', { get: 'getENV' }],
-  ['Ember.lookup', 'ember-environment', { get: 'getLookup', set: 'setLookup' }],
   ['Ember.getOwner', 'ember-utils', 'getOwner'],
   ['Ember.setOwner', 'ember-utils', 'setOwner'],
   ['Ember.assign', 'ember-utils'],
@@ -70,8 +68,6 @@ let allExports = [
   ['Ember.Instrumentation.subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Ember.Instrumentation.unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
   ['Ember.Instrumentation.reset', 'ember-metal', 'instrumentationReset'],
-  ['Ember.testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
-  ['Ember.onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
   ['Ember.FEATURES', 'ember/features'],
   ['Ember.FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
   ['Ember.meta', 'ember-metal'],
@@ -106,7 +102,6 @@ let allExports = [
   ['Ember.run.schedule', 'ember-metal', 'schedule'],
   ['Ember.run.scheduleOnce', 'ember-metal', 'scheduleOnce'],
   ['Ember.run.throttle', 'ember-metal', 'throttle'],
-  ['Ember.run.currentRunLoop', 'ember-metal', { get: 'getCurrentRunLoop' }],
   ['Ember.propertyWillChange', 'ember-metal'],
   ['Ember.propertyDidChange', 'ember-metal'],
   ['Ember.notifyPropertyChange', 'ember-metal'],
@@ -114,8 +109,6 @@ let allExports = [
   ['Ember.beginPropertyChanges', 'ember-metal'],
   ['Ember.endPropertyChanges', 'ember-metal'],
   ['Ember.changeProperties', 'ember-metal'],
-  ['Ember.platform.defineProperty', null, { value: true }],
-  ['Ember.platform.hasPropertyAccessors', null, { value: true }],
   ['Ember.defineProperty', 'ember-metal'],
   ['Ember.watchKey', 'ember-metal'],
   ['Ember.unwatchKey', 'ember-metal'],
@@ -265,6 +258,7 @@ moduleNames.forEach(moduleName => {
 
     if (!exportForGlobal) {
       console.log('could not find: ' + m.global);
+
       if (m.export === 'default') {
         contents += `// TODO: export default ${m.global};\n`;
       } else {
@@ -275,8 +269,10 @@ moduleNames.forEach(moduleName => {
 
       if (m.export === 'default') {
         contents += `export { ${exportName} as default } from '${exportForGlobal[1]}';\n`;
-      } else {
+      } else if (m.export === exportName) {
         contents += `export { ${exportName} } from '${exportForGlobal[1]}';\n`;
+      } else {
+        contents += `export { ${exportName} as ${m.export} } from '${exportForGlobal[1]}';\n`;
       }
     }
   });

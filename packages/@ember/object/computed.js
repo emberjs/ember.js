@@ -13,7 +13,7 @@ export { lt } from 'ember-runtime';
 export { lte } from 'ember-runtime';
 export { alias } from 'ember-metal';
 export { oneWay } from 'ember-runtime';
-export { oneWay } from 'ember-runtime';
+export { oneWay as reads } from 'ember-runtime';
 export { readOnly } from 'ember-runtime';
 export { deprecatingAlias } from 'ember-runtime';
 export { and } from 'ember-runtime';

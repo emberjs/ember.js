@@ -1,4 +1,4 @@
-export { _globalsRun } from 'ember-metal';
+export { _globalsRun as run } from 'ember-metal';
 export { begin } from 'ember-metal';
 export { bind } from 'ember-metal';
 export { cancel } from 'ember-metal';
