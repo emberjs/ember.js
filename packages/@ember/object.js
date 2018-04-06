@@ -1,0 +1,11 @@
+export { Object as default } from 'ember-runtime';
+export { defineProperty } from 'ember-metal';
+export { get } from 'ember-metal';
+export { set } from 'ember-metal';
+export { getProperties } from 'ember-metal';
+export { setProperties } from 'ember-metal';
+export { getWithDefault } from 'ember-metal';
+export { observer } from 'ember-metal';
+export { _globalsComputed } from 'ember-metal';
+export { trySet } from 'ember-metal';
+export { aliasMethod } from 'ember-metal';

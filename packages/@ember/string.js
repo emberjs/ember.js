@@ -1,0 +1,11 @@
+// TODO: export const camelize = Ember.String.camelize;
+// TODO: export const capitalize = Ember.String.capitalize;
+// TODO: export const classify = Ember.String.classify;
+// TODO: export const dasherize = Ember.String.dasherize;
+// TODO: export const decamelize = Ember.String.decamelize;
+// TODO: export const fmt = Ember.String.fmt;
+export { htmlSafe } from 'ember-glimmer';
+// TODO: export const isHTMLSafe = Ember.String.isHTMLSafe;
+// TODO: export const loc = Ember.String.loc;
+// TODO: export const underscore = Ember.String.underscore;
+// TODO: export const w = Ember.String.w;
