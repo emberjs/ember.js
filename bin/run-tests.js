@@ -164,7 +164,7 @@ function runInBrowser(url, retries, resolve, reject) {
             console.log(chalk.red('Browser crashed with exit code ' + code));
 
             if (retries > 1) {
-              console.log(chalk.yellow('Retrying... ¯_(ツ)_/¯'));
+              console.log(chalk.yellow('Retrying... ¯\\_(ツ)_/¯'));
               runInBrowser(url, retries - 1, resolve, reject);
             } else {
               console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
