@@ -1,6 +1,6 @@
 import { assign } from 'ember-utils';
-import { replacePath, getPath, getQuery, getFullPath } from '../../location/util';
-import { supportsHistory, supportsHashChange } from '../../location/util';
+import { replacePath, getPath, getQuery, getFullPath } from '../../lib/location/util';
+import { supportsHistory, supportsHashChange } from '../../lib/location/util';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides, assert) {

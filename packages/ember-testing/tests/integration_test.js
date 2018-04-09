@@ -1,5 +1,5 @@
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
-import Test from '../test';
+import Test from '../lib/test';
 
 import { A as emberA } from 'ember-runtime';
 import { Route } from 'ember-routing';

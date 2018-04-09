@@ -1,8 +1,8 @@
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
 import { later } from 'ember-metal';
-import Test from '../test';
-import QUnitAdapter from '../adapters/qunit';
+import Test from '../lib/test';
+import QUnitAdapter from '../lib/adapters/qunit';
 import { Route } from 'ember-routing';
 import { RSVP } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views';

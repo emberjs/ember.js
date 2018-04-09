@@ -1,5 +1,5 @@
 import { run } from 'ember-metal';
-import Engine from '../../system/engine';
+import Engine from '../../lib/system/engine';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 let MyEngine, myEngine, myEngineInstance;

@@ -1,5 +1,5 @@
 import { set, run } from 'ember-metal';
-import NoneLocation from '../../location/none_location';
+import NoneLocation from '../../lib/location/none_location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let NoneTestLocation, location;

@@ -1,5 +1,5 @@
 import { set, run } from 'ember-metal';
-import HistoryLocation from '../../location/history_location';
+import HistoryLocation from '../../lib/location/history_location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let FakeHistory, HistoryTestLocation, location;

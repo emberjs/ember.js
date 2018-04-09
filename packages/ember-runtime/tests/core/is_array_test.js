@@ -1,6 +1,6 @@
-import { isArray } from '../../utils';
-import { A as emberA } from '../../mixins/array';
-import ArrayProxy from '../../system/array_proxy';
+import { isArray } from '../../lib/utils';
+import { A as emberA } from '../../lib/mixins/array';
+import ArrayProxy from '../../lib/system/array_proxy';
 import { environment } from 'ember-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

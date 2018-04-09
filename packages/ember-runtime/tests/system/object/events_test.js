@@ -1,5 +1,5 @@
-import EmberObject from '../../../system/object';
-import Evented from '../../../mixins/evented';
+import EmberObject from '../../../lib/system/object';
+import Evented from '../../../lib/mixins/evented';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

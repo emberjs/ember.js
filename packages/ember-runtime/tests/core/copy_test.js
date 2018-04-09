@@ -1,4 +1,4 @@
-import copy from '../../copy';
+import copy from '../../lib/copy';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

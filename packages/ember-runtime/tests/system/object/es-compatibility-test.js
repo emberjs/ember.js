@@ -1,4 +1,4 @@
-import EmberObject from '../../../system/object';
+import EmberObject from '../../../lib/system/object';
 import { Mixin } from 'ember-metal';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

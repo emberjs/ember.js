@@ -1,7 +1,7 @@
 import { setOwner } from 'ember-utils';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { Service, Object as EmberObject, inject } from 'ember-runtime';
-import EmberRoute from '../../system/route';
+import EmberRoute from '../../lib/system/route';
 
 let route, routeOne, routeTwo, lookupHash;
 

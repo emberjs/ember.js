@@ -1,9 +1,9 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { Object as EmberObject, inject, RSVP, onerrorDefault } from 'ember-runtime';
 import { later } from 'ember-metal';
-import Application from '../../system/application';
-import ApplicationInstance from '../../system/application-instance';
-import Engine from '../../system/engine';
+import Application from '../../lib/system/application';
+import ApplicationInstance from '../../lib/system/application-instance';
+import Engine from '../../lib/system/engine';
 import { Route } from 'ember-routing';
 import { Component, helper, isSerializationFirstNode } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';

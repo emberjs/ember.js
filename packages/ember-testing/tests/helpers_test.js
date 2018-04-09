@@ -6,17 +6,17 @@ import { later } from 'ember-metal';
 import { Component } from 'ember-glimmer';
 import { jQueryDisabled, jQuery } from 'ember-views';
 
-import Test from '../test';
-import setupForTesting from '../setup_for_testing';
+import Test from '../lib/test';
+import setupForTesting from '../lib/setup_for_testing';
 
 import {
   pendingRequests,
   incrementPendingRequests,
   decrementPendingRequests,
   clearPendingRequests,
-} from '../test/pending_requests';
-import { setAdapter, getAdapter } from '../test/adapter';
-import { registerWaiter, unregisterWaiter } from '../test/waiters';
+} from '../lib/test/pending_requests';
+import { setAdapter, getAdapter } from '../lib/test/adapter';
+import { registerWaiter, unregisterWaiter } from '../lib/test/waiters';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
 
 var originalInfo = getDebugFunction('info');

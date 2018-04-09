@@ -1,6 +1,6 @@
 import { alias, computed, set, get, getWithDefault, observer, defineProperty } from 'ember-metal';
 import { oneWay as reads } from 'ember-runtime';
-import EmberObject from '../../../system/object';
+import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function K() {

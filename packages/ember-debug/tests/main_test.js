@@ -1,18 +1,18 @@
 import { ENV } from 'ember-environment';
 import { Object as EmberObject } from 'ember-runtime';
-import { HANDLERS } from '../handlers';
+import { HANDLERS } from '../lib/handlers';
 import {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
   missingOptionsUntilDeprecation,
-} from '../deprecate';
+} from '../lib/deprecate';
 
 import {
   missingOptionsIdDeprecation as missingWarnOptionsIdDeprecation,
   missingOptionsDeprecation as missingWarnOptionsDeprecation,
   registerHandler as registerWarnHandler,
-} from '../warn';
+} from '../lib/warn';
 
 import { deprecate, warn, assert as emberAssert } from '../index';
 

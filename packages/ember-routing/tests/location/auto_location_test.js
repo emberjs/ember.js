@@ -1,11 +1,11 @@
 import { assign, OWNER } from 'ember-utils';
 import { environment } from 'ember-environment';
 import { get, run } from 'ember-metal';
-import AutoLocation from '../../location/auto_location';
-import { getHistoryPath, getHashPath } from '../../location/auto_location';
-import HistoryLocation from '../../location/history_location';
-import HashLocation from '../../location/hash_location';
-import NoneLocation from '../../location/none_location';
+import AutoLocation from '../../lib/location/auto_location';
+import { getHistoryPath, getHashPath } from '../../lib/location/auto_location';
+import HistoryLocation from '../../lib/location/history_location';
+import HashLocation from '../../lib/location/hash_location';
+import NoneLocation from '../../lib/location/none_location';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides, assert) {

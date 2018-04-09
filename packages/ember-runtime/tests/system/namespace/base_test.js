@@ -1,7 +1,7 @@
 import { context } from 'ember-environment';
 import { run, get, setNamespaceSearchDisabled } from 'ember-metal';
-import EmberObject from '../../../system/object';
-import Namespace from '../../../system/namespace';
+import EmberObject from '../../../lib/system/object';
+import Namespace from '../../../lib/system/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const originalLookup = context.lookup;

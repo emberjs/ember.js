@@ -1,6 +1,6 @@
 import { run } from 'ember-metal';
 import { Component, getTemplate, setTemplates, hasTemplate, setTemplate } from 'ember-glimmer';
-import bootstrap from '../../system/bootstrap';
+import bootstrap from '../../lib/system/bootstrap';
 import {
   runAppend,
   runDestroy,

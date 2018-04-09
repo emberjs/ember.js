@@ -1,4 +1,4 @@
-import { normalizeControllerQueryParams } from '../utils';
+import { normalizeControllerQueryParams } from '../lib/utils';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

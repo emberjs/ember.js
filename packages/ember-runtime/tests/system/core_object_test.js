@@ -1,6 +1,6 @@
 import { getOwner } from 'ember-utils';
 import { get } from 'ember-metal';
-import CoreObject from '../../system/core_object';
+import CoreObject from '../../lib/system/core_object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -1,4 +1,4 @@
-import { HANDLERS, registerHandler, invoke } from '../handlers';
+import { HANDLERS, registerHandler, invoke } from '../lib/handlers';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 moduleFor(

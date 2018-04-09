@@ -17,8 +17,8 @@
 // Ember.Observable Tests
 // ========================================================================
 
-import EmberObject from '../../../../system/object';
-import Observable from '../../../../mixins/observable';
+import EmberObject from '../../../../lib/system/object';
+import Observable from '../../../../lib/mixins/observable';
 import { computed, observer } from 'ember-metal';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

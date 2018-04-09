@@ -8,8 +8,8 @@ import {
   computed,
   observer,
 } from 'ember-metal';
-import EmberObject from '../../system/object';
-import ObjectProxy from '../../system/object_proxy';
+import EmberObject from '../../lib/system/object';
+import ObjectProxy from '../../lib/system/object_proxy';
 import {
   sum,
   min,
@@ -25,9 +25,9 @@ import {
   union,
   intersect,
   collect,
-} from '../../computed/reduce_computed_macros';
-import { isArray } from '../../utils';
-import { A as emberA, removeAt } from '../../mixins/array';
+} from '../../lib/computed/reduce_computed_macros';
+import { isArray } from '../../lib/utils';
+import { A as emberA, removeAt } from '../../lib/mixins/array';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

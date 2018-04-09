@@ -1,5 +1,5 @@
 import { run } from 'ember-metal';
-import Application from '../../../system/application';
+import Application from '../../../lib/system/application';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 let application, registry;

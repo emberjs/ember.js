@@ -1,7 +1,7 @@
 import { OWNER } from 'ember-utils';
 import { Container, Registry } from 'container';
-import ContainerProxy from '../../mixins/container_proxy';
-import EmberObject from '../../system/object';
+import ContainerProxy from '../../lib/mixins/container_proxy';
+import EmberObject from '../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

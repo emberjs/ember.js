@@ -17,7 +17,12 @@ export {
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe,
 } from './lib/instrumentation';
-export { getOnerror, setOnerror, setDispatchOverride, getDispatchOverride } from './lib/error_handler';
+export {
+  getOnerror,
+  setOnerror,
+  setDispatchOverride,
+  getDispatchOverride,
+} from './lib/error_handler';
 export { descriptorFor, meta, peekMeta, deleteMeta } from './lib/meta';
 export { default as Cache } from './lib/cache';
 export { PROXY_CONTENT, _getPath, get, getWithDefault } from './lib/property_get';

@@ -7,7 +7,7 @@ import {
   endPropertyChanges,
   peekMeta,
 } from 'ember-metal';
-import EmberObject from '../../../system/object';
+import EmberObject from '../../../lib/system/object';
 import { MANDATORY_SETTER } from 'ember/features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

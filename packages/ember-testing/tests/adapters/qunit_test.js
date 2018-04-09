@@ -1,5 +1,5 @@
 import { run } from 'ember-metal';
-import QUnitAdapter from '../../adapters/qunit';
+import QUnitAdapter from '../../lib/adapters/qunit';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 var adapter;

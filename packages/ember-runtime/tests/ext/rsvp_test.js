@@ -1,5 +1,5 @@
 import { setOnerror, getOnerror, run, schedule, next } from 'ember-metal';
-import RSVP from '../../ext/rsvp';
+import RSVP from '../../lib/ext/rsvp';
 import { isTesting, setTesting } from 'ember-debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

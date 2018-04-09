@@ -1,7 +1,7 @@
 import { guidFor, setName } from 'ember-utils';
 import { context } from 'ember-environment';
-import EmberObject from '../../../system/object';
-import Namespace from '../../../system/namespace';
+import EmberObject from '../../../lib/system/object';
+import Namespace from '../../../lib/system/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let originalLookup = context.lookup;

@@ -1,7 +1,7 @@
 import { run, next, setOnerror } from 'ember-metal';
-import Test from '../test';
-import Adapter from '../adapters/adapter';
-import QUnitAdapter from '../adapters/qunit';
+import Test from '../lib/test';
+import Adapter from '../lib/adapters/adapter';
+import QUnitAdapter from '../lib/adapters/qunit';
 import { Application as EmberApplication } from 'ember-application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { RSVP } from 'ember-runtime';

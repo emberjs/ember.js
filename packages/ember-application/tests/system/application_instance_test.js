@@ -1,6 +1,6 @@
-import Engine from '../../system/engine';
-import Application from '../../system/application';
-import ApplicationInstance from '../../system/application-instance';
+import Engine from '../../lib/system/engine';
+import Application from '../../lib/system/application';
+import ApplicationInstance from '../../lib/system/application-instance';
 import { run } from 'ember-metal';
 import { privatize as P } from 'container';
 import { factory } from 'internal-test-helpers';

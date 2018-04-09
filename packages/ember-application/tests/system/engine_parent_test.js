@@ -1,4 +1,4 @@
-import { getEngineParent, setEngineParent, ENGINE_PARENT } from '../../system/engine-parent';
+import { getEngineParent, setEngineParent, ENGINE_PARENT } from '../../lib/system/engine-parent';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 moduleFor(

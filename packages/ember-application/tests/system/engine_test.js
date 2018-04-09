@@ -1,6 +1,6 @@
 import { context } from 'ember-environment';
 import { run } from 'ember-metal';
-import Engine from '../../system/engine';
+import Engine from '../../lib/system/engine';
 import { Object as EmberObject } from 'ember-runtime';
 import { privatize as P } from 'container';
 import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
