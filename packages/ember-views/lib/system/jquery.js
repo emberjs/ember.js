@@ -1,5 +1,24 @@
 import { context, environment } from 'ember-environment';
 
+/**
+ @module jquery
+ @public
+ */
+
+/**
+ @class jquery
+ @public
+ @static
+ */
+
+/**
+  Alias for jQuery
+
+  @for jquery
+  @method $
+  @static
+  @public
+*/
 let jQuery;
 export let jQueryDisabled = false;
 
