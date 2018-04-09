@@ -1,5 +1,5 @@
 import { set, computed } from 'ember-metal';
-import { jQueryDisabled } from 'ember-views/system/jquery';
+import { jQueryDisabled } from 'ember-views';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
