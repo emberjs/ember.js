@@ -36,6 +36,7 @@ const {
   nodeTests,
   rollupEmberMetal,
   buildEmberEnvFlagsES,
+  getPackagesES,
 } = require('./broccoli/packages');
 const SHOULD_ROLLUP = true;
 const ENV = process.env.EMBER_ENV || 'development';
@@ -48,28 +49,18 @@ module.exports = function() {
 
   // generate "loose" ES<latest> modules...
   let combinedES = new MergeTrees([
-    emberVersionES(),
-    emberFeaturesES(),
+    // dependencies
     backburnerES(),
     handlebarsES(),
     simpleHTMLTokenizerES(),
     rsvpES(),
-    emberPkgES('container'),
-    emberPkgES('ember-application'),
-    emberPkgES('ember-console'),
-    emberPkgES('ember-debug'),
-    emberPkgES('ember-environment'),
-    emberPkgES('ember-extension-support'),
-    emberGlimmerES,
-    emberPkgES('ember-metal'),
-    emberPkgES('ember-routing'),
-    emberPkgES('ember-runtime'),
-    emberPkgES('ember-template-compiler'),
-    emberPkgES('ember-testing'),
-    emberPkgES('ember-utils'),
-    emberPkgES('ember-views'),
-    emberPkgES('ember'),
     ...dependenciesES({ includeGlimmerCompiler: true }),
+
+    // dynamically generated packages
+    emberVersionES(),
+    emberFeaturesES(),
+
+    getPackagesES(),
   ]);
 
   let es = new Funnel(combinedES, {

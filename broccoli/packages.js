@@ -61,6 +61,44 @@ module.exports.qunit = function _qunit() {
   });
 };
 
+module.exports.getPackagesES = function getPackagesES() {
+  let input = new Funnel(`packages`, {
+    destDir: `packages`,
+  });
+
+  let debuggedInput = debugTree(input, `get-packages-es:input`);
+
+  let compiledTemplatesAndTypescript = new GlimmerTemplatePrecompiler(debuggedInput, {
+    persist: true,
+    glimmer: require('@glimmer/compiler'),
+    annotation: `get-packages-es templates -> es`,
+  });
+
+  let debuggedCompiledTemplatesAndTypeScript = debugTree(
+    compiledTemplatesAndTypescript,
+    `get-packages-es:templates-output`
+  );
+
+  let nonTypeScriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
+    srcDir: 'packages',
+    exclude: ['**/*.ts'],
+  });
+
+  let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
+    include: ['**/*.ts'],
+  });
+
+  let typescriptCompiled = typescript(debugTree(typescriptContents, `get-packages-es:ts:input`));
+
+  let debuggedCompiledTypescript = debugTree(typescriptCompiled, `get-packages-es:ts:output`);
+
+  let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], {
+    overwrite: true,
+  });
+
+  return debugTree(mergedFinalOutput, `get-packages-es:output`);
+};
+
 module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
   let input = new Funnel(`packages/${name}`, {
     destDir: `packages/${name}`,
