@@ -6,6 +6,6 @@ export { getProperties } from 'ember-metal';
 export { setProperties } from 'ember-metal';
 export { getWithDefault } from 'ember-metal';
 export { observer } from 'ember-metal';
-export { _globalsComputed as computed } from 'ember-metal';
+export { computed } from 'ember-metal';
 export { trySet } from 'ember-metal';
 export { aliasMethod } from 'ember-metal';
