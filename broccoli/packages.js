@@ -63,6 +63,7 @@ module.exports.qunit = function _qunit() {
 
 module.exports.getPackagesES = function getPackagesES() {
   let input = new Funnel(`packages`, {
+    exclude: ['packages/node-module/**', 'packages/loader/**', 'packages/external-helpers/**'],
     destDir: `packages`,
   });
 
