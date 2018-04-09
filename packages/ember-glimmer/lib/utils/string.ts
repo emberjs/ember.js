@@ -2,6 +2,8 @@
 @module @ember/string
 */
 
+import { deprecate } from 'ember-debug';
+
 export class SafeString {
   public string: string;
 
@@ -74,6 +76,7 @@ export function escapeExpression(string: any): string {
   @static
   @return {Handlebars.SafeString} A string that will not be HTML escaped by Handlebars.
   @public
+  @deprecated
 */
 export function htmlSafe(str: string) {
   if (str === null || str === undefined) {
@@ -82,6 +85,19 @@ export function htmlSafe(str: string) {
     str = '' + str;
   }
   return new SafeString(str);
+}
+
+export function deprecatedHTMLSafe(str: string) {
+  deprecate(
+    'Ember.String namespace is deprecated. Please, import `htmlSafe` from `@ember/template`.',
+    false,
+    {
+      id: 'ember-glimmer.ember-string-html-safe',
+      until: '3.5.0',
+      url: '',
+    }
+  );
+  return htmlSafe(str);
 }
 
 /**
@@ -102,7 +118,21 @@ export function htmlSafe(str: string) {
   @static
   @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
   @public
+  @deprecated
 */
 export function isHTMLSafe(str: any | null | undefined): str is SafeString {
   return str !== null && typeof str === 'object' && typeof str.toHTML === 'function';
+}
+
+export function deprecatedIsHTMLSafe(str: any | null | undefined): str is SafeString {
+  deprecate(
+    'Ember.String namespace is deprecated. Please, import `isHTMLSafe` from `@ember/template`.',
+    false,
+    {
+      id: 'ember-glimmer.ember-string-is-html-safe',
+      until: '3.5.0',
+      url: '',
+    }
+  );
+  return isHTMLSafe(str);
 }

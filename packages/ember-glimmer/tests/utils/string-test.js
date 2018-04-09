@@ -1,10 +1,23 @@
-import { SafeString, htmlSafe, isHTMLSafe } from './helpers';
+import {
+  SafeString,
+  htmlSafe,
+  deprecatedHTMLSafe,
+  isHTMLSafe,
+  deprecatedIsHTMLSafe,
+} from './helpers';
 import { TestCase } from './abstract-test-case';
 import { moduleFor } from './test-case';
 
 moduleFor(
   'SafeString',
   class extends TestCase {
+    ['@test deprecated version is deprecated']() {
+      expectDeprecation(/ember\/template/);
+      let safeString = deprecatedHTMLSafe('Hello');
+
+      this.assert.ok(safeString instanceof SafeString, 'should be a SafeString');
+    }
+
     ['@test htmlSafe should return an instance of SafeString']() {
       let safeString = htmlSafe('you need to be more <b>bold</b>');
 
@@ -30,6 +43,10 @@ moduleFor(
 moduleFor(
   'SafeString isHTMLSafe',
   class extends TestCase {
+    ['@test deprecated version is deprecated']() {
+      expectDeprecation(/ember\/template/);
+      deprecatedIsHTMLSafe('Hello');
+    }
     ['@test isHTMLSafe should detect SafeString']() {
       let safeString = htmlSafe('<em>Emphasize</em> the important things.');
 

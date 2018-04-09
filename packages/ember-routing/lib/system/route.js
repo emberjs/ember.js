@@ -5,7 +5,7 @@ import { DEBUG } from 'ember-env-flags';
 import {
   typeOf,
   copy,
-  String as StringUtils,
+  StringUtils,
   Object as EmberObject,
   A as emberA,
   Evented,

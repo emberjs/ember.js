@@ -1,10 +1,11 @@
 import { ENV } from 'ember-environment';
-import { camelize } from '../../../system/string';
+import { camelize, default as EmberString } from '../../../system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
   assert.deepEqual(camelize(given), expected, description);
   if (ENV.EXTEND_PROTOTYPES.String) {
+    expectDeprecation(/@ember\/string/);
     assert.deepEqual(given.camelize(), expected, description);
   }
 }
@@ -12,6 +13,11 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.camelize',
   class extends AbstractTestCase {
+    ['@test Ember.String.camelize is deprecated']() {
+      expectDeprecation(/Ember.String namespace is deprecated/);
+      EmberString.camelize('hello world');
+    }
+
     ['@test String.prototype.camelize is not modified without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(

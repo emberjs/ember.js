@@ -9,7 +9,9 @@ export {
   InteractiveRender,
   InertRenderer,
   htmlSafe,
+  deprecatedHTMLSafe,
   SafeString,
   DOMChanges,
   isHTMLSafe,
+  deprecatedIsHTMLSafe,
 } from 'ember-glimmer';

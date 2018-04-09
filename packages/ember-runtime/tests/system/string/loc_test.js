@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { loc } from '../../../system/string';
+import { default as EmberString, loc } from '../../../system/string';
 import { setStrings, getStrings } from '../../../string_registry';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -8,6 +8,7 @@ let oldString;
 function test(assert, given, args, expected, description) {
   assert.equal(loc(given, args), expected, description);
   if (ENV.EXTEND_PROTOTYPES.String) {
+    expectDeprecation(/`loc` is deprecated/);
     assert.deepEqual(given.loc(...args), expected, description);
   }
 }
@@ -27,6 +28,11 @@ moduleFor(
 
     afterEach() {
       setStrings(oldString);
+    }
+
+    ['@test Ember.String.loc is deprecated']() {
+      expectDeprecation(/Ember.String namespace is deprecated/);
+      EmberString.loc('_Hello Worl', []);
     }
 
     ['@test String.prototype.loc is not available without EXTEND_PROTOTYPES'](assert) {

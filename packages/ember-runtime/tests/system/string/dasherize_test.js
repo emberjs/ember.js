@@ -1,10 +1,11 @@
 import { ENV } from 'ember-environment';
-import { dasherize } from '../../../system/string';
+import { dasherize, default as EmberString } from '../../../system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
   assert.deepEqual(dasherize(given), expected, description);
   if (ENV.EXTEND_PROTOTYPES.String) {
+    expectDeprecation(/@ember\/string/);
     assert.deepEqual(given.dasherize(), expected, description);
   }
 }
@@ -12,6 +13,11 @@ function test(assert, given, expected, description) {
 moduleFor(
   'EmberStringUtils.dasherize',
   class extends AbstractTestCase {
+    ['@test Ember.String.dasherize is deprecated']() {
+      expectDeprecation(/Ember.String namespace is deprecated/);
+      EmberString.dasherize('hello world');
+    }
+
     ['@test String.prototype.dasherize is not modified without EXTEND_PROTOTYPES'](assert) {
       if (!ENV.EXTEND_PROTOTYPES.String) {
         assert.ok(

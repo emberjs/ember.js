@@ -21,3 +21,15 @@ export const String: {
 export function isEmberArray(arr: any): boolean;
 
 export function _contentFor(proxy: any): any;
+
+export const StringUtils: {
+  fmt(s: string, ...args: any[]): string,
+  loc(s: string, ...args: any[]): string,
+  w(s: string): string[],
+  decamelize(s: string): string,
+  dasherize(s: string): string,
+  camelize(s: string): string,
+  classify(s: string): string,
+  underscore(s: string): string,
+  capitalize(s: string): string
+}

@@ -85,6 +85,8 @@ import {
   Checkbox,
   Component,
   componentManager,
+  deprecatedHTMLSafe,
+  deprecatedIsHTMLSafe,
   escapeExpression,
   getTemplates,
   Helper,
@@ -424,11 +426,20 @@ Ember.HTMLBars = {
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {
+    EmberDebug.deprecate(
+      `Extending String prototype is deprecated. Please, use htmlSafe from '@ember/template'.`,
+      false,
+      {
+        id: 'ember-runtime.string-prototype-extension',
+        until: '3.5.0',
+        url: '',
+      }
+    );
     return htmlSafe(this);
   };
 }
-EmberString.htmlSafe = htmlSafe;
-EmberString.isHTMLSafe = isHTMLSafe;
+EmberString.htmlSafe = deprecatedHTMLSafe;
+EmberString.isHTMLSafe = deprecatedIsHTMLSafe;
 
 /**
   Global hash of shared templates. This will automatically be populated
@@ -446,6 +457,19 @@ Object.defineProperty(Ember, 'TEMPLATES', {
   configurable: false,
   enumerable: false,
 });
+
+/**
+  Global for safe usage of methods coming from module '@ember/template'.
+
+  @property Template
+  @for Ember
+  @type Object
+  @private
+ */
+Ember._Template = {
+  htmlSafe,
+  isHTMLSafe,
+};
 
 /**
   The semantic version

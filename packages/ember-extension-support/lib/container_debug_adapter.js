@@ -1,10 +1,4 @@
-import {
-  A as emberA,
-  typeOf,
-  String as StringUtils,
-  Namespace,
-  Object as EmberObject,
-} from 'ember-runtime';
+import { A as emberA, typeOf, StringUtils, Namespace, Object as EmberObject } from 'ember-runtime';
 
 /**
 @module @ember/debug

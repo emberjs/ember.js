@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { String as StringUtils } from 'ember-runtime';
+import { StringUtils } from 'ember-runtime';
 import { helper } from '../helper';
 
 /**
