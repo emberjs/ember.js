@@ -19,10 +19,9 @@
       "packages/ember-testing/lib",
       "packages/ember-extension-support/lib",
       "packages/container/lib",
-      "node_modules/rsvp/lib",
-      "node_modules/router_js/lib/router"
+      "node_modules/rsvp/lib"
     ],
-    "exclude": "vendor,node_modules/router_js/lib/router/handler-info,node_modules/router_js/lib/router/transition-intent,node_modules/router_js/lib/router/router_js,node_modules/router_js/lib/router/transition-intent.js,node_modules/router_js/lib/router/transition-state.js,node_modules/router_js/lib/router/unrecognized-url-error.js,node_modules/router_js/lib/router/utils.js",
+    "exclude": "vendor",
     "outdir":   "docs",
     "preprocessor": "bin/feature-flag-yuidoc-filter"
   }
