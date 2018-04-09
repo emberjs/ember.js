@@ -236,7 +236,7 @@ module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
 
 module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
   if (rollup) {
-    return new Rollup(`packages/${name}/lib`, {
+    return new Rollup(`packages/${name}`, {
       annotation: `rollup ${name}`,
       rollup: {
         input: 'index.js',
@@ -250,8 +250,8 @@ module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
     });
   }
 
-  return new Funnel(`packages/${name}/lib`, {
-    exclude: ['.gitkeep', '**/*.d.ts'],
+  return new Funnel(`packages/${name}`, {
+    exclude: ['.gitkeep', '**/*.d.ts', 'tests'],
     destDir: name,
     annotation: `${name} es`,
   });

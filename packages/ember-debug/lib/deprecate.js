@@ -5,7 +5,7 @@ import EmberError from './error';
 
 import { ENV } from 'ember-environment';
 
-import { assert } from './index';
+import { assert } from '../index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 /**
  @module @ember/debug

@@ -16,21 +16,21 @@ if (!_Ember.VERSION) {
 }
 
 // used for adding Ember.Handlebars.compile for backwards compat
-import setupGlobal from './compat';
+import setupGlobal from './lib/compat';
 setupGlobal(_Ember);
 
-export { default as precompile } from './system/precompile';
-export { default as compile } from './system/compile';
+export { default as precompile } from './lib/system/precompile';
+export { default as compile } from './lib/system/compile';
 export {
   default as compileOptions,
   registerPlugin,
   unregisterPlugin,
-} from './system/compile-options';
-export { default as defaultPlugins } from './plugins/index';
+} from './lib/system/compile-options';
+export { default as defaultPlugins } from './lib/plugins/index';
 
 // used to bootstrap templates
-import './system/bootstrap';
+import './lib/system/bootstrap';
 
 // add domTemplates initializer (only does something if `ember-template-compiler`
 // is loaded already)
-import './system/initializer';
+import './lib/system/initializer';

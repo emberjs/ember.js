@@ -1,18 +1,18 @@
 import { DEBUG } from 'ember-env-flags';
 import { ENV, environment } from 'ember-environment';
-import { isTesting } from './testing';
-import EmberError from './error';
-import { default as isFeatureEnabled } from './features';
+import { isTesting } from './lib/testing';
+import EmberError from './lib/error';
+import { default as isFeatureEnabled } from './lib/features';
 import * as FLAGS from 'ember/features';
 let { DEFAULT_FEATURES, FEATURES } = FLAGS;
-import _deprecate from './deprecate';
-import _warn from './warn';
+import _deprecate from './lib/deprecate';
+import _warn from './lib/warn';
 
-export { registerHandler as registerWarnHandler } from './warn';
-export { registerHandler as registerDeprecationHandler } from './deprecate';
-export { default as isFeatureEnabled } from './features';
-export { default as Error } from './error';
-export { isTesting, setTesting } from './testing';
+export { registerHandler as registerWarnHandler } from './lib/warn';
+export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
+export { default as isFeatureEnabled } from './lib/features';
+export { default as Error } from './lib/error';
+export { isTesting, setTesting } from './lib/testing';
 
 // These are the default production build versions:
 const noop = () => {};
