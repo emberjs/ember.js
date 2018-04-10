@@ -118,7 +118,7 @@ module.exports = function() {
 
   let emberDebugBundle = new MergeTrees([
     new Funnel(packagesES5, {
-      exclude: ['*/tests/**'],
+      exclude: ['*/tests/**', 'ember-template-compiler/**'],
     }),
     dependenciesES5,
     loader,
