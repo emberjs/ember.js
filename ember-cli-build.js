@@ -38,6 +38,7 @@ const ENV = process.env.EMBER_ENV || 'development';
 module.exports = function() {
   let loader = internalLoader();
   let nodeModule = nodeModuleUtils();
+  let license = emberLicense();
 
   // generate "loose" ES<latest> modules...
   let dependenciesES = new MergeTrees([
@@ -61,7 +62,6 @@ module.exports = function() {
     // dynamically generated packages
     emberVersionES(),
     emberFeaturesES(),
-    emberLicense(),
 
     // packages/** (after typescript compilation)
     getPackagesES(),
@@ -106,6 +106,7 @@ module.exports = function() {
       include: ['internal-test-helpers/**', '*/tests/**', 'license.js'],
     }),
     loader,
+    license,
     nodeModule,
     babelDebugHelpersES5,
   ]);
@@ -121,6 +122,7 @@ module.exports = function() {
     }),
     dependenciesES5,
     loader,
+    license,
     nodeModule,
     bootstrapModule('ember'),
     babelDebugHelpersES5,
@@ -135,6 +137,7 @@ module.exports = function() {
       include: ['ember-debug/**', 'ember-testing/**', 'license.js'],
     }),
     loader,
+    license,
     babelDebugHelpersES5,
     nodeModule,
   ]);
@@ -177,6 +180,7 @@ module.exports = function() {
     let emberTemplateCompilerBundle = new MergeTrees([
       templateCompiler(),
       loader,
+      license,
       babelDebugHelpersES5,
       nodeModule,
     ]);
