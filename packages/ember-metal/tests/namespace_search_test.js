@@ -1,4 +1,4 @@
-import { classToString, Mixin } from '..';
+import { Mixin } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
