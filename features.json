@@ -1,16 +1,16 @@
 {
   "features": {
-    "features-stripped-test": null,
-    "ember-libraries-isregistered": null,
-    "ember-improved-instrumentation": null,
+    "features-stripped-test": false,
+    "ember-libraries-isregistered": false,
+    "ember-improved-instrumentation": false,
     "ember-glimmer-named-arguments": true,
     "ember-metal-es5-getters": true,
     "ember-routing-router-service": true,
     "ember-engines-mount-params": true,
-    "ember-module-unification": null,
-    "glimmer-custom-component-manager": null,
+    "ember-module-unification": false,
+    "glimmer-custom-component-manager": false,
     "ember-template-block-let-helper": true,
-    "ember-metal-tracked-properties": null
+    "ember-metal-tracked-properties": false
   },
   "deprecations": {
     "container-lookupFactory": "2.12.0",
