@@ -2,6 +2,7 @@
 
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
+const Rollup = require('broccoli-rollup');
 const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
 const concatBundle = require('./broccoli/concat-bundle');
@@ -87,8 +88,31 @@ module.exports = function() {
     annotation: 'babel helpers debug',
   });
 
+  // Rollup
+  let packagesESRollup = new MergeTrees([
+    new Funnel(packagesES, {
+      exclude: [
+        'container/index.js',
+        'container/lib/**',
+        'ember-environment/index.js',
+        'ember-environment/lib/**',
+        'ember-glimmer/index.js',
+        'ember-glimmer/lib/**',
+        'ember-metal/index.js',
+        'ember-metal/lib/**',
+        'ember-utils/index.js',
+        'ember-utils/lib/**',
+      ],
+    }),
+    rollupPackage(packagesES, 'container'),
+    rollupPackage(packagesES, 'ember-environment'),
+    rollupPackage(packagesES, 'ember-glimmer'),
+    rollupPackage(packagesES, 'ember-metal'),
+    rollupPackage(packagesES, 'ember-utils'),
+  ]);
+
   // ES5
-  let packagesES5 = toES5(packagesES);
+  let packagesES5 = toES5(packagesESRollup);
   let dependenciesES5 = toES5(dependenciesES);
   let templateCompilerDependenciesES5 = toES5(templateCompilerDependenciesES);
   let emberDebugFeaturesES5 = toES5(emberFeaturesES());
@@ -166,7 +190,7 @@ module.exports = function() {
   let trees = [];
 
   if (ENV === 'production') {
-    let prodPackagesES5 = stripForProd(toES5(packagesES, { environment: 'production' }));
+    let prodPackagesES5 = stripForProd(toES5(packagesESRollup, { environment: 'production' }));
     let babelProdHelpersES5 = toES5(babelHelpers('prod'), {
       environment: 'production',
     });
@@ -285,4 +309,44 @@ function glimmerDependenciesES() {
     }
   }
   return glimmerTrees(glimmerEntries);
+}
+
+function rollupPackage(packagesES, name) {
+  let externs = [
+    '@glimmer/reference',
+    '@glimmer/runtime',
+    '@glimmer/node',
+    '@glimmer/opcode-compiler',
+    '@glimmer/program',
+    '@glimmer/wire-format',
+    '@glimmer/util',
+    'ember-console',
+    'ember-debug',
+    'ember-env-flags',
+    'ember/features',
+    'ember-environment',
+    'ember-utils',
+    'ember-metal',
+    'ember-runtime',
+    'ember-views',
+    'ember-routing',
+    'node-module',
+    'require',
+    'rsvp',
+    'container',
+    'backburner',
+  ];
+
+  return new Rollup(packagesES, {
+    annotation: `rollup ${name}`,
+    rollup: {
+      input: `${name}/index.js`,
+      external: externs,
+      output: {
+        file: `${name}.js`,
+        format: 'es',
+        exports: 'named',
+      },
+    },
+  });
 }
