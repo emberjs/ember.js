@@ -63,11 +63,10 @@ env:
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
   matrix:
     - TEST_SUITE=browserstack
-    - TEST_SUITE=each-package-tests BUILD_TYPE=canary PUBLISH=true
+    - TEST_SUITE=each-package-tests BUILD_TYPE=beta PUBLISH=true
     - TEST_SUITE=built-tests EMBER_ENV=production
     - TEST_SUITE=old-jquery-and-extend-prototypes
     - TEST_SUITE=node
     - TEST_SUITE=blueprints
     - TEST_SUITE=travis-browsers
-    - TEST_SUITE=each-package-tests BUILD_TYPE=alpha PUBLISH=true
     - TEST_SUITE=code-quality
