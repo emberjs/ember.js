@@ -1,42 +1,20 @@
 # Ember Changelog
 
-### v3.1.0-beta.5 (March 12, 2018)
-- [#15601](https://github.com/emberjs/ember.js/pull/15601) [BUGFIX] Ensure Mixin.prototype.toString does not return constructor code
+### v3.1.0 (April 10, 2018)
+- [#16293](https://github.com/emberjs/ember.js/pull/16293) [BUGFIX] Ignore --pod for -addon blueprints: helper, initializer, and instance-initializer
+- [#16312](https://github.com/emberjs/ember.js/pull/16312) [DEPRECATION] Deprecate `Route.prototype.router` in favor of `Route.prototype._router`
 - [#16326](https://github.com/emberjs/ember.js/pull/16326) [BUGFIX] Expanded syntax error for if handlebars helper to include source of error
-- [#16347](https://github.com/emberjs/ember.js/pull/16347) [BUGFIX] Adds toJSON to list of descriptorTrap assertion exception
-- [#16350](https://github.com/emberjs/ember.js/pull/16350) [BUGFIX] Fix initialiters tests blueprints
-- [#16351](https://github.com/emberjs/ember.js/pull/16351) [BUGFIX] Bring RSVP.cast back from the dead
-- [#16365](https://github.com/emberjs/ember.js/pull/16365) [BUGFIX] Fold all trap methods together
-
-### v3.1.0-beta.4 (March 5, 2018)
+- [#16350](https://github.com/emberjs/ember.js/pull/16350) [BUGFIX] Fix initializers tests blueprints
 - [#16294](https://github.com/emberjs/ember.js/pull/16294) [BUGFIX] Fix input macro params handling
-- [#16297](https://github.com/emberjs/ember.js/pull/16297) [BUGFIX] Revert "Update to backburner.js@2.2.0."
-- [#16299](https://github.com/emberjs/ember.js/pull/16299) [BUGFIX] Revert "[CLEANUP] Remove ':change' suffix on change events"
 - [#16307](https://github.com/emberjs/ember.js/pull/16307) [BUGFIX] Ensure proper .toString() of default components.
-
-### v3.1.0-beta.3 (February 26, 2018)
-- [#16271](https://github.com/emberjs/ember.js/pull/16271) [BUGFIX] Fix ChainNode unchaining
-- [#16274](https://github.com/emberjs/ember.js/pull/16274) [BUGFIX] Ensure accessing a "proxy" itself does not error.
-- [#16282](https://github.com/emberjs/ember.js/pull/16282) [BUGFIX] Fix nested ObserverSet flushes
-- [#16285](https://github.com/emberjs/ember.js/pull/16285) [BUGFIX] Fix version with many special chars.
-- [#16286](https://github.com/emberjs/ember.js/pull/16286) [BUGFIX] Update to glimmer-vm@0.32.1.
 - [#16287](https://github.com/emberjs/ember.js/pull/16287) [BUGFIX] Update to router_js@2.0.0-beta.2.
-- [#16288](https://github.com/emberjs/ember.js/pull/16288) [BUGFIX] Ensure all "internal symbols" avoid the proxy assertion
-
-### v3.1.0-beta.2 (February 19, 2018)
-
-- [#13355](https://github.com/emberjs/ember.js/pull/13355) [BUGFIX] Fix issue with `Ember.trySet` on destroyed objects.
 - [#16245](https://github.com/emberjs/ember.js/pull/16245) [BUGFIX] Ensure errors in deferred component hooks can be recovered.
 - [#16246](https://github.com/emberjs/ember.js/pull/16246) [BUGFIX] computed.sort should not sort if sortProperties is empty
-
-### v3.1.0-beta.1 (February 14, 2018)
-
 - [emberjs/rfcs#276](https://github.com/emberjs/rfcs/blob/master/text/0276-named-args.md) [FEATURE named-args] enabled by default.
 - [emberjs/rfcs#278](https://github.com/emberjs/rfcs/blob/master/text/0278-template-only-components.md) [FEATURE template-only-glimmer-components] Enable-able via `@ember/optional-features` addon.
 - [emberjs/rfcs#280](https://github.com/emberjs/rfcs/blob/master/text/0280-remove-application-wrapper.md) [FEATURE application-template-wrapper] Enable-able via `@ember/optional-features` addon.
 - [emberjs/rfcs#281](https://github.com/emberjs/rfcs/blob/master/text/0281-es5-getters.md) [FEATURE native-es5-getters] Enabled by default.
 - [#15828](https://github.com/emberjs/ember.js/pull/15828) Upgrade glimmer-vm to latest version.
-- [#16212](https://github.com/emberjs/ember.js/pull/16212) Update to backburner.js@2.2.0.
 
 ### v3.0.0 (February 13, 2018)
 
