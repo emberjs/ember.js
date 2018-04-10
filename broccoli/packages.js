@@ -17,7 +17,6 @@ const { RELEASE, DEBUG, toConst } = require('./features');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const { stripIndent } = require('common-tags');
-const toES5 = require('./to-es5');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
