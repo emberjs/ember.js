@@ -184,6 +184,9 @@ function calculateToString(target) {
     }
     let superclass = target;
     do {
+      if (superclass === null) {
+         break;
+      }
       superclass = Object.getPrototypeOf(superclass);
       if (superclass === Function.prototype) {
         break;
