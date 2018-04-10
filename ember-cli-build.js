@@ -178,9 +178,9 @@ module.exports = function() {
         include: [
           'ember/version.js',
           'ember-debug/**',
-          'ember-environment/**',
+          'ember-environment.js',
           'ember-template-compiler/**',
-          'ember-utils/**',
+          'ember-utils.js',
         ],
       }),
       bootstrapModule('ember-template-compiler', 'umd'),
