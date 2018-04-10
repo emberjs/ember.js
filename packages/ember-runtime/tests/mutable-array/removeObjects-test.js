@@ -1,7 +1,7 @@
 import { get } from 'ember-metal';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests, newFixture, newObjectsFixture } from '../helpers/array';
-import { A as emberA } from '../../mixins/array';
+import { A as emberA } from '../../lib/mixins/array';
 
 class RemoveObjectsTests extends AbstractTestCase {
   '@test should return receiver'() {

@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { capitalize } from '../../../system/string';
+import { capitalize } from '../../../lib/system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {

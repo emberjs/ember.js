@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { camelize } from '../../../system/string';
+import { camelize } from '../../../lib/system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {

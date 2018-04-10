@@ -1,5 +1,5 @@
-import { typeOf } from '../../utils';
-import EmberObject from '../../system/object';
+import { typeOf } from '../../lib/utils';
+import EmberObject from '../../lib/system/object';
 import { environment } from 'ember-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

@@ -1,5 +1,5 @@
 import { get, run } from 'ember-metal';
-import HashLocation from '../../location/hash_location';
+import HashLocation from '../../lib/location/hash_location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let location;

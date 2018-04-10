@@ -1,5 +1,5 @@
 import { run } from 'ember-metal';
-import { onLoad, runLoadHooks, _loaded } from '../../system/lazy_load';
+import { onLoad, runLoadHooks, _loaded } from '../../lib/system/lazy_load';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -1,8 +1,8 @@
 import { get, run } from 'ember-metal';
-import ObjectProxy from '../../system/object_proxy';
-import PromiseProxyMixin from '../../mixins/promise_proxy';
-import EmberRSVP from '../../ext/rsvp';
-import { onerrorDefault } from '../../ext/rsvp';
+import ObjectProxy from '../../lib/system/object_proxy';
+import PromiseProxyMixin from '../../lib/mixins/promise_proxy';
+import EmberRSVP from '../../lib/ext/rsvp';
+import { onerrorDefault } from '../../lib/ext/rsvp';
 import * as RSVP from 'rsvp';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

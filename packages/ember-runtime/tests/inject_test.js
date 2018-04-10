@@ -2,9 +2,9 @@
 
 import { InjectedProperty } from 'ember-metal';
 import { DEBUG } from 'ember-env-flags';
-import inject from '../inject';
-import { createInjectionHelper } from '../inject';
-import EmberObject from '../system/object';
+import inject from '../lib/inject';
+import { createInjectionHelper } from '../lib/inject';
+import EmberObject from '../lib/system/object';
 import { buildOwner } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

@@ -1,6 +1,6 @@
 import { computed, Mixin, observer } from 'ember-metal';
 import { MANDATORY_SETTER } from 'ember/features';
-import EmberObject from '../../../system/object';
+import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

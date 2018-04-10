@@ -1,5 +1,5 @@
 import { run } from 'ember-metal';
-import Adapter from '../../adapters/adapter';
+import Adapter from '../../lib/adapters/adapter';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 var adapter;

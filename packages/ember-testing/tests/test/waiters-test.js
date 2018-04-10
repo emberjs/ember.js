@@ -1,4 +1,4 @@
-import { registerWaiter, unregisterWaiter, checkWaiters } from '../../test/waiters';
+import { registerWaiter, unregisterWaiter, checkWaiters } from '../../lib/test/waiters';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 class Waiters {

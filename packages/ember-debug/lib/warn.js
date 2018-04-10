@@ -2,7 +2,7 @@ import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 
 import deprecate from './deprecate';
-import { assert } from './index';
+import { assert } from '../index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 let registerHandler = () => {};

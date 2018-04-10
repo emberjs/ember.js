@@ -1,6 +1,6 @@
 import { context } from 'ember-environment';
-import EmberObject from '../../system/object';
-import TargetActionSupport from '../../mixins/target_action_support';
+import EmberObject from '../../lib/system/object';
+import TargetActionSupport from '../../lib/mixins/target_action_support';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let originalLookup = context.lookup;

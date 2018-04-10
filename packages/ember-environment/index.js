@@ -1,5 +1,5 @@
-import global from './global';
-import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './utils';
+import global from './lib/global';
+import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './lib/utils';
 /**
   The hash of environment variables used to control various configuration
   settings. To specify your own or override default settings, add the

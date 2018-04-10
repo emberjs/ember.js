@@ -1,7 +1,7 @@
 import { get } from 'ember-metal';
-import EmberObject from '../../system/object';
-import compare from '../../compare';
-import Comparable from '../../mixins/comparable';
+import EmberObject from '../../lib/system/object';
+import compare from '../../lib/compare';
+import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const Rectangle = EmberObject.extend(Comparable, {

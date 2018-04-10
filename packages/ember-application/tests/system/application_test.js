@@ -3,7 +3,7 @@ import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
 import { libraries, setNamespaceSearchDisabled } from 'ember-metal';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
-import Application from '../../system/application';
+import Application from '../../lib/system/application';
 import { Router, NoneLocation, Route as EmberRoute } from 'ember-routing';
 import { jQuery } from 'ember-views';
 import { Controller, Object as EmberObject, _loaded } from 'ember-runtime';

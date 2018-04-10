@@ -1,4 +1,4 @@
-import DefaultResolver from '../../../system/resolver';
+import DefaultResolver from '../../../lib/system/resolver';
 import { assign } from 'ember-utils';
 import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 

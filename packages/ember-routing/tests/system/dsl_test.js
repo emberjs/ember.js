@@ -1,5 +1,5 @@
 import { setOwner } from 'ember-utils';
-import EmberRouter from '../../system/router';
+import EmberRouter from '../../lib/system/router';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let Router;

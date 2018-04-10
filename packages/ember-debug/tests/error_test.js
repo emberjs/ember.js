@@ -1,4 +1,4 @@
-import EmberError from '../error';
+import EmberError from '../lib/error';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 moduleFor(

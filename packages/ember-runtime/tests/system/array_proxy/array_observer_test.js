@@ -1,6 +1,6 @@
 import { set } from 'ember-metal';
-import ArrayProxy from '../../../system/array_proxy';
-import { A } from '../../../mixins/array';
+import ArrayProxy from '../../../lib/system/array_proxy';
+import { A } from '../../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

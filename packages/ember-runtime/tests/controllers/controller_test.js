@@ -1,10 +1,10 @@
 /* global EmberDev */
 
-import Controller from '../../controllers/controller';
-import Service from '../../system/service';
+import Controller from '../../lib/controllers/controller';
+import Service from '../../lib/system/service';
 import { Mixin, get } from 'ember-metal';
-import EmberObject from '../../system/object';
-import inject from '../../inject';
+import EmberObject from '../../lib/system/object';
+import inject from '../../lib/inject';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

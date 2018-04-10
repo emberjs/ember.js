@@ -1,5 +1,5 @@
 import { run } from 'ember-metal';
-import Test from '../test';
+import Test from '../lib/test';
 import { Application as EmberApplication } from 'ember-application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

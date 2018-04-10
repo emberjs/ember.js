@@ -1,6 +1,6 @@
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
-import EmberObject from '../../system/object';
+import EmberObject from '../../lib/system/object';
 
 class EveryTest extends AbstractTestCase {
   '@test every should should invoke callback on each item as long as you return true'() {

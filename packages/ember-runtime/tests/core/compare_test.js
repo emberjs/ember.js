@@ -1,7 +1,7 @@
-import { typeOf } from '../../utils';
-import EmberObject from '../../system/object';
-import compare from '../../compare';
-import Comparable from '../../mixins/comparable';
+import { typeOf } from '../../lib/utils';
+import EmberObject from '../../lib/system/object';
+import compare from '../../lib/compare';
+import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let data = [];

@@ -1,4 +1,4 @@
-import isEqual from '../../is-equal';
+import isEqual from '../../lib/is-equal';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

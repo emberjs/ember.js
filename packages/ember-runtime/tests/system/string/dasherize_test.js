@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { dasherize } from '../../../system/string';
+import { dasherize } from '../../../lib/system/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {

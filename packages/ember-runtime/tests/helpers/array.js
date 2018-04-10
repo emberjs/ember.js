@@ -1,5 +1,5 @@
-import ArrayProxy from '../../system/array_proxy';
-import EmberArray, { A as emberA, MutableArray } from '../../mixins/array';
+import ArrayProxy from '../../lib/system/array_proxy';
+import EmberArray, { A as emberA, MutableArray } from '../../lib/mixins/array';
 import { generateGuid, guidFor } from 'ember-utils';
 import {
   get,
@@ -10,8 +10,8 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from 'ember-metal';
-import EmberObject from '../../system/object';
-import Copyable from '../../mixins/copyable';
+import EmberObject from '../../lib/system/object';
+import Copyable from '../../lib/mixins/copyable';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {

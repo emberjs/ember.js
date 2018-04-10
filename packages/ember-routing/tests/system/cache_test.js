@@ -1,4 +1,4 @@
-import BucketCache from '../../system/cache';
+import BucketCache from '../../lib/system/cache';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

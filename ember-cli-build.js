@@ -115,9 +115,10 @@ module.exports = function() {
   let inlineParser = toES5(handlebarsES(), { annotation: 'handlebars' });
   let tokenizer = toES5(simpleHTMLTokenizerES(), { annotation: 'tokenizer' });
   let rsvp = toES5(rsvpES(), { annotation: 'rsvp' });
-  let emberMetal = new Funnel('packages/ember-metal/lib', {
+  let emberMetal = new Funnel('packages/ember-metal', {
     destDir: '/',
     include: ['**/*.js'],
+    exclude: ['tests'],
   });
   let emberMetalES5 = rollupEmberMetal(emberMetal);
   let emberConsole = emberPkgES('ember-console', SHOULD_ROLLUP, ['ember-environment']);

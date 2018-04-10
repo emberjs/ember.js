@@ -1,9 +1,9 @@
 import { setOwner } from 'ember-utils';
-import HashLocation from '../../location/hash_location';
-import HistoryLocation from '../../location/history_location';
-import AutoLocation from '../../location/auto_location';
-import NoneLocation from '../../location/none_location';
-import Router, { triggerEvent } from '../../system/router';
+import HashLocation from '../../lib/location/hash_location';
+import HistoryLocation from '../../lib/location/history_location';
+import AutoLocation from '../../lib/location/auto_location';
+import NoneLocation from '../../lib/location/none_location';
+import Router, { triggerEvent } from '../../lib/system/router';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let owner;

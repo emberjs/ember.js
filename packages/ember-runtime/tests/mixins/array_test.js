@@ -10,9 +10,9 @@ import {
   arrayContentDidChange,
   arrayContentWillChange,
 } from 'ember-metal';
-import EmberObject from '../../system/object';
-import EmberArray from '../../mixins/array';
-import { A as emberA } from '../../mixins/array';
+import EmberObject from '../../lib/system/object';
+import EmberArray from '../../lib/mixins/array';
+import { A as emberA } from '../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*
