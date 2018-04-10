@@ -8,9 +8,9 @@ echo -e "PULL_REQUEST: ${TRAVIS_PULL_REQUEST}\n"
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$PUBLISH" == "true" ]; then
 
-  ./bin/build-for-publishing.js
+  node ./bin/build-for-publishing.js
 
-  ./bin/publish_to_s3.js
+  node ./bin/publish_to_s3.js
 
   #### NPM PUBLISHING
   if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
