@@ -61,15 +61,17 @@ module.exports = function() {
   let packagesES = new MergeTrees([
     // dynamically generated packages
     emberVersionES(),
-    emberFeaturesES(),
 
     // packages/** (after typescript compilation)
     getPackagesES(),
   ]);
 
-  let es = new MergeTrees([packagesES, dependenciesES, templateCompilerDependenciesES], {
-    overwrite: true,
-  });
+  let es = new MergeTrees(
+    [packagesES, emberFeaturesES(), dependenciesES, templateCompilerDependenciesES],
+    {
+      overwrite: true,
+    }
+  );
   let pkgAndTestESInAMD = toNamedAMD(es);
   let emberEnvFlagsDebug = toNamedAMD(buildEmberEnvFlagsES({ DEBUG: true }));
 
@@ -89,6 +91,8 @@ module.exports = function() {
   // ES5
   let packagesES5 = toES5(packagesES);
   let dependenciesES5 = toES5(dependenciesES);
+  let templateCompilerDependenciesES5 = toES5(templateCompilerDependenciesES);
+  let emberDebugFeaturesES5 = toES5(emberFeaturesES());
 
   // Bundling
   let emberTestsBundle = new MergeTrees([
@@ -111,6 +115,7 @@ module.exports = function() {
       exclude: ['*/tests/**', 'ember-template-compiler/**'],
     }),
     dependenciesES5,
+    emberDebugFeaturesES5,
     loader,
     license,
     nodeModule,
@@ -148,8 +153,6 @@ module.exports = function() {
     return new MergeTrees([
       new Funnel(packagesES5, {
         include: [
-          'license.js',
-          'ember/features.js',
           'ember/version.js',
           'ember-debug/**',
           'ember-environment/**',
@@ -157,7 +160,6 @@ module.exports = function() {
           'ember-utils/**',
         ],
       }),
-      toES5(templateCompilerDependenciesES),
       bootstrapModule('ember-template-compiler', 'umd'),
     ]);
   }
@@ -165,14 +167,80 @@ module.exports = function() {
   let trees = [];
 
   if (ENV === 'production') {
-    // fill in laterz
+    let prodPackagesES5 = stripForProd(toES5(packagesES, { environment: 'production' }));
+    let babelProdHelpersES5 = toES5(babelHelpers('prod'), {
+      environment: 'production',
+    });
+    let productionFeatures = toES5(emberFeaturesES(true), {
+      environment: 'production',
+    });
+
+    let emberProdBundle = new MergeTrees([
+      new Funnel(prodPackagesES5, {
+        exclude: ['*/tests/**', 'ember-template-compiler/**'],
+      }),
+      stripForProd(dependenciesES5),
+      loader,
+      license,
+      nodeModule,
+      bootstrapModule('ember'),
+      babelProdHelpersES5,
+      productionFeatures,
+    ]);
+
+    emberProdBundle = concatBundle(emberProdBundle, {
+      outputFile: 'ember.prod.js',
+    });
+    trees.push(emberProdBundle);
+
+    let emberProdMinRename = rename(emberProdBundle, {
+      'ember.prod.js': 'ember.min.js',
+    });
+    let emberMinBundle = minify(emberProdMinRename);
+    trees.push(emberMinBundle);
+
+    let emberTestsBundle = new MergeTrees([
+      new Funnel(prodPackagesES5, {
+        include: ['internal-test-helpers/**', '*/tests/**', 'license.js'],
+      }),
+      loader,
+      license,
+      nodeModule,
+      babelProdHelpersES5,
+    ]);
+
+    emberTestsBundle = concatBundle(emberTestsBundle, {
+      outputFile: 'ember-tests.prod.js',
+      hasBootstrap: false,
+    });
+    trees.push(emberTestsBundle);
+
+    // Note:
+    // We have to build custom production template compiler
+    // because we strip babel helpers in the prod build
+    let emberTemplateCompilerBundle = new MergeTrees([
+      stripForProd(templateCompiler()),
+      stripForProd(templateCompilerDependenciesES5),
+      loader,
+      license,
+      babelProdHelpersES5,
+      nodeModule,
+      productionFeatures,
+    ]);
+
+    emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {
+      outputFile: 'ember-template-compiler.js',
+    });
+    trees.push(emberTemplateCompilerBundle);
   } else {
     let emberTemplateCompilerBundle = new MergeTrees([
       templateCompiler(),
+      templateCompilerDependenciesES5,
       loader,
       license,
       babelDebugHelpersES5,
       nodeModule,
+      emberDebugFeaturesES5,
     ]);
 
     emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {
