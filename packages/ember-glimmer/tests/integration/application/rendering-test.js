@@ -212,12 +212,14 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
         this.route('c');
         this.route('d');
       });
+      this.route('e');
     });
 
     this.addTemplate('a', 'A{{outlet}}');
     this.addTemplate('b', 'B{{outlet}}');
     this.addTemplate('b.c', 'C');
     this.addTemplate('b.d', 'D');
+    this.addTemplate('e', '{{{noValue}}}E');
 
     return this.visit('/b/c').then(() => {
       // this.assertComponentElement(this.firstChild, { content: 'BC' });
@@ -230,6 +232,12 @@ moduleFor('Application test: rendering', class extends ApplicationTest {
     }).then(() => {
       this.assertText('BD');
       // this.assertComponentElement(this.firstChild, { content: 'BD' });
+    }).then(() => {
+      return this.visit('e');
+    }).then(() => {
+      return this.visit('a');
+    }).then(() => {
+      this.assertText('A');
     });
   }
 
