@@ -67,20 +67,10 @@ module.exports = function() {
     getPackagesES(),
   ]);
 
-  let es = new Funnel(
-    new MergeTrees([packagesES, dependenciesES, templateCompilerDependenciesES], {
-      overwrite: true,
-    }),
-    { destDir: 'es' }
-  );
-
-  let esMin = minify(
-    new Funnel(packagesES, {
-      destDir: 'es-min',
-    })
-  );
-
-  let pkgAndTestESInAMD = toNamedAMD(packagesES);
+  let es = new MergeTrees([packagesES, dependenciesES, templateCompilerDependenciesES], {
+    overwrite: true,
+  });
+  let pkgAndTestESInAMD = toNamedAMD(es);
   let emberEnvFlagsDebug = toNamedAMD(buildEmberEnvFlagsES({ DEBUG: true }));
 
   let pkgAndTestESBundleDebug = concat(
@@ -193,7 +183,7 @@ module.exports = function() {
   }
 
   return new MergeTrees([
-    es,
+    new Funnel(es, { destDir: 'es' }),
     pkgAndTestESBundleDebug,
     ...trees,
     emberTestsBundle,
