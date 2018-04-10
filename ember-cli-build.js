@@ -43,7 +43,6 @@ module.exports = function() {
   // generate "loose" ES<latest> modules...
   let dependenciesES = new MergeTrees([
     backburnerES(),
-    handlebarsES(),
     rsvpES(),
     dagES(),
     routerES(),
@@ -112,7 +111,7 @@ module.exports = function() {
 
   let emberDebugBundle = new MergeTrees([
     new Funnel(packagesES5, {
-      exclude: ['*/tests/**', 'ember-template-compiler/**'],
+      exclude: ['*/tests/**', 'ember-template-compiler/**', 'internal-test-helpers/**'],
     }),
     dependenciesES5,
     emberDebugFeaturesES5,
@@ -177,7 +176,12 @@ module.exports = function() {
 
     let emberProdBundle = new MergeTrees([
       new Funnel(prodPackagesES5, {
-        exclude: ['*/tests/**', 'ember-template-compiler/**'],
+        exclude: [
+          '*/tests/**',
+          'ember-template-compiler/**',
+          'ember-testing/**',
+          'internal-test-helpers/**',
+        ],
       }),
       stripForProd(dependenciesES5),
       loader,
