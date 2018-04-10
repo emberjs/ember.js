@@ -18,7 +18,6 @@ const {
   jquery,
   internalLoader,
   qunit,
-  rollupEmberGlimmerES,
   handlebarsES,
   rsvpES,
   simpleHTMLTokenizerES,
@@ -26,7 +25,6 @@ const {
   dagES,
   routeRecognizerES,
   emberPkgES,
-  emberTypescriptPkgES,
   glimmerTrees,
   nodeModuleUtils,
   emberVersionES,
@@ -44,7 +42,6 @@ module.exports = function() {
   let loader = internalLoader();
   let license = emberLicense();
   let nodeModule = nodeModuleUtils();
-  let emberGlimmerES = emberTypescriptPkgES('ember-glimmer');
 
   // generate "loose" ES<latest> modules...
   let combinedES = new MergeTrees([
@@ -53,7 +50,10 @@ module.exports = function() {
     handlebarsES(),
     simpleHTMLTokenizerES(),
     rsvpES(),
-    ...dependenciesES({ includeGlimmerCompiler: true }),
+    dagES(),
+    routerES(),
+    routeRecognizerES(),
+    ...glimmerDependenciesES({ includeGlimmerCompiler: true }),
 
     // dynamically generated packages
     emberVersionES(),
@@ -85,14 +85,8 @@ module.exports = function() {
     }
   );
 
-  let debugFeatures = toES5(emberFeaturesES());
   let version = toES5(emberVersionES());
   let emberDebug = emberPkgES('ember-debug');
-  let emberDebugES5 = toES5(emberDebug, { annotation: 'ember-debug' });
-  let emberTemplateCompiler = emberPkgES('ember-template-compiler');
-  let emberTemplateCompilerES5 = toES5(emberTemplateCompiler, {
-    annotation: 'ember-template-compiler',
-  });
   let babelDebugHelpersES5 = toES5(babelHelpers('debug'), {
     annotation: 'babel helpers debug',
   });
@@ -111,13 +105,6 @@ module.exports = function() {
   let emberEnvironmentES5 = toES5(emberEnvironment, {
     annotation: 'ember-environment',
   });
-  let emberUtils = emberPkgES('ember-utils');
-  let emberUtilsES5 = toES5(emberUtils, { annotation: 'ember-utils' });
-  let container = emberPkgES('container');
-  let containerES5 = toES5(container, { annotation: 'container' });
-  let emberCoreES = emberES().concat(rollupEmberGlimmerES(emberGlimmerES));
-  let testHarness = testHarnessFiles();
-  let backburner = toES5(backburnerES());
 
   // ES5
   let combinedES5 = toES5(combinedES);
@@ -125,55 +112,12 @@ module.exports = function() {
   // Bundling
   let emberTestsBundle = new MergeTrees([
     new Funnel(combinedES5, {
-      include: ['internal-test-helpers/**', '*/tests/**'],
+      include: ['internal-test-helpers/**', '*/tests/**', 'license.js'],
     }),
     loader,
-    license,
     nodeModule,
     babelDebugHelpersES5,
   ]);
-
-  let emberDebugES = new Funnel(combinedES5, {
-    include: [
-      // dependencies
-      '@glimmer/debug.js',
-      '@glimmer/encoder.js',
-      '@glimmer/local-debug-flags.js',
-      '@glimmer/low-level.js',
-      '@glimmer/node.js',
-      '@glimmer/object.js',
-      '@glimmer/object-reference.js',
-      '@glimmer/opcode-compiler.js',
-      '@glimmer/program.js',
-      '@glimmer/reference.js',
-      '@glimmer/runtime.js',
-      '@glimmer/util.js',
-      '@glimmer/vm.js',
-      '@glimmer/wire-format.js',
-      'backburner.js',
-      'dag-map.js',
-      'route-recognizer.js',
-      'router.js',
-      'rsvp.js',
-
-      // packages
-      'container/**',
-      'ember/**',
-      'ember-application/**',
-      'ember-console/**',
-      'ember-debug/**',
-      'ember-environment/**',
-      'ember-extension-support/**',
-      'ember-glimmer/**',
-      'ember-metal/**',
-      'ember-routing/**',
-      'ember-runtime/**',
-      'ember-testing/**',
-      'ember-utils/**',
-      'ember-views/**',
-    ],
-    exclude: ['*/tests/**'],
-  });
 
   emberTestsBundle = concatBundle(emberTestsBundle, {
     outputFile: 'ember-tests.js',
@@ -181,8 +125,9 @@ module.exports = function() {
   });
 
   let emberDebugBundle = new MergeTrees([
-    emberDebugES,
-    license,
+    new Funnel(combinedES5, {
+      exclude: ['*/tests/**'],
+    }),
     loader,
     nodeModule,
     bootstrapModule('ember'),
@@ -193,14 +138,11 @@ module.exports = function() {
     outputFile: 'ember.debug.js',
   });
 
-  let emberTestingES = new Funnel(combinedES, {
-    include: ['ember-debug/**', 'ember-testing/**'],
-  });
-
   let emberTestingBundle = new MergeTrees([
+    new Funnel(combinedES5, {
+      include: ['ember-debug/**', 'ember-testing/**', 'license.js'],
+    }),
     loader,
-    license,
-    toES5(emberTestingES),
     babelDebugHelpersES5,
     nodeModule,
   ]);
@@ -218,21 +160,23 @@ module.exports = function() {
   });
 
   function templateCompiler(babelHelpers) {
-    return [
-      containerES5,
-      emberUtilsES5,
-      emberEnvironmentES5,
-      emberConsoleES5,
-      emberTemplateCompilerES5,
-      emberDebugES5,
-      // metal depends on @glimmer/reference
-      ...glimmerTrees(['@glimmer/compiler', '@glimmer/reference']).map(toES5),
-      debugFeatures,
+    return new MergeTrees([
+      new Funnel(combinedES5, {
+        include: [
+          'license.js',
+          'ember/features.js',
+          'ember-debug/**',
+          'ember-environment/**',
+          'ember-template-compiler/**',
+          'ember-utils/**',
+        ],
+      }),
+      ...glimmerTrees(['@glimmer/compiler']).map(toES5),
       tokenizer,
       inlineParser,
       babelHelpers,
       bootstrapModule('ember-template-compiler', 'umd'),
-    ];
+    ]);
   }
 
   let trees = [];
@@ -348,9 +292,8 @@ module.exports = function() {
     }
   } else {
     let emberTemplateCompilerBundle = new MergeTrees([
-      ...templateCompiler(babelDebugHelpersES5),
+      templateCompiler(babelDebugHelpersES5),
       version,
-      license,
       loader,
       nodeModule,
     ]);
@@ -366,15 +309,19 @@ module.exports = function() {
     es,
     pkgAndTestESBundleDebug,
     ...trees,
-    ...testHarness,
     emberTestsBundle,
     emberDebugBundle,
     emberTestingBundle,
     nodeTests(),
+
+    // test harness
+    testIndexHTML(),
+    jquery(),
+    qunit(),
   ]);
 };
 
-function dependenciesES(options = {}) {
+function glimmerDependenciesES(options = {}) {
   let glimmerEntries = ['@glimmer/node', '@glimmer/opcode-compiler', '@glimmer/runtime'];
 
   if (options.includeGlimmerCompiler) {
@@ -392,20 +339,5 @@ function dependenciesES(options = {}) {
       glimmerEntries.push('@glimmer/debug', '@glimmer/local-debug-flags');
     }
   }
-  return [dagES(), routerES(), routeRecognizerES(), ...glimmerTrees(glimmerEntries)];
-}
-
-function emberES() {
-  return [
-    emberPkgES('ember-views'),
-    emberPkgES('ember'),
-    emberPkgES('ember-application'),
-    emberPkgES('ember-runtime'),
-    emberPkgES('ember-extension-support'),
-    emberPkgES('ember-routing'),
-  ];
-}
-
-function testHarnessFiles() {
-  return [testIndexHTML(), jquery(), qunit()];
+  return glimmerTrees(glimmerEntries);
 }
