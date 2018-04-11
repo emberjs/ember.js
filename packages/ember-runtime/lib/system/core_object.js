@@ -123,6 +123,9 @@ function makeCtor() {
 
       if (initFactory) {
         FACTORY_FOR.set(this, initFactory);
+        if (DEBUG && self !== this) {
+          FACTORY_FOR.set(self, initFactory);
+        }
         initFactory = null;
       }
 
