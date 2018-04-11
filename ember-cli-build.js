@@ -324,6 +324,7 @@ function rollupPackage(packagesES, name) {
     'ember-debug',
     'ember-env-flags',
     'ember/features',
+    'ember/version',
     'ember-environment',
     'ember-utils',
     'ember-metal',
