@@ -1,3 +1,4 @@
+import { getOwner, setOwner } from 'ember-utils';
 import { computed, Mixin, observer } from 'ember-metal';
 import { MANDATORY_SETTER } from 'ember/features';
 import EmberObject from '../../../lib/system/object';
@@ -111,6 +112,24 @@ moduleFor(
     ['@test EmberObject.create can take undefined as a parameter'](assert) {
       let o = EmberObject.create(undefined);
       assert.deepEqual(EmberObject.create(), o);
+    }
+
+    ['@test can use getOwner in a proxy init GH#16484'](assert) {
+      let owner = {};
+      let options = {};
+      setOwner(options, owner);
+
+      EmberObject.extend({
+        init() {
+          this._super(...arguments);
+          let localOwner = getOwner(this);
+
+          assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
+        },
+        unknownProperty() {
+          return undefined;
+        },
+      }).create(options);
     }
   }
 );

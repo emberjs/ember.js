@@ -130,6 +130,8 @@ function makeCtor(base) {
               assert(messageFor(receiver, property), value === undefined);
             },
           });
+
+          FACTORY_FOR.set(self, FACTORY_FOR.get(this));
         }
 
         let m = meta(self);

@@ -1,6 +1,6 @@
-import { Controller } from 'ember-runtime';
+import { getOwner } from 'ember-utils';
+import { Controller, inject, Service, _ProxyMixin } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { inject, Service } from 'ember-runtime';
 import { computed } from 'ember-metal';
 import { EMBER_METAL_ES5_GETTERS, EMBER_MODULE_UNIFICATION } from 'ember/features';
 
@@ -21,6 +21,32 @@ moduleFor(
       this.visit('/').then(() => {
         let controller = this.applicationInstance.lookup('controller:application');
         assert.ok(controller.get('myService') instanceof MyService);
+      });
+    }
+
+    ['@test Service can be an object proxy and access owner in init GH#16484'](assert) {
+      let serviceOwner;
+
+      this.add(
+        'controller:application',
+        Controller.extend({
+          myService: inject.service('my-service'),
+        })
+      );
+      let MyService = Service.extend(_ProxyMixin, {
+        init() {
+          this._super(...arguments);
+
+          serviceOwner = getOwner(this);
+        },
+      });
+      this.add('service:my-service', MyService);
+      this.addTemplate('application', '');
+
+      this.visit('/').then(instance => {
+        let controller = this.applicationInstance.lookup('controller:application');
+        assert.ok(controller.get('myService') instanceof MyService);
+        assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
       });
     }
   }
