@@ -21,9 +21,8 @@ describe('Blueprint: route-test', function() {
     });
 
     it('route-test foo', function() {
-      return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/routes/foo-test.js'))
-          .to.equal(fixture('route-test/default.js'));
+      return emberGenerateDestroy(['route-test', 'foo'], _file => {
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
       });
     });
 
@@ -33,9 +32,8 @@ describe('Blueprint: route-test', function() {
       });
 
       it('route-test foo', function() {
-        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/routes/foo-test.js'))
-            .to.equal(fixture('route-test/rfc232.js'));
+        return emberGenerateDestroy(['route-test', 'foo'], _file => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/rfc232.js'));
         });
       });
     });
@@ -44,15 +42,14 @@ describe('Blueprint: route-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
       });
 
       it('route-test foo', function() {
-        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/routes/foo-test.js'))
-            .to.equal(fixture('route-test/mocha.js'));
+        return emberGenerateDestroy(['route-test', 'foo'], _file => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/mocha.js'));
         });
       });
     });
@@ -61,15 +58,16 @@ describe('Blueprint: route-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
       });
 
       it('route-test foo', function() {
-        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/routes/foo-test.js'))
-            .to.equal(fixture('route-test/mocha-0.12.js'));
+        return emberGenerateDestroy(['route-test', 'foo'], _file => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(
+            fixture('route-test/mocha-0.12.js')
+          );
         });
       });
     });
@@ -81,9 +79,8 @@ describe('Blueprint: route-test', function() {
     });
 
     it('route-test foo', function() {
-      return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/routes/foo-test.js'))
-          .to.equal(fixture('route-test/default.js'));
+      return emberGenerateDestroy(['route-test', 'foo'], _file => {
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
       });
     });
   });

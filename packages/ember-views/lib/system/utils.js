@@ -13,12 +13,16 @@ export function isSimpleClick(event) {
 }
 
 export function constructStyleDeprecationMessage(affectedStyle) {
-  return '' +
+  return (
+    '' +
     'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
     'please ensure that values being bound are properly escaped. For more information, ' +
     'including how to disable this warning, see ' +
     'https://emberjs.com/deprecations/v1.x/#toc_binding-style-attributes. ' +
-    'Style affected: "' + affectedStyle + '"';
+    'Style affected: "' +
+    affectedStyle +
+    '"'
+  );
 }
 
 /**
@@ -48,10 +52,10 @@ export function getRootViews(owner) {
   @param {Ember.View} view
  */
 export function getViewId(view) {
-  if (view.tagName === '') {
-    return guidFor(view);
+  if (view.tagName !== '' && view.elementId) {
+    return view.elementId;
   } else {
-    return view.elementId || guidFor(view);
+    return guidFor(view);
   }
 }
 
@@ -71,7 +75,7 @@ export function initViewElement(view) {
 }
 
 export function setViewElement(view, element) {
-  return view[VIEW_ELEMENT] = element;
+  return (view[VIEW_ELEMENT] = element);
 }
 
 const CHILD_VIEW_IDS = new WeakMap();
@@ -88,7 +92,7 @@ export function getChildViews(view) {
 }
 
 export function initChildViews(view) {
-  let childViews = [];
+  let childViews = new Set();
   CHILD_VIEW_IDS.set(view, childViews);
   return childViews;
 }
@@ -99,20 +103,17 @@ export function addChildView(parent, child) {
     childViews = initChildViews(parent);
   }
 
-  childViews.push(getViewId(child));
+  childViews.add(getViewId(child));
 }
 
 export function collectChildViews(view, registry) {
-  let ids = [];
   let views = [];
   let childViews = CHILD_VIEW_IDS.get(view);
 
-  if (childViews) {
+  if (childViews !== undefined) {
     childViews.forEach(id => {
       let view = registry[id];
-
-      if (view && !view.isDestroying && !view.isDestroyed && ids.indexOf(id) === -1) {
-        ids.push(id);
+      if (view && !view.isDestroying && !view.isDestroyed) {
         views.push(view);
       }
     });
@@ -185,13 +186,14 @@ export function getViewBoundingClientRect(view) {
   @param {DOMElement} el
   @param {String} selector
 */
-export const elMatches = typeof Element !== 'undefined' &&
+export const elMatches =
+  typeof Element !== 'undefined' &&
   (Element.prototype.matches ||
-   Element.prototype.matchesSelector ||
-   Element.prototype.mozMatchesSelector ||
-   Element.prototype.msMatchesSelector ||
-   Element.prototype.oMatchesSelector ||
-   Element.prototype.webkitMatchesSelector);
+    Element.prototype.matchesSelector ||
+    Element.prototype.mozMatchesSelector ||
+    Element.prototype.msMatchesSelector ||
+    Element.prototype.oMatchesSelector ||
+    Element.prototype.webkitMatchesSelector);
 
 export function matches(el, selector) {
   return elMatches.call(el, selector);

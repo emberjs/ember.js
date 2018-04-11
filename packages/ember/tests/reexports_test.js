@@ -1,11 +1,34 @@
 import Ember from '../index';
-import { ENV } from 'ember-environment';
 import { confirmExport } from 'internal-test-helpers';
-import { DEBUG } from 'ember-env-flags';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-QUnit.module('ember reexports');
+moduleFor(
+  'ember reexports',
+  class extends AbstractTestCase {
+    [`@test Ember exports correctly`](assert) {
+      allExports.forEach(reexport => {
+        let [path, moduleId, exportName] = reexport;
 
-let allExports =[
+        // default path === exportName if none present
+        if (!exportName) {
+          exportName = path;
+        }
+
+        confirmExport(Ember, assert, path, moduleId, exportName, `Ember.${path} exports correctly`);
+      });
+    }
+
+    ['@test Ember.String.isHTMLSafe exports correctly'](assert) {
+      confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+    }
+  }
+);
+
+let allExports = [
+  // ember-environment
+  ['ENV', 'ember-environment', { get: 'getENV' }],
+  ['lookup', 'ember-environment', { get: 'getLookup', set: 'setLookup' }],
+
   // ember-utils
   ['getOwner', 'ember-utils', 'getOwner'],
   ['setOwner', 'ember-utils', 'setOwner'],
@@ -19,9 +42,7 @@ let allExports =[
   ['canInvoke', 'ember-utils'],
   ['tryInvoke', 'ember-utils'],
   ['wrap', 'ember-utils'],
-
-  // ember-environment
-  // ['ENV', 'ember-environment', 'ENV'], TODO: fix this, its failing because we are hitting the getter
+  ['NAME_KEY', 'ember-utils'],
 
   // container
   ['Registry', 'container', 'Registry'],
@@ -34,25 +55,26 @@ let allExports =[
   ['warn', 'ember-debug'],
   ['debug', 'ember-debug'],
   ['runInDebug', 'ember-debug'],
+  ['Debug.registerDeprecationHandler', 'ember-debug', 'registerDeprecationHandler'],
+  ['Debug.registerWarnHandler', 'ember-debug', 'registerWarnHandler'],
+  ['Error', 'ember-debug'],
 
   // ember-metal
-  ['computed', 'ember-metal'],
+  ['computed', 'ember-metal', '_globalsComputed'],
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal', 'getCachedValueFor'],
   ['merge', 'ember-metal'],
   ['instrument', 'ember-metal'],
+  ['subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.instrument', 'ember-metal', 'instrument'],
   ['Instrumentation.subscribe', 'ember-metal', 'instrumentationSubscribe'],
   ['Instrumentation.unsubscribe', 'ember-metal', 'instrumentationUnsubscribe'],
   ['Instrumentation.reset', 'ember-metal', 'instrumentationReset'],
   ['testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
   ['onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
-  // ['create'], TODO: figure out what to do here
-  // ['keys'], TODO: figure out what to do here
   ['FEATURES', 'ember/features'],
   ['FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
-  ['Error', 'ember-debug'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],
   ['set', 'ember-metal'],
@@ -70,7 +92,22 @@ let allExports =[
   ['isBlank', 'ember-metal'],
   ['isPresent', 'ember-metal'],
   ['_Backburner', 'backburner', 'default'],
-  ['run', 'ember-metal'],
+  ['run', 'ember-metal', '_globalsRun'],
+  ['run.backburner', 'ember-metal', 'backburner'],
+  ['run.begin', 'ember-metal', 'begin'],
+  ['run.bind', 'ember-metal', 'bind'],
+  ['run.cancel', 'ember-metal', 'cancel'],
+  ['run.debounce', 'ember-metal', 'debounce'],
+  ['run.end', 'ember-metal', 'end'],
+  ['run.hasScheduledTimers', 'ember-metal', 'hasScheduledTimers'],
+  ['run.join', 'ember-metal', 'join'],
+  ['run.later', 'ember-metal', 'later'],
+  ['run.next', 'ember-metal', 'next'],
+  ['run.once', 'ember-metal', 'once'],
+  ['run.schedule', 'ember-metal', 'schedule'],
+  ['run.scheduleOnce', 'ember-metal', 'scheduleOnce'],
+  ['run.throttle', 'ember-metal', 'throttle'],
+  ['run.currentRunLoop', 'ember-metal', { get: 'getCurrentRunLoop' }],
   ['propertyWillChange', 'ember-metal'],
   ['propertyDidChange', 'ember-metal'],
   ['notifyPropertyChange', 'ember-metal'],
@@ -78,6 +115,8 @@ let allExports =[
   ['beginPropertyChanges', 'ember-metal'],
   ['endPropertyChanges', 'ember-metal'],
   ['changeProperties', 'ember-metal'],
+  ['platform.defineProperty', null, { value: true }],
+  ['platform.hasPropertyAccessors', null, { value: true }],
   ['defineProperty', 'ember-metal'],
   ['watchKey', 'ember-metal'],
   ['unwatchKey', 'ember-metal'],
@@ -97,13 +136,15 @@ let allExports =[
   ['getProperties', 'ember-metal'],
   ['setProperties', 'ember-metal'],
   ['expandProperties', 'ember-metal'],
-  ['NAME_KEY', 'ember-utils'],
   ['addObserver', 'ember-metal'],
   ['removeObserver', 'ember-metal'],
   ['aliasMethod', 'ember-metal'],
   ['observer', 'ember-metal'],
   ['mixin', 'ember-metal'],
   ['Mixin', 'ember-metal'],
+
+  // ember-console
+  ['Logger', 'ember-console', 'default'],
 
   // ember-views
   ['$', 'ember-views', 'jQuery'],
@@ -114,24 +155,28 @@ let allExports =[
   ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
   ['ViewUtils.getRootViews', 'ember-views', 'getRootViews'],
   ['ViewUtils.getChildViews', 'ember-views', 'getChildViews'],
+  ['ViewUtils.isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
   ['TextSupport', 'ember-views'],
   ['ComponentLookup', 'ember-views'],
   ['EventDispatcher', 'ember-views'],
 
   // ember-glimmer
-  ['Component',     'ember-glimmer', 'Component'],
-  ['Helper',        'ember-glimmer', 'Helper'],
+  ['Component', 'ember-glimmer', 'Component'],
+  ['Helper', 'ember-glimmer', 'Helper'],
   ['Helper.helper', 'ember-glimmer', 'helper'],
-  ['Checkbox',      'ember-glimmer', 'Checkbox'],
+  ['Checkbox', 'ember-glimmer', 'Checkbox'],
   ['LinkComponent', 'ember-glimmer', 'LinkComponent'],
-  ['TextArea',      'ember-glimmer', 'TextArea'],
-  ['TextField',     'ember-glimmer', 'TextField'],
-  ['TEMPLATES',     'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
+  ['TextArea', 'ember-glimmer', 'TextArea'],
+  ['TextField', 'ember-glimmer', 'TextField'],
+  ['TEMPLATES', 'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
   ['Handlebars.template', 'ember-glimmer', 'template'],
+  ['HTMLBars.template', 'ember-glimmer', 'template'],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
+  ['_setComponentManager', 'ember-glimmer', 'componentManager'],
 
   // ember-runtime
+  ['A', 'ember-runtime'],
   ['_RegistryProxyMixin', 'ember-runtime', 'RegistryProxyMixin'],
   ['_ContainerProxyMixin', 'ember-runtime', 'ContainerProxyMixin'],
   ['Object', 'ember-runtime'],
@@ -167,7 +212,42 @@ let allExports =[
   ['_ProxyMixin', 'ember-runtime'],
   ['RSVP', 'ember-runtime'],
   ['STRINGS', 'ember-runtime', { get: 'getStrings', set: 'setStrings' }],
-  ['BOOTED', 'ember-runtime', { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' }],
+  [
+    'BOOTED',
+    'ember-metal',
+    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
+  ],
+  ['computed.empty', 'ember-runtime', 'empty'],
+  ['computed.notEmpty', 'ember-runtime', 'notEmpty'],
+  ['computed.none', 'ember-runtime', 'none'],
+  ['computed.not', 'ember-runtime', 'not'],
+  ['computed.bool', 'ember-runtime', 'bool'],
+  ['computed.match', 'ember-runtime', 'match'],
+  ['computed.equal', 'ember-runtime', 'equal'],
+  ['computed.gt', 'ember-runtime', 'gt'],
+  ['computed.gte', 'ember-runtime', 'gte'],
+  ['computed.lt', 'ember-runtime', 'lt'],
+  ['computed.lte', 'ember-runtime', 'lte'],
+  ['computed.oneWay', 'ember-runtime', 'oneWay'],
+  ['computed.reads', 'ember-runtime', 'oneWay'],
+  ['computed.readOnly', 'ember-runtime', 'readOnly'],
+  ['computed.deprecatingAlias', 'ember-runtime', 'deprecatingAlias'],
+  ['computed.and', 'ember-runtime', 'and'],
+  ['computed.or', 'ember-runtime', 'or'],
+  ['computed.sum', 'ember-runtime', 'sum'],
+  ['computed.min', 'ember-runtime', 'min'],
+  ['computed.max', 'ember-runtime', 'max'],
+  ['computed.map', 'ember-runtime', 'map'],
+  ['computed.sort', 'ember-runtime', 'sort'],
+  ['computed.setDiff', 'ember-runtime', 'setDiff'],
+  ['computed.mapBy', 'ember-runtime', 'mapBy'],
+  ['computed.filter', 'ember-runtime', 'filter'],
+  ['computed.filterBy', 'ember-runtime', 'filterBy'],
+  ['computed.uniq', 'ember-runtime', 'uniq'],
+  ['computed.uniqBy', 'ember-runtime', 'uniqBy'],
+  ['computed.union', 'ember-runtime', 'union'],
+  ['computed.intersect', 'ember-runtime', 'intersect'],
+  ['computed.collect', 'ember-runtime', 'collect'],
 
   // ember-routing
   ['Location', 'ember-routing'],
@@ -192,41 +272,5 @@ let allExports =[
 
   // ember-extension-support
   ['DataAdapter', 'ember-extension-support'],
-  ['ContainerDebugAdapter', 'ember-extension-support']
+  ['ContainerDebugAdapter', 'ember-extension-support'],
 ];
-
-if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT) {
-  allExports.push(['required', 'ember-metal']);
-}
-
-allExports.forEach(reexport => {
-  let [path, moduleId, exportName] = reexport;
-
-  // default path === exportName if none present
-  if (!exportName) {
-    exportName = path;
-  }
-
-  QUnit.test(`Ember.${path} exports correctly`, assert => {
-    confirmExport(Ember, assert, path, moduleId, exportName);
-  });
-});
-
-QUnit.test('Ember.String.isHTMLSafe exports correctly', function(assert) {
-  confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
-});
-
-if (DEBUG) {
-  QUnit.test('Ember.MODEL_FACTORY_INJECTIONS', function(assert) {
-    let descriptor = Object.getOwnPropertyDescriptor(Ember, 'MODEL_FACTORY_INJECTIONS');
-    assert.equal(descriptor.enumerable, false, 'descriptor is not enumerable');
-    assert.equal(descriptor.configurable, false, 'descriptor is not configurable');
-
-    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false);
-
-    expectDeprecation(function() {
-      Ember.MODEL_FACTORY_INJECTIONS = true;
-    }, 'Ember.MODEL_FACTORY_INJECTIONS is no longer required');
-    assert.equal(Ember.MODEL_FACTORY_INJECTIONS, false, 'writing to the property has no affect');
-  });
-}

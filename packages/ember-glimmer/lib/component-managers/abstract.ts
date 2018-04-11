@@ -1,7 +1,4 @@
-import {
-  ComponentCapabilities,
-  Simple,
-} from '@glimmer/interfaces';
+import { ComponentCapabilities, Simple } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
@@ -12,11 +9,7 @@ import {
   Environment,
   PreparedArguments,
 } from '@glimmer/runtime';
-import {
-  Destroyable,
-  Opaque,
-  Option
-} from '@glimmer/util';
+import { Destroyable, Opaque, Option } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
 import DebugStack from '../utils/debug-stack';
 
@@ -26,8 +19,8 @@ import DebugStack from '../utils/debug-stack';
 
 export default abstract class AbstractManager<T, U> implements ComponentManager<T, U> {
   public debugStack: typeof DebugStack;
-  public _pushToDebugStack: (name: string, environment: any) => void;
-  public _pushEngineToDebugStack: (name: string, environment: any) => void;
+  public _pushToDebugStack!: (name: string, environment: any) => void;
+  public _pushEngineToDebugStack!: (name: string, environment: any) => void;
 
   constructor() {
     this.debugStack = undefined;
@@ -47,7 +40,8 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     args: Arguments,
     dynamicScope: DynamicScope,
     caller: VersionedPathReference<void | {}>,
-    hasDefaultBlock: boolean): T;
+    hasDefaultBlock: boolean
+  ): T;
 
   abstract getSelf(component: T): VersionedPathReference<Opaque>;
   abstract getCapabilities(state: U): ComponentCapabilities;

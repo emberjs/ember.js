@@ -13,22 +13,22 @@ module.exports = {
     {
       name: 'path',
       type: String,
-      default: ''
+      default: '',
     },
     {
       name: 'skip-router',
       type: Boolean,
-      default: false
+      default: false,
     },
     {
       name: 'reset-namespace',
-      type: Boolean
-    }
+      type: Boolean,
+    },
   ],
 
   fileMapTokens: function() {
     return {
-      __name__: function (options) {
+      __name__: function(options) {
         if (options.pod) {
           return 'route';
         }
@@ -66,7 +66,7 @@ module.exports = {
         }
 
         return 'app';
-      }
+      },
     };
   },
 
@@ -78,7 +78,7 @@ module.exports = {
     }
 
     return {
-      moduleName: stringUtil.dasherize(moduleName)
+      moduleName: stringUtil.dasherize(moduleName),
     };
   },
 
@@ -94,9 +94,15 @@ module.exports = {
     let entityTouchesRouter = this.shouldEntityTouchRouter(name);
     let isDummy = !!options.dummy;
     let isAddon = !!options.project.isEmberCLIAddon();
-    let isAddonDummyOrApp = (isDummy === isAddon);
+    let isAddonDummyOrApp = isDummy === isAddon;
 
-    return (entityTouchesRouter && isAddonDummyOrApp && !options.dryRun && !options.inRepoAddon && !options.skipRouter);
+    return (
+      entityTouchesRouter &&
+      isAddonDummyOrApp &&
+      !options.dryRun &&
+      !options.inRepoAddon &&
+      !options.skipRouter
+    );
   },
 
   afterInstall: function(options) {
@@ -105,14 +111,14 @@ module.exports = {
 
   afterUninstall: function(options) {
     updateRouter.call(this, 'remove', options);
-  }
+  },
 };
 
 function updateRouter(action, options) {
   let entity = options.entity;
   let actionColorMap = {
     add: 'green',
-    remove: 'red'
+    remove: 'red',
   };
   let color = actionColorMap[action] || 'gray';
 

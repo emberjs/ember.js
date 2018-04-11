@@ -16,7 +16,7 @@ module('ember-template-compiler.js', {
   afterEach: function() {
     // clear the previously cached version of this module
     delete require.cache[templateCompilerPath + '.js'];
-  }
+  },
 });
 
 test('can be required', function(assert) {

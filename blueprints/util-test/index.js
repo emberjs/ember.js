@@ -9,7 +9,7 @@ module.exports = useTestFrameworkDetector({
   locals: function(options) {
     return {
       friendlyTestName: ['Unit', 'Utility', options.entity.name].join(' | '),
-      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix)
+      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
     };
-  }
+  },
 });

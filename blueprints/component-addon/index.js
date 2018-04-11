@@ -28,7 +28,7 @@ module.exports = {
           return path.join('lib', options.inRepoAddon, 'app');
         }
         return 'app';
-      }
+      },
     };
   },
 
@@ -39,10 +39,10 @@ module.exports = {
   },
 
   locals: function(options) {
-    let addonRawName   = options.inRepoAddon ? options.inRepoAddon : options.project.name();
-    let addonName      = stringUtil.dasherize(addonRawName);
-    let fileName       = stringUtil.dasherize(options.entity.name);
-    let importPathName       = [addonName, 'components', fileName].join('/');
+    let addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
+    let addonName = stringUtil.dasherize(addonRawName);
+    let fileName = stringUtil.dasherize(options.entity.name);
+    let importPathName = [addonName, 'components', fileName].join('/');
 
     if (options.pod) {
       importPathName = [addonName, 'components', fileName, 'component'].join('/');
@@ -50,7 +50,7 @@ module.exports = {
 
     return {
       modulePath: importPathName,
-      path: getPathOption(options)
+      path: getPathOption(options),
     };
-  }
+  },
 };

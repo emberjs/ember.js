@@ -1,9 +1,9 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const pathUtil = require('ember-cli-path-utils');
 const stringUtils = require('ember-cli-string-utils');
-const existsSync = require('exists-sync');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -17,15 +17,19 @@ module.exports = useTestFrameworkDetector({
       testFolderRoot = pathUtil.getRelativeParentPath(options.entity.name, -1, false);
     }
 
-    let destroyAppExists =
-      existsSync(path.join(this.project.root, '/tests/helpers/destroy-app.js'));
+    let destroyAppExists = fs.existsSync(
+      path.join(this.project.root, '/tests/helpers/destroy-app.js')
+    );
 
-    let friendlyTestName = ['Acceptance', stringUtils.dasherize(options.entity.name).replace(/[-]/g,' ')].join(' | ');
+    let friendlyTestName = [
+      'Acceptance',
+      stringUtils.dasherize(options.entity.name).replace(/[-]/g, ' '),
+    ].join(' | ');
 
     return {
       testFolderRoot: testFolderRoot,
       friendlyTestName,
-      destroyAppExists
+      destroyAppExists,
     };
-  }
+  },
 });

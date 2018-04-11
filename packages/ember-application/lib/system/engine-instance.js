@@ -7,7 +7,7 @@ import {
   Object as EmberObject,
   ContainerProxyMixin,
   RegistryProxyMixin,
-  RSVP
+  RSVP,
 } from 'ember-runtime';
 import { assert, Error as EmberError } from 'ember-debug';
 import { Registry, privatize as P } from 'container';
@@ -47,9 +47,9 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
-    let registry = this.__registry__ = new Registry({
-      fallback: base.__registry__
-    });
+    let registry = (this.__registry__ = new Registry({
+      fallback: base.__registry__,
+    }));
 
     // Create a per-instance container from the instance's registry
     this.__container__ = registry.container({ owner: this });
@@ -71,7 +71,9 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @return {Promise<EngineInstance,Error>}
   */
   boot(options) {
-    if (this._bootPromise) { return this._bootPromise; }
+    if (this._bootPromise) {
+      return this._bootPromise;
+    }
 
     this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
 
@@ -93,9 +95,14 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @private
   */
   _bootSync(options) {
-    if (this._booted) { return this; }
+    if (this._booted) {
+      return this;
+    }
 
-    assert('An engine instance\'s parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.', getEngineParent(this));
+    assert(
+      "An engine instance's parent must be set via `setEngineParent(engine, parent)` prior to calling `engine.boot()`.",
+      getEngineParent(this)
+    );
 
     this.cloneParentDependencies();
 
@@ -143,7 +150,9 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     let Engine = this.lookup(`engine:${name}`);
 
     if (!Engine) {
-      throw new EmberError(`You attempted to mount the engine '${name}', but it is not registered with its parent.`);
+      throw new EmberError(
+        `You attempted to mount the engine '${name}', but it is not registered with its parent.`
+      );
     }
 
     let engineInstance = Engine.buildInstance(options);
@@ -162,11 +171,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   cloneParentDependencies() {
     let parent = getEngineParent(this);
 
-    let registrations = [
-      'route:basic',
-      'service:-routing',
-      'service:-glimmer-environment'
-    ];
+    let registrations = ['route:basic', 'service:-routing', 'service:-glimmer-environment'];
 
     registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
 
@@ -190,7 +195,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     this.inject('view', '_environment', '-environment:main');
     this.inject('route', '_environment', '-environment:main');
-  }
+  },
 });
 
 EngineInstance.reopenClass({
@@ -202,7 +207,9 @@ EngineInstance.reopenClass({
    */
   setupRegistry(registry, options) {
     // when no options/environment is present, do nothing
-    if (!options) { return; }
+    if (!options) {
+      return;
+    }
 
     registry.injection('view', '_environment', '-environment:main');
     registry.injection('route', '_environment', '-environment:main');
@@ -214,7 +221,7 @@ EngineInstance.reopenClass({
       registry.injection('view', 'renderer', 'renderer:-inert');
       registry.injection('component', 'renderer', 'renderer:-inert');
     }
-  }
+  },
 });
 
 export default EngineInstance;

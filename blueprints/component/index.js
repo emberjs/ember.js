@@ -16,10 +16,8 @@ module.exports = {
       name: 'path',
       type: String,
       default: 'components',
-      aliases: [
-        { 'no-path': '' }
-      ]
-    }
+      aliases: [{ 'no-path': '' }],
+    },
   ],
 
   filesPath: function() {
@@ -68,7 +66,7 @@ module.exports = {
             return 'template';
           }
           return options.dasherizedModuleName;
-        }
+        },
       };
     }
   },
@@ -80,27 +78,28 @@ module.exports = {
   },
 
   locals: function(options) {
-    let templatePath   = '';
+    let templatePath = '';
     let importTemplate = '';
-    let contents       = '';
+    let contents = '';
 
     // if we're in an addon, build import statement
-    if (options.project.isEmberCLIAddon() || options.inRepoAddon && !options.inDummy) {
+    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
       if (options.pod) {
-        templatePath   = './template';
+        templatePath = './template';
       } else {
-        templatePath   = pathUtil.getRelativeParentPath(options.entity.name) +
-          'templates/components/' + stringUtil.dasherize(options.entity.name);
-
+        templatePath =
+          pathUtil.getRelativeParentPath(options.entity.name) +
+          'templates/components/' +
+          stringUtil.dasherize(options.entity.name);
       }
-      importTemplate   = 'import layout from \'' + templatePath + '\';\n';
-      contents         = '\n  layout';
+      importTemplate = "import layout from '" + templatePath + "';\n";
+      contents = '\n  layout';
     }
 
     return {
       importTemplate: importTemplate,
       contents: contents,
-      path: getPathOption(options)
+      path: getPathOption(options),
     };
-  }
+  },
 };

@@ -2,7 +2,7 @@ export default function calculateLocationDisplay(moduleName, loc = {}) {
   let { column, line } = loc.start || {};
   let moduleInfo = '';
   if (moduleName) {
-    moduleInfo +=  `'${moduleName}' `;
+    moduleInfo += `'${moduleName}' `;
   }
 
   if (line !== undefined && column !== undefined) {

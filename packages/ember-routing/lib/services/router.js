@@ -2,15 +2,8 @@
 @module ember
 */
 
-import {
-  Service,
-  readOnly
-} from 'ember-runtime';
-import {
-  shallowEqual,
-  resemblesURL,
-  extractRouteArgs
-} from '../utils';
+import { Service, readOnly } from 'ember-runtime';
+import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
 
 /**
    The Router service is the public API that provides component/view layer
@@ -21,7 +14,6 @@ import {
    @category ember-routing-router-service
  */
 const RouterService = Service.extend({
-
   /**
      Name of the current route.
 
@@ -31,7 +23,7 @@ const RouterService = Service.extend({
 
      ```app/router.js
      Router.map(function() {
-       this.route('about);
+       this.route('about');
        this.route('blog', function () {
          this.route('post', { path: ':post_id' });
        });
@@ -59,7 +51,7 @@ const RouterService = Service.extend({
 
      ```app/router.js
      Router.map(function() {
-       this.route('about);
+       this.route('about');
        this.route('blog', function () {
          this.route('post', { path: ':post_id' });
        });
@@ -70,8 +62,8 @@ const RouterService = Service.extend({
 
      * `/` when you visit `/`
      * `/about` when you visit `/about`
-     * `/blog/index` when you visit `/blog`
-     * `/blog/post` when you visit `/blog/some-post-id`
+     * `/blog` when you visit `/blog`
+     * `/blog/some-post-id` when you visit `/blog/some-post-id`
 
      @property currentURL
      @type String
@@ -210,17 +202,23 @@ const RouterService = Service.extend({
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
-    if (!routerMicrolib.isActiveIntent(routeName, models, null)) { return false; }
+    if (!routerMicrolib.isActiveIntent(routeName, models, null)) {
+      return false;
+    }
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
-      this._router._prepareQueryParams(routeName, models, queryParams, true /* fromRouterService */);
+      this._router._prepareQueryParams(
+        routeName,
+        models,
+        queryParams,
+        true /* fromRouterService */
+      );
       return shallowEqual(queryParams, routerMicrolib.state.queryParams);
     }
 
     return true;
-  }
-
+  },
 });
 
 export default RouterService;

@@ -19,15 +19,25 @@ class DSL {
       options = {};
     }
 
-    assert(`'${name}' cannot be used as a route name.`, (() => {
-      if (options.overrideNameAssertion === true) { return true; }
+    assert(
+      `'${name}' cannot be used as a route name.`,
+      (() => {
+        if (options.overrideNameAssertion === true) {
+          return true;
+        }
 
-      return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
-    })());
+        return ['array', 'basic', 'object', 'application'].indexOf(name) === -1;
+      })()
+    );
 
     if (this.enableLoadingSubstates) {
-      createRoute(this, `${name}_loading`, { resetNamespace: options.resetNamespace });
-      createRoute(this, `${name}_error`, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
+      createRoute(this, `${name}_loading`, {
+        resetNamespace: options.resetNamespace,
+      });
+      createRoute(this, `${name}_error`, {
+        resetNamespace: options.resetNamespace,
+        path: dummyErrorRoute,
+      });
     }
 
     if (callback) {
@@ -58,10 +68,14 @@ class DSL {
 
       this.options.addRouteForEngine(name, routeInfo);
     } else if (serialize) {
-      throw new Error(`Defining a route serializer on route '${name}' outside an Engine is not allowed.`);
+      throw new Error(
+        `Defining a route serializer on route '${name}' outside an Engine is not allowed.`
+      );
     }
 
-    if (url === '' || url === '/' || parts[parts.length - 1] === 'index') { this.explicitIndex = true; }
+    if (url === '' || url === '/' || parts[parts.length - 1] === 'index') {
+      this.explicitIndex = true;
+    }
 
     this.matches.push(url, name, callback);
   }
@@ -94,7 +108,7 @@ class DSL {
       name: _name,
       instanceId: uuid++,
       mountPoint: fullName,
-      fullName
+      fullName,
     };
 
     let path = options.path;
@@ -137,13 +151,18 @@ class DSL {
       let substateName = `${name}_loading`;
       let localFullName = `application_loading`;
       let routeInfo = assign({ localFullName }, engineInfo);
-      createRoute(this, substateName, { resetNamespace: options.resetNamespace });
+      createRoute(this, substateName, {
+        resetNamespace: options.resetNamespace,
+      });
       this.options.addRouteForEngine(substateName, routeInfo);
 
       substateName = `${name}_error`;
       localFullName = `application_error`;
       routeInfo = assign({ localFullName }, engineInfo);
-      createRoute(this, substateName, { resetNamespace: options.resetNamespace, path: dummyErrorRoute });
+      createRoute(this, substateName, {
+        resetNamespace: options.resetNamespace,
+        path: dummyErrorRoute,
+      });
       this.options.addRouteForEngine(substateName, routeInfo);
     }
 

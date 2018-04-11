@@ -5,7 +5,9 @@ import { environment } from 'ember-environment';
 import { matches } from '../system/utils';
 import { default as jQuery, jQueryDisabled } from '../system/jquery';
 
-function K() { return this; }
+function K() {
+  return this;
+}
 
 /**
  @class ViewMixin
@@ -84,12 +86,13 @@ export default Mixin.create({
   */
   nearestOfType(klass) {
     let view = this.parentView;
-    let isOfType = klass instanceof Mixin ?
-                   view => klass.detect(view) :
-                   view => klass.detect(view.constructor);
+    let isOfType =
+      klass instanceof Mixin ? view => klass.detect(view) : view => klass.detect(view.constructor);
 
     while (view) {
-      if (isOfType(view)) { return view; }
+      if (isOfType(view)) {
+        return view;
+      }
       view = view.parentView;
     }
   },
@@ -107,7 +110,9 @@ export default Mixin.create({
     let view = this.parentView;
 
     while (view) {
-      if (property in view) { return view; }
+      if (property in view) {
+        return view;
+      }
       view = view.parentView;
     }
   },
@@ -149,7 +154,7 @@ export default Mixin.create({
     enumerable: false,
     get() {
       return this.renderer.getElement(this);
-    }
+    },
   }),
 
   /**
@@ -166,7 +171,10 @@ export default Mixin.create({
     @public
   */
   $(sel) {
-    assert('You cannot access this.$() on a component with `tagName: \'\'` specified.', this.tagName !== '');
+    assert(
+      "You cannot access this.$() on a component with `tagName: ''` specified.",
+      this.tagName !== ''
+    );
     assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
     if (this.element) {
       return sel ? jQuery(sel, this.element) : jQuery(this.element);
@@ -199,23 +207,32 @@ export default Mixin.create({
 
       assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
       assert('You cannot append to an existing Ember.View.', !matches(target, '.ember-view'));
-      assert('You cannot append to an existing Ember.View.', ((() => {
-        let node = target.parentNode;
-        while (node) {
-          if (node.nodeType !== 9 && matches(node, '.ember-view')) {
-            return false;
+      assert(
+        'You cannot append to an existing Ember.View.',
+        (() => {
+          let node = target.parentNode;
+          while (node) {
+            if (node.nodeType !== 9 && matches(node, '.ember-view')) {
+              return false;
+            }
+
+            node = node.parentNode;
           }
 
-          node = node.parentNode;
-        }
-
-        return true;
-      }))());
+          return true;
+        })()
+      );
     } else {
       target = selector;
 
-      assert(`You tried to append to a selector string (${selector}) in an environment without jQuery`, typeof target !== 'string');
-      assert(`You tried to append to a non-Element (${selector}) in an environment without jQuery`, typeof selector.appendChild === 'function');
+      assert(
+        `You tried to append to a selector string (${selector}) in an environment without jQuery`,
+        typeof target !== 'string'
+      );
+      assert(
+        `You tried to append to a non-Element (${selector}) in an environment without jQuery`,
+        typeof selector.appendChild === 'function'
+      );
     }
 
     this.renderer.appendTo(this, target);
@@ -399,10 +416,16 @@ export default Mixin.create({
     this._super(...arguments);
 
     // tslint:disable-next-line:max-line-length
-    assert(`You cannot use a computed property for the component's \`elementId\` (${this}).`, descriptorFor(this, 'elementId') === undefined);
+    assert(
+      `You cannot use a computed property for the component's \`elementId\` (${this}).`,
+      descriptorFor(this, 'elementId') === undefined
+    );
 
     // tslint:disable-next-line:max-line-length
-    assert(`You cannot use a computed property for the component's \`tagName\` (${this}).`, descriptorFor(this, 'tagName') === undefined);
+    assert(
+      `You cannot use a computed property for the component's \`tagName\` (${this}).`,
+      descriptorFor(this, 'tagName') === undefined
+    );
 
     if (!this.elementId && this.tagName !== '') {
       this.elementId = guidFor(this);
@@ -411,21 +434,21 @@ export default Mixin.create({
     if (environment._ENABLE_DID_INIT_ATTRS_SUPPORT) {
       deprecate(
         `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
-        typeof(this.didInitAttrs) !== 'function',
+        typeof this.didInitAttrs !== 'function',
         {
           id: 'ember-views.did-init-attrs',
           until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+          url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs',
         }
       );
     } else {
-      assert(`didInitAttrs called in ${this.toString()} is no longer supported.`, typeof(this.didInitAttrs) !== 'function');
+      assert(
+        `didInitAttrs called in ${this.toString()} is no longer supported.`,
+        typeof this.didInitAttrs !== 'function'
+      );
     }
 
-    assert(
-      'Using a custom `.render` function is no longer supported.',
-      !this.render
-    );
+    assert('Using a custom `.render` function is no longer supported.', !this.render);
   },
 
   // .......................................................
@@ -442,5 +465,5 @@ export default Mixin.create({
   */
   handleEvent(eventName, evt) {
     return this._currentState.handleEvent(this, eventName, evt);
-  }
+  },
 });

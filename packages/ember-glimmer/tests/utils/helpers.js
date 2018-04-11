@@ -1,7 +1,4 @@
-export {
-  compile,
-  precompile
-} from 'ember-template-compiler';
+export { compile, precompile } from 'ember-template-compiler';
 
 export {
   INVOKE,
@@ -14,5 +11,5 @@ export {
   htmlSafe,
   SafeString,
   DOMChanges,
-  isHTMLSafe
+  isHTMLSafe,
 } from 'ember-glimmer';

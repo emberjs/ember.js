@@ -1,14 +1,8 @@
 /**
 @module ember
 */
-import {
-  Mixin,
-  descriptor
-} from 'ember-metal';
-import {
-  getChildViews,
-  addChildView
-} from '../system/utils';
+import { Mixin, descriptor } from 'ember-metal';
+import { getChildViews, addChildView } from '../system/utils';
 
 export default Mixin.create({
   /**
@@ -24,10 +18,10 @@ export default Mixin.create({
     enumerable: false,
     get() {
       return getChildViews(this);
-    }
+    },
   }),
 
   appendChild(view) {
     addChildView(this, view);
-  }
+  },
 });

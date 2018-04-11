@@ -3,7 +3,7 @@ import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 import { get } from 'ember-metal';
 
-const mapFunc = item => item ? item.toString() : null;
+const mapFunc = item => (item ? item.toString() : null);
 
 class MapTests extends AbstractTestCase {
   '@test map should iterate over list'() {
@@ -38,7 +38,6 @@ class MapTests extends AbstractTestCase {
     let obj = this.newObject();
     let target = this;
 
-
     obj.map(() => {
       // ES6TODO: When transpiled we will end up with "use strict" which disables automatically binding to the global context.
       // Therefore, the following test can never pass in strict mode unless we modify the `map` function implementation to
@@ -51,7 +50,6 @@ class MapTests extends AbstractTestCase {
       this.assert.equal(guidFor(this), guidFor(target), 'should pass target as this if context');
     }, target);
   }
-
 
   '@test callback params'() {
     let obj = this.newObject();

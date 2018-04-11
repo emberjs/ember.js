@@ -29,7 +29,7 @@ function canSetTypeOfInput(type: string) {
     // ignored
   }
 
-  return inputTypes[type] = inputTypeTestElement.type === type;
+  return (inputTypes[type] = inputTypeTestElement.type === type);
 }
 
 /**

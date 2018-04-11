@@ -3,10 +3,7 @@
 */
 
 import { assign } from 'ember-utils';
-import {
-  Service,
-  readOnly
-} from 'ember-runtime';
+import { Service, readOnly } from 'ember-runtime';
 import { get } from 'ember-metal';
 
 /**
@@ -50,7 +47,9 @@ export default Service.extend({
   generateURL(routeName, models, queryParams) {
     let router = get(this, 'router');
     // return early when the router microlib is not present, which is the case for {{link-to}} in integration tests
-    if (!router._routerMicrolib) { return; }
+    if (!router._routerMicrolib) {
+      return;
+    }
 
     let visibleQueryParams = {};
     if (queryParams) {
@@ -58,7 +57,9 @@ export default Service.extend({
       this.normalizeQueryParams(routeName, models, visibleQueryParams);
     }
 
-    return router.generate(routeName, ...models, { queryParams: visibleQueryParams });
+    return router.generate(routeName, ...models, {
+      queryParams: visibleQueryParams,
+    });
   },
 
   isActiveForRoute(contexts, queryParams, routeName, routerState, isCurrentWhenSpecified) {
@@ -83,7 +84,7 @@ export default Service.extend({
     }
 
     return routerState.isActiveIntent(routeName, contexts, queryParams, !isCurrentWhenSpecified);
-  }
+  },
 });
 
 function numberOfContextsAcceptedByHandler(handler, handlerInfos) {

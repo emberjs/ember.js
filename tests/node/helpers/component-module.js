@@ -1,3 +1,5 @@
+'use strict';
+
 var path = require('path');
 var SimpleDOM = require('simple-dom');
 var buildOwner = require('./build-owner');
@@ -27,7 +29,7 @@ module.exports = function(moduleName) {
         return this.Ember.HTMLBars.template(template);
       };
 
-      var Ember = this.Ember = require(emberPath);
+      var Ember = (this.Ember = require(emberPath));
 
       Ember.testing = true;
       this.run = Ember.run;
@@ -51,7 +53,7 @@ module.exports = function(moduleName) {
       this.Ember = null;
 
       clearEmber();
-    }
+    },
   });
 };
 
@@ -60,7 +62,9 @@ function setupComponentTest() {
 
   module.element = new SimpleDOM.Document();
   module.owner = buildOwner(this.Ember, { resolve: function() {} });
-  module.owner.register('service:-document', new SimpleDOM.Document(), { instantiate: false });
+  module.owner.register('service:-document', new SimpleDOM.Document(), {
+    instantiate: false,
+  });
 
   this._hasRendered = false;
   let OutletView = module.owner.factoryFor('view:-outlet');
@@ -76,7 +80,7 @@ function setupComponentTest() {
       template: OutletTemplate,
     },
 
-    outlets: { }
+    outlets: {},
   };
 
   templateId = 0;
@@ -98,7 +102,7 @@ function render(_template) {
   var module = this;
   var template = this.compile(_template);
 
-  var templateFullName = 'template:-undertest-' + (++templateId);
+  var templateFullName = 'template:-undertest-' + ++templateId;
   this.owner.register(templateFullName, template);
   var stateToRender = {
     owner: this.owner,

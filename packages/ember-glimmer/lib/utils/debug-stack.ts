@@ -6,12 +6,11 @@ let DebugStack: any;
 
 if (DEBUG) {
   class Element {
-    constructor(public name: string) {
-    }
+    constructor(public name: string) {}
   }
 
-  class TemplateElement extends Element { }
-  class EngineElement extends Element { }
+  class TemplateElement extends Element {}
+  class EngineElement extends Element {}
 
   // tslint:disable-next-line:no-shadowed-variable
   DebugStack = class DebugStack {

@@ -7,7 +7,7 @@ module.exports = useTestFrameworkDetector({
   locals: function(options) {
     return {
       projectName: options.inRepoAddon ? options.inRepoAddon : options.project.name(),
-      friendlyTestName: ['Unit', 'Mixin', options.entity.name].join(' | ')
+      friendlyTestName: ['Unit', 'Mixin', options.entity.name].join(' | '),
     };
-  }
+  },
 });

@@ -13,16 +13,16 @@ import {
   defineProperty,
   Mixin,
   tagFor,
-  setProxy
 } from 'ember-metal';
-import {
-  assert,
-} from 'ember-debug';
+import { setProxy } from 'ember-utils';
+import { assert } from 'ember-debug';
 import { bool } from '../computed/computed_macros';
 
 function contentPropertyDidChange(content, contentKey) {
   let key = contentKey.slice(8); // remove "content."
-  if (key in this) { return; } // if shadowed in proxy
+  if (key in this) {
+    return;
+  } // if shadowed in proxy
   notifyPropertyChange(this, key);
 }
 
@@ -92,8 +92,11 @@ export default Mixin.create({
 
     let content = contentFor(this, m);
 
-    assert(`Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`, content);
+    assert(
+      `Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`,
+      content
+    );
 
     return set(content, key, value);
-  }
+  },
 });

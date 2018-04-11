@@ -65,8 +65,7 @@ export interface OutletState {
 export class RootOutletReference implements VersionedPathReference<OutletState> {
   tag = DirtyableTag.create();
 
-  constructor(public outletState: OutletState) {
-  }
+  constructor(public outletState: OutletState) {}
 
   get(key: string): VersionedPathReference<Opaque> {
     return new PathReference(this, key);
@@ -88,8 +87,10 @@ export class RootOutletReference implements VersionedPathReference<OutletState> 
 export class OutletReference implements VersionedPathReference<OutletState | undefined> {
   tag: Tag;
 
-  constructor(public parentStateRef: VersionedPathReference<OutletState | undefined>,
-              public outletNameRef: Reference<string>) {
+  constructor(
+    public parentStateRef: VersionedPathReference<OutletState | undefined>,
+    public outletNameRef: Reference<string>
+  ) {
     this.tag = combine([parentStateRef.tag, outletNameRef.tag]);
   }
 

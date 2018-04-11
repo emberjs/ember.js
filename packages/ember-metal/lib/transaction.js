@@ -1,14 +1,11 @@
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import {
-  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-} from 'ember/features';
+import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
 
 let runInTransaction, didRender, assertNotRendered;
 
 // detect-backtracking-rerender by default is debug build only
 if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
-
   // there are 2 states
 
   // DEBUG
@@ -42,7 +39,9 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     }
 
     didRender(object, key, reference) {
-      if (!this.inTransaction) { return; }
+      if (!this.inTransaction) {
+        return;
+      }
       if (DEBUG) {
         this.setKey(object, key, {
           lastRef: reference,
@@ -54,7 +53,9 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     }
 
     assertNotRendered(object, key) {
-      if (!this.inTransaction) { return; }
+      if (!this.inTransaction) {
+        return;
+      }
       if (this.hasRendered(object, key)) {
         if (DEBUG) {
           let { lastRef, lastRenderedIn } = this.getKey(object, key);
@@ -74,7 +75,10 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
             label = 'the same value';
           }
 
-          assert(`You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`, false);
+          assert(
+            `You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`,
+            false
+          );
         }
 
         this.shouldReflush = true;
@@ -82,7 +86,9 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     }
 
     hasRendered(object, key) {
-      if (!this.inTransaction) { return false; }
+      if (!this.inTransaction) {
+        return false;
+      }
       if (DEBUG) {
         return this.getKey(object, key) !== undefined;
       }
@@ -139,9 +145,9 @@ if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
 
   let runner = new TransactionRunner();
 
-  runInTransaction   = runner.runInTransaction.bind(runner);
-  didRender          = runner.didRender.bind(runner);
-  assertNotRendered  = runner.assertNotRendered.bind(runner);
+  runInTransaction = runner.runInTransaction.bind(runner);
+  didRender = runner.didRender.bind(runner);
+  assertNotRendered = runner.assertNotRendered.bind(runner);
 } else {
   // in production do nothing to detect reflushes
   runInTransaction = (context, methodName) => {

@@ -2,15 +2,8 @@
 @module @ember/engine
 */
 import { canInvoke } from 'ember-utils';
-import {
-  Namespace,
-  RegistryProxyMixin,
-  Controller
-} from 'ember-runtime';
-import {
-  Registry,
-  privatize as P
-} from 'container';
+import { Namespace, RegistryProxyMixin, Controller } from 'ember-runtime';
+import { Registry, privatize as P } from 'container';
 import DAG from 'dag-map';
 import { assert } from 'ember-debug';
 import { get, set } from 'ember-metal';
@@ -96,7 +89,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
     @return {Ember.Registry} the configured registry
   */
   buildRegistry() {
-    let registry = this.__registry__ = this.constructor.buildRegistry(this);
+    let registry = (this.__registry__ = this.constructor.buildRegistry(this));
 
     return registry;
   },
@@ -152,7 +145,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
     }
 
     graph.topsort(cb);
-  }
+  },
 });
 
 Engine.reopenClass({
@@ -407,7 +400,7 @@ Engine.reopenClass({
   */
   buildRegistry(namespace) {
     let registry = new Registry({
-      resolver: resolverFor(namespace)
+      resolver: resolverFor(namespace),
     });
 
     registry.set = set;
@@ -435,7 +428,7 @@ Engine.reopenClass({
     @property resolver
     @public
   */
-  Resolver: null
+  Resolver: null,
 });
 
 /**
@@ -458,25 +451,37 @@ function resolverFor(namespace) {
   let ResolverClass = namespace.get('Resolver') || DefaultResolver;
 
   return ResolverClass.create({
-    namespace
+    namespace,
   });
 }
 
 function buildInitializerMethod(bucketName, humanName) {
-  return function (initializer) {
+  return function(initializer) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would
     // pollute the parent class as well as other subclasses.
-    if (this.superclass[bucketName] !== undefined && this.superclass[bucketName] === this[bucketName]) {
+    if (
+      this.superclass[bucketName] !== undefined &&
+      this.superclass[bucketName] === this[bucketName]
+    ) {
       let attrs = {};
       attrs[bucketName] = Object.create(this[bucketName]);
       this.reopenClass(attrs);
     }
 
-    assert(`The ${humanName} '${initializer.name}' has already been registered`, !this[bucketName][initializer.name]);
-    assert(`An ${humanName} cannot be registered without an initialize function`, canInvoke(initializer, 'initialize'));
-    assert(`An ${humanName} cannot be registered without a name property`, initializer.name !== undefined);
+    assert(
+      `The ${humanName} '${initializer.name}' has already been registered`,
+      !this[bucketName][initializer.name]
+    );
+    assert(
+      `An ${humanName} cannot be registered without an initialize function`,
+      canInvoke(initializer, 'initialize')
+    );
+    assert(
+      `An ${humanName} cannot be registered without a name property`,
+      initializer.name !== undefined
+    );
 
     this[bucketName][initializer.name] = initializer;
   };
@@ -502,7 +507,7 @@ function commonSetupRegistry(registry) {
   registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
   registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
 
-  registry.injection('route', 'router', 'router:main');
+  registry.injection('route', '_router', 'router:main');
 
   // Register the routing service...
   registry.register('service:-routing', RoutingService);
@@ -510,7 +515,9 @@ function commonSetupRegistry(registry) {
   registry.injection('service:-routing', 'router', 'router:main');
 
   // DEBUGGING
-  registry.register('resolver-for-debugging:main', registry.resolver, { instantiate: false });
+  registry.register('resolver-for-debugging:main', registry.resolver, {
+    instantiate: false,
+  });
   registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
   registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key

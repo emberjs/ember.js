@@ -26,5 +26,5 @@ export function hasTemplate(name: string): boolean {
 }
 
 export function setTemplate(name: string, template: Factory): Factory {
-  return TEMPLATES[name] = template;
+  return (TEMPLATES[name] = template);
 }

@@ -33,11 +33,12 @@ function bootstrap({ context, hasTemplate, setTemplate }) {
     // Get the name of the script
     // First look for data-template-name attribute, then fall back to its
     // id if no name is found.
-    let templateName = script.getAttribute('data-template-name') || script.getAttribute('id') || 'application';
+    let templateName =
+      script.getAttribute('data-template-name') || script.getAttribute('id') || 'application';
     let template;
 
     template = compile(script.innerHTML, {
-      moduleName: templateName
+      moduleName: templateName,
     });
 
     // Check if template of same name already exists.

@@ -4,7 +4,11 @@ const DELIMITER = '%';
 
 function serializeKey(specifier, source, namespace) {
   let [type, name] = specifier.split(':');
-  return `${type}://${[name, (namespace ? '[source invalid due to namespace]' : source), namespace].join(DELIMITER)}`;
+  return `${type}://${[
+    name,
+    namespace ? '[source invalid due to namespace]' : source,
+    namespace,
+  ].join(DELIMITER)}`;
 }
 
 class Resolver {
@@ -50,16 +54,18 @@ class Resolver {
         throw new Error('Specifier string has an unknown type');
     }
 
-    return this._registered[key] = factory;
+    return (this._registered[key] = factory);
   }
   addTemplate(templateName, template) {
     let templateType = typeof template;
     if (templateType !== 'string') {
-      throw new Error(`You called addTemplate for "${templateName}" with a template argument of type of '${templateType}'. addTemplate expects an argument of an uncompiled template as a string.`);
+      throw new Error(
+        `You called addTemplate for "${templateName}" with a template argument of type of '${templateType}'. addTemplate expects an argument of an uncompiled template as a string.`
+      );
     }
-    return this._registered[serializeKey(`template:${templateName}`)] = compile(template, {
-      moduleName: `my-app/templates/${templateName}.hbs`
-    });
+    return (this._registered[serializeKey(`template:${templateName}`)] = compile(template, {
+      moduleName: `my-app/templates/${templateName}.hbs`,
+    }));
   }
   static create() {
     return new this();

@@ -10,20 +10,26 @@ export default function deprecateRender(env) {
 
     visitor: {
       MustacheStatement(node) {
-        if (node.path.original !== 'render') { return; }
-        if (node.params.length !== 1) { return; }
+        if (node.path.original !== 'render') {
+          return;
+        }
+        if (node.params.length !== 1) {
+          return;
+        }
 
-        each(node.params, (param) => {
-          if (param.type !== 'StringLiteral') { return; }
+        each(node.params, param => {
+          if (param.type !== 'StringLiteral') {
+            return;
+          }
 
           deprecate(deprecationMessage(moduleName, node), false, {
             id: 'ember-template-compiler.deprecate-render',
             until: '3.0.0',
-            url: 'https://emberjs.com/deprecations/v2.x#toc_code-render-code-helper'
+            url: 'https://emberjs.com/deprecations/v2.x#toc_code-render-code-helper',
           });
         });
-      }
-    }
+      },
+    },
   };
 }
 
@@ -39,6 +45,8 @@ function deprecationMessage(moduleName, node) {
   let original = `{{render "${componentName}"}}`;
   let preferred = `{{${componentName}}}`;
 
-  return `Please refactor \`${original}\` to a component and invoke via` +
-    ` \`${preferred}\`. ${sourceInformation}`;
+  return (
+    `Please refactor \`${original}\` to a component and invoke via` +
+    ` \`${preferred}\`. ${sourceInformation}`
+  );
 }

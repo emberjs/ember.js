@@ -1,7 +1,4 @@
-import {
-  Arguments,
-  VM
-} from '@glimmer/runtime';
+import { Arguments, VM } from '@glimmer/runtime';
 
 /**
 @module ember

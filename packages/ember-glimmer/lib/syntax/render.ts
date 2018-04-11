@@ -7,12 +7,7 @@
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { isConst, VersionedPathReference } from '@glimmer/reference';
-import {
-  Arguments,
-  CurriedComponentDefinition,
-  curry,
-  VM,
-} from '@glimmer/runtime';
+import { Arguments, CurriedComponentDefinition, curry, VM } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
@@ -26,18 +21,30 @@ import Environment from '../environment';
 import { OwnedTemplate } from '../template';
 import { UnboundReference } from '../utils/references';
 
-export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<CurriedComponentDefinition | null>  {
-  let env     = vm.env as Environment;
+export function renderHelper(
+  vm: VM,
+  args: Arguments
+): VersionedPathReference<CurriedComponentDefinition | null> {
+  let env = vm.env as Environment;
   let nameRef = args.positional.at(0);
 
-  assert(`The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`, isConst(nameRef));
+  assert(
+    `The first argument of {{render}} must be quoted, e.g. {{render "sidebar"}}.`,
+    isConst(nameRef)
+  );
   // tslint:disable-next-line:max-line-length
-  assert(`The second argument of {{render}} must be a path, e.g. {{render "post" post}}.`, args.positional.length === 1 || !isConst(args.positional.at(1)));
+  assert(
+    `The second argument of {{render}} must be a path, e.g. {{render "post" post}}.`,
+    args.positional.length === 1 || !isConst(args.positional.at(1))
+  );
 
   let templateName = nameRef.value() as string;
 
   // tslint:disable-next-line:max-line-length
-  assert(`You used \`{{render '${templateName}'}}\`, but '${templateName}' can not be found as a template.`, env.owner.hasRegistration(`template:${templateName}`));
+  assert(
+    `You used \`{{render '${templateName}'}}\`, but '${templateName}' can not be found as a template.`,
+    env.owner.hasRegistration(`template:${templateName}`)
+  );
 
   let template = env.owner.lookup<OwnedTemplate>(`template:${templateName}`);
 
@@ -47,13 +54,19 @@ export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<Cu
     let controllerNameRef = args.named.get('controller');
 
     // tslint:disable-next-line:max-line-length
-    assert(`The controller argument for {{render}} must be quoted, e.g. {{render "sidebar" controller="foo"}}.`, isConst(controllerNameRef));
+    assert(
+      `The controller argument for {{render}} must be quoted, e.g. {{render "sidebar" controller="foo"}}.`,
+      isConst(controllerNameRef)
+    );
 
     // TODO should be ensuring this to string here
     controllerName = controllerNameRef.value() as string;
 
     // tslint:disable-next-line:max-line-length
-    assert(`The controller name you supplied '${controllerName}' did not resolve to a controller.`, env.owner.hasRegistration(`controller:${controllerName}`));
+    assert(
+      `The controller name you supplied '${controllerName}' did not resolve to a controller.`,
+      env.owner.hasRegistration(`controller:${controllerName}`)
+    );
   } else {
     controllerName = templateName;
   }
@@ -140,12 +153,22 @@ export function renderHelper(vm: VM, args: Arguments): VersionedPathReference<Cu
   @public
   @deprecated Use a component instead
 */
-export function renderMacro(_name: string, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+export function renderMacro(
+  _name: string,
+  params: Option<WireFormat.Core.Params>,
+  hash: Option<WireFormat.Core.Hash>,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+) {
   if (ENV._ENABLE_RENDER_SUPPORT === true) {
     // TODO needs makeComponentDefinition a helper that returns a curried definition
     // TODO not sure all args are for definition or component
     // likely the controller name should be a arg to create?
-    let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-render', params || [], hash];
+    let expr: WireFormat.Expressions.Helper = [
+      WireFormat.Ops.Helper,
+      '-render',
+      params || [],
+      hash,
+    ];
     builder.dynamicComponent(expr, null, null, false, null, null);
     return true;
   }

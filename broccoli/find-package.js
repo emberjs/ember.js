@@ -1,24 +1,30 @@
-"use strict";
+'use strict';
+const fs = require('fs');
 const path = require('path');
+const resolve = require('resolve');
 
 const cache = new Map();
 
-module.exports = function findPackage(name) {
-  let info = cache.get(name);
+module.exports = function findPackage(name, from) {
+  let key = from === void 0 ? name : name + '\0' + from;
+  let info = cache.get(key);
   if (info === undefined) {
-    info = new PackageInfo(name);
-    cache.set(name, info);
+    let basedir = from === void 0 ? __dirname : findPackage(from).dir;
+    let resolved = resolve.sync(name + '/package.json', {
+      basedir: basedir,
+    });
+    info = new PackageInfo(fs.realpathSync(resolved));
+    cache.set(key, info);
   }
   return info;
 };
 
 class PackageInfo {
-  constructor(name) {
-    this.name = name;
-    let pkgName = name + '/package';
-    let config = require(pkgName);
+  constructor(resovled) {
+    let config = require(resovled);
+    this.name = config.name;
     this.config = config;
-    this.dir = path.dirname(require.resolve(pkgName));
+    this.dir = path.dirname(resovled);
   }
 
   get main() {
@@ -48,5 +54,4 @@ class PackageInfo {
       path: resolved,
     };
   }
-
 }

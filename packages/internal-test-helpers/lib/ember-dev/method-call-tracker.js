@@ -23,7 +23,7 @@ MethodCallTracker.prototype = {
     env.setDebugFunction(methodName, (message, test) => {
       let resultOfTest = checkTest(test);
 
-      this._actuals.push([ message, resultOfTest ]);
+      this._actuals.push([message, resultOfTest]);
     });
   },
 
@@ -76,7 +76,10 @@ MethodCallTracker.prototype = {
           actualMessages.push(actuals[i][0]);
         }
       }
-      assert.ok(actualMessages.length === 0, `Expected no Ember.${methodName} calls, got ${actuals.length}: ${actualMessages.join(', ')}`);
+      assert.ok(
+        actualMessages.length === 0,
+        `Expected no Ember.${methodName} calls, got ${actuals.length}: ${actualMessages.join(', ')}`
+      );
       return;
     }
 
@@ -106,14 +109,27 @@ MethodCallTracker.prototype = {
       } else if (match && !match[1]) {
         assert.ok(true, `Received failing Ember.${methodName} call with message: ${match[0]}`);
       } else if (match && match[1]) {
-        assert.ok(false, `Expected failing Ember.${methodName} call, got succeeding with message: ${match[0]}`);
+        assert.ok(
+          false,
+          `Expected failing Ember.${methodName} call, got succeeding with message: ${match[0]}`
+        );
       } else if (actual[1]) {
-        assert.ok(false, `Did not receive failing Ember.${methodName} call matching '${expected}', last was success with '${actual[0]}'`);
+        assert.ok(
+          false,
+          `Did not receive failing Ember.${methodName} call matching '${expected}', last was success with '${
+            actual[0]
+          }'`
+        );
       } else if (!actual[1]) {
-        assert.ok(false, `Did not receive failing Ember.${methodName} call matching '${expected}', last was failure with '${actual[0]}'`);
+        assert.ok(
+          false,
+          `Did not receive failing Ember.${methodName} call matching '${expected}', last was failure with '${
+            actual[0]
+          }'`
+        );
       }
     }
-  }
+  },
 };
 
 export default MethodCallTracker;

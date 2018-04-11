@@ -91,7 +91,7 @@ class ChainWatchers {
 
     // we gather callbacks so we don't notify them during revalidation
     for (let i = 0; i < affected.length; i += 2) {
-      let obj  = affected[i];
+      let obj = affected[i];
       let path = affected[i + 1];
       callback(obj, path);
     }
@@ -113,7 +113,9 @@ function addChainWatcher(obj, keyName, node) {
 }
 
 function removeChainWatcher(obj, keyName, node, _meta) {
-  if (!isObject(obj)) { return; }
+  if (!isObject(obj)) {
+    return;
+  }
 
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
@@ -135,7 +137,7 @@ function removeChainWatcher(obj, keyName, node, _meta) {
 class ChainNode {
   constructor(parent, key, value) {
     this._parent = parent;
-    this._key    = key;
+    this._key = key;
 
     this._chains = undefined;
     this._object = undefined;
@@ -150,7 +152,7 @@ class ChainNode {
     // It is false for the root of a chain (because we have no parent)
     // and for global paths (because the parent node is the object with
     // the observer on it)
-    let isWatching = this._isWatching = (value === undefined);
+    let isWatching = (this._isWatching = value === undefined);
     if (isWatching) {
       let obj = parent.value();
 
@@ -186,7 +188,9 @@ class ChainNode {
     if (paths !== undefined) {
       let path;
       for (path in paths) {
-        if (paths[path] > 0) { ret.add(path); }
+        if (paths[path] > 0) {
+          ret.add(path);
+        }
       }
     }
     return ret;
@@ -206,7 +210,9 @@ class ChainNode {
   // path
   remove(path) {
     let paths = this._paths;
-    if (paths === undefined) { return; }
+    if (paths === undefined) {
+      return;
+    }
     if (paths[path] > 0) {
       paths[path]--;
     }
@@ -317,7 +323,7 @@ function lazyGet(obj, key) {
     return eachProxyFor(obj);
   } else if (isVolatile(obj, key, meta)) {
     return get(obj, key);
-  // Otherwise attempt to get the cached value of the computed property
+    // Otherwise attempt to get the cached value of the computed property
   } else {
     return getCachedValueFor(obj, key);
   }
@@ -336,9 +342,4 @@ function finishChains(meta) {
   }
 }
 
-export {
-  finishChains,
-  makeChainNode,
-  removeChainWatcher,
-  ChainNode
-};
+export { finishChains, makeChainNode, removeChainWatcher, ChainNode };

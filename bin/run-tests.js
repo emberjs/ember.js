@@ -1,22 +1,22 @@
-#!/usr/bin/env node
-
+/* globals QUnit */
 /* eslint-disable no-console */
+'use strict';
 
 var execa = require('execa');
-var RSVP  = require('rsvp');
+var RSVP = require('rsvp');
 var execFile = require('child_process').execFile;
 var chalk = require('chalk');
-var FEATURES = require('../broccoli/features');
-var getPackages = require('../lib/packages');
 var runInSequence = require('../lib/run-in-sequence');
 var path = require('path');
 
 var finalhandler = require('finalhandler');
 var http = require('http');
 var serveStatic = require('serve-static');
+var puppeteer = require('puppeteer');
+const fs = require('fs');
 
 // Serve up public/ftp folder.
-var serve = serveStatic('./dist/', { 'index': ['index.html', 'index.htm'] });
+var serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
 
 // Create server.
 var server = http.createServer(function(req, res) {
@@ -28,6 +28,9 @@ var PORT = 13141;
 // Listen.
 server.listen(PORT);
 
+// Cache the Chrome browser instance when launched for new pages.
+var browserPromise;
+
 function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
     var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
@@ -36,13 +39,15 @@ function run(queryString) {
 }
 
 function runInBrowser(url, retries, resolve, reject) {
-  var result = {output: [], errors: [], code: null};
+  var result = { output: [], errors: [], code: null };
 
   console.log('Running Chrome headless: ' + url);
 
-  var puppeteer = require('puppeteer');
+  if (!browserPromise) {
+    browserPromise = puppeteer.launch();
+  }
 
-  puppeteer.launch().then(function(browser) {
+  browserPromise.then(function(browser) {
     browser.newPage().then(function(page) {
       /* globals window */
       var crashed;
@@ -71,7 +76,7 @@ function runInBrowser(url, retries, resolve, reject) {
           var testsFailed = 0;
           var currentTestAssertions = [];
 
-          QUnit.log(function (details) {
+          QUnit.log(function(details) {
             var response;
 
             // Ignore passing assertions
@@ -96,10 +101,10 @@ function runInBrowser(url, retries, resolve, reject) {
             currentTestAssertions.push('Failed assertion: ' + response);
           });
 
-          QUnit.testDone(function (result) {
+          QUnit.testDone(function(result) {
             var i,
-                len,
-                name = '';
+              len,
+              name = '';
 
             if (result.module) {
               name += result.module + ': ';
@@ -122,53 +127,69 @@ function runInBrowser(url, retries, resolve, reject) {
             currentTestAssertions.length = 0;
           });
 
-          QUnit.done(function (result) {
-            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
+          QUnit.done(function(result) {
+            console.log(
+              '\n' +
+                'Took ' +
+                result.runtime +
+                'ms to run ' +
+                testsTotal +
+                ' tests. ' +
+                testsPassed +
+                ' passed, ' +
+                testsFailed +
+                ' failed.'
+            );
 
-            if (typeof window.callPhantom === 'function') {
-              window.callPhantom({
-                'name': 'QUnit.done',
-                'data': result
-              });
-            }
+            window.callPhantom({
+              name: 'QUnit.done',
+              data: result,
+            });
           });
         });
       };
 
-      page.exposeFunction('callPhantom', function(message) {
-        if (message && message.name === 'QUnit.done') {
-          result = message.data;
-          var failed = !result || !result.total || result.failed;
+      return page
+        .exposeFunction('callPhantom', function(message) {
+          page.close();
 
-          if (!result.total) {
-            console.error('No tests were executed. Are you loading tests asynchronously?');
-          }
+          if (message && message.name === 'QUnit.done') {
+            result = message.data;
+            var failed = !result || !result.total || result.failed;
 
-          var code = failed ? 1 : 0;
-          result.code = code;
-
-          if (!crashed && code === 0) {
-            resolve(result);
-          } else if (crashed) {
-            console.log(chalk.red('Browser crashed with exit code ' + code));
-
-            if (retries > 1) {
-              console.log(chalk.yellow('Retrying... ¯\_(ツ)_/¯'));
-              runInBrowser(url, retries - 1, resolve, reject);
-            } else {
-              console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
-              console.log(chalk.yellow('This might be a known issue with Chrome headless, skipping for now'));
-              resolve(result);
+            if (!result.total) {
+              console.error('No tests were executed. Are you loading tests asynchronously?');
             }
-          } else {
-            reject(result);
+
+            var code = failed ? 1 : 0;
+            result.code = code;
+
+            if (!crashed && code === 0) {
+              resolve(result);
+            } else if (crashed) {
+              console.log(chalk.red('Browser crashed with exit code ' + code));
+
+              if (retries > 1) {
+                console.log(chalk.yellow('Retrying... ¯\\_(ツ)_/¯'));
+                runInBrowser(url, retries - 1, resolve, reject);
+              } else {
+                console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
+                console.log(
+                  chalk.yellow('This might be a known issue with Chrome headless, skipping for now')
+                );
+                resolve(result);
+              }
+            } else {
+              reject(result);
+            }
           }
-        }
-      });
-
-      page.evaluateOnNewDocument(addLogging);
-
-      page.goto(url, { timeout: 900 });
+        })
+        .then(function() {
+          return page.evaluateOnNewDocument(addLogging);
+        })
+        .then(function() {
+          return page.goto(url, { timeout: 900 });
+        });
     });
   });
 }
@@ -176,24 +197,31 @@ function runInBrowser(url, retries, resolve, reject) {
 var testFunctions = [];
 
 function generateEachPackageTests() {
-  var features = FEATURES;
-  var packages = getPackages(features);
+  let entries = fs.readdirSync('packages');
+  entries.forEach(entry => {
+    let relativePath = path.join('packages', entry);
 
-  Object.keys(packages).forEach(function(packageName) {
-    if (packages[packageName].skipTests) { return; }
+    if (!fs.existsSync(path.join(relativePath, 'tests'))) {
+      return;
+    }
 
     testFunctions.push(function() {
-      return run('package=' + packageName);
+      return run('package=' + entry);
     });
-    if (packages[packageName].requiresJQuery === false) {
+    testFunctions.push(function() {
+      return run('package=' + entry + '&dist=es');
+    });
+    testFunctions.push(function() {
+      return run('package=' + entry + '&enableoptionalfeatures=true');
+    });
+
+    // TODO: this should ultimately be deleted (when all packages can run with and
+    // without jQuery)
+    if (entry !== 'ember') {
       testFunctions.push(function() {
-        return run('package=' + packageName + '&jquery=none');
+        return run('package=' + entry + '&jquery=none');
       });
     }
-    testFunctions.push(function() {
-      return run('package=' + packageName + '&enableoptionalfeatures=true');
-    });
-
   });
 }
 
@@ -250,19 +278,9 @@ function runChecker(bin, args) {
 
 function codeQualityChecks() {
   var checkers = [
-    runChecker('node', [
-      require.resolve('typescript/bin/tsc'),
-      '--noEmit'
-    ]),
-    runChecker('node', [
-      require.resolve('tslint/bin/tslint'),
-      '-p',
-      'tsconfig.json'
-    ]),
-    runChecker('node', [
-      require.resolve('eslint/bin/eslint'),
-      '.'
-    ])
+    runChecker('node', [require.resolve('typescript/bin/tsc'), '--noEmit']),
+    runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
+    runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
   ];
   return RSVP.Promise.all(checkers).then(function(results) {
     results.forEach(result => {
@@ -273,7 +291,7 @@ function codeQualityChecks() {
       }
     });
     if (!results.every(result => result.ok)) {
-      throw new Error("Some quality checks failed");
+      throw new Error('Some quality checks failed');
     }
   });
 }
@@ -289,7 +307,6 @@ function runAndExit() {
       process.exit(1);
     });
 }
-
 
 switch (process.env.TEST_SUITE) {
   case 'built-tests':

@@ -9,7 +9,9 @@ function stripClassCallCheck({ traverse }) {
         enter(path, state) {
           let [amd] = path.get('body');
 
-          if (!amd) { return; }
+          if (!amd) {
+            return;
+          }
 
           let [, deps, callBack] = amd.get('expression.arguments');
           let params = callBack.get('params');
@@ -25,7 +27,9 @@ function stripClassCallCheck({ traverse }) {
           }
         },
         exit(path) {
-          if (!this.binding) { return; }
+          if (!this.binding) {
+            return;
+          }
 
           traverse.clearCache();
           path.scope.crawl();
@@ -38,29 +42,37 @@ function stripClassCallCheck({ traverse }) {
             this.binding.remove();
             elements[this.index].remove();
           }
-        }
+        },
       },
 
       CallExpression(path) {
         let callee = path.get('callee');
 
-        if (!this.binding) { return; }
+        if (!this.binding) {
+          return;
+        }
 
         if (callee.isSequenceExpression()) {
           let [, member] = callee.get('expressions');
 
-          if (member.node.object.name === this.binding.node.name && member.node.property.name.indexOf('classCallCheck') > -1) {
+          if (
+            member.node.object.name === this.binding.node.name &&
+            member.node.property.name.indexOf('classCallCheck') > -1
+          ) {
             path.remove();
           }
         }
 
         if (callee.isMemberExpression()) {
-          if (callee.node.object.name === this.binding.node.name && callee.node.property.name.indexOf('classCallCheck') > -1) {
+          if (
+            callee.node.object.name === this.binding.node.name &&
+            callee.node.property.name.indexOf('classCallCheck') > -1
+          ) {
             path.remove();
           }
         }
-      }
-    }
+      },
+    },
   };
 }
 

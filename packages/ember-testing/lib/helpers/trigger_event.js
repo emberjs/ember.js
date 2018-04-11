@@ -34,12 +34,14 @@ export default function triggerEvent(app, selector, contextOrType, typeOrOptions
     options = {};
   } else if (arity === 4) {
     // context and options are optional, so this is
-    if (typeof typeOrOptions === 'object') {  // either
+    if (typeof typeOrOptions === 'object') {
+      // either
       // app, selector, type, options
       context = null;
       type = contextOrType;
       options = typeOrOptions;
-    } else { // or
+    } else {
+      // or
       // app, selector, context, type
       context = contextOrType;
       type = typeOrOptions;

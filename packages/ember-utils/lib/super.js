@@ -1,10 +1,13 @@
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 const fnToString = Function.prototype.toString;
 
-export const checkHasSuper = ((() => {
-  let sourceAvailable = fnToString.call(function() {
-    return this;
-  }).indexOf('return this') > -1;
+export const checkHasSuper = (() => {
+  let sourceAvailable =
+    fnToString
+      .call(function() {
+        return this;
+      })
+      .indexOf('return this') > -1;
 
   if (sourceAvailable) {
     return function checkHasSuper(func) {
@@ -15,7 +18,7 @@ export const checkHasSuper = ((() => {
   return function checkHasSuper() {
     return true;
   };
-})());
+})();
 
 export function ROOT() {}
 ROOT.__hasSuper = false;
@@ -61,7 +64,6 @@ function _wrap(func, superFunc) {
 
   superWrapper.wrappedFunction = func;
   superWrapper.__ember_observes__ = func.__ember_observes__;
-  superWrapper.__ember_observesBefore__ = func.__ember_observesBefore__;
   superWrapper.__ember_listens__ = func.__ember_listens__;
 
   return superWrapper;

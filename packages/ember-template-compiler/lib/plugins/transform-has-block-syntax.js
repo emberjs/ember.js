@@ -21,7 +21,7 @@
 
 const TRANSFORMATIONS = {
   hasBlock: 'has-block',
-  hasBlockParams: 'has-block-params'
+  hasBlockParams: 'has-block-params',
 };
 
 export default function transformHasBlockSyntax(env) {
@@ -38,14 +38,20 @@ export default function transformHasBlockSyntax(env) {
       },
       MustacheStatement(node) {
         if (TRANSFORMATIONS[node.path.original]) {
-          return b.mustache(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash, null, node.loc);
+          return b.mustache(
+            b.path(TRANSFORMATIONS[node.path.original]),
+            node.params,
+            node.hash,
+            null,
+            node.loc
+          );
         }
       },
       SubExpression(node) {
         if (TRANSFORMATIONS[node.path.original]) {
           return b.sexpr(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash);
         }
-      }
-    }
+      },
+    },
   };
 }

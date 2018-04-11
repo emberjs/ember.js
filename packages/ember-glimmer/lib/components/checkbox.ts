@@ -57,7 +57,7 @@ const Checkbox = EmberComponent.extend({
   },
 
   change() {
-   set(this, 'checked', this.element.checked);
+    set(this, 'checked', this.element.checked);
   },
 });
 

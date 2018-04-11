@@ -16,7 +16,6 @@ import { Mixin } from 'ember-metal';
   @private
 */
 export default Mixin.create({
-
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -35,5 +34,5 @@ export default Mixin.create({
     @return {Number} the result of the comparison
     @private
   */
-  compare: null
+  compare: null,
 });

@@ -15,14 +15,14 @@ assign(inDOM, {
 
     if (DEBUG) {
       addObserver(view, 'elementId', () => {
-        throw new EmberError('Changing a view\'s elementId after creation is not allowed');
+        throw new EmberError("Changing a view's elementId after creation is not allowed");
       });
     }
   },
 
   exit(view) {
     view.renderer.unregister(view);
-  }
+  },
 });
 
 export default inDOM;

@@ -1,13 +1,7 @@
 import { DirtyableTag } from '@glimmer/reference';
-import {
-  normalizeProperty,
-  SVG_NAMESPACE
-} from '@glimmer/runtime';
+import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
-import {
-  get,
-  PROPERTY_DID_CHANGE,
-} from 'ember-metal';
+import { get, PROPERTY_DID_CHANGE } from 'ember-metal';
 import { TargetActionSupport } from 'ember-runtime';
 import { getOwner, symbol } from 'ember-utils';
 import {
@@ -562,7 +556,8 @@ const Component = CoreView.extend(
   ClassNamesSupport,
   TargetActionSupport,
   ActionSupport,
-  ViewMixin, {
+  ViewMixin,
+  {
     isComponent: true,
 
     init() {
@@ -576,21 +571,23 @@ const Component = CoreView.extend(
       assert(
         // tslint:disable-next-line:max-line-length
         `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
-        this.tagName !== '' || !this.renderer._destinedForDOM || !(() => {
-          let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
-          let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
+        this.tagName !== '' ||
+          !this.renderer._destinedForDOM ||
+          !(() => {
+            let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
+            let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
 
-          // tslint:disable-next-line:forin
-          for (let key in events) {
-            let methodName = events[key];
+            // tslint:disable-next-line:forin
+            for (let key in events) {
+              let methodName = events[key];
 
-            if (typeof this[methodName]  === 'function') {
-              return true; // indicate that the assertion should be triggered
+              if (typeof this[methodName] === 'function') {
+                return true; // indicate that the assertion should be triggered
+              }
             }
-          }
-          return false;
-        }
-      )());
+            return false;
+          })()
+      );
     },
 
     rerender() {
@@ -599,7 +596,9 @@ const Component = CoreView.extend(
     },
 
     [PROPERTY_DID_CHANGE](key: string) {
-      if (this[IS_DISPATCHING_ATTRS]) { return; }
+      if (this[IS_DISPATCHING_ATTRS]) {
+        return;
+      }
 
       let args = this[ARGS];
       let reference = args && args[key];
@@ -905,7 +904,7 @@ const Component = CoreView.extend(
      @default null
      @public
      */
-  },
+  }
 );
 
 Component.toString = () => '@ember/component';

@@ -1,7 +1,5 @@
 import { ComponentCapabilities, Option, Unique } from '@glimmer/interfaces';
-import {
-  CONSTANT_TAG, Tag, VersionedPathReference
-} from '@glimmer/reference';
+import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
   ComponentDefinition,
@@ -10,7 +8,7 @@ import {
   Invocation,
   UNDEFINED_REFERENCE,
   WithDynamicTagName,
-  WithStaticLayout
+  WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
 import { DEBUG } from 'ember-env-flags';
@@ -20,9 +18,7 @@ import { assign, guidFor } from 'ember-utils';
 import { OwnedTemplateMeta } from 'ember-views';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
-import {
-  OwnedTemplate,
-} from '../template';
+import { OwnedTemplate } from '../template';
 import { OutletState } from '../utils/outlet';
 import { RootReference } from '../utils/references';
 import OutletView from '../views/outlet';
@@ -51,15 +47,27 @@ const CAPABILITIES: ComponentCapabilities = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true,
 };
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
-  implements WithStaticLayout<OutletInstanceState, OutletDefinitionState, OwnedTemplateMeta, RuntimeResolver> {
-  create(environment: Environment,
-         definition: OutletDefinitionState,
-         _args: Arguments,
-         dynamicScope: DynamicScope) {
+  implements
+    WithStaticLayout<
+      OutletInstanceState,
+      OutletDefinitionState,
+      OwnedTemplateMeta,
+      RuntimeResolver
+    > {
+  create(
+    environment: Environment,
+    definition: OutletDefinitionState,
+    _args: Arguments,
+    dynamicScope: DynamicScope
+  ) {
     if (DEBUG) {
       this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
     }
@@ -78,7 +86,11 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     };
   }
 
-  layoutFor(_state: OutletDefinitionState, _component: OutletInstanceState, _env: Environment): Unique<'Handle'> {
+  layoutFor(
+    _state: OutletDefinitionState,
+    _component: OutletInstanceState,
+    _env: Environment
+  ): Unique<'Handle'> {
     throw new Error('Method not implemented.');
   }
 
@@ -87,7 +99,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     const layout = template.asLayout();
     return {
       handle: layout.compile(),
-      symbolTable: layout.symbolTable
+      symbolTable: layout.symbolTable,
     };
   }
 
@@ -119,9 +131,12 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 
 const OUTLET_MANAGER = new OutletComponentManager();
 
-export class OutletComponentDefinition implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
-  constructor(public state: OutletDefinitionState, public manager: OutletComponentManager = OUTLET_MANAGER) {
-  }
+export class OutletComponentDefinition
+  implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
+  constructor(
+    public state: OutletDefinitionState,
+    public manager: OutletComponentManager = OUTLET_MANAGER
+  ) {}
 }
 
 export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
@@ -132,8 +147,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
     });
 
     const WrappedOutletComponentManager = class extends OutletComponentManager
-    implements WithDynamicTagName<OutletInstanceState> {
-
+      implements WithDynamicTagName<OutletInstanceState> {
       getTagName(_component: OutletInstanceState) {
         return 'div';
       }
@@ -144,7 +158,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         const layout = template.asWrappedLayout();
         return {
           handle: layout.compile(),
-          symbolTable: layout.symbolTable
+          symbolTable: layout.symbolTable,
         };
       }
 
@@ -152,7 +166,11 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return WRAPPED_CAPABILITIES;
       }
 
-      didCreateElement(component: OutletInstanceState, element: Element, _operations: ElementOperations): void {
+      didCreateElement(
+        component: OutletInstanceState,
+        element: Element,
+        _operations: ElementOperations
+      ): void {
         // to add GUID id and class
         element.setAttribute('class', 'ember-view');
         element.setAttribute('id', guidFor(component));

@@ -1,9 +1,4 @@
-import {
-  get,
-  setProperties,
-  computed,
-  Mixin
-} from 'ember-metal';
+import { get, setProperties, computed, Mixin } from 'ember-metal';
 import { Error as EmberError } from 'ember-debug';
 import { not, or } from '../computed/computed_macros';
 
@@ -14,26 +9,30 @@ import { not, or } from '../computed/computed_macros';
 function tap(proxy, promise) {
   setProperties(proxy, {
     isFulfilled: false,
-    isRejected: false
+    isRejected: false,
   });
 
-  return promise.then(value => {
-    if (!proxy.isDestroyed && !proxy.isDestroying) {
-      setProperties(proxy, {
-        content: value,
-        isFulfilled: true
-      });
-    }
-    return value;
-  }, reason => {
-    if (!proxy.isDestroyed && !proxy.isDestroying) {
-      setProperties(proxy, {
-        reason,
-        isRejected: true
-      });
-    }
-    throw reason;
-  }, 'Ember: PromiseProxy');
+  return promise.then(
+    value => {
+      if (!proxy.isDestroyed && !proxy.isDestroying) {
+        setProperties(proxy, {
+          content: value,
+          isFulfilled: true,
+        });
+      }
+      return value;
+    },
+    reason => {
+      if (!proxy.isDestroyed && !proxy.isDestroying) {
+        setProperties(proxy, {
+          reason,
+          isRejected: true,
+        });
+      }
+      throw reason;
+    },
+    'Ember: PromiseProxy'
+  );
 }
 
 /**
@@ -168,11 +167,11 @@ export default Mixin.create({
   */
   promise: computed({
     get() {
-      throw new EmberError('PromiseProxy\'s promise must be set');
+      throw new EmberError("PromiseProxy's promise must be set");
     },
     set(key, promise) {
       return tap(this, promise);
-    }
+    },
   }),
 
   /**
@@ -198,7 +197,7 @@ export default Mixin.create({
     @since 1.3.0
     @public
   */
-  'catch': promiseAlias('catch'),
+  catch: promiseAlias('catch'),
 
   /**
     An alias to the proxied promise's `finally`.
@@ -211,12 +210,11 @@ export default Mixin.create({
     @since 1.3.0
     @public
   */
-  'finally': promiseAlias('finally')
-
+  finally: promiseAlias('finally'),
 });
 
 function promiseAlias(name) {
-  return function () {
+  return function() {
     let promise = get(this, 'promise');
     return promise[name](...arguments);
   };

@@ -1,18 +1,9 @@
 import { symbol } from 'ember-utils';
-import {
-  descriptorFor,
-  peekMeta
-} from './meta';
-import {
-  sendEvent
-} from './events';
-import {
-  markObjectAsDirty
-} from './tags';
+import { descriptorFor, peekMeta } from './meta';
+import { sendEvent } from './events';
+import { markObjectAsDirty } from './tags';
 import ObserverSet from './observer_set';
-import {
-  EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER,
-} from 'ember/features';
+import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
 import { deprecate } from 'ember-debug';
 import { assertNotRendered } from './transaction';
 import { changeEvent } from './observer';
@@ -43,7 +34,8 @@ function propertyWillChange() {
     {
       id: 'ember-metal.deprecate-propertyWillChange',
       until: '3.5.0',
-      url: 'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange'
+      url:
+        'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange',
     }
   );
 }
@@ -60,7 +52,8 @@ function propertyDidChange(obj, keyName, _meta) {
     {
       id: 'ember-metal.deprecate-propertyDidChange',
       until: '3.5.0',
-      url: 'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange'
+      url:
+        'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange',
     }
   );
 
@@ -87,7 +80,9 @@ function notifyPropertyChange(obj, keyName, _meta) {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
   let hasMeta = meta !== undefined;
 
-  if (hasMeta && !meta.isInitialized(obj)) { return; }
+  if (hasMeta && !meta.isInitialized(obj)) {
+    return;
+  }
 
   let possibleDesc = descriptorFor(obj, keyName, meta);
 
@@ -107,7 +102,9 @@ function notifyPropertyChange(obj, keyName, _meta) {
   }
 
   if (hasMeta) {
-    if (meta.isSourceDestroying()) { return; }
+    if (meta.isSourceDestroying()) {
+      return;
+    }
     markObjectAsDirty(obj, keyName, meta);
   }
 
@@ -116,22 +113,26 @@ function notifyPropertyChange(obj, keyName, _meta) {
   }
 }
 
-let DID_SEEN = null;
+const SEEN_MAP = new Map();
+let IS_TOP_SEEN_MAP = true;
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
-  if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) { return; }
-  let seen = DID_SEEN;
-  let top = seen === null;
+  if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) {
+    return;
+  }
+  let seen = SEEN_MAP;
+  let isTop = IS_TOP_SEEN_MAP;
 
-  if (top) {
-    seen = DID_SEEN = new Map();
+  if (isTop) {
+    IS_TOP_SEEN_MAP = false;
   }
 
   iterDeps(notifyPropertyChange, obj, depKey, seen, meta);
 
-  if (top) {
-    DID_SEEN = null;
+  if (isTop) {
+    SEEN_MAP.clear();
+    IS_TOP_SEEN_MAP = true;
   }
 }
 
@@ -143,11 +144,15 @@ function iterDeps(method, obj, depKey, seen, meta) {
     seen.set(obj, current);
   }
 
-  if (current.has(depKey)) { return; }
+  if (current.has(depKey)) {
+    return;
+  }
 
   let possibleDesc;
   meta.forEachInDeps(depKey, (key, value) => {
-    if (!value) { return; }
+    if (!value) {
+      return;
+    }
 
     possibleDesc = descriptorFor(obj, key, meta);
 
@@ -218,7 +223,9 @@ function changeProperties(callback) {
 }
 
 function notifyObservers(obj, keyName, meta) {
-  if (meta.isSourceDestroying()) { return; }
+  if (meta.isSourceDestroying()) {
+    return;
+  }
 
   let eventName = changeEvent(keyName);
   if (deferred > 0) {
@@ -235,5 +242,5 @@ export {
   overrideChains,
   beginPropertyChanges,
   endPropertyChanges,
-  changeProperties
+  changeProperties,
 };

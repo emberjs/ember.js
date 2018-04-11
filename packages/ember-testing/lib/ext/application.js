@@ -1,16 +1,10 @@
 import { Application as EmberApplication } from 'ember-application';
 import setupForTesting from '../setup_for_testing';
 import { helpers } from '../test/helpers';
-import TestPromise, {
-  resolve,
-  getLastPromise
-} from '../test/promise';
+import TestPromise, { resolve, getLastPromise } from '../test/promise';
 import run from '../test/run';
 import { invokeInjectHelpersCallbacks } from '../test/on_inject_helpers';
-import {
-  asyncStart,
-  asyncEnd
-} from '../test/adapter';
+import { asyncStart, asyncEnd } from '../test/adapter';
 
 EmberApplication.reopen({
   /**
@@ -40,7 +34,6 @@ EmberApplication.reopen({
     @since 1.3.0
   */
   originalMethods: {},
-
 
   /**
   This property indicates whether or not this application is currently in
@@ -78,7 +71,7 @@ EmberApplication.reopen({
     this.testing = true;
 
     this.resolveRegistration('router:main').reopen({
-      location: 'none'
+      location: 'none',
     });
   },
 
@@ -123,7 +116,7 @@ EmberApplication.reopen({
       willDestroy() {
         this._super(...arguments);
         this.removeTestHelpers();
-      }
+      },
     });
 
     this.testHelpers = {};
@@ -150,7 +143,9 @@ EmberApplication.reopen({
     @method removeTestHelpers
   */
   removeTestHelpers() {
-    if (!this.helperContainer) { return; }
+    if (!this.helperContainer) {
+      return;
+    }
 
     for (let name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
@@ -158,7 +153,7 @@ EmberApplication.reopen({
       delete this.testHelpers[name];
       delete this.originalMethods[name];
     }
-  }
+  },
 });
 
 // This method is no longer needed

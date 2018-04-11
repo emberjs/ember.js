@@ -11,7 +11,6 @@ function injectNodeGlobals({ types: t }) {
           moduleId = path.scope.globals.module;
 
           if (requireId || moduleId) {
-
             let specifiers = [];
             let source = t.stringLiteral(this.file.resolveModuleSource('node-module'));
 
@@ -28,20 +27,19 @@ function injectNodeGlobals({ types: t }) {
             importDecl = t.importDeclaration(specifiers, source);
             path.unshiftContainer('body', importDecl);
           }
-
         },
         exit(path) {
           if (requireId) {
-            path.scope.rename("require");
+            path.scope.rename('require');
           }
-        }
+        },
       },
       ImportDeclaration(path) {
         if (path.node === importDecl) {
           path.scope.registerDeclaration(path);
         }
-      }
-    }
+      },
+    },
   };
 }
 

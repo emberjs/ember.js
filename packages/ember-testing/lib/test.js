@@ -1,27 +1,12 @@
 /**
   @module ember
 */
-import {
-  helpers,
-  registerHelper,
-  registerAsyncHelper,
-  unregisterHelper
-} from './test/helpers';
+import { helpers, registerHelper, registerAsyncHelper, unregisterHelper } from './test/helpers';
 import { onInjectHelpers } from './test/on_inject_helpers';
-import TestPromise, {
-  promise,
-  resolve
-} from './test/promise';
-import {
-  checkWaiters,
-  registerWaiter,
-  unregisterWaiter
-} from './test/waiters';
+import TestPromise, { promise, resolve } from './test/promise';
+import { checkWaiters, registerWaiter, unregisterWaiter } from './test/waiters';
 
-import {
-  getAdapter,
-  setAdapter
-} from './test/adapter';
+import { getAdapter, setAdapter } from './test/adapter';
 
 /**
   This is a container for an assortment of testing related functionality:
@@ -54,7 +39,7 @@ const Test = {
   resolve,
   registerWaiter,
   unregisterWaiter,
-  checkWaiters
+  checkWaiters,
 };
 
 /**
@@ -79,7 +64,7 @@ const Test = {
 */
 Object.defineProperty(Test, 'adapter', {
   get: getAdapter,
-  set: setAdapter
+  set: setAdapter,
 });
 
 export default Test;

@@ -1,9 +1,8 @@
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 
-import Logger from 'ember-console';
 import deprecate from './deprecate';
-import { assert } from './index';
+import { assert } from '../index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 
 let registerHandler = () => {};
@@ -51,13 +50,16 @@ if (DEBUG) {
   };
 
   registerHandler(function logWarning(message) {
-    Logger.warn(`WARNING: ${message}`);
-    if ('trace' in Logger) {
-      Logger.trace();
+    /* eslint-disable no-console */
+    console.warn(`WARNING: ${message}`);
+    if (console.trace) {
+      console.trace();
     }
+    /* eslint-enable no-console */
   });
 
-  missingOptionsDeprecation = 'When calling `warn` you ' +
+  missingOptionsDeprecation =
+    'When calling `warn` you ' +
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include an `id` property.';
   missingOptionsIdDeprecation = 'When calling `warn` you must provide `id` in options.';
@@ -93,27 +95,19 @@ if (DEBUG) {
     }
 
     if (!options && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsDeprecation,
-        false,
-        {
-          id: 'ember-debug.warn-options-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
+      deprecate(missingOptionsDeprecation, false, {
+        id: 'ember-debug.warn-options-missing',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
+      });
     }
 
     if (options && !options.id && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsIdDeprecation,
-        false,
-        {
-          id: 'ember-debug.warn-id-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
+      deprecate(missingOptionsIdDeprecation, false, {
+        id: 'ember-debug.warn-id-missing',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
+      });
     }
 
     invoke('warn', message, test, options);
@@ -121,8 +115,4 @@ if (DEBUG) {
 }
 
 export default warn;
-export {
-  registerHandler,
-  missingOptionsIdDeprecation,
-  missingOptionsDeprecation
-};
+export { registerHandler, missingOptionsIdDeprecation, missingOptionsDeprecation };

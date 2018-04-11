@@ -1,16 +1,12 @@
 /* global Element */
 
 import { assign } from 'ember-utils';
-import { run } from 'ember-metal';
+import { run, next, hasScheduledTimers, getCurrentRunLoop } from 'ember-metal';
 
 import NodeQuery from './node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
-import {
-  equalsElement,
-  regex,
-  classes
-} from '../matchers';
+import { equalsElement, regex, classes } from '../matchers';
 import { Promise } from 'rsvp';
 
 const TextNode = window.Text;
@@ -30,10 +26,10 @@ function isMarker(node) {
 }
 
 export default class AbstractTestCase {
-  constructor() {
+  constructor(assert) {
     this.element = null;
     this.snapshot = null;
-    this.assert = QUnit.config.current.assert;
+    this.assert = assert;
 
     let { fixture } = this;
     if (fixture) {
@@ -49,8 +45,8 @@ export default class AbstractTestCase {
   }
 
   runTaskNext() {
-    return new Promise((resolve) => {
-      return run.next(resolve);
+    return new Promise(resolve => {
+      return next(resolve);
     });
   }
 
@@ -134,7 +130,9 @@ export default class AbstractTestCase {
       // Every 5ms, poll for the async thing to have finished
       let watcher = setInterval(() => {
         // If there are scheduled timers or we are inside of a run loop, keep polling
-        if (run.hasScheduledTimers() || run.currentRunLoop) { return; }
+        if (hasScheduledTimers() || getCurrentRunLoop()) {
+          return;
+        }
 
         // Stop polling
         clearInterval(watcher);
@@ -150,7 +148,7 @@ export default class AbstractTestCase {
   }
 
   takeSnapshot() {
-    let snapshot = this.snapshot = [];
+    let snapshot = (this.snapshot = []);
 
     let node = this.element.firstChild;
 
@@ -166,7 +164,11 @@ export default class AbstractTestCase {
   }
 
   assertText(text) {
-    this.assert.strictEqual(this.textValue(), text, `#qunit-fixture content should be: \`${text}\``);
+    this.assert.strictEqual(
+      this.textValue(),
+      text,
+      `#qunit-fixture content should be: \`${text}\``
+    );
   }
 
   assertInnerHTML(html) {
@@ -185,7 +187,10 @@ export default class AbstractTestCase {
     equalsElement(this.assert, node, tagName, attrs, content);
   }
 
-  assertComponentElement(node, { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }) {
+  assertComponentElement(
+    node,
+    { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }
+  ) {
     attrs = assign({}, { id: regex(/^ember\d*$/), class: classes('ember-view') }, attrs || {});
     this.assertElement(node, { ElementType, tagName, attrs, content });
   }

@@ -22,8 +22,9 @@ describe('Blueprint: controller-test', function() {
 
     it('controller-test foo', function() {
       return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-        expect(_file('tests/unit/controllers/foo-test.js'))
-          .to.equal(fixture('controller-test/default.js'));
+        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
       });
     });
 
@@ -34,8 +35,9 @@ describe('Blueprint: controller-test', function() {
 
       it('controller-test foo', function() {
         return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-          expect(_file('tests/unit/controllers/foo-test.js'))
-            .to.equal(fixture('controller-test/rfc232.js'));
+          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+            fixture('controller-test/rfc232.js')
+          );
         });
       });
     });
@@ -44,15 +46,16 @@ describe('Blueprint: controller-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
       });
 
       it('controller-test foo for mocha', function() {
         return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-          expect(_file('tests/unit/controllers/foo-test.js'))
-            .to.equal(fixture('controller-test/mocha.js'));
+          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+            fixture('controller-test/mocha.js')
+          );
         });
       });
     });
@@ -61,15 +64,16 @@ describe('Blueprint: controller-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
       });
 
       it('controller-test foo', function() {
         return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-          expect(_file('tests/unit/controllers/foo-test.js'))
-            .to.equal(fixture('controller-test/mocha-0.12.js'));
+          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+            fixture('controller-test/mocha-0.12.js')
+          );
         });
       });
     });
@@ -82,8 +86,9 @@ describe('Blueprint: controller-test', function() {
 
     it('controller-test foo', function() {
       return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-        expect(_file('tests/unit/controllers/foo-test.js'))
-          .to.equal(fixture('controller-test/default.js'));
+        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
       });
     });
   });

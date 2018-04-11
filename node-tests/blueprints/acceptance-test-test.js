@@ -22,8 +22,9 @@ describe('Blueprint: acceptance-test', function() {
 
     it('acceptance-test foo', function() {
       return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-        expect(_file('tests/acceptance/foo-test.js'))
-        .to.equal(fixture('acceptance-test/default.js'));
+        expect(_file('tests/acceptance/foo-test.js')).to.equal(
+          fixture('acceptance-test/default.js')
+        );
       });
     });
 
@@ -34,8 +35,9 @@ describe('Blueprint: acceptance-test', function() {
 
       it('acceptance-test foo', function() {
         return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-          expect(_file('tests/acceptance/foo-test.js'))
-            .to.equal(fixture('acceptance-test/qunit-rfc268.js'));
+          expect(_file('tests/acceptance/foo-test.js')).to.equal(
+            fixture('acceptance-test/qunit-rfc268.js')
+          );
         });
       });
     });
@@ -44,19 +46,19 @@ describe('Blueprint: acceptance-test', function() {
       beforeEach(function() {
         return modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
       });
 
       it('acceptance-test foo', function() {
         return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-          expect(_file('tests/acceptance/foo-test.js'))
-            .to.equal(fixture('acceptance-test/mocha.js'));
+          expect(_file('tests/acceptance/foo-test.js')).to.equal(
+            fixture('acceptance-test/mocha.js')
+          );
         });
       });
     });
   });
-
 
   describe('in addon', function() {
     beforeEach(function() {
@@ -65,21 +67,21 @@ describe('Blueprint: acceptance-test', function() {
 
     it('acceptance-test foo', function() {
       return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-        expect(_file('tests/acceptance/foo-test.js'))
-        .to.equal(fixture('acceptance-test/addon-default.js'));
+        expect(_file('tests/acceptance/foo-test.js')).to.equal(
+          fixture('acceptance-test/addon-default.js')
+        );
 
-        expect(_file('app/acceptance-tests/foo.js'))
-          .to.not.exist;
+        expect(_file('app/acceptance-tests/foo.js')).to.not.exist;
       });
     });
 
     it('acceptance-test foo/bar', function() {
       return emberGenerateDestroy(['acceptance-test', 'foo/bar'], _file => {
-        expect(_file('tests/acceptance/foo/bar-test.js'))
-          .to.equal(fixture('acceptance-test/addon-nested.js'));
+        expect(_file('tests/acceptance/foo/bar-test.js')).to.equal(
+          fixture('acceptance-test/addon-nested.js')
+        );
 
-        expect(_file('app/acceptance-tests/foo/bar.js'))
-          .to.not.exist;
+        expect(_file('app/acceptance-tests/foo/bar.js')).to.not.exist;
       });
     });
 
@@ -90,8 +92,9 @@ describe('Blueprint: acceptance-test', function() {
 
       it('acceptance-test foo', function() {
         return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-          expect(_file('tests/acceptance/foo-test.js'))
-            .to.equal(fixture('acceptance-test/qunit-rfc268.js'));
+          expect(_file('tests/acceptance/foo-test.js')).to.equal(
+            fixture('acceptance-test/qunit-rfc268.js')
+          );
         });
       });
     });

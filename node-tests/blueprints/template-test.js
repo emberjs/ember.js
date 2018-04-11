@@ -51,7 +51,7 @@ describe('Blueprint: template', function() {
       beforeEach(function() {
         setupPodConfig({
           usePods: true,
-          podModulePrefix: true
+          podModulePrefix: true,
         });
       });
 

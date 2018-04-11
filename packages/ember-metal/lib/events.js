@@ -46,12 +46,14 @@ export function addListener(obj, eventName, target, method, once) {
       {
         id: 'ember-views.did-init-attrs',
         until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs'
+        url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs',
       }
     );
-  }
-  else {
-    assert(`didInitAttrs called in ${obj && obj.toString && obj.toString()} is no longer supported.`, eventName !== 'didInitAttrs');
+  } else {
+    assert(
+      `didInitAttrs called in ${obj && obj.toString && obj.toString()} is no longer supported.`,
+      eventName !== 'didInitAttrs'
+    );
   }
 
   if (!method && 'function' === typeof target) {
@@ -60,10 +62,6 @@ export function addListener(obj, eventName, target, method, once) {
   }
 
   metaFor(obj).addToListeners(eventName, target, method, once);
-
-  if ('function' === typeof obj.didAddListener) {
-    obj.didAddListener(eventName, target, method);
-  }
 }
 
 /**
@@ -88,9 +86,7 @@ export function removeListener(obj, eventName, target, method) {
     target = null;
   }
 
-  let func = ('function' === typeof obj.didRemoveListener) ?
-    obj.didRemoveListener.bind(obj) : ()=> {};
-  metaFor(obj).removeFromListeners(eventName, target, method, func);
+  metaFor(obj).removeFromListeners(eventName, target, method);
 }
 
 /**
@@ -113,21 +109,28 @@ export function removeListener(obj, eventName, target, method) {
 export function sendEvent(obj, eventName, params, actions, _meta) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
-    actions = typeof meta === 'object' &&
-      meta !== null &&
-      meta.matchingListeners(eventName);
+    actions = typeof meta === 'object' && meta !== null && meta.matchingListeners(eventName);
   }
 
-  if (actions === undefined || actions.length === 0) { return false; }
+  if (actions === undefined || actions.length === 0) {
+    return false;
+  }
 
-  for (let i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
+  for (let i = actions.length - 3; i >= 0; i -= 3) {
+    // looping in reverse for once listeners
     let target = actions[i];
     let method = actions[i + 1];
     let once = actions[i + 2];
 
-    if (!method) { continue; }
-    if (once) { removeListener(obj, eventName, target, method); }
-    if (!target) { target = obj; }
+    if (!method) {
+      continue;
+    }
+    if (once) {
+      removeListener(obj, eventName, target, method);
+    }
+    if (!target) {
+      target = obj;
+    }
     if ('string' === typeof method) {
       method = target[method];
     }
@@ -147,7 +150,9 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
 */
 export function hasListeners(obj, eventName) {
   let meta = peekMeta(obj);
-  if (meta === undefined) { return false; }
+  if (meta === undefined) {
+    return false;
+  }
   let matched = meta.matchingListeners(eventName);
   return matched !== undefined && matched.length > 0;
 }
@@ -186,7 +191,10 @@ export function on(...args) {
   let events = args;
 
   assert('on expects function as last argument', typeof func === 'function');
-  assert('on called without valid event names', events.length > 0 && events.every((p)=> typeof p === 'string' && p.length));
+  assert(
+    'on called without valid event names',
+    events.length > 0 && events.every(p => typeof p === 'string' && p.length)
+  );
 
   func.__ember_listens__ = events;
   return func;

@@ -2,6 +2,5 @@ export {
   AbstractTestCase as TestCase,
   ApplicationTestCase as ApplicationTest,
   RenderingTestCase as RenderingTest,
-  moduleFor
+  moduleFor,
 } from 'internal-test-helpers';
-

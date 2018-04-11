@@ -4,15 +4,15 @@ function buildProgram(b, content, loc) {
 
 function buildStatement(b, content, loc) {
   switch (content.type) {
-  case 'PathExpression':
-    return b.mustache(content, null, null, null, loc);
+    case 'PathExpression':
+      return b.mustache(content, null, null, null, loc);
 
-  case 'SubExpression':
-    return b.mustache(content.path, content.params, content.hash, null, loc);
+    case 'SubExpression':
+      return b.mustache(content.path, content.params, content.hash, null, loc);
 
     // The default case handles literals.
-  default:
-    return b.text(`${content.value}`, loc);
+    default:
+      return b.text(`${content.value}`, loc);
   }
 }
 
@@ -39,7 +39,7 @@ export default function transformInlineLinkTo(env) {
             node.loc
           );
         }
-      }
-    }
+      },
+    },
   };
 }

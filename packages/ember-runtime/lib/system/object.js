@@ -3,7 +3,7 @@
 */
 
 import { FACTORY_FOR } from 'container';
-import { symbol, OWNER } from 'ember-utils';
+import { symbol, OWNER, setName } from 'ember-utils';
 import { on, descriptor } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
@@ -29,7 +29,7 @@ const EmberObject = CoreObject.extend(Observable, {
       let factory = FACTORY_FOR.get(this);
 
       return factory !== undefined && factory.fullName;
-    }
+    },
   }),
 
   [OWNER]: descriptor({
@@ -48,11 +48,11 @@ const EmberObject = CoreObject.extend(Observable, {
     // folks calling `owner.ownerInjection()` API
     set(value) {
       this[OVERRIDE_OWNER] = value;
-    }
-  })
+    },
+  }),
 });
 
-EmberObject.toString = () => 'Ember.Object';
+setName(EmberObject, 'Ember.Object');
 
 export let FrameworkObject = EmberObject;
 
@@ -71,7 +71,7 @@ if (DEBUG) {
         `You must call \`this._super(...arguments);\` when overriding \`init\` on a framework object. Please update ${this} to call \`this._super(...arguments);\` from \`init\`.`,
         this[INIT_WAS_CALLED]
       );
-    })
+    }),
   });
 }
 

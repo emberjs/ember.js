@@ -1,6 +1,6 @@
 import { Simple } from '@glimmer/interfaces';
 import { environment } from 'ember-environment';
-import { run } from 'ember-metal';
+import { schedule } from 'ember-metal';
 import { assign, OWNER, Owner } from 'ember-utils';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
@@ -42,8 +42,13 @@ export default class OutletView {
   public ref: RootOutletReference;
   public state: OutletDefinitionState;
 
-  constructor(private _environment: BootEnvironment, public renderer: Renderer, public owner: Owner, public template: OwnedTemplate) {
-    let ref = this.ref = new RootOutletReference({
+  constructor(
+    private _environment: BootEnvironment,
+    public renderer: Renderer,
+    public owner: Owner,
+    public template: OwnedTemplate
+  ) {
+    let ref = (this.ref = new RootOutletReference({
       outlets: { main: undefined },
       render: {
         owner: owner,
@@ -53,13 +58,13 @@ export default class OutletView {
         controller: undefined,
         template,
       },
-    });
+    }));
     this.state = {
       ref,
       name: TOP_LEVEL_NAME,
       outlet: TOP_LEVEL_OUTLET,
       template,
-      controller: undefined
+      controller: undefined,
     };
   }
 
@@ -73,14 +78,18 @@ export default class OutletView {
       target = selector;
     }
 
-    run.schedule('render', this.renderer, 'appendOutletView', this, target);
+    schedule('render', this.renderer, 'appendOutletView', this, target);
   }
 
-  rerender() { /**/ }
+  rerender() {
+    /**/
+  }
 
   setOutletState(state: OutletState) {
     this.ref.update(state);
   }
 
-  destroy() { /**/ }
+  destroy() {
+    /**/
+  }
 }

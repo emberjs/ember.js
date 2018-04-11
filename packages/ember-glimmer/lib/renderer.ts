@@ -14,17 +14,8 @@ import {
 } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
-import {
-  run,
-  runInTransaction,
-  setHasViews,
-} from 'ember-metal';
-import {
-  fallbackViewRegistry,
-  getViewElement,
-  getViewId,
-  setViewElement,
-} from 'ember-views';
+import { backburner, getCurrentRunLoop, runInTransaction, setHasViews } from 'ember-metal';
+import { fallbackViewRegistry, getViewElement, getViewId, setViewElement } from 'ember-views';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
@@ -36,15 +27,14 @@ import { OutletState } from './utils/outlet';
 import { UnboundReference } from './utils/references';
 import OutletView from './views/outlet';
 
-const { backburner } = run;
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
     public view: Component | {} | null,
     public outletState: VersionedPathReference<OutletState | undefined>,
-    public rootOutletState?: VersionedPathReference<OutletState | undefined>) {
-  }
+    public rootOutletState?: VersionedPathReference<OutletState | undefined>
+  ) {}
 
   child() {
     return new DynamicScope(this.view, this.outletState, this.rootOutletState);
@@ -52,13 +42,19 @@ export class DynamicScope implements GlimmerDynamicScope {
 
   get(key: 'outletState'): VersionedPathReference<OutletState | undefined> {
     // tslint:disable-next-line:max-line-length
-    assert(`Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
+    assert(
+      `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
+      key === 'outletState'
+    );
     return this.outletState;
   }
 
   set(key: 'outletState', value: VersionedPathReference<OutletState | undefined>) {
     // tslint:disable-next-line:max-line-length
-    assert(`Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`, key === 'outletState');
+    assert(
+      `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
+      key === 'outletState'
+    );
     this.outletState = value;
     return value;
   }
@@ -94,14 +90,15 @@ class RootState {
     this.shouldReflush = false;
     this.destroyed = false;
 
-    let options = this.options = {
+    let options = (this.options = {
       alwaysRevalidate: false,
-    };
+    });
 
     this.render = () => {
       let layout = template.asLayout();
       let handle = layout.compile();
-      let iterator = renderMain(layout['compiler'].program,
+      let iterator = renderMain(
+        layout['compiler'].program,
         env,
         self,
         dynamicScope,
@@ -113,7 +110,7 @@ class RootState {
         iteratorResult = iterator.next();
       } while (!iteratorResult.done);
 
-      let result = this.result = iteratorResult.value;
+      let result = (this.result = iteratorResult.value);
 
       // override .render function after initial render
       this.render = () => result.rerender(options);
@@ -186,7 +183,9 @@ function loopBegin(): void {
   }
 }
 
-function K() { /* noop */ }
+function K() {
+  /* noop */
+}
 
 let renderSettledDeferred: RSVP.Deferred<void> | null = null;
 /*
@@ -203,7 +202,7 @@ export function renderSettled() {
     renderSettledDeferred = RSVP.defer();
     // if there is no current runloop, the promise created above will not have
     // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!run.currentRunLoop) {
+    if (!getCurrentRunLoop()) {
       // ensure a runloop has been kicked off
       backburner.schedule('actions', null, K);
     }
@@ -246,7 +245,7 @@ export abstract class Renderer {
   private _env: Environment;
   private _rootTemplate: any;
   private _viewRegistry: {
-    [viewId: string]: Opaque,
+    [viewId: string]: Opaque;
   };
   private _destinedForDOM: boolean;
   private _destroyed: boolean;
@@ -256,7 +255,13 @@ export abstract class Renderer {
   private _removedRoots: RootState[];
   private _builder: IBuilder;
 
-  constructor(env: Environment, rootTemplate: OwnedTemplate, _viewRegistry = fallbackViewRegistry, destinedForDOM = false, builder = clientBuilder) {
+  constructor(
+    env: Environment,
+    rootTemplate: OwnedTemplate,
+    _viewRegistry = fallbackViewRegistry,
+    destinedForDOM = false,
+    builder = clientBuilder
+  ) {
     this._env = env;
     this._rootTemplate = rootTemplate;
     this._viewRegistry = _viewRegistry;
@@ -284,10 +289,19 @@ export abstract class Renderer {
   _appendDefinition(
     root: OutletView | Component,
     definition: CurriedComponentDefinition,
-    target: Simple.Element) {
+    target: Simple.Element
+  ) {
     let self = new UnboundReference(definition);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
-    let rootState = new RootState(root, this._env, this._rootTemplate, self, target, dynamicScope, this._builder);
+    let rootState = new RootState(
+      root,
+      this._env,
+      this._rootTemplate,
+      self,
+      target,
+      dynamicScope,
+      this._builder
+    );
     this._renderRoot(rootState);
   }
 
@@ -297,7 +311,10 @@ export abstract class Renderer {
 
   register(view: any) {
     let id = getViewId(view);
-    assert('Attempted to register a view with an id already in use: ' + id, !this._viewRegistry[id]);
+    assert(
+      'Attempted to register a view with an id already in use: ' + id,
+      !this._viewRegistry[id]
+    );
     this._viewRegistry[id] = view;
   }
 
@@ -323,7 +340,9 @@ export abstract class Renderer {
 
   cleanupRootFor(view: Opaque) {
     // no need to cleanup roots if we have already been destroyed
-    if (this._destroyed) { return; }
+    if (this._destroyed) {
+      return;
+    }
 
     let roots = this._roots;
 
@@ -496,17 +515,39 @@ export abstract class Renderer {
 }
 
 export class InertRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry, builder }: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any, builder: any}) {
+  static create({
+    env,
+    rootTemplate,
+    _viewRegistry,
+    builder,
+  }: {
+    env: Environment;
+    rootTemplate: OwnedTemplate;
+    _viewRegistry: any;
+    builder: any;
+  }) {
     return new this(env, rootTemplate, _viewRegistry, false, builder);
   }
 
   getElement(_view: Opaque): Simple.Element | undefined {
-    throw new Error('Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).');
+    throw new Error(
+      'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
+    );
   }
 }
 
 export class InteractiveRenderer extends Renderer {
-  static create({ env, rootTemplate, _viewRegistry, builder}: {env: Environment, rootTemplate: OwnedTemplate, _viewRegistry: any, builder: any}) {
+  static create({
+    env,
+    rootTemplate,
+    _viewRegistry,
+    builder,
+  }: {
+    env: Environment;
+    rootTemplate: OwnedTemplate;
+    _viewRegistry: any;
+    builder: any;
+  }) {
     return new this(env, rootTemplate, _viewRegistry, true, builder);
   }
 

@@ -22,8 +22,9 @@ describe('Blueprint: instance-initializer-test', function() {
 
     it('instance-initializer-test foo', function() {
       return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-        expect(_file('tests/unit/instance-initializers/foo-test.js'))
-          .to.equal(fixture('instance-initializer-test/default.js'));
+        expect(_file('tests/unit/instance-initializers/foo-test.js')).to.equal(
+          fixture('instance-initializer-test/default.js')
+        );
       });
     });
 
@@ -34,8 +35,9 @@ describe('Blueprint: instance-initializer-test', function() {
 
       it('instance-initializer-test foo', function() {
         return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-          expect(_file('tests/unit/instance-initializers/foo-test.js'))
-            .to.equal(fixture('instance-initializer-test/rfc232.js'));
+          expect(_file('tests/unit/instance-initializers/foo-test.js')).to.equal(
+            fixture('instance-initializer-test/rfc232.js')
+          );
         });
       });
     });
@@ -44,14 +46,15 @@ describe('Blueprint: instance-initializer-test', function() {
       beforeEach(function() {
         modifyPackages([
           { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true }
+          { name: 'ember-cli-mocha', dev: true },
         ]);
       });
 
       it('instance-initializer-test foo for mocha', function() {
         return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-          expect(_file('tests/unit/instance-initializers/foo-test.js'))
-            .to.equal(fixture('instance-initializer-test/mocha.js'));
+          expect(_file('tests/unit/instance-initializers/foo-test.js')).to.equal(
+            fixture('instance-initializer-test/mocha.js')
+          );
         });
       });
     });
@@ -64,8 +67,9 @@ describe('Blueprint: instance-initializer-test', function() {
 
     it('instance-initializer-test foo', function() {
       return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-        expect(_file('tests/unit/instance-initializers/foo-test.js'))
-          .to.equal(fixture('instance-initializer-test/dummy.js'));
+        expect(_file('tests/unit/instance-initializers/foo-test.js')).to.equal(
+          fixture('instance-initializer-test/dummy.js')
+        );
       });
     });
   });

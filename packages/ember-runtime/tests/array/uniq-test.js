@@ -5,9 +5,9 @@ class UniqTests extends AbstractTestCase {
   '@test should return new instance with duplicates removed'() {
     let before, after, obj, ret;
 
-    after  = newFixture(3);
+    after = newFixture(3);
     before = [after[0], after[1], after[2], after[1], after[0]];
-    obj    = this.newObject(before);
+    obj = this.newObject(before);
     before = obj.toArray(); // in case of set before will be different...
 
     ret = obj.uniq();

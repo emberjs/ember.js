@@ -2,10 +2,7 @@
 @module ember
 */
 
-import {
-  Arguments,
-  VM
-} from '@glimmer/runtime';
+import { Arguments, VM } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import { UnboundReference } from '../utils/references';
 
@@ -40,7 +37,7 @@ import { UnboundReference } from '../utils/references';
 export default function(_vm: VM, args: Arguments) {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
-    args.positional.length === 1 && args.named.length === 0,
+    args.positional.length === 1 && args.named.length === 0
   );
 
   return UnboundReference.create(args.positional.at(0).value());

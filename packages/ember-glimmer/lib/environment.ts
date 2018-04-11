@@ -1,29 +1,17 @@
-import {
-  Reference,
-} from '@glimmer/reference';
+import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
   ElementBuilder,
   Environment as GlimmerEnvironment,
-  PrimitiveReference,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
-import {
-  Destroyable, Opaque,
-} from '@glimmer/util';
+import { Destroyable, Opaque } from '@glimmer/util';
 import { warn } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { OWNER, Owner } from 'ember-utils';
-import {
-  constructStyleDeprecationMessage,
-  lookupComponent,
-} from 'ember-views';
+import { constructStyleDeprecationMessage, lookupComponent } from 'ember-views';
 import DebugStack from './utils/debug-stack';
 import createIterable from './utils/iterable';
-import {
-  ConditionalReference,
-  RootPropertyReference,
-  UpdatableReference,
-} from './utils/references';
+import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
@@ -45,7 +33,7 @@ export default class Environment extends GlimmerEnvironment {
   public destroyedComponents: Destroyable[];
 
   public debugStack: typeof DebugStack;
-  public inTransaction: boolean;
+  public inTransaction = false;
 
   constructor(injections: any) {
     super(injections);
@@ -72,11 +60,11 @@ export default class Environment extends GlimmerEnvironment {
     return lookupComponent(meta.owner, name, meta);
   }
 
-  toConditionalReference(reference: UpdatableReference): ConditionalReference | RootPropertyReference | PrimitiveReference<any> {
+  toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
     return ConditionalReference.create(reference);
   }
 
-  iterableFor(ref: Reference<Opaque>, key: string) {
+  iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
     return createIterable(ref, key);
   }
 
@@ -86,23 +74,23 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  scheduleUpdateModifier(modifier: any, manager: any) {
+  scheduleUpdateModifier(modifier: any, manager: any): void {
     if (this.isInteractive) {
       super.scheduleUpdateModifier(modifier, manager);
     }
   }
 
-  didDestroy(destroyable: Destroyable) {
+  didDestroy(destroyable: Destroyable): void {
     destroyable.destroy();
   }
 
-  begin() {
+  begin(): void {
     this.inTransaction = true;
 
     super.begin();
   }
 
-  commit() {
+  commit(): void {
     let destroyedComponents = this.destroyedComponents;
     this.destroyedComponents = [];
     // components queued for destruction must be destroyed before firing
@@ -123,30 +111,49 @@ export default class Environment extends GlimmerEnvironment {
 if (DEBUG) {
   class StyleAttributeManager extends SimpleDynamicAttribute {
     set(dom: ElementBuilder, value: Opaque, env: GlimmerEnvironment): void {
-      warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isHTMLSafe(value)) {
-          return true;
-        }
-        return false;
-      })(), { id: 'ember-htmlbars.style-xss-warning' });
+      warn(
+        constructStyleDeprecationMessage(value),
+        (() => {
+          if (value === null || value === undefined || isHTMLSafe(value)) {
+            return true;
+          }
+          return false;
+        })(),
+        { id: 'ember-htmlbars.style-xss-warning' }
+      );
       super.set(dom, value, env);
     }
     update(value: Opaque, env: GlimmerEnvironment): void {
-      warn(constructStyleDeprecationMessage(value), (() => {
-        if (value === null || value === undefined || isHTMLSafe(value)) {
-          return true;
-        }
-        return false;
-      })(), { id: 'ember-htmlbars.style-xss-warning' });
+      warn(
+        constructStyleDeprecationMessage(value),
+        (() => {
+          if (value === null || value === undefined || isHTMLSafe(value)) {
+            return true;
+          }
+          return false;
+        })(),
+        { id: 'ember-htmlbars.style-xss-warning' }
+      );
       super.update(value, env);
     }
   }
 
-  Environment.prototype.attributeFor = function (element, attribute: string, isTrusting: boolean, _namespace?) {
+  Environment.prototype.attributeFor = function(
+    element,
+    attribute: string,
+    isTrusting: boolean,
+    _namespace?
+  ) {
     if (attribute === 'style' && !isTrusting) {
       return StyleAttributeManager;
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting, _namespace);
+    return GlimmerEnvironment.prototype.attributeFor.call(
+      this,
+      element,
+      attribute,
+      isTrusting,
+      _namespace
+    );
   };
 }

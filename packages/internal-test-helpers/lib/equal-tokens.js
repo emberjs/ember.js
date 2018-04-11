@@ -4,12 +4,12 @@ function generateTokens(containerOrHTML) {
   if (typeof containerOrHTML === 'string') {
     return {
       tokens: tokenize(containerOrHTML),
-      html: containerOrHTML
+      html: containerOrHTML,
     };
   } else {
     return {
       tokens: tokenize(containerOrHTML.innerHTML),
-      html: containerOrHTML.innerHTML
+      html: containerOrHTML.innerHTML,
     };
   }
 }
@@ -18,8 +18,12 @@ function normalizeTokens(tokens) {
   tokens.forEach(token => {
     if (token.type === 'StartTag') {
       token.attributes = token.attributes.sort((a, b) => {
-        if (a[0] > b[0]) { return 1; }
-        if (a[0] < b[0]) { return -1; }
+        if (a[0] > b[0]) {
+          return 1;
+        }
+        if (a[0] < b[0]) {
+          return -1;
+        }
         return 0;
       });
     }
@@ -43,7 +47,7 @@ export default function equalTokens(actualContainer, expectedHTML, message = nul
       result: QUnit.equiv(actual.tokens, expected.tokens),
       actual: actual.html,
       expected: expected.html,
-      message
+      message,
     });
   }
 }

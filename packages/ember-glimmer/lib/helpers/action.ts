@@ -6,12 +6,7 @@ import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import {
-  flaggedInstrument,
-  get,
-  isNone,
-  run,
-} from 'ember-metal';
+import { flaggedInstrument, get, isNone, join } from 'ember-metal';
 import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
 /**
@@ -300,15 +295,19 @@ export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
   return new UnboundReference(fn);
 }
 
-function NOOP(args: Arguments) { return args; }
+function NOOP(args: Arguments) {
+  return args;
+}
 
-function makeArgsProcessor(valuePathRef: VersionedPathReference<Opaque> | false,
-                           actionArgsRef: Array<VersionedPathReference<Opaque>>) {
+function makeArgsProcessor(
+  valuePathRef: VersionedPathReference<Opaque> | false,
+  actionArgsRef: Array<VersionedPathReference<Opaque>>
+) {
   let mergeArgs: any;
 
   if (actionArgsRef.length > 0) {
     mergeArgs = (args: Arguments) => {
-      return actionArgsRef.map((ref) => ref.value()).concat(args);
+      return actionArgsRef.map(ref => ref.value()).concat(args);
     };
   }
 
@@ -335,18 +334,32 @@ function makeArgsProcessor(valuePathRef: VersionedPathReference<Opaque> | false,
   }
 }
 
-function makeDynamicClosureAction(context: any, targetRef: any, actionRef: any, processArgs: any, debugKey: any) {
+function makeDynamicClosureAction(
+  context: any,
+  targetRef: any,
+  actionRef: any,
+  processArgs: any,
+  debugKey: any
+) {
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
   if (DEBUG) {
     makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey);
   }
 
   return (...args: any[]) => {
-    return makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey)(...args);
+    return makeClosureAction(context, targetRef.value(), actionRef.value(), processArgs, debugKey)(
+      ...args
+    );
   };
 }
 
-function makeClosureAction(context: any, target: any, action: any, processArgs: any, debugKey: any) {
+function makeClosureAction(
+  context: any,
+  target: any,
+  action: any,
+  processArgs: any,
+  debugKey: any
+) {
   let self: any;
   let fn: any;
 
@@ -354,28 +367,33 @@ function makeClosureAction(context: any, target: any, action: any, processArgs: 
 
   if (typeof action[INVOKE] === 'function') {
     self = action;
-    fn   = action[INVOKE];
+    fn = action[INVOKE];
   } else {
     let typeofAction = typeof action;
 
     if (typeofAction === 'string') {
       self = target;
-      fn   = target.actions && target.actions[action];
+      fn = target.actions && target.actions[action];
 
       assert(`An action named '${action}' was not found in ${target}`, fn);
     } else if (typeofAction === 'function') {
       self = context;
-      fn   = action;
+      fn = action;
     } else {
       // tslint:disable-next-line:max-line-length
-      assert(`An action could not be made for \`${debugKey || action}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${debugKey || 'myAction'}')\`) or a function available in ${target}.`, false);
+      assert(
+        `An action could not be made for \`${debugKey ||
+          action}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${debugKey ||
+          'myAction'}')\`) or a function available in ${target}.`,
+        false
+      );
     }
   }
 
   return (...args: any[]) => {
     let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
-      return run.join(self, fn, ...processArgs(args));
+      return join(self, fn, ...processArgs(args));
     });
   };
 }

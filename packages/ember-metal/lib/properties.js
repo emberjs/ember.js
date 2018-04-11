@@ -3,7 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import { HAS_NATIVE_PROXY } from 'ember-utils';
+import { HAS_NATIVE_PROXY, HAS_NATIVE_SYMBOL } from 'ember-utils';
 import { descriptorFor, meta as metaFor, peekMeta, DESCRIPTOR, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
@@ -35,7 +35,10 @@ export function MANDATORY_SETTER_FUNCTION(name) {
     if (!m.isInitialized(this)) {
       m.writeValues(name, value);
     } else {
-      assert(`You must use set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`, false);
+      assert(
+        `You must use set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`,
+        false
+      );
     }
   }
 
@@ -85,7 +88,8 @@ if (EMBER_METAL_ES5_GETTERS) {
   // development to aid in development asertions. Production builds of
   // ember strip this entire branch out.
   let messageFor = function(obj, keyName, property, value) {
-    return `You attempted to access \`${keyName}.${String(property)}\` ` +
+    return (
+      `You attempted to access \`${keyName}.${String(property)}\` ` +
       `(on \`${obj}\`), but \`${keyName}\` is a computed property.\n\n` +
       `Due to certain internal implementation details of Ember, the ` +
       `\`${keyName}\` property previously contained a private "descriptor" ` +
@@ -103,7 +107,8 @@ if (EMBER_METAL_ES5_GETTERS) {
       `to offer some help.\n\n` +
       `If you are an addon author and need help transitioning your code, ` +
       `please get in touch in the #dev-ember channel in the Ember Community ` +
-      `Slack.`;
+      `Slack.`
+    );
   };
 
   let trapFor;
@@ -126,14 +131,15 @@ if (EMBER_METAL_ES5_GETTERS) {
             property === 'toString' ||
             property === 'valueOf' ||
             property === 'inspect' ||
-            Symbol && property === Symbol.toPrimitive ||
-            Symbol && property === Symbol.toStringTag
+            property === 'toJSON' ||
+            (HAS_NATIVE_SYMBOL && property === Symbol.toPrimitive) ||
+            (HAS_NATIVE_SYMBOL && property === Symbol.toStringTag)
           ) {
             return () => '[COMPUTED PROPERTY]';
           }
 
           assert(messageFor(obj, keyName, property, descriptor[property]));
-        }
+        },
       });
     };
   } else {
@@ -144,21 +150,23 @@ if (EMBER_METAL_ES5_GETTERS) {
         configurable: false,
         enumerable: false,
         writable: false,
-        value: descriptor
+        value: descriptor,
       });
 
-      trap.toString = trap.valueOf = () => '[COMPUTED PROPERTY]';
+      trap.toString = trap.toJSON = trap.valueOf = () => '[COMPUTED PROPERTY]';
 
       // Without a proxy, we can only trap the "likely" properties
-      ['isDescriptor', 'setup', 'teardown', 'get', '_getter', 'set', '_setter', 'meta'].forEach(property => {
-        Object.defineProperty(trap, property, {
-          configurable: false,
-          enumerable: false,
-          get() {
-            assert(messageFor(obj, keyName, property, descriptor[property]));
-          }
-        });
-      });
+      ['isDescriptor', 'setup', 'teardown', 'get', '_getter', 'set', '_setter', 'meta'].forEach(
+        property => {
+          Object.defineProperty(trap, property, {
+            configurable: false,
+            enumerable: false,
+            get() {
+              assert(messageFor(obj, keyName, property, descriptor[property]));
+            },
+          });
+        }
+      );
 
       return trap;
     };
@@ -167,7 +175,9 @@ if (EMBER_METAL_ES5_GETTERS) {
   DESCRIPTOR_GETTER_FUNCTION = function(name, descriptor) {
     let trap;
     return function CPGETTER_FUNCTION() {
-      if (trap) { return trap; }
+      if (trap) {
+        return trap;
+      }
 
       trap = trapFor(this, name, descriptor);
       return trap;
@@ -223,7 +233,9 @@ if (EMBER_METAL_ES5_GETTERS) {
     become the explicit value of this property.
 */
 export function defineProperty(obj, keyName, desc, data, meta) {
-  if (meta === undefined) { meta = metaFor(obj); }
+  if (meta === undefined) {
+    meta = metaFor(obj);
+  }
 
   let watchEntry = meta.peekWatching(keyName);
   let watching = watchEntry !== undefined && watchEntry > 0;
@@ -258,21 +270,21 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
-        get: DESCRIPTOR_GETTER_FUNCTION(keyName, value)
+        get: DESCRIPTOR_GETTER_FUNCTION(keyName, value),
       });
     } else if (MANDATORY_SETTER && watching) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
         writable: true,
-        value
+        value,
       });
     } else if (enumerable === false) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         writable: true,
         enumerable,
-        value
+        value,
       });
     } else {
       obj[keyName] = value;
@@ -282,7 +294,9 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       meta.writeDescriptors(keyName, value);
     }
 
-    if (typeof desc.setup === 'function') { desc.setup(obj, keyName); }
+    if (typeof desc.setup === 'function') {
+      desc.setup(obj, keyName);
+    }
   } else if (desc === undefined || desc === null) {
     value = data;
 
@@ -293,7 +307,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
         configurable: true,
         enumerable,
         set: MANDATORY_SETTER_FUNCTION(keyName),
-        get: DEFAULT_GETTER_FUNCTION(keyName)
+        get: DEFAULT_GETTER_FUNCTION(keyName),
       };
 
       Object.defineProperty(obj, keyName, defaultDescriptor);
@@ -302,14 +316,14 @@ export function defineProperty(obj, keyName, desc, data, meta) {
         configurable: true,
         enumerable,
         writable: true,
-        value
+        value,
       });
     } else if (enumerable === false) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
         writable: true,
-        value
+        value,
       });
     } else {
       obj[keyName] = data;
@@ -323,11 +337,15 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (watching) { overrideChains(obj, keyName, meta); }
+  if (watching) {
+    overrideChains(obj, keyName, meta);
+  }
 
   // The `value` passed to the `didDefineProperty` hook is
   // either the descriptor or data, whichever was passed.
-  if (typeof obj.didDefineProperty === 'function') { obj.didDefineProperty(obj, keyName, value); }
+  if (typeof obj.didDefineProperty === 'function') {
+    obj.didDefineProperty(obj, keyName, value);
+  }
 
   return this;
 }

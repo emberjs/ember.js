@@ -13,7 +13,6 @@ class ForEachTests extends AbstractTestCase {
     this.assert.deepEqual(found, ary, 'items passed during forEach should match');
   }
 
-
   '@test forEach should iterate over list after mutation'() {
     if (get(this, 'canTestMutation')) {
       this.assert.expect(0);
@@ -51,7 +50,6 @@ class ForEachTests extends AbstractTestCase {
       this.assert.equal(guidFor(this), guidFor(target), 'should pass target as this if context');
     }, target);
   }
-
 
   '@test callback params'() {
     let obj = this.newObject();

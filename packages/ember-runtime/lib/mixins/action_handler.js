@@ -197,9 +197,15 @@ const ActionHandler = Mixin.create({
     @public
   */
   send(actionName, ...args) {
+    assert(
+      `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
     if (this.actions && this.actions[actionName]) {
       let shouldBubble = this.actions[actionName].apply(this, args) === true;
-      if (!shouldBubble) { return; }
+      if (!shouldBubble) {
+        return;
+      }
     }
 
     let target = get(this, 'target');
@@ -210,7 +216,7 @@ const ActionHandler = Mixin.create({
       );
       target.send(...arguments);
     }
-  }
+  },
 });
 
 export default ActionHandler;

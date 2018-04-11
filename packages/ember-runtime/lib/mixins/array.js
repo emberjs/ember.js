@@ -7,23 +7,19 @@ import {
   get,
   set,
   objectAt,
-  replace,
+  replaceInNativeArray,
   computed,
   isNone,
   aliasMethod,
   Mixin,
-  notifyPropertyChange,
-  addListener,
-  removeListener,
-  sendEvent,
   hasListeners,
-  peekMeta,
   eachProxyFor,
-  eachProxyArrayWillChange,
-  eachProxyArrayDidChange,
   beginPropertyChanges,
   endPropertyChanges,
-  peekCacheFor
+  addArrayObserver,
+  removeArrayObserver,
+  arrayContentWillChange,
+  arrayContentDidChange,
 } from 'ember-metal';
 import { assert, deprecate } from 'ember-debug';
 import Enumerable from './enumerable';
@@ -35,102 +31,7 @@ import copy from '../copy';
 import { Error as EmberError } from 'ember-debug';
 import MutableEnumerable from './mutable_enumerable';
 
-function arrayObserversHelper(obj, target, opts, operation, notify) {
-  let willChange = (opts && opts.willChange) || 'arrayWillChange';
-  let didChange  = (opts && opts.didChange) || 'arrayDidChange';
-  let hasObservers = get(obj, 'hasArrayObservers');
-
-  operation(obj, '@array:before', target, willChange);
-  operation(obj, '@array:change', target, didChange);
-
-  if (hasObservers === notify) {
-    notifyPropertyChange(obj, 'hasArrayObservers');
-  }
-
-  return obj;
-}
-
-export function addArrayObserver(array, target, opts) {
-  return arrayObserversHelper(array, target, opts, addListener, false);
-}
-
-export function removeArrayObserver(array, target, opts) {
-  return arrayObserversHelper(array, target, opts, removeListener, true);
-}
-
-export function arrayContentWillChange(array, startIdx, removeAmt, addAmt) {
-  // if no args are passed assume everything changes
-  if (startIdx === undefined) {
-    startIdx = 0;
-    removeAmt = addAmt = -1;
-  } else {
-    if (removeAmt === undefined) {
-      removeAmt = -1;
-    }
-
-    if (addAmt === undefined) {
-      addAmt = -1;
-    }
-  }
-
-  eachProxyArrayWillChange(array, startIdx, removeAmt, addAmt);
-
-  sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
-
-  return array;
-}
-
-export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
-  // if no args are passed assume everything changes
-  if (startIdx === undefined) {
-    startIdx = 0;
-    removeAmt = addAmt = -1;
-  } else {
-    if (removeAmt === undefined) {
-      removeAmt = -1;
-    }
-
-    if (addAmt === undefined) {
-      addAmt = -1;
-    }
-  }
-
-  if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
-    notifyPropertyChange(array, 'length');
-  }
-
-  notifyPropertyChange(array, '[]');
-
-  eachProxyArrayDidChange(array, startIdx, removeAmt, addAmt);
-
-  sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
-
-  let meta = peekMeta(array);
-  let cache = peekCacheFor(array);
-  if (cache !== undefined) {
-    let length = get(array, 'length');
-    let addedAmount = (addAmt === -1 ? 0 : addAmt);
-    let removedAmount = (removeAmt === -1 ? 0 : removeAmt);
-    let delta = addedAmount - removedAmount;
-    let previousLength = length - delta;
-
-    let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
-    if (cache.has('firstObject') && normalStartIdx === 0) {
-      notifyPropertyChange(array, 'firstObject', meta);
-    }
-
-    if (cache.has('lastObject')) {
-      let previousLastIndex = previousLength - 1;
-      let lastAffectedIndex = normalStartIdx + removedAmount;
-      if (previousLastIndex < lastAffectedIndex) {
-        notifyPropertyChange(array, 'lastObject', meta);
-      }
-    }
-  }
-
-  return array;
-}
-
+const EMPTY_ARRAY = Object.freeze([]);
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
@@ -140,9 +41,7 @@ export function isEmberArray(obj) {
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
 
-  return valueProvided ?
-    (item)=> value === get(item, key) :
-    (item)=> !!get(item, key);
+  return valueProvided ? item => value === get(item, key) : item => !!get(item, key);
 }
 
 // ..........................................................
@@ -182,7 +81,6 @@ function iter(key, value) {
   @public
 */
 const ArrayMixin = Mixin.create(Enumerable, {
-
   [EMBER_ARRAY]: true,
 
   /**
@@ -257,13 +155,14 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '[]': computed({
-    get(key) {   // eslint-disable-line no-unused-vars
+    get() {
+      // eslint-disable-line no-unused-vars
       return this;
     },
     set(key, value) {
       this.replace(0, get(this, 'length'), value);
       return this;
-    }
+    },
   }),
 
   /**
@@ -318,7 +217,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
       beginIndex = length + beginIndex;
     }
 
-    if (isNone(endIndex) || (endIndex > length)) {
+    if (isNone(endIndex) || endIndex > length) {
       endIndex = length;
     } else if (endIndex < 0) {
       endIndex = length + endIndex;
@@ -613,7 +512,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     let ret = A();
 
-    this.forEach((x, idx, i) => ret[idx] = callback.call(target, x, idx, i));
+    this.forEach((x, idx, i) => (ret[idx] = callback.call(target, x, idx, i)));
 
     return ret;
   },
@@ -705,7 +604,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     assert('reject expects a function as first argument.', typeof callback === 'function');
 
     return this.filter(function() {
-      return !(callback.apply(target, arguments));
+      return !callback.apply(target, arguments);
     });
   },
 
@@ -720,7 +619,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} filtered array
     @public
   */
-  filterBy(key, value) { // eslint-disable-line no-unused-vars
+  filterBy() {
+    // eslint-disable-line no-unused-vars
     return this.filter(iter.apply(this, arguments));
   },
 
@@ -737,8 +637,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
   */
   rejectBy(key, value) {
     let exactValue = item => get(item, key) === value;
-    let hasValue = item  => !!get(item, key);
-    let use = (arguments.length === 2 ? exactValue : hasValue);
+    let hasValue = item => !!get(item, key);
+    let use = arguments.length === 2 ? exactValue : hasValue;
 
     return this.reject(use);
   },
@@ -798,7 +698,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object} found item or `undefined`
     @public
   */
-  findBy(key, value) {  // eslint-disable-line no-unused-vars
+  findBy() {
+    // eslint-disable-line no-unused-vars
     return this.find(iter.apply(this, arguments));
   },
 
@@ -858,7 +759,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isEvery(key, value) {  // eslint-disable-line no-unused-vars
+  isEvery() {
+    // eslint-disable-line no-unused-vars
     return this.every(iter.apply(this, arguments));
   },
 
@@ -927,7 +829,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isAny(key, value) {  // eslint-disable-line no-unused-vars
+  isAny() {
+    // eslint-disable-line no-unused-vars
     return this.any(iter.apply(this, arguments));
   },
 
@@ -1013,7 +916,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   toArray() {
     let ret = A();
 
-    this.forEach((o, idx) => ret[idx] = o);
+    this.forEach((o, idx) => (ret[idx] = o));
 
     return ret;
   },
@@ -1159,7 +1062,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     let ret = A();
     let seen = new Set();
 
-    this.forEach((item) => {
+    this.forEach(item => {
       let val = get(item, key);
       if (!seen.has(val)) {
         seen.add(val);
@@ -1194,7 +1097,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     this.forEach(k => {
       // SameValueZero comparison (NaN !== NaN)
-      if (!(k === value || k !== k && value !== value)) {
+      if (!(k === value || (k !== k && value !== value))) {
         ret[ret.length] = k;
       }
     });
@@ -1229,27 +1132,22 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '@each': computed(function() {
-    deprecate(
-      `Getting the '@each' property on object ${toString(this)} is deprecated`,
-      false,
-      {
-        id: 'ember-metal.getting-each',
-        until: '3.5.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property'
-      }
-    );
+    deprecate(`Getting the '@each' property on object ${toString(this)} is deprecated`, false, {
+      id: 'ember-metal.getting-each',
+      until: '3.5.0',
+      url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property',
+    });
 
     return eachProxyFor(this);
-  }).readOnly()
+  }).readOnly(),
 });
-
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 const EMPTY = [];
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
-    if ((start < 0) || (start >= get(array, 'length'))) {
+    if (start < 0 || start >= get(array, 'length')) {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
 
@@ -1286,7 +1184,6 @@ export function removeAt(array, start, len) {
 */
 
 const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
-
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1649,7 +1546,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     objects.forEach(obj => this.addObject(obj));
     endPropertyChanges(this);
     return this;
-  }
+  },
 });
 
 /**
@@ -1708,7 +1605,6 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
   @public
 */
 let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
-
   // because length is a built-in property we need to know to just get the
   // original property.
   get(key) {
@@ -1724,29 +1620,18 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   },
 
   // primitive for array support.
-  replace(idx, amt, objects) {
-    assert('The third argument to replace needs to be an array.', objects === null || objects === undefined || Array.isArray(objects));
+  replace(start, deleteCount, items = EMPTY_ARRAY) {
+    assert('The third argument to replace needs to be an array.', Array.isArray(items));
 
-    // if we replaced exactly the same number of items, then pass only the
-    // replaced range. Otherwise, pass the full remaining array length
-    // since everything has shifted
-    let len = objects ? get(objects, 'length') : 0;
-    arrayContentWillChange(this, idx, amt, len);
+    replaceInNativeArray(this, start, deleteCount, items);
 
-    if (len === 0) {
-      this.splice(idx, amt);
-    } else {
-      replace(this, idx, amt, objects);
-    }
-
-    arrayContentDidChange(this, idx, amt, len);
     return this;
   },
 
   // If you ask for an unknown property, then try to collect the value
   // from member items.
   unknownProperty(key, value) {
-    let ret;// = this.reducedProperty(key, value);
+    let ret; // = this.reducedProperty(key, value);
     if (value !== undefined && ret === undefined) {
       ret = this[key] = value;
     }
@@ -1758,16 +1643,16 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   copy(deep) {
     if (deep) {
-      return this.map((item) => copy(item, true));
+      return this.map(item => copy(item, true));
     }
 
     return this.slice();
-  }
+  },
 });
 
 // Remove any methods implemented natively so we don't override them
 const ignore = ['length'];
-NativeArray.keys().forEach((methodName) => {
+NativeArray.keys().forEach(methodName => {
   if (Array.prototype[methodName]) {
     ignore.push(methodName);
   }
@@ -1782,15 +1667,13 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
   A = arr => arr || [];
 } else {
   A = arr => {
-    if (!arr) { arr = []; }
+    if (!arr) {
+      arr = [];
+    }
     return ArrayMixin.detect(arr) ? arr : NativeArray.apply(arr);
   };
 }
 
-export {
-  A,
-  NativeArray,
-  MutableArray
-};
+export { A, NativeArray, MutableArray };
 
 export default ArrayMixin;

@@ -1,6 +1,11 @@
 import { ComponentCapabilities } from '@glimmer/interfaces';
 import { CONSTANT_TAG } from '@glimmer/reference';
-import { ComponentDefinition, Invocation, NULL_REFERENCE, WithStaticLayout } from '@glimmer/runtime';
+import {
+  ComponentDefinition,
+  Invocation,
+  NULL_REFERENCE,
+  WithStaticLayout,
+} from '@glimmer/runtime';
 import { OwnedTemplateMeta } from 'ember-views';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -12,15 +17,20 @@ const CAPABILITIES: ComponentCapabilities = {
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
-  elementHook: false
+  elementHook: false,
+  createCaller: true,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true,
 };
 
-export default class TemplateOnlyComponentManager extends AbstractManager<null, OwnedTemplate> implements WithStaticLayout<null, OwnedTemplate, OwnedTemplateMeta, RuntimeResolver> {
+export default class TemplateOnlyComponentManager extends AbstractManager<null, OwnedTemplate>
+  implements WithStaticLayout<null, OwnedTemplate, OwnedTemplateMeta, RuntimeResolver> {
   getLayout(template: OwnedTemplate): Invocation {
     const layout = template.asLayout();
     return {
       handle: layout.compile(),
-      symbolTable: layout.symbolTable
+      symbolTable: layout.symbolTable,
     };
   }
 
@@ -47,8 +57,8 @@ export default class TemplateOnlyComponentManager extends AbstractManager<null, 
 
 const MANAGER = new TemplateOnlyComponentManager();
 
-export class TemplateOnlyComponentDefinition implements ComponentDefinition<OwnedTemplate, TemplateOnlyComponentManager> {
+export class TemplateOnlyComponentDefinition
+  implements ComponentDefinition<OwnedTemplate, TemplateOnlyComponentManager> {
   manager = MANAGER;
-  constructor(public state: OwnedTemplate) {
-  }
+  constructor(public state: OwnedTemplate) {}
 }

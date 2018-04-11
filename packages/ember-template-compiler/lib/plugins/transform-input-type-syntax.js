@@ -34,8 +34,8 @@ export default function transformInputTypeSyntax(env) {
         if (isInput(node)) {
           insertTypeHelperParameter(node, b);
         }
-      }
-    }
+      },
+    },
   };
 }
 

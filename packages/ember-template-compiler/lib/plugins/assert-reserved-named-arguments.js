@@ -17,8 +17,8 @@ export default function assertReservedNamedArguments(env) {
         if (isReserved(original)) {
           assert(`${assertMessage(original)} ${calculateLocationDisplay(moduleName, loc)}`);
         }
-      }
-    }
+      },
+    },
   };
 }
 

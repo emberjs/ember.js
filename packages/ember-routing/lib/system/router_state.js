@@ -10,7 +10,9 @@ export default class RouterState {
 
   isActiveIntent(routeName, models, queryParams, queryParamsMustMatch) {
     let state = this.routerJsState;
-    if (!this.routerJs.isActiveIntent(routeName, models, null, state)) { return false; }
+    if (!this.routerJs.isActiveIntent(routeName, models, null, state)) {
+      return false;
+    }
 
     if (queryParamsMustMatch && Object.keys(queryParams).length > 0) {
       let visibleQueryParams = assign({}, queryParams);
@@ -21,5 +23,4 @@ export default class RouterState {
 
     return true;
   }
-
 }

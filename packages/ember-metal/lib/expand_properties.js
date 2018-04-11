@@ -37,7 +37,10 @@ const END_WITH_EACH_REGEX = /\.@each$/;
   expansion, and is passed the expansion.
 */
 export default function expandProperties(pattern, callback) {
-  assert(`A computed property key must be a string, you passed ${typeof pattern} ${pattern}`, typeof pattern === 'string');
+  assert(
+    `A computed property key must be a string, you passed ${typeof pattern} ${pattern}`,
+    typeof pattern === 'string'
+  );
   assert(
     'Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"',
     pattern.indexOf(' ') === -1
@@ -45,12 +48,12 @@ export default function expandProperties(pattern, callback) {
   // regex to look for double open, double close, or unclosed braces
   assert(
     `Brace expanded properties have to be balanced and cannot be nested, pattern: ${pattern}`,
-    pattern.match( /\{[^}{]*\{|\}[^}{]*\}|\{[^}]*$/g ) === null
+    pattern.match(/\{[^}{]*\{|\}[^}{]*\}|\{[^}]*$/g) === null
   );
 
   let start = pattern.indexOf('{');
   if (start < 0) {
-    callback( pattern.replace(END_WITH_EACH_REGEX, '.[]') );
+    callback(pattern.replace(END_WITH_EACH_REGEX, '.[]'));
   } else {
     dive('', pattern, start, callback);
   }
@@ -58,9 +61,9 @@ export default function expandProperties(pattern, callback) {
 
 function dive(prefix, pattern, start, callback) {
   let end = pattern.indexOf('}'),
-      i = 0,
-      newStart,
-      arrayLength;
+    i = 0,
+    newStart,
+    arrayLength;
   let tempArr = pattern.substring(start + 1, end).split(',');
   let after = pattern.substring(end + 1);
   prefix = prefix + pattern.substring(0, start);

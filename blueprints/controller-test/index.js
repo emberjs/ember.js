@@ -11,7 +11,7 @@ module.exports = useTestFrameworkDetector({
     let controllerPathName = dasherizedModuleName;
     return {
       controllerPathName: controllerPathName,
-      friendlyTestDescription: ['Unit', 'Controller', dasherizedModuleName].join(' | ')
+      friendlyTestDescription: ['Unit', 'Controller', dasherizedModuleName].join(' | '),
     };
-  }
+  },
 });

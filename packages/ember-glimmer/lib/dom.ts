@@ -3,9 +3,6 @@ export {
   DOMChanges,
   DOMTreeConstruction,
   clientBuilder,
-  rehydrationBuilder
+  rehydrationBuilder,
 } from '@glimmer/runtime';
-export {
-  NodeDOMTreeConstruction,
-  serializeBuilder
-} from '@glimmer/node';
+export { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';

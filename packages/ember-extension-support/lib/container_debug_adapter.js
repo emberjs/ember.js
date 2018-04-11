@@ -3,7 +3,7 @@ import {
   typeOf,
   String as StringUtils,
   Namespace,
-  Object as EmberObject
+  Object as EmberObject,
 } from 'ember-runtime';
 
 /**
@@ -88,7 +88,9 @@ export default EmberObject.extend({
 
     namespaces.forEach(namespace => {
       for (let key in namespace) {
-        if (!namespace.hasOwnProperty(key)) { continue; }
+        if (!namespace.hasOwnProperty(key)) {
+          continue;
+        }
         if (typeSuffixRegex.test(key)) {
           let klass = namespace[key];
           if (typeOf(klass) === 'class') {
@@ -98,5 +100,5 @@ export default EmberObject.extend({
       }
     });
     return types;
-  }
+  },
 });

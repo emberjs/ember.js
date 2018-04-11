@@ -1,12 +1,10 @@
 import { getOwner } from 'ember-utils';
-import { get, run, objectAt } from 'ember-metal';
+import { get, scheduleOnce, objectAt, addArrayObserver, removeArrayObserver } from 'ember-metal';
 import {
   String as StringUtils,
   Namespace,
   Object as EmberObject,
   A as emberA,
-  addArrayObserver,
-  removeArrayObserver
 } from 'ember-runtime';
 
 /**
@@ -16,7 +14,7 @@ import {
 /**
   The `DataAdapter` helps a data persistence library
   interface with tools that debug Ember such
-  as the [Ember Extension](https://github.com/tildeio/ember-extension)
+  as the [Ember Inspector](https://github.com/emberjs/ember-inspector)
   for Chrome and Firefox.
 
   This class will be extended by a persistence library
@@ -150,7 +148,7 @@ export default EmberObject.extend({
     typesAdded(typesToSend);
 
     let release = () => {
-      releaseMethods.forEach((fn) => fn());
+      releaseMethods.forEach(fn => fn());
       this.releaseMethods.removeObject(release);
     };
     this.releaseMethods.pushObject(release);
@@ -200,7 +198,7 @@ export default EmberObject.extend({
       recordsUpdated([updatedRecord]);
     }
 
-    let recordsToSend = records.map((record) => {
+    let recordsToSend = records.map(record => {
       releaseMethods.push(this.observeRecord(record, recordUpdated));
       return this.wrapRecord(record);
     });
@@ -218,7 +216,12 @@ export default EmberObject.extend({
       }
     };
 
-    let observer = { didChange: contentDidChange, willChange() { return this; } };
+    let observer = {
+      didChange: contentDidChange,
+      willChange() {
+        return this;
+      },
+    };
     addArrayObserver(records, this, observer);
 
     release = () => {
@@ -293,10 +296,12 @@ export default EmberObject.extend({
         // Only re-fetch records if the record count changed
         // (which is all we care about as far as model types are concerned).
         if (removedCount > 0 || addedCount > 0) {
-          run.scheduleOnce('actions', this, onChange);
+          scheduleOnce('actions', this, onChange);
         }
       },
-      willChange() { return this; }
+      willChange() {
+        return this;
+      },
     };
 
     addArrayObserver(records, this, observer);
@@ -305,7 +310,6 @@ export default EmberObject.extend({
 
     return release;
   },
-
 
   /**
     Wraps a given model type and observes changes to it.
@@ -332,12 +336,11 @@ export default EmberObject.extend({
       name,
       count: get(records, 'length'),
       columns: this.columnsForType(klass),
-      object: klass
+      object: klass,
     };
 
     return typeToSend;
   },
-
 
   /**
     Fetches all models defined in the application.
@@ -357,10 +360,10 @@ export default EmberObject.extend({
     }
 
     // New adapters return strings instead of classes.
-    types = emberA(types).map((name) => {
+    types = emberA(types).map(name => {
       return {
         klass: this._nameToClass(name),
-        name
+        name,
       };
     });
     types = emberA(types).filter(type => this.detect(type.klass));
@@ -382,10 +385,14 @@ export default EmberObject.extend({
 
     namespaces.forEach(namespace => {
       for (let key in namespace) {
-        if (!namespace.hasOwnProperty(key)) { continue; }
+        if (!namespace.hasOwnProperty(key)) {
+          continue;
+        }
         // Even though we will filter again in `getModelTypes`,
         // we should not call `lookupFactory` on non-models
-        if (!this.detect(namespace[key])) { continue; }
+        if (!this.detect(namespace[key])) {
+          continue;
+        }
         let name = StringUtils.dasherize(key);
         types.push(name);
       }
@@ -485,5 +492,5 @@ export default EmberObject.extend({
   */
   observeRecord() {
     return function() {};
-  }
+  },
 });

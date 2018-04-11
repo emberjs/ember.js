@@ -11,8 +11,8 @@ export default function transformOldClassBindingSyntax(env) {
 
       BlockStatement(node) {
         process(b, node);
-      }
-    }
+      },
+    },
   };
 }
 
@@ -32,7 +32,9 @@ function process(b, node) {
     }
   });
 
-  if (allOfTheMicrosyntaxes.length === 0) { return; }
+  if (allOfTheMicrosyntaxes.length === 0) {
+    return;
+  }
 
   let classValue = [];
 

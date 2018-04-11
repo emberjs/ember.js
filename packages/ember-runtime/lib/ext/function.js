@@ -3,11 +3,7 @@
 */
 
 import { ENV } from 'ember-environment';
-import {
-  on,
-  computed,
-  observer
-} from 'ember-metal';
+import { on, computed, observer } from 'ember-metal';
 import { assert } from 'ember-debug';
 
 const FunctionPrototype = Function.prototype;
@@ -82,9 +78,9 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     configurable: true,
     enumerable: false,
     writable: true,
-    value: function () {
+    value: function() {
       return computed(...arguments, this);
-    }
+    },
   });
 
   /**
@@ -118,19 +114,19 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     configurable: true,
     enumerable: false,
     writable: true,
-    value: function () {
+    value: function() {
       return observer(...arguments, this);
-    }
+    },
   });
 
   Object.defineProperty(FunctionPrototype, '_observesImmediately', {
     configurable: true,
     enumerable: false,
     writable: true,
-    value: function () {
+    value: function() {
       assert(
         'Immediate observers must observe internal properties only, ' +
-        'not properties on other objects.',
+          'not properties on other objects.',
         function checkIsInternalProperty() {
           for (let i = 0; i < arguments.length; i++) {
             if (arguments[i].indexOf('.') !== -1) {
@@ -143,7 +139,7 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
 
       // observes handles property expansion
       return this.observes(...arguments);
-    }
+    },
   });
 
   /**
@@ -175,8 +171,8 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
     configurable: true,
     enumerable: false,
     writable: true,
-    value: function () {
+    value: function() {
       return on(...arguments, this);
-    }
+    },
   });
 }

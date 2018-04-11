@@ -4,10 +4,22 @@ import isFormControl from './helpers/-is-form-control';
 
 const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };
 const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'];
-const MOUSE_EVENT_TYPES = ['click', 'mousedown', 'mouseup', 'dblclick', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover'];
+const MOUSE_EVENT_TYPES = [
+  'click',
+  'mousedown',
+  'mouseup',
+  'dblclick',
+  'mouseenter',
+  'mouseleave',
+  'mousemove',
+  'mouseout',
+  'mouseover',
+];
 
 export function focus(el) {
-  if (!el) { return; }
+  if (!el) {
+    return;
+  }
   if (el.isContentEditable || isFormControl(el)) {
     let type = el.getAttribute('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
@@ -16,7 +28,7 @@ export function focus(el) {
 
         // makes `document.activeElement` be `element`. If the browser is focused, it also fires a focus event
         el.focus();
-      
+
         // Firefox does not trigger the `focusin` event if the window
         // does not have focus. If the document does not have focus then
         // fire `focusin` event as well.
@@ -25,7 +37,7 @@ export function focus(el) {
           fireEvent(el, 'focus', {
             bubbles: false,
           });
-      
+
           fireEvent(el, 'focusin');
         }
       });
@@ -48,7 +60,7 @@ export function fireEvent(element, type, options = {}) {
       screenX: x + 5,
       screenY: y + 95,
       clientX: x,
-      clientY: y
+      clientY: y,
     };
     event = buildMouseEvent(type, assign(simulatedCoordinates, options));
   } else {
@@ -92,7 +104,8 @@ function buildMouseEvent(type, options = {}) {
       eventOpts.shiftKey,
       eventOpts.metaKey,
       eventOpts.button,
-      eventOpts.relatedTarget);
+      eventOpts.relatedTarget
+    );
   } catch (e) {
     event = buildBasicEvent(type, options);
   }

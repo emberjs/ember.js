@@ -1,6 +1,6 @@
 function callForEach(prop, func) {
   return function() {
-    for (var i=0, l=this[prop].length;i<l;i++) {
+    for (var i = 0, l = this[prop].length; i < l; i++) {
       this[prop][i][func]();
     }
   };
@@ -15,7 +15,7 @@ export function buildCompositeAssert(assertClasses) {
     reset: callForEach('asserts', 'reset'),
     inject: callForEach('asserts', 'inject'),
     assert: callForEach('asserts', 'assert'),
-    restore: callForEach('asserts', 'restore')
+    restore: callForEach('asserts', 'restore'),
   };
 
   return Composite;
@@ -23,7 +23,7 @@ export function buildCompositeAssert(assertClasses) {
 
 function noop() {}
 
-export function callWithStub(env, name, func, debugStub=noop) {
+export function callWithStub(env, name, func, debugStub = noop) {
   let originalFunc = env.getDebugFunction(name);
   try {
     env.setDebugFunction(name, debugStub);
@@ -34,5 +34,5 @@ export function callWithStub(env, name, func, debugStub=noop) {
 }
 
 export function checkTest(test) {
-  return (typeof test === 'function') ? test() : test;
+  return typeof test === 'function' ? test() : test;
 }

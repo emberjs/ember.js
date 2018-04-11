@@ -1,7 +1,7 @@
 import { get } from 'ember-metal';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests, newFixture, newObjectsFixture } from '../helpers/array';
-import { A as emberA } from '../../mixins/array';
+import { A as emberA } from '../../lib/mixins/array';
 
 class RemoveObjectsTests extends AbstractTestCase {
   '@test should return receiver'() {
@@ -28,8 +28,16 @@ class RemoveObjectsTests extends AbstractTestCase {
       this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
       this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
-      this.assert.equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
-      this.assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
+      this.assert.equal(
+        observer.validate('firstObject'),
+        false,
+        'should NOT have notified firstObject'
+      );
+      this.assert.equal(
+        observer.validate('lastObject'),
+        false,
+        'should NOT have notified lastObject'
+      );
     }
   }
 
@@ -50,14 +58,22 @@ class RemoveObjectsTests extends AbstractTestCase {
       this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
       this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
-      this.assert.equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
-      this.assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
+      this.assert.equal(
+        observer.validate('firstObject'),
+        false,
+        'should NOT have notified firstObject'
+      );
+      this.assert.equal(
+        observer.validate('lastObject'),
+        false,
+        'should NOT have notified lastObject'
+      );
     }
   }
 
   '@test [A,B,C].removeObjects([A,B]) => [C] + notify'() {
     let before = emberA(newFixture(3));
-    let after  = [before[2]];
+    let after = [before[2]];
     let obj = before;
     let observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
@@ -73,7 +89,11 @@ class RemoveObjectsTests extends AbstractTestCase {
       this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
       this.assert.equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject');
-      this.assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
+      this.assert.equal(
+        observer.validate('lastObject'),
+        false,
+        'should NOT have notified lastObject'
+      );
     }
   }
 
@@ -95,7 +115,11 @@ class RemoveObjectsTests extends AbstractTestCase {
       this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
       this.assert.equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject');
-      this.assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
+      this.assert.equal(
+        observer.validate('lastObject'),
+        false,
+        'should NOT have notified lastObject'
+      );
     }
   }
 
@@ -161,8 +185,16 @@ class RemoveObjectsTests extends AbstractTestCase {
       this.assert.equal(observer.validate('[]'), false, 'should NOT have notified []');
       this.assert.equal(observer.validate('length'), false, 'should NOT have notified length');
 
-      this.assert.equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
-      this.assert.equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
+      this.assert.equal(
+        observer.validate('firstObject'),
+        false,
+        'should NOT have notified firstObject'
+      );
+      this.assert.equal(
+        observer.validate('lastObject'),
+        false,
+        'should NOT have notified lastObject'
+      );
     }
   }
 }

@@ -1,14 +1,8 @@
-import {
-  inject,
-  readOnly
-} from 'ember-runtime';
+import { inject, readOnly } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Route } from 'ember-routing';
 import { get } from 'ember-metal';
-import {
-  RouterTestCase,
-  moduleFor
-} from 'internal-test-helpers';
+import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
@@ -32,118 +26,123 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     afterModel() {
       let service = get(this, 'routerService');
       results.push([service.get('currentRouteName'), 'afterModel', service.get('currentURL')]);
-    }
+    },
   });
 
-  moduleFor('Router Service - currentURL', class extends RouterTestCase {
-    constructor() {
-      super();
+  moduleFor(
+    'Router Service - currentURL',
+    class extends RouterTestCase {
+      constructor() {
+        super(...arguments);
 
-      results = [];
+        results = [];
 
-      ROUTE_NAMES.forEach((name) => {
-        let routeName = `parent.${name}`;
-        this.add(`route:${routeName}`, InstrumentedRoute.extend());
-        this.addTemplate(routeName, '{{current-url}}');
-      });
-
-      this.addComponent('current-url', {
-        ComponentClass: Component.extend({
-          routerService: inject.service('router'),
-          currentURL: readOnly('routerService.currentURL')
-        }),
-        template: '{{currentURL}}'
-      });
-    }
-
-    ['@test RouterService#currentURL is correctly set for top level route'](assert) {
-      assert.expect(1);
-
-      return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/');
-      });
-    }
-
-    ['@test RouterService#currentURL is correctly set for child route'](assert) {
-      assert.expect(1);
-
-      return this.visit('/child').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/child');
-      });
-    }
-
-    ['@test RouterService#currentURL is correctly set after transition'](assert) {
-      assert.expect(1);
-
-      return this.visit('/child')
-        .then(() => {
-          return this.routerService.transitionTo('parent.sister');
-        })
-        .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/sister');
+        ROUTE_NAMES.forEach(name => {
+          let routeName = `parent.${name}`;
+          this.add(`route:${routeName}`, InstrumentedRoute.extend());
+          this.addTemplate(routeName, '{{current-url}}');
         });
-    }
 
-    ['@test RouterService#currentURL is correctly set on each transition'](assert) {
-      assert.expect(3);
+        this.addComponent('current-url', {
+          ComponentClass: Component.extend({
+            routerService: inject.service('router'),
+            currentURL: readOnly('routerService.currentURL'),
+          }),
+          template: '{{currentURL}}',
+        });
+      }
 
-      return this.visit('/child')
-        .then(() => {
+      ['@test RouterService#currentURL is correctly set for top level route'](assert) {
+        assert.expect(1);
+
+        return this.visit('/').then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/');
+        });
+      }
+
+      ['@test RouterService#currentURL is correctly set for child route'](assert) {
+        assert.expect(1);
+
+        return this.visit('/child').then(() => {
           assert.equal(this.routerService.get('currentURL'), '/child');
+        });
+      }
 
-          return this.visit('/sister');
-        })
-        .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/sister');
+      ['@test RouterService#currentURL is correctly set after transition'](assert) {
+        assert.expect(1);
 
-          return this.visit('/brother');
-        })
-        .then(() => {
+        return this.visit('/child')
+          .then(() => {
+            return this.routerService.transitionTo('parent.sister');
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/sister');
+          });
+      }
+
+      ['@test RouterService#currentURL is correctly set on each transition'](assert) {
+        assert.expect(3);
+
+        return this.visit('/child')
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child');
+
+            return this.visit('/sister');
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/sister');
+
+            return this.visit('/brother');
+          })
+          .then(() => {
             assert.equal(this.routerService.get('currentURL'), '/brother');
-        });
+          });
+      }
+
+      ['@test RouterService#currentURL is not set during lifecycle hooks'](assert) {
+        assert.expect(2);
+
+        return this.visit('/')
+          .then(() => {
+            assert.deepEqual(results, [
+              [null, 'beforeModel', null],
+              [null, 'model', null],
+              [null, 'afterModel', null],
+            ]);
+
+            results = [];
+
+            return this.visit('/child');
+          })
+          .then(() => {
+            assert.deepEqual(results, [
+              ['parent.index', 'beforeModel', '/'],
+              ['parent.index', 'model', '/'],
+              ['parent.index', 'afterModel', '/'],
+            ]);
+          });
+      }
+
+      ['@test RouterService#currentURL is correctly set with component after consecutive visits'](
+        assert
+      ) {
+        assert.expect(3);
+
+        return this.visit('/')
+          .then(() => {
+            this.assertText('/');
+
+            return this.visit('/child');
+          })
+          .then(() => {
+            this.assertText('/child');
+
+            return this.visit('/');
+          })
+          .then(() => {
+            this.assertText('/');
+          });
+      }
     }
-
-    ['@test RouterService#currentURL is not set during lifecycle hooks'](assert) {
-      assert.expect(2);
-
-      return this.visit('/')
-        .then(() => {
-          assert.deepEqual(results, [
-            [null, 'beforeModel', null],
-            [null, 'model', null],
-            [null, 'afterModel', null]
-          ]);
-
-          results = [];
-
-          return this.visit('/child');
-        })
-        .then(() => {
-          assert.deepEqual(results, [
-            ['parent.index', 'beforeModel', '/'],
-            ['parent.index', 'model', '/'],
-            ['parent.index', 'afterModel', '/']
-          ]);
-        });
-    }
-
-    ['@test RouterService#currentURL is correctly set with component after consecutive visits'](assert) {
-      assert.expect(3);
-
-      return this.visit('/')
-        .then(() => {
-          this.assertText('/');
-
-          return this.visit('/child');
-        })
-        .then(() => {
-          this.assertText('/child');
-
-          return this.visit('/');
-        })
-        .then(() => {
-          this.assertText('/');
-        });
-    }
-  });
+  );
 }

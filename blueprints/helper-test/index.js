@@ -14,19 +14,19 @@ module.exports = useTestFrameworkDetector({
       type: ['integration', 'unit'],
       default: 'integration',
       aliases: [
-        { 'i': 'integration' },
-        { 'u': 'unit' },
-        { 'integration': 'integration' },
-        { 'unit': 'unit' }
-      ]
-    }
+        { i: 'integration' },
+        { u: 'unit' },
+        { integration: 'integration' },
+        { unit: 'unit' },
+      ],
+    },
   ],
 
   fileMapTokens: function() {
     return {
       __testType__: function(options) {
         return options.locals.testType || 'integration';
-      }
+      },
     };
   },
 
@@ -38,15 +38,19 @@ module.exports = useTestFrameworkDetector({
     return {
       friendlyTestName: friendlyTestName,
       dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
-      testType: testType
+      testType: testType,
     };
   },
 
   afterInstall: function(options) {
-    if (!options.dryRun && options.testType === 'integration' && isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')) {
+    if (
+      !options.dryRun &&
+      options.testType === 'integration' &&
+      isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
+    ) {
       return this.addPackagesToProject([
-        { name: 'ember-cli-htmlbars-inline-precompile', target: '^0.3.1' }
+        { name: 'ember-cli-htmlbars-inline-precompile', target: '^0.3.1' },
       ]);
     }
-  }
+  },
 });

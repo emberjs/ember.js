@@ -5,9 +5,11 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
+const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
+const fs = require('fs-extra');
 
 describe('Blueprint: service', function() {
   setupTestHooks(this);
@@ -96,6 +98,43 @@ describe('Blueprint: service', function() {
     });
   });
 
+  describe('in app - module unification', function() {
+    beforeEach(function() {
+      return emberNew().then(() => fs.ensureDirSync('src'));
+    });
+
+    it('service foo', function() {
+      return emberGenerateDestroy(['service', 'foo'], _file => {
+        expect(_file('src/services/foo.js'))
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
+
+        expect(_file('src/services/foo-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('service:foo'");
+      });
+    });
+
+    it('service foo/bar', function() {
+      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
+        expect(_file('src/services/foo/bar.js'))
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
+
+        expect(_file('src/services/foo/bar-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('service:foo/bar'");
+      });
+    });
+
+    it('service foo --pod', function() {
+      return expectError(
+        emberGenerateDestroy(['service', 'foo', '--pod']),
+        "Pods aren't supported within a module unification app"
+      );
+    });
+  });
+
   describe('in addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'addon' });
@@ -107,8 +146,9 @@ describe('Blueprint: service', function() {
           .to.contain("import Service from '@ember/service';")
           .to.contain('export default Service.extend({\n});');
 
-        expect(_file('app/services/foo.js'))
-          .to.contain("export { default } from 'my-addon/services/foo';");
+        expect(_file('app/services/foo.js')).to.contain(
+          "export { default } from 'my-addon/services/foo';"
+        );
 
         expect(_file('tests/unit/services/foo-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
@@ -122,12 +162,47 @@ describe('Blueprint: service', function() {
           .to.contain("import Service from '@ember/service';")
           .to.contain('export default Service.extend({\n});');
 
-        expect(_file('app/services/foo/bar.js'))
-          .to.contain("export { default } from 'my-addon/services/foo/bar';");
+        expect(_file('app/services/foo/bar.js')).to.contain(
+          "export { default } from 'my-addon/services/foo/bar';"
+        );
 
         expect(_file('tests/unit/services/foo/bar-test.js'))
           .to.contain("import { moduleFor, test } from 'ember-qunit';")
           .to.contain("moduleFor('service:foo/bar'");
+      });
+    });
+  });
+
+  describe('in addon - module unification', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+    });
+
+    it('service foo', function() {
+      return emberGenerateDestroy(['service', 'foo'], _file => {
+        expect(_file('src/services/foo.js'))
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
+
+        expect(_file('src/services/foo-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('service:foo'");
+
+        expect(_file('app/services/foo.js')).to.not.exist;
+      });
+    });
+
+    it('service foo/bar', function() {
+      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
+        expect(_file('src/services/foo/bar.js'))
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
+
+        expect(_file('src/services/foo/bar-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('service:foo/bar'");
+
+        expect(_file('app/services/foo/bar.js')).to.not.exist;
       });
     });
   });

@@ -18,11 +18,13 @@ describe('Blueprint: route-addon', function() {
 
     it('route-addon foo', function() {
       return emberGenerateDestroy(['route-addon', 'foo'], _file => {
-        expect(_file('app/routes/foo.js'))
-          .to.contain("export { default } from 'my-addon/routes/foo';");
+        expect(_file('app/routes/foo.js')).to.contain(
+          "export { default } from 'my-addon/routes/foo';"
+        );
 
-        expect(_file('app/templates/foo.js'))
-          .to.contain("export { default } from 'my-addon/templates/foo';");
+        expect(_file('app/templates/foo.js')).to.contain(
+          "export { default } from 'my-addon/templates/foo';"
+        );
       });
     });
   });

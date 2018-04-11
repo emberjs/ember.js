@@ -1,19 +1,6 @@
-import {
-  Opaque,
-  Option,
-  Simple
-} from '@glimmer/interfaces';
-import {
-  CachedReference,
-  combine,
-  map,
-  Reference,
-  Tag
-} from '@glimmer/reference';
-import {
-  ElementOperations,
-  PrimitiveReference
-} from '@glimmer/runtime';
+import { Opaque, Option, Simple } from '@glimmer/interfaces';
+import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
+import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
@@ -48,7 +35,7 @@ export function wrapComponentClassAttribute(hash: Core.Hash) {
     return;
   }
 
-  let [ keys, values ] = hash;
+  let [keys, values] = hash;
   let index = keys === null ? -1 : keys.indexOf('class');
 
   if (index !== -1) {
@@ -57,7 +44,7 @@ export function wrapComponentClassAttribute(hash: Core.Hash) {
       return;
     }
 
-    let [ type ] = value;
+    let [type] = value;
 
     if (type === Ops.Get || type === Ops.MaybeLocal) {
       let path = value[value.length - 1];
@@ -72,19 +59,30 @@ export const AttributeBinding = {
     let colonIndex = microsyntax.indexOf(':');
 
     if (colonIndex === -1) {
-      assert('You cannot use class as an attributeBinding, use classNameBindings instead.', microsyntax !== 'class');
+      assert(
+        'You cannot use class as an attributeBinding, use classNameBindings instead.',
+        microsyntax !== 'class'
+      );
       return [microsyntax, microsyntax.toLowerCase(), true];
     } else {
       let prop = microsyntax.substring(0, colonIndex);
       let attribute = microsyntax.substring(colonIndex + 1);
 
-      assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attribute !== 'class');
+      assert(
+        'You cannot use class as an attributeBinding, use classNameBindings instead.',
+        attribute !== 'class'
+      );
 
       return [prop, attribute, false];
     }
   },
 
-  install(_element: Simple.Element, component: Component, parsed: [string, string, boolean], operations: ElementOperations) {
+  install(
+    _element: Simple.Element,
+    component: Component,
+    parsed: [string, string, boolean],
+    operations: ElementOperations
+  ) {
     let [prop, attribute, isSimple] = parsed;
 
     if (attribute === 'id') {
@@ -99,9 +97,14 @@ export const AttributeBinding = {
     }
 
     let isPath = prop.indexOf('.') > -1;
-    let reference = isPath ? referenceForParts(component, prop.split('.')) : referenceForKey(component, prop);
+    let reference = isPath
+      ? referenceForParts(component, prop.split('.'))
+      : referenceForKey(component, prop);
 
-    assert(`Illegal attributeBinding: '${prop}' is not a valid attribute name.`, !(isSimple && isPath));
+    assert(
+      `Illegal attributeBinding: '${prop}' is not a valid attribute name.`,
+      !(isSimple && isPath)
+    );
 
     if (attribute === 'style') {
       reference = new StyleBindingReference(reference, referenceForKey(component, 'isVisible'));
@@ -158,8 +161,13 @@ export const IsVisibleBinding = {
 };
 
 export const ClassNameBinding = {
-  install(_element: Simple.Element, component: Component, microsyntax: string, operations: ElementOperations) {
-    let [ prop, truthy, falsy ] = microsyntax.split(':');
+  install(
+    _element: Simple.Element,
+    component: Component,
+    microsyntax: string,
+    operations: ElementOperations
+  ) {
+    let [prop, truthy, falsy] = microsyntax.split(':');
     let isStatic = prop === '';
 
     if (isStatic) {
@@ -215,9 +223,11 @@ class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
 export class ColonClassNameBindingReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
-  constructor(private inner: Reference<Opaque>,
-              private truthy: Option<string> = null,
-              private falsy: Option<string> = null) {
+  constructor(
+    private inner: Reference<Opaque>,
+    private truthy: Option<string> = null,
+    private falsy: Option<string> = null
+  ) {
     super();
 
     this.tag = inner.tag;

@@ -11,13 +11,12 @@ import {
   getHash,
   getQuery,
   getFullPath,
-  replacePath
+  replacePath,
 } from './util';
 
 /**
 @module @ember/routing
 */
-
 
 /**
   AutoLocation will select the best location option based off browser
@@ -142,8 +141,10 @@ export default EmberObject.extend({
   detect() {
     let rootURL = this.rootURL;
 
-    assert('rootURL must end with a trailing forward slash e.g. "/app/"',
-                 rootURL.charAt(rootURL.length - 1) === '/');
+    assert(
+      'rootURL must end with a trailing forward slash e.g. "/app/"',
+      rootURL.charAt(rootURL.length - 1) === '/'
+    );
 
     let implementation = detectImplementation({
       location: this.location,
@@ -151,7 +152,7 @@ export default EmberObject.extend({
       userAgent: this.userAgent,
       rootURL,
       documentMode: this.documentMode,
-      global: this.global
+      global: this.global,
     });
 
     if (implementation === false) {
@@ -180,13 +181,16 @@ export default EmberObject.extend({
     if (concreteImplementation) {
       concreteImplementation.destroy();
     }
-  }
+  },
 });
 
 function delegateToConcreteImplementation(methodName) {
   return function(...args) {
     let concreteImplementation = get(this, 'concreteImplementation');
-    assert('AutoLocation\'s detect() method should be called before calling any other hooks.', !!concreteImplementation);
+    assert(
+      "AutoLocation's detect() method should be called before calling any other hooks.",
+      !!concreteImplementation
+    );
     return tryInvoke(concreteImplementation, methodName, args);
   };
 }
@@ -206,14 +210,7 @@ function delegateToConcreteImplementation(methodName) {
 */
 
 function detectImplementation(options) {
-  let {
-    location,
-    userAgent,
-    history,
-    documentMode,
-    global,
-    rootURL
-  } = options;
+  let { location, userAgent, history, documentMode, global, rootURL } = options;
 
   let implementation = 'none';
   let cancelRouterSetup = false;

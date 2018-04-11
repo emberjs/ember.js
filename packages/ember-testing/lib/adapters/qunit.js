@@ -1,3 +1,5 @@
+/* globals QUnit */
+
 import { inspect } from 'ember-utils';
 import Adapter from './adapter';
 /**
@@ -41,5 +43,5 @@ export default Adapter.extend({
   },
   exception(error) {
     QUnit.config.current.assert.ok(false, inspect(error));
-  }
+  },
 });

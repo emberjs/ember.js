@@ -1,8 +1,6 @@
 import { privatize as P } from 'container';
 import { ENV } from 'ember-environment';
-import {
-  EMBER_MODULE_UNIFICATION,
-} from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 
 function lookupModuleUnificationComponentPair(componentLookup, owner, name, options) {
   let localComponent = componentLookup.componentFor(name, owner, options);
@@ -11,8 +9,11 @@ function lookupModuleUnificationComponentPair(componentLookup, owner, name, opti
   let globalComponent = componentLookup.componentFor(name, owner);
   let globalLayout = componentLookup.layoutFor(name, owner);
 
-  let localAndUniqueComponent = !!localComponent && (!globalComponent || localComponent.class !== globalComponent.class);
-  let localAndUniqueLayout = !!localLayout && (!globalLayout || localLayout.referrer.moduleName !== globalLayout.referrer.moduleName);
+  let localAndUniqueComponent =
+    !!localComponent && (!globalComponent || localComponent.class !== globalComponent.class);
+  let localAndUniqueLayout =
+    !!localLayout &&
+    (!globalLayout || localLayout.referrer.moduleName !== globalLayout.referrer.moduleName);
 
   if (localAndUniqueComponent && localAndUniqueLayout) {
     return { layout: localLayout, component: localComponent };

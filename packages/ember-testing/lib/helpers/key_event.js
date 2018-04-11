@@ -29,5 +29,8 @@ export default function keyEvent(app, selector, contextOrType, typeOrKeyCode, ke
     type = typeOrKeyCode;
   }
 
-  return app.testHelpers.triggerEvent(selector, context, type, { keyCode, which: keyCode });
+  return app.testHelpers.triggerEvent(selector, context, type, {
+    keyCode,
+    which: keyCode,
+  });
 }

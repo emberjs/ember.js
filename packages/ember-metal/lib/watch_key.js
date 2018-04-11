@@ -1,28 +1,21 @@
 import { lookupDescriptor } from 'ember-utils';
 import { MANDATORY_SETTER } from 'ember/features';
-import {
-  descriptorFor,
-  isDescriptor,
-  meta as metaFor,
-  peekMeta,
-  UNDEFINED
-} from './meta';
+import { descriptorFor, isDescriptor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION,
-  INHERITING_GETTER_FUNCTION
+  INHERITING_GETTER_FUNCTION,
 } from './properties';
 
 let handleMandatorySetter;
 
 export function watchKey(obj, keyName, _meta) {
-  if (typeof obj !== 'object' || obj === null) { return; }
-
   let meta = _meta === undefined ? metaFor(obj) : _meta;
   let count = meta.peekWatching(keyName) || 0;
   meta.writeWatching(keyName, count + 1);
 
-  if (count === 0) { // activate watching first time
+  if (count === 0) {
+    // activate watching first time
     let possibleDesc = descriptorFor(obj, keyName, meta);
 
     if (possibleDesc !== undefined && possibleDesc.willWatch) {
@@ -40,7 +33,6 @@ export function watchKey(obj, keyName, _meta) {
   }
 }
 
-
 if (MANDATORY_SETTER) {
   let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
   let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
@@ -52,7 +44,9 @@ if (MANDATORY_SETTER) {
     let descriptor = lookupDescriptor(obj, keyName);
     let hasDescriptor = descriptor !== null;
     let possibleDesc = hasDescriptor && descriptor.value;
-    if (isDescriptor(possibleDesc)) { return; }
+    if (isDescriptor(possibleDesc)) {
+      return;
+    }
     let configurable = hasDescriptor ? descriptor.configurable : true;
     let isWritable = hasDescriptor ? descriptor.writable : true;
     let hasValue = hasDescriptor ? 'value' in descriptor : true;
@@ -63,7 +57,7 @@ if (MANDATORY_SETTER) {
         configurable: true,
         set: MANDATORY_SETTER_FUNCTION(keyName),
         enumerable: propertyIsEnumerable(obj, keyName),
-        get: undefined
+        get: undefined,
       };
 
       if (hasOwnProperty(obj, keyName)) {
@@ -79,13 +73,12 @@ if (MANDATORY_SETTER) {
 }
 
 export function unwatchKey(obj, keyName, _meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   // do nothing of this object has already been destroyed
-  if (meta === undefined || meta.isSourceDestroyed()) { return; }
+  if (meta === undefined || meta.isSourceDestroyed()) {
+    return;
+  }
 
   let count = meta.peekWatching(keyName);
   if (count === 1) {
@@ -127,7 +120,7 @@ export function unwatchKey(obj, keyName, _meta) {
             configurable: true,
             enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
             writable: true,
-            value: meta.peekValues(keyName)
+            value: meta.peekValues(keyName),
           });
           meta.deleteFromValues(keyName);
         }

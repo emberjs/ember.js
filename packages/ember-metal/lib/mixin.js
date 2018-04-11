@@ -2,57 +2,42 @@
 @module @ember/object
 */
 import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
-import {
-  assign,
-  guidFor,
-  NAME_KEY,
-  ROOT,
-  wrap,
-  makeArray
-} from 'ember-utils';
-import {
-  assert,
-  deprecate
-} from 'ember-debug';
+import { assign, guidFor, ROOT, wrap, makeArray } from 'ember-utils';
+import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';
-import {
-  Descriptor,
-  defineProperty
-} from './properties';
+import { Descriptor, defineProperty } from './properties';
 import { ComputedProperty } from './computed';
-import {
-  addObserver,
-  removeObserver
-} from './observer';
-import {
-  addListener,
-  removeListener
-} from './events';
+import { addObserver, removeObserver } from './observer';
+import { addListener, removeListener } from './events';
+import { setUnprocessedMixins, classToString } from './namespace_search';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
 function isMethod(obj) {
-  return 'function' === typeof obj &&
+  return (
+    'function' === typeof obj &&
     obj.isMethod !== false &&
     obj !== Boolean &&
     obj !== Object &&
     obj !== Number &&
     obj !== Array &&
     obj !== Date &&
-    obj !== String;
+    obj !== String
+  );
 }
 
 const CONTINUE = {};
 
 function mixinProperties(mixinsMeta, mixin) {
   if (mixin instanceof Mixin) {
-    let guid = guidFor(mixin);
-    if (mixinsMeta.peekMixins(guid)) { return CONTINUE; }
-    mixinsMeta.writeMixins(guid, mixin);
+    if (mixinsMeta.hasMixin(mixin)) {
+      return CONTINUE;
+    }
+    mixinsMeta.addMixin(mixin);
     return mixin.properties;
   } else {
     return mixin; // apply anonymous mixin properties
@@ -114,7 +99,10 @@ function giveMethodSuper(obj, key, method, values, descs) {
 
   // If we didn't find the original value in a parent mixin, find it in
   // the original object
-  if (superMethod === undefined && (!EMBER_METAL_ES5_GETTERS || descriptorFor(obj, key) === undefined)) {
+  if (
+    superMethod === undefined &&
+    (!EMBER_METAL_ES5_GETTERS || descriptorFor(obj, key) === undefined)
+  ) {
     superMethod = obj[key];
   }
 
@@ -145,15 +133,24 @@ function applyConcatenatedProperties(obj, key, value, values) {
 function applyMergedProperties(obj, key, value, values) {
   let baseValue = values[key] || obj[key];
 
-  assert(`You passed in \`${JSON.stringify(value)}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`, !isArray(value));
+  assert(
+    `You passed in \`${JSON.stringify(
+      value
+    )}\` as the value for \`${key}\` but \`${key}\` cannot be an Array`,
+    !isArray(value)
+  );
 
-  if (!baseValue) { return value; }
+  if (!baseValue) {
+    return value;
+  }
 
   let newBase = assign({}, baseValue);
   let hasFunction = false;
 
   for (let prop in value) {
-    if (!value.hasOwnProperty(prop)) { continue; }
+    if (!value.hasOwnProperty(prop)) {
+      continue;
+    }
 
     let propValue = value[prop];
     if (isMethod(propValue)) {
@@ -174,20 +171,20 @@ function applyMergedProperties(obj, key, value, values) {
 
 function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
   if (value instanceof Descriptor) {
-    if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT && value === REQUIRED && descs[key]) { return CONTINUE; }
-
     // Wrap descriptor function to implement
     // _super() if needed
     if (value._getter) {
       value = giveDescriptorSuper(meta, key, value, values, descs, base);
     }
 
-    descs[key]  = value;
+    descs[key] = value;
     values[key] = undefined;
   } else {
-    if ((concats && concats.indexOf(key) >= 0) ||
-        key === 'concatenatedProperties' ||
-        key === 'mergedProperties') {
+    if (
+      (concats && concats.indexOf(key) >= 0) ||
+      key === 'concatenatedProperties' ||
+      key === 'mergedProperties'
+    ) {
       value = applyConcatenatedProperties(base, key, value, values);
     } else if (mergings && mergings.indexOf(key) > -1) {
       value = applyMergedProperties(base, key, value, values);
@@ -212,29 +209,41 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
     currentMixin = mixins[i];
     assert(
       `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
-      typeof currentMixin === 'object' && currentMixin !== null && Object.prototype.toString.call(currentMixin) !== '[object Array]'
+      typeof currentMixin === 'object' &&
+        currentMixin !== null &&
+        Object.prototype.toString.call(currentMixin) !== '[object Array]'
     );
 
     props = mixinProperties(meta, currentMixin);
-    if (props === CONTINUE) { continue; }
+    if (props === CONTINUE) {
+      continue;
+    }
 
     if (props) {
       // remove willMergeMixin after 3.4 as it was used for _actions
-      if (base.willMergeMixin) { base.willMergeMixin(props); }
+      if (base.willMergeMixin) {
+        base.willMergeMixin(props);
+      }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
       for (key in props) {
-        if (!props.hasOwnProperty(key)) { continue; }
+        if (!props.hasOwnProperty(key)) {
+          continue;
+        }
         keys.push(key);
         addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
       }
 
       // manually copy toString() because some JS engines do not enumerate it
-      if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
+      if (props.hasOwnProperty('toString')) {
+        base.toString = props.toString;
+      }
     } else if (currentMixin.mixins) {
       mergeMixins(currentMixin.mixins, meta, descs, values, base, keys);
-      if (currentMixin._without) { currentMixin._without.forEach(removeKeys); }
+      if (currentMixin._without) {
+        currentMixin._without.forEach(removeKeys);
+      }
     }
   }
 }
@@ -245,9 +254,9 @@ function followAlias(obj, desc, descs, values) {
   let possibleDesc;
   if (descs[altKey] || values[altKey]) {
     value = values[altKey];
-    desc  = descs[altKey];
+    desc = descs[altKey];
   } else if ((possibleDesc = descriptorFor(obj, altKey)) !== undefined) {
-    desc  = possibleDesc;
+    desc = possibleDesc;
     value = undefined;
   } else {
     desc = undefined;
@@ -297,12 +306,12 @@ function applyMixin(obj, mixins, partial) {
 
   for (let i = 0; i < keys.length; i++) {
     key = keys[i];
-    if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
+    if (key === 'constructor' || !values.hasOwnProperty(key)) {
+      continue;
+    }
 
     desc = descs[key];
     value = values[key];
-
-    if (ENV._ENABLE_PROPERTY_REQUIRED_SUPPORT && desc === REQUIRED) { continue; }
 
     while (desc && desc instanceof Alias) {
       let followed = followAlias(obj, desc, descs, values);
@@ -310,7 +319,9 @@ function applyMixin(obj, mixins, partial) {
       value = followed.value;
     }
 
-    if (desc === undefined && value === undefined) { continue; }
+    if (desc === undefined && value === undefined) {
+      continue;
+    }
 
     if (EMBER_METAL_ES5_GETTERS && descriptorFor(obj, key) !== undefined) {
       replaceObserversAndListeners(obj, key, null, value);
@@ -318,7 +329,11 @@ function applyMixin(obj, mixins, partial) {
       replaceObserversAndListeners(obj, key, obj[key], value);
     }
 
-    if (ENV._ENABLE_BINDING_SUPPORT && typeof Mixin.detectBinding === 'function' && Mixin.detectBinding(key)) {
+    if (
+      ENV._ENABLE_BINDING_SUPPORT &&
+      typeof Mixin.detectBinding === 'function' &&
+      Mixin.detectBinding(key)
+    ) {
       meta.writeBindings(key, value);
     }
 
@@ -429,28 +444,9 @@ export function mixin(obj, ...args) {
 export default class Mixin {
   constructor(mixins, properties) {
     this.properties = properties;
-
-    let length = mixins && mixins.length;
-
-    if (length > 0) {
-      let m = new Array(length);
-
-      for (let i = 0; i < length; i++) {
-        let x = mixins[i];
-        if (x instanceof Mixin) {
-          m[i] = x;
-        } else {
-          m[i] = new Mixin(undefined, x);
-        }
-      }
-
-      this.mixins = m;
-    } else {
-      this.mixins = undefined;
-    }
+    this.mixins = buildMixinsArray(mixins);
     this.ownerConstructor = undefined;
     this._without = undefined;
-    this[NAME_KEY] = null;
 
     if (DEBUG) {
       /*
@@ -463,6 +459,10 @@ export default class Mixin {
       guidFor(this);
       Object.seal(this);
     }
+  }
+
+  static _apply() {
+    return applyMixin(...arguments);
   }
 
   static applyPartial(obj, ...args) {
@@ -478,7 +478,7 @@ export default class Mixin {
   */
   static create(...args) {
     // ES6TODO: this relies on a global state?
-    unprocessedFlag = true;
+    setUnprocessedMixins();
     let M = this;
     return new M(args, undefined);
   }
@@ -488,11 +488,15 @@ export default class Mixin {
   static mixins(obj) {
     let meta = peekMeta(obj);
     let ret = [];
-    if (meta === undefined) { return ret; }
+    if (meta === undefined) {
+      return ret;
+    }
 
-    meta.forEachMixins((key, currentMixin) => {
+    meta.forEachMixins(currentMixin => {
       // skip primitive mixins since these are always anonymous
-      if (!currentMixin.properties) { ret.push(currentMixin); }
+      if (!currentMixin.properties) {
+        ret.push(currentMixin);
+      }
     });
 
     return ret;
@@ -503,35 +507,20 @@ export default class Mixin {
     @param arguments*
     @private
   */
-  reopen() {
-    let currentMixin;
+  reopen(...args) {
+    if (args.length === 0) {
+      return;
+    }
 
     if (this.properties) {
-      currentMixin = new Mixin(undefined, this.properties);
+      let currentMixin = new Mixin(undefined, this.properties);
       this.properties = undefined;
       this.mixins = [currentMixin];
     } else if (!this.mixins) {
       this.mixins = [];
     }
 
-    let mixins = this.mixins;
-    let idx;
-
-    for (idx = 0; idx < arguments.length; idx++) {
-      currentMixin = arguments[idx];
-      assert(
-        `Expected hash or Mixin instance, got ${Object.prototype.toString.call(currentMixin)}`,
-        typeof currentMixin === 'object' && currentMixin !== null &&
-          Object.prototype.toString.call(currentMixin) !== '[object Array]'
-      );
-
-      if (currentMixin instanceof Mixin) {
-        mixins.push(currentMixin);
-      } else {
-        mixins.push(new Mixin(undefined, currentMixin));
-      }
-    }
-
+    this.mixins = this.mixins.concat(buildMixinsArray(args));
     return this;
   }
 
@@ -556,11 +545,17 @@ export default class Mixin {
     @private
   */
   detect(obj) {
-    if (typeof obj !== 'object' || obj === null) { return false; }
-    if (obj instanceof Mixin) { return _detect(obj, this, {}); }
+    if (typeof obj !== 'object' || obj === null) {
+      return false;
+    }
+    if (obj instanceof Mixin) {
+      return _detect(obj, this);
+    }
     let meta = peekMeta(obj);
-    if (meta === undefined) { return false; }
-    return !!meta.peekMixins(guidFor(this));
+    if (meta === undefined) {
+      return false;
+    }
+    return meta.hasMixin(this);
   }
 
   without(...args) {
@@ -570,17 +565,40 @@ export default class Mixin {
   }
 
   keys() {
-    let keys = {};
-    let seen = {};
-
-    _keys(keys, this, seen);
-    let ret = Object.keys(keys);
-    return ret;
+    return _keys(this);
   }
 
+  toString() {
+    return '(unknown mixin)';
+  }
 }
 
-Mixin._apply = applyMixin;
+function buildMixinsArray(mixins) {
+  let length = mixins && mixins.length;
+  let m;
+
+  if (length > 0) {
+    m = new Array(length);
+    for (let i = 0; i < length; i++) {
+      let x = mixins[i];
+      assert(
+        `Expected hash or Mixin instance, got ${Object.prototype.toString.call(x)}`,
+        typeof x === 'object' &&
+          x !== null &&
+          Object.prototype.toString.call(x) !== '[object Array]'
+      );
+
+      if (x instanceof Mixin) {
+        m[i] = x;
+      } else {
+        m[i] = new Mixin(undefined, x);
+      }
+    }
+  }
+
+  return m;
+}
+
 if (ENV._ENABLE_BINDING_SUPPORT) {
   // slotting this so that the legacy addon can add the function here
   // without triggering an error due to the Object.seal done below
@@ -588,70 +606,45 @@ if (ENV._ENABLE_BINDING_SUPPORT) {
   Mixin.detectBinding = null;
 }
 
-let MixinPrototype = Mixin.prototype;
-MixinPrototype.toString = Object.toString;
+Mixin.prototype.toString = classToString;
 
 if (DEBUG) {
-  Object.seal(MixinPrototype);
+  Object.seal(Mixin.prototype);
 }
 
-let unprocessedFlag = false;
-
-export function hasUnprocessedMixins() {
-  return unprocessedFlag;
-}
-
-export function clearUnprocessedMixins() {
-  unprocessedFlag = false;
-}
-
-function _detect(curMixin, targetMixin, seen) {
-  let guid = guidFor(curMixin);
-
-  if (seen[guid]) { return false; }
-  seen[guid] = true;
-
-  if (curMixin === targetMixin) { return true; }
-  let mixins = curMixin.mixins;
-  let loc = mixins ? mixins.length : 0;
-  while (--loc >= 0) {
-    if (_detect(mixins[loc], targetMixin, seen)) { return true; }
+function _detect(curMixin, targetMixin, seen = new Set()) {
+  if (seen.has(curMixin)) {
+    return false;
   }
+  seen.add(curMixin);
+
+  if (curMixin === targetMixin) {
+    return true;
+  }
+  let mixins = curMixin.mixins;
+  if (mixins) {
+    return mixins.some(mixin => _detect(mixin, targetMixin, seen));
+  }
+
   return false;
 }
 
-function _keys(ret, mixin, seen) {
-  if (seen[guidFor(mixin)]) { return; }
-  seen[guidFor(mixin)] = true;
+function _keys(mixin, ret = new Set(), seen = new Set()) {
+  if (seen.has(mixin)) {
+    return;
+  }
+  seen.add(mixin);
 
   if (mixin.properties) {
     let props = Object.keys(mixin.properties);
     for (let i = 0; i < props.length; i++) {
-      let key = props[i];
-      ret[key] = true;
+      ret.add(props[i]);
     }
   } else if (mixin.mixins) {
-    mixin.mixins.forEach((x) => _keys(ret, x, seen));
+    mixin.mixins.forEach(x => _keys(x, ret, seen));
   }
-}
 
-const REQUIRED = new Descriptor();
-REQUIRED.toString = () => '(Required Property)';
-
-/**
-  Denotes a required property for a mixin
-
-  @method required
-  @for Ember
-  @private
-*/
-export function required() {
-  deprecate(
-    'Ember.required is deprecated as its behavior is inconsistent and unreliable.',
-    false,
-    { id: 'ember-metal.required', until: '3.0.0' }
-  );
-  return REQUIRED;
+  return ret;
 }
 
 class Alias extends Descriptor {
@@ -728,7 +721,10 @@ export function observer(...args) {
   let _paths = args;
 
   assert('observer called without a function', typeof func === 'function');
-  assert('observer called without valid path', _paths.length > 0 && _paths.every((p)=> typeof p === 'string' && p.length));
+  assert(
+    'observer called without valid path',
+    _paths.length > 0 && _paths.every(p => typeof p === 'string' && p.length)
+  );
 
   let paths = [];
   let addWatchedProperty = path => paths.push(path);
@@ -741,7 +737,4 @@ export function observer(...args) {
   return func;
 }
 
-export {
-  Mixin,
-  REQUIRED
-};
+export { Mixin };

@@ -64,7 +64,7 @@ export default function transformInElement(env) {
           // https://github.com/glimmerjs/glimmer-vm/blob/ba9b37d44b85fa1385eeeea71910ff5798198c8e/packages/%40glimmer/syntax/lib/parser/handlebars-node-visitors.ts#L340-L363
           let hasNextSibling = false;
           let hash = node.hash;
-          hash.pairs.forEach((pair) => {
+          hash.pairs.forEach(pair => {
             if (pair.key === 'nextSibling') {
               hasNextSibling = true;
             }
@@ -80,8 +80,8 @@ export default function transformInElement(env) {
             hash.pairs.push(nextSibling);
           }
         }
-      }
-    }
+      },
+    },
   };
 }
 

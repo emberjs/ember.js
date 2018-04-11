@@ -29,19 +29,29 @@ interface Registry {
 }
 
 export function setupApplicationRegistry(registry: Registry) {
-  registry.injection('service:-glimmer-environment', 'appendOperations', 'service:-dom-tree-construction');
+  registry.injection(
+    'service:-glimmer-environment',
+    'appendOperations',
+    'service:-dom-tree-construction'
+  );
   registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
+  // because we are using injections we can't use instantiate false
+  // we need to use bind() to copy the function so factory for
+  // association won't leak
   registry.register('service:-dom-builder', {
     create({ bootOptions }: { bootOptions: { _renderMode: string } }) {
       let { _renderMode } = bootOptions;
 
-      switch(_renderMode) {
-        case 'serialize': return serializeBuilder;
-        case 'rehydrate': return rehydrationBuilder;
-        default: return clientBuilder;
+      switch (_renderMode) {
+        case 'serialize':
+          return serializeBuilder.bind(null);
+        case 'rehydrate':
+          return rehydrationBuilder.bind(null);
+        default:
+          return clientBuilder.bind(null);
       }
-    }
+    },
   });
   registry.injection('service:-dom-builder', 'bootOptions', '-environment:main');
   registry.injection('renderer', 'builder', 'service:-dom-builder');

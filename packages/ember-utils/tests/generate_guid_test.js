@@ -1,13 +1,13 @@
 import { generateGuid } from '..';
-import {
-  moduleFor,
-  AbstractTestCase as TestCase
-} from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
-moduleFor('Ember.generateGuid', class extends TestCase {
-  ['@test Prefix'](assert) {
-    let a = {};
+moduleFor(
+  'Ember.generateGuid',
+  class extends TestCase {
+    ['@test Prefix'](assert) {
+      let a = {};
 
-    assert.ok(generateGuid(a, 'tyrell').indexOf('tyrell') > -1, 'guid can be prefixed');
+      assert.ok(generateGuid(a, 'tyrell').indexOf('tyrell') > -1, 'guid can be prefixed');
+    }
   }
-});
+);

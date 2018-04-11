@@ -1,5 +1,4 @@
 export default function transformQuotedBindingsIntoJustBindings(/* env */) {
-
   return {
     name: 'transform-quoted-bindings-into-just-bindings',
 
@@ -7,22 +6,26 @@ export default function transformQuotedBindingsIntoJustBindings(/* env */) {
       ElementNode(node) {
         let styleAttr = getStyleAttr(node);
 
-        if (!validStyleAttr(styleAttr)) { return; }
+        if (!validStyleAttr(styleAttr)) {
+          return;
+        }
 
         styleAttr.value = styleAttr.value.parts[0];
-      }
-    }
+      },
+    },
   };
 }
 
 function validStyleAttr(attr) {
-  if (!attr) { return false; }
+  if (!attr) {
+    return false;
+  }
 
   let value = attr.value;
 
-  if (!value ||
-      value.type !== 'ConcatStatement' ||
-      value.parts.length !== 1) { return false; }
+  if (!value || value.type !== 'ConcatStatement' || value.parts.length !== 1) {
+    return false;
+  }
 
   let onlyPart = value.parts[0];
 

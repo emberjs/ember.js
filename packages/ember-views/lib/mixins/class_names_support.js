@@ -18,8 +18,15 @@ export default Mixin.create({
   init() {
     this._super(...arguments);
 
-    assert(`Only arrays are allowed for 'classNameBindings'`, descriptorFor(this, 'classNameBindings') === undefined && Array.isArray(this.classNameBindings));
-    assert(`Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`, descriptorFor(this, 'classNames') === undefined && Array.isArray(this.classNames));
+    assert(
+      `Only arrays are allowed for 'classNameBindings'`,
+      descriptorFor(this, 'classNameBindings') === undefined &&
+        Array.isArray(this.classNameBindings)
+    );
+    assert(
+      `Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`,
+      descriptorFor(this, 'classNames') === undefined && Array.isArray(this.classNames)
+    );
   },
 
   /**
@@ -79,5 +86,5 @@ export default Mixin.create({
     @default []
     @public
   */
-  classNameBindings: EMPTY_ARRAY
+  classNameBindings: EMPTY_ARRAY,
 });

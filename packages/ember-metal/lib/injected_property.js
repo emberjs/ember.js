@@ -32,7 +32,7 @@ export default class InjectedProperty extends ComputedProperty {
         this.name = name;
         this.namespace = undefined;
       } else {
-        this.name = name.slice(namespaceDelimiterOffset+2);
+        this.name = name.slice(namespaceDelimiterOffset + 2);
         this.namespace = name.slice(0, namespaceDelimiterOffset);
       }
     } else {
@@ -45,9 +45,18 @@ function injectedPropertyGet(keyName) {
   let desc = descriptorFor(this, keyName);
   let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
-  assert(`InjectedProperties should be defined with the inject computed property macros.`, desc && desc.type);
-  assert(`Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`, owner);
+  assert(
+    `InjectedProperties should be defined with the inject computed property macros.`,
+    desc && desc.type
+  );
+  assert(
+    `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+    owner
+  );
 
   let specifier = `${desc.type}:${desc.name || keyName}`;
-  return owner.lookup(specifier, {source: desc.source, namespace: desc.namespace});
+  return owner.lookup(specifier, {
+    source: desc.source,
+    namespace: desc.namespace,
+  });
 }

@@ -3,9 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import {
-  Mixin
-} from 'ember-metal';
+import { Mixin } from 'ember-metal';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -257,11 +255,11 @@ export default Mixin.create({
     @param  property {String}
     @param  injectionName {String}
   **/
-  inject: registryAlias('injection')
+  inject: registryAlias('injection'),
 });
 
 function registryAlias(name) {
-  return function () {
+  return function() {
     return this.__registry__[name](...arguments);
   };
 }

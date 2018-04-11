@@ -1,12 +1,7 @@
 import * as RSVP from 'rsvp';
-import {
-  run,
-  getDispatchOverride
-} from 'ember-metal';
+import { backburner, getDispatchOverride } from 'ember-metal';
 import { assert } from 'ember-debug';
 import { privatize as P } from 'container';
-
-const backburner = run.backburner;
 
 RSVP.configure('async', (callback, promise) => {
   backburner.schedule('actions', null, callback, promise);
@@ -56,7 +51,7 @@ function unwrapErrorThrown(reason) {
   }
   Object.defineProperty(error, '__reason_with_error_thrown__', {
     value: reason,
-    enumerable: false
+    enumerable: false,
   });
   return error;
 }

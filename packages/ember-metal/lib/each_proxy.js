@@ -41,11 +41,12 @@ class EachProxy {
   // ARRAY CHANGES
   // Invokes whenever the content array itself changes.
 
-  arrayWillChange(content, idx, removedCnt, addedCnt) {   // eslint-disable-line no-unused-vars
+  arrayWillChange(content, idx, removedCnt /*, addedCnt */) {
+    // eslint-disable-line no-unused-vars
     let keys = this._keys;
     let lim = removedCnt > 0 ? idx + removedCnt : -1;
-    for (let key in keys) {
-      if (lim > 0) {
+    if (lim > 0) {
+      for (let key in keys) {
         removeObserverForContentKey(content, key, this, idx, lim);
       }
     }
@@ -81,7 +82,7 @@ class EachProxy {
 
   beginObservingContentKey(keyName) {
     let keys = this._keys;
-    if (!keys) {
+    if (keys === undefined) {
       keys = this._keys = Object.create(null);
     }
 
@@ -98,9 +99,9 @@ class EachProxy {
 
   stopObservingContentKey(keyName) {
     let keys = this._keys;
-    if (keys && (keys[keyName] > 0) && (--keys[keyName] <= 0)) {
+    if (keys !== undefined && keys[keyName] > 0 && --keys[keyName] <= 0) {
       let content = this._content;
-      let len     = get(content, 'length');
+      let len = get(content, 'length');
 
       removeObserverForContentKey(content, keyName, this, 0, len);
     }
@@ -115,7 +116,12 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while (--loc >= idx) {
     let item = objectAt(content, loc);
     if (item) {
-      assert(`When using @each to observe the array \`${toString(content)}\`, the array must return an object`, typeof item === 'object');
+      assert(
+        `When using @each to observe the array \`${toString(
+          content
+        )}\`, the array must return an object`,
+        typeof item === 'object'
+      );
       addObserver(item, keyName, proxy, 'contentKeyDidChange');
     }
   }

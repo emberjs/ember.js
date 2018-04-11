@@ -1,17 +1,17 @@
-import ArrayProxy from '../../system/array_proxy';
-import EmberArray, {
-  A as emberA,
-  MutableArray,
-  arrayContentDidChange,
-  arrayContentWillChange,
+import ArrayProxy from '../../lib/system/array_proxy';
+import EmberArray, { A as emberA, MutableArray } from '../../lib/mixins/array';
+import { generateGuid, guidFor } from 'ember-utils';
+import {
+  get,
+  set,
+  computed,
   addArrayObserver,
   removeArrayObserver,
-} from '../../mixins/array';
-import { generateGuid, guidFor } from 'ember-utils';
-import { get, set } from 'ember-metal';
-import { computed } from 'ember-metal';
-import EmberObject from '../../system/object';
-import Copyable from '../../mixins/copyable';
+  arrayContentWillChange,
+  arrayContentDidChange,
+} from 'ember-metal';
+import EmberObject from '../../lib/system/object';
+import Copyable from '../../lib/mixins/copyable';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {
@@ -51,7 +51,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
 
   observe(obj, ...keys) {
     if (obj.addObserver) {
-      let loc  = keys.length;
+      let loc = keys.length;
 
       while (--loc >= 0) {
         obj.addObserver(keys[loc], this, 'propertyDidChange');
@@ -73,7 +73,9 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   propertyDidChange(target, key, value) {
-    if (this._keys[key] === undefined) { this._keys[key] = 0; }
+    if (this._keys[key] === undefined) {
+      this._keys[key] = 0;
+    }
     this._keys[key]++;
     this._values[key] = value;
   },
@@ -106,7 +108,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
 
   timesCalled(key) {
     return this._keys[key] || 0;
-  }
+  },
 });
 
 class AbstractArrayHelper {
@@ -222,7 +224,7 @@ const TestArray = EmberObject.extend(EmberArray, {
 
   length: computed(function() {
     return this._content.length;
-  })
+  }),
 });
 
 /*
@@ -230,7 +232,6 @@ const TestArray = EmberObject.extend(EmberArray, {
   enumerable can impl this API.
 */
 const TestMutableArray = EmberObject.extend(MutableArray, {
-
   _content: null,
 
   init(ary = []) {
@@ -240,7 +241,7 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
   replace(idx, amt, objects) {
     let args = objects ? objects.slice() : [];
     let removeAmt = amt;
-    let addAmt    = args.length;
+    let addAmt = args.length;
 
     arrayContentWillChange(this, idx, removeAmt, addAmt);
 
@@ -261,7 +262,7 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
 
   slice() {
     return this._content.slice();
-  }
+  },
 });
 
 const CopyableObject = EmberObject.extend(Copyable, {
@@ -276,7 +277,7 @@ const CopyableObject = EmberObject.extend(Copyable, {
     let ret = new CopyableObject();
     set(ret, 'id', get(this, 'id'));
     return ret;
-  }
+  },
 });
 
 class MutableArrayHelpers extends NativeArrayHelpers {
@@ -298,8 +299,8 @@ class EmberArrayHelpers extends MutableArrayHelpers {
 
 export function runArrayTests(name, Tests, ...types) {
   if (types.length > 0) {
-    types.forEach((type) => {
-      switch(type) {
+    types.forEach(type => {
+      switch (type) {
         case 'ArrayProxy':
           moduleFor(`ArrayProxy: ${name}`, Tests, ArrayProxyHelpers);
           break;

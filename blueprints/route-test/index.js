@@ -10,13 +10,13 @@ module.exports = useTestFrameworkDetector({
   availableOptions: [
     {
       name: 'reset-namespace',
-      type: Boolean
-    }
+      type: Boolean,
+    },
   ],
 
   fileMapTokens: function() {
     return {
-      __test__: function (options) {
+      __test__: function(options) {
         let moduleName = options.locals.moduleName;
 
         if (options.pod) {
@@ -30,7 +30,7 @@ module.exports = useTestFrameworkDetector({
           return path.join(options.podPath, options.locals.moduleName);
         }
         return 'routes';
-      }
+      },
     };
   },
 
@@ -43,7 +43,7 @@ module.exports = useTestFrameworkDetector({
 
     return {
       friendlyTestDescription: ['Unit', 'Route', options.entity.name].join(' | '),
-      moduleName: stringUtil.dasherize(moduleName)
+      moduleName: stringUtil.dasherize(moduleName),
     };
   },
 });

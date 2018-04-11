@@ -11,7 +11,7 @@ onLoad('Ember.Application', function(Application) {
         if (application.testing) {
           application.deferReadiness();
         }
-      }
+      },
     });
   }
 });

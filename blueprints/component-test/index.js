@@ -17,12 +17,12 @@ module.exports = useTestFrameworkDetector({
       type: ['integration', 'unit'],
       default: 'integration',
       aliases: [
-        { 'i': 'integration' },
-        { 'u': 'unit' },
-        { 'integration': 'integration' },
-        { 'unit': 'unit' }
-      ]
-    }
+        { i: 'integration' },
+        { u: 'unit' },
+        { integration: 'integration' },
+        { unit: 'unit' },
+      ],
+    },
   ],
 
   fileMapTokens: function() {
@@ -39,17 +39,17 @@ module.exports = useTestFrameworkDetector({
         },
         __testType__(options) {
           if (options.locals.testType === 'unit') {
-            throw 'The --unit flag isn\'t supported within a module unification app';
+            throw "The --unit flag isn't supported within a module unification app";
           }
 
           return '';
         },
         __path__(options) {
           if (options.pod) {
-            throw 'Pods aren\'t supported within a module unification app';
+            throw "Pods aren't supported within a module unification app";
           }
           return path.join('ui', 'components', options.dasherizedModuleName);
-        }
+        },
       };
     } else {
       return {
@@ -64,7 +64,7 @@ module.exports = useTestFrameworkDetector({
             return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
           }
           return 'components';
-        }
+        },
       };
     }
   },
@@ -94,15 +94,19 @@ module.exports = useTestFrameworkDetector({
       path: getPathOption(options),
       testType: testType,
       componentPathName: componentPathName,
-      friendlyTestDescription: friendlyTestDescription
+      friendlyTestDescription: friendlyTestDescription,
     };
   },
 
   afterInstall: function(options) {
-    if (!options.dryRun && options.testType === 'integration' && isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')) {
+    if (
+      !options.dryRun &&
+      options.testType === 'integration' &&
+      isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
+    ) {
       return this.addPackagesToProject([
-        { name: 'ember-cli-htmlbars-inline-precompile', target: '^0.3.1' }
+        { name: 'ember-cli-htmlbars-inline-precompile', target: '^0.3.1' },
       ]);
     }
-  }
+  },
 });

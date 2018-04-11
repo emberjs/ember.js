@@ -2,18 +2,13 @@ import { inspect } from 'ember-utils';
 import { assert, warn, Error as EmberError } from 'ember-debug';
 import { set } from './property_set';
 import { meta as metaFor, peekMeta } from './meta';
+import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import expandProperties from './expand_properties';
-import {
-  Descriptor,
-  defineProperty
-} from './properties';
-import {
-  notifyPropertyChange
-} from './property_events';
-import {
-  addDependentKeys,
-  removeDependentKeys
-} from './dependent_keys';
+import { Descriptor, defineProperty } from './properties';
+import { notifyPropertyChange } from './property_events';
+import { addDependentKeys, removeDependentKeys } from './dependent_keys';
+import { getCurrentTracker, setCurrentTracker } from './tracked';
+import { tagForProperty, update } from './tags';
 
 /**
 @module @ember/object
@@ -139,9 +134,18 @@ class ComputedProperty extends Descriptor {
     if (hasGetterOnly) {
       this._getter = config;
     } else {
-      assert('computed expects a function or an object as last argument.', typeof config === 'object' && !Array.isArray(config));
-      assert('Config object passed to computed can only contain `get` and `set` keys.', Object.keys(config).every((key)=> key === 'get' || key === 'set'));
-      assert('Computed properties must receive a getter or a setter, you passed none.', !!config.get || !!config.set);
+      assert(
+        'computed expects a function or an object as last argument.',
+        typeof config === 'object' && !Array.isArray(config)
+      );
+      assert(
+        'Config object passed to computed can only contain `get` and `set` keys.',
+        Object.keys(config).every(key => key === 'get' || key === 'set')
+      );
+      assert(
+        'Computed properties must receive a getter or a setter, you passed none.',
+        !!config.get || !!config.set
+      );
       this._getter = config.get || noop;
       this._setter = config.set;
     }
@@ -149,6 +153,10 @@ class ComputedProperty extends Descriptor {
     this._suspended = undefined;
     this._meta = undefined;
     this._volatile = false;
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      this._auto = false;
+    }
 
     this._dependentKeys = opts && opts.dependentKeys;
     this._readOnly = opts && hasGetterOnly && opts.readOnly === true;
@@ -209,7 +217,10 @@ class ComputedProperty extends Descriptor {
   */
   readOnly() {
     this._readOnly = true;
-    assert('Computed properties that define a setter using the new syntax cannot be read-only', !(this._readOnly && this._setter && this._setter !== this._getter));
+    assert(
+      'Computed properties that define a setter using the new syntax cannot be read-only',
+      !(this._readOnly && this._setter && this._setter !== this._getter)
+    );
     return this;
   }
 
@@ -250,7 +261,7 @@ class ComputedProperty extends Descriptor {
       warn(
         `Dependent keys containing @each only work one level deep. ` +
           `You used the key "${property}" which is invalid. ` +
-            `Please create an intermediary computed property.`,
+          `Please create an intermediary computed property.`,
         DEEP_EACH_REGEX.test(property) === false,
         { id: 'ember-metal.computed-deep-each' }
       );
@@ -328,12 +339,47 @@ class ComputedProperty extends Descriptor {
     }
 
     let cache = getCacheFor(obj);
+    let propertyTag;
 
-    if (cache.has(keyName)) {
-      return cache.get(keyName);
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      propertyTag = tagForProperty(obj, keyName);
+
+      if (cache.has(keyName)) {
+        // special-case for computed with no dependent keys used to
+        // trigger cacheable behavior.
+        if (!this._auto && (!this._dependentKeys || this._dependentKeys.length === 0)) {
+          return cache.get(keyName);
+        }
+
+        let lastRevision = getLastRevisionFor(obj, keyName);
+        if (propertyTag.validate(lastRevision)) {
+          return cache.get(keyName);
+        }
+      }
+    } else {
+      if (cache.has(keyName)) {
+        return cache.get(keyName);
+      }
+    }
+
+    let parent;
+    let tracker;
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      parent = getCurrentTracker();
+      tracker = setCurrentTracker();
     }
 
     let ret = this._getter.call(obj, keyName);
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      setCurrentTracker(parent);
+      let tag = tracker.combine();
+      if (parent) parent.add(tag);
+
+      update(propertyTag, tag);
+      setLastRevisionFor(obj, keyName, propertyTag.value());
+    }
 
     cache.set(keyName, ret);
 
@@ -409,6 +455,11 @@ class ComputedProperty extends Descriptor {
 
     notifyPropertyChange(obj, keyName, meta);
 
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      let propertyTag = tagForProperty(obj, keyName);
+      setLastRevisionFor(obj, keyName, propertyTag.value());
+    }
+
     return ret;
   }
 
@@ -423,6 +474,14 @@ class ComputedProperty extends Descriptor {
     }
   }
 }
+
+if (EMBER_METAL_TRACKED_PROPERTIES) {
+  ComputedProperty.prototype.auto = function() {
+    this._auto = true;
+    return this;
+  };
+}
+
 /**
   This helper returns a new property descriptor that wraps the passed
   computed property function. You can use this helper to define properties
@@ -522,8 +581,11 @@ export default function computed(...args) {
 
   return cp;
 }
+// used for the Ember.computed global only
+export const _globalsComputed = computed.bind(null);
 
 const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap();
+const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : undefined;
 
 /**
   Returns the cached value for a property, if one exists.
@@ -544,6 +606,11 @@ export function getCacheFor(obj) {
   let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
   if (cache === undefined) {
     cache = new Map();
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      COMPUTED_PROPERTY_LAST_REVISION.set(obj, new Map());
+    }
+
     COMPUTED_PROPERTY_CACHED_VALUES.set(obj, cache);
   }
   return cache;
@@ -556,11 +623,27 @@ export function getCachedValueFor(obj, key) {
   }
 }
 
+export let setLastRevisionFor;
+export let getLastRevisionFor;
+
+if (EMBER_METAL_TRACKED_PROPERTIES) {
+  setLastRevisionFor = (obj, key, revision) => {
+    let lastRevision = COMPUTED_PROPERTY_LAST_REVISION.get(obj);
+    lastRevision.set(key, revision);
+  };
+
+  getLastRevisionFor = (obj, key) => {
+    let cache = COMPUTED_PROPERTY_LAST_REVISION.get(obj);
+    if (cache == undefined) {
+      return 0;
+    } else {
+      return cache.get(key);
+    }
+  };
+}
+
 export function peekCacheFor(obj) {
   return COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
 }
 
-export {
-  ComputedProperty,
-  computed
-};
+export { ComputedProperty, computed };

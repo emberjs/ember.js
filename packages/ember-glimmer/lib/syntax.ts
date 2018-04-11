@@ -15,7 +15,12 @@ import { renderMacro } from './syntax/render';
 import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 
-function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Option<Core.Hash>, builder: OpcodeBuilder<OwnedTemplateMeta>): boolean {
+function refineInlineSyntax(
+  name: string,
+  params: Option<Core.Params>,
+  hash: Option<Core.Hash>,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+): boolean {
   assert(
     `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
     !(
@@ -37,7 +42,14 @@ function refineInlineSyntax(name: string, params: Option<Core.Params>, hash: Opt
   return false;
 }
 
-function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<OwnedTemplateMeta>) {
+function refineBlockSyntax(
+  name: string,
+  params: Core.Params,
+  hash: Core.Hash,
+  template: Option<CompilableBlock>,
+  inverse: Option<CompilableBlock>,
+  builder: OpcodeBuilder<OwnedTemplateMeta>
+) {
   if (name.indexOf('-') === -1) {
     return false;
   }
@@ -50,7 +62,10 @@ function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, t
     return true;
   }
 
-  assert(`A component or helper named "${name}" could not be found`, builder.referrer.owner.hasRegistration(`helper:${name}`));
+  assert(
+    `A component or helper named "${name}" could not be found`,
+    builder.referrer.owner.hasRegistration(`helper:${name}`)
+  );
 
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
@@ -61,7 +76,9 @@ function refineBlockSyntax(name: string, params: Core.Params, hash: Core.Hash, t
         return true;
       }
       let options = { source: `template:${moduleName}` };
-      return owner.hasRegistration(`helper:${name}`, options) || owner.hasRegistration(`helper:${name}`);
+      return (
+        owner.hasRegistration(`helper:${name}`, options) || owner.hasRegistration(`helper:${name}`)
+      );
     })()
   );
 

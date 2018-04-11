@@ -2,11 +2,10 @@
 import { DEBUG } from 'ember-env-flags';
 
 import EmberError from './error';
-import Logger from 'ember-console';
 
 import { ENV } from 'ember-environment';
 
-import { assert } from './index';
+import { assert } from '../index';
 import { registerHandler as genericRegisterHandler, invoke } from './handlers';
 /**
  @module @ember/debug
@@ -51,7 +50,10 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
   @since 2.1.0
 */
 let registerHandler = () => {};
-let missingOptionsDeprecation, missingOptionsIdDeprecation, missingOptionsUntilDeprecation, deprecate;
+let missingOptionsDeprecation,
+  missingOptionsIdDeprecation,
+  missingOptionsUntilDeprecation,
+  deprecate;
 
 if (DEBUG) {
   registerHandler = function registerHandler(handler) {
@@ -74,8 +76,7 @@ if (DEBUG) {
 
   registerHandler(function logDeprecationToConsole(message, options) {
     let updatedMessage = formatMessage(message, options);
-
-    Logger.warn(`DEPRECATION: ${updatedMessage}`);
+    console.warn(`DEPRECATION: ${updatedMessage}`); // eslint-disable-line no-console
   });
 
   let captureErrorForStack;
@@ -84,7 +85,11 @@ if (DEBUG) {
     captureErrorForStack = () => new Error();
   } else {
     captureErrorForStack = () => {
-      try { __fail__.fail(); } catch (e) { return e; }
+      try {
+        __fail__.fail();
+      } catch (e) {
+        return e;
+      }
     };
   }
 
@@ -97,14 +102,18 @@ if (DEBUG) {
       if (error.stack) {
         if (error['arguments']) {
           // Chrome
-          stack = error.stack.replace(/^\s+at\s+/gm, '').
-            replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2').
-            replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)').split('\n');
+          stack = error.stack
+            .replace(/^\s+at\s+/gm, '')
+            .replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2')
+            .replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)')
+            .split('\n');
           stack.shift();
         } else {
           // Firefox
-          stack = error.stack.replace(/(?:\n@:0)?\s+$/m, '').
-            replace(/^\(/gm, '{anonymous}(').split('\n');
+          stack = error.stack
+            .replace(/(?:\n@:0)?\s+$/m, '')
+            .replace(/^\(/gm, '{anonymous}(')
+            .split('\n');
         }
 
         stackStr = `\n    ${stack.slice(2).join('\n    ')}`;
@@ -112,7 +121,7 @@ if (DEBUG) {
 
       let updatedMessage = formatMessage(message, options);
 
-      Logger.warn(`DEPRECATION: ${updatedMessage}${stackStr}`);
+      console.warn(`DEPRECATION: ${updatedMessage}${stackStr}`); // eslint-disable-line no-console
     } else {
       next(...arguments);
     }
@@ -128,7 +137,8 @@ if (DEBUG) {
     }
   });
 
-  missingOptionsDeprecation = 'When calling `deprecate` you ' +
+  missingOptionsDeprecation =
+    'When calling `deprecate` you ' +
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include `id` and `until` properties.';
   missingOptionsIdDeprecation = 'When calling `deprecate` you must provide `id` in options.';
@@ -168,40 +178,31 @@ if (DEBUG) {
       assert(missingOptionsUntilDeprecation, options.until);
     }
 
-    if ((!options || (!options.id && !options.until)) && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsDeprecation,
-        false,
-        {
-          id: 'ember-debug.deprecate-options-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
+    if (
+      (!options || (!options.id && !options.until)) &&
+      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
+    ) {
+      deprecate(missingOptionsDeprecation, false, {
+        id: 'ember-debug.deprecate-options-missing',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
+      });
     }
 
     if (options && !options.id && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsIdDeprecation,
-        false,
-        {
-          id: 'ember-debug.deprecate-id-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
+      deprecate(missingOptionsIdDeprecation, false, {
+        id: 'ember-debug.deprecate-id-missing',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
+      });
     }
 
     if (options && !options.until && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
-      deprecate(
-        missingOptionsUntilDeprecation,
-        options && options.until,
-        {
-          id: 'ember-debug.deprecate-until-missing',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options'
-        }
-      );
+      deprecate(missingOptionsUntilDeprecation, options && options.until, {
+        id: 'ember-debug.deprecate-until-missing',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
+      });
     }
 
     invoke('deprecate', ...arguments);
@@ -214,5 +215,5 @@ export {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation
+  missingOptionsUntilDeprecation,
 };

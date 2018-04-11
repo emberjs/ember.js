@@ -109,6 +109,11 @@ export default Mixin.create({
     @public
   */
   sendAction(action, ...contexts) {
+    assert(
+      `Attempted to call .sendAction() with the action '${action}' on the destroyed object '${this}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
+
     let actionName;
 
     // Send the default action
@@ -119,24 +124,33 @@ export default Mixin.create({
     actionName = validateAction(this, actionName);
 
     // If no action name for that action could be found, just abort.
-    if (actionName === undefined) { return; }
+    if (actionName === undefined) {
+      return;
+    }
 
     if (typeof actionName === 'function') {
       actionName(...contexts);
     } else {
       this.triggerAction({
         action: actionName,
-        actionContext: contexts
+        actionContext: contexts,
       });
     }
   },
 
   send(actionName, ...args) {
+    assert(
+      `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
+      !this.isDestroying && !this.isDestroyed
+    );
+
     let action = this.actions && this.actions[actionName];
 
     if (action) {
       let shouldBubble = action.apply(this, args) === true;
-      if (!shouldBubble) { return; }
+      if (!shouldBubble) {
+        return;
+      }
     }
 
     let target = get(this, 'target');
@@ -149,5 +163,5 @@ export default Mixin.create({
     } else {
       assert(`${inspect(this)} had no action handler for: ${actionName}`, action);
     }
-  }
+  },
 });

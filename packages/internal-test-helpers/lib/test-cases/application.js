@@ -5,7 +5,7 @@ import { assign } from 'ember-utils';
 
 export default class ApplicationTestCase extends TestResolverApplicationTestCase {
   constructor() {
-    super();
+    super(...arguments);
 
     let { applicationOptions } = this;
     this.application = this.runTask(() => this.createApplication(applicationOptions));
@@ -17,13 +17,13 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     }
   }
 
-  createApplication(myOptions={}, MyApplication=Application) {
+  createApplication(myOptions = {}, MyApplication = Application) {
     return MyApplication.create(myOptions);
   }
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
-      autoboot: false
+      autoboot: false,
     });
   }
 
@@ -32,9 +32,8 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
   }
 
   transitionTo() {
-    return this.runTask(() =>{
+    return this.runTask(() => {
       return this.appRouter.transitionTo(...arguments);
     });
   }
-
 }

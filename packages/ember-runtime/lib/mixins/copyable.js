@@ -29,5 +29,5 @@ export default Mixin.create({
     @return {Object} copy of receiver
     @private
   */
-  copy: null
+  copy: null,
 });

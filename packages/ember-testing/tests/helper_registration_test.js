@@ -1,5 +1,5 @@
 import { run } from 'ember-metal';
-import Test from '../test';
+import Test from '../lib/test';
 import { Application as EmberApplication } from 'ember-application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -37,51 +37,60 @@ function destroyApp() {
   }
 }
 
-moduleFor('Test - registerHelper/unregisterHelper', class extends AbstractTestCase {
-  teardown() {
-    Test.adapter = originalAdapter;
-    destroyApp();
+moduleFor(
+  'Test - registerHelper/unregisterHelper',
+  class extends AbstractTestCase {
+    teardown() {
+      Test.adapter = originalAdapter;
+      destroyApp();
+    }
+
+    ['@test Helper gets registered'](assert) {
+      assert.expect(2);
+
+      registerHelper();
+      setupApp();
+
+      assert.ok(App.testHelpers.boot);
+      assert.ok(helperContainer.boot);
+    }
+
+    ['@test Helper is ran when called'](assert) {
+      let done = assert.async();
+      assert.expect(1);
+
+      registerHelper();
+      setupApp();
+
+      App.testHelpers
+        .boot()
+        .then(function() {
+          assert.ok(appBooted);
+        })
+        .finally(done);
+    }
+
+    ['@test Helper can be unregistered'](assert) {
+      assert.expect(4);
+
+      registerHelper();
+      setupApp();
+
+      assert.ok(App.testHelpers.boot);
+      assert.ok(helperContainer.boot);
+
+      unregisterHelper();
+
+      setupApp();
+
+      assert.ok(
+        !App.testHelpers.boot,
+        'once unregistered the helper is not added to App.testHelpers'
+      );
+      assert.ok(
+        !helperContainer.boot,
+        'once unregistered the helper is not added to the helperContainer'
+      );
+    }
   }
-
-  ['@test Helper gets registered'](assert) {
-    assert.expect(2);
-
-    registerHelper();
-    setupApp();
-
-    assert.ok(App.testHelpers.boot);
-    assert.ok(helperContainer.boot);
-  }
-
-  ['@test Helper is ran when called'](assert) {
-    let done = assert.async();
-    assert.expect(1);
-
-    registerHelper();
-    setupApp();
-
-    App.testHelpers.boot()
-      .then(function() {
-        assert.ok(appBooted);
-      })
-      .finally(done);
-  }
-
-  ['@test Helper can be unregistered'](assert) {
-    assert.expect(4);
-
-    registerHelper();
-    setupApp();
-
-    assert.ok(App.testHelpers.boot);
-    assert.ok(helperContainer.boot);
-
-    unregisterHelper();
-
-    setupApp();
-
-    assert.ok(!App.testHelpers.boot, 'once unregistered the helper is not added to App.testHelpers');
-    assert.ok(!helperContainer.boot, 'once unregistered the helper is not added to the helperContainer');
-  }
-});
-
+);

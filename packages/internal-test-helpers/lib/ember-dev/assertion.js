@@ -24,8 +24,8 @@ export default function AssertionAssert(env) {
 }
 
 AssertionAssert.prototype = {
-  reset() { },
-  assert() { },
+  reset() {},
+  assert() {},
 
   inject() {
     let expectAssertion = (func, expectedMessage) => {
@@ -44,7 +44,9 @@ AssertionAssert.prototype = {
       try {
         callWithStub(this.env, 'assert', func, (message, test) => {
           sawCall = true;
-          if (checkTest(test)) { return; }
+          if (checkTest(test)) {
+            return;
+          }
           actualMessage = message;
           throw BREAK;
         });
@@ -57,7 +59,7 @@ AssertionAssert.prototype = {
       check(assert, sawCall, actualMessage, expectedMessage);
     };
 
-    let ignoreAssertion = (func) => {
+    let ignoreAssertion = func => {
       callWithStub(this.env, 'assert', func);
     };
 
@@ -68,7 +70,7 @@ AssertionAssert.prototype = {
   restore() {
     window.expectAssertion = null;
     window.ignoreAssertion = null;
-  }
+  },
 };
 
 function check(assert, sawCall, actualMessage, expectedMessage) {
@@ -76,13 +78,23 @@ function check(assert, sawCall, actualMessage, expectedMessage) {
   if (!sawCall) {
     assert.ok(false, `Expected Ember.assert to be called (Not called with any value).`);
   } else if (!actualMessage) {
-    assert.ok(false, `Expected a failing Ember.assert (Ember.assert called, but without a failing test).`);
+    assert.ok(
+      false,
+      `Expected a failing Ember.assert (Ember.assert called, but without a failing test).`
+    );
   } else {
     if (expectedMessage) {
       if (expectedMessage instanceof RegExp) {
-        assert.ok(expectedMessage.test(actualMessage), `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`);
+        assert.ok(
+          expectedMessage.test(actualMessage),
+          `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`
+        );
       } else {
-        assert.equal(actualMessage, expectedMessage, `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`);
+        assert.equal(
+          actualMessage,
+          expectedMessage,
+          `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`
+        );
       }
     } else {
       // Positive assertion that assert was called

@@ -1,4 +1,5 @@
 import require, { has } from 'require';
+import bootstrap from './bootstrap';
 
 // Globals mode template compiler
 if (has('ember-application') && has('ember-environment') && has('ember-glimmer')) {
@@ -9,20 +10,15 @@ if (has('ember-application') && has('ember-environment') && has('ember-glimmer')
   let { hasTemplate, setTemplate } = emberGlimmer;
   let { environment } = emberEnv;
 
-  let bootstrap = function() { };
-
   Application.initializer({
     name: 'domTemplates',
     initialize() {
-      let bootstrapModuleId = 'ember-template-compiler/system/bootstrap';
       let context;
-      if (environment.hasDOM && has(bootstrapModuleId)) {
-        bootstrap = require(bootstrapModuleId).default;
+      if (environment.hasDOM) {
         context = document;
       }
 
       bootstrap({ context, hasTemplate, setTemplate });
-    }
+    },
   });
 }
-

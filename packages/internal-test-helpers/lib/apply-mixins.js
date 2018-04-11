@@ -1,7 +1,8 @@
 import { assign } from 'ember-utils';
+import getAllPropertyNames from './get-all-property-names';
 
 function isGenerator(mixin) {
-  return Array.isArray(mixin.cases) && (typeof mixin.generate === 'function');
+  return Array.isArray(mixin.cases) && typeof mixin.generate === 'function';
 }
 
 export default function applyMixins(TestClass, ...mixins) {
@@ -18,16 +19,18 @@ export default function applyMixins(TestClass, ...mixins) {
 
       assign(TestClass.prototype, mixin);
     } else if (typeof mixinOrGenerator === 'function') {
+      let properties = getAllPropertyNames(mixinOrGenerator);
       mixin = new mixinOrGenerator();
-      for (let key in mixin) {
-        TestClass.prototype[key] = mixin[key];
-      }
+
+      properties.forEach(name => {
+        TestClass.prototype[name] = function() {
+          return mixin[name].apply(mixin, arguments);
+        };
+      });
     } else {
       mixin = mixinOrGenerator;
       assign(TestClass.prototype, mixin);
     }
-
-
   });
 
   return TestClass;

@@ -1,17 +1,13 @@
 import AbstractApplicationTestCase from './abstract-application';
 import { Resolver as DefaultResolver } from 'ember-application';
 import { Application } from 'ember-application';
-import {
-  setTemplates,
-  setTemplate
-} from 'ember-glimmer';
+import { setTemplates, setTemplate } from 'ember-glimmer';
 import { assign } from 'ember-utils';
 import { Router } from 'ember-routing';
 
 export default class ApplicationTestCase extends AbstractApplicationTestCase {
-
   createApplication() {
-    let application = this.application = Application.create(this.applicationOptions);
+    let application = (this.application = Application.create(this.applicationOptions));
     application.Router = Router.extend(this.routerOptions);
     return application;
   }
@@ -19,7 +15,7 @@ export default class ApplicationTestCase extends AbstractApplicationTestCase {
   get applicationOptions() {
     return assign(super.applicationOptions, {
       autoboot: false,
-      Resolver: DefaultResolver
+      Resolver: DefaultResolver,
     });
   }
 
@@ -33,7 +29,7 @@ export default class ApplicationTestCase extends AbstractApplicationTestCase {
   }
 
   transitionTo() {
-    return this.runTask(() =>{
+    return this.runTask(() => {
       return this.appRouter.transitionTo(...arguments);
     });
   }
@@ -43,6 +39,4 @@ export default class ApplicationTestCase extends AbstractApplicationTestCase {
     setTemplate(name, compiled);
     return compiled;
   }
-
-
 }

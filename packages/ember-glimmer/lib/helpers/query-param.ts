@@ -1,11 +1,7 @@
 /**
 @module ember
 */
-import {
-  Arguments,
-  CapturedArguments,
-  VM
-} from '@glimmer/runtime';
+import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import { QueryParams } from 'ember-routing';
 import { assign } from 'ember-utils';
@@ -29,7 +25,10 @@ import { InternalHelperReference } from '../utils/references';
 */
 function queryParams({ positional, named }: CapturedArguments) {
   // tslint:disable-next-line:max-line-length
-  assert('The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName=\'foo\') as opposed to just (query-params \'foo\')', positional.value().length === 0);
+  assert(
+    "The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='foo') as opposed to just (query-params 'foo')",
+    positional.value().length === 0
+  );
 
   return new QueryParams(assign({}, named.value()));
 }

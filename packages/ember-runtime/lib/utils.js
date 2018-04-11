@@ -5,15 +5,15 @@ import EmberObject from './system/object';
 // TYPING & ARRAY MESSAGING
 //
 const TYPE_MAP = {
-  '[object Boolean]':  'boolean',
-  '[object Number]':   'number',
-  '[object String]':   'string',
+  '[object Boolean]': 'boolean',
+  '[object Number]': 'number',
+  '[object String]': 'string',
   '[object Function]': 'function',
-  '[object Array]':    'array',
-  '[object Date]':     'date',
-  '[object RegExp]':   'regexp',
-  '[object Object]':   'object',
-  '[object FileList]': 'filelist'
+  '[object Array]': 'array',
+  '[object Date]': 'date',
+  '[object RegExp]': 'regexp',
+  '[object Object]': 'object',
+  '[object FileList]': 'filelist',
 };
 
 const { toString } = Object.prototype;
@@ -49,14 +49,24 @@ const { toString } = Object.prototype;
   @public
 */
 export function isArray(obj) {
-  if (!obj || obj.setInterval) { return false; }
-  if (Array.isArray(obj)) { return true; }
-  if (EmberArray.detect(obj)) { return true; }
+  if (!obj || obj.setInterval) {
+    return false;
+  }
+  if (Array.isArray(obj)) {
+    return true;
+  }
+  if (EmberArray.detect(obj)) {
+    return true;
+  }
 
   let type = typeOf(obj);
-  if ('array' === type) { return true; }
+  if ('array' === type) {
+    return true;
+  }
   let length = obj.length;
-  if (typeof length === 'number' && length === length && 'object' === type) { return true; }
+  if (typeof length === 'number' && length === length && 'object' === type) {
+    return true;
+  }
   return false;
 }
 /**
@@ -123,8 +133,12 @@ export function isArray(obj) {
   @static
 */
 export function typeOf(item) {
-  if (item === null) { return 'null'; }
-  if (item === undefined) { return 'undefined'; }
+  if (item === null) {
+    return 'null';
+  }
+  if (item === undefined) {
+    return 'undefined';
+  }
   let ret = TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {

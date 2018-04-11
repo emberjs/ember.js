@@ -1,7 +1,7 @@
 import { assign } from 'ember-utils';
 import { compile } from 'ember-template-compiler';
 import { EventDispatcher } from 'ember-views';
-import { helper, Helper, Component, _resetRenderers} from 'ember-glimmer';
+import { helper, Helper, Component, _resetRenderers } from 'ember-glimmer';
 import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
@@ -12,14 +12,14 @@ const TextNode = window.Text;
 
 export default class AbstractRenderingTestCase extends AbstractTestCase {
   constructor() {
-    super();
+    super(...arguments);
     let bootOptions = this.getBootOptions();
 
-    let owner = this.owner = buildOwner({
+    let owner = (this.owner = buildOwner({
       ownerOptions: this.getOwnerOptions(),
       resolver: this.getResolver(),
       bootOptions,
-    });
+    }));
 
     this.renderer = this.owner.lookup('renderer:-dom');
     this.element = document.querySelector('#qunit-fixture');
@@ -40,8 +40,8 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     return {};
   }
 
-  getOwnerOptions() { }
-  getBootOptions() { }
+  getOwnerOptions() {}
+  getBootOptions() {}
 
   get resolver() {
     return this.owner.__registry__.fallback.resolver;
@@ -57,13 +57,19 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
 
   addTemplate(templateName, templateString) {
     if (typeof templateName === 'string') {
-      this.resolver.add(`template:${templateName}`, this.compile(templateString, {
-        moduleName: templateName
-      }));
+      this.resolver.add(
+        `template:${templateName}`,
+        this.compile(templateString, {
+          moduleName: templateName,
+        })
+      );
     } else {
-      this.resolver.add(templateName, this.compile(templateString, {
-        moduleName: templateName.moduleName
-      }));
+      this.resolver.add(
+        templateName,
+        this.compile(templateString, {
+          moduleName: templateName.moduleName,
+        })
+      );
     }
   }
 
@@ -73,9 +79,12 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     }
 
     if (typeof template === 'string') {
-      this.resolver.add(`template:components/${name}`, this.compile(template, {
-        moduleName: `components/${name}`
-      }));
+      this.resolver.add(
+        `template:components/${name}`,
+        this.compile(template, {
+          moduleName: `components/${name}`,
+        })
+      );
     }
   }
 
@@ -99,13 +108,16 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   render(templateStr, context = {}) {
     let { owner } = this;
 
-    owner.register('template:-top-level', this.compile(templateStr, {
-      moduleName: '-top-level'
-    }));
+    owner.register(
+      'template:-top-level',
+      this.compile(templateStr, {
+        moduleName: '-top-level',
+      })
+    );
 
     let attrs = assign({}, context, {
       tagName: '',
-      layoutName: '-top-level'
+      layoutName: '-top-level',
     });
 
     owner.register('component:-top-level', Component.extend(attrs));
@@ -134,7 +146,10 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   registerPartial(name, template) {
     let owner = this.env.owner || this.owner;
     if (typeof template === 'string') {
-      owner.register(`template:${name}`, this.compile(template, { moduleName: `my-app/templates/-${name}.hbs` }));
+      owner.register(
+        `template:${name}`,
+        this.compile(template, { moduleName: `my-app/templates/-${name}.hbs` })
+      );
     }
   }
 
@@ -146,18 +161,24 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     }
 
     if (typeof template === 'string') {
-      owner.register(`template:components/${name}`, this.compile(template, {
-        moduleName: `my-app/templates/components/${name}.hbs`
-      }));
+      owner.register(
+        `template:components/${name}`,
+        this.compile(template, {
+          moduleName: `my-app/templates/components/${name}.hbs`,
+        })
+      );
     }
   }
 
   registerTemplate(name, template) {
     let { owner } = this;
     if (typeof template === 'string') {
-      owner.register(`template:${name}`, this.compile(template, {
-        moduleName: `my-app/templates/${name}.hbs`
-      }));
+      owner.register(
+        `template:${name}`,
+        this.compile(template, {
+          moduleName: `my-app/templates/${name}.hbs`,
+        })
+      );
     } else {
       throw new Error(`Registered template "${name}" must be a string`);
     }

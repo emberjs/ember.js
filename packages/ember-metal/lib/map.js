@@ -144,7 +144,9 @@ class OrderedSet {
     @private
   */
   has(obj) {
-    if (this.size === 0) { return false; }
+    if (this.size === 0) {
+      return false;
+    }
 
     let guid = guidFor(obj);
     let presenceSet = this.presenceSet;
@@ -161,7 +163,9 @@ class OrderedSet {
   forEach(fn /*, ...thisArg*/) {
     assert(`${Object.prototype.toString.call(fn)} is not a function`, typeof fn === 'function');
 
-    if (this.size === 0) { return; }
+    if (this.size === 0) {
+      return;
+    }
 
     let list = this.list;
 
@@ -247,7 +251,9 @@ class Map {
     @private
   */
   get(key) {
-    if (this.size === 0) { return; }
+    if (this.size === 0) {
+      return;
+    }
 
     let values = this._values;
     let guid = guidFor(key);
@@ -271,7 +277,7 @@ class Map {
     let guid = guidFor(key);
 
     // ensure we don't store -0
-    let k = key === -0 ? 0 : key;
+    let k = key === -0 ? 0 : key; // eslint-disable-line no-compare-neg-zero
 
     keys.add(k, guid);
 
@@ -292,7 +298,9 @@ class Map {
     @private
   */
   delete(key) {
-    if (this.size === 0) { return false; }
+    if (this.size === 0) {
+      return false;
+    }
     // don't use ES6 "delete" because it will be annoying
     // to use in browsers that are not ES6 friendly;
     let keys = this._keys;
@@ -333,10 +341,15 @@ class Map {
       callback. By default, `this` is the map.
     @private
   */
-  forEach(callback/*, ...thisArg*/) {
-    assert(`${Object.prototype.toString.call(callback)} is not a function`, typeof callback === 'function');
+  forEach(callback /*, ...thisArg*/) {
+    assert(
+      `${Object.prototype.toString.call(callback)} is not a function`,
+      typeof callback === 'function'
+    );
 
-    if (this.size === 0) { return; }
+    if (this.size === 0) {
+      return;
+    }
 
     let map = this;
     let cb, thisArg;
@@ -429,17 +442,15 @@ class MapWithDefault extends Map {
   */
   copy() {
     let Constructor = this.constructor;
-    return copyMap(this, new Constructor({
-      defaultValue: this.defaultValue
-    }));
+    return copyMap(
+      this,
+      new Constructor({
+        defaultValue: this.defaultValue,
+      })
+    );
   }
 }
 
-
 export default Map;
 
-export {
-  OrderedSet,
-  Map,
-  MapWithDefault
-};
+export { OrderedSet, Map, MapWithDefault };

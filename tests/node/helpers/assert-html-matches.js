@@ -1,6 +1,6 @@
 var diffOptions = {
   ignoreAttributes: ['id'],
-  ignoreWhitespaces: true
+  ignoreWhitespaces: true,
 };
 var HtmlDiffer = require('html-differ').HtmlDiffer;
 var htmlDiffer = new HtmlDiffer(diffOptions);
@@ -18,7 +18,7 @@ function assertHTMLMatches(assert, actual, expected, message) {
     result: isEqual,
     actual,
     expected,
-    message
+    message,
   });
 }
 

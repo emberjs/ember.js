@@ -1,20 +1,16 @@
 /* global self */
 
 import { setTesting } from 'ember-debug';
-import {
-  getAdapter,
-  setAdapter
-} from './test/adapter';
+import { jQuery } from 'ember-views';
+import { getAdapter, setAdapter } from './test/adapter';
 import {
   incrementPendingRequests,
   decrementPendingRequests,
-  clearPendingRequests
+  clearPendingRequests,
 } from './test/pending_requests';
 import Adapter from './adapters/adapter';
 import QUnitAdapter from './adapters/qunit';
-/**
-@module ember
-*/
+
 /**
   Sets Ember up for testing. This is useful to perform
   basic setup steps in order to unit test.
@@ -33,14 +29,16 @@ export default function setupForTesting() {
   let adapter = getAdapter();
   // if adapter is not manually set default to QUnit
   if (!adapter) {
-    setAdapter((typeof self.QUnit === 'undefined') ? new Adapter() : new QUnitAdapter());
+    setAdapter(typeof self.QUnit === 'undefined' ? new Adapter() : new QUnitAdapter());
   }
 
-  document.removeEventListener('ajaxSend', incrementPendingRequests);
-  document.removeEventListener('ajaxComplete', decrementPendingRequests);
+  if (jQuery) {
+    jQuery(document).off('ajaxSend', incrementPendingRequests);
+    jQuery(document).off('ajaxComplete', decrementPendingRequests);
 
-  clearPendingRequests();
+    clearPendingRequests();
 
-  document.addEventListener('ajaxSend', incrementPendingRequests);
-  document.addEventListener('ajaxComplete', decrementPendingRequests);
+    jQuery(document).on('ajaxSend', incrementPendingRequests);
+    jQuery(document).on('ajaxComplete', decrementPendingRequests);
+  }
 }

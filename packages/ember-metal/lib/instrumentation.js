@@ -81,9 +81,11 @@ const time = (() => {
   let perf = 'undefined' !== typeof window ? window.performance || {} : {};
   let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
   // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
-  return fn ? fn.bind(perf) : () => {
-    return +new Date();
-  };
+  return fn
+    ? fn.bind(perf)
+    : () => {
+        return +new Date();
+      };
 })();
 
 /**
@@ -222,7 +224,7 @@ export function subscribe(pattern, object) {
   let subscriber = {
     pattern,
     regex: new RegExp(`^${regex}$`),
-    object
+    object,
   };
 
   subscribers.push(subscriber);

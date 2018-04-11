@@ -15,6 +15,7 @@ import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformDotComponentInvocation from './transform-dot-component-invocation';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import TransformInElement from './transform-in-element';
+import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 
 const transforms = [
   TransformDotComponentInvocation,
@@ -34,6 +35,7 @@ const transforms = [
   TransformHasBlockSyntax,
   AssertInputHelperWithoutBlock,
   TransformInElement,
+  AssertIfHelperWithoutArguments,
 ];
 
 export default Object.freeze(transforms);

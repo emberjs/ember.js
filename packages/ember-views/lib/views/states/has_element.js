@@ -1,11 +1,10 @@
 import { assign } from 'ember-utils';
 import _default from './default';
-import { run, flaggedInstrument } from 'ember-metal';
+import { join, flaggedInstrument } from 'ember-metal';
 
 const hasElement = Object.create(_default);
 
 assign(hasElement, {
-
   rerender(view) {
     view.renderer.rerender(view);
   },
@@ -20,12 +19,12 @@ assign(hasElement, {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
       return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {
-        return run.join(view, view.trigger, eventName, event);
+        return join(view, view.trigger, eventName, event);
       });
     } else {
       return true; // continue event propagation
     }
-  }
+  },
 });
 
 export default hasElement;
