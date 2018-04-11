@@ -127,7 +127,7 @@ function makeCtor(base) {
 
               let value = target.unknownProperty.call(receiver, property);
 
-              assert(messageFor(receiver, property), value === undefined);
+              assert(messageFor(receiver, property), value === undefined || value === null);
             },
           });
         }
