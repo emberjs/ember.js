@@ -10,8 +10,9 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const fixture = require('../helpers/fixture');
+const fs = require('fs-extra');
 
-describe('Blueprint: helper', function() {
+describe.only('Blueprint: helper', function() {
   setupTestHooks(this);
 
   describe('in app', function() {
@@ -80,7 +81,65 @@ describe('Blueprint: helper', function() {
     });
   });
 
+  describe('in app - module unification', function() {
+    beforeEach(function() {
+      return emberNew().then(() => fs.ensureDirSync('src'));
+    });
+
+    it('helper foo/bar-baz', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/integration.js')
+        );
+      });
+    });
+
+    it('helper foo/bar-baz unit', function() {
+      return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/unit.js')
+        );
+      });
+    });
+  });
+
   describe('in addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+    });
+
+    it.only('helper foo/bar-baz', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+        expect(_file('app/helpers/foo/bar-baz.js')).to.not.exist;
+        expect(_file('src/ui/components/foo/bar-baz.js-test.js')).to.equal(
+          fixture('helper-test/integration.js')
+        );
+      });
+    });
+
+    it('helper foo/bar-baz', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
+        expect(_file('addon/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper-addon.js'));
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/integration.js')
+        );
+      });
+    });
+
+    it('helper foo/bar-baz --dummy', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+        expect(_file('app/helpers/foo/bar-baz.js')).to.not.exist;
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.not.exist;
+      });
+    });
+  });
+
+  describe('in addon - module unification', function() {
     beforeEach(function() {
       return emberNew({ target: 'addon' });
     });
