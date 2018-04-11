@@ -1,4 +1,4 @@
-import { getOwner } from 'ember-utils';
+import { getOwner, setOwner } from 'ember-utils';
 import { get } from 'ember-metal';
 import CoreObject from '../../lib/system/core_object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -73,6 +73,24 @@ moduleFor(
 
       // should not trigger an assertion
       getOwner(proxy);
+    }
+
+    ['@test can use getOwner in a proxy init GH#16484'](assert) {
+      let owner = {};
+      let options = {};
+      setOwner(options, owner);
+
+      CoreObject.extend({
+        init() {
+          this._super(...arguments);
+          let localOwner = getOwner(this);
+
+          assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
+        },
+        unknownProperty() {
+          return undefined;
+        },
+      }).create(options);
     }
   }
 );
