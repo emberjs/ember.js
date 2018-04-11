@@ -312,32 +312,6 @@ function glimmerDependenciesES() {
 }
 
 function rollupPackage(packagesES, name) {
-  let externs = [
-    '@glimmer/reference',
-    '@glimmer/runtime',
-    '@glimmer/node',
-    '@glimmer/opcode-compiler',
-    '@glimmer/program',
-    '@glimmer/wire-format',
-    '@glimmer/util',
-    'ember-console',
-    'ember-debug',
-    'ember-env-flags',
-    'ember/features',
-    'ember/version',
-    'ember-environment',
-    'ember-utils',
-    'ember-metal',
-    'ember-runtime',
-    'ember-views',
-    'ember-routing',
-    'node-module',
-    'require',
-    'rsvp',
-    'container',
-    'backburner',
-  ];
-
   // this prevents broccoli-rollup from "seeing" changes in
   // its input that are unrelated to what we are building
   // and therefore noop on rebuilds...
@@ -350,7 +324,20 @@ function rollupPackage(packagesES, name) {
     annotation: `rollup ${name}`,
     rollup: {
       input: `${name}/index.js`,
-      external: externs,
+      external(importee, importer) {
+        // importer of null/undefined means entry module
+        if (!importer) {
+          return false;
+        }
+
+        // import is relative initially, then expanded to absolute
+        // when resolveId is called. this checks for either...
+        if (importee[0] === '.' || importee[0] === '/') {
+          return false;
+        }
+
+        return true;
+      },
       output: {
         file: `${name}.js`,
         format: 'es',
