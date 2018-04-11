@@ -1,7 +1,7 @@
 import { assert } from 'ember-debug';
 
 /**
-@module @ember/object/computed
+@module @ember/object
 */
 
 const END_WITH_EACH_REGEX = /\.@each$/;
@@ -30,7 +30,7 @@ const END_WITH_EACH_REGEX = /\.@each$/;
 
   @method expandProperties
   @static
-  @for @ember/object
+  @for @ember/object/computed
   @public
   @param {String} pattern The property pattern to expand.
   @param {Function} callback The callback to invoke.  It is invoked once per
