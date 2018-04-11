@@ -10,14 +10,6 @@ export { default as alias } from './lib/alias';
 export { default as merge } from './lib/merge';
 export { deprecateProperty } from './lib/deprecate_property';
 export {
-  instrument,
-  flaggedInstrument,
-  _instrumentStart,
-  reset as instrumentationReset,
-  subscribe as instrumentationSubscribe,
-  unsubscribe as instrumentationUnsubscribe,
-} from './lib/instrumentation';
-export {
   getOnerror,
   setOnerror,
   setDispatchOverride,

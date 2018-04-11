@@ -296,9 +296,10 @@
   @public
 */
 
+import { flaggedInstrument } from '@ember/instrumentation';
 import { assert, warn } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import { computed, flaggedInstrument, get } from 'ember-metal';
+import { computed, get } from 'ember-metal';
 import { inject } from 'ember-runtime';
 import { isSimpleClick } from 'ember-views';
 import EmberComponent, { HAS_BLOCK } from '../component';

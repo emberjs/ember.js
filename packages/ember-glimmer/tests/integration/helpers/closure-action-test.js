@@ -1,10 +1,8 @@
+import { getCurrentRunLoop, set, computed } from 'ember-metal';
 import {
-  getCurrentRunLoop,
-  set,
-  computed,
-  instrumentationSubscribe,
-  instrumentationUnsubscribe,
-} from 'ember-metal';
+  subscribe as instrumentationSubscribe,
+  unsubscribe as instrumentationUnsubscribe,
+} from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';

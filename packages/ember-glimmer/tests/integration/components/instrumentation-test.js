@@ -1,6 +1,10 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { instrumentationSubscribe, instrumentationReset, set } from 'ember-metal';
+import { set } from 'ember-metal';
+import {
+  subscribe as instrumentationSubscribe,
+  reset as instrumentationReset,
+} from '@ember/instrumentation';
 
 moduleFor(
   'Components instrumentation',
