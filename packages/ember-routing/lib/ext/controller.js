@@ -24,6 +24,7 @@ ControllerMixin.reopen({
         }
       }]
     ```
+    @for Ember.ControllerMixin
     @property queryParams
     @public
   */
