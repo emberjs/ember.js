@@ -17,7 +17,6 @@ const { RELEASE, DEBUG, toConst } = require('./features');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const { stripIndent } = require('common-tags');
-const toES5 = require('./to-es5');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
@@ -61,22 +60,23 @@ module.exports.qunit = function _qunit() {
   });
 };
 
-module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
-  let input = new Funnel(`packages/${name}`, {
-    destDir: `packages/${name}`,
+module.exports.getPackagesES = function getPackagesES() {
+  let input = new Funnel(`packages`, {
+    exclude: ['node-module/**', 'loader/**', 'external-helpers/**'],
+    destDir: `packages`,
   });
 
-  let debuggedInput = debugTree(input, `${name}:input`);
+  let debuggedInput = debugTree(input, `get-packages-es:input`);
 
   let compiledTemplatesAndTypescript = new GlimmerTemplatePrecompiler(debuggedInput, {
     persist: true,
     glimmer: require('@glimmer/compiler'),
-    annotation: `${name} templates -> es`,
+    annotation: `get-packages-es templates -> es`,
   });
 
   let debuggedCompiledTemplatesAndTypeScript = debugTree(
     compiledTemplatesAndTypescript,
-    `${name}:templates-output`
+    `get-packages-es:templates-output`
   );
 
   let nonTypeScriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
@@ -88,51 +88,15 @@ module.exports.emberTypescriptPkgES = function emberTypescriptPkg(name) {
     include: ['**/*.ts'],
   });
 
-  let typescriptCompiled = typescript(debugTree(typescriptContents, `${name}:ts:input`));
+  let typescriptCompiled = typescript(debugTree(typescriptContents, `get-packages-es:ts:input`));
 
-  let debuggedCompiledTypescript = debugTree(typescriptCompiled, `${name}:ts:output`);
+  let debuggedCompiledTypescript = debugTree(typescriptCompiled, `get-packages-es:ts:output`);
 
   let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], {
     overwrite: true,
   });
 
-  return debugTree(mergedFinalOutput, `${name}:output`);
-};
-
-module.exports.rollupEmberGlimmerES = function(emberGlimmerES) {
-  return new Rollup(emberGlimmerES, {
-    annotation: 'ember-glimmer',
-    rollup: {
-      external: [
-        '@glimmer/reference',
-        '@glimmer/runtime',
-        '@glimmer/node',
-        '@glimmer/opcode-compiler',
-        '@glimmer/program',
-        '@glimmer/wire-format',
-        '@glimmer/util',
-        'ember-console',
-        'ember-debug',
-        'ember-env-flags',
-        'ember/features',
-        'ember-environment',
-        'ember-utils',
-        'ember-metal',
-        'ember-runtime',
-        'ember-views',
-        'ember-routing',
-        'node-module',
-        'rsvp',
-        'container',
-      ],
-      input: 'ember-glimmer/index.js',
-      output: {
-        file: 'ember-glimmer.js',
-        format: 'es',
-        exports: 'named',
-      },
-    },
-  });
+  return debugTree(mergedFinalOutput, `get-packages-es:output`);
 };
 
 module.exports.handlebarsES = function _handlebars() {
@@ -234,29 +198,6 @@ module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
   });
 };
 
-module.exports.emberPkgES = function _emberPkgES(name, rollup, externs) {
-  if (rollup) {
-    return new Rollup(`packages/${name}`, {
-      annotation: `rollup ${name}`,
-      rollup: {
-        input: 'index.js',
-        external: externs,
-        output: {
-          file: `${name}.js`,
-          format: 'es',
-          exports: 'named',
-        },
-      },
-    });
-  }
-
-  return new Funnel(`packages/${name}`, {
-    exclude: ['.gitkeep', '**/*.d.ts', 'tests'],
-    destDir: name,
-    annotation: `${name} es`,
-  });
-};
-
 const glimmerTrees = new Map();
 
 function rollupGlimmerPackage(pkg) {
@@ -278,10 +219,6 @@ function rollupGlimmerPackage(pkg) {
   }
   return tree;
 }
-
-module.exports.glimmerPkgES = function glimmerPkgES(name) {
-  return rollupGlimmerPackage(findPackage(name));
-};
 
 module.exports.glimmerTrees = function glimmerTrees(entries) {
   let seen = new Set();
@@ -315,14 +252,6 @@ module.exports.glimmerTrees = function glimmerTrees(entries) {
     }
   }
   return trees;
-};
-
-module.exports.emberTestsES = function _emberTestES(name) {
-  return new Funnel(`packages/${name}/tests`, {
-    exclude: ['.gitkeep'],
-    destDir: `${name}/tests`,
-    annotation: `${name} tests es`,
-  });
 };
 
 module.exports.nodeModuleUtils = function _nodeModuleUtils() {
@@ -392,37 +321,4 @@ module.exports.nodeTests = function _nodeTests() {
   return new Funnel('tests', {
     include: ['**/*/*.js'],
   });
-};
-
-module.exports.rollupEmberMetal = function _rollupEmberMetal(tree, options) {
-  options = Object.assign({ transformModules: false, annotation: 'ember metal' }, options);
-  let emberMetalES5 = toES5(tree, options);
-  return toES5(
-    new Rollup(emberMetalES5, {
-      annotation: `rollup ember-metal`,
-      rollup: {
-        input: `index.js`,
-        output: {
-          amd: { id: 'ember-metal' },
-          file: 'ember-metal.js',
-          format: 'amd',
-          exports: 'named',
-        },
-        external: [
-          'node-module',
-          'ember-babel',
-          'ember-debug',
-          'ember-environment',
-          'ember-utils',
-          '@glimmer/reference',
-          'require',
-          'backburner',
-          'ember-console',
-          'ember-env-flags',
-          'ember/features',
-        ],
-      },
-    }),
-    { transformDefine: true }
-  );
 };

@@ -64,3 +64,4 @@ export class Cache<T, V> {
 }
 
 export { tagForProperty, tagFor } from './lib/tags';
+export { tracked } from './lib/tracked';

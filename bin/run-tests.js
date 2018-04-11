@@ -6,8 +6,6 @@ var execa = require('execa');
 var RSVP = require('rsvp');
 var execFile = require('child_process').execFile;
 var chalk = require('chalk');
-var FEATURES = require('../broccoli/features');
-var getPackages = require('../lib/packages');
 var runInSequence = require('../lib/run-in-sequence');
 var path = require('path');
 
@@ -15,6 +13,7 @@ var finalhandler = require('finalhandler');
 var http = require('http');
 var serveStatic = require('serve-static');
 var puppeteer = require('puppeteer');
+const fs = require('fs');
 
 // Serve up public/ftp folder.
 var serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
@@ -198,28 +197,31 @@ function runInBrowser(url, retries, resolve, reject) {
 var testFunctions = [];
 
 function generateEachPackageTests() {
-  var features = FEATURES;
-  var packages = getPackages(features);
+  let entries = fs.readdirSync('packages');
+  entries.forEach(entry => {
+    let relativePath = path.join('packages', entry);
 
-  Object.keys(packages).forEach(function(packageName) {
-    if (packages[packageName].skipTests) {
+    if (!fs.existsSync(path.join(relativePath, 'tests'))) {
       return;
     }
 
     testFunctions.push(function() {
-      return run('package=' + packageName);
+      return run('package=' + entry);
     });
     testFunctions.push(function() {
-      return run('package=' + packageName + '&dist=es');
+      return run('package=' + entry + '&dist=es');
     });
-    if (packages[packageName].requiresJQuery === false) {
+    testFunctions.push(function() {
+      return run('package=' + entry + '&enableoptionalfeatures=true');
+    });
+
+    // TODO: this should ultimately be deleted (when all packages can run with and
+    // without jQuery)
+    if (entry !== 'ember') {
       testFunctions.push(function() {
-        return run('package=' + packageName + '&jquery=none');
+        return run('package=' + entry + '&jquery=none');
       });
     }
-    testFunctions.push(function() {
-      return run('package=' + packageName + '&enableoptionalfeatures=true');
-    });
   });
 }
 
