@@ -338,7 +338,15 @@ function rollupPackage(packagesES, name) {
     'backburner',
   ];
 
-  return new Rollup(packagesES, {
+  // this prevents broccoli-rollup from "seeing" changes in
+  // its input that are unrelated to what we are building
+  // and therefore noop on rebuilds...
+  let rollupRestrictedInput = new Funnel(packagesES, {
+    srcDir: name,
+    destDir: name,
+  });
+
+  return new Rollup(rollupRestrictedInput, {
     annotation: `rollup ${name}`,
     rollup: {
       input: `${name}/index.js`,
