@@ -28,7 +28,7 @@ import { ENV } from 'ember-environment';
 import Observable from '../mixins/observable';
 import Copyable from '../mixins/copyable';
 import copy from '../copy';
-import { Error as EmberError } from 'ember-debug';
+import EmberError from '@ember/error';
 import MutableEnumerable from './mutable_enumerable';
 
 const EMPTY_ARRAY = Object.freeze([]);

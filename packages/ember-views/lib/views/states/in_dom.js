@@ -1,6 +1,6 @@
 import { assign } from 'ember-utils';
 import { addObserver } from 'ember-metal';
-import { Error as EmberError } from 'ember-debug';
+import EmberError from '@ember/error';
 import { DEBUG } from 'ember-env-flags';
 
 import hasElement from './has_element';

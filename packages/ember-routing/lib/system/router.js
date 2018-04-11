@@ -10,7 +10,8 @@ import {
   schedule,
   cancel,
 } from 'ember-metal';
-import { Error as EmberError, deprecate, assert, info } from 'ember-debug';
+import EmberError from '@ember/error';
+import { deprecate, assert, info } from 'ember-debug';
 import { Object as EmberObject, Evented, typeOf, A as emberA } from 'ember-runtime';
 import { defaultSerialize, hasDefaultSerialize } from './route';
 import EmberRouterDSL from './dsl';

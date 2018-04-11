@@ -1,5 +1,6 @@
 import { inspect } from 'ember-utils';
-import { assert, Error as EmberError } from 'ember-debug';
+import { assert } from 'ember-debug';
+import EmberError from '@ember/error';
 import { get } from './property_get';
 import { set } from './property_set';
 import { Descriptor, defineProperty } from './properties';

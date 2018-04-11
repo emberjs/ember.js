@@ -1,7 +1,7 @@
 import { DEBUG } from 'ember-env-flags';
 import { ENV, environment } from 'ember-environment';
 import { isTesting } from './lib/testing';
-import EmberError from './lib/error';
+import EmberError from '@ember/error';
 import { default as isFeatureEnabled } from './lib/features';
 import * as FLAGS from 'ember/features';
 let { DEFAULT_FEATURES, FEATURES } = FLAGS;
@@ -11,7 +11,6 @@ import _warn from './lib/warn';
 export { registerHandler as registerWarnHandler } from './lib/warn';
 export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
 export { default as isFeatureEnabled } from './lib/features';
-export { default as Error } from './lib/error';
 export { isTesting, setTesting } from './lib/testing';
 
 // These are the default production build versions:

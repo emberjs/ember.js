@@ -1,5 +1,5 @@
 import { run, schedule, getCurrentRunLoop } from '../..';
-import { Error as EmberError } from 'ember-debug';
+import EmberError from '@ember/error';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
