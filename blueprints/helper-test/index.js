@@ -4,6 +4,7 @@ const stringUtils = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
+const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a helper integration test or a unit test.',
@@ -23,11 +24,31 @@ module.exports = useTestFrameworkDetector({
   ],
 
   fileMapTokens: function() {
-    return {
-      __testType__: function(options) {
-        return options.locals.testType || 'integration';
-      },
-    };
+    if (isModuleUnificationProject(this.project)) {
+      return {
+        __root__() {
+          return 'src';
+        },
+        __testType__() {
+          return '';
+        },
+        __collection__() {
+          return 'ui/components';
+        },
+      };
+    } else {
+      return {
+        __root__() {
+          return 'tests';
+        },
+        __testType__(options) {
+          return options.locals.testType || 'integration';
+        },
+        __collection__() {
+          return 'helpers';
+        },
+      };
+    }
   },
 
   locals: function(options) {
