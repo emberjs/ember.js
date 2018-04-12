@@ -1,5 +1,6 @@
 import { Object as EmberObject } from 'ember-runtime';
-import { run, get, Mixin } from '../..';
+import { get, Mixin } from '../..';
+import { run } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

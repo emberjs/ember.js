@@ -1,5 +1,5 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import { Router } from 'ember-routing';
 
 moduleFor(

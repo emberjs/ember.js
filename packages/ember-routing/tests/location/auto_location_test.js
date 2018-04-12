@@ -1,6 +1,7 @@
 import { assign, OWNER } from 'ember-utils';
 import { environment } from 'ember-environment';
-import { get, run } from 'ember-metal';
+import { run } from '@ember/runloop';
+import { get } from 'ember-metal';
 import AutoLocation from '../../lib/location/auto_location';
 import { getHistoryPath, getHashPath } from '../../lib/location/auto_location';
 import HistoryLocation from '../../lib/location/history_location';

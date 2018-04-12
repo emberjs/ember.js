@@ -1,5 +1,5 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import EmberApplication from '../../lib/system/application';
 
 let jQuery, application, Application;

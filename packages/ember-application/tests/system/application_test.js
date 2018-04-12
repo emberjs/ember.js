@@ -18,7 +18,7 @@ import {
   AutobootApplicationTestCase,
   DefaultResolverApplicationTestCase,
 } from 'internal-test-helpers';
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 
 moduleFor(
   'Application, autobooting multiple apps',

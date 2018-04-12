@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import Application from '../../../lib/system/application';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 

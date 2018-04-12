@@ -1,4 +1,4 @@
-import { run } from '../..';
+import { run } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

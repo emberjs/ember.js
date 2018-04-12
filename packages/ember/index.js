@@ -105,6 +105,7 @@ import * as routing from 'ember-routing';
 import * as application from 'ember-application';
 import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
+import * as runloop from '@ember/runloop';
 
 // ****ember-environment****
 
@@ -174,6 +175,31 @@ Ember.Instrumentation = {
   unsubscribe: instrumentation.unsubscribe,
   reset: instrumentation.reset,
 };
+
+// ****@ember/runloop****
+
+// Using _globalsRun here so that mutating the function (adding
+// `next`, `later`, etc to it) is only available in globals builds
+Ember.run = runloop._globalsRun;
+Ember.run.backburner = runloop.backburner;
+Ember.run.begin = runloop.begin;
+Ember.run.bind = runloop.bind;
+Ember.run.cancel = runloop.cancel;
+Ember.run.debounce = runloop.debounce;
+Ember.run.end = runloop.end;
+Ember.run.hasScheduledTimers = runloop.hasScheduledTimers;
+Ember.run.join = runloop.join;
+Ember.run.later = runloop.later;
+Ember.run.next = runloop.next;
+Ember.run.once = runloop.once;
+Ember.run.schedule = runloop.schedule;
+Ember.run.scheduleOnce = runloop.scheduleOnce;
+Ember.run.throttle = runloop.throttle;
+Object.defineProperty(Ember.run, 'currentRunLoop', {
+  get: runloop.getCurrentRunLoop,
+  enumerable: false,
+});
+
 // ****ember-metal****
 
 // Using _globalsComputed here so that mutating the function is only available
@@ -202,27 +228,6 @@ Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
-// Using _globalsRun here so that mutating the function (adding
-// `next`, `later`, etc to it) is only available in globals builds
-Ember.run = metal._globalsRun;
-Ember.run.backburner = metal.backburner;
-Ember.run.begin = metal.begin;
-Ember.run.bind = metal.bind;
-Ember.run.cancel = metal.cancel;
-Ember.run.debounce = metal.debounce;
-Ember.run.end = metal.end;
-Ember.run.hasScheduledTimers = metal.hasScheduledTimers;
-Ember.run.join = metal.join;
-Ember.run.later = metal.later;
-Ember.run.next = metal.next;
-Ember.run.once = metal.once;
-Ember.run.schedule = metal.schedule;
-Ember.run.scheduleOnce = metal.scheduleOnce;
-Ember.run.throttle = metal.throttle;
-Object.defineProperty(Ember.run, 'currentRunLoop', {
-  get: metal.getCurrentRunLoop,
-  enumerable: false,
-});
 Ember.propertyWillChange = metal.propertyWillChange;
 Ember.propertyDidChange = metal.propertyDidChange;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;

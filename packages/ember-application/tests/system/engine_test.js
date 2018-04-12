@@ -1,5 +1,5 @@
 import { context } from 'ember-environment';
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import Engine from '../../lib/system/engine';
 import { Object as EmberObject } from 'ember-runtime';
 import { privatize as P } from 'container';

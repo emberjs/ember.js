@@ -1,5 +1,5 @@
 import { context } from 'ember-environment';
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import { Object as EmberObject } from 'ember-runtime';
 import Application from '../../lib/system/application';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';

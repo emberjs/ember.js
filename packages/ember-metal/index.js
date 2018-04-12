@@ -10,6 +10,7 @@ export { default as alias } from './lib/alias';
 export { default as merge } from './lib/merge';
 export { deprecateProperty } from './lib/deprecate_property';
 export {
+  onErrorTarget,
   getOnerror,
   setOnerror,
   setDispatchOverride,
@@ -35,26 +36,6 @@ export { default as isNone } from './lib/is_none';
 export { default as isEmpty } from './lib/is_empty';
 export { default as isBlank } from './lib/is_blank';
 export { default as isPresent } from './lib/is_present';
-export {
-  getCurrentRunLoop,
-  backburner,
-  run,
-  join,
-  bind,
-  begin,
-  end,
-  schedule,
-  hasScheduledTimers,
-  cancelTimers,
-  later,
-  once,
-  scheduleOnce,
-  next,
-  cancel,
-  debounce,
-  throttle,
-  _globalsRun,
-} from './lib/run_loop';
 export {
   beginPropertyChanges,
   changeProperties,

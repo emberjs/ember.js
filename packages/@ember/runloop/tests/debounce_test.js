@@ -1,4 +1,4 @@
-import { debounce } from '../..';
+import { debounce } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

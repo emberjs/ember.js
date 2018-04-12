@@ -1,4 +1,5 @@
-import { get, set, run, changeProperties } from 'ember-metal';
+import { run } from '@ember/runloop';
+import { get, set, changeProperties } from 'ember-metal';
 import { not } from '../../../lib/computed/computed_macros';
 import ArrayProxy from '../../../lib/system/array_proxy';
 import { A as emberA } from '../../../lib/mixins/array';

@@ -1,4 +1,5 @@
-import { observer, run, get, set } from 'ember-metal';
+import { run } from '@ember/runloop';
+import { observer, get, set } from 'ember-metal';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

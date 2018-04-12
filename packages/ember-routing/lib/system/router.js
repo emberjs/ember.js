@@ -1,15 +1,6 @@
 import { assign, getOwner } from 'ember-utils';
-import {
-  get,
-  set,
-  defineProperty,
-  computed,
-  run,
-  once,
-  scheduleOnce,
-  schedule,
-  cancel,
-} from 'ember-metal';
+import { cancel, once, run, scheduleOnce, schedule } from '@ember/runloop';
+import { get, set, defineProperty, computed } from 'ember-metal';
 import EmberError from '@ember/error';
 import { deprecate, assert, info } from 'ember-debug';
 import { Object as EmberObject, Evented, typeOf, A as emberA } from 'ember-runtime';

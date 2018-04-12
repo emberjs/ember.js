@@ -1,4 +1,5 @@
-import { run, setOnerror, getOnerror, setDispatchOverride, getDispatchOverride } from '../..';
+import { run } from '..';
+import { setOnerror, getOnerror, setDispatchOverride, getDispatchOverride } from 'ember-metal';
 import { isTesting, setTesting } from 'ember-debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

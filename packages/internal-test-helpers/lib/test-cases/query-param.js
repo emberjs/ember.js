@@ -1,6 +1,6 @@
 import { Controller } from 'ember-runtime';
 import { NoneLocation } from 'ember-routing';
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 
 import ApplicationTestCase from './application';
 

@@ -14,6 +14,7 @@ import {
   HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from 'ember-utils';
+import { schedule } from '@ember/runloop';
 import {
   PROXY_CONTENT,
   descriptorFor,
@@ -25,7 +26,6 @@ import {
   defineProperty,
   ComputedProperty,
   InjectedProperty,
-  schedule,
   deleteMeta,
   descriptor,
   classToString,

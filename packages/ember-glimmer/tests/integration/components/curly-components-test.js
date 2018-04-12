@@ -1,5 +1,6 @@
+import { run } from '@ember/runloop';
 /* globals EmberDev */
-import { set, get, observer, on, computed, run } from 'ember-metal';
+import { set, get, observer, on, computed } from 'ember-metal';
 import { Object as EmberObject, A as emberA, inject, Service } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views';
 import { ENV } from 'ember-environment';

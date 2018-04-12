@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { Object as EmberObject, inject, RSVP, onerrorDefault } from 'ember-runtime';
-import { later } from 'ember-metal';
+import { later } from '@ember/runloop';
 import Application from '../../lib/system/application';
 import ApplicationInstance from '../../lib/system/application-instance';
 import Engine from '../../lib/system/engine';

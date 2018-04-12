@@ -1,7 +1,7 @@
 /* global Element */
 
 import { assign } from 'ember-utils';
-import { run, next, hasScheduledTimers, getCurrentRunLoop } from 'ember-metal';
+import { getCurrentRunLoop, hasScheduledTimers, next, run } from '@ember/runloop';
 
 import NodeQuery from './node-query';
 import equalInnerHTML from '../equal-inner-html';

@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
-import { run, getCurrentRunLoop } from 'ember-metal';
+import { getCurrentRunLoop, run } from '@ember/runloop';
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,

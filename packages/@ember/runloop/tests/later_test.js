@@ -1,6 +1,7 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { assign } from 'ember-utils';
-import { run, later, backburner, isNone, hasScheduledTimers, getCurrentRunLoop } from '../..';
+import { isNone } from 'ember-metal';
+import { run, later, backburner, hasScheduledTimers, getCurrentRunLoop } from '..';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;

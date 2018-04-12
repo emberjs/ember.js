@@ -3,7 +3,7 @@
 */
 import { checkWaiters } from '../test/waiters';
 import { RSVP } from 'ember-runtime';
-import { getCurrentRunLoop, hasScheduledTimers, run } from 'ember-metal';
+import { getCurrentRunLoop, hasScheduledTimers, run } from '@ember/runloop';
 import { pendingRequests } from '../test/pending_requests';
 
 /**

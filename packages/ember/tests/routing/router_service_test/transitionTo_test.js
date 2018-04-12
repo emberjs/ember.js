@@ -2,7 +2,8 @@ import { inject } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Route, NoneLocation } from 'ember-routing';
 import { Controller } from 'ember-runtime';
-import { run, get } from 'ember-metal';
+import { run } from '@ember/runloop';
+import { get } from 'ember-metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { Transition } from 'router';
 

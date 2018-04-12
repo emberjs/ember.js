@@ -1,6 +1,6 @@
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 
-import { later } from 'ember-metal';
+import { later } from '@ember/runloop';
 import Test from '../lib/test';
 import QUnitAdapter from '../lib/adapters/qunit';
 import { Route } from 'ember-routing';

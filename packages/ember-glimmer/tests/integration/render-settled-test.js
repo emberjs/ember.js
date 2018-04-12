@@ -1,7 +1,7 @@
 import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
 import { renderSettled } from 'ember-glimmer';
 import { all } from 'rsvp';
-import { run, schedule } from 'ember-metal';
+import { run, schedule } from '@ember/runloop';
 
 moduleFor(
   'renderSettled',

@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import QUnitAdapter from '../../lib/adapters/qunit';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
