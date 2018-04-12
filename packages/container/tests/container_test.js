@@ -1,4 +1,5 @@
-import { OWNER, assign } from 'ember-utils';
+import { OWNER } from '@ember/application';
+import { assign } from 'ember-utils';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';

@@ -1,4 +1,4 @@
-import { setOwner } from 'ember-utils';
+import { setOwner } from '@ember/application';
 import { Descriptor, defineProperty, get, set, InjectedProperty } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

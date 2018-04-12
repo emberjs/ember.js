@@ -2,7 +2,8 @@
 import { assert } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
-import { dictionary, setOwner, OWNER, assign, HAS_NATIVE_PROXY } from 'ember-utils';
+import { OWNER, setOwner } from '@ember/application';
+import { dictionary, assign, HAS_NATIVE_PROXY } from 'ember-utils';
 
 /**
  A container used to instantiate and cache objects.

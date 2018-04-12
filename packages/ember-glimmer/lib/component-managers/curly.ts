@@ -1,3 +1,4 @@
+import { getOwner } from '@ember/application';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentCapabilities,
@@ -27,7 +28,7 @@ import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { String as StringUtils } from 'ember-runtime';
-import { assign, getOwner, guidFor } from 'ember-utils';
+import { assign, guidFor } from 'ember-utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
 import Environment from '../environment';

@@ -30,8 +30,8 @@ let allExports = [
   ['lookup', 'ember-environment', { get: 'getLookup', set: 'setLookup' }],
 
   // ember-utils
-  ['getOwner', 'ember-utils', 'getOwner'],
-  ['setOwner', 'ember-utils', 'setOwner'],
+  ['getOwner', '@ember/application', 'getOwner'],
+  ['setOwner', '@ember/application', 'setOwner'],
   ['assign', 'ember-utils'],
   ['GUID_KEY', 'ember-utils'],
   ['uuid', 'ember-utils'],

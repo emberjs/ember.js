@@ -107,6 +107,7 @@ import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
+import { getOwner, setOwner } from '@ember/application';
 
 // ****ember-environment****
 
@@ -128,9 +129,11 @@ Object.defineProperty(Ember, 'lookup', {
   enumerable: false,
 });
 
+// ****@ember/application****
+Ember.getOwner = getOwner;
+Ember.setOwner = setOwner;
+
 // ****ember-utils****
-Ember.getOwner = utils.getOwner;
-Ember.setOwner = utils.setOwner;
 Ember.generateGuid = utils.generateGuid;
 Ember.GUID_KEY = utils.GUID_KEY;
 Ember.guidFor = utils.guidFor;

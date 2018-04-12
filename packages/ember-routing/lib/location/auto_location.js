@@ -1,4 +1,5 @@
-import { tryInvoke, getOwner } from 'ember-utils';
+import { getOwner } from '@ember/application';
+import { tryInvoke } from 'ember-utils';
 import { get, set } from 'ember-metal';
 import { assert } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';

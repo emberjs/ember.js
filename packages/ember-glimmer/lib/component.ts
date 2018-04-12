@@ -1,9 +1,10 @@
+import { getOwner } from '@ember/application';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
 import { assert } from 'ember-debug';
 import { get, PROPERTY_DID_CHANGE } from 'ember-metal';
 import { TargetActionSupport } from 'ember-runtime';
-import { getOwner, symbol } from 'ember-utils';
+import { symbol } from 'ember-utils';
 import {
   ActionSupport,
   ChildViewsSupport,
