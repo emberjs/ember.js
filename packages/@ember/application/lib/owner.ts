@@ -2,6 +2,27 @@
 @module @ember/application
 */
 
+export interface LookupOptions {
+  source?: string;
+  namespace?: string;
+}
+
+export interface Factory<T, C> {
+  class: C;
+  fullName: string;
+  normalizedName: string;
+  create(props?: { [prop: string]: any }): T;
+}
+
+export interface Owner {
+  lookup<T>(fullName: string, options?: LookupOptions): T;
+  lookup(fullName: string, options?: LookupOptions): any;
+  factoryFor<T, C>(fullName: string, options?: LookupOptions): Factory<T, C> | undefined;
+  factoryFor(fullName: string, options?: LookupOptions): Factory<any, any> | undefined;
+  buildChildEngineInstance<T>(name: string): T;
+  hasRegistration(name: string, options?: LookupOptions): boolean;
+}
+
 import { symbol } from 'ember-utils';
 
 export const OWNER = symbol('OWNER');
@@ -49,7 +70,7 @@ export const OWNER = symbol('OWNER');
   @since 2.3.0
   @public
 */
-export function getOwner(object) {
+export function getOwner(object: any): Owner {
   return object[OWNER];
 }
 
@@ -65,6 +86,6 @@ export function getOwner(object) {
   @since 2.3.0
   @public
 */
-export function setOwner(object, owner) {
+export function setOwner(object: any, owner: Owner): void {
   object[OWNER] = owner;
 }
