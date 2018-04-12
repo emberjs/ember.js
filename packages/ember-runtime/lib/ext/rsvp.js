@@ -1,6 +1,6 @@
 import * as RSVP from 'rsvp';
 import { backburner } from '@ember/runloop';
-import { getDispatchOverride } from 'ember-metal';
+import { getDispatchOverride } from 'ember-error-handling';
 import { assert } from 'ember-debug';
 import { privatize as P } from 'container';
 

@@ -106,6 +106,7 @@ import * as application from 'ember-application';
 import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
+import { getOnerror, setOnerror } from 'ember-error-handling';
 
 // ****ember-environment****
 
@@ -289,8 +290,8 @@ Ember.Mixin = metal.Mixin;
   @public
 */
 Object.defineProperty(Ember, 'onerror', {
-  get: metal.getOnerror,
-  set: metal.setOnerror,
+  get: getOnerror,
+  set: setOnerror,
   enumerable: false,
 });
 

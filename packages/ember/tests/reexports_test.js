@@ -72,7 +72,7 @@ let allExports = [
   ['Instrumentation.unsubscribe', '@ember/instrumentation', 'unsubscribe'],
   ['Instrumentation.reset', '@ember/instrumentation', 'reset'],
   ['testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
-  ['onerror', 'ember-metal', { get: 'getOnerror', set: 'setOnerror' }],
+  ['onerror', 'ember-error-handling', { get: 'getOnerror', set: 'setOnerror' }],
   ['FEATURES', 'ember/features'],
   ['FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
   ['meta', 'ember-metal'],

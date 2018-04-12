@@ -9,13 +9,6 @@ export {
 export { default as alias } from './lib/alias';
 export { default as merge } from './lib/merge';
 export { deprecateProperty } from './lib/deprecate_property';
-export {
-  onErrorTarget,
-  getOnerror,
-  setOnerror,
-  setDispatchOverride,
-  getDispatchOverride,
-} from './lib/error_handler';
 export { descriptorFor, meta, peekMeta, deleteMeta } from './lib/meta';
 export { default as Cache } from './lib/cache';
 export { PROXY_CONTENT, _getPath, get, getWithDefault } from './lib/property_get';
