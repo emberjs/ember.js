@@ -176,6 +176,9 @@ module.exports = function() {
     return new MergeTrees([
       new Funnel(packagesES5, {
         include: [
+          '@ember/error/index.js',
+          '@ember/debug/index.js',
+          '@ember/polyfills/index.js',
           'ember/version.js',
           'ember-debug/**',
           'ember-environment.js',
