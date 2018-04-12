@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 
 export function runAppend(view) {
   run(view, 'appendTo', '#qunit-fixture');

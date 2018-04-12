@@ -1,4 +1,4 @@
-import { setDispatchOverride } from 'ember-metal';
+import { setDispatchOverride } from 'ember-error-handling';
 
 let adapter;
 export function getAdapter() {

@@ -1,5 +1,5 @@
 import { OutletView } from 'ember-glimmer';
-import { run, schedule } from 'ember-metal';
+import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import { onLoad, runLoadHooks, _loaded } from '../../lib/system/lazy_load';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

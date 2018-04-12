@@ -1,5 +1,5 @@
+import { run } from '@ember/runloop';
 import {
-  run,
   observer,
   get,
   set,

@@ -1,5 +1,6 @@
 import { assign, getOwner } from 'ember-utils';
-import { get, set, getProperties, setProperties, computed, once, isEmpty } from 'ember-metal';
+import { once } from '@ember/runloop';
+import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember-metal';
 import { assert, info, isTesting, deprecate } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import {

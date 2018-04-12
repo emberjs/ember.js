@@ -1,7 +1,7 @@
 import Engine from '../../lib/system/engine';
 import EngineInstance from '../../lib/system/engine-instance';
 import { getEngineParent, setEngineParent } from '../../lib/system/engine-parent';
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import { factory } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 

@@ -1,4 +1,4 @@
-import { getCurrentRunLoop, hasScheduledTimers, cancelTimers, end } from 'ember-metal';
+import { cancelTimers, end, getCurrentRunLoop, hasScheduledTimers } from '@ember/runloop';
 
 function RunLoopAssertion(env) {
   this.env = env;

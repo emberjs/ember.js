@@ -1,4 +1,4 @@
-import { bind, getCurrentRunLoop } from '../..';
+import { bind, getCurrentRunLoop } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

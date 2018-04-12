@@ -1,7 +1,7 @@
 import { privatize as P } from 'container';
 import { assert, deprecate, isTesting } from 'ember-debug';
-import { onErrorTarget } from './error_handler';
-import { beginPropertyChanges, endPropertyChanges } from './property_events';
+import { onErrorTarget } from 'ember-error-handling';
+import { beginPropertyChanges, endPropertyChanges } from 'ember-metal';
 import Backburner from 'backburner';
 
 let currentRunLoop = null;

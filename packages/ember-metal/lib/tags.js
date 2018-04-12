@@ -2,7 +2,7 @@ import { CONSTANT_TAG, UpdatableTag, DirtyableTag, combine } from '@glimmer/refe
 import { isProxy } from 'ember-utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { meta as metaFor } from './meta';
-import { backburner } from './run_loop';
+import { backburner } from '@ember/runloop';
 
 let hasViews = () => false;
 

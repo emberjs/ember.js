@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import Test from '../lib/test';
 import { Application as EmberApplication } from 'ember-application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

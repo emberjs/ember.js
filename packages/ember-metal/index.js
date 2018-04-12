@@ -9,12 +9,6 @@ export {
 export { default as alias } from './lib/alias';
 export { default as merge } from './lib/merge';
 export { deprecateProperty } from './lib/deprecate_property';
-export {
-  getOnerror,
-  setOnerror,
-  setDispatchOverride,
-  getDispatchOverride,
-} from './lib/error_handler';
 export { descriptorFor, meta, peekMeta, deleteMeta } from './lib/meta';
 export { default as Cache } from './lib/cache';
 export { PROXY_CONTENT, _getPath, get, getWithDefault } from './lib/property_get';
@@ -35,26 +29,6 @@ export { default as isNone } from './lib/is_none';
 export { default as isEmpty } from './lib/is_empty';
 export { default as isBlank } from './lib/is_blank';
 export { default as isPresent } from './lib/is_present';
-export {
-  getCurrentRunLoop,
-  backburner,
-  run,
-  join,
-  bind,
-  begin,
-  end,
-  schedule,
-  hasScheduledTimers,
-  cancelTimers,
-  later,
-  once,
-  scheduleOnce,
-  next,
-  cancel,
-  debounce,
-  throttle,
-  _globalsRun,
-} from './lib/run_loop';
 export {
   beginPropertyChanges,
   changeProperties,

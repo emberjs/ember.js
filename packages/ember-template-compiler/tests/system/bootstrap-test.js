@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import { Component, getTemplate, setTemplates, hasTemplate, setTemplate } from 'ember-glimmer';
 import bootstrap from '../../lib/system/bootstrap';
 import {

@@ -1,6 +1,6 @@
 import { assign } from 'ember-utils';
 import _default from './default';
-import { join } from 'ember-metal';
+import { join } from '@ember/runloop';
 import { flaggedInstrument } from '@ember/instrumentation';
 
 const hasElement = Object.create(_default);

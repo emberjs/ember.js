@@ -1,7 +1,7 @@
 import RSVP from '../../lib/ext/rsvp';
 import { getAdapter, setAdapter } from '../../lib/test/adapter';
 import TestPromise, { getLastPromise } from '../../lib/test/promise';
-import { getCurrentRunLoop } from 'ember-metal';
+import { getCurrentRunLoop } from '@ember/runloop';
 import { isTesting, setTesting } from 'ember-debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

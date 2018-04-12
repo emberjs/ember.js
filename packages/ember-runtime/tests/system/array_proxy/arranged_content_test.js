@@ -1,4 +1,5 @@
-import { run, computed, objectAt } from 'ember-metal';
+import { run } from '@ember/runloop';
+import { computed, objectAt } from 'ember-metal';
 import ArrayProxy from '../../../lib/system/array_proxy';
 import { A as emberA } from '../../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

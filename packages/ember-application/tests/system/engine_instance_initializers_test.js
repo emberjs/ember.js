@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import Engine from '../../lib/system/engine';
 import EngineInstance from '../../lib/system/engine-instance';
 import { setEngineParent } from '../../lib/system/engine-parent';

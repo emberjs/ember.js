@@ -1,4 +1,4 @@
-import { run, schedule, getCurrentRunLoop } from '../..';
+import { run, schedule, getCurrentRunLoop } from '..';
 import EmberError from '@ember/error';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

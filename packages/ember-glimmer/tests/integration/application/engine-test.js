@@ -5,7 +5,7 @@ import { Controller, RSVP } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Engine } from 'ember-application';
 import { Route } from 'ember-routing';
-import { next } from 'ember-metal';
+import { next } from '@ember/runloop';
 
 moduleFor(
   'Application test: engine rendering',

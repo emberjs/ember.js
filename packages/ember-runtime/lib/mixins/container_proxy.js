@@ -1,7 +1,8 @@
+import { run } from '@ember/runloop';
 /**
 @module ember
 */
-import { Mixin, run } from 'ember-metal';
+import { Mixin } from 'ember-metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific

@@ -1,4 +1,5 @@
-import { set, setProperties, schedule } from 'ember-metal';
+import { schedule } from '@ember/runloop';
+import { set, setProperties } from 'ember-metal';
 import { A as emberA } from 'ember-runtime';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';

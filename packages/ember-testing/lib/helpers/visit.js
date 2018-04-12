@@ -1,7 +1,4 @@
-/**
-@module ember
-*/
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 
 /**
   Loads a route, sets up any controllers, and renders any templates associated

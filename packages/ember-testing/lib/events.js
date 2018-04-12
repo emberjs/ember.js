@@ -1,4 +1,4 @@
-import { run } from 'ember-metal';
+import { run } from '@ember/runloop';
 import { assign } from 'ember-utils';
 import isFormControl from './helpers/-is-form-control';
 

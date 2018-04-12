@@ -5,16 +5,8 @@ import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
 import { assert, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
-import {
-  libraries,
-  run,
-  join,
-  schedule,
-  bind,
-  once,
-  processAllNamespaces,
-  setNamespaceSearchDisabled,
-} from 'ember-metal';
+import { bind, join, once, run, schedule } from '@ember/runloop';
+import { libraries, processAllNamespaces, setNamespaceSearchDisabled } from 'ember-metal';
 import { runLoadHooks, _loaded, RSVP } from 'ember-runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
 import {

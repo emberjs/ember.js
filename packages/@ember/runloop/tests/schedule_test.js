@@ -1,4 +1,4 @@
-import { run, cancel, schedule, getCurrentRunLoop } from '../..';
+import { run, cancel, schedule, getCurrentRunLoop } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
