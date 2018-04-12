@@ -196,33 +196,39 @@ function runInBrowser(url, retries, resolve, reject) {
 
 var testFunctions = [];
 
-function generateEachPackageTests() {
-  let entries = fs.readdirSync('packages');
-  entries.forEach(entry => {
-    let relativePath = path.join('packages', entry);
+function generateTestsFor(packageName) {
+  let relativePath = path.join('packages', packageName);
 
-    if (!fs.existsSync(path.join(relativePath, 'tests'))) {
-      return;
-    }
+  if (!fs.existsSync(path.join(relativePath, 'tests'))) {
+    return;
+  }
 
-    testFunctions.push(function() {
-      return run('package=' + entry);
-    });
-    testFunctions.push(function() {
-      return run('package=' + entry + '&dist=es');
-    });
-    testFunctions.push(function() {
-      return run('package=' + entry + '&enableoptionalfeatures=true');
-    });
-
-    // TODO: this should ultimately be deleted (when all packages can run with and
-    // without jQuery)
-    if (entry !== 'ember') {
-      testFunctions.push(function() {
-        return run('package=' + entry + '&jquery=none');
-      });
-    }
+  testFunctions.push(function() {
+    return run('package=' + packageName);
   });
+  testFunctions.push(function() {
+    return run('package=' + packageName + '&dist=es');
+  });
+  testFunctions.push(function() {
+    return run('package=' + packageName + '&enableoptionalfeatures=true');
+  });
+
+  // TODO: this should ultimately be deleted (when all packages can run with and
+  // without jQuery)
+  if (packageName !== 'ember') {
+    testFunctions.push(function() {
+      return run('package=' + packageName + '&jquery=none');
+    });
+  }
+}
+
+function generateEachPackageTests() {
+  fs.readdirSync('packages/@ember').forEach(e => generateTestsFor(`@ember/${e}`));
+
+  fs
+    .readdirSync('packages')
+    .filter(e => e !== '@ember')
+    .forEach(generateTestsFor);
 }
 
 function generateBuiltTests() {
