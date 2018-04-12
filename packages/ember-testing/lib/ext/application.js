@@ -1,4 +1,4 @@
-import { Application as EmberApplication } from 'ember-application';
+import EmberApplication from '@ember/application';
 import setupForTesting from '../setup_for_testing';
 import { helpers } from '../test/helpers';
 import TestPromise, { resolve, getLastPromise } from '../test/promise';

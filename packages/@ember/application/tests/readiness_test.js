@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import EmberApplication from '../../lib/system/application';
+import EmberApplication from '..';
 
 let jQuery, application, Application;
 let readyWasCalled, domReady, readyCallbacks;

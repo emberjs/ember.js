@@ -1,6 +1,6 @@
 import AbstractApplicationTestCase from './abstract-application';
 import { Resolver as DefaultResolver } from 'ember-application';
-import { Application } from 'ember-application';
+import Application from '@ember/application';
 import { setTemplates, setTemplate } from 'ember-glimmer';
 import { assign } from 'ember-utils';
 import { Router } from 'ember-routing';

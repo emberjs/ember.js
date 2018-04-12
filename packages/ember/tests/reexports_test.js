@@ -263,7 +263,7 @@ let allExports = [
   ['Route', 'ember-routing'],
 
   // ember-application
-  ['Application', 'ember-application'],
+  ['Application', '@ember/application', 'default'],
   ['ApplicationInstance', 'ember-application'],
   ['Engine', 'ember-application'],
   ['EngineInstance', 'ember-application'],

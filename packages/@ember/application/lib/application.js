@@ -1,6 +1,7 @@
 /**
 @module @ember/application
 */
+
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
 import { assert, isTesting } from 'ember-debug';
@@ -19,9 +20,8 @@ import {
   NoneLocation,
   BucketCache,
 } from 'ember-routing';
-import ApplicationInstance from './application-instance';
+import { Engine, ApplicationInstance } from 'ember-application';
 import { privatize as P } from 'container';
-import Engine from './engine';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';
 import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';

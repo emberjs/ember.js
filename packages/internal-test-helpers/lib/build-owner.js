@@ -1,6 +1,7 @@
 import { Registry } from 'container';
 import { Router } from 'ember-routing';
-import { Application, ApplicationInstance } from 'ember-application';
+import { ApplicationInstance } from 'ember-application';
+import Application from '@ember/application';
 import { RegistryProxyMixin, ContainerProxyMixin, Object as EmberObject } from 'ember-runtime';
 
 export default function buildOwner(options = {}) {
