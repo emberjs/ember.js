@@ -37,6 +37,8 @@ export interface SerializedHeap {
 
 export type Placeholder = [number, () => number];
 
+const PAGE_SIZE = 0x100000;
+
 /**
  * The Heap is responsible for dynamically allocating
  * memory in which we read/write the VM's instructions
@@ -63,6 +65,7 @@ export class Heap implements CompileTimeHeap {
   private table: number[];
   private offset = 0;
   private handle = 0;
+  private pageSize = 0;
 
   constructor(serializedHeap?: SerializedHeap) {
     if (serializedHeap) {
@@ -72,13 +75,24 @@ export class Heap implements CompileTimeHeap {
       this.offset = this.heap.length;
       this.handle = handle;
     } else {
-      this.heap = new Uint16Array(0x100000);
+      this.heap = new Uint16Array(PAGE_SIZE);
       this.table = [];
     }
   }
 
   push(item: number): void {
     this.heap[this.offset++] = item;
+    this.pageSize++;
+    if (this.pageSize === PAGE_SIZE) {
+      this.grow();
+    }
+  }
+
+  private grow() {
+    let heap = this.heap.slice(0, this.pageSize);
+    this.heap = new Uint16Array(heap.length + PAGE_SIZE);
+    this.heap.set(heap);
+    this.pageSize = 0;
   }
 
   getbyaddr(address: number): number {
