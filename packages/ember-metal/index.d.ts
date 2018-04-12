@@ -22,17 +22,9 @@ export function getCurrentRunLoop(): boolean;
 
 export const PROPERTY_DID_CHANGE: symbol;
 
-export const flaggedInstrument: any;
-
 export function setHasViews(fn: () => boolean): null;
 
 export function runInTransaction(context: any, methodName: string): any;
-
-export function _instrumentStart(
-  name: string,
-  _payload: (_payloadParam: any) => any,
-  _payloadParam: any
-): () => void;
 
 export function get(obj: any, keyName: string): any;
 

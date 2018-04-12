@@ -1,11 +1,8 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 import { Controller, inject, A as emberA } from 'ember-runtime';
-import {
-  instrumentationSubscribe as subscribe,
-  instrumentationReset as reset,
-  alias,
-} from 'ember-metal';
+import { alias } from 'ember-metal';
+import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from 'ember-routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 

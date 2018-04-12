@@ -1,8 +1,8 @@
+import { _instrumentStart } from '@ember/instrumentation';
 import { ComponentCapabilities } from '@glimmer/interfaces';
 import { Arguments, ComponentDefinition } from '@glimmer/runtime';
 import { FACTORY_FOR } from 'container';
 import { DEBUG } from 'ember-env-flags';
-import { _instrumentStart } from 'ember-metal';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';

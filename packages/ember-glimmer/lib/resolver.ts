@@ -1,3 +1,4 @@
+import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentDefinition,
   Opaque,
@@ -9,7 +10,6 @@ import { ComponentManager, getDynamicVar, Helper, ModifierManager } from '@glimm
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
-import { _instrumentStart } from 'ember-metal';
 import { LookupOptions, Owner, setOwner } from 'ember-utils';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from 'ember-views';
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';

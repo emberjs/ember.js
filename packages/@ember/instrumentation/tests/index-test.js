@@ -1,9 +1,4 @@
-import {
-  instrument,
-  instrumentationSubscribe as subscribe,
-  instrumentationUnsubscribe as unsubscribe,
-  instrumentationReset as reset,
-} from '..';
+import { instrument, subscribe, unsubscribe, reset } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

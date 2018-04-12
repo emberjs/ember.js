@@ -4,6 +4,7 @@ import { getENV, getLookup, setLookup, ENV, context } from 'ember-environment';
 import { IS_NODE, module } from 'node-module';
 import * as utils from 'ember-utils';
 import { Registry, Container } from 'container';
+import * as instrumentation from '@ember/instrumentation';
 import * as metal from 'ember-metal';
 import * as FLAGS from 'ember/features';
 import * as EmberDebug from 'ember-debug';
@@ -161,6 +162,15 @@ Ember.Debug = {
   registerWarnHandler: EmberDebug.registerWarnHandler,
 };
 
+// ****@ember/instrumentation****
+Ember.instrument = instrumentation.instrument;
+Ember.subscribe = instrumentation.subscribe;
+Ember.Instrumentation = {
+  instrument: instrumentation.instrument,
+  subscribe: instrumentation.subscribe,
+  unsubscribe: instrumentation.unsubscribe,
+  reset: instrumentation.reset,
+};
 // ****ember-metal****
 
 // Using _globalsComputed here so that mutating the function is only available
@@ -171,14 +181,6 @@ computed.alias = metal.alias;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.getCachedValueFor;
 Ember.merge = metal.merge;
-Ember.instrument = metal.instrument;
-Ember.subscribe = metal.instrumentationSubscribe;
-Ember.Instrumentation = {
-  instrument: metal.instrument,
-  subscribe: metal.instrumentationSubscribe,
-  unsubscribe: metal.instrumentationUnsubscribe,
-  reset: metal.instrumentationReset,
-};
 Ember.meta = metal.meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;

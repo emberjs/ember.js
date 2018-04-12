@@ -1,11 +1,10 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
+import { run, getCurrentRunLoop } from 'ember-metal';
 import {
-  instrumentationSubscribe,
-  instrumentationReset,
-  run,
-  getCurrentRunLoop,
-} from 'ember-metal';
+  subscribe as instrumentationSubscribe,
+  reset as instrumentationReset,
+} from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;

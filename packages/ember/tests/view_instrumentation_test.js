@@ -1,4 +1,4 @@
-import { instrumentationSubscribe as subscribe, instrumentationReset as reset } from 'ember-metal';
+import { subscribe, reset } from '@ember/instrumentation';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(
