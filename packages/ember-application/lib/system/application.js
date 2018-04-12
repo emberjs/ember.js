@@ -7,7 +7,8 @@ import { assert, isTesting } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { bind, join, once, run, schedule } from '@ember/runloop';
 import { libraries, processAllNamespaces, setNamespaceSearchDisabled } from 'ember-metal';
-import { runLoadHooks, _loaded, RSVP } from 'ember-runtime';
+import { _loaded, runLoadHooks } from '@ember/application';
+import { RSVP } from 'ember-runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
 import {
   Route,

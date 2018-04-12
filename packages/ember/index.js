@@ -29,8 +29,6 @@ import {
   Observable,
   typeOf,
   isArray,
-  onLoad,
-  runLoadHooks,
   Controller,
   ControllerMixin,
   Service,
@@ -107,7 +105,7 @@ import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
-import { getOwner, setOwner } from '@ember/application';
+import { getOwner, onLoad, runLoadHooks, setOwner } from '@ember/application';
 
 // ****ember-environment****
 
