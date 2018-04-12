@@ -1,4 +1,3 @@
-import { privatize as P } from 'container';
 import { assert, deprecate, isTesting } from 'ember-debug';
 import { onErrorTarget } from 'ember-error-handling';
 import { beginPropertyChanges, endPropertyChanges } from 'ember-metal';
@@ -16,6 +15,8 @@ function onBegin(current) {
 function onEnd(current, next) {
   currentRunLoop = next;
 }
+
+export const _rsvpErrorQueue = `${Math.random()}${Date.now()}`.replace('.', '');
 
 /**
   Array of named queues. This array determines the order in which queues
@@ -42,7 +43,7 @@ export const queues = [
 
   // used to re-throw unhandled RSVP rejection errors specifically in this
   // position to avoid breaking anything rendered in the other sections
-  P`rsvpAfter`,
+  _rsvpErrorQueue,
 ];
 
 export const backburner = new Backburner(queues, {

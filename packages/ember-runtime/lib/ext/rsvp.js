@@ -1,15 +1,14 @@
 import * as RSVP from 'rsvp';
-import { backburner } from '@ember/runloop';
+import { backburner, _rsvpErrorQueue } from '@ember/runloop';
 import { getDispatchOverride } from 'ember-error-handling';
 import { assert } from 'ember-debug';
-import { privatize as P } from 'container';
 
 RSVP.configure('async', (callback, promise) => {
   backburner.schedule('actions', null, callback, promise);
 });
 
 RSVP.configure('after', cb => {
-  backburner.schedule(P`rsvpAfter`, null, cb);
+  backburner.schedule(_rsvpErrorQueue, null, cb);
 });
 
 RSVP.on('error', onerrorDefault);
