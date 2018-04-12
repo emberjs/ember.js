@@ -1,4 +1,4 @@
-import { Owner } from 'ember-utils';
+import { Owner } from '@ember/application';
 interface Container {
   registry: any;
   owner: Owner | null;

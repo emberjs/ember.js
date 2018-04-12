@@ -1,4 +1,4 @@
-import { getOwner } from 'ember-utils';
+import { getOwner } from '@ember/application';
 import { scheduleOnce } from '@ember/runloop';
 import { get, objectAt, addArrayObserver, removeArrayObserver } from 'ember-metal';
 import {

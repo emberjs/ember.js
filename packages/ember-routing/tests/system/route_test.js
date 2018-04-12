@@ -1,4 +1,4 @@
-import { setOwner } from 'ember-utils';
+import { setOwner } from '@ember/application';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { Service, Object as EmberObject, inject } from 'ember-runtime';
 import EmberRoute from '../../lib/system/route';

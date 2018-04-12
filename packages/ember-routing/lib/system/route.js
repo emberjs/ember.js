@@ -1,4 +1,5 @@
-import { assign, getOwner } from 'ember-utils';
+import { getOwner } from '@ember/application';
+import { assign } from 'ember-utils';
 import { once } from '@ember/runloop';
 import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember-metal';
 import { assert, info, isTesting, deprecate } from 'ember-debug';

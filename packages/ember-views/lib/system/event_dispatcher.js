@@ -1,8 +1,9 @@
+import { getOwner } from '@ember/application';
 /**
 @module ember
 */
 
-import { assign, getOwner } from 'ember-utils';
+import { assign } from 'ember-utils';
 import { assert } from 'ember-debug';
 import { get, set, isNone } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';

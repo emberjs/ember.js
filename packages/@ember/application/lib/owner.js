@@ -2,7 +2,7 @@
 @module @ember/application
 */
 
-import symbol from './symbol';
+import { symbol } from 'ember-utils';
 
 export const OWNER = symbol('OWNER');
 

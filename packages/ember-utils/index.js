@@ -9,7 +9,6 @@
  elsewhere (so they can be lazily evaluated / parsed).
 */
 export { default as symbol, isInternalSymbol } from './lib/symbol';
-export { getOwner, setOwner, OWNER } from './lib/owner';
 
 // Export `assignPolyfill` for testing
 export { default as assign, assign as assignPolyfill } from './lib/assign';

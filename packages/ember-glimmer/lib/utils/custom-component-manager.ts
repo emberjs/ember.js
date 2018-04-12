@@ -1,5 +1,6 @@
+import { Owner } from '@ember/application';
 import { assert } from 'ember-debug';
-import { Owner, symbol } from 'ember-utils';
+import { symbol } from 'ember-utils';
 
 import CustomComponentManager, { CustomComponentState } from '../component-managers/custom';
 

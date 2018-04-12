@@ -1,4 +1,5 @@
-import { assign, getOwner } from 'ember-utils';
+import { getOwner } from '@ember/application';
+import { assign } from 'ember-utils';
 import { cancel, once, run, scheduleOnce, schedule } from '@ember/runloop';
 import { get, set, defineProperty, computed } from 'ember-metal';
 import EmberError from '@ember/error';

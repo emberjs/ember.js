@@ -1,4 +1,5 @@
-import { assign, OWNER } from 'ember-utils';
+import { OWNER } from '@ember/application';
+import { assign } from 'ember-utils';
 import { environment } from 'ember-environment';
 import { run } from '@ember/runloop';
 import { get } from 'ember-metal';

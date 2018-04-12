@@ -1,4 +1,4 @@
-import { getOwner } from 'ember-utils';
+import { getOwner } from '@ember/application';
 import { Controller, inject, Service, _ProxyMixin } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from 'ember-metal';
