@@ -57,7 +57,7 @@ let allExports = [
   ['runInDebug', 'ember-debug'],
   ['Debug.registerDeprecationHandler', 'ember-debug', 'registerDeprecationHandler'],
   ['Debug.registerWarnHandler', 'ember-debug', 'registerWarnHandler'],
-  ['Error', 'ember-debug'],
+  ['Error', '@ember/error', 'default'],
 
   // ember-metal
   ['computed', 'ember-metal', '_globalsComputed'],

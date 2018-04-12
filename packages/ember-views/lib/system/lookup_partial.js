@@ -1,4 +1,5 @@
-import { assert, Error as EmberError } from 'ember-debug';
+import { assert } from 'ember-debug';
+import EmberError from '@ember/error';
 
 function parseUnderscoredName(templateName) {
   let nameParts = templateName.split('/');

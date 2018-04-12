@@ -1,8 +1,5 @@
 /*global __fail__*/
 import { DEBUG } from 'ember-env-flags';
-
-import EmberError from './error';
-
 import { ENV } from 'ember-environment';
 
 import { assert } from '../index';
@@ -131,7 +128,7 @@ if (DEBUG) {
     if (ENV.RAISE_ON_DEPRECATION) {
       let updatedMessage = formatMessage(message);
 
-      throw new EmberError(updatedMessage);
+      throw new Error(updatedMessage);
     } else {
       next(...arguments);
     }

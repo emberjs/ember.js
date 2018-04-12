@@ -1,5 +1,6 @@
 import { inspect } from 'ember-utils';
-import { assert, warn, Error as EmberError } from 'ember-debug';
+import { assert, warn } from 'ember-debug';
+import EmberError from '@ember/error';
 import { set } from './property_set';
 import { meta as metaFor, peekMeta } from './meta';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';

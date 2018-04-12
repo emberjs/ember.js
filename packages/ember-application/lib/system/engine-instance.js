@@ -9,7 +9,8 @@ import {
   RegistryProxyMixin,
   RSVP,
 } from 'ember-runtime';
-import { assert, Error as EmberError } from 'ember-debug';
+import { assert } from 'ember-debug';
+import EmberError from '@ember/error';
 import { Registry, privatize as P } from 'container';
 import { getEngineParent, setEngineParent } from './engine-parent';
 

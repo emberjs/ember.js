@@ -1,4 +1,4 @@
-import { Error as EmberError } from 'ember-debug';
+import EmberError from '@ember/error';
 
 export default {
   // appendChild is only legal while rendering the buffer.

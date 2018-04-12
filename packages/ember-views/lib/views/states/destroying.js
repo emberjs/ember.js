@@ -1,5 +1,5 @@
 import { assign } from 'ember-utils';
-import { Error as EmberError } from 'ember-debug';
+import EmberError from '@ember/error';
 import _default from './default';
 
 const destroying = Object.create(_default);

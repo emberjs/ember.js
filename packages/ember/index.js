@@ -104,6 +104,7 @@ import * as views from 'ember-views';
 import * as routing from 'ember-routing';
 import * as application from 'ember-application';
 import * as extensionSupport from 'ember-extension-support';
+import EmberError from '@ember/error';
 
 // ****ember-environment****
 
@@ -151,7 +152,9 @@ Ember.debug = EmberDebug.debug;
 Ember.deprecate = EmberDebug.deprecate;
 Ember.deprecateFunc = EmberDebug.deprecateFunc;
 Ember.runInDebug = EmberDebug.runInDebug;
-Ember.Error = EmberDebug.Error;
+
+// ****@ember/error****
+Ember.Error = EmberError;
 
 /**
   @public
