@@ -1,4 +1,4 @@
-import { getOwner, setOwner } from '@ember/application';
+import { getOwner, setOwner } from 'ember-owner';
 import { get } from 'ember-metal';
 import CoreObject from '../../lib/system/core_object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

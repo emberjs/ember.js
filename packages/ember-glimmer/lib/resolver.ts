@@ -1,4 +1,3 @@
-import { LookupOptions, Owner, setOwner } from '@ember/application';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentDefinition,
@@ -11,6 +10,7 @@ import { ComponentManager, getDynamicVar, Helper, ModifierManager } from '@glimm
 import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
+import { LookupOptions, Owner, setOwner } from 'ember-owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from 'ember-views';
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';

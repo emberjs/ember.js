@@ -1,7 +1,7 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Application from '@ember/application';
 import { Component } from 'ember-glimmer';
-import { getOwner } from '@ember/application';
+import { getOwner } from 'ember-owner';
 import { assign } from 'ember-utils';
 import { resolve } from 'rsvp';
 

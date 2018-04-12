@@ -1,4 +1,4 @@
-import { getOwner, setOwner } from '@ember/application';
+import { getOwner, setOwner } from 'ember-owner';
 import { computed, Mixin, observer } from 'ember-metal';
 import { MANDATORY_SETTER } from 'ember/features';
 import EmberObject from '../../../lib/system/object';

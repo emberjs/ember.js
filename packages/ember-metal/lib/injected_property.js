@@ -1,4 +1,4 @@
-import { getOwner } from '@ember/application';
+import { getOwner } from 'ember-owner';
 import { assert } from 'ember-debug';
 import { ComputedProperty } from './computed';
 import { descriptorFor } from './meta';

@@ -1,4 +1,4 @@
-import { OWNER } from '@ember/application';
+import { OWNER } from 'ember-owner';
 import { assign } from 'ember-utils';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { Registry } from '..';

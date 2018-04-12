@@ -105,7 +105,8 @@ import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
-import Application, { getOwner, onLoad, runLoadHooks, setOwner } from '@ember/application';
+import { getOwner, setOwner } from 'ember-owner';
+import Application, { onLoad, runLoadHooks } from '@ember/application';
 
 // ****ember-environment****
 

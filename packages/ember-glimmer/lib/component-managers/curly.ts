@@ -1,4 +1,3 @@
-import { getOwner } from '@ember/application';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentCapabilities,
@@ -27,6 +26,7 @@ import { assert, deprecate } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
+import { getOwner } from 'ember-owner';
 import { String as StringUtils } from 'ember-runtime';
 import { assign, guidFor } from 'ember-utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';

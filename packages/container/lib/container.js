@@ -2,7 +2,7 @@
 import { assert } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from 'ember-env-flags';
-import { OWNER, setOwner } from '@ember/application';
+import { OWNER, setOwner } from 'ember-owner';
 import { dictionary, assign, HAS_NATIVE_PROXY } from 'ember-utils';
 
 /**

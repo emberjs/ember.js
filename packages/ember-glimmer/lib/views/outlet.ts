@@ -1,7 +1,7 @@
-import { OWNER, Owner } from '@ember/application';
 import { schedule } from '@ember/runloop';
 import { Simple } from '@glimmer/interfaces';
 import { environment } from 'ember-environment';
+import { OWNER, Owner } from 'ember-owner';
 import { assign } from 'ember-utils';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';

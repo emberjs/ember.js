@@ -1,4 +1,4 @@
-import { OWNER, getOwner, setOwner } from '@ember/application';
+import { OWNER, getOwner, setOwner } from 'ember-owner';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

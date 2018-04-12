@@ -1,4 +1,3 @@
-import { OWNER, Owner } from '@ember/application';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
   ElementBuilder,
@@ -8,6 +7,7 @@ import {
 import { Destroyable, Opaque } from '@glimmer/util';
 import { warn } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
+import { OWNER, Owner } from 'ember-owner';
 import { constructStyleDeprecationMessage, lookupComponent } from 'ember-views';
 import DebugStack from './utils/debug-stack';
 import createIterable from './utils/iterable';
