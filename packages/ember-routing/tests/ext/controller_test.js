@@ -1,5 +1,5 @@
 import { setOwner } from 'ember-owner';
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

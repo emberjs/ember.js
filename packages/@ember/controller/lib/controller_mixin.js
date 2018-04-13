@@ -1,5 +1,5 @@
 import { Mixin } from 'ember-metal';
-import ActionHandler from './action_handler';
+import { ActionHandler } from 'ember-runtime';
 
 /**
   @class ControllerMixin

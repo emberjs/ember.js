@@ -1,5 +1,5 @@
 import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { set } from 'ember-metal';
 import { LinkComponent } from '../../utils/helpers';
 import { classes as classMatcher } from '../../utils/test-helpers';

@@ -1,7 +1,7 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { assign } from 'ember-utils';
 import { run } from '@ember/runloop';
-import { Controller as EmberController } from 'ember-runtime';
+import EmberController from '@ember/controller';
 import '../index'; // Must be required to export Ember.ContainerDebugAdapter.
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
 

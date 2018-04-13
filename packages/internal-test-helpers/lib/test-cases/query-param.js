@@ -1,4 +1,4 @@
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { NoneLocation } from 'ember-routing';
 import { run } from '@ember/runloop';
 

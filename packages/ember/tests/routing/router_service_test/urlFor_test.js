@@ -1,4 +1,5 @@
-import { Controller, String } from 'ember-runtime';
+import Controller from '@ember/controller';
+import { String } from 'ember-runtime';
 import { Route } from 'ember-routing';
 import { get } from 'ember-metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';

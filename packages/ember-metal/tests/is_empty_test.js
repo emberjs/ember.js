@@ -1,4 +1,6 @@
-import { isEmpty, Map, OrderedSet } from '..';
+import { isEmpty } from '..';
+import Map from '@ember/map';
+import OrderedSet from '@ember/map/lib/ordered-set';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -1,7 +1,8 @@
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
-import { Controller, RSVP } from 'ember-runtime';
+import Controller from '@ember/controller';
+import { RSVP } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import Engine from '@ember/engine';
 import { Route } from 'ember-routing';

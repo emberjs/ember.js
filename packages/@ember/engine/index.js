@@ -2,7 +2,8 @@
 @module @ember/engine
 */
 import { canInvoke } from 'ember-utils';
-import { Namespace, RegistryProxyMixin, Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
+import { Namespace, RegistryProxyMixin } from 'ember-runtime';
 import { Registry, privatize as P } from 'container';
 import DAG from 'dag-map';
 import { assert } from 'ember-debug';

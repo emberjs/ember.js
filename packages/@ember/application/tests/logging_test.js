@@ -2,7 +2,7 @@
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { Route } from 'ember-routing';
 import { assign } from 'ember-utils';
 

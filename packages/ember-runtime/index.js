@@ -3,7 +3,7 @@ export { default as String } from './lib/system/string';
 export { default as RegistryProxyMixin } from './lib/mixins/registry_proxy';
 export { default as ContainerProxyMixin } from './lib/mixins/container_proxy';
 export { default as copy } from './lib/copy';
-export { default as inject } from './lib/inject';
+export { default as inject, createInjectionHelper } from './lib/inject';
 export { default as compare } from './lib/compare';
 export { default as isEqual } from './lib/is-equal';
 export {
@@ -65,8 +65,6 @@ export {
   collect,
 } from './lib/computed/reduce_computed_macros';
 
-export { default as Controller } from './lib/controllers/controller';
-export { default as ControllerMixin } from './lib/mixins/controller';
 export { default as Service } from './lib/system/service';
 export { default as RSVP, onerrorDefault } from './lib/ext/rsvp'; // just for side effect of extending Ember.RSVP
 export { isArray, typeOf } from './lib/utils';

@@ -1,5 +1,5 @@
 import Application from '@ember/application';
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { Component } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';

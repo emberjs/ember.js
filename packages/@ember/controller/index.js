@@ -1,7 +1,7 @@
 import { assert } from 'ember-debug';
-import EmberObject from '../system/object';
-import Mixin from '../mixins/controller';
-import { createInjectionHelper } from '../inject';
+import { Object as EmberObject } from 'ember-runtime';
+import Mixin from './lib/controller_mixin';
+import { createInjectionHelper } from 'ember-runtime';
 
 /**
 @module @ember/controller
