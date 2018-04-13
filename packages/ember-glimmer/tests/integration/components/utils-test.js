@@ -1,4 +1,4 @@
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import {
   getRootViews,
   getChildViews,

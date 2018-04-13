@@ -1,6 +1,8 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-import { Controller, inject, A as emberA } from 'ember-runtime';
+import Controller from '@ember/controller';
+
+import { inject, A as emberA } from 'ember-runtime';
 import { alias } from 'ember-metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from 'ember-routing';

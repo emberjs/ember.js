@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';

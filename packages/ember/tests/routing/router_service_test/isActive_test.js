@@ -1,4 +1,4 @@
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';

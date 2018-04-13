@@ -10,6 +10,8 @@ import * as FLAGS from 'ember/features';
 import * as EmberDebug from 'ember-debug';
 import Backburner from 'backburner';
 import Logger from 'ember-console';
+import Controller from '@ember/controller';
+import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
   String as EmberString,
   Object as EmberObject,
@@ -29,8 +31,6 @@ import {
   Observable,
   typeOf,
   isArray,
-  Controller,
-  ControllerMixin,
   Service,
   _ProxyMixin,
   RSVP,
@@ -44,9 +44,9 @@ import {
   NativeArray,
   A,
   getStrings,
-  setStrings,
 
   // computed macros
+  setStrings,
   empty,
   notEmpty,
   none,
@@ -62,9 +62,9 @@ import {
   readOnly,
   deprecatingAlias,
   and,
-  or,
 
   // reduced computed macros
+  or,
   sum,
   min,
   max,

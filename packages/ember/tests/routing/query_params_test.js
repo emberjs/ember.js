@@ -1,10 +1,5 @@
-import {
-  Controller,
-  RSVP,
-  Object as EmberObject,
-  A as emberA,
-  String as StringUtils,
-} from 'ember-runtime';
+import Controller from '@ember/controller';
+import { RSVP, Object as EmberObject, A as emberA, String as StringUtils } from 'ember-runtime';
 import { run } from '@ember/runloop';
 import { get, computed, peekMeta } from 'ember-metal';
 import { Route } from 'ember-routing';

@@ -1,4 +1,5 @@
-import { Controller, Service, inject } from 'ember-runtime';
+import Controller from '@ember/controller';
+import { Service, inject } from 'ember-runtime';
 import { run } from '@ember/runloop';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 

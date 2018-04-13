@@ -1,7 +1,8 @@
 import { moduleFor, AutobootApplicationTestCase, isIE11 } from 'internal-test-helpers';
 
 import { Route } from 'ember-routing';
-import { Controller, RSVP } from 'ember-runtime';
+import Controller from '@ember/controller';
+import { RSVP } from 'ember-runtime';
 import { later } from '@ember/runloop';
 import { Component } from 'ember-glimmer';
 import { jQueryDisabled, jQuery } from 'ember-views';

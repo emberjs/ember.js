@@ -1,4 +1,4 @@
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import controllerFor from '../../lib/system/controller_for';
 import generateController from '../../lib/system/generate_controller';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';

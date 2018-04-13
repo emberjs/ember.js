@@ -1,4 +1,4 @@
-import { Controller } from 'ember-runtime';
+import Controller from '@ember/controller';
 import { Route } from 'ember-routing';
 import { run } from '@ember/runloop';
 import { Mixin } from 'ember-metal';

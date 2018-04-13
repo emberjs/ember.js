@@ -1,4 +1,5 @@
-import { Controller, A as emberA } from 'ember-runtime';
+import Controller from '@ember/controller';
+import { A as emberA } from 'ember-runtime';
 import { Route } from 'ember-routing';
 import { run } from '@ember/runloop';
 import { computed } from 'ember-metal';
