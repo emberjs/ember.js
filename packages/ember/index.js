@@ -107,6 +107,7 @@ import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
 import { getOwner, setOwner } from 'ember-owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
+import Resolver from '@ember/application/globals-resolver';
 
 // ****ember-environment****
 
@@ -132,6 +133,7 @@ Object.defineProperty(Ember, 'lookup', {
 Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
 Ember.Application = Application;
+Ember.DefaultResolver = Ember.Resolver = Resolver;
 
 // ****ember-utils****
 Ember.generateGuid = utils.generateGuid;
@@ -505,7 +507,6 @@ Ember.Route = routing.Route;
 Ember.ApplicationInstance = application.ApplicationInstance;
 Ember.Engine = application.Engine;
 Ember.EngineInstance = application.EngineInstance;
-Ember.DefaultResolver = Ember.Resolver = application.Resolver;
 
 runLoadHooks('Ember.Application', Application);
 

@@ -267,8 +267,8 @@ let allExports = [
   ['ApplicationInstance', 'ember-application'],
   ['Engine', 'ember-application'],
   ['EngineInstance', 'ember-application'],
-  ['Resolver', 'ember-application'],
-  ['DefaultResolver', 'ember-application', 'Resolver'],
+  ['Resolver', '@ember/application/globals-resolver', 'default'],
+  ['DefaultResolver', '@ember/application/globals-resolver', 'default'],
 
   // ember-extension-support
   ['DataAdapter', 'ember-extension-support'],

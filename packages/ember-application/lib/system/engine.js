@@ -7,7 +7,7 @@ import { Registry, privatize as P } from 'container';
 import DAG from 'dag-map';
 import { assert } from 'ember-debug';
 import { get, set } from 'ember-metal';
-import DefaultResolver from './resolver';
+import DefaultResolver from '@ember/application/globals-resolver';
 import EngineInstance from './engine-instance';
 import { RoutingService } from 'ember-routing';
 import { ContainerDebugAdapter } from 'ember-extension-support';
