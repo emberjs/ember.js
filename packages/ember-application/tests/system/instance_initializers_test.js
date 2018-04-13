@@ -1,6 +1,7 @@
 import { assign } from 'ember-utils';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
-import { Application, ApplicationInstance } from 'ember-application';
+import { ApplicationInstance } from 'ember-application';
+import Application from '@ember/application';
 
 moduleFor(
   'Application instance initializers',

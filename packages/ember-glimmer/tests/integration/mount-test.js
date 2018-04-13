@@ -1,4 +1,4 @@
-import { getOwner } from '@ember/application';
+import { getOwner } from 'ember-owner';
 import { moduleFor, ApplicationTest, RenderingTest } from '../utils/test-case';
 import { compile, Component } from '../utils/helpers';
 import { Controller } from 'ember-runtime';

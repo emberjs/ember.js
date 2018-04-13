@@ -1,4 +1,4 @@
-import { Application } from 'ember-application';
+import Application from '@ember/application';
 import { Controller } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';

@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { onLoad, runLoadHooks, _loaded } from '../../lib/system/lazy_load';
+import { onLoad, runLoadHooks, _loaded } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

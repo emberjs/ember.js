@@ -29,8 +29,6 @@ import {
   Observable,
   typeOf,
   isArray,
-  onLoad,
-  runLoadHooks,
   Controller,
   ControllerMixin,
   Service,
@@ -107,7 +105,8 @@ import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
-import { getOwner, setOwner } from '@ember/application';
+import { getOwner, setOwner } from 'ember-owner';
+import Application, { onLoad, runLoadHooks } from '@ember/application';
 
 // ****ember-environment****
 
@@ -132,6 +131,7 @@ Object.defineProperty(Ember, 'lookup', {
 // ****@ember/application****
 Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
+Ember.Application = Application;
 
 // ****ember-utils****
 Ember.generateGuid = utils.generateGuid;
@@ -502,13 +502,12 @@ Ember.Router = routing.Router;
 Ember.Route = routing.Route;
 
 // ****ember-application****
-Ember.Application = application.Application;
 Ember.ApplicationInstance = application.ApplicationInstance;
 Ember.Engine = application.Engine;
 Ember.EngineInstance = application.EngineInstance;
 Ember.DefaultResolver = Ember.Resolver = application.Resolver;
 
-runLoadHooks('Ember.Application', application.Application);
+runLoadHooks('Ember.Application', Application);
 
 Ember.DataAdapter = extensionSupport.DataAdapter;
 Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;

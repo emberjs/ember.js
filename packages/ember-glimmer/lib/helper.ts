@@ -2,9 +2,9 @@
 @module @ember/component
 */
 
-import { Factory } from '@ember/application';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import { DirtyableTag } from '@glimmer/reference';
+import { Factory } from 'ember-owner';
 import { FrameworkObject } from 'ember-runtime';
 import { symbol } from 'ember-utils';
 

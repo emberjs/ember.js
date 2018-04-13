@@ -5,8 +5,8 @@ import bootstrap from './bootstrap';
 if (has('ember-application') && has('ember-environment') && has('ember-glimmer')) {
   let emberEnv = require('ember-environment');
   let emberGlimmer = require('ember-glimmer');
-  let emberApp = require('ember-application');
-  let { Application } = emberApp;
+  let emberApp = require('@ember/application');
+  let Application = emberApp.default;
   let { hasTemplate, setTemplate } = emberGlimmer;
   let { environment } = emberEnv;
 

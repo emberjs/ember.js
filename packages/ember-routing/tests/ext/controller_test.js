@@ -1,4 +1,4 @@
-import { setOwner } from '@ember/application';
+import { setOwner } from 'ember-owner';
 import { Controller } from 'ember-runtime';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

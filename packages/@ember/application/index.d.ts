@@ -1,1 +1,1 @@
-export { Owner, Factory, LookupOptions, OWNER, getOwner, setOwner } from './lib/owner';
+export { getOwner, setOwner } from 'ember-owner';

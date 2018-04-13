@@ -3,13 +3,17 @@ import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
 import { libraries, setNamespaceSearchDisabled } from 'ember-metal';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
-import Application from '../../lib/system/application';
+import Application from '..';
 import { Router, NoneLocation, Route as EmberRoute } from 'ember-routing';
 import { jQuery } from 'ember-views';
-import { Controller, Object as EmberObject, _loaded } from 'ember-runtime';
+import { _loaded } from '@ember/application';
+import { Controller, Object as EmberObject } from 'ember-runtime';
 import { setTemplates } from 'ember-glimmer';
 import { privatize as P } from 'container';
-import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
+import {
+  verifyInjection,
+  verifyRegistration,
+} from 'ember-application/tests/test-helpers/registry-check';
 import { assign } from 'ember-utils';
 import {
   moduleFor,

@@ -1,4 +1,4 @@
-import { getOwner } from '@ember/application';
+import { getOwner } from 'ember-owner';
 import { assign } from 'ember-utils';
 import { get } from 'ember-metal';
 import EmberError from '@ember/error';

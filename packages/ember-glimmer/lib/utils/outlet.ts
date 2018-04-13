@@ -1,6 +1,6 @@
-import { Owner } from '@ember/application';
 import { Opaque } from '@glimmer/interfaces';
 import { combine, DirtyableTag, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
+import { Owner } from 'ember-owner';
 import { OwnedTemplate } from '../template';
 
 export interface RenderState {

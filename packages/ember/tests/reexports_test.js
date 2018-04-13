@@ -204,8 +204,8 @@ let allExports = [
   ['typeOf', 'ember-runtime'],
   ['isArray', 'ember-runtime'],
   ['Object', 'ember-runtime'],
-  ['onLoad', 'ember-runtime'],
-  ['runLoadHooks', 'ember-runtime'],
+  ['onLoad', '@ember/application'],
+  ['runLoadHooks', '@ember/application'],
   ['Controller', 'ember-runtime'],
   ['ControllerMixin', 'ember-runtime'],
   ['Service', 'ember-runtime'],
@@ -263,7 +263,7 @@ let allExports = [
   ['Route', 'ember-routing'],
 
   // ember-application
-  ['Application', 'ember-application'],
+  ['Application', '@ember/application', 'default'],
   ['ApplicationInstance', 'ember-application'],
   ['Engine', 'ember-application'],
   ['EngineInstance', 'ember-application'],

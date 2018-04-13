@@ -23,7 +23,6 @@ export { default as ActionHandler } from './lib/mixins/action_handler';
 export { default as Copyable } from './lib/mixins/copyable';
 export { default as Enumerable } from './lib/mixins/enumerable';
 export { default as _ProxyMixin, contentFor as _contentFor } from './lib/mixins/-proxy';
-export { onLoad, runLoadHooks, _loaded } from './lib/system/lazy_load';
 export { default as Observable } from './lib/mixins/observable';
 export { default as MutableEnumerable } from './lib/mixins/mutable_enumerable';
 export { default as TargetActionSupport } from './lib/mixins/target_action_support';

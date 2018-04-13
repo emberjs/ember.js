@@ -1,4 +1,3 @@
-export { default as Application } from './lib/system/application';
 export { default as ApplicationInstance } from './lib/system/application-instance';
 export { default as Resolver } from './lib/system/resolver';
 export { default as Engine } from './lib/system/engine';

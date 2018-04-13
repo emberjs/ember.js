@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
-
-import { getOwner } from '@ember/application';
+import { getOwner } from 'ember-owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
 import { ENV } from 'ember-environment';
