@@ -10,7 +10,7 @@ import { run } from '@ember/runloop';
 import { Mixin, computed, set, addObserver, observer } from 'ember-metal';
 import { getTextOf } from 'internal-test-helpers';
 import { Component } from 'ember-glimmer';
-import { Engine } from 'ember-application';
+import Engine from '@ember/engine';
 import { Transition } from 'router';
 
 let originalRenderSupport;

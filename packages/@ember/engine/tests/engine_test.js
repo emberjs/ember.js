@@ -1,9 +1,12 @@
 import { context } from 'ember-environment';
 import { run } from '@ember/runloop';
-import Engine from '../../lib/system/engine';
+import Engine from '@ember/engine';
 import { Object as EmberObject } from 'ember-runtime';
 import { privatize as P } from 'container';
-import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
+import {
+  verifyInjection,
+  verifyRegistration,
+} from 'ember-application/tests/test-helpers/registry-check';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 let engine;

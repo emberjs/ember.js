@@ -1,4 +1,4 @@
-import Engine from '../../lib/system/engine';
+import Engine from '@ember/engine';
 import EngineInstance from '../../lib/system/engine-instance';
 import { getEngineParent, setEngineParent } from '../../lib/system/engine-parent';
 import { run } from '@ember/runloop';

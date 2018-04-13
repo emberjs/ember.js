@@ -21,7 +21,7 @@ import {
   BucketCache,
 } from 'ember-routing';
 import ApplicationInstance from '@ember/application/instance';
-import { Engine } from 'ember-application';
+import Engine from '@ember/engine';
 import { privatize as P } from 'container';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';

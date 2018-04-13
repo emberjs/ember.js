@@ -3,7 +3,7 @@ import { Object as EmberObject, inject, RSVP, onerrorDefault } from 'ember-runti
 import { later } from '@ember/runloop';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
-import { Engine } from 'ember-application';
+import Engine from '@ember/engine';
 import { Route } from 'ember-routing';
 import { Component, helper, isSerializationFirstNode } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';

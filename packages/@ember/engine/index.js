@@ -8,7 +8,7 @@ import DAG from 'dag-map';
 import { assert } from 'ember-debug';
 import { get, set } from 'ember-metal';
 import DefaultResolver from '@ember/application/globals-resolver';
-import EngineInstance from './engine-instance';
+import { EngineInstance } from 'ember-application';
 import { RoutingService } from 'ember-routing';
 import { ContainerDebugAdapter } from 'ember-extension-support';
 import { ComponentLookup } from 'ember-views';
