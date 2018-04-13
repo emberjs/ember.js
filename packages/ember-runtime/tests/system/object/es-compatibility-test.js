@@ -1,5 +1,5 @@
 import EmberObject from '../../../lib/system/object';
-import { Mixin } from 'ember-metal';
+import { Mixin, defineProperty, computed } from 'ember-metal';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -276,6 +276,25 @@ moduleFor(
 
       assert.equal(obj.foo, 123, 'sets class fields on instance correctly');
       assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
+    }
+
+    ['@test calling metaForProperty on a native class works'](assert) {
+      assert.expect(0);
+
+      class SubEmberObject extends EmberObject {}
+
+      defineProperty(
+        SubEmberObject.prototype,
+        'foo',
+        computed('foo', {
+          get() {
+            return 'bar';
+          },
+        })
+      );
+
+      // able to get meta without throwing an error
+      SubEmberObject.metaForProperty('foo');
     }
   }
 );

@@ -241,7 +241,7 @@ function makeCtor(base) {
     };
   }
 
-  Class.willReopen = () => {
+  Class.willReopen = function() {
     if (wasApplied) {
       Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
     }
@@ -249,7 +249,7 @@ function makeCtor(base) {
     wasApplied = false;
   };
 
-  Class.proto = () => {
+  Class.proto = function() {
     let superclass = Class.superclass;
     if (superclass) {
       superclass.proto();
@@ -260,7 +260,10 @@ function makeCtor(base) {
       Class.PrototypeMixin.applyPartial(Class.prototype);
     }
 
-    return Class.prototype;
+    // Native classes will call the nearest superclass's proto function,
+    // and proto is expected to return the current instance's prototype,
+    // so we need to return it from `this` instead
+    return this.prototype;
   };
 
   return Class;
