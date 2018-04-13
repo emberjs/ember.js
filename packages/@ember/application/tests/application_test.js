@@ -10,10 +10,6 @@ import { _loaded } from '@ember/application';
 import { Controller, Object as EmberObject } from 'ember-runtime';
 import { setTemplates } from 'ember-glimmer';
 import { privatize as P } from 'container';
-import {
-  verifyInjection,
-  verifyRegistration,
-} from 'ember-application/tests/test-helpers/registry-check';
 import { assign } from 'ember-utils';
 import {
   moduleFor,
@@ -21,6 +17,8 @@ import {
   AbstractTestCase,
   AutobootApplicationTestCase,
   DefaultResolverApplicationTestCase,
+  verifyInjection,
+  verifyRegistration,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 

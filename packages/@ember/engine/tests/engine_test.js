@@ -4,10 +4,11 @@ import Engine from '@ember/engine';
 import { Object as EmberObject } from 'ember-runtime';
 import { privatize as P } from 'container';
 import {
+  moduleFor,
+  AbstractTestCase as TestCase,
   verifyInjection,
   verifyRegistration,
-} from 'ember-application/tests/test-helpers/registry-check';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+} from 'internal-test-helpers';
 
 let engine;
 let originalLookup = context.lookup;
