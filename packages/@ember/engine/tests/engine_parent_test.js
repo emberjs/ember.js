@@ -1,4 +1,4 @@
-import { getEngineParent, setEngineParent, ENGINE_PARENT } from '../../lib/system/engine-parent';
+import { getEngineParent, setEngineParent } from '@ember/engine';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -15,11 +15,6 @@ moduleFor(
       setEngineParent(engine, parent);
 
       assert.strictEqual(getEngineParent(engine), parent, 'parent has been set');
-      assert.strictEqual(
-        engine[ENGINE_PARENT],
-        parent,
-        'parent has been set to the ENGINE_PARENT symbol'
-      );
     }
   }
 );

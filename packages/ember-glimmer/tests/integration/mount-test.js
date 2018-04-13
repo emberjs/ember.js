@@ -3,8 +3,7 @@ import { moduleFor, ApplicationTest, RenderingTest } from '../utils/test-case';
 import { compile, Component } from '../utils/helpers';
 import { Controller } from 'ember-runtime';
 import { set } from 'ember-metal';
-import Engine from '@ember/engine';
-import { getEngineParent } from 'ember-application';
+import Engine, { getEngineParent } from '@ember/engine';
 import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 
 if (EMBER_ENGINES_MOUNT_PARAMS) {
