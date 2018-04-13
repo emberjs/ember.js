@@ -264,7 +264,7 @@ let allExports = [
 
   // ember-application
   ['Application', '@ember/application', 'default'],
-  ['ApplicationInstance', 'ember-application'],
+  ['ApplicationInstance', '@ember/application/instance', 'default'],
   ['Engine', 'ember-application'],
   ['EngineInstance', 'ember-application'],
   ['Resolver', '@ember/application/globals-resolver', 'default'],

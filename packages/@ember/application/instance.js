@@ -6,7 +6,7 @@ import { assign } from 'ember-utils';
 import { get, set, computed } from 'ember-metal';
 import { environment } from 'ember-environment';
 import { jQuery } from 'ember-views';
-import EngineInstance from './engine-instance';
+import { EngineInstance } from 'ember-application';
 import { renderSettled } from 'ember-glimmer';
 
 /**

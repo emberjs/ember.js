@@ -1,6 +1,6 @@
-import Engine from '../../lib/system/engine';
+import { Engine } from 'ember-application';
 import Application from '@ember/application';
-import ApplicationInstance from '../../lib/system/application-instance';
+import ApplicationInstance from '@ember/application/instance';
 import { run } from '@ember/runloop';
 import { privatize as P } from 'container';
 import { factory } from 'internal-test-helpers';

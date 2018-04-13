@@ -108,6 +108,7 @@ import { getOnerror, setOnerror } from 'ember-error-handling';
 import { getOwner, setOwner } from 'ember-owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
 import Resolver from '@ember/application/globals-resolver';
+import ApplicationInstance from '@ember/application/instance';
 
 // ****ember-environment****
 
@@ -134,6 +135,7 @@ Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
 Ember.Application = Application;
 Ember.DefaultResolver = Ember.Resolver = Resolver;
+Ember.ApplicationInstance = ApplicationInstance;
 
 // ****ember-utils****
 Ember.generateGuid = utils.generateGuid;
@@ -504,7 +506,6 @@ Ember.Router = routing.Router;
 Ember.Route = routing.Route;
 
 // ****ember-application****
-Ember.ApplicationInstance = application.ApplicationInstance;
 Ember.Engine = application.Engine;
 Ember.EngineInstance = application.EngineInstance;
 
