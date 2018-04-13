@@ -100,13 +100,16 @@ import {
 import VERSION from './version';
 import * as views from 'ember-views';
 import * as routing from 'ember-routing';
-import * as application from 'ember-application';
 import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
 import { getOwner, setOwner } from 'ember-owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
+import Resolver from '@ember/application/globals-resolver';
+import ApplicationInstance from '@ember/application/instance';
+import Engine from '@ember/engine';
+import EngineInstance from '@ember/engine/instance';
 
 // ****ember-environment****
 
@@ -132,6 +135,12 @@ Object.defineProperty(Ember, 'lookup', {
 Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
 Ember.Application = Application;
+Ember.DefaultResolver = Ember.Resolver = Resolver;
+Ember.ApplicationInstance = ApplicationInstance;
+
+// ****@ember/engine****
+Ember.Engine = Engine;
+Ember.EngineInstance = EngineInstance;
 
 // ****ember-utils****
 Ember.generateGuid = utils.generateGuid;
@@ -500,12 +509,6 @@ Ember.generateController = routing.generateController;
 Ember.RouterDSL = routing.RouterDSL;
 Ember.Router = routing.Router;
 Ember.Route = routing.Route;
-
-// ****ember-application****
-Ember.ApplicationInstance = application.ApplicationInstance;
-Ember.Engine = application.Engine;
-Ember.EngineInstance = application.EngineInstance;
-Ember.DefaultResolver = Ember.Resolver = application.Resolver;
 
 runLoadHooks('Ember.Application', Application);
 

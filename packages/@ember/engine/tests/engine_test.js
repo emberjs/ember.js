@@ -1,10 +1,14 @@
 import { context } from 'ember-environment';
 import { run } from '@ember/runloop';
-import Engine from '../../lib/system/engine';
+import Engine from '@ember/engine';
 import { Object as EmberObject } from 'ember-runtime';
 import { privatize as P } from 'container';
-import { verifyInjection, verifyRegistration } from '../test-helpers/registry-check';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase as TestCase,
+  verifyInjection,
+  verifyRegistration,
+} from 'internal-test-helpers';
 
 let engine;
 let originalLookup = context.lookup;

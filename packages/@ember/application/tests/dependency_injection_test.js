@@ -1,10 +1,8 @@
 import { context } from 'ember-environment';
 import { run } from '@ember/runloop';
 import { Object as EmberObject } from 'ember-runtime';
-import Application from '@ember/application';
+import EmberApplication from '@ember/application';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
-
-let EmberApplication = Application;
 
 let originalLookup = context.lookup;
 let registry, locator, application;

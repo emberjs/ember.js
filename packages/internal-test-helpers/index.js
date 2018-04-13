@@ -28,3 +28,4 @@ export {
 } from './lib/test-resolver';
 
 export { isIE11 } from './lib/browser-detect';
+export { verifyInjection, verifyRegistration } from './lib/registry-check';
