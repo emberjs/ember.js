@@ -103,6 +103,7 @@ import * as views from 'ember-views';
 import * as routing from 'ember-routing';
 import * as application from 'ember-application';
 import * as extensionSupport from 'ember-extension-support';
+import { deprecate } from 'ember-debug';
 
 // ****ember-environment****
 
@@ -122,6 +123,17 @@ Object.defineProperty(Ember, 'lookup', {
   get: getLookup,
   set: setLookup,
   enumerable: false,
+});
+
+Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
+  enumerable: false,
+  get() {
+    deprecate(
+      'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES'
+    );
+
+    return ENV.EXTEND_PROTOTYPES;
+  },
 });
 
 // ****ember-utils****

@@ -21,6 +21,16 @@ moduleFor(
     ['@test Ember.String.isHTMLSafe exports correctly'](assert) {
       confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
     }
+
+    ['@test Ember.EXTEND_PROTOTYPES is present (but deprecated)'](assert) {
+      expectDeprecation(() => {
+        assert.strictEqual(
+          Ember.ENV.EXTEND_PROTOTYPES,
+          Ember.EXTEND_PROTOTYPES,
+          'Ember.EXTEND_PROTOTYPES exists'
+        );
+      }, /EXTEND_PROTOTYPES is deprecated/);
+    }
   }
 );
 
