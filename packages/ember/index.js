@@ -8,6 +8,7 @@ import * as instrumentation from '@ember/instrumentation';
 import * as metal from 'ember-metal';
 import * as FLAGS from 'ember/features';
 import * as EmberDebug from 'ember-debug';
+import { deprecate } from 'ember-debug';
 import Backburner from 'backburner';
 import Logger from 'ember-console';
 import Controller from '@ember/controller';
@@ -110,7 +111,9 @@ import Resolver from '@ember/application/globals-resolver';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
-import { deprecate } from 'ember-debug';
+import Map from '@ember/map';
+import MapWithDefault from '@ember/map/with-default';
+import OrderedSet from '@ember/map/lib/ordered-set';
 
 // ****ember-environment****
 
@@ -153,6 +156,11 @@ Ember.ApplicationInstance = ApplicationInstance;
 // ****@ember/engine****
 Ember.Engine = Engine;
 Ember.EngineInstance = EngineInstance;
+
+// ****@ember/map****
+Ember.OrderedSet = OrderedSet;
+Ember.Map = Map;
+Ember.MapWithDefault = MapWithDefault;
 
 // ****ember-utils****
 Ember.generateGuid = utils.generateGuid;
@@ -277,9 +285,6 @@ Ember.isWatching = metal.isWatching;
 Ember.unwatch = metal.unwatch;
 Ember.destroy = metal.deleteMeta;
 Ember.libraries = metal.libraries;
-Ember.OrderedSet = metal.OrderedSet;
-Ember.Map = metal.Map;
-Ember.MapWithDefault = metal.MapWithDefault;
 Ember.getProperties = metal.getProperties;
 Ember.setProperties = metal.setProperties;
 Ember.expandProperties = metal.expandProperties;

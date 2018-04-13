@@ -45,7 +45,6 @@ export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
 export { watchPath, unwatchPath } from './lib/watch_path';
 export { isWatching, unwatch, watch, watcherCount } from './lib/watching';
 export { default as libraries, Libraries } from './lib/libraries';
-export { Map, MapWithDefault, OrderedSet } from './lib/map';
 export { default as getProperties } from './lib/get_properties';
 export { default as setProperties } from './lib/set_properties';
 export { default as expandProperties } from './lib/expand_properties';

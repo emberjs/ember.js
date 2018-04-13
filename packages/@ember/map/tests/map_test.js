@@ -1,4 +1,6 @@
-import { Map, MapWithDefault, OrderedSet } from '..';
+import Map from '..';
+import MapWithDefault from '../with-default';
+import OrderedSet from '../lib/ordered-set';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let object, number, string, map, variety;
