@@ -110,6 +110,7 @@ import Resolver from '@ember/application/globals-resolver';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
+import { deprecate } from 'ember-debug';
 
 // ****ember-environment****
 
@@ -129,6 +130,17 @@ Object.defineProperty(Ember, 'lookup', {
   get: getLookup,
   set: setLookup,
   enumerable: false,
+});
+
+Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
+  enumerable: false,
+  get() {
+    deprecate(
+      'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES'
+    );
+
+    return ENV.EXTEND_PROTOTYPES;
+  },
 });
 
 // ****@ember/application****
