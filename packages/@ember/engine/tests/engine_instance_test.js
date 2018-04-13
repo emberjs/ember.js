@@ -1,5 +1,5 @@
 import Engine, { getEngineParent, setEngineParent } from '@ember/engine';
-import EngineInstance from '../../lib/system/engine-instance';
+import EngineInstance from '@ember/engine/instance';
 import { run } from '@ember/runloop';
 import { factory } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
