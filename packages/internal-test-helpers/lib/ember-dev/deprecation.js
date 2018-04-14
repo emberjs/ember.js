@@ -54,7 +54,7 @@ class DeprecationAssert extends DebugAssert {
           throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
         }
 
-        tracker.expectCall(message);
+        tracker.expectCall(message, ['id', 'until']);
       });
     };
 

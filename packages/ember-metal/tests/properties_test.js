@@ -81,7 +81,7 @@ moduleFor(
       assert.expect(3);
       let obj = { foo: 'bar' };
 
-      deprecateProperty(obj, 'baz', 'foo');
+      deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
 
       expectDeprecation();
       assert.equal(obj.baz, obj.foo, 'baz and foo are equal');
@@ -94,7 +94,7 @@ moduleFor(
       assert.expect(2);
       let obj = { foo: 'bar', blammo: 'whammy' };
 
-      deprecateProperty(obj, 'baz', 'foo');
+      deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
 
       for (let prop in obj) {
         if (obj.hasOwnProperty(prop)) {
@@ -109,7 +109,7 @@ moduleFor(
       assert.expect(3);
       let obj = { foo: 'bar' };
 
-      deprecateProperty(obj, 'baz', 'foo');
+      deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
 
       expectDeprecation();
       obj.baz = 'bloop';
