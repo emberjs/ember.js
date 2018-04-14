@@ -473,10 +473,26 @@ moduleFor(
         })
       );
 
-      defineProperty(obj, 'barAlias', deprecatingAlias('bar'));
-      defineProperty(obj, 'bazAlias', deprecatingAlias('baz'));
-      defineProperty(obj, 'quzAlias', deprecatingAlias('quz'));
-      defineProperty(obj, 'bayAlias', deprecatingAlias('bay'));
+      defineProperty(
+        obj,
+        'barAlias',
+        deprecatingAlias('bar', { id: 'bar-deprecation', until: 'some.version' })
+      );
+      defineProperty(
+        obj,
+        'bazAlias',
+        deprecatingAlias('baz', { id: 'baz-deprecation', until: 'some.version' })
+      );
+      defineProperty(
+        obj,
+        'quzAlias',
+        deprecatingAlias('quz', { id: 'quz-deprecation', until: 'some.version' })
+      );
+      defineProperty(
+        obj,
+        'bayAlias',
+        deprecatingAlias('bay', { id: 'bay-deprecation', until: 'some.version' })
+      );
 
       expectDeprecation(function() {
         assert.equal(get(obj, 'barAlias'), 'asdf');
