@@ -139,7 +139,12 @@ Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
   enumerable: false,
   get() {
     deprecate(
-      'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES'
+      'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES',
+      false,
+      {
+        id: 'ember-env.old-extend-prototypes',
+        until: '4.0.0',
+      }
     );
 
     return ENV.EXTEND_PROTOTYPES;
