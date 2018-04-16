@@ -1,5 +1,44 @@
-import global from './lib/global';
-import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './lib/utils';
+import global from './global';
+import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './utils';
+
+export interface Environment {
+  ENABLE_ALL_FEATURES: boolean;
+  ENABLE_OPTIONAL_FEATURES: boolean;
+  EXTEND_PROTOTYPES: {
+    Array: boolean;
+    Function: boolean;
+    String: boolean;
+  };
+  LOG_STACKTRACE_ON_DEPRECATION: boolean;
+  LOG_VERSION: boolean;
+  RAISE_ON_DEPRECATION: boolean;
+  _APPLICATION_TEMPLATE_WRAPPER: boolean;
+  _TEMPLATE_ONLY_GLIMMER_COMPONENTS: boolean;
+  _ENABLE_EMBER_K_SUPPORT: boolean;
+  _ENABLE_SAFE_STRING_SUPPORT: boolean;
+  _ENABLE_ENUMERABLE_CONTAINS_SUPPORT: boolean;
+  _ENABLE_UNDERSCORE_ACTIONS_SUPPORT: boolean;
+  _ENABLE_REVERSED_OBSERVER_SUPPORT: boolean;
+  _ENABLE_INITIALIZER_ARGUMENTS_SUPPORT: boolean;
+  _ENABLE_ROUTER_RESOURCE: boolean;
+  _ENABLE_CURRENT_WHEN_SUPPORT: boolean;
+  _ENABLE_CONTROLLER_WRAPPED_SUPPORT: boolean;
+  _ENABLE_DEPRECATED_REGISTRY_SUPPORT: boolean;
+  _ENABLE_IMMEDIATE_OBSERVER_SUPPORT: boolean;
+  _ENABLE_STRING_FMT_SUPPORT: boolean;
+  _ENABLE_FREEZABLE_SUPPORT: boolean;
+  _ENABLE_COMPONENT_DEFAULTLAYOUT_SUPPORT: boolean;
+  _ENABLE_BINDING_SUPPORT: boolean;
+  _ENABLE_INPUT_TRANSFORM_SUPPORT: boolean;
+  _ENABLE_DEPRECATION_OPTIONS_SUPPORT: boolean;
+  _ENABLE_ORPHANED_OUTLETS_SUPPORT: boolean;
+  _ENABLE_WARN_OPTIONS_SUPPORT: boolean;
+  _ENABLE_RESOLVER_FUNCTION_SUPPORT: boolean;
+  _ENABLE_DID_INIT_ATTRS_SUPPORT: boolean;
+  _ENABLE_RENDER_SUPPORT: boolean;
+  _ENABLE_PROPERTY_REQUIRED_SUPPORT: boolean;
+}
+
 /**
   The hash of environment variables used to control various configuration
   settings. To specify your own or override default settings, add the
@@ -11,7 +50,7 @@ import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './lib/util
   @type Object
   @public
 */
-export const ENV =
+export const ENV: Environment =
   (typeof global.EmberENV === 'object' && global.EmberENV) ||
   (typeof global.ENV === 'object' && global.ENV) ||
   {};
@@ -101,52 +140,3 @@ ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(ENV._APPLICATION_TEMPLATE_WRAPPE
   @private
 */
 ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = defaultFalse(ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS);
-
-// check if window exists and actually is the global
-const hasDOM =
-  typeof window !== 'undefined' &&
-  window === global &&
-  window.document &&
-  window.document.createElement &&
-  !ENV.disableBrowserEnvironment; // is this a public thing?
-
-// legacy imports/exports/lookup stuff (should we keep this??)
-const originalContext = global.Ember || {};
-
-export const context = {
-  // import jQuery
-  imports: originalContext.imports || global,
-  // export Ember
-  exports: originalContext.exports || global,
-  // search for Namespaces
-  lookup: originalContext.lookup || global,
-};
-
-export function getLookup() {
-  return context.lookup;
-}
-
-export function setLookup(value) {
-  context.lookup = value;
-}
-
-// TODO: cleanup single source of truth issues with this stuff
-export const environment = hasDOM
-  ? {
-      hasDOM: true,
-      isChrome: !!window.chrome && !window.opera,
-      isFirefox: typeof InstallTrigger !== 'undefined',
-      location: window.location,
-      history: window.history,
-      userAgent: window.navigator.userAgent,
-      window,
-    }
-  : {
-      hasDOM: false,
-      isChrome: false,
-      isFirefox: false,
-      location: null,
-      history: null,
-      userAgent: 'Lynx (textmode)',
-      window: null,
-    };
