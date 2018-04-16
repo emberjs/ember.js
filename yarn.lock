@@ -2548,9 +2548,9 @@ ember-cli-yuidoc@^0.8.8:
     rsvp "3.0.14"
     yuidocjs "^0.10.0"
 
-"ember-cli@github:ember-cli/ember-cli#8f5a13a02d8ea5a04683565340611161c63bef89":
-  version "3.1.0-beta.1"
-  resolved "https://codeload.github.com/ember-cli/ember-cli/tar.gz/8f5a13a02d8ea5a04683565340611161c63bef89"
+"ember-cli@github:ember-cli/ember-cli#f724919b2d0455899411908531c9179240f5ef41":
+  version "3.1.2"
+  resolved "https://codeload.github.com/ember-cli/ember-cli/tar.gz/f724919b2d0455899411908531c9179240f5ef41"
   dependencies:
     amd-name-resolver "^1.2.0"
     babel-plugin-transform-es2015-modules-amd "^6.24.0"
