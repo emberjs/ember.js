@@ -1,5 +1,22 @@
-import global from './lib/global';
-import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './lib/utils';
+import global from './global';
+import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './utils';
+
+export interface Environment {
+  ENABLE_ALL_FEATURES: boolean;
+  ENABLE_OPTIONAL_FEATURES: boolean;
+  EXTEND_PROTOTYPES: {
+    Array: boolean;
+    Function: boolean;
+    String: boolean;
+  };
+  LOG_STACKTRACE_ON_DEPRECATION: boolean;
+  LOG_VERSION: boolean;
+  RAISE_ON_DEPRECATION: boolean;
+  _APPLICATION_TEMPLATE_WRAPPER: boolean;
+  _TEMPLATE_ONLY_GLIMMER_COMPONENTS: boolean;
+  _ENABLE_WARN_OPTIONS_SUPPORT: boolean;
+}
+
 /**
   The hash of environment variables used to control various configuration
   settings. To specify your own or override default settings, add the
@@ -11,7 +28,7 @@ import { defaultFalse, defaultTrue, normalizeExtendPrototypes } from './lib/util
   @type Object
   @public
 */
-export const ENV =
+export const ENV: Environment =
   (typeof global.EmberENV === 'object' && global.EmberENV) ||
   (typeof global.ENV === 'object' && global.ENV) ||
   {};
@@ -101,52 +118,3 @@ ENV._APPLICATION_TEMPLATE_WRAPPER = defaultTrue(ENV._APPLICATION_TEMPLATE_WRAPPE
   @private
 */
 ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = defaultFalse(ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS);
-
-// check if window exists and actually is the global
-const hasDOM =
-  typeof window !== 'undefined' &&
-  window === global &&
-  window.document &&
-  window.document.createElement &&
-  !ENV.disableBrowserEnvironment; // is this a public thing?
-
-// legacy imports/exports/lookup stuff (should we keep this??)
-const originalContext = global.Ember || {};
-
-export const context = {
-  // import jQuery
-  imports: originalContext.imports || global,
-  // export Ember
-  exports: originalContext.exports || global,
-  // search for Namespaces
-  lookup: originalContext.lookup || global,
-};
-
-export function getLookup() {
-  return context.lookup;
-}
-
-export function setLookup(value) {
-  context.lookup = value;
-}
-
-// TODO: cleanup single source of truth issues with this stuff
-export const environment = hasDOM
-  ? {
-      hasDOM: true,
-      isChrome: !!window.chrome && !window.opera,
-      isFirefox: typeof InstallTrigger !== 'undefined',
-      location: window.location,
-      history: window.history,
-      userAgent: window.navigator.userAgent,
-      window,
-    }
-  : {
-      hasDOM: false,
-      isChrome: false,
-      isFirefox: false,
-      location: null,
-      history: null,
-      userAgent: 'Lynx (textmode)',
-      window: null,
-    };
