@@ -2,7 +2,7 @@
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...
 
-import { guidFor } from 'ember-utils';
+import { guidFor, NAME_KEY } from 'ember-utils';
 import { mixin, Mixin } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -57,6 +57,19 @@ moduleFor(
         ]),
         'should return included mixins'
       );
+    }
+
+    ['@test setting a NAME_KEY on a mixin does not error'](assert) {
+      assert.expect(0);
+
+      let instance = Mixin.create();
+      instance[NAME_KEY] = 'My special name!';
+    }
+
+    ['@test setting a NAME_KEY on a mixin instance does not error'](assert) {
+      assert.expect(0);
+
+      Mixin.create({ [NAME_KEY]: 'My special name' });
     }
   }
 );
