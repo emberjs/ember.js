@@ -1,7 +1,7 @@
 import { lookupDescriptor, symbol, toString } from 'ember-utils';
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 import { removeChainWatcher } from './chains';
 import { ENV } from 'ember-environment';

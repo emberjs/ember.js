@@ -1,7 +1,7 @@
 /* globals Proxy */
 import { assert } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { OWNER, setOwner } from 'ember-owner';
 import { dictionary, assign, HAS_NATIVE_PROXY } from 'ember-utils';
 

@@ -5,7 +5,7 @@
 import { dictionary } from 'ember-utils';
 import { ENV, environment } from 'ember-environment';
 import { assert, isTesting } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { bind, join, once, run, schedule } from '@ember/runloop';
 import { libraries, processAllNamespaces, setNamespaceSearchDisabled } from 'ember-metal';
 import { _loaded, runLoadHooks } from '@ember/application';

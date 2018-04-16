@@ -1,4 +1,5 @@
 import { _instrumentStart } from '@ember/instrumentation';
+import { DEBUG } from '@glimmer/env';
 import {
   ComponentCapabilities,
   Option,
@@ -23,7 +24,6 @@ import {
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
 import { privatize as P } from 'container';
 import { assert, deprecate } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { getOwner } from 'ember-owner';

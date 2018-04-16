@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities, Simple } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -10,7 +11,6 @@ import {
   PreparedArguments,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
-import { DEBUG } from 'ember-env-flags';
 import DebugStack from '../utils/debug-stack';
 
 // implements the ComponentManager interface as defined in glimmer:

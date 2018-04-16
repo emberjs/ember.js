@@ -297,8 +297,8 @@
 */
 
 import { flaggedInstrument } from '@ember/instrumentation';
+import { DEBUG } from '@glimmer/env';
 import { assert, warn } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
 import { computed, get } from 'ember-metal';
 import { inject } from 'ember-runtime';
 import { isSimpleClick } from 'ember-views';

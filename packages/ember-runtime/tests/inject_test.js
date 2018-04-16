@@ -1,7 +1,7 @@
 /* global EmberDev */
 
 import { InjectedProperty } from 'ember-metal';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import inject from '../lib/inject';
 import { createInjectionHelper } from '../lib/inject';
 import EmberObject from '../lib/system/object';

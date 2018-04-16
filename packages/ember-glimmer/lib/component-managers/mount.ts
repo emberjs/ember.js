@@ -1,8 +1,8 @@
+import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities } from '@glimmer/interfaces';
 import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import { ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
-import { DEBUG } from 'ember-env-flags';
 
 import { generateControllerFactory } from 'ember-routing';
 import { OwnedTemplateMeta } from 'ember-views';

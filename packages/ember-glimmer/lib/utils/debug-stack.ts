@@ -1,6 +1,6 @@
 // @ts-check
 
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 
 let DebugStack: any;
 

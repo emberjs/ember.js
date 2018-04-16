@@ -3,11 +3,11 @@
 */
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import { isConst, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
 import { get, isNone } from 'ember-metal';
 import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 

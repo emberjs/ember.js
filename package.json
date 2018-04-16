@@ -66,6 +66,7 @@
   },
   "devDependencies": {
     "@glimmer/compiler": "^0.33.5",
+    "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "^0.33.5",
     "@glimmer/node": "^0.33.5",
     "@glimmer/opcode-compiler": "^0.33.5",

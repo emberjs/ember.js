@@ -8,7 +8,7 @@ import { assert, info } from 'ember-debug';
 import { String as StringUtils, Object as EmberObject } from 'ember-runtime';
 import validateType from './lib/validate-type';
 import { getTemplate } from 'ember-glimmer';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 
 export const Resolver = EmberObject.extend({
   /*

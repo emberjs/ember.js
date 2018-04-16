@@ -15,6 +15,10 @@
   version "0.33.5"
   resolved "https://registry.yarnpkg.com/@glimmer/encoder/-/encoder-0.33.5.tgz#685c5235dc6b7d2d504fbe6ab7642b818ff8a68c"
 
+"@glimmer/env@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"
+
 "@glimmer/interfaces@^0.33.5":
   version "0.33.5"
   resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.33.5.tgz#f6b1d12532ec67fd55c8e595cf7df5e5281c7070"
