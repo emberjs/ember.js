@@ -2,7 +2,7 @@
 @module @ember/object
 */
 import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
-import { assign, guidFor, ROOT, wrap, makeArray } from 'ember-utils';
+import { assign, guidFor, ROOT, wrap, makeArray, NAME_KEY } from 'ember-utils';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { ENV } from 'ember-environment';
@@ -449,6 +449,7 @@ export default class Mixin {
     this._without = undefined;
 
     if (DEBUG) {
+      this[NAME_KEY] = undefined;
       /*
         In debug builds, we seal mixins to help avoid performance pitfalls.
 
@@ -609,6 +610,7 @@ if (ENV._ENABLE_BINDING_SUPPORT) {
 Mixin.prototype.toString = classToString;
 
 if (DEBUG) {
+  Mixin.prototype[NAME_KEY] = undefined;
   Object.seal(Mixin.prototype);
 }
 
