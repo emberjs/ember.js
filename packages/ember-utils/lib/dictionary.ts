@@ -3,7 +3,9 @@
 // appears worthwhile in some usecases. Please note, these deletes do increase
 // the cost of creation dramatically over a plain Object.create. And as this
 // only makes sense for long-lived dictionaries that aren't instantiated often.
-export default function makeDictionary(parent) {
+export default function makeDictionary<T>(
+  parent: { [key: string]: T } | null
+): { [key: string]: T } {
   let dict = Object.create(parent);
   dict['_dict'] = null;
   delete dict['_dict'];

@@ -1,6 +1,11 @@
 /**
  @module @ember/polyfills
 */
+
+export function assign<T, U>(target: T, source: U): T & U;
+export function assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
+export function assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
+export function assign(target: object, ...sources: any[]): any;
 /**
   Copy properties from a source object to a target object.
 
@@ -15,13 +20,13 @@
 
   @method assign
   @for @ember/polyfills
-  @param {Object} original The object to assign into
+  @param {Object} target The object to assign into
   @param {Object} ...args The objects to copy properties from
   @return {Object}
   @public
   @static
 */
-export function assign(original) {
+export function assign(target: object) {
   for (let i = 1; i < arguments.length; i++) {
     let arg = arguments[i];
     if (!arg) {
@@ -32,11 +37,11 @@ export function assign(original) {
 
     for (let i = 0; i < updates.length; i++) {
       let prop = updates[i];
-      original[prop] = arg[prop];
+      target[prop] = arg[prop];
     }
   }
 
-  return original;
+  return target;
 }
 
 // Note: We use the bracket notation so
@@ -44,4 +49,4 @@ export function assign(original) {
 //       transform it.
 // https://www.npmjs.com/package/babel-plugin-transform-object-assign
 const { assign: _assign } = Object;
-export default _assign || assign;
+export default (_assign || assign) as typeof assign;
