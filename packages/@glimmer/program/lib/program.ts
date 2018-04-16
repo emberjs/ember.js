@@ -37,6 +37,8 @@ export interface SerializedHeap {
 
 export type Placeholder = [number, () => number];
 
+const PAGE_SIZE = 0x100000;
+
 /**
  * The Heap is responsible for dynamically allocating
  * memory in which we read/write the VM's instructions
@@ -58,11 +60,12 @@ export type Placeholder = [number, () => number];
  * over them as you will have a bad memory access exception.
  */
 export class Heap implements CompileTimeHeap {
-  private heap: Uint16Array | Array<number>;
+  private heap: Uint16Array;
   private placeholders: Placeholder[] = [];
   private table: number[];
   private offset = 0;
   private handle = 0;
+  private capacity = PAGE_SIZE;
 
   constructor(serializedHeap?: SerializedHeap) {
     if (serializedHeap) {
@@ -71,14 +74,26 @@ export class Heap implements CompileTimeHeap {
       this.table = table;
       this.offset = this.heap.length;
       this.handle = handle;
+      this.capacity = 0;
     } else {
-      this.heap = new Uint16Array(0x100000);
+      this.heap = new Uint16Array(PAGE_SIZE);
       this.table = [];
     }
   }
 
   push(item: number): void {
+    this.sizeCheck();
     this.heap[this.offset++] = item;
+  }
+
+  private sizeCheck() {
+    if (this.capacity === 0) {
+      let heap = slice(this.heap, 0, this.offset);
+      this.heap = new Uint16Array(heap.length + PAGE_SIZE);
+      this.heap.set(heap, 0);
+      this.capacity = PAGE_SIZE;
+    }
+    this.capacity--;
   }
 
   getbyaddr(address: number): number {
@@ -180,6 +195,7 @@ export class Heap implements CompileTimeHeap {
   }
 
   pushPlaceholder(valueFunc: () => number): void {
+    this.sizeCheck();
     let address = this.offset++;
     this.heap[address] = Size.MAX_SIZE;
     this.placeholders.push([address, valueFunc]);
@@ -196,11 +212,11 @@ export class Heap implements CompileTimeHeap {
     }
   }
 
-  capture(): SerializedHeap {
+  capture(offset = this.offset): SerializedHeap {
     this.patchPlaceholders();
 
     // Only called in eager mode
-    let buffer = slice(this.heap, 0, this.offset);
+    let buffer = slice(this.heap, 0, offset).buffer;
     return {
       handle: this.handle,
       table: this.table,
@@ -250,20 +266,16 @@ export class Program<Locator> extends WriteOnlyProgram {
   public constants: Constants<Locator>;
 }
 
-function slice(arr: Uint16Array | number[], start: number, end: number) {
-  if (arr instanceof Uint16Array) {
-    if (arr.slice !== undefined) {
-      return arr.slice(start, end).buffer;
-    }
-
-    let ret = new Uint16Array(end);
-
-    for (; start < end; start++) {
-      ret[start]  = arr[start];
-    }
-
-    return ret.buffer;
+function slice(arr: Uint16Array, start: number, end: number): Uint16Array {
+  if (arr.slice !== undefined) {
+    return arr.slice(start, end);
   }
 
-  return null;
+  let ret = new Uint16Array(end);
+
+  for (; start < end; start++) {
+    ret[start]  = arr[start];
+  }
+
+  return ret;
 }
