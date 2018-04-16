@@ -1,5 +1,5 @@
 import { Arguments, VM } from '@glimmer/runtime';
-import { String as StringUtils } from 'ember-runtime';
+import { dasherize } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
 function normalizeClass({ positional }: any) {
@@ -11,7 +11,7 @@ function normalizeClass({ positional }: any) {
   let value = positional.at(1).value();
 
   if (value === true) {
-    return StringUtils.dasherize(className);
+    return dasherize(className);
   } else if (!value && value !== 0) {
     return '';
   } else {

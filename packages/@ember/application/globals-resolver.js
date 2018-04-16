@@ -5,7 +5,7 @@
 import { dictionary } from 'ember-utils';
 import { get, findNamespace } from 'ember-metal';
 import { assert, info } from 'ember-debug';
-import { String as StringUtils, Object as EmberObject } from 'ember-runtime';
+import { capitalize, classify, decamelize, dasherize, Object as EmberObject } from 'ember-runtime';
 import validateType from './lib/validate-type';
 import { getTemplate } from 'ember-glimmer';
 import { DEBUG } from '@glimmer/env';
@@ -191,7 +191,7 @@ const DefaultResolver = EmberObject.extend({
     if (type !== 'template' && lastSlashIndex !== -1) {
       let parts = name.split('/');
       name = parts[parts.length - 1];
-      let namespaceName = StringUtils.capitalize(parts.slice(0, -1).join('.'));
+      let namespaceName = capitalize(parts.slice(0, -1).join('.'));
       root = findNamespace(namespaceName);
 
       assert(
@@ -200,7 +200,7 @@ const DefaultResolver = EmberObject.extend({
       );
     }
 
-    let resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : StringUtils.classify(type);
+    let resolveMethodName = fullNameWithoutType === 'main' ? 'Main' : classify(type);
 
     if (!(name && type)) {
       throw new TypeError(`Invalid fullName: \`${fullName}\`, must be of the form \`type:name\` `);
@@ -235,10 +235,10 @@ const DefaultResolver = EmberObject.extend({
       return `template at ${parsedName.fullNameWithoutType.replace(/\./g, '/')}`;
     }
 
-    description = `${parsedName.root}.${StringUtils.classify(parsedName.name).replace(/\./g, '')}`;
+    description = `${parsedName.root}.${classify(parsedName.name).replace(/\./g, '')}`;
 
     if (parsedName.type !== 'model') {
-      description += StringUtils.classify(parsedName.type);
+      description += classify(parsedName.type);
     }
 
     return description;
@@ -275,7 +275,7 @@ const DefaultResolver = EmberObject.extend({
   resolveTemplate(parsedName) {
     let templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
-    return getTemplate(templateName) || getTemplate(StringUtils.decamelize(templateName));
+    return getTemplate(templateName) || getTemplate(decamelize(templateName));
   },
 
   /**
@@ -325,7 +325,7 @@ const DefaultResolver = EmberObject.extend({
     @protected
   */
   resolveModel(parsedName) {
-    let className = StringUtils.classify(parsedName.name);
+    let className = classify(parsedName.name);
     let factory = get(parsedName.root, className);
 
     return factory;
@@ -352,13 +352,13 @@ const DefaultResolver = EmberObject.extend({
     @protected
   */
   resolveOther(parsedName) {
-    let className = StringUtils.classify(parsedName.name) + StringUtils.classify(parsedName.type);
+    let className = classify(parsedName.name) + classify(parsedName.type);
     let factory = get(parsedName.root, className);
     return factory;
   },
 
   resolveMain(parsedName) {
-    let className = StringUtils.classify(parsedName.type);
+    let className = classify(parsedName.type);
     return get(parsedName.root, className);
   },
 
@@ -371,7 +371,7 @@ const DefaultResolver = EmberObject.extend({
   */
   knownForType(type) {
     let namespace = get(this, 'namespace');
-    let suffix = StringUtils.classify(type);
+    let suffix = classify(type);
     let typeRegexp = new RegExp(`${suffix}$`);
 
     let known = dictionary(null);
@@ -403,9 +403,9 @@ const DefaultResolver = EmberObject.extend({
     @private
   */
   translateToContainerFullname(type, name) {
-    let suffix = StringUtils.classify(type);
+    let suffix = classify(type);
     let namePrefix = name.slice(0, suffix.length * -1);
-    let dasherizedName = StringUtils.dasherize(namePrefix);
+    let dasherizedName = dasherize(namePrefix);
 
     return `${type}:${dasherizedName}`;
   },

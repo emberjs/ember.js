@@ -27,7 +27,7 @@ import { assert, deprecate } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { getOwner } from 'ember-owner';
-import { String as StringUtils } from 'ember-runtime';
+import { dasherize } from 'ember-runtime';
 import { assign, guidFor } from 'ember-utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
@@ -332,11 +332,7 @@ export default class CurlyComponentManager
     if (classRef && classRef.value()) {
       const ref =
         classRef.value() === true
-          ? new ColonClassNameBindingReference(
-              classRef,
-              StringUtils.dasherize(classRef['_propertyKey']),
-              null
-            )
+          ? new ColonClassNameBindingReference(classRef, dasherize(classRef['_propertyKey']), null)
           : classRef;
       operations.setAttribute('class', ref, false, null);
     }

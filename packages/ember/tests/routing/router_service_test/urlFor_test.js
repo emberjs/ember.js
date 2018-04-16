@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { String } from 'ember-runtime';
+import { capitalize } from 'ember-runtime';
 import { Route } from 'ember-routing';
 import { get } from 'ember-metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
@@ -7,7 +7,7 @@ import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
 
 function setupController(app, name) {
-  let controllerName = `${String.capitalize(name)}Controller`;
+  let controllerName = `${capitalize(name)}Controller`;
 
   Object.defineProperty(app, controllerName, {
     get() {

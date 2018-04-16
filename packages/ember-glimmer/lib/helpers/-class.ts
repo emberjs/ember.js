@@ -1,5 +1,5 @@
 import { Arguments, VM } from '@glimmer/runtime';
-import { String as StringUtils } from 'ember-runtime';
+import { dasherize } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
 function classHelper({ positional }: any) {
@@ -9,14 +9,14 @@ function classHelper({ positional }: any) {
 
   if (value === true) {
     if (args > 1) {
-      return StringUtils.dasherize(positional.at(1).value());
+      return dasherize(positional.at(1).value());
     }
     return null;
   }
 
   if (value === false) {
     if (args > 2) {
-      return StringUtils.dasherize(positional.at(2).value());
+      return dasherize(positional.at(2).value());
     }
     return null;
   }

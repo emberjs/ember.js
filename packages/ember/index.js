@@ -14,7 +14,6 @@ import Logger from 'ember-console';
 import Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
-  String as EmberString,
   Object as EmberObject,
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -80,6 +79,15 @@ import {
   union,
   intersect,
   collect,
+
+  // string
+  loc,
+  w,
+  decamelize,
+  camelize,
+  classify,
+  underscore,
+  capitalize,
 } from 'ember-runtime';
 import {
   Checkbox,
@@ -342,7 +350,15 @@ Ember.Logger = Logger;
 
 // ****ember-runtime****
 Ember.A = A;
-Ember.String = EmberString;
+Ember.String = {
+  loc,
+  w,
+  decamelize,
+  camelize,
+  classify,
+  underscore,
+  capitalize,
+};
 Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
 Ember._ContainerProxyMixin = ContainerProxyMixin;
@@ -472,8 +488,8 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     return htmlSafe(this);
   };
 }
-EmberString.htmlSafe = htmlSafe;
-EmberString.isHTMLSafe = isHTMLSafe;
+Ember.String.htmlSafe = htmlSafe;
+Ember.String.isHTMLSafe = isHTMLSafe;
 
 /**
   Global hash of shared templates. This will automatically be populated

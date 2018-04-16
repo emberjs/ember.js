@@ -4,7 +4,7 @@ import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
 import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
-import { String as StringUtils } from 'ember-runtime';
+import { dasherize } from 'ember-runtime';
 import { ROOT_REF } from '../component';
 import { Component } from './curly-component-state-bucket';
 import { referenceFromParts } from './references';
@@ -211,7 +211,7 @@ class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
 
     if (value === true) {
       let { path, dasherizedPath } = this;
-      return dasherizedPath || (this.dasherizedPath = StringUtils.dasherize(path));
+      return dasherizedPath || (this.dasherizedPath = dasherize(path));
     } else if (value || value === 0) {
       return String(value);
     } else {

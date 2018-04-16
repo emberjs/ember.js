@@ -1,5 +1,14 @@
 export { default as Object, FrameworkObject } from './lib/system/object';
-export { default as String } from './lib/system/string';
+export {
+  loc,
+  w,
+  dasherize,
+  decamelize,
+  camelize,
+  classify,
+  underscore,
+  capitalize,
+} from './lib/system/string';
 export { default as RegistryProxyMixin } from './lib/mixins/registry_proxy';
 export { default as ContainerProxyMixin } from './lib/mixins/container_proxy';
 export { default as copy } from './lib/copy';

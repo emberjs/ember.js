@@ -1,7 +1,8 @@
 import {
   A as emberA,
   typeOf,
-  String as StringUtils,
+  classify,
+  dasherize,
   Namespace,
   Object as EmberObject,
 } from 'ember-runtime';
@@ -84,7 +85,7 @@ export default EmberObject.extend({
   catalogEntriesByType(type) {
     let namespaces = emberA(Namespace.NAMESPACES);
     let types = emberA();
-    let typeSuffixRegex = new RegExp(`${StringUtils.classify(type)}$`);
+    let typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
     namespaces.forEach(namespace => {
       for (let key in namespace) {
@@ -94,7 +95,7 @@ export default EmberObject.extend({
         if (typeSuffixRegex.test(key)) {
           let klass = namespace[key];
           if (typeOf(klass) === 'class') {
-            types.push(StringUtils.dasherize(key.replace(typeSuffixRegex, '')));
+            types.push(dasherize(key.replace(typeSuffixRegex, '')));
           }
         }
       }

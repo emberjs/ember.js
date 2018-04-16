@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { String as StringUtils } from 'ember-runtime';
+import { loc } from 'ember-runtime';
 import { helper } from '../helper';
 
 /**
@@ -38,5 +38,5 @@ import { helper } from '../helper';
   @public
 */
 export default helper(function(params) {
-  return StringUtils.loc.apply(null, params);
+  return loc.apply(null, params);
 });

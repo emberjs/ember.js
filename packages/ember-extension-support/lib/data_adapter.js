@@ -2,7 +2,7 @@ import { getOwner } from 'ember-owner';
 import { scheduleOnce } from '@ember/runloop';
 import { get, objectAt, addArrayObserver, removeArrayObserver } from 'ember-metal';
 import {
-  String as StringUtils,
+  dasherize,
   Namespace,
   Object as EmberObject,
   A as emberA,
@@ -394,7 +394,7 @@ export default EmberObject.extend({
         if (!this.detect(namespace[key])) {
           continue;
         }
-        let name = StringUtils.dasherize(key);
+        let name = dasherize(key);
         types.push(name);
       }
     });
