@@ -1,4 +1,4 @@
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { ENV, environment } from 'ember-environment';
 import { isTesting } from './lib/testing';
 import EmberError from '@ember/error';

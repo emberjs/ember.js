@@ -33,7 +33,7 @@ import {
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 import { MANDATORY_GETTER, MANDATORY_SETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 

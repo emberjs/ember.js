@@ -1,4 +1,4 @@
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { assert as emberAssert, runInDebug } from 'ember-debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

@@ -10,7 +10,7 @@ import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';
 import { resemblesURL, getActiveTargetName, calculateCacheKey, extractRouteArgs } from '../utils';
 import RouterState from './router_state';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 
 /**
 @module @ember/routing

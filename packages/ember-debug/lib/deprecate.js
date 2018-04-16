@@ -1,5 +1,4 @@
-/*global __fail__*/
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 
 import { assert } from '../index';
@@ -83,7 +82,7 @@ if (DEBUG) {
   } else {
     captureErrorForStack = () => {
       try {
-        __fail__.fail();
+        __fail__.fail(); // eslint-disable-line
       } catch (e) {
         return e;
       }

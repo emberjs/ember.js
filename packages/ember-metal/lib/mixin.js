@@ -4,7 +4,7 @@
 import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import { assign, guidFor, ROOT, wrap, makeArray, NAME_KEY } from 'ember-utils';
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import expandProperties from './expand_properties';

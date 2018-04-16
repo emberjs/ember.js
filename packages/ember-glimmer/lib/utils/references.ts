@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { Opaque } from '@glimmer/interfaces';
 import {
   combine,
@@ -19,7 +20,6 @@ import {
   PrimitiveReference,
 } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
-import { DEBUG } from 'ember-env-flags';
 import { didRender, get, set, tagFor, tagForProperty, watchKey } from 'ember-metal';
 import { isProxy, symbol } from 'ember-utils';
 import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER, MANDATORY_SETTER } from 'ember/features';

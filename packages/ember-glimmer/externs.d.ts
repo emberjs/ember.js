@@ -6,7 +6,3 @@ declare module 'ember/features' {
   export const EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER: boolean | null;
   export const MANDATORY_SETTER: boolean | null;
 }
-
-declare module 'ember-env-flags' {
-  export const DEBUG: boolean;
-}

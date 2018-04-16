@@ -1,5 +1,5 @@
 import { assert } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
 
 let runInTransaction, didRender, assertNotRendered;

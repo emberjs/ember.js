@@ -273,8 +273,8 @@ module.exports.buildEmberEnvFlagsES = function(flags) {
     content += `\nexport const ${key} = ${flags[key]};`;
   }
 
-  return new WriteFile('ember-env-flags.js', content, {
-    annotation: 'ember-env-flags',
+  return new WriteFile('@glimmer/env.js', content, {
+    annotation: '@glimmer/env',
   });
 };
 

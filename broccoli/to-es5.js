@@ -28,7 +28,7 @@ module.exports = function toES5(tree, _options) {
           assertPredicateIndex: 1,
         },
         envFlags: {
-          source: 'ember-env-flags',
+          source: '@glimmer/env',
           flags: { DEBUG: options.environment !== 'production' },
         },
         features: {

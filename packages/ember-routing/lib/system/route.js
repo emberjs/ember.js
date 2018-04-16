@@ -3,7 +3,7 @@ import { assign } from 'ember-utils';
 import { once } from '@ember/runloop';
 import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember-metal';
 import { assert, info, isTesting, deprecate } from 'ember-debug';
-import { DEBUG } from 'ember-env-flags';
+import { DEBUG } from '@glimmer/env';
 import {
   typeOf,
   copy,
