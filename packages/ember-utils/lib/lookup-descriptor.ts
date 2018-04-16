@@ -1,4 +1,4 @@
-export default function lookupDescriptor(obj, keyName) {
+export default function lookupDescriptor(obj: object, keyName: string) {
   let current = obj;
   while (current) {
     let descriptor = Object.getOwnPropertyDescriptor(current, keyName);

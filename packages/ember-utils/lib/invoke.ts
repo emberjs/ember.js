@@ -16,7 +16,7 @@
   @return {Boolean}
   @private
 */
-export function canInvoke(obj, methodName) {
+export function canInvoke(obj: any | null | undefined, methodName: string): obj is Function {
   return obj !== null && obj !== undefined && typeof obj[methodName] === 'function';
 }
 
@@ -47,7 +47,11 @@ export function canInvoke(obj, methodName) {
   @return {*} the return value of the invoked method or undefined if it cannot be invoked
   @public
 */
-export function tryInvoke(obj, methodName, args) {
+export function tryInvoke(
+  obj: any | undefined | null,
+  methodName: string,
+  args: Array<any | undefined | null>
+) {
   if (canInvoke(obj, methodName)) {
     let method = obj[methodName];
     return method.apply(obj, args);

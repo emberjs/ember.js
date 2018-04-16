@@ -37,7 +37,7 @@
   @private
   @return {String} interned version of the provided string
 */
-export default function intern(str) {
+export default function intern(str: string): string {
   let obj = {};
   obj[str] = 1;
   for (let key in obj) {

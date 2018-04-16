@@ -16,7 +16,7 @@ const objectToString = Object.prototype.toString;
   @since 1.4.0
   @private
 */
-export default function inspect(obj) {
+export default function inspect(obj: any | null | undefined): string {
   if (obj === null) {
     return 'null';
   }
