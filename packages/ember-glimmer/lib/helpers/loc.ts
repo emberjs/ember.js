@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { loc } from 'ember-runtime';
+import { loc } from '@ember/string';
 import { helper } from '../helper';
 
 /**

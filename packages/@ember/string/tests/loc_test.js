@@ -1,6 +1,6 @@
 import { ENV } from 'ember-environment';
-import { loc } from '../../../lib/system/string';
-import { setStrings, getStrings } from '../../../lib/string_registry';
+import { loc } from '@ember/string';
+import { setStrings, getStrings } from '@ember/string/lib/string_registry';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let oldString;

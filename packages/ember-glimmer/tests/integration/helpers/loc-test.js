@@ -1,13 +1,13 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { set } from 'ember-metal';
-import { setStrings } from 'ember-runtime';
+import { _setStrings } from '@ember/string';
 
 moduleFor(
   'Helpers test: {{loc}}',
   class extends RenderingTest {
     constructor() {
       super(...arguments);
-      setStrings({
+      _setStrings({
         'Hello Friend': 'Hallo Freund',
         Hello: 'Hallo, %@',
       });
@@ -15,7 +15,7 @@ moduleFor(
 
     teardown() {
       super.teardown();
-      setStrings({});
+      _setStrings({});
     }
 
     ['@test it lets the original value through by default']() {

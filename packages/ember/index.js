@@ -14,6 +14,18 @@ import Logger from 'ember-console';
 import Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
+  _getStrings,
+  _setStrings,
+  dasherize,
+  camelize,
+  capitalize,
+  classify,
+  decamelize,
+  loc,
+  underscore,
+  w,
+} from '@ember/string';
+import {
   Object as EmberObject,
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -43,10 +55,8 @@ import {
   CoreObject,
   NativeArray,
   A,
-  getStrings,
 
   // computed macros
-  setStrings,
   empty,
   notEmpty,
   none,
@@ -79,15 +89,6 @@ import {
   union,
   intersect,
   collect,
-
-  // string
-  loc,
-  w,
-  decamelize,
-  camelize,
-  classify,
-  underscore,
-  capitalize,
 } from 'ember-runtime';
 import {
   Checkbox,
@@ -353,6 +354,7 @@ Ember.A = A;
 Ember.String = {
   loc,
   w,
+  dasherize,
   decamelize,
   camelize,
   classify,
@@ -439,8 +441,8 @@ computed.collect = collect;
 */
 Object.defineProperty(Ember, 'STRINGS', {
   configurable: false,
-  get: getStrings,
-  set: setStrings,
+  get: _getStrings,
+  set: _setStrings,
 });
 
 /**

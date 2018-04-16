@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { w } from '../../../lib/system/string';
+import { w } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {

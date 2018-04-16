@@ -1,5 +1,5 @@
+import { dasherize } from '@ember/string';
 import { Arguments, VM } from '@glimmer/runtime';
-import { dasherize } from 'ember-runtime';
 import { InternalHelperReference } from '../utils/references';
 
 function normalizeClass({ positional }: any) {

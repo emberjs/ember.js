@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { capitalize } from 'ember-runtime';
+import { capitalize } from '@ember/string';
 import { Route } from 'ember-routing';
 import { get } from 'ember-metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';

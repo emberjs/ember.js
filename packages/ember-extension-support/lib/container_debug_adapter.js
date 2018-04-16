@@ -1,11 +1,5 @@
-import {
-  A as emberA,
-  typeOf,
-  classify,
-  dasherize,
-  Namespace,
-  Object as EmberObject,
-} from 'ember-runtime';
+import { classify, dasherize } from '@ember/string';
+import { A as emberA, typeOf, Namespace, Object as EmberObject } from 'ember-runtime';
 
 /**
 @module @ember/debug

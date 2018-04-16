@@ -13,9 +13,6 @@ export const inject: {
 
 export const FrameworkObject: any;
 
-export function dasherize(s: string): string;
-export function loc(s: string, ...args: string[]): string;
-
 export function isEmberArray(arr: any): boolean;
 
 export function _contentFor(proxy: any): any;
