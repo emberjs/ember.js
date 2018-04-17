@@ -1,7 +1,6 @@
 /**
 @module @ember/object
 */
-import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import { assign, guidFor, ROOT, wrap, makeArray, NAME_KEY } from 'ember-utils';
 import { assert } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
@@ -99,10 +98,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
 
   // If we didn't find the original value in a parent mixin, find it in
   // the original object
-  if (
-    superMethod === undefined &&
-    (!EMBER_METAL_ES5_GETTERS || descriptorFor(obj, key) === undefined)
-  ) {
+  if (superMethod === undefined && descriptorFor(obj, key) === undefined) {
     superMethod = obj[key];
   }
 
@@ -323,7 +319,7 @@ function applyMixin(obj, mixins, partial) {
       continue;
     }
 
-    if (EMBER_METAL_ES5_GETTERS && descriptorFor(obj, key) !== undefined) {
+    if (descriptorFor(obj, key) !== undefined) {
       replaceObserversAndListeners(obj, key, null, value);
     } else {
       replaceObserversAndListeners(obj, key, obj[key], value);

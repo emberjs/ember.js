@@ -4,7 +4,6 @@
     "ember-libraries-isregistered": false,
     "ember-improved-instrumentation": false,
     "ember-glimmer-named-arguments": true,
-    "ember-metal-es5-getters": true,
     "ember-routing-router-service": true,
     "ember-engines-mount-params": true,
     "ember-module-unification": false,
