@@ -40,6 +40,7 @@ import { OwnedTemplateMeta } from 'ember-views';
 
   @method let
   @for Ember.Templates.helpers
+  @category ember-block-let-helper
   @public
 */
 export function blockLetMacro(
