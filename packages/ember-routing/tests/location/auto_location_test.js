@@ -1,6 +1,6 @@
 import { OWNER } from 'ember-owner';
 import { assign } from 'ember-utils';
-import { environment } from 'ember-environment';
+import { window } from 'ember-browser-environment';
 import { run } from '@ember/runloop';
 import { get } from 'ember-metal';
 import AutoLocation from '../../lib/location/auto_location';
@@ -71,7 +71,7 @@ moduleFor(
       let location = AutoLocation.create();
 
       assert.ok(location.global, 'has a global defined');
-      assert.strictEqual(location.global, environment.window, 'has the environments window global');
+      assert.strictEqual(location.global, window, 'has the environments window global');
     }
 
     ["@test AutoLocation should return concrete implementation's value for `getURL`"](assert) {

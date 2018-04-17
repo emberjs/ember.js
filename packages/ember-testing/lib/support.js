@@ -1,7 +1,7 @@
 import { warn } from 'ember-debug';
 import { jQuery, jQueryDisabled } from 'ember-views';
 
-import { environment } from 'ember-environment';
+import { hasDOM } from 'ember-browser-environment';
 
 /**
   @module ember
@@ -28,7 +28,7 @@ function testCheckboxClick(handler) {
     .remove();
 }
 
-if (environment.hasDOM && !jQueryDisabled) {
+if (hasDOM && !jQueryDisabled) {
   $(function() {
     /*
       Determine whether a checkbox checked using jQuery's "click" method will have

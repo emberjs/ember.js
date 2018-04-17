@@ -123,6 +123,10 @@ export const ENV = {
   EMBER_LOAD_HOOKS: {} as {
     [hook: string]: Function[];
   },
+
+  FEATURES: {} as {
+    [feature: string]: boolean;
+  },
 };
 
 (EmberENV => {
@@ -166,6 +170,13 @@ export const ENV = {
       if (Array.isArray(hooks)) {
         ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter(hook => typeof hook === 'function');
       }
+    }
+  }
+  let { FEATURES } = EmberENV;
+  if (typeof FEATURES === 'object' && FEATURES !== null) {
+    for (let feature in FEATURES) {
+      if (!FEATURES.hasOwnProperty(feature)) continue;
+      ENV.FEATURES[feature] = FEATURES[feature] === true;
     }
   }
 })(global.EmberENV || global.ENV);

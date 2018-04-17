@@ -1,6 +1,6 @@
 /* globals module, URL */
 
-import { environment as emberEnvironment } from 'ember-environment';
+import { hasDOM } from 'ember-browser-environment';
 import { IS_NODE, require } from 'node-module';
 import Environment from './environment';
 
@@ -10,7 +10,7 @@ let parsingNode: HTMLAnchorElement;
 export default function installProtocolForURL(environment: Environment) {
   let protocol;
 
-  if (emberEnvironment.hasDOM) {
+  if (hasDOM) {
     protocol = browserProtocolForURL.call(environment, 'foobar:baz');
   }
 

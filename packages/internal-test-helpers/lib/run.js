@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
 
 export function runAppend(view) {
-  run(view, 'appendTo', '#qunit-fixture');
+  run(view, 'appendTo', document.getElementById('qunit-fixture'));
 }
 
 export function runDestroy(toDestroy) {

@@ -1,5 +1,6 @@
 import { DEBUG } from '@glimmer/env';
-import { ENV, environment } from 'ember-environment';
+import { ENV } from 'ember-environment';
+import { isChrome, isFirefox } from 'ember-browser-environment';
 import { isTesting } from './lib/testing';
 import EmberError from '@ember/error';
 import { default as isFeatureEnabled } from './lib/features';
@@ -312,10 +313,6 @@ if (DEBUG && !isTesting()) {
 
   delete FEATURES['features-stripped-test'];
   _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, DEFAULT_FEATURES, featuresWereStripped);
-
-  // Inform the developer about the Ember Inspector if not installed.
-  let isFirefox = environment.isFirefox;
-  let isChrome = environment.isChrome;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener(

@@ -1,9 +1,10 @@
-import { context, environment } from 'ember-environment';
+import { context } from 'ember-environment';
+import { hasDOM } from 'ember-browser-environment';
 
 let jQuery;
 export let jQueryDisabled = false;
 
-if (environment.hasDOM) {
+if (hasDOM) {
   jQuery = context.imports.jQuery;
 
   if (jQuery) {

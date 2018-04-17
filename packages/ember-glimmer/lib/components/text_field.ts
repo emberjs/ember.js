@@ -1,7 +1,7 @@
 /**
 @module @ember/component
 */
-import { environment } from 'ember-environment';
+import { hasDOM } from 'ember-browser-environment';
 import { computed } from 'ember-metal';
 import { TextSupport } from 'ember-views';
 import Component from '../component';
@@ -15,7 +15,7 @@ function canSetTypeOfInput(type: string) {
 
   // if running in outside of a browser always return the
   // original type
-  if (!environment.hasDOM) {
+  if (!hasDOM) {
     inputTypes[type] = type;
 
     return type;

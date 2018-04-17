@@ -1,6 +1,7 @@
 /*globals CustomEvent */
 
-import { ENV, environment } from 'ember-environment';
+import { ENV } from 'ember-environment';
+import { window } from 'ember-browser-environment';
 
 /**
   @module @ember/application
@@ -56,7 +57,6 @@ export function onLoad(name, callback) {
 */
 export function runLoadHooks(name, object) {
   loaded[name] = object;
-  let window = environment.window;
 
   if (window && typeof CustomEvent === 'function') {
     let event = new CustomEvent(name, { detail: object, name });
