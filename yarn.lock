@@ -886,13 +886,6 @@ babel-plugin-transform-object-assign@^6.22.0:
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-transform-proto-to-assign@^6.26.0:
-  version "6.26.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-proto-to-assign/-/babel-plugin-transform-proto-to-assign-6.26.0.tgz#c493e24a62749a44f7ede96506c0cb3a1891f67b"
-  dependencies:
-    babel-runtime "^6.26.0"
-    lodash "^4.17.4"
-
 babel-plugin-transform-regenerator@^6.22.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-transform-regenerator/-/babel-plugin-transform-regenerator-6.26.0.tgz#e0703696fbde27f0a3efcacf8b4dca2f7b3a8f2f"

@@ -52,7 +52,6 @@ module.exports = function toES5(tree, _options) {
     ['transform-es2015-block-scoping', { throwIfClosureRequired: true }],
     ['check-es2015-constants'],
     ['transform-es2015-classes', { loose: true }],
-    ['transform-proto-to-assign'],
     ['transform-object-assign'],
     injectNodeGlobals,
     ['transform-es2015-modules-amd', { noInterop: true, strict: true }],
