@@ -123,7 +123,7 @@ import EngineInstance from '@ember/engine/instance';
 import Map from '@ember/map';
 import MapWithDefault from '@ember/map/with-default';
 import OrderedSet from '@ember/map/lib/ordered-set';
-import { assign } from '@ember/polyfills';
+import { assign, merge } from '@ember/polyfills';
 
 // ****ember-environment****
 
@@ -177,6 +177,10 @@ Ember.OrderedSet = OrderedSet;
 Ember.Map = Map;
 Ember.MapWithDefault = MapWithDefault;
 
+// ****@ember/polyfills****
+Ember.assign = assign;
+Ember.merge = merge;
+
 // ****ember-utils****
 Ember.generateGuid = utils.generateGuid;
 Ember.GUID_KEY = utils.GUID_KEY;
@@ -187,7 +191,6 @@ Ember.canInvoke = utils.canInvoke;
 Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
-Ember.assign = assign;
 Ember.NAME_KEY = utils.NAME_KEY;
 
 // ****container****
@@ -257,7 +260,6 @@ Ember.computed = computed;
 computed.alias = metal.alias;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.getCachedValueFor;
-Ember.merge = metal.merge;
 Ember.meta = metal.meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;

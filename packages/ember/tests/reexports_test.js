@@ -74,7 +74,7 @@ let allExports = [
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal', 'getCachedValueFor'],
-  ['merge', 'ember-metal'],
+  ['merge', '@ember/polyfills'],
   ['instrument', '@ember/instrumentation'],
   ['subscribe', '@ember/instrumentation', 'subscribe'],
   ['Instrumentation.instrument', '@ember/instrumentation', 'instrument'],

@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
 /* globals Element */
 
-import { merge } from 'ember-metal';
+import { merge } from '@ember/polyfills';
 
 const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };
 const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'];
