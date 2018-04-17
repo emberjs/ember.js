@@ -473,8 +473,6 @@ Object.defineProperty(Ember, 'TEMPLATES', {
 */
 Ember.VERSION = VERSION;
 
-metal.libraries.registerCoreLibrary('Ember', VERSION);
-
 // ****ember-views****
 Ember.$ = views.jQuery;
 Ember.ViewUtils = {
