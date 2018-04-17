@@ -6,7 +6,7 @@ import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_
 import { notifyPropertyChange } from './property_events';
 
 import { isPath } from './path_cache';
-import { isDescriptor, peekMeta, descriptorFor } from './meta';
+import { isDescriptor, peekMeta, descriptorFor } from 'ember-meta';
 
 /**
  @module @ember/object

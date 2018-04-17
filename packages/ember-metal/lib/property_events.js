@@ -1,5 +1,5 @@
 import { symbol } from 'ember-utils';
-import { descriptorFor, peekMeta } from './meta';
+import { descriptorFor, peekMeta } from 'ember-meta';
 import { sendEvent } from './events';
 import { markObjectAsDirty } from './tags';
 import ObserverSet from './observer_set';

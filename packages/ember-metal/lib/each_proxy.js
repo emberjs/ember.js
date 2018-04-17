@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import { notifyPropertyChange } from './property_events';
 import { addObserver, removeObserver } from './observer';
-import { meta, peekMeta } from './meta';
+import { meta, peekMeta } from 'ember-meta';
 import { objectAt } from './array';
 
 const EACH_PROXIES = new WeakMap();

@@ -1,15 +1,94 @@
-import { lookupDescriptor, symbol, toString } from 'ember-utils';
-import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { removeChainWatcher } from './chains';
+import { Tag } from '@glimmer/reference';
 import { ENV } from 'ember-environment';
+import { lookupDescriptor, symbol, toString } from 'ember-utils';
 
-let counters;
+// TODO move chains into ember-meta
+function removeChainWatcher(obj: object, keyName: string, node: any, meta: Meta) {
+  meta.readableChainWatchers().remove(keyName, node);
+  unwatchKey(obj, keyName, meta);
+}
+
+// TODO move unwatch key into meta
+function unwatchKey(obj: object, keyName: string, meta: Meta) {
+  // do nothing of this object has already been destroyed
+  if (meta.isSourceDestroyed()) {
+    return;
+  }
+
+  let count = meta.peekWatching(keyName);
+  if (count === 1) {
+    meta.writeWatching(keyName, 0);
+
+    let possibleDesc = descriptorFor(obj, keyName, meta);
+    let isDescriptor = possibleDesc !== undefined;
+
+    if (isDescriptor && possibleDesc.didUnwatch) {
+      possibleDesc.didUnwatch(obj, keyName, meta);
+    }
+
+    if (typeof (obj as any).didUnwatchProperty === 'function') {
+      (obj as any).didUnwatchProperty(keyName);
+    }
+
+    if (DEBUG) {
+      // It is true, the following code looks quite WAT. But have no fear, It
+      // exists purely to improve development ergonomics and is removed from
+      // ember.min.js and ember.prod.js builds.
+      //
+      // Some further context: Once a property is watched by ember, bypassing `set`
+      // for mutation, will bypass observation. This code exists to assert when
+      // that occurs, and attempt to provide more helpful feedback. The alternative
+      // is tricky to debug partially observable properties.
+      if (!isDescriptor && keyName in obj) {
+        let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
+
+        // TODO extract function isMandatorySetter
+        // likely should just make mandatory setter inert instead of uninstalling and reinstalling
+        if (
+          maybeMandatoryDescriptor!.set &&
+          (maybeMandatoryDescriptor!.set! as any).isMandatorySetter
+        ) {
+          if (
+            maybeMandatoryDescriptor!.get &&
+            (maybeMandatoryDescriptor!.get! as any).isInheritingGetter
+          ) {
+            let possibleValue = meta.readInheritedValue('values', keyName);
+            if (possibleValue === UNDEFINED) {
+              delete obj[keyName];
+              return;
+            }
+          }
+
+          Object.defineProperty(obj, keyName, {
+            configurable: true,
+            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
+            writable: true,
+            value: meta.peekValues(keyName),
+          });
+          meta.deleteFromValues(keyName);
+        }
+      }
+    }
+  } else if (count > 1) {
+    meta.writeWatching(keyName, count - 1);
+  }
+}
+
+export interface MetaCounters {
+  peekCalls: number;
+  peekPrototypeWalks: number;
+  setCalls: number;
+  deleteCalls: number;
+  metaCalls: number;
+  metaInstantiated: number;
+}
+
+let counters: MetaCounters | undefined;
 if (DEBUG) {
   counters = {
     peekCalls: 0,
-    peekParentCalls: 0,
     peekPrototypeWalks: 0,
     setCalls: 0,
     deleteCalls: 0,
@@ -29,12 +108,31 @@ const SOURCE_DESTROYING = 1 << 1;
 const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 
-const NODE_STACK = [];
+const NODE_STACK: any[] = [];
 
 export class Meta {
-  constructor(obj, parentMeta) {
+  _descriptors: any | undefined;
+  _watching: any | undefined;
+  _mixins: any | undefined;
+  _deps: any | undefined;
+  _chainWatchers: any | undefined;
+  _chains: any | undefined;
+  _tag: Tag | undefined;
+  _tags: any | undefined;
+  _flags: number;
+  source: object;
+  proto: object | undefined;
+  parent: Meta | undefined;
+  _listeners: any | undefined;
+  _listenersFinalized: boolean;
+
+  // DEBUG
+  _values: any | undefined;
+  _bindings: any | undefined;
+
+  constructor(obj: object, parentMeta: Meta | undefined) {
     if (DEBUG) {
-      counters.metaInstantiated++;
+      counters!.metaInstantiated++;
       this._values = undefined;
     }
     this._descriptors = undefined;
@@ -70,7 +168,7 @@ export class Meta {
     this._listenersFinalized = false;
   }
 
-  isInitialized(obj) {
+  isInitialized(obj: object) {
     return this.proto !== obj;
   }
 
@@ -142,20 +240,20 @@ export class Meta {
     this._flags |= META_DESTROYED;
   }
 
-  _hasFlag(flag) {
+  _hasFlag(flag: number) {
     return (this._flags & flag) === flag;
   }
 
-  _getOrCreateOwnMap(key) {
+  _getOrCreateOwnMap(key: string) {
     return this[key] || (this[key] = Object.create(null));
   }
 
-  _getOrCreateOwnSet(key) {
+  _getOrCreateOwnSet(key: string) {
     return this[key] || (this[key] = new Set());
   }
 
-  _getInherited(key) {
-    let pointer = this;
+  _getInherited(key: string) {
+    let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map !== undefined) {
@@ -165,8 +263,8 @@ export class Meta {
     }
   }
 
-  _findInherited(key, subkey) {
-    let pointer = this;
+  _findInherited(key: string, subkey: string): any | undefined {
+    let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map !== undefined) {
@@ -179,8 +277,8 @@ export class Meta {
     }
   }
 
-  _hasInInheritedSet(key, value) {
-    let pointer = this;
+  _hasInInheritedSet(key: string, value: any) {
+    let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let set = pointer[key];
       if (set !== undefined) {
@@ -195,12 +293,13 @@ export class Meta {
 
   // Implements a member that provides a lazily created map of maps,
   // with inheritance at both levels.
-  writeDeps(subkey, itemkey, value) {
+  writeDeps(subkey: string, itemkey: string, value: any) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot modify dependent keys for \`${itemkey}\` on \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot modify dependent keys for \`${itemkey}\` on \`${toString(
+            this.source
+          )}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
 
@@ -212,8 +311,8 @@ export class Meta {
     innerMap[itemkey] = value;
   }
 
-  peekDeps(subkey, itemkey) {
-    let pointer = this;
+  peekDeps(subkey: string, itemkey: string) {
+    let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let map = pointer._deps;
       if (map !== undefined) {
@@ -229,8 +328,8 @@ export class Meta {
     }
   }
 
-  hasDeps(subkey) {
-    let pointer = this;
+  hasDeps(subkey: string) {
+    let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let deps = pointer._deps;
       if (deps !== undefined && deps[subkey] !== undefined) {
@@ -241,14 +340,14 @@ export class Meta {
     return false;
   }
 
-  forEachInDeps(subkey, fn) {
+  forEachInDeps(subkey: string, fn: Function) {
     return this._forEachIn('_deps', subkey, fn);
   }
 
-  _forEachIn(key, subkey, fn) {
-    let pointer = this;
-    let seen;
-    let calls;
+  _forEachIn(key: string, subkey: string, fn: Function) {
+    let pointer: Meta | undefined = this;
+    let seen: Set<any> | undefined;
+    let calls: any[] | undefined;
     while (pointer !== undefined) {
       let map = pointer[key];
       if (map !== undefined) {
@@ -281,10 +380,11 @@ export class Meta {
     return this._tags;
   }
 
-  writableTag(create) {
+  writableTag(create: (obj: object) => Tag) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
     let ret = this._tag;
@@ -298,12 +398,13 @@ export class Meta {
     return this._tag;
   }
 
-  writableChainWatchers(create) {
+  writableChainWatchers(create: (source: object) => any) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot create a new chain watcher for \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot create a new chain watcher for \`${toString(
+            this.source
+          )}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
     let ret = this._chainWatchers;
@@ -317,10 +418,11 @@ export class Meta {
     return this._chainWatchers;
   }
 
-  writableChains(create) {
+  writableChains(create: (source: object) => any) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
     let ret = this._chains;
@@ -339,48 +441,51 @@ export class Meta {
     return this._getInherited('_chains');
   }
 
-  writeWatching(subkey, value) {
+  writeWatching(subkey: string, value: any) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot update watchers for \`${subkey}\` on \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot update watchers for \`${subkey}\` on \`${toString(
+            this.source
+          )}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
     let map = this._getOrCreateOwnMap('_watching');
     map[subkey] = value;
   }
 
-  peekWatching(subkey) {
+  peekWatching(subkey: string) {
     return this._findInherited('_watching', subkey);
   }
 
-  addMixin(mixin) {
+  addMixin(mixin: any) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot add mixins of \`${toString(mixin)}\` on \`${toString(
-          this.source
-        )}\` call addMixin after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot add mixins of \`${toString(mixin)}\` on \`${toString(
+            this.source
+          )}\` call addMixin after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
     let set = this._getOrCreateOwnSet('_mixins');
     set.add(mixin);
   }
 
-  hasMixin(mixin) {
+  hasMixin(mixin: any) {
     return this._hasInInheritedSet('_mixins', mixin);
   }
 
-  forEachMixins(fn) {
-    let pointer = this;
-    let seen;
+  forEachMixins(fn: Function) {
+    let pointer: Meta | undefined = this;
+    let seen: Set<any> | undefined;
     while (pointer !== undefined) {
       let set = pointer._mixins;
       if (set !== undefined) {
         seen = seen === undefined ? new Set() : seen;
-        set.forEach(mixin => {
-          if (!seen.has(mixin)) {
-            seen.add(mixin);
+        // TODO cleanup typing here
+        set.forEach((mixin: any) => {
+          if (!seen!.has(mixin)) {
+            seen!.add(mixin);
             fn(mixin);
           }
         });
@@ -389,16 +494,17 @@ export class Meta {
     }
   }
 
-  writeBindings(subkey, value) {
+  writeBindings(subkey: string, value: any) {
     assert(
       'Cannot invoke `meta.writeBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
       ENV._ENABLE_BINDING_SUPPORT
     );
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot add a binding for \`${subkey}\` on \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot add a binding for \`${subkey}\` on \`${toString(
+            this.source
+          )}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
 
@@ -406,7 +512,7 @@ export class Meta {
     map[subkey] = value;
   }
 
-  peekBindings(subkey) {
+  peekBindings(subkey: string) {
     assert(
       'Cannot invoke `meta.peekBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
       ENV._ENABLE_BINDING_SUPPORT
@@ -414,21 +520,22 @@ export class Meta {
     return this._findInherited('_bindings', subkey);
   }
 
-  forEachBindings(fn) {
+  forEachBindings(fn: Function) {
     assert(
       'Cannot invoke `meta.forEachBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
       ENV._ENABLE_BINDING_SUPPORT
     );
 
-    let pointer = this;
-    let seen;
+    let pointer: Meta | undefined = this;
+    let seen: { [key: string]: any } | undefined;
     while (pointer !== undefined) {
       let map = pointer._bindings;
       if (map !== undefined) {
         for (let key in map) {
-          seen = seen || Object.create(null);
-          if (seen[key] === undefined) {
-            seen[key] = true;
+          // cleanup typing
+          seen = seen === undefined ? Object.create(null) : seen;
+          if (seen![key] === undefined) {
+            seen![key] = true;
             fn(key, map[key]);
           }
         }
@@ -443,37 +550,39 @@ export class Meta {
       ENV._ENABLE_BINDING_SUPPORT
     );
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
     this._bindings = undefined;
   }
 
-  writeDescriptors(subkey, value) {
+  writeDescriptors(subkey: string, value: any) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot update descriptors for \`${subkey}\` on \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot update descriptors for \`${subkey}\` on \`${toString(
+            this.source
+          )}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
     let map = this._getOrCreateOwnMap('_descriptors');
     map[subkey] = value;
   }
 
-  peekDescriptors(subkey) {
+  peekDescriptors(subkey: string) {
     let possibleDesc = this._findInherited('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
-  removeDescriptors(subkey) {
+  removeDescriptors(subkey: string) {
     this.writeDescriptors(subkey, UNDEFINED);
   }
 
-  forEachDescriptors(fn) {
-    let pointer = this;
-    let seen;
+  forEachDescriptors(fn: Function) {
+    let pointer: Meta | undefined = this;
+    let seen: Set<any> | undefined;
     while (pointer !== undefined) {
       let map = pointer._descriptors;
       if (map !== undefined) {
@@ -491,19 +600,103 @@ export class Meta {
       pointer = pointer.parent;
     }
   }
+
+  addToListeners(eventName: string, target: object, method: Function | string, once: boolean) {
+    if (this._listeners === undefined) {
+      this._listeners = [];
+    }
+    this._listeners.push(eventName, target, method, once);
+  }
+
+  _finalizeListeners() {
+    if (this._listenersFinalized) {
+      return;
+    }
+    if (this._listeners === undefined) {
+      this._listeners = [];
+    }
+    let pointer = this.parent;
+    while (pointer !== undefined) {
+      let listeners = pointer._listeners;
+      if (listeners !== undefined) {
+        this._listeners = this._listeners.concat(listeners);
+      }
+      if (pointer._listenersFinalized) {
+        break;
+      }
+      pointer = pointer.parent;
+    }
+    this._listenersFinalized = true;
+  }
+
+  removeFromListeners(eventName: string, target: any, method: Function | string): void {
+    let pointer: Meta | undefined = this;
+    while (pointer !== undefined) {
+      let listeners = pointer._listeners;
+      if (listeners !== undefined) {
+        for (let index = listeners.length - 4; index >= 0; index -= 4) {
+          if (
+            listeners[index] === eventName &&
+            (!method || (listeners[index + 1] === target && listeners[index + 2] === method))
+          ) {
+            if (pointer === this) {
+              listeners.splice(index, 4); // we are modifying our own list, so we edit directly
+            } else {
+              // we are trying to remove an inherited listener, so we do
+              // just-in-time copying to detach our own listeners from
+              // our inheritance chain.
+              this._finalizeListeners();
+              return this.removeFromListeners(eventName, target, method);
+            }
+          }
+        }
+      }
+      if (pointer._listenersFinalized) {
+        break;
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  matchingListeners(eventName: string) {
+    let pointer: Meta | undefined = this;
+    // fix type
+    let result: any[] | undefined;
+    while (pointer !== undefined) {
+      let listeners = pointer._listeners;
+      if (listeners !== undefined) {
+        for (let index = 0; index < listeners.length; index += 4) {
+          if (listeners[index] === eventName) {
+            result = result || [];
+            pushUniqueListener(result, listeners, index);
+          }
+        }
+      }
+      if (pointer._listenersFinalized) {
+        break;
+      }
+      pointer = pointer.parent;
+    }
+    return result;
+  }
 }
 
-for (let name in listenerMethods) {
-  Meta.prototype[name] = listenerMethods[name];
+export interface Meta {
+  writeValues(subkey: string, value: any): void;
+  peekValues(key: string): any;
+  deleteFromValues(key: string): any;
+  readInheritedValue(key: string, subkey: string): any;
+  writeValue(obj: object, key: string, value: any): any;
 }
 
 if (DEBUG) {
-  Meta.prototype.writeValues = function(subkey, value) {
+  Meta.prototype.writeValues = function(subkey: string, value: any) {
     assert(
-      this.isMetaDestroyed() &&
-        `Cannot set the value of \`${subkey}\` on \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
+      this.isMetaDestroyed()
+        ? `Cannot set the value of \`${subkey}\` on \`${toString(
+            this.source
+          )}\` after it has been destroyed.`
+        : '',
       !this.isMetaDestroyed()
     );
 
@@ -511,18 +704,18 @@ if (DEBUG) {
     map[subkey] = value;
   };
 
-  Meta.prototype.peekValues = function(subkey) {
+  Meta.prototype.peekValues = function(subkey: string) {
     return this._findInherited('_values', subkey);
   };
 
-  Meta.prototype.deleteFromValues = function(subkey) {
+  Meta.prototype.deleteFromValues = function(subkey: string) {
     delete this._getOrCreateOwnMap('_values')[subkey];
   };
 
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
 
-    let pointer = this;
+    let pointer: Meta | undefined = this;
 
     while (pointer !== undefined) {
       let map = pointer[internalKey];
@@ -538,10 +731,10 @@ if (DEBUG) {
     return UNDEFINED;
   };
 
-  Meta.prototype.writeValue = function(obj, key, value) {
+  Meta.prototype.writeValue = function(obj: object, key: string, value: any) {
     let descriptor = lookupDescriptor(obj, key);
     let isMandatorySetter =
-      descriptor !== null && descriptor.set && descriptor.set.isMandatorySetter;
+      descriptor !== null && descriptor.set && (descriptor.set as any).isMandatorySetter;
 
     if (isMandatorySetter) {
       this.writeValues(key, value);
@@ -554,7 +747,7 @@ if (DEBUG) {
 const getPrototypeOf = Object.getPrototypeOf;
 const metaStore = new WeakMap();
 
-export function setMeta(obj, meta) {
+export function setMeta(obj: object, meta: Meta) {
   assert('Cannot call `setMeta` on null', obj !== null);
   assert('Cannot call `setMeta` on undefined', obj !== undefined);
   assert(
@@ -563,12 +756,12 @@ export function setMeta(obj, meta) {
   );
 
   if (DEBUG) {
-    counters.setCalls++;
+    counters!.setCalls++;
   }
   metaStore.set(obj, meta);
 }
 
-export function peekMeta(obj) {
+export function peekMeta(obj: object) {
   assert('Cannot call `peekMeta` on null', obj !== null);
   assert('Cannot call `peekMeta` on undefined', obj !== undefined);
   assert(
@@ -582,7 +775,7 @@ export function peekMeta(obj) {
     meta = metaStore.get(pointer);
     // jshint loopfunc:true
     if (DEBUG) {
-      counters.peekCalls++;
+      counters!.peekCalls++;
     }
     if (meta !== undefined) {
       return meta;
@@ -590,7 +783,7 @@ export function peekMeta(obj) {
 
     pointer = getPrototypeOf(pointer);
     if (DEBUG) {
-      counters.peekPrototypeWalks++;
+      counters!.peekPrototypeWalks++;
     }
   }
 }
@@ -605,7 +798,7 @@ export function peekMeta(obj) {
   @return {void}
   @private
 */
-export function deleteMeta(obj) {
+export function deleteMeta(obj: object) {
   assert('Cannot call `deleteMeta` on null', obj !== null);
   assert('Cannot call `deleteMeta` on undefined', obj !== undefined);
   assert(
@@ -614,7 +807,7 @@ export function deleteMeta(obj) {
   );
 
   if (DEBUG) {
-    counters.deleteCalls++;
+    counters!.deleteCalls++;
   }
 
   let meta = peekMeta(obj);
@@ -641,7 +834,10 @@ export function deleteMeta(obj) {
     the meta hash, allowing the method to avoid making an unnecessary copy.
   @return {Object} the meta hash for an object
 */
-export function meta(obj) {
+export const meta: {
+  (obj: object): Meta;
+  _counters?: MetaCounters;
+} = function meta(obj: object) {
   assert('Cannot call `meta` on null', obj !== null);
   assert('Cannot call `meta` on undefined', obj !== undefined);
   assert(
@@ -650,7 +846,7 @@ export function meta(obj) {
   );
 
   if (DEBUG) {
-    counters.metaCalls++;
+    counters!.metaCalls++;
   }
 
   let maybeMeta = peekMeta(obj);
@@ -667,7 +863,7 @@ export function meta(obj) {
   let newMeta = new Meta(obj, parent);
   setMeta(obj, newMeta);
   return newMeta;
-}
+};
 
 if (DEBUG) {
   meta._counters = counters;
@@ -682,7 +878,7 @@ if (DEBUG) {
   @return {Descriptor}
   @private
 */
-export function descriptorFor(obj, keyName, _meta) {
+export function descriptorFor(obj: object, keyName: string, _meta?: Meta) {
   assert('Cannot call `descriptorFor` on null', obj !== null);
   assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
   assert(
@@ -705,8 +901,31 @@ export function descriptorFor(obj, keyName, _meta) {
   @return {boolean}
   @private
 */
-export function isDescriptor(possibleDesc) {
+export function isDescriptor(possibleDesc: any | undefined | null): boolean {
+  // TODO make this return possibleDesc is Descriptor
   return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 }
 
 export { counters };
+
+/*
+ When we render a rich template hierarchy, the set of events that
+ *might* happen tends to be much larger than the set of events that
+ actually happen. This implies that we should make listener creation &
+ destruction cheap, even at the cost of making event dispatch more
+ expensive.
+
+ Thus we store a new listener with a single push and no new
+ allocations, without even bothering to do deduplication -- we can
+ save that for dispatch time, if an event actually happens.
+ */
+function pushUniqueListener(destination: any[], source: any[], index: number) {
+  let target = source[index + 1];
+  let method = source[index + 2];
+  for (let destinationIndex = 0; destinationIndex < destination.length; destinationIndex += 3) {
+    if (destination[destinationIndex] === target && destination[destinationIndex + 1] === method) {
+      return;
+    }
+  }
+  destination.push(target, method, source[index + 3]);
+}
